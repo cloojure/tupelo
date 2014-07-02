@@ -1,5 +1,4 @@
-;   Copyright (c) Alan Thompson. All rights reserved. 
-;   The use and distribution terms for this software are covered by the Eclipse Public
+;   Copyright (c) Alan Thompson. All rights reserved.  ;   The use and distribution terms for this software are covered by the Eclipse Public
 ;   License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
@@ -16,7 +15,13 @@
 
 (set! *warn-on-reflection* false)
 
-; AWTAWT TODO: add ":delimiter \x" support
+; AWTAWT TODO: move to cooljure.core
+(defn keyvals 
+  "Returns a map's keys & values as a vector, suitable for reconstructing the map via
+  (apply hashmap (keyvals m))."
+  [m]
+  { :pre  [ (map? m) ] }
+  (vec (flatten (seq m))) )
 
 (defn parse-csv->maps-v0
   "Reads string data from the specified CSV file. The first row is assumed to be column
@@ -26,7 +31,7 @@
   function, which is applied to the corresponding data entry for each row. Data for
   col-hdr-keywords not present in parse-fns-map is returned as a string.  Return value is
   a sequence of row maps.  "
-  ( [csv-file] (parse-csv->maps csv-file {}) )
+  ( [csv-file] (parse-csv->maps-v0 csv-file {}) )
   ( [csv-file parse-fns-map]
     { :pre  [ (string? csv-file)
               (map? parse-fns-map) ]
@@ -51,10 +56,15 @@
   function, which is applied to the corresponding data entry for each row. Data for
   col-hdr-keywords not present in parse-fns-map is returned as a string.  Return value is
   a sequence of row maps.  "
-  [csv-file] 
+  [csv-file & {:as opts}] 
   { :pre  [ (string? csv-file) ]
     :post [ (map? (first %)) ] }
-  (let [data-lines    (csv/parse-csv (slurp csv-file))
+  (let [_ (prn "opts" opts)
+        opts2         (merge {:delimiter \,} opts)
+        _ (prn "opts2" opts2)
+                        ; AWT TODO: clean up options syntax
+        data-lines    (apply csv/parse-csv (slurp csv-file) (keyvals opts2))
+        _ (prn "#3")
         hdrs-all      (mapv cool-misc/str->kw (first data-lines))
         data-maps     (for [row (rest data-lines)]
                         (zipmap hdrs-all row) )
