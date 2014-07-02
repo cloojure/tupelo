@@ -17,18 +17,18 @@
   a sequence of row maps.  "
   ( [csv-file] (parse-csv->maps csv-file {}) )
   ( [csv-file parse-fns-map]
-    { :pre [  (string? csv-file)
+    { :pre  [ (string? csv-file)
               (map? parse-fns-map) ]
       :post [ (map? (first %)) ] }
-    (let [data-lines      (csv/parse-csv (slurp csv-file))
-          hdrs-all        (mapv cool-misc/str->kw (first data-lines))
-          data-rows       (rest data-lines)
-          data-maps       (for [row data-rows]
-                            (let [raw-map   (zipmap hdrs-all row)
-                                  data-map  (reduce 
-                                              (fn [cum-map [parse-kw parse-fn]]
-                                                (update-in cum-map [parse-kw] parse-fn) )
-                                              raw-map parse-fns-map )
-                          ] data-map ))
+    (let [data-lines    (csv/parse-csv (slurp csv-file))
+          hdrs-all      (mapv cool-misc/str->kw (first data-lines))
+          data-rows     (rest data-lines)
+          data-maps     (for [row data-rows]
+                          (let [raw-map   (zipmap hdrs-all row)
+                                data-map  (reduce 
+                                            (fn [cum-map [parse-kw parse-fn]]
+                                              (update-in cum-map [parse-kw] parse-fn) )
+                                            raw-map parse-fns-map )
+                        ] data-map ))
     ] data-maps )))
 
