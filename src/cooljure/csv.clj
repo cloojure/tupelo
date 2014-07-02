@@ -18,7 +18,7 @@
 
 ; AWTAWT TODO: add ":delimiter \x" support
 
-(defn parse-csv->maps
+(defn parse-csv->maps-v0
   "Reads string data from the specified CSV file. The first row is assumed to be column
   header strings, which are (safely) converted into keywords. Each row is converted to a
   map using the column-hdr-keywords map and the corresponding string data from that row.
@@ -40,6 +40,23 @@
                                             (fn [cum-map [parse-kw parse-fn]]
                                               (update-in cum-map [parse-kw] parse-fn) )
                                             raw-map parse-fns-map )
-                        ] data-map ))
+                          ] data-map ))
     ] data-maps )))
+
+(defn parse-csv->maps
+  "Reads string data from the specified CSV file. The first row is assumed to be column
+  header strings, which are (safely) converted into keywords. Each row is converted to a
+  map using the column-hdr-keywords map and the corresponding string data from that row.
+  If supplied, each entry of parse-fns-map associates a col-hdr-keyword & a parsing
+  function, which is applied to the corresponding data entry for each row. Data for
+  col-hdr-keywords not present in parse-fns-map is returned as a string.  Return value is
+  a sequence of row maps.  "
+  [csv-file] 
+  { :pre  [ (string? csv-file) ]
+    :post [ (map? (first %)) ] }
+  (let [data-lines    (csv/parse-csv (slurp csv-file))
+        hdrs-all      (mapv cool-misc/str->kw (first data-lines))
+        data-maps     (for [row (rest data-lines)]
+                        (zipmap hdrs-all row) )
+  ] data-maps ))
 
