@@ -16,6 +16,8 @@
 
 (set! *warn-on-reflection* false)
 
+; AWTAWT TODO: add ":delimiter \x" support
+
 (defn parse-csv->maps
   "Reads string data from the specified CSV file. The first row is assumed to be column
   header strings, which are (safely) converted into keywords. Each row is converted to a
