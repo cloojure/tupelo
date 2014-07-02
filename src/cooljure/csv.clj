@@ -62,7 +62,7 @@
   (let [_ (prn "opts" opts)
         opts2         (merge {:delimiter \,} opts)
         _ (prn "opts2" opts2)
-                        ; AWT TODO: clean up options syntax
+                        ; AWTAWT TODO: clean up options syntax
         data-lines    (apply csv/parse-csv (slurp csv-file) (keyvals opts2))
         _ (prn "#3")
         hdrs-all      (mapv cool-misc/str->kw (first data-lines))

@@ -14,6 +14,7 @@
   (testing "basic usage"
     (let [mm {:a 1 :b 2 :c 3} ]
       (is (= mm (apply hash-map (keyvals mm)))) )))
+; AWTAWT TODO: add test.generative
 
 (def home-dir (System/getProperty "user.home"))
 (def store-zip-file  
