@@ -6,9 +6,9 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns cooljure.core-test
-  (:require [cooljure.core          :refer :all]
-            [clojure.contrib.seq    :as seq] )
-  (:use [clojure.test] ))
+  (:require [clojure.contrib.seq    :as seq]
+            [cooljure.core          :refer :all]
+            [clojure.test           :refer :all] ))
 
 (deftest truthy-falsey-tst
   (let [data [true :a 1 false nil] ]
