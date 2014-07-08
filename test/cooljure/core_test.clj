@@ -82,3 +82,9 @@
     (is (= [0 1 2 3 4 5] (conjv (range 4) 4 5)))
     (is (= [0 1 2 3 4 5] (apply conjv [0] (range 1 6)))) ))
 
+(deftest keyvals-test
+  (testing "basic usage"
+    (let [mm {:a 1 :b 2 :c 3} ]
+      (is (= mm (apply hash-map (keyvals mm)))) )))
+; AWTAWT TODO: add test.generative
+

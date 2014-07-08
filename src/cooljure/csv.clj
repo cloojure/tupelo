@@ -11,17 +11,8 @@
   (:require [clojure.string             :as str]
             [clojure.java.io            :as io]
             [clojure-csv.core           :as csv]
-            [cooljure.misc              :as cool-misc] ))
-
-(set! *warn-on-reflection* false)
-
-; AWTAWT TODO: move to cooljure.core
-(defn keyvals 
-  "Returns a map's keys & values as a vector, suitable for reconstructing the map via
-  (apply hashmap (keyvals m))."
-  [m]
-  { :pre  [ (map? m) ] }
-  (vec (flatten (seq m))) )
+            [cooljure.misc              :as cool-misc] 
+            [cooljure.core              :refer :all] ))
 
 (defn parse-csv->maps-v0
   "Reads string data from the specified CSV file. The first row is assumed to be column
@@ -59,12 +50,8 @@
   [csv-file & {:as opts}] 
   { :pre  [ (string? csv-file) ]
     :post [ (map? (first %)) ] }
-  (let [_ (prn "opts" opts)
-        opts2         (merge {:delimiter \,} opts)
-        _ (prn "opts2" opts2)
-                        ; AWTAWT TODO: clean up options syntax
-        data-lines    (apply csv/parse-csv (slurp csv-file) (keyvals opts2))
-        _ (prn "#3")
+  (let [opts-def      (merge {:delimiter \,} opts)
+        data-lines    (apply csv/parse-csv (slurp csv-file) (keyvals opts-def))
         hdrs-all      (mapv cool-misc/str->kw (first data-lines))
         data-maps     (for [row (rest data-lines)]
                         (zipmap hdrs-all row) )

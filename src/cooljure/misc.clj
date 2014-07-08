@@ -12,8 +12,6 @@
   (:require [clojure.string             :as str]
             [clojure.java.io            :as io] ))
 
-(set! *warn-on-reflection* false)
-
 (defn normalize-str
   "Returns a 'normalized' version of the input string, stripped of leading/trailing
   blanks, and with all non-alphanumeric chars converted to hyphens."

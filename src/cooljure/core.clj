@@ -36,8 +36,15 @@
 (defn conjv 
   "Appends items to collection, always returning the result as a vector."
   ; From Stuart Sierra post 2014-2-10
-  ([coll x]
-     (conj (vec coll) x) )
-  ([coll x & xs]
-     (apply conj (vec coll) x xs) ))
+  ( [coll x]
+      (conj (vec coll) x) )
+  ( [coll x & xs]
+      (apply conj (vec coll) x xs) ))
+
+(defn keyvals 
+  "Returns a map's keys & values as a vector, suitable for reconstructing the map via
+  (apply hashmap (keyvals m))."
+  [m]
+  {:pre [ (map? m) ] }
+  (vec (flatten (seq m))) )
 
