@@ -34,7 +34,7 @@
                       (zipmap hdrs-kw data-line) )
   ] row-maps ))
 
-; AWTAWT TODO: clean up, add testing, enforce identical columns each row
+; AWTAWT TODO: clean up, enforce identical columns each row
 (defn row-maps->col-vecs
   "<TEMP> Converts a sequence of row-maps into a map of column-vectors"
   [row-maps]
@@ -44,6 +44,18 @@
         col-vecs    (into {}  (for [hdr-kw hdrs-kw]
                                 { hdr-kw (mapv hdr-kw row-maps) } ))
   ] col-vecs ))
+
+; AWTAWT TODO: clean up, enforce identical columns length
+(defn col-vecs->row-maps
+  "<TEMP> Converts a map of column-vectors into a sequence of row-maps"
+  [col-vecs]
+  { :pre  [ (map? col-vecs) ]
+    :post [ (map? (first %)) ] }
+  (let [col-kws     (keys col-vecs)
+        col-vals    (vals col-vecs)
+        row-vals    (apply map vector col-vals)
+        row-maps    (map #(zipmap col-kws %) row-vals)
+  ] row-maps ))
 
 (defn csv->col-vecs
   "Returns a map constructed from the columns of the input file.  The first line is

@@ -47,6 +47,15 @@
     (is (= result test4-expected)) ))
 )
 
+(deftest col-vecs->row-maps-test
+  (testing "col-vecs->row-maps-test-1"
+    (let [result (col-vecs->row-maps test3-expected) ]
+    (is (= result test1-expected)) ))
+  (testing "col-vecs->row-maps-test-2"
+    (let [result (col-vecs->row-maps test4-expected) ]
+    (is (= result test2-expected)) ))
+)
+
 (deftest csv->row-maps-test
   (testing "csv->row-maps-test-1"
     (let [result (csv->row-maps (str user-dir "/test/cooljure/csv-test-1.csv")) ]
