@@ -8,33 +8,63 @@
 (ns cooljure.csv-test
   (:require [clojure.java.io            :as io]
             [clojure.string             :as str]
-            [kits.parse                 :as kparse] 
             [cooljure.csv               :refer :all]
             [clojure.test               :refer :all] ))
 
-(def home-dir (System/getProperty "user.home"))
-(def store-zip-file  
-  (str home-dir 
-    (first [
-      "/local-data/store-to-zip.psv"
-    ] )))
+(def user-dir (System/getProperty "user.dir"))
 
-(defn load-store-zip-maps
-  [store-zip-file]
-  (let [_ (println "a1")
-        raw-maps    (csv->row-maps store-zip-file :delimiter \| )
-        _ (println "a2")
-        data-maps   (map #(hash-map :store-id (kparse/str->long (:STORE-NUM %))
-                                    :zipcode                    (:ZIP-POSTAL-CODE %) )
-                      raw-maps )
-        _ (println "a3")
-  ] data-maps ))
-(def store-zip-maps (load-store-zip-maps  store-zip-file)) 
+(def test1-expected
+  [ { :zip-postal-code "01002" :store-num "00006" :chain-rank "4" }
+    { :zip-postal-code "01002" :store-num "00277" :chain-rank "5" }
+    { :zip-postal-code "01003" :store-num "00277" :chain-rank "5" }
+    { :zip-postal-code "01008" :store-num "01217" :chain-rank "5" }
+    { :zip-postal-code "01009" :store-num "00439" :chain-rank "5" }
+    { :zip-postal-code "01020" :store-num "01193" :chain-rank "5" } ] )
 
-(deftest basic
-  (testing "basic usage"
-    (println "store-zip-maps")
-    (prn (take 5 store-zip-maps))
+(def test2-expected
+  [ { :zipcode "01002" :store-id    6 }
+    { :zipcode "01002" :store-id  277 }
+    { :zipcode "01003" :store-id  277 }
+    { :zipcode "01008" :store-id 1217 }
+    { :zipcode "01009" :store-id  439 }
+    { :zipcode "01020" :store-id 1193 } ] )
 
-    (is (= 1 1)) ))
+(deftest csv->row-maps-test
+  (testing "csv->row-maps-test-1"
+    (let [result (csv->row-maps (str user-dir "/test/cooljure/csv-test-1.csv")) ]
+    (is (= result test1-expected)) ))
+
+  (testing "csv->row-maps-test-2"
+    (let [raw-maps  (csv->row-maps (str user-dir "/test/cooljure/csv-test-2.psv")
+                                   :delimiter \| )
+          result    (map #(hash-map :store-id (Long/parseLong (:STORE-NUM %))
+                                    :zipcode                  (:ZIP-POSTAL-CODE %) )
+                         raw-maps ) ]
+    (is (= result test2-expected)) )))
+
+(def test3-expected
+  { :zip-postal-code    ["01002" "01002" "01003" "01008" "01009" "01020"]
+    :store-num          ["00006" "00277" "00277" "01217" "00439" "01193"]
+    :chain-rank         [    "4"     "5"     "5"     "5"     "5"     "5"] } )
+
+(def test4-expected
+  { :zipcode            ["01002" "01002" "01003" "01008" "01009" "01020"]
+    :store-id           [     6     277     277    1217     439    1193 ] } )
+
+(deftest csv->col-maps-test
+  (testing "csv->col-maps-test-1"
+    (let [result    (csv->col-maps (str user-dir "/test/cooljure/csv-test-1.csv")) ]
+    (println "csv->col-maps-test-1")
+    (println result)
+    (is (= result test3-expected)) ))
+
+  (testing "csv->col-maps-test-2"
+    (let [raw-maps  (csv->col-maps (str user-dir "/test/cooljure/csv-test-2.psv")
+                                   :delimiter \| )
+          result    { :store-id (map #(Long/parseLong %) (:STORE-NUM       raw-maps))
+                      :zipcode                           (:ZIP-POSTAL-CODE raw-maps) } ]
+
+    (println "csv->col-maps-test-2")
+    (println result)
+    (is (= result test4-expected)) )))
 

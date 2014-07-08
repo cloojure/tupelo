@@ -27,10 +27,31 @@
   [csv-file & {:as opts} ] 
   { :pre  [ (string? csv-file) ]
     :post [ (map? (first %)) ] }
-  (let [opts-def      (merge {:delimiter \,} opts)
-        data-lines    (apply csv/parse-csv (slurp csv-file) (keyvals opts-def))
-        hdrs-kw       (mapv cool-misc/str->kw (first data-lines))
-        data-maps     (for [row (rest data-lines)]
-                        (zipmap hdrs-kw row) )
-  ] data-maps ))
+  (let [opts-def    (merge {:delimiter \,} opts)
+        data-lines  (apply csv/parse-csv (slurp csv-file) (keyvals opts-def))
+        hdrs-kw     (mapv cool-misc/str->kw (first data-lines))
+        row-maps    (for [data-line (rest data-lines)]
+                      (zipmap hdrs-kw data-line) )
+  ] row-maps ))
+
+(defn csv->col-maps
+  "Returns a map constructed from the columns of the input file.  The first line is
+  assumed to be column header strings, which are (safely) converted into keywords. The
+  returned map has one entry for each column header keyword. The corresponding value for
+  each keyword is a vector of string data taken from each subsequent line in the file.
+  Default delimiter is the comma character (i.e. \\,) but may be changed using the syntax
+  such as: 
+  
+    (cvs->col-maps my-file.psv :delimiter \\| )
+
+  to select the pipe character (i.e. \\|) as the delimiter.  "
+  [csv-file & {:as opts} ] 
+  { :pre  [ (string? csv-file) ]
+    :post [ (map? %) ] }
+  (let [opts-def    (merge {:delimiter \,} opts)
+        row-maps    (apply csv->row-maps csv-file (keyvals opts-def))
+        hdrs-kw     (keys (first row-maps))
+        col-maps    (into {}  (for [hdr-kw hdrs-kw]
+                                { hdr-kw (mapv hdr-kw row-maps) } ))
+  ] col-maps ))
 
