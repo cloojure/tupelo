@@ -88,3 +88,8 @@
       (is (= mm (apply hash-map (keyvals mm)))) )))
 ; AWTAWT TODO: add test.generative
 
+(deftest with-exception-default-test
+  (testing "basic usage"
+    (is (thrown?    Exception                       (/ 1 0)))
+    (is (= nil      (with-exception-default nil     (/ 1 0))))
+    (is (= :dummy   (with-exception-default :dummy  (/ 1 0)))) ))

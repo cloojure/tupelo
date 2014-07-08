@@ -16,7 +16,8 @@
             [cooljure.core              :refer :all] ))
 
 (defn csv->row-maps
-  "Returns a sequence of maps constructed from the lines of the input file.  The first line
+ "[csv-file & {:as opts} ] 
+  Returns a sequence of maps constructed from the lines of csv-file.  The first line
   is assumed to be column header strings, which are (safely) converted into keywords.
   String data from each subsequent line is paired with the corresponding column keyword to
   construct a map for that line.  Default delimiter is the comma character (i.e. \\,) but 
@@ -59,7 +60,8 @@
   ] row-maps ))
 
 (defn csv->col-vecs
-  "Returns a map constructed from the columns of the input file.  The first line is
+ "[csv-file & {:as opts} ] 
+  Returns a map constructed from the columns of csv-file.  The first line is
   assumed to be column header strings, which are (safely) converted into keywords. The
   returned map has one entry for each column header keyword. The corresponding value for
   each keyword is a vector of string data taken from each subsequent line in the file.

@@ -11,15 +11,6 @@
   cooljure.parse
   (:require [cooljure.core :refer :all] ))
 
-; AWTAWT TODO: move to cooljure.core
-(defmacro with-exception-default
- "[default & body]
-  Evaluates body, returning specified default value in the event of an exception."
-  [default & body]
-  `(try
-     ~@body
-     (catch Exception e# ~default) ))
-
 (defn parseLong
  "( [str-val]
     [str-val :or default-val] )

@@ -13,7 +13,8 @@
             [clojure.java.io            :as io] ))
 
 (defn normalize-str
-  "Returns a 'normalized' version of the input string, stripped of leading/trailing
+ "[orig-str]
+  Returns a 'normalized' version of orig-str, stripped of leading/trailing
   blanks, and with all non-alphanumeric chars converted to hyphens."
   [orig-str]
   (-> orig-str
@@ -22,13 +23,15 @@
   ; AWTAWT TODO: replace with other lib
 
 (defn str->kw
-  "Returns a keyword from the normalized input string."
+ "[orig-str]
+  Returns a keyword from the normalized orig-str"
   [orig-str]
   (keyword (normalize-str orig-str)) )
   ; AWTAWT TODO: replace with other lib
 
 (defn take-dist
-  "Returns a sequence of N items from a collection, distributed
+ "[n coll]
+  Returns a sequence of n items from a collection, distributed
   evenly between first & last elements, which are always included."
   ; AWTAWT TODO: write tests, incl degenerate cases of N=0,1,2, etc
   [n coll]
