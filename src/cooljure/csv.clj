@@ -14,46 +14,23 @@
             [cooljure.misc              :as cool-misc] 
             [cooljure.core              :refer :all] ))
 
-(defn parse-csv->maps-v0
-  "Reads string data from the specified CSV file. The first row is assumed to be column
-  header strings, which are (safely) converted into keywords. Each row is converted to a
-  map using the column-hdr-keywords map and the corresponding string data from that row.
-  If supplied, each entry of parse-fns-map associates a col-hdr-keyword & a parsing
-  function, which is applied to the corresponding data entry for each row. Data for
-  col-hdr-keywords not present in parse-fns-map is returned as a string.  Return value is
-  a sequence of row maps.  "
-  ( [csv-file] (parse-csv->maps-v0 csv-file {}) )
-  ( [csv-file parse-fns-map]
-    { :pre  [ (string? csv-file)
-              (map? parse-fns-map) ]
-      :post [ (map? (first %)) ] }
-    (let [data-lines    (csv/parse-csv (slurp csv-file))
-          hdrs-all      (mapv cool-misc/str->kw (first data-lines))
-          data-rows     (rest data-lines)
-          data-maps     (for [row data-rows]
-                          (let [raw-map   (zipmap hdrs-all row)
-                                data-map  (reduce 
-                                            (fn [cum-map [parse-kw parse-fn]]
-                                              (update-in cum-map [parse-kw] parse-fn) )
-                                            raw-map parse-fns-map )
-                          ] data-map ))
-    ] data-maps )))
+(defn csv->row-maps
+  "Returns a sequence of maps constructed from the lines of the input file.  The first line
+  is assumed to be column header strings, which are (safely) converted into keywords.
+  String data from each subsequent line is paired with the corresponding column keyword to
+  construct a map for that line.  Default delimiter is the comma character (i.e. \\,) but 
+  may be changed using the syntax such as: 
+  
+    (cvs->row-maps my-file.psv :delimiter \\| )
 
-(defn parse-csv->maps
-  "Reads string data from the specified CSV file. The first row is assumed to be column
-  header strings, which are (safely) converted into keywords. Each row is converted to a
-  map using the column-hdr-keywords map and the corresponding string data from that row.
-  If supplied, each entry of parse-fns-map associates a col-hdr-keyword & a parsing
-  function, which is applied to the corresponding data entry for each row. Data for
-  col-hdr-keywords not present in parse-fns-map is returned as a string.  Return value is
-  a sequence of row maps.  "
-  [csv-file & {:as opts}] 
+  to select the pipe character (i.e. \\|) as the delimiter.  "
+  [csv-file & {:as opts} ] 
   { :pre  [ (string? csv-file) ]
     :post [ (map? (first %)) ] }
   (let [opts-def      (merge {:delimiter \,} opts)
         data-lines    (apply csv/parse-csv (slurp csv-file) (keyvals opts-def))
-        hdrs-all      (mapv cool-misc/str->kw (first data-lines))
+        hdrs-kw       (mapv cool-misc/str->kw (first data-lines))
         data-maps     (for [row (rest data-lines)]
-                        (zipmap hdrs-all row) )
+                        (zipmap hdrs-kw row) )
   ] data-maps ))
 
