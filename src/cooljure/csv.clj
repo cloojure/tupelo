@@ -36,7 +36,7 @@
   ] row-maps ))
 
 ; AWTAWT TODO: clean up, enforce identical columns each row
-(defn row-maps->col-vecs
+(defn row-maps->col-vecs    ; move to cooljure.data ?
   "<TEMP> Converts a sequence of row-maps into a map of column-vectors"
   [row-maps]
   { :pre  [ (map? (first row-maps)) ]
@@ -47,7 +47,7 @@
   ] col-vecs ))
 
 ; AWTAWT TODO: clean up, enforce identical columns length
-(defn col-vecs->row-maps
+(defn col-vecs->row-maps    ; move to cooljure.data ?
   "<TEMP> Converts a map of column-vectors into a sequence of row-maps"
   [col-vecs]
   { :pre  [ (map? col-vecs) ]
