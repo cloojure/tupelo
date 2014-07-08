@@ -44,8 +44,7 @@
     (is (= result test3-expected)) ))
   (testing "row-maps->col-vecs-test-2"
     (let [result (row-maps->col-vecs test2-expected) ]
-    (is (= result test4-expected)) ))
-)
+    (is (= result test4-expected)) )))
 
 (deftest col-vecs->row-maps-test
   (testing "col-vecs->row-maps-test-1"
@@ -53,8 +52,7 @@
     (is (= result test1-expected)) ))
   (testing "col-vecs->row-maps-test-2"
     (let [result (col-vecs->row-maps test4-expected) ]
-    (is (= result test2-expected)) ))
-)
+    (is (= result test2-expected)) )))
 
 (deftest csv->row-maps-test
   (testing "csv->row-maps-test-1"
@@ -72,8 +70,6 @@
 (deftest csv->col-vecs-test
   (testing "csv->col-vecs-test-1"
     (let [result    (csv->col-vecs (str user-dir "/test/cooljure/csv-test-1.csv")) ]
-    ; (println "csv->col-vecs-test-1")
-    ; (println result)
     (is (= result test3-expected)) ))
 
   (testing "csv->col-vecs-test-2"
@@ -81,8 +77,5 @@
                                    :delimiter \| )
           result    { :store-id (map #(Long/parseLong %) (:STORE-NUM       raw-maps))
                       :zipcode                           (:ZIP-POSTAL-CODE raw-maps) } ]
-
-    ; (println "csv->col-vecs-test-2")
-    ; (println result)
     (is (= result test4-expected)) )))
 
