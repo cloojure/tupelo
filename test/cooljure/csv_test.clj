@@ -29,6 +29,24 @@
     { :zipcode "01009" :store-id  439 }
     { :zipcode "01020" :store-id 1193 } ] )
 
+(def test3-expected
+  { :zip-postal-code    ["01002" "01002" "01003" "01008" "01009" "01020"]
+    :store-num          ["00006" "00277" "00277" "01217" "00439" "01193"]
+    :chain-rank         [    "4"     "5"     "5"     "5"     "5"     "5"] } )
+
+(def test4-expected
+  { :zipcode            ["01002" "01002" "01003" "01008" "01009" "01020"]
+    :store-id           [     6     277     277    1217     439    1193 ] } )
+
+(deftest row-maps->col-vecs-test
+  (testing "row-maps->col-vecs-test-1"
+    (let [result (row-maps->col-vecs test1-expected) ]
+    (is (= result test3-expected)) ))
+  (testing "row-maps->col-vecs-test-2"
+    (let [result (row-maps->col-vecs test2-expected) ]
+    (is (= result test4-expected)) ))
+)
+
 (deftest csv->row-maps-test
   (testing "csv->row-maps-test-1"
     (let [result (csv->row-maps (str user-dir "/test/cooljure/csv-test-1.csv")) ]
@@ -42,29 +60,20 @@
                          raw-maps ) ]
     (is (= result test2-expected)) )))
 
-(def test3-expected
-  { :zip-postal-code    ["01002" "01002" "01003" "01008" "01009" "01020"]
-    :store-num          ["00006" "00277" "00277" "01217" "00439" "01193"]
-    :chain-rank         [    "4"     "5"     "5"     "5"     "5"     "5"] } )
-
-(def test4-expected
-  { :zipcode            ["01002" "01002" "01003" "01008" "01009" "01020"]
-    :store-id           [     6     277     277    1217     439    1193 ] } )
-
-(deftest csv->col-maps-test
-  (testing "csv->col-maps-test-1"
-    (let [result    (csv->col-maps (str user-dir "/test/cooljure/csv-test-1.csv")) ]
-    (println "csv->col-maps-test-1")
-    (println result)
+(deftest csv->col-vecs-test
+  (testing "csv->col-vecs-test-1"
+    (let [result    (csv->col-vecs (str user-dir "/test/cooljure/csv-test-1.csv")) ]
+    ; (println "csv->col-vecs-test-1")
+    ; (println result)
     (is (= result test3-expected)) ))
 
-  (testing "csv->col-maps-test-2"
-    (let [raw-maps  (csv->col-maps (str user-dir "/test/cooljure/csv-test-2.psv")
+  (testing "csv->col-vecs-test-2"
+    (let [raw-maps  (csv->col-vecs (str user-dir "/test/cooljure/csv-test-2.psv")
                                    :delimiter \| )
           result    { :store-id (map #(Long/parseLong %) (:STORE-NUM       raw-maps))
                       :zipcode                           (:ZIP-POSTAL-CODE raw-maps) } ]
 
-    (println "csv->col-maps-test-2")
-    (println result)
+    ; (println "csv->col-vecs-test-2")
+    ; (println result)
     (is (= result test4-expected)) )))
 
