@@ -7,6 +7,7 @@
 
 (ns cooljure.core-test
   (:require [clojure.contrib.seq    :as seq]
+            [clojure.string         :as str]
             [cooljure.core          :refer :all]
             [clojure.test           :refer :all] ))
 
@@ -93,3 +94,28 @@
     (is (thrown?    Exception                       (/ 1 0)))
     (is (= nil      (with-exception-default nil     (/ 1 0))))
     (is (= :dummy   (with-exception-default :dummy  (/ 1 0)))) ))
+
+(deftest spy-test
+  (testing "basic usage"
+    (is (= "hi => 5" 
+        (str/trim (with-out-str (spy-msg "hi"  (+ 2 3)))) ))
+    (is (= "(+ 2 3) => 5" 
+        (str/trim (with-out-str (spy-expr (+ 2 3)))) ))
+    (is (= "5" 
+        (str/trim (with-out-str (spy-val (+ 2 3)))) ))
+
+    (is (= "first => 5\nsecond => 25"
+        (str/trim (with-out-str (-> 2 
+                                    (+ 3) 
+                                    (spy-first "first" )
+                                    (* 5)
+                                    (spy-first "second") )))))
+
+    (is (= "first => 5\nsecond => 25"
+        (str/trim (with-out-str (->> 2 
+                                    (+ 3) 
+                                    (spy-msg "first" )
+                                    (* 5)
+                                    (spy-msg "second") )))))
+))
+
