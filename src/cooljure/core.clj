@@ -63,3 +63,39 @@
      ~@body
      (catch Exception e# ~default) ))
 
+; AWTWAT TODO:  need tests
+(defmacro spy-expr
+  "Evaluates expr and outputs the form and its result to the debug log; returns 
+  the result of expr."
+  [expr]
+  `(let [out-val# ~expr] 
+      (println (str '~expr " => " out-val#)) 
+      out-val#) )
+
+; AWTWAT TODO:  need tests
+(defmacro spy-msg
+  "Evaluates expr and outputs the form and its result to the debug log; returns 
+  the result of expr."
+  [msg expr]
+  `(let [out-val# ~expr]
+      (println (str ~msg " => " out-val#))
+      out-val# ))
+
+; AWTWAT TODO:  need tests
+(defmacro spy-val
+  "Evaluates expr and outputs the form and its result to the debug log; returns 
+  the result of expr."
+  [expr]
+  `(let [out-val# ~expr]
+      (println out-val#)
+      out-val# ))
+
+; AWTWAT TODO:  need tests
+(defmacro spy-first
+  "Evaluates expr and outputs the form and its result to the debug log; returns 
+  the result of expr."
+  [expr msg]
+  `(let [out-val# ~expr]
+      (println (str ~msg " => " out-val#))
+      out-val# ))
+
