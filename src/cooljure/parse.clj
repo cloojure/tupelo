@@ -11,6 +11,48 @@
   cooljure.parse
   (:require [cooljure.core :refer :all] ))
 
+(defn parseByte
+ "( [str-val]
+    [str-val :or default-val] )
+  A thin wrapper around java.lang.Byte/parseByte.  Parses the string str-val into a byte.
+  If the optional default-val is specified, it will be returned in the event of an
+  exception."
+  [str-val & opts]
+  {:pre [ (string? str-val) ] }
+  (let [opts-map    (apply hash-map opts)
+        or-val      (get opts-map :or ::none) ]
+    (if (= or-val ::none)
+      (Byte/parseByte str-val)
+      (with-exception-default or-val (Byte/parseByte str-val)) )))
+
+(defn parseShort
+ "( [str-val]
+    [str-val :or default-val] )
+  A thin wrapper around java.lang.Short/parseShort.  Parses the string str-val into a short.
+  If the optional default-val is specified, it will be returned in the event of an
+  exception."
+  [str-val & opts]
+  {:pre [ (string? str-val) ] }
+  (let [opts-map    (apply hash-map opts)
+        or-val      (get opts-map :or ::none) ]
+    (if (= or-val ::none)
+      (Short/parseShort str-val)
+      (with-exception-default or-val (Short/parseShort str-val)) )))
+
+(defn parseInt
+ "( [str-val]
+    [str-val :or default-val] )
+  A thin wrapper around java.lang.Integer/parseInt  Parses the string str-val into a integer.
+  If the optional default-val is specified, it will be returned in the event of an
+  exception."
+  [str-val & opts]
+  {:pre [ (string? str-val) ] }
+  (let [opts-map    (apply hash-map opts)
+        or-val      (get opts-map :or ::none) ]
+    (if (= or-val ::none)
+      (Integer/parseInt str-val)
+      (with-exception-default or-val (Integer/parseInt str-val)) )))
+
 (defn parseLong
  "( [str-val]
     [str-val :or default-val] )
@@ -25,3 +67,44 @@
       (Long/parseLong str-val)
       (with-exception-default or-val (Long/parseLong str-val)) )))
 
+(defn parseFloat
+ "( [str-val]
+    [str-val :or default-val] )
+  A thin wrapper around java.lang.Float/parseFloat.  Parses the string str-val into a float.
+  If the optional default-val is specified, it will be returned in the event of an
+  exception."
+  [str-val & opts]
+  {:pre [ (string? str-val) ] }
+  (let [opts-map    (apply hash-map opts)
+        or-val      (get opts-map :or ::none) ]
+    (if (= or-val ::none)
+      (Float/parseFloat str-val)
+      (with-exception-default or-val (Float/parseFloat str-val)) )))
+
+(defn parseDouble
+ "( [str-val]
+    [str-val :or default-val] )
+  A thin wrapper around java.lang.Double/parseDouble.  Parses the string str-val into a double.
+  If the optional default-val is specified, it will be returned in the event of an
+  exception."
+  [str-val & opts]
+  {:pre [ (string? str-val) ] }
+  (let [opts-map    (apply hash-map opts)
+        or-val      (get opts-map :or ::none) ]
+    (if (= or-val ::none)
+      (Double/parseDouble str-val)
+      (with-exception-default or-val (Double/parseDouble str-val)) )))
+
+#_(defn parseXXXX
+ "( [str-val]
+    [str-val :or default-val] )
+  A thin wrapper around java.lang.XXXX/parseXXXX.  Parses the string str-val into a xxxx.
+  If the optional default-val is specified, it will be returned in the event of an
+  exception."
+  [str-val & opts]
+  {:pre [ (string? str-val) ] }
+  (let [opts-map    (apply hash-map opts)
+        or-val      (get opts-map :or ::none) ]
+    (if (= or-val ::none)
+      (XXXX/parseXXXX str-val)
+      (with-exception-default or-val (XXXX/parseXXXX str-val)) )))
