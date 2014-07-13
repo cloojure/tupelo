@@ -63,22 +63,6 @@
      ~@body
      (catch Exception e# ~default) ))
 
-(defmacro spy-expr
-  "Evaluates expr and outputs the form and its result to the debug log; returns 
-  the result of expr."
-  [expr]
-  `(let [out-val# ~expr] 
-      (println (str '~expr " => " out-val#)) 
-      out-val#) )
-
-(defmacro spy-msg
-  "Evaluates expr and outputs the form and its result to the debug log; returns 
-  the result of expr."
-  [msg expr]
-  `(let [out-val# ~expr]
-      (println (str ~msg " => " out-val#))
-      out-val# ))
-
 (defmacro spy-first
   "Evaluates expr and outputs the form and its result to the debug log; returns 
   the result of expr."
@@ -86,6 +70,22 @@
   `(let [out-val# ~expr]
       (println (str ~msg " => " out-val#))
       out-val# ))
+
+(defmacro spy-last
+  "Evaluates expr and outputs the form and its result to the debug log; returns 
+  the result of expr."
+  [msg expr]
+  `(let [out-val# ~expr]
+      (println (str ~msg " => " out-val#))
+      out-val# ))
+
+(defmacro spy-expr
+  "Evaluates expr and outputs the form and its result to the debug log; returns 
+  the result of expr."
+  [expr]
+  `(let [out-val# ~expr] 
+      (println (str '~expr " => " out-val#)) 
+      out-val#) )
 
 (defmacro spy-val
   "Evaluates expr and outputs the form and its result to the debug log; returns 

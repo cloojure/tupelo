@@ -98,7 +98,7 @@
 (deftest spy-test
   (testing "basic usage"
     (is (= "hi => 5" 
-        (str/trim (with-out-str (spy-msg "hi"  (+ 2 3)))) ))
+        (str/trim (with-out-str (spy-last "hi"  (+ 2 3)))) ))
     (is (= "(+ 2 3) => 5" 
         (str/trim (with-out-str (spy-expr (+ 2 3)))) ))
     (is (= "5" 
@@ -114,8 +114,8 @@
     (is (= "first => 5\nsecond => 25"
         (str/trim (with-out-str (->> 2 
                                     (+ 3) 
-                                    (spy-msg "first" )
+                                    (spy-last "first" )
                                     (* 5)
-                                    (spy-msg "second") )))))
+                                    (spy-last "second") )))))
 ))
 
