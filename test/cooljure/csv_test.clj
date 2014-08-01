@@ -72,24 +72,24 @@
     (let [result (col-vecs->row-maps test4-expected) ]
     (is (= result test2-expected)) )))
 
-(deftest csv->row-maps-test
-  (testing "csv->row-maps-test-1"
+(deftest parse-csv->row-maps-test
+  (testing "parse-csv->row-maps-test-1"
     (let [result (parse-csv->row-maps csv-test-1-str ) ]
     (is (= result test1-expected)) ))
 
-  (testing "csv->row-maps-test-2"
+  (testing "parse-csv->row-maps-test-2"
     (let [raw-maps  (parse-csv->row-maps csv-test-2-str :delimiter \| )
           result    (map #(hash-map :store-id (Long/parseLong (:STORE-NUM %))
                                     :zipcode                  (:ZIP-POSTAL-CODE %) )
                          raw-maps ) ]
     (is (= result test2-expected)) )))
 
-(deftest csv->col-vecs-test
-  (testing "csv->col-vecs-test-1"
+(deftest parse-csv->col-vecs-test
+  (testing "parse-csv->col-vecs-test-1"
     (let [result    (parse-csv->col-vecs csv-test-1-str) ]
     (is (= result test3-expected)) ))
 
-  (testing "csv->col-vecs-test-2"
+  (testing "parse-csv->col-vecs-test-2"
     (let [raw-maps  (parse-csv->col-vecs csv-test-2-str :delimiter \| )
           result    { :store-id (map #(Long/parseLong %) (:STORE-NUM       raw-maps))
                       :zipcode                           (:ZIP-POSTAL-CODE raw-maps) } ]
