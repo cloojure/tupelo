@@ -81,18 +81,18 @@
     (is (= result test2-expected)) )))
 
 (deftest parse-csv->row-maps-test
-  (testing "parse-csv->row-maps-test-1"
+  (testing "basic parse-csv->row-maps test"
     (let [result (parse-csv->row-maps csv-test-1-str ) ]
     (is (= result test1-expected)) ))
 
-  (testing "parse-csv->row-maps-test-2"
+  (testing "read PSV file instead of default CSV"
     (let [raw-maps  (parse-csv->row-maps csv-test-2-str :delimiter \| )
           result    (map #(hash-map :store-id (Long/parseLong (:STORE-NUM %))
                                     :zipcode                  (:ZIP-POSTAL-CODE %) )
                          raw-maps ) ]
     (is (= result test2-expected)) ))
 
-  (testing "no header row in file"
+  (testing "no header row in file, user spec :hdrs"
     (let [result (parse-csv->row-maps csv-test-1b-str
                     :hdrs [:zip-postal-code :store-num :chain-rank] ) ]
     (is (= result test1-expected)) ))
