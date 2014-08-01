@@ -13,6 +13,24 @@
 
 (def user-dir (System/getProperty "user.dir"))
 
+(def csv-test-1-str
+"zip_postal_code,store$num,chain#rank
+01002,00006,4
+01002,00277,5
+01003,00277,5
+01008,01217,5
+01009,00439,5
+01020,01193,5" )
+
+(def csv-test-2-str
+"ZIP_POSTAL_CODE|STORE_NUM|CHAIN_RANK
+01002|00006|4
+01002|00277|5
+01003|00277|5
+01008|01217|5
+01009|00439|5
+01020|01193|5" )
+
 (def test1-expected
   [ { :zip-postal-code "01002" :store-num "00006" :chain-rank "4" }
     { :zip-postal-code "01002" :store-num "00277" :chain-rank "5" }
@@ -56,12 +74,11 @@
 
 (deftest csv->row-maps-test
   (testing "csv->row-maps-test-1"
-    (let [result (csv->row-maps (str user-dir "/test/cooljure/csv-test-1.csv")) ]
+    (let [result (parse-csv->row-maps csv-test-1-str ) ]
     (is (= result test1-expected)) ))
 
   (testing "csv->row-maps-test-2"
-    (let [raw-maps  (csv->row-maps (str user-dir "/test/cooljure/csv-test-2.psv")
-                                   :delimiter \| )
+    (let [raw-maps  (parse-csv->row-maps csv-test-2-str :delimiter \| )
           result    (map #(hash-map :store-id (Long/parseLong (:STORE-NUM %))
                                     :zipcode                  (:ZIP-POSTAL-CODE %) )
                          raw-maps ) ]
@@ -69,12 +86,11 @@
 
 (deftest csv->col-vecs-test
   (testing "csv->col-vecs-test-1"
-    (let [result    (csv->col-vecs (str user-dir "/test/cooljure/csv-test-1.csv")) ]
+    (let [result    (parse-csv->col-vecs csv-test-1-str) ]
     (is (= result test3-expected)) ))
 
   (testing "csv->col-vecs-test-2"
-    (let [raw-maps  (csv->col-vecs (str user-dir "/test/cooljure/csv-test-2.psv")
-                                   :delimiter \| )
+    (let [raw-maps  (parse-csv->col-vecs csv-test-2-str :delimiter \| )
           result    { :store-id (map #(Long/parseLong %) (:STORE-NUM       raw-maps))
                       :zipcode                           (:ZIP-POSTAL-CODE raw-maps) } ]
     (is (= result test4-expected)) )))

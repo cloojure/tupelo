@@ -7,7 +7,7 @@
 
 (ns ^{:doc "Cooljure - Cool stuff you wish was in Clojure"
       :author "Alan Thompson"}
-  cooljure.core)
+  cooljure.core )
 
 (defn truthy?
  "[arg]
@@ -94,4 +94,7 @@
   `(let [out-val# ~expr]
       (println out-val#)
       out-val# ))
+
+; AWTAWT TODO:  
+; add eager (forall ...) -> (doall (for ...))
 

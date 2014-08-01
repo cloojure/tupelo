@@ -9,8 +9,8 @@
             Misc functions."
       :author "Alan Thompson"}
   cooljure.misc
-  (:require [clojure.string             :as str]
-            [clojure.java.io            :as io] ))
+  (:require [clojure.string     :as str]
+            [clojure.java.io    :as io] ))
 
 (defn normalize-str
  "[orig-str]

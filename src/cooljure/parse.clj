@@ -6,7 +6,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns ^{:doc "Cooljure - Cool stuff you wish was in Clojure.  
-            Utils for reading CSV (comma-separated-value) formatted files."
+            Utils for parsing string values."
       :author "Alan Thompson"}
   cooljure.parse
   (:require [cooljure.core :refer :all] ))
@@ -24,4 +24,6 @@
     (if (= or-val ::none)
       (Long/parseLong str-val)
       (with-exception-default or-val (Long/parseLong str-val)) )))
+
+; AWTAWT TODO:  finish other parse* functions
 
