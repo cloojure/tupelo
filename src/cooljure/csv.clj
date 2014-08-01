@@ -15,6 +15,15 @@
             [cooljure.misc              :as cool-misc] 
             [cooljure.core              :refer :all] ))
 
+(defn get-hdrs-and-data-lines
+  [opts parsed-lines]
+  (if (:hdrs opts)  ; if user supplied col header keywords
+    { :hdrs-kw      (:hdrs opts)    ; use them
+      :data-lines   parsed-lines }  ; all lines are data
+  ;else, get col headers from first row -> keywords
+    { :hdrs-kw      (mapv cool-misc/str->kw (first parsed-lines))
+      :data-lines   (rest parsed-lines) } ))  ; rest of lines are data
+
 ; AWTAWT TODO: change csv-lines to allow line-seq
 (defn parse-csv->row-maps
  "[csv-lines & {:as opts} ] 
@@ -30,16 +39,12 @@
   [csv-lines & {:as opts} ] 
   { :pre  [ (string? csv-lines) ]
     :post [ (map? (first %)) ] }
-  (let [opts-def    (merge {:delimiter \,} opts)
-        data-lines  (apply csv/parse-csv csv-lines (keyvals opts-def))
-        ctx         (if (:hdrs opts)  ; if user supplied col header keywords
-                      { :hdrs-kw      (:hdrs opts)  ; use them
-                        :data-lines   data-lines }  ; all rows are data
-                    ;else, get col headers from first row -> keywords
-                      { :hdrs-kw      (mapv cool-misc/str->kw (first data-lines))
-                        :data-lines   (rest data-lines) } )  ; rest of rows are data
-        row-maps    (for [data-line (:data-lines ctx)]
-                      (zipmap (:hdrs-kw ctx) data-line) )
+  (let [opts-def        (merge {:delimiter \,} opts)
+        parsed-lines    (apply csv/parse-csv csv-lines (keyvals opts-def))
+        {:keys [hdrs-kw data-lines]}  
+                        (get-hdrs-and-data-lines opts parsed-lines)
+        row-maps        (for [data-line data-lines]
+                          (zipmap hdrs-kw data-line) )
   ] row-maps ))
 
 ; AWTAWT TODO: clean up, enforce identical columns each row
