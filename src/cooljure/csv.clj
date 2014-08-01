@@ -15,6 +15,7 @@
             [cooljure.misc              :as cool-misc] 
             [cooljure.core              :refer :all] ))
 
+; AWTAWT TODO: change csv-lines to allow line-seq
 (defn parse-csv->row-maps
  "[csv-lines & {:as opts} ] 
   Returns a sequence of maps constructed from csv-lines.  The first line
@@ -31,9 +32,14 @@
     :post [ (map? (first %)) ] }
   (let [opts-def    (merge {:delimiter \,} opts)
         data-lines  (apply csv/parse-csv csv-lines (keyvals opts-def))
-        hdrs-kw     (mapv cool-misc/str->kw (first data-lines))
-        row-maps    (for [data-line (rest data-lines)]
-                      (zipmap hdrs-kw data-line) )
+        ctx         (if (:hdrs opts)  ; if user supplied col header keywords
+                      { :hdrs-kw      (:hdrs opts)  ; use them
+                        :data-lines   data-lines }  ; all rows are data
+                    ;else, get col headers from first row -> keywords
+                      { :hdrs-kw      (mapv cool-misc/str->kw (first data-lines))
+                        :data-lines   (rest data-lines) } )  ; rest of rows are data
+        row-maps    (for [data-line (:data-lines ctx)]
+                      (zipmap (:hdrs-kw ctx) data-line) )
   ] row-maps ))
 
 ; AWTAWT TODO: clean up, enforce identical columns each row

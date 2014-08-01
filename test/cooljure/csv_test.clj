@@ -22,6 +22,14 @@
 01009,00439,5
 01020,01193,5" )
 
+(def csv-test-1b-str
+"01002,00006,4
+01002,00277,5
+01003,00277,5
+01008,01217,5
+01009,00439,5
+01020,01193,5" )
+
 (def csv-test-2-str
 "ZIP_POSTAL_CODE|STORE_NUM|CHAIN_RANK
 01002|00006|4
@@ -82,7 +90,13 @@
           result    (map #(hash-map :store-id (Long/parseLong (:STORE-NUM %))
                                     :zipcode                  (:ZIP-POSTAL-CODE %) )
                          raw-maps ) ]
-    (is (= result test2-expected)) )))
+    (is (= result test2-expected)) ))
+
+  (testing "no header row in file"
+    (let [result (parse-csv->row-maps csv-test-1b-str
+                    :hdrs [:zip-postal-code :store-num :chain-rank] ) ]
+    (is (= result test1-expected)) ))
+)
 
 (deftest parse-csv->col-vecs-test
   (testing "parse-csv->col-vecs-test-1"
