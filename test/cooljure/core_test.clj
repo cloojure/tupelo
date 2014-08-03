@@ -105,6 +105,8 @@
 (deftest spy-test
   (testing "basic usage"
     (is (= "hi => 5" 
+        (str/trim (with-out-str (spy-first (+ 2 3) "hi"))) ))
+    (is (= "hi => 5" 
         (str/trim (with-out-str (spy-last "hi"  (+ 2 3)))) ))
     (is (= "(+ 2 3) => 5" 
         (str/trim (with-out-str (spy-expr (+ 2 3)))) ))
