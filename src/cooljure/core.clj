@@ -7,7 +7,8 @@
 
 (ns ^{:doc "Cooljure - Cool stuff you wish was in Clojure"
       :author "Alan Thompson"}
-  cooljure.core )
+  cooljure.core
+    (:require [clojure.test      :as test] ) )
 
 (defn truthy?
  "[arg]
@@ -95,6 +96,27 @@
       (println out-val#)
       out-val# ))
 
-; AWTAWT TODO:  
-; add eager (forall ...) -> (doall (for ...))
+; add eager (forall  ...) -> (doall (for ...))      ; AWTAWT TODO:  
+;           (for-all ...)
+;           (for-now ...)
+
+(defn test-all 
+  "Convenience fn to reload a namespace & the corresponding test namespace from disk and
+  execute tests i the REPL.  Assumes canonical project test file organization with
+  parallel src/... & test/... directories, where a '-test' suffix is added to all src
+  namespaces to generate the cooresponding test namespace.  Example:
+
+    (test-all 'cooljure.core 'cooljure.csv)
+
+  This will reload cooljure.core, cooljure.core-test, cooljure.csv, cooljure.csv-test and
+  then execute clojure.test/run-tests on both of the test namespaces."
+  [& ns-list]
+  (use 'clojure.test)
+  (let [test-ns-list
+          (for [curr-ns ns-list]
+            (let [curr-ns-test (symbol (str curr-ns "-test")) ]
+              (require curr-ns curr-ns-test :reload-all)
+              curr-ns-test )) 
+  ]
+    (apply clojure.test/run-tests test-ns-list) ))
 

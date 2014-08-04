@@ -6,23 +6,12 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns cooljure.csv-test
-  (:require [clojure.java.io            :as io]
-            [clojure.string             :as str]
+  (:require [clojure.string             :as str]
+            [clojure.java.io            :as io]
             [cooljure.csv               :refer :all]
             [clojure.test               :refer :all] ))
 
-(def user-dir (System/getProperty "user.dir"))
-
-(def csv-test-1-str
-"zip_postal_code,store$num,chain#rank
-01002,00006,4
-01002,00277,5
-01003,00277,5
-01008,01217,5
-01009,00439,5
-01020,01193,5" )
-
-(def csv-test-1b-str
+(def test1-str-no-hdr
 "01002,00006,4
 01002,00277,5
 01003,00277,5
@@ -30,7 +19,10 @@
 01009,00439,5
 01020,01193,5" )
 
-(def csv-test-2-str
+(def test1-str-hdr
+  (str "zip_postal_code,store$num,chain#rank" \newline test1-str-no-hdr) )
+
+(def test2-str-hdr
 "ZIP_POSTAL_CODE|STORE_NUM|CHAIN_RANK
 01002|00006|4
 01002|00277|5
@@ -82,29 +74,29 @@
 
 (deftest parse-csv->row-maps-test
   (testing "basic parse-csv->row-maps test"
-    (let [result (parse-csv->row-maps csv-test-1-str ) ]
+    (let [result (parse-csv->row-maps test1-str-hdr ) ]
     (is (= result test1-expected)) ))
 
   (testing "read PSV file instead of default CSV"
-    (let [raw-maps  (parse-csv->row-maps csv-test-2-str :delimiter \| )
+    (let [raw-maps  (parse-csv->row-maps test2-str-hdr :delimiter \| )
           result    (map #(hash-map :store-id (Long/parseLong (:STORE-NUM %))
                                     :zipcode                  (:ZIP-POSTAL-CODE %) )
                          raw-maps ) ]
     (is (= result test2-expected)) ))
 
   (testing "no header row in file, user spec :hdrs"
-    (let [result (parse-csv->row-maps csv-test-1b-str
+    (let [result (parse-csv->row-maps test1-str-no-hdr 
                     :hdrs [:zip-postal-code :store-num :chain-rank] ) ]
     (is (= result test1-expected)) ))
 )
 
 (deftest parse-csv->col-vecs-test
   (testing "parse-csv->col-vecs-test-1"
-    (let [result    (parse-csv->col-vecs csv-test-1-str) ]
+    (let [result    (parse-csv->col-vecs test1-str-hdr) ]
     (is (= result test3-expected)) ))
 
   (testing "parse-csv->col-vecs-test-2"
-    (let [raw-maps  (parse-csv->col-vecs csv-test-2-str :delimiter \| )
+    (let [raw-maps  (parse-csv->col-vecs test2-str-hdr :delimiter \| )
           result    { :store-id (map #(Long/parseLong %) (:STORE-NUM       raw-maps))
                       :zipcode                           (:ZIP-POSTAL-CODE raw-maps) } ]
     (is (= result test4-expected)) )))
