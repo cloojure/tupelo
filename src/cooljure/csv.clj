@@ -24,7 +24,7 @@
     { :hdrs-kw      (mapv cool-misc/str->kw (first parsed-lines))
       :data-lines   (rest parsed-lines) } ))  ; rest of lines are data
 
-; AWTAWT TODO: change csv-lines to allow line-seq
+; AWTAWT TODO: change to allow line-seq, FILE, etc
 (defn parse-csv->row-maps
  "[csv-lines & {:as opts} ] 
   Returns a sequence of maps constructed from csv-lines.  The first line
@@ -71,6 +71,7 @@
         row-maps    (map #(zipmap col-kws %) row-vals)
   ] row-maps ))
 
+; AWTAWT TODO: change to allow line-seq, FILE, etc
 (defn parse-csv->col-vecs
  "[csv-lines & {:as opts} ] 
   Returns a map constructed from the columns of csv-lines.  The first line is
@@ -83,6 +84,7 @@
     (parse-cvs->col-vecs my-file.psv :delimiter \\| )
 
   to select the pipe character (i.e. \\|) as the delimiter.  "
+  ; AWTAWT TODO: update docs re. col-hdrs (keywords)
   [csv-lines & {:as opts} ] 
   { :pre  [ (string? csv-lines) ]
     :post [ (map? %) ] }
