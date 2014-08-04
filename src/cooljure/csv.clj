@@ -15,12 +15,12 @@
             [cooljure.misc              :as cool-misc] 
             [cooljure.core              :refer :all] ))
 
-(defn get-hdrs-and-data-lines
+(defn- get-hdrs-and-data-lines
   [opts parsed-lines]
   (if (:hdrs opts)  ; if user supplied col header keywords
     { :hdrs-kw      (:hdrs opts)    ; use them
       :data-lines   parsed-lines }  ; all lines are data
-  ;else, get col headers from first row -> keywords
+  ;else, convert first row of strings -> col hdr keywords
     { :hdrs-kw      (mapv cool-misc/str->kw (first parsed-lines))
       :data-lines   (rest parsed-lines) } ))  ; rest of lines are data
 
@@ -36,6 +36,7 @@
     (parse-csv->row-maps csv-lines :delimiter \\| )
 
   to select the pipe character (i.e. \\|) as the delimiter.  "
+  ; AWTAWT TODO: update docs re. col-hdrs (keywords)
   [csv-lines & {:as opts} ] 
   { :pre  [ (string? csv-lines) ]
     :post [ (map? (first %)) ] }
