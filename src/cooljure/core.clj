@@ -65,32 +65,36 @@
      (catch Exception e# ~default) ))
 
 (defmacro spy-first
-  "Evaluates expr and outputs the form and its result to the debug log; returns 
-  the result of expr."
+  "[expr msg]
+  Evaluates the expression (the first arg) and prints both msg and the result to stdout;
+  returns the result of expr."
   [expr msg]
   `(let [out-val# ~expr]
       (println (str ~msg " => " out-val#))
       out-val# ))
 
 (defmacro spy-last
-  "Evaluates expr and outputs the form and its result to the debug log; returns 
-  the result of expr."
+  "[msg expr]
+  Evaluates the expression (the last arg) and prints both msg and the result to stdout;
+  returns the result of expr."
   [msg expr]
   `(let [out-val# ~expr]
       (println (str ~msg " => " out-val#))
       out-val# ))
 
 (defmacro spy-expr
-  "Evaluates expr and outputs the form and its result to the debug log; returns 
-  the result of expr."
+  "[expr]
+  Evaluates the expression and prints both expr and its result to stdout; 
+  returns the result of expr."
   [expr]
   `(let [out-val# ~expr] 
       (println (str '~expr " => " out-val#)) 
       out-val#) )
 
 (defmacro spy-val
-  "Evaluates expr and outputs the form and its result to the debug log; returns 
-  the result of expr."
+  "[expr]
+  Evaluates the expression and prints its result to stdout; 
+  returns the result of expr."
   [expr]
   `(let [out-val# ~expr]
       (println out-val#)
@@ -101,7 +105,8 @@
 ;           (for-now ...)
 
 (defn test-all 
-  "Convenience fn to reload a namespace & the corresponding test namespace from disk and
+  "[& ns-list]
+  Convenience fn to reload a namespace & the corresponding test namespace from disk and
   execute tests i the REPL.  Assumes canonical project test file organization with
   parallel src/... & test/... directories, where a '-test' suffix is added to all src
   namespaces to generate the cooresponding test namespace.  Example:
@@ -112,11 +117,15 @@
   then execute clojure.test/run-tests on both of the test namespaces."
   [& ns-list]
   (use 'clojure.test)
-  (let [test-ns-list
-          (for [curr-ns ns-list]
-            (let [curr-ns-test (symbol (str curr-ns "-test")) ]
-              (require curr-ns curr-ns-test :reload-all)
-              curr-ns-test )) 
+  (let [
+    test-ns-list    (for [curr-ns ns-list]
+                      (let [curr-ns-test (symbol (str curr-ns "-test")) ]
+                        (require curr-ns curr-ns-test :reload-all)
+                        curr-ns-test )) 
+    _ (println "------------------------------------------------------------")
+    test-result     (apply clojure.test/run-tests test-ns-list)
+    _ (println "------------------------------------------------------------")
+    _ (newline)
   ]
-    (apply clojure.test/run-tests test-ns-list) ))
+  nil ))
 
