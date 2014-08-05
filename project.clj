@@ -12,6 +12,7 @@
                   [commons-collections                     "3.2.1"]
                   [commons-io                              "2.4"]
                   [org.clojars.runa/kits                   "1.17.14-SNAPSHOT"] ]
+  :deploy-repositories {"releases" :clojars}
   :update :daily  ; :always
   :main ^:skip-aot cooljure.core
   :target-path "target/%s"
