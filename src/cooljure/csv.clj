@@ -15,25 +15,38 @@
             [cooljure.misc              :as cool-misc] 
             [cooljure.core              :refer :all] ))
 
-(defn csv->row-maps
- "[csv-file & {:as opts} ] 
-  Returns a sequence of maps constructed from the lines of csv-file.  The first line
+(defn- get-hdrs-and-data-lines
+  [opts parsed-lines]
+  (if (:hdrs opts)  ; if user supplied col header keywords
+    { :hdrs-kw      (:hdrs opts)    ; use them
+      :data-lines   parsed-lines }  ; all lines are data
+  ;else, convert first row of strings -> col hdr keywords
+    { :hdrs-kw      (mapv cool-misc/str->kw (first parsed-lines))
+      :data-lines   (rest parsed-lines) } ))  ; rest of lines are data
+
+; AWTAWT TODO: add default (trim...) (with option to disable?)
+; AWTAWT TODO: change to allow line-seq, FILE, etc
+(defn parse-csv->row-maps
+ "[csv-lines & {:as opts} ] 
+  Returns a sequence of maps constructed from csv-lines.  The first line
   is assumed to be column header strings, which are (safely) converted into keywords.
   String data from each subsequent line is paired with the corresponding column keyword to
   construct a map for that line.  Default delimiter is the comma character (i.e. \\,) but 
   may be changed using the syntax such as: 
   
-    (cvs->row-maps my-file.psv :delimiter \\| )
+    (parse-csv->row-maps csv-lines :delimiter \\| )
 
   to select the pipe character (i.e. \\|) as the delimiter.  "
-  [csv-file & {:as opts} ] 
-  { :pre  [ (string? csv-file) ]
+  ; AWTAWT TODO: update docs re. col-hdrs (keywords)
+  [csv-lines & {:as opts} ] 
+  { :pre  [ (string? csv-lines) ]
     :post [ (map? (first %)) ] }
-  (let [opts-def    (merge {:delimiter \,} opts)
-        data-lines  (apply csv/parse-csv (slurp csv-file) (keyvals opts-def))
-        hdrs-kw     (mapv cool-misc/str->kw (first data-lines))
-        row-maps    (for [data-line (rest data-lines)]
-                      (zipmap hdrs-kw data-line) )
+  (let [opts-def        (merge {:delimiter \,} opts)
+        parsed-lines    (apply csv/parse-csv csv-lines (keyvals opts-def))
+        {:keys [hdrs-kw data-lines]}  
+                        (get-hdrs-and-data-lines opts parsed-lines)
+        row-maps        (for [data-line data-lines]
+                          (zipmap hdrs-kw data-line) )
   ] row-maps ))
 
 ; AWTAWT TODO: clean up, enforce identical columns each row
@@ -59,23 +72,25 @@
         row-maps    (map #(zipmap col-kws %) row-vals)
   ] row-maps ))
 
-(defn csv->col-vecs
- "[csv-file & {:as opts} ] 
-  Returns a map constructed from the columns of csv-file.  The first line is
+; AWTAWT TODO: change to allow line-seq, FILE, etc
+(defn parse-csv->col-vecs
+ "[csv-lines & {:as opts} ] 
+  Returns a map constructed from the columns of csv-lines.  The first line is
   assumed to be column header strings, which are (safely) converted into keywords. The
   returned map has one entry for each column header keyword. The corresponding value for
   each keyword is a vector of string data taken from each subsequent line in the file.
   Default delimiter is the comma character (i.e. \\,) but may be changed using the syntax
   such as: 
   
-    (cvs->col-vecs my-file.psv :delimiter \\| )
+    (parse-cvs->col-vecs my-file.psv :delimiter \\| )
 
   to select the pipe character (i.e. \\|) as the delimiter.  "
-  [csv-file & {:as opts} ] 
-  { :pre  [ (string? csv-file) ]
+  ; AWTAWT TODO: update docs re. col-hdrs (keywords)
+  [csv-lines & {:as opts} ] 
+  { :pre  [ (string? csv-lines) ]
     :post [ (map? %) ] }
   (let [opts-def    (merge {:delimiter \,} opts)
-        row-maps    (apply csv->row-maps csv-file (keyvals opts-def))
+        row-maps    (apply parse-csv->row-maps csv-lines (keyvals opts-def))
         col-vecs    (row-maps->col-vecs row-maps)
   ] col-vecs ))
 
