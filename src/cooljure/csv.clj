@@ -24,6 +24,7 @@
     { :hdrs-kw      (mapv cool-misc/str->kw (first parsed-lines))
       :data-lines   (rest parsed-lines) } ))  ; rest of lines are data
 
+; AWTAWT TODO: add default (trim...) (with option to disable?)
 ; AWTAWT TODO: change to allow line-seq, FILE, etc
 (defn parse-csv->row-maps
  "[csv-lines & {:as opts} ] 
