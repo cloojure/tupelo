@@ -1,4 +1,4 @@
-(defproject cooljure "0.1.1"
+(defproject cooljure "0.1.4"
   :description "Cooljure:  Cool stuff you wish was in Clojure"
   :url "http://github.com/cloojure/cooljure"
   :license {:name "Eclipse Public License"
@@ -13,6 +13,7 @@
   :update :daily  ; :always
   :main ^:skip-aot cooljure.core
   :target-path "target/%s"
+  :clean-targets [ "target" ]
   :profiles { ; :dev      { :certificates ["clojars.pom"] }
               :uberjar  { :aot :all }
             }
