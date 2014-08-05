@@ -27,14 +27,14 @@
 
 (defn any?
  "[pred coll]
-  Returns true if (pred x) is logical true for any x in collection; otherwise returns
-  false.  Like clojure.core/some, but returns only true or false."
+  For any predicate & collection, returns true if (pred x) is logical true for any x in
+  coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
   [pred coll]
   (truthy? (some pred coll)) )
 
 (defn not-empty?
  "[coll]
-  Returns true if collection contains any items; otherwise returns false
+  For any collection, returns true if coll contains any items; otherwise returns false
   Equivalent to (not (empty? coll))."
   [coll]
   (truthy? (seq coll)) )
@@ -42,7 +42,8 @@
 (defn conjv 
  "( [coll x]
     [coll x & xs] )
-  Appends items to collection, always returning the result as a vector."
+  For any collection coll and list of values x, appends the x's to collection, always
+  returning the result as a vector."
   ; From Stuart Sierra post 2014-2-10
   ( [coll x]
       (conj (vec coll) x) )
@@ -51,15 +52,18 @@
 
 (defn keyvals 
  "[m]
-  Returns a map's keys & values as a vector, suitable for reconstructing the map via
-  (apply hashmap (keyvals m))."
+  For any map m, returns the keys & values of m as a vector, suitable for reconstructing m
+  via (apply hashmap (keyvals m))."
   [m]
-  {:pre [ (map? m) ] }
-  (vec (flatten (seq m))) )
+  {:pre  [ (map? m) ] 
+   :post [ (vector? %) ] }
+  (reduce   #(conj %1 (first %2) (second %2))
+            [] (seq m) ))
 
 (defmacro with-exception-default
  "[default & body]
-  Evaluates body, returning specified default value in the event of an exception."
+  Evaluates body & returns its result.  In the event of an exception the specified default
+  value is returned instead."
   [default & body]
   `(try
      ~@body

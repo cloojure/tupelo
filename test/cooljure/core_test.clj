@@ -89,8 +89,11 @@
 
 (deftest keyvals-test
   (testing "basic usage"
-    (let [mm {:a 1 :b 2 :c 3} ]
-      (is (= mm (apply hash-map (keyvals mm)))) )))
+    (let [m1 {:a 1 :b 2 :c 3} 
+          m2 {:a 1 :b 2 :c [3 4]} ]
+      (is (= m1 (apply hash-map (keyvals m1))))
+      (is (= m2 (apply hash-map (keyvals m2)))) 
+    )))
 ; AWTAWT TODO: add test.generative
 
 (deftest with-exception-default-test
