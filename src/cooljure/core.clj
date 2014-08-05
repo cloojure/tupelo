@@ -8,7 +8,8 @@
 (ns ^{:doc "Cooljure - Cool stuff you wish was in Clojure"
       :author "Alan Thompson"}
   cooljure.core
-    (:require [clojure.test      :as test] ) )
+    (:require [clojure.string       :as str]
+              [clojure.test         :as test] ) )
 
 (defn truthy?
  "[arg]
@@ -128,4 +129,32 @@
     _ (newline)
   ]
   nil ))
+
+
+;************************************************************
+; awtawt TODO:  broken, needs fix!
+;
+(defn f1 [] (println "*** f1 ***"))
+(defn f2 [] (println "*** f2 ***"))
+
+(defn run-all 
+  "[& fn-list]
+  Convenience fn to run a function in the REPL after first reloading its namespace from
+  disk.  Functions must be fully namespace-qualified.  Example:
+
+    (run-all 'cooljure.core/main 'cooljure.csv/demo)
+
+  This will reload cooljure.core, and cooljure.csv, then execute the corresponging main
+  and test functions."
+  [& fn-list]
+  (spy-expr fn-list)
+  (doseq [curr-fn fn-list]
+    (let [  _ (spy-expr curr-fn)
+          ns-str      (str/replace (str curr-fn) #"/.*$" "")
+          curr-ns     (symbol ns-str) ]
+      (println "reloading:" ns-str)
+      (require curr-ns :reload-all)
+      (println "running" curr-fn)
+      (eval curr-fn)
+    )))
 
