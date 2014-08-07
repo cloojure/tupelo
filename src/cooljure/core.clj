@@ -105,9 +105,29 @@
       (println out-val#)
       out-val# ))
 
-; add eager (forall  ...) -> (doall (for ...))      ; AWTAWT TODO:  
+; add eager (forall  ...) -> (doall (for ...))      ; awtawt TODO:  
 ;           (for-all ...)
 ;           (for-now ...)
+
+; Another benefitof test-all:  don't need "-test" suffix like in lein test:
+  ; ~/cooljure > lein test :only cooljure.core
+  ; lein test user
+  ; Ran 0 tests containing 0 assertions.
+  ; 0 failures, 0 errors.
+  ;
+  ; ~/cooljure > lein test :only cooljure.core-test
+  ; lein test cooljure.core-test
+  ; Ran 8 tests containing 44 assertions.
+  ; 0 failures, 0 errors.
+  ;
+  ; ~/cooljure > lein test :only cooljure.core-test/grab-test
+  ; lein test cooljure.core-test
+  ; Ran 1 tests containing 3 assertions.
+  ; 0 failures, 0 errors.
+  ; 
+  ; awtawt TODO:  add run-tests with syntax like lein test :only
+  ;   (run-tests 'cooljure.core-test)
+  ;   (run-tests 'cooljure.core-test/grab-test)
 
 (defn test-all 
   "[& ns-list]
@@ -133,6 +153,18 @@
     _ (newline)
   ]
   nil ))
+
+; awtawt TODO:  maybe allow (grab m k :or alt-value) syntax???
+(defn grab 
+  "A fail-fast version of get. For map m & key k, returns the value v associated with k in
+  m.  Throws an exception if k is not present in m."
+  [m k]
+  (if (contains? m k)
+    (get m k)
+    (throw (IllegalArgumentException.    
+              (str  "Key not present in map:" \newline
+                    "  map: " m  \newline
+                    "  key: " k  \newline )))))
 
 
 ;************************************************************

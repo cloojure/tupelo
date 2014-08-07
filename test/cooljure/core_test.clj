@@ -131,3 +131,22 @@
                                     (spy-last "second") )))))
 ))
 
+(deftest grab-test
+  (testing "basic usage"
+    (let [map1  {:a 1 :b 2}]
+      (is (= 1                                  (grab map1 :a)))
+      (is (= 2                                  (grab map1 :b)))
+      (is (thrown?    IllegalArgumentException  (grab map1 :c))) )))
+
+(comment    ; example usage w/o -> macro
+  (def cust->zip
+    "A map from (int) customer-id to (string-5) zipcode, like { 96307657 \"54665\", ...}"
+    (spy-last "#00 map:"
+      (into (sorted-map) 
+        (spy-last "#01 for:"
+          (for [cust-zip-map cust-zips]
+            (spy-last "#02 vec:" 
+              [ (:customer-id  cust-zip-map)
+                (:zipcode      cust-zip-map)  ] ))))))
+)
+
