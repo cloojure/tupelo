@@ -42,12 +42,15 @@
   [csv-lines & {:as opts} ] 
   { :pre  [ (string? csv-lines) ]
     :post [ (map? (first %)) ] }
-  (let [opts-def        (merge {:delimiter \,} opts)
-        parsed-lines    (apply csv/parse-csv csv-lines (keyvals opts-def))
+  (let [opts-default    {:delimiter \,  :data-fn str/trim}
+        opts-use        (merge opts-default opts)
+        parsed-lines    (apply csv/parse-csv csv-lines (keyvals opts-use))
         {:keys [labels-kw data-lines]}  
                         (get-labels-and-data-lines opts parsed-lines)
+        data-fn         (:data-fn opts-use) 
         row-maps        (for [data-line data-lines]
-                          (zipmap labels-kw data-line) )
+                          (zipmap labels-kw 
+                                  (map #(data-fn %) data-line) ))
   ] row-maps ))
 
 ; AWTAWT TODO: clean up, enforce identical columns each row
