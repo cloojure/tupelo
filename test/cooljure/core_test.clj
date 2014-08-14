@@ -138,6 +138,45 @@
       (is (= 2                                  (grab map1 :b)))
       (is (thrown?    IllegalArgumentException  (grab map1 :c))) )))
 
+(deftest grab-in-test
+  (testing "basic usage"
+    (let [map1  {:a1 "a1"
+                 :a2 { :b1 "b1"
+                       :b2 { :c1 "c1"
+                             :c2 "c2" }}} ]
+      (is (= (grab-in map1 [:a1] ) "a1" ))
+      (is (= (grab-in map1 [:a2 :b1] ) "b1" ))
+      (is (= (grab-in map1 [:a2 :b2 :c1] ) "c1" ))
+      (is (= (grab-in map1 [:a2 :b2 :c2] ) "c2" ))
+      (is (thrown? IllegalArgumentException  (grab-in map1 [:a9]) )) 
+      (is (thrown? IllegalArgumentException  (grab-in map1 [:a2 :b9]) )) 
+      (is (thrown? IllegalArgumentException  (grab-in map1 [:a2 :b2 :c9]) )) 
+    )))
+
+(deftest t-rel=
+  (is (rel= 1 1 :digits 4 ))
+  (is (rel= 1 1 :tol    0.01 ))
+
+  (is (thrown? IllegalArgumentException  (rel= 1 1 )))
+  (is (thrown? IllegalArgumentException  (rel= 1 1 4)))
+  (is (thrown? IllegalArgumentException  (rel= 1 1 :xxdigits 4      )))
+  (is (thrown? IllegalArgumentException  (rel= 1 1 :digits   4.1    )))
+  (is (thrown? IllegalArgumentException  (rel= 1 1 :digits   0      )))
+  (is (thrown? IllegalArgumentException  (rel= 1 1 :digits  -4      )))
+
+  (is (thrown? IllegalArgumentException  (rel= 1 1 :tol    -0.01    )))
+  (is (thrown? IllegalArgumentException  (rel= 1 1 :tol     "xx"    )))
+  (is (thrown? IllegalArgumentException  (rel= 1 1 :xxtol   0.01    )))
+
+  (is      (rel= 1 1.001 :digits 3 ))
+  (is (not (rel= 1 1.001 :digits 4 )))
+  (is      (rel= 123450000 123456789 :digits 4 ))
+  (is (not (rel= 123450000 123456789 :digits 6 )))
+
+  (is      (rel= 1 1.001 :tol 0.01 ))
+  (is (not (rel= 1 1.001 :tol 0.0001 )))
+)
+
 (comment    ; example usage w/o -> macro
   (def cust->zip
     "A map from (int) customer-id to (string-5) zipcode, like { 96307657 \"54665\", ...}"

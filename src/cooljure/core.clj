@@ -166,6 +166,69 @@
                     "  map: " m  \newline
                     "  key: " k  \newline )))))
 
+; awtawt TODO:  maybe allow (grab m k :or alt-value) syntax???
+(defn grab-in
+  "A fail-fast version of get-in. For map m & keys ks, returns the value v associated with ks in
+  m, as for (get-in m ks). Throws an exception if the path ks is not present in m."
+  [m  ks]
+  (let [result (get-in m ks ::not-found) ]
+    (if (= result ::not-found)
+      (throw (IllegalArgumentException.    
+                (str  "Key seq not present in map:" \newline
+                      "  map : " m  \newline
+                      "  keys: " ks  \newline )))
+      result )))
+
+(defn rel=
+  "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative
+  equality is specified as either (1) the N most significant digits are equal, or (2) the
+  absolute difference is less than a tolerance.  Input values are coerced to double before
+  comparison."
+  [val1 val2 & {:as opts} ]
+  { :pre [  (number? val1) (number? val2) ]
+    :post [ (contains? #{true false} %) ] }
+  (let [ {:keys [digits tol] }  opts ]
+    (when-not (or digits tol)
+      (throw (IllegalArgumentException.
+                (str  "Must specify either :digits or :tol" \newline
+                      "opts: " opts ))))
+    (when tol 
+      (when-not (number? tol)
+        (throw (IllegalArgumentException.
+                  (str  ":tol must be a number" \newline
+                        "opts: " opts ))))
+      (when-not (pos? tol)
+        (throw (IllegalArgumentException.
+                  (str  ":tol must be positive" \newline
+                        "opts: " opts )))))
+    (when digits 
+      (when-not (integer? digits)
+        (throw (IllegalArgumentException.
+                  (str  ":digits must be an integer" \newline
+                        "opts: " opts ))))
+      (when-not (pos? digits)
+        (throw (IllegalArgumentException.
+                  (str  ":digits must positive" \newline
+                        "opts: " opts )))))
+    ; At this point, there were no invalid args and at least one of either :tol and
+    ; :digits was specified.  So, return the answer.
+    (let [val1      (double val1)
+          val2      (double val2)
+          delta-abs (Math/abs (- val1 val2)) 
+          or-result  
+            (truthy?  (or (and tol
+                            (let [tol-result (< delta-abs tol)
+                            ] tol-result ))
+                          (and digits
+                            (let [abs1          (Math/abs (double val1))
+                                  abs2          (Math/abs val2)
+                                  max-abs       (Math/max abs1 abs2)
+                                  delta-rel-abs (/ delta-abs max-abs) 
+                                  rel-tol       (Math/pow 10 (- digits))
+                                  dig-result        (< delta-rel-abs rel-tol)
+                            ] dig-result ))))
+    ] 
+      or-result )))
 
 ;************************************************************
 ; awtawt TODO:  broken, needs fix!
