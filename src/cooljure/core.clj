@@ -154,7 +154,7 @@
   ]
   nil ))
 
-; awtawt TODO:  maybe allow (grab m k :or alt-value) syntax???
+; awtawt TODO:  maybe rename like [cooljure.explici/get :as x] -> (x/get ...)
 (defn grab 
   "A fail-fast version of get. For map m & key k, returns the value v associated with k in
   m.  Throws an exception if k is not present in m."
@@ -166,7 +166,7 @@
                     "  map: " m  \newline
                     "  key: " k  \newline )))))
 
-; awtawt TODO:  maybe allow (grab m k :or alt-value) syntax???
+; awtawt TODO:  maybe rename like [cooljure.explici/get-in :as x] -> (x/get-in ...)
 (defn grab-in
   "A fail-fast version of get-in. For map m & keys ks, returns the value v associated with ks in
   m, as for (get-in m ks). Throws an exception if the path ks is not present in m."

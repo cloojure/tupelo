@@ -13,7 +13,8 @@
             [clojure.java.io            :as io]
             [clojure-csv.core           :as csv]
             [cooljure.misc              :as cool-misc] 
-            [cooljure.core              :refer :all] ))
+            [cooljure.core              :refer :all] )
+  (:import  [java.io Reader StringReader] ))
 
 (defn- get-labels-and-data-lines
   [opts parsed-lines]
@@ -28,23 +29,26 @@
 ; AWTAWT TODO: add default data-fn (trim...)
 ; AWTAWT TODO: change to allow line-seq, FILE, etc
 (defn parse-csv->row-maps
- "[csv-lines & {:as opts} ] 
-  Returns a sequence of maps constructed from csv-lines.  The first line
+ "[csv-input & {:as opts} ] 
+  Returns a sequence of maps constructed from csv-input.  The first line
   is assumed to be column label strings, which are (safely) converted into keywords.
   String data from each subsequent line is paired with the corresponding column keyword to
   construct a map for that line.  Default delimiter is the comma character (i.e. \\,) but 
   may be changed using the syntax such as: 
   
-    (parse-csv->row-maps csv-lines :delimiter \\| )
+    (parse-csv->row-maps csv-input :delimiter \\| )
 
   to select the pipe character (i.e. \\|) as the delimiter.  "
   ; AWTAWT TODO: update docs re. col-labels (keywords)
-  [csv-lines & {:as opts} ] 
-  { :pre  [ (string? csv-lines) ]
+  [csv-input & {:as opts} ] 
+  { :pre  [ (or (string? csv-input) (instance? Reader csv-input)) ]
     :post [ (map? (first %)) ] }
   (let [opts-default    {:delimiter \,  :data-fn str/trim}
         opts-use        (merge opts-default opts)
-        parsed-lines    (apply csv/parse-csv csv-lines (keyvals opts-use))
+        csv-reader      (if (string? csv-input) 
+                            (StringReader. csv-input)
+                            csv-input )
+        parsed-lines    (apply csv/parse-csv csv-reader (keyvals opts-use))
         {:keys [labels-kw data-lines]}  
                         (get-labels-and-data-lines opts parsed-lines)
         data-fn         (:data-fn opts-use) 
@@ -78,8 +82,8 @@
 
 ; AWTAWT TODO: change to allow line-seq, FILE, etc
 (defn parse-csv->col-vecs
- "[csv-lines & {:as opts} ] 
-  Returns a map constructed from the columns of csv-lines.  The first line is
+ "[csv-input & {:as opts} ] 
+  Returns a map constructed from the columns of csv-input.  The first line is
   assumed to be column label strings, which are (safely) converted into keywords. The
   returned map has one entry for each column label keyword. The corresponding value for
   each keyword is a vector of string data taken from each subsequent line in the file.
@@ -90,11 +94,11 @@
 
   to select the pipe character (i.e. \\|) as the delimiter.  "
   ; AWTAWT TODO: update docs re. col-labels (keywords)
-  [csv-lines & {:as opts} ] 
-  { :pre  [ (string? csv-lines) ]
+  [csv-input & {:as opts} ] 
+  { :pre  [ (or (string? csv-input) (instance? Reader csv-input)) ]
     :post [ (map? %) ] }
   (let [opts-def    (merge {:delimiter \,} opts)
-        row-maps    (apply parse-csv->row-maps csv-lines (keyvals opts-def))
+        row-maps    (apply parse-csv->row-maps csv-input (keyvals opts-def))
         col-vecs    (row-maps->col-vecs row-maps)
   ] col-vecs ))
 

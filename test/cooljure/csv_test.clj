@@ -9,7 +9,8 @@
   (:require [clojure.string             :as str]
             [clojure.java.io            :as io]
             [cooljure.csv               :refer :all]
-            [clojure.test               :refer :all] ))
+            [clojure.test               :refer :all] )
+  (:import  [java.io Reader StringReader] ))
 
 (def test1-str-no-label
 "01002,00006,4
@@ -87,6 +88,12 @@
   (testing "no header row in file, user spec :labels"
     (let [result (parse-csv->row-maps test1-str-no-label 
                     :labels [:zip-postal-code :store-num :chain-rank] ) ]
+    (is (= result test1-expected)) ))
+)
+
+(deftest t-parse-csv->row-maps-reader
+  (testing "basic parse-csv->row-maps test"
+    (let [result (parse-csv->row-maps (StringReader. test1-str-label) ) ]
     (is (= result test1-expected)) ))
 )
 
