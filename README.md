@@ -1,11 +1,15 @@
 cooljure
 ========
 
-Cooljure:  Cool stuff you wish was in Clojure
+# Cool stuff you wish was in Clojure
+
+Leiningen coordinates:
 
 [![Clojars Project]
 (http://clojars.org/cooljure/latest-version.svg)]
 (http://clojars.org/cooljure)
+
+## Overview
 
 Have you ever wanted to do something simple but clojure.core doesn't support it?  Or, maybe you are wishing for an enhanced version of a standard function.  The goal of Cooljure is to add support for these convenience features, so that you have a simple way of using either the enhanced version or the original version.
 
