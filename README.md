@@ -133,8 +133,8 @@ Sometimes you may prefer to print out the expression itself, or nothing at all. 
 ```
 ## cooljure.csv - Functions for using CSV (Comma Separate Value) files
 
-TEMP TODO:  see source code [cooljure.csv]()
+TEMP TODO:  see source code [cooljure.csv](http://github.com/cloojure/cooljure/blob/master/src/cooljure/csv.clj)
 
 ## coojure.parse - Functions to ease parsing
 
-TEMP TODO:  see source code [cooljure.parse]()
+TEMP TODO:  see source code [cooljure.parse](http://github.com/cloojure/cooljure/blob/master/src/cooljure/parse.clj)
