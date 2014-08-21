@@ -1,7 +1,7 @@
 cooljure
 ========
 
-# Cool stuff you wish was in Clojure
+## Cool stuff you wish was in Clojure
 
 Leiningen coordinates:
 
