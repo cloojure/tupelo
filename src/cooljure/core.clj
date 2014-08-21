@@ -12,37 +12,31 @@
               [clojure.test         :as test] ) )
 
 (defn truthy?
- "[arg]
-  Returns true if arg is logical true (neither nil nor false);
+ "Returns true if arg is logical true (neither nil nor false);
   otherwise returns false."
   [arg]
   (if arg true false) )
 
 (defn falsey?
- "[arg]
-  Returns true if arg is logical false (either nil or false);
+ "Returns true if arg is logical false (either nil or false);
   otherwise returns false. Equivalent to (not (truthy? arg))."
   [arg]
   (if arg false true) )
 
 (defn any?
- "[pred coll]
-  For any predicate & collection, returns true if (pred x) is logical true for any x in
+ "For any predicate & collection, returns true if (pred x) is logical true for any x in
   coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
   [pred coll]
   (truthy? (some pred coll)) )
 
 (defn not-empty?
- "[coll]
-  For any collection, returns true if coll contains any items; otherwise returns false
+ "For any collection, returns true if coll contains any items; otherwise returns false
   Equivalent to (not (empty? coll))."
   [coll]
   (truthy? (seq coll)) )
 
 (defn conjv 
- "( [coll x]
-    [coll x & xs] )
-  For any collection coll and list of values x, appends the x's to collection, always
+ "For any collection coll and list of values x, appends the x's to collection, always
   returning the result as a vector."
   ; From Stuart Sierra post 2014-2-10
   ( [coll x]
@@ -51,9 +45,8 @@
       (apply conj (vec coll) x xs) ))
 
 (defn keyvals 
- "[m]
-  For any map m, returns the keys & values of m as a vector, suitable for reconstructing m
-  via (apply hashmap (keyvals m))."
+ "For any map m, returns the keys & values of m as a vector, suitable for reconstructing m
+  via (apply hash-map (keyvals m))."
   [m]
   {:pre  [ (map? m) ] 
    :post [ (vector? %) ] }
@@ -61,8 +54,7 @@
             [] (seq m) ))
 
 (defmacro with-exception-default
- "[default & body]
-  Evaluates body & returns its result.  In the event of an exception the specified default
+ "Evaluates body & returns its result.  In the event of an exception the specified default
   value is returned instead."
   [default & body]
   `(try
@@ -70,8 +62,7 @@
      (catch Exception e# ~default) ))
 
 (defmacro spy-first
-  "[expr msg]
-  Evaluates the expression (the first arg) and prints both msg and the result to stdout;
+ "Evaluates the expression (the first arg) and prints both msg and the result to stdout;
   returns the result of expr."
   [expr msg]
   `(let [out-val# ~expr]
@@ -79,8 +70,7 @@
       out-val# ))
 
 (defmacro spy-last
-  "[msg expr]
-  Evaluates the expression (the last arg) and prints both msg and the result to stdout;
+ "Evaluates the expression (the last arg) and prints both msg and the result to stdout;
   returns the result of expr."
   [msg expr]
   `(let [out-val# ~expr]
@@ -88,8 +78,7 @@
       out-val# ))
 
 (defmacro spy-expr
-  "[expr]
-  Evaluates the expression and prints both expr and its result to stdout; 
+ "Evaluates the expression and prints both expr and its result to stdout; 
   returns the result of expr."
   [expr]
   `(let [out-val# ~expr] 
@@ -97,8 +86,7 @@
       out-val#) )
 
 (defmacro spy-val
-  "[expr]
-  Evaluates the expression and prints its result to stdout; 
+ "Evaluates the expression and prints its result to stdout; 
   returns the result of expr."
   [expr]
   `(let [out-val# ~expr]
