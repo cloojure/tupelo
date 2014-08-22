@@ -232,13 +232,19 @@ test namespace:
 Floating Point Number Comparison
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Everyone know that you shouldn't compare floating-point numbers (e.g. float, double, etc) for equality since roundoff errors can prevent a precise match between logically equivalent results.  However, it has always been awkward to regenerate "approx-equals" code by hand every time new project requires it.  Here we have a simple function that compares two floating-point values (cast to double) for equality by specifying either the number of significant digits that must match or the maximum error tolerance allowed:
+Everyone know that you shouldn't compare floating-point numbers (e.g. float,
+double, etc) for equality since roundoff errors can prevent a precise match
+between logically equivalent results.  However, it has always been awkward to
+regenerate "approx-equals" code by hand every time new project requires it.
+Here we have a simple function that compares two floating-point values (cast to
+double) for equality by specifying either the number of significant digits that
+must match or the maximum error tolerance allowed:
 
 ----
 (defn rel= val1 val2 & {:as opts} )
   Returns true if 2 double-precision numbers are relatively equal, else false.
   Relative equality is specified as either (1) the N most significant digits are
-  equal, or (2) the absolute difference is less than a tolerance.  Input values
+  equal, or (2) the absolute difference is less than a tolerance value.  Input values
   are coerced to double before comparison."
 ----
 An extract from the unit tests illustrates the use of `rel=`

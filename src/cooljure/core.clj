@@ -44,6 +44,31 @@
   ( [coll x & xs]
       (apply conj (vec coll) x xs) ))
 
+; awtawt TODO:  maybe rename like [cooljure.explici/get :as x] -> (x/get ...)
+(defn grab 
+  "A fail-fast version of get. For map m & key k, returns the value v associated with k in
+  m.  Throws an exception if k is not present in m."
+  [m k]
+  (if (contains? m k)
+    (get m k)
+    (throw (IllegalArgumentException.    
+              (str  "Key not present in map:" \newline
+                    "  map: " m  \newline
+                    "  key: " k  \newline )))))
+
+; awtawt TODO:  maybe rename like [cooljure.explici/get-in :as x] -> (x/get-in ...)
+(defn grab-in
+  "A fail-fast version of get-in. For map m & keys ks, returns the value v associated with ks in
+  m, as for (get-in m ks). Throws an exception if the path ks is not present in m."
+  [m  ks]
+  (let [result (get-in m ks ::not-found) ]
+    (if (= result ::not-found)
+      (throw (IllegalArgumentException.    
+                (str  "Key seq not present in map:" \newline
+                      "  map : " m  \newline
+                      "  keys: " ks  \newline )))
+      result )))
+
 (defn keyvals 
  "For any map m, returns the keys & values of m as a vector, suitable for reconstructing m
   via (apply hash-map (keyvals m))."
@@ -142,36 +167,11 @@
   ]
   nil ))
 
-; awtawt TODO:  maybe rename like [cooljure.explici/get :as x] -> (x/get ...)
-(defn grab 
-  "A fail-fast version of get. For map m & key k, returns the value v associated with k in
-  m.  Throws an exception if k is not present in m."
-  [m k]
-  (if (contains? m k)
-    (get m k)
-    (throw (IllegalArgumentException.    
-              (str  "Key not present in map:" \newline
-                    "  map: " m  \newline
-                    "  key: " k  \newline )))))
-
-; awtawt TODO:  maybe rename like [cooljure.explici/get-in :as x] -> (x/get-in ...)
-(defn grab-in
-  "A fail-fast version of get-in. For map m & keys ks, returns the value v associated with ks in
-  m, as for (get-in m ks). Throws an exception if the path ks is not present in m."
-  [m  ks]
-  (let [result (get-in m ks ::not-found) ]
-    (if (= result ::not-found)
-      (throw (IllegalArgumentException.    
-                (str  "Key seq not present in map:" \newline
-                      "  map : " m  \newline
-                      "  keys: " ks  \newline )))
-      result )))
-
 (defn rel=
   "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative
   equality is specified as either (1) the N most significant digits are equal, or (2) the
-  absolute difference is less than a tolerance.  Input values are coerced to double before
-  comparison."
+  absolute difference is less than a tolerance value.  Input values are coerced to double
+  before comparison."
   [val1 val2 & {:as opts} ]
   { :pre [  (number? val1) (number? val2) ]
     :post [ (contains? #{true false} %) ] }
