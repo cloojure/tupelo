@@ -236,10 +236,10 @@ Everyone know that you shouldn't compare floating-point numbers (e.g. float, dou
 
 ----
 (defn rel= val1 val2 & {:as opts} )
-  Returns true if 2 double-precision numbers are relatively equal, else false.  Relative
-  equality is specified as either (1) the N most significant digits are equal, or (2) the
-  absolute difference is less than a tolerance.  Input values are coerced to double before
-  comparison."
+  Returns true if 2 double-precision numbers are relatively equal, else false.
+  Relative equality is specified as either (1) the N most significant digits are
+  equal, or (2) the absolute difference is less than a tolerance.  Input values
+  are coerced to double before comparison."
 ----
 An extract from the unit tests illustrates the use of `rel=`
 [source,clojure]
