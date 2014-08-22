@@ -60,69 +60,77 @@ These functions aren't in clojure.core, but people keep writing into the mailing
   otherwise returns false. Equivalent to (not (empty? coll)).
 ----
 
-### Focus on vectors
+Focus on vectors
+^^^^^^^^^^^^^^^^
 
 Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you just want everything to stay in a nice, eager, random-access vector. Here is an easy way to build up a vector result:
 
-```
+----
 (conjv coll x)
 (conjv coll x & xs)
   For any collection coll and list of values x, appends the x's to 
   collection, always returning the result as a vector.
-```
-```clojure
+----
+[source,clojure]
+----
 => (conjv '(1 2) 3)
 [1 2 3]
-```
+----
 
-### Map manipulation
+Map manipulation
+~~~~~~~~~~~~~~~~
 
 Sometimes you want to extract the keys & values from a map for manipulation or extension before building up another map (especially useful manipulating default function args). Here is very handy function for that:
 
-```
+----
 (keyvals m)
   For any map m, returns the keys & values of m as a vector, 
   suitable for reconstructing via (apply hashmap (keyvals m)).
-```
-```clojure
+----
+[source,clojure]
+----
 => (keyvals {:a 1 :b 2})
 [:b 2 :a 1]
 => (apply hash-map (keyvals {:a 1 :b 2}))
 {:b 2, :a 1}
-```
+----
 
-### Expression debugging
+Expression debugging
+~~~~~~~~~~~~~~~~~~~~
 
 Ever been debugging some new code and had trouble inserting printing out intermediate values?  For example:
 
-```clojure
+[source,clojure]
+----
 (-> 1
     (inc)
     (* 2))
 4
-```
+----
 Suppose you want to disply the value after the (inc) function. You can't just insert a (println) because the return value of `nil` will break the pipeline structure. Instead, just use `spy-first`:
-
-```clojure
+[source,clojure]
+----
 (-> 1
     (inc)
     (spy-first "after inc")
     (* 2))
 after inc => 2
 4
-```
+----
 This tool is named `spy-first` since it is intended to be placed into a "thread-first" pipeline (e.g. using `->` or similar). A companion named `spy-last` is available for pipelines using "thread-last" (e.g. `->>`):
-```clojure
+[source,clojure]
+----
 (->> 1
     (inc)
     (spy-last "after inc")
     (* 2))
 after inc => 2
 4
-```
+----
 
 Sometimes you may prefer to print out the expression itself, or nothing at all. Then, just use `spy-expr` or `spy-val`:
-```clojure
+[source,clojure]
+----
 (as-> 1 x
       (spy-expr (inc x))
       (* 2 x))
@@ -135,19 +143,22 @@ Sometimes you may prefer to print out the expression itself, or nothing at all. 
      (* 2))
 2
 4
-```
+----
 To be precise, the function signatures are:
-```clojure
+[source,clojure]
+----
 (spy-first expr msg )
 (spy-last  msg  expr)
 (spy-expr  expr)
 (spy-val   expr)
-```
+----
 
-## cooljure.csv - Functions for using CSV (Comma Separate Value) files
+cooljure.csv - Functions for using CSV (Comma Separate Value) files
+~~~~~~~~~~
 
 TEMP TODO:  see source code [cooljure.csv](http://github.com/cloojure/cooljure/blob/master/src/cooljure/csv.clj)
 
-## coojure.parse - Functions to ease parsing
+coojure.parse - Functions to ease parsing
+~~~~~~~~~~
 
 TEMP TODO:  see source code [cooljure.parse](http://github.com/cloojure/cooljure/blob/master/src/cooljure/parse.clj)
