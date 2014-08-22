@@ -63,7 +63,8 @@ Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you jus
 (conjv coll x & xs)
   For any collection coll and list of values x, appends the x's to 
   collection, always returning the result as a vector.
-
+```
+```clojure
 => (conjv '(1 2) 3)
 [1 2 3]
 ```
@@ -76,7 +77,8 @@ Sometimes you want to extract the keys & values from a map for manipulation or e
 (keyvals m)
   For any map m, returns the keys & values of m as a vector, 
   suitable for reconstructing via (apply hashmap (keyvals m)).
-
+```
+```clojure
 => (keyvals {:a 1 :b 2})
 [:b 2 :a 1]
 => (apply hash-map (keyvals {:a 1 :b 2}))
