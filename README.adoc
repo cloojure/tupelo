@@ -244,10 +244,10 @@ digits that must match or the maximum error tolerance allowed:
 
 ----
 (rel= val1 val2 & opts)
-  Returns true if 2 double-precision numbers are relatively equal, else false.  Relative
-  equality is specified as either (1) the N most significant digits are equal, or (2) the
-  absolute difference is less than a tolerance value.  Input values are coerced to double
-  before comparison.  
+  Returns true if 2 double-precision numbers are relatively equal, else false.
+  Relative equality is specified as either (1) the N most significant digits are
+  equal, or (2) the absolute difference is less than a tolerance value.  Input
+  values are coerced to double before comparison.  
 ----
 An extract from the unit tests illustrates the use of `rel=`
 [source,clojure]
