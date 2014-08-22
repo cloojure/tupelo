@@ -80,7 +80,7 @@
 
 (defmacro with-exception-default
  "Evaluates body & returns its result.  In the event of an exception the specified default
-  value is returned instead."
+  value is returned instead of the exception."
   [default-val & body]
   `(try
      ~@body
@@ -145,7 +145,7 @@
 (defn test-all 
   "[& ns-list]
   Convenience fn to reload a namespace & the corresponding test namespace from disk and
-  execute tests i the REPL.  Assumes canonical project test file organization with
+  execute tests in the REPL.  Assumes canonical project test file organization with
   parallel src/... & test/... directories, where a '-test' suffix is added to all src
   namespaces to generate the cooresponding test namespace.  Example:
 
@@ -168,10 +168,14 @@
   nil ))
 
 (defn rel=
-  "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative
-  equality is specified as either (1) the N most significant digits are equal, or (2) the
-  absolute difference is less than a tolerance value.  Input values are coerced to double
-  before comparison."
+ "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative
+ equality is specified as either (1) the N most significant digits are equal, or (2) the
+ absolute difference is less than a tolerance value.  Input values are coerced to double
+ before comparison.  Example:
+
+    (rel= 123450000 123456789   :digits 4)      ; true
+    (rel= 1         1.001       :tol 0.01 )     ; true
+  "
   [val1 val2 & {:as opts} ]
   { :pre [  (number? val1) (number? val2) ]
     :post [ (contains? #{true false} %) ] }
