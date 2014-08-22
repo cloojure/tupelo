@@ -56,10 +56,10 @@
 (defmacro with-exception-default
  "Evaluates body & returns its result.  In the event of an exception the specified default
   value is returned instead."
-  [default & body]
+  [default-val & body]
   `(try
      ~@body
-     (catch Exception e# ~default) ))
+     (catch Exception e# ~default-val) ))
 
 (defmacro spy-first
  "Evaluates the expression (the first arg) and prints both msg and the result to stdout;

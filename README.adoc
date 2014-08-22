@@ -10,9 +10,15 @@ image:http://clojars.org/cooljure/latest-version.svg[ http://clojars.org/cooljur
 Overview
 --------
 
-Have you ever wanted to do something simple but clojure.core doesn't support it? Or, maybe you are wishing for an enhanced version of a standard function. The goal of Cooljure is to add support for these convenience features, so that you have a simple way of using either the enhanced version or the original version.
+Have you ever wanted to do something simple but clojure.core doesn't support it? Or, maybe
+you are wishing for an enhanced version of a standard function. The goal of Cooljure is to
+add support for these convenience features, so that you have a simple way of using either
+the enhanced version or the original version.
 
-The goal in using `cooljure.core` is that you can just plop it in any namespace without having to worry about any conflicts with core functionality. So, both the core functions and the added/enhanced functions are both available for use at all times. As such, we use normally use `:refer :all` for cooljure.core in our namespaces:
+The goal in using `cooljure.core` is that you can just plop it in any namespace without
+having to worry about any conflicts with core functionality. So, both the core functions
+and the added/enhanced functions are both available for use at all times. As such, we use
+normally use `:refer :all` for cooljure.core in our namespaces:
 
 [source,clojure]
 ----
@@ -30,7 +36,10 @@ cooljure.core - Basic functions
 The truth is not ambiguous
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Clojure marries the worlds of Java and Lisp. Unfortunately, these two worlds have different ideas of truth, so Clojure accepts both `false` and `nil` as _false_. Sometimes you want to coerce logical values into literal _true_ or _false_ values, so we provide a simple way to do that:
+Clojure marries the worlds of Java and Lisp. Unfortunately, these two worlds have
+different ideas of truth, so Clojure accepts both `false` and `nil` as _false_. Sometimes
+you want to coerce logical values into literal _true_ or _false_ values, so we provide a
+simple way to do that:
 
 ----
 (truthy? arg)
@@ -45,7 +54,8 @@ Clojure marries the worlds of Java and Lisp. Unfortunately, these two worlds hav
 Convenience testing seq's
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-These functions aren't in clojure.core, but people keep writing into the mailing list wondering where they are. Well, now they are available:
+These functions aren't in clojure.core, but people keep writing into the mailing list
+wondering where they are. Well, now they are available:
 
 ----
 (any? pred coll)
@@ -61,7 +71,9 @@ These functions aren't in clojure.core, but people keep writing into the mailing
 Focus on vectors
 ^^^^^^^^^^^^^^^^
 
-Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you just want everything to stay in a nice, eager, random-access vector. Here is an easy way to build up a vector result:
+Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you just want
+everything to stay in a nice, eager, random-access vector. Here is an easy way to build up
+a vector result:
 
 ----
 (conjv coll x)
@@ -76,9 +88,11 @@ Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you jus
 ----
 
 Map manipulation
-~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^
 
-Sometimes you want to extract the keys & values from a map for manipulation or extension before building up another map (especially useful manipulating default function args). Here is very handy function for that:
+Sometimes you want to extract the keys & values from a map for manipulation or extension
+before building up another map (especially useful manipulating default function args).
+Here is very handy function for that:
 
 ----
 (keyvals m)
@@ -93,10 +107,40 @@ Sometimes you want to extract the keys & values from a map for manipulation or e
 {:b 2, :a 1}
 ----
 
+Maps are convenient, especially when keywords are used as functions to look up a value in
+a map.  Unfortunately, attempting to look up a non-existing keyword in a map will return
+nil.  While sometimes convenient, this means that a simple typo in the keyword name will
+silently return corrupted data (i.e. nil instead of the desired value.  The two funcitons
+`grab` and `grab-in` are dop-in replacements for `get` and `get-in`, except that they will
+throw an Exception in the event the keyword is not present in the map:
+
+----
+(grab m k)
+  A fail-fast version of get. For map m & key k, returns the value v associated with k in
+  m.  Throws an exception if k is not present in m.
+
+(grab-in m ks)
+  A fail-fast version of get-in. For map m & keys ks, returns the value v associated with
+  ks in m, as for (get-in m ks). Throws an exception if the path ks is not present in m.
+----
+
+Default value in case of Exception
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Sometimes you know an operation may result in an Exception, and you would like to have the
+Exception converted into a default value.  That is when you need:
+
+----
+(with-exception-default default-val & body)
+  Evaluates body & returns its result.  In the event of an exception the specified default
+  value is returned instead."
+----
+
 Expression debugging
 ~~~~~~~~~~~~~~~~~~~~
 
-Ever been debugging some new code and had trouble inserting printing out intermediate values?  For example:
+Ever been debugging some new code and had trouble inserting printing out intermediate
+values?  For example:
 
 [source,clojure]
 ----
@@ -105,7 +149,10 @@ Ever been debugging some new code and had trouble inserting printing out interme
     (* 2))
 4
 ----
-Suppose you want to disply the value after the (inc) function. You can't just insert a (println) because the return value of `nil` will break the pipeline structure. Instead, just use `spy-first`:
+Suppose you want to disply the value after the (inc) function. You can't just insert a
+(println) because the return value of `nil` will break the pipeline structure. Instead,
+just use `spy-first`:
+
 [source,clojure]
 ----
 (-> 1
@@ -115,7 +162,10 @@ Suppose you want to disply the value after the (inc) function. You can't just in
 after inc => 2
 4
 ----
-This tool is named `spy-first` since it is intended to be placed into a "thread-first" pipeline (e.g. using `->` or similar). A companion named `spy-last` is available for pipelines using "thread-last" (e.g. `->>`):
+This tool is named `spy-first` since it is intended to be placed into a "thread-first"
+pipeline (e.g. using `->` or similar). A companion named `spy-last` is available for
+pipelines using "thread-last" (e.g. `->>`):
+
 [source,clojure]
 ----
 (->> 1
@@ -126,7 +176,9 @@ after inc => 2
 4
 ----
 
-Sometimes you may prefer to print out the expression itself, or nothing at all. Then, just use `spy-expr` or `spy-val`:
+Sometimes you may prefer to print out the expression itself, or nothing at all. Then, just
+use `spy-expr` or `spy-val`:
+
 [source,clojure]
 ----
 (as-> 1 x
@@ -143,6 +195,7 @@ Sometimes you may prefer to print out the expression itself, or nothing at all. 
 4
 ----
 To be precise, the function signatures are:
+
 [source,clojure]
 ----
 (spy-first expr msg )
@@ -150,6 +203,34 @@ To be precise, the function signatures are:
 (spy-expr  expr)
 (spy-val   expr)
 ----
+
+REPL driven testing
+~~~~~~~~~~~~~~~~~~~
+
+Developing at the REPL is productive & cool, but it can be a pain to reload source files
+modified in an external editor.  This is especially so when simultaneously editing both
+the core program and the corresponding test code.  The function `test-all` will reload
+both a namespace and its corresponding test namespace from file, then invoke the corresponding
+test namespace:
+
+----
+(test-all & ns-list)
+  Convenience fn to reload a namespace & the corresponding test namespace from disk and
+  execute tests i the REPL.  Assumes canonical project test file organization with
+  parallel src/... & test/... directories, where a '-test' suffix is added to all src
+  namespaces to generate the cooresponding test namespace.  Example:
+
+    (test-all 'cooljure.core 'cooljure.csv)
+
+  This will reload cooljure.core, cooljure.core-test, cooljure.csv, cooljure.csv-test and
+  then execute clojure.test/run-tests on both of the test namespaces."
+  [& ns-list]
+----
+
+Floating Point Number Comparison
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Everyone know that you shouldn't compare floating-point numbers (e.g. float, double, etc) for equality since roundoff errors can prevent a precise match between logically equivalent results.  However, it has always been awkward to regenerate "approx-equals" code by hand
 
 cooljure.csv - Functions for using CSV (Comma Separate Value) files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
