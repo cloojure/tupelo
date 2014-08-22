@@ -30,7 +30,7 @@ The goal in using `cooljure.core` is that you can just plop it in any namespace 
 
 Clojure marries the worlds of Java and Lisp. Unfortunately, these two worlds have different ideas of truth, so Clojure accepts both `false` and `nil` as _false_. Sometimes you want to coerce logical values into literal _true_ or _false_ values, so we provide a simple way to do that:
 
-```clojure
+```
 (truthy? arg)
   Returns true if arg is logical true (neither nil nor false);
   otherwise returns false.
@@ -44,7 +44,7 @@ Clojure marries the worlds of Java and Lisp. Unfortunately, these two worlds hav
 
 These functions aren't in clojure.core, but people keep writing into the mailing list wondering where they are. Well, now they are available:
 
-```clojure
+```
 (any? pred coll)
   For any predicate & collection, returns true if (pred x) is 
   logical true for any x in coll; otherwise returns false. Like
@@ -58,15 +58,14 @@ These functions aren't in clojure.core, but people keep writing into the mailing
 
 Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you just want everything to stay in a nice, eager, random-access vector. Here is an easy way to build up a vector result:
 
-```clojure
+```
 (conjv coll x)
 (conjv coll x & xs)
   For any collection coll and list of values x, appends the x's to 
   collection, always returning the result as a vector.
-  
+
 => (conjv '(1 2) 3)
 [1 2 3]
-
 ```
 
 ### Map manipulation
