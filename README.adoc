@@ -5,9 +5,7 @@ cooljure
 
 Leiningen coordinates:
 
-[![Clojars Project]
-(http://clojars.org/cooljure/latest-version.svg)]
-(http://clojars.org/cooljure)
+image:http://clojars.org/cooljure/latest-version.svg[ http://clojars.org/cooljure ]
 
 Overview
 --------
