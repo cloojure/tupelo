@@ -73,7 +73,7 @@ Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you jus
 
 Sometimes you want to extract the keys & values from a map for manipulation or extension before building up another map (especially useful manipulating default function args). Here is very handy function for that:
 
-```clojure
+```
 (keyvals m)
   For any map m, returns the keys & values of m as a vector, 
   suitable for reconstructing via (apply hashmap (keyvals m)).
