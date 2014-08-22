@@ -204,16 +204,17 @@
           val2      (double val2)
           delta-abs (Math/abs (- val1 val2)) 
           or-result  
-            (truthy?  (or (and tol
+            (truthy?  (or (zero? delta-abs)
+                          (and tol
                             (let [tol-result (< delta-abs tol)
                             ] tol-result ))
                           (and digits
-                            (let [abs1          (Math/abs (double val1))
-                                  abs2          (Math/abs val2)
-                                  max-abs       (Math/max abs1 abs2)
-                                  delta-rel-abs (/ delta-abs max-abs) 
-                                  rel-tol       (Math/pow 10 (- digits))
-                                  dig-result        (< delta-rel-abs rel-tol)
+                            (let [abs1            (Math/abs val1)
+                                  abs2            (Math/abs val2)
+                                  max-abs         (Math/max abs1 abs2)
+                                  delta-rel-abs   (/ delta-abs max-abs) 
+                                  rel-tol         (Math/pow 10 (- digits))
+                                  dig-result      (< delta-rel-abs rel-tol)
                             ] dig-result ))))
     ] 
       or-result )))
