@@ -157,6 +157,6 @@ cooljure.csv - Functions for using CSV (Comma Separate Value) files
 TEMP TODO:  see source code http://github.com/cloojure/cooljure/blob/master/src/cooljure/csv.clj[cooljure.csv]
 
 coojure.parse - Functions to ease parsing
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 TEMP TODO:  see source code http://github.com/cloojure/cooljure/blob/master/src/cooljure/parse.clj[cooljure.parse]
