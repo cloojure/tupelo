@@ -116,26 +116,25 @@ after inc => 2
 
 Sometimes you may prefer to print out the expression itself, or nothing at all.  Then, just use `spy-expr` or `spy-val`:
 ```clojure
-(->> 1
-           #_=>     (inc)
-           #_=>     (spy-expr)
-           #_=>     (* 2))
-(inc 1) => 2
+(as-> 1 x
+      (spy-expr (inc x))
+      (* 2 x))
+(inc x) => 2
 4
 
 (->> 1
-           #_=>     (inc)
-           #_=>     (spy-val)
-           #_=>     (* 2))
+     (inc)
+     (spy-val)
+     (* 2))
 2
 4
 ```
 To be precise, the function signatures are:
 ```clojure
-(spy-first expr doc-str)
-(spy-last  doc-str expr)
+(spy-first expr msg )
+(spy-last  msg  expr)
 (spy-expr  expr)
-(spy-val   val)
+(spy-val   expr)
 ```
 
 ## cooljure.csv - Functions for using CSV (Comma Separate Value) files
