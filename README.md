@@ -31,13 +31,11 @@ The goal in using `cooljure.core` is that you can just plop it in any namespace 
 Clojure marries the worlds of Java and Lisp.  Unfortunately, these two worlds have different ideas of truth, so Clojure accepts both `false` and `nil` as _false_.  Sometimes you want to coerce logical values into literal _true_ or _false_ values, so we provide a simple way to do that:
 
 ```clojure
-truthy?
-([arg])
+(truthy? arg)
   Returns true if arg is logical true (neither nil nor false);
   otherwise returns false.
 
-falsey?
-([arg])
+(falsey? arg)
   Returns true if arg is logical false (either nil or false);
   otherwise returns false. Equivalent to (not (truthy? arg)).
 ```
@@ -47,14 +45,12 @@ falsey?
 These functions aren't in clojure.core, but people keep writing into the mailing list wondering where they are.  Well, now they are available:
 
 ```clojure
-any?
-([pred coll])
+(any? pred coll)
   For any predicate & collection, returns true if (pred x) is 
   logical true for any x in  coll; otherwise returns false.  Like
   clojure.core/some, but returns only true or false.
 
-not-empty?
-([coll])
+(not-empty? coll)
   For any collection, returns true if coll contains any items; 
   otherwise returns false. Equivalent to (not (empty? coll)).
 ```
@@ -63,8 +59,8 @@ not-empty?
 Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you just want everything to stay in a nice, eager, random-access vector.  Here is an easy way to build up a vector result:
 
 ```clojure
-conjv
-([coll x] [coll x & xs])
+(conjv coll x)
+(conjv coll x & xs)
   For any collection coll and list of values x, appends the x's to 
   collection, always returning the result as a vector.
   
@@ -78,8 +74,7 @@ conjv
 Sometimes you want to extract the keys & values from a map for manipulation or extension before building up another map (especially useful manipulating default function args).  Here is very handy function for that:
 
 ```clojure
-keyvals
-([m])
+(keyvals m)
   For any map m, returns the keys & values of m as a vector, 
   suitable for reconstructing via (apply hashmap (keyvals m)).
 
@@ -135,6 +130,14 @@ Sometimes you may prefer to print out the expression itself, or nothing at all. 
 2
 4
 ```
+To be precise, the function signatures are:
+```clojure
+(spy-first expr doc-str)
+(spy-last  doc-str expr)
+(spy-expr  expr)
+(spy-val   val)
+```
+
 ## cooljure.csv - Functions for using CSV (Comma Separate Value) files
 
 TEMP TODO:  see source code [cooljure.csv](http://github.com/cloojure/cooljure/blob/master/src/cooljure/csv.clj)
