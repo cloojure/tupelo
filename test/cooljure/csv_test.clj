@@ -57,6 +57,31 @@
   { :zipcode            ["01002" "01002" "01003" "01008" "01009" "01020"]
     :store-id           [     6     277     277    1217     439    1193 ] } )
 
+(deftest parse-csv->row-maps-test
+  (testing "basic parse-csv->row-maps test"
+    (let [result (parse-csv->row-maps test1-str-label ) ]
+    (is (= result test1-expected)) ))
+
+  (testing "read PSV file instead of default CSV"
+    (let [raw-maps  (parse-csv->row-maps test2-str-label :delimiter \| )
+          result    (map #(hash-map :store-id (Long/parseLong (:STORE-NUM %))
+                                    :zipcode                  (:ZIP-POSTAL-CODE %) )
+                      raw-maps ) ]
+    (is (= result test2-expected)) ))
+
+  (testing "no header row in file, user spec :labels"
+    (let [result (parse-csv->row-maps test1-str-no-label 
+                    :labels [:zip-postal-code :store-num :chain-rank] ) ]
+    (is (= result test1-expected)) ))
+)
+
+(deftest t-parse-csv->row-maps-reader
+  (testing "basic parse-csv->row-maps test, using Reader"
+    (let [result (parse-csv->row-maps (StringReader. test1-str-label) ) ]
+    (is (= result test1-expected)) ))
+)
+
+
 (deftest row-maps->col-vecs-test
   (testing "row-maps->col-vecs-test-1"
     (let [result (row-maps->col-vecs test1-expected) ]
@@ -73,29 +98,6 @@
     (let [result (col-vecs->row-maps test4-expected) ]
     (is (= result test2-expected)) )))
 
-(deftest parse-csv->row-maps-test
-  (testing "basic parse-csv->row-maps test"
-    (let [result (parse-csv->row-maps test1-str-label ) ]
-    (is (= result test1-expected)) ))
-
-  (testing "read PSV file instead of default CSV"
-    (let [raw-maps  (parse-csv->row-maps test2-str-label :delimiter \| )
-          result    (map #(hash-map :store-id (Long/parseLong (:STORE-NUM %))
-                                    :zipcode                  (:ZIP-POSTAL-CODE %) )
-                         raw-maps ) ]
-    (is (= result test2-expected)) ))
-
-  (testing "no header row in file, user spec :labels"
-    (let [result (parse-csv->row-maps test1-str-no-label 
-                    :labels [:zip-postal-code :store-num :chain-rank] ) ]
-    (is (= result test1-expected)) ))
-)
-
-(deftest t-parse-csv->row-maps-reader
-  (testing "basic parse-csv->row-maps test"
-    (let [result (parse-csv->row-maps (StringReader. test1-str-label) ) ]
-    (is (= result test1-expected)) ))
-)
 
 (deftest parse-csv->col-vecs-test
   (testing "parse-csv->col-vecs-test-1"

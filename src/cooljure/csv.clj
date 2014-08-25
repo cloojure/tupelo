@@ -26,8 +26,7 @@
       :data-lines   (rest parsed-lines) } ))  ; rest of lines are data
 ; AWTAWT TODO: add default label-fn (comp trim safe-char )
 
-; AWTAWT TODO: add default data-fn (trim...)
-; AWTAWT TODO: change to allow line-seq, FILE, etc
+; AWTAWT TODO: change to allow line-seq, FILE, etc?
 (defn parse-csv->row-maps
  "[csv-input & {:as opts} ] 
   Returns a sequence of maps constructed from csv-input.  The first line
