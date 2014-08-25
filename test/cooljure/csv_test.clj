@@ -58,7 +58,7 @@
     :store-id           [     6     277     277    1217     439    1193 ] } )
 
 (deftest parse-csv->row-maps-test
-  (testing "basic parse-csv->row-maps test"
+  (testing "basic parse-csv->row-maps test, using String"
     (let [result (parse-csv->row-maps test1-str-label ) ]
     (is (= result test1-expected)) ))
 
