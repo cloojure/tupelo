@@ -109,24 +109,6 @@ Here is very handy function for that:
 {:b 2, :a 1}
 ----
 
-Maps are convenient, especially when keywords are used as functions to look up a value in
-a map.  Unfortunately, attempting to look up a non-existing keyword in a map will return
-nil.  While sometimes convenient, this means that a simple typo in the keyword name will
-silently return corrupted data (i.e. nil instead of the desired value.  The two funcitons
-`grab` and `grab-in` are dop-in replacements for `get` and `get-in`, except that they will
-throw an Exception in the event the keyword is not present in the map:
-
-----
-(grab m k)
-  A fail-fast version of get. For map m & key k, returns the value v associated
-  with k in m.  Throws an exception if k is not present in m.
-
-(grab-in m ks)
-  A fail-fast version of get-in. For map m & keys ks, returns the value v
-  associated with ks in m, as for (get-in m ks). Throws an exception if the path
-  ks is not present in m.
-----
-
 Default value in case of Exception
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -259,6 +241,9 @@ An extract from the unit tests illustrates the use of `rel=`
   (is (not (rel= 1 1.001 :tol 0.0001 )))
 )
 ----
+
+link:explicit.adoc[cooljure.explicit - Explicit Language for Clojure]
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 cooljure.csv - Functions for using CSV (Comma Separate Value) files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
