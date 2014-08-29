@@ -243,7 +243,6 @@ An extract from the unit tests illustrates the use of `rel=`
 ----
 
 link:explicit.adoc[cooljure.explicit - Explicit Language for Clojure]
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 cooljure.csv - Functions for using CSV (Comma Separate Value) files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
