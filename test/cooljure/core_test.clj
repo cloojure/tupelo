@@ -131,28 +131,6 @@
                                     (spy-last "second") )))))
 ))
 
-(deftest grab-test
-  (testing "basic usage"
-    (let [map1  {:a 1 :b 2}]
-      (is (= 1                                  (grab map1 :a)))
-      (is (= 2                                  (grab map1 :b)))
-      (is (thrown?    IllegalArgumentException  (grab map1 :c))) )))
-
-(deftest grab-in-test
-  (testing "basic usage"
-    (let [map1  {:a1 "a1"
-                 :a2 { :b1 "b1"
-                       :b2 { :c1 "c1"
-                             :c2 "c2" }}} ]
-      (is (= (grab-in map1 [:a1] ) "a1" ))
-      (is (= (grab-in map1 [:a2 :b1] ) "b1" ))
-      (is (= (grab-in map1 [:a2 :b2 :c1] ) "c1" ))
-      (is (= (grab-in map1 [:a2 :b2 :c2] ) "c2" ))
-      (is (thrown? IllegalArgumentException  (grab-in map1 [:a9]) )) 
-      (is (thrown? IllegalArgumentException  (grab-in map1 [:a2 :b9]) )) 
-      (is (thrown? IllegalArgumentException  (grab-in map1 [:a2 :b2 :c9]) )) 
-    )))
-
 (deftest t-rel=
   (is (rel= 1 1 :digits 4 ))
   (is (rel= 1 1 :tol    0.01 ))

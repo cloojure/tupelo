@@ -8,8 +8,10 @@
 (ns ^{:doc "Cooljure - Cool stuff you wish was in Clojure"
       :author "Alan Thompson"}
   cooljure.core
-    (:require [clojure.string       :as str]
-              [clojure.test         :as test] ) )
+    (:require [clojure.string               :as str]
+              [clojure.test                 :as test]
+              [clojure.core.incubator       :as cci]
+              ) )
 
 (defn truthy?
  "Returns true if arg is logical true (neither nil nor false);
@@ -43,31 +45,6 @@
       (conj (vec coll) x) )
   ( [coll x & xs]
       (apply conj (vec coll) x xs) ))
-
-; awtawt TODO:  maybe rename like [cooljure.explici/get :as x] -> (x/get ...)
-(defn grab 
-  "A fail-fast version of get. For map m & key k, returns the value v associated with k in
-  m.  Throws an exception if k is not present in m."
-  [m k]
-  (if (contains? m k)
-    (get m k)
-    (throw (IllegalArgumentException.    
-              (str  "Key not present in map:" \newline
-                    "  map: " m  \newline
-                    "  key: " k  \newline )))))
-
-; awtawt TODO:  maybe rename like [cooljure.explici/get-in :as x] -> (x/get-in ...)
-(defn grab-in
-  "A fail-fast version of get-in. For map m & keys ks, returns the value v associated with ks in
-  m, as for (get-in m ks). Throws an exception if the path ks is not present in m."
-  [m  ks]
-  (let [result (get-in m ks ::not-found) ]
-    (if (= result ::not-found)
-      (throw (IllegalArgumentException.    
-                (str  "Key seq not present in map:" \newline
-                      "  map : " m  \newline
-                      "  keys: " ks  \newline )))
-      result )))
 
 (defn keyvals 
  "For any map m, returns the keys & values of m as a vector, suitable for reconstructing m
@@ -133,14 +110,14 @@
   ; Ran 8 tests containing 44 assertions.
   ; 0 failures, 0 errors.
   ;
-  ; ~/cooljure > lein test :only cooljure.core-test/grab-test
+  ; ~/cooljure > lein test :only cooljure.core-test/convj-test
   ; lein test cooljure.core-test
   ; Ran 1 tests containing 3 assertions.
   ; 0 failures, 0 errors.
   ; 
   ; awtawt TODO:  add run-tests with syntax like lein test :only
   ;   (run-tests 'cooljure.core-test)
-  ;   (run-tests 'cooljure.core-test/grab-test)
+  ;   (run-tests 'cooljure.core-test/convj-test)
 
 (defn test-all 
   "[& ns-list]
