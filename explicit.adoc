@@ -7,10 +7,10 @@ Overview
 --------
 
 Have you ever found yourself uncertain about the result of calling a function in
-Clojure? Unfortunately, dynamic languages like Clojure sometimes give you `too
-much` flexibility.  They "helpfully" return nil when a sought-for object isn't
+Clojure? Unfortunately, dynamic languages like Clojure sometimes give you *too
+much* flexibility.  They "helpfully" return nil when a sought-for object isn't
 present, or perhaps convert one type into another in an effor to avoid problems.
-The problem is, that SOMETIMES they do one thing, then SOMETIMES do something
+The problem is, that _sometimes_ they do one thing, then _sometimes_ do something
 else.  Which behavior you get depends on the context.  Since you can't always
 tell the execution context when reading the code, you are left with
 unpredictable (at least to you) code behavior.  Of course, since the code may
