@@ -11,6 +11,8 @@
   cooljure.parse
   (:require [cooljure.core :refer :all] ))
 
+; awtawt TODO:  convert args from [str-val & opts] -> [str-val & {:as opts} ]
+
 (defn parseByte
  "( [str-val]
     [str-val :or default-val] )
