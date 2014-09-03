@@ -53,7 +53,7 @@
         data-fn         (:data-fn opts-use) 
         row-maps        (for [data-line data-lines]
                           (zipmap labels-kw 
-                                  (map #(data-fn %) data-line) ))
+                                  (map data-fn data-line) ))
   ] row-maps ))
 
 ; AWTAWT TODO: clean up, enforce identical columns each row
