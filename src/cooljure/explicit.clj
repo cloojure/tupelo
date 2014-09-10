@@ -13,9 +13,11 @@
               [clojure.core                 :as clj]
               [cooljure.core                :as cool] ))
 
+
 (defn get 
-  "A fail-fast version of get. For map m & key k, returns the value v associated with k in
-  m.  Throws an exception if k is not present in m."
+  "A fail-fast version of clojure.core/get. For map m & key k, returns
+  the value v associated with k in m.  Throws an exception if k is not
+  present in m."
   [m k]
   (if (contains? m k)
     (clj/get m k)
@@ -25,8 +27,9 @@
                     "  key: " k  \newline )))))
 
 (defn get-in
-  "A fail-fast version of get-in. For map m & keys ks, returns the value v associated with ks in
-  m, as for (get-in m ks). Throws an exception if the path ks is not present in m."
+  "A fail-fast version of clojure.core/get-in. For map m & keys ks,
+  returns the value v associated with ks in m, as for (get-in m ks).
+  Throws an exception if the path ks is not present in m."
   [m  ks]
   (let [result (clj/get-in m ks ::not-found) ]
     (if (= result ::not-found)
@@ -36,7 +39,7 @@
                       "  keys: " ks  \newline )))
       result )))
 
-; awtawt TODO:  add in dissoc-in as (update-in ... dissoc)
+; #awt TODO:  add in dissoc-in as (update-in ... dissoc)
 ;
-; awtawt TODO:  add in dissoc-empty-vals to recursively delete all k-v pairs 
+; #awt TODO:  add in dissoc-empty-vals to recursively delete all k-v pairs 
 ;               where val is nil or empty?

@@ -95,7 +95,7 @@
       (println out-val#)
       out-val# ))
 
-; add eager (forall  ...) -> (doall (for ...))      ; awtawt TODO:  
+; add eager (forall  ...) -> (doall (for ...))      ; #awt TODO:  
 ;           (for-all ...)
 ;           (for-now ...)
 
@@ -115,7 +115,7 @@
   ; Ran 1 tests containing 3 assertions.
   ; 0 failures, 0 errors.
   ; 
-  ; awtawt TODO:  add run-tests with syntax like lein test :only
+  ; #awt TODO:  add run-tests with syntax like lein test :only
   ;   (run-tests 'cooljure.core-test)
   ;   (run-tests 'cooljure.core-test/convj-test)
 
@@ -201,7 +201,7 @@
       or-result )))
 
 ;************************************************************
-; awtawt TODO:  broken, needs fix!
+; #awt TODO:  broken, needs fix!
 ;
 (defn f1 [] (println "*** f1 ***"))
 (defn f2 [] (println "*** f2 ***"))
