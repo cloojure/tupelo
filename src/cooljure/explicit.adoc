@@ -44,7 +44,7 @@ present in the map.  Usage is illustrated below:
 Then, whenever you want to perform key-based lookup in maps, just use
 `cooljure.explicit` instead of the `clojure.core` version:
 
-[source,text]
+[source,clojure]
 ----
 user=> (require '[cooljure.explicit :as x])
 
@@ -52,15 +52,23 @@ user=> (def m {:a 1 :b 2})
 user=> (x/get m :a)
 1
 user=> (x/get m :c)
+----
+[source,text]
+----
 IllegalArgumentException Key not present in map:
   map: {:b 2, :a 1}
   key: :c
   cooljure.explicit/get (explicit.clj:23)
 
+[source,clojure]
+----
 user=> (def mm {:a 1 :b {:c 3}})
 user=> (x/get-in mm [:b :c])
 3
 user=> (x/get-in mm [:b :z])
+----
+[source,text]
+----
 IllegalArgumentException Key seq not present in map:
   map : {:b {:c 3}, :a 1}
   keys: [:b :z]
