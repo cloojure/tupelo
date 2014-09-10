@@ -232,7 +232,9 @@ An extract from the unit tests illustrates the use of `rel=`
 )
 ----
 
-link:explicit.adoc[cooljure.explicit - Explicit Language for Clojure]
+=== cooljure.explicit - Explicit Language for Clojure
+
+link:src/cooljure/explicit.adoc[Link to documentation]
 
 === cooljure.csv - Functions for using CSV (Comma Separate Value) files
 
