@@ -35,7 +35,6 @@ present in the map.  Usage is illustrated below:
             [cooljure.core      :refer :all]
             [cooljure.explicit  :as x]
             ... ))
-----
 
 (x/get m k)
   A fail-fast version of get. For map m & key k, returns the value v associated
