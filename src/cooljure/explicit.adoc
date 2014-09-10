@@ -60,6 +60,7 @@ IllegalArgumentException Key not present in map:
   key: :c
   cooljure.explicit/get (explicit.clj:23)
 
+----
 [source,clojure]
 ----
 user=> (def mm {:a 1 :b {:c 3}})
