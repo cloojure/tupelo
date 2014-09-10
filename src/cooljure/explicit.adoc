@@ -30,20 +30,41 @@ present in the map.  Usage is illustrated below:
 
 [source,clojure]
 ----
-(ns my.proj
-  (:require ...
-            [cooljure.core      :refer :all]
-            [cooljure.explicit  :as x]
-            ... ))
-
-(x/get m k)
+(cooljure.explicit/get m k)
   A fail-fast version of get. For map m & key k, returns the value v associated
   with k in m.  Throws an exception if k is not present in m.
 
-(x/get-in m ks)
+(cooljure.explicit/get-in m ks)
   A fail-fast version of get-in. For map m & keys ks, returns the value v
   associated with ks in m, as for (get-in m ks). Throws an exception if the path
   ks is not present in m.
 ----
 
+Then, whenever you want to perform key-based lookup in maps, just use
+`cooljure.explicit` instead of the `clojure.core` version:
+
+[source,clojure]
+----
+user=> (require '[cooljure.explicit :as x])
+
+user=> (def m {:a 1 :b 2})
+user=> (x/get m :a)
+1
+user=> (x/get m :c)
+IllegalArgumentException Key not present in map:
+  map: {:b 2, :a 1}
+  key: :c
+  cooljure.explicit/get (explicit.clj:23)
+
+user=> (def mm {:a 1 :b {:c 3}})
+user=> (x/get-in mm [:b :c])
+3
+user=> (x/get-in mm [:b :z])
+
+IllegalArgumentException Key seq not present in map:
+  map : {:b {:c 3}, :a 1}
+  keys: [:b :z]
+  cooljure.explicit/get-in (explicit.clj:34)
+user=> 
+----
 
