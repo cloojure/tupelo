@@ -44,7 +44,7 @@ present in the map.  Usage is illustrated below:
 Then, whenever you want to perform key-based lookup in maps, just use
 `cooljure.explicit` instead of the `clojure.core` version:
 
-[source,perl]
+[source,java]
 ----
 user=> (require '[cooljure.explicit :as x])
 
