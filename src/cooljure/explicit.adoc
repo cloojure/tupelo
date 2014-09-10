@@ -52,13 +52,10 @@ user=> (def m {:a 1 :b 2})
 user=> (x/get m :a)
 1
 user=> (x/get m :c)
-----
-[source,text]
-----
-IllegalArgumentException Key not present in map:
-  map: {:b 2, :a 1}
-  key: :c
-  cooljure.explicit/get (explicit.clj:23)
+;=> IllegalArgumentException Key not present in map:
+;=>   map: {:b 2, :a 1}
+;=>   key: :c
+;=>   cooljure.explicit/get (explicit.clj:23)
 
 ----
 [source,clojure]
