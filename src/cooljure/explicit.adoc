@@ -57,19 +57,13 @@ user=> (x/get m :c)
 ;=>   key: :c
 ;=>   cooljure.explicit/get (explicit.clj:23)
 
-----
-[source,clojure]
-----
 user=> (def mm {:a 1 :b {:c 3}})
 user=> (x/get-in mm [:b :c])
 3
 user=> (x/get-in mm [:b :z])
-----
-[source,text]
-----
-IllegalArgumentException Key seq not present in map:
-  map : {:b {:c 3}, :a 1}
-  keys: [:b :z]
-  cooljure.explicit/get-in (explicit.clj:34)
+;=> IllegalArgumentException Key seq not present in map:
+;=>   map : {:b {:c 3}, :a 1}
+;=>   keys: [:b :z]
+;=>   cooljure.explicit/get-in (explicit.clj:34)
 ----
 
