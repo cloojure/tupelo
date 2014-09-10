@@ -24,15 +24,24 @@ Maps are convenient, especially when keywords are used as functions to look up a
 a map.  Unfortunately, attempting to look up a non-existing keyword in a map will return
 nil.  While sometimes convenient, this means that a simple typo in the keyword name will
 silently return corrupted data (i.e. nil instead of the desired value.  The two funcitons
-`grab` and `grab-in` are dop-in replacements for `get` and `get-in`, except that they will
-throw an Exception in the event the keyword is not present in the map:
+`cooljure.explicit/get` and `cooljure.explicit/get-in` are drop-in replacements for `get`
+and `get-in`, except that they will throw an Exception in the event the keyword is not
+present in the map.  Usage is illustrated below:
 
+[source,clojure]
 ----
-(grab m k)
+(ns my.proj
+  (:require ...
+            [cooljure.core      :refer :all]
+            [cooljure.explicit  :as x]
+            ... ))
+----
+
+(x/get m k)
   A fail-fast version of get. For map m & key k, returns the value v associated
   with k in m.  Throws an exception if k is not present in m.
 
-(grab-in m ks)
+(x/get-in m ks)
   A fail-fast version of get-in. For map m & keys ks, returns the value v
   associated with ks in m, as for (get-in m ks). Throws an exception if the path
   ks is not present in m.
