@@ -71,8 +71,8 @@ details.
 === Data Manipulation Functions
 
 In some cases, the user may prefer a column-oriented output format over the default
-row-oriented format. Or one may wish to convert between row- and column-oriented formats.
-In this case, the user may wish to use the `row-maps->col-vecs` to convert between a
+row-oriented format. Or, one may wish to convert between row- and column-oriented formats.
+In this case, the user may wish to use the +row-maps->col-vecs+ function to convert between a
 sequence of maps (one per row of input data) to a map of vectors, where each keyword label
 is associated with a vector of the corresponding values from all rows.  Continuing the
 above example:
