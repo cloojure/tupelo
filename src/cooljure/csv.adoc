@@ -13,9 +13,15 @@ Typically, the first line of CSV data are the data labels which describe all of 
 remaining rows of data.  The `cooljure.csv` function `parse-cvs->row-maps` does exactly
 what its name implies, (safely) converting the data labels into Clojure keywords and 
 pairing them with each row of data to form a Clojure map.  The return value is then a
-sequence of such maps.  If the CSV data does not have data labels in the first row, the
-user must supply the keyword labels using the `:labels` option, such as:
+sequence of such maps. The simplest way to parse CSV data is:
+[source,clojure]
+----
+  (parse-cvs->row-maps  <csv-data-src> )
+----
+where <csv-data-src> is a character sequence such as a Java Reader, etc.
 
+If the CSV data does not have data labels in the first row, the
+user must supply the keyword labels using the `:labels` option, such as:
 [source,clojure]
 ----
   (parse-cvs->row-maps  <csv-data-src>  :labels [:name :email :phone] )
@@ -24,7 +30,6 @@ user must supply the keyword labels using the `:labels` option, such as:
 In general, CSV-type files sometimes use other delimiters between data fields, such as the
 pipe character '|', tab character, or other choices.  If the comma is not the field
 separator, the user must specify the correct character using the `:delimiter` option:
-
 [source,clojure]
 ----
   (parse-cvs->row-maps  <csv-data-src>  :delimiter \| )
@@ -33,7 +38,6 @@ separator, the user must specify the correct character using the `:delimiter` op
 Prior to insertion into the map, each data value is processed through the function
 `clojure.string/trim`.  If the user wishes to use another pre-processing function, it may
 be specified using the `:data-fn` option:
-
 [source,clojure]
 ----
   (parse-cvs->row-maps  <csv-data-src>  :data-fn clojure.string/lower-case )
@@ -44,44 +48,9 @@ be specified using the `:data-fn` option:
 
 In some cases, the user may prefer a column-oriented output format over the default
 row-oriented format. Or one may wish to convert between row- and column-oriented formats.
-In this case, the user may wish to use 
-
+In this case, the user may wish to use:
 [source,clojure]
 ----
 (cooljure.explicit/get m k)
-  A fail-fast version of clojure.core/get. For map m & key k, returns
-  the value v associated with k in m.  Throws an exception if k is not
-  present in m.
-
-(cooljure.explicit/get-in m ks)
-  A fail-fast version of clojure.core/get-in. For map m & keys ks,
-  returns the value v associated with ks in m, as for (get-in m ks).
-  Throws an exception if the path ks is not present in m.
-----
-
-Then, whenever you want to perform key-based lookup in maps, just use
-`cooljure.explicit` instead of the `clojure.core` version:
-
-[source,clojure]
-----
-user=> (require '[cooljure.explicit :as x])
-
-user=> (def m {:a 1 :b 2})
-user=> (x/get m :a)
-1
-user=> (x/get m :c)
-;=> IllegalArgumentException Key not present in map:
-;=>   map: {:b 2, :a 1}
-;=>   key: :c
-;=>   cooljure.explicit/get (explicit.clj:23)
-
-user=> (def mm {:a 1 :b {:c 3}})
-user=> (x/get-in mm [:b :c])
-3
-user=> (x/get-in mm [:b :z])
-;=> IllegalArgumentException Key seq not present in map:
-;=>   map : {:b {:c 3}, :a 1}
-;=>   keys: [:b :z]
-;=>   cooljure.explicit/get-in (explicit.clj:34)
 ----
 
