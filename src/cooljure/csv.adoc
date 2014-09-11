@@ -27,9 +27,9 @@ Reader, etc. For example:
 user=> (require '[cooljure.csv :as csv])
 user=> (use     '[clojure.pprint])
 
-user=> (def csv-str     "name,  email,          phone
-                         me,    me@gmail.com,   555-1234
-                         you,   you@gmail.com,  999-1234" )
+user=> (def csv-str "name,  email,          phone
+                     me,    me@gmail.com,   555-1234
+                     you,   you@gmail.com,  999-1234" )
 
 user=> (pprint (csv/parse-csv->row-maps ss))
 ({:phone "555-1234", :email "me@gmail.com", :name "me"}
