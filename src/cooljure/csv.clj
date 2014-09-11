@@ -81,25 +81,14 @@
         row-maps    (map #(zipmap col-kws %) row-vals)
   ] row-maps ))
 
-; AWTAWT TODO: change to allow line-seq, FILE, etc
 (defn parse-csv->col-vecs
  "[csv-input & {:as opts} ] 
   Returns a map constructed from the columns of csv-input.  The first line is
   assumed to be column label strings, which are (safely) converted into keywords. The
   returned map has one entry for each column label keyword. The corresponding value for
   each keyword is a vector of string data taken from each subsequent line in the file.
-  Default delimiter is the comma character (i.e. \\,) but may be changed using the syntax
-  such as: 
-  
-    (parse-cvs->col-vecs my-file.psv :delimiter \\| )
-
-  to select the pipe character (i.e. \\|) as the delimiter.  "
-  ; AWTAWT TODO: update docs re. col-labels (keywords)
+  See cooljure.csv/parse-csv->row-maps for options."
   [csv-input & {:as opts} ] 
-  { :pre  [ (or (string? csv-input) (instance? Reader csv-input)) ]
-    :post [ (map? %) ] }
-  (let [opts        (or opts {} )
-        row-maps    (apply parse-csv->row-maps csv-input (keyvals opts))
-        col-vecs    (row-maps->col-vecs row-maps)
-  ] col-vecs ))
-
+  (let [opts (or opts {} ) ] 
+    (row-maps->col-vecs 
+      (apply parse-csv->row-maps csv-input (keyvals opts)))))

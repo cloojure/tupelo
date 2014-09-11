@@ -88,3 +88,12 @@ user=> (pprint colvec-data)
  :name ["me" "you"]}
 ----
 
+A corresponding function `col-vecs->row-maps` performs the opposite conversion:
+
+[source,clojure]
+----
+user=> (def rowmaps2-data (csv/col-vecs->row-maps colvec-data))
+user=> (pprint rowmaps2-data)
+({:name "me", :email "me@gmail.com", :phone "555-1234"}
+ {:name "you", :email "you@gmail.com", :phone "999-1234"})
+----
