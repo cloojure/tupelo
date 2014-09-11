@@ -45,14 +45,14 @@
   { :pre  [ (or (string? csv-input) (instance? Reader csv-input)) ]
     :post [ (map? (first %)) ] }
   (let [opts-default    {:delimiter \,  :data-fn str/trim}
-        opts-use        (merge opts-default opts)
+        opts            (merge opts-default opts)
         csv-reader      (if (string? csv-input) 
                             (StringReader. csv-input)
                             csv-input )
-        parsed-lines    (apply csv/parse-csv csv-reader (keyvals opts-use))
+        parsed-lines    (apply csv/parse-csv csv-reader (keyvals opts))
         {:keys [labels-kw data-lines]}  
                         (get-labels-and-data-lines opts parsed-lines)
-        data-fn         (:data-fn opts-use) 
+        data-fn         (:data-fn opts) 
         row-maps        (for [data-line data-lines]
                           (zipmap labels-kw 
                                   (map data-fn data-line) ))
@@ -98,8 +98,8 @@
   [csv-input & {:as opts} ] 
   { :pre  [ (or (string? csv-input) (instance? Reader csv-input)) ]
     :post [ (map? %) ] }
-  (let [opts-def    (merge {:delimiter \,} opts)
-        row-maps    (apply parse-csv->row-maps csv-input (keyvals opts-def))
+  (let [opts        (or opts {} )
+        row-maps    (apply parse-csv->row-maps csv-input (keyvals opts))
         col-vecs    (row-maps->col-vecs row-maps)
   ] col-vecs ))
 
