@@ -10,14 +10,14 @@ may wish. In `cooljure.csv` we emphasize the idomatic Clojure usage of data, whi
 often expressed as sequence of maps.
 
 Typically, the first line of CSV data are the data labels which describe all of the
-remaining rows of data.  The `cooljure.csv` function `parse-cvs->row-maps` does exactly
+remaining rows of data.  The `cooljure.csv` function `parse-csv->row-maps` does exactly
 what its name implies, (safely) converting the data labels into Clojure keywords and 
 pairing them with each row of data to form a Clojure map.  The return value is then a
 sequence of such maps. The simplest way to parse CSV data is:
 
 [source,clojure]
 ----
-  (parse-cvs->row-maps  <csv-data-src> )
+  (parse-csv->row-maps  <csv-data-src> )
 ----
 where <csv-data-src> is a (possibly lazy) character sequence such as a Java Reader, etc.
 
@@ -26,7 +26,7 @@ user must supply the keyword labels using the `:labels` option, such as:
 
 [source,clojure]
 ----
-  (parse-cvs->row-maps  <csv-data-src>  :labels [:name :email :phone] )
+  (parse-csv->row-maps  <csv-data-src>  :labels [:name :email :phone] )
 ----
 
 Prior to insertion into the map, each data value is processed through the function
@@ -35,7 +35,7 @@ be specified using the `:data-fn` option:
 
 [source,clojure]
 ----
-  (parse-cvs->row-maps  <csv-data-src>  :data-fn clojure.string/lower-case )
+  (parse-csv->row-maps  <csv-data-src>  :data-fn clojure.string/lower-case )
 ----
 
 In general, CSV-type files sometimes use other delimiters between data fields, such as the
@@ -44,7 +44,7 @@ separator, the user must specify the correct character using the `:delimiter` op
 
 [source,clojure]
 ----
-  (parse-cvs->row-maps  <csv-data-src>  :delimiter \| )
+  (parse-csv->row-maps  <csv-data-src>  :delimiter \| )
 ----
 
 The `:delimiter` option is passed directly to clojure-csv/parse-csv, as are any other
