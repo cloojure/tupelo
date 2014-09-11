@@ -19,7 +19,22 @@ sequence of such maps. The simplest way to parse CSV data is:
 ----
   (parse-csv->row-maps  <csv-data-src> )
 ----
-where <csv-data-src> is a (possibly lazy) character sequence such as a Java Reader, etc.
+where <csv-data-src> is a (possibly lazy) character sequence such as a String, Java
+Reader, etc. For example:
+
+[source,clojure]
+----
+user=> (require '[cooljure.csv :as csv])
+user=> (use     '[clojure.pprint])
+
+user=> (def csv-str     "name,  email,          phone
+                         me,    me@gmail.com,   555-1234
+                         you,   you@gmail.com,  999-1234" )
+
+user=> (pprint (csv/parse-csv->row-maps ss))
+({:phone "555-1234", :email "me@gmail.com", :name "me"}
+ {:phone "999-1234", :email "you@gmail.com", :name "you"})
+----
 
 If the CSV data does not have data labels in the first row, the
 user must supply the keyword labels using the `:labels` option, such as:
