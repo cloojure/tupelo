@@ -19,7 +19,7 @@ sequence of such maps. The simplest way to parse CSV data is:
 ----
   (parse-cvs->row-maps  <csv-data-src> )
 ----
-where <csv-data-src> is a character sequence such as a Java Reader, etc.
+where <csv-data-src> is a (possibly lazy) character sequence such as a Java Reader, etc.
 
 If the CSV data does not have data labels in the first row, the
 user must supply the keyword labels using the `:labels` option, such as:
@@ -29,21 +29,28 @@ user must supply the keyword labels using the `:labels` option, such as:
   (parse-cvs->row-maps  <csv-data-src>  :labels [:name :email :phone] )
 ----
 
+Prior to insertion into the map, each data value is processed through the function
+`clojure.string/trim`.  If the user wishes to use another pre-processing function, it may
+be specified using the `:data-fn` option:
+
+[source,clojure]
+----
+  (parse-cvs->row-maps  <csv-data-src>  :data-fn clojure.string/lower-case )
+----
+
 In general, CSV-type files sometimes use other delimiters between data fields, such as the
 pipe character '|', tab character, or other choices.  If the comma is not the field
 separator, the user must specify the correct character using the `:delimiter` option:
+
 [source,clojure]
 ----
   (parse-cvs->row-maps  <csv-data-src>  :delimiter \| )
 ----
 
-Prior to insertion into the map, each data value is processed through the function
-`clojure.string/trim`.  If the user wishes to use another pre-processing function, it may
-be specified using the `:data-fn` option:
-[source,clojure]
-----
-  (parse-cvs->row-maps  <csv-data-src>  :data-fn clojure.string/lower-case )
-----
+The `:delimiter` option is passed directly to clojure-csv/parse-csv, as are any other
+options such as `:end-of-line`, `:quote-char`, or `:strict`.  See  
+link:http://github.com/davidsantiago/clojure-csv[the clojure-csv documentation] for
+details.
 
 
 === Data Manipulation Functions
@@ -51,6 +58,7 @@ be specified using the `:data-fn` option:
 In some cases, the user may prefer a column-oriented output format over the default
 row-oriented format. Or one may wish to convert between row- and column-oriented formats.
 In this case, the user may wish to use:
+
 [source,clojure]
 ----
 (cooljure.explicit/get m k)

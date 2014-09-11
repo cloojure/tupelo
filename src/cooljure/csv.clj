@@ -44,7 +44,7 @@
   [csv-input & {:as opts} ] 
   { :pre  [ (or (string? csv-input) (instance? Reader csv-input)) ]
     :post [ (map? (first %)) ] }
-  (let [opts-default    {:delimiter \,  :data-fn str/trim}
+  (let [opts-default    {:data-fn str/trim}
         opts            (merge opts-default opts)
         csv-reader      (if (string? csv-input) 
                             (StringReader. csv-input)
