@@ -246,8 +246,8 @@ link:src/cooljure/explicit.adoc[Documentation for cooljure.explicit]
 
 The standard link:http://github.com/davidsantiago/clojure-csv[clojure-csv library] has well-tested and useful functions for parsing 
 CSV (Comma Separated Value) text data, but it does not offer all of the convenience one
-may wish. In `cooljure.csv` we emphasize the idomatic Clojure usage of data, which is
-often expressed as sequence of maps.
+may wish. In `cooljure.csv` we emphasize the idomatic Clojure usage of data, using
+sequences and maps.
 
 link:src/cooljure/csv.adoc[Documentation for cooljure.csv]
 

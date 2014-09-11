@@ -6,8 +6,8 @@
 
 The standard link:http://github.com/davidsantiago/clojure-csv[clojure-csv library] has well-tested and useful functions for parsing 
 CSV (Comma Separated Value) text data, but it does not offer all of the convenience one
-may wish. In `cooljure.csv` we emphasize the idomatic Clojure usage of data, which is
-often expressed as sequence of maps.
+may wish. In `cooljure.csv` we emphasize the idomatic Clojure usage of data, using 
+sequences and maps.
 
 Typically, the first line of CSV data are the data labels which describe all of the
 remaining rows of data.  The `cooljure.csv` function `parse-csv->row-maps` does exactly
