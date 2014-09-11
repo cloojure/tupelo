@@ -204,7 +204,7 @@ test namespace:
 
 === Floating Point Number Comparison
 
-Everyone know that you shouldn't compare floating-point numbers (e.g. float,
+Everyone knows that you shouldn't compare floating-point numbers (e.g. float,
 double, etc) for equality since roundoff errors can prevent a precise match
 between logically equivalent results.  However, it has always been awkward to
 regenerate "approx-equals" code by hand every time new project requires it.
@@ -227,8 +227,9 @@ An extract from the unit tests illustrates the use of `rel=`
 
   (is      (rel= 1 1.001 :tol 0.01 ))
   (is (not (rel= 1 1.001 :tol 0.0001 )))
-)
 ----
+
+== Other Parts of cooljure.core
 
 === cooljure.explicit - Explicit Language for Clojure
 
