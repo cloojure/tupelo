@@ -237,11 +237,11 @@ Clojure tries to be flexible and return reasonable default value (usually `nil`)
 something goes wrong (for example, looking up a non-existent key in a map).  Cooljure.explicit
 disables this behavior and instead implements a "fail-fast" philosophy.
 
-link:src/cooljure/explicit.adoc[cooljure.explicit documentation]
+link:src/cooljure/explicit.adoc[Documentation for cooljure.explicit]
 
 === cooljure.csv - Functions for using CSV (Comma Separate Value) files
 
-link:src/cooljure/csv.adoc[cooljure.csv documentation]
+link:src/cooljure/csv.adoc[Documentation for cooljure.csv]
 
 === coojure.parse - Functions to ease parsing
 
