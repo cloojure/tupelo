@@ -229,7 +229,7 @@ An extract from the unit tests illustrates the use of `rel=`
   (is (not (rel= 1 1.001 :tol 0.0001 )))
 ----
 
-== Other Parts of cooljure.core
+== Cooljure.* - Other Useful Tools
 
 === cooljure.explicit - Explicit Language for Clojure
 
