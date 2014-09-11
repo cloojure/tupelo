@@ -14,6 +14,7 @@ remaining rows of data.  The `cooljure.csv` function `parse-cvs->row-maps` does 
 what its name implies, (safely) converting the data labels into Clojure keywords and 
 pairing them with each row of data to form a Clojure map.  The return value is then a
 sequence of such maps. The simplest way to parse CSV data is:
+
 [source,clojure]
 ----
   (parse-cvs->row-maps  <csv-data-src> )
@@ -22,6 +23,7 @@ where <csv-data-src> is a character sequence such as a Java Reader, etc.
 
 If the CSV data does not have data labels in the first row, the
 user must supply the keyword labels using the `:labels` option, such as:
+
 [source,clojure]
 ----
   (parse-cvs->row-maps  <csv-data-src>  :labels [:name :email :phone] )
