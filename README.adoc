@@ -241,7 +241,7 @@ link:src/cooljure/explicit.asc[Documentation]
 
 === cooljure.csv - Functions for using CSV (Comma Separate Value) files
 
-TEMP TODO:  see source code http://github.com/cloojure/cooljure/blob/master/src/cooljure/csv.clj[cooljure.csv]
+link:src/cooljure/csv.asc[Documentation]
 
 === coojure.parse - Functions to ease parsing
 

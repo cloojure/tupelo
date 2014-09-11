@@ -26,16 +26,18 @@
       :data-lines   (rest parsed-lines) } ))  ; rest of lines are data
 ; AWTAWT TODO: add default label-fn (comp trim safe-char )
 
-; AWTAWT TODO: change to allow line-seq, FILE, etc?
+; AWTAWT TODO: change to allow line-seq, FILE, etc? (document!)
+; AWTAWT TODO: change to ignore blank lines
+; AWTAWT TODO: throw if mismatched missing/excess fields found? (test at least!)
 (defn parse-csv->row-maps
  "[csv-input & {:as opts} ] 
-  Returns a sequence of maps constructed from csv-input.  The first line
+  Returns a lazy sequence of maps constructed from csv-input.  The first line
   is assumed to be column label strings, which are (safely) converted into keywords.
   String data from each subsequent line is paired with the corresponding column keyword to
   construct a map for that line.  Default delimiter is the comma character (i.e. \\,) but 
   may be changed using the syntax such as: 
   
-    (parse-csv->row-maps csv-input :delimiter \\| )
+    (parse-csv->row-maps <csv-data-src> :delimiter \\| )
 
   to select the pipe character (i.e. \\|) as the delimiter.  "
   ; AWTAWT TODO: update docs re. col-labels (keywords)
