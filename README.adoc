@@ -244,6 +244,11 @@ link:src/cooljure/explicit.adoc[Documentation for cooljure.explicit]
 
 === cooljure.csv - Functions for using CSV (Comma Separate Value) files
 
+The standard link:http://github.com/davidsantiago/clojure-csv[clojure-csv library] has well-tested and useful functions for parsing 
+CSV (Comma Separated Value) text data, but it does not offer all of the convenience one
+may wish. In `cooljure.csv` we emphasize the idomatic Clojure usage of data, which is
+often expressed as sequence of maps.
+
 link:src/cooljure/csv.adoc[Documentation for cooljure.csv]
 
 === coojure.parse - Functions to ease parsing
