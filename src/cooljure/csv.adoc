@@ -4,7 +4,7 @@
 
 === Overview
 
-The standard link:http://github.com/davidsantiago/clojure-csv[the clojure-csv library] has well-tested and useful functions for parsing 
+The standard link:http://github.com/davidsantiago/clojure-csv[clojure-csv library] has well-tested and useful functions for parsing 
 CSV (Comma Separated Value) text data, but it does not offer all of the convenience one
 may wish. In `cooljure.csv` we emphasize the idomatic Clojure usage of data, which is
 often expressed as sequence of maps.
