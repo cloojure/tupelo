@@ -30,17 +30,21 @@ separator, the user must specify the correct character using the `:delimiter` op
   (parse-cvs->row-maps  <csv-data-src>  :delimiter \| )
 ----
 
+Prior to insertion into the map, each data value is processed through the function
+`clojure.string/trim`.  If the user wishes to use another pre-processing function, it may
+be specified using the `:data-fn` option:
+
+[source,clojure]
+----
+  (parse-cvs->row-maps  <csv-data-src>  :data-fn clojure.string/lower-case )
+----
 
 
-==== Map manipulation
+=== Data Manipulation Functions
 
-Maps are convenient, especially when keywords are used as functions to look up a value in
-a map.  Unfortunately, attempting to look up a non-existing keyword in a map will return
-`nil`.  While sometimes convenient, this means that a simple typo in the keyword name will
-silently return corrupted data (i.e. `nil` instead of the desired value.  The two funcitons
-`cooljure.explicit/get` and `cooljure.explicit/get-in` are drop-in replacements for `get`
-and `get-in`, except that they will throw an Exception in the event the keyword is not
-present in the map.  Usage is illustrated below:
+In some cases, the user may prefer a column-oriented output format over the default
+row-oriented format. Or one may wish to convert between row- and column-oriented formats.
+In this case, the user may wish to use 
 
 [source,clojure]
 ----
