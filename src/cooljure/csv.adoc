@@ -97,3 +97,17 @@ user=> (pprint rowmaps2-data)
 ({:name "me", :email "me@gmail.com", :phone "555-1234"}
  {:name "you", :email "you@gmail.com", :phone "999-1234"})
 ----
+
+Note that `row-maps->col-vecs` and its dual `col-vecs->row-maps` are very much like matrix
+transform functions, and calling one on the output of the other is the identity operation.
+If the user is only interested in the column-oriented data, a convenience function
+`parse-cvs->col-vecs` combines the effect of `parse-csv->row-maps` and
+`row-maps->col-vecs`.
+
+[source,clojure]
+----
+(pprint (csv/parse-csv->col-vecs csv-str))
+{:phone ["555-1234" "999-1234"],
+ :email ["me@gmail.com" "you@gmail.com"],
+ :name ["me" "you"]}
+----
