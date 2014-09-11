@@ -234,8 +234,8 @@ An extract from the unit tests illustrates the use of `rel=`
 === cooljure.explicit - Explicit Language for Clojure
 
 Clojure tries to be flexible and return reasonable default value (usually `nil`) when
-something goes wrong (for example, looking up a non-existent key in a map).  Cooljure.explicit
-disables this behavior and instead implements a "fail-fast" philosophy.
+something goes wrong (for example, looking up a non-existent key in a map).  The functions in 
+`cooljure.explicit` disable this behavior and instead implement a "fail-fast" philosophy.
 
 link:src/cooljure/explicit.adoc[Documentation for cooljure.explicit]
 
