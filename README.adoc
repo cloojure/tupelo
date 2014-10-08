@@ -71,6 +71,21 @@ wondering where they are. Well, now they are available:
   otherwise returns false. Equivalent to (not (empty? coll)).
 ----
 
+[source,clojure]
+----
+=> (any? odd? [1 2 3] ) 
+true
+=> (any? odd? [2 4 6] ) 
+false
+=> (any? odd? [] )
+false
+
+=> (map not-empty? ["1" [1] '(1) {:1 1} #{1} ] )
+(true true true true true)
+=> (map not-empty? ["" [] '() {} #{} nil] )
+(false false false false false false)
+----
+
 ==== Focus on vectors
 
 Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you just want
