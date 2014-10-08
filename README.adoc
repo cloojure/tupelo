@@ -46,6 +46,15 @@ simple way to do that:
   otherwise returns false. Equivalent to (not (truthy? arg)).
 ----
 
+[source,clojure]
+----
+=> (def data [true :a 'my-symbol 1 "hello" \x false nil])
+=> (filter truthy? data)
+(true :a my-symbol 1 "hello" \x)
+=> (filter falsey? data)
+(false nil)
+----
+
 ==== Convenience in testing seq's
 
 These functions aren't in clojure.core, but people keep writing into the mailing list
