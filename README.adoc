@@ -136,6 +136,12 @@ Exception converted into a default value.  That is when you need:
   specified default value is returned instead of the exception."
 ----
 
+[source,clojure]
+----
+(with-exception-default 0
+  (Long/parseLong "12xy3"))
+0
+----
 === Expression debugging
 
 Ever been debugging some new code and had trouble printing out intermediate
