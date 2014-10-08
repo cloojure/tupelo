@@ -45,7 +45,6 @@ simple way to do that:
   Returns true if arg is logical false (either nil or false);
   otherwise returns false. Equivalent to (not (truthy? arg)).
 ----
-
 [source,clojure]
 ----
 => (def data [true :a 'my-symbol 1 "hello" \x false nil])
@@ -70,7 +69,6 @@ wondering where they are. Well, now they are available:
   For any collection, returns true if coll contains any items; 
   otherwise returns false. Equivalent to (not (empty? coll)).
 ----
-
 [source,clojure]
 ----
 => (any? odd? [1 2 3] ) 
@@ -135,7 +133,6 @@ Exception converted into a default value.  That is when you need:
   Evaluates body & returns its result.  In the event of an exception the
   specified default value is returned instead of the exception."
 ----
-
 [source,clojure]
 ----
 (with-exception-default 0
