@@ -50,9 +50,9 @@ simple way to do that:
 ----
 => (def data [true :a 'my-symbol 1 "hello" \x false nil])
 => (filter truthy? data)
-(true :a my-symbol 1 "hello" \x)
+[true :a my-symbol 1 "hello" \x]
 => (filter falsey? data)
-(false nil)
+[false nil]
 ----
 
 ==== Convenience in testing seq's
@@ -81,9 +81,9 @@ false
 false
 
 => (map not-empty? ["1" [1] '(1) {:1 1} #{1} ] )
-(true true true true true)
+[true true true true true]
 => (map not-empty? ["" [] '() {} #{} nil] )
-(false false false false false false)
+[false false false false false false]
 ----
 
 ==== Focus on vectors
