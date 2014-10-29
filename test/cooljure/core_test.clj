@@ -107,14 +107,24 @@
 
 (deftest spy-test
   (testing "basic usage"
-    (is (= "hi => 5" 
-        (str/trim (with-out-str (spy-first (+ 2 3) "hi"))) ))
-    (is (= "hi => 5" 
-        (str/trim (with-out-str (spy-last "hi"  (+ 2 3)))) ))
-    (is (= "(+ 2 3) => 5" 
-        (str/trim (with-out-str (spy-expr (+ 2 3)))) ))
-    (is (= "5" 
-        (str/trim (with-out-str (spy-val (+ 2 3)))) ))
+    (let [side-effect-cum-sum (atom 0)  ; side-effect running total
+
+          ; Returns the sum of its arguments AND keep a running total.
+          side-effect-add!  (fn [ & args ]
+                              (let [result (apply + args) ]
+                                (swap! side-effect-cum-sum + result)
+                                result))
+    ]
+      (is (= "hi => 5" 
+          (str/trim (with-out-str (spy-first (side-effect-add! 2 3) "hi"))) ))
+      (is (= "hi => 5" 
+          (str/trim (with-out-str (spy-last "hi"  (side-effect-add! 2 3)))) ))
+      (is (= "(side-effect-add! 2 3) => 5" 
+          (str/trim (with-out-str (spy-expr (side-effect-add! 2 3)))) ))
+      (is (= "5" 
+          (str/trim (with-out-str (spy-val (side-effect-add! 2 3)))) ))
+      (println "side-effect-cum-sum:" @side-effect-cum-sum)
+      (is (= 20 @side-effect-cum-sum)))
 
     (is (= "first => 5\nsecond => 25"
         (str/trim (with-out-str (-> 2 
@@ -122,14 +132,13 @@
                                     (spy-first "first" )
                                     (* 5)
                                     (spy-first "second") )))))
-
     (is (= "first => 5\nsecond => 25"
         (str/trim (with-out-str (->> 2 
                                     (+ 3) 
                                     (spy-last "first" )
                                     (* 5)
                                     (spy-last "second") )))))
-))
+  ))
 
 (deftest t-rel=
   (is (rel= 1 1 :digits 4 ))

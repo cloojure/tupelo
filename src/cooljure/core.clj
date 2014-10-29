@@ -63,37 +63,34 @@
      ~@body
      (catch Exception e# ~default-val) ))
 
-(defmacro spy-first
+(defn spy-first
  "Evaluates the expression (the first arg) and prints both msg and the result to stdout;
   returns the result of expr."
-  [expr msg]
-  `(let [out-val# ~expr]
-      (println (str ~msg " => " out-val#))
-      out-val# ))
+  [spy-val msg]
+  (println (str msg " => " spy-val))
+  spy-val)
 
-(defmacro spy-last
+(defn spy-last
  "Evaluates the expression (the last arg) and prints both msg and the result to stdout;
   returns the result of expr."
-  [msg expr]
-  `(let [out-val# ~expr]
-      (println (str ~msg " => " out-val#))
-      out-val# ))
+  [msg spy-val]
+  (println (str msg " => " spy-val))
+  spy-val)
 
 (defmacro spy-expr
  "Evaluates the expression and prints both expr and its result to stdout; 
   returns the result of expr."
   [expr]
-  `(let [out-val# ~expr] 
-      (println (str '~expr " => " out-val#)) 
-      out-val#) )
+  `(let [spy-val# ~expr] 
+      (println (str '~expr " => " spy-val#)) 
+      spy-val#))
 
-(defmacro spy-val
+(defn spy-val
  "Evaluates the expression and prints its result to stdout; 
   returns the result of expr."
-  [expr]
-  `(let [out-val# ~expr]
-      (println out-val#)
-      out-val# ))
+  [spy-val]
+  (println spy-val)
+  spy-val)
 
 ; add eager (forall  ...) -> (doall (for ...))      ; #awt TODO:  
 ;           (for-all ...)
