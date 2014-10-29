@@ -64,33 +64,34 @@
      (catch Exception e# ~default-val) ))
 
 (defn spy-first
- "Evaluates the expression (the first arg) and prints both msg and the result to stdout;
-  returns the result of expr."
+  "A (println ...) for use in thread-first forms.  Prints both msg and spy-val (first arg) 
+  to stdout, then returns spy-val"
   [spy-val msg]
   (println (str msg " => " spy-val))
   spy-val)
 
 (defn spy-last
- "Evaluates the expression (the last arg) and prints both msg and the result to stdout;
-  returns the result of expr."
+  "A (println ...) for use in thread-last forms.  Prints both msg and spy-val (last arg) 
+  to stdout, then returns spy-val"
   [msg spy-val]
   (println (str msg " => " spy-val))
   spy-val)
 
+(defn spy-val
+  "A (println ...) for use in threading forms.  Prints the supplied value to stdout, then
+  returns the value."
+  [spy-val]
+  (println spy-val)
+  spy-val)
+
 (defmacro spy-expr
- "Evaluates the expression and prints both expr and its result to stdout; 
-  returns the result of expr."
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the
+  supplied expression, printing both the expression and its value to stdout, then returns
+  the value."
   [expr]
   `(let [spy-val# ~expr] 
       (println (str '~expr " => " spy-val#)) 
       spy-val#))
-
-(defn spy-val
- "Evaluates the expression and prints its result to stdout; 
-  returns the result of expr."
-  [spy-val]
-  (println spy-val)
-  spy-val)
 
 ; add eager (forall  ...) -> (doall (for ...))      ; #awt TODO:  
 ;           (for-all ...)

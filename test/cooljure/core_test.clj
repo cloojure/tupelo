@@ -123,7 +123,6 @@
           (str/trim (with-out-str (spy-expr (side-effect-add! 2 3)))) ))
       (is (= "5" 
           (str/trim (with-out-str (spy-val (side-effect-add! 2 3)))) ))
-      (println "side-effect-cum-sum:" @side-effect-cum-sum)
       (is (= 20 @side-effect-cum-sum)))
 
     (is (= "first => 5\nsecond => 25"
