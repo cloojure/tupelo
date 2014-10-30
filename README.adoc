@@ -186,9 +186,11 @@ value is output using (pr-str ...) so that numbers and strings are unambiguous i
 ----
 > (-> 30 (+ 4) (spy :msg "dbg") (* 10))
 dbg => 34
+340
 
-(-> "3" (str "4") (spy :msg "dbg") (str "5"))
+(-> "3" (str "4") (spy :msg "dbg") (str "0"))
 dbg => "34"
+"340"
 ----
 
 Sometimes you may prefer to print out the literal expression instead of a
