@@ -137,6 +137,21 @@
                                     (spy-last "first" )
                                     (* 5)
                                     (spy-last "second") )))))
+
+    (let [side-effect-cum-sum (atom 0)  ; side-effect running total
+
+          ; Returns the sum of its arguments AND keep a running total.
+          side-effect-add!  (fn [ & args ]
+                              (let [result (apply + args) ]
+                                (swap! side-effect-cum-sum + result)
+                                result))
+    ]
+      (is (= "value => 5" 
+          (str/trim (with-out-str (spy (side-effect-add! 2 3) :msg "value"))) ))
+      (is (= "value => 5" 
+          (str/trim (with-out-str (spy :msg "value"  (side-effect-add! 2 3)))) ))
+      (is (= 10 @side-effect-cum-sum)))
+
   ))
 
 (deftest t-rel=

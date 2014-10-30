@@ -63,26 +63,24 @@
      ~@body
      (catch Exception e# ~default-val) ))
 
-(defn spy-first
-  "A (println ...) for use in thread-first forms.  Prints both msg and spy-val (first arg) 
-  to stdout, then returns spy-val"
-  [spy-val msg]
-  (println (str msg " => " spy-val))
-  spy-val)
-
-(defn spy-last
-  "A (println ...) for use in thread-last forms.  Prints both msg and spy-val (last arg) 
-  to stdout, then returns spy-val"
-  [msg spy-val]
-  (println (str msg " => " spy-val))
-  spy-val)
-
-(defn spy-val
-  "A (println ...) for use in threading forms.  Prints the supplied value to stdout, then
-  returns the value."
-  [spy-val]
-  (println spy-val)
-  spy-val)
+(defn spy
+  "A (println ...) for use in threading forms. Usage:  (spy :msg \"#dbg301\")
+  Prints both the message string (string after :msg keyword) and value inserted by the
+  threading form (either -> or ->>) to stdout, then returns the value. For example, both
+  of the following 
+        (->   2 
+              (+ 3) 
+              (spy :msg \"sum\" ))
+        (->>  2 
+              (+ 3) 
+              (spy :msg \"sum\" ))
+  will print 'sum => 5'.  "
+  [arg1 arg2 arg3]
+  (cond (= :msg arg1) (do (println (str arg2 " => " (pr-str arg3))) arg3)
+        (= :msg arg2) (do (println (str arg3 " => " (pr-str arg1))) arg1)
+        :else (throw (IllegalArgumentException.  (str 
+                         "spy: either first or 2nd arg must be :msg \n   args:"
+                         (pr-str [arg1 arg2 arg3]))))))
 
 (defmacro spy-expr
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the
@@ -92,6 +90,29 @@
   `(let [spy-val# ~expr] 
       (println (str '~expr " => " spy-val#)) 
       spy-val#))
+
+(comment 
+  (defn ^:deprecated spy-first
+    "A (println ...) for use in thread-first forms.  Usage: (spy-first \"#dbg301\")
+    Prints both msg and spy-val (first arg) to stdout, then returns spy-val"
+    [spy-val msg]
+    (println (str msg " => " (pr-str spy-val)))
+    spy-val)
+
+  (defn ^:deprecated spy-last
+    "A (println ...) for use in thread-last forms.  Usage: (spy-last \"#dbg301\")
+    Prints both msg and spy-val (last arg) to stdout, then returns spy-val"
+    [msg spy-val]
+    (println (str msg " => " (pr-str spy-val)))
+    spy-val)
+
+  (defn ^:deprecated spy-val
+    "A (println ...) for use in threading forms.  Usage: (spy-val)
+    Prints the supplied value to stdout, then returns the value."
+    [spy-val]
+    (println spy-val)
+    spy-val)
+)
 
 ; add eager (forall  ...) -> (doall (for ...))      ; #awt TODO:  
 ;           (for-all ...)
