@@ -153,33 +153,46 @@ values?  For example:
 ----
 Suppose you want to disply the value after the (inc) function. You can't just insert a
 (println) because the return value of `nil` will break the pipeline structure. Instead,
-just use `spy-first`:
+just use `spy`:
 
 [source,clojure]
 ----
 (-> 1
     (inc)
-    (spy-first "after inc")
+    (spy :msg "after inc")
     (* 2))
 after inc => 2
 4
 ----
-This tool is named `spy-first` since it is intended to be placed into a "thread-first"
-pipeline (e.g. using `->` or similar). A companion named `spy-last` is available for
-pipelines using "thread-last" (e.g. `->>`):
+This tool is named `spy` since it can display values from inside either  a "thread-first" or a "thread-last" form
+(e.g. using `->` or `->>`) where they would normally be hidden.  
 
 [source,clojure]
 ----
 (->> 1
     (inc)
-    (spy-last "after inc")
+    (spy :msg "after inc")
     (* 2))
 after inc => 2
 4
 ----
 
+Note that the same call to `spy` works in either `->` or `->>` expressions.  The keyword `:msg` is required just
+before the message string, as it is this that allows the `spy` function to detect whether
+it is in a thread-first or thread-last form, and thus produce the correct output. As a bonus for debugging, the 
+value is output using (pr-str ...) so that numbers and strings are unambiguous in the output:
+
+[source,clojure]
+----
+> (-> 30 (+ 4) (spy :msg "dbg") (* 10))
+dbg => 34
+
+(-> "3" (str "4") (spy :msg "dbg") (str "5"))
+dbg => "34"
+----
+
 Sometimes you may prefer to print out the literal expression instead of a
-message, or just the value itself. Then, just use `spy-expr` or `spy-val`:
+message. In this case, just use `spy-expr`:
 
 [source,clojure]
 ----
@@ -189,21 +202,13 @@ message, or just the value itself. Then, just use `spy-expr` or `spy-val`:
 (inc x) => 2
 4
 
-(->> 1
-     (inc)
-     (spy-val)
-     (* 2))
-2
-4
 ----
 To be precise, the function signatures are:
 
 [source,clojure]
 ----
-(spy-first expr msg )
-(spy-last  msg  expr)
+(spy :msg msg-str)    ; the ":msg" keyword literal is required
 (spy-expr  expr)
-(spy-val   expr)
 ----
 
 === REPL driven testing
