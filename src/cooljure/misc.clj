@@ -9,7 +9,8 @@
             Misc functions."
       :author "Alan Thompson"}
   cooljure.misc
-  (:require [clojure.string     :as str]) )
+  (:require [clojure.string     :as str])
+  (:use cooljure.core))
 
 (defn normalize-str
  "[orig-str]
@@ -39,3 +40,15 @@
                                (last coll) ] )
        ] result ))
 
+(defn char-seq
+  "Given two characters, returns a seq of characters (inclusive) from the first to the second.
+  Characters must be in ascending ASCII order."
+  [start-char stop-char]
+  {:pre [(char? start-char) (char? stop-char)] }
+  (let [start-val   (int start-char)
+        stop-val    (int stop-char)]
+    (when (< stop-val start-val)
+      (throw (IllegalArgumentException. 
+        (str "char-seq: start-char must come before stop-char."
+        "  start-val=" start-val "  stop-val=" stop-val))))
+    (mapv char (range start-val (inc stop-val)))))

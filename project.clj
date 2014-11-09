@@ -6,9 +6,12 @@
   :dependencies [ [org.clojure/clojure                      "1.7.0-alpha1"]
                   [org.clojure/clojure-contrib              "1.2.0"]
                   [org.clojure/core.incubator               "0.1.3"]
+                  [org.clojure/data.codec                   "0.1.0"]
+                  [org.clojure/test.generative              "0.5.0"]
                   [clojure-csv/clojure-csv                  "2.0.1"]
                   [clj-time                                 "0.7.0"]
-                  [criterium                                "0.4.3"] ]
+                  [criterium                                "0.4.3"]
+                  [prismatic/schema                         "0.3.2"] ]
   :deploy-repositories {  "snapshots" :clojars
                           "releases"  :clojars }
   :update :always; :daily  
