@@ -52,3 +52,12 @@
         (str "char-seq: start-char must come before stop-char."
         "  start-val=" start-val "  stop-val=" stop-val))))
     (mapv char (range start-val (inc stop-val)))))
+
+(defn seq->str
+  "Convert a seq into a string (using pr) with a space preceding each value"
+  [seq-in]
+  (with-out-str
+    (doseq [it (seq seq-in)]
+      (print \space)
+      (pr it))))
+

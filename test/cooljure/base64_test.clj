@@ -25,27 +25,33 @@
   (s/validate SetOfStr #{ "a" "b" "c"} )
   )
 
-(def b64-data-chars
-  "A set of Base64 data characters a-z, A-A, 0-9 (not including padding characters like =)"
-  (into #{} (flatten [ (misc/char-seq  \a \z)
-                       (misc/char-seq  \A \Z)
-                       (misc/char-seq  \0 \9) ] )))
-
-(def base64-chars
-  "A set of chars for traditional Base64 symbols, with padding chars [ + \\ = ]"
-  (into b64-data-chars [\+ \\ \=] ))
-(spy-expr base64-chars)
-
-(def y64-chars
-  "A set of chars for the URL-safe Yahoo variant of Base64 symbols, with padding chars [ . _ - ]
-   (see YUI library)"
-  (into b64-data-chars [\. \_ \-] ))
-(spy-expr y64-chars)
-
 (def chars-seq
   "A seq of 1-char strings of all printable characters from space (32) to tilde (126)"
   (mapv str (misc/char-seq \space \~)))
-; (spy-expr chars-seq)
+(spy-expr chars-seq)
+
+(defn b64-round-trip-bytes
+  "Transform a seq of bytes to a base64 string and back."
+  [data-in]
+; (spy-expr (misc/seq->str data-in))
+  (let [bytes-in        (byte-array data-in)
+        _ (assert (= (seq bytes-in) (seq data-in)))
+        string-b64      (b64/encode-bytes->str      bytes-in)
+        bytes-out       (b64/decode-str->bytes      string-b64) ]
+;   (spy-expr (misc/seq->str string-b64))
+;   (spy-expr (misc/seq->str bytes-out))
+    (assert (every? b64/base64-chars (seq string-b64)))
+    (assert (= (seq bytes-in) (seq bytes-out)))
+    bytes-out))
+
+(deftest sample-t
+  (println \newline "base64 - basic test")
+  (doseq [step [50 20 7]]
+    (let [orig    (byte-array (mapv #(.byteValue %) (range 0 400 step)))
+          result  (b64-round-trip-bytes orig) ]
+;     (spy-expr (misc/seq->str orig))
+      (spy-expr (misc/seq->str result)) 
+      (assert (= (seq orig) (seq result))))))
 
 (defn seq-of-bytes
   "Return a list or vec or bytes"
@@ -53,34 +59,18 @@
   (gen/one-of   (gen/list gen/byte)
                 (gen/vec  gen/byte)))
 
-(defn b64-round-trip-bytes
-  "Transform a seq of bytes to a base64 string and back."
-  [bytes-in]
-  (let [string-b64      (b64/encode-bytes->str      bytes-in)
-        bytes-out       (b64/decode-str->bytes      string-b64) ]
-    (spy-expr string-b64)
-    (assert (every? base64-chars (seq string-b64)))
-    bytes-out))
+(tg/defspec bytes-spec
+  b64-round-trip-bytes
+  [^cooljure.base64-test/seq-of-bytes arg]
+  (assert (types/byte-array? %)))
 
-; (tg/defspec bytes-t
-
-(defn seq->str
-  "pr a seq to stdout"
-  [seq-in]
-  (with-out-str
-    (doseq [it seq-in]
-      (print \space)
-      (pr it))))
-
-(deftest sample-t
-  (testing "basic usage"
-    (println \newline "#1")
-    (let [step 50
-          data  (byte-array (mapv #(.byteValue %) (range 0 400 step)))
-          _ (spy-expr (seq->str data))
-          result (b64-round-trip-bytes data)
-          _ (spy-expr (seq->str result)) ]
-      (assert (= (seq data) (seq result))))))
+(deftest gen1
+  (println \newline "base64 - generative test")
+  (try
+    (tgr/run 4 2000 #'cooljure.base64-test/bytes-spec)
+    (catch Exception ex
+      (println "Caught exception: " ex)
+      (ex-data ex))))
 
 #_(defn -main []
     (println \newline "#9")
