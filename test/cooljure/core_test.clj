@@ -116,27 +116,25 @@
                                 result))
     ]
       (is (= "hi => 5" 
-          (str/trim (with-out-str (spy-first (side-effect-add! 2 3) "hi"))) ))
+          (str/trim (with-out-str (spy (side-effect-add! 2 3) :msg "hi"))) ))
       (is (= "hi => 5" 
-          (str/trim (with-out-str (spy-last "hi"  (side-effect-add! 2 3)))) ))
+          (str/trim (with-out-str (spy :msg "hi"  (side-effect-add! 2 3)))) ))
       (is (= "(side-effect-add! 2 3) => 5" 
           (str/trim (with-out-str (spy-expr (side-effect-add! 2 3)))) ))
-      (is (= "5" 
-          (str/trim (with-out-str (spy-val (side-effect-add! 2 3)))) ))
-      (is (= 20 @side-effect-cum-sum)))
+      (is (= 15 @side-effect-cum-sum)))
 
     (is (= "first => 5\nsecond => 25"
         (str/trim (with-out-str (-> 2 
                                     (+ 3) 
-                                    (spy-first "first" )
+                                    (spy :msg "first" )
                                     (* 5)
-                                    (spy-first "second") )))))
+                                    (spy :msg "second") )))))
     (is (= "first => 5\nsecond => 25"
         (str/trim (with-out-str (->> 2 
                                     (+ 3) 
-                                    (spy-last "first" )
+                                    (spy :msg "first" )
                                     (* 5)
-                                    (spy-last "second") )))))
+                                    (spy :msg "second") )))))
 
     (let [side-effect-cum-sum (atom 0)  ; side-effect running total
 
