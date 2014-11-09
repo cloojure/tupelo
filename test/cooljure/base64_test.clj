@@ -25,10 +25,10 @@
   (s/validate SetOfStr #{ "a" "b" "c"} )
   )
 
-(def chars-seq
+(def printable-chars
   "A seq of 1-char strings of all printable characters from space (32) to tilde (126)"
   (mapv str (misc/char-seq \space \~)))
-(spy-expr chars-seq)
+(spy-expr printable-chars)
 
 (defn b64-round-trip-bytes
   "Transform a seq of bytes to a base64 string and back."
@@ -44,14 +44,39 @@
     (assert (= (seq bytes-in) (seq bytes-out)))
     bytes-out))
 
-(deftest sample-t
-  (println \newline "base64 - basic test")
-  (doseq [step [50 20 7]]
-    (let [orig    (byte-array (mapv #(.byteValue %) (range 0 400 step)))
-          result  (b64-round-trip-bytes orig) ]
-;     (spy-expr (misc/seq->str orig))
-      (spy-expr (misc/seq->str result)) 
-      (assert (= (seq orig) (seq result))))))
+(defn b64-round-trip-str
+  "Transform a string to a base64 string and back."
+  [str-in]
+  {:pre [(string? str-in)] }
+; (newline)
+; (spy-expr str-in)
+  (let [str-b64    (b64/encode-str     str-in)
+        str-out    (b64/decode-str     str-b64) ]
+;   (spy-expr str-b64)
+;   (spy-expr str-out)
+    (assert (every? b64/base64-chars (seq str-b64)))
+    (assert (= str-in str-out))
+    str-out))
+
+(deftest b64-basic
+  (testing "base64 - bytes "
+    (println \newline "base64 - basic bytes")
+    (doseq [step [50 20 7]]
+      (let [orig    (byte-array (mapv #(.byteValue %) (range 0 400 step)))
+            result  (b64-round-trip-bytes orig) ]
+;       (spy-expr (misc/seq->str orig))
+        (spy-expr (misc/seq->str result)) 
+        (assert (= (seq orig) (seq result))))))
+  (testing "base64 - string"
+    (println \newline "base64 - basic string")
+    (doseq [num-chars [1 2 3 7 20]]
+      (newline)
+      (spy-expr num-chars)
+      (let [orig    (str/join (misc/take-dist num-chars printable-chars))
+            _ (spy-expr orig)
+            result  (b64-round-trip-str orig) ]
+        (spy-expr result)
+        (assert (= orig result))))))
 
 (defn seq-of-bytes
   "Return a list or vec or bytes"
@@ -65,17 +90,30 @@
   (assert (types/byte-array? %)))
 
 (deftest gen1
-  (println \newline "base64 - generative test")
+  (println \newline "base64 - generative bytes")
   (try
-    (tgr/run 4 2000 #'cooljure.base64-test/bytes-spec)
+    (tgr/run 4 1000 #'cooljure.base64-test/bytes-spec)
+    (catch Exception ex
+      (println "Caught exception: " ex)
+      (ex-data ex))))
+
+(tg/defspec str-spec
+  b64-round-trip-str
+  [^clojure.data.generators/string arg]
+  (assert (string? %)))
+
+(deftest gen2
+  (println \newline "base64 - generative string")
+  (try
+    (tgr/run 4 1000 #'cooljure.base64-test/str-spec)
     (catch Exception ex
       (println "Caught exception: " ex)
       (ex-data ex))))
 
 #_(defn -main []
     (println \newline "#9")
-    (println "chars-seq" (pr-str chars-seq))
-    (doseq [curr-char chars-seq]
+    (println "printable-chars" (pr-str printable-chars))
+    (doseq [curr-char printable-chars]
       (newline)
       (doseq [prefix ["" "a" "ab" "abc"] ]
         (let [orig-str    (str prefix curr-char)
@@ -85,8 +123,8 @@
     (newline)
 
     (println \newline "#10")
-    (println "chars-seq" (pr-str chars-seq))
-    (doseq [curr-char chars-seq]
+    (println "printable-chars" (pr-str printable-chars))
+    (doseq [curr-char printable-chars]
       (newline)
       (doseq [prefix ["" "a" "ab" "abc"] ]
         (let [orig-str    (str prefix curr-char)
