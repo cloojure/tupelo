@@ -35,10 +35,13 @@
   evenly between first & last elements, which are always included."
   ; AWTAWT TODO: write tests, incl degenerate cases of N=0,1,2, etc
   [n coll]
-  (let [interval    (Math/round (double (/ (count coll) (- n 1))))
-        result      (flatten [ (take (- n 1) (take-nth interval coll))
-                               (last coll) ] )
-       ] result ))
+  {:pre [(pos? n)] }
+  (if (= n 1)
+    (first coll)
+    (let [interval    (Math/round (double (/ (count coll) (- n 1))))
+          result      (flatten [ (take (- n 1) (take-nth interval coll))
+                                 (last coll) ] ) ] 
+      result )))
 
 (defn char-seq
   "Given two characters, returns a seq of characters (inclusive) from the first to the second.
@@ -52,3 +55,12 @@
         (str "char-seq: start-char must come before stop-char."
         "  start-val=" start-val "  stop-val=" stop-val))))
     (mapv char (range start-val (inc stop-val)))))
+
+(defn seq->str
+  "Convert a seq into a string (using pr) with a space preceding each value"
+  [seq-in]
+  (with-out-str
+    (doseq [it (seq seq-in)]
+      (print \space)
+      (pr it))))
+

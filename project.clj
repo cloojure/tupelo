@@ -21,6 +21,13 @@
   :profiles { ; :dev      { :certificates ["clojars.pom"] }
               :uberjar  { :aot :all }
             }
+  ;
+  ; "lein test"         will not  run tests marked with the ":slow" metadata
+  ; "lein test :slow"   will only run tests marked with the ":slow" metadata
+  ; "lein test :all"    will run all  tests (built-in)
+  :test-selectors { :default    (complement :slow)
+                    :slow       :slow }
+
   :jvm-opts ["-Xms2g" "-Xmx12g" ]
 ; :jvm-opts ["-Xms4g" "-Xmx8g" "-server"]
 )
