@@ -5,13 +5,13 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns cooljure.base64-test
-  (:require [clojure.string                           :as str]
-            [clojure.test.generative                  :as tg]
-            [clojure.test.generative.runner           :as tgr]
-            [clojure.data.generators                  :as gen]
-            [cooljure.base64                          :as b64]
-            [cooljure.types                           :as types] 
-            [schema.core                              :as s] )
+  (:require [clojure.string                         :as str]
+            [clojure.test.check                     :as tc]
+            [clojure.test.check.generators          :as gen]
+            [clojure.test.check.properties          :as prop]
+            [cooljure.base64                        :as b64]
+            [cooljure.types                         :as types] 
+            [schema.core                            :as s] )
   (:use cooljure.core
         clojure.test)
   (:gen-class))

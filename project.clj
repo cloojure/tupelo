@@ -7,7 +7,7 @@
                   [org.clojure/clojure-contrib              "1.2.0"]
                   [org.clojure/core.incubator               "0.1.3"]
                   [org.clojure/data.codec                   "0.1.0"]
-                  [org.clojure/test.generative              "0.5.0"]
+                  [org.clojure/test.check                   "0.5.9"]
                   [clojure-csv/clojure-csv                  "2.0.1"]
                   [clj-time                                 "0.7.0"]
                   [criterium                                "0.4.3"]
