@@ -11,7 +11,6 @@
             [clojure.test.check.generators          :as gen]
             [clojure.test.check.properties          :as prop]
             [clojure.test.check.clojure-test        :as tst]
-            [cooljure.base64                        :as b64]
             [cooljure.y64                           :as y64]
             [cooljure.misc                          :as misc] 
             [cooljure.types                         :as types] 
@@ -37,13 +36,6 @@
     (is (every? y64/y64-chars (map char y64-bytes)))
     (is (= (seq orig) (seq result)))))
 
-(deftest t2
-  (let [orig        (byte-array [(byte \A)] )
-        b64-str     (b64/encode-bytes->str  orig)
-        result      (b64/decode-str->bytes  b64-str) ]
-    (is (every? b64/base64-chars (seq b64-str)))
-    (is (= (seq orig) (seq result)))))
-
 (deftest y64-basic
   (testing "y64 - bytes "
     (doseq [step [50 20 7]]
@@ -65,8 +57,8 @@
   (prop/for-all [orig gen/bytes]
     (let [y64-str   (y64/encode-bytes->str  orig)
           result    (y64/decode-str->bytes  y64-str) ]
-      (every? y64/y64-chars (seq y64-str))
-      (types/byte-array? result)
+      (assert (every? y64/y64-chars (seq y64-str)))
+      (assert (types/byte-array? result))
       (= (seq orig) (seq result)))))
 
 ; Transform a string to a y64 string and back
@@ -74,8 +66,8 @@
   (prop/for-all [orig gen/string]
     (let [y64-str   (y64/encode-str  orig)
           result    (y64/decode-str  y64-str) ]
-      (every? y64/y64-chars (seq y64-str))
-      (types/byte-array? result)
+      (assert (every? y64/y64-chars (seq y64-str)))
+      (assert (string? result))
       (= orig result))))
 
 (defn -main []
