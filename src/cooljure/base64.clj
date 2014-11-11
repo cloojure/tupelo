@@ -1,3 +1,10 @@
+;   Copyright (c) Alan Thompson. All rights reserved. 
+;   The use and distribution terms for this software are covered by the Eclipse Public
+;   License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the
+;   file epl-v10.html at the root of this distribution.  By using this software in any
+;   fashion, you are agreeing to be bound by the terms of this license.
+;   You must not remove this notice, or any other, from this software.
+
 (ns cooljure.base64
   (:require [clojure.string :as str]
             [clojure.data.codec.base64 :as clj-b64]
@@ -8,22 +15,12 @@
 
 ; #awt TODO: convert :pre/:post to Prismatic Schema
 
-(def data-chars
-  "A set of Base64 data characters a-z, A-A, 0-9 (not including padding characters like =)"
+(def base64-chars
+  "A set of chars used for traditional Base64 encoding (incl. padding char)"
   (into #{} (flatten [ (misc/char-seq  \a \z)
                        (misc/char-seq  \A \Z)
-                       (misc/char-seq  \0 \9) ] )))
-
-(def base64-chars
-  "A set of chars for traditional Base64 symbols, with padding chars [ + \\ = ]"
-  (into data-chars [\+ \/ \=] ))
-(spy-expr base64-chars)
-
-(def y64-chars
-  "A set of chars for the URL-safe Yahoo variant of Base64 symbols, with padding chars [ . _ - ]
-   (see YUI library)"
-  (into data-chars [\. \_ \-] ))
-(spy-expr y64-chars)
+                       (misc/char-seq  \0 \9) 
+                       [\+ \/ \=] ] )))
 
 (defn encode-bytes->str
   "Encodes a byte array into base-64, returning a String."

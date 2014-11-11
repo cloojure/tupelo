@@ -4,6 +4,7 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
+;
 (ns cooljure.base64-test
   (:require [clojure.string                         :as str]
             [clojure.test.check                     :as tc]
@@ -29,7 +30,6 @@
 (def printable-chars
   "A seq of 1-char strings of all printable characters from space (32) to tilde (126)"
   (mapv str (misc/char-seq \space \~)))
-; (spy-expr printable-chars)
 
 (defn b64-round-trip-str
   "Transform a string to a base64 string and back."
