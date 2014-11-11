@@ -1,4 +1,4 @@
-(defproject cooljure "0.1.12"
+(defproject cooljure "0.1.13"
   :description "Cooljure:  Cool stuff you wish was in Clojure"
   :url "http://github.com/cloojure/cooljure"
   :license {:name "Eclipse Public License"

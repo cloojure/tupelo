@@ -63,24 +63,26 @@
 
 (defn spy
   "A (println ...) for use in threading forms. Usage:  (spy :msg \"#dbg301\")
-  Prints both the message string (string after :msg keyword) and value inserted by the
+  Prints both the message (the string after the :msg keyword) and the value inserted by the
   threading form (either -> or ->>) to stdout, then returns the value. For example, both
   of the following 
         (->   2 
               (+ 3) 
-              (spy :msg \"sum\" ))
+              (spy :msg \"sum\" )
+              (* 4))
         (->>  2 
               (+ 3) 
-              (spy :msg \"sum\" ))
+              (spy :msg \"sum\" )
+              (* 4))
   will print 'sum => 5'.  "
   [arg1 arg2 arg3]
-  (cond (= :msg arg1) (do (println (str arg2 " => " (pr-str arg3))) arg3)
-        (= :msg arg2) (do (println (str arg3 " => " (pr-str arg1))) arg1)
+  (cond (= :msg arg1) (do (println (str arg2 " => " (pr-str arg3))) arg3)  ; for ->>
+        (= :msg arg2) (do (println (str arg3 " => " (pr-str arg1))) arg1)  ; for ->
         :else (throw (IllegalArgumentException.  (str 
                          "spy: either first or 2nd arg must be :msg \n   args:"
                          (pr-str [arg1 arg2 arg3]))))))
 
-(defmacro spy-expr
+(defmacro spyx
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the
   supplied expression, printing both the expression and its value to stdout, then returns
   the value."
@@ -89,42 +91,20 @@
       (println (str '~expr " => " (pr-str spy-val#)))
       spy-val#))
 
-(comment 
-  (defn ^:deprecated spy-first
-    "A (println ...) for use in thread-first forms.  Usage: (spy-first \"#dbg301\")
-    Prints both msg and spy-val (first arg) to stdout, then returns spy-val"
-    [spy-val msg]
-    (println (str msg " => " (pr-str spy-val)))
-    spy-val)
-
-  (defn ^:deprecated spy-last
-    "A (println ...) for use in thread-last forms.  Usage: (spy-last \"#dbg301\")
-    Prints both msg and spy-val (last arg) to stdout, then returns spy-val"
-    [msg spy-val]
-    (println (str msg " => " (pr-str spy-val)))
-    spy-val)
-
-  (defn ^:deprecated spy-val
-    "A (println ...) for use in threading forms.  Usage: (spy-val)
-    Prints the supplied value to stdout, then returns the value."
-    [spy-val]
-    (println spy-val)
-    spy-val)
-)
 
 ; add eager (forall  ...) -> (doall (for ...))      ; #awt TODO:  
 ;           (for-all ...)
 ;           (for-now ...)
 
-; Another benefitof test-all:  don't need "-test" suffix like in lein test:
+; Another benefit of test-all:  don't need "-test" suffix like in lein test:
   ; ~/cooljure > lein test :only cooljure.core
   ; lein test user
-  ; Ran 0 tests containing 0 assertions.
+  ; Ran 0 tests containing 0 assertions.     ***** Nearly silent failure *****
   ; 0 failures, 0 errors.
   ;
   ; ~/cooljure > lein test :only cooljure.core-test
   ; lein test cooljure.core-test
-  ; Ran 8 tests containing 44 assertions.
+  ; Ran 8 tests containing 44 assertions.     ***** Runs correctly *****
   ; 0 failures, 0 errors.
   ;
   ; ~/cooljure > lein test :only cooljure.core-test/convj-test
@@ -230,9 +210,9 @@
   This will reload cooljure.core, and cooljure.csv, then execute the corresponging main
   and test functions."
   [& fn-list]
-  (spy-expr fn-list)
+  (spyx fn-list)
   (doseq [curr-fn fn-list]
-    (let [  _ (spy-expr curr-fn)
+    (let [  _ (spyx curr-fn)
           ns-str      (str/replace (str curr-fn) #"/.*$" "")
           curr-ns     (symbol ns-str) ]
       (println "reloading:" ns-str)

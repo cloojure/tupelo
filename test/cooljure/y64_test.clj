@@ -53,7 +53,7 @@
         (is (= orig result))))))
 
 ; Transform a seq of bytes to a y64 string and back
-(tst/defspec ^:slow y64-round-trip-bytes 9999
+(tst/defspec ^:slow round-trip-bytes 9999
   (prop/for-all [orig gen/bytes]
     (let [y64-str   (y64/encode-bytes->str  orig)
           result    (y64/decode-str->bytes  y64-str) ]
@@ -62,7 +62,7 @@
       (= (seq orig) (seq result)))))
 
 ; Transform a string to a y64 string and back
-(tst/defspec ^:slow y64-round-trip-string 9999
+(tst/defspec ^:slow round-trip-string 9999
   (prop/for-all [orig gen/string]
     (let [y64-str   (y64/encode-str  orig)
           result    (y64/decode-str  y64-str) ]

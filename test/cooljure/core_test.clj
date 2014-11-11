@@ -120,7 +120,7 @@
       (is (= "hi => 5" 
           (str/trim (with-out-str (spy :msg "hi"  (side-effect-add! 2 3)))) ))
       (is (= "(side-effect-add! 2 3) => 5" 
-          (str/trim (with-out-str (spy-expr (side-effect-add! 2 3)))) ))
+          (str/trim (with-out-str (spyx (side-effect-add! 2 3)))) ))
       (is (= 15 @side-effect-cum-sum)))
 
     (is (= "first => 5\nsecond => 25"
@@ -151,7 +151,7 @@
       (is (= 10 @side-effect-cum-sum))
 
       (is (= "(str \"abc\" \"def\") => \"abcdef\"" 
-          (str/trim (with-out-str (spy-expr (str "abc" "def") )))))
+          (str/trim (with-out-str (spyx (str "abc" "def") )))))
 
       (is (thrown? IllegalArgumentException  (spy "some-msg" 42 :msg)))
       (is (thrown? IllegalArgumentException  (spy "some-msg" 42)))
