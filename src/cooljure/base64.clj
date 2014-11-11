@@ -22,36 +22,47 @@
                        (misc/char-seq  \0 \9) 
                        [\+ \/ \=] ] )))
 
+(defn encode-bytes
+  "Encodes a byte array into Base64, returning a new byte array."
+  [bytes-in]
+  {:pre [(types/byte-array? bytes-in)] }
+  ; clojure.data.codec.base64 does not handle case of zero-length bytes-in, so we must.
+  (if (zero? (alength bytes-in))
+    (byte-array [])
+    (clj-b64/encode bytes-in)))
+
+(defn decode-bytes
+  "Decodes a byte array from Base64, returning a new byte array."
+  [bytes-in]
+  {:pre [(types/byte-array? bytes-in)] }
+  ; clojure.data.codec.base64 does not handle case of zero-length bytes-in, so we must.
+  ; #awt todo:  submit PR to fix
+  (if (zero? (alength bytes-in))
+    (byte-array [])
+    (clj-b64/decode bytes-in)))
+
 (defn encode-bytes->str
   "Encodes a byte array into base-64, returning a String."
   [bytes-in]
-  {:pre  [ (types/byte-array? bytes-in) ]
-   :post [ (string? %) ] }
-  (if (zero? (count bytes-in))
-    ""
-    (types/bytes->str (clj-b64/encode bytes-in))))
+  {:pre  [ (types/byte-array? bytes-in) ] }
+  (-> bytes-in encode-bytes types/bytes->str))
 
 (defn decode-str->bytes
   "Decodes a base-64 encoded String, returning a byte array"
-  [^String str-in]
-  {:pre  [ (string? str-in) ] 
-   :post [ (types/byte-array? %) ] }
-  (if (zero? (count str-in))
-    (byte-array [])
-    (clj-b64/decode (types/str->bytes str-in))))
+  [str-in]
+  {:pre  [ (string? str-in) ] }
+  (-> str-in types/str->bytes decode-bytes))
 
 
 (defn encode-str 
   "Encodes a String into base-64, returning a String."
-  [^String str-in]
-  {:pre  [ (string? str-in) ] 
-   :post [ (string?   %) ] }
+  [str-in]
+  {:pre  [ (string? str-in) ] }
   (encode-bytes->str (types/str->bytes str-in)))
 
 (defn decode-str 
   "Decodes a base-64 encoded String, returning a String."
-  [^String str-in]
-  {:pre  [ (string? str-in) ] 
-   :post [ (string? %) ] }
+  [str-in]
+  {:pre  [ (string? str-in) ] }
   (types/bytes->str (decode-str->bytes str-in)))
 

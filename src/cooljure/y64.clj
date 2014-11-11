@@ -9,10 +9,10 @@
   "A set of functions for encoding/decoding strings and byte-arrays into the Y64 encoding.
   Y64 is a URL-safe variant of Base64 encoding created by Yahoo (YUI library) which
   replaces problematic chars like '/' (slash) and '=' (equals) with URL-safe substitues."
-  (:require [clojure.string :as str]
-            [clojure.data.codec.base64 :as clj-b64]
-            [cooljure.misc  :as misc]
-            [cooljure.types :as types] )
+  (:require [clojure.string     :as str]
+            [cooljure.base64    :as b64]
+            [cooljure.misc      :as misc]
+            [cooljure.types     :as types] )
   (:use cooljure.core)
   (:gen-class))
 
@@ -32,6 +32,7 @@
 (def y64-code-62  (byte \. ))
 (def y64-code-63  (byte \_ ))
 (def y64-code-pad (byte \- ))
+
 
 (defn b64-bytes->y64-bytes
   "Converts a byte array from Base64 -> Y64 encoding."
@@ -55,59 +56,42 @@
         (= byte-val y64-code-pad)   b64-code-pad
         :default byte-val))))
 
+
 (defn encode-bytes
   "Encodes a byte array into Y64, returning a new byte array."
-  [^bytes input]
-  {:pre [(types/byte-array? input)] }
-  ; clojure.data.codec.base64 does not handle case of zero-length input, so we must.
-  (if (zero? (alength input))
-    (byte-array [])
-    (let [b64-bytes (clj-b64/encode input)
-          result    (b64-bytes->y64-bytes b64-bytes)]
-;     (println \newline 
-;       (format "encode-bytes, length input: %d  result %d" (count input) (count result) ))
-;     (println "  input  =" (misc/seq->str input))
-;     (println "  result =" (misc/seq->str result))
-;     (println "  chars  =" (misc/seq->str (map char result)))
-      result )))
+  [bytes-in]
+  {:pre [(types/byte-array? bytes-in)] }
+  (-> bytes-in b64/encode-bytes b64-bytes->y64-bytes))
 
 (defn decode-bytes
   "Decodes a byte array from Y64, returning a new byte array."
-  [^bytes input]
-  {:pre [(types/byte-array? input)] }
-  ; clojure.data.codec.base64 does not handle case of zero-length input, so we must.
-  ; #awt todo:  submit PR to fix
-  (if (zero? (alength input))
-    (byte-array [])
-    (let [b64-bytes     (y64-bytes->b64-bytes input)
-          result        (clj-b64/decode b64-bytes)]
-;     (println \newline 
-;       (format "decode-bytes, length input: %d  result %d" (count input) (count result) ))
-;     (println "  input  =" (misc/seq->str input))
-;     (println "  result =" (misc/seq->str result))
-      result )))
+  [bytes-in]
+  {:pre [(types/byte-array? bytes-in)] }
+  (-> bytes-in y64-bytes->b64-bytes b64/decode-bytes))
+
 
 (defn encode-bytes->str
   "Encodes a byte array into base-64, returning a String."
-  [input]
-  (-> input encode-bytes types/bytes->str))
+  [bytes-in]
+  {:pre [(types/byte-array? bytes-in)] }
+  (-> bytes-in encode-bytes types/bytes->str))
 
 (defn decode-str->bytes
   "Decodes a base-64 encoded String, returning a byte array"
-  [input]
-  (-> input types/str->bytes decode-bytes))
+  [str-in]
+  {:pre  [(string? str-in)] }
+  (-> str-in types/str->bytes decode-bytes))
+
 
 (defn encode-str 
   "Encodes a String into base-64, returning a String."
   [^String str-in]
-  {:pre  [ (string? str-in) ] 
-   :post [ (string?   %) ] }
+  {:pre  [ (string? str-in) ] }
   (-> str-in types/str->bytes encode-bytes types/bytes->str))
 
 (defn decode-str 
   "Decodes a base-64 encoded String, returning a String."
   [^String str-in]
-  {:pre  [(string? str-in)] 
-   :post [(string? %)] }
+  {:pre  [(string? str-in)] }
   (-> str-in types/str->bytes decode-bytes types/bytes->str))
 

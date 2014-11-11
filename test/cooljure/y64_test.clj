@@ -12,7 +12,6 @@
             [clojure.test.check.properties          :as prop]
             [clojure.test.check.clojure-test        :as tst]
             [cooljure.y64                           :as y64]
-            [cooljure.base64                        :as b64]
             [cooljure.misc                          :as misc] 
             [cooljure.types                         :as types] 
             [schema.core                            :as s] )
