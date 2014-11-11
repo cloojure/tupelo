@@ -43,7 +43,7 @@
         (= byte-val b64-code-62)    y64-code-62
         (= byte-val b64-code-63)    y64-code-63
         (= byte-val b64-code-pad)   y64-code-pad
-        :default byte-val))))
+        :default                    byte-val))))
 
 (defn y64-bytes->b64-bytes
   "Converts a byte array from Y64 -> Base64 encoding."

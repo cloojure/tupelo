@@ -1,9 +1,9 @@
-(defproject cooljure "0.1.11"
+(defproject cooljure "0.1.12"
   :description "Cooljure:  Cool stuff you wish was in Clojure"
   :url "http://github.com/cloojure/cooljure"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [ [org.clojure/clojure                      "1.7.0-alpha1"]
+  :dependencies [ [org.clojure/clojure                      "1.7.0-alpha3"]
                   [org.clojure/clojure-contrib              "1.2.0"]
                   [org.clojure/core.incubator               "0.1.3"]
                   [org.clojure/data.codec                   "0.1.0"]
@@ -21,7 +21,7 @@
   :profiles { ; :dev      { :certificates ["clojars.pom"] }
               :uberjar  { :aot :all }
             }
-  ;
+
   ; "lein test"         will not  run tests marked with the ":slow" metadata
   ; "lein test :slow"   will only run tests marked with the ":slow" metadata
   ; "lein test :all"    will run all  tests (built-in)
