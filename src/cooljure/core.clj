@@ -5,13 +5,11 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns ^{:doc "Cooljure - Cool stuff you wish was in Clojure"
-      :author "Alan Thompson"}
-  cooljure.core
-    (:require [clojure.string               :as str]
-              [clojure.test                 :as test]
-              [clojure.core.incubator       :as cci]
-              ) )
+(ns cooljure.core
+  "Cooljure - Cool stuff you wish was in Clojure"
+  (:require [clojure.string               :as str]
+            [clojure.test                 :as test]
+            [clojure.core.incubator       :as cci] ))
 
 (defn truthy?
  "Returns true if arg is logical true (neither nil nor false);
@@ -222,9 +220,6 @@
 ;************************************************************
 ; #awt TODO:  broken, needs fix!
 ;
-(defn f1 [] (println "*** f1 ***"))
-(defn f2 [] (println "*** f2 ***"))
-
 (defn run-all 
   "[& fn-list]
   Convenience fn to run a function in the REPL after first reloading its namespace from

@@ -36,7 +36,7 @@
 
 (defn b64-bytes->y64-bytes
   "Converts a byte array from Base64 -> Y64 encoding."
-  [coded-bytes]
+  [^bytes coded-bytes]
   (byte-array 
     (for [byte-val coded-bytes]
       (cond  
@@ -47,7 +47,7 @@
 
 (defn y64-bytes->b64-bytes
   "Converts a byte array from Y64 -> Base64 encoding."
-  [coded-bytes]
+  [^bytes coded-bytes]
   (byte-array 
     (for [byte-val coded-bytes]
       (cond  
