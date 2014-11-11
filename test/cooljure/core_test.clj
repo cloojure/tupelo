@@ -145,12 +145,24 @@
                                 result))
     ]
       (is (= "value => 5" 
-          (str/trim (with-out-str (spy (side-effect-add! 2 3) :msg "value"))) ))
+          (str/trim (with-out-str (spy (side-effect-add! 2 3) :msg "value")))))
       (is (= "value => 5" 
-          (str/trim (with-out-str (spy :msg "value"  (side-effect-add! 2 3)))) ))
-      (is (= 10 @side-effect-cum-sum)))
+          (str/trim (with-out-str (spy :msg "value"  (side-effect-add! 2 3))))))
+      (is (= 10 @side-effect-cum-sum))
 
-  ))
+      (is (= "(str \"abc\" \"def\") => \"abcdef\"" 
+          (str/trim (with-out-str (spy-expr (str "abc" "def") )))))
+
+      (is (thrown? IllegalArgumentException  (spy "some-msg" 42 :msg)))
+      (is (thrown? IllegalArgumentException  (spy "some-msg" 42)))
+      (is (thrown? IllegalArgumentException  (spy :some-key  42)))
+      (is (thrown? IllegalArgumentException  (spy :msg  "some-str")))
+      (is (thrown? IllegalArgumentException  (spy :msg  42)))
+      (is (thrown? IllegalArgumentException  (spy "some-msg" )))
+      (is (thrown? IllegalArgumentException  (spy :some-key  )))
+      (is (thrown? IllegalArgumentException  (spy :msg )))
+      (is (thrown? IllegalArgumentException  (spy 42 )))
+    )))
 
 (deftest t-rel=
   (is (rel= 1 1 :digits 4 ))

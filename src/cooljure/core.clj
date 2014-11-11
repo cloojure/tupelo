@@ -88,7 +88,7 @@
   the value."
   [expr]
   `(let [spy-val# ~expr] 
-      (println (str '~expr " => " spy-val#)) 
+      (println (str '~expr " => " (pr-str spy-val#)))
       spy-val#))
 
 (comment 
