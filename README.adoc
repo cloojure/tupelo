@@ -194,12 +194,12 @@ dbg => "34"
 ----
 
 Sometimes you may prefer to print out the literal expression instead of a
-message. In this case, just use `spy-expr`:
+message. In this case, just use `spyx`:
 
 [source,clojure]
 ----
 (as-> 1 x
-      (spy-expr (inc x))
+      (spyx (inc x))
       (* 2 x))
 (inc x) => 2
 4
@@ -210,7 +210,7 @@ To be precise, the function signatures are:
 [source,clojure]
 ----
 (spy :msg msg-str)    ; the ":msg" keyword literal is required
-(spy-expr  expr)
+(spyx expr)
 ----
 
 === REPL driven testing
@@ -285,9 +285,17 @@ sequences and maps.
 
 link:src/cooljure/csv.adoc[Documentation for cooljure.csv]
 
-=== coojure.parse - Functions to ease parsing
+=== cooljure.parse - Functions to ease parsing
 
-TEMP TODO:  see source code http://github.com/cloojure/cooljure/blob/master/src/cooljure/parse.clj[cooljure.parse]
+TEMP TODO:  see source code http://github.com/cloojure/cooljure/blob/master/src/cooljure/parse.clj
+
+=== cooljure.base64 - Convert to/from base64 encoding
+
+TEMP TODO:  see source code http://github.com/cloojure/cooljure/blob/master/src/cooljure/base64.clj
+
+=== cooljure.y64 - Convert to/from the URL-safe Y64 encoding (Yahoo YUI library).
+
+TEMP TODO:  see source code http://github.com/cloojure/cooljure/blob/master/src/cooljure/y64.clj
 
 == License
 
