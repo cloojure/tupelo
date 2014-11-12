@@ -262,6 +262,9 @@ An extract from the unit tests illustrates the use of `rel=`
   (is      (rel= 1 1.001 :tol 0.01 ))
   (is (not (rel= 1 1.001 :tol 0.0001 )))
 ----
+== Full API Documentation
+
+Is located at:  http://cloojure.github.io/cooljure
 
 == Other Useful Tools:
 
@@ -287,15 +290,15 @@ link:src/cooljure/csv.adoc[Documentation for cooljure.csv]
 
 === cooljure.parse - Functions to ease parsing
 
-TEMP TODO:  see source code http://github.com/cloojure/cooljure/blob/master/src/cooljure/parse.clj
+TEMP TODO:  see http://cloojure.github.io/cooljure/cooljure.parse.html
 
 === cooljure.base64 - Convert to/from base64 encoding
 
-TEMP TODO:  see source code http://github.com/cloojure/cooljure/blob/master/src/cooljure/base64.clj
+TEMP TODO:  see http://cloojure.github.io/cooljure/cooljure.base64.html
 
 === cooljure.y64 - Convert to/from the URL-safe Y64 encoding (Yahoo YUI library).
 
-TEMP TODO:  see source code http://github.com/cloojure/cooljure/blob/master/src/cooljure/y64.clj
+TEMP TODO:  see http://cloojure.github.io/cooljure/cooljure.y64.html
 
 == License
 
