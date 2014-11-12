@@ -4,15 +4,12 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-
-(ns ^{:doc "cooljure/explicit - functions that avoid ambiguity"
-      :author "Alan Thompson"}
-  cooljure.explicit
-    (:refer-clojure :exclude [get get-in] )
-    (:require [clojure.string               :as str]
-              [clojure.core                 :as clj]
-              [cooljure.core                :as cool] ))
-
+(ns cooljure.explicit
+  "Functions that avoid ambiguity"
+  (:refer-clojure :exclude [get get-in] )
+  (:require [clojure.string               :as str]
+            [clojure.core                 :as clj]
+            [cooljure.core                :as cool] ))
 
 (defn get 
   "A fail-fast version of clojure.core/get. For map m & key k, returns
@@ -43,3 +40,4 @@
 ;
 ; #awt TODO:  add in dissoc-empty-vals to recursively delete all k-v pairs 
 ;               where val is nil or empty?
+;

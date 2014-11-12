@@ -4,11 +4,8 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-
-(ns ^{:doc "Cooljure - Cool stuff you wish was in Clojure.  
-            Utils for parsing string values."
-      :author "Alan Thompson"}
-  cooljure.parse
+(ns cooljure.parse
+  "Cooljure - Cool stuff you wish was in Clojure.  Utils for parsing string values."
   (:require [cooljure.core :refer :all] ))
 
 ; #awt TODO:  convert args from [str-val & opts] -> [str-val & {:as opts} ]
