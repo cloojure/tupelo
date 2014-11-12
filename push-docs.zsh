@@ -1,13 +1,16 @@
-#!/bin/zsh -v
+#!/bin/zsh
 
-ghPagesDir="~/gh-pages"
-projName="cooljure"
-docsDir=$(pwd)/doc
+# Controlling values
+readonly ghPagesDir=~/gh-pages          # must be absolute pathname
+readonly projName="cooljure"
 
-pushd $ghPagesDir
-  rm -rf             $projName
-  cp -pr   $docsDir  $projName
-  git add            $projName
+srcDir=$(pwd)/doc                       # absolute pathname of source
+destDir=${ghPagesDir}/${projName}       # absolute pathname of destination
+
+rm -rf   $destDir
+cp -pr   $docsDir  $destDir
+pushd ${ghPagesDir}
+  git add $projName
   git commit --all -m"Update docs for $projName"
-  git push
+  git push --set-upstream
 popd
