@@ -10,20 +10,20 @@
   (:use cooljure.core))
 
 (defn normalize-str
- "[orig-str]
-  Returns a 'normalized' version of orig-str, stripped of leading/trailing
+ "[str-in]
+  Returns a 'normalized' version of str-in, stripped of leading/trailing
   blanks, and with all non-alphanumeric chars converted to hyphens."
-  [orig-str]
-  (-> orig-str
+  [str-in]
+  (-> str-in
       str/trim
       (str/replace #"[^a-zA-Z0-9]" "-") ))
   ; AWTAWT TODO: replace with other lib
 
 (defn str->kw
- "[orig-str]
-  Returns a keyword from the normalized orig-str"
-  [orig-str]
-  (keyword (normalize-str orig-str)) )
+ "[str-in]
+  Returns a keyword constructed from the normalized str-in"
+  [str-in]
+  (keyword (normalize-str str-in)) )
   ; AWTAWT TODO: replace with other lib
 
 (defn take-dist

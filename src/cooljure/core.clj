@@ -23,20 +23,21 @@
   (if arg false true) )
 
 (defn any?
- "For any predicate & collection, returns true if (pred x) is logical true for any x in
-  coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
+ "For any predicate pred & collection coll, returns true if (pred x) is logical true for
+ any x in coll; otherwise returns false.  Like clojure.core/some, but returns only true or
+ false."
   [pred coll]
   (truthy? (some pred coll)) )
 
 (defn not-empty?
- "For any collection, returns true if coll contains any items; otherwise returns false
-  Equivalent to (not (empty? coll))."
+ "For any collection coll, returns true if coll contains any items; otherwise returns
+ false Equivalent to (not (empty? coll))."
   [coll]
   (truthy? (seq coll)) )
 
 (defn conjv 
- "For any collection coll and list of values x, appends the x's to collection, always
-  returning the result as a vector."
+ "For any collection coll and seq x, appends the x's to coll, always returning the result
+ as a vector."
   ; From Stuart Sierra post 2014-2-10
   ( [coll x]
       (conj (vec coll) x) )
@@ -53,8 +54,8 @@
             [] (seq m) ))
 
 (defmacro with-exception-default
- "Evaluates body & returns its result.  In the event of an exception the specified default
-  value is returned instead of the exception."
+ "Evaluates body & returns its result.  In the event of an exception, default-val is
+ returned instead of the exception."
   [default-val & body]
   `(try
      ~@body
@@ -116,8 +117,7 @@
   ;   (run-tests 'cooljure.core-test/convj-test)
 
 (defn test-all 
-  "[& ns-list]
-  Convenience fn to reload a namespace & the corresponding test namespace from disk and
+  "Convenience fn to reload a namespace & the corresponding test namespace from disk and
   execute tests in the REPL.  Assumes canonical project test file organization with
   parallel src/... & test/... directories, where a '-test' suffix is added to all src
   namespaces to generate the cooresponding test namespace.  Example:
@@ -199,9 +199,8 @@
 ;************************************************************
 ; #awt TODO:  broken, needs fix!
 ;
-(defn run-all 
-  "[& fn-list]
-  Convenience fn to run a function in the REPL after first reloading its namespace from
+#_(defn run-all 
+  "Convenience fn to run a function in the REPL after first reloading its namespace from
   disk.  Functions must be fully namespace-qualified.  Example:
 
     (run-all 'cooljure.core/main 'cooljure.csv/demo)
