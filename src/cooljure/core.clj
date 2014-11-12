@@ -62,25 +62,54 @@
      (catch Exception e# ~default-val) ))
 
 (defn spy
-  "A (println ...) for use in threading forms. Usage:  (spy :msg \"#dbg301\")
-  Prints both the message (the string after the :msg keyword) and the value inserted by the
-  threading form (either -> or ->>) to stdout, then returns the value. For example, both
-  of the following 
-        (->   2 
-              (+ 3) 
-              (spy :msg \"sum\" )
-              (* 4))
-        (->>  2 
-              (+ 3) 
-              (spy :msg \"sum\" )
-              (* 4))
-  will print 'sum => 5'.  "
-  [arg1 arg2 arg3]
-  (cond (= :msg arg1) (do (println (str arg2 " => " (pr-str arg3))) arg3)  ; for ->>
-        (= :msg arg2) (do (println (str arg3 " => " (pr-str arg1))) arg1)  ; for ->
-        :else (throw (IllegalArgumentException.  (str 
-                         "spy: either first or 2nd arg must be :msg \n   args:"
-                         (pr-str [arg1 arg2 arg3]))))))
+  "A form of (println ...) to ease debugging display of either intermediate values in
+  threading forms or function return values. There are three variants.  Usage:  
+
+    (spy :msg <msg-string>)
+        This variant is intended for use in either thread-first (->) or thread-last (->>)
+        forms.  The keyword :msg is used to identify the message string and works equally
+        well for both the -> and ->> operators. Spy prints both <msg-string>  and the
+        threading value to stdout, then returns the value for further propogation in the
+        threading form. For example, both of the following:
+            (->   2 
+                  (+ 3) 
+                  (spy :msg \"sum\" )
+                  (* 4))
+            (->>  2 
+                  (+ 3) 
+                  (spy :msg \"sum\" )
+                  (* 4))
+        will print 'sum => 5' to stdout.
+
+    (spy <msg-string> <value>)
+        This variant is intended for simpler use cases such as function return values.
+        Function return value expressions often invoke other functions and cannot be
+        easily displayed since (println ...) swallows the return value and returns nil
+        itself.  Spy will output both <msg-string> and the value, then return the value
+        for use by further processing.  For example, the following:
+            (println (* 2
+                       (spy \"sum\" (+ 3 4))))
+      will print:
+            sum => 7
+            14
+      to stdout.
+
+    (spy <value>)
+        This variant is intended for use in very simple situations and is the same as the
+        2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
+        prints 'spy => 5' to stdout.  "
+  ( [arg1 arg2 arg3]
+    (cond (= :msg arg1) (do (println (str arg2 " => " (pr-str arg3))) arg3)  ; for ->>
+          (= :msg arg2) (do (println (str arg3 " => " (pr-str arg1))) arg1)  ; for ->
+          :else (throw (IllegalArgumentException.  (str 
+                           "spy: either first or 2nd arg must be :msg \n   args:"
+                           (pr-str [arg1 arg2 arg3]))))))
+
+  ( [msg value] ; 2-arg arity assumes value is last arg
+    (do (println (str msg " => " (pr-str value))) value))
+
+  ( [value] ; 1-arg arity uses a generic "spy" message
+    (spy "spy" value)))
 
 (defmacro spyx
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the
