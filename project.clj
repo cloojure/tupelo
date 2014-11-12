@@ -13,7 +13,7 @@
                   [criterium                                "0.4.3"]
                   [prismatic/schema                         "0.3.2"] ]
   :plugins  [ [codox "0.8.10"] ]
-  :codox {:src-dir-uri "http://github.com/cooljure/cooljure/blob/master/"
+  :codox {:src-dir-uri "http://github.com/cloojure/cooljure/blob/master/"
           :src-linenum-anchor-prefix "L"}
   :deploy-repositories {  "snapshots" :clojars
                           "releases"  :clojars }

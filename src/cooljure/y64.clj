@@ -6,9 +6,16 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns cooljure.y64
-  "A set of functions for encoding/decoding strings and byte-arrays into the Y64 encoding.
-  Y64 is a URL-safe variant of Base64 encoding created by Yahoo (YUI library) which
-  replaces problematic chars like '/' (slash) and '=' (equals) with URL-safe substitues."
+  "Convert to/from the URL-safe Y64 encoding.  Y64 is a URL-safe variant of Base64
+  encoding created by Yahoo (YUI library) which replaces URL-problematic chars 
+  with URL-safe substitutes. The specific substitutions are:
+      +  ->  .   (plus   -> period)
+      /  ->  _   (slash  -> underscore)
+      =  ->  -   (equals -> hyphen)
+  For more information, please see:
+    http://en.wikipedia.org/wiki/Base64  
+    http://www.yuiblog.com/blog/2010/07/06/in-the-yui-3-gallery-base64-and-y64-encoding/
+  "
   (:require [clojure.string     :as str]
             [cooljure.base64    :as b64]
             [cooljure.misc      :as misc]
