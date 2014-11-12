@@ -7,8 +7,12 @@ readonly projName="cooljure"
 srcDir=$(pwd)/doc                       # absolute pathname of source
 destDir=${ghPagesDir}/${projName}       # absolute pathname of destination
 
-rm -rf   $destDir
-cp -pr   $docsDir  $destDir
+# Copy files
+rm -rf $destDir
+echo "Copying:  $srcDir  ->  $destDir"
+cp -pr          $srcDir      $destDir
+
+# Commit changes
 pushd ${ghPagesDir}
   git add $projName
   git commit --all -m"Update docs for $projName"

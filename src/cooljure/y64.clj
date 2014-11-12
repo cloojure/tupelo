@@ -32,16 +32,16 @@
                        (misc/char-seq  \0 \9) 
                        [\. \_ \-] ] )))
 
-(def b64-code-62  (byte \+ ))
-(def b64-code-63  (byte \/ ))
-(def b64-code-pad (byte \= ))
+(def ^:private b64-code-62  (byte \+ ))
+(def ^:private b64-code-63  (byte \/ ))
+(def ^:private b64-code-pad (byte \= ))
 
-(def y64-code-62  (byte \. ))
-(def y64-code-63  (byte \_ ))
-(def y64-code-pad (byte \- ))
+(def ^:private y64-code-62  (byte \. ))
+(def ^:private y64-code-63  (byte \_ ))
+(def ^:private y64-code-pad (byte \- ))
 
 
-(defn b64-bytes->y64-bytes
+(defn- b64-bytes->y64-bytes
   "Converts a byte array from Base64 -> Y64 encoding."
   [^bytes coded-bytes]
   (byte-array 
@@ -52,7 +52,7 @@
         (= byte-val b64-code-pad)   y64-code-pad
         :default                    byte-val))))
 
-(defn y64-bytes->b64-bytes
+(defn- y64-bytes->b64-bytes
   "Converts a byte array from Y64 -> Base64 encoding."
   [^bytes coded-bytes]
   (byte-array 
