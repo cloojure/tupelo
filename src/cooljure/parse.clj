@@ -14,7 +14,7 @@
 
 ; #awt TODO:  convert args from [str-val & opts] -> [str-val & {:as opts} ]
 
-(defn parseByte
+(defn parse-byte
  "( [str-val]
     [str-val :or default-val] )
   A thin wrapper around java.lang.Byte/parseByte.  Parses the string str-val into a byte.
@@ -28,7 +28,7 @@
       (Byte/parseByte str-val)
       (with-exception-default default-val (Byte/parseByte str-val)) )))
 
-(defn parseShort
+(defn parse-short
  "( [str-val]
     [str-val :or default-val] )
   A thin wrapper around java.lang.Short/parseShort.  Parses the string str-val into a short.
@@ -42,7 +42,7 @@
       (Short/parseShort str-val)
       (with-exception-default default-val (Short/parseShort str-val)) )))
 
-(defn parseInt
+(defn parse-int
  "( [str-val]
     [str-val :or default-val] )
   A thin wrapper around java.lang.Integer/parseInt  Parses the string str-val into a integer.
@@ -56,7 +56,7 @@
       (Integer/parseInt str-val)
       (with-exception-default default-val (Integer/parseInt str-val)) )))
 
-(defn parseLong
+(defn parse-long
  "( [str-val]
     [str-val :or default-val] )
   A thin wrapper around java.lang.Long/parseLong.  Parses the string str-val into a long.
@@ -70,7 +70,7 @@
       (Long/parseLong str-val)
       (with-exception-default default-val (Long/parseLong str-val)) )))
 
-(defn parseFloat
+(defn parse-float
  "( [str-val]
     [str-val :or default-val] )
   A thin wrapper around java.lang.Float/parseFloat.  Parses the string str-val into a float.
@@ -84,7 +84,7 @@
       (Float/parseFloat str-val)
       (with-exception-default default-val (Float/parseFloat str-val)) )))
 
-(defn parseDouble
+(defn parse-double
  "( [str-val]
     [str-val :or default-val] )
   A thin wrapper around java.lang.Double/parseDouble.  Parses the string str-val into a double.
@@ -98,7 +98,7 @@
       (Double/parseDouble str-val)
       (with-exception-default default-val (Double/parseDouble str-val)) )))
 
-#_(defn parseXXXX
+#_(defn parse-xxxx
  "( [str-val]
     [str-val :or default-val] )
   A thin wrapper around java.lang.XXXX/parseXXXX.  Parses the string str-val into a xxxx.
