@@ -5,7 +5,11 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns cooljure.parse
-  "Cooljure - Cool stuff you wish was in Clojure.  Utils for parsing string values."
+  "Utils for parsing string values. Provides a thin Clojure wrapper around java native
+  parsing functions such as java.lang.Float/parseFloat.  Unlike the original java
+  functions, these native-Clojure functions can be used as higher-order functions in maps,
+  function arguments, etc.  Each function also provides an optional default-value which
+  will be returned if there is an exception during parsing."
   (:require [cooljure.core :refer :all] ))
 
 ; #awt TODO:  convert args from [str-val & opts] -> [str-val & {:as opts} ]
@@ -19,10 +23,10 @@
   [str-val & opts]
   {:pre [ (string? str-val) ] }
   (let [opts-map    (apply hash-map opts)
-        or-val      (get opts-map :or ::none) ]
-    (if (= or-val ::none)
+        default-val (get opts-map :or ::none) ]
+    (if (= default-val ::none)
       (Byte/parseByte str-val)
-      (with-exception-default or-val (Byte/parseByte str-val)) )))
+      (with-exception-default default-val (Byte/parseByte str-val)) )))
 
 (defn parseShort
  "( [str-val]
@@ -33,10 +37,10 @@
   [str-val & opts]
   {:pre [ (string? str-val) ] }
   (let [opts-map    (apply hash-map opts)
-        or-val      (get opts-map :or ::none) ]
-    (if (= or-val ::none)
+        default-val (get opts-map :or ::none) ]
+    (if (= default-val ::none)
       (Short/parseShort str-val)
-      (with-exception-default or-val (Short/parseShort str-val)) )))
+      (with-exception-default default-val (Short/parseShort str-val)) )))
 
 (defn parseInt
  "( [str-val]
@@ -47,10 +51,10 @@
   [str-val & opts]
   {:pre [ (string? str-val) ] }
   (let [opts-map    (apply hash-map opts)
-        or-val      (get opts-map :or ::none) ]
-    (if (= or-val ::none)
+        default-val (get opts-map :or ::none) ]
+    (if (= default-val ::none)
       (Integer/parseInt str-val)
-      (with-exception-default or-val (Integer/parseInt str-val)) )))
+      (with-exception-default default-val (Integer/parseInt str-val)) )))
 
 (defn parseLong
  "( [str-val]
@@ -61,10 +65,10 @@
   [str-val & opts]
   {:pre [ (string? str-val) ] }
   (let [opts-map    (apply hash-map opts)
-        or-val      (get opts-map :or ::none) ]
-    (if (= or-val ::none)
+        default-val (get opts-map :or ::none) ]
+    (if (= default-val ::none)
       (Long/parseLong str-val)
-      (with-exception-default or-val (Long/parseLong str-val)) )))
+      (with-exception-default default-val (Long/parseLong str-val)) )))
 
 (defn parseFloat
  "( [str-val]
@@ -75,10 +79,10 @@
   [str-val & opts]
   {:pre [ (string? str-val) ] }
   (let [opts-map    (apply hash-map opts)
-        or-val      (get opts-map :or ::none) ]
-    (if (= or-val ::none)
+        default-val (get opts-map :or ::none) ]
+    (if (= default-val ::none)
       (Float/parseFloat str-val)
-      (with-exception-default or-val (Float/parseFloat str-val)) )))
+      (with-exception-default default-val (Float/parseFloat str-val)) )))
 
 (defn parseDouble
  "( [str-val]
@@ -89,10 +93,10 @@
   [str-val & opts]
   {:pre [ (string? str-val) ] }
   (let [opts-map    (apply hash-map opts)
-        or-val      (get opts-map :or ::none) ]
-    (if (= or-val ::none)
+        default-val (get opts-map :or ::none) ]
+    (if (= default-val ::none)
       (Double/parseDouble str-val)
-      (with-exception-default or-val (Double/parseDouble str-val)) )))
+      (with-exception-default default-val (Double/parseDouble str-val)) )))
 
 #_(defn parseXXXX
  "( [str-val]
@@ -103,10 +107,10 @@
   [str-val & opts]
   {:pre [ (string? str-val) ] }
   (let [opts-map    (apply hash-map opts)
-        or-val      (get opts-map :or ::none) ]
-    (if (= or-val ::none)
+        default-val (get opts-map :or ::none) ]
+    (if (= default-val ::none)
       (XXXX/parseXXXX str-val)
-      (with-exception-default or-val (XXXX/parseXXXX str-val)) )))
+      (with-exception-default default-val (XXXX/parseXXXX str-val)) )))
 
 ; #awt TODO:  finish other parse* functions
 
