@@ -6,8 +6,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns cooljure.core-test
-  (:require [clojure.contrib.seq    :as seq]
-            [clojure.string         :as str]
+  (:require [clojure.string         :as str]
             [cooljure.core          :refer :all]
             [clojure.test           :refer :all] ))
 
@@ -33,18 +32,7 @@
               num-false   (count-if falsey? data) ]
           (is (and  (= 6 num-true)
                     (= 2 num-false) )))))
-
-    (testing "contrib"
-      ; corece to primitive boolean feels wrong
-      (let [ result (seq/separate boolean data) ]
-        (is (= [ [true :a 'my-symbol 1 "hello" \x] 
-                 [false nil] ]
-               result )))
-      ; separate by truthy? (or not)
-      (let [ result (seq/separate truthy? data) ]
-        (is (= [ [true :a 'my-symbol 1 "hello" \x] 
-                 [false nil] ]
-               result ))))))
+  ))
 
 (deftest any-tst
   (testing "basic usage"
