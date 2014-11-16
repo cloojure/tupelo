@@ -8,7 +8,9 @@
   "Cooljure - Cool stuff you wish was in Clojure"
   (:require [clojure.string               :as str]
             [clojure.test                 :as test]
-            [clojure.core.incubator       :as cci] ))
+            [clojure.core.incubator       :as cci]
+            [cooljure.types               :as types]
+  ))
 
 (defn truthy?
  "Returns true if arg is logical true (neither nil nor false);
@@ -43,6 +45,46 @@
       (conj (vec coll) x) )
   ( [coll x & xs]
       (apply conj (vec coll) x xs) ))
+
+(defn strcat
+  "Concat all arguments into a single string result."
+  [& args]
+  (let [
+    ; We need to use flatten twice since the inner one doesn't changes a string into a
+    ; sequence of chars, nor does it affect byte-array, et al.  We eventually get
+    ; seq-of-scalars which can look like [ \a \b 77 78 \66 \z ]
+    seq-of-scalars  (flatten 
+                      (for [it (flatten [args])] 
+                        ; Note that "sequential?" returns false for sets, strings, and the various
+                        ; array types.
+                        (if (or (sequential? it)
+                                (set?                   it)
+                                (string?                it)
+                                (types/byte-array?      it)
+                                (types/char-array?      it)
+                                (types/int-array?       it)
+                                (types/long-array?      it)
+                                (types/short-array?     it)
+                                (types/object-array?    it))
+                          (seq it)
+                          it )))
+    ; Coerce any integer values into character equivalents (e.g. 65 -> \A), then concat
+    ; into a single string.
+    result  (apply str 
+              (map char seq-of-scalars))
+  ]
+    result ))
+
+(defn seqable?      ; from clojure.contrib.core/seqable
+  "Returns true if (seq x) will succeed, false otherwise."
+  [x]
+  (or (seq? x)
+      (instance? clojure.lang.Seqable x)
+      (nil? x)
+      (instance? Iterable x)
+      (-> x .getClass .isArray)
+      (string? x)
+      (instance? java.util.Map x)))
 
 (defn keyvals 
  "For any map m, returns the keys & values of m as a vector, suitable for reconstructing m

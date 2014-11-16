@@ -8,6 +8,7 @@
 (ns cooljure.core-test
   (:require [clojure.string         :as str]
             [cooljure.core          :refer :all]
+            [cooljure.misc          :as     misc]
             [clojure.test           :refer :all] ))
 
 (deftest truthy-falsey-tst
@@ -75,14 +76,47 @@
     (is (= [0 1 2 3 4 5] (conjv (range 4) 4 5)))
     (is (= [0 1 2 3 4 5] (apply conjv [0] (range 1 6)))) ))
 
-(deftest keyvals-test
+(deftest strcat-tst
+  (is (= "a" (strcat \a  )))    (is (= "a" (strcat [\a]  )))
+  (is (= "a" (strcat "a" )))    (is (= "a" (strcat ["a"] )))
+  (is (= "a" (strcat 97  )))    (is (= "a" (strcat [97]  )))
+
+  (is (= "ab" (strcat \a   \b   ))) (is (= "ab" (strcat [\a]  \b   )))
+  (is (= "ab" (strcat \a  [\b]  ))) (is (= "ab" (strcat [\a   \b]  )))
+  (is (= "ab" (strcat "a"  "b"  ))) (is (= "ab" (strcat ["a"] "b"  )))
+  (is (= "ab" (strcat "a" ["b"] ))) (is (= "ab" (strcat ["a"  "b"] )))
+  (is (= "ab" (strcat 97   98   ))) (is (= "ab" (strcat [97]  98   )))
+  (is (= "ab" (strcat 97  [98]  ))) (is (= "ab" (strcat [97   98]  )))
+
+  (is (= "abcd" (strcat              97  98   "cd" )))
+  (is (= "abcd" (strcat             [97  98]  "cd" )))
+  (is (= "abcd" (strcat (byte-array [97  98]) "cd" )))
+
+  (let [chars-set   (into #{} (misc/char-seq \a \z)) 
+        str-val     (strcat chars-set) ]
+    (is (= 26 (count chars-set)))
+    (is (= 26 (count str-val)))
+    (is (= 26 (count (re-seq #"[a-z]" str-val))))))
+
+(deftest seqable-tst
+  (is (seqable? "abc"))
+  (is (seqable?  {1 2 3 4}))
+  (is (seqable? #{1 2 3}))
+  (is (seqable? '(1 2 3)))
+  (is (seqable?  [1 2 3]))
+  (is (seqable? (byte-array [1 2])))
+
+  (is (not (seqable?  1 )))
+  (is (not (seqable? \a ))))
+
+(deftest keyvals-test 
   (testing "basic usage"
     (let [m1 {:a 1 :b 2 :c 3} 
           m2 {:a 1 :b 2 :c [3 4]} ]
       (is (= m1 (apply hash-map (keyvals m1))))
       (is (= m2 (apply hash-map (keyvals m2)))) 
     )))
-; AWTAWT TODO: add test.generative
+; AWTAWT TODO: add test.check
 
 (deftest with-exception-default-test
   (testing "basic usage"
