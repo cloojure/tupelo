@@ -41,8 +41,8 @@
       result )))
 
 (defn char-seq
-  "Given two characters, returns a seq of characters (inclusive) from the first to the second.
-  Characters must be in ascending ASCII order."
+  "Given two characters (or numerical equivalents), returns a seq of characters
+  (inclusive) from the first to the second.  Characters must be in ascending order."
   [start-char stop-char]
   {:pre [ (char start-char) (char stop-char) ] }
     ; These "dummy" casts are to ensure that any input integer values are within the valid
