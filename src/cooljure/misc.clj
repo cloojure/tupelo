@@ -44,10 +44,12 @@
   "Given two characters, returns a seq of characters (inclusive) from the first to the second.
   Characters must be in ascending ASCII order."
   [start-char stop-char]
-  {:pre [(char? start-char) (char? stop-char)] }
+  {:pre [ (char start-char) (char stop-char) ] }
+    ; These "dummy" casts are to ensure that any input integer values are within the valid
+    ; range for Unicode characters
   (let [start-val   (int start-char)
         stop-val    (int stop-char)]
-    (when (< stop-val start-val)
+    (when-not (<= start-val stop-val)
       (throw (IllegalArgumentException. 
         (str "char-seq: start-char must come before stop-char."
         "  start-val=" start-val "  stop-val=" stop-val))))

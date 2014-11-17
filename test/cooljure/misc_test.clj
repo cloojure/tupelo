@@ -18,6 +18,13 @@
   (is (= [\a ]              (misc/char-seq \a \a)))
   (is (= [\a \b]            (misc/char-seq \a \b)))
   (is (= [\a \b \c]         (misc/char-seq \a \c)))
+
+  (is (= [\a ]              (misc/char-seq 97 97)))
+  (is (= [\a \b]            (misc/char-seq 97 98)))
+  (is (= [\a \b \c]         (misc/char-seq 97 99)))
+
+  (is (thrown? Exception    (misc/char-seq 987654321 987654321 )))
   (is (thrown? Exception    (misc/char-seq \c \a)))
+  (is (thrown? Exception    (misc/char-seq 99 98)))
 )
 
