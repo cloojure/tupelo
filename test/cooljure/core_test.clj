@@ -98,6 +98,40 @@
     (is (= 26 (count str-val)))
     (is (= 26 (count (re-seq #"[a-z]" str-val))))))
 
+(def pp-str-expected-tmpl
+"['first'
+ :second
+ [1
+  2
+  3
+  {:c '333333333',
+   :b {:nested {:some-map ['array' 222222 333333 4444444444]}},
+   :d 44444444444,
+   :x 'xxx',
+   :a 1}
+  10
+  11
+  12]
+ :nearly
+ :there
+ 'now']" )
+
+(deftest pp-str-t
+  (let [v1          ["first" :second 
+                      [1 2 3 
+                        {:a 1 :b 
+                          {:nested {:some-map ["array" 222222 333333 4444444444]}}
+                          :c "333333333" :d 44444444444 :x "xxx" }
+                        10 11 12
+                      ]
+                      :nearly :there "now"]
+        result      (pp-str v1)
+        expected    (str/replace pp-str-expected-tmpl \' \" )
+        ; transform single quotes to double quotes
+  ]
+    (is (= (str/trim expected) (str/trim result)))
+  ))
+
 (deftest seqable-tst
   (is (seqable? "abc"))
   (is (seqable?  {1 2 3 4}))

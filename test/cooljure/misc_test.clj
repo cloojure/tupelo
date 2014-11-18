@@ -7,8 +7,7 @@
 (ns cooljure.misc-test
   (:require [clojure.string     :as str]
             [cooljure.misc      :as misc])
-  (:use clojure.test
-        cooljure.core))
+  (:use clojure.test))
 
 (deftest str->kw-t
   (testing "basic usage"
@@ -27,4 +26,9 @@
   (is (thrown? Exception    (misc/char-seq \c \a)))
   (is (thrown? Exception    (misc/char-seq 99 98)))
 )
+
+(deftest seq->str-t
+  (is (= " 1 2 3"           (misc/seq->str (byte-array [1 2 3]))))
+  (is (= " :a :b 3 4"     (misc/seq->str [:a :b 3 4])))
+  (is (= " \\a \\b \\c"     (misc/seq->str "abc"))))
 

@@ -7,8 +7,8 @@
 (ns cooljure.core
   "Cooljure - Cool stuff you wish was in Clojure"
   (:require [clojure.string               :as str]
+            [clojure.pprint               :as pprint]
             [clojure.test                 :as test]
-            [clojure.core.incubator       :as cci]
             [cooljure.types               :as types]
   ))
 
@@ -74,6 +74,11 @@
               (map char seq-of-scalars))
   ]
     result ))
+
+(defn pp-str
+  "Returns a string that is the result of clojure.pprint/pprint"
+  [arg]
+  (with-out-str (pprint/pprint arg)))
 
 (defn seqable?      ; from clojure.contrib.core/seqable
   "Returns true if (seq x) will succeed, false otherwise."

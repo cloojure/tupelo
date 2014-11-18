@@ -5,13 +5,11 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns cooljure.misc
-  "Cooljure - Cool stuff you wish was in Clojure.  Misc functions."
-  (:require [clojure.string     :as str])
-  (:use cooljure.core))
+  "Miscellaneous functions."
+  (:require [clojure.string     :as str] ))
 
 (defn normalize-str
- "[str-in]
-  Returns a 'normalized' version of str-in, stripped of leading/trailing
+ "Returns a 'normalized' version of str-in, stripped of leading/trailing
   blanks, and with all non-alphanumeric chars converted to hyphens."
   [str-in]
   (-> str-in
@@ -20,15 +18,13 @@
   ; AWTAWT TODO: replace with other lib
 
 (defn str->kw
- "[str-in]
-  Returns a keyword constructed from the normalized str-in"
+ "Returns a keyword constructed from the normalized str-in"
   [str-in]
   (keyword (normalize-str str-in)) )
   ; AWTAWT TODO: replace with other lib
 
 (defn take-dist
- "[n coll]
-  Returns a sequence of n items from a collection, distributed
+ "Returns a sequence of n items from a collection, distributed
   evenly between first & last elements, which are always included."
   ; AWTAWT TODO: write tests, incl degenerate cases of N=0,1,2, etc
   [n coll]

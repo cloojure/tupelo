@@ -19,7 +19,8 @@
   (:require [clojure.string     :as str]
             [cooljure.base64    :as b64]
             [cooljure.misc      :as misc]
-            [cooljure.types     :as types] )
+            [cooljure.types     :as types]
+            [schema.core        :as s] )
   (:use cooljure.core)
   (:gen-class))
 
