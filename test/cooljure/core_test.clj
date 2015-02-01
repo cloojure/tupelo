@@ -143,7 +143,7 @@
   (is (not (seqable?  1 )))
   (is (not (seqable? \a ))))
 
-(deftest keyvals-test 
+(deftest keyvals-t
   (testing "basic usage"
     (let [m1 {:a 1 :b 2 :c 3} 
           m2 {:a 1 :b 2 :c [3 4]} ]
@@ -152,7 +152,7 @@
     )))
 ; AWTAWT TODO: add test.check
 
-(deftest with-exception-default-test
+(deftest with-exception-default-t
   (testing "basic usage"
     (is (thrown?    Exception                       (/ 1 0)))
     (is (= nil      (with-exception-default nil     (/ 1 0))))
@@ -161,7 +161,13 @@
     (is (= 0        (with-exception-default 0       (Long/parseLong "12xy3"))))
     ))
 
-(deftest spy-test
+(deftest forv-t
+  (is (= (forv [x (range 23)] (* x x))
+         (for  [x (range 23)] (* x x))))
+  (is (= (forv [x (range 5)  y (range 2 9)] (str x y))
+         (for  [x (range 5)  y (range 2 9)] (str x y)))))
+
+(deftest spy-t
   (testing "basic usage"
     (let [side-effect-cum-sum (atom 0)  ; side-effect running total
 

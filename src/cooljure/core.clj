@@ -167,10 +167,11 @@
       (println (str '~expr " => " (pr-str spy-val#)))
       spy-val#))
 
-
-; add eager (forall  ...) -> (doall (for ...))      ; #awt TODO:  
-;           (for-all ...)
-;           (for-now ...)
+(defmacro forv
+  "Like clojure.core/for but returns results in a vector.  Equivalent to 
+  (into [] (for ...)). Not lazy."
+  [& body]
+  `(into [] (for ~@body)))
 
 ; Another benefit of test-all:  don't need "-test" suffix like in lein test:
   ; ~/cooljure > lein test :only cooljure.core
