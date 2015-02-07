@@ -11,6 +11,9 @@
             [clojure.core                 :as clj]
             [cooljure.core                :as cool] ))
 
+; If necessary, can copy the following syntax to override clojure/core vars
+;       (:refer-clojure :exclude [* - + == /])
+
 (defn get 
   "A fail-fast version of clojure.core/get. For map m & key k, returns
   the value v associated with k in m.  Throws an exception if k is not

@@ -33,7 +33,7 @@
 
 (defn not-empty?
  "For any collection coll, returns true if coll contains any items; otherwise returns
- false Equivalent to (not (empty? coll))."
+ false. Equivalent to (not (empty? coll))."
   [coll]
   (truthy? (seq coll)) )
 
