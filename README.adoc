@@ -264,9 +264,9 @@ An extract from the unit tests illustrates the use of `rel=`
   (is      (rel= 1 1.001 :tol 0.01 ))
   (is (not (rel= 1 1.001 :tol 0.0001 )))
 ----
-== Full API Documentation
+=== Full API Documentation
 
-Is located at:  http://cloojure.github.io/cooljure
+Is located at:  http://cloojure.github.io/doc/cooljure/
 
 == Other Useful Tools:
 
