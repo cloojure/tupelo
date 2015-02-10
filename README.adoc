@@ -1,10 +1,12 @@
-= cooljure
 
-== Cool stuff you wish was in Clojure
 
-Leiningen coordinates:
+= Cool stuff you wish was in Clojure
+
+Leiningen coordinates:   
 
 image:http://clojars.org/cooljure/latest-version.svg[ http://clojars.org/cooljure ]
+
+=== API Docs:   http://cloojure.github.io/doc/cooljure/
 
 == Overview
 
@@ -302,6 +304,6 @@ TEMP TODO:  see http://cloojure.github.io/cooljure/cooljure.y64.html
 
 == License
 
-Copyright © 2014 Alan Thompson. 
+Copyright © 2015 Alan Thompson. 
 
 Distributed under the Eclipse Public License, the same as Clojure.
