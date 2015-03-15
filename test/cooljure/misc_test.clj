@@ -9,6 +9,10 @@
             [cooljure.misc      :as misc])
   (:use clojure.test))
 
+(deftest kw->dbstr-t
+  (testing "basic usage"
+    (is (= :abc-def-gh (misc/str->kw "abc_def_gh"))) ))
+
 (deftest str->kw-t
   (testing "basic usage"
     (is (= :abc-def-gh-qrs (misc/str->kw "abc def*gh_qrs"))) ))

@@ -8,6 +8,16 @@
   "Miscellaneous functions."
   (:require [clojure.string     :as str] ))
 
+(defn- dasherize 
+  "Replace underscores with dashes"
+  [s]
+  (str/replace s "_" "-"))
+
+(defn- undasherize
+  "Replace dashes with underscores"
+  [s]
+  (str/replace s "-" "_"))
+
 (defn normalize-str
  "Returns a 'normalized' version of str-in, stripped of leading/trailing
   blanks, and with all non-alphanumeric chars converted to hyphens."
@@ -22,6 +32,12 @@
   [str-in]
   (keyword (normalize-str str-in)) )
   ; AWTAWT TODO: replace with other lib
+
+(defn kw->dbstr 
+  "Converts a keyword to a database compatible string (e.g. all hyphens converted to
+  underscores)"
+  [kw]
+  (undasherize (name kw)))
 
 (defn take-dist
  "Returns a sequence of n items from a collection, distributed
