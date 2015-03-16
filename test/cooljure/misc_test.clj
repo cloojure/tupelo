@@ -11,7 +11,11 @@
 
 (deftest kw->dbstr-t
   (testing "basic usage"
-    (is (= :abc-def-gh (misc/str->kw "abc_def_gh"))) ))
+    (is (= "abc_def_gh" (misc/kw->dbstr :abc-def-gh))) ))
+
+(deftest dbstr->kw-t
+  (testing "basic usage"
+    (is (= :abc-def-gh (misc/dbstr->kw "ABC_DEF_GH"))) ))
 
 (deftest str->kw-t
   (testing "basic usage"

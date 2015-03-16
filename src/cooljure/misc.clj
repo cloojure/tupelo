@@ -39,6 +39,12 @@
   [kw]
   (undasherize (name kw)))
 
+(defn dbstr->kw
+  "Converts a keyword to a database compatible string (e.g. all hyphens converted to
+  underscores)"
+  [kw]
+  (keyword (str/lower-case (dasherize kw))))
+
 (defn take-dist
  "Returns a sequence of n items from a collection, distributed
   evenly between first & last elements, which are always included."
