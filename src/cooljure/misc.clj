@@ -8,6 +8,13 @@
   "Miscellaneous functions."
   (:require [clojure.string     :as str] ))
 
+(defn collapse-whitespace
+ "Replaces all consecutive runs of whitespace characters with a single space."
+  [it]
+  (-> it
+      str/trim
+      (str/replace #"\s+" " ") ))
+
 (defn- dasherize 
   "Replace underscores with dashes"
   [s]

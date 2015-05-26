@@ -9,6 +9,12 @@
             [cooljure.misc      :as misc])
   (:use clojure.test))
 
+(deftest collapse-whitespace-t
+  (testing "basic usage"
+    (is (= "abc def g hij kl" 
+            (misc/collapse-whitespace "  abc    def			g 
+                                       hij kl	 " ))) ))
+
 (deftest kw->dbstr-t
   (testing "basic usage"
     (is (= "abc_def_gh" (misc/kw->dbstr :abc-def-gh))) ))
