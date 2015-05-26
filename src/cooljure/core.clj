@@ -1,9 +1,9 @@
 ;   Copyright (c) Alan Thompson. All rights reserved. 
-;   The use and distribution terms for this software are covered by the Eclipse Public
-;   License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the
-;   file epl-v10.html at the root of this distribution.  By using this software in any
-;   fashion, you are agreeing to be bound by the terms of this license.
-;   You must not remove this notice, or any other, from this software.
+;   The use and distribution terms for this software are covered by the Eclipse Public License 1.0
+;   (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the file epl-v10.html at
+;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
+;   bound by the terms of this license.  You must not remove this notice, or any other, from this
+;   software.
 (ns cooljure.core
   "Cooljure - Cool stuff you wish was in Clojure"
   (:require [clojure.string               :as str]
@@ -13,33 +13,31 @@
   ))
 
 (defn truthy?
- "Returns true if arg is logical true (neither nil nor false);
-  otherwise returns false."
+  "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
   [arg]
   (if arg true false) )
 
 (defn falsey?
- "Returns true if arg is logical false (either nil or false);
-  otherwise returns false. Equivalent to (not (truthy? arg))."
+  "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
+   to (not (truthy? arg))."
   [arg]
   (if arg false true) )
 
 (defn any?
- "For any predicate pred & collection coll, returns true if (pred x) is logical true for
- any x in coll; otherwise returns false.  Like clojure.core/some, but returns only true or
- false."
+  "For any predicate pred & collection coll, returns true if (pred x) is logical true for any x in
+   coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
   [pred coll]
   (truthy? (some pred coll)) )
 
 (defn not-empty?
- "For any collection coll, returns true if coll contains any items; otherwise returns
- false. Equivalent to (not (empty? coll))."
+  "For any collection coll, returns true if coll contains any items; otherwise returns false.
+   Equivalent to (not (empty? coll))."
   [coll]
   (truthy? (seq coll)) )
 
 (defn conjv 
- "For any collection coll and seq x, appends the x's to coll, always returning the result
- as a vector."
+  "For any collection coll and seq x, appends the x's to coll, always returning the result as a
+   vector."
   ; From Stuart Sierra post 2014-2-10
   ( [coll x]
       (conj (vec coll) x) )
@@ -92,8 +90,8 @@
       (instance? java.util.Map x)))
 
 (defn keyvals 
- "For any map m, returns the keys & values of m as a vector, suitable for reconstructing m
-  via (apply hash-map (keyvals m))."
+  "For any map m, returns the keys & values of m as a vector, suitable for reconstructing m via
+   (apply hash-map (keyvals m))."
   [m]
   {:pre  [ (map? m) ] 
    :post [ (vector? %) ] }
@@ -101,16 +99,16 @@
             [] (seq m) ))
 
 (defmacro with-exception-default
- "Evaluates body & returns its result.  In the event of an exception, default-val is
- returned instead of the exception."
+  "Evaluates body & returns its result.  In the event of an exception, default-val is returned
+   instead of the exception."
   [default-val & body]
   `(try
      ~@body
      (catch Exception e# ~default-val) ))
 
 (defn spy
-  "A form of (println ...) to ease debugging display of either intermediate values in
-  threading forms or function return values. There are three variants.  Usage:  
+  "A form of (println ...) to ease debugging display of either intermediate values in threading
+   forms or function return values. There are three variants.  Usage:  
 
     (spy :msg <msg-string>)
         This variant is intended for use in either thread-first (->) or thread-last (->>)
@@ -159,25 +157,24 @@
     (spy "spy" value)))
 
 (defmacro spyx
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the
-  supplied expression, printing both the expression and its value to stdout, then returns
-  the value."
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expression, printing both the expression and its value to stdout, then returns the value."
   [expr]
   `(let [spy-val# ~expr] 
       (println (str '~expr " => " (pr-str spy-val#)))
       spy-val#))
 
 (defmacro forv
-  "Like clojure.core/for but returns results in a vector.  Equivalent to 
-  (into [] (for ...)). Not lazy."
+  "Like clojure.core/for but returns results in a vector.  Equivalent to (into [] (for ...)). Not
+   lazy."
   [& body]
   `(into [] (for ~@body)))
 
 (defn rel=
- "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative
- equality is specified as either (1) the N most significant digits are equal, or (2) the
- absolute difference is less than a tolerance value.  Input values are coerced to double
- before comparison.  Example:
+  "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative equality
+   is specified as either (1) the N most significant digits are equal, or (2) the absolute
+   difference is less than a tolerance value.  Input values are coerced to double before comparison.
+   Example:
 
     (rel= 123450000 123456789   :digits 4)      ; true
     (rel= 1         1.001       :tol 0.01 )     ; true
