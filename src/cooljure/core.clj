@@ -164,6 +164,15 @@
       (println (str '~expr " => " (pr-str spy-val#)))
       spy-val#))
 
+(defmacro spyxt
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expression, printing both the expression, its type, and its value to stdout, then returns the value."
+  [expr]
+  `(let [ spy-val#      ~expr
+          class-name#   (-> spy-val# class .getName) ]
+      (println (str '~expr " => [" class-name# "]->" (pr-str spy-val#)))
+      spy-val#))
+
 (defmacro forv
   "Like clojure.core/for but returns results in a vector.  Equivalent to (into [] (for ...)). Not
    lazy."

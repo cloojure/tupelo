@@ -187,6 +187,22 @@
       (is (thrown? IllegalArgumentException  (spy "some-msg" 42 :msg)))
     )))
 
+(deftest spyxt-t
+  (let [val1  {:a 1 :b 2}
+        val2  (+ 2 3) ]
+    (is (= "val1 => [clojure.lang.PersistentArrayMap]->{:a 1, :b 2}"
+        (str/trim (with-out-str (spyxt val1 )))  ))
+
+    (is (= "val2 => [java.lang.Long]->5"
+        (str/trim (with-out-str (spyxt val2 ))) ))
+  ))
+
+(deftest t-rel=
+  (is (rel= 1 1 :digits 4 ))
+  (is (rel= 1 1 :tol    0.01 ))
+
+  )
+
 (deftest t-rel=
   (is (rel= 1 1 :digits 4 ))
   (is (rel= 1 1 :tol    0.01 ))
