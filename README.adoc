@@ -206,11 +206,11 @@ message. In this case, just use `spyx`:
 4
 ----
 
-In other instances, you may wish to use `spyxt` display both the type and value of an expression:
+In other instances, you may wish to use `spyxx` display both the type and value of an expression:
 [source,clojure]
 ----
 (defn mystery-fn [] (into (sorted-map) {:b 2 :a 1}))
-(spyxt (mystery-fn))
+(spyxx (mystery-fn))
 ;; (mystery-fn) => clojure.lang.PersistentTreeMap->{:a 1, :b 2}
 ----
 
@@ -220,7 +220,7 @@ To be precise, the function signatures are:
 ----
 (spy :msg msg-str)    ; the ":msg" keyword literal is required
 (spyx expr)
-(spyxt expr)
+(spyxx expr)
 ----
 
 === REPL driven testing
