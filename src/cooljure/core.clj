@@ -98,6 +98,27 @@
   (reduce   #(conj %1 (first %2) (second %2))
             [] (seq m) ))
 
+; #awt #todo: Test failure of (safe-> 3 (* 2) (+ 1))
+; #awt #todo: finish safe->>
+(defmacro safe->
+  "When expr is not nil, threads it into the first form (via ->), and when that result is not nil,
+   through the next etc.  If result is nil, throw IllegalArgumentException"
+  [expr & forms]
+  (let [g     (gensym)
+        pstep (fn [step] `(if (nil? ~g) 
+                            (throw (IllegalArgumentException. (str "Nil value passed to form '" ~step \')))
+                            #_(do (println "g=" ~g) (spyxx (-> ~g ~step)))
+                                ;; (def mm {:a {:b 2}})
+                                ;; user=> (safe-> mm (:aa) (:b))
+                                ;; g= {:a {:b 2}}
+                                ;; NullPointerException   user/eval1850 (form-init5653535826905962071.clj:1)
+                                ;; user=> (safe-> mm :aa :b)   ; works
+                            (-> ~g ~step)
+                          )) ]
+    `(let [~g ~expr
+           ~@(interleave (repeat g) (map pstep forms))]
+       ~g)))
+
 (defmacro with-exception-default
   "Evaluates body & returns its result.  In the event of an exception, default-val is returned
    instead of the exception."
