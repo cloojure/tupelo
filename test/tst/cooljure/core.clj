@@ -197,11 +197,17 @@
         (str/trim (with-out-str (spyxx val2 ))) ))
   ))
 
-(deftest t-rel=
-  (is (rel= 1 1 :digits 4 ))
-  (is (rel= 1 1 :tol    0.01 ))
-
+(deftest t-safe->
+  (is (= 7 (safe-> 3 (* 2) (+ 1))))
+  (let [mm  {:a {:b 2}}]
+    (is (= (safe-> mm :a)     {:b 2} ))
+    (is (= (safe-> mm :a :b)      2))
+    (is (thrown? IllegalArgumentException   (safe-> mm :x)))
+    (is (thrown? IllegalArgumentException   (safe-> mm :a :x)))
+    (is (thrown? IllegalArgumentException   (safe-> mm :a :b :x)))
   )
+
+)
 
 (deftest t-rel=
   (is (rel= 1 1 :digits 4 ))
