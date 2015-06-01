@@ -5,7 +5,7 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns cooljure.core-test
+(ns tst.cooljure.core
   (:require [clojure.string     :as str]
             [cooljure.misc      :as misc] )
   (:use cooljure.core 

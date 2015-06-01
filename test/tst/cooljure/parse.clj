@@ -5,7 +5,7 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns cooljure.parse-test
+(ns tst.cooljure.parse
   (:require [cooljure.parse             :as coolp]
             [clojure.test               :refer :all] 
             [cooljure.core              :refer [rel=]] )

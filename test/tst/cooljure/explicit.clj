@@ -5,7 +5,7 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns cooljure.explicit-test
+(ns tst.cooljure.explicit
   (:require [clojure.string         :as str]
             [cooljure.explicit      :as x]
             [clojure.test           :refer :all] ))

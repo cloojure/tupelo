@@ -5,7 +5,7 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns cooljure.csv-test
+(ns tst.cooljure.csv
   (:require [clojure.string             :as str]
             [clojure.java.io            :as io]
             [cooljure.csv               :refer :all]

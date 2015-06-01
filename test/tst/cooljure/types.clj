@@ -4,7 +4,7 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns cooljure.types-test
+(ns tst.cooljure.types
   (:use cooljure.types clojure.test))
 
 (deftest t-boolean?
