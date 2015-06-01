@@ -5,9 +5,28 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns cooljure.datomic-test
-  (:require [cooljure.datomic   :refer :all])
-  (:use clojure.test))
+  (:use cooljure.datomic 
+        clojure.test
+        cooljure.core)
+)
 
-(deftest xxxx
-  (is true) )
+(deftest entity-spec-t
+  (is (= (entity-spec :my-ident :db.type/string)
+          {:db/id                                     "#db/id[:db.part/db]"
+           :db/ident                                  :my-ident
+           :db/valueType                              :db.type/string, 
+           :db/cardinality                            :db.cardinality/one
+           :db/doc                                    "???"
+           :db.install/_attribute                     :db.part/db} ))
+
+  (is (= (entity-spec :my-ident :db.type/string
+                        :unique? :identity )
+          {:db/id                                     "#db/id[:db.part/db]"
+           :db/ident                                  :my-ident
+           :db/valueType                              :db.type/string, 
+           :db/cardinality                            :db.cardinality/one
+           :db/unique                                 :db.unique/identity
+           :db/doc                                    "???"
+           :db.install/_attribute                     :db.part/db} ))
+)
 
