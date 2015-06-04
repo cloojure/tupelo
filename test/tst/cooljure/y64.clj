@@ -7,7 +7,7 @@
 
 (ns tst.cooljure.y64
   (:require [clojure.string                         :as str]
-            [clojure.test.check                     :as tc]
+          ; [clojure.test.check                     :as tc]
             [clojure.test.check.generators          :as gen]
             [clojure.test.check.properties          :as prop]
             [clojure.test.check.clojure-test        :as tst]
