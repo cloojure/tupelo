@@ -5,27 +5,31 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.cooljure.misc
+  (:use cooljure.misc 
+        cooljure.core
+        clojure.test )
   (:require [clojure.string     :as str]
-            [cooljure.misc      :as misc])
-  (:use clojure.test))
+            [cooljure.misc      :as misc] ))
+
+(set! *warn-on-reflection* true)
 
 (deftest collapse-whitespace-t
   (testing "basic usage"
     (is (= "abc def g hij kl" 
             (misc/collapse-whitespace "  abc    def			g 
-                                       hij kl	 " ))) ))
+                                       hij kl	 " )))))
 
 (deftest kw->dbstr-t
   (testing "basic usage"
-    (is (= "abc_def_gh" (misc/kw->dbstr :abc-def-gh))) ))
+    (is (= "abc_def_gh" (misc/kw->dbstr :abc-def-gh)))))
 
 (deftest dbstr->kw-t
   (testing "basic usage"
-    (is (= :abc-def-gh (misc/dbstr->kw "ABC_DEF_GH"))) ))
+    (is (= :abc-def-gh (misc/dbstr->kw "ABC_DEF_GH")))))
 
 (deftest str->kw-t
   (testing "basic usage"
-    (is (= :abc-def-gh-qrs (misc/str->kw "abc def*gh_qrs"))) ))
+    (is (= :abc-def-gh-qrs (misc/str->kw "abc def*gh_qrs")))))
 
 (deftest char-seq-t
   (is (= [\a ]              (misc/char-seq \a \a)))
@@ -45,4 +49,23 @@
   (is (= " 1 2 3"           (misc/seq->str (byte-array [1 2 3]))))
   (is (= " :a :b 3 4"     (misc/seq->str [:a :b 3 4])))
   (is (= " \\a \\b \\c"     (misc/seq->str "abc"))))
+
+(deftest shell-cmd-t
+  (testing "no errors"
+    (let [result (shell-cmd "ls -ldF *")]
+      (when false  ; set true -> debug print
+        (println "(:out result)" )
+        (println  (:out result)  ))
+      (is (= 0 (:exit result))))
+    (let [result (shell-cmd "ls /bin/bash")]
+      (is (= 0 (:exit result)))
+      (is (= 1 (count (re-seq #"/bin/bash" (:out result))))))
+    (binding [*os-shell* "/bin/sh"]
+      (let [result (shell-cmd "ls /bin/*sh")]
+        (is (= 0 (:exit result)))
+        (is (< 0 (count (re-seq #"/bin/bash" (:out result)))))))
+    )
+
+  (testing "errors"
+    (is (thrown? RuntimeException (shell-cmd "LLLls -ldF *")))))
 

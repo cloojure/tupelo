@@ -6,14 +6,18 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns cooljure.misc
   "Miscellaneous functions."
-  (:require [clojure.string     :as str] ))
+  (:require [clojure.string       :as str]
+            [clojure.java.shell   :as shell] )
+  (:use cooljure.core))
+
+(def ^:dynamic *os-shell* "/bin/bash")  ; could also use /bin/zsh, etc
 
 (defn collapse-whitespace
  "Replaces all consecutive runs of whitespace characters with a single space."
   [it]
   (-> it
       str/trim
-      (str/replace #"\s+" " ") ))
+      (str/replace #"\s+" " ")))
 
 (defn- dasherize 
   "Replace underscores with dashes"
@@ -31,13 +35,13 @@
   [str-in]
   (-> str-in
       str/trim
-      (str/replace #"[^a-zA-Z0-9]" "-") ))
+      (str/replace #"[^a-zA-Z0-9]" "-")))
   ; AWTAWT TODO: replace with other lib
 
 (defn str->kw
  "Returns a keyword constructed from the normalized str-in"
   [str-in]
-  (keyword (normalize-str str-in)) )
+  (keyword (normalize-str str-in)))
   ; AWTAWT TODO: replace with other lib
 
 (defn kw->dbstr 
@@ -87,4 +91,19 @@
     (doseq [it (seq seq-in)]
       (print \space)
       (pr it))))
+
+(defn shell-cmd 
+  "Run a command represented as a string in an OS shell (default=/bin/bash).
+  Example: 'ls -ldF *'  "
+  [cmd-str]
+  (let [result (shell/sh *os-shell* "-c" cmd-str)]
+    (if (= 0 (safe-> :exit result))
+      result
+      (throw (RuntimeException. 
+               (str "shell-cmd: clojure.java.shell/sh failed. \n" 
+                    "cmd-str:"     cmd-str        "\n"
+                    "exit status:" (:exit result) "\n"
+                    "stderr:"      (:err  result) "\n"
+                    "result:"      (:out  result) "\n" 
+              ))))))
 
