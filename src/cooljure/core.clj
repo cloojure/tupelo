@@ -124,6 +124,20 @@
            ~@(interleave (repeat g) (map pstep forms))]
        ~g)))
 
+(defmacro it->
+  "A threadin macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
+      (it-> 1
+            (inc it)
+            (+ 3 it)
+            (/ 10 it))
+      ;=> 2
+   "
+  [expr & forms]
+  `(let [~'it ~expr
+         ~@(interleave (repeat 'it) forms)
+   ]
+     ~'it ))
+
 (defmacro with-exception-default
   "Evaluates body & returns its result.  In the event of an exception, default-val is returned
    instead of the exception."

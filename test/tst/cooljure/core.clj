@@ -205,9 +205,17 @@
     (is (thrown? IllegalArgumentException   (safe-> mm :x)))
     (is (thrown? IllegalArgumentException   (safe-> mm :a :x)))
     (is (thrown? IllegalArgumentException   (safe-> mm :a :b :x)))
-  )
+  ))
 
-)
+(deftest t-it->
+  (is (= 2  (it-> 1
+                  (inc it)
+                  (+ 3 it)
+                  (/ 10 it))))
+  (let [mm  {:a {:b 2}}]
+    (is (= (it-> mm (:a it)          )  {:b 2} ))
+    (is (= (it-> mm (it :a)  (:b it) )      2  ))))
+  
 
 (deftest t-rel=
   (is (rel= 1 1 :digits 4 ))
