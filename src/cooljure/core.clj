@@ -6,7 +6,8 @@
 ;   software.
 (ns cooljure.core
   "Cooljure - Cool stuff you wish was in Clojure"
-  (:require [clojure.string               :as str]
+  (:require [clojure.core                 :as clj]
+            [clojure.string               :as str] 
             [clojure.pprint               :as pprint]
             [clojure.test                 :as test]
             [cooljure.types               :as types]
@@ -72,6 +73,17 @@
               (map char seq-of-scalars))
   ]
     result ))
+
+(defn grab
+  "A fail-fast version of keyword/map lookup, where (:the-keyword the-map) -> (grab :the-keyword the-map).  
+   Throws an exception if :the-keyword is not present in the-map."
+  [k m]
+  (if (contains? m k)
+    (clj/get m k)
+    (throw (IllegalArgumentException.    
+              (str  "Key not present in map:" \newline
+                    "  map: " m  \newline
+                    "  key: " k  \newline )))))
 
 (defn pp-str
   "Returns a string that is the result of clojure.pprint/pprint"
