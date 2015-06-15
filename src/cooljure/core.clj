@@ -287,3 +287,17 @@
     ] 
       or-result )))
 
+(defn glue 
+  "Glues together like sequences:
+
+     (glue [1 2] [3 4] [5 6])         -> [1 2 3 4 5 6]
+     (glue {:a 1} {:b 2} {:c 3})      -> {:a 1 :c 3 :b 2}
+     (glue #{1 2} #{3 4} #{6 5})      -> #{1 2 6 5 3 4}
+
+   If you want to convert to a sorted set or map, just put an empty one first:
+
+     (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
+     (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
+   " 
+  [& colls]
+  (reduce into colls))
