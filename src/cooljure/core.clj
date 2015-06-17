@@ -301,3 +301,4 @@
    " 
   [& colls]
   (reduce into colls))
+  ; #todo add checks for all same type (sequence/vector, map, set)
