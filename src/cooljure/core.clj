@@ -287,6 +287,10 @@
     ] 
       or-result )))
 
+; #todo: surprising concat failure
+;   (concat {:a 1} {:b 2} {:c 3})
+;   =>     ([:a 1] [:b 2] [:c 3])
+
 (defn glue 
   "Glues together like sequences:
 
