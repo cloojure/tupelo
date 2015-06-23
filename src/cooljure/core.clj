@@ -8,10 +8,11 @@
   "Cooljure - Cool stuff you wish was in Clojure"
   (:require [clojure.core                 :as clj]
             [clojure.string               :as str] 
-            [clojure.pprint               :as pprint]
-            [clojure.test                 :as test]
-            [cooljure.types               :as types]
-  ))
+            [clojure.set                  :as c.s]
+            [clojure.pprint               :refer [pprint] ]
+            [schema.core                  :as s]
+            [cooljure.types               :as types] )
+  (:gen-class))
 
 (defn truthy?
   "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
@@ -88,7 +89,7 @@
 (defn pp-str
   "Returns a string that is the result of clojure.pprint/pprint"
   [arg]
-  (with-out-str (pprint/pprint arg)))
+  (with-out-str (pprint arg)))
 
 (defn seqable?      ; from clojure.contrib.core/seqable
   "Returns true if (seq x) will succeed, false otherwise."
@@ -306,3 +307,26 @@
   [& colls]
   (reduce into colls))
   ; #todo add checks for all same type (sequence/vector, map, set)
+
+; #todo need test
+(s/defn submap? :- Boolean
+  "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
+   another map.  Similar to clojure.set/subset?"
+  [ inner-map   :- {s/Any s/Any}    ; #todo
+    outer-map   :- {s/Any s/Any} ]  ; #todo
+  (let [inner-set   (set inner-map)
+        outer-set   (set outer-map) ]
+    (c.s/subset? inner-set outer-set)))
+
+(defn match? [data spec]
+  (println "data: " data "   spec: " spec)
+  (let [result    (truthy?
+                    (cond
+                      (= spec :*)       true
+                      (= data spec)     true
+                      (coll? data)      (apply = true (mapv match? data spec))
+                      :default          false)) ]
+    (println "result:" result)
+    result))
+
+

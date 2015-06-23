@@ -268,3 +268,92 @@
   (is (= (seq (glue (sorted-map) {:a 1   :b 2} {:c 3   :d 4   :e 5} {:f 6}))
                                [ [:a 1] [:b 2] [:c 3] [:d 4] [:e 5] [:f 6] ] ))
 )
+
+(deftest t-match
+  (testing "vectors"
+    (let [vv [1 2  3]
+          tt [1 2  3]
+          ww [1 :* 3]
+          zz [1 2  4] ]
+      (newline) (is (match? vv tt))
+      (newline) (is (not (match? vv zz))))
+    (let [vv [1  [2 3]]
+          tt [1  [2 3]]
+          ww [:* [2 3]]
+          zz [9  [2 3]] ]
+      (newline) (is (match? vv tt))
+      (newline) (is (match? vv ww))
+      (newline) (is not (match? vv zz)))
+  )
+  (testing "maps"
+    (let [vv {:a 1 }
+          tt {:a 1 }
+          w1 {:* 1 }
+          w2 {:a :*}
+          zz {:a 2 }
+    ]
+      (newline) (is (match? vv tt))
+      (newline) (is (match? vv w1))
+      (newline) (is (match? vv w2))
+      (newline) (is (not (match? vv zz)))
+    )
+    (let [vv {:a 1 :b {:c 3}}
+          tt {:a 1 :b {:c 3}}
+          w1 {:* 1 :b {:c 3}}
+          w2 {:a :* :b {:c 3}}
+          w3 {:a 1 :* {:c 3}}
+          w4 {:a 1 :b {:* 3}}
+          w5 {:a 1 :b {:c :*}}
+          zz {:a 2 :b {:c 3}}
+    ]
+      (newline) (is (match? vv tt))
+      (newline) (is (match? vv w1))
+      (newline) (is (match? vv w2))
+      (newline) (is (match? vv w3))
+      (newline) (is (match? vv w4))
+      (newline) (is (match? vv w5))
+      (newline) (is (not (match? vv zz)))
+    )
+  )
+  (testing "vecs & maps 1"
+    (let [vv [:a 1  :b {:c  3} ]
+          tt [:a 1  :b {:c  3} ]
+          w1 [:* 1  :b {:c  3} ]
+          w2 [:a :* :b {:c  3} ]
+          w3 [:a 1  :* {:c  3} ]
+          w4 [:a 1  :b {:*  3} ]
+          w5 [:a 1  :b {:c :*} ]
+          zz [:a 2  :b {:c  3} ]
+    ]
+      (newline) (is (match? vv tt))
+      (newline) (is (match? vv w1))
+      (newline) (is (match? vv w2))
+      (newline) (is (match? vv w3))
+      (newline) (is (match? vv w4))
+      (newline) (is (match? vv w5))
+      (newline) (is (not (match? vv zz)))
+    )
+  )
+  (testing "vecs & maps 2"
+    (let [vv {:a 1  :b [:c  3] }
+          tt {:a 1  :b [:c  3] }
+          w1 {:* 1  :b [:c  3] }
+          w2 {:a :* :b [:c  3] }
+          w3 {:a 1  :* [:c  3] }
+          w4 {:a 1  :b [:*  3] }
+          w5 {:a 1  :b [:c :*] }
+          z1 {:a 2  :b [:c  3] }
+          z2 {:a 1  :b [:c  9] }
+    ]
+      (newline) (is (match? vv tt))
+      (newline) (is (match? vv w1))
+      (newline) (is (match? vv w2))
+      (newline) (is (match? vv w3))
+      (newline) (is (match? vv w4))
+      (newline) (is (match? vv w5))
+      (newline) (is (not (match? vv z1)))
+      (newline) (is (not (match? vv z2)))
+    )
+  )
+)
+
