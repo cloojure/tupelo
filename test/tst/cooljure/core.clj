@@ -275,15 +275,15 @@
           tt [1 2  3]
           ww [1 :* 3]
           zz [1 2  4] ]
-      (newline) (is (match? vv tt))
-      (newline) (is (not (match? vv zz))))
+      (is (wild-match? vv tt))
+      (is (not (wild-match? vv zz))))
     (let [vv [1  [2 3]]
           tt [1  [2 3]]
           ww [:* [2 3]]
           zz [9  [2 3]] ]
-      (newline) (is (match? vv tt))
-      (newline) (is (match? vv ww))
-      (newline) (is not (match? vv zz)))
+      (is (wild-match? vv tt))
+      (is (wild-match? vv ww))
+      (is not (wild-match? vv zz)))
   )
   (testing "maps"
     (let [vv {:a 1 }
@@ -292,10 +292,10 @@
           w2 {:a :*}
           zz {:a 2 }
     ]
-      (newline) (is (match? vv tt))
-      (newline) (is (match? vv w1))
-      (newline) (is (match? vv w2))
-      (newline) (is (not (match? vv zz)))
+      (is (wild-match? vv tt))
+      (is (wild-match? vv w1))
+      (is (wild-match? vv w2))
+      (is (not (wild-match? vv zz)))
     )
     (let [vv {:a 1 :b {:c 3}}
           tt {:a 1 :b {:c 3}}
@@ -306,13 +306,13 @@
           w5 {:a 1 :b {:c :*}}
           zz {:a 2 :b {:c 3}}
     ]
-      (newline) (is (match? vv tt))
-      (newline) (is (match? vv w1))
-      (newline) (is (match? vv w2))
-      (newline) (is (match? vv w3))
-      (newline) (is (match? vv w4))
-      (newline) (is (match? vv w5))
-      (newline) (is (not (match? vv zz)))
+      (is (wild-match? vv tt))
+      (is (wild-match? vv w1))
+      (is (wild-match? vv w2))
+      (is (wild-match? vv w3))
+      (is (wild-match? vv w4))
+      (is (wild-match? vv w5))
+      (is (not (wild-match? vv zz)))
     )
   )
   (testing "vecs & maps 1"
@@ -325,13 +325,13 @@
           w5 [:a 1  :b {:c :*} ]
           zz [:a 2  :b {:c  3} ]
     ]
-      (newline) (is (match? vv tt))
-      (newline) (is (match? vv w1))
-      (newline) (is (match? vv w2))
-      (newline) (is (match? vv w3))
-      (newline) (is (match? vv w4))
-      (newline) (is (match? vv w5))
-      (newline) (is (not (match? vv zz)))
+      (is (wild-match? vv tt))
+      (is (wild-match? vv w1))
+      (is (wild-match? vv w2))
+      (is (wild-match? vv w3))
+      (is (wild-match? vv w4))
+      (is (wild-match? vv w5))
+      (is (not (wild-match? vv zz)))
     )
   )
   (testing "vecs & maps 2"
@@ -345,14 +345,14 @@
           z1 {:a 2  :b [:c  3] }
           z2 {:a 1  :b [:c  9] }
     ]
-      (newline) (is (match? vv tt))
-      (newline) (is (match? vv w1))
-      (newline) (is (match? vv w2))
-      (newline) (is (match? vv w3))
-      (newline) (is (match? vv w4))
-      (newline) (is (match? vv w5))
-      (newline) (is (not (match? vv z1)))
-      (newline) (is (not (match? vv z2)))
+      (is (wild-match? vv tt))
+      (is (wild-match? vv w1))
+      (is (wild-match? vv w2))
+      (is (wild-match? vv w3))
+      (is (wild-match? vv w4))
+      (is (wild-match? vv w5))
+      (is (not (wild-match? vv z1)))
+      (is (not (wild-match? vv z2)))
     )
   )
 )

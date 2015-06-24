@@ -10,6 +10,7 @@
             [clojure.string               :as str] 
             [clojure.set                  :as c.s]
             [clojure.pprint               :refer [pprint] ]
+            [clojure.core.match           :as ccm ]
             [schema.core                  :as s]
             [cooljure.types               :as types] )
   (:gen-class))
@@ -318,15 +319,21 @@
         outer-set   (set outer-map) ]
     (c.s/subset? inner-set outer-set)))
 
-(defn match? [data spec]
-  (println "data: " data "   spec: " spec)
+(defn wild-match? [data spec]
+; (println "data: " data "   spec: " spec)
   (let [result    (truthy?
                     (cond
                       (= spec :*)       true
                       (= data spec)     true
-                      (coll? data)      (apply = true (mapv match? data spec))
+                      (coll? data)      (apply = true (mapv wild-match? data spec))
                       :default          false)) ]
-    (println "result:" result)
+;   (println "result:" result)
     result))
 
 
+(defmacro match-only   ; #todo need test
+  "A shortcut to clojure.core.match/match to aid in testing"
+  [data pattern]
+  `(ccm/match ~data   
+       ~pattern   true
+        :else     false ))
