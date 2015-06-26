@@ -1,6 +1,6 @@
 
 
-= Cool stuff you wish was in Clojure
+= Making Clojure Even Sweeter
 
 Leiningen coordinates:   
 
@@ -24,8 +24,8 @@ normally use `:refer :all` for `tupelo.core` in our namespaces:
 ----
 (ns my.proj
   (:require [tupelo.core    :refer :all]
-            [tupelo.csv     :as cool-csv]
-            [tupelo.parse   :as cool-parse] 
+            [tupelo.csv     :as tcsv]
+            [tupelo.parse   :as tp] 
             ... ))
 ----
 
