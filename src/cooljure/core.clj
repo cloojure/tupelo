@@ -319,20 +319,43 @@
         outer-set   (set outer-map) ]
     (c.s/subset? inner-set outer-set)))
 
-(defn wild-match? [data spec]
-; (println "data: " data "   spec: " spec)
+(defn wild-match?  ; #todo need test
+  "Returns true if the data value
+   matches the pattern value.  The special keyword :* (colon-star) in the pattern value serves as
+   a wildcard value. Usage: 
+
+     (matches? data pattern)
+
+   sample:
+
+     (matches? {:a 1   [:b 2]  :c 3}  
+               {:a :*  :*      :c 3} )  ;=> true
+
+   Note that a wildcald can match either a primitive or a composite value."
+  [data pattern]
+; (spyxx data) (spyxx pattern)
   (let [result    (truthy?
                     (cond
-                      (= spec :*)       true
-                      (= data spec)     true
-                      (coll? data)      (apply = true (mapv wild-match? data spec))
+                      (= pattern :*)       true
+                      (= data pattern)     true
+                      (coll? data)      (apply = true (mapv wild-match? data pattern))
                       :default          false)) ]
-;   (println "result:" result)
+;   (spyxx result)
     result))
 
 
-(defmacro match-only   ; #todo need test
-  "A shortcut to clojure.core.match/match to aid in testing"
+(defmacro matches?   ; #todo need test
+  "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
+   matches the pattern value.  Underscores serve as wildcard values. Usage: 
+
+     (matches? data pattern)
+
+   sample:
+
+     (matches? {:a 1 [:b 2] :c 3}  
+               {:a _ _      :c 3} )  ;=> true
+
+   Note that a wildcald can match either a primitive or a composite value."
   [data pattern]
   `(ccm/match ~data   
        ~pattern   true
