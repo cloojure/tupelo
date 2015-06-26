@@ -12,7 +12,9 @@
             [clojure.pprint               :refer [pprint] ]
             [clojure.core.match           :as ccm ]
             [schema.core                  :as s]
-            [tupelo.types               :as types] )
+            [tupelo.types                 :as types]
+            [tupelo.schema                :as ts]
+            )
   (:gen-class))
 
 (defn truthy?
@@ -76,10 +78,11 @@
   ]
     result ))
 
-(defn grab
+(s/defn grab :- s/Any
   "A fail-fast version of keyword/map lookup, where (:the-keyword the-map) -> (grab :the-keyword the-map).  
    Throws an exception if :the-keyword is not present in the-map."
-  [k m]
+  [k    :- s/Keyword
+   m    :- ts/KeyMap ] 
   (if (contains? m k)
     (clj/get m k)
     (throw (IllegalArgumentException.    
