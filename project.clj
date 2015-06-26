@@ -1,6 +1,6 @@
-(defproject cooljure "0.1.29"
-  :description "Cooljure:  Cool stuff you wish was in Clojure"
-  :url "http://github.com/cloojure/cooljure"
+(defproject tupelo "0.1.29"
+  :description "Tupelo:  Making Clojure Even Sweeter"
+  :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [ [org.clojure/clojure              "1.7.0-RC2"]
@@ -13,12 +13,12 @@
                   [criterium                        "0.4.3"]
                   [prismatic/schema                 "0.3.2"] ]
   :plugins  [ [codox "0.8.10"] ]
-  :codox {:src-dir-uri "http://github.com/cloojure/cooljure/blob/master/"
+  :codox {:src-dir-uri "http://github.com/cloojure/tupelo/blob/master/"
           :src-linenum-anchor-prefix "L"}
   :deploy-repositories {  "snapshots" :clojars
                           "releases"  :clojars }
   :update :always; :daily  
-  :main ^:skip-aot cooljure.core
+  :main ^:skip-aot tupelo.core
   :target-path "target/%s"
   :clean-targets [ "target" ]
   :profiles { ; :dev      { :certificates ["clojars.pom"] }

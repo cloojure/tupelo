@@ -5,7 +5,7 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns cooljure.y64
+(ns tupelo.y64
   "Convert to/from the URL-safe Y64 encoding.  Y64 is a URL-safe variant of Base64
   encoding created by Yahoo (YUI library) which replaces URL-problematic chars 
   with URL-safe substitutes. The specific substitutions are:
@@ -17,11 +17,11 @@
     http://www.yuiblog.com/blog/2010/07/06/in-the-yui-3-gallery-base64-and-y64-encoding/
   "
   (:require [clojure.string     :as str]
-            [cooljure.base64    :as b64]
-            [cooljure.misc      :as misc]
-            [cooljure.types     :as types]
+            [tupelo.base64    :as b64]
+            [tupelo.misc      :as misc]
+            [tupelo.types     :as types]
             [schema.core        :as s] )
-  (:use cooljure.core)
+  (:use tupelo.core)
   (:gen-class))
 
 ; #awt TODO: convert :pre/:post to Prismatic Schema

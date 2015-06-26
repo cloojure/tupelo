@@ -5,10 +5,10 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns tst.cooljure.parse
-  (:require [cooljure.parse             :as coolp]
+(ns tst.tupelo.parse
+  (:require [tupelo.parse             :as coolp]
             [clojure.test               :refer :all] 
-            [cooljure.core              :refer [rel=]] )
+            [tupelo.core              :refer [rel=]] )
   (:import   [java.lang.Math] ))
 
 (deftest parse-byte

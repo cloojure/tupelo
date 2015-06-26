@@ -5,10 +5,10 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns tst.cooljure.core
+(ns tst.tupelo.core
   (:require [clojure.string     :as str]
-            [cooljure.misc      :as misc] )
-  (:use cooljure.core 
+            [tupelo.misc      :as misc] )
+  (:use tupelo.core 
         clojure.test ))
 
 (deftest truthy-falsey-tst

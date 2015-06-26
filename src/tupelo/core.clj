@@ -4,15 +4,15 @@
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
-(ns cooljure.core
-  "Cooljure - Cool stuff you wish was in Clojure"
+(ns tupelo.core
+  "tupelo - Cool stuff you wish was in Clojure"
   (:require [clojure.core                 :as clj]
             [clojure.string               :as str] 
             [clojure.set                  :as c.s]
             [clojure.pprint               :refer [pprint] ]
             [clojure.core.match           :as ccm ]
             [schema.core                  :as s]
-            [cooljure.types               :as types] )
+            [tupelo.types               :as types] )
   (:gen-class))
 
 (defn truthy?

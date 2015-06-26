@@ -4,10 +4,10 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns tst.cooljure.datomic
-  (:use cooljure.datomic 
+(ns tst.tupelo.datomic
+  (:use tupelo.datomic 
         clojure.test
-        cooljure.core)
+        tupelo.core)
 )
 
 (deftest entity-spec-t

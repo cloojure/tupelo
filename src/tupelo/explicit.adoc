@@ -1,4 +1,4 @@
-= cooljure.explicit
+= tupelo.explicit
 
 == Explicit Language for Clojure
 
@@ -21,29 +21,29 @@ Maps are convenient, especially when keywords are used as functions to look up a
 a map.  Unfortunately, attempting to look up a non-existing keyword in a map will return
 `nil`.  While sometimes convenient, this means that a simple typo in the keyword name will
 silently return corrupted data (i.e. `nil` instead of the desired value.  The two funcitons
-`cooljure.explicit/get` and `cooljure.explicit/get-in` are drop-in replacements for `get`
+`tupelo.explicit/get` and `tupelo.explicit/get-in` are drop-in replacements for `get`
 and `get-in`, except that they will throw an Exception in the event the keyword is not
 present in the map.  Usage is illustrated below:
 
 [source,clojure]
 ----
-(cooljure.explicit/get m k)
+(tupelo.explicit/get m k)
   A fail-fast version of clojure.core/get. For map m & key k, returns
   the value v associated with k in m.  Throws an exception if k is not
   present in m.
 
-(cooljure.explicit/get-in m ks)
+(tupelo.explicit/get-in m ks)
   A fail-fast version of clojure.core/get-in. For map m & keys ks,
   returns the value v associated with ks in m, as for (get-in m ks).
   Throws an exception if the path ks is not present in m.
 ----
 
 Then, whenever you want to perform key-based lookup in maps, just use
-`cooljure.explicit` instead of the `clojure.core` version:
+`tupelo.explicit` instead of the `clojure.core` version:
 
 [source,clojure]
 ----
-user=> (require '[cooljure.explicit :as x])
+user=> (require '[tupelo.explicit :as x])
 
 user=> (def m {:a 1 :b 2})
 user=> (x/get m :a)
@@ -52,7 +52,7 @@ user=> (x/get m :c)
 ;=> IllegalArgumentException Key not present in map:
 ;=>   map: {:b 2, :a 1}
 ;=>   key: :c
-;=>   cooljure.explicit/get (explicit.clj:23)
+;=>   tupelo.explicit/get (explicit.clj:23)
 
 user=> (def mm {:a 1 :b {:c 3}})
 user=> (x/get-in mm [:b :c])
@@ -61,6 +61,6 @@ user=> (x/get-in mm [:b :z])
 ;=> IllegalArgumentException Key seq not present in map:
 ;=>   map : {:b {:c 3}, :a 1}
 ;=>   keys: [:b :z]
-;=>   cooljure.explicit/get-in (explicit.clj:34)
+;=>   tupelo.explicit/get-in (explicit.clj:34)
 ----
 

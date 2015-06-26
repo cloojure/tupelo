@@ -4,13 +4,13 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns cooljure.base64
+(ns tupelo.base64
   "Convert to/from traditional Base64 encoding."
   (:require [clojure.string :as str]
             [clojure.data.codec.base64 :as clj-b64]
-            [cooljure.misc  :as misc]
-            [cooljure.types :as types] )
-  (:use cooljure.core)
+            [tupelo.misc  :as misc]
+            [tupelo.types :as types] )
+  (:use tupelo.core)
   (:gen-class))
 
 ; #awt TODO: convert :pre/:post to Prismatic Schema

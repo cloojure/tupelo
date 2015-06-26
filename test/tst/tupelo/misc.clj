@@ -4,12 +4,12 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns tst.cooljure.misc
-  (:use cooljure.misc 
-        cooljure.core
+(ns tst.tupelo.misc
+  (:use tupelo.misc 
+        tupelo.core
         clojure.test )
   (:require [clojure.string     :as str]
-            [cooljure.misc      :as misc] ))
+            [tupelo.misc      :as misc] ))
 
 (set! *warn-on-reflection* true)
 

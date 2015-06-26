@@ -5,10 +5,10 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns tst.cooljure.csv
+(ns tst.tupelo.csv
   (:require [clojure.string             :as str]
             [clojure.java.io            :as io]
-            [cooljure.csv               :refer :all]
+            [tupelo.csv               :refer :all]
             [clojure.test               :refer :all] )
   (:import  [java.io Reader StringReader] ))
 

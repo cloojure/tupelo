@@ -4,18 +4,18 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-
-(ns tst.cooljure.y64
+;
+(ns tst.tupelo.base64
   (:require [clojure.string                         :as str]
-          ; [clojure.test.check                     :as tc]
+            [clojure.test.check                     :as tc]
             [clojure.test.check.generators          :as gen]
             [clojure.test.check.properties          :as prop]
             [clojure.test.check.clojure-test        :as tst]
-            [cooljure.y64                           :as y64]
-            [cooljure.misc                          :as misc] 
-            [cooljure.types                         :as types] 
+            [tupelo.base64                        :as b64]
+            [tupelo.misc                          :as misc] 
+            [tupelo.types                         :as types] 
             [schema.core                            :as s] )
-  (:use cooljure.core
+  (:use tupelo.core
         clojure.test)
   (:gen-class))
 
@@ -23,7 +23,9 @@
   #{ s/Str } )
 
 (deftest t1 []
-  (s/validate SetOfStr #{ "a" "b" "c"} ))
+  (println "t1 - enter")
+  (s/validate SetOfStr #{ "a" "b" "c"} )
+  (println "t1 - exit"))
 
 (def printable-chars
   "A seq of 1-char strings of all printable characters from space (32) to tilde (126)"
@@ -31,42 +33,41 @@
 
 (deftest t1
   (let [orig        (byte-array [(byte \A)] )
-        y64-bytes   (y64/encode-bytes  orig)
-        result      (y64/decode-bytes  y64-bytes) ]
-    (is (every? y64/y64-chars (map char y64-bytes)))
+        b64-str     (b64/encode-bytes->str  orig)
+        result      (b64/decode-str->bytes  b64-str) ]
+    (is (every? b64/base64-chars (seq b64-str)))
     (is (= (seq orig) (seq result)))))
 
-(deftest y64-basic
-  (testing "y64 - bytes "
+(deftest b64-basic
+  (testing "base64 - bytes "
     (doseq [step [50 20 7]]
       (let [orig        (byte-array (mapv #(.byteValue %) (range 0 400 step)))
-            y64-bytes   (y64/encode-bytes  orig)
-            result      (y64/decode-bytes  y64-bytes) ]
-        (is (every? y64/y64-chars (map char y64-bytes)))
+            b64-str     (b64/encode-bytes->str  orig)
+            result      (b64/decode-str->bytes  b64-str) ]
+        (is (every? b64/base64-chars (seq b64-str)))
         (is (= (seq orig) (seq result))))))
-  (testing "y64 - string"
+  (testing "base64 - string"
     (doseq [num-chars [1 2 3 7 20]]
       (let [orig        (str/join (misc/take-dist num-chars printable-chars))
-            y64-str     (y64/encode-str  orig)
-            result      (y64/decode-str  y64-str) ]
-        (is (every? y64/y64-chars (seq y64-str)))
+            b64-str     (b64/encode-str  orig)
+            result      (b64/decode-str  b64-str) ]
+        (is (every? b64/base64-chars (seq b64-str)))
         (is (= orig result))))))
 
-; Transform a seq of bytes to a y64 string and back
 (tst/defspec ^:slow round-trip-bytes 9999
   (prop/for-all [orig gen/bytes]
-    (let [y64-str   (y64/encode-bytes->str  orig)
-          result    (y64/decode-str->bytes  y64-str) ]
-      (assert (every? y64/y64-chars (seq y64-str)))
+    (let [string-b64  (b64/encode-bytes->str  orig)
+          result      (b64/decode-str->bytes  string-b64) ]
+      (assert (every? b64/base64-chars (seq string-b64)))
       (assert (types/byte-array? result))
       (= (seq orig) (seq result)))))
 
-; Transform a string to a y64 string and back
+; Transform a string to a base64 string and back
 (tst/defspec ^:slow round-trip-string 9999
   (prop/for-all [orig gen/string]
-    (let [y64-str   (y64/encode-str  orig)
-          result    (y64/decode-str  y64-str) ]
-      (assert (every? y64/y64-chars (seq y64-str)))
+    (let [string-b64  (b64/encode-str  orig)
+          result      (b64/decode-str  string-b64) ]
+      (assert (every? b64/base64-chars (seq string-b64)))
       (assert (string? result))
       (= orig result))))
 
@@ -78,8 +79,8 @@
     (newline)
     (doseq [prefix ["" "a" "ab" "abc"] ]
       (let [orig-str    (str prefix curr-char)
-            enc-str     (y64/encode-str orig-str)
-            dec-str     (y64/decode-str enc-str) ]
+            enc-str     (b64/encode-str orig-str)
+            dec-str     (b64/decode-str enc-str) ]
         (print (format "\"%s\" \"%s\" \"%s\"          " orig-str enc-str dec-str)))))
   (newline))
 

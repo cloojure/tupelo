@@ -5,9 +5,9 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns tst.cooljure.explicit
+(ns tst.tupelo.explicit
   (:require [clojure.string         :as str]
-            [cooljure.explicit      :as x]
+            [tupelo.explicit      :as x]
             [clojure.test           :refer :all] ))
 
 (deftest get-t

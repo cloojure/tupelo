@@ -1,4 +1,4 @@
-= cooljure.csv
+= tupelo.csv
 
 == Enhanced CSV Parsing Functions
 
@@ -6,11 +6,11 @@
 
 The standard link:http://github.com/davidsantiago/clojure-csv[clojure-csv library] has well-tested and useful functions for parsing 
 CSV (Comma Separated Value) text data, but it does not offer all of the convenience one
-may wish. In `cooljure.csv` we emphasize the idomatic Clojure usage of data, using 
+may wish. In `tupelo.csv` we emphasize the idomatic Clojure usage of data, using 
 sequences and maps.
 
 Typically, the first line of CSV data are the data labels which describe all of the
-remaining rows of data.  The `cooljure.csv` function `parse-csv->row-maps` does exactly
+remaining rows of data.  The `tupelo.csv` function `parse-csv->row-maps` does exactly
 what its name implies, (safely) converting the data labels into Clojure keywords and 
 pairing them with each row of data to form a Clojure map.  The return value is then a
 sequence of such maps. The simplest way to parse CSV data is:
@@ -24,7 +24,7 @@ Reader, etc. For example:
 
 [source,clojure]
 ----
-user=> (require '[cooljure.csv :as csv])
+user=> (require '[tupelo.csv :as csv])
 user=> (use     '[clojure.pprint])
 
 user=> (def csv-str "name,  email,          phone

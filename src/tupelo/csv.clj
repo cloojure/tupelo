@@ -4,13 +4,13 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns cooljure.csv
+(ns tupelo.csv
   "Utils for reading CSV (comma-separated-value) formatted files."
   (:require [clojure.string             :as str]
             [clojure.java.io            :as io]
             [clojure-csv.core           :as csv]
-            [cooljure.misc              :as cool-misc] 
-            [cooljure.core              :refer :all] )
+            [tupelo.misc              :as cool-misc] 
+            [tupelo.core              :refer :all] )
   (:import  [java.io Reader StringReader] ))
 
 (defn- get-labels-and-data-lines
@@ -56,7 +56,7 @@
   ] row-maps ))
 
 ; AWTAWT TODO: clean up, enforce identical columns each row
-(defn row-maps->col-vecs    ; move to cooljure.data ?
+(defn row-maps->col-vecs    ; move to tupelo.data ?
   "<TEMP> Converts a sequence of row-maps into a map of column-vectors"
   [row-maps]
   { :pre  [ (map? (first row-maps)) ]
@@ -67,7 +67,7 @@
   ] col-vecs ))
 
 ; AWTAWT TODO: clean up, enforce identical columns length
-(defn col-vecs->row-maps    ; move to cooljure.data ?
+(defn col-vecs->row-maps    ; move to tupelo.data ?
   "<TEMP> Converts a map of column-vectors into a sequence of row-maps"
   [col-vecs]
   { :pre  [ (map? col-vecs) ]
@@ -84,7 +84,7 @@
   assumed to be column label strings, which are (safely) converted into keywords. The
   returned map has one entry for each column label keyword. The corresponding value for
   each keyword is a vector of string data taken from each subsequent line in the file.
-  See cooljure.csv/parse-csv->row-maps for options."
+  See tupelo.csv/parse-csv->row-maps for options."
   [csv-input & {:as opts} ] 
   (let [opts (or opts {} ) ] 
     (row-maps->col-vecs 

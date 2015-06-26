@@ -4,12 +4,12 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns cooljure.explicit
+(ns tupelo.explicit
   "Functions that avoid ambiguity"
   (:refer-clojure :exclude [get get-in] )
   (:require [clojure.string               :as str]
             [clojure.core                 :as clj]
-            [cooljure.core                :as cool] ))
+            [tupelo.core                :as cool] ))
 
 ; If necessary, can copy the following syntax to override clojure/core vars
 ;       (:refer-clojure :exclude [* - + == /])

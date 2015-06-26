@@ -4,13 +4,13 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns cooljure.parse
+(ns tupelo.parse
   "Utils for parsing string values. Provides a thin Clojure wrapper around java native
   parsing functions such as java.lang.Float/parseFloat.  Unlike the original java
   functions, these native-Clojure functions can be used as higher-order functions in maps,
   function arguments, etc.  Each function also provides an optional default-value which
   will be returned if there is an exception during parsing."
-  (:require [cooljure.core :refer :all] ))
+  (:require [tupelo.core :refer :all] ))
 
 ; #awt TODO:  convert args from [str-val & opts] -> [str-val & {:as opts} ]
 

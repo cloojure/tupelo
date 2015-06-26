@@ -4,32 +4,32 @@
 
 Leiningen coordinates:   
 
-image:http://clojars.org/cooljure/latest-version.svg[ http://clojars.org/cooljure ]
+image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 
-=== API Docs:   http://cloojure.github.io/doc/cooljure/
+=== API Docs:   http://cloojure.github.io/doc/tupelo/
 
 == Overview
 
 Have you ever wanted to do something simple but clojure.core doesn't support it? Or, maybe
-you are wishing for an enhanced version of a standard function. The goal of Cooljure is to
+you are wishing for an enhanced version of a standard function. The goal of Tupelo is to
 add support for these convenience features, so that you have a simple way of using either
 the enhanced version or the original version.
 
-The goal in using `cooljure.core` is that you can just plop it into any namespace without
+The goal in using `tupelo.core` is that you can just plop it into any namespace without
 having to worry about any conflicts with `clojure.core` functionality. So, both the core functions
 and the added/enhanced functions are both available for use at all times. As such, we use
-normally use `:refer :all` for `cooljure.core` in our namespaces:
+normally use `:refer :all` for `tupelo.core` in our namespaces:
 
 [source,clojure]
 ----
 (ns my.proj
-  (:require [cooljure.core    :refer :all]
-            [cooljure.csv     :as cool-csv]
-            [cooljure.parse   :as cool-parse] 
+  (:require [tupelo.core    :refer :all]
+            [tupelo.csv     :as cool-csv]
+            [tupelo.parse   :as cool-parse] 
             ... ))
 ----
 
-=== cooljure.core - Basic functions
+=== tupelo.core - Basic functions
 
 ==== The truth is not ambiguous
 
@@ -239,10 +239,10 @@ test namespace:
   suffix is added to all src namespaces to generate the cooresponding test
   namespace.  Example:
 
-    (test-all 'cooljure.core 'cooljure.csv)
+    (test-all 'tupelo.core 'tupelo.csv)
 
-  This will reload cooljure.core, cooljure.core-test, cooljure.csv,
-  cooljure.csv-test and then execute clojure.test/run-tests on both of the test
+  This will reload tupelo.core, tupelo.core-test, tupelo.csv,
+  tupelo.csv-test and then execute clojure.test/run-tests on both of the test
   namespaces.
 ----
 
@@ -274,41 +274,41 @@ An extract from the unit tests illustrates the use of `rel=`
 ----
 === Full API Documentation
 
-Is located at:  http://cloojure.github.io/doc/cooljure/
+Is located at:  http://cloojure.github.io/doc/tupelo/
 
 == Other Useful Tools:
 
-Besides `cooljure.core`, Cooljure has a number of other useful tools in the following
+Besides `tupelo.core`, tupelo has a number of other useful tools in the following
 namespaces:
 
-=== cooljure.explicit - Explicit Language for Clojure
+=== tupelo.explicit - Explicit Language for Clojure
 
 Clojure tries to be flexible and return reasonable default value (usually `nil`) when
 something goes wrong (for example, looking up a non-existent key in a map).  The functions in 
-`cooljure.explicit` disable this behavior and instead implement a "fail-fast" philosophy.
+`tupelo.explicit` disable this behavior and instead implement a "fail-fast" philosophy.
 
-link:src/cooljure/explicit.adoc[Documentation for cooljure.explicit]
+link:src/tupelo/explicit.adoc[Documentation for tupelo.explicit]
 
-=== cooljure.csv - Functions for using CSV (Comma Separate Value) files
+=== tupelo.csv - Functions for using CSV (Comma Separate Value) files
 
 The standard link:http://github.com/davidsantiago/clojure-csv[clojure-csv library] has well-tested and useful functions for parsing 
 CSV (Comma Separated Value) text data, but it does not offer all of the convenience one
-may wish. In `cooljure.csv` we emphasize the idomatic Clojure usage of data, using
+may wish. In `tupelo.csv` we emphasize the idomatic Clojure usage of data, using
 sequences and maps.
 
-link:src/cooljure/csv.adoc[Documentation for cooljure.csv]
+link:src/tupelo/csv.adoc[Documentation for tupelo.csv]
 
-=== cooljure.parse - Functions to ease parsing
+=== tupelo.parse - Functions to ease parsing
 
-TEMP TODO:  see http://cloojure.github.io/cooljure/cooljure.parse.html
+TEMP TODO:  see http://cloojure.github.io/tupelo/tupelo.parse.html
 
-=== cooljure.base64 - Convert to/from base64 encoding
+=== tupelo.base64 - Convert to/from base64 encoding
 
-TEMP TODO:  see http://cloojure.github.io/cooljure/cooljure.base64.html
+TEMP TODO:  see http://cloojure.github.io/tupelo/tupelo.base64.html
 
-=== cooljure.y64 - Convert to/from the URL-safe Y64 encoding (Yahoo YUI library).
+=== tupelo.y64 - Convert to/from the URL-safe Y64 encoding (Yahoo YUI library).
 
-TEMP TODO:  see http://cloojure.github.io/cooljure/cooljure.y64.html
+TEMP TODO:  see http://cloojure.github.io/tupelo/tupelo.y64.html
 
 == License
 
