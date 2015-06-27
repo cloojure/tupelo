@@ -57,67 +57,67 @@
     (let [result  (t/new-attribute :location :db.type/string) ]
       (is (matches? result
               {:db/id           _                     :db/ident       :location 
-               :db/valueType    :xb.type/string       :db/cardinality :db.cardinality/one 
+               :db/valueType    :db.type/string       :db/cardinality :db.cardinality/one 
                :db.install/_attribute :db.part/db } )))
     (let [result  (t/new-attribute :location :db.type/keyword) ]
       (is (matches? result
               {:db/id           _                     :db/ident       :location 
-               :db/valueType    :xb.type/keyword       :db/cardinality :db.cardinality/one 
+               :db/valueType    :db.type/keyword       :db/cardinality :db.cardinality/one 
                :db.install/_attribute :db.part/db } )))
     (let [result  (t/new-attribute :location :db.type/boolean) ]
       (is (matches? result
               {:db/id           _                     :db/ident       :location 
-               :db/valueType    :xb.type/boolean       :db/cardinality :db.cardinality/one 
+               :db/valueType    :db.type/boolean       :db/cardinality :db.cardinality/one 
                :db.install/_attribute :db.part/db } )))
     (let [result  (t/new-attribute :location :db.type/long) ]
       (is (matches? result
               {:db/id           _                     :db/ident       :location 
-               :db/valueType    :xb.type/long       :db/cardinality :db.cardinality/one 
+               :db/valueType    :db.type/long       :db/cardinality :db.cardinality/one 
                :db.install/_attribute :db.part/db } )))
     (let [result  (t/new-attribute :location :db.type/bigint) ]
       (is (matches? result
               {:db/id           _                     :db/ident       :location 
-               :db/valueType    :xb.type/bigint       :db/cardinality :db.cardinality/one 
+               :db/valueType    :db.type/bigint       :db/cardinality :db.cardinality/one 
                :db.install/_attribute :db.part/db } )))
     (let [result  (t/new-attribute :location :db.type/float) ]
       (is (matches? result
               {:db/id           _                     :db/ident       :location 
-               :db/valueType    :xb.type/float       :db/cardinality :db.cardinality/one 
+               :db/valueType    :db.type/float       :db/cardinality :db.cardinality/one 
                :db.install/_attribute :db.part/db } )))
     (let [result  (t/new-attribute :location :db.type/double) ]
       (is (matches? result
               {:db/id           _                     :db/ident       :location 
-               :db/valueType    :xb.type/double       :db/cardinality :db.cardinality/one 
+               :db/valueType    :db.type/double       :db/cardinality :db.cardinality/one 
                :db.install/_attribute :db.part/db } )))
     (let [result  (t/new-attribute :location :db.type/bigdec) ]
       (is (matches? result
               {:db/id           _                     :db/ident       :location 
-               :db/valueType    :xb.type/bigdec       :db/cardinality :db.cardinality/one 
+               :db/valueType    :db.type/bigdec       :db/cardinality :db.cardinality/one 
                :db.install/_attribute :db.part/db } )))
     (let [result  (t/new-attribute :location :db.type/bytes) ]
       (is (matches? result
               {:db/id           _                     :db/ident       :location 
-               :db/valueType    :xb.type/bytes       :db/cardinality :db.cardinality/one 
+               :db/valueType    :db.type/bytes       :db/cardinality :db.cardinality/one 
                :db.install/_attribute :db.part/db } )))
     (let [result  (t/new-attribute :location :db.type/instant) ]
       (is (matches? result
               {:db/id           _                     :db/ident       :location 
-               :db/valueType    :xb.type/instant       :db/cardinality :db.cardinality/one 
+               :db/valueType    :db.type/instant       :db/cardinality :db.cardinality/one 
                :db.install/_attribute :db.part/db } )))
     (let [result  (t/new-attribute :location :db.type/uuid) ]
       (is (matches? result
               {:db/id           _                     :db/ident       :location 
-               :db/valueType    :xb.type/uuid       :db/cardinality :db.cardinality/one 
+               :db/valueType    :db.type/uuid       :db/cardinality :db.cardinality/one 
                :db.install/_attribute :db.part/db } )))
     (let [result  (t/new-attribute :location :db.type/uri) ]
       (is (matches? result
               {:db/id           _                     :db/ident       :location 
-               :db/valueType    :xb.type/uri       :db/cardinality :db.cardinality/one 
+               :db/valueType    :db.type/uri       :db/cardinality :db.cardinality/one 
                :db.install/_attribute :db.part/db } )))
     (let [result  (t/new-attribute :location :db.type/ref) ]
       (is (matches? result
               {:db/id           _                     :db/ident       :location 
-               :db/valueType    :xb.type/ref       :db/cardinality :db.cardinality/one 
+               :db/valueType    :db.type/ref       :db/cardinality :db.cardinality/one 
                :db.install/_attribute :db.part/db } ))))
 
   (testing "cardinality & unique"
