@@ -3,6 +3,7 @@
         clojure.test )
   (:require [datomic.api      :as d]
             [tupelo.datomic   :as t]
+            [tupelo.schema    :as ts]
             [schema.core      :as s]))
 
 (set! *warn-on-reflection* false)
@@ -27,6 +28,19 @@
       (d/delete-database uri)
     )))
 
+
+(deftest t-new-partition
+  (let [result   (t/new-partition :people ) ]
+    (is (matches? result
+           {:db/id                    #db/id[:db.part/db _] 
+            :db.install/_partition    :db.part/db 
+            :db/ident                 :people} )))
+  (let [result   (t/new-partition :part.with.ns ) ]
+    (is (matches? result
+           {:db/id                    #db/id[:db.part/db _] 
+            :db.install/_partition    :db.part/db 
+            :db/ident                 :part.with.ns} )))
+)
 
 (deftest t-new-attribute
   (testing "basic"
@@ -144,16 +158,69 @@
 )
 
 
-(deftest t-new-partition
-  (let [result   (t/new-partition :people ) ]
-    (is (matches? result
-           {:db/id                    #db/id[:db.part/db _] 
-            :db.install/_partition    :db.part/db 
-            :db/ident                 :people} )))
-  (let [result   (t/new-partition :part.with.ns ) ]
-    (is (matches? result
-           {:db/id                    #db/id[:db.part/db _] 
-            :db.install/_partition    :db.part/db 
-            :db/ident                 :part.with.ns} )))
-)
+(deftest t-new-entity
+  (testing "new-entity"
+    (let [result  (t/new-entity     {:person/name "dilbert" :job/type :job.type/sucky} ) ]
+      (is (matches? result {:db/id _ :person/name "dilbert" :job/type :job.type/sucky} ))
+    )
+  )
+  (testing "new-entity with partition"
+    (let [result  (t/new-entity  :dummy.part/name   {:person/name "dilbert" :job/type :job.type/sucky} ) 
+          dbid    (grab :db/id result) 
+          part1   (first dbid)
+          part2   (second dbid) ]
+      ; result: {:db/id #db/id[:dummy.part/name -1000003] :person/name "dilbert" :job/type :job.type/sucky}
+      (is (matches? result   {:db/id _  :person/name "dilbert" :job/type :job.type/sucky} ))
+      (is (matches? dbid #db/id[:dummy.part/name _] ))  ; #db/id[:dummy.part/name -1000003]
+      (is (matches? part1 [:part :dummy.part/name]))
+      (is (matches? part2 [:idx _]))
+      (is (s/validate ts/Eid (second part2))))))
+
+#_(deftest t-xx
+  (testing "xx"
+      (let [result  
+      ]
+        (spyxx result)
+      )
+  ))
+
+#_(deftest t-xx
+  (testing "xx"
+      (let [result  
+      ]
+        (spyxx result)
+      )
+  ))
+
+#_(deftest t-xx
+  (testing "xx"
+      (let [result  
+      ]
+        (spyxx result)
+      )
+  ))
+
+#_(deftest t-xx
+  (testing "xx"
+      (let [result  
+      ]
+        (spyxx result)
+      )
+  ))
+
+#_(deftest t-xx
+  (testing "xx"
+      (let [result  
+      ]
+        (spyxx result)
+      )
+  ))
+
+#_(deftest t-xx
+  (testing "xx"
+      (let [result  
+      ]
+        (spyxx result)
+      )
+  ))
 
