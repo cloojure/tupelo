@@ -1,7 +1,8 @@
 (ns tupelo.datomic
   (:refer-clojure :exclude [update partition])
   (:require [datomic.api      :as d]
-            [tupelo.core    :refer [truthy? safe-> it-> spy spyx spyxx grab]]
+            [tupelo.core      :refer [truthy? safe-> it-> spy spyx spyxx grab]]
+            [tupelo.schema    :as ts]
             [schema.core      :as s] )
   (:use   clojure.pprint)
   (:import [java.util HashSet] )
@@ -10,74 +11,6 @@
 ;---------------------------------------------------------------------------------------------------
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
-
-(def Map      {s/Any      s/Any} )
-(def KeyMap   {s/Keyword  s/Any} )
-
-(def Eid
-  "Each entity in the DB is uniquely specified its Entity ID (EID).  Indeed, allocation of a unique
-   EID is what 'creates' an entity in the DB."
-  Long)
-
-(def HashSetGeneric
-  "Either a Clojure hash-set or a java.util.HashSet"
-  (s/either #{s/Any} 
-            java.util.HashSet ))
-
-; #todo - clarify in all doc-strings that entity-spec = [EID or lookup-ref]
-(def LookupRef  
-  "If an entity has an attribute with either :db.unique/value or :db.unique/identity, that entity
-   can be uniquely specified using a lookup-ref (LookupRef). A lookup-ref is an attribute-value pair
-   expressed as a tuple:  [ <attribute> <value> ]"
-  [ (s/one s/Keyword  "attr")  
-    (s/one s/Any      "val" ) ] )
-
-(def EntitySpec 
-  "An EntitySpec is used to uniquely specify an entity in the DB. It consists of 
-   either an EID or a LookupRef."
-  (s/either Eid 
-            LookupRef))
-
-(def DatomMap
-  "The Clojure map representation of a Datom."
-  { :e Eid  :a Eid  :v s/Any  :tx Eid  :added s/Bool } )
-
-(def TxResult
-  "A map returned by a successful transaction. Contains the keys 
-   :db-before, :db-after, :tx-data, and :tempids"
-  { :db-before    datomic.db.Db
-    :db-after     datomic.db.Db
-    :tx-data      [s/Any]  ; #todo (seq of datom)
-    :tempids      Map } )  ; #todo
-
-(def Tuple
-  "A specific type of sequential collection, typically a vector of constant length where each
-   element has a pre-defined interpretation."
-  [s/Any] )
-
-(def TupleList
-  "A sequence of tuples (typically a vector of vectors)"
-  [ Tuple ] )
-
-(def TupleSet 
-  "The result of any Datomic using the Entity API is logically a hash-set of tuples (vectors).  
-   The contents and order of each tuple is determined by the find clause:
-
-        ----- query -----                         ----- tuples -----
-      (d/q '{:find [?e ?name ?age] ...)     ->    [?e ?name ?age] 
-   
-   "
-  #{ Tuple } )
-
-(def TupleMap     [ {s/Any s/Any} ] ) ; pull api
-
-(def Vec1 [ (s/one s/Any "x1") ] )
-(def Vec2 [ (s/one s/Any "x1") (s/one s/Any "x2") ] )
-(def Vec3 [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") ] )
-(def Vec4 [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") (s/one s/Any "x4") ] )
-(def Vec5 [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") (s/one s/Any "x4") (s/one s/Any "x5") ] )
-
-;---------------------------------------------------------------------------------------------------
 
 (def special-attrvals
  "A map that defines the set of permissible values for use in attribute definition.
@@ -122,7 +55,7 @@
 ;---------------------------------------------------------------------------------------------------
 ; Core functions
 
-(s/defn new-partition :- KeyMap
+(s/defn new-partition :- ts/KeyMap
   "Returns the tx-data to create a new partition in the DB. Usage:
 
     (d/transact *conn* [
@@ -136,7 +69,7 @@
     :db.install/_partition    :db.part/db   ; ceremony so Datomic "installs" our new partition
     :db/ident                 ident } )     ; the "name" of our new partition
 
-(s/defn new-attribute    :- KeyMap
+(s/defn new-attribute    :- ts/KeyMap
   "Returns the tx-data to create a new attribute in the DB.  Usage:
 
     (d/transact *conn* [
@@ -187,7 +120,7 @@
   ))
 
 ; #todo need test
-(s/defn new-entity  :- KeyMap
+(s/defn new-entity  :- ts/KeyMap
   "Returns the tx-data to create a new entity in the DB. Usage:
 
     (d/transact *conn* [
@@ -197,14 +130,14 @@
 
    where attr-val-map is a Clojure map containing attribute-value pairs to be added to the new
    entity."
-  ( [ attr-val-map    :- KeyMap ]
+  ( [ attr-val-map    :- ts/KeyMap ]
    (new-entity :db.part/user attr-val-map))
   ( [ -partition      :- s/Keyword
-      attr-val-map    :- KeyMap ]
+      attr-val-map    :- ts/KeyMap ]
     (into {:db/id (d/tempid -partition) } attr-val-map)))
 
 ; #todo need test
-(s/defn new-enum :- KeyMap   ; #todo add namespace version
+(s/defn new-enum :- ts/KeyMap   ; #todo add namespace version
   "Returns the tx-data to create a new enumeration entity in the DB. Usage:
 
     (d/transact *conn* [
@@ -219,7 +152,7 @@
 
 ; #todo  -  document entity-spec as EID or refspec in all doc-strings
 ; #todo  -  document use of "ident" in all doc-strings
-(s/defn update :- KeyMap
+(s/defn update :- ts/KeyMap
   "Returns the tx-data to update an existing entity  Usage:
 
     (d/transact *conn* [
@@ -230,11 +163,11 @@
    entity.  For attributes with :db.cardinality/one, the previous value will be (automatically)
    retracted prior to the insertion of the new value. For attributes with :db.cardinality/many, the
    new value will be accumulated into the current set of values.  "
-  [entity-spec    :- EntitySpec
-   attr-val-map   :- KeyMap ]
+  [entity-spec    :- ts/EntitySpec
+   attr-val-map   :- ts/KeyMap ]
     (into {:db/id entity-spec} attr-val-map))
 
-(s/defn retraction :- Vec4
+(s/defn retraction :- ts/Vec4
   "Returns the tx-data to retract an attribute-value pair for an entity. Usage:
 
     (d/transact *conn* [
@@ -242,12 +175,12 @@
     ] )
 
    where the attribute-value pair must exist for the entity or the retraction will fail.  " ; #todo verify
-  [entity-spec  :- EntitySpec
+  [entity-spec  :- ts/EntitySpec
    attribute    :- s/Keyword
    value        :- s/Any ]
   [:db/retract entity-spec attribute value] )
 
-(s/defn retraction-entity :- Vec2
+(s/defn retraction-entity :- ts/Vec2
   "Returns the tx-data to retract all attribute-value pairs for an entity, as well as all references
    to the entity by other entities. Usage:
    
@@ -257,7 +190,7 @@
    
   If the retracted entity refers to any other entity through an attribute with :db/isComponent=true,
   the referenced entity will be recursively retracted as well."
-  [entity-spec  :- EntitySpec ]
+  [entity-spec  :- ts/EntitySpec ]
   [:db.fn/retractEntity entity-spec] )
 
 ; #todo need test
@@ -279,19 +212,19 @@
 ; (defn find-scalars  ...)       -> Set
 ; (defn find-one      ...)       -> scalar
 
-(s/defn result-set :- TupleSet
+(s/defn result-set :- ts/TupleSet
   "Returns a TupleSet (hash-set of tuples) built from the output of a Datomic query using the Entity API"
-  [raw-resultset :- HashSetGeneric]
+  [raw-resultset :- ts/HashSetGeneric]
   (into #{} raw-resultset))
 
-(s/defn result-set-sort :- TupleSet
+(s/defn result-set-sort :- ts/TupleSet
   "Returns a TupleSet (hash-set of tuples) built from the output of a Datomic query using the Entity API"
-  [raw-resultset :- HashSetGeneric]
+  [raw-resultset :- ts/HashSetGeneric]
   (into (sorted-set) raw-resultset))
 
 (s/defn result-only :- [s/Any]
   "Returns a single tuple result built from the output of a Datomic query using the Entity API"
-  [raw-resultset :- HashSetGeneric]
+  [raw-resultset :- ts/HashSetGeneric]
   (let [rs          (result-set raw-resultset)
         num-tuples  (count rs) ]
     (when-not (= 1 num-tuples)
@@ -301,7 +234,7 @@
 
 (s/defn result-scalar :- s/Any
   "Returns a single scalar result built from the output of a Datomic query using the Entity API"
-  [raw-resultset :- HashSetGeneric]
+  [raw-resultset :- ts/HashSetGeneric]
   (let [tuple       (result-only raw-resultset)
         tuple-len   (count tuple) ]
     (when-not (= 1 tuple-len)
@@ -309,20 +242,20 @@
                (format "TupleSet must be one tuple of one element; tuple-len = %d" ))))
     (first tuple)))
 
-(s/defn entity-map :- KeyMap
+(s/defn entity-map :- ts/KeyMap
   "Returns a map of an entity's attribute-value pairs. A simpler, eager version of datomic/entity."
   [db-val         :- datomic.db.Db
-   entity-spec    :- EntitySpec ]
+   entity-spec    :- ts/EntitySpec ]
   (into {} (d/entity db-val entity-spec)))
 
-(s/defn entity-map-sort :- KeyMap
+(s/defn entity-map-sort :- ts/KeyMap
   "Returns a map of an entity's attribute-value pairs. A simpler, eager version of datomic/entity."
   [db-val         :- datomic.db.Db
-   entity-spec    :- EntitySpec ]
+   entity-spec    :- ts/EntitySpec ]
   (into (sorted-map) (d/entity db-val entity-spec)))
 
 ; #todo - need test
-(s/defn datom-map :- DatomMap
+(s/defn datom-map :- ts/DatomMap
   "Returns a plain of Clojure map of an datom's attribute-value pairs. 
    A datom map is structured as:
 
@@ -340,7 +273,7 @@
     :added        (:added datom) } )
 
 ; #todo - need test
-(s/defn datoms :- [ DatomMap ]
+(s/defn datoms :- [ ts/DatomMap ]
   "Returns a sequence of Clojure maps of an datom's attribute-value pairs. 
    A datom map is structured as:
 
@@ -360,7 +293,7 @@
 (s/defn eid->ident :- s/Keyword
   "Returns the keyword ident value given an EID value"
   [db-val     :- s/Any  ; #todo
-   eid-val    :- Eid]
+   eid-val    :- ts/Eid]
   (let [result  (d/q '[:find ?ident .
                        :in $ ?eid
                        :where [?eid :db/ident ?ident] ]
@@ -371,7 +304,7 @@
 (s/defn tx-datoms :- s/Any
   "Returns a seq of datom-maps from a TxResult"
   [db-val     :- s/Any  ; #todo
-   tx-result  :- TxResult ]
+   tx-result  :- ts/TxResult ]
   (let [tx-data       (:tx-data tx-result)  ; a seq of datoms
         fn-datom      (fn [arg]
                         (let [datom1  (datom-map arg)
@@ -387,10 +320,10 @@
 (s/defn partition-name :- s/Keyword
   "Returns the name of a DB partition (its :db/ident value)"
   [db-val       :- datomic.db.Db
-   entity-spec  :- EntitySpec ]
+   entity-spec  :- ts/EntitySpec ]
   (d/ident db-val (d/part entity-spec)))
 
-(s/defn transactions :- [ KeyMap ]
+(s/defn transactions :- [ ts/KeyMap ]
   "Returns a lazy-seq of entity-maps for all DB transactions"
   [db-val :- s/Any]
   (let [tx-datoms (datoms db-val :aevt :db/txInstant) ] ; all datoms with attr :db/txInstant
@@ -398,14 +331,14 @@
       (entity-map db-val (:e datom)))))
 
 ; #todo need test
-(s/defn eids :- [long]
+(s/defn eids :- [ts/Eid]
   "Returns a collection of the EIDs created in a transaction."
-  [tx-result :- TxResult]
+  [tx-result :- ts/TxResult]
   (vals (grab :tempids tx-result)))
 
-(s/defn txid  :- Eid
+(s/defn txid  :- ts/Eid
   "Returns the EID of a transaction"
-  [tx-result :- TxResult]
+  [tx-result :- ts/TxResult]
   (let [datoms  (grab :tx-data tx-result)
         txids   (mapv :tx datoms)
         _ (assert (apply = txids))  ; all datoms in tx have same txid
