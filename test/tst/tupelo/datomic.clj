@@ -176,12 +176,16 @@
       (is (matches? part2 [:idx _]))
       (is (s/validate ts/Eid (second part2))))))
 
-#_(deftest t-xx
+(deftest t-new-enum
   (testing "xx"
-      (let [result  
-      ]
-        (spyxx result)
-      )
+    (let [result    (t/new-enum :weapon.type/gun)
+    ]
+      (spyxx result)
+    )
+    (let [result    (t/new-enum :gun)
+    ]
+      (spyxx result)
+    )
   ))
 
 #_(deftest t-xx
