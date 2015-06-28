@@ -211,6 +211,12 @@
   (is (thrown? Exception (t/result-set [ [:a 1] [:b 2] ] )))
 )
 
+(deftest t-result-only
+  (is (= (t/result-only #{ [:a 1] } )
+                           [:a 1] ))
+  (is (thrown? Exception (t/result-only #{ [:a 1] [:b 2] } )))
+)
+
 #_(deftest t-xx
   (testing "xx"
     (let [result  
