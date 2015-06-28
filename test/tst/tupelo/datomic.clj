@@ -178,18 +178,25 @@
 
 (deftest t-new-enum
   (is (matches? (t/new-enum :weapon.type/gun)
-                {:db/id #db/id[:db.part/user _], :db/ident :weapon.type/gun} ))
+                {:db/id #db/id[:db.part/user _] :db/ident :weapon.type/gun} ))
   (is (matches? (t/new-enum :gun)
-                {:db/id #db/id[:db.part/user _], :db/ident :gun} ))
+                {:db/id #db/id[:db.part/user _] :db/ident :gun} ))
   (is (thrown? Exception (t/new-enum "gun"))))
 
 (deftest t-update
   (testing "update"
     (is (matches? (t/update 999 {:person/name "joe"  :car :car.type/bmw} )
-          {:db/id 999, :person/name "joe", :car :car.type/bmw} ))
+          {:db/id 999 :person/name "joe" :car :car.type/bmw} ))
     (is (matches? (t/update [:person/name "joe"] {:car :car.type/bmw} )
-          {:db/id [:person/name "joe"], :car :car.type/bmw} ))
+          {:db/id [:person/name "joe"] :car :car.type/bmw} ))
   ))
+
+(deftest t-retraction
+  (testing "retraction"
+    (is (matches? (t/retraction 999 :car :car.type/bmw)
+                   [:db/retract 999 :car :car.type/bmw] ))
+    (is (matches? (t/retraction [:person/name "joe"] :car :car.type/bmw )
+                   [:db/retract [:person/name "joe"] :car :car.type/bmw] ))))
 
 #_(deftest t-xx
   (testing "xx"
