@@ -183,43 +183,59 @@
                 {:db/id #db/id[:db.part/user _], :db/ident :gun} ))
   (is (thrown? Exception (t/new-enum "gun"))))
 
-#_(deftest t-xx
-  (testing "xx"
-      (let [result  
-      ]
-        (spyxx result)
-      )
+(deftest t-update
+  (testing "update"
+    (is (matches? (t/update 999 {:person/name "joe"  :car :car.type/bmw} )
+          {:db/id 999, :person/name "joe", :car :car.type/bmw} ))
+    (is (matches? (t/update [:person/name "joe"] {:car :car.type/bmw} )
+          {:db/id [:person/name "joe"], :car :car.type/bmw} ))
   ))
 
 #_(deftest t-xx
   (testing "xx"
-      (let [result  
-      ]
-        (spyxx result)
-      )
+    (let [result  
+    ]
+      (spyxx result)
+    )
   ))
 
 #_(deftest t-xx
   (testing "xx"
-      (let [result  
-      ]
-        (spyxx result)
-      )
+    (let [result  
+    ]
+      (spyxx result)
+    )
   ))
 
 #_(deftest t-xx
   (testing "xx"
-      (let [result  
-      ]
-        (spyxx result)
-      )
+    (let [result  
+    ]
+      (spyxx result)
+    )
   ))
 
 #_(deftest t-xx
   (testing "xx"
-      (let [result  
-      ]
-        (spyxx result)
-      )
+    (let [result  
+    ]
+      (spyxx result)
+    )
+  ))
+
+#_(deftest t-xx
+  (testing "xx"
+    (let [result  
+    ]
+      (spyxx result)
+    )
+  ))
+
+#_(deftest t-xx
+  (testing "xx"
+    (let [result  
+    ]
+      (spyxx result)
+    )
   ))
 
