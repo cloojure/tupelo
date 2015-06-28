@@ -205,14 +205,11 @@
     (is (matches? (t/retract-entity [:person/name "joe"] )
                  [:db.fn/retractEntity [:person/name "joe"] ] ))))
 
-
-#_(deftest t-xx
-  (testing "xx"
-    (let [result  
-    ]
-      (spyxx result)
-    )
-  ))
+(deftest t-result-set
+  (is (= (t/result-set #{ [:a 1] [:b 2] } )
+                       #{ [:a 1] [:b 2] } ))
+  (is (thrown? Exception (t/result-set [ [:a 1] [:b 2] ] )))
+)
 
 #_(deftest t-xx
   (testing "xx"
