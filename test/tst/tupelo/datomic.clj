@@ -188,7 +188,7 @@
     (is (matches? (t/update 999 {:person/name "joe"  :car :car.type/bmw} )
           {:db/id 999, :person/name "joe", :car :car.type/bmw} ))
     (is (matches? (t/update [:person/name "joe"] {:car :car.type/bmw} )
-          {:db/id [:person/name "joe"], :car :car.type/bmw} ))
+          {:db/id [:person/name "joe"], :cxr :car.type/bmw} ))
   ))
 
 #_(deftest t-xx
