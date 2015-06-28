@@ -217,6 +217,13 @@
   (is (thrown? Exception (t/result-only #{ [:a 1] [:b 2] } )))
 )
 
+(deftest t-result-scalar
+  (is (= (t/result-scalar #{ ["Joe"] } )
+                              "Joe"  ))
+  (is (thrown? Exception (t/result-scalar #{ ["Joe" 42] [:b 2] } )))
+  (is (thrown? Exception (t/result-scalar #{ ["Joe" 42]        } )))
+)
+
 #_(deftest t-xx
   (testing "xx"
     (let [result  
