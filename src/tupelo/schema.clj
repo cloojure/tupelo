@@ -15,11 +15,6 @@
    EID is what 'creates' an entity in the DB."
   Long)
 
-(def HashSetGeneric
-  "Either a Clojure hash-set or a java.util.HashSet"
-  (s/either #{s/Any} 
-            java.util.HashSet ))
-
 ; #todo - clarify in all doc-strings that entity-spec = [EID or lookup-ref]
 (def LookupRef  
   "If an entity has an attribute with either :db.unique/value or :db.unique/identity, that entity
@@ -46,6 +41,11 @@
     :tx-data      [s/Any]  ; #todo (seq of datom)
     :tempids      Map } )  ; #todo
 
+(def Set
+  "Either a Clojure hash-set or a java.util.HashSet"
+  (s/either #{s/Any} 
+            java.util.HashSet ))
+
 (def Tuple
   "A specific type of sequential collection, typically a vector of constant length where each
    element has a pre-defined interpretation."
@@ -65,7 +65,7 @@
    "
   #{ Tuple } )
 
-(def TupleMap     [ {s/Any s/Any} ] ) ; pull api
+(def TupleMap     [ {s/Any s/Any} ] ) ; returned by Datomic pull api
 
 (def Vec1 [ (s/one s/Any "x1") ] )
 (def Vec2 [ (s/one s/Any "x1") (s/one s/Any "x2") ] )

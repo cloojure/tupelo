@@ -214,17 +214,17 @@
 
 (s/defn result-set :- ts/TupleSet
   "Returns a TupleSet (hash-set of tuples) built from the output of a Datomic query using the Entity API"
-  [raw-resultset :- ts/HashSetGeneric]
+  [raw-resultset :- ts/Set]
   (into #{} raw-resultset))
 
 (s/defn result-set-sort :- ts/TupleSet
   "Returns a TupleSet (hash-set of tuples) built from the output of a Datomic query using the Entity API"
-  [raw-resultset :- ts/HashSetGeneric]
+  [raw-resultset :- ts/Set]
   (into (sorted-set) raw-resultset))
 
 (s/defn result-only :- [s/Any]
   "Returns a single tuple result built from the output of a Datomic query using the Entity API"
-  [raw-resultset :- ts/HashSetGeneric]
+  [raw-resultset :- ts/Set]
   (let [rs          (result-set raw-resultset)
         num-tuples  (count rs) ]
     (when-not (= 1 num-tuples)
@@ -234,7 +234,7 @@
 
 (s/defn result-scalar :- s/Any
   "Returns a single scalar result built from the output of a Datomic query using the Entity API"
-  [raw-resultset :- ts/HashSetGeneric]
+  [raw-resultset :- ts/Set]
   (let [tuple       (result-only raw-resultset)
         tuple-len   (count tuple) ]
     (when-not (= 1 tuple-len)

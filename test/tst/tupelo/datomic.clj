@@ -205,13 +205,6 @@
     (is (matches? (t/retract-entity [:person/name "joe"] )
                  [:db.fn/retractEntity [:person/name "joe"] ] ))))
 
-#_(deftest t-xx
-  (testing "xx"
-    (let [result  
-    ]
-      (spyxx result)
-    )
-  ))
 
 #_(deftest t-xx
   (testing "xx"
