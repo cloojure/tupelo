@@ -217,11 +217,6 @@
   [raw-resultset :- ts/Set]
   (into #{} raw-resultset))
 
-(s/defn result-set-sort :- ts/TupleSet
-  "Returns a TupleSet (hash-set of tuples) built from the output of a Datomic query using the Entity API"
-  [raw-resultset :- ts/Set]
-  (into (sorted-set) raw-resultset))
-
 (s/defn result-only :- [s/Any]
   "Returns a single tuple result built from the output of a Datomic query using the Entity API"
   [raw-resultset :- ts/Set]
@@ -247,12 +242,6 @@
   [db-val         :- datomic.db.Db
    entity-spec    :- ts/EntitySpec ]
   (into {} (d/entity db-val entity-spec)))
-
-(s/defn entity-map-sort :- ts/KeyMap
-  "Returns a map of an entity's attribute-value pairs. A simpler, eager version of datomic/entity."
-  [db-val         :- datomic.db.Db
-   entity-spec    :- ts/EntitySpec ]
-  (into (sorted-map) (d/entity db-val entity-spec)))
 
 ; #todo - need test
 (s/defn datom-map :- ts/DatomMap
