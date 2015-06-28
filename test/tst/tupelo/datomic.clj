@@ -177,16 +177,11 @@
       (is (s/validate ts/Eid (second part2))))))
 
 (deftest t-new-enum
-  (testing "xx"
-    (let [result    (t/new-enum :weapon.type/gun)
-    ]
-      (spyxx result)
-    )
-    (let [result    (t/new-enum :gun)
-    ]
-      (spyxx result)
-    )
-  ))
+  (is (matches? (t/new-enum :weapon.type/gun)
+                {:db/id #db/id[:db.part/user _], :db/ident :weapon.type/gun} ))
+  (is (matches? (t/new-enum :gun)
+                {:db/id #db/id[:db.part/user _], :db/ident :gun} ))
+  (is (thrown? Exception (t/new-enum "gun"))))
 
 #_(deftest t-xx
   (testing "xx"
