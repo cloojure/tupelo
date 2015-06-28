@@ -191,20 +191,19 @@
           {:db/id [:person/name "joe"] :car :car.type/bmw} ))
   ))
 
-(deftest t-retraction
-  (testing "retraction"
-    (is (matches? (t/retraction 999 :car :car.type/bmw)
+(deftest t-retract-value
+  (testing "retract-value"
+    (is (matches? (t/retract-value 999 :car :car.type/bmw)
                    [:db/retract 999 :car :car.type/bmw] ))
-    (is (matches? (t/retraction [:person/name "joe"] :car :car.type/bmw )
+    (is (matches? (t/retract-value [:person/name "joe"] :car :car.type/bmw )
                    [:db/retract [:person/name "joe"] :car :car.type/bmw] ))))
 
-#_(deftest t-xx
-  (testing "xx"
-    (let [result  
-    ]
-      (spyxx result)
-    )
-  ))
+(deftest t-retract-entity
+  (testing "retract-entity"
+    (is (matches? (t/retract-entity 999 )
+                 [:db.fn/retractEntity 999] ))
+    (is (matches? (t/retract-entity [:person/name "joe"] )
+                 [:db.fn/retractEntity [:person/name "joe"] ] ))))
 
 #_(deftest t-xx
   (testing "xx"

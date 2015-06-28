@@ -167,11 +167,11 @@
    attr-val-map   :- ts/KeyMap ]
     (into {:db/id entity-spec} attr-val-map))
 
-(s/defn retraction :- ts/Vec4
+(s/defn retract-value :- ts/Vec4
   "Returns the tx-data to retract an attribute-value pair for an entity. Usage:
 
     (d/transact *conn* [
-      (retraction entity-spec attribute value)
+      (retract-value entity-spec attribute value)
     ] )
 
    where the attribute-value pair must exist for the entity or the retraction will fail.  " ; #todo verify
@@ -180,12 +180,12 @@
    value        :- s/Any ]
   [:db/retract entity-spec attribute value] )
 
-(s/defn retraction-entity :- ts/Vec2
+(s/defn retract-entity :- ts/Vec2
   "Returns the tx-data to retract all attribute-value pairs for an entity, as well as all references
    to the entity by other entities. Usage:
    
     (d/transact *conn* [
-      (retraction-entity entity-spec)
+      (retract-entity entity-spec)
     ] )
    
   If the retracted entity refers to any other entity through an attribute with :db/isComponent=true,
