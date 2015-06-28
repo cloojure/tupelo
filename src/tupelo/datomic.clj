@@ -237,11 +237,22 @@
                (format "TupleSet must be one tuple of one element; tuple-len = %d" ))))
     (first tuple)))
 
+; #todo - need test
 (s/defn entity-map :- ts/KeyMap
   "Returns a map of an entity's attribute-value pairs. A simpler, eager version of datomic/entity."
   [db-val         :- datomic.db.Db
    entity-spec    :- ts/EntitySpec ]
   (into {} (d/entity db-val entity-spec)))
+
+; #todo - need test
+(s/defn eid->ident :- s/Keyword
+  "Returns the keyword ident value given an EID value"
+  [db-val     :- s/Any  ; #todo
+   eid-val    :- ts/Eid]
+  (d/q '{:find  [?ident .]
+         :in    [$ ?eid]
+         :where [ [?eid :db/ident ?ident] ] }
+       db-val eid-val ))
 
 ; #todo - need test
 (s/defn datom-map :- ts/DatomMap
@@ -262,8 +273,9 @@
     :added        (:added datom) } )
 
 ; #todo - need test
+; #todo - make non-lazy?
 (s/defn datoms :- [ ts/DatomMap ]
-  "Returns a sequence of Clojure maps of an datom's attribute-value pairs. 
+  "Returns a lazy sequence of Clojure maps of an datom's attribute-value pairs. 
    A datom map is structured as:
 
       { :e        entity id (eid)
@@ -276,22 +288,12 @@
   [db             :- s/Any
    index          :- s/Keyword
    & components ]  ; #todo
-  (let [datoms  (apply d/datoms db index components) ]
-    (map datom-map datoms)))
+  (for [datom (apply d/datoms db index components) ]
+    (datom-map datom)))
 
-(s/defn eid->ident :- s/Keyword
-  "Returns the keyword ident value given an EID value"
-  [db-val     :- s/Any  ; #todo
-   eid-val    :- ts/Eid]
-  (let [result  (d/q '[:find ?ident .
-                       :in $ ?eid
-                       :where [?eid :db/ident ?ident] ]
-                     db-val eid-val )
-  ]
-    result))
-
+; #todo - need test
 (s/defn tx-datoms :- s/Any
-  "Returns a seq of datom-maps from a TxResult"
+  "Returns a vector of datom-maps from a TxResult"
   [db-val     :- s/Any  ; #todo
    tx-result  :- ts/TxResult ]
   (let [tx-data       (:tx-data tx-result)  ; a seq of datoms
@@ -306,14 +308,18 @@
     ]
       tx-datoms ))
 
+; #todo - need test
 (s/defn partition-name :- s/Keyword
   "Returns the name of a DB partition (its :db/ident value)"
   [db-val       :- datomic.db.Db
    entity-spec  :- ts/EntitySpec ]
   (d/ident db-val (d/part entity-spec)))
 
+; #todo - need be more selective? use partition?
+; #todo - need test
 (s/defn transactions :- [ ts/KeyMap ]
-  "Returns a lazy-seq of entity-maps for all DB transactions"
+  "Returns a lazy sequence of entity-maps for all DB transactions (i.e. entities with an
+   :db/txInstant attribute)"
   [db-val :- s/Any]
   (let [tx-datoms (datoms db-val :aevt :db/txInstant) ] ; all datoms with attr :db/txInstant
     (for [datom tx-datoms]
@@ -329,11 +335,9 @@
   "Returns the EID of a transaction"
   [tx-result :- ts/TxResult]
   (let [datoms  (grab :tx-data tx-result)
-        txids   (mapv :tx datoms)
-        _ (assert (apply = txids))  ; all datoms in tx have same txid
-        result  (first txids)       ; we only need the first datom
-  ] 
-    result ))
+        txids   (mapv :tx datoms) ] 
+    (assert (apply = txids))  ; all datoms in tx have same txid
+    (first txids)))           ; we only need the first datom
 
 ;---------------------------------------------------------------------------------------------------
 ; Pull stuff
