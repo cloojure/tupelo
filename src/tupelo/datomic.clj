@@ -214,6 +214,8 @@
               :find   [?e]
               :where  [ [?e :person/name ?name] ] )
 
+; #todo need checks to stop collection result (:find [?e ...])
+; #todo and scalar result (:find [?e .])
 (defmacro query ; #todo remember 'with'
   "Improved API syntax for datomic/q query (Entity API)"
   [& args]
