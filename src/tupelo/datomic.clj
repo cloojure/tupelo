@@ -206,6 +206,63 @@
   (d/transact conn tx-specs))
 
 ;---------------------------------------------------------------------------------------------------
+; Query
+
+; Usage sample
+#_(td/q   :let    [$      (d/db *conn*) 
+                   ?name  "Mephistopheles"]
+          :find   [?e]
+          :where  [ [?e :person/name ?name] ] )
+
+(defmacro query ; #todo remember 'with'
+  "Improved API syntax for datomic/q query (Entity API)"
+  [& args]
+  (let [args-map    (apply hash-map args)
+      ; _ (println args-map)
+        let-vec     (:let args-map)
+        let-map     (apply hash-map let-vec)
+      ; _ (println let-map)
+        let-syms    (keys let-map)
+      ; _ (println let-syms)
+        let-srcs    (vals let-map)
+      ; _ (println let-srcs)
+        find-vec    (:find args-map)
+      ; _ (println find-vec)
+        where-vec   (:where args-map)
+      ; _ (println where-vec)
+  ]
+    (when-not (vector? let-vec)
+      (throw (IllegalArgumentException. (str "value for :let must be a vector; received=" let-vec))))
+    (when-not (vector? find-vec)
+      (throw (IllegalArgumentException. (str "value for :find must be a vector; received=" find-vec))))
+    (when-not (vector? where-vec)
+      (throw (IllegalArgumentException. (str "value for :where must be a vector; received=" where-vec))))
+
+    `(d/q    '{ :find   ~find-vec
+                :where  ~where-vec 
+                :in     [ ~@let-syms ] }
+        ~@let-srcs
+     )
+  ))
+
+; #todo: write blog post/forum letter about this testing technique
+(defn t-query
+  "Test the query macro, returns true on success."
+  []
+  (let [expanded-result
+          (macroexpand-1 '(tupelo.datomic/query   :let    [a  (src 1)  
+                                                           b  val-2]
+                                                  :find   [?e]
+                                                  :where  [ [?e :person/name ?name] ] ))
+  ]
+    (= expanded-result
+       '(datomic.api/q (quote {:find [?e], 
+                               :where [[?e :person/name ?name]], 
+                               :in [a b]}) 
+                       (src 1) val-2) )))
+
+
+;---------------------------------------------------------------------------------------------------
 ; Informational functions
 
 ; (defn find-tuples   ...)       -> TupleSet
