@@ -209,10 +209,10 @@
 ; Query
 
 ; Usage sample
-#_(td/q   :let    [$      (d/db *conn*) 
-                   ?name  "Mephistopheles"]
-          :find   [?e]
-          :where  [ [?e :person/name ?name] ] )
+#_(td/query   :let    [$      (d/db *conn*) 
+                       ?name  "Mephistopheles"]
+              :find   [?e]
+              :where  [ [?e :person/name ?name] ] )
 
 (defmacro query ; #todo remember 'with'
   "Improved API syntax for datomic/q query (Entity API)"
@@ -238,11 +238,11 @@
     (when-not (vector? where-vec)
       (throw (IllegalArgumentException. (str "value for :where must be a vector; received=" where-vec))))
 
-    `(d/q    '{ :find   ~find-vec
-                :where  ~where-vec 
-                :in     [ ~@let-syms ] }
-        ~@let-srcs
-     )
+   `(into #{}
+      (d/q  '{:find   ~find-vec
+              :where  ~where-vec 
+              :in     [ ~@let-syms ] }
+          ~@let-srcs))
   ))
 
 ; #todo: write blog post/forum letter about this testing technique
@@ -256,10 +256,11 @@
                                                   :where  [ [?e :person/name ?name] ] ))
   ]
     (= expanded-result
-       '(datomic.api/q (quote {:find [?e], 
-                               :where [[?e :person/name ?name]], 
-                               :in [a b]}) 
-                       (src 1) val-2) )))
+       '(clojure.core/into #{} 
+          (datomic.api/q (quote {:find [?e], 
+                                 :where [[?e :person/name ?name]], 
+                                 :in [a b]}) 
+                         (src 1) val-2) ))))
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -404,6 +405,19 @@
         txids   (mapv :tx datoms) ] 
     (assert (apply = txids))  ; all datoms in tx have same txid
     (first txids)))           ; we only need the first datom
+
+;---------------------------------------------------------------------------------------------------
+; Helper functions
+
+(s/defn TupleSet->Set :- ts/Set  ; # todo -> ts/Schema ?
+  "Converts from a TupleSet #{ [s/Any] } to a Set #{ s/Any }" 
+  [tuple-set  :- ts/TupleSet ]
+  (into #{}
+    (for [tuple tuple-set]
+      (do
+        (assert (= 1 (count tuple)))
+        (first tuple)))))
+
 
 ;---------------------------------------------------------------------------------------------------
 ; Pull stuff

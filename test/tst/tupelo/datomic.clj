@@ -228,13 +228,9 @@
 (deftest t-macro
   (is (td/t-query)))
 
-#_(deftest t-xx
-  (testing "xx"
-    (let [result  
-    ]
-      (spyxx result)
-    )
-  ))
+(deftest t-TupleSet->Set
+  (is (= (td/TupleSet->Set #{ [1] [2] [3] } )
+                           #{  1   2   3  } )))
 
 #_(deftest t-xx
   (testing "xx"
