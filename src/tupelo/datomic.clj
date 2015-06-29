@@ -315,15 +315,24 @@
    entity-spec  :- ts/EntitySpec ]
   (d/ident db-val (d/part entity-spec)))
 
-; #todo - need be more selective? use partition?
+; #todo - need test
+(s/defn is-transaction? :- s/Bool
+  "Returns true if an entity is a transaction (i.e. it is in the :db.part/tx partition)"
+  [db-val   :- s/Any
+   eid      :- ts/Eid ]
+  (= :db.part/tx (partition-name db-val eid)))
+
 ; #todo - need test
 (s/defn transactions :- [ ts/KeyMap ]
-  "Returns a lazy sequence of entity-maps for all DB transactions (i.e. entities with an
-   :db/txInstant attribute)"
+  "Returns a lazy sequence of entity-maps for all DB transactions"
   [db-val :- s/Any]
-  (let [tx-datoms (datoms db-val :aevt :db/txInstant) ] ; all datoms with attr :db/txInstant
-    (for [datom tx-datoms]
-      (entity-map db-val (:e datom)))))
+  ; Transactions are entities which always have a :db/txInstant attribute.
+  (let [candidate-eids    (map :e (datoms db-val :aevt :db/txInstant))
+            ; All transaction entities must have attr :db/txInstant
+        tx-eids           (filter #(is-transaction? db-val %) candidate-eids) 
+            ; filter in case any user entities have attr :db/txInstant
+        result            (map #(entity-map db-val %) tx-eids) ]
+    result))
 
 ; #todo need test
 (s/defn eids :- [ts/Eid]
