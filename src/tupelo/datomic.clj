@@ -250,7 +250,7 @@
         let-srcs    (vals let-map)
       ; _ (println let-srcs)
         find-vec    (grab :find args-map)
-        _ (println \newline find-vec)
+      ; _ (println \newline find-vec)
         where-vec   (grab :where args-map)
       ; _ (println where-vec)
   ]
@@ -276,15 +276,15 @@
 (defmacro query
   "Returns a TupleSet #{ [s/Any] } of query results, where each tuple is unique."
   [& args]
-  (println "query" args)
+; (println "query" args)
   `(into #{} 
       (for [tuple# (query* ~@args) ]
         (into [] tuple#))))
 
 (defmacro query-set
   "Returns a Set #{s/Any} of query results, where each item is unique."
-  [ & args ]
-  (println "query-set" args)
+  [& args]
+; (println "query-set" args)
   `(into #{}
       (for [tuple# (query* ~@args)]
         (do 
@@ -294,41 +294,32 @@
 
 (defn contains-pull?
   "Returns true if a sequence of symbols includes 'pull'"
-  [args]
-  (println \newline "contains-pull?" args)
-  (let [args-map    (apply hash-map args)
+  [args-vec]
+; (println \newline "contains-pull?" args-vec)
+  (let [args-map    (apply hash-map args-vec)
         find-vec    (flatten [ (grab :find args-map) ] ) ]
-    (spyxx find-vec)
-    (doseq [item find-vec]
-      (do (print " ") (pr item) ))
-    (newline)
+  ; (spyxx find-vec)
+  ; (doseq [item find-vec]
+  ;   (do (print " ") (pr item) ))
+  ; (newline)
     (any? #(= 'pull %) find-vec)))
 
 (defmacro query-pull
   "Returns a TupleList [Tuple] of query results, where items may be duplicated. Intended only for
    use with the Datomic Pull API"
-  [ & args ]  ; #todo add check for pull api presence, else exception
-  '(do 
-      (println "query-pull" args)
-      (assert (tupelo.datomic/contains-pull? args)
-              "query-pull: Only intended for queries using the Datomic Pull API")
-      (println "query-pull: past assert")
+  [& args]  ; #todo add check for pull api presence, else exception
+; (println "query-pull" args)
+  (assert (tupelo.datomic/contains-pull? args)
+          "query-pull: Only intended for queries using the Datomic Pull API")
+; (println "query-pull: past assert")
+  `(do 
       (into []
           (for [tuple# (query* ~@args)]
             (into [] tuple#)))))
 
-(do
-  (println "----------------------------------------------------------------------------------------")
-  (println "query-pull expand")
-  (println (macroexpand
-             '(td/query-pull  :let    [$ db-val]
-                              :find   [ (pull ?c [*]) ]
-                              :where  [ [?c :community/name] ] ))))
-
 (defmacro query-tuple
   "Returns a single Tuple [s/Any] of query results"
-  [ & args ]
-  (println "query-tuple" args)
+  [& args]
   `(let [result-set# (query* ~@args) ]
       (assert (= 1 (count result-set#))
               "query-tuple: result-set must hold only one tuple")
@@ -336,8 +327,7 @@
 
 (defmacro query-scalar
   "Returns a scalar query result"
-  [ & args ]
-  (println "query-scalar:" args)
+  [& args]
   `(let [tuple# (query-tuple ~@args) ] ; retrieve the single-tuple result
       (assert (= 1 (count tuple#))
               "query-scalar: result-set must be a single scalar item")
