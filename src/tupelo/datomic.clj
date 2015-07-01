@@ -308,15 +308,22 @@
   "Returns a TupleList [Tuple] of query results, where items may be duplicated. Intended only for
    use with the Datomic Pull API"
   [ & args ]  ; #todo add check for pull api presence, else exception
-  (println "query-pull" args)
-  (assert (contains-pull? args)
-          "query-pull: Only intended for queries using the Datomic Pull API")
-  (println "query-pull: past assert")
   '(do 
-      (println "query-pull: in do")
+      (println "query-pull" args)
+      (assert (tupelo.datomic/contains-pull? args)
+              "query-pull: Only intended for queries using the Datomic Pull API")
+      (println "query-pull: past assert")
       (into []
           (for [tuple# (query* ~@args)]
             (into [] tuple#)))))
+
+(do
+  (println "----------------------------------------------------------------------------------------")
+  (println "query-pull expand")
+  (println (macroexpand
+             '(td/query-pull  :let    [$ db-val]
+                              :find   [ (pull ?c [*]) ]
+                              :where  [ [?c :community/name] ] ))))
 
 (defmacro query-tuple
   "Returns a single Tuple [s/Any] of query results"
