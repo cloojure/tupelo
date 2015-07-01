@@ -1,7 +1,7 @@
 (ns tupelo.datomic
   (:refer-clojure :exclude [update partition])
   (:require [datomic.api      :as d]
-            [tupelo.core      :refer [truthy? safe-> it-> spy spyx spyxx grab]]
+            [tupelo.core      :refer [truthy? safe-> it-> spy spyx spyxx grab any?]]
             [tupelo.schema    :as ts]
             [schema.core      :as s] )
   (:use   clojure.pprint)
@@ -250,7 +250,7 @@
         let-srcs    (vals let-map)
       ; _ (println let-srcs)
         find-vec    (grab :find args-map)
-      ; _ (println find-vec)
+        _ (println \newline find-vec)
         where-vec   (grab :where args-map)
       ; _ (println where-vec)
   ]
@@ -290,6 +290,29 @@
                   "query-set: tuple must hold only one item")
           (first tuple#)))))
 
+(defn contains-pull?
+  "Returns true if a sequence of symbols includes 'pull'"
+  [& args]
+  (println \newline "contains-pull?" args)
+  (let [args-map    (apply hash-map args)
+        find-vec    (flatten [ (grab :find args-map) ] ) ]
+    (spyxx find-vec)
+    (doseq [item find-vec]
+      (do (print " ") (pr item) ))
+    (newline)
+    (any? #(= 'pull %) find-vec)))
+
+(defmacro query-pull
+  "Returns a TupleList [Tuple] of query results, where items may be duplicated. Intended only for
+   use with the Datomic Pull API"
+  [ & args ]  ; #todo add check for pull api presence, else exception
+  '(do 
+      (assert (contains-pull? ~@args)
+              "query-pull: Only intended for queries using the Datomic Pull API")
+      (into []
+          (for [tuple# (query* ~@args)]
+            (into [] tuple#)))))
+
 (defmacro query-tuple
   "Returns a single Tuple [s/Any] of query results"
   [ & args ]
@@ -311,17 +334,16 @@
   "Test the query macro, returns true on success."
   []
   (let [expanded-result
-          (macroexpand-1 '(tupelo.datomic/query   :let    [a  (src 1)  
+          (macroexpand-1 '(tupelo.datomic/query*  :let    [a  (src 1)  
                                                            b  val-2]
                                                   :find   [?e]
                                                   :where  [ [?e :person/name ?name] ] ))
   ]
     (= expanded-result
-       '(clojure.core/into #{} 
-          (datomic.api/q (quote {:find [?e], 
-                                 :where [[?e :person/name ?name]], 
-                                 :in [a b]}) 
-                         (src 1) val-2) ))))
+       '(datomic.api/q (quote {:find [?e], 
+                               :where [[?e :person/name ?name]], 
+                               :in [a b]}) 
+                       (src 1) val-2) )))
 
 
 ;---------------------------------------------------------------------------------------------------

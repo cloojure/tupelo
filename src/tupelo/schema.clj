@@ -53,7 +53,7 @@
 
 (def TupleList
   "A sequence of tuples (typically a vector of vectors)"
-  [ Tuple ] )
+  [Tuple] )
 
 (def TupleSet 
   "The result of any Datomic using the Entity API is logically a hash-set of tuples (vectors).  
@@ -63,7 +63,7 @@
       (d/q '{:find [?e ?name ?age] ...)     ->    [?e ?name ?age] 
    
    "
-  #{ Tuple } )
+  #{Tuple} )
 
 (def TupleMap     [ {s/Any s/Any} ] ) ; returned by Datomic pull api
 
