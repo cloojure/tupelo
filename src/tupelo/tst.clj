@@ -8,7 +8,15 @@
   (:import [java.util HashSet] )
   (:gen-class))
 
+(defmacro add [& args]
+  `(apply + [ ~@args ] ))
+  
+(println (macroexpand-1 '(add 1 2 3) ))
+(println                 (add 1 2 3) )
 
+(defmacro go [& args]
+  `(add ~@args))
+(println "go" (go 1 2))
 
 (defn -main []
   (println "-main"))

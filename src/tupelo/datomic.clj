@@ -9,6 +9,32 @@
   (:gen-class))
 
 ;---------------------------------------------------------------------------------------------------
+; Notes:
+;
+; EAVT makes Datomic a database of *facts*.  EAV is just a database of *state*.
+; Relation:   A set of maps (possibly shortened to a vector)
+; Tuple:      A (fixed-length) vector (usually one of a group)
+; Value:      A primitive value like "Joe" or 42
+;
+;---------------------------------------------------------------------------------------------------
+; #todo
+; - Verify that on update, retraction of old & assertion of new both get same tx/timestamp
+; - Each entity should have an :entity/type attr, populated by ident-vals like :entity.type/person,
+;   :entity.type/address, etc.
+; - Each entity.type should have an entity.type.*/invariants list of functions which must always be
+;   true (integrity constraints).
+; 
+; So a an Entity of type :entity.type/person looks like:
+;              <name>          <type>      <constraints/invariants>
+;             :person/name     String    #{ <english alphabet> fn.2 ... }
+;             :person/email    String    #{ <email constraints> fn.2 ... }
+;             :person/phone    long      #{ <us=10 digits> fn.2 ... }
+;             :entity/type      attr      :entity.type/person
+; 
+; Does then [?eid :entity/_type  :entity.type/person] yield a list of all "person" entities?
+; 
+; 
+;---------------------------------------------------------------------------------------------------
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
@@ -208,44 +234,77 @@
 ;---------------------------------------------------------------------------------------------------
 ; Query
 
-; Usage sample
-#_(td/query   :let    [$      (d/db *conn*) 
-                       ?name  "Mephistopheles"]
-              :find   [?e]
-              :where  [ [?e :person/name ?name] ] )
-
 ; #todo need checks to stop collection result (:find [?e ...])
 ; #todo and scalar result (:find [?e .])
-(defmacro query ; #todo remember 'with'
-  "Improved API syntax for datomic/q query (Entity API)"
+(defmacro query* ; #todo remember 'with'
+  ; returns a HashSet of datomic entity objects
+  "Base function for improved API syntax for datomic/q query (Entity API)"
   [& args]
   (let [args-map    (apply hash-map args)
       ; _ (println args-map)
-        let-vec     (:let args-map)
+        let-vec     (grab :let args-map)
         let-map     (apply hash-map let-vec)
       ; _ (println let-map)
         let-syms    (keys let-map)
       ; _ (println let-syms)
         let-srcs    (vals let-map)
       ; _ (println let-srcs)
-        find-vec    (:find args-map)
+        find-vec    (grab :find args-map)
       ; _ (println find-vec)
-        where-vec   (:where args-map)
+        where-vec   (grab :where args-map)
       ; _ (println where-vec)
   ]
     (when-not (vector? let-vec)
-      (throw (IllegalArgumentException. (str "value for :let must be a vector; received=" let-vec))))
+      (throw (IllegalArgumentException. (str "query*: value for :let must be a vector; received=" let-vec))))
     (when-not (vector? find-vec)
-      (throw (IllegalArgumentException. (str "value for :find must be a vector; received=" find-vec))))
+      (throw (IllegalArgumentException. (str "query*: value for :find must be a vector; received=" find-vec))))
     (when-not (vector? where-vec)
-      (throw (IllegalArgumentException. (str "value for :where must be a vector; received=" where-vec))))
+      (throw (IllegalArgumentException. (str "query*: value for :where must be a vector; received=" where-vec))))
 
-   `(into #{}
-      (d/q  '{:find   ~find-vec
-              :where  ~where-vec 
-              :in     [ ~@let-syms ] }
-          ~@let-srcs))
+   `(d/q  '{:find   ~find-vec
+            :where  ~where-vec 
+            :in     [ ~@let-syms ] }
+        ~@let-srcs)
   ))
+
+; Usage sample
+#_(td/query   :let    [$      (d/db *conn*) 
+                       ?name  "Mephistopheles"]
+              :find   [?e]
+              :where  [ [?e :person/name ?name] ] )
+
+(defmacro query
+  "Returns a TupleSet #{ [s/Any] } of query results, where each tuple is unique."
+  [& args]
+  `(into #{} 
+      (for [tuple# (query* ~@args) ]
+        (into [] tuple#))))
+
+(defmacro query-set
+  "Returns a Set #{s/Any} of query results, where each item is unique."
+  [ & args ]
+  `(into #{}
+      (for [tuple# (query* ~@args)]
+        (do 
+          (assert (= 1 (count tuple#)) 
+                  "query-set: tuple must hold only one item")
+          (first tuple#)))))
+
+(defmacro query-tuple
+  "Returns a single Tuple [s/Any] of query results"
+  [ & args ]
+  `(let [result-set# (query* ~@args) ]
+      (assert (= 1 (count result-set#))
+              "query-tuple: result-set must hold only one tuple")
+      (into [] (first result-set#))))
+
+(defmacro query-scalar
+  "Returns a scalar query result"
+  [ & args ]
+  `(let [tuple# (query-tuple ~@args) ] ; retrieve the single-tuple result
+      (assert (= 1 (count tuple#))
+              "query-scalar: result-set must be a single scalar item")
+      (first tuple#)))
 
 ; #todo: write blog post/forum letter about this testing technique
 (defn t-query
@@ -407,19 +466,6 @@
         txids   (mapv :tx datoms) ] 
     (assert (apply = txids))  ; all datoms in tx have same txid
     (first txids)))           ; we only need the first datom
-
-;---------------------------------------------------------------------------------------------------
-; Helper functions
-
-(s/defn TupleSet->Set :- ts/Set  ; # todo -> ts/Schema ?
-  "Converts from a TupleSet #{ [s/Any] } to a Set #{ s/Any }" 
-  [tuple-set  :- ts/TupleSet ]
-  (into #{}
-    (for [tuple tuple-set]
-      (do
-        (assert (= 1 (count tuple)))
-        (first tuple)))))
-
 
 ;---------------------------------------------------------------------------------------------------
 ; Pull stuff
