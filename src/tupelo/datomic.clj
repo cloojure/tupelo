@@ -276,6 +276,7 @@
 (defmacro query
   "Returns a TupleSet #{ [s/Any] } of query results, where each tuple is unique."
   [& args]
+  (println "query" args)
   `(into #{} 
       (for [tuple# (query* ~@args) ]
         (into [] tuple#))))
@@ -283,6 +284,7 @@
 (defmacro query-set
   "Returns a Set #{s/Any} of query results, where each item is unique."
   [ & args ]
+  (println "query-set" args)
   `(into #{}
       (for [tuple# (query* ~@args)]
         (do 
@@ -292,7 +294,7 @@
 
 (defn contains-pull?
   "Returns true if a sequence of symbols includes 'pull'"
-  [& args]
+  [args]
   (println \newline "contains-pull?" args)
   (let [args-map    (apply hash-map args)
         find-vec    (flatten [ (grab :find args-map) ] ) ]
@@ -306,9 +308,12 @@
   "Returns a TupleList [Tuple] of query results, where items may be duplicated. Intended only for
    use with the Datomic Pull API"
   [ & args ]  ; #todo add check for pull api presence, else exception
+  (println "query-pull" args)
+  (assert (contains-pull? args)
+          "query-pull: Only intended for queries using the Datomic Pull API")
+  (println "query-pull: past assert")
   '(do 
-      (assert (contains-pull? ~@args)
-              "query-pull: Only intended for queries using the Datomic Pull API")
+      (println "query-pull: in do")
       (into []
           (for [tuple# (query* ~@args)]
             (into [] tuple#)))))
@@ -316,6 +321,7 @@
 (defmacro query-tuple
   "Returns a single Tuple [s/Any] of query results"
   [ & args ]
+  (println "query-tuple" args)
   `(let [result-set# (query* ~@args) ]
       (assert (= 1 (count result-set#))
               "query-tuple: result-set must hold only one tuple")
@@ -324,6 +330,7 @@
 (defmacro query-scalar
   "Returns a scalar query result"
   [ & args ]
+  (println "query-scalar:" args)
   `(let [tuple# (query-tuple ~@args) ] ; retrieve the single-tuple result
       (assert (= 1 (count tuple#))
               "query-scalar: result-set must be a single scalar item")
