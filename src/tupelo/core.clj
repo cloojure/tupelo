@@ -17,6 +17,13 @@
             )
   (:gen-class))
 
+(def  spy-indent-level (atom 0))
+(defn spy-indent-inc [] (swap! spy-indent-level inc))
+(defn spy-indent-dec [] (swap! spy-indent-level dec))
+(defn spy-indent-spaces []
+  (str/join (repeat (* 2 @spy-indent-level) \space)))
+
+
 (defn truthy?
   "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
   [arg]
@@ -218,7 +225,7 @@
    expression, printing both the expression and its value to stdout, then returns the value."
   [expr]
   `(let [spy-val# ~expr] 
-      (println (str '~expr " => " (pr-str spy-val#)))
+      (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val#)))
       spy-val#))
 
 (defmacro spyxx
@@ -227,7 +234,7 @@
   [expr]
   `(let [ spy-val#      ~expr
           class-name#   (-> spy-val# class .getName) ]
-      (println (str '~expr " => " class-name# "->" (pr-str spy-val#)))
+      (println (str (spy-indent-spaces) '~expr " => " class-name# "->" (pr-str spy-val#)))
       spy-val#))
 
 (defmacro forv
@@ -336,14 +343,15 @@
 
    Note that a wildcald can match either a primitive or a composite value."
   [data pattern]
-; (spyxx data) (spyxx pattern)
+; (spy-indent-inc) (spyxx data) (spyxx pattern)
   (let [result    (truthy?
                     (cond
                       (= pattern :*)       true
                       (= data pattern)     true
                       (coll? data)      (apply = true (mapv wild-match? data pattern))
-                      :default          false)) ]
-;   (spyxx result)
+                      :default          false)) 
+  ]
+;   (spyx result) (spy-indent-dec)
     result))
 
 

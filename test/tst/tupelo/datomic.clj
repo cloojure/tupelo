@@ -229,8 +229,8 @@
   (is (td/t-query)))
 
 (deftest t-contains-pull?
-  (is       (td/contains-pull? :find '[xx (pull [*]) ?y ] ))
-  (is (not  (td/contains-pull? :find '[xx            ?y ] ))))
+  (is       (td/contains-pull? [:find '[xx (pull [*]) ?y ]] ))
+  (is (not  (td/contains-pull? [:find '[xx            ?y ]] ))))
 
 #_(deftest t-xx
   (testing "xx"

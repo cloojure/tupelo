@@ -270,7 +270,7 @@
 ; Usage sample
 #_(td/query   :let    [$      (d/db *conn*) 
                        ?name  "Mephistopheles"]
-              :find   [?e]
+              :find   [?e]  ; rename :find -> :select or :return or :result ???
               :where  [ [?e :person/name ?name] ] )
 
 (defmacro query
@@ -493,6 +493,22 @@
     (assert (apply = txids))  ; all datoms in tx have same txid
     (first txids)))           ; we only need the first datom
 
+
+;---------------------------------------------------------------------------------------------------
+; #todo: make helper fn's for rule creation
+; (def-rule <name> [args]
+;   [?com-eid    :community/neighborhood   ?nbr]          ; rule clause
+;   [?nbr        :neighborhood/district    ?dist]         ; rule clause
+;   [?dist       :district/region          ?reg]          ; rule clause
+;   [?reg        :db/ident                 ?reg-ident] ]  ; rule clause
+;
+; literal way:
+; (let[ rules-list   '[ [ (com-region ?com-eid ?reg-ident) ; rule header
+;                         [?com-eid    :community/neighborhood   ?nbr]          ; rule clause
+;                         [?nbr        :neighborhood/district    ?dist]         ; rule clause
+;                         [?dist       :district/region          ?reg]          ; rule clause
+;                         [?reg        :db/ident                 ?reg-ident] ]  ; rule clause
+;                     ]
 ;---------------------------------------------------------------------------------------------------
 ; Pull stuff
 ; #todo:  pull-one
