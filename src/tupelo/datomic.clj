@@ -287,10 +287,10 @@
 ; (println "query-set" args)
   `(into #{}
       (for [tuple# (query* ~@args)]
-        (do 
-          (assert (= 1 (count tuple#)) 
-                  "query-set: tuple must hold only one item")
-          (first tuple#)))))
+        (if (= 1 (count tuple#)) 
+          (first tuple#)
+          (throw (IllegalStateException.
+                  (str "query-set: tuple must hold only one item: " tuple#)))))))
 
 (defn contains-pull?
   "Returns true if a sequence of symbols includes 'pull'"
@@ -321,17 +321,19 @@
   "Returns a single Tuple [s/Any] of query results"
   [& args]
   `(let [result-set# (query* ~@args) ]
-      (assert (= 1 (count result-set#))
-              "query-tuple: result-set must hold only one tuple")
-      (into [] (first result-set#))))
+      (if (= 1 (count result-set#))
+        (into [] (first result-set#))
+        (throw (IllegalStateException.
+                (str "query-tuple: result-set must hold only one tuple: " result-set#))))))
 
 (defmacro query-scalar
   "Returns a scalar query result"
   [& args]
   `(let [tuple# (query-tuple ~@args) ] ; retrieve the single-tuple result
-      (assert (= 1 (count tuple#))
-              "query-scalar: result-set must be a single scalar item")
-      (first tuple#)))
+      (if (= 1 (count tuple#))
+        (first tuple#)
+        (throw (IllegalStateException.
+          (str "query-scalar: tuple must hold a single item: " tuple#))))))
 
 ; #todo: write blog post/forum letter about this testing technique
 (defn t-query
@@ -357,6 +359,8 @@
 ; (defn find-scalars  ...)       -> Set
 ; (defn find-one      ...)       -> scalar
 
+; #todo kill these old ones
+;
 (s/defn result-set :- ts/TupleSet
   "Returns a TupleSet (hash-set of tuples) built from the output of a Datomic query using the Entity API"
   [raw-resultset :- ts/Set]
