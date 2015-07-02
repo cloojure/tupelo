@@ -357,3 +357,56 @@
   )
 )
 
+(deftest t-clip-str
+  (testing "single string"
+    (is (= ""         (clip-str 0 "abcdefg")))
+    (is (= "a"        (clip-str 1 "abcdefg")))
+    (is (= "ab"       (clip-str 2 "abcdefg")))
+    (is (= "abc"      (clip-str 3 "abcdefg")))
+    (is (= "abcd"     (clip-str 4 "abcdefg")))
+    (is (= "abcde"    (clip-str 5 "abcdefg"))))
+  (testing "two strings"
+    (is (= ""         (clip-str 0 "abcdefg")))
+    (is (= "a"        (clip-str 1 "abcdefg")))
+    (is (= "ab"       (clip-str 2 "abcdefg")))
+    (is (= "abc"      (clip-str 3 "abcdefg")))
+    (is (= "abcd"     (clip-str 4 "abcdefg")))
+    (is (= "abcde"    (clip-str 5 "abcdefg"))))
+  (testing "two strings & char"
+    (is (= ""         (clip-str 0 "ab" \c "defg")))
+    (is (= "a"        (clip-str 1 "ab" \c "defg")))
+    (is (= "ab"       (clip-str 2 "ab" \c "defg")))
+    (is (= "abc"      (clip-str 3 "ab" \c "defg")))
+    (is (= "abcd"     (clip-str 4 "ab" \c "defg")))
+    (is (= "abcde"    (clip-str 5 "ab" \c "defg"))))
+  (testing "two strings & digit"
+    (is (= ""         (clip-str 0 "ab" 9 "defg")))
+    (is (= "a"        (clip-str 1 "ab" 9 "defg")))
+    (is (= "ab"       (clip-str 2 "ab" 9 "defg")))
+    (is (= "ab9"      (clip-str 3 "ab" 9 "defg")))
+    (is (= "ab9d"     (clip-str 4 "ab" 9 "defg")))
+    (is (= "ab9de"    (clip-str 5 "ab" 9 "defg"))))
+  (testing "vector"
+    (is (= ""               (clip-str  0 [1 2 3 4 5] )))
+    (is (= "["              (clip-str  1 [1 2 3 4 5] )))
+    (is (= "[1"             (clip-str  2 [1 2 3 4 5] )))
+    (is (= "[1 2"           (clip-str  4 [1 2 3 4 5] )))
+    (is (= "[1 2 3 4"       (clip-str  8 [1 2 3 4 5] )))
+    (is (= "[1 2 3 4 5]"    (clip-str 16 [1 2 3 4 5] ))))
+  (testing "map"
+    (is (= ""               (clip-str  0 {:a 1 :b 2} )))
+    (is (= "{"              (clip-str  1 {:a 1 :b 2} )))
+    (is (= "{:"             (clip-str  2 {:a 1 :b 2} )))
+    (is (= "{:a "           (clip-str  4 {:a 1 :b 2} )))
+    (is (= "{:a 1, :"       (clip-str  8 {:a 1 :b 2} )))
+    (is (= "{:a 1, :b 2}"   (clip-str 16 {:a 1 :b 2} ))))
+  (testing "set"
+    (let [tst-set (sorted-set 5 4 3 2 1) ]
+      (is (= ""             (clip-str  0 tst-set )))
+      (is (= "#"            (clip-str  1 tst-set )))
+      (is (= "#{"           (clip-str  2 tst-set )))
+      (is (= "#{1 "         (clip-str  4 tst-set )))
+      (is (= "#{1 2 3 "     (clip-str  8 tst-set )))
+      (is (= "#{1 2 3 4 5}" (clip-str 16 tst-set )))))
+)
+

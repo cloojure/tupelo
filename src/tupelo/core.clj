@@ -371,3 +371,10 @@
   `(ccm/match ~data   
        ~pattern   true
         :else     false ))
+
+
+(defn clip-str [nchars & args]
+  (it-> (apply str args)
+        (take nchars it)
+        (apply str it)))
+
