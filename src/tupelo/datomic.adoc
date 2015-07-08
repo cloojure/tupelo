@@ -178,7 +178,7 @@ example of Tupelo Datomic query in action:
 
 ----
 
-Tupelo Datomic modifies the original Datomic query syntax compared to (datomic.api/q ...) in two
+Tupelo Datomic modifies the original Datomic query syntax compared to `(datomic.api/q ...)` in two
 ways.  For convenience, the query form does not need to be wrapped in a map literal nor is any
 quoting required.  Most importantly, the `:in` keyword has been replaced with the `:let` keyword,
 and the syntax has been copied from the Clojure `let` special form so that both the query variables
