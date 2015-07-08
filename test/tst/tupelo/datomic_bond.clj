@@ -173,13 +173,20 @@
                                               [?eid :location    "Caribbean"] ] )
         busy      (try
                     (td/query-scalar  :let    [$ (live-db)]
+                                      :find   [?eid] ; error - tuple [?eid ?name] is not scalar
+                                      :where  [ [?eid :person/name ?name    ]
+                                                [?eid :location  "London"  ] ] )
+                    (catch Exception ex (.toString ex)))
+        multi     (try
+                    (td/query-scalar  :let    [$ (live-db)]
                                       :find   [?eid ?name] ; error - tuple [?eid ?name] is not scalar
                                       :where  [ [?eid :person/name ?name    ]
                                                 [?eid :location  "Caribbean"  ] ] )
                     (catch Exception ex (.toString ex)))
   ]
     (is (= beachy "Dr No"))                       ; found 1 match as expected
-    (is (re-seq #"IllegalStateException" busy)))  ; Exception thrown/caught since 2 people in London
+    (is (re-seq #"IllegalStateException" busy))   ; Exception thrown/caught since 2 people in London
+    (is (re-seq #"IllegalStateException" multi))) ; Exception thrown/caught since 2 people in London
 
   ; If you wish to retain duplicate results on output, you must use td/query-pull and the Datomic Pull API to return a
   ; list of results (instead of a set).
