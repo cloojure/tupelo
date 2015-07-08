@@ -178,12 +178,12 @@ example of Tupelo Datomic query in action:
 
 ----
 
-Tupelo Datomic modifies the original Datomic query syntax compared to (datomic/q ...) in two ways.
-For convenience, the query form does not need to be wrapped in a map literal nor is any quoting
-required.  Most importantly, the `:in` keyword has been replaced with the `:let` keyword, and the syntax
-has been copied from the Clojure `let` special form so that both the query variables (the implicit
-DB `$` in this case) are more closely aligned with their actual values. Also, the implicit DB `$`
-must be explicitly tied to its data source in all cases (as shown above).
+Tupelo Datomic modifies the original Datomic query syntax compared to (datomic.api/q ...) in two
+ways.  For convenience, the query form does not need to be wrapped in a map literal nor is any
+quoting required.  Most importantly, the `:in` keyword has been replaced with the `:let` keyword,
+and the syntax has been copied from the Clojure `let` special form so that both the query variables
+(the implicit DB `$` in this case) are more closely aligned with their actual values. Also, the
+implicit DB `$` must be explicitly tied to its data source in all cases (as shown above).
 
 Receiving a TupleSet result is the most general case, but in many instances we can save some effort.
 If we are retrieving the value for a single attribute per entity, we don't need to wrap that result in a
