@@ -127,7 +127,7 @@ We can also use either type of EntitySpec for update
 
 ----
 
-As expected, our database contains the updated values for James & the doctor. Notice that, since
+As expected, our database contains the updated values for Dr No and James Bond. Notice that, since
 `:weapon/type` is implemented as a set in Datmoic, duplicate values are not allowed and both
 antagonists have only a single gun:
 
@@ -137,11 +137,11 @@ antagonists have only a single gun:
   (let [people (get-people (live-db)) ]
     (is (= people   
       #{ { :person/name "James Bond" :location "London"    
-           :weapon/type #{              :weapon/wit :weapon/knife :weapon/gun} :person/secret-id 7 }
+           :weapon/type #{:weapon/wit :weapon/knife :weapon/gun} :person/secret-id 7 }
          { :person/name "M"          :location "London"    
-           :weapon/type #{:weapon/guile                           :weapon/gun} }
+           :weapon/type #{:weapon/guile :weapon/gun} }
          { :person/name "Dr No"      :location "Caribbean" 
-           :weapon/type #{:weapon/guile             :weapon/knife :weapon/gun} } } )))
+           :weapon/type #{:weapon/guile :weapon/knife :weapon/gun} } } )))
 ----
 
 
