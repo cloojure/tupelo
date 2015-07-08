@@ -7,27 +7,30 @@
             [schema.core      :as s]))
 
 (set! *warn-on-reflection* false)
-(set! *print-length* 5)
 (set! *print-length* nil)
 
-;---------------------------------------------------------------------------------------------------
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
+(def uri "datomic:mem://tupelo")          ; the URI for our test db
 (def ^:dynamic *conn*)
 
+;---------------------------------------------------------------------------------------------------
+; clojure.test fixture: setup & teardown for each test
 (use-fixtures :each
-  (fn [tst-fn]
-    ; Create the database & a connection to it
-    (let [uri           "datomic:mem://tupelo"
-          _ (d/create-database uri)
-          conn          (d/connect uri)
-    ]
-      (binding [*conn* conn]
-        (tst-fn))
-      (d/delete-database uri)
-    )))
+  (fn setup-execute-teardown            ; perform setup, execution, & teardown for each test
+    [tst-fn]
+; setup ----------------------------------------------------------
+    (d/create-database uri)             ; create the DB
+    (binding [*conn* (d/connect uri) ]  ; create & save a connection to the db
+; execute --------------------------------------------------------
+      (try
+        (tst-fn)
+; teardown -------------------------------------------------------
+        (finally
+          (d/delete-database uri))))))
 
+;---------------------------------------------------------------------------------------------------
 
 (deftest t-new-partition
   (let [result   (td/new-partition :people ) ]
@@ -157,7 +160,6 @@
                :db/unique       :db.unique/identity   :db.install/_attribute :db.part/db } ))))
 )
 
-
 (deftest t-new-entity
   (testing "new-entity"
     (let [result  (td/new-entity     {:person/name "dilbert" :job/type :job.type/sucky} ) ]
@@ -183,6 +185,8 @@
                 {:db/id #db/id[:db.part/user _] :db/ident :gun} ))
   (is (thrown? Exception (td/new-enum "gun"))))
 
+; #todo: need more tests for query-*, etc
+
 (deftest t-update
   (testing "update"
     (is (matches? (td/update 999 {:person/name "joe"  :car :car.type/bmw} )
@@ -205,40 +209,14 @@
     (is (matches? (td/retract-entity [:person/name "joe"] )
                  [:db.fn/retractEntity [:person/name "joe"] ] ))))
 
-(deftest t-result-set
-  (is (= (td/result-set #{ [:a 1] [:b 2] } )
-                       #{ [:a 1] [:b 2] } ))
-  (is (thrown? Exception (td/result-set [ [:a 1] [:b 2] ] )))
-)
-
-(deftest t-result-only
-  (is (= (td/result-only #{ [:a 1] } )
-                           [:a 1] ))
-  (is (thrown? Exception (td/result-only #{ [:a 1] [:b 2] } )))
-)
-
-(deftest t-result-scalar
-  (is (= (td/result-scalar #{ ["Joe"] } )
-                              "Joe"  ))
-  (is (thrown? Exception (td/result-scalar #{ ["Joe" 42] [:b 2] } )))
-  (is (thrown? Exception (td/result-scalar #{ ["Joe" 42]        } )))
-)
-
 ; The macro test must be in the same source file as the macro definition or it won't expand properly
 (deftest t-macro
   (is (td/t-query)))
 
 (deftest t-contains-pull?
-  (is       (td/contains-pull? [:find '[xx (pull [*]) ?y ]] ))
-  (is (not  (td/contains-pull? [:find '[xx            ?y ]] ))))
-
-#_(deftest t-xx
-  (testing "xx"
-    (let [result  
-    ]
-      (spyxx result)
-    )
-  ))
+  (let [proxy-contains-pull? #'td/contains-pull? ] ; trick to get around private var
+    (is       (proxy-contains-pull? [:find '[xx (pull [*]) ?y ]] ))
+    (is (not  (proxy-contains-pull? [:find '[xx            ?y ]] )))))
 
 #_(deftest t-xx
   (testing "xx"

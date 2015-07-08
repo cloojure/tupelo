@@ -4,8 +4,7 @@
             [tupelo.core      :refer [truthy? safe-> it-> spy spyx spyxx grab any?]]
             [tupelo.schema    :as ts]
             [schema.core      :as s] )
-  (:use   clojure.pprint)
-  (:import [java.util HashSet] )
+  (:use clojure.pprint)
   (:gen-class))
 
 ;---------------------------------------------------------------------------------------------------
@@ -35,6 +34,7 @@
 ; 
 ; 
 ;---------------------------------------------------------------------------------------------------
+
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
@@ -84,23 +84,23 @@
 (s/defn new-partition :- ts/KeyMap
   "Returns the tx-data to create a new partition in the DB. Usage:
 
-    (d/transact *conn* [
+    (td/transact *conn* 
       (partition ident)
-    ] )
+    )
   "
   [ident :- s/Keyword]
   (when-not (keyword? ident)
     (throw (IllegalArgumentException. (str "attribute ident must be keyword: " ident ))))
   { :db/id                    (d/tempid :db.part/db) ; The partition :db.part/db is built-in to Datomic
-    :db.install/_partition    :db.part/db   ; ceremony so Datomic "installs" our new partition
-    :db/ident                 ident } )     ; the "name" of our new partition
+    :db.install/_partition    :db.part/db   ; Ceremony so Datomic "installs" our new partition
+    :db/ident                 ident } )     ; The "name" of our new partition
 
 (s/defn new-attribute    :- ts/KeyMap
   "Returns the tx-data to create a new attribute in the DB.  Usage:
 
-    (d/transact *conn* [
+    (td/transact *conn* 
       (attribute ident value-type & options)
-    ] )
+    )
 
    The first 2 params are required. Other params are optional and will use normal Datomic default
    values (false or nil) if omitted. An attribute is assumed to be :db.cardinality/one unless
@@ -139,7 +139,7 @@
                             (= it :db/fulltext)             {:db/fulltext true}
                             (= it :db/isComponent)          {:db/isComponent true}
                             (= it :db/noHistory)            {:db/noHistory true}
-                            (string? it)                    {:db/doc it})))
+                            (string? it)                    {:db/doc it}))) ; #todo finish this
         tx-specs      (into base-specs option-specs)
   ]
     tx-specs
@@ -149,10 +149,10 @@
 (s/defn new-entity  :- ts/KeyMap
   "Returns the tx-data to create a new entity in the DB. Usage:
 
-    (d/transact *conn* [
+    (td/transact *conn* 
       (new-entity attr-val-map)                 ; default partition -> :db.part/user 
       (new-entity partition attr-val-map)       ; user-specified partition
-    ] )
+    )
 
    where attr-val-map is a Clojure map containing attribute-value pairs to be added to the new
    entity."
@@ -166,9 +166,9 @@
 (s/defn new-enum :- ts/KeyMap   ; #todo add namespace version
   "Returns the tx-data to create a new enumeration entity in the DB. Usage:
 
-    (d/transact *conn* [
+    (td/transact *conn*
       (new-enum ident)
-    ] )
+    )
 
   where ident is the (keyword) name for the new enumeration entity.  "
   [ident :- s/Keyword]
@@ -177,28 +177,29 @@
   (new-entity {:db/ident ident} ))
 
 ; #todo  -  document entity-spec as EID or refspec in all doc-strings
-; #todo  -  document use of "ident" in all doc-strings
+; #todo  -  document use of "ident" in all doc-strings (EntityIdent?)
 (s/defn update :- ts/KeyMap
   "Returns the tx-data to update an existing entity  Usage:
 
-    (d/transact *conn* [
+    (td/transact *conn*
       (update entity-spec attr-val-map)
-    ] )
+    )
 
    where attr-val-map is a Clojure map containing attribute-value pairs to be added to the new
    entity.  For attributes with :db.cardinality/one, the previous value will be (automatically)
    retracted prior to the insertion of the new value. For attributes with :db.cardinality/many, the
-   new value will be accumulated into the current set of values.  "
+   new value will be accumulated into the current set of values."
   [entity-spec    :- ts/EntitySpec
    attr-val-map   :- ts/KeyMap ]
     (into {:db/id entity-spec} attr-val-map))
 
 (s/defn retract-value :- ts/Vec4
-  "Returns the tx-data to retract an attribute-value pair for an entity. Usage:
+  "Returns the tx-data to retract an attribute-value pair for an entity. Only a single
+   attribute-value pair can be retracted for each call to retract-value.  Usage:
 
-    (d/transact *conn* [
+    (td/transact *conn*
       (retract-value entity-spec attribute value)
-    ] )
+    )
 
    where the attribute-value pair must exist for the entity or the retraction will fail.  " ; #todo verify
   [entity-spec  :- ts/EntitySpec
@@ -210,9 +211,9 @@
   "Returns the tx-data to retract all attribute-value pairs for an entity, as well as all references
    to the entity by other entities. Usage:
    
-    (d/transact *conn* [
+    (td/transact *conn*
       (retract-entity entity-spec)
-    ] )
+    )
    
   If the retracted entity refers to any other entity through an attribute with :db/isComponent=true,
   the referenced entity will be recursively retracted as well."
@@ -221,12 +222,12 @@
 
 ; #todo need test
 (s/defn transact :- s/Any  ; #todo
-  "Like (d/transact [...] ), but does not require wrapping everything in a Clojure vector. Usage:
+  "Like (datomic.api/transact ...) but does not require wrapping everything in a Clojure vector. Usage:
    
-    (t/transact *conn*
-      (t/new-entity ident)
-      (t/update entity-spec-1 attr-val-map-1)
-      (t/update entity-spec-2 attr-val-map-2))
+    (td/transact *conn*
+      (td/new-entity attr-val-map)                 ; default partition -> :db.part/user 
+      (td/update entity-spec-1 attr-val-map-1)
+      (td/update entity-spec-2 attr-val-map-2))
    "
   [conn & tx-specs]
   (d/transact conn tx-specs))
@@ -238,7 +239,7 @@
 ; #todo and scalar result (:find [?e .])
 (defmacro query* ; #todo remember 'with'
   ; returns a HashSet of datomic entity objects
-  "Base function for improved API syntax for datomic/q query (Entity API)"
+  "Base function for improved API syntax for datomic.api/q query function (Entity API)"
   [& args]
   (let [args-map    (apply hash-map args)
       ; _ (println args-map)
@@ -267,24 +268,35 @@
         ~@let-srcs)
   ))
 
-; Usage sample
-#_(td/query   :let    [$      (d/db *conn*) 
-                       ?name  "Mephistopheles"]
-              :find   [?e]  ; rename :find -> :select or :return or :result ???
-              :where  [ [?e :person/name ?name] ] )
-
+; #todo: rename :find -> :select or :return or :result ???
 (defmacro query
-  "Returns a TupleSet #{ [s/Any] } of query results, where each tuple is unique."
+  "Returns a TupleSet #{ [s/Any] } of query results, where each tuple is unique. Usage:
+
+    (td/query   :let    [$        (d/db *conn*)
+                         ?name    \"James Bond\"]
+                :find   [?e]
+                :where  [ [?e :person/name ?name] ] )
+
+  Unlike datomic.api/q, the query form does not need to be wrapped in a map literal nor is any
+  quoting required. Most importantly, the :in keyword has been replaced with the :let keyword, and
+  the syntax has been copied from the Clojure let special form so that both the query variables (the
+  implicit DB $ in this case) are more closely aligned with their actual values. Also, the implicit
+  DB $ must be explicitly tied to its data source in all cases (as shown above).  "
   [& args]
-; (println "query" args)
   `(into #{} 
       (for [tuple# (query* ~@args) ]
         (into [] tuple#))))
 
 (defmacro query-set
-  "Returns a Set #{s/Any} of query results, where each item is unique."
+  "Returns a Set of unique scalar query results (i.e. #{s/Any}). Any duplicate values will be
+   discarded. Usage:
+
+    (td/query-set :let    [$        (d/db *conn*) 
+                           ?name    \"James Bond\"]
+                  :find   [?e]
+                  :where  [ [?e :person/name ?name] ] )
+  "
   [& args]
-; (println "query-set" args)
   `(into #{}
       (for [tuple# (query* ~@args)]
         (if (= 1 (count tuple#)) 
@@ -292,7 +304,41 @@
           (throw (IllegalStateException.
                   (str "query-set: tuple must hold only one item: " tuple#)))))))
 
-(defn contains-pull?
+(defmacro query-tuple
+  "Returns a single Tuple (i.e. [s/Any]) of query results. Usage:
+
+    (td/query-tuple :let    [$ (d/db *conn*)]
+                    :find   [?eid ?name] ; <- output tuple shape
+                    :where  [ [?eid :person/name ?name      ]
+                              [?eid :location    \"Caribbean\"] ] )
+
+   It is an error if more than one tuple is found.
+  "
+  [& args]
+  `(let [result-set# (query* ~@args) ]
+      (if (= 1 (count result-set#))
+        (into [] (first result-set#))
+        (throw (IllegalStateException.
+                (str "query-tuple: result-set must hold only one tuple: " result-set#))))))
+
+(defmacro query-scalar
+  "Returns a scalar query result (i.e. s/Any).  Usage:
+   
+    (td/query-scalar  :let    [$      (d/db *conn*)
+                               ?name  \"James Bond\"]
+                      :find   [?eid]
+                      :where  [ [?eid :person/name ?name] ] )
+
+   It is an error if more than one tuple is found or if the tuple contains more than one scalar
+   value.  "
+  [& args]
+  `(let [tuple# (query-tuple ~@args) ] ; retrieve the single-tuple result
+      (if (= 1 (count tuple#))
+        (first tuple#)
+        (throw (IllegalStateException.
+          (str "query-scalar: tuple must hold a single item: " tuple#))))))
+
+(defn- contains-pull?
   "Returns true if a sequence of symbols includes 'pull'"
   [args-vec]
 ; (println \newline "contains-pull?" args-vec)
@@ -306,8 +352,14 @@
 
 (defmacro query-pull
   "Returns a TupleList [Tuple] of query results, where items may be duplicated. Intended only for
-   use with the Datomic Pull API"
-  [& args]  ; #todo add check for pull api presence, else exception
+   use with the Datomic Pull API. Usage:
+
+     (td/query-pull  :let    [$ (d/db *conn*) ]
+                     :find   [ (pull ?eid [:location]) ]
+                     :where  [ [?eid :location] ] )
+
+   It is an error if the :find clause does not contain a Datomic Pull API request.  "
+  [& args]
 ; (println "query-pull" args)
   (assert (tupelo.datomic/contains-pull? args)
           "query-pull: Only intended for queries using the Datomic Pull API")
@@ -316,24 +368,6 @@
       (into []
           (for [tuple# (query* ~@args)]
             (into [] tuple#)))))
-
-(defmacro query-tuple
-  "Returns a single Tuple [s/Any] of query results"
-  [& args]
-  `(let [result-set# (query* ~@args) ]
-      (if (= 1 (count result-set#))
-        (into [] (first result-set#))
-        (throw (IllegalStateException.
-                (str "query-tuple: result-set must hold only one tuple: " result-set#))))))
-
-(defmacro query-scalar
-  "Returns a scalar query result"
-  [& args]
-  `(let [tuple# (query-tuple ~@args) ] ; retrieve the single-tuple result
-      (if (= 1 (count tuple#))
-        (first tuple#)
-        (throw (IllegalStateException.
-          (str "query-scalar: tuple must hold a single item: " tuple#))))))
 
 ; #todo: write blog post/forum letter about this testing technique
 (defn t-query
@@ -354,37 +388,6 @@
 
 ;---------------------------------------------------------------------------------------------------
 ; Informational functions
-
-; (defn find-tuples   ...)       -> TupleSet
-; (defn find-scalars  ...)       -> Set
-; (defn find-one      ...)       -> scalar
-
-; #todo kill these old ones
-;
-(s/defn result-set :- ts/TupleSet
-  "Returns a TupleSet (hash-set of tuples) built from the output of a Datomic query using the Entity API"
-  [raw-resultset :- ts/Set]
-  (into #{} raw-resultset))
-
-(s/defn result-only :- [s/Any]
-  "Returns a single tuple result built from the output of a Datomic query using the Entity API"
-  [raw-resultset :- ts/Set]
-  (let [rs          (result-set raw-resultset)
-        num-tuples  (count rs) ]
-    (when-not (= 1 num-tuples)
-      (throw (IllegalStateException. 
-               (format "TupleSet must have exactly one tuple; count = %d" num-tuples))))
-    (first rs)))
-
-(s/defn result-scalar :- s/Any
-  "Returns a single scalar result built from the output of a Datomic query using the Entity API"
-  [raw-resultset :- ts/Set]
-  (let [tuple       (result-only raw-resultset)
-        tuple-len   (count tuple) ]
-    (when-not (= 1 tuple-len)
-      (throw (IllegalStateException. 
-               (format "TupleSet must be one tuple of one element; tuple-len = %d" ))))
-    (first tuple)))
 
 ; #todo - need test
 (s/defn entity-map :- ts/KeyMap
@@ -433,7 +436,7 @@
         :tx       transaction eid
         :added    true/false (assertion/retraction) }
 
-   Like (d/datoms ...), but returns a seq of plain Clojure maps.  "
+   Like (datomic.api/datoms ...), but returns a seq of plain Clojure maps.  "
   [db             :- s/Any
    index          :- s/Keyword
    & components ]  ; #todo
@@ -459,7 +462,7 @@
 
 ; #todo - need test
 (s/defn partition-name :- s/Keyword
-  "Returns the name of a DB partition (its :db/ident value)"
+  "Returns the partition name (the :db/ident value) for an Entity"
   [db-val       :- datomic.db.Db
    entity-spec  :- ts/EntitySpec ]
   (d/ident db-val (d/part entity-spec)))
@@ -468,14 +471,13 @@
 (s/defn is-transaction? :- s/Bool
   "Returns true if an entity is a transaction (i.e. it is in the :db.part/tx partition)"
   [db-val   :- s/Any
-   eid      :- ts/Eid ]
-  (= :db.part/tx (partition-name db-val eid)))
+   entity-spec  :- ts/EntitySpec ]
+  (= :db.part/tx (partition-name db-val entity-spec)))
 
 ; #todo - need test
 (s/defn transactions :- [ ts/KeyMap ]
   "Returns a lazy sequence of entity-maps for all DB transactions"
   [db-val :- s/Any]
-  ; Transactions are entities which always have a :db/txInstant attribute.
   (let [candidate-eids    (map :e (datoms db-val :aevt :db/txInstant))
             ; All transaction entities must have attr :db/txInstant
         tx-eids           (filter #(is-transaction? db-val %) candidate-eids) 
@@ -495,7 +497,7 @@
   (let [datoms  (grab :tx-data tx-result)
         txids   (mapv :tx datoms) ] 
     (assert (apply = txids))  ; all datoms in tx have same txid
-    (first txids)))           ; we only need the first datom
+    (first txids)))           ; return the first one
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -513,6 +515,8 @@
 ;                         [?dist       :district/region          ?reg]          ; rule clause
 ;                         [?reg        :db/ident                 ?reg-ident] ]  ; rule clause
 ;                     ]
+;---------------------------------------------------------------------------------------------------
+; #todo: make helper fn's for enum invarient enforcement (no random entities assigned)
 ;---------------------------------------------------------------------------------------------------
 ; Pull stuff
 ; #todo:  pull-one
