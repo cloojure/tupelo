@@ -88,7 +88,7 @@ that we can find James Bond and retrieve all of his attr-val pairs using both ty
 
 [source,clojure]
 ----
-  ; Using James' name, lookup his EntityId (EID). It is a java.lang.Long that is a unique ID across the whole DB.
+  ; Using James' name, lookup his EntityId (EID). 
   (let [james-eid   (td/query-scalar  :let    [$ (live-db)]     ; like Clojure let
                                       :find   [?eid]
                                       :where  [ [?eid :person/name "James Bond"] ] )
@@ -97,7 +97,8 @@ that we can find James Bond and retrieve all of his attr-val pairs using both ty
         james-map   (td/entity-map (live-db) james-eid)                       ; lookup by EID  
         james-map2  (td/entity-map (live-db) [:person/name "James Bond"] )    ; lookup by LookupRef
   ]
-    (is (= james-map {:person/name "James Bond" :location "London" :weapon/type #{:weapon/wit :weapon/gun} } ))
+    (is (= james-map {:person/name "James Bond" :location "London" 
+                      :weapon/type #{:weapon/wit :weapon/gun} } ))
     (is (= james-map james-map2 ))
 
     ; Update the database with more weapons.  If we overwrite some items that are already present
