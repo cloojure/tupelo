@@ -49,6 +49,21 @@ number of choices available to our antagonists:
     (td/new-enum :weapon/wit))
 ----
 
+Let's create a few antagonists and load them into the DB. Note that we are just using plain Clojure
+values and map/set literals here, and we don't have to worry about any Datmoic specific conversions.
+
+[source,clojure]
+----
+  ; Create some antagonists and load them into the db.  We can specify some of the attribute-value
+  ; pairs at the time of creation, and add others later. Note that whenever we are adding multiple
+  ; values for an attribute in a single step (e.g. :weapon/type), we must wrap all of the values
+  ; in a set. Note that the set implies there can never be duplicate weapons for any one person.
+  ; As before, we immediately commit the new entities into the DB.
+  (td/transact *conn* 
+    (td/new-entity { :person/name "James Bond" :location "London"     :weapon/type #{ :weapon/gun :weapon/wit   } } )
+    (td/new-entity { :person/name "M"          :location "London"     :weapon/type #{ :weapon/gun :weapon/guile } } )
+    (td/new-entity { :person/name "Dr No"      :location "Caribbean"  :weapon/type    :weapon/gun                 } ))
+----
 
 === tupelo.datomic - Basic functions
 
