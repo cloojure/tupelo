@@ -181,7 +181,6 @@
     (is (= beachy "Dr No"))                       ; found 1 match as expected
     (is (re-seq #"IllegalStateException" busy)))  ; Exception thrown/caught since 2 people in London
 
-  ; result is a list - retains duplicates
   ; If you wish to retain duplicate results on output, you must use td/query-pull and the Datomic Pull API to return a
   ; list of results (instead of a set).
   (let [result-pull     (td/query-pull  :let    [$ (live-db)]               ; $ is the implicit db name
