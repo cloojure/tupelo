@@ -15,7 +15,8 @@ so, then Tupelo Datomic is for you.  The goal of Tupelo Datomic is to automatate
 that rarely changes or is needed when dealing with Datomic, making your job nearly effortless.
 
 Suppose we're trying to keep track of information for the world's premiere spy agency. Let's create
-a few attributes that will apply to our heroes & villains:
+a few attributes that will apply to our heroes & villains (see the executable code at
+https://github.com/cloojure/tupelo/blob/master/test/tst/tupelo/datomic_bond.clj).
 
 [source,clojure]
 ----
@@ -65,7 +66,8 @@ values and literals here, and we don't have to worry about any Datomic specific 
     (td/new-entity { :person/name "Dr No"      :location "Caribbean"  :weapon/type    :weapon/gun                 } ))
 ----
 
-And, just like that, we have values persisted in the DB! Let's check that they are really there,
+And, just like that, we have values persisted in the DB! Let's check that they are really there:
+
 [source,clojure]
 ----
   ; Verify the antagonists were added to the DB
@@ -75,6 +77,8 @@ And, just like that, we have values persisted in the DB! Let's check that they a
               {:person/name "M"             :location "London"      :weapon/type #{:weapon/guile  :weapon/gun} }
               {:person/name "Dr No"         :location "Caribbean"   :weapon/type #{:weapon/gun               } } } )))
 ----
+
+
 
 === tupelo.datomic - Basic functions
 
