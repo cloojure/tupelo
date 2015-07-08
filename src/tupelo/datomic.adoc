@@ -11,7 +11,7 @@ image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 == Overview
 
 Have you ever wanted to jump into using Datomic but been wishing for a simpler starting point? If
-so, then Tupelo/Datomic is for you.  The goal of Tupelo/Datomic is to automatate all of the detail
+so, then Tupelo Datomic is for you.  The goal of Tupelo Datomic is to automatate all of the detail
 that rarely changes or is needed when dealing with Datomic, making your job nearly effortless.
 
 Suppose we're trying to keep track of information for the world's premiere spy agency. Let's create
