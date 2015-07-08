@@ -303,6 +303,10 @@ In Tupelo Datmoic, we may easily create and use partitions:
            (td/partition-name (live-db) honey-eid))))
 ----
 
+== Future Work
+
+Lots more to come!
+
 
 == License
 
