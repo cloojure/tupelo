@@ -22,7 +22,6 @@ A library of helper functions for Datomic. Please see link:src/tupelo/datomic.ad
 === Tupelo Core
 
 A library of helper functions for core Clojure. Please see link:src/tupelo/core.adoc[the Tupelo Datomic docs]
-Is located at:  http://cloojure.github.io/doc/tupelo/
 
 === Tupelo Explicit - Explicit Language for Clojure
 
@@ -30,16 +29,14 @@ link:src/tupelo/explicit.adoc[Documentation for tupelo.explicit]
 
 === tupelo.csv - Functions for using CSV (Comma Separate Value) files
 
-The standard link:http://github.com/davidsantiago/clojure-csv[clojure-csv library] has well-tested and useful functions for parsing 
-CSV (Comma Separated Value) text data, but it does not offer all of the convenience one
-may wish. In `tupelo.csv` we emphasize the idomatic Clojure usage of data, using
-sequences and maps.
-
-link:src/tupelo/csv.adoc[Documentation for tupelo.csv]
+The standard link:http://github.com/davidsantiago/clojure-csv[clojure-csv library] has well-tested
+and useful functions for parsing CSV (Comma Separated Value) text data, but it does not offer all of
+the convenience one may wish. Tupelo CSV emphasizes the idomatic Clojure usage of data, using
+sequences and maps. Please see link:src/tupelo/csv.adoc[the Tupelo CSV docs]
 
 === tupelo.parse - Functions to ease parsing
 
-TEMP TODO:  see http://cloojure.github.io/tupelo/tupelo.parse.html
+TEMP TODO:  http://cloojure.github.io/tupelo/tupelo.parse.html
 
 === tupelo.base64 - Convert to/from base64 encoding
 
