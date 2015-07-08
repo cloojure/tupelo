@@ -62,8 +62,8 @@
     (td/new-attribute   :favorite-weapon     :db.type/keyword ))  ; all default values
 
   ; Create some "enum" values. These are degenerate entities that serve the same purpose as an
-  ; (integer) enumerated value in Java (these entities will never have any attributes). Again, we
-  ; wrap our new enum values in a transaction and commit them in to the DB. 
+  ; enumerated value in Java (these entities will never have any attributes). Again, we
+  ; wrap our new enum values in a transaction and commit them into the DB. 
   (td/transact *conn* 
     (td/new-enum :weapon/gun)
     (td/new-enum :weapon/knife)
