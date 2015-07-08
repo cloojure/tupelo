@@ -6,7 +6,7 @@ Leiningen coordinates:
 
 image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 
-=== API Docs:   http://cloojure.github.io/doc/tupelo/
+=== API Docs:  http://cloojure.github.io/doc/tupelo/tupelo.core.html
 
 == Overview
 
