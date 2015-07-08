@@ -304,37 +304,6 @@ In Tupelo Datmoic, we may easily create and use partitions:
 ----
 
 
-=== tupelo.datomic - Basic functions
-
-==== new-attribute
-
-details here...
-
------------------------------------------------------------------------------
------------------------------------------------------------------------------
-link:src/tupelo/explicit.adoc[Documentation for tupelo.explicit]
-
-=== tupelo.csv - Functions for using CSV (Comma Separate Value) files
-
-The standard link:http://github.com/davidsantiago/clojure-csv[clojure-csv library] has well-tested and useful functions for parsing 
-CSV (Comma Separated Value) text data, but it does not offer all of the convenience one
-may wish. In `tupelo.csv` we emphasize the idomatic Clojure usage of data, using
-sequences and maps.
-
-link:src/tupelo/csv.adoc[Documentation for tupelo.csv]
-
-=== tupelo.parse - Functions to ease parsing
-
-TEMP TODO:  see http://cloojure.github.io/tupelo/tupelo.parse.html
-
-=== tupelo.base64 - Convert to/from base64 encoding
-
-TEMP TODO:  see http://cloojure.github.io/tupelo/tupelo.base64.html
-
-=== tupelo.y64 - Convert to/from the URL-safe Y64 encoding (Yahoo YUI library).
-
-TEMP TODO:  see http://cloojure.github.io/tupelo/tupelo.y64.html
-
 == License
 
 Copyright © 2015 Alan Thompson. 
