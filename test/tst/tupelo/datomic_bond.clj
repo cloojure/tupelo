@@ -150,8 +150,8 @@
 
   ; If you want just a single tuple as output, you can get it (rather than a set of
   ; tuples) using td/query-tuple.  It is an error if more than one tuple is found.
-  (let [beachy    (td/query-tuple :let    [$    (live-db)
-                                           ?loc "Caribbean"]
+  (let [beachy    (td/query-tuple :let    [$    (live-db)     ; assign multiple query variables
+                                           ?loc "Caribbean"]  ; just like clojure 'let' special form
                                   :find   [?eid ?name] ; <- output tuple shape
                                   :where  [ [?eid :person/name ?name      ]
                                             [?eid :location    ?loc] ] )
@@ -169,14 +169,15 @@
 
   ; If you know there is (or should be) only a single scalar answer, you can get the scalar value as
   ; output using td/query-scalar. It is an error if more than one tuple or value is present.
-  (let [beachy    (td/query-scalar  :let    [$    (live-db)
-                                             ?loc "Caribbean"]
+  (let [beachy    (td/query-scalar  :let    [$    (live-db)     ; assign multiple query variables 
+                                             ?loc "Caribbean"]  ; just like clojure 'let' special form
                                     :find   [?name]
                                     :where  [ [?eid :person/name ?name]
                                               [?eid :location    ?loc ] ] )
         busy      (try ; error - multiple results for London
                     (td/query-scalar  :let    [$    (live-db)
                                                ?loc "London"]
+
                                       :find   [?eid]
                                       :where  [ [?eid :person/name  ?name]
                                                 [?eid :location     ?loc ] ] )
