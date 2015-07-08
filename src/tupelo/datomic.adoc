@@ -231,6 +231,29 @@ In this case, we don't need to wrap the result tuple in a set and we can use the
     (is (re-seq #"IllegalStateException" busy)))  ; Exception thrown/caught since 2 people in London
 ----
 
+Of course, in some instances you may want only the value of only a single attribute for a single
+entity.  In this case, we may use the function `td/query-scalar`, which returns a single scalar
+value instead of a set of tuples of scalars:
+
+[source,clojure]
+----
+  ; If you know there is (or should be) only a single scalar answer, you can get the scalar value as
+  ; output using td/query-scalar. It is an error if more than one tuple or value is present.
+  (let [beachy    (td/query-scalar  :let    [$ (live-db)]
+                                    :find   [?name]
+                                    :where  [ [?eid :person/name ?name      ]
+                                              [?eid :location    "Caribbean"] ] )
+        busy      (try
+                    (td/query-scalar  :let    [$ (live-db)]
+                                      :find   [?eid ?name] ; error - tuple [?eid ?name] is not scalar
+                                      :where  [ [?eid :person/name ?name    ]
+                                                [?eid :location  "Caribbean"  ] ] )
+                    (catch Exception ex (.toString ex)))
+  ]
+    (is (= beachy "Dr No"))                       ; found 1 match as expected
+    (is (re-seq #"IllegalStateException" busy)))  ; Exception thrown/caught since 2 people in London
+----
+
 
 === tupelo.datomic - Basic functions
 
