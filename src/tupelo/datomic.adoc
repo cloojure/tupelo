@@ -189,8 +189,8 @@ must be explicitly tied to its data source in all cases (as shown above).
 
 Receiving a TupleSet result is the most general case, but in many instances we can save some effort.
 If we are retrieving the value for a single attribute per entity, we don't need to wrap that result in a
-tuple. In this case, we can use the function `td/query-set` instead.  In this case, the function
-returns a set of scalars as output rather than a set of tuples:
+tuple. In this case, we can use the function `td/query-set`, which returns a set of scalars as
+output rather than a set of tuples:
 
 [source,clojure]
 ----
@@ -206,6 +206,29 @@ returns a set of scalars as output rather than a set of tuples:
   ]
     (is (= names    #{"Dr No" "James Bond" "M"} ))  ; all names are present, since unique
     (is (= cities   #{"Caribbean" "London"} )))     ; duplicate "London" discarded
+----
+
+A parallel case is when we want results for just a single entity, but multiple values are needed.
+In this case, we don't need to wrap the result tuple in a set and we can use the function
+`td/query-tuple`, which returns a single tuple as output rather than a set of tuples:
+
+[source,clojure]
+----
+  ; If you want just a single tuple as output, you can get it (rather than a set of
+  ; tuples) using td/query-tuple.  It is an error if more than one tuple is found.
+  (let [beachy    (td/query-tuple :let    [$ (live-db)]
+                                  :find   [?eid ?name]
+                                  :where  [ [?eid :person/name ?name      ]
+                                            [?eid :location    "Caribbean"] ] )
+        busy      (try
+                    (td/query-tuple :let    [$ (live-db)]       ; error - both James & M are in London
+                                    :find   [?eid ?name]
+                                    :where  [ [?eid :person/name ?name    ]
+                                              [?eid :location    "London" ] ] )
+                    (catch Exception ex (.toString ex)))
+  ]
+    (is (matches? beachy [_ "Dr No"] ))           ; found 1 match as expected
+    (is (re-seq #"IllegalStateException" busy)))  ; Exception thrown/caught since 2 people in London
 ----
 
 
