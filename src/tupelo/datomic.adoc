@@ -220,8 +220,8 @@ In this case, we don't need to wrap the result tuple in a set and we can use the
                                   :find   [?eid ?name] ; <- output tuple shape
                                   :where  [ [?eid :person/name ?name      ]
                                             [?eid :location    "Caribbean"] ] )
-        busy      (try
-                    (td/query-tuple :let    [$ (live-db)]       ; error - both James & M are in London
+        busy      (try ; error - both James & M are in London
+                    (td/query-tuple :let    [$ (live-db)]
                                     :find   [?eid ?name] ; <- output tuple shape
                                     :where  [ [?eid :person/name ?name    ]
                                               [?eid :location    "London" ] ] )
