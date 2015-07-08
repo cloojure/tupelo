@@ -156,7 +156,7 @@ James a non-existant weapon, Datomic will generate an exception:
 
 ----
 
-== Query Functions
+== Query Functions in Tupelo Datomic
 
 When querying for values using Tupelo Datomic, the fundamental result type is a TupleSet (a Clojure
 set containing unique Clojure vectors).  This overcomes the problem where native result type
