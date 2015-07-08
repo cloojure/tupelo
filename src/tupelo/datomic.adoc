@@ -1,6 +1,6 @@
 
 
-= Making Clojure Even Sweeter
+= Making Datomic Even Sweeter
 
 Leiningen coordinates:   
 
@@ -10,23 +10,25 @@ image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 
 == Overview
 
-Have you ever wanted to do something simple but clojure.core doesn't support it? Or, maybe
-you are wishing for an enhanced version of a standard function. The goal of Tupelo is to
-add support for these convenience features, so that you have a simple way of using either
-the enhanced version or the original version.
+Have you ever wanted to jump into using Datomic but been wishing for a simpler starting point? If
+so, then tupelo.datomic is for you.  The goal of tupelo.datomic is to automatate all of the detail
+that rarely changes or is needed when dealing with Datomic, making your job nearly effortless.
 
-The goal in using `tupelo.core` is that you can just plop it into any namespace without
-having to worry about any conflicts with `clojure.core` functionality. So, both the core functions
-and the added/enhanced functions are both available for use at all times. As such, we use
-normally use `:refer :all` for `tupelo.core` in our namespaces:
+Suppose we're trying to keep track of information for the world's premiere spy agency. Let's create
+a few attributes that will apply to our heroes & villains:
 
 [source,clojure]
 ----
-(ns my.proj
-  (:require [tupelo.core    :refer :all]
-            [tupelo.csv     :as tcsv]
-            [tupelo.parse   :as tp] 
-            ... ))
+  ; Create some new attributes. Required args are the attribute name (an optionally namespaced
+  ; keyword) and the attribute type (full listing at http://docs.datomic.com/schema.html). We wrap
+  ; the new attribute definitions in a transaction and immediately commit them into the DB.
+  (td/transact *conn* ;   required              required              zero-or-more
+                      ;  <attr name>         <attr value type>       <optional specs ...>
+    (td/new-attribute   :person/name         :db.type/string         :db.unique/value)      ; each name      is unique
+    (td/new-attribute   :person/secret-id    :db.type/long           :db.unique/value)      ; each secret-id is unique
+    (td/new-attribute   :weapon/type         :db.type/ref            :db.cardinality/many)  ; one may have many weapons
+    (td/new-attribute   :location            :db.type/string)     ; all default values
+    (td/new-attribute   :favorite-weapon     :db.type/keyword ))  ; all default values
 ----
 
 === tupelo.core - Basic functions
