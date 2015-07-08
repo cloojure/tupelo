@@ -343,7 +343,7 @@
 
    Note that a wildcald can match either a primitive or a composite value."
   [data pattern]
-; (spy-indent-inc) (spyxx data) (spyxx pattern)
+; (spy-indent-inc) (spyxx data) (spyxx pattern) (flush)       ; for debug
   (let [result    (truthy?
                     (cond
                       (= pattern :*)       true
@@ -351,7 +351,7 @@
                       (coll? data)      (apply = true (mapv wild-match? data pattern))
                       :default          false)) 
   ]
-;   (spyx result) (spy-indent-dec)
+;   (spyx result) (spy-indent-dec) (flush)      ; for debug
     result))
 
 
