@@ -156,6 +156,36 @@ James a non-existant weapon, Datomic will generate an exception:
 
 ----
 
+== Query Functions
+
+When querying for values in Tupelo Datomic, the fundamental result type is a TupleSet (a Clojure set
+containing unique Clojure vectors). Here is an example in action:
+
+[source,clojure]
+----
+  ; For general queries, use td/query.  It returns a set of tuples (TupleSet).  Any duplicated
+  ; tuples will be discarded
+  (let [tuple-set   (td/query  :let    [$ (live-db)]
+                               :find   [?name ?loc] ; <- shape of output tuples
+                               :where  [ [?eid :person/name ?name]      ; pattern-matching rules specify how the variables
+                                         [?eid :location    ?loc ] ] )  ;   must be related (implicit join)
+  ]
+    (is (s/validate  ts/TupleSet  tuple-set))       ; verify expected type using Prismatic Schema
+    (is (s/validate #{ [s/Any] }  tuple-set))       ; literal definition of TupleSet
+    (is (= tuple-set #{ ["Dr No"       "Caribbean"]      ; Even though London is repeated, each tuple is
+                        ["James Bond"  "London"]         ;   still unique. Otherwise, any duplicate tuples
+                        ["M"           "London"] } )))   ;   will be discarded since output is a clojure set.
+
+----
+
+Tupelo Datomic modifies the original Datomic query syntax compared to (datomic/q ...) in two ways.
+For convenience, the query form does not need to be wrapped in a map literal nor is any quoting
+required.  Most importantly, the `:in` key has been replaced with the `:let` keyword, and the syntax
+has been copied from the Clojure `let` special form so that both the query variables (the implicit
+DB `$` in this case) are more closely aligned with their actual values. Also, the implicit DB `$`
+must be explicitly tied to its data source in all cases (as shown above).
+
+
 === tupelo.datomic - Basic functions
 
 ==== new-attribute
