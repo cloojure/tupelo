@@ -15,8 +15,8 @@ so, then Tupelo Datomic is for you.  The goal of Tupelo Datomic is to automatate
 that rarely changes or is needed when dealing with Datomic, making your job nearly effortless.
 
 Suppose we're trying to keep track of information for the world's premiere spy agency. Let's create
-a few attributes that will apply to our heroes & villains (see the executable code at
-link:tst/tupelo/datomic_bond.clj[Documentation for tupelo.explicit]).
+a few attributes that will apply to our heroes & villains (see the executable code in the
+link:tst/tupelo/datomic_bond.clj[unit test]).
 
 [source,clojure]
 ----
