@@ -100,13 +100,11 @@ of EntitySpec:
   (let [james-eid   (td/query-scalar  :let    [$ (live-db)]     ; like Clojure let
                                       :find   [?eid]
                                       :where  [ [?eid :person/name "James Bond"] ] )
-        ; Retrieve James' attr-val pairs as a map. An entity can be referenced either by EID or by a
-        ; LookupRef, which is a unique attribute-value pair expressed as a vector.
+        ; Retrieve James' attr-val pairs as a map. An entity can be referenced by either EID or LookupRef
         james-map   (td/entity-map (live-db) james-eid)                       ; use EID  
         james-map2  (td/entity-map (live-db) [:person/name "James Bond"] )    ; use LookupRef
   ]
-    (is (= james-map {:person/name "James Bond" :location "London" 
-                      :weapon/type #{:weapon/wit :weapon/gun} } ))
+    (is (= james-map {:person/name "James Bond" :location "London" :weapon/type #{:weapon/wit :weapon/gun} } ))
     (is (= james-map james-map2 ))
 ----
 
