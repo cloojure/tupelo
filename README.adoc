@@ -36,15 +36,15 @@ sequences and maps. Please see link:src/tupelo/csv.adoc[the Tupelo CSV docs]
 
 === tupelo.parse - Functions to ease parsing
 
-TEMP TODO:  http://cloojure.github.io/tupelo/tupelo.parse.html
+TEMP TODO:  http://cloojure.github.io/doc/tupelo/tupelo.parse.html
 
 === tupelo.base64 - Convert to/from base64 encoding
 
-TEMP TODO:  see http://cloojure.github.io/tupelo/tupelo.base64.html
+TEMP TODO:  see http://cloojure.github.io/doc/tupelo/tupelo.base64.html
 
 === tupelo.y64 - Convert to/from the URL-safe Y64 encoding (Yahoo YUI library).
 
-TEMP TODO:  see http://cloojure.github.io/tupelo/tupelo.y64.html
+TEMP TODO:  see http://cloojure.github.io/doc/tupelo/tupelo.y64.html
 
 == License
 
