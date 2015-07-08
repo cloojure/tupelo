@@ -16,7 +16,7 @@ that rarely changes or is needed when dealing with Datomic, making your job near
 
 Suppose we're trying to keep track of information for the world's premiere spy agency. Let's create
 a few attributes that will apply to our heroes & villains (see the executable code 
-link:tst/tupelo/datomic_bond.clj[in the unit test]).
+link:../../tst/tupelo/datomic_bond.clj[in the unit test]).
 
 [source,clojure]
 ----
