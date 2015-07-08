@@ -314,6 +314,11 @@ Copyright © 2015 Alan Thompson.
 
 Distributed under the Eclipse Public License, the same as Clojure.
 
-==== ToDo List
+==== ToDo List (#todo)
 
   Add docs for new-attribute optional specs
+  Seattle tutorial using Tupelo Datomic
+  MBrainz tutorial using Tupelo Datomic
+  General Datamoic tutorial using Tupelo
+    - including details & gotchas
+
