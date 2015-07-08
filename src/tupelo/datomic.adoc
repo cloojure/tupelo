@@ -126,7 +126,7 @@ We can also use either type of EntitySpec for update
 ----
 
 As expected, our database contains the updated values for Dr No and James Bond. Notice that, since
-`:weapon/type` is implemented as a set in Datmoic, duplicate values are not allowed and both
+`:weapon/type` is implemented as a set in Datomic, duplicate values are not allowed and both
 antagonists have only a single gun:
 
 [source,clojure]
@@ -282,7 +282,7 @@ effect of a partition in Datomic is to effectively "pre-sort" all entities in th
 are adjacent in storage, which _may_ improve access times for related entities that are often
 accessed together.
 
-In Tupelo Datmoic, we may easily create and use partitions:
+In Tupelo Datomic, we may easily create and use partitions:
 
 [source,clojure]
 ----
