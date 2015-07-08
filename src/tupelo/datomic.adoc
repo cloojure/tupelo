@@ -34,264 +34,30 @@ a few attributes that will apply to our heroes & villains:
     (td/new-attribute   :favorite-weapon     :db.type/keyword ))  ; all default values
 ----
 
-=== tupelo.core - Basic functions
-
-==== The truth is not ambiguous
-
-Clojure marries the worlds of Java and Lisp. Unfortunately, these two worlds have
-different ideas of truth, so Clojure accepts both `false` and `nil` as _false_. Sometimes
-you want to coerce logical values into literal _true_ or _false_ values, so we provide a
-simple way to do that:
-
-----
-(truthy? arg)
-  Returns true if arg is logical true (neither nil nor false);
-  otherwise returns false.
-
-(falsey? arg)
-  Returns true if arg is logical false (either nil or false);
-  otherwise returns false. Equivalent to (not (truthy? arg)).
-----
-[source,clojure]
-----
-=> (def data [true :a 'my-symbol 1 "hello" \x false nil])
-=> (filter truthy? data)
-[true :a my-symbol 1 "hello" \x]
-=> (filter falsey? data)
-[false nil]
-----
-
-==== Convenience in testing seq's
-
-These functions aren't in clojure.core, but people keep writing into the mailing list
-wondering where they are. Well, now they are available:
-
-----
-(any? pred coll)
-  For any predicate & collection, returns true if (pred x) is 
-  logical true for any x in coll; otherwise returns false. Like
-  clojure.core/some, but returns only true or false.
-
-(not-empty? coll)
-  For any collection, returns true if coll contains any items; 
-  otherwise returns false. Equivalent to (not (empty? coll)).
-----
-[source,clojure]
-----
-=> (any? odd? [1 2 3] ) 
-true
-=> (any? odd? [2 4 6] ) 
-false
-=> (any? odd? [] )
-false
-
-=> (map not-empty? ["1" [1] '(1) {:1 1} #{1} ] )
-[true true true true true]
-=> (map not-empty? ["" [] '() {} #{} nil] )
-[false false false false false false]
-----
-
-==== Focus on vectors
-
-Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you just want
-everything to stay in a nice, eager, random-access vector. Here is an easy way to build up
-a vector result:
-
-----
-(conjv coll x)
-(conjv coll x & xs)
-  For any collection coll and list of values x, appends the x's to 
-  collection, always returning the result as a vector.
-----
-[source,clojure]
-----
-=> (conjv '(1 2) 3)
-[1 2 3]
-=> (conjv [1 2] 3 4 5 6)
-[1 2 3 4 5 6]
-----
-
-==== Map manipulation
-
-Sometimes you want to extract the keys & values from a map for manipulation or extension
-before building up another map (especially useful manipulating default function args).
-Here is very handy function for that:
-
-----
-(keyvals m)
-  For any map m, returns the keys & values of m as a vector, 
-  suitable for reconstructing via (apply hash-map (keyvals m)).
-----
-[source,clojure]
-----
-=> (keyvals {:a 1 :b 2})
-[:b 2 :a 1]
-=> (apply hash-map (keyvals {:a 1 :b 2}))
-{:b 2, :a 1}
-----
-
-==== Default value in case of Exception
-
-Sometimes you know an operation may result in an Exception, and you would like to have the
-Exception converted into a default value.  That is when you need:
-
-----
-(with-exception-default default-val & body)
-  Evaluates body & returns its result.  In the event of an exception the
-  specified default value is returned instead of the exception."
-----
-[source,clojure]
-----
-(with-exception-default 0
-  (Long/parseLong "12xy3"))
-0
-----
-=== Expression debugging
-
-Ever been debugging some new code and had trouble printing out intermediate
-values?  For example:
+For the `:weapon/type` attribute, we want to use an enumerated type since there are only a limited
+number of choices available to our antagonists:
 
 [source,clojure]
 ----
-(-> 1
-    (inc)
-    (* 2))
-4
-----
-Suppose you want to disply the value after the (inc) function. You can't just insert a
-(println) because the return value of `nil` will break the pipeline structure. Instead,
-just use `spy`:
-
-[source,clojure]
-----
-(-> 1
-    (inc)
-    (spy :msg "after inc")
-    (* 2))
-;; after inc => 2
-4
-----
-This tool is named `spy` since it can display values from inside either  a "thread-first" or a "thread-last" form
-(e.g. using `->` or `->>`) where they would normally be hidden.  
-
-[source,clojure]
-----
-(->> 1
-    (inc)
-    (spy :msg "after inc")
-    (* 2))
-;; after inc => 2
-4
+  ; Create some "enum" values. These are degenerate entities that serve the same purpose as an
+  ; (integer) enumerated value in Java (these entities will never have any attributes). Again, we
+  ; wrap our new enum values in a transaction and commit them in to the DB. 
+  (td/transact *conn* 
+    (td/new-enum :weapon/gun)
+    (td/new-enum :weapon/knife)
+    (td/new-enum :weapon/guile)
+    (td/new-enum :weapon/wit))
 ----
 
-Note that the same call to `spy` works in either `->` or `->>` expressions.  The keyword `:msg` is required just
-before the message string, as it is this that allows the `spy` function to detect whether
-it is in a thread-first or thread-last form, and thus produce the correct output. As a bonus for debugging, the 
-value is output using (pr-str ...) so that numbers and strings are unambiguous in the output:
 
-[source,clojure]
-----
-> (-> 30 (+ 4) (spy :msg "dbg") (* 10))
-;; dbg => 34
-340
+=== tupelo.datomic - Basic functions
 
-(-> "3" (str "4") (spy :msg "dbg") (str "0"))
-;; dbg => "34"
-"340"
-----
+==== new-attribute
 
-Sometimes you may prefer to print out the literal expression instead of a
-message. In this case, just use `spyx`:
-[source,clojure]
-----
-(as-> 1 x
-      (spyx (inc x))
-      (* 2 x))
-;; (inc x) => 2
-4
-----
+details here...
 
-In other instances, you may wish to use `spyxx` display both the type and value of an expression:
-[source,clojure]
-----
-(defn mystery-fn [] (into (sorted-map) {:b 2 :a 1}))
-(spyxx (mystery-fn))
-;; (mystery-fn) => clojure.lang.PersistentTreeMap->{:a 1, :b 2}
-----
-
-To be precise, the function signatures are:
-
-[source,clojure]
-----
-(spy :msg msg-str)    ; the ":msg" keyword literal is required
-(spyx expr)
-(spyxx expr)
-----
-
-=== REPL driven testing
-
-Developing at the REPL is productive & cool, but it can be a pain to reload source files
-modified in an external editor.  This is especially so when simultaneously editing both
-the core program and the corresponding test code.  The function `test-all` will reload
-both a namespace and its corresponding test namespace from file, then invoke the corresponding
-test namespace:
-
-----
-(test-all & ns-names)
-  Convenience fn to reload a namespace & the corresponding test namespace from
-  disk and execute tests in the REPL.  Assumes canonical project test file
-  organization with parallel src/... & test/... directories, where a '-test'
-  suffix is added to all src namespaces to generate the cooresponding test
-  namespace.  Example:
-
-    (test-all 'tupelo.core 'tupelo.csv)
-
-  This will reload tupelo.core, tupelo.core-test, tupelo.csv,
-  tupelo.csv-test and then execute clojure.test/run-tests on both of the test
-  namespaces.
-----
-
-=== Floating Point Number Comparison
-
-Everyone knows that you shouldn't compare floating-point numbers (e.g. float,
-double, etc) for equality since roundoff errors can prevent a precise match
-between logically equivalent results.  However, it has always been awkward to
-regenerate "approx-equals" code by hand every time new project requires it.
-Here we have a simple function that compares two floating-point values (cast to
-double) for relative equality by specifying either the number of significant
-digits that must match or the maximum error tolerance allowed:
-
-----
-(rel= val1 val2 & opts)
-  Returns true if 2 double-precision numbers are relatively equal, else false.
-  Relative equality is specified as either (1) the N most significant digits are
-  equal, or (2) the absolute difference is less than a tolerance value.  Input
-  values are coerced to double before comparison.  
-----
-An extract from the unit tests illustrates the use of `rel=`
-[source,clojure]
-----
-  (is      (rel= 123450000 123456789 :digits 4 ))
-  (is (not (rel= 123450000 123456789 :digits 6 )))
-
-  (is      (rel= 1 1.001 :tol 0.01 ))
-  (is (not (rel= 1 1.001 :tol 0.0001 )))
-----
-=== Full API Documentation
-
-Is located at:  http://cloojure.github.io/doc/tupelo/
-
-== Other Useful Tools:
-
-Besides `tupelo.core`, tupelo has a number of other useful tools in the following
-namespaces:
-
-=== tupelo.explicit - Explicit Language for Clojure
-
-Clojure tries to be flexible and return reasonable default value (usually `nil`) when
-something goes wrong (for example, looking up a non-existent key in a map).  The functions in 
-`tupelo.explicit` disable this behavior and instead implement a "fail-fast" philosophy.
-
+-----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 link:src/tupelo/explicit.adoc[Documentation for tupelo.explicit]
 
 === tupelo.csv - Functions for using CSV (Comma Separate Value) files
