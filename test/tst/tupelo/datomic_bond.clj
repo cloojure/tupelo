@@ -151,12 +151,12 @@
   ; If you want just a single tuple as output, you can get it (rather than a set of
   ; tuples) using td/query-tuple.  It is an error if more than one tuple is found.
   (let [beachy    (td/query-tuple :let    [$ (live-db)]
-                                  :find   [?eid ?name]
+                                  :find   [?eid ?name] ; <- output tuple shape
                                   :where  [ [?eid :person/name ?name      ]
                                             [?eid :location    "Caribbean"] ] )
         busy      (try
                     (td/query-tuple :let    [$ (live-db)]       ; error - both James & M are in London
-                                    :find   [?eid ?name]
+                                    :find   [?eid ?name] ; <- output tuple shape
                                     :where  [ [?eid :person/name ?name    ]
                                               [?eid :location    "London" ] ] )
                     (catch Exception ex (.toString ex)))
