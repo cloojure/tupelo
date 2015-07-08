@@ -141,6 +141,20 @@ antagonists have only a single gun:
          { :person/name "Dr No" :location "Caribbean"   :weapon/type #{:weapon/guile :weapon/knife :weapon/gun} } } )))
 ----
 
+== Enum Values
+
+The benefit of using enumerated values in Datomic is that we can easily restrict the the domain of
+acceptable values more easily than by using plain keyword values. For example, if we try to give
+James a non-existant weapon, Datomic will generate an exception:
+
+[source,clojure]
+----
+  ; Try to add non-existent weapon. This throws since the bogus kw does not match up with an entity.
+  (is (thrown? Exception   @(td/transact *conn* 
+                              (td/update [:person/name "James Bond"] ; update using a LookupRef
+                                { :weapon/type #{ :there.is/no-such-kw } } ))))  ; bogus value for :weapon/type causes exception
+
+----
 
 === tupelo.datomic - Basic functions
 
