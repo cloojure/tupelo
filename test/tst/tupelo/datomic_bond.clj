@@ -27,7 +27,7 @@
 ; setup ----------------------------------------------------------
     (d/create-database uri)             ; create the DB
     (binding [*conn* (d/connect uri) ]  ; create & save a connection to the db
-  ; execute --------------------------------------------------------
+; execute --------------------------------------------------------
       (try
         (tst-fn)
 ; teardown -------------------------------------------------------
