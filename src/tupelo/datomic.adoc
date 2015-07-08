@@ -279,9 +279,9 @@ entities:
 == Using Datomic Partitions
 
 Datomic allows the user to create 'partitions' within the DB.  Datomic partitions serve solely as 
-a structural optimization, and do not control or limit who or how datoms may be accessed.  The
+a structural optimization, and do not control or limit how or by whom datoms may be accessed.  The
 effect of a partition in Datomic is to effectively "pre-sort" all entities in that partition so they
-are adjacent in storage, which *may* improve access times for related entities that are often
+are adjacent in storage, which _may_ improve access times for related entities that are often
 accessed together.
 
 In Tupelo Datmoic, we may easily create and use partitions:
