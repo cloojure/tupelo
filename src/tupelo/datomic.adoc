@@ -110,7 +110,7 @@ of EntitySpec:
     (is (= james-map james-map2 ))
 ----
 
-We can use either type of EntitySpec for update
+We can also use either type of EntitySpec for update
 
 [source,clojure]
 ----
@@ -126,6 +126,24 @@ We can use either type of EntitySpec for update
         { :weapon/type #{ :weapon/gun :weapon/knife :weapon/guile } } )))
 
 ----
+
+as expected, our database contains the updated values for James & Dr. No.  Notice that, since
+`:weapon/type` is implemented as a set in Datmoic, duplicate values are not allowed and both
+antagonists have only a single gun:
+
+[source,clojure]
+----
+  ; Verify current status. Notice there are no duplicate weapons.
+  (let [people (get-people (live-db)) ]
+    (is (= people   
+      #{ { :person/name "James Bond" :location "London"    
+           :weapon/type #{              :weapon/wit :weapon/knife :weapon/gun} :person/secret-id 7 }
+         { :person/name "M"          :location "London"    
+           :weapon/type #{:weapon/guile                           :weapon/gun} }
+         { :person/name "Dr No"      :location "Caribbean" 
+           :weapon/type #{:weapon/guile             :weapon/knife :weapon/gun} } } )))
+----
+
 
 === tupelo.datomic - Basic functions
 
