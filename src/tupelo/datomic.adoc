@@ -288,6 +288,19 @@ In Tupelo Datmoic, we may easily create and use partitions:
 
 [source,clojure]
 ----
+  ; Create a partition named :people (we could namespace it like :db.part/people if we wished)
+  (td/transact *conn* 
+    (td/new-partition :people ))
+
+  ; Create Honey Rider and add her to the :people partition
+  (let [tx-result   @(td/transact *conn* 
+                        (td/new-entity :people ; <- partition is first arg to td/new-entity 
+                          { :person/name "Honey Rider" :location "Caribbean" :weapon/type #{:weapon/knife} } ))
+        [honey-eid]  (td/eids tx-result)  ; retrieve Honey Rider's EID from the seq (destructuring)
+  ]
+    (is (s/validate ts/Eid honey-eid))  ; verify the expected type
+    (is (= :people ; verify the partition name for Honey's EID
+           (td/partition-name (live-db) honey-eid))))
 ----
 
 
