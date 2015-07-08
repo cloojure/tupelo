@@ -143,7 +143,7 @@ antagonists have only a single gun:
 
 The benefit of using enumerated values in Datomic is that we can easily restrict the the domain of
 acceptable values more easily than by using plain keyword values. For example, if we try to give
-James a non-existant weapon, Datomic will generate an exception:
+James a non-existent weapon, Datomic will generate an exception:
 
 [source,clojure]
 ----
