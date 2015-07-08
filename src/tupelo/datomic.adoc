@@ -78,13 +78,21 @@ And, just like that, we have values persisted in the DB! Let's check that they a
               {:person/name "Dr No"         :location "Caribbean"   :weapon/type #{:weapon/gun               } } } )))
 ----
 
-== Query
+== EntitySpec, EntityID, and LookupRef
 
-Entities in Datomic are often specified using their EntityID (EID), which is a globally unique Long
-value.  If an entity has an attribute specified as either :db.unique/value or :db.unique/identity,
-the entity can also be specified using a LookupRef, which is an attribute-value pair wrapped in a
-vector.  In Tupelo Datomic, both EID and LookupRef are examples of an EntitySpec.  Here we verify
-that we can find James Bond and retrieve all of his attr-val pairs using both types of EntitySpec:
+Entities in Datomic are specified using an EntitySpec, which is either an EntityID (EID) or a
+LookupRef.
+
+An EntityID (EID) is a globally unique Long value that uniquely specifies any entity in the Datomic
+DB. These are always positive for committed entities in Datomic (negative values indicate temporary
+EIDs used only in building transactions).
+
+A LookupRef is an attribute-value pair (wrapped in a vector), which uniquely specifies an entity.
+If an entity has an attribute specified as either :db.unique/value or :db.unique/identity, that
+entity may be specified using a LookupRef.
+
+Here we verify that we can find James Bond and retrieve all of his attr-val pairs using either type
+of EntitySpec:
 
 [source,clojure]
 ----
@@ -100,7 +108,12 @@ that we can find James Bond and retrieve all of his attr-val pairs using both ty
     (is (= james-map {:person/name "James Bond" :location "London" 
                       :weapon/type #{:weapon/wit :weapon/gun} } ))
     (is (= james-map james-map2 ))
+----
 
+We can use either type of EntitySpec for update
+
+[source,clojure]
+----
     ; Update the database with more weapons.  If we overwrite some items that are already present
     ; (e.g. :weapon/gun) it is idempotent (no duplicates are allowed).  The first arg to td/update
     ; is an EntitySpec (either EntityId or LookupRef) and determines the Entity that is updated.
