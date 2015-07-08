@@ -7,9 +7,11 @@
 
 (ns tst.tupelo.core
   (:require [clojure.string     :as str]
-            [tupelo.misc      :as misc] )
+            [tupelo.misc        :as tm] )
   (:use tupelo.core 
         clojure.test ))
+
+(println "*clojure-version* = " *clojure-version*)
 
 (deftest truthy-falsey-tst
   (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]
@@ -92,7 +94,7 @@
   (is (= "abcd" (strcat             [97  98]  "cd" )))
   (is (= "abcd" (strcat (byte-array [97  98]) "cd" )))
 
-  (let [chars-set   (into #{} (misc/char-seq \a \z)) 
+  (let [chars-set   (into #{} (tm/char-seq \a \z)) 
         str-val     (strcat chars-set) ]
     (is (= 26 (count chars-set)))
     (is (= 26 (count str-val)))
