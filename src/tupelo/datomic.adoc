@@ -158,8 +158,10 @@ James a non-existant weapon, Datomic will generate an exception:
 
 == Query Functions
 
-When querying for values in Tupelo Datomic, the fundamental result type is a TupleSet (a Clojure set
-containing unique Clojure vectors). Here is an example in action:
+When querying for values using Tupelo Datomic, the fundamental result type is a TupleSet (a Clojure
+set containing unique Clojure vectors).  This overcomes the problem where native result type
+datomic.query.EntityMap is lazy-loading and may give deceptive results when printed.  Here is an
+example of Tupelo Datomic query in action:
 
 [source,clojure]
 ----
