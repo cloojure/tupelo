@@ -1,6 +1,6 @@
 
 
-= Making Datomic Even Sweeter
+= Tupelo: Making Datomic Even Sweeter
 
 Leiningen coordinates:   
 
