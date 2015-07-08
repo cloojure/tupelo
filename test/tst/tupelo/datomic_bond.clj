@@ -177,7 +177,6 @@
         busy      (try ; error - multiple results for London
                     (td/query-scalar  :let    [$    (live-db)
                                                ?loc "London"]
-
                                       :find   [?eid]
                                       :where  [ [?eid :person/name  ?name]
                                                 [?eid :location     ?loc ] ] )
@@ -196,7 +195,7 @@
 
   ; If you wish to retain duplicate results on output, you must use td/query-pull and the Datomic
   ; Pull API to return a list of results (instead of a set).
-  (let [result-pull     (td/query-pull  :let    [$ (live-db)]               ; $ is the implicit db name
+  (let [result-pull     (td/query-pull  :let    [$ (live-db)]                 ; $ is the implicit db name
                                         :find   [ (pull ?eid [:location]) ]   ; output :location for each ?eid found
                                         :where  [ [?eid :location] ] )        ; find any ?eid with a :location attr
         result-sort     (sort-by #(-> % first :location) result-pull)
@@ -212,7 +211,7 @@
 
   ; Create Honey Rider and add her to the :people partition
   (let [tx-result   @(td/transact *conn* 
-                        (td/new-entity :people ; <- partition is first arg to td/new-entity 
+                        (td/new-entity :people ; <- partition is first arg (optional) to td/new-entity 
                           { :person/name "Honey Rider" :location "Caribbean" :weapon/type #{:weapon/knife} } ))
         [honey-eid]  (td/eids tx-result)  ; retrieve Honey Rider's EID from the seq (destructuring)
   ]

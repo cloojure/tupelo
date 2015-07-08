@@ -181,14 +181,14 @@ example of Tupelo Datomic query in action:
 Tupelo Datomic modifies the original Datomic query syntax compared to `(datomic.api/q ...)` in two
 ways.  For convenience, the query form does not need to be wrapped in a map literal nor is any
 quoting required.  Most importantly, the `:in` keyword has been replaced with the `:let` keyword,
-and the syntax has been copied from the Clojure `let` special form so that both the query variables
-(the implicit DB `$` in this case) are more closely aligned with their actual values. Also, the
-implicit DB `$` must be explicitly tied to its data source in all cases (as shown above).
+and the syntax has been copied from the Clojure `let` special form so that each query variables are
+more closely aligned with their actual values. Also, the implicit DB `$` must be explicitly tied to
+its data source in all cases (as shown above).
 
 Receiving a TupleSet result is the most general case, but in many instances we can save some effort.
 If we are retrieving the value for a single attribute per entity, we don't need to wrap that result in a
 tuple. In this case, we can use the function `td/query-set`, which returns a set of scalars as
-output rather than a set of tuples:
+output rather than a set of tuples of scalars:
 
 [source,clojure]
 ----
@@ -291,7 +291,7 @@ entities:
 
 Datomic allows the user to create 'partitions' within the DB.  Datomic partitions serve solely as 
 a structural optimization, and do not control or limit how or by whom datoms may be accessed.  The
-effect of a partition in Datomic is to effectively "pre-sort" all entities in that partition so they
+effect of a partition in Datomic is to effectively "pre-sort" all entities in that partition so that they
 are adjacent in storage, which _may_ improve access times for related entities that are often
 accessed together.
 
