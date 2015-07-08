@@ -188,8 +188,8 @@
     (is (re-seq #"IllegalStateException" busy))   ; Exception thrown/caught since 2 people in London
     (is (re-seq #"IllegalStateException" multi))) ; Exception thrown/caught since 2 people in London
 
-  ; If you wish to retain duplicate results on output, you must use td/query-pull and the Datomic Pull API to return a
-  ; list of results (instead of a set).
+  ; If you wish to retain duplicate results on output, you must use td/query-pull and the Datomic
+  ; Pull API to return a list of results (instead of a set).
   (let [result-pull     (td/query-pull  :let    [$ (live-db)]               ; $ is the implicit db name
                                         :find   [ (pull ?eid [:location]) ]   ; output :location for each ?eid found
                                         :where  [ [?eid :location] ] )        ; find any ?eid with a :location attr
