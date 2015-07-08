@@ -21,6 +21,7 @@ a few attributes that will apply to our heroes & villains:
 ----
   (:require [tupelo.datomic   :as td]
             [tupelo.schema    :as ts])
+
   ; Create some new attributes. Required args are the attribute name (an optionally namespaced
   ; keyword) and the attribute type (full listing at http://docs.datomic.com/schema.html). We wrap
   ; the new attribute definitions in a transaction and immediately commit them into the DB.
