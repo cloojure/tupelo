@@ -65,6 +65,17 @@ values and literals here, and we don't have to worry about any Datomic specific 
     (td/new-entity { :person/name "Dr No"      :location "Caribbean"  :weapon/type    :weapon/gun                 } ))
 ----
 
+And, just like that, we have values persisted in the DB! Let's check that they are really there,
+[source,clojure]
+----
+  ; Verify the antagonists were added to the DB
+  (let [people (get-people (live-db)) ]
+    (is (= people   
+           #{ {:person/name "James Bond"    :location "London"      :weapon/type #{:weapon/wit    :weapon/gun} }
+              {:person/name "M"             :location "London"      :weapon/type #{:weapon/guile  :weapon/gun} }
+              {:person/name "Dr No"         :location "Caribbean"   :weapon/type #{:weapon/gun               } } } )))
+----
+
 === tupelo.datomic - Basic functions
 
 ==== new-attribute
