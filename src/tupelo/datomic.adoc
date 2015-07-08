@@ -78,7 +78,40 @@ And, just like that, we have values persisted in the DB! Let's check that they a
               {:person/name "Dr No"         :location "Caribbean"   :weapon/type #{:weapon/gun               } } } )))
 ----
 
+== Query
 
+Entities in Datomic are often specified using their EntityID (EID), which is a globally unique Long
+value.  If an entity has an attribute specified as either :db.unique/value or :db.unique/identity,
+the entity can also be specified using a LookupRef, which is an attribute-value pair wrapped in a
+vector. Here we verify that we can find James Bond and retrieve all of his attr-val pairs using
+either EID or LookupRef (i.e. an EntitySpec).
+
+[source,clojure]
+----
+  ; Using James' name, lookup his EntityId (EID). It is a java.lang.Long that is a unique ID across the whole DB.
+  (let [james-eid   (td/query-scalar  :let    [$ (live-db)]     ; like Clojure let
+                                      :find   [?eid]
+                                      :where  [ [?eid :person/name "James Bond"] ] )
+        ; Retrieve James' attr-val pairs as a map. An entity can be referenced either by EID or by a
+        ; LookupRef, which is a unique attribute-value pair expressed as a vector.
+        james-map   (td/entity-map (live-db) james-eid)                       ; lookup by EID  
+        james-map2  (td/entity-map (live-db) [:person/name "James Bond"] )    ; lookup by LookupRef
+  ]
+    (is (= james-map {:person/name "James Bond" :location "London" :weapon/type #{:weapon/wit :weapon/gun} } ))
+    (is (= james-map james-map2 ))
+
+    ; Update the database with more weapons.  If we overwrite some items that are already present
+    ; (e.g. :weapon/gun) it is idempotent (no duplicates are allowed).  The first arg to td/update
+    ; is an EntitySpec (either EntityId or LookupRef) and determines the Entity that is updated.
+    (td/transact *conn* 
+      (td/update james-eid   ; update using EID
+          { :weapon/type #{ :weapon/gun :weapon/knife }
+            :person/secret-id 007 } )   ; Note that James has a secret-id but no one else does
+
+      (td/update [:person/name "Dr No"] ; update using LookupRef
+        { :weapon/type #{ :weapon/gun :weapon/knife :weapon/guile } } )))
+
+----
 
 === tupelo.datomic - Basic functions
 
