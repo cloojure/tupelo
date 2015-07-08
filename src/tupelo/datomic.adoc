@@ -305,7 +305,7 @@ In Tupelo Datomic, we may easily create and use partitions:
 
   ; Create Honey Rider and add her to the :people partition
   (let [tx-result   @(td/transact *conn* 
-                        (td/new-entity :people ; <- partition is first arg to td/new-entity 
+                        (td/new-entity :people ; <- partition is first arg (optional) to td/new-entity 
                           { :person/name "Honey Rider" :location "Caribbean" :weapon/type #{:weapon/knife} } ))
         [honey-eid]  (td/eids tx-result)  ; retrieve Honey Rider's EID from the seq (destructuring)
   ]
