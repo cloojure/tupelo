@@ -160,7 +160,7 @@ James a non-existant weapon, Datomic will generate an exception:
 
 When querying for values using Tupelo Datomic, the fundamental result type is a TupleSet (a Clojure
 set containing unique Clojure vectors).  This overcomes the problem where native result type
-datomic.query.EntityMap is lazy-loading and may give deceptive results when printed.  Here is an
+datomic.query.EntityMap is lazy-loading and may give unexpected results.  Here is an
 example of Tupelo Datomic query in action:
 
 [source,clojure]
@@ -175,17 +175,38 @@ example of Tupelo Datomic query in action:
     (is (s/validate  ts/TupleSet  tuple-set))       ; verify expected type using Prismatic Schema
     (is (s/validate #{ [s/Any] }  tuple-set))       ; literal definition of TupleSet
     (is (= tuple-set #{ ["Dr No"       "Caribbean"]      ; Even though London is repeated, each tuple is
-                        ["James Bond"  "London"]         ;   still unique. Otherwise, any duplicate tuples
-                        ["M"           "London"] } )))   ;   will be discarded since output is a clojure set.
+                        ["James Bond"  "London"]         ; still unique. Otherwise, any duplicate tuples
+                        ["M"           "London"] } )))   ; will be discarded since output is a clojure set.
 
 ----
 
 Tupelo Datomic modifies the original Datomic query syntax compared to (datomic/q ...) in two ways.
 For convenience, the query form does not need to be wrapped in a map literal nor is any quoting
-required.  Most importantly, the `:in` key has been replaced with the `:let` keyword, and the syntax
+required.  Most importantly, the `:in` keyword has been replaced with the `:let` keyword, and the syntax
 has been copied from the Clojure `let` special form so that both the query variables (the implicit
 DB `$` in this case) are more closely aligned with their actual values. Also, the implicit DB `$`
 must be explicitly tied to its data source in all cases (as shown above).
+
+Receiving a TupleSet result is the most general case, but in many instances we can save some effort.
+If we are retrieving the value for a single attribute per entity, we don't need to wrap that result in a
+tuple. In this case, we can use the function `td/query-set` instead.  In this case, the function
+returns a set of scalars as output rather than a set of tuples:
+
+[source,clojure]
+----
+  ; If you want just a single attribute as output, you can get a set of values (rather than a set of
+  ; tuples) using td/query-set.  As usual, any duplicate values will be discarded.
+  (let [names     (td/query-set :let    [$ (live-db)]
+                                :find   [?name] ; <- a single attr-val output allows use of td/query-set
+                                :where  [ [?eid :person/name ?name] ] )
+        cities    (td/query-set :let    [$ (live-db)]
+                                :find   [?loc]  ; <- a single attr-val output allows use of td/query-set
+                                :where  [ [?eid :location ?loc] ] )
+
+  ]
+    (is (= names    #{"Dr No" "James Bond" "M"} ))  ; all names are present, since unique
+    (is (= cities   #{"Caribbean" "London"} )))     ; duplicate "London" discarded
+----
 
 
 === tupelo.datomic - Basic functions

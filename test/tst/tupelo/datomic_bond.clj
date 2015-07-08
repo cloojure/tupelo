@@ -132,8 +132,8 @@
     (is (s/validate  ts/TupleSet  tuple-set))       ; verify expected type using Prismatic Schema
     (is (s/validate #{ [s/Any] }  tuple-set))       ; literal definition of TupleSet
     (is (= tuple-set #{ ["Dr No"       "Caribbean"]      ; Even though London is repeated, each tuple is
-                        ["James Bond"  "London"]         ;   still unique. Otherwise, any duplicate tuples
-                        ["M"           "London"] } )))   ;   will be discarded since output is a clojure set.
+                        ["James Bond"  "London"]         ; still unique. Otherwise, any duplicate tuples
+                        ["M"           "London"] } )))   ; will be discarded since output is a clojure set.
 
   ; If you want just a single attribute as output, you can get a set of values (rather than a set of
   ; tuples) using td/query-set.  As usual, any duplicate values will be discarded.
