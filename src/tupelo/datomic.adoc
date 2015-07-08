@@ -83,8 +83,8 @@ And, just like that, we have values persisted in the DB! Let's check that they a
 Entities in Datomic are often specified using their EntityID (EID), which is a globally unique Long
 value.  If an entity has an attribute specified as either :db.unique/value or :db.unique/identity,
 the entity can also be specified using a LookupRef, which is an attribute-value pair wrapped in a
-vector. Here we verify that we can find James Bond and retrieve all of his attr-val pairs using
-either EID or LookupRef (i.e. an EntitySpec).
+vector.  In Tupelo Datomic, both EID and LookupRef are examples of an EntitySpec.  Here we verify
+that we can find James Bond and retrieve all of his attr-val pairs using both types of EntitySpec:
 
 [source,clojure]
 ----
