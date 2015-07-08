@@ -313,3 +313,7 @@ Lots more to come!
 Copyright © 2015 Alan Thompson. 
 
 Distributed under the Eclipse Public License, the same as Clojure.
+
+==== ToDo List
+
+  Add docs for new-attribute optional specs
