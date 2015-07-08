@@ -50,7 +50,7 @@ number of choices available to our antagonists:
 ----
 
 Let's create a few antagonists and load them into the DB. Note that we are just using plain Clojure
-values and map/set literals here, and we don't have to worry about any Datmoic specific conversions.
+values and literals here, and we don't have to worry about any Datomic specific conversions.
 
 [source,clojure]
 ----
