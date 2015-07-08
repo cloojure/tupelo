@@ -263,7 +263,7 @@ value instead of a set of tuples of scalars:
 
 If one wishes to use queries returning possibly duplicate result items, then the Datomic Pull api is
 required.  A Pull query returns results in a List (a Clojure vector), rather than a Set, so that
-duplicate result items are not discarded.  An example, let's find the location of all of our
+duplicate result items are not discarded.  As an example, let's find the location of all of our
 entities:
 
 [source,clojure]
