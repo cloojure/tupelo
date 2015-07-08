@@ -214,15 +214,17 @@ In this case, we don't need to wrap the result tuple in a set and we can use the
 ----
   ; If you want just a single tuple as output, you can get it (rather than a set of
   ; tuples) using td/query-tuple.  It is an error if more than one tuple is found.
-  (let [beachy    (td/query-tuple :let    [$ (live-db)]
+  (let [beachy    (td/query-tuple :let    [$    (live-db)
+                                           ?loc "Caribbean"]
                                   :find   [?eid ?name] ; <- output tuple shape
                                   :where  [ [?eid :person/name ?name      ]
-                                            [?eid :location    "Caribbean"] ] )
+                                            [?eid :location    ?loc] ] )
         busy      (try ; error - both James & M are in London
-                    (td/query-tuple :let    [$ (live-db)]
+                    (td/query-tuple :let    [$ (live-db)
+                                             ?loc "London"]
                                     :find   [?eid ?name] ; <- output tuple shape
-                                    :where  [ [?eid :person/name ?name    ]
-                                              [?eid :location    "London" ] ] )
+                                    :where  [ [?eid :person/name ?name]
+                                              [?eid :location    ?loc ] ] )
                     (catch Exception ex (.toString ex)))
   ]
     (is (matches? beachy [_ "Dr No"] ))           ; found 1 match as expected
@@ -237,21 +239,24 @@ value instead of a set of tuples of scalars:
 ----
   ; If you know there is (or should be) only a single scalar answer, you can get the scalar value as
   ; output using td/query-scalar. It is an error if more than one tuple or value is present.
-  (let [beachy    (td/query-scalar  :let    [$ (live-db)]
+  (let [beachy    (td/query-scalar  :let    [$    (live-db)
+                                             ?loc "Caribbean"]
                                     :find   [?name]
-                                    :where  [ [?eid :person/name ?name      ]
-                                              [?eid :location    "Caribbean"] ] )
-        busy      (try
-                    (td/query-scalar  :let    [$ (live-db)]
-                                      :find   [?eid] ; error - tuple [?eid ?name] is not scalar
-                                      :where  [ [?eid :person/name ?name    ]
-                                                [?eid :location  "London"  ] ] )
+                                    :where  [ [?eid :person/name ?name]
+                                              [?eid :location    ?loc ] ] )
+        busy      (try ; error - multiple results for London
+                    (td/query-scalar  :let    [$    (live-db)
+                                               ?loc "London"]
+                                      :find   [?eid]
+                                      :where  [ [?eid :person/name  ?name]
+                                                [?eid :location     ?loc ] ] )
                     (catch Exception ex (.toString ex)))
-        multi     (try
-                    (td/query-scalar  :let    [$ (live-db)]
-                                      :find   [?eid ?name] ; error - tuple [?eid ?name] is not scalar
-                                      :where  [ [?eid :person/name ?name    ]
-                                                [?eid :location  "Caribbean"  ] ] )
+        multi     (try ; error - tuple [?eid ?name] is not scalar
+                    (td/query-scalar  :let    [$    (live-db)
+                                               ?loc "Caribbean"]
+                                      :find   [?eid ?name]
+                                      :where  [ [?eid :person/name  ?name]
+                                                [?eid :location     ?loc ] ] )
                     (catch Exception ex (.toString ex)))
   ]
     (is (= beachy "Dr No"))                       ; found 1 match as expected
