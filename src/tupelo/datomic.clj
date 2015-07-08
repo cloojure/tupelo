@@ -237,7 +237,7 @@
 
 ; #todo need checks to stop collection result (:find [?e ...])
 ; #todo and scalar result (:find [?e .])
-(defmacro query* ; #todo remember 'with'
+(defmacro ^:no-doc query* ; #todo remember 'with'
   ; returns a HashSet of datomic entity objects
   "Base function for improved API syntax for datomic.api/q query function (Entity API)"
   [& args]
@@ -338,7 +338,7 @@
         (throw (IllegalStateException.
           (str "query-scalar: tuple must hold a single item: " tuple#))))))
 
-(defn- contains-pull?
+(defn- ^:no-doc contains-pull?  ; prevent codox ("lein doc") from processing 
   "Returns true if a sequence of symbols includes 'pull'"
   [args-vec]
 ; (println \newline "contains-pull?" args-vec)
