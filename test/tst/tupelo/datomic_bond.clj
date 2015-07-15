@@ -16,9 +16,6 @@
 (def uri "datomic:mem://bond")          ; the URI for our test db
 (def ^:dynamic *conn*)                  ; dynamic var to hold the db connection
 
-; Convenience function to keep syntax a bit more concise
-(defn live-db [] (d/db *conn*))
-
 ;---------------------------------------------------------------------------------------------------
 ; clojure.test fixture: setup & teardown for each test
 (use-fixtures :each
@@ -26,17 +23,19 @@
     [tst-fn]
 ; setup ----------------------------------------------------------
     (d/create-database uri)             ; create the DB
-    (binding [*conn* (d/connect uri) ]  ; create & save a connection to the db
+    (try
+      (binding [*conn* (d/connect uri) ]  ; create & save a connection to the db
 ; execute --------------------------------------------------------
-      (try
-        (tst-fn)
+        (tst-fn))
 ; teardown -------------------------------------------------------
-        (finally
-          (d/delete-database uri))))))
+      (finally
+        (d/delete-database uri)))))
 
 ;---------------------------------------------------------------------------------------------------
-; helper function
+; Convenience function to keep syntax a bit more concise
+(defn live-db [] (d/db *conn*))
 
+; helper function
 (defn get-people
   "Returns facts about all entities with the :person/name attribute"
   [db-val]
