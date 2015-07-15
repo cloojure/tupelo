@@ -13,7 +13,7 @@
 (set! *print-length* nil)
 (s/set-fn-validation! true)             ; enable Prismatic Schema type definitions (#todo add to Schema docs)
 
-(def uri "datomic:mem://bond")          ; the URI for our test db
+(def uri "datomic:mem://tst.bond")      ; the URI for our test db
 (def ^:dynamic *conn*)                  ; dynamic var to hold the db connection
 
 ;---------------------------------------------------------------------------------------------------

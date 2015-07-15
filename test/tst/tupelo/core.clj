@@ -11,7 +11,7 @@
   (:use tupelo.core 
         clojure.test ))
 
-(println "*clojure-version* = " *clojure-version*)
+(spyx *clojure-version*)
 
 (deftest truthy-falsey-tst
   (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]
