@@ -85,18 +85,6 @@
   ]
     result ))
 
-(s/defn grab :- s/Any
-  "A fail-fast version of keyword/map lookup, where (:the-keyword the-map) -> (grab :the-keyword the-map).  
-   Throws an exception if :the-keyword is not present in the-map."
-  [k    :- s/Keyword
-   m    :- ts/KeyMap ] 
-  (if (contains? m k)
-    (clj/get m k)
-    (throw (IllegalArgumentException.    
-              (str  "Key not present in map:" \newline
-                    "  map: " m  \newline
-                    "  key: " k  \newline )))))
-
 (defn pp-str
   "Returns a string that is the result of clojure.pprint/pprint"
   [arg]
@@ -299,10 +287,22 @@
     ] 
       or-result )))
 
+; #todo need test
+(s/defn grab :- s/Any
+  "A fail-fast version of keyword/map lookup, where (:the-keyword the-map) -> (grab :the-keyword the-map).  
+   Throws an exception if :the-keyword is not present in the-map."
+  [k    :- s/Keyword
+   m    :- ts/KeyMap ] 
+  (if (contains? m k)
+    (clj/get m k)
+    (throw (IllegalArgumentException.    
+              (str  "Key not present in map:" \newline
+                    "  map: " m  \newline
+                    "  key: " k  \newline )))))
+
 ; #todo: surprising concat failure
 ;   (concat {:a 1} {:b 2} {:c 3})
 ;   =>     ([:a 1] [:b 2] [:c 3])
-
 (defn glue 
   "Glues together like sequences:
 
@@ -354,7 +354,6 @@
 ;   (spyx result) (spy-indent-dec) (flush)      ; for debug
     result))
 
-
 (defmacro matches?   ; #todo need test
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
    matches the pattern value.  Underscores serve as wildcard values. Usage: 
@@ -378,3 +377,22 @@
         (take nchars it)
         (apply str it)))
 
+(defn keep-if-z
+  "Returns a lazy sequence of items in coll for which (pred item) is true (alias for clojure.core/filter)"
+  [pred coll]
+  (clojure.core/filter pred coll))
+
+(defn keep-if
+  "Returns an eager sequence of items in coll for which (pred item) is true (alias for clojure.core/filter)"
+  [pred coll]
+  (vec (keep-if-z pred coll)))
+
+(defn drop-if-z
+  "Returns a lazy sequence of items in coll for which (pred item) is false (alias for clojure.core/remove)"
+  [pred coll]
+  (clojure.core/remove pred coll))
+
+(defn drop-if
+  "Returns an eager sequence of items in coll for which (pred item) is false (alias for clojure.core/remove)"
+  [pred coll]
+  (vec (drop-if-z pred coll)))

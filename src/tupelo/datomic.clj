@@ -22,6 +22,8 @@
 ;   :entity.type/address, etc.
 ; - Each entity.type should have an entity.type.*/invariants list of functions which must always be
 ;   true (integrity constraints).
+; - Add "enum" like keyword attrs (not entities)
+; - Look at seek-datoms & entid-at (Craig Andera StrangeLoop talk 2013)
 ; 
 ; So a an Entity of type :entity.type/person looks like:
 ;              <name>          <type>      <constraints/invariants>
