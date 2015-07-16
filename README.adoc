@@ -15,36 +15,36 @@ you are wishing for an enhanced version of a standard function. The goal of Tupe
 add support for these convenience features, so that you have a simple way of using either
 the enhanced version or the original version.
 
-=== Tupelo Datomic
+== Tupelo Datomic
 
 A library of helper functions for Datomic. Please see link:src/tupelo/datomic.adoc[the Tupelo Datomic docs]
 
-=== Tupelo Core
+== Tupelo Core
 
 A library of helper functions for core Clojure. Please see link:src/tupelo/core.adoc[the Tupelo Datomic docs]
 
-=== Tupelo Explicit - Explicit Language for Clojure
-
-link:src/tupelo/explicit.adoc[Documentation for tupelo.explicit]
-
-=== tupelo.csv - Functions for using CSV (Comma Separate Value) files
+== tupelo.csv - Functions for using CSV (Comma Separate Value) files
 
 The standard link:http://github.com/davidsantiago/clojure-csv[clojure-csv library] has well-tested
 and useful functions for parsing CSV (Comma Separated Value) text data, but it does not offer all of
 the convenience one may wish. Tupelo CSV emphasizes the idomatic Clojure usage of data, using
 sequences and maps. Please see link:src/tupelo/csv.adoc[the Tupelo CSV docs]
 
-=== tupelo.parse - Functions to ease parsing
+== tupelo.parse - Functions to ease parsing
 
 TEMP TODO:  http://cloojure.github.io/doc/tupelo/tupelo.parse.html
 
-=== tupelo.base64 - Convert to/from base64 encoding
+== tupelo.base64 - Convert to/from base64 encoding
 
 TEMP TODO:  see http://cloojure.github.io/doc/tupelo/tupelo.base64.html
 
-=== tupelo.y64 - Convert to/from the URL-safe Y64 encoding (Yahoo YUI library).
+== tupelo.y64 - Convert to/from the URL-safe Y64 encoding (Yahoo YUI library).
 
 TEMP TODO:  see http://cloojure.github.io/doc/tupelo/tupelo.y64.html
+
+== Tupelo Explicit - Explicit Language for Clojure
+
+link:src/tupelo/explicit.adoc[Documentation for tupelo.explicit]
 
 == License
 
