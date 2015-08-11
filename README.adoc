@@ -21,7 +21,7 @@ A library of helper functions for Datomic. Please see link:src/tupelo/datomic.ad
 
 == Tupelo Core
 
-A library of helper functions for core Clojure. Please see link:src/tupelo/core.adoc[the Tupelo Datomic docs]
+A library of helper functions for core Clojure. Please see link:src/tupelo/core.adoc[the Tupelo Core docs]
 
 == tupelo.csv - Functions for using CSV (Comma Separate Value) files
 
