@@ -13,7 +13,8 @@
 (def ^:dynamic *os-shell* "/bin/bash")  ; could also use /bin/zsh, etc
 
 (defn collapse-whitespace
- "Replaces all consecutive runs of whitespace characters with a single space."
+ "Replaces all consecutive runs of whitespace characters with a single space. Also removes
+  any leading or trailing whitespace."
   [it]
   (-> it
       str/trim
