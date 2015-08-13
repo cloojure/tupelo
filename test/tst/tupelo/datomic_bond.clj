@@ -109,11 +109,10 @@
         { :weapon/type #{ :weapon/gun :weapon/knife :weapon/guile } } )))
 
   ; Verify current status. Notice there are no duplicate weapons.
-  (let [people (get-people (live-db)) ]
-    (is (= people   
-      #{ {:person/name "James Bond" :location "London"    :weapon/type #{              :weapon/wit :weapon/knife :weapon/gun} :person/secret-id 7 }
-         {:person/name "M"          :location "London"    :weapon/type #{:weapon/guile                           :weapon/gun} }
-         {:person/name "Dr No"      :location "Caribbean" :weapon/type #{:weapon/guile             :weapon/knife :weapon/gun} } } )))
+  (is (= (get-people (live-db))
+    #{ {:person/name "James Bond" :location "London"    :weapon/type #{              :weapon/wit :weapon/knife :weapon/gun} :person/secret-id 7 }
+       {:person/name "M"          :location "London"    :weapon/type #{:weapon/guile                           :weapon/gun} }
+       {:person/name "Dr No"      :location "Caribbean" :weapon/type #{:weapon/guile             :weapon/knife :weapon/gun} } } ))
 
   ; Try to add non-existent weapon. This throws since the bogus kw does not match up with an entity.
   (is (thrown? Exception   @(td/transact *conn* 
