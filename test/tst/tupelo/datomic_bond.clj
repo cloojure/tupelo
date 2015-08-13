@@ -80,11 +80,10 @@
     (td/new-entity { :person/name "Dr No"      :location "Caribbean"  :weapon/type    :weapon/gun                 } ))
 
   ; Verify the antagonists were added to the DB
-  (let [people (get-people (live-db)) ]
-    (is (= people   
-           #{ {:person/name "James Bond"    :location "London"      :weapon/type #{:weapon/wit    :weapon/gun} }
-              {:person/name "M"             :location "London"      :weapon/type #{:weapon/guile  :weapon/gun} }
-              {:person/name "Dr No"         :location "Caribbean"   :weapon/type #{:weapon/gun               } } } )))
+  (is (= (get-people (live-db))
+         #{ {:person/name "James Bond"    :location "London"      :weapon/type #{:weapon/wit    :weapon/gun} }
+            {:person/name "M"             :location "London"      :weapon/type #{:weapon/guile  :weapon/gun} }
+            {:person/name "Dr No"         :location "Caribbean"   :weapon/type #{:weapon/gun               } } } ))
 
   ; Using James' name, lookup his EntityId (EID). It is a java.lang.Long that is a unique ID across the whole DB.
   (let [james-eid   (td/query-scalar  :let    [$ (live-db)]     ; like Clojure let
