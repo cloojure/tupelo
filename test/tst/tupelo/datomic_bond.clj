@@ -119,8 +119,8 @@
                               (td/update [:person/name "James Bond"] ; update using a LookupRef
                                 { :weapon/type #{ :there.is/no-such-kw } } ))))  ; bogus value for :weapon/type causes exception
 
-  ; For general queries, use td/query.  It returns a set of tuples (TupleSet).  Any duplicated
-  ; tuples will be discarded
+  ; For general queries, use td/query.  It returns a set of tuples (a TupleSet).  Duplicate
+  ; tuples in the result will be discarded.
   (let [tuple-set   (td/query  :let    [$ (live-db)]
                                :find   [?name ?loc] ; <- shape of output tuples
                                :where  [ [?eid :person/name ?name]      ; pattern-matching rules specify how the variables
@@ -133,7 +133,8 @@
                         ["M"           "London"] } )))   ; will be discarded since output is a clojure set.
 
   ; If you want just a single attribute as output, you can get a set of values (rather than a set of
-  ; tuples) using td/query-set.  As usual, any duplicate values will be discarded.
+  ; tuples) using td/query-set.  As usual, any duplicate values will be discarded. It is an error if
+  ; more than one attribute is returned (per entity).
   (let [names     (td/query-set :let    [$ (live-db)]
                                 :find   [?name] ; <- a single attr-val output allows use of td/query-set
                                 :where  [ [?eid :person/name ?name] ] )
@@ -148,7 +149,7 @@
   ; If you want just a single tuple as output, you can get it (rather than a set of
   ; tuples) using td/query-tuple.  It is an error if more than one tuple is found.
   (let [beachy    (td/query-tuple :let    [$    (live-db)     ; assign multiple query variables
-                                           ?loc "Caribbean"]  ; just like clojure 'let' special form
+                                           ?loc "Caribbean"]  ;   just like clojure 'let' special form
                                   :find   [?eid ?name] ; <- output tuple shape
                                   :where  [ [?eid :person/name ?name      ]
                                             [?eid :location    ?loc] ] )
@@ -161,7 +162,7 @@
                     (catch Exception ex (.toString ex)))
   ]
     (is (matches? beachy [_ "Dr No"] ))           ; found 1 match as expected
-    (is (re-seq #"IllegalStateException" busy)))  ; Exception thrown/caught since 2 people in London
+    (is (re-find #"IllegalStateException" busy)))  ; Exception thrown/caught since 2 people in London
 
 
   ; If you know there is (or should be) only a single scalar answer, you can get the scalar value as
@@ -187,8 +188,8 @@
                     (catch Exception ex (.toString ex)))
   ]
     (is (= beachy "Dr No"))                       ; found 1 match as expected
-    (is (re-seq #"IllegalStateException" busy))   ; Exception thrown/caught since 2 people in London
-    (is (re-seq #"IllegalStateException" multi))) ; Exception thrown/caught since 2 people in London
+    (is (re-find #"IllegalStateException" busy))   ; Exception thrown/caught since 2 people in London
+    (is (re-find #"IllegalStateException" multi))) ; Exception thrown/caught since 2-vector is not scalar
 
   ; If you wish to retain duplicate results on output, you must use td/query-pull and the Datomic
   ; Pull API to return a list of results (instead of a set).
@@ -201,6 +202,8 @@
     (is (= result-sort  [ [ {:location "Caribbean"} ] 
                           [ {:location "London"   } ]
                           [ {:location "London"   } ] ] )))
+; #todo make "[ts/TupleMap]" -> ts/TupleList
+; #todo show Exception if non-pull
 
   ; Create a partition named :people (we could namespace it like :db.part/people if we wished)
   (td/transact *conn* 
