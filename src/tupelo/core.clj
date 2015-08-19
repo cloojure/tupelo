@@ -381,27 +381,30 @@
         (take nchars it)
         (apply str it)))
 
+; #todo add to README
 (defn keep-if-z
   "Returns a lazy sequence of items in coll for which (pred item) is true (alias for clojure.core/filter)"
   [pred coll]
   (clojure.core/filter pred coll))
 
+; #todo add to README
 (defn keep-if
   "Returns an eager sequence of items in coll for which (pred item) is true (alias for clojure.core/filter)"
   [pred coll]
   (vec (keep-if-z pred coll)))
 
+; #todo add to README
 (defn drop-if-z
   "Returns a lazy sequence of items in coll for which (pred item) is false (alias for clojure.core/remove)"
   [pred coll]
   (clojure.core/remove pred coll))
 
+; #todo add to README
 (defn drop-if
   "Returns an eager sequence of items in coll for which (pred item) is false (alias for clojure.core/remove)"
   [pred coll]
   (vec (drop-if-z pred coll)))
 
-; #todo need test
 ; #todo add to README
 (defn string->lines
   "Returns a lazy seq of lines from a string"
