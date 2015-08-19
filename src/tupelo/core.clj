@@ -15,6 +15,7 @@
             [tupelo.types                 :as types]
             [tupelo.schema                :as ts]
             )
+  (:import [java.io BufferedReader StringReader] )
   (:gen-class))
 
 (def  spy-indent-level (atom 0))
@@ -136,6 +137,7 @@
            ~@(interleave (repeat g) (map pstep forms))]
        ~g)))
 
+; #todo add to README
 (defmacro it->
   "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
       (it-> 1
@@ -288,6 +290,8 @@
       or-result )))
 
 ; #todo need test
+; #todo need grab-in
+; #todo add to README
 (s/defn grab :- s/Any
   "A fail-fast version of keyword/map lookup, where (:the-keyword the-map) -> (grab :the-keyword the-map).  
    Throws an exception if :the-keyword is not present in the-map."
@@ -396,3 +400,10 @@
   "Returns an eager sequence of items in coll for which (pred item) is false (alias for clojure.core/remove)"
   [pred coll]
   (vec (drop-if-z pred coll)))
+
+; #todo need test
+; #todo add to README
+(defn string->lines
+  "Returns a lazy seq of lines from a string"
+  [string-arg]
+  (line-seq (BufferedReader. (StringReader. string-arg))))
