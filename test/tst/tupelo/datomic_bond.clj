@@ -222,7 +222,7 @@
     (let [eid-start     (d/entid-at (live-db) :people 0)              ; 1st possible eid 
           datoms        (d/seek-datoms (live-db) :eavt eid-start)     ; all datoms >= eid-start
           eids-all      (distinct (map #(:e %) datoms))               ; pull out unique eids
-          eids-keep     (filter #(= :people (td/partition-name (live-db) %)) 
+          eids-keep     (take-while #(= :people (td/partition-name (live-db) %)) 
                                 eids-all)  ; keep only eids in :people partition
           entity-maps   (map #(td/entity-map (live-db) %) eids-keep)
     ]
