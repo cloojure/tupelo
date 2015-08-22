@@ -408,6 +408,8 @@
          :where [ [?eid :db/ident ?ident] ] }
        db-val eid-val ))
 
+; #todo write a blog post documenting keywords [:e :a :v :tx :added] for #datom[0 10 :db.part/db 13194139533312 true]
+; (pr t1) => #datom[299067162756085 63 "Honey Rider" 13194139534324 true]
 ; #todo - need test
 (s/defn datom-map :- ts/DatomMap
   "Returns a plain of Clojure map of an datom's attribute-value pairs. 

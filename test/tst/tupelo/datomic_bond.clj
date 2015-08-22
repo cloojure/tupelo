@@ -217,6 +217,17 @@
   ]
     (is (s/validate ts/Eid honey-eid))  ; verify the expected type
     (is (= :people ; verify the partition name for Honey's EID
-           (td/partition-name (live-db) honey-eid))))
+           (td/partition-name (live-db) honey-eid)))
+
+    (let [eid-start     (d/entid-at (live-db) :people 0)              ; 1st possible eid 
+          datoms        (d/seek-datoms (live-db) :eavt eid-start)     ; all datoms >= eid-start
+          eids-all      (distinct (map #(:e %) datoms))               ; pull out unique eids
+          eids-keep     (filter #(= :people (td/partition-name (live-db) %)) 
+                                eids-all)  ; keep only eids in :people partition
+          entity-maps   (map #(td/entity-map (live-db) %) eids-keep)
+    ]
+      (is (= entity-maps [ 
+               {:person/name "Honey Rider", :weapon/type #{:weapon/knife}, :location "Caribbean"} ] )))
+  )
 
 )
