@@ -233,17 +233,15 @@ test namespace:
 
 ----
 (test-all & ns-names)
-  Convenience fn to reload a namespace & the corresponding test namespace from
-  disk and execute tests in the REPL.  Assumes canonical project test file
-  organization with parallel src/... & test/... directories, where a '-test'
-  suffix is added to all src namespaces to generate the cooresponding test
-  namespace.  Example:
+  Convenience fn to reload a namespace & the corresponding test namespace from disk and
+  execute tests in the REPL.  Assumes canonical project test file organization with
+  parallel src/... & test/tst/... directories, where a 'tst.' prefix is added to all src
+  namespaces to generate the cooresponding test namespace.  Example:
 
     (test-all 'tupelo.core 'tupelo.csv)
 
-  This will reload tupelo.core, tupelo.core-test, tupelo.csv,
-  tupelo.csv-test and then execute clojure.test/run-tests on both of the test
-  namespaces.
+  This will reload tupelo.core, tst.tupelo.core, tupelo.csv, tst.tupelo.csv and
+  then execute clojure.test/run-tests on both of the test namespaces.
 ----
 
 === Floating Point Number Comparison
