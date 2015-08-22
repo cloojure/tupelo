@@ -219,6 +219,7 @@
     (is (= :people ; verify the partition name for Honey's EID
            (td/partition-name (live-db) honey-eid)))
 
+    ; Shows how to efficiently find all datoms from a given partition
     (let [eid-start     (d/entid-at (live-db) :people 0)              ; 1st possible eid 
           datoms        (d/seek-datoms (live-db) :eavt eid-start)     ; all datoms >= eid-start
           eids-all      (distinct (map #(:e %) datoms))               ; pull out unique eids
