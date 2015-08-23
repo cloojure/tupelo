@@ -471,6 +471,19 @@
    entity-spec  :- ts/EntitySpec ]
   (d/ident db-val (d/part entity-spec)))
 
+(s/defn partition-eids  :- [ts/Eid]
+  "Returns a lazy sequence of all the EIDs in a partition."
+  [db-val     :- datomic.db.Db
+   part-kw    :- s/Keyword ]
+  (let [time-zero     0
+        eid-start     (d/entid-at db-val part-kw time-zero)     ; 1st possible eid 
+        datoms        (d/seek-datoms db-val :eavt eid-start)    ; all datoms >= eid-start
+        eids-all      (distinct (map #(:e %) datoms))           ; pull out unique eids
+        eids-keep     (take-while  #(= part-kw (partition-name db-val %))   ; keep only eids in desired partition
+                                   eids-all)
+  ]
+    eids-keep))
+
 ; #todo - need test
 (s/defn is-transaction? :- s/Bool
   "Returns true if an entity is a transaction (i.e. it is in the :db.part/tx partition)"
@@ -503,19 +516,6 @@
     (assert (apply = txids))  ; all datoms in tx have same txid
     (first txids)))           ; return the first one
 
-
-(s/defn partition-eids  :- [ts/Eid]
-  "Returns a lazy sequence of all the EIDs in a partition."
-  [db-val     :- datomic.db.Db
-   part-kw    :- s/Keyword ]
-  (let [time-zero     0
-        eid-start     (d/entid-at db-val part-kw time-zero)     ; 1st possible eid 
-        datoms        (d/seek-datoms db-val :eavt eid-start)    ; all datoms >= eid-start
-        eids-all      (distinct (map #(:e %) datoms))           ; pull out unique eids
-        eids-keep     (take-while  #(= part-kw (partition-name db-val %))   ; keep only eids in desired partition
-                                   eids-all)
-  ]
-    eids-keep))
 
 ;---------------------------------------------------------------------------------------------------
 ; #todo: make helper fn's for rule creation
