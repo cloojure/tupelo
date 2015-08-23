@@ -219,16 +219,12 @@
     (is (= :people ; verify the partition name for Honey's EID
            (td/partition-name (live-db) honey-eid)))
 
-    ; Shows how to efficiently find all datoms from a given partition
-    (let [eid-start     (d/entid-at (live-db) :people 0)              ; 1st possible eid 
-          datoms        (d/seek-datoms (live-db) :eavt eid-start)     ; all datoms >= eid-start
-          eids-all      (distinct (map #(:e %) datoms))               ; pull out unique eids
-          eids-keep     (take-while #(= :people (td/partition-name (live-db) %)) 
-                                eids-all)  ; keep only eids in :people partition
-          entity-maps   (map #(td/entity-map (live-db) %) eids-keep)
-    ]
-      (is (= entity-maps [ 
+    ; Show that only Honey is in the people partition
+    (let [people-eids           (td/partition-eids (live-db) :people)
+          people-entity-maps    (map #(td/entity-map (live-db) %) people-eids) ]
+      (is (= people-entity-maps [
                {:person/name "Honey Rider", :weapon/type #{:weapon/knife}, :location "Caribbean"} ] )))
+
   )
 
 )
