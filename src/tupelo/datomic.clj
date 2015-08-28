@@ -471,6 +471,7 @@
    entity-spec  :- ts/EntitySpec ]
   (d/ident db-val (d/part entity-spec)))
 
+; #todo add example from bond to README
 (s/defn partition-eids  :- [ts/Eid]
   "Returns a lazy sequence of all the EIDs in a partition."
   [db-val     :- datomic.db.Db
@@ -483,6 +484,17 @@
                                    eids-all)
   ]
     eids-keep))
+
+; #todo from Craig Andera video (InfoQ 2013-12-12) of StrangLoop talk.
+#_(defn datoms-between
+    "Returns a reducible collection of datoms created between the start and end dates (half-open
+     interval) in a single partition."
+    [db partition start end]
+    (let [start-eid     (d/entid-at db partition start)
+          end-eid       (d/entid-at db partition end) ]
+      (->> (d/seek-datoms db :eavt start-eid)
+           (r/take-while #(< (:e %) end-eid)))))
+
 
 ; #todo - need test
 (s/defn is-transaction? :- s/Bool
