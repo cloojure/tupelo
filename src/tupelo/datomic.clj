@@ -552,3 +552,18 @@
 ; #todo:  pull-many
 ; #todo:  pull-deep (pull-recursive) ; need a limit?
 
+; #todo: Blog idea: name the indexes with english names
+;   :eavt   entity index (row-index)
+;   :aevt   attr   index (col-index)
+;   :avet   value  index (sorted-col)
+;   :vaet   reverse index (reverse entity index) 
+;
+;   question:  should we index every attr by default?
+
+; #todo make easy to have attr namespace be like table name.
+;   table     persons           <- table    <-> set of person entities (rows)
+;   entity:   person            <- entity   <-> table row
+;   attrs:    person/name       <- attr     <-> table column
+;             person/address
+;             person/phone
+;   Need validator fns to ensure/verify person entity has all person/* attrs an no other attrs.

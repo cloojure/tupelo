@@ -143,7 +143,7 @@
   "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
       (it-> 1
             (inc it)
-            (+ 3 it)
+            (+ it 3)
             (/ 10 it))
       ;=> 2
    "
