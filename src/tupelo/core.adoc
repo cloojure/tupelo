@@ -106,6 +106,49 @@ a vector result:
 [1 2 3 4 5 6]
 ----
 
+==== Map Value Lookup
+
+Maps are convenient, especially when keywords are used as functions to look up a value in
+a map.  Unfortunately, attempting to look up a non-existing keyword in a map will return
+`nil`.  While sometimes convenient, this means that a simple typo in the keyword name will
+silently return corrupted data (i.e. `nil` instead of the desired value).  
+
+Instead, use the function grab for keyword/map lookup:
+[source,clojure]
+----
+(grab k m)
+  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map), 
+   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).  
+   Throws an Exception if :the-key is not present in the-map."
+
+user=> (def m {:a 1 :b 2})
+user=> (grab :a m)
+1
+user=> (grab :c m)
+;=> IllegalArgumentException Key not present in map:
+;=>   map: {:b 2, :a 1}
+;=>   key: :c
+----
+The function `grab` should also be used in place of `clojure.core/get`. Simply reverse the order of arguments to
+match the "keyword-first, map-second" convention.
+
+For looking up values in nested maps, the function `snag` replaces `clojure.core/get-in`:
+[source,clojure]
+----
+(snag m ks)
+  "A fail-fast version of clojure.core/get-in. When invoked as (snag the-map keys-vec), 
+   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).  
+   Throws an Exception if the path keys-vec is not present in the-map."
+
+user=> (def mm {:a 1 :b {:c 3}})
+user=> (snag mm [:b :c])
+3
+user=> (snag mm [:b :z])
+;=> IllegalArgumentException Key seq not present in map:
+;=>   map : {:b {:c 3}, :a 1}
+;=>   keys: [:b :z]
+----
+
 ==== Map manipulation
 
 Sometimes you want to extract the keys & values from a map for manipulation or extension
@@ -278,14 +321,6 @@ Is located at:  http://cloojure.github.io/doc/tupelo/
 
 Besides `tupelo.core`, tupelo has a number of other useful tools in the following
 namespaces:
-
-=== tupelo.explicit - Explicit Language for Clojure
-
-Clojure tries to be flexible and return reasonable default value (usually `nil`) when
-something goes wrong (for example, looking up a non-existent key in a map).  The functions in 
-`tupelo.explicit` disable this behavior and instead implement a "fail-fast" philosophy.
-
-link:src/tupelo/explicit.adoc[Documentation for tupelo.explicit]
 
 === tupelo.csv - Functions for using CSV (Comma Separate Value) files
 

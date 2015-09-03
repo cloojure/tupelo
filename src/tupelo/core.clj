@@ -293,9 +293,9 @@
 ; #todo need test
 ; #todo add to README
 (s/defn snag :- s/Any
-  "A fail-fast version of clojure.core/get-in. For map m & keys ks,
-  returns the value v associated with ks in m, as for (get-in m ks).
-  Throws an exception if the path ks is not present in m."
+  "A fail-fast version of clojure.core/get-in. When invoked as (snag the-map keys-vec), 
+   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).  
+   Throws an Exception if the path keys-vec is not present in the-map."
   [m    :- ts/KeyMap 
    ks   :- [s/Keyword] ]
   (let [result (clj/get-in m ks ::not-found) ]
@@ -307,8 +307,9 @@
       result )))
 
 (s/defn grab :- s/Any
-  "A fail-fast version of keyword/map lookup, where (:the-keyword the-map) -> (grab :the-keyword the-map).  
-   Throws an exception if :the-keyword is not present in the-map."
+  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map), 
+   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).  
+   Throws an Exception if :the-key is not present in the-map."
   [k    :- s/Keyword
    m    :- ts/KeyMap ] 
   (snag m [k]))
