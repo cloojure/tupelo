@@ -4,7 +4,7 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns tupelo.explicit
+(ns ^:no-doc ^:deprecated tupelo.explicit
   "Functions that avoid ambiguity"
   (:refer-clojure :exclude [get get-in] )
   (:require [clojure.string   :as str]
@@ -19,12 +19,12 @@
   the value v associated with k in m.  Throws an exception if k is not
   present in m."
   [m k]
-  (tc/snag m [k]))
+  (tc/fetch m [k]))
 
 (defn ^:no-doc ^:deprecated get-in
   "A fail-fast version of clojure.core/get-in. For map m & keys ks,
   returns the value v associated with ks in m, as for (get-in m ks).
   Throws an exception if the path ks is not present in m."
   [m  ks]
-  (tc/snag m ks))
+  (tc/fetch m ks))
 

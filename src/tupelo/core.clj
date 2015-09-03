@@ -292,8 +292,8 @@
 
 ; #todo need test
 ; #todo add to README
-(s/defn snag :- s/Any
-  "A fail-fast version of clojure.core/get-in. When invoked as (snag the-map keys-vec), 
+(s/defn fetch :- s/Any
+  "A fail-fast version of clojure.core/get-in. When invoked as (fetch the-map keys-vec), 
    returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).  
    Throws an Exception if the path keys-vec is not present in the-map."
   [m    :- ts/KeyMap 
@@ -312,7 +312,7 @@
    Throws an Exception if :the-key is not present in the-map."
   [k    :- s/Keyword
    m    :- ts/KeyMap ] 
-  (snag m [k]))
+  (fetch m [k]))
 
 ; #awt TODO:  add in release (dissoc-in) as (update-in ... dissoc)
 ;
