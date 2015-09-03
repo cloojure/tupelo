@@ -14,14 +14,14 @@
 ; If necessary, can copy the following syntax to override clojure/core vars
 ;       (:refer-clojure :exclude [* - + == /])
 
-(defn ^:deprecated get 
+(defn ^:no-doc ^:deprecated get 
   "A fail-fast version of clojure.core/get. For map m & key k, returns
   the value v associated with k in m.  Throws an exception if k is not
   present in m."
   [m k]
   (tc/snag m [k]))
 
-(defn ^:deprecated get-in
+(defn ^:no-doc ^:deprecated get-in
   "A fail-fast version of clojure.core/get-in. For map m & keys ks,
   returns the value v associated with ks in m, as for (get-in m ks).
   Throws an exception if the path ks is not present in m."
