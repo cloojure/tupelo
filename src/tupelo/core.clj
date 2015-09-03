@@ -291,19 +291,33 @@
       or-result )))
 
 ; #todo need test
-; #todo need grab-in
 ; #todo add to README
+(s/defn snag :- s/Any
+  "A fail-fast version of clojure.core/get-in. For map m & keys ks,
+  returns the value v associated with ks in m, as for (get-in m ks).
+  Throws an exception if the path ks is not present in m."
+  [m    :- ts/KeyMap 
+   ks   :- [s/Keyword] ]
+  (let [result (clj/get-in m ks ::not-found) ]
+    (if (= result ::not-found)
+      (throw (IllegalArgumentException.    
+                (str  "Key seq not present in map:" \newline
+                      "  map : " m  \newline
+                      "  keys: " ks  \newline )))
+      result )))
+
 (s/defn grab :- s/Any
   "A fail-fast version of keyword/map lookup, where (:the-keyword the-map) -> (grab :the-keyword the-map).  
    Throws an exception if :the-keyword is not present in the-map."
   [k    :- s/Keyword
    m    :- ts/KeyMap ] 
-  (if (contains? m k)
-    (clj/get m k)
-    (throw (IllegalArgumentException.    
-              (str  "Key not present in map:" \newline
-                    "  map: " m  \newline
-                    "  key: " k  \newline )))))
+  (snag m [k]))
+
+; #awt TODO:  add in release (dissoc-in) as (update-in ... dissoc)
+;
+; #awt TODO:  add in dissoc-empty-vals to recursively delete all k-v pairs 
+;               where val is nil or empty?
+
 
 ; #todo: surprising concat failure
 ;   (concat {:a 1} {:b 2} {:c 3})

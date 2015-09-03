@@ -452,3 +452,25 @@
                   "line 2" 
                   ""
                   "line 4" ] ))))
+
+(deftest t-grab
+  (let [map1  {:a 1 :b 2}]
+    (is (= 1                                  (grab :a map1)))
+    (is (= 2                                  (grab :b map1)))
+    (is (thrown?    IllegalArgumentException  (grab :c map1))) ))
+
+(deftest t-snag
+  (testing "basic usage"
+    (let [map1  {:a1 "a1"
+                 :a2 { :b1 "b1"
+                       :b2 { :c1 "c1"
+                             :c2 "c2" }}} ]
+      (is (= (snag map1 [:a1] ) "a1" ))
+      (is (= (snag map1 [:a2 :b1] ) "b1" ))
+      (is (= (snag map1 [:a2 :b2 :c1] ) "c1" ))
+      (is (= (snag map1 [:a2 :b2 :c2] ) "c2" ))
+      (is (thrown? IllegalArgumentException  (snag map1 [:a9]) )) 
+      (is (thrown? IllegalArgumentException  (snag map1 [:a2 :b9]) )) 
+      (is (thrown? IllegalArgumentException  (snag map1 [:a2 :b2 :c9]) )) 
+    )))
+

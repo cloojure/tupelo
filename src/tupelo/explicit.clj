@@ -7,40 +7,24 @@
 (ns tupelo.explicit
   "Functions that avoid ambiguity"
   (:refer-clojure :exclude [get get-in] )
-  (:require [clojure.string               :as str]
-            [clojure.core                 :as clj]
-            [tupelo.core                :as cool] ))
+  (:require [clojure.string   :as str]
+            [clojure.core     :as clj]
+            [tupelo.core      :as tc] ))
 
 ; If necessary, can copy the following syntax to override clojure/core vars
 ;       (:refer-clojure :exclude [* - + == /])
 
-(defn get 
+(defn ^:deprecated get 
   "A fail-fast version of clojure.core/get. For map m & key k, returns
   the value v associated with k in m.  Throws an exception if k is not
   present in m."
   [m k]
-  (if (contains? m k)
-    (clj/get m k)
-    (throw (IllegalArgumentException.    
-              (str  "Key not present in map:" \newline
-                    "  map: " m  \newline
-                    "  key: " k  \newline )))))
+  (tc/snag m [k]))
 
-(defn get-in
+(defn ^:deprecated get-in
   "A fail-fast version of clojure.core/get-in. For map m & keys ks,
   returns the value v associated with ks in m, as for (get-in m ks).
   Throws an exception if the path ks is not present in m."
   [m  ks]
-  (let [result (clj/get-in m ks ::not-found) ]
-    (if (= result ::not-found)
-      (throw (IllegalArgumentException.    
-                (str  "Key seq not present in map:" \newline
-                      "  map : " m  \newline
-                      "  keys: " ks  \newline )))
-      result )))
+  (tc/snag m ks))
 
-; #awt TODO:  add in dissoc-in as (update-in ... dissoc)
-;
-; #awt TODO:  add in dissoc-empty-vals to recursively delete all k-v pairs 
-;               where val is nil or empty?
-;
