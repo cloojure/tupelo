@@ -90,7 +90,11 @@
       (let [truthies    (filter truthy? data)
             falsies     (filter falsey? data) ]
         (is (and  (= truthies [true :a 'my-symbol 1 "hello" \x] )
-                  (= falsies  [false nil] ) ))))
+                  (= falsies  [false nil] ) ))
+        (is (every? truthy? [true :a 'my-symbol 1 "hello" \x] ))
+        (is (every? falsey? [false nil] ))
+        (is (not-any? falsey? truthies))
+        (is (not-any? truthy? falsies))))
 
     (testing "improved usage"
       (let [count-if (comp count filter) ]
