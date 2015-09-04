@@ -159,7 +159,28 @@ To be precise, the function signatures are:
 (spyxx expr)
 ----
 
-==== The truth is not ambiguous
+=== Literate Threading Macro
+
+We all love to use the threading macros `\->` and `\->>` for certain tasks, but they only work if
+all of the forms accept the previous result as the first or last argument.
+
+The built-in threading macro `as\->` can avoid this requirement, but the order of the first
+expression and the placeholder symbol is arguably backwards from what users would expect, and there
+is often no obvious name to use for the result of the previous form.  Re-using a good idea from
+Groovy & Ruby, we simply use the symbol `it` as the placeholder in each expression for the value of
+the previous result.
+
+[source,clojure]
+----
+(it-> 1
+      (inc it)
+      (+ it 3)
+      (/ 10 it)
+      (str "We need to order " it " items." )
+;=> "We need to order 2 items." )
+----
+
+=== The truth is not ambiguous
 
 Clojure marries the worlds of Java and Lisp. Unfortunately, these two worlds have different ideas of
 truth, so Clojure accepts both `false` and `nil` as _false_. Sometimes, however, you want to coerce
@@ -195,7 +216,7 @@ higher-order-function is required:
               (= 2 num-false) )))))
 ----
 
-==== Convenience in testing seq's
+=== Convenience in testing seq's
 
 These functions aren't in clojure.core, but people keep writing into the mailing list
 wondering where they are. Well, now they are available:
@@ -223,7 +244,7 @@ The unit test shows these functions in action
                        [false  false   false  false  false  false ] ))
 ----
 
-==== Focus on vectors
+=== Focus on vectors
 
 Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you just want
 everything to stay in a nice, eager, random-access vector. Here is an easy way to build up
@@ -251,7 +272,7 @@ in a vector:
        [0 1 4 9] ))
 ----
 
-==== Joining together like collections
+=== Joining together like collections
 
 The `concat` function can sometimes have rather surprising results:
 [source,clojure]
@@ -293,7 +314,7 @@ the same type. The allowable input types are:
   - all maps (sorted or not)
   - all sets (sorted or not)
 
-==== Map Value Lookup
+=== Map Value Lookup
 
 Maps are convenient, especially when keywords are used as functions to look up a value in
 a map.  Unfortunately, attempting to look up a non-existent keyword in a map will return
@@ -336,7 +357,7 @@ user=> (fetch mm [:b :z])
 ;=>   keys: [:b :z]
 ----
 
-==== Map Dissociation
+=== Map Dissociation
 
 Clojure has functions `assoc` & `assoc-in`, `update` & `update-in`, and `dissoc`. However, there
 is no function `dissoc-in`.  The function `dissoc-entry` provides the desired functionality:
@@ -375,7 +396,7 @@ function in the old clojure-contrib library named `dissoc-in` which had the
 unpredictable behavior of recursively (& silently) deleting all keys in `keys-vec`
 corresponding to empty maps.
 
-==== Map Entries (Key-Value pairs)
+=== Map Entries (Key-Value pairs)
 
 Sometimes you want to extract the keys & values from a map for manipulation or extension
 before building up another map (especially useful for manipulating default function args).
@@ -393,7 +414,7 @@ Here is very handy function for that:
 {:b 2, :a 1}
 ----
 
-==== Default value in case of Exception
+=== Default value in case of Exception
 
 Sometimes you know an operation may result in an Exception, and you would like to have the
 Exception converted into a default value.  That is when you need:
