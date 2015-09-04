@@ -148,10 +148,9 @@
   (let [coll-types        (mapv type colls)
         vec-or-list?      (fn [coll] (or (vector? coll)
                                          (list?   coll)))
-        all-vec-list      (every? truthy? (mapv vec-or-list?  colls))    ; true if list or vector
-        all-set           (every? truthy? (mapv set?          colls))    ; true if set (sorted or not)
-        all-map           (every? truthy? (mapv map?          colls))    ; true if map (sorted or not)
-        all-same-types    (or all-vec-list all-set all-map) ]
+        all-same-types    (or (every? vec-or-list?  colls)      ; true if list or vector
+                              (every? set?          colls)      ; true if set (sorted or not)
+                              (every? map?          colls)) ]   ; true if map (sorted or not)
     (if all-same-types
       (reduce into colls)
       (throw (IllegalArgumentException.
