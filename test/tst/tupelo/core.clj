@@ -1,4 +1,4 @@
-;   Copyright (c) Alan Thompson. All rights reserved. 
+;   Copyright (c) Alan Thompson. All rights reserved.
 ;   The use and distribution terms for this software are covered by the Eclipse Public License 1.0
 ;   (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the file epl-v10.html at
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
@@ -11,7 +11,7 @@
             [clojure.test.check.properties          :as prop]
             [clojure.test.check.clojure-test        :as tst]
             [tupelo.misc                            :as tm] )
-  (:use tupelo.core 
+  (:use tupelo.core
         clojure.test ))
 
 (spyx *clojure-version*)
@@ -26,23 +26,23 @@
                                 (swap! side-effect-cum-sum + result)
                                 result))
     ]
-      (is (= "hi => 5" 
+      (is (= "hi => 5"
           (str/trim (with-out-str (spy (side-effect-add! 2 3) :msg "hi"))) ))
-      (is (= "hi => 5" 
+      (is (= "hi => 5"
           (str/trim (with-out-str (spy :msg "hi"  (side-effect-add! 2 3)))) ))
-      (is (= "(side-effect-add! 2 3) => 5" 
+      (is (= "(side-effect-add! 2 3) => 5"
           (str/trim (with-out-str (spyx (side-effect-add! 2 3)))) ))
       (is (= 15 @side-effect-cum-sum)))
 
     (is (= "first => 5\nsecond => 25"
-        (str/trim (with-out-str (-> 2 
-                                    (+ 3) 
+        (str/trim (with-out-str (-> 2
+                                    (+ 3)
                                     (spy :msg "first" )
                                     (* 5)
                                     (spy :msg "second") )))))
     (is (= "first => 5\nsecond => 25"
-        (str/trim (with-out-str (->> 2 
-                                    (+ 3) 
+        (str/trim (with-out-str (->> 2
+                                    (+ 3)
                                     (spy :msg "first" )
                                     (* 5)
                                     (spy :msg "second") )))))
@@ -55,16 +55,16 @@
                                 (swap! side-effect-cum-sum + result)
                                 result))
     ]
-      (is (= "value => 5" 
+      (is (= "value => 5"
           (str/trim (with-out-str (spy (side-effect-add! 2 3) :msg "value")))))
-      (is (= "value => 5" 
+      (is (= "value => 5"
           (str/trim (with-out-str (spy :msg "value"  (side-effect-add! 2 3))))))
       (is (= 10 @side-effect-cum-sum))
 
       (is (= "value => 5" (str/trim (with-out-str (spy "value" (+ 2 3) )))))
       (is (=   "spy => 5" (str/trim (with-out-str (spy         (+ 2 3) )))))
 
-      (is (= "(str \"abc\" \"def\") => \"abcdef\"" 
+      (is (= "(str \"abc\" \"def\") => \"abcdef\""
           (str/trim (with-out-str (spyx (str "abc" "def") )))))
 
       (is (thrown? IllegalArgumentException  (spy "some-msg" 42 :msg)))
@@ -100,7 +100,7 @@
       (let [count-if (comp count filter) ]
         (let [num-true    (count-if boolean data)   ; awkward phrasing
               num-false   (count-if not     data) ] ; doesn't feel natural
-          (is (and  (= 6 num-true) 
+          (is (and  (= 6 num-true)
                     (= 2 num-false) )))
         (let [num-true    (count-if truthy? data)   ; matches intent much better
               num-false   (count-if falsey? data) ]
@@ -192,7 +192,7 @@
   (is (= (glue (sorted-map) {:a 1} {:b 2} {:c 3})   {:a 1 :b 2 :c 3} ))
   (is (= (glue (sorted-set) #{1 2} #{3 4} #{6 5})   #{1 2 3 4 5 6}))
 
-  (is (= (glue (sorted-map) {:a 1 :b 2} {:c 3 :d 4} {:e 5 :f 6})   
+  (is (= (glue (sorted-map) {:a 1 :b 2} {:c 3 :d 4} {:e 5 :f 6})
                             {:a 1 :b 2   :c 3 :d 4   :e 5 :f 6} ))
   (is (= (seq (glue (sorted-map) {:a 1   :b 2} {:c 3   :d 4   :e 5} {:f 6}))
                                [ [:a 1] [:b 2] [:c 3] [:d 4] [:e 5] [:f 6] ] ))
@@ -214,9 +214,9 @@
       (is (= (fetch map1 [:a2 :b1] ) "b1" ))
       (is (= (fetch map1 [:a2 :b2 :c1] ) "c1" ))
       (is (= (fetch map1 [:a2 :b2 :c2] ) "c2" ))
-      (is (thrown? IllegalArgumentException  (fetch map1 [:a9]) )) 
-      (is (thrown? IllegalArgumentException  (fetch map1 [:a2 :b9]) )) 
-      (is (thrown? IllegalArgumentException  (fetch map1 [:a2 :b2 :c9]) )) 
+      (is (thrown? IllegalArgumentException  (fetch map1 [:a9]) ))
+      (is (thrown? IllegalArgumentException  (fetch map1 [:a2 :b9]) ))
+      (is (thrown? IllegalArgumentException  (fetch map1 [:a2 :b2 :c9]) ))
     )))
 
 (deftest t-dissoc-entry
@@ -259,10 +259,10 @@
 
 (deftest keyvals-t
   (testing "basic usage"
-    (let [m1 {:a 1 :b 2 :c 3} 
+    (let [m1 {:a 1 :b 2 :c 3}
           m2 {:a 1 :b 2 :c [3 4]} ]
       (is (= m1 (apply hash-map (keyvals m1))))
-      (is (= m2 (apply hash-map (keyvals m2)))) 
+      (is (= m2 (apply hash-map (keyvals m2))))
     )))
 ; AWTAWT TODO: add test.check
 
@@ -284,7 +284,7 @@
   (let [mm  {:a {:b 2}}]
     (is (= (it-> mm (:a it)          )  {:b 2} ))
     (is (= (it-> mm (it :a)  (:b it) )      2  ))))
-  
+
 (deftest with-exception-default-t
   (testing "basic usage"
     (is (thrown?    Exception                       (/ 1 0)))
@@ -336,7 +336,7 @@
   (is (= "abcd" (strcat             [97  98]  "cd" )))
   (is (= "abcd" (strcat (byte-array [97  98]) "cd" )))
 
-  (let [chars-set   (into #{} (tm/char-seq \a \z)) 
+  (let [chars-set   (into #{} (tm/char-seq \a \z))
         str-val     (strcat chars-set) ]
     (is (= 26 (count chars-set)))
     (is (= 26 (count str-val)))
@@ -346,11 +346,11 @@
   (let [src-str   "line 1
                    line 2
 
-                   line 4" 
+                   line 4"
         lines     (forv [line (string->lines src-str) ]
                     (str/trim line)) ]
-    (is (= lines ["line 1"  
-                  "line 2" 
+    (is (= lines ["line 1"
+                  "line 2"
                   ""
                   "line 4" ] ))))
 
@@ -507,8 +507,10 @@
 )
 
 (deftest t-keep-if
-  (is (= [1 3 5 7 9] (keep-if odd?  (range 10))))
-  (is (= [0 2 4 6 8] (keep-if even? (range 10)))))
+  (is (= [0 2 4 6 8]  (keep-if even? (range 10))
+                      (drop-if odd?  (range 10))))
+  (is (= [1 3 5 7 9]  (keep-if odd?  (range 10))
+                      (drop-if even? (range 10)))))
 
 (tst/defspec ^:slow t-keep-if-drop-if 9999
   (prop/for-all [vv (gen/vector gen/int) ]
@@ -520,8 +522,8 @@
 
           odd-1       (keep-if   odd?   vv)
           odd-1v      (keep-ifv  odd?   vv)
-          odd-2       (drop-if   even?  vv) 
-          odd-2v      (drop-ifv  even?  vv) 
+          odd-2       (drop-if   even?  vv)
+          odd-2v      (drop-ifv  even?  vv)
           odd-rem     (remove    even?  vv) ]
       (and  (= even-1 even-1v even-2 even-2v even-filt)
             (=  odd-1  odd-1v  odd-2  odd-2v  odd-rem))
