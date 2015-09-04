@@ -41,10 +41,9 @@
   ))
 
 (deftest any-tst
-  (testing "basic usage"
-    (is (= true   (any? odd? [1 2 3] ) ))
-    (is (= false  (any? odd? [2 4 6] ) ))
-    (is (= false  (any? odd? []      ) )) ))
+  (is (= true   (any? odd? [1 2 3] ) ))
+  (is (= false  (any? odd? [2 4 6] ) ))
+  (is (= false  (any? odd? []      ) )))
 
 (deftest not-empty-tst
   (testing "basic usage"
@@ -80,6 +79,14 @@
   (testing "lazy seqs/apply"
     (is (= [0 1 2 3 4 5] (conjv (range 4) 4 5)))
     (is (= [0 1 2 3 4 5] (apply conjv [0] (range 1 6)))) ))
+
+(deftest forv-t
+  (is (= (forv [x (range 4)] (* x x))
+         [0 1 4 9] ))
+  (is (= (forv [x (range 23)] (* x x))
+         (for  [x (range 23)] (* x x))))
+  (is (= (forv [x (range 5)  y (range 2 9)] (str x y))
+         (for  [x (range 5)  y (range 2 9)] (str x y)))))
 
 (deftest strcat-tst
   (is (= "a" (strcat \a  )))    (is (= "a" (strcat [\a]  )))
@@ -131,12 +138,6 @@
     (is (= 123      (with-exception-default 0       (Long/parseLong "123"))))
     (is (= 0        (with-exception-default 0       (Long/parseLong "12xy3"))))
     ))
-
-(deftest forv-t
-  (is (= (forv [x (range 23)] (* x x))
-         (for  [x (range 23)] (* x x))))
-  (is (= (forv [x (range 5)  y (range 2 9)] (str x y))
-         (for  [x (range 5)  y (range 2 9)] (str x y)))))
 
 (deftest spy-t
   (testing "basic usage"
@@ -473,4 +474,38 @@
       (is (thrown? IllegalArgumentException  (fetch map1 [:a2 :b9]) )) 
       (is (thrown? IllegalArgumentException  (fetch map1 [:a2 :b2 :c9]) )) 
     )))
+
+(deftest t-dissoc-entry
+  (let [mm    {:a { :b { :c "c" }}} ]
+    (is (= (dissoc-entry mm [:a]       ) {} ))
+    (is (= (dissoc-entry mm [:a :b]    ) {:a {}} ))
+    (is (= (dissoc-entry mm [:a :b :c] ) {:a { :b {}}} ))
+    (is (= (dissoc-entry mm [:a :x :y] ) {:a { :b { :c "c" }
+                                               :x nil }} ))
+    (is (thrown? IllegalArgumentException  (dissoc-entry mm [] ))))
+  (let [mm    {:a1 "a1"
+               :a2 { :b1 "b1"
+                     :b2 { :c1 "c1"
+                           :c2 "c2" }}} ]
+    (is (= (dissoc-entry mm [:a1] )
+              {:a2 { :b1 "b1"
+                     :b2 { :c1 "c1"
+                           :c2 "c2" }}} ))
+    (is (= (dissoc-entry mm [:a2] )
+              {:a1 "a1" } ))
+    (is (= (dissoc-entry mm [:a2 :b1] )
+              {:a1 "a1"
+               :a2 { :b2 { :c1 "c1"
+                           :c2 "c2" }}} ))
+    (is (= (dissoc-entry mm [:a2 :b2] )
+              {:a1 "a1"
+               :a2 { :b1 "b1" }} ))
+    (is (= (dissoc-entry mm [:a2 :b2 :c1] )
+              {:a1 "a1"
+               :a2 { :b1 "b1"
+                     :b2 { :c2 "c2" }}} ))
+    (is (= (dissoc-entry mm [:a2 :b2 :c2] )
+              {:a1 "a1"
+               :a2 { :b1 "b1"
+                     :b2 { :c1 "c1" }}} ))))
 

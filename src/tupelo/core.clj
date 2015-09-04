@@ -58,6 +58,12 @@
   ( [coll x & xs]
       (apply conj (vec coll) x xs) ))
 
+(defmacro forv
+  "Like clojure.core/for but returns results in a vector.  Equivalent to (into [] (for ...)). Not
+   lazy."
+  [& body]
+  `(into [] (for ~@body)))
+
 (defn strcat
   "Concat all arguments into a single string result."
   [& args]
@@ -228,12 +234,6 @@
       (println (str (spy-indent-spaces) '~expr " => " class-name# "->" (pr-str spy-val#)))
       spy-val#))
 
-(defmacro forv
-  "Like clojure.core/for but returns results in a vector.  Equivalent to (into [] (for ...)). Not
-   lazy."
-  [& body]
-  `(into [] (for ~@body)))
-
 (defn rel=
   "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative equality
    is specified as either (1) the N most significant digits are equal, or (2) the absolute
@@ -290,35 +290,48 @@
     ] 
       or-result )))
 
-; #todo need test
-; #todo add to README
 (s/defn fetch :- s/Any
   "A fail-fast version of clojure.core/get-in. When invoked as (fetch the-map keys-vec), 
    returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).  
    Throws an Exception if the path keys-vec is not present in the-map."
-  [m    :- ts/KeyMap 
-   ks   :- [s/Keyword] ]
-  (let [result (clj/get-in m ks ::not-found) ]
+  [the-map    :- ts/KeyMap 
+   keys-vec   :- [s/Keyword] ]
+  (let [result (clj/get-in the-map keys-vec ::not-found) ]
     (if (= result ::not-found)
       (throw (IllegalArgumentException.    
                 (str  "Key seq not present in map:" \newline
-                      "  map : " m  \newline
-                      "  keys: " ks  \newline )))
+                      "  map : " the-map  \newline
+                      "  keys: " keys-vec  \newline )))
       result )))
 
 (s/defn grab :- s/Any
   "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map), 
    returns the value associated with :the-key as for (clojure.core/get the-map :the-key).  
    Throws an Exception if :the-key is not present in the-map."
-  [k    :- s/Keyword
-   m    :- ts/KeyMap ] 
-  (fetch m [k]))
+  [the-key    :- s/Keyword
+   the-map    :- ts/KeyMap ] 
+  (fetch the-map [the-key] ))
 
-; #awt TODO:  add in release (dissoc-in) as (update-in ... dissoc)
-;
-; #awt TODO:  add in dissoc-empty-vals to recursively delete all k-v pairs 
+(s/defn dissoc-entry :- s/Any
+  "A sane version of dissoc-in that will not delete intermediate keys. 
+   When invoked as (dissoc-entry the-map [:k1 :k2 :k3... :kZ]), acts like 
+   (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only 
+   the map entry containing the last key :kZ is removed, and all map entries 
+   higher than kZ in the hierarchy are unaffected."
+  [the-map    :- ts/KeyMap 
+   keys-vec   :- [s/Keyword] ]
+  (let [num-keys (count keys-vec) ]
+    (when-not (pos? num-keys)
+      (throw (IllegalArgumentException.    
+                (str  "keys-vec must be non-empty: " keys-vec))))
+    (let [parent-keys   (butlast keys-vec) 
+          key-to-clear  (last    keys-vec) ]
+      (if (= 1 num-keys)
+        (dissoc the-map key-to-clear)
+        (update-in the-map parent-keys dissoc key-to-clear)))))
+
+; #awt TODO:  add in clear-nil-entries to recursively delete all k-v pairs 
 ;               where val is nil or empty?
-
 
 ; #todo: surprising concat failure
 ;   (concat {:a 1} {:b 2} {:c 3})

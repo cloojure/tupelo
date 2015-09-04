@@ -10,8 +10,8 @@ image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 
 == Overview
 
-Have you ever wanted to do something simple but clojure.core doesn't support it? Or, maybe
-you are wishing for an enhanced version of a standard function. The goal of Tupelo is to
+Have you ever wanted to do something simple but `clojure.core` doesn't support it? Or, maybe
+you are wishing for an enhanced version of a standard function. The goal of `tupelo.core` is to
 add support for these convenience features, so that you have a simple way of using either
 the enhanced version or the original version.
 
@@ -24,8 +24,7 @@ normally use `:refer :all` for `tupelo.core` in our namespaces:
 ----
 (ns my.proj
   (:require [tupelo.core    :refer :all]
-            [tupelo.csv     :as tcsv]
-            [tupelo.parse   :as tp] 
+            [tupelo.datomic :as td]
             ... ))
 ----
 
@@ -33,10 +32,9 @@ normally use `:refer :all` for `tupelo.core` in our namespaces:
 
 ==== The truth is not ambiguous
 
-Clojure marries the worlds of Java and Lisp. Unfortunately, these two worlds have
-different ideas of truth, so Clojure accepts both `false` and `nil` as _false_. Sometimes
-you want to coerce logical values into literal _true_ or _false_ values, so we provide a
-simple way to do that:
+Clojure marries the worlds of Java and Lisp. Unfortunately, these two worlds have different ideas of
+truth, so Clojure accepts both `false` and `nil` as _false_. Sometimes, however, you want to coerce
+logical values into literal _true_ or _false_ values, so we provide a simple way to do that:
 
 ----
 (truthy? arg)
@@ -49,10 +47,10 @@ simple way to do that:
 ----
 [source,clojure]
 ----
-=> (def data [true :a 'my-symbol 1 "hello" \x false nil])
-=> (filter truthy? data)
+> (def data [true :a 'my-symbol 1 "hello" \x false nil])
+> (filter truthy? data)
 [true :a my-symbol 1 "hello" \x]
-=> (filter falsey? data)
+> (filter falsey? data)
 [false nil]
 ----
 
@@ -71,19 +69,17 @@ wondering where they are. Well, now they are available:
   For any collection, returns true if coll contains any items; 
   otherwise returns false. Equivalent to (not (empty? coll)).
 ----
+The unit test shows these functions in action
 [source,clojure]
 ----
-=> (any? odd? [1 2 3] ) 
-true
-=> (any? odd? [2 4 6] ) 
-false
-=> (any? odd? [] )
-false
+(is (= true   (any? odd? [1 2 3] ) ))
+(is (= false  (any? odd? [2 4 6] ) ))
+(is (= false  (any? odd? []      ) ))
 
-=> (map not-empty? ["1" [1] '(1) {:1 1} #{1} ] )
-[true true true true true]
-=> (map not-empty? ["" [] '() {} #{} nil] )
-[false false false false false false]
+(is (= (map not-empty? ["1"   [1]   '(1)  {:1 1}  #{1} ] )
+                       [true  true  true  true    true ]  ))
+(is (= (map not-empty? [""     []      '()    {}     #{}    nil   ] )
+                       [false  false   false  false  false  false ] ))
 ----
 
 ==== Focus on vectors
@@ -92,18 +88,26 @@ Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you jus
 everything to stay in a nice, eager, random-access vector. Here is an easy way to build up
 a vector result:
 
+[source,clojure]
 ----
 (conjv coll x)
 (conjv coll x & xs)
   For any collection coll and list of values x, appends the x's to 
   collection, always returning the result as a vector.
-----
-[source,clojure]
-----
+
 => (conjv '(1 2) 3)
 [1 2 3]
 => (conjv [1 2] 3 4 5 6)
 [1 2 3 4 5 6]
+----
+
+Similarly, we may wish to use an eager version of `for` and return the results
+in a vector:
+
+[source,clojure]
+----
+(is (= (forv [x (range 4)] (* x x))
+       [0 1 4 9] ))
 ----
 
 ==== Map Value Lookup
@@ -111,7 +115,7 @@ a vector result:
 Maps are convenient, especially when keywords are used as functions to look up a value in
 a map.  Unfortunately, attempting to look up a non-existing keyword in a map will return
 `nil`.  While sometimes convenient, this means that a simple typo in the keyword name will
-silently return corrupted data (i.e. `nil` instead of the desired value).  
+silently return corrupted data (i.e. `nil`) instead of the desired value.
 
 Instead, use the function grab for keyword/map lookup:
 [source,clojure]
@@ -149,19 +153,48 @@ user=> (fetch mm [:b :z])
 ;=>   keys: [:b :z]
 ----
 
-==== Map manipulation
+==== Map Dissociation
+
+Clojure has functions `assoc` & `assoc-in`, `update` & `update-in`, and `dissoc`. However, there
+is no function `dissoc-in`.  The function `dissoc-entry` provides the desired functionality:
+
+[source,clojure]
+----
+(dissoc-entry the-map keys-vec)
+  "A sane version of dissoc-in that will not delete intermediate keys. 
+   When invoked as (dissoc-entry the-map [:k1 :k2 :k3... :kZ]), acts like 
+   (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only 
+   the map entry containing the last key :kZ is removed, and all map entries 
+   higher than kZ in the hierarchy are unaffected."
+----
+
+The unit test shows the functions in action:
+
+[source,clojure]
+----
+  (let [mm {:a { :b { :c "c" }}} ]
+    (is (= (dissoc-entry mm [:a      ] ) {} ))
+    (is (= (dissoc-entry mm [:a :b   ] ) {:a {}} ))
+    (is (= (dissoc-entry mm [:a :b :c] ) {:a { :b {}}} ))
+    (is (thrown? IllegalArgumentException  (dissoc-entry mm [] )))
+----
+
+The name `dissoc-entry` is chosen to emphasize that only the map entry corresponding to the last key
+`kZ` is cleared. This also avoids confusion with a function in the old clojure-contrib named
+`dissoc-in` that would sometimes delete keys above `kZ` in the map hierarchy.
+
+==== Map Entries (Key-Value pairs)
 
 Sometimes you want to extract the keys & values from a map for manipulation or extension
-before building up another map (especially useful manipulating default function args).
+before building up another map (especially useful for manipulating default function args).
 Here is very handy function for that:
 
+[source,clojure]
 ----
 (keyvals m)
   For any map m, returns the keys & values of m as a vector, 
   suitable for reconstructing via (apply hash-map (keyvals m)).
-----
-[source,clojure]
-----
+
 => (keyvals {:a 1 :b 2})
 [:b 2 :a 1]
 => (apply hash-map (keyvals {:a 1 :b 2}))
@@ -173,13 +206,12 @@ Here is very handy function for that:
 Sometimes you know an operation may result in an Exception, and you would like to have the
 Exception converted into a default value.  That is when you need:
 
+[source,clojure]
 ----
 (with-exception-default default-val & body)
   Evaluates body & returns its result.  In the event of an exception the
   specified default value is returned instead of the exception."
-----
-[source,clojure]
-----
+
 (with-exception-default 0
   (Long/parseLong "12xy3"))
 0
@@ -274,6 +306,7 @@ the core program and the corresponding test code.  The function `test-all` will 
 both a namespace and its corresponding test namespace from file, then invoke the corresponding
 test namespace:
 
+[source,clojure]
 ----
 (test-all & ns-names)
   Convenience fn to reload a namespace & the corresponding test namespace from disk and
@@ -297,6 +330,7 @@ Here we have a simple function that compares two floating-point values (cast to
 double) for relative equality by specifying either the number of significant
 digits that must match or the maximum error tolerance allowed:
 
+[source,clojure]
 ----
 (rel= val1 val2 & opts)
   Returns true if 2 double-precision numbers are relatively equal, else false.
@@ -304,7 +338,9 @@ digits that must match or the maximum error tolerance allowed:
   equal, or (2) the absolute difference is less than a tolerance value.  Input
   values are coerced to double before comparison.  
 ----
+
 An extract from the unit tests illustrates the use of `rel=`
+
 [source,clojure]
 ----
   (is      (rel= 123450000 123456789 :digits 4 ))
