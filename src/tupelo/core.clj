@@ -130,7 +130,7 @@
   "Like clojure.core/for but returns results in a vector.  Equivalent to (into [] (for ...)). Not
    lazy."
   [& body]
-  `(into [] (for ~@body)))
+  `(vec (for ~@body)))
 
 (defn glue 
   "Glues together like collections:
@@ -425,28 +425,28 @@
         (apply str it)))
 
 ; #todo add to README
-(defn keep-if-z
+(defn keep-if
   "Returns a lazy sequence of items in coll for which (pred item) is true (alias for clojure.core/filter)"
   [pred coll]
   (clojure.core/filter pred coll))
 
 ; #todo add to README
-(defn keep-if
-  "Returns an eager sequence of items in coll for which (pred item) is true (alias for clojure.core/filter)"
-  [pred coll]
-  (vec (keep-if-z pred coll)))
-
-; #todo add to README
-(defn drop-if-z
+(defn drop-if
   "Returns a lazy sequence of items in coll for which (pred item) is false (alias for clojure.core/remove)"
   [pred coll]
   (clojure.core/remove pred coll))
 
 ; #todo add to README
-(defn drop-if
-  "Returns an eager sequence of items in coll for which (pred item) is false (alias for clojure.core/remove)"
+(defn keep-ifv
+  "An eager version of keep-if that returns results in a vector."
   [pred coll]
-  (vec (drop-if-z pred coll)))
+  (vec (keep-if pred coll)))
+
+; #todo add to README
+(defn drop-ifv
+  "An eager version of drop-if that returns results in a vector."
+  [pred coll]
+  (vec (drop-if pred coll)))
 
 ;---------------------------------------------------------------------------------------------------
 
