@@ -16,6 +16,70 @@
 
 (spyx *clojure-version*)
 
+(deftest spy-t
+  (testing "basic usage"
+    (let [side-effect-cum-sum (atom 0)  ; side-effect running total
+
+          ; Returns the sum of its arguments AND keep a running total.
+          side-effect-add!  (fn [ & args ]
+                              (let [result (apply + args) ]
+                                (swap! side-effect-cum-sum + result)
+                                result))
+    ]
+      (is (= "hi => 5" 
+          (str/trim (with-out-str (spy (side-effect-add! 2 3) :msg "hi"))) ))
+      (is (= "hi => 5" 
+          (str/trim (with-out-str (spy :msg "hi"  (side-effect-add! 2 3)))) ))
+      (is (= "(side-effect-add! 2 3) => 5" 
+          (str/trim (with-out-str (spyx (side-effect-add! 2 3)))) ))
+      (is (= 15 @side-effect-cum-sum)))
+
+    (is (= "first => 5\nsecond => 25"
+        (str/trim (with-out-str (-> 2 
+                                    (+ 3) 
+                                    (spy :msg "first" )
+                                    (* 5)
+                                    (spy :msg "second") )))))
+    (is (= "first => 5\nsecond => 25"
+        (str/trim (with-out-str (->> 2 
+                                    (+ 3) 
+                                    (spy :msg "first" )
+                                    (* 5)
+                                    (spy :msg "second") )))))
+
+    (let [side-effect-cum-sum (atom 0)  ; side-effect running total
+
+          ; Returns the sum of its arguments AND keep a running total.
+          side-effect-add!  (fn [ & args ]
+                              (let [result (apply + args) ]
+                                (swap! side-effect-cum-sum + result)
+                                result))
+    ]
+      (is (= "value => 5" 
+          (str/trim (with-out-str (spy (side-effect-add! 2 3) :msg "value")))))
+      (is (= "value => 5" 
+          (str/trim (with-out-str (spy :msg "value"  (side-effect-add! 2 3))))))
+      (is (= 10 @side-effect-cum-sum))
+
+      (is (= "value => 5" (str/trim (with-out-str (spy "value" (+ 2 3) )))))
+      (is (=   "spy => 5" (str/trim (with-out-str (spy         (+ 2 3) )))))
+
+      (is (= "(str \"abc\" \"def\") => \"abcdef\"" 
+          (str/trim (with-out-str (spyx (str "abc" "def") )))))
+
+      (is (thrown? IllegalArgumentException  (spy "some-msg" 42 :msg)))
+    )))
+
+(deftest spyxx-t
+  (let [val1  (into (sorted-map) {:a 1 :b 2})
+        val2  (+ 2 3) ]
+    (is (= "val1 => clojure.lang.PersistentTreeMap->{:a 1, :b 2}"
+        (str/trim (with-out-str (spyxx val1 )))  ))
+
+    (is (= "val2 => java.lang.Long->5"
+        (str/trim (with-out-str (spyxx val2 ))) ))
+  ))
+
 (deftest truthy-falsey-tst
   (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]
     (testing "basic usage"
@@ -130,41 +194,6 @@
                                [ [:a 1] [:b 2] [:c 3] [:d 4] [:e 5] [:f 6] ] ))
 )
 
-;###
-
-(deftest strcat-tst
-  (is (= "a" (strcat \a  )))    (is (= "a" (strcat [\a]  )))
-  (is (= "a" (strcat "a" )))    (is (= "a" (strcat ["a"] )))
-  (is (= "a" (strcat 97  )))    (is (= "a" (strcat [97]  )))
-
-  (is (= "ab" (strcat \a   \b   ))) (is (= "ab" (strcat [\a]  \b   )))
-  (is (= "ab" (strcat \a  [\b]  ))) (is (= "ab" (strcat [\a   \b]  )))
-  (is (= "ab" (strcat "a"  "b"  ))) (is (= "ab" (strcat ["a"] "b"  )))
-  (is (= "ab" (strcat "a" ["b"] ))) (is (= "ab" (strcat ["a"  "b"] )))
-  (is (= "ab" (strcat 97   98   ))) (is (= "ab" (strcat [97]  98   )))
-  (is (= "ab" (strcat 97  [98]  ))) (is (= "ab" (strcat [97   98]  )))
-
-  (is (= "abcd" (strcat              97  98   "cd" )))
-  (is (= "abcd" (strcat             [97  98]  "cd" )))
-  (is (= "abcd" (strcat (byte-array [97  98]) "cd" )))
-
-  (let [chars-set   (into #{} (tm/char-seq \a \z)) 
-        str-val     (strcat chars-set) ]
-    (is (= 26 (count chars-set)))
-    (is (= 26 (count str-val)))
-    (is (= 26 (count (re-seq #"[a-z]" str-val))))))
-
-(deftest seqable-tst
-  (is (seqable? "abc"))
-  (is (seqable?  {1 2 3 4}))
-  (is (seqable? #{1 2 3}))
-  (is (seqable? '(1 2 3)))
-  (is (seqable?  [1 2 3]))
-  (is (seqable? (byte-array [1 2])))
-
-  (is (not (seqable?  1 )))
-  (is (not (seqable? \a ))))
-
 (deftest t-grab
   (let [map1  {:a 1 :b 2}]
     (is (= 1                                  (grab :a map1)))
@@ -233,79 +262,6 @@
     )))
 ; AWTAWT TODO: add test.check
 
-(deftest with-exception-default-t
-  (testing "basic usage"
-    (is (thrown?    Exception                       (/ 1 0)))
-    (is (= nil      (with-exception-default nil     (/ 1 0))))
-    (is (= :dummy   (with-exception-default :dummy  (/ 1 0))))
-    (is (= 123      (with-exception-default 0       (Long/parseLong "123"))))
-    (is (= 0        (with-exception-default 0       (Long/parseLong "12xy3"))))
-    ))
-
-(deftest spy-t
-  (testing "basic usage"
-    (let [side-effect-cum-sum (atom 0)  ; side-effect running total
-
-          ; Returns the sum of its arguments AND keep a running total.
-          side-effect-add!  (fn [ & args ]
-                              (let [result (apply + args) ]
-                                (swap! side-effect-cum-sum + result)
-                                result))
-    ]
-      (is (= "hi => 5" 
-          (str/trim (with-out-str (spy (side-effect-add! 2 3) :msg "hi"))) ))
-      (is (= "hi => 5" 
-          (str/trim (with-out-str (spy :msg "hi"  (side-effect-add! 2 3)))) ))
-      (is (= "(side-effect-add! 2 3) => 5" 
-          (str/trim (with-out-str (spyx (side-effect-add! 2 3)))) ))
-      (is (= 15 @side-effect-cum-sum)))
-
-    (is (= "first => 5\nsecond => 25"
-        (str/trim (with-out-str (-> 2 
-                                    (+ 3) 
-                                    (spy :msg "first" )
-                                    (* 5)
-                                    (spy :msg "second") )))))
-    (is (= "first => 5\nsecond => 25"
-        (str/trim (with-out-str (->> 2 
-                                    (+ 3) 
-                                    (spy :msg "first" )
-                                    (* 5)
-                                    (spy :msg "second") )))))
-
-    (let [side-effect-cum-sum (atom 0)  ; side-effect running total
-
-          ; Returns the sum of its arguments AND keep a running total.
-          side-effect-add!  (fn [ & args ]
-                              (let [result (apply + args) ]
-                                (swap! side-effect-cum-sum + result)
-                                result))
-    ]
-      (is (= "value => 5" 
-          (str/trim (with-out-str (spy (side-effect-add! 2 3) :msg "value")))))
-      (is (= "value => 5" 
-          (str/trim (with-out-str (spy :msg "value"  (side-effect-add! 2 3))))))
-      (is (= 10 @side-effect-cum-sum))
-
-      (is (= "value => 5" (str/trim (with-out-str (spy "value" (+ 2 3) )))))
-      (is (=   "spy => 5" (str/trim (with-out-str (spy         (+ 2 3) )))))
-
-      (is (= "(str \"abc\" \"def\") => \"abcdef\"" 
-          (str/trim (with-out-str (spyx (str "abc" "def") )))))
-
-      (is (thrown? IllegalArgumentException  (spy "some-msg" 42 :msg)))
-    )))
-
-(deftest spyxx-t
-  (let [val1  (into (sorted-map) {:a 1 :b 2})
-        val2  (+ 2 3) ]
-    (is (= "val1 => clojure.lang.PersistentTreeMap->{:a 1, :b 2}"
-        (str/trim (with-out-str (spyxx val1 )))  ))
-
-    (is (= "val2 => java.lang.Long->5"
-        (str/trim (with-out-str (spyxx val2 ))) ))
-  ))
-
 (deftest t-safe->
   (is (= 7 (safe-> 3 (* 2) (+ 1))))
   (let [mm  {:a {:b 2}}]
@@ -325,6 +281,14 @@
     (is (= (it-> mm (:a it)          )  {:b 2} ))
     (is (= (it-> mm (it :a)  (:b it) )      2  ))))
   
+(deftest with-exception-default-t
+  (testing "basic usage"
+    (is (thrown?    Exception                       (/ 1 0)))
+    (is (= nil      (with-exception-default nil     (/ 1 0))))
+    (is (= :dummy   (with-exception-default :dummy  (/ 1 0))))
+    (is (= 123      (with-exception-default 0       (Long/parseLong "123"))))
+    (is (= 0        (with-exception-default 0       (Long/parseLong "12xy3"))))
+    ))
 
 (deftest t-rel=
   (is (rel= 1 1 :digits 4 ))
@@ -352,19 +316,52 @@
   (is (not (rel= 1 1.001 :tol 0.0001 )))
 )
 
-(comment    ; example usage w/o -> macro
-  (def cust->zip
-    "A map from (int) customer-id to (string-5) zipcode, like { 96307657 \"54665\", ...}"
-    (spy-last "#00 map:"
-      (into (sorted-map) 
-        (spy-last "#01 for:"
-          (for [cust-zip-map cust-zips]
-            (spy-last "#02 vec:" 
-              [ (:customer-id  cust-zip-map)
-                (:zipcode      cust-zip-map)  ] ))))))
-)
+(deftest strcat-tst
+  (is (= "a" (strcat \a  )))    (is (= "a" (strcat [\a]  )))
+  (is (= "a" (strcat "a" )))    (is (= "a" (strcat ["a"] )))
+  (is (= "a" (strcat 97  )))    (is (= "a" (strcat [97]  )))
 
-(deftest t-match
+  (is (= "ab" (strcat \a   \b   ))) (is (= "ab" (strcat [\a]  \b   )))
+  (is (= "ab" (strcat \a  [\b]  ))) (is (= "ab" (strcat [\a   \b]  )))
+  (is (= "ab" (strcat "a"  "b"  ))) (is (= "ab" (strcat ["a"] "b"  )))
+  (is (= "ab" (strcat "a" ["b"] ))) (is (= "ab" (strcat ["a"  "b"] )))
+  (is (= "ab" (strcat 97   98   ))) (is (= "ab" (strcat [97]  98   )))
+  (is (= "ab" (strcat 97  [98]  ))) (is (= "ab" (strcat [97   98]  )))
+
+  (is (= "abcd" (strcat              97  98   "cd" )))
+  (is (= "abcd" (strcat             [97  98]  "cd" )))
+  (is (= "abcd" (strcat (byte-array [97  98]) "cd" )))
+
+  (let [chars-set   (into #{} (tm/char-seq \a \z)) 
+        str-val     (strcat chars-set) ]
+    (is (= 26 (count chars-set)))
+    (is (= 26 (count str-val)))
+    (is (= 26 (count (re-seq #"[a-z]" str-val))))))
+
+(deftest t-string->lines
+  (let [src-str   "line 1
+                   line 2
+
+                   line 4" 
+        lines     (forv [line (string->lines src-str) ]
+                    (str/trim line)) ]
+    (is (= lines ["line 1"  
+                  "line 2" 
+                  ""
+                  "line 4" ] ))))
+
+(deftest seqable-tst
+  (is (seqable? "abc"))
+  (is (seqable?  {1 2 3 4}))
+  (is (seqable? #{1 2 3}))
+  (is (seqable? '(1 2 3)))
+  (is (seqable?  [1 2 3]))
+  (is (seqable? (byte-array [1 2])))
+
+  (is (not (seqable?  1 )))
+  (is (not (seqable? \a ))))
+
+(deftest t-wild-match
   (testing "vectors"
     (let [vv [1 2  3]
           tt [1 2  3]
@@ -519,16 +516,4 @@
           odd-rem   (remove  even?  vv) ]
       (and  (= even-1 even-2 even-filt)
             (= odd-1  odd-2  odd-rem)))))
-
-(deftest t-string->lines
-  (let [src-str   "line 1
-                   line 2
-
-                   line 4" 
-        lines     (forv [line (string->lines src-str) ]
-                    (str/trim line)) ]
-    (is (= lines ["line 1"  
-                  "line 2" 
-                  ""
-                  "line 4" ] ))))
 

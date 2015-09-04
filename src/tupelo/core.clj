@@ -347,6 +347,12 @@
   [arg]
   (with-out-str (pprint arg)))
 
+; #todo add to README
+(defn string->lines
+  "Returns a lazy seq of lines from a string"
+  [string-arg]
+  (line-seq (BufferedReader. (StringReader. string-arg))))
+
 (defn seqable?      ; from clojure.contrib.core/seqable
   "Returns true if (seq x) will succeed, false otherwise."
   [x]
@@ -393,7 +399,8 @@
 ;   (spyx result) (spy-indent-dec) (flush)      ; for debug
     result))
 
-(defmacro matches?   ; #todo need test
+; #todo need test
+(defmacro matches?   
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
    matches the pattern value.  Underscores serve as wildcard values. Usage: 
 
@@ -411,7 +418,9 @@
         :else     false ))
 
 
-(defn clip-str [nchars & args]
+(defn clip-str 
+  "Converts all args to single string and clips any characters beyond nchars."
+  [nchars & args]
   (it-> (apply str args)
         (take nchars it)
         (apply str it)))
@@ -439,12 +448,6 @@
   "Returns an eager sequence of items in coll for which (pred item) is false (alias for clojure.core/remove)"
   [pred coll]
   (vec (drop-if-z pred coll)))
-
-; #todo add to README
-(defn string->lines
-  "Returns a lazy seq of lines from a string"
-  [string-arg]
-  (line-seq (BufferedReader. (StringReader. string-arg))))
 
 ;---------------------------------------------------------------------------------------------------
 
