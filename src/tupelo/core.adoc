@@ -110,6 +110,41 @@ in a vector:
        [0 1 4 9] ))
 ----
 
+==== Joining together like collections
+
+The `concat` function can sometimes have rather surprising results:
+[source,clojure]
+----
+  (is (= (concat {:a 1} {:b 2} {:c 3} )
+               [ [:a 1] [:b 2] [:c 3] ] ))
+----
+In this example, the user probably meant to merge the 3 maps into one. The
+`conj` function can also surprise the user:
+[source,clojure]
+----
+  (is (= (conj [1 2] [3 4])
+               [1 2  [3 4] ] ))
+----
+
+Here the user probably wanted to get `[1 2 3 4]` back, but instead got a nested
+vector by mistake.
+
+Instead of having to wonder if the items to be combined will be merged, nested, or
+converted into another data type, we provide the `glue` function to *always*
+combine like collections together into a result collection of the same type:
+
+[source,clojure]
+----
+; Glues together like collections:
+(is (= (glue [1 2] [3 4] [5 6])        [1 2 3 4 5 6]    ))
+(is (= (glue {:a 1} {:b 2} {:c 3})     {:a 1 :c 3 :b 2} ))
+(is (= (glue #{1 2} #{3 4} #{6 5})    #{ 1 2 6 5 3 4}   ))
+
+; If you want to convert to a sorted set or map, just put an empty one first:
+(is (= (glue (sorted-map) {:a 1} {:b 2} {:c 3})   {:a 1 :b 2 :c 3} ))
+(is (= (glue (sorted-set) #{1 2} #{3 4} #{6 5})  #{ 1 2 3 4 5 6}   ))
+----
+
 ==== Map Value Lookup
 
 Maps are convenient, especially when keywords are used as functions to look up a value in

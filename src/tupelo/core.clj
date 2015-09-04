@@ -26,6 +26,74 @@
   (str/join (repeat (* 2 @spy-indent-level) \space)))
 
 
+(defn spy
+  "A form of (println ...) to ease debugging display of either intermediate values in threading
+   forms or function return values. There are three variants.  Usage:  
+
+    (spy :msg <msg-string>)
+        This variant is intended for use in either thread-first (->) or thread-last (->>)
+        forms.  The keyword :msg is used to identify the message string and works equally
+        well for both the -> and ->> operators. Spy prints both <msg-string>  and the
+        threading value to stdout, then returns the value for further propogation in the
+        threading form. For example, both of the following:
+            (->   2 
+                  (+ 3) 
+                  (spy :msg \"sum\" )
+                  (* 4))
+            (->>  2 
+                  (+ 3) 
+                  (spy :msg \"sum\" )
+                  (* 4))
+        will print 'sum => 5' to stdout.
+
+    (spy <msg-string> <value>)
+        This variant is intended for simpler use cases such as function return values.
+        Function return value expressions often invoke other functions and cannot be
+        easily displayed since (println ...) swallows the return value and returns nil
+        itself.  Spy will output both <msg-string> and the value, then return the value
+        for use by further processing.  For example, the following:
+            (println (* 2
+                       (spy \"sum\" (+ 3 4))))
+      will print:
+            sum => 7
+            14
+      to stdout.
+
+    (spy <value>)
+        This variant is intended for use in very simple situations and is the same as the
+        2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
+        prints 'spy => 5' to stdout.  "
+  ( [arg1 arg2 arg3]
+    (cond (= :msg arg1) (do (println (str arg2 " => " (pr-str arg3))) arg3)  ; for ->>
+          (= :msg arg2) (do (println (str arg3 " => " (pr-str arg1))) arg1)  ; for ->
+          :else (throw (IllegalArgumentException.  (str 
+                           "spy: either first or 2nd arg must be :msg \n   args:"
+                           (pr-str [arg1 arg2 arg3]))))))
+
+  ( [msg value] ; 2-arg arity assumes value is last arg
+    (do (println (str msg " => " (pr-str value))) value))
+
+  ( [value] ; 1-arg arity uses a generic "spy" message
+    (spy "spy" value)))
+
+(defmacro spyx
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expression, printing both the expression and its value to stdout, then returns the value."
+  [expr]
+  `(let [spy-val# ~expr] 
+      (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val#)))
+      spy-val#))
+
+(defmacro spyxx
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expression, printing both the expression, its type, and its value to stdout, then returns the value."
+  [expr]
+  `(let [ spy-val#      ~expr
+          class-name#   (-> spy-val# class .getName) ]
+      (println (str (spy-indent-spaces) '~expr " => " class-name# "->" (pr-str spy-val#)))
+      spy-val#))
+
+
 (defn truthy?
   "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
   [arg]
@@ -64,11 +132,8 @@
   [& body]
   `(into [] (for ~@body)))
 
-; #todo: surprising concat failure
-;   (concat {:a 1} {:b 2} {:c 3})
-;   =>     ([:a 1] [:b 2] [:c 3])
 (defn glue 
-  "Glues together like sequences:
+  "Glues together like collections:
 
      (glue [1 2] [3 4] [5 6])         -> [1 2 3 4 5 6]
      (glue {:a 1} {:b 2} {:c 3})      -> {:a 1 :c 3 :b 2}
@@ -80,8 +145,17 @@
      (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
    " 
   [& colls]
-  (reduce into colls))
-  ; #todo add checks for all same type (sequence/vector, map, set)
+  (let [coll-types        (mapv type colls)
+        vec-or-list?      (fn [coll] (or (vector? coll)
+                                         (list?   coll)))
+        all-vec-list      (every? truthy? (mapv vec-or-list?  colls))    ; true if list or vector
+        all-set           (every? truthy? (mapv set?          colls))    ; true if set (sorted or not)
+        all-map           (every? truthy? (mapv map?          colls))    ; true if map (sorted or not)
+        all-same-types    (or all-vec-list all-set all-map) ]
+    (if all-same-types
+      (reduce into colls)
+      (throw (IllegalArgumentException.
+                (str  "colls must be all identical type; coll-types:" coll-types ))))))
 
 (s/defn fetch :- s/Any
   "A fail-fast version of clojure.core/get-in. When invoked as (fetch the-map keys-vec), 
@@ -181,73 +255,6 @@
   `(try
      ~@body
      (catch Exception e# ~default-val) ))
-
-(defn spy
-  "A form of (println ...) to ease debugging display of either intermediate values in threading
-   forms or function return values. There are three variants.  Usage:  
-
-    (spy :msg <msg-string>)
-        This variant is intended for use in either thread-first (->) or thread-last (->>)
-        forms.  The keyword :msg is used to identify the message string and works equally
-        well for both the -> and ->> operators. Spy prints both <msg-string>  and the
-        threading value to stdout, then returns the value for further propogation in the
-        threading form. For example, both of the following:
-            (->   2 
-                  (+ 3) 
-                  (spy :msg \"sum\" )
-                  (* 4))
-            (->>  2 
-                  (+ 3) 
-                  (spy :msg \"sum\" )
-                  (* 4))
-        will print 'sum => 5' to stdout.
-
-    (spy <msg-string> <value>)
-        This variant is intended for simpler use cases such as function return values.
-        Function return value expressions often invoke other functions and cannot be
-        easily displayed since (println ...) swallows the return value and returns nil
-        itself.  Spy will output both <msg-string> and the value, then return the value
-        for use by further processing.  For example, the following:
-            (println (* 2
-                       (spy \"sum\" (+ 3 4))))
-      will print:
-            sum => 7
-            14
-      to stdout.
-
-    (spy <value>)
-        This variant is intended for use in very simple situations and is the same as the
-        2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
-        prints 'spy => 5' to stdout.  "
-  ( [arg1 arg2 arg3]
-    (cond (= :msg arg1) (do (println (str arg2 " => " (pr-str arg3))) arg3)  ; for ->>
-          (= :msg arg2) (do (println (str arg3 " => " (pr-str arg1))) arg1)  ; for ->
-          :else (throw (IllegalArgumentException.  (str 
-                           "spy: either first or 2nd arg must be :msg \n   args:"
-                           (pr-str [arg1 arg2 arg3]))))))
-
-  ( [msg value] ; 2-arg arity assumes value is last arg
-    (do (println (str msg " => " (pr-str value))) value))
-
-  ( [value] ; 1-arg arity uses a generic "spy" message
-    (spy "spy" value)))
-
-(defmacro spyx
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expression, printing both the expression and its value to stdout, then returns the value."
-  [expr]
-  `(let [spy-val# ~expr] 
-      (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val#)))
-      spy-val#))
-
-(defmacro spyxx
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expression, printing both the expression, its type, and its value to stdout, then returns the value."
-  [expr]
-  `(let [ spy-val#      ~expr
-          class-name#   (-> spy-val# class .getName) ]
-      (println (str (spy-indent-spaces) '~expr " => " class-name# "->" (pr-str spy-val#)))
-      spy-val#))
 
 (defn rel=
   "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative equality

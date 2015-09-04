@@ -88,6 +88,50 @@
   (is (= (forv [x (range 5)  y (range 2 9)] (str x y))
          (for  [x (range 5)  y (range 2 9)] (str x y)))))
 
+(deftest t-glue
+  ; unexpected results
+  (is (= (concat {:a 1} {:b 2} {:c 3} )
+               [ [:a 1] [:b 2] [:c 3] ] ))
+  (is (= (conj [1 2] [3 4])
+               [1 2  [3 4] ] ))
+
+  (let [objs   [ [] '()   {} (sorted-map)   #{} (sorted-set) ] ]
+    (is (= (map sequential? objs) [true  true    false false   false false] ))
+    (is (= (map map?        objs) [false false   true  true    false false] ))
+    (is (= (map set?        objs) [false false   false false   true  true ] )))
+
+  (is (thrown? IllegalArgumentException   (spyxx (glue   [1 2]   {:a 1} ))))
+  (is (thrown? IllegalArgumentException   (spyxx (glue   [1 2]  #{:a 1} ))))
+  (is (thrown? IllegalArgumentException   (spyxx (glue  '(1 2)   {:a 1} ))))
+  (is (thrown? IllegalArgumentException   (spyxx (glue  '(1 2)  #{:a 1} ))))
+  (is (thrown? IllegalArgumentException   (spyxx (glue  #{1 2}   {:a 1} ))))
+
+  (is (= (glue [1 2] [3 4] [5 6])        [1 2 3 4 5 6]))
+  (is (= (glue [] [1 2] )                [1 2] ))
+  (is (= (glue [1 2] [] )                [1 2] ))
+  (is (= (glue [] [1 2] [] )             [1 2] ))
+
+  (is (= (glue {:a 1} {:b 2} {:c 3})     {:a 1 :c 3 :b 2}))
+  (is (= (glue {:a 1} {} )               {:a 1} ))
+  (is (= (glue {} {:a 1} )               {:a 1} ))
+  (is (= (glue {} {:a 1} {} )            {:a 1} ))
+
+  (is (= (glue #{1 2} #{3 4} #{6 5})     #{1 2 6 5 3 4}))
+  (is (= (glue #{} #{1 2} )              #{1 2} ))
+  (is (= (glue #{1 2} #{} )              #{1 2} ))
+  (is (= (glue #{} #{1 2} #{} )          #{1 2} ))
+
+  (is (= (glue (sorted-map) {:a 1} {:b 2} {:c 3})   {:a 1 :b 2 :c 3} ))
+  (is (= (glue (sorted-set) #{1 2} #{3 4} #{6 5})   #{1 2 3 4 5 6}))
+
+  (is (= (glue (sorted-map) {:a 1 :b 2} {:c 3 :d 4} {:e 5 :f 6})   
+                            {:a 1 :b 2   :c 3 :d 4   :e 5 :f 6} ))
+  (is (= (seq (glue (sorted-map) {:a 1   :b 2} {:c 3   :d 4   :e 5} {:f 6}))
+                               [ [:a 1] [:b 2] [:c 3] [:d 4] [:e 5] [:f 6] ] ))
+)
+
+;###
+
 (deftest strcat-tst
   (is (= "a" (strcat \a  )))    (is (= "a" (strcat [\a]  )))
   (is (= "a" (strcat "a" )))    (is (= "a" (strcat ["a"] )))
@@ -318,31 +362,6 @@
             (spy-last "#02 vec:" 
               [ (:customer-id  cust-zip-map)
                 (:zipcode      cust-zip-map)  ] ))))))
-)
-
-(deftest t-glue
-  (is (= (glue [1 2] [3 4] [5 6])        [1 2 3 4 5 6]))
-  (is (= (glue [] [1 2] )                [1 2] ))
-  (is (= (glue [1 2] [] )                [1 2] ))
-  (is (= (glue [] [1 2] [] )             [1 2] ))
-
-  (is (= (glue {:a 1} {:b 2} {:c 3})     {:a 1 :c 3 :b 2}))
-  (is (= (glue {:a 1} {} )               {:a 1} ))
-  (is (= (glue {} {:a 1} )               {:a 1} ))
-  (is (= (glue {} {:a 1} {} )            {:a 1} ))
-
-  (is (= (glue #{1 2} #{3 4} #{6 5})     #{1 2 6 5 3 4}))
-  (is (= (glue #{} #{1 2} )              #{1 2} ))
-  (is (= (glue #{1 2} #{} )              #{1 2} ))
-  (is (= (glue #{} #{1 2} #{} )          #{1 2} ))
-
-  (is (= (glue (sorted-map) {:a 1} {:b 2} {:c 3})   {:a 1 :b 2 :c 3} ))
-  (is (= (glue (sorted-set) #{1 2} #{3 4} #{6 5})   #{1 2 3 4 5 6}))
-
-  (is (= (glue (sorted-map) {:a 1 :b 2} {:c 3 :d 4} {:e 5 :f 6})   
-                            {:a 1 :b 2   :c 3 :d 4   :e 5 :f 6} ))
-  (is (= (seq (glue (sorted-map) {:a 1   :b 2} {:c 3   :d 4   :e 5} {:f 6}))
-                               [ [:a 1] [:b 2] [:c 3] [:d 4] [:e 5] [:f 6] ] ))
 )
 
 (deftest t-match
