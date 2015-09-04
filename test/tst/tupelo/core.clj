@@ -482,6 +482,8 @@
     (is (= (dissoc-entry mm [:a :b :c] ) {:a { :b {}}} ))
     (is (= (dissoc-entry mm [:a :x :y] ) {:a { :b { :c "c" }
                                                :x nil }} ))
+    (is (= (dissoc-entry mm [:k1 :k2 :k3 :kz] )   {:a  { :b  { :c  "c" }}
+                                                   :k1 { :k2 { :k3 nil }}} ))
     (is (thrown? IllegalArgumentException  (dissoc-entry mm [] ))))
   (let [mm    {:a1 "a1"
                :a2 { :b1 "b1"

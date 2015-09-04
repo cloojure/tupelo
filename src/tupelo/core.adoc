@@ -172,12 +172,17 @@ The unit test shows the functions in action:
 
 [source,clojure]
 ----
-  (let [mm {:a { :b { :c "c" }}} ]
-    (is (= (dissoc-entry mm [:a      ] ) {} ))
-    (is (= (dissoc-entry mm [:a :b   ] ) {:a {}} ))
-    (is (= (dissoc-entry mm [:a :b :c] ) {:a { :b {}}} ))
-    (is (thrown? IllegalArgumentException  (dissoc-entry mm [] )))
+(let [mm {:a { :b { :c "c" }}} ]
+  (is (= (dissoc-entry mm [:a      ] ) {} ))
+  (is (= (dissoc-entry mm [:a :b   ] ) {:a {}} ))
+  (is (= (dissoc-entry mm [:a :b :c] ) {:a { :b {}}} ))
+  (is (= (dissoc-entry mm [:a :x :y] ) {:a { :b { :c "c" }
+                                             :x nil }} ))
+  (is (thrown? IllegalArgumentException  (dissoc-entry mm [] ))))
 ----
+
+Note that if non-existant keys are included in `keys-vec` (except for `kZ`), any intervening map
+layers will be constructed as necessary.
 
 The name `dissoc-entry` is chosen to emphasize that only the map entry corresponding to the last key
 `kZ` is cleared. This also avoids confusion with a function in the old clojure-contrib named
