@@ -121,6 +121,65 @@
   (is (not (seqable?  1 )))
   (is (not (seqable? \a ))))
 
+(deftest t-grab
+  (let [map1  {:a 1 :b 2}]
+    (is (= 1                                  (grab :a map1)))
+    (is (= 2                                  (grab :b map1)))
+    (is (thrown?    IllegalArgumentException  (grab :c map1))) ))
+
+(deftest t-fetch
+  (testing "basic usage"
+    (let [map1  {:a1 "a1"
+                 :a2 { :b1 "b1"
+                       :b2 { :c1 "c1"
+                             :c2 "c2" }}} ]
+      (is (= (fetch map1 [:a1] ) "a1" ))
+      (is (= (fetch map1 [:a2 :b1] ) "b1" ))
+      (is (= (fetch map1 [:a2 :b2 :c1] ) "c1" ))
+      (is (= (fetch map1 [:a2 :b2 :c2] ) "c2" ))
+      (is (thrown? IllegalArgumentException  (fetch map1 [:a9]) )) 
+      (is (thrown? IllegalArgumentException  (fetch map1 [:a2 :b9]) )) 
+      (is (thrown? IllegalArgumentException  (fetch map1 [:a2 :b2 :c9]) )) 
+    )))
+
+(deftest t-dissoc-entry
+  (let [mm    {:a { :b { :c "c" }}} ]
+    (is (= (dissoc-entry mm []         )          mm ))
+    (is (= (dissoc-entry mm [:a]       )          {} ))
+    (is (= (dissoc-entry mm [:a :b]    )          {:a  {}} ))
+    (is (= (dissoc-entry mm [:a :b :c] )          {:a  { :b  {}}} ))
+    (is (= (dissoc-entry mm [:a :x :y] )          {:a  { :b  { :c "c" }
+                                                         :x  nil }} ))
+    (is (= (dissoc-entry mm [:a :x :y :z] )       {:a  { :b  { :c "c" }
+                                                         :x  { :y nil }}} ))
+    (is (= (dissoc-entry mm [:k1 :k2 :k3 :kz] )   {:a  { :b  { :c  "c" }}
+                                                   :k1 { :k2 { :k3 nil }}} )))
+  (let [mm    {:a1 "a1"
+               :a2 { :b1 "b1"
+                     :b2 { :c1 "c1"
+                           :c2 "c2" }}} ]
+    (is (= (dissoc-entry mm [:a1] )
+              {:a2 { :b1 "b1"
+                     :b2 { :c1 "c1"
+                           :c2 "c2" }}} ))
+    (is (= (dissoc-entry mm [:a2] )
+              {:a1 "a1" } ))
+    (is (= (dissoc-entry mm [:a2 :b1] )
+              {:a1 "a1"
+               :a2 { :b2 { :c1 "c1"
+                           :c2 "c2" }}} ))
+    (is (= (dissoc-entry mm [:a2 :b2] )
+              {:a1 "a1"
+               :a2 { :b1 "b1" }} ))
+    (is (= (dissoc-entry mm [:a2 :b2 :c1] )
+              {:a1 "a1"
+               :a2 { :b1 "b1"
+                     :b2 { :c2 "c2" }}} ))
+    (is (= (dissoc-entry mm [:a2 :b2 :c2] )
+              {:a1 "a1"
+               :a2 { :b1 "b1"
+                     :b2 { :c1 "c1" }}} ))))
+
 (deftest keyvals-t
   (testing "basic usage"
     (let [m1 {:a 1 :b 2 :c 3} 
@@ -453,63 +512,4 @@
                   "line 2" 
                   ""
                   "line 4" ] ))))
-
-(deftest t-grab
-  (let [map1  {:a 1 :b 2}]
-    (is (= 1                                  (grab :a map1)))
-    (is (= 2                                  (grab :b map1)))
-    (is (thrown?    IllegalArgumentException  (grab :c map1))) ))
-
-(deftest t-fetch
-  (testing "basic usage"
-    (let [map1  {:a1 "a1"
-                 :a2 { :b1 "b1"
-                       :b2 { :c1 "c1"
-                             :c2 "c2" }}} ]
-      (is (= (fetch map1 [:a1] ) "a1" ))
-      (is (= (fetch map1 [:a2 :b1] ) "b1" ))
-      (is (= (fetch map1 [:a2 :b2 :c1] ) "c1" ))
-      (is (= (fetch map1 [:a2 :b2 :c2] ) "c2" ))
-      (is (thrown? IllegalArgumentException  (fetch map1 [:a9]) )) 
-      (is (thrown? IllegalArgumentException  (fetch map1 [:a2 :b9]) )) 
-      (is (thrown? IllegalArgumentException  (fetch map1 [:a2 :b2 :c9]) )) 
-    )))
-
-(deftest t-dissoc-entry
-  (let [mm    {:a { :b { :c "c" }}} ]
-    (is (= (dissoc-entry mm []         )          mm ))
-    (is (= (dissoc-entry mm [:a]       )          {} ))
-    (is (= (dissoc-entry mm [:a :b]    )          {:a  {}} ))
-    (is (= (dissoc-entry mm [:a :b :c] )          {:a  { :b  {}}} ))
-    (is (= (dissoc-entry mm [:a :x :y] )          {:a  { :b  { :c "c" }
-                                                         :x  nil }} ))
-    (is (= (dissoc-entry mm [:a :x :y :z] )       {:a  { :b  { :c "c" }
-                                                         :x  { :y nil }}} ))
-    (is (= (dissoc-entry mm [:k1 :k2 :k3 :kz] )   {:a  { :b  { :c  "c" }}
-                                                   :k1 { :k2 { :k3 nil }}} )))
-  (let [mm    {:a1 "a1"
-               :a2 { :b1 "b1"
-                     :b2 { :c1 "c1"
-                           :c2 "c2" }}} ]
-    (is (= (dissoc-entry mm [:a1] )
-              {:a2 { :b1 "b1"
-                     :b2 { :c1 "c1"
-                           :c2 "c2" }}} ))
-    (is (= (dissoc-entry mm [:a2] )
-              {:a1 "a1" } ))
-    (is (= (dissoc-entry mm [:a2 :b1] )
-              {:a1 "a1"
-               :a2 { :b2 { :c1 "c1"
-                           :c2 "c2" }}} ))
-    (is (= (dissoc-entry mm [:a2 :b2] )
-              {:a1 "a1"
-               :a2 { :b1 "b1" }} ))
-    (is (= (dissoc-entry mm [:a2 :b2 :c1] )
-              {:a1 "a1"
-               :a2 { :b1 "b1"
-                     :b2 { :c2 "c2" }}} ))
-    (is (= (dissoc-entry mm [:a2 :b2 :c2] )
-              {:a1 "a1"
-               :a2 { :b1 "b1"
-                     :b2 { :c1 "c1" }}} ))))
 

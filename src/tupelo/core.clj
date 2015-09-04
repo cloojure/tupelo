@@ -64,50 +64,65 @@
   [& body]
   `(into [] (for ~@body)))
 
-(defn strcat
-  "Concat all arguments into a single string result."
-  [& args]
-  (let [
-    ; We need to use flatten twice since the inner one doesn't changes a string into a
-    ; sequence of chars, nor does it affect byte-array, et al.  We eventually get
-    ; seq-of-scalars which can look like [ \a \b 77 78 \66 \z ]
-    seq-of-scalars  (flatten 
-                      (for [it (flatten [args])] 
-                        ; Note that "sequential?" returns false for sets, strings, and the various
-                        ; array types.
-                        (if (or (sequential? it)
-                                (set?                   it)
-                                (string?                it)
-                                (types/byte-array?      it)
-                                (types/char-array?      it)
-                                (types/int-array?       it)
-                                (types/long-array?      it)
-                                (types/short-array?     it)
-                                (types/object-array?    it))
-                          (seq it)
-                          it )))
-    ; Coerce any integer values into character equivalents (e.g. 65 -> \A), then concat
-    ; into a single string.
-    result  (apply str 
-              (map char seq-of-scalars))
-  ]
-    result ))
+; #todo: surprising concat failure
+;   (concat {:a 1} {:b 2} {:c 3})
+;   =>     ([:a 1] [:b 2] [:c 3])
+(defn glue 
+  "Glues together like sequences:
 
-(defn pp-str
-  "Returns a string that is the result of clojure.pprint/pprint"
-  [arg]
-  (with-out-str (pprint arg)))
+     (glue [1 2] [3 4] [5 6])         -> [1 2 3 4 5 6]
+     (glue {:a 1} {:b 2} {:c 3})      -> {:a 1 :c 3 :b 2}
+     (glue #{1 2} #{3 4} #{6 5})      -> #{1 2 6 5 3 4}
 
-(defn seqable?      ; from clojure.contrib.core/seqable
-  "Returns true if (seq x) will succeed, false otherwise."
-  [x]
-  (or (seq? x)
-      (instance? clojure.lang.Seqable x)
-      (nil? x)
-      (instance? Iterable x)
-      (-> x .getClass .isArray)
-      (string? x)
-      (instance? java.util.Map x)))
+   If you want to convert to a sorted set or map, just put an empty one first:
+
+     (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
+     (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
+   " 
+  [& colls]
+  (reduce into colls))
+  ; #todo add checks for all same type (sequence/vector, map, set)
+
+(s/defn fetch :- s/Any
+  "A fail-fast version of clojure.core/get-in. When invoked as (fetch the-map keys-vec), 
+   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).  
+   Throws an Exception if the path keys-vec is not present in the-map."
+  [the-map    :- ts/KeyMap 
+   keys-vec   :- [s/Keyword] ]
+  (let [result (clj/get-in the-map keys-vec ::not-found) ]
+    (if (= result ::not-found)
+      (throw (IllegalArgumentException.    
+                (str  "Key seq not present in map:" \newline
+                      "  map : " the-map  \newline
+                      "  keys: " keys-vec  \newline )))
+      result )))
+
+(s/defn grab :- s/Any
+  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map), 
+   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).  
+   Throws an Exception if :the-key is not present in the-map."
+  [the-key    :- s/Keyword
+   the-map    :- ts/KeyMap ] 
+  (fetch the-map [the-key] ))
+
+(s/defn dissoc-entry :- s/Any
+  "A sane version of dissoc-in that will not delete intermediate keys. 
+   When invoked as (dissoc-entry the-map [:k1 :k2 :k3... :kZ]), acts like 
+   (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only 
+   the map entry containing the last key :kZ is removed, and all map entries 
+   higher than kZ in the hierarchy are unaffected."
+  [the-map    :- ts/KeyMap 
+   keys-vec   :- [s/Keyword] ]
+  (let [num-keys      (count    keys-vec)
+        key-to-clear  (last     keys-vec)
+        parent-keys   (butlast  keys-vec) ] 
+    (cond 
+      (zero? num-keys)      the-map
+      (= 1   num-keys)      (dissoc the-map key-to-clear)
+      :else                 (update-in the-map parent-keys dissoc key-to-clear))))
+
+; #awt TODO:  add in clear-nil-entries to recursively delete all k-v pairs 
+;               where val is nil or empty?
 
 (defn keyvals 
   "For any map m, returns the keys & values of m as a vector, suitable for reconstructing m via
@@ -290,65 +305,50 @@
     ] 
       or-result )))
 
-(s/defn fetch :- s/Any
-  "A fail-fast version of clojure.core/get-in. When invoked as (fetch the-map keys-vec), 
-   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).  
-   Throws an Exception if the path keys-vec is not present in the-map."
-  [the-map    :- ts/KeyMap 
-   keys-vec   :- [s/Keyword] ]
-  (let [result (clj/get-in the-map keys-vec ::not-found) ]
-    (if (= result ::not-found)
-      (throw (IllegalArgumentException.    
-                (str  "Key seq not present in map:" \newline
-                      "  map : " the-map  \newline
-                      "  keys: " keys-vec  \newline )))
-      result )))
+(defn strcat
+  "Concat all arguments into a single string result."
+  [& args]
+  (let [
+    ; We need to use flatten twice since the inner one doesn't changes a string into a
+    ; sequence of chars, nor does it affect byte-array, et al.  We eventually get
+    ; seq-of-scalars which can look like [ \a \b 77 78 \66 \z ]
+    seq-of-scalars  (flatten 
+                      (for [it (flatten [args])] 
+                        ; Note that "sequential?" returns false for sets, strings, and the various
+                        ; array types.
+                        (if (or (sequential? it)
+                                (set?                   it)
+                                (string?                it)
+                                (types/byte-array?      it)
+                                (types/char-array?      it)
+                                (types/int-array?       it)
+                                (types/long-array?      it)
+                                (types/short-array?     it)
+                                (types/object-array?    it))
+                          (seq it)
+                          it )))
+    ; Coerce any integer values into character equivalents (e.g. 65 -> \A), then concat
+    ; into a single string.
+    result  (apply str 
+              (map char seq-of-scalars))
+  ]
+    result ))
 
-(s/defn grab :- s/Any
-  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map), 
-   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).  
-   Throws an Exception if :the-key is not present in the-map."
-  [the-key    :- s/Keyword
-   the-map    :- ts/KeyMap ] 
-  (fetch the-map [the-key] ))
+(defn pp-str
+  "Returns a string that is the result of clojure.pprint/pprint"
+  [arg]
+  (with-out-str (pprint arg)))
 
-(s/defn dissoc-entry :- s/Any
-  "A sane version of dissoc-in that will not delete intermediate keys. 
-   When invoked as (dissoc-entry the-map [:k1 :k2 :k3... :kZ]), acts like 
-   (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only 
-   the map entry containing the last key :kZ is removed, and all map entries 
-   higher than kZ in the hierarchy are unaffected."
-  [the-map    :- ts/KeyMap 
-   keys-vec   :- [s/Keyword] ]
-  (let [num-keys      (count    keys-vec)
-        key-to-clear  (last     keys-vec)
-        parent-keys   (butlast  keys-vec) ] 
-    (cond 
-      (zero? num-keys)      the-map
-      (= 1   num-keys)      (dissoc the-map key-to-clear)
-      :else                 (update-in the-map parent-keys dissoc key-to-clear))))
-
-; #awt TODO:  add in clear-nil-entries to recursively delete all k-v pairs 
-;               where val is nil or empty?
-
-; #todo: surprising concat failure
-;   (concat {:a 1} {:b 2} {:c 3})
-;   =>     ([:a 1] [:b 2] [:c 3])
-(defn glue 
-  "Glues together like sequences:
-
-     (glue [1 2] [3 4] [5 6])         -> [1 2 3 4 5 6]
-     (glue {:a 1} {:b 2} {:c 3})      -> {:a 1 :c 3 :b 2}
-     (glue #{1 2} #{3 4} #{6 5})      -> #{1 2 6 5 3 4}
-
-   If you want to convert to a sorted set or map, just put an empty one first:
-
-     (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
-     (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
-   " 
-  [& colls]
-  (reduce into colls))
-  ; #todo add checks for all same type (sequence/vector, map, set)
+(defn seqable?      ; from clojure.contrib.core/seqable
+  "Returns true if (seq x) will succeed, false otherwise."
+  [x]
+  (or (seq? x)
+      (instance? clojure.lang.Seqable x)
+      (nil? x)
+      (instance? Iterable x)
+      (-> x .getClass .isArray)
+      (string? x)
+      (instance? java.util.Map x)))
 
 ; #todo need test
 (s/defn submap? :- Boolean

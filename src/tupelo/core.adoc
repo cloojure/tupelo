@@ -173,6 +173,7 @@ The unit test shows the functions in action:
 [source,clojure]
 ----
 (let [mm {:a { :b { :c "c" }}} ]
+  (is (= (dissoc-entry mm []         ) mm ))
   (is (= (dissoc-entry mm [:a      ] ) {} ))
   (is (= (dissoc-entry mm [:a :b   ] ) {:a {}} ))
   (is (= (dissoc-entry mm [:a :b :c] ) {:a { :b {}}} ))
@@ -185,8 +186,9 @@ Note that if non-existant keys are included in `keys-vec` (except for `kZ`), any
 layers will be constructed as necessary.
 
 The name `dissoc-entry` is chosen to emphasize that only the map entry corresponding to the last key
-`kZ` is cleared. This also avoids confusion with a function in the old clojure-contrib named
-`dissoc-in` that would sometimes delete keys above `kZ` in the map hierarchy.
+`kZ` is cleared. This also avoids confusion with a function in the old
+clojure-contrib library named `dissoc-in` that would sometimes delete keys above
+`kZ` in the map hierarchy.
 
 ==== Map Entries (Key-Value pairs)
 
