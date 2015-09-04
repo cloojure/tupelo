@@ -507,8 +507,8 @@
 )
 
 (deftest t-keep-if
-  (is (= [1 3 5] (keep-if odd?  (range 6))))
-  (is (= [0 2 4] (keep-if even? (range 6)))))
+  (is (= [1 3 5 7 9] (keep-if odd?  (range 10))))
+  (is (= [0 2 4 6 8] (keep-if even? (range 10)))))
 
 (tst/defspec ^:slow t-keep-if-drop-if 9999
   (prop/for-all [vv (gen/vector gen/int) ]

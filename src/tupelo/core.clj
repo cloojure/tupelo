@@ -430,19 +430,16 @@
   [pred coll]
   (clojure.core/filter pred coll))
 
-; #todo add to README
 (defn drop-if
   "Returns a lazy sequence of items in coll for which (pred item) is false (alias for clojure.core/remove)"
   [pred coll]
   (clojure.core/remove pred coll))
 
-; #todo add to README
 (defn keep-ifv
   "An eager version of keep-if that returns results in a vector."
   [pred coll]
   (vec (keep-if pred coll)))
 
-; #todo add to README
 (defn drop-ifv
   "An eager version of drop-if that returns results in a vector."
   [pred coll]
