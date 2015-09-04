@@ -477,14 +477,16 @@
 
 (deftest t-dissoc-entry
   (let [mm    {:a { :b { :c "c" }}} ]
-    (is (= (dissoc-entry mm [:a]       ) {} ))
-    (is (= (dissoc-entry mm [:a :b]    ) {:a {}} ))
-    (is (= (dissoc-entry mm [:a :b :c] ) {:a { :b {}}} ))
-    (is (= (dissoc-entry mm [:a :x :y] ) {:a { :b { :c "c" }
-                                               :x nil }} ))
+    (is (= (dissoc-entry mm []         )          mm ))
+    (is (= (dissoc-entry mm [:a]       )          {} ))
+    (is (= (dissoc-entry mm [:a :b]    )          {:a  {}} ))
+    (is (= (dissoc-entry mm [:a :b :c] )          {:a  { :b  {}}} ))
+    (is (= (dissoc-entry mm [:a :x :y] )          {:a  { :b  { :c "c" }
+                                                         :x  nil }} ))
+    (is (= (dissoc-entry mm [:a :x :y :z] )       {:a  { :b  { :c "c" }
+                                                         :x  { :y nil }}} ))
     (is (= (dissoc-entry mm [:k1 :k2 :k3 :kz] )   {:a  { :b  { :c  "c" }}
-                                                   :k1 { :k2 { :k3 nil }}} ))
-    (is (thrown? IllegalArgumentException  (dissoc-entry mm [] ))))
+                                                   :k1 { :k2 { :k3 nil }}} )))
   (let [mm    {:a1 "a1"
                :a2 { :b1 "b1"
                      :b2 { :c1 "c1"

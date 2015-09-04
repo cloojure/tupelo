@@ -321,14 +321,13 @@
   [the-map    :- ts/KeyMap 
    keys-vec   :- [s/Keyword] ]
   (let [num-keys (count keys-vec) ]
-    (when-not (pos? num-keys)
-      (throw (IllegalArgumentException.    
-                (str  "keys-vec must be non-empty: " keys-vec))))
-    (let [parent-keys   (butlast keys-vec) 
-          key-to-clear  (last    keys-vec) ]
-      (if (= 1 num-keys)
-        (dissoc the-map key-to-clear)
-        (update-in the-map parent-keys dissoc key-to-clear)))))
+    (if (zero? num-keys)
+      the-map
+      (let [parent-keys   (butlast keys-vec) 
+            key-to-clear  (last    keys-vec) ]
+        (if (= 1 num-keys)
+          (dissoc the-map key-to-clear)
+          (update-in the-map parent-keys dissoc key-to-clear))))))
 
 ; #awt TODO:  add in clear-nil-entries to recursively delete all k-v pairs 
 ;               where val is nil or empty?
