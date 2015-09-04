@@ -145,6 +145,13 @@ combine like collections together into a result collection of the same type:
 (is (= (glue (sorted-set) #{1 2} #{3 4} #{6 5})  #{ 1 2 3 4 5 6}   ))
 ----
 
+An `Exception` will be thrown if the collections to be 'glued' are not all of
+the same type:
+
+  - mixed lists & vectors
+  - all map (sorted or not)
+  - all set (sorted or not)
+
 ==== Map Value Lookup
 
 Maps are convenient, especially when keywords are used as functions to look up a value in
