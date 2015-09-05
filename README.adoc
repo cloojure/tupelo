@@ -574,8 +574,3 @@ Copyright © 2015 Alan Thompson.
 
 Distributed under the Eclipse Public License, the same as Clojure.
 
-== License
-
-Copyright © 2015 Alan Thompson. 
-
-Distributed under the Eclipse Public License, the same as Clojure.
