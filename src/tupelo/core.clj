@@ -312,6 +312,27 @@
     ] 
       or-result )))
 
+; #todo add to README
+(defn keep-if
+  "Returns a lazy sequence of items in coll for which (pred item) is true (alias for clojure.core/filter)"
+  [pred coll]
+  (clojure.core/filter pred coll))
+
+(defn drop-if
+  "Returns a lazy sequence of items in coll for which (pred item) is false (alias for clojure.core/remove)"
+  [pred coll]
+  (clojure.core/remove pred coll))
+
+(defn keep-ifv
+  "An eager version of keep-if that returns results in a vector."
+  [pred coll]
+  (vec (keep-if pred coll)))
+
+(defn drop-ifv
+  "An eager version of drop-if that returns results in a vector."
+  [pred coll]
+  (vec (drop-if pred coll)))
+
 (defn strcat
   "Concat all arguments into a single string result."
   [& args]
@@ -360,29 +381,71 @@
         (take nchars it)
         (apply str it)))
 
-; #todo add to README
-(defn keep-if
-  "Returns a lazy sequence of items in coll for which (pred item) is true (alias for clojure.core/filter)"
-  [pred coll]
-  (clojure.core/filter pred coll))
+(defn seqable?      ; from clojure.contrib.core/seqable
+  "Returns true if (seq x) will succeed, false otherwise."
+  [x]
+  (or (seq? x)
+      (instance? clojure.lang.Seqable x)
+      (nil? x)
+      (instance? Iterable x)
+      (-> x .getClass .isArray)
+      (string? x)
+      (instance? java.util.Map x)))
 
-(defn drop-if
-  "Returns a lazy sequence of items in coll for which (pred item) is false (alias for clojure.core/remove)"
-  [pred coll]
-  (clojure.core/remove pred coll))
+; #todo need test & README
+(s/defn submap? :- Boolean
+  "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
+   another map.  Similar to clojure.set/subset?"
+  [ inner-map   :- {s/Any s/Any}    ; #todo
+    outer-map   :- {s/Any s/Any} ]  ; #todo
+  (let [inner-set   (set inner-map)
+        outer-set   (set outer-map) ]
+    (c.s/subset? inner-set outer-set)))
 
-(defn keep-ifv
-  "An eager version of keep-if that returns results in a vector."
-  [pred coll]
-  (vec (keep-if pred coll)))
+(defn wild-match?  ; #todo need test & README
+  "Returns true if the data value
+   matches the pattern value.  The special keyword :* (colon-star) in the pattern value serves as
+   a wildcard value. Usage: 
 
-(defn drop-ifv
-  "An eager version of drop-if that returns results in a vector."
-  [pred coll]
-  (vec (drop-if pred coll)))
+     (matches? data pattern)
+
+   sample:
+
+     (matches? {:a 1   :b 2}  
+               {:a :*  :b 2} )  ;=> true
+
+   Note that a wildcald can match either a primitive or a composite value."
+  [data pattern]
+; (spy-indent-inc) (spyxx data) (spyxx pattern) (flush)       ; for debug
+  (let [result    (truthy?
+                    (cond
+                      (= pattern :*)       true
+                      (= data pattern)     true
+                      (coll? data)      (apply = true (mapv wild-match? data pattern))
+                      :default          false)) 
+  ]
+;   (spyx result) (spy-indent-dec) (flush)      ; for debug
+    result))
+
+; #todo need test & README
+(defmacro matches?   
+  "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
+   matches the pattern value.  Underscores serve as wildcard values. Usage: 
+
+     (matches? data pattern)
+
+   sample:
+
+     (matches? {:a 1 [:b 2] :c 3}  
+               {:a _ _      :c 3} )  ;=> true
+
+   Note that a wildcald can match either a primitive or a composite value."
+  [data pattern]
+  `(ccm/match ~data   
+       ~pattern   true
+        :else     false ))
 
 ;---------------------------------------------------------------------------------------------------
-
 ; Another benefit of test-all:  don't need "-test" suffix like in lein test:
 ; ~/tupelo > lein test :only tupelo.core
 ; lein test user
@@ -428,68 +491,4 @@
     (println "-----------------------------------------------------------------------------")
     (newline)
   ))
-
-(defn seqable?      ; from clojure.contrib.core/seqable
-  "Returns true if (seq x) will succeed, false otherwise."
-  [x]
-  (or (seq? x)
-      (instance? clojure.lang.Seqable x)
-      (nil? x)
-      (instance? Iterable x)
-      (-> x .getClass .isArray)
-      (string? x)
-      (instance? java.util.Map x)))
-
-; #todo need test
-(s/defn submap? :- Boolean
-  "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
-   another map.  Similar to clojure.set/subset?"
-  [ inner-map   :- {s/Any s/Any}    ; #todo
-    outer-map   :- {s/Any s/Any} ]  ; #todo
-  (let [inner-set   (set inner-map)
-        outer-set   (set outer-map) ]
-    (c.s/subset? inner-set outer-set)))
-
-(defn wild-match?  ; #todo need test
-  "Returns true if the data value
-   matches the pattern value.  The special keyword :* (colon-star) in the pattern value serves as
-   a wildcard value. Usage: 
-
-     (matches? data pattern)
-
-   sample:
-
-     (matches? {:a 1   :b 2}  
-               {:a :*  :b 2} )  ;=> true
-
-   Note that a wildcald can match either a primitive or a composite value."
-  [data pattern]
-; (spy-indent-inc) (spyxx data) (spyxx pattern) (flush)       ; for debug
-  (let [result    (truthy?
-                    (cond
-                      (= pattern :*)       true
-                      (= data pattern)     true
-                      (coll? data)      (apply = true (mapv wild-match? data pattern))
-                      :default          false)) 
-  ]
-;   (spyx result) (spy-indent-dec) (flush)      ; for debug
-    result))
-
-; #todo need test
-(defmacro matches?   
-  "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
-   matches the pattern value.  Underscores serve as wildcard values. Usage: 
-
-     (matches? data pattern)
-
-   sample:
-
-     (matches? {:a 1 [:b 2] :c 3}  
-               {:a _ _      :c 3} )  ;=> true
-
-   Note that a wildcald can match either a primitive or a composite value."
-  [data pattern]
-  `(ccm/match ~data   
-       ~pattern   true
-        :else     false ))
 

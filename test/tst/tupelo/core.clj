@@ -320,21 +320,48 @@
   (is (not (rel= 1 1.001 :tol 0.0001 )))
 )
 
-(deftest strcat-tst
-  (is (= "a" (strcat \a  )))    (is (= "a" (strcat [\a]  )))
-  (is (= "a" (strcat "a" )))    (is (= "a" (strcat ["a"] )))
-  (is (= "a" (strcat 97  )))    (is (= "a" (strcat [97]  )))
+(deftest t-keep-if
+  (is (= [0 2 4 6 8]  (keep-if even? (range 10))
+                      (drop-if odd?  (range 10))))
+  (is (= [1 3 5 7 9]  (keep-if odd?  (range 10))
+                      (drop-if even? (range 10)))))
 
-  (is (= "ab" (strcat \a   \b   ))) (is (= "ab" (strcat [\a]  \b   )))
-  (is (= "ab" (strcat \a  [\b]  ))) (is (= "ab" (strcat [\a   \b]  )))
-  (is (= "ab" (strcat "a"  "b"  ))) (is (= "ab" (strcat ["a"] "b"  )))
-  (is (= "ab" (strcat "a" ["b"] ))) (is (= "ab" (strcat ["a"  "b"] )))
-  (is (= "ab" (strcat 97   98   ))) (is (= "ab" (strcat [97]  98   )))
-  (is (= "ab" (strcat 97  [98]  ))) (is (= "ab" (strcat [97   98]  )))
+(tst/defspec ^:slow t-keep-if-drop-if 9999
+  (prop/for-all [vv (gen/vector gen/int) ]
+    (let [even-1      (keep-if   even?  vv)
+          even-1v     (keep-ifv  even?  vv)
+          even-2      (drop-if   odd?   vv)
+          even-2v     (drop-ifv  odd?   vv)
+          even-filt   (filter    even?  vv)
+
+          odd-1       (keep-if   odd?   vv)
+          odd-1v      (keep-ifv  odd?   vv)
+          odd-2       (drop-if   even?  vv)
+          odd-2v      (drop-ifv  even?  vv)
+          odd-rem     (remove    even?  vv) ]
+      (and  (= even-1 even-1v even-2 even-2v even-filt)
+            (=  odd-1  odd-1v  odd-2  odd-2v  odd-rem))
+    )))
+
+(deftest strcat-tst
+  (is (= "a" (strcat \a  )) (strcat [\a]  ))
+  (is (= "a" (strcat "a" )) (strcat ["a"] ))
+  (is (= "a" (strcat 97  )) (strcat [97]  ))
+
+  (is (= "ab" (strcat \a   \b   )) (strcat [\a]  \b   ))
+  (is (= "ab" (strcat \a  [\b]  )) (strcat [\a   \b]  ))
+  (is (= "ab" (strcat "a"  "b"  )) (strcat ["a"] "b"  ))
+  (is (= "ab" (strcat "a" ["b"] )) (strcat ["a"  "b"] ))
+  (is (= "ab" (strcat 97   98   )) (strcat [97]  98   ))
+  (is (= "ab" (strcat 97  [98]  )) (strcat [97   98]  ))
 
   (is (= "abcd" (strcat              97  98   "cd" )))
   (is (= "abcd" (strcat             [97  98]  "cd" )))
   (is (= "abcd" (strcat (byte-array [97  98]) "cd" )))
+
+  (is (= (strcat "I " [ \h \a \v [\e \space (byte-array [97]) 
+                        [ 32 "complicated" (Math/pow 2 5) '( "str" "ing") ]]] )
+         "I have a complicated string" ))
 
   (let [chars-set   (into #{} (tm/char-seq \a \z))
         str-val     (strcat chars-set) ]
@@ -353,6 +380,59 @@
                   "line 2"
                   ""
                   "line 4" ] ))))
+
+(deftest t-clip-str
+  (testing "single string"
+    (is (= ""         (clip-str 0 "abcdefg")))
+    (is (= "a"        (clip-str 1 "abcdefg")))
+    (is (= "ab"       (clip-str 2 "abcdefg")))
+    (is (= "abc"      (clip-str 3 "abcdefg")))
+    (is (= "abcd"     (clip-str 4 "abcdefg")))
+    (is (= "abcde"    (clip-str 5 "abcdefg"))))
+  (testing "two strings"
+    (is (= ""         (clip-str 0 "abc defg")))
+    (is (= "a"        (clip-str 1 "abc defg")))
+    (is (= "ab"       (clip-str 2 "abc defg")))
+    (is (= "abc"      (clip-str 3 "abc defg")))
+    (is (= "abc "     (clip-str 4 "abc defg")))
+    (is (= "abc d"    (clip-str 5 "abc defg"))))
+  (testing "two strings & char"
+    (is (= ""         (clip-str 0 "ab" \c "defg")))
+    (is (= "a"        (clip-str 1 "ab" \c "defg")))
+    (is (= "ab"       (clip-str 2 "ab" \c "defg")))
+    (is (= "abc"      (clip-str 3 "ab" \c "defg")))
+    (is (= "abcd"     (clip-str 4 "ab" \c "defg")))
+    (is (= "abcde"    (clip-str 5 "ab" \c "defg"))))
+  (testing "two strings & digit"
+    (is (= ""         (clip-str 0 "ab" 9 "defg")))
+    (is (= "a"        (clip-str 1 "ab" 9 "defg")))
+    (is (= "ab"       (clip-str 2 "ab" 9 "defg")))
+    (is (= "ab9"      (clip-str 3 "ab" 9 "defg")))
+    (is (= "ab9d"     (clip-str 4 "ab" 9 "defg")))
+    (is (= "ab9de"    (clip-str 5 "ab" 9 "defg"))))
+  (testing "vector"
+    (is (= ""               (clip-str  0 [1 2 3 4 5] )))
+    (is (= "["              (clip-str  1 [1 2 3 4 5] )))
+    (is (= "[1"             (clip-str  2 [1 2 3 4 5] )))
+    (is (= "[1 2"           (clip-str  4 [1 2 3 4 5] )))
+    (is (= "[1 2 3 4"       (clip-str  8 [1 2 3 4 5] )))
+    (is (= "[1 2 3 4 5]"    (clip-str 16 [1 2 3 4 5] ))))
+  (testing "map"
+    (is (= ""               (clip-str  0 (sorted-map :a 1 :b 2) )))
+    (is (= "{"              (clip-str  1 (sorted-map :a 1 :b 2) )))
+    (is (= "{:"             (clip-str  2 (sorted-map :a 1 :b 2) )))
+    (is (= "{:a "           (clip-str  4 (sorted-map :a 1 :b 2) )))
+    (is (= "{:a 1, :"       (clip-str  8 (sorted-map :a 1 :b 2) )))
+    (is (= "{:a 1, :b 2}"   (clip-str 16 (sorted-map :a 1 :b 2) ))))
+  (testing "set"
+    (let [tst-set (sorted-set 5 4 3 2 1) ]
+      (is (= ""             (clip-str  0 tst-set )))
+      (is (= "#"            (clip-str  1 tst-set )))
+      (is (= "#{"           (clip-str  2 tst-set )))
+      (is (= "#{1 "         (clip-str  4 tst-set )))
+      (is (= "#{1 2 3 "     (clip-str  8 tst-set )))
+      (is (= "#{1 2 3 4 5}" (clip-str 16 tst-set )))))
+)
 
 (deftest seqable-tst
   (is (seqable?   "abc"))
@@ -452,80 +532,4 @@
     )
   )
 )
-
-(deftest t-clip-str
-  (testing "single string"
-    (is (= ""         (clip-str 0 "abcdefg")))
-    (is (= "a"        (clip-str 1 "abcdefg")))
-    (is (= "ab"       (clip-str 2 "abcdefg")))
-    (is (= "abc"      (clip-str 3 "abcdefg")))
-    (is (= "abcd"     (clip-str 4 "abcdefg")))
-    (is (= "abcde"    (clip-str 5 "abcdefg"))))
-  (testing "two strings"
-    (is (= ""         (clip-str 0 "abcdefg")))
-    (is (= "a"        (clip-str 1 "abcdefg")))
-    (is (= "ab"       (clip-str 2 "abcdefg")))
-    (is (= "abc"      (clip-str 3 "abcdefg")))
-    (is (= "abcd"     (clip-str 4 "abcdefg")))
-    (is (= "abcde"    (clip-str 5 "abcdefg"))))
-  (testing "two strings & char"
-    (is (= ""         (clip-str 0 "ab" \c "defg")))
-    (is (= "a"        (clip-str 1 "ab" \c "defg")))
-    (is (= "ab"       (clip-str 2 "ab" \c "defg")))
-    (is (= "abc"      (clip-str 3 "ab" \c "defg")))
-    (is (= "abcd"     (clip-str 4 "ab" \c "defg")))
-    (is (= "abcde"    (clip-str 5 "ab" \c "defg"))))
-  (testing "two strings & digit"
-    (is (= ""         (clip-str 0 "ab" 9 "defg")))
-    (is (= "a"        (clip-str 1 "ab" 9 "defg")))
-    (is (= "ab"       (clip-str 2 "ab" 9 "defg")))
-    (is (= "ab9"      (clip-str 3 "ab" 9 "defg")))
-    (is (= "ab9d"     (clip-str 4 "ab" 9 "defg")))
-    (is (= "ab9de"    (clip-str 5 "ab" 9 "defg"))))
-  (testing "vector"
-    (is (= ""               (clip-str  0 [1 2 3 4 5] )))
-    (is (= "["              (clip-str  1 [1 2 3 4 5] )))
-    (is (= "[1"             (clip-str  2 [1 2 3 4 5] )))
-    (is (= "[1 2"           (clip-str  4 [1 2 3 4 5] )))
-    (is (= "[1 2 3 4"       (clip-str  8 [1 2 3 4 5] )))
-    (is (= "[1 2 3 4 5]"    (clip-str 16 [1 2 3 4 5] ))))
-  (testing "map"
-    (is (= ""               (clip-str  0 (sorted-map :a 1 :b 2) )))
-    (is (= "{"              (clip-str  1 (sorted-map :a 1 :b 2) )))
-    (is (= "{:"             (clip-str  2 (sorted-map :a 1 :b 2) )))
-    (is (= "{:a "           (clip-str  4 (sorted-map :a 1 :b 2) )))
-    (is (= "{:a 1, :"       (clip-str  8 (sorted-map :a 1 :b 2) )))
-    (is (= "{:a 1, :b 2}"   (clip-str 16 (sorted-map :a 1 :b 2) ))))
-  (testing "set"
-    (let [tst-set (sorted-set 5 4 3 2 1) ]
-      (is (= ""             (clip-str  0 tst-set )))
-      (is (= "#"            (clip-str  1 tst-set )))
-      (is (= "#{"           (clip-str  2 tst-set )))
-      (is (= "#{1 "         (clip-str  4 tst-set )))
-      (is (= "#{1 2 3 "     (clip-str  8 tst-set )))
-      (is (= "#{1 2 3 4 5}" (clip-str 16 tst-set )))))
-)
-
-(deftest t-keep-if
-  (is (= [0 2 4 6 8]  (keep-if even? (range 10))
-                      (drop-if odd?  (range 10))))
-  (is (= [1 3 5 7 9]  (keep-if odd?  (range 10))
-                      (drop-if even? (range 10)))))
-
-(tst/defspec ^:slow t-keep-if-drop-if 9999
-  (prop/for-all [vv (gen/vector gen/int) ]
-    (let [even-1      (keep-if   even?  vv)
-          even-1v     (keep-ifv  even?  vv)
-          even-2      (drop-if   odd?   vv)
-          even-2v     (drop-ifv  odd?   vv)
-          even-filt   (filter    even?  vv)
-
-          odd-1       (keep-if   odd?   vv)
-          odd-1v      (keep-ifv  odd?   vv)
-          odd-2       (drop-if   even?  vv)
-          odd-2v      (drop-ifv  even?  vv)
-          odd-rem     (remove    even?  vv) ]
-      (and  (= even-1 even-1v even-2 even-2v even-filt)
-            (=  odd-1  odd-1v  odd-2  odd-2v  odd-rem))
-    )))
 

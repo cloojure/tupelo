@@ -487,6 +487,44 @@ music. However, `filter` in Clojure is written in reverse, so that it *_keeps_* 
 the predicate. It seems to me that `keep-if` and `drop-if` are much more natural names and remove
 ambiguity from the code.
 
+=== String Operations
+
+Suppose you have a bunch of nested results and you just want to convert everything into a single
+string. In that case, `strcat` is you:
+
+[source,clojure]
+----
+(is (= (strcat "I " [ \h \a \v [\e \space (byte-array [97]) 
+                      [ 32 "complicated" (Math/pow 2 5) '( "str" "ing") ]]] )
+       "I have a complicated string" ))
+----
+
+Or, you may wish to break a string up into a sequence of lines. Then use the `string\->lines` function:
+
+[source,clojure]
+----
+(ns xyz
+  (:require [clojure.string :as str] ...))
+(let [src-str   "line 1
+                 line 2
+
+                 line 4"
+      lines     (forv [line (string->lines src-str) ]
+                  (str/trim line)) ]
+  (is (= lines ["line 1"
+                "line 2"
+                ""
+                "line 4" ] ))))
+----
+
+Sometimes, you may wish to clip a string to a maximum length for ease of display. In that case, use `clip-str`:
+
+[source,clojure]
+----
+(is (= "abc"        (clip-str 3 "abcdefg")))
+(is (= "{:a 1, :"   (clip-str 8 (sorted-map :a 1 :b 2) )))
+----
+
 === Identifying Sequences
 
 In some situations, a function may need to verify that an argument is _seqable_, that is, that it
@@ -506,7 +544,7 @@ we can copy one from `clojure.contrib.core/seqable`:
 (is (not (seqable? \a )))
 ----
 
-=== REPL driven testing
+=== REPL Driven Testing
 
 Developing at the REPL is productive & cool, but it can be a pain to reload source files
 modified in an external editor.  This is especially so when simultaneously editing both
