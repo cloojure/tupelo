@@ -531,7 +531,7 @@ Sometimes, you may wish to clip a string to a maximum length for ease of display
 
 In some situations, a function may need to verify that an argument is _seqable_, that is, that it
 may be interpreted as a sequence of values.  Clojure doesn't have a built-in function for this, but
-we can copy one from `clojure.contrib.core/seqable`:
+we can copy one from the old `clojure.contrib.core/seqable`:
 
 [source,clojure]
 ----
