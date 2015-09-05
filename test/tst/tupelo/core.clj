@@ -355,12 +355,12 @@
                   "line 4" ] ))))
 
 (deftest seqable-tst
-  (is (seqable? "abc"))
-  (is (seqable?  {1 2 3 4}))
-  (is (seqable? #{1 2 3}))
-  (is (seqable? '(1 2 3)))
-  (is (seqable?  [1 2 3]))
-  (is (seqable? (byte-array [1 2])))
+  (is (seqable?   "abc"))
+  (is (seqable?   {1 2 3 4} ))
+  (is (seqable?  #{1 2 3} ))
+  (is (seqable?  '(1 2 3) ))
+  (is (seqable?   [1 2 3] ))
+  (is (seqable?   (byte-array [1 2] )))
 
   (is (not (seqable?  1 )))
   (is (not (seqable? \a ))))

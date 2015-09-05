@@ -352,70 +352,6 @@
   [string-arg]
   (line-seq (BufferedReader. (StringReader. string-arg))))
 
-(defn seqable?      ; from clojure.contrib.core/seqable
-  "Returns true if (seq x) will succeed, false otherwise."
-  [x]
-  (or (seq? x)
-      (instance? clojure.lang.Seqable x)
-      (nil? x)
-      (instance? Iterable x)
-      (-> x .getClass .isArray)
-      (string? x)
-      (instance? java.util.Map x)))
-
-; #todo need test
-(s/defn submap? :- Boolean
-  "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
-   another map.  Similar to clojure.set/subset?"
-  [ inner-map   :- {s/Any s/Any}    ; #todo
-    outer-map   :- {s/Any s/Any} ]  ; #todo
-  (let [inner-set   (set inner-map)
-        outer-set   (set outer-map) ]
-    (c.s/subset? inner-set outer-set)))
-
-(defn wild-match?  ; #todo need test
-  "Returns true if the data value
-   matches the pattern value.  The special keyword :* (colon-star) in the pattern value serves as
-   a wildcard value. Usage: 
-
-     (matches? data pattern)
-
-   sample:
-
-     (matches? {:a 1   :b 2}  
-               {:a :*  :b 2} )  ;=> true
-
-   Note that a wildcald can match either a primitive or a composite value."
-  [data pattern]
-; (spy-indent-inc) (spyxx data) (spyxx pattern) (flush)       ; for debug
-  (let [result    (truthy?
-                    (cond
-                      (= pattern :*)       true
-                      (= data pattern)     true
-                      (coll? data)      (apply = true (mapv wild-match? data pattern))
-                      :default          false)) 
-  ]
-;   (spyx result) (spy-indent-dec) (flush)      ; for debug
-    result))
-
-; #todo need test
-(defmacro matches?   
-  "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
-   matches the pattern value.  Underscores serve as wildcard values. Usage: 
-
-     (matches? data pattern)
-
-   sample:
-
-     (matches? {:a 1 [:b 2] :c 3}  
-               {:a _ _      :c 3} )  ;=> true
-
-   Note that a wildcald can match either a primitive or a composite value."
-  [data pattern]
-  `(ccm/match ~data   
-       ~pattern   true
-        :else     false ))
-
 
 (defn clip-str 
   "Converts all args to single string and clips any characters beyond nchars."
@@ -492,4 +428,68 @@
     (println "-----------------------------------------------------------------------------")
     (newline)
   ))
+
+(defn seqable?      ; from clojure.contrib.core/seqable
+  "Returns true if (seq x) will succeed, false otherwise."
+  [x]
+  (or (seq? x)
+      (instance? clojure.lang.Seqable x)
+      (nil? x)
+      (instance? Iterable x)
+      (-> x .getClass .isArray)
+      (string? x)
+      (instance? java.util.Map x)))
+
+; #todo need test
+(s/defn submap? :- Boolean
+  "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
+   another map.  Similar to clojure.set/subset?"
+  [ inner-map   :- {s/Any s/Any}    ; #todo
+    outer-map   :- {s/Any s/Any} ]  ; #todo
+  (let [inner-set   (set inner-map)
+        outer-set   (set outer-map) ]
+    (c.s/subset? inner-set outer-set)))
+
+(defn wild-match?  ; #todo need test
+  "Returns true if the data value
+   matches the pattern value.  The special keyword :* (colon-star) in the pattern value serves as
+   a wildcard value. Usage: 
+
+     (matches? data pattern)
+
+   sample:
+
+     (matches? {:a 1   :b 2}  
+               {:a :*  :b 2} )  ;=> true
+
+   Note that a wildcald can match either a primitive or a composite value."
+  [data pattern]
+; (spy-indent-inc) (spyxx data) (spyxx pattern) (flush)       ; for debug
+  (let [result    (truthy?
+                    (cond
+                      (= pattern :*)       true
+                      (= data pattern)     true
+                      (coll? data)      (apply = true (mapv wild-match? data pattern))
+                      :default          false)) 
+  ]
+;   (spyx result) (spy-indent-dec) (flush)      ; for debug
+    result))
+
+; #todo need test
+(defmacro matches?   
+  "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
+   matches the pattern value.  Underscores serve as wildcard values. Usage: 
+
+     (matches? data pattern)
+
+   sample:
+
+     (matches? {:a 1 [:b 2] :c 3}  
+               {:a _ _      :c 3} )  ;=> true
+
+   Note that a wildcald can match either a primitive or a composite value."
+  [data pattern]
+  `(ccm/match ~data   
+       ~pattern   true
+        :else     false ))
 

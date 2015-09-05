@@ -460,6 +460,52 @@ An extract from the unit tests illustrates the use of `rel=`
   (is (not (rel= 1 1.001 :tol 0.0001 )))
 ----
 
+=== Keeping & Dropping Elements of a Sequence
+
+When processing sequences of data, we often need to extract a sequence of desired data, or,
+conversely, remove all of the undesired elements. Here are a pair of (lazy) functions to perform
+these tasks:
+
+[source,clojure]
+----
+(is (= [0 2 4 6 8]  (keep-if even? (range 10))
+                    (drop-if odd?  (range 10))))
+----
+
+Of course, these are just thin wrappers around the built-in `clojure.core` functions, but they are
+much less ambiguous.  Without these, I am constantly trying to remember which case is correct:
+
+----
+  (is (= (filter even? (range 10)) [1 3 5 7 9] )) ; do we     "remove bad" (falsey) items?
+                                                  ;   or
+  (is (= (filter even? (range 10)) [0 2 4 6 8] )) ; or do we  "keep good" (truthy) items?
+----
+
+I normally think of filters as removing bad things.  Air filters remove dust.  Coffee filters keep
+coffee grounds out of my cup. A noise filter in my stereo removes contaminating frequencies from my
+music. However, `filter` in Clojure is written in reverse, so that it *_keeps_* items identified by
+the predicate. It seems to me that `keep-if` and `drop-if` are much more natural names and remove
+ambiguity from the code.
+
+=== Identifying Sequences
+
+In some situations, a function may need to verify that an argument is _seqable_, that is, that it
+may be interpreted as a sequence of values.  Clojure doesn't have a built-in function for this, but
+we can copy one from `clojure.contrib.core/seqable`:
+
+[source,clojure]
+----
+(is (seqable?   "abc"))
+(is (seqable?   {1 2 3 4} ))
+(is (seqable?  #{1 2 3} ))
+(is (seqable?  '(1 2 3) ))
+(is (seqable?   [1 2 3] ))
+(is (seqable?   (byte-array [1 2] )))
+
+(is (not (seqable?  1 )))
+(is (not (seqable? \a )))
+----
+
 === REPL driven testing
 
 Developing at the REPL is productive & cool, but it can be a pain to reload source files
