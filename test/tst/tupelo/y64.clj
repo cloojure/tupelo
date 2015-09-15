@@ -11,29 +11,19 @@
             [clojure.test.check.generators          :as gen]
             [clojure.test.check.properties          :as prop]
             [clojure.test.check.clojure-test        :as tst]
-            [tupelo.y64                           :as y64]
-            [tupelo.misc                          :as misc] 
-            [tupelo.types                         :as types] 
+            [tupelo.y64                             :as y64]
+            [tupelo.misc                            :as misc] 
+            [tupelo.types                           :as types] 
             [schema.core                            :as s] )
   (:use tupelo.core
         clojure.test)
   (:gen-class))
 
-(def SetOfStr
-  #{ s/Str } )
-
-(deftest t1 []
-  (s/validate SetOfStr #{ "a" "b" "c"} ))
-
-(def printable-chars
-  "A seq of 1-char strings of all printable characters from space (32) to tilde (126)"
-  (mapv str (misc/char-seq \space \~)))
-
 (deftest t1
   (let [orig        (byte-array [(byte \A)] )
         y64-bytes   (y64/encode-bytes  orig)
         result      (y64/decode-bytes  y64-bytes) ]
-    (is (every? y64/y64-chars (map char y64-bytes)))
+    (is (every? y64/code-chars (map char y64-bytes)))
     (is (= (seq orig) (seq result)))))
 
 (deftest y64-basic
@@ -42,14 +32,14 @@
       (let [orig        (byte-array (mapv #(.byteValue %) (range 0 400 step)))
             y64-bytes   (y64/encode-bytes  orig)
             result      (y64/decode-bytes  y64-bytes) ]
-        (is (every? y64/y64-chars (map char y64-bytes)))
+        (is (every? y64/code-chars (map char y64-bytes)))
         (is (= (seq orig) (seq result))))))
   (testing "y64 - string"
     (doseq [num-chars [1 2 3 7 20]]
-      (let [orig        (str/join (misc/take-dist num-chars printable-chars))
+      (let [orig        (str/join (misc/take-dist num-chars misc/printable-chars))
             y64-str     (y64/encode-str  orig)
             result      (y64/decode-str  y64-str) ]
-        (is (every? y64/y64-chars (seq y64-str)))
+        (is (every? y64/code-chars (seq y64-str)))
         (is (= orig result))))))
 
 ; Transform a seq of bytes to a y64 string and back
@@ -57,7 +47,7 @@
   (prop/for-all [orig gen/bytes]
     (let [y64-str   (y64/encode-bytes->str  orig)
           result    (y64/decode-str->bytes  y64-str) ]
-      (assert (every? y64/y64-chars (seq y64-str)))
+      (assert (every? y64/code-chars (seq y64-str)))
       (assert (types/byte-array? result))
       (= (seq orig) (seq result)))))
 
@@ -66,15 +56,15 @@
   (prop/for-all [orig gen/string]
     (let [y64-str   (y64/encode-str  orig)
           result    (y64/decode-str  y64-str) ]
-      (assert (every? y64/y64-chars (seq y64-str)))
+      (assert (every? y64/code-chars (seq y64-str)))
       (assert (string? result))
       (= orig result))))
 
 (defn -main []
   (newline)
-  (println "printable-chars" (pr-str printable-chars))
+  (println "printable-chars" (pr-str misc/printable-chars))
   (newline)
-  (doseq [curr-char printable-chars]
+  (doseq [curr-char misc/printable-chars]
     (newline)
     (doseq [prefix ["" "a" "ab" "abc"] ]
       (let [orig-str    (str prefix curr-char)

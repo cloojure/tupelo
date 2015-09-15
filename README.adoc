@@ -37,13 +37,19 @@ sequences and maps. Please see the link:src/tupelo/csv.adoc[tupelo.csv] docs.
 
 ==== Tupelo Parse - Functions to ease text parsing 
 
-Please see the link:http://cloojure.github.io/doc/tupelo/tupelo.parse.html[
-tupelo.parse] docs.
+Please see the link:http://cloojure.github.io/doc/tupelo/tupelo.parse.html[tupelo.parse] docs.
+
+==== Tupelo Misc - A grab bag of functions that don't fit anywhere else (yet!)
+
+Please see the link:http://cloojure.github.io/doc/tupelo/tupelo.misc.html[tupelo.misc] docs.
 
 ==== tupelo.base64 - Convert to/from base64 encoding. 
 
-Please see the link:http://cloojure.github.io/doc/tupelo/tupelo.base64.html[
-tupelo.base64] docs.
+Please see the link:http://cloojure.github.io/doc/tupelo/tupelo.base64.html[tupelo.base64] docs.
+
+==== tupelo.base64url - Convert to/from base64url encoding. 
+
+Please see the link:http://cloojure.github.io/doc/tupelo/tupelo.base64url.html[tupelo.base64url] docs.
 
 ==== Tupelo Y64 - Convert to/from the URL-safe Y64 encoding (Yahoo YUI library).
 

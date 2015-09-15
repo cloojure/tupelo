@@ -17,16 +17,16 @@
     http://www.yuiblog.com/blog/2010/07/06/in-the-yui-3-gallery-base64-and-y64-encoding/
   "
   (:require [clojure.string     :as str]
-            [tupelo.base64    :as b64]
-            [tupelo.misc      :as misc]
-            [tupelo.types     :as types]
+            [tupelo.base64      :as b64]
+            [tupelo.misc        :as misc]
+            [tupelo.types       :as types]
             [schema.core        :as s] )
   (:use tupelo.core)
   (:gen-class))
 
 ; #awt TODO: convert :pre/:post to Prismatic Schema
 
-(def y64-chars
+(def code-chars
   "A set of chars used for the Y64 encoding (incl. padding char)"
   (into #{} (flatten [ (misc/char-seq  \a \z)
                        (misc/char-seq  \A \Z)
@@ -42,9 +42,9 @@
 (def ^:private y64-code-pad (byte \- ))
 
 
-(defn- b64-bytes->y64-bytes
+(defn- b64->y64
   "Converts a byte array from Base64 -> Y64 encoding."
-  [^bytes coded-bytes]
+  [coded-bytes]
   (byte-array 
     (for [byte-val coded-bytes]
       (cond  
@@ -53,9 +53,9 @@
         (= byte-val b64-code-pad)   y64-code-pad
         :default                    byte-val))))
 
-(defn- y64-bytes->b64-bytes
+(defn- y64->b64
   "Converts a byte array from Y64 -> Base64 encoding."
-  [^bytes coded-bytes]
+  [coded-bytes]
   (byte-array 
     (for [byte-val coded-bytes]
       (cond  
@@ -68,38 +68,32 @@
 (defn encode-bytes
   "Encodes a byte array into Y64, returning a new byte array."
   [bytes-in]
-  {:pre [(types/byte-array? bytes-in)] }
-  (-> bytes-in b64/encode-bytes b64-bytes->y64-bytes))
+  (-> bytes-in b64/encode-bytes b64->y64))
 
 (defn decode-bytes
   "Decodes a byte array from Y64, returning a new byte array."
   [bytes-in]
-  {:pre [(types/byte-array? bytes-in)] }
-  (-> bytes-in y64-bytes->b64-bytes b64/decode-bytes))
+  (-> bytes-in y64->b64 b64/decode-bytes))
 
 
 (defn encode-bytes->str
   "Encodes a byte array into base-64, returning a String."
   [bytes-in]
-  {:pre [(types/byte-array? bytes-in)] }
   (-> bytes-in encode-bytes types/bytes->str))
 
 (defn decode-str->bytes
   "Decodes a base-64 encoded String, returning a byte array"
   [str-in]
-  {:pre  [(string? str-in)] }
   (-> str-in types/str->bytes decode-bytes))
 
 
 (defn encode-str 
   "Encodes a String into base-64, returning a String."
-  [^String str-in]
-  {:pre  [ (string? str-in) ] }
+  [str-in]
   (-> str-in types/str->bytes encode-bytes types/bytes->str))
 
 (defn decode-str 
   "Decodes a base-64 encoded String, returning a String."
-  [^String str-in]
-  {:pre  [(string? str-in)] }
+  [str-in]
   (-> str-in types/str->bytes decode-bytes types/bytes->str))
 

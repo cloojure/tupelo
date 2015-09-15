@@ -4,35 +4,35 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns tupelo.base64
-  "Convert to/from traditional Base64 encoding."
+(ns tupelo.base64url
+  "Convert to/from traditional base64url encoding."
   (:require [clojure.string :as str]
             [tupelo.misc  :as misc]
             [tupelo.types :as types]
             [criterium.core :as crit])
   (:use tupelo.core )
-; (:import java.util.Base64)
   (:gen-class))
 
 ; #awt TODO: convert :pre/:post to Prismatic Schema
 
-(def base64-chars
-  "A set of chars used for traditional Base64 encoding (incl. padding char)"
+; #todo -> code-chars (& other ns's)
+(def code-chars
+  "A set of chars used for traditional base64url encoding (incl. padding char)"
   (into #{} (flatten [ (misc/char-seq  \a \z)
                        (misc/char-seq  \A \Z)
                        (misc/char-seq  \0 \9) 
-                       [\+ \/ \=] ] )))
+                       [\- \_ \=] ] )))
 
-(def encoder (java.util.Base64/getEncoder))
-(def decoder (java.util.Base64/getDecoder))
+(def encoder (java.util.Base64/getUrlEncoder))
+(def decoder (java.util.Base64/getUrlDecoder))
 
 (defn encode-bytes
-  "Encodes a byte array into Base64, returning a new byte array."
+  "Encodes a byte array into base64url, returning a new byte array."
   [bytes-in]
   (.encode encoder bytes-in))
 
 (defn decode-bytes
-  "Decodes a byte array from Base64, returning a new byte array."
+  "Decodes a byte array from base64url, returning a new byte array."
   [bytes-in]
   (.decode decoder bytes-in))
 
@@ -59,12 +59,12 @@
 (defn exercise-code []
   (doseq [step [50 20 7]]
     (let [orig        (byte-array (mapv #(.byteValue %) (range 0 400 step)))
-          b64-str     (encode-bytes->str  orig)
-          result      (decode-str->bytes  b64-str) ] ))
+          code-str    (encode-bytes->str  orig)
+          result      (decode-str->bytes  code-str) ] ))
   (doseq [num-chars [1 2 3 7 20]]
     (let [orig        (str/join (misc/take-dist num-chars misc/printable-chars))
-          b64-str     (encode-str  orig)
-          result      (decode-str  b64-str) ] )))
+          code-str    (encode-str  orig)
+          result      (decode-str  code-str) ] )))
 
 (defn quick-bench []
   (crit/quick-bench (exercise-code)))

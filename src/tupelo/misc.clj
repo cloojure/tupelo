@@ -108,3 +108,7 @@
                     "result:"      (:out  result) "\n" 
               ))))))
 
+(def printable-chars
+  "A seq of 1-char strings of all printable characters from space (32) to tilde (126)"
+  (mapv str (char-seq \space \~)))
+
