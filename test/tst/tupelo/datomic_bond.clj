@@ -131,11 +131,11 @@
                         ["James Bond"  "London"]         ; still unique. Otherwise, any duplicate tuples
                         ["M"           "London"] } )))   ; will be discarded since output is a clojure set.
 
-  ; #todo: rename to (td/query-attr ...)
+  ; #todo: rename to (td/query-attr ...) & update release notes
   ;
-  ; If you want just a single attribute as output, you can get a set of values (rather than a set of
+  ; If you want just a single attribute as output, you can get a set of attributes (rather than a set of
   ; tuples) using td/query-set.  As usual, any duplicate values will be discarded. It is an error if
-  ; more than one attribute is returned (per entity).
+  ; more than one attribute is present in the :find clause.
   (let [names     (td/query-set :let    [$ (live-db)]
                                 :find   [?name] ; <- a single attr-val output allows use of td/query-set
                                 :where  [ [?eid :person/name ?name] ] )

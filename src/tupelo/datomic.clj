@@ -272,18 +272,20 @@
 
 ; #todo: rename :find -> :select or :return or :result ???
 (defmacro query
-  "Returns a TupleSet #{ [s/Any] } of query results, where each tuple is unique. Usage:
+  "Returns query results as a set of tuples (i.e. a TupleSet, or #{ [s/Any] } in Prismatic Schema), 
+   where each tuple is unique. Usage:
 
-    (td/query   :let    [$        (d/db *conn*)
-                         ?name    \"James Bond\"]
-                :find   [?e]
-                :where  [ [?e :person/name ?name] ] )
+    (td/query   :let    [$        (d/db *conn*)     ; assign multiple variables just like
+                         ?name    \"Caribbean\"]    ;   in Clojure 'let' special form
+                :find   [?e ?name]
+                :where  [ [?e :person/name ?name] 
+                          [?e :location ?loc] ] )
 
   Unlike datomic.api/q, the query form does not need to be wrapped in a map literal nor is any
   quoting required. Most importantly, the :in keyword has been replaced with the :let keyword, and
   the syntax has been copied from the Clojure let special form so that both the query variables (the
-  implicit DB $ in this case) are more closely aligned with their actual values. Also, the implicit
-  DB $ must be explicitly tied to its data source in all cases (as shown above).  "
+  variables $ and ?name in this case) are more closely aligned with their actual values. Also, the
+  implicit DB $ must be explicitly tied to its data source in all cases (as shown above).  "
   [& args]
   `(into #{} 
       (for [tuple# (query* ~@args) ]
@@ -294,8 +296,8 @@
   "Returns a Set of unique scalar query results (i.e. #{s/Any}). Any duplicate values will be
    discarded. Usage:
 
-    (td/query-set :let    [$        (d/db *conn*) 
-                           ?name    \"James Bond\"]
+    (td/query-set :let    [$        (d/db *conn*)       ; assign multiple variables just like
+                           ?name    \"James Bond\"]     ;   in Clojure 'let' special form
                   :find   [?e]
                   :where  [ [?e :person/name ?name] ] )
   "
@@ -311,7 +313,7 @@
   "Returns a single Tuple (i.e. [s/Any]) of query results. Usage:
 
     (td/query-tuple :let    [$ (d/db *conn*)]
-                    :find   [?eid ?name] ; <- output tuple shape
+                    :find   [?eid ?name]  ; <- output tuple shape
                     :where  [ [?eid :person/name ?name      ]
                               [?eid :location    \"Caribbean\"] ] )
 
