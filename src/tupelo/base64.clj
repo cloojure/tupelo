@@ -5,58 +5,57 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.base64
-  "Convert to/from traditional Base64 encoding."
+  "Convert to/from traditional base64 encoding."
   (:require [clojure.string :as str]
             [tupelo.misc  :as misc]
             [tupelo.types :as types]
             [criterium.core :as crit])
   (:use tupelo.core )
-; (:import java.util.Base64)
   (:gen-class))
 
 ; #awt TODO: convert :pre/:post to Prismatic Schema
 
 (def base64-chars
-  "A set of chars used for traditional Base64 encoding (incl. padding char)"
+  "A set of chars used for traditional base64 encoding (incl. padding char)"
   (into #{} (flatten [ (misc/char-seq  \a \z)
                        (misc/char-seq  \A \Z)
                        (misc/char-seq  \0 \9) 
                        [\+ \/ \=] ] )))
 
-(def encoder (java.util.Base64/getEncoder))
-(def decoder (java.util.Base64/getDecoder))
+(def ^:private encoder (java.util.Base64/getEncoder))
+(def ^:private decoder (java.util.Base64/getDecoder))
 
 (defn encode-bytes
-  "Encodes a byte array into Base64, returning a new byte array."
-  [bytes-in]
-  (.encode encoder bytes-in))
+  "Encodes a byte array into base64, returning a new byte array."
+  [data-bytes]
+  (.encode encoder data-bytes))
 
 (defn decode-bytes
-  "Decodes a byte array from Base64, returning a new byte array."
-  [bytes-in]
-  (.decode decoder bytes-in))
+  "Decodes a byte array from base64, returning a new byte array."
+  [code-bytes]
+  (.decode decoder code-bytes))
 
 (defn encode-bytes->str
-  "Encodes a byte array into base-64, returning a String."
-  [bytes-in]
-  (.encodeToString encoder bytes-in))
+  "Encodes a byte array into base64, returning a String."
+  [data-bytes]
+  (.encodeToString encoder data-bytes))
 
 (defn decode-str->bytes
-  "Decodes a base-64 encoded String, returning a byte array"
-  [str-in]
-  (.decode decoder str-in))
+  "Decodes a base64 encoded String, returning a byte array"
+  [code-str]
+  (.decode decoder code-str))
 
 (defn encode-str 
-  "Encodes a String into base-64, returning a String."
-  [str-in]
-  (-> str-in types/str->bytes encode-bytes->str))
+  "Encodes a String into base64, returning a String."
+  [data-str]
+  (-> data-str types/str->bytes encode-bytes->str))
 
 (defn decode-str 
-  "Decodes a base-64 encoded String, returning a String."
-  [str-in]
-  (-> str-in decode-str->bytes types/bytes->str))
+  "Decodes a base64 encoded String, returning a String."
+  [code-str]
+  (-> code-str decode-str->bytes types/bytes->str))
 
-(defn exercise-code []
+(defn ^:private exercise-code []
   (doseq [step [50 20 7]]
     (let [orig        (byte-array (mapv #(.byteValue %) (range 0 400 step)))
           b64-str     (encode-bytes->str  orig)
@@ -66,8 +65,8 @@
           b64-str     (encode-str  orig)
           result      (decode-str  b64-str) ] )))
 
-(defn quick-bench []
+(defn ^:private quick-bench []
   (crit/quick-bench (exercise-code)))
 
-(defn bench []
+(defn ^:private bench []
   (crit/bench (exercise-code)))

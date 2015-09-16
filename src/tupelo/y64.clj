@@ -43,7 +43,7 @@
 
 
 (defn- b64->y64
-  "Converts a byte array from Base64 -> Y64 encoding."
+  "Converts a byte array from base64 -> Y64 encoding."
   [coded-bytes]
   (byte-array 
     (for [byte-val coded-bytes]
@@ -54,7 +54,7 @@
         :default                    byte-val))))
 
 (defn- y64->b64
-  "Converts a byte array from Y64 -> Base64 encoding."
+  "Converts a byte array from Y64 -> base64 encoding."
   [coded-bytes]
   (byte-array 
     (for [byte-val coded-bytes]
@@ -67,33 +67,33 @@
 
 (defn encode-bytes
   "Encodes a byte array into Y64, returning a new byte array."
-  [bytes-in]
-  (-> bytes-in b64/encode-bytes b64->y64))
+  [data-bytes]
+  (-> data-bytes b64/encode-bytes b64->y64))
 
 (defn decode-bytes
   "Decodes a byte array from Y64, returning a new byte array."
-  [bytes-in]
-  (-> bytes-in y64->b64 b64/decode-bytes))
+  [code-bytes]
+  (-> code-bytes y64->b64 b64/decode-bytes))
 
 
 (defn encode-bytes->str
-  "Encodes a byte array into base-64, returning a String."
-  [bytes-in]
-  (-> bytes-in encode-bytes types/bytes->str))
+  "Encodes a byte array into Y64, returning a String."
+  [data-bytes]
+  (-> data-bytes encode-bytes types/bytes->str))
 
 (defn decode-str->bytes
-  "Decodes a base-64 encoded String, returning a byte array"
-  [str-in]
-  (-> str-in types/str->bytes decode-bytes))
+  "Decodes a Y64 encoded String, returning a byte array"
+  [code-str]
+  (-> code-str types/str->bytes decode-bytes))
 
 
 (defn encode-str 
-  "Encodes a String into base-64, returning a String."
-  [str-in]
-  (-> str-in types/str->bytes encode-bytes types/bytes->str))
+  "Encodes a String into Y64, returning a String."
+  [data-str]
+  (-> data-str types/str->bytes encode-bytes types/bytes->str))
 
 (defn decode-str 
-  "Decodes a base-64 encoded String, returning a String."
-  [str-in]
-  (-> str-in types/str->bytes decode-bytes types/bytes->str))
+  "Decodes a Y64 encoded String, returning a String."
+  [code-str]
+  (-> code-str types/str->bytes decode-bytes types/bytes->str))
 

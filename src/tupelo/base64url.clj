@@ -23,40 +23,40 @@
                        (misc/char-seq  \0 \9) 
                        [\- \_ \=] ] )))
 
-(def encoder (java.util.Base64/getUrlEncoder))
-(def decoder (java.util.Base64/getUrlDecoder))
+(def ^:private encoder (java.util.Base64/getUrlEncoder))
+(def ^:private decoder (java.util.Base64/getUrlDecoder))
 
 (defn encode-bytes
   "Encodes a byte array into base64url, returning a new byte array."
-  [bytes-in]
-  (.encode encoder bytes-in))
+  [data-bytes]
+  (.encode encoder data-bytes))
 
 (defn decode-bytes
   "Decodes a byte array from base64url, returning a new byte array."
-  [bytes-in]
-  (.decode decoder bytes-in))
+  [data-bytes]
+  (.decode decoder data-bytes))
 
 (defn encode-bytes->str
-  "Encodes a byte array into base-64, returning a String."
-  [bytes-in]
-  (.encodeToString encoder bytes-in))
+  "Encodes a byte array into base64url, returning a String."
+  [data-bytes]
+  (.encodeToString encoder data-bytes))
 
 (defn decode-str->bytes
-  "Decodes a base-64 encoded String, returning a byte array"
-  [str-in]
-  (.decode decoder str-in))
+  "Decodes a base64url encoded String, returning a byte array"
+  [code-str]
+  (.decode decoder code-str))
 
 (defn encode-str 
-  "Encodes a String into base-64, returning a String."
-  [str-in]
-  (-> str-in types/str->bytes encode-bytes->str))
+  "Encodes a String into base64url, returning a String."
+  [data-str]
+  (-> data-str types/str->bytes encode-bytes->str))
 
 (defn decode-str 
-  "Decodes a base-64 encoded String, returning a String."
-  [str-in]
-  (-> str-in decode-str->bytes types/bytes->str))
+  "Decodes a base64url encoded String, returning a String."
+  [code-str]
+  (-> code-str decode-str->bytes types/bytes->str))
 
-(defn exercise-code []
+(defn ^:private exercise-code []
   (doseq [step [50 20 7]]
     (let [orig        (byte-array (mapv #(.byteValue %) (range 0 400 step)))
           code-str    (encode-bytes->str  orig)
@@ -66,8 +66,8 @@
           code-str    (encode-str  orig)
           result      (decode-str  code-str) ] )))
 
-(defn quick-bench []
+(defn ^:private quick-bench []
   (crit/quick-bench (exercise-code)))
 
-(defn bench []
+(defn ^:private bench []
   (crit/bench (exercise-code)))
