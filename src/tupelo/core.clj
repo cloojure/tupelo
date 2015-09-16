@@ -19,21 +19,21 @@
   (:import [java.io BufferedReader StringReader] )
   (:gen-class))
 
-(def  ^:no-doc  spy-indent-level (atom 0))
-(defn ^:no-doc  spy-indent-spaces []
+(def  ^:no-doc spy-indent-level (atom 0))
+(defn ^:no-doc spy-indent-spaces []
   (str/join (repeat (* 2 @spy-indent-level) \space)))
 
-(defn spy-indent-reset
+(defn ^:no-doc spy-indent-reset
   "Reset the spy indent level to zero."
   [] 
   (reset! spy-indent-level 0))
 
-(defn spy-indent-inc 
+(defn ^:no-doc spy-indent-inc 
   "Increase the spy indent level by one."
   [] 
   (swap! spy-indent-level inc))
 
-(defn spy-indent-dec 
+(defn ^:no-doc spy-indent-dec 
   "Decrease the spy indent level by one."
   [] 
   (swap! spy-indent-level dec))
@@ -106,6 +106,7 @@
       spy-val#))
 
 (defmacro with-spy-indent
+  "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
   [& body]
   `(do
      (spy-indent-inc)
