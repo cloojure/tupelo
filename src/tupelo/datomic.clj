@@ -1,7 +1,7 @@
 (ns tupelo.datomic
   (:refer-clojure :exclude [update partition])
   (:require [datomic.api      :as d]
-            [tupelo.core      :refer [truthy? safe-> it-> spy spyx spyxx grab any? keep-if]]
+            [tupelo.core      :refer [truthy? safe-> it-> spy spyx spyxx grab any? keep-if forv]]
             [tupelo.schema    :as ts]
             [schema.core      :as s] )
   (:use clojure.pprint)
@@ -370,10 +370,8 @@
   (assert (tupelo.datomic/contains-pull? args)
           "query-pull: Only intended for queries using the Datomic Pull API")
 ; (println "query-pull: past assert")
-  `(do 
-      (into []
-          (for [tuple# (query* ~@args)]
-            (into [] tuple#)))))
+  `(forv [tuple# (query* ~@args) ]
+      (vec tuple#)))
 
 ; #todo: write blog post/forum letter about this testing technique
 (defn t-query
