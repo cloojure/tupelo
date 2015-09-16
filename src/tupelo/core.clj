@@ -19,12 +19,24 @@
   (:import [java.io BufferedReader StringReader] )
   (:gen-class))
 
-(def  spy-indent-level (atom 0))
-(defn spy-indent-inc [] (swap! spy-indent-level inc))
-(defn spy-indent-dec [] (swap! spy-indent-level dec))
-(defn spy-indent-spaces []
+(def  ^:no-doc  spy-indent-level (atom 0))
+(defn ^:no-doc  spy-indent-spaces []
   (str/join (repeat (* 2 @spy-indent-level) \space)))
 
+(defn spy-indent-reset
+  "Reset the spy indent level to zero."
+  [] 
+  (reset! spy-indent-level 0))
+
+(defn spy-indent-inc 
+  "Increase the spy indent level by one."
+  [] 
+  (swap! spy-indent-level inc))
+
+(defn spy-indent-dec 
+  "Decrease the spy indent level by one."
+  [] 
+  (swap! spy-indent-level dec))
 
 (defn spy
   "A form of (println ...) to ease debugging display of either intermediate values in threading
@@ -64,8 +76,8 @@
         2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
         prints 'spy => 5' to stdout.  "
   ( [arg1 arg2 arg3]
-    (cond (= :msg arg1) (do (println (str arg2 " => " (pr-str arg3))) arg3)  ; for ->>
-          (= :msg arg2) (do (println (str arg3 " => " (pr-str arg1))) arg1)  ; for ->
+    (cond (= :msg arg1) (do (println (str (spy-indent-spaces) arg2 " => " (pr-str arg3))) arg3)  ; for ->>
+          (= :msg arg2) (do (println (str (spy-indent-spaces) arg3 " => " (pr-str arg1))) arg1)  ; for ->
           :else (throw (IllegalArgumentException.  (str 
                            "spy: either first or 2nd arg must be :msg \n   args:"
                            (pr-str [arg1 arg2 arg3]))))))
@@ -92,6 +104,14 @@
           class-name#   (-> spy-val# class .getName) ]
       (println (str (spy-indent-spaces) '~expr " => " class-name# "->" (pr-str spy-val#)))
       spy-val#))
+
+(defmacro with-spy-indent
+  [& body]
+  `(do
+     (spy-indent-inc)
+     (let [result# (do ~@body) ]
+       (spy-indent-dec)
+       result#)))
 
 
 (defn truthy?

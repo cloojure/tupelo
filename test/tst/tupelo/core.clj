@@ -16,7 +16,7 @@
 
 (spyx *clojure-version*)
 
-(deftest spy-t
+(deftest t-spy
   (testing "basic usage"
     (let [side-effect-cum-sum (atom 0)  ; side-effect running total
 
@@ -70,7 +70,7 @@
       (is (thrown? IllegalArgumentException  (spy "some-msg" 42 :msg)))
     )))
 
-(deftest spyxx-t
+(deftest t-spyxx
   (let [val1  (into (sorted-map) {:a 1 :b 2})
         val2  (+ 2 3) ]
     (is (= "val1 => clojure.lang.PersistentTreeMap->{:a 1, :b 2}"
@@ -80,7 +80,19 @@
         (str/trim (with-out-str (spyxx val2 ))) ))
   ))
 
-(deftest truthy-falsey-tst
+(deftest t-with-spy-indent
+  (let [fn2   (fn []  (with-spy-indent
+                        (spy :msg "msg2" (+ 2 3))))
+        fn1   (fn []  (with-spy-indent
+                        (spy :msg "msg1" (+ 2 3))
+                        (fn2)))
+        fn0   (fn [] (spy :msg "msg0" (+ 2 3))) ]
+    (is (= "  msg2 => 5\n"                  (with-out-str (fn2))))
+    (is (= "  msg1 => 5\n    msg2 => 5\n"   (with-out-str (fn1))))
+    (is (= "msg0 => 5\n"                    (with-out-str (fn0))))
+    ))
+
+(deftest t-truthy-falsey
   (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]
     (testing "basic usage"
       (let [truthies    (filter boolean data)       ; coerce to primitive type
@@ -108,12 +120,12 @@
                     (= 2 num-false) )))))
   ))
 
-(deftest any-tst
+(deftest t-any
   (is (= true   (any? odd? [1 2 3] ) ))
   (is (= false  (any? odd? [2 4 6] ) ))
   (is (= false  (any? odd? []      ) )))
 
-(deftest not-empty-tst
+(deftest t-not-empty
   (testing "basic usage"
     (is (every?     not-empty? ["1" [1] '(1) {:1 1} #{1}    ] ))
     (is (not-any?   not-empty? [""  []  '()  {}     #{}  nil] ))
@@ -123,7 +135,7 @@
     (is (= (map not-empty? ["" [] '() {} #{} nil] )
            [false false false false false false ] ))))
 
-(deftest conjv-tst
+(deftest t-conjv
   (testing "basic usage"
     (is (= [  2  ]  (conjv  []  2   )))
     (is (= [  2  ]  (conjv '()  2   )))
@@ -148,7 +160,7 @@
     (is (= [0 1 2 3 4 5] (conjv (range 4) 4 5)))
     (is (= [0 1 2 3 4 5] (apply conjv [0] (range 1 6)))) ))
 
-(deftest forv-t
+(deftest t-forv
   (is (= (forv [x (range 4)] (* x x))
          [0 1 4 9] ))
   (is (= (forv [x (range 23)] (* x x))
@@ -257,7 +269,7 @@
                :a2 { :b1 "b1"
                      :b2 { :c1 "c1" }}} ))))
 
-(deftest keyvals-t
+(deftest t-keyvals
   (testing "basic usage"
     (let [m1 {:a 1 :b 2 :c 3}
           m2 {:a 1 :b 2 :c [3 4]} ]
@@ -285,7 +297,7 @@
     (is (= (it-> mm (:a it)          )  {:b 2} ))
     (is (= (it-> mm (it :a)  (:b it) )      2  ))))
 
-(deftest with-exception-default-t
+(deftest t-with-exception-default
   (testing "basic usage"
     (is (thrown?    Exception                       (/ 1 0)))
     (is (= nil      (with-exception-default nil     (/ 1 0))))
@@ -343,7 +355,7 @@
             (=  odd-1  odd-1v  odd-2  odd-2v  odd-rem))
     )))
 
-(deftest strcat-tst
+(deftest t-strcat
   (is (= "a" (strcat \a  )) (strcat [\a]  ))
   (is (= "a" (strcat "a" )) (strcat ["a"] ))
   (is (= "a" (strcat 97  )) (strcat [97]  ))
@@ -434,7 +446,7 @@
       (is (= "#{1 2 3 4 5}" (clip-str 16 tst-set )))))
 )
 
-(deftest seqable-tst
+(deftest t-seqable
   (is (seqable?   "abc"))
   (is (seqable?   {1 2 3 4} ))
   (is (seqable?  #{1 2 3} ))
