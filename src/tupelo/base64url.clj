@@ -13,7 +13,7 @@
   (:use tupelo.core )
   (:gen-class))
 
-; #awt TODO: convert :pre/:post to Prismatic Schema
+; #todo: convert :pre/:post to Prismatic Schema
 
 ; #todo -> code-chars (& other ns's)
 (def code-chars

@@ -24,7 +24,7 @@
   (:use tupelo.core)
   (:gen-class))
 
-; #awt TODO: convert :pre/:post to Prismatic Schema
+; #todo: convert :pre/:post to Prismatic Schema
 
 (def code-chars
   "A set of chars used for the Y64 encoding (incl. padding char)"

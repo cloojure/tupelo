@@ -13,7 +13,7 @@
   (:use tupelo.core )
   (:gen-class))
 
-; #awt TODO: convert :pre/:post to Prismatic Schema
+; #todo: convert :pre/:post to Prismatic Schema
 
 (def base64-chars
   "A set of chars used for traditional base64 encoding (incl. padding char)"
