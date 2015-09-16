@@ -12,7 +12,7 @@
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
-(def uri "datomic:mem://tupelo")          ; the URI for our test db
+(def datomic-uri "datomic:mem://tupelo")          ; the URI for our test db
 (def ^:dynamic *conn*)
 
 ;---------------------------------------------------------------------------------------------------
@@ -21,14 +21,14 @@
   (fn setup-execute-teardown            ; perform setup, execution, & teardown for each test
     [tst-fn]
 ; setup ----------------------------------------------------------
-    (d/create-database uri)             ; create the DB
-    (binding [*conn* (d/connect uri) ]  ; create & save a connection to the db
+    (d/create-database datomic-uri)             ; create the DB
+    (binding [*conn* (d/connect datomic-uri) ]  ; create & save a connection to the db
 ; execute --------------------------------------------------------
       (try
         (tst-fn)
 ; teardown -------------------------------------------------------
         (finally
-          (d/delete-database uri))))))
+          (d/delete-database datomic-uri))))))
 
 ;---------------------------------------------------------------------------------------------------
 
@@ -43,6 +43,11 @@
            {:db/id                    #db/id[:db.part/db _] 
             :db.install/_partition    :db.part/db 
             :db/ident                 :part.with.ns} )))
+  (let [result   (td/new-partition :some-ns/some-part ) ]
+    (is (matches? result
+           {:db/id                    #db/id[:db.part/db _] 
+            :db.install/_partition    :db.part/db 
+            :db/ident                 :some-ns/some-part} )))
 )
 
 (deftest t-new-attribute
@@ -163,10 +168,11 @@
 (deftest t-new-entity
   (testing "new-entity"
     (let [result  (td/new-entity     {:person/name "dilbert" :job/type :job.type/sucky} ) ]
-      (is (matches? result {:db/id _ :person/name "dilbert" :job/type :job.type/sucky} ))
+      (is (matches? result {:db/id _  :person/name "dilbert" :job/type :job.type/sucky} ))
     )
   )
   (testing "new-entity with partition"
+    ; #todo isn't this an error? Creating an entity with a partition that doesn't exist???
     (let [result  (td/new-entity  :dummy.part/name   {:person/name "dilbert" :job/type :job.type/sucky} ) 
           dbid    (grab :db/id result) 
           part1   (first dbid)
@@ -180,13 +186,14 @@
 
 (deftest t-new-enum
   (is (matches? (td/new-enum :weapon.type/gun)
-                {:db/id #db/id[:db.part/user _] :db/ident :weapon.type/gun} ))
+                {:db/id #db/id[:db.part/user _]  :db/ident :weapon.type/gun} ))
   (is (matches? (td/new-enum :gun)
-                {:db/id #db/id[:db.part/user _] :db/ident :gun} ))
+                {:db/id #db/id[:db.part/user _]  :db/ident :gun} ))
   (is (thrown? Exception (td/new-enum "gun"))))
 
 ; #todo: need more tests for query-*, etc
 
+; #todo how can we update 999 when we haven't created it yet???
 (deftest t-update
   (testing "update"
     (is (matches? (td/update 999 {:person/name "joe"  :car :car.type/bmw} )
@@ -217,12 +224,4 @@
   (let [proxy-contains-pull? #'td/contains-pull? ] ; trick to get around private var
     (is       (proxy-contains-pull? [:find '[xx (pull [*]) ?y ]] ))
     (is (not  (proxy-contains-pull? [:find '[xx            ?y ]] )))))
-
-#_(deftest t-xx
-  (testing "xx"
-    (let [result  
-    ]
-      (spyxx result)
-    )
-  ))
 
