@@ -344,16 +344,6 @@
   [pred coll]
   (clojure.core/remove pred coll))
 
-(defn keep-ifv
-  "An eager version of keep-if that returns results in a vector."
-  [pred coll]
-  (vec (keep-if pred coll)))
-
-(defn drop-ifv
-  "An eager version of drop-if that returns results in a vector."
-  [pred coll]
-  (vec (drop-if pred coll)))
-
 (defn strcat
   "Concat all arguments into a single string result."
   [& args]

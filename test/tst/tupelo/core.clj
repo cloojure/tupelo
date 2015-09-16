@@ -341,18 +341,14 @@
 (tst/defspec ^:slow t-keep-if-drop-if 9999
   (prop/for-all [vv (gen/vector gen/int) ]
     (let [even-1      (keep-if   even?  vv)
-          even-1v     (keep-ifv  even?  vv)
           even-2      (drop-if   odd?   vv)
-          even-2v     (drop-ifv  odd?   vv)
           even-filt   (filter    even?  vv)
 
           odd-1       (keep-if   odd?   vv)
-          odd-1v      (keep-ifv  odd?   vv)
           odd-2       (drop-if   even?  vv)
-          odd-2v      (drop-ifv  even?  vv)
           odd-rem     (remove    even?  vv) ]
-      (and  (= even-1 even-1v even-2 even-2v even-filt)
-            (=  odd-1  odd-1v  odd-2  odd-2v  odd-rem))
+      (and  (= even-1 even-2 even-filt)
+            (=  odd-1  odd-2  odd-rem))
     )))
 
 (deftest t-strcat
