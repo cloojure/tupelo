@@ -289,6 +289,7 @@
       (for [tuple# (query* ~@args) ]
         (into [] tuple#))))
 
+; #todo: rename to (td/query-attr ...)  ?
 (defmacro query-set
   "Returns a Set of unique scalar query results (i.e. #{s/Any}). Any duplicate values will be
    discarded. Usage:
@@ -319,10 +320,11 @@
   [& args]
   `(let [result-set# (query* ~@args) ]
       (if (= 1 (count result-set#))
-        (into [] (first result-set#))
+        (vec (first result-set#))
         (throw (IllegalStateException.
                 (str "query-tuple: result-set must hold only one tuple: " result-set#))))))
 
+; #todo: rename to (td/query-one ...)  ?
 (defmacro query-scalar
   "Returns a scalar query result (i.e. s/Any).  Usage:
    

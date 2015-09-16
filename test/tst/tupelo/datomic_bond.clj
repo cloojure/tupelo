@@ -5,15 +5,14 @@
             [datomic.api      :as d]
             [schema.core      :as s]
   )
-  (:use clojure.pprint
-        clojure.test)
+  (:use clojure.test)
   (:gen-class))
 
 (set! *warn-on-reflection* false)
 (set! *print-length* nil)
 (s/set-fn-validation! true)             ; enable Prismatic Schema type definitions (#todo add to Schema docs)
 
-(def uri "datomic:mem://tst.bond")      ; the URI for our test db
+(def datomic-uri "datomic:mem://tst.bond")      ; the URI for our test db
 (def ^:dynamic *conn*)                  ; dynamic var to hold the db connection
 
 ;---------------------------------------------------------------------------------------------------
@@ -22,14 +21,14 @@
   (fn setup-execute-teardown            ; perform setup, execution, & teardown for each test
     [tst-fn]
 ; setup ----------------------------------------------------------
-    (d/create-database uri)             ; create the DB
+    (d/create-database datomic-uri)             ; create the DB
     (try
-      (binding [*conn* (d/connect uri) ]  ; create & save a connection to the db
+      (binding [*conn* (d/connect datomic-uri) ]  ; create & save a connection to the db
 ; execute --------------------------------------------------------
         (tst-fn))
 ; teardown -------------------------------------------------------
       (finally
-        (d/delete-database uri)))))
+        (d/delete-database datomic-uri)))))
 
 ;---------------------------------------------------------------------------------------------------
 ; Convenience function to keep syntax a bit more concise
@@ -37,7 +36,7 @@
 
 ; helper function
 (defn get-people
-  "Returns facts about all entities with the :person/name attribute"
+  "Returns a set of entity maps for all entities with the :person/name attribute"
   [db-val]
   (let [eid-set     (td/query-set :let    [$ db-val]
                                   :find   [?e]  ; <- could also use Datomic Pull API
@@ -132,6 +131,8 @@
                         ["James Bond"  "London"]         ; still unique. Otherwise, any duplicate tuples
                         ["M"           "London"] } )))   ; will be discarded since output is a clojure set.
 
+  ; #todo: rename to (td/query-attr ...)
+  ;
   ; If you want just a single attribute as output, you can get a set of values (rather than a set of
   ; tuples) using td/query-set.  As usual, any duplicate values will be discarded. It is an error if
   ; more than one attribute is returned (per entity).
