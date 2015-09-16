@@ -222,7 +222,8 @@
 
     ; Show that only Honey is in the people partition
     (let [people-eids           (td/partition-eids (live-db) :people)
-          people-entity-maps    (map #(td/entity-map (live-db) %) people-eids) ]
+          people-entity-maps    (map #(td/entity-map (live-db) %)  
+                                     people-eids) ]
       (is (= people-entity-maps [
                {:person/name "Honey Rider", :weapon/type #{:weapon/knife}, :location "Caribbean"} ] )))
 

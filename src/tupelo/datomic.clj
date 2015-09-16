@@ -347,13 +347,8 @@
 (defn- ^:no-doc contains-pull?  ; prevent codox ("lein doc") from processing 
   "Returns true if a sequence of symbols includes 'pull'"
   [args-vec]
-; (println \newline "contains-pull?" args-vec)
   (let [args-map    (apply hash-map args-vec)
         find-vec    (flatten [ (grab :find args-map) ] ) ]
-  ; (spyxx find-vec)
-  ; (doseq [item find-vec]
-  ;   (do (print " ") (pr item) ))
-  ; (newline)
     (any? #(= 'pull %) find-vec)))
 
 (defmacro query-pull
@@ -366,10 +361,8 @@
 
    It is an error if the :find clause does not contain a Datomic Pull API request.  "
   [& args]
-; (println "query-pull" args)
   (assert (tupelo.datomic/contains-pull? args)
           "query-pull: Only intended for queries using the Datomic Pull API")
-; (println "query-pull: past assert")
   `(forv [tuple# (query* ~@args) ]
       (vec tuple#)))
 
@@ -414,7 +407,7 @@
 ; (pr t1) => #datom[299067162756085 63 "Honey Rider" 13194139534324 true]
 ; #todo - need test
 (s/defn datom-map :- ts/DatomMap
-  "Returns a plain of Clojure map of an datom's attribute-value pairs. 
+  "Returns a plain Clojure map of an datom's attribute-value pairs. 
    A datom map is structured as:
 
       { :e        entity id (eid)
