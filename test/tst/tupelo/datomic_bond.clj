@@ -96,6 +96,11 @@
     (is (= james-map {:person/name "James Bond" :location "London" :weapon/type #{:weapon/wit :weapon/gun} } ))
     (is (= james-map james-map2 ))
 
+    ; Adding nil values is not allowed, and will generate an Exception.
+    (is (thrown? Exception   @(td/transact *conn* 
+                                (td/update [:person/name "James Bond"] ; update using a LookupRef
+                                  { :weapon/type nil } ))))  ; nil value for :weapon/type causes exception
+
     ; Update the database with more weapons.  If we overwrite some items that are already present
     ; (e.g. :weapon/gun) it is idempotent (no duplicates are allowed).  The first arg to td/update
     ; is an EntitySpec (either EntityId or LookupRef) and determines the Entity that is updated.
