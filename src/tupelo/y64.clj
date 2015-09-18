@@ -21,11 +21,13 @@
             [tupelo.misc        :as misc]
             [tupelo.types       :as types]
             [schema.core        :as s]
-            [criterium.core :as crit] )
+            [criterium.core     :as crit] )
   (:use tupelo.core)
   (:gen-class))
 
-; #todo: convert :pre/:post to Prismatic Schema
+; Prismatic Schema type definitions
+(s/set-fn-validation! true)   ; #todo add to Schema docs
+
 
 (def code-chars
   "A set of chars used for the Y64 encoding (incl. padding char)"
@@ -45,9 +47,10 @@
 
 (defn- b64->y64
   "Converts a byte array from base64 -> Y64 encoding."
-  [coded-bytes]
+  [code-bytes]
+  (types/byte-array? code-bytes) 
   (byte-array 
-    (for [byte-val coded-bytes]
+    (for [byte-val code-bytes]
       (cond  
         (= byte-val b64-code-62)    y64-code-62
         (= byte-val b64-code-63)    y64-code-63
@@ -56,9 +59,10 @@
 
 (defn- y64->b64
   "Converts a byte array from Y64 -> base64 encoding."
-  [coded-bytes]
+  [code-bytes]
+  (types/byte-array? code-bytes) 
   (byte-array 
-    (for [byte-val coded-bytes]
+    (for [byte-val code-bytes]
       (cond  
         (= byte-val y64-code-62)    b64-code-62
         (= byte-val y64-code-63)    b64-code-63
@@ -69,34 +73,35 @@
 (defn encode-bytes
   "Encodes a byte array into Y64, returning a new byte array."
   [data-bytes]
+  (types/byte-array? data-bytes) 
   (-> data-bytes b64/encode-bytes b64->y64))
 
 (defn decode-bytes
   "Decodes a byte array from Y64, returning a new byte array."
   [code-bytes]
+  (types/byte-array? code-bytes) 
   (-> code-bytes y64->b64 b64/decode-bytes))
 
-
-(defn encode-bytes->str
+(s/defn encode-bytes->str :- s/Str
   "Encodes a byte array into Y64, returning a String."
   [data-bytes]
+  (types/byte-array? data-bytes) 
   (-> data-bytes encode-bytes types/bytes->str))
 
-(defn decode-str->bytes
+(s/defn decode-str->bytes
   "Decodes a Y64 encoded String, returning a byte array"
-  [code-str]
+  [code-str :- s/Str]
   (-> code-str types/str->bytes decode-bytes))
 
-
-(defn encode-str 
+(s/defn encode-str :- s/Str
   "Encodes a String into Y64, returning a String."
-  [data-str]
-  (-> data-str types/str->bytes encode-bytes types/bytes->str))
+  [data-str :- s/Str]
+  (-> data-str types/str->bytes encode-bytes->str))
 
-(defn decode-str 
+(s/defn decode-str :- s/Str
   "Decodes a Y64 encoded String, returning a String."
-  [code-str]
-  (-> code-str types/str->bytes decode-bytes types/bytes->str))
+  [code-str :- s/Str]
+  (-> code-str decode-str->bytes types/bytes->str))
 
 (defn ^:private exercise-code []
   (doseq [step [50 20 7]]

@@ -188,9 +188,9 @@
     )
 
    where attr-val-map is a Clojure map containing attribute-value pairs to be added to the new
-   entity.  For attributes with :db.cardinality/one, the previous value will be (automatically)
-   retracted prior to the insertion of the new value. For attributes with :db.cardinality/many, the
-   new value will be accumulated into the current set of values."
+   entity.  For attributes with :db.cardinality/one, Datomic will (automatically) retract the
+   previous value prior to the insertion of the new value. For attributes with :db.cardinality/many,
+   the new value will be accumulated into the current set of values."
   [entity-spec    :- ts/EntitySpec
    attr-val-map   :- ts/KeyMap ]
     (into {:db/id entity-spec} attr-val-map))

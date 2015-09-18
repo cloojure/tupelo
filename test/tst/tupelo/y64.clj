@@ -19,6 +19,9 @@
         clojure.test)
   (:gen-class))
 
+; Prismatic Schema type definitions
+(s/set-fn-validation! true)   ; #todo add to Schema docs
+
 (deftest t1
   (let [orig        (byte-array [(byte \A)] )
         y64-bytes   (y64/encode-bytes  orig)

@@ -172,7 +172,6 @@
     )
   )
   (testing "new-entity with partition"
-    ; #todo isn't this an error? Creating an entity with a partition that doesn't exist???
     (let [result  (td/new-entity  :dummy.part/name   {:person/name "dilbert" :job/type :job.type/sucky} ) 
           dbid    (grab :db/id result) 
           part1   (first dbid)
@@ -193,7 +192,6 @@
 
 ; #todo: need more tests for query-*, etc
 
-; #todo how can we update 999 when we haven't created it yet???
 (deftest t-update
   (testing "update"
     (is (matches? (td/update 999 {:person/name "joe"  :car :car.type/bmw} )

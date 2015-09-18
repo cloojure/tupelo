@@ -7,13 +7,16 @@
 (ns tupelo.base64url
   "Convert to/from traditional base64url encoding."
   (:require [clojure.string :as str]
-            [tupelo.misc  :as misc]
-            [tupelo.types :as types]
+            [tupelo.misc    :as misc]
+            [tupelo.types   :as types]
+            [schema.core    :as s]
             [criterium.core :as crit])
   (:use tupelo.core )
   (:gen-class))
 
-; #todo: convert :pre/:post to Prismatic Schema
+; Prismatic Schema type definitions
+(s/set-fn-validation! true)   ; #todo add to Schema docs
+
 
 ; #todo -> code-chars (& other ns's)
 (def code-chars
@@ -29,31 +32,34 @@
 (defn encode-bytes
   "Encodes a byte array into base64url, returning a new byte array."
   [data-bytes]
+  (types/byte-array? data-bytes) 
   (.encode encoder data-bytes))
 
 (defn decode-bytes
   "Decodes a byte array from base64url, returning a new byte array."
-  [data-bytes]
-  (.decode decoder data-bytes))
+  [code-bytes]
+  (types/byte-array? code-bytes) 
+  (.decode decoder code-bytes))
 
-(defn encode-bytes->str
+(s/defn encode-bytes->str :- s/Str
   "Encodes a byte array into base64url, returning a String."
   [data-bytes]
+  (types/byte-array? data-bytes) 
   (.encodeToString encoder data-bytes))
 
-(defn decode-str->bytes
+(s/defn decode-str->bytes
   "Decodes a base64url encoded String, returning a byte array"
-  [code-str]
+  [code-str :- s/Str]
   (.decode decoder code-str))
 
-(defn encode-str 
+(s/defn encode-str :- s/Str
   "Encodes a String into base64url, returning a String."
-  [data-str]
+  [data-str :- s/Str]
   (-> data-str types/str->bytes encode-bytes->str))
 
-(defn decode-str 
+(s/defn decode-str :- s/Str
   "Decodes a base64url encoded String, returning a String."
-  [code-str]
+  [code-str :- s/Str]
   (-> code-str decode-str->bytes types/bytes->str))
 
 (defn ^:private exercise-code []

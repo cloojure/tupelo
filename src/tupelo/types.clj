@@ -12,15 +12,15 @@
 (def ^:const UTF-8-Charset-Name "UTF-8")
 
 ; An instance of the java.lang.Class<XXXX[]> (e.g. java.lang.Class<Byte[]>). 
-(defonce ^:private Class-byte-array         (.getClass (byte-array      0)))
-(defonce ^:private Class-boolean-array      (.getClass (boolean-array   0)))
-(defonce ^:private Class-char-array         (.getClass (char-array      0)))
-(defonce ^:private Class-double-array       (.getClass (double-array    0)))
-(defonce ^:private Class-float-array        (.getClass (float-array     0)))
-(defonce ^:private Class-int-array          (.getClass (int-array       0)))
-(defonce ^:private Class-long-array         (.getClass (long-array      0)))
-(defonce ^:private Class-object-array       (.getClass (object-array    0)))
-(defonce ^:private Class-short-array        (.getClass (short-array     0)))
+(def ^:private Class-byte-array         (.getClass (byte-array      0)))
+(def ^:private Class-boolean-array      (.getClass (boolean-array   0)))
+(def ^:private Class-char-array         (.getClass (char-array      0)))
+(def ^:private Class-double-array       (.getClass (double-array    0)))
+(def ^:private Class-float-array        (.getClass (float-array     0)))
+(def ^:private Class-int-array          (.getClass (int-array       0)))
+(def ^:private Class-long-array         (.getClass (long-array      0)))
+(def ^:private Class-object-array       (.getClass (object-array    0)))
+(def ^:private Class-short-array        (.getClass (short-array     0)))
 
 
 (defn boolean?
