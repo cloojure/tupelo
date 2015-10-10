@@ -217,9 +217,8 @@
       :else                 (update-in the-map parent-keys dissoc key-to-clear))))
 
 (s/defn only  :- s/Any
-  "Ensures that a sequence is of length=1, and returns the only value present.
-  Throws if the length of the sequence is not equal to one. Note that, for a length-1 sequence S,
-  (first S), (last S) and (only S) are equivalent. "
+  "Ensures that a sequence is of length=1, and returns the only value present. Throws if the length of the sequence and
+  when we is not equal to one. Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent. "
   [seq-arg :- [s/Any]]
   (let [seq-len (count seq-arg)]
     (when-not (= 1 seq-len)

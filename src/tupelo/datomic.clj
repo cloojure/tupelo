@@ -1,7 +1,7 @@
 (ns tupelo.datomic
   (:refer-clojure :exclude [update partition])
   (:require [datomic.api      :as d]
-            [tupelo.core      :refer [truthy? safe-> it-> spy spyx spyxx grab any? keep-if forv]]
+            [tupelo.core      :refer [truthy? safe-> it-> spy spyx spyxx grab any? keep-if forv only]]
             [tupelo.schema    :as ts]
             [schema.core      :as s] )
   (:use clojure.pprint)
