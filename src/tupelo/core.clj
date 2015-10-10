@@ -216,7 +216,17 @@
       (= 1   num-keys)      (dissoc the-map key-to-clear)
       :else                 (update-in the-map parent-keys dissoc key-to-clear))))
 
-; #awt TODO:  add in clear-nil-entries to recursively delete all k-v pairs 
+(s/defn only  :- s/Any
+  "Ensures that a sequence is of length=1, and returns the only value present.
+  Throws if the length of the sequence is not equal to one. Note that, for a length-1 sequence S,
+  (first S), (last S) and (only S) are equivalent. "
+  [seq-arg :- [s/Any]]
+  (let [seq-len (count seq-arg)]
+    (when-not (= 1 seq-len)
+      (throw (IllegalArgumentException. (str "only: length != 1; length=" seq-len)))))
+  (first seq-arg))
+
+; #awt TODO:  add in clear-nil-entries to recursively delete all k-v pairs
 ;               where val is nil or empty?
 
 (defn keyvals 

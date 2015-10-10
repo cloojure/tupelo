@@ -273,6 +273,11 @@
                :a2 { :b1 "b1"
                      :b2 { :c1 "c1" }}} ))))
 
+(deftest t-only
+  (is (= :x (only [:x])))
+  (is (thrown? IllegalArgumentException (only [])))
+  (is (thrown? IllegalArgumentException (only [:x :y]))))
+
 (deftest t-keyvals
   (testing "basic usage"
     (let [m1 {:a 1 :b 2 :c 3}
