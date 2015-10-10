@@ -366,13 +366,13 @@ user=> (fetch mm [:b :z])
 === Map Dissociation
 
 Clojure has functions `assoc` & `assoc-in`, `update` & `update-in`, and `dissoc`. However, there
-is no function `dissoc-in`.  The function `dissoc-entry` provides the desired functionality:
+is no function `dissoc-in`.  The function `dissoc-in` provides the desired functionality:
 
 [source,clojure]
 ----
-(dissoc-entry the-map keys-vec)
+(dissoc-in the-map keys-vec)
   "A sane version of dissoc-in that will not delete intermediate keys. 
-   When invoked as (dissoc-entry the-map [:k1 :k2 :k3... :kZ]), acts like 
+   When invoked as (dissoc-in the-map [:k1 :k2 :k3... :kZ]), acts like 
    (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only 
    the map entry containing the last key :kZ is removed, and all map entries 
    higher than kZ in the hierarchy are unaffected."
@@ -383,11 +383,11 @@ The unit test shows the functions in action:
 [source,clojure]
 ----
 (let [mm {:a { :b { :c "c" }}} ]
-  (is (= (dissoc-entry mm []         ) mm ))
-  (is (= (dissoc-entry mm [:a      ] ) {} ))
-  (is (= (dissoc-entry mm [:a :b   ] ) {:a {}} ))
-  (is (= (dissoc-entry mm [:a :b :c] ) {:a { :b {}}} ))
-  (is (= (dissoc-entry mm [:a :x :y] ) {:a { :b { :c "c" }
+  (is (= (dissoc-in mm []         ) mm ))
+  (is (= (dissoc-in mm [:a      ] ) {} ))
+  (is (= (dissoc-in mm [:a :b   ] ) {:a {}} ))
+  (is (= (dissoc-in mm [:a :b :c] ) {:a { :b {}}} ))
+  (is (= (dissoc-in mm [:a :x :y] ) {:a { :b { :c "c" }
                                              :x nil }} )))
 ----
 
@@ -396,7 +396,7 @@ layers will be constructed as necessary, which is consistant with the behavior
 of both `clojure.core/assoc-in` and `clojure.core/update-in` (note that `nil` is
 the value of the final map entry, not the empty map `{}` as for the other examples). 
 
-The name `dissoc-entry` is chosen to emphasize that only the map entry
+The name `dissoc-in` is chosen to emphasize that only the map entry
 corresponding to the last key `kZ` is cleared. This also avoids confusion with a
 function in the old clojure-contrib library named `dissoc-in` which had the
 unpredictable behavior of recursively (& silently) deleting all keys in `keys-vec`
@@ -573,6 +573,11 @@ test namespace:
   This will reload tupelo.core, tst.tupelo.core, tupelo.csv, tst.tupelo.csv and
   then execute clojure.test/run-tests on both of the test namespaces.
 ----
+
+== Requirements
+
+ - Clojure 1.6.0
+ - Java 1.8
 
 == License
 

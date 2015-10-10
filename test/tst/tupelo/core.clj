@@ -10,11 +10,15 @@
             [clojure.test.check.generators          :as gen]
             [clojure.test.check.properties          :as prop]
             [clojure.test.check.clojure-test        :as tst]
-            [tupelo.misc                            :as tm] )
+            [tupelo.misc                            :as tm]
+            [schema.core                            :as s] )
   (:use tupelo.core
         clojure.test ))
 
 (spyx *clojure-version*)
+
+; Prismatic Schema type definitions
+(s/set-fn-validation! true)   ; #todo add to Schema docs
 
 (deftest t-spy
   (testing "basic usage"
@@ -231,40 +235,40 @@
       (is (thrown? IllegalArgumentException  (fetch map1 [:a2 :b2 :c9]) ))
     )))
 
-(deftest t-dissoc-entry
+(deftest t-dissoc-in
   (let [mm    {:a { :b { :c "c" }}} ]
-    (is (= (dissoc-entry mm []         )          mm ))
-    (is (= (dissoc-entry mm [:a]       )          {} ))
-    (is (= (dissoc-entry mm [:a :b]    )          {:a  {}} ))
-    (is (= (dissoc-entry mm [:a :b :c] )          {:a  { :b  {}}} ))
-    (is (= (dissoc-entry mm [:a :x :y] )          {:a  { :b  { :c "c" }
+    (is (= (dissoc-in mm []         )          mm ))
+    (is (= (dissoc-in mm [:a]       )          {} ))
+    (is (= (dissoc-in mm [:a :b]    )          {:a  {}} ))
+    (is (= (dissoc-in mm [:a :b :c] )          {:a  { :b  {}}} ))
+    (is (= (dissoc-in mm [:a :x :y] )          {:a  { :b  { :c "c" }
                                                          :x  nil }} ))
-    (is (= (dissoc-entry mm [:a :x :y :z] )       {:a  { :b  { :c "c" }
+    (is (= (dissoc-in mm [:a :x :y :z] )       {:a  { :b  { :c "c" }
                                                          :x  { :y nil }}} ))
-    (is (= (dissoc-entry mm [:k1 :k2 :k3 :kz] )   {:a  { :b  { :c  "c" }}
+    (is (= (dissoc-in mm [:k1 :k2 :k3 :kz] )   {:a  { :b  { :c  "c" }}
                                                    :k1 { :k2 { :k3 nil }}} )))
   (let [mm    {:a1 "a1"
                :a2 { :b1 "b1"
                      :b2 { :c1 "c1"
                            :c2 "c2" }}} ]
-    (is (= (dissoc-entry mm [:a1] )
+    (is (= (dissoc-in mm [:a1] )
               {:a2 { :b1 "b1"
                      :b2 { :c1 "c1"
                            :c2 "c2" }}} ))
-    (is (= (dissoc-entry mm [:a2] )
+    (is (= (dissoc-in mm [:a2] )
               {:a1 "a1" } ))
-    (is (= (dissoc-entry mm [:a2 :b1] )
+    (is (= (dissoc-in mm [:a2 :b1] )
               {:a1 "a1"
                :a2 { :b2 { :c1 "c1"
                            :c2 "c2" }}} ))
-    (is (= (dissoc-entry mm [:a2 :b2] )
+    (is (= (dissoc-in mm [:a2 :b2] )
               {:a1 "a1"
                :a2 { :b1 "b1" }} ))
-    (is (= (dissoc-entry mm [:a2 :b2 :c1] )
+    (is (= (dissoc-in mm [:a2 :b2 :c1] )
               {:a1 "a1"
                :a2 { :b1 "b1"
                      :b2 { :c2 "c2" }}} ))
-    (is (= (dissoc-entry mm [:a2 :b2 :c2] )
+    (is (= (dissoc-in mm [:a2 :b2 :c2] )
               {:a1 "a1"
                :a2 { :b1 "b1"
                      :b2 { :c1 "c1" }}} ))))

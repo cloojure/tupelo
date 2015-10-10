@@ -200,9 +200,9 @@
                       "  keys: " keys-vec  \newline )))
       result )))
 
-(s/defn dissoc-entry :- s/Any
+(s/defn dissoc-in :- s/Any
   "A sane version of dissoc-in that will not delete intermediate keys. 
-   When invoked as (dissoc-entry the-map [:k1 :k2 :k3... :kZ]), acts like 
+   When invoked as (dissoc-in the-map [:k1 :k2 :k3... :kZ]), acts like
    (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only 
    the map entry containing the last key :kZ is removed, and all map entries 
    higher than kZ in the hierarchy are unaffected."
@@ -254,7 +254,6 @@
            ~@(interleave (repeat g) (map pstep forms))]
        ~g)))
 
-; #todo add to README
 (defmacro it->
   "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
       (it-> 1
