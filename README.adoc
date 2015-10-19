@@ -402,6 +402,37 @@ function in the old clojure-contrib library named `dissoc-in` which had the
 unpredictable behavior of recursively (& silently) deleting all keys in `keys-vec`
 corresponding to empty maps.
 
+=== Extracting *_Only_* Values
+
+The pervasive use of seq's in Clojure means that scalar values often appear
+wrapped in a vector or some other sequence type.  One thus sees code like 
+`(first some-var)` and it is not always clear that the code is simply "unwrapping" a scalar value,
+since there could well be remaining values in the sequence. Indeed, it would be equivalent to use 
+`(last some-var)` as well, since first=last for a length-1 sequence. 
+
+[source,clojure]
+---- 
+(only seq-arg)
+  Ensures that a sequence is of length=1, and returns the only value present.
+  Throws an exception if the length of the sequence is not one.  Note that, 
+  for a length-1 sequence S, (first S), (last S) and (only S) are equivalent.
+----
+
+=== Validating Intermediate Results
+
+Within a processing chain, it is often desirable to verify that an intermediate value is within an
+expected range or of an expected type. The built-in `assert` function cannot be used for this
+purpose since it returns `nil`, and the Prismatic Schema `validate` can only perform a limited
+amount of type testing.  The `(validate ...)` function performs arbitrary validation, 
+throwing an exception if a non-truthy result is returned:
+
+[source,clojure]
+---- 
+  (validate tstfn tstval)
+  Used to validate intermediate results. Returns tstval if the result of (tstfn tstval)
+  is truthy.  Otherwise, throws IllegalStateException.
+---- 
+
 === Map Entries (Key-Value pairs)
 
 Sometimes you want to extract the keys & values from a map for manipulation or extension
@@ -414,10 +445,10 @@ Here is very handy function for that:
   For any map m, returns the keys & values of m as a vector, 
   suitable for reconstructing via (apply hash-map (keyvals m)).
 
-=> (keyvals {:a 1 :b 2})
-[:b 2 :a 1]
-=> (apply hash-map (keyvals {:a 1 :b 2}))
-{:b 2, :a 1}
+(keyvals {:a 1 :b 2})
+;=> [:b 2 :a 1]
+(apply hash-map (keyvals {:a 1 :b 2}))
+;=> {:b 2, :a 1}
 ----
 
 === Default value in case of Exception

@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bb094a6a-2b2f-4a43-83cf-fdaa1f45b1ad" name="Default" comment="">
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.adoc" afterPath="$PROJECT_DIR$/README.adoc" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tupelo/core.clj" afterPath="$PROJECT_DIR$/src/tupelo/core.clj" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/test/tst/tupelo/core.clj" afterPath="$PROJECT_DIR$/test/tst/tupelo/core.clj" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/project.clj" afterPath="$PROJECT_DIR$/project.clj" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="tupelo.iws" />
@@ -32,8 +32,8 @@
           <file leaf-file-name="core.clj" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/test/tst/tupelo/core.clj">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.57918555">
-                  <caret line="287" column="0" selection-start-line="287" selection-start-column="0" selection-end-line="287" selection-end-column="0" />
+                <state vertical-scroll-proportion="0.5614035">
+                  <caret line="289" column="61" selection-start-line="289" selection-start-column="55" selection-end-line="289" selection-end-column="62" />
                   <folding />
                 </state>
               </provider>
@@ -46,8 +46,8 @@
           <file leaf-file-name="core.clj" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/tupelo/core.clj">
               <provider selected="true" editor-type-id="text-editor">
-                <state vertical-scroll-proportion="0.50678736">
-                  <caret line="234" column="2" selection-start-line="234" selection-start-column="2" selection-end-line="234" selection-end-column="2" />
+                <state vertical-scroll-proportion="0.38866398">
+                  <caret line="230" column="0" selection-start-line="230" selection-start-column="0" selection-end-line="230" selection-end-column="0" />
                   <folding />
                 </state>
               </provider>
@@ -68,9 +68,9 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
+        <option value="$PROJECT_DIR$/project.clj" />
         <option value="$PROJECT_DIR$/src/tupelo/core.clj" />
         <option value="$PROJECT_DIR$/test/tst/tupelo/core.clj" />
-        <option value="$PROJECT_DIR$/project.clj" />
       </list>
     </option>
   </component>
@@ -475,12 +475,12 @@
       <workItem from="1444518446091" duration="765000" />
       <workItem from="1445280253461" duration="65000" />
       <workItem from="1445280327015" duration="79000" />
-      <workItem from="1445280415716" duration="3568000" />
+      <workItem from="1445280415716" duration="7183000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="4477000" />
+    <option name="totallyTimeSpent" value="8092000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1918" y="-3" width="1924" height="1087" extended-state="6" />
@@ -495,7 +495,7 @@
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="REPL" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.2682927" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.18557794" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Leiningen" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.44621938" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32979852" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -541,14 +541,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/tupelo/core.clj">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.50678736">
-          <caret line="234" column="2" selection-start-line="234" selection-start-column="2" selection-end-line="234" selection-end-column="2" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/project.clj">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0">
@@ -557,10 +549,18 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/tupelo/core.clj">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.38866398">
+          <caret line="230" column="0" selection-start-line="230" selection-start-column="0" selection-end-line="230" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/test/tst/tupelo/core.clj">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.57918555">
-          <caret line="287" column="0" selection-start-line="287" selection-start-column="0" selection-end-line="287" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.5614035">
+          <caret line="289" column="61" selection-start-line="289" selection-start-column="55" selection-end-line="289" selection-end-column="62" />
           <folding />
         </state>
       </provider>

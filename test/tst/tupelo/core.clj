@@ -280,22 +280,15 @@
   (is (thrown? IllegalArgumentException (only [])))
   (is (thrown? IllegalArgumentException (only [:x :y]))))
 
-(deftest t-assert-truthy
-  (is (= true   (assert-truthy true)))
-  (is (= 1      (assert-truthy 1   )))
-  (is (= :x     (assert-truthy :x  )))
-  (is (= "yes"  (assert-truthy "yes")))
-  (is (= [42]   (assert-truthy [42])))
-  (is (thrown? IllegalStateException (assert-truthy nil)))
-  (is (thrown? IllegalStateException (assert-truthy false)))
-
-  (is (= 3        (assert-truthy + 1 2)))
-  (is (= "abc"    (assert-truthy str \a \b "c" )))
-  (is (= [0 1 2]  (assert-truthy range 3)))
-  (is (= 5        (assert-truthy count "hello")))
-  (is (= [42]     (assert-truthy vector (* 2 3 7) )))
-  (is (thrown? IllegalStateException (assert-truthy (doseq [char "hello"] char))))
-  (is (thrown? IllegalStateException (assert-truthy truthy? false)))
+(deftest t-validate
+  (is (= 3        (validate pos? 3)))
+  (is (= 3.14     (validate number? 3.14 )))
+  (is (= 3.14     (validate #(< 3 % 4) 3.14 )))
+  (is (= [0 1 2]  (validate vector? (vec (range 3)))))
+  (is (= nil      (validate nil? (next []))))
+  (is (= [0 1 2]  (validate #(= 3 (count %)) [0 1 2])))
+  (is (thrown? IllegalStateException (validate number? "hello")))
+  (is (thrown? IllegalStateException (validate truthy? nil)))
 )
 
 (deftest t-keyvals

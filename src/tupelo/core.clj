@@ -217,26 +217,25 @@
       :else                 (update-in the-map parent-keys dissoc key-to-clear))))
 
 (s/defn only  :- s/Any
-  "Ensures that a sequence is of length=1, and returns the only value present. Throws if the length of the sequence and
-  when we is not equal to one. Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent. "
+  "(only seq-arg)
+  Ensures that a sequence is of length=1, and returns the only value present.
+  Throws an exception if the length of the sequence is not one.
+  Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
   [seq-arg :- [s/Any]]
   (let [seq-len (count seq-arg)]
     (when-not (= 1 seq-len)
       (throw (IllegalArgumentException. (str "only: length != 1; length=" seq-len)))))
   (first seq-arg))
 
-(defn assert-truthy
-  "(assert-truthy arg)            ; (1)
-   (assert-truthy tstfn & args)   ; (2)
-  For (1), asserts that the argument is truthy and returns it.  For (2), asserts that (apply tstfn args) is truthy and
-  returns the result. Otherwise, throws IllegalStateException."
-  ([arg]
-    (assert-truthy identity arg))
-  ([tstfn & args]
-    (let [result (apply tstfn args)]
+(defn validate
+  "(validate tstfn tstval)
+  Used to validate intermediate results. Returns tstval if the result of (tstfn tstval)
+  is truthy.  Otherwise, throws IllegalStateException."
+  ([tstfn tstval]
+    (let [result (tstfn tstval)]
       (when-not (truthy? result)
-        (throw (IllegalStateException. (str "assert-truthy: non-truthy result=" result ))))
-      result)))
+        (throw (IllegalStateException. (str "validate: validation failure, result=" result ))))
+      tstval)))
 
 ; #awt TODO:  add in clear-nil-entries to recursively delete all k-v pairs
 ;               where val is nil or empty?
