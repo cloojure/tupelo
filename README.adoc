@@ -420,11 +420,13 @@ since there could well be remaining values in the sequence. Indeed, it would be 
 
 === Validating Intermediate Results
 
-Within a processing chain, it is often desirable to verify that an intermediate value is within an
-expected range or of an expected type. The built-in `assert` function cannot be used for this
-purpose since it returns `nil`, and the Prismatic Schema `validate` can only perform a limited
-amount of type testing.  The `(validate ...)` function performs arbitrary validation, 
-throwing an exception if a non-truthy result is returned:
+Within a processing chain, it is often desirable to verify that an
+intermediate value is within an expected range or of an expected type.
+The built-in `assert` function cannot be used for this purpose since
+it returns `nil`, and the Prismatic Schema `validate` can only perform
+a limited amount of type testing.  The `(validate ...)` function
+performs arbitrary validation, throwing an exception if a non-truthy
+result is returned:
 
 [source,clojure]
 ---- 
