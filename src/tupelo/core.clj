@@ -229,8 +229,8 @@
 
 (defn validate
   "(validate tstfn tstval)
-  Used to validate intermediate results. Returns tstval if the result of (tstfn tstval)
-  is truthy.  Otherwise, throws IllegalStateException."
+  Used to validate intermediate results. Returns tstval if the result of
+  (tstfn tstval) is truthy.  Otherwise, throws IllegalStateException."
   ([tstfn tstval]
     (let [result (tstfn tstval)]
       (when-not (truthy? result)
