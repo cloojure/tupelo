@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Leiningen: io.netty/netty:3.6.7.Final">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/io/netty/netty/3.6.7.Final/netty-3.6.7.Final.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

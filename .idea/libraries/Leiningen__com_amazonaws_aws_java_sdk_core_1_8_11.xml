@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Leiningen: com.amazonaws/aws-java-sdk-core:1.8.11">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/amazonaws/aws-java-sdk-core/1.8.11/aws-java-sdk-core-1.8.11.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
