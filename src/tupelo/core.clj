@@ -225,6 +225,19 @@
       (throw (IllegalArgumentException. (str "only: length != 1; length=" seq-len)))))
   (first seq-arg))
 
+(defn assert-truthy
+  "(assert-truthy arg)            ; (1)
+   (assert-truthy tstfn & args)   ; (2)
+  For (1), asserts that the argument is truthy and returns it.  For (2), asserts that (apply tstfn args) is truthy and
+  returns the result. Otherwise, throws IllegalStateException."
+  ([arg]
+    (assert-truthy identity arg))
+  ([tstfn & args]
+    (let [result (apply tstfn args)]
+      (when-not (truthy? result)
+        (throw (IllegalStateException. (str "assert-truthy: non-truthy result=" result ))))
+      result)))
+
 ; #awt TODO:  add in clear-nil-entries to recursively delete all k-v pairs
 ;               where val is nil or empty?
 

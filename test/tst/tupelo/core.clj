@@ -274,9 +274,29 @@
                      :b2 { :c1 "c1" }}} ))))
 
 (deftest t-only
+  (is (= 42 (only [42])))
   (is (= :x (only [:x])))
+  (is (= "hello" (only ["hello"] )))
   (is (thrown? IllegalArgumentException (only [])))
   (is (thrown? IllegalArgumentException (only [:x :y]))))
+
+(deftest t-assert-truthy
+  (is (= true   (assert-truthy true)))
+  (is (= 1      (assert-truthy 1   )))
+  (is (= :x     (assert-truthy :x  )))
+  (is (= "yes"  (assert-truthy "yes")))
+  (is (= [42]   (assert-truthy [42])))
+  (is (thrown? IllegalStateException (assert-truthy nil)))
+  (is (thrown? IllegalStateException (assert-truthy false)))
+
+  (is (= 3        (assert-truthy + 1 2)))
+  (is (= "abc"    (assert-truthy str \a \b "c" )))
+  (is (= [0 1 2]  (assert-truthy range 3)))
+  (is (= 5        (assert-truthy count "hello")))
+  (is (= [42]     (assert-truthy vector (* 2 3 7) )))
+  (is (thrown? IllegalStateException (assert-truthy (doseq [char "hello"] char))))
+  (is (thrown? IllegalStateException (assert-truthy truthy? false)))
+)
 
 (deftest t-keyvals
   (testing "basic usage"
