@@ -153,7 +153,7 @@
   [& body]
   `(vec (for ~@body)))
 
-(defn glue 
+(defn glue
   "Glues together like collections:
 
      (glue [1 2] [3 4] [5 6])         -> [1 2 3 4 5 6]
@@ -216,6 +216,9 @@
       (= 1   num-keys)      (dissoc the-map key-to-clear)
       :else                 (update-in the-map parent-keys dissoc key-to-clear))))
 
+; #awt TODO:  add in clear-nil-entries to recursively delete all k-v pairs
+;               where val is nil or empty?
+
 (s/defn only  :- s/Any
   "(only seq-arg)
   Ensures that a sequence is of length=1, and returns the only value present.
@@ -237,10 +240,7 @@
         (throw (IllegalStateException. (str "validate: validation failure, result=" result ))))
       tstval)))
 
-; #awt TODO:  add in clear-nil-entries to recursively delete all k-v pairs
-;               where val is nil or empty?
-
-(defn keyvals 
+(defn keyvals
   "For any map m, returns the keys & values of m as a vector, suitable for reconstructing m via
    (apply hash-map (keyvals m))."
   [m]
@@ -352,6 +352,20 @@
                             ] dig-result ))))
     ] 
       or-result )))
+
+; #awt #todo:  add (thru a b)     -> [a..b] (inclusive)
+;                  (thru 1 3)     -> [ 1  2  3]
+;                  (thru \a \c)   -> [\a \b \c]
+;                  (thru :a :c)   -> [:a :b :c]
+;                  (thru 'a 'c)   -> ['a 'b 'c]
+;                  (thru 0.1 0.3 0.1)     -> [0.1  0.2  0.3]
+;                       (thru start stop step) uses integer steps and
+;                       (rel= curr stop :tol step) as ending criteria
+(rel= 1         1.001       :tol 0.01 )     ; true
+;       (thru :cc 1 5)   -> [1 2 3 4 5]
+;       (thru :oc 1 5)   -> [  2 3 4 5]
+;       (thru :co 1 5)   -> [1 2 3 4  ]  ; like (range ...)
+;       (thru :oo 1 5)   -> [  2 3 4  ]
 
 ; #todo add to README
 (defn keep-if
