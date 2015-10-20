@@ -81,7 +81,7 @@ normally use `:refer :all` for `tupelo.core` in our namespaces:
 
 === tupelo.core - Basic functions
 
-=== Expression debugging
+=== Expression Debugging
 
 Ever been debugging some code and had trouble printing out intermediate
 values?  For example:
@@ -186,7 +186,7 @@ the previous result.
 ;=> "We need to order 2 items." )
 ----
 
-=== The truth is not ambiguous
+=== The Truth Is Not Ambiguous
 
 Clojure marries the worlds of Java and Lisp. Unfortunately, these two worlds have different ideas of
 truth, so Clojure accepts both `false` and `nil` as _false_. Sometimes, however, you want to coerce
@@ -222,7 +222,7 @@ higher-order-function is required:
               (= 2 num-false) )))))
 ----
 
-=== Convenience in testing seq's
+=== Convenience in Testing Seq's
 
 These functions aren't in clojure.core, but people keep writing into the mailing list
 wondering where they are. Well, now they are available:
@@ -250,7 +250,7 @@ The unit test shows these functions in action
                        [false  false   false  false  false  false ] ))
 ----
 
-=== Focus on vectors
+=== Focus on Vectors
 
 Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you just want
 everything to stay in a nice, eager, random-access vector. Here is an easy way to build up
@@ -278,7 +278,7 @@ in a vector:
        [0 1 4 9] ))
 ----
 
-=== Joining together like collections
+=== Gluing Together Like Collections
 
 The `concat` function can sometimes have rather surprising results:
 [source,clojure]
@@ -451,7 +451,7 @@ Here is very handy function for that:
 ;=> {:b 2, :a 1}
 ----
 
-=== Default value in case of Exception
+=== Default Value in Case of Exception
 
 Sometimes you know an operation may result in an Exception, and you would like to have the
 Exception converted into a default value.  That is when you need:
