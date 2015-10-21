@@ -222,17 +222,20 @@ is an example of Tupelo Datomic query in action:
 
 ----
 
-Tupelo Datomic modifies the original Datomic query syntax compared to `(datomic.api/q ...)` in two
-ways.  For convenience, the query form does not need to be wrapped in a map literal nor is any
-quoting required.  Most importantly, the `:in` keyword has been replaced with the `:let` keyword,
-and the syntax has been copied from the Clojure `let` special form so that each query variables are
-more closely aligned with their actual values. Also, the implicit DB `$` must be explicitly tied to
-its data source in all cases (as shown above).
+Tupelo Datomic modifies the original Datomic query syntax compared to
+`(datomic.api/q ...)` in two ways.  For convenience, the query form does not
+need to be wrapped in a map literal nor is any quoting required.  Most
+importantly, the `:in` keyword has been replaced with the `:let` keyword, and
+the syntax has been copied from the Clojure `let` special form. In this way, each of
+the query variables is more closely aligned with its actual value. Also, the
+implicit DB `$` must be explicitly tied to its data source in all cases (as
+shown above).
 
-Receiving a TupleSet result is the most general case, but in many instances we can save some effort.
-If we are retrieving the value for a single attribute per entity, we don't need to wrap that result in a
-tuple. In this case, we can use the function `td/query-set`, which returns a set of scalars as
-output rather than a set of tuples of scalars:
+Receiving a TupleSet result is the most general case, but in many instances we
+can save some effort.  If we are retrieving the value for a single attribute per
+entity, we don't need to wrap that result in a tuple. In this case, we can use
+the function `td/query-set`, which returns a set of scalars as output rather
+than a set of tuples of scalars:
 
 [source,clojure]
 ----

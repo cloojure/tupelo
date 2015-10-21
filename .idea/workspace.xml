@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="bb094a6a-2b2f-4a43-83cf-fdaa1f45b1ad" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tupelo/datomic.adoc" afterPath="$PROJECT_DIR$/src/tupelo/datomic.adoc" />
-    </list>
+    <list default="true" id="bb094a6a-2b2f-4a43-83cf-fdaa1f45b1ad" name="Default" comment="" />
     <ignored path="tupelo.iws" />
     <ignored path=".idea/workspace.xml" />
     <ignored path=".idea/dataSources.local.xml" />
