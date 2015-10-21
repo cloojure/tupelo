@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="bb094a6a-2b2f-4a43-83cf-fdaa1f45b1ad" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/README.adoc" afterPath="$PROJECT_DIR$/README.adoc" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/tupelo/datomic.adoc" afterPath="$PROJECT_DIR$/src/tupelo/datomic.adoc" />
     </list>
     <ignored path="tupelo.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -472,12 +472,12 @@
       <workItem from="1444518446091" duration="765000" />
       <workItem from="1445280253461" duration="65000" />
       <workItem from="1445280327015" duration="79000" />
-      <workItem from="1445280415716" duration="10094000" />
+      <workItem from="1445280415716" duration="10693000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="11003000" />
+    <option name="totallyTimeSpent" value="11602000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="1918" y="-3" width="1924" height="1087" extended-state="6" />

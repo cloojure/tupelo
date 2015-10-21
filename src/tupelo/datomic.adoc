@@ -10,7 +10,7 @@ image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 == Overview
 
 Have you ever wanted to jump into using Datomic but wished for a simpler starting point? If
-so, then *Tupelo Datomic* is for you!  The goal of Tupelo Datomic is to automatate all of the detail
+so, then *Tupelo Datomic* is for you!  The goal of Tupelo Datomic is to automate all of the detail
 that rarely changes or is needed when dealing with Datomic, making your job nearly effortless.
 
 Suppose we're trying to keep track of information for the world's premiere spy agency. Let's create
@@ -19,8 +19,9 @@ link:../../test/tst/tupelo/datomic_bond.clj[in the unit test]).
 
 [source,clojure]
 ----
+(ns ...
   (:require [tupelo.datomic   :as td]
-            [tupelo.schema    :as ts])
+            [tupelo.schema    :as ts]))
 
   ; Create some new attributes. Required args are the attribute name (an optionally namespaced
   ; keyword) and the attribute type (full listing at http://docs.datomic.com/schema.html). We wrap
@@ -49,16 +50,34 @@ number of choices available to our antagonists:
     (td/new-enum :weapon/wit))
 ----
 
+There are several other naming possibilities for this (or any) attribute:
+
+----
+original           "pure"           pseudo-namespace   random-namespace     no-namespace        simple
+                                                                          
+:weapon/gun     :weapon.type/gun      :weapon-gun       :big/gun            :big-gun            :gun
+:weapon/knife   :weapon.type/knife    :weapon-knife     :sharp/knife        :sharp-knife        :knife
+:weapon/guile   :weapon.type/guile    :weapon-guile     :effortless/guile   :effortless-guile   :guile
+:weapon/wit     :weapon.type/wit      :weapon-wit       :rapier/wit         :rapier-wit         :wit
+----
+
+To Datomic, all of these attribute naming styles are equally valid. In
+particular, Datomic applies no semantic difference between any of these
+choices. Datomic effectively treats any attribute name as an opaque string.  For
+simplicity, one may wish to omit any attribute namespaces until the project has
+grown large enought to warrant them.
+
 Let's create a few antagonists and load them into the DB. Note that we are just using plain Clojure
 values and literals here, and we don't have to worry about any Datomic specific conversions.
 
 [source,clojure]
 ----
-  ; Create some antagonists and load them into the db.  We can specify some of the attribute-value
-  ; pairs at the time of creation, and add others later. Note that whenever we are adding multiple
-  ; values for an attribute in a single step (e.g. :weapon/type), we must wrap all of the values
-  ; in a set. Note that the set implies there can never be duplicate weapons for any one person.
-  ; As before, we immediately commit the new entities into the DB.
+  ; Create some antagonists and load them into the db.  We can specify some of the
+  ; attribute-value pairs at the time of creation, and add others later. Note that
+  ; whenever we are adding multiple values for an attribute in a single step (e.g.
+  ; :weapon/type), we must wrap all of the values in a set. Note that the set
+  ; implies there can never be duplicate weapons for any one person.  As before,
+  ; we immediately commit the new entities into the DB.
   (td/transact *conn* 
     (td/new-entity { :person/name "James Bond" :location "London"     :weapon/type #{ :weapon/gun :weapon/wit   } } )
     (td/new-entity { :person/name "M"          :location "London"     :weapon/type #{ :weapon/gun :weapon/guile } } )
