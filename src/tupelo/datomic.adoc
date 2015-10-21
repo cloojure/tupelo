@@ -130,9 +130,10 @@ We can also use either type of EntitySpec for update
 
 [source,clojure]
 ----
-    ; Update the database with more weapons.  If we overwrite some items that are already present
-    ; (e.g. :weapon/gun) it is idempotent (no duplicates are allowed).  The first arg to td/update
-    ; is an EntitySpec (either EntityId or LookupRef) and determines the Entity that is updated.
+    ; Update the database with more weapons.  If we overwrite some items that are
+    ; already present (e.g. :weapon/gun) it is idempotent (no duplicates are
+    ; allowed).  The first arg to td/update is an EntitySpec (either EntityId or
+    ; LookupRef) and determines the Entity that is updated.
     (td/transact *conn* 
       (td/update james-eid   ; update using EID
           { :weapon/type #{ :weapon/gun :weapon/knife }
@@ -156,6 +157,29 @@ antagonists have only a single gun:
          { :person/name "M" :location "London"          :weapon/type #{:weapon/guile :weapon/gun} }
          { :person/name "Dr No" :location "Caribbean"   :weapon/type #{:weapon/guile :weapon/knife :weapon/gun} } } )))
 ----
+
+A Note that James Bond is the only person with an entry for `:person/secret-id`.
+This points out an *_important_* conceptual point regarding Datomic:
+
+.Datomic Conceptual Model
+****
+[big]#*_Datomic is conceptually structured as a simple map, where all keys are EID values, and
+each value is a map of attribute-value pairs._*#
+
+An equivlent example in Clojure would look like:
+
+[source,clojure]
+----
+; <EID>         <Map of Attribute-Value Pairs>
+{  1001    { :person/name "James Bond"    :location "London"      ... :person/secret-id 7 }
+   1002    { :person/name "M"             :location "London"      ... }
+   1003    { :person/name "Dr No"         :location "Caribbean"   ... } }
+----
+
+except that the _actual_ EID values are randomly assigned by the Datomic
+Transactor; we only know that they are of type "positive 64-bit integer".
+****
+
 
 == Enum Values
 
