@@ -294,7 +294,6 @@ value instead of a set of tuples of scalars:
         busy      (try ; error - multiple results for London
                     (td/query-scalar  :let    [$    (live-db)
                                                ?loc "London"]
-
                                       :find   [?eid]
                                       :where  [ [?eid :person/name  ?name]
                                                 [?eid :location     ?loc ] ] )
