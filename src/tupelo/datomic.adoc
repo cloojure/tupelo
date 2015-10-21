@@ -182,25 +182,28 @@ Transactor; we only know that they are of type "positive 64-bit integer".
 
 == Enum Values
 
-The benefit of using enumerated values in Datomic is that we can easily restrict the the domain of
+The benefit of using enumerated values in Datomic is that we can restrict the the domain of
 acceptable values more easily than by using plain keyword values. For example, if we try to give
 James a non-existent weapon, Datomic will generate an exception:
 
 [source,clojure]
 ----
-  ; Try to add non-existent weapon. This throws since the bogus kw does not match up with an entity.
+  ; Try to add non-existent weapon. This throws an Exception since the 
+  ; bogus kw does not match up with an entity.
   (is (thrown? Exception   @(td/transact *conn* 
                               (td/update [:person/name "James Bond"] ; update using a LookupRef
-                                { :weapon/type #{ :there.is/no-such-kw } } ))))  ; bogus value for :weapon/type causes exception
+                                { :weapon/type #{ :there.is/no-such-kw } } ))))
+                                ; bogus value for :weapon/type causes exception
 
 ----
 
 == Query Functions in Tupelo Datomic
 
-When querying for values using Tupelo Datomic, the fundamental result type is a TupleSet (a Clojure
-set containing unique Clojure vectors).  This overcomes the problem where native result type
-datomic.query.EntityMap is lazy-loading and may give unexpected results.  Here is an
-example of Tupelo Datomic query in action:
+When querying for values using Tupelo Datomic, the fundamental result type is a
+TupleSet (a Clojure set containing unique Clojure vectors).  This overcomes a
+possible problem with the native Datomic return type of datomic.query.EntityMap,
+which is lazy-loading and may appear to be missing data (unless forced).  Here
+is an example of Tupelo Datomic query in action:
 
 [source,clojure]
 ----
