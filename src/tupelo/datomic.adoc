@@ -161,19 +161,19 @@ antagonists have only a single gun:
 A Note that James Bond is the only person with an entry for `:person/secret-id`.
 This points out an *_important_* conceptual point regarding Datomic:
 
-==== The Datomic Conceptual Model
+==== The Datomic Conceptual Model:
 
-[big]#*_Datomic is conceptually structured as a simple map, where all keys are EID values, and
+[big]#*_Datomic is conceptually structured as a simple map, where each key is an EID, and
 each value is a map of attribute-value pairs._*#
 
-An equivlent example in Clojure would look like:
+A Clojure example equivalent to the above would look like:
 
 [source,clojure]
 ----
-; <EID>         <Map of Attribute-Value Pairs>
+; <EID>    <---------- Map of Attribute-Value Pairs -------------------------------------->
 {  1001    { :person/name "James Bond"    :location "London"      ... :person/secret-id 7 }
-   1002    { :person/name "M"             :location "London"      ... }
-   1003    { :person/name "Dr No"         :location "Caribbean"   ... } }
+   1002    { :person/name "M"             :location "London"      ...                     }
+   1003    { :person/name "Dr No"         :location "Caribbean"   ...                     } }
 ----
 
 except that the _actual_ EID values are randomly assigned by the Datomic
