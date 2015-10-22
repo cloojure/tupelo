@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Leiningen: prismatic/schema:0.4.3">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/prismatic/schema/0.4.3/schema-0.4.3.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

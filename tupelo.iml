@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module cursive.leiningen.project.LeiningenProjectsManager.displayName="tupelo:0.1.50" cursive.leiningen.project.LeiningenProjectsManager.isLeinModule="true" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="false">
+    <output url="file://$MODULE_DIR$/target/base+system+user+dev/classes" />
+    <output-test url="file://$MODULE_DIR$/target/base+system+user+dev/classes" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/resources" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/dev-resources" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/test" isTestSource="true" />
+      <excludeFolder url="file://$MODULE_DIR$/target/base+system+user+dev" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Leiningen: clj-time:0.7.0" level="project" />
+    <orderEntry type="library" name="Leiningen: clojure-complete:0.2.3" level="project" />
+    <orderEntry type="library" name="Leiningen: clojure-csv:2.0.1" level="project" />
+    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk-core:1.8.11" level="project" />
+    <orderEntry type="library" name="Leiningen: com.amazonaws/aws-java-sdk:1.8.11" level="project" />
+    <orderEntry type="library" name="Leiningen: com.datomic/datomic-lucene-core:3.3.0" level="project" />
+    <orderEntry type="library" name="Leiningen: com.datomic/datomic-pro:0.9.5173" level="project" />
+    <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-annotations:2.1.1" level="project" />
+    <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-core:2.1.1" level="project" />
+    <orderEntry type="library" name="Leiningen: com.fasterxml.jackson.core/jackson-databind:2.1.1" level="project" />
+    <orderEntry type="library" name="Leiningen: com.google.guava/guava:18.0" level="project" />
+    <orderEntry type="library" name="Leiningen: com.h2database/h2:1.3.171" level="project" />
+    <orderEntry type="library" name="Leiningen: commons-codec:1.5" level="project" />
+    <orderEntry type="library" name="Leiningen: criterium:0.4.3" level="project" />
+    <orderEntry type="library" name="Leiningen: io.netty/netty:3.6.7.Final" level="project" />
+    <orderEntry type="library" name="Leiningen: joda-time:2.3" level="project" />
+    <orderEntry type="library" name="Leiningen: net.spy/spymemcached:2.11.4" level="project" />
+    <orderEntry type="library" name="Leiningen: org.apache.httpcomponents/httpclient:4.2" level="project" />
+    <orderEntry type="library" name="Leiningen: org.apache.httpcomponents/httpcore:4.2" level="project" />
+    <orderEntry type="library" name="Leiningen: org.apache.tomcat/tomcat-jdbc:7.0.27" level="project" />
+    <orderEntry type="library" name="Leiningen: org.apache.tomcat/tomcat-juli:7.0.27" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/clojure:1.8.0-alpha3" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/core.cache:0.6.3" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/core.incubator:0.1.3" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/core.match:0.3.0-alpha4" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/core.memoize:0.5.6" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/data.priority-map:0.0.2" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/test.check:0.5.9" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/tools.analyzer.jvm:0.6.5" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/tools.analyzer:0.6.4" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/tools.cli:0.2.2" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/tools.namespace:0.2.9" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/tools.nrepl:0.2.10" level="project" />
+    <orderEntry type="library" name="Leiningen: org.clojure/tools.reader:0.8.12" level="project" />
+    <orderEntry type="library" name="Leiningen: org.codehaus.janino/commons-compiler-jdk:2.6.1" level="project" />
+    <orderEntry type="library" name="Leiningen: org.codehaus.janino/commons-compiler:2.6.1" level="project" />
+    <orderEntry type="library" name="Leiningen: org.fressian/fressian:0.6.5" level="project" />
+    <orderEntry type="library" name="Leiningen: org.hornetq/hornetq-commons:2.3.17.Final" level="project" />
+    <orderEntry type="library" name="Leiningen: org.hornetq/hornetq-core-client:2.3.17.Final" level="project" />
+    <orderEntry type="library" name="Leiningen: org.hornetq/hornetq-journal:2.3.17.Final" level="project" />
+    <orderEntry type="library" name="Leiningen: org.hornetq/hornetq-server:2.3.17.Final" level="project" />
+    <orderEntry type="library" name="Leiningen: org.jboss.logging/jboss-logging:3.1.0.GA" level="project" />
+    <orderEntry type="library" name="Leiningen: org.jgroups/jgroups:3.2.12.Final" level="project" />
+    <orderEntry type="library" name="Leiningen: org.ow2.asm/asm-all:4.2" level="project" />
+    <orderEntry type="library" name="Leiningen: org.slf4j/jcl-over-slf4j:1.7.7" level="project" />
+    <orderEntry type="library" name="Leiningen: org.slf4j/jul-to-slf4j:1.7.7" level="project" />
+    <orderEntry type="library" name="Leiningen: org.slf4j/log4j-over-slf4j:1.7.7" level="project" />
+    <orderEntry type="library" name="Leiningen: org.slf4j/slf4j-api:1.7.7" level="project" />
+    <orderEntry type="library" name="Leiningen: org.slf4j/slf4j-nop:1.7.7" level="project" />
+    <orderEntry type="library" name="Leiningen: prismatic/schema:0.4.3" level="project" />
+  </component>
+</module>

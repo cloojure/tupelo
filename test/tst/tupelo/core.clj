@@ -274,9 +274,22 @@
                      :b2 { :c1 "c1" }}} ))))
 
 (deftest t-only
+  (is (= 42 (only [42])))
   (is (= :x (only [:x])))
+  (is (= "hello" (only ["hello"] )))
   (is (thrown? IllegalArgumentException (only [])))
   (is (thrown? IllegalArgumentException (only [:x :y]))))
+
+(deftest t-validate
+  (is (= 3        (validate pos? 3)))
+  (is (= 3.14     (validate number? 3.14 )))
+  (is (= 3.14     (validate #(< 3 % 4) 3.14 )))
+  (is (= [0 1 2]  (validate vector? (vec (range 3)))))
+  (is (= nil      (validate nil? (next []))))
+  (is (= [0 1 2]  (validate #(= 3 (count %)) [0 1 2])))
+  (is (thrown? IllegalStateException (validate number? "hello")))
+  (is (thrown? IllegalStateException (validate truthy? nil)))
+)
 
 (deftest t-keyvals
   (testing "basic usage"

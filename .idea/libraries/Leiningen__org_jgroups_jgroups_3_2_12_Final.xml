@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Leiningen: org.jgroups/jgroups:3.2.12.Final">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/jgroups/jgroups/3.2.12.Final/jgroups-3.2.12.Final.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

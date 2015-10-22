@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Leiningen: com.datomic/datomic-lucene-core:3.3.0">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/datomic/datomic-lucene-core/3.3.0/datomic-lucene-core-3.3.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
