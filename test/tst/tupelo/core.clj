@@ -157,8 +157,8 @@
     (is (= [1 2 3 4]  (conjv '(1) 2  3 4))) )
 
   (testing "vector elements"
-    (is (=    [[1 2] [3 4]  [5 6] ]
-      (conjv '([1 2] [3 4]) [5 6] ) )))
+    (is (=    [ [1 2] [3 4]  [5 6] ]
+      (conjv '( [1 2] [3 4]) [5 6] ) )))
 
   (testing "lazy seqs/apply"
     (is (= [0 1 2 3 4 5] (conjv (range 4) 4 5)))

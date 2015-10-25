@@ -5,7 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tupelo.core
-  "tupelo - Cool stuff you wish was in Clojure"
+  "tupelo - Making Clojure even sweeter"
   (:require [clojure.core                 :as clj]
             [clojure.string               :as str] 
             [clojure.set                  :as c.s]
@@ -115,37 +115,52 @@
        result#)))
 
 
-(defn truthy?
+(s/defn truthy? :- s/Bool
   "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
-  [arg]
+  [arg :- s/Any]
   (if arg true false) )
 
-(defn falsey?
+(s/defn falsey? :- s/Bool
   "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
    to (not (truthy? arg))."
-  [arg]
+  [arg :- s/Any]
   (if arg false true) )
 
-(defn any?
+(defn validate
+  "(validate tstfn tstval)
+  Used to validate intermediate results. Returns tstval if the result of
+  (tstfn tstval) is truthy.  Otherwise, throws IllegalStateException."
+  ([tstfn tstval]
+    (let [result (tstfn tstval)]
+      (when-not (truthy? result)
+        (throw (IllegalStateException. (str "validate: validation failure, result=" result ))))
+      tstval)))
+
+(s/defn any? :- s/Bool
   "For any predicate pred & collection coll, returns true if (pred x) is logical true for any x in
    coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
-  [pred coll]
+  [pred :- s/Any
+   coll :- [s/Any]]
   (truthy? (some pred coll)) )
 
-(defn not-empty?
+(s/defn not-empty? :- s/Bool
   "For any collection coll, returns true if coll contains any items; otherwise returns false.
    Equivalent to (not (empty? coll))."
+; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
   [coll]
-  (truthy? (seq coll)) )
+  (truthy? (seq coll)))
 
-(defn conjv 
-  "For any collection coll and seq x, appends the x's to coll, always returning the result as a
-   vector."
+(s/defn conjv :- [s/Any]
+  "Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.
+   The result is always returned as a vector."
   ; From Stuart Sierra post 2014-2-10
-  ( [coll x]
-      (conj (vec coll) x) )
-  ( [coll x & xs]
-      (apply conj (vec coll) x xs) ))
+  ( [base-coll  :- [s/Any]
+     value      :-  s/Any ]
+      (conj (vec base-coll) value) )
+  ( [base-coll  :- [s/Any]
+     value      :-  s/Any 
+     & values   :- [s/Any] ]
+      (apply conj (vec base-coll) value values) ))
 
 (defmacro forv
   "Like clojure.core/for but returns results in a vector.  Equivalent to (into [] (for ...)). Not
@@ -176,6 +191,17 @@
       (reduce into colls)
       (throw (IllegalArgumentException.
                 (str  "colls must be all identical type; coll-types:" coll-types ))))))
+
+(defn seqable?      ; from clojure.contrib.core/seqable
+  "Returns true if (seq x) will succeed, false otherwise."
+  [x]
+  (or (seq? x)
+      (instance? clojure.lang.Seqable x)
+      (nil? x)
+      (instance? Iterable x)
+      (-> x .getClass .isArray)
+      (string? x)
+      (instance? java.util.Map x)))
 
 (declare fetch)
 (s/defn grab :- s/Any
@@ -229,16 +255,6 @@
     (when-not (= 1 seq-len)
       (throw (IllegalArgumentException. (str "only: length != 1; length=" seq-len)))))
   (first seq-arg))
-
-(defn validate
-  "(validate tstfn tstval)
-  Used to validate intermediate results. Returns tstval if the result of
-  (tstfn tstval) is truthy.  Otherwise, throws IllegalStateException."
-  ([tstfn tstval]
-    (let [result (tstfn tstval)]
-      (when-not (truthy? result)
-        (throw (IllegalStateException. (str "validate: validation failure, result=" result ))))
-      tstval)))
 
 (defn keyvals
   "For any map m, returns the keys & values of m as a vector, suitable for reconstructing m via
@@ -425,17 +441,6 @@
   (it-> (apply str args)
         (take nchars it)
         (apply str it)))
-
-(defn seqable?      ; from clojure.contrib.core/seqable
-  "Returns true if (seq x) will succeed, false otherwise."
-  [x]
-  (or (seq? x)
-      (instance? clojure.lang.Seqable x)
-      (nil? x)
-      (instance? Iterable x)
-      (-> x .getClass .isArray)
-      (string? x)
-      (instance? java.util.Map x)))
 
 ; #todo need test & README
 (s/defn submap? :- Boolean
