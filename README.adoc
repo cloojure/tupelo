@@ -346,18 +346,18 @@ user=> (grab :c m)
 The function `grab` should also be used in place of `clojure.core/get`. Simply reverse the order of arguments to
 match the "keyword-first, map-second" convention.
 
-For looking up values in nested maps, the function `fetch` replaces `clojure.core/get-in`:
+For looking up values in nested maps, the function `fetch-in` replaces `clojure.core/get-in`:
 [source,clojure]
 ----
-(fetch m ks)
-  "A fail-fast version of clojure.core/get-in. When invoked as (fetch the-map keys-vec), 
+(fetch-in m ks)
+  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec), 
    returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).  
    Throws an Exception if the path keys-vec is not present in the-map."
 
 user=> (def mm {:a 1 :b {:c 3}})
-user=> (fetch mm [:b :c])
+user=> (fetch-in mm [:b :c])
 3
-user=> (fetch mm [:b :z])
+user=> (fetch-in mm [:b :z])
 ;=> IllegalArgumentException Key seq not present in map:
 ;=>   map : {:b {:c 3}, :a 1}
 ;=>   keys: [:b :z]

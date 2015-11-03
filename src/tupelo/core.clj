@@ -203,17 +203,17 @@
       (string? x)
       (instance? java.util.Map x)))
 
-(declare fetch)
+(declare fetch-in)
 (s/defn grab :- s/Any
   "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map), 
    returns the value associated with :the-key as for (clojure.core/get the-map :the-key).  
    Throws an Exception if :the-key is not present in the-map."
   [the-key    :- s/Keyword
    the-map    :- ts/KeyMap ] 
-  (fetch the-map [the-key] ))
+  (fetch-in the-map [the-key] ))
 
-(s/defn fetch :- s/Any
-  "A fail-fast version of clojure.core/get-in. When invoked as (fetch the-map keys-vec), 
+(s/defn fetch-in :- s/Any
+  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec), 
    returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).  
    Throws an Exception if the path keys-vec is not present in the-map."
   [the-map    :- ts/KeyMap 
