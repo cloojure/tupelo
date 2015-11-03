@@ -153,8 +153,8 @@
   "Returns the tx-data to create a new entity in the DB. Usage:
 
     (td/transact *conn* 
-      (new-entity attr-val-map)                 ; default partition -> :db.part/user 
-      (new-entity partition attr-val-map)       ; user-specified partition
+      (new-entity attr-val-map)             ; default partition -> :db.part/user 
+      (new-entity partition attr-val-map)   ; user-specified partition
     )
 
    where attr-val-map is a Clojure map containing attribute-value pairs to be added to the new
