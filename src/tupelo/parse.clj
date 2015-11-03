@@ -5,7 +5,7 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.parse
-  "Utils for parsing string values. Provides a thin Clojure wrapper around java native
+ "Utils for parsing string values. Provides a thin Clojure wrapper around java native
   parsing functions such as java.lang.Float/parseFloat.  Unlike the original java
   functions, these native-Clojure functions can be used as higher-order functions in maps,
   function arguments, etc.  Each function also provides an optional default-value which
