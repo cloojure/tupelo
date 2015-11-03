@@ -1,4 +1,4 @@
-;   Copyright (c) Alan Thompson. All rights reserved. 
+;   Copyright (c) Alan Thompson. All rights reserved.
 ;   The use and distribution terms for this software are covered by the Eclipse Public License 1.0
 ;   (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the file epl-v10.html at
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
@@ -7,7 +7,7 @@
 (ns tupelo.core
   "tupelo - Making Clojure even sweeter"
   (:require [clojure.core                 :as clj]
-            [clojure.string               :as str] 
+            [clojure.string               :as str]
             [clojure.set                  :as c.s]
             [clojure.pprint               :refer [pprint] ]
             [clojure.core.match           :as ccm ]
@@ -25,22 +25,22 @@
 
 (defn ^:no-doc spy-indent-reset
   "Reset the spy indent level to zero."
-  [] 
+  []
   (reset! spy-indent-level 0))
 
-(defn ^:no-doc spy-indent-inc 
+(defn ^:no-doc spy-indent-inc
   "Increase the spy indent level by one."
-  [] 
+  []
   (swap! spy-indent-level inc))
 
-(defn ^:no-doc spy-indent-dec 
+(defn ^:no-doc spy-indent-dec
   "Decrease the spy indent level by one."
-  [] 
+  []
   (swap! spy-indent-level dec))
 
 (defn spy
   "A form of (println ...) to ease debugging display of either intermediate values in threading
-   forms or function return values. There are three variants.  Usage:  
+   forms or function return values. There are three variants.  Usage:
 
     (spy :msg <msg-string>)
         This variant is intended for use in either thread-first (->) or thread-last (->>)
@@ -48,12 +48,12 @@
         well for both the -> and ->> operators. Spy prints both <msg-string>  and the
         threading value to stdout, then returns the value for further propogation in the
         threading form. For example, both of the following:
-            (->   2 
-                  (+ 3) 
+            (->   2
+                  (+ 3)
                   (spy :msg \"sum\" )
                   (* 4))
-            (->>  2 
-                  (+ 3) 
+            (->>  2
+                  (+ 3)
                   (spy :msg \"sum\" )
                   (* 4))
         will print 'sum => 5' to stdout.
@@ -78,7 +78,7 @@
   ( [arg1 arg2 arg3]
     (cond (= :msg arg1) (do (println (str (spy-indent-spaces) arg2 " => " (pr-str arg3))) arg3)  ; for ->>
           (= :msg arg2) (do (println (str (spy-indent-spaces) arg3 " => " (pr-str arg1))) arg1)  ; for ->
-          :else (throw (IllegalArgumentException.  (str 
+          :else (throw (IllegalArgumentException.  (str
                            "spy: either first or 2nd arg must be :msg \n   args:"
                            (pr-str [arg1 arg2 arg3]))))))
 
@@ -92,7 +92,7 @@
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
    expression, printing both the expression and its value to stdout, then returns the value."
   [expr]
-  `(let [spy-val# ~expr] 
+  `(let [spy-val# ~expr]
       (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val#)))
       spy-val#))
 
@@ -158,7 +158,7 @@
      value      :-  s/Any ]
       (conj (vec base-coll) value) )
   ( [base-coll  :- [s/Any]
-     value      :-  s/Any 
+     value      :-  s/Any
      & values   :- [s/Any] ]
       (apply conj (vec base-coll) value values) ))
 
@@ -179,7 +179,7 @@
 
      (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
      (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
-   " 
+   "
   [& colls]
   (let [coll-types        (mapv type colls)
         vec-or-list?      (fn [coll] (or (vector? coll)
@@ -205,39 +205,39 @@
 
 (declare fetch-in)
 (s/defn grab :- s/Any
-  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map), 
-   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).  
+  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
+   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
    Throws an Exception if :the-key is not present in the-map."
   [the-key    :- s/Keyword
-   the-map    :- ts/KeyMap ] 
+   the-map    :- ts/KeyMap ]
   (fetch-in the-map [the-key] ))
 
 (s/defn fetch-in :- s/Any
-  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec), 
-   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).  
+  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
+   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
    Throws an Exception if the path keys-vec is not present in the-map."
-  [the-map    :- ts/KeyMap 
+  [the-map    :- ts/KeyMap
    keys-vec   :- [s/Keyword] ]
   (let [result (clj/get-in the-map keys-vec ::not-found) ]
     (if (= result ::not-found)
-      (throw (IllegalArgumentException.    
+      (throw (IllegalArgumentException.
                 (str  "Key seq not present in map:" \newline
                       "  map : " the-map  \newline
                       "  keys: " keys-vec  \newline )))
       result )))
 
 (s/defn dissoc-in :- s/Any
-  "A sane version of dissoc-in that will not delete intermediate keys. 
+  "A sane version of dissoc-in that will not delete intermediate keys.
    When invoked as (dissoc-in the-map [:k1 :k2 :k3... :kZ]), acts like
-   (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only 
-   the map entry containing the last key :kZ is removed, and all map entries 
+   (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only
+   the map entry containing the last key :kZ is removed, and all map entries
    higher than kZ in the hierarchy are unaffected."
-  [the-map    :- ts/KeyMap 
+  [the-map    :- ts/KeyMap
    keys-vec   :- [s/Keyword] ]
   (let [num-keys      (count    keys-vec)
         key-to-clear  (last     keys-vec)
-        parent-keys   (butlast  keys-vec) ] 
-    (cond 
+        parent-keys   (butlast  keys-vec) ]
+    (cond
       (zero? num-keys)      the-map
       (= 1   num-keys)      (dissoc the-map key-to-clear)
       :else                 (update-in the-map parent-keys dissoc key-to-clear))))
@@ -260,7 +260,7 @@
   "For any map m, returns the keys & values of m as a vector, suitable for reconstructing m via
    (apply hash-map (keyvals m))."
   [m]
-  {:pre  [ (map? m) ] 
+  {:pre  [ (map? m) ]
    :post [ (vector? %) ] }
   (reduce   #(conj %1 (first %2) (second %2))
             [] (seq m) ))
@@ -273,7 +273,7 @@
    through the next etc.  If result is nil, throw IllegalArgumentException"
   [expr & forms]
   (let [g     (gensym)
-        pstep (fn [step] `(if (nil? ~g) 
+        pstep (fn [step] `(if (nil? ~g)
                             (throw (IllegalArgumentException. (str "Nil value passed to form '" ~step \')))
                             ; #awt #todo: remove unneeded test above ^^^
                             #_(do (println "g=" ~g) (spyxx (-> ~g ~step)))
@@ -313,13 +313,17 @@
      ~@body
      (catch Exception e# ~default-val) ))
 
-; (defn round [dblVal :digits 2]            ; #todo add 
+; (defn round [dblVal :incr   (/ 1 3)]            ; #todo add
 ;   (let [factor (Math/pow 10 *digits*)]
-;     (it-> dblVal 
+;     (it-> dblVal
 ;           (* it factor)
 ;           (Math/round it)
 ;           (/ it factor))))
-                                      
+; (defn round [dblVal :exp -2]
+;   (round dblVal :incr (Math/pow 10 *digits*)))
+; (defn round [dblVal :digits 2]
+;   (round dblVal :exp (- *digits*)))
+
 
 (defn rel=
  "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative equality
@@ -338,7 +342,7 @@
       (throw (IllegalArgumentException.
                 (str  "Must specify either :digits or :tol" \newline
                       "opts: " opts ))))
-    (when tol 
+    (when tol
       (when-not (number? tol)
         (throw (IllegalArgumentException.
                   (str  ":tol must be a number" \newline
@@ -347,7 +351,7 @@
         (throw (IllegalArgumentException.
                   (str  ":tol must be positive" \newline
                         "opts: " opts )))))
-    (when digits 
+    (when digits
       (when-not (integer? digits)
         (throw (IllegalArgumentException.
                   (str  ":digits must be an integer" \newline
@@ -360,8 +364,8 @@
     ; :digits was specified.  So, return the answer.
     (let [val1      (double val1)
           val2      (double val2)
-          delta-abs (Math/abs (- val1 val2)) 
-          or-result  
+          delta-abs (Math/abs (- val1 val2))
+          or-result
             (truthy?  (or (zero? delta-abs)
                           (and tol
                             (let [tol-result (< delta-abs tol)
@@ -370,11 +374,11 @@
                             (let [abs1            (Math/abs val1)
                                   abs2            (Math/abs val2)
                                   max-abs         (Math/max abs1 abs2)
-                                  delta-rel-abs   (/ delta-abs max-abs) 
+                                  delta-rel-abs   (/ delta-abs max-abs)
                                   rel-tol         (Math/pow 10 (- digits))
                                   dig-result      (< delta-rel-abs rel-tol)
                             ] dig-result ))))
-    ] 
+    ]
       or-result )))
 
 ; #awt #todo:  add (thru a b)     -> [a..b] (inclusive)
@@ -409,8 +413,8 @@
     ; We need to use flatten twice since the inner one doesn't changes a string into a
     ; sequence of chars, nor does it affect byte-array, et al.  We eventually get
     ; seq-of-scalars which can look like [ \a \b 77 78 \66 \z ]
-    seq-of-scalars  (flatten 
-                      (for [it (flatten [args])] 
+    seq-of-scalars  (flatten
+                      (for [it (flatten [args])]
                         ; Note that "sequential?" returns false for sets, strings, and the various
                         ; array types.
                         (if (or (sequential? it)
@@ -426,7 +430,7 @@
                           it )))
     ; Coerce any integer values into character equivalents (e.g. 65 -> \A), then concat
     ; into a single string.
-    result  (apply str 
+    result  (apply str
               (map char seq-of-scalars))
   ]
     result ))
@@ -443,7 +447,7 @@
   (line-seq (BufferedReader. (StringReader. string-arg))))
 
 
-(defn clip-str 
+(defn clip-str
   "Converts all args to single string and clips any characters beyond nchars."
   [nchars & args]
   (it-> (apply str args)
@@ -463,13 +467,13 @@
 (defn wild-match?  ; #todo need test & README
   "Returns true if the data value
    matches the pattern value.  The special keyword :* (colon-star) in the pattern value serves as
-   a wildcard value. Usage: 
+   a wildcard value. Usage:
 
      (matches? data pattern)
 
    sample:
 
-     (matches? {:a 1   :b 2}  
+     (matches? {:a 1   :b 2}
                {:a :*  :b 2} )  ;=> true
 
    Note that a wildcald can match either a primitive or a composite value."
@@ -480,26 +484,26 @@
                       (= pattern :*)       true
                       (= data pattern)     true
                       (coll? data)      (apply = true (mapv wild-match? data pattern))
-                      :default          false)) 
+                      :default          false))
   ]
 ;   (spyx result) (spy-indent-dec) (flush)      ; for debug
     result))
 
 ; #todo need test & README
-(defmacro matches?   
+(defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
-   matches the pattern value.  Underscores serve as wildcard values. Usage: 
+   matches the pattern value.  Underscores serve as wildcard values. Usage:
 
      (matches? data pattern)
 
    sample:
 
-     (matches? {:a 1 [:b 2] :c 3}  
+     (matches? {:a 1 [:b 2] :c 3}
                {:a _ _      :c 3} )  ;=> true
 
    Note that a wildcald can match either a primitive or a composite value."
   [data pattern]
-  `(ccm/match ~data   
+  `(ccm/match ~data
        ~pattern   true
         :else     false ))
 
@@ -519,7 +523,7 @@
 ; lein test tst.tupelo.core
 ; Ran 1 tests containing 3 assertions.
 ; 0 failures, 0 errors.
-; 
+;
 ; #todo:  add run-tests with syntax like lein test :only
 ;   (run-tests 'tst.tupelo.core)              ; whole namespace
 ;   (run-tests 'tst.tupelo.core/convj-test)   ; one function only
@@ -527,7 +531,7 @@
 ; #todo make it handle either tst.orig.namespace or orig.namespace-test
 ; #todo make it a macro to accept unquoted namespace values
 
-(defn test-all 
+(defn test-all
   "Convenience fn to reload a namespace & the corresponding test namespace from disk and
   execute tests in the REPL.  Assumes canonical project test file organization with
   parallel src/... & test/tst/... directories, where a 'tst.' prefix is added to all src

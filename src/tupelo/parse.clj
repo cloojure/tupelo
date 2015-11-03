@@ -12,7 +12,8 @@
   will be returned if there is an exception during parsing."
   (:require [tupelo.core :refer :all] ))
 
-; #awt TODO:  convert args from [str-val & opts] -> [str-val & {:as opts} ]
+; #todo:  convert args from [str-val & opts] -> [str-val & {:as opts} ]
+; #todo:  convert from (parse-xxx [str-val :or default-val]) -> (parse-xxx [str-val :default default-val])
 
 (defn parse-byte
  "( [str-val]
