@@ -297,14 +297,22 @@
      ~@body
      (catch Exception e# ~default-val) ))
 
-(defn rel=
-  "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative equality
-   is specified as either (1) the N most significant digits are equal, or (2) the absolute
-   difference is less than a tolerance value.  Input values are coerced to double before comparison.
-   Example:
+; (defn round [dblVal :digits 2]            ; #todo add 
+;   (let [factor (Math/pow 10 *digits*)]
+;     (it-> dblVal 
+;           (* it factor)
+;           (Math/round it)
+;           (/ it factor))))
+                                      
 
-    (rel= 123450000 123456789   :digits 4)      ; true
-    (rel= 1         1.001       :tol 0.01 )     ; true
+(defn rel=
+ "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative equality
+  is specified as either (1) the N most significant digits are equal, or (2) the absolute
+  difference is less than a tolerance value.  Input values are coerced to double before comparison.
+  Example:
+
+    (rel= 123450000 123456789   :digits 4   )  ; true
+    (rel= 1         1.001       :tol    0.01)  ; true
   "
   [val1 val2 & {:as opts} ]
   { :pre [  (number? val1) (number? val2) ]
