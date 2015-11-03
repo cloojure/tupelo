@@ -38,9 +38,9 @@
 (defn get-people
   "Returns a set of entity maps for all entities with the :person/name attribute"
   [db-val]
-  (let [eid-set     (td/query-set :let    [$ db-val]
-                                  :find   [?e]  ; <- could also use Datomic Pull API
-                                  :where  [ [?e :person/name] ] ) ]
+  (let [eid-set (td/query-set :let    [$ db-val]
+                              :find   [?e]  ; <- could also use Datomic Pull API
+                              :where  [ [?e :person/name] ] ) ]
     (into #{}
       (for [eid eid-set]
         (td/entity-map db-val eid)))))

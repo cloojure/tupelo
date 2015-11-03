@@ -123,11 +123,12 @@
    & options ]  ; #todo type spec?
   (when-not (keyword? ident)
     (throw (IllegalArgumentException. (str "attribute ident must be keyword: " ident ))))
-  (when-not (truthy? (safe-> special-attrvals :db/valueType value-type))
-    (throw (IllegalArgumentException. (str "attribute value-type invalid: " ident ))))
+  (let [legal-attrvals-set (grab :db/valueType special-attrvals) ]
+    (when-not (contains? legal-attrvals-set value-type)
+      (throw (IllegalArgumentException. (str "attribute value-type invalid: " ident )))))
   (let [base-specs    { :db/id                  (d/tempid :db.part/db)
-                        :db.install/_attribute  :db.part/db ; Datomic ceremony to "install" the new attribute
-                        :db/cardinality         :db.cardinality/one   ; default value for most attrs
+                        :db.install/_attribute  :db.part/db  ; Datomic ceremony to "install" the new attribute
+                        :db/cardinality         :db.cardinality/one  ; default value for most attrs
                         :db/ident               ident
                         :db/valueType           value-type }
         option-specs  (into (sorted-map)
@@ -152,8 +153,8 @@
   "Returns the tx-data to create a new entity in the DB. Usage:
 
     (td/transact *conn* 
-      (new-entity attr-val-map)                 ; default partition -> :db.part/user 
-      (new-entity partition attr-val-map)       ; user-specified partition
+      (new-entity attr-val-map)             ; default partition -> :db.part/user 
+      (new-entity partition attr-val-map)   ; user-specified partition
     )
 
    where attr-val-map is a Clojure map containing attribute-value pairs to be added to the new

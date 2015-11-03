@@ -168,12 +168,12 @@ To be precise, the function signatures are:
 === Literate Threading Macro
 
 We all love to use the threading macros `\->` and `\->>` for certain tasks, but they only work if
-all of the forms accept the previous result as the first or last argument.
+all of the forms should be threaded into the first or last argument.
 
 The built-in threading macro `as\->` can avoid this requirement, but the order of the first
-expression and the placeholder symbol is arguably backwards from what users would expect, and there
-is often no obvious name to use for the result of the previous form.  Re-using a good idea from
-Groovy & Ruby, we simply use the symbol `it` as the placeholder in each expression for the value of
+expression and the placeholder symbol is arguably backwards from what users would expect. Also,
+there is often no obvious name to use for the placeholder symbol.  Re-using a good idea from Groovy,
+we simply use the symbol `it` as the placeholder symbol in each expression to represent the value of
 the previous result.
 
 [source,clojure]
@@ -258,10 +258,10 @@ a vector result:
 
 [source,clojure]
 ----
-(conjv coll x)
-(conjv coll x & xs)
-  For any collection coll and list of values x, appends the x's to 
-  collection, always returning the result as a vector.
+(conjv base-coll value)
+(conjv base-coll value & values)
+  Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.
+  The result is always returned as a vector.
 
 => (conjv '(1 2) 3)
 [1 2 3]
@@ -269,7 +269,7 @@ a vector result:
 [1 2 3 4 5 6]
 ----
 
-Similarly, we may wish to use an eager version of `for` and return the results
+Similarly, we may wish to use an eager (non-lazy) version of `for` which always returns results
 in a vector:
 
 [source,clojure]
@@ -346,18 +346,18 @@ user=> (grab :c m)
 The function `grab` should also be used in place of `clojure.core/get`. Simply reverse the order of arguments to
 match the "keyword-first, map-second" convention.
 
-For looking up values in nested maps, the function `fetch` replaces `clojure.core/get-in`:
+For looking up values in nested maps, the function `fetch-in` replaces `clojure.core/get-in`:
 [source,clojure]
 ----
-(fetch m ks)
-  "A fail-fast version of clojure.core/get-in. When invoked as (fetch the-map keys-vec), 
+(fetch-in m ks)
+  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec), 
    returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).  
    Throws an Exception if the path keys-vec is not present in the-map."
 
 user=> (def mm {:a 1 :b {:c 3}})
-user=> (fetch mm [:b :c])
+user=> (fetch-in mm [:b :c])
 3
-user=> (fetch mm [:b :z])
+user=> (fetch-in mm [:b :z])
 ;=> IllegalArgumentException Key seq not present in map:
 ;=>   map : {:b {:c 3}, :a 1}
 ;=>   keys: [:b :z]

@@ -157,8 +157,8 @@
     (is (= [1 2 3 4]  (conjv '(1) 2  3 4))) )
 
   (testing "vector elements"
-    (is (=    [[1 2] [3 4]  [5 6] ]
-      (conjv '([1 2] [3 4]) [5 6] ) )))
+    (is (=    [ [1 2] [3 4]  [5 6] ]
+      (conjv '( [1 2] [3 4]) [5 6] ) )))
 
   (testing "lazy seqs/apply"
     (is (= [0 1 2 3 4 5] (conjv (range 4) 4 5)))
@@ -220,19 +220,19 @@
     (is (= 2                                  (grab :b map1)))
     (is (thrown?    IllegalArgumentException  (grab :c map1))) ))
 
-(deftest t-fetch
+(deftest t-fetch-in
   (testing "basic usage"
     (let [map1  {:a1 "a1"
                  :a2 { :b1 "b1"
                        :b2 { :c1 "c1"
                              :c2 "c2" }}} ]
-      (is (= (fetch map1 [:a1] ) "a1" ))
-      (is (= (fetch map1 [:a2 :b1] ) "b1" ))
-      (is (= (fetch map1 [:a2 :b2 :c1] ) "c1" ))
-      (is (= (fetch map1 [:a2 :b2 :c2] ) "c2" ))
-      (is (thrown? IllegalArgumentException  (fetch map1 [:a9]) ))
-      (is (thrown? IllegalArgumentException  (fetch map1 [:a2 :b9]) ))
-      (is (thrown? IllegalArgumentException  (fetch map1 [:a2 :b2 :c9]) ))
+      (is (= (fetch-in map1 [:a1] ) "a1" ))
+      (is (= (fetch-in map1 [:a2 :b1] ) "b1" ))
+      (is (= (fetch-in map1 [:a2 :b2 :c1] ) "c1" ))
+      (is (= (fetch-in map1 [:a2 :b2 :c2] ) "c2" ))
+      (is (thrown? IllegalArgumentException  (fetch-in map1 [:a9]) ))
+      (is (thrown? IllegalArgumentException  (fetch-in map1 [:a2 :b9]) ))
+      (is (thrown? IllegalArgumentException  (fetch-in map1 [:a2 :b2 :c9]) ))
     )))
 
 (deftest t-dissoc-in

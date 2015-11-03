@@ -76,6 +76,7 @@
                :db/fulltext     true    :db/valueType           :db.type/keyword } ))))
 
   (testing "types"
+    (is (thrown? Exception (td/new-attribute :some-attr :db.type/bogus)))
     (let [result  (td/new-attribute :location :db.type/string) ]
       (is (matches? result
               {:db/id           _                     :db/ident       :location 
