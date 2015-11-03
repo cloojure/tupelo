@@ -390,7 +390,7 @@ Distributed under the Eclipse Public License, the same as Clojure.
 
 ==== ToDo List (#todo)
 
-  Add docs for new-attribute optional specs
+  Add docs for new-attribute optional specs (& default values)
   Seattle tutorial using Tupelo Datomic
   MBrainz tutorial using Tupelo Datomic
   General Datamoic tutorial using Tupelo

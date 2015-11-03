@@ -24,17 +24,17 @@
 ;   true (integrity constraints).
 ; - Add "enum" like keyword attrs (not entities)
 ; - Look at seek-datoms & entid-at (Craig Andera StrangeLoop talk 2013)
-; 
+;
 ; So a an Entity of type :entity.type/person looks like:
 ;              <name>          <type>      <constraints/invariants>
 ;             :person/name     String    #{ <english alphabet> fn.2 ... }
 ;             :person/email    String    #{ <email constraints> fn.2 ... }
 ;             :person/phone    long      #{ <us=10 digits> fn.2 ... }
 ;             :entity/type      attr      :entity.type/person
-; 
+;
 ; Does then [?eid :entity/_type  :entity.type/person] yield a list of all "person" entities?
-; 
-; 
+;
+;
 ;---------------------------------------------------------------------------------------------------
 
 ; Prismatic Schema type definitions
@@ -63,8 +63,8 @@
   user-defined attributes. Most special attributes are defined by a set of permissible keyword
   values. Permissible values for other special attributes are defined by a predicate function.  "
   { :db/valueType
-      #{ :db.type/keyword   :db.type/string   :db.type/boolean  :db.type/long     :db.type/bigint 
-         :db.type/float     :db.type/double   :db.type/bigdec   :db.type/bytes 
+      #{ :db.type/keyword   :db.type/string   :db.type/boolean  :db.type/long     :db.type/bigint
+         :db.type/float     :db.type/double   :db.type/bigdec   :db.type/bytes
          :db.type/instant   :db.type/uuid     :db.type/uri      :db.type/ref }
 
     :db/cardinality   #{ :db.cardinality/one :db.cardinality/many }
@@ -86,7 +86,7 @@
 (s/defn new-partition :- ts/KeyMap
   "Returns the tx-data to create a new partition in the DB. Usage:
 
-    (td/transact *conn* 
+    (td/transact *conn*
       (partition ident)
     )
   "
@@ -100,7 +100,7 @@
 (s/defn new-attribute    :- ts/KeyMap
   "Returns the tx-data to create a new attribute in the DB.  Usage:
 
-    (td/transact *conn* 
+    (td/transact *conn*
       (attribute ident value-type & options)
     )
 
@@ -128,17 +128,19 @@
       (throw (IllegalArgumentException. (str "attribute value-type invalid: " ident )))))
   (let [base-specs    { :db/id                  (d/tempid :db.part/db)
                         :db.install/_attribute  :db.part/db  ; Datomic ceremony to "install" the new attribute
-                        :db/cardinality         :db.cardinality/one  ; default value for most attrs
+                        :db/cardinality         :db.cardinality/one   ; default value for most attrs
+                        :db/index               true                  ; default for max speed
                         :db/ident               ident
                         :db/valueType           value-type }
         option-specs  (into (sorted-map)
                         (for [it options]
-                          (cond 
+                          (cond
                             (= it :db.unique/value)         {:db/unique :db.unique/value}
                             (= it :db.unique/identity)      {:db/unique :db.unique/identity}
                             (= it :db.cardinality/one)      {:db/cardinality :db.cardinality/one}
                             (= it :db.cardinality/many)     {:db/cardinality :db.cardinality/many}
                             (= it :db/index)                {:db/index true}
+                            (= it :db/noindex)              {:db/index false}
                             (= it :db/fulltext)             {:db/fulltext true}
                             (= it :db/isComponent)          {:db/isComponent true}
                             (= it :db/noHistory)            {:db/noHistory true}
@@ -152,8 +154,8 @@
 (s/defn new-entity  :- ts/KeyMap
   "Returns the tx-data to create a new entity in the DB. Usage:
 
-    (td/transact *conn* 
-      (new-entity attr-val-map)             ; default partition -> :db.part/user 
+    (td/transact *conn*
+      (new-entity attr-val-map)             ; default partition -> :db.part/user
       (new-entity partition attr-val-map)   ; user-specified partition
     )
 
@@ -213,11 +215,11 @@
 (s/defn retract-entity :- ts/Vec2
   "Returns the tx-data to retract all attribute-value pairs for an entity, as well as all references
    to the entity by other entities. Usage:
-   
+
     (td/transact *conn*
       (retract-entity entity-spec)
     )
-   
+
   If the retracted entity refers to any other entity through an attribute with :db/isComponent=true,
   the referenced entity will be recursively retracted as well."
   [entity-spec  :- ts/EntitySpec ]
@@ -226,9 +228,9 @@
 ; #todo need test
 (s/defn transact :- s/Any  ; #todo
   "Like (datomic.api/transact ...) but does not require wrapping everything in a Clojure vector. Usage:
-   
+
     (td/transact *conn*
-      (td/new-entity attr-val-map)                 ; default partition -> :db.part/user 
+      (td/new-entity attr-val-map)                 ; default partition -> :db.part/user
       (td/update entity-spec-1 attr-val-map-1)
       (td/update entity-spec-2 attr-val-map-2))
    "
@@ -266,20 +268,20 @@
       (throw (IllegalArgumentException. (str "query*: value for :where must be a vector; received=" where-vec))))
 
    `(d/q  '{:find   ~find-vec
-            :where  ~where-vec 
+            :where  ~where-vec
             :in     [ ~@let-syms ] }
         ~@let-srcs)
   ))
 
 ; #todo: rename :find -> :select or :return or :result ???
 (defmacro query
-  "Returns query results as a set of tuples (i.e. a TupleSet, or #{ [s/Any] } in Prismatic Schema), 
+  "Returns query results as a set of tuples (i.e. a TupleSet, or #{ [s/Any] } in Prismatic Schema),
    where each tuple is unique. Usage:
 
     (td/query   :let    [$        (d/db *conn*)     ; assign multiple variables just like
                          ?name    \"Caribbean\"]    ;   in Clojure 'let' special form
                 :find   [?e ?name]
-                :where  [ [?e :person/name ?name] 
+                :where  [ [?e :person/name ?name]
                           [?e :location ?loc] ] )
 
   Unlike datomic.api/q, the query form does not need to be wrapped in a map literal nor is any
@@ -288,7 +290,7 @@
   variables $ and ?name in this case) are more closely aligned with their actual values. Also, the
   implicit DB $ must be explicitly tied to its data source in all cases (as shown above).  "
   [& args]
-  `(into #{} 
+  `(into #{}
       (for [tuple# (query* ~@args) ]
         (into [] tuple#))))
 
@@ -305,7 +307,7 @@
   [& args]
   `(into #{}
       (for [tuple# (query* ~@args)]
-        (if (= 1 (count tuple#)) 
+        (if (= 1 (count tuple#))
           (first tuple#)
           (throw (IllegalStateException.
                   (str "query-set: tuple must hold only one item: " tuple#)))))))
@@ -330,7 +332,7 @@
 ; #todo: rename to (td/query-one ...)  ?
 (defmacro query-scalar
   "Returns a scalar query result (i.e. s/Any).  Usage:
-   
+
     (td/query-scalar  :let    [$      (d/db *conn*)
                                ?name  \"James Bond\"]
                       :find   [?eid]
@@ -345,7 +347,7 @@
         (throw (IllegalStateException.
           (str "query-scalar: tuple must hold a single item: " tuple#))))))
 
-(defn- ^:no-doc contains-pull?  ; prevent codox ("lein doc") from processing 
+(defn- ^:no-doc contains-pull?  ; prevent codox ("lein doc") from processing
   "Returns true if a sequence of symbols includes 'pull'"
   [args-vec]
   (let [args-map    (apply hash-map args-vec)
@@ -372,15 +374,15 @@
   "Test the query macro, returns true on success."
   []
   (let [expanded-result
-          (macroexpand-1 '(tupelo.datomic/query*  :let    [a  (src 1)  
+          (macroexpand-1 '(tupelo.datomic/query*  :let    [a  (src 1)
                                                            b  val-2]
                                                   :find   [?e]
                                                   :where  [ [?e :person/name ?name] ] ))
   ]
     (= expanded-result
-       '(datomic.api/q (quote {:find [?e], 
-                               :where [[?e :person/name ?name]], 
-                               :in [a b]}) 
+       '(datomic.api/q (quote {:find [?e],
+                               :where [[?e :person/name ?name]],
+                               :in [a b]})
                        (src 1) val-2) )))
 
 
@@ -408,7 +410,7 @@
 ; (pr t1) => #datom[299067162756085 63 "Honey Rider" 13194139534324 true]
 ; #todo - need test
 (s/defn datom-map :- ts/DatomMap
-  "Returns a plain Clojure map of an datom's attribute-value pairs. 
+  "Returns a plain Clojure map of an datom's attribute-value pairs.
    A datom map is structured as:
 
       { :e        entity id (eid)
@@ -427,7 +429,7 @@
 ; #todo - need test
 ; #todo - make non-lazy?
 (s/defn datoms :- [ ts/DatomMap ]
-  "Returns a lazy sequence of Clojure maps of an datom's attribute-value pairs. 
+  "Returns a lazy sequence of Clojure maps of an datom's attribute-value pairs.
    A datom map is structured as:
 
       { :e        entity id (eid)
@@ -473,7 +475,7 @@
   [db-val     :- datomic.db.Db
    part-kw    :- s/Keyword ]
   (let [time-zero     0
-        eid-start     (d/entid-at db-val part-kw time-zero)     ; 1st possible eid 
+        eid-start     (d/entid-at db-val part-kw time-zero)     ; 1st possible eid
         datoms        (d/seek-datoms db-val :eavt eid-start)    ; all datoms >= eid-start
         eids-all      (distinct (map #(:e %) datoms))           ; pull out unique eids
         eids-keep     (take-while  #(= part-kw (partition-name db-val %))   ; keep only eids in desired partition
@@ -505,7 +507,7 @@
   [db-val :- s/Any]
   (let [candidate-eids    (map :e (datoms db-val :aevt :db/txInstant))
             ; All transaction entities must have attr :db/txInstant
-        tx-eids           (filter #(is-transaction? db-val %) candidate-eids) 
+        tx-eids           (filter #(is-transaction? db-val %) candidate-eids)
             ; filter in case any user entities have attr :db/txInstant
         result            (map #(entity-map db-val %) tx-eids) ]
     result))
@@ -520,7 +522,7 @@
   "Returns the EID of a transaction"
   [tx-result :- ts/TxResult]
   (let [datoms  (grab :tx-data tx-result)
-        txids   (mapv :tx datoms) ] 
+        txids   (mapv :tx datoms) ]
     (assert (apply = txids))  ; all datoms in tx have same txid
     (first txids)))           ; return the first one
 
@@ -552,7 +554,7 @@
 ;   :eavt   entity index (row-index)
 ;   :aevt   attr   index (col-index)
 ;   :avet   value  index (sorted-col)
-;   :vaet   reverse index (reverse entity index) 
+;   :vaet   reverse index (reverse entity index)
 ;
 ;   question:  should we index every attr by default?
 

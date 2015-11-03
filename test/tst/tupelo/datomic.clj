@@ -35,134 +35,150 @@
 (deftest t-new-partition
   (let [result   (td/new-partition :people ) ]
     (is (matches? result
-           {:db/id                    #db/id[:db.part/db _] 
-            :db.install/_partition    :db.part/db 
+           {:db/id                    #db/id[:db.part/db _]
+            :db.install/_partition    :db.part/db
             :db/ident                 :people} )))
   (let [result   (td/new-partition :part.with.ns ) ]
     (is (matches? result
-           {:db/id                    #db/id[:db.part/db _] 
-            :db.install/_partition    :db.part/db 
+           {:db/id                    #db/id[:db.part/db _]
+            :db.install/_partition    :db.part/db
             :db/ident                 :part.with.ns} )))
   (let [result   (td/new-partition :some-ns/some-part ) ]
     (is (matches? result
-           {:db/id                    #db/id[:db.part/db _] 
-            :db.install/_partition    :db.part/db 
+           {:db/id                    #db/id[:db.part/db _]
+            :db.install/_partition    :db.part/db
             :db/ident                 :some-ns/some-part} )))
 )
 
 (deftest t-new-attribute
+  ; #todo add more testing; verify each option alone pos/neg
   (testing "basic"
-    (let [result  (td/new-attribute :weapon/type :db.type/keyword 
-                      :db.unique/value       :db.unique/identity 
-                      :db.cardinality/one    :db.cardinality/many 
+    (let [result  (td/new-attribute :weapon/type :db.type/keyword
+                      :db.unique/value       :db.unique/identity
+                      :db.cardinality/one    :db.cardinality/many
                       :db/index :db/fulltext :db/isComponent :db/noHistory ) ]
       (is (s/validate datomic.db.DbId (:db/id result)))
       (is (matches? result
               {:db/id           _       :db/ident               :weapon/type
-               :db/index        true    :db/unique              :db.unique/identity  
+               :db/index        true    :db/unique              :db.unique/identity
                :db/noHistory    true    :db/cardinality         :db.cardinality/many
-               :db/isComponent  true    :db.install/_attribute  :db.part/db 
+               :db/isComponent  true    :db.install/_attribute  :db.part/db
                :db/fulltext     true    :db/valueType           :db.type/keyword } )))
-               
-    (let [result  (td/new-attribute :weapon/type :db.type/keyword 
+
+    (let [result  (td/new-attribute :name :db.type/string) ]
+      (is (matches? result
+              {:db/id _   :db.install/_attribute  :db.part/db
+               :db/ident        :name
+               :db/valueType    :db.type/string
+               :db/index        true
+               :db/cardinality  :db.cardinality/one  } )))
+    (let [result  (td/new-attribute :name :db.type/string :db/noindex) ]
+      (is (matches? result
+              {:db/id _   :db.install/_attribute  :db.part/db
+               :db/ident        :name
+               :db/valueType    :db.type/string
+               :db/index        false
+               :db/cardinality  :db.cardinality/one  } )))
+
+    (let [result  (td/new-attribute :weapon/type :db.type/keyword
                       :db.unique/identity    :db.unique/value
                       :db.cardinality/many   :db.cardinality/one
                       :db/index :db/fulltext :db/isComponent :db/noHistory ) ]
       (is (matches? result
               {:db/id           _       :db/ident               :weapon/type
-               :db/index        true    :db/unique              :db.unique/value  
-               :db/noHistory    true    :db/cardinality         :db.cardinality/one  
-               :db/isComponent  true    :db.install/_attribute  :db.part/db 
+               :db/index        true    :db/unique              :db.unique/value
+               :db/noHistory    true    :db/cardinality         :db.cardinality/one
+               :db/isComponent  true    :db.install/_attribute  :db.part/db
                :db/fulltext     true    :db/valueType           :db.type/keyword } ))))
 
   (testing "types"
     (is (thrown? Exception (td/new-attribute :some-attr :db.type/bogus)))
     (let [result  (td/new-attribute :location :db.type/string) ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/string       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/string       :db/cardinality :db.cardinality/one
                :db.install/_attribute :db.part/db } )))
     (let [result  (td/new-attribute :location :db.type/keyword) ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/keyword       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/keyword       :db/cardinality :db.cardinality/one
                :db.install/_attribute :db.part/db } )))
     (let [result  (td/new-attribute :location :db.type/boolean) ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/boolean       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/boolean       :db/cardinality :db.cardinality/one
                :db.install/_attribute :db.part/db } )))
     (let [result  (td/new-attribute :location :db.type/long) ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/long       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/long       :db/cardinality :db.cardinality/one
                :db.install/_attribute :db.part/db } )))
     (let [result  (td/new-attribute :location :db.type/bigint) ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/bigint       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/bigint       :db/cardinality :db.cardinality/one
                :db.install/_attribute :db.part/db } )))
     (let [result  (td/new-attribute :location :db.type/float) ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/float       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/float       :db/cardinality :db.cardinality/one
                :db.install/_attribute :db.part/db } )))
     (let [result  (td/new-attribute :location :db.type/double) ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/double       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/double       :db/cardinality :db.cardinality/one
                :db.install/_attribute :db.part/db } )))
     (let [result  (td/new-attribute :location :db.type/bigdec) ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/bigdec       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/bigdec       :db/cardinality :db.cardinality/one
                :db.install/_attribute :db.part/db } )))
     (let [result  (td/new-attribute :location :db.type/bytes) ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/bytes       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/bytes       :db/cardinality :db.cardinality/one
                :db.install/_attribute :db.part/db } )))
     (let [result  (td/new-attribute :location :db.type/instant) ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/instant       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/instant       :db/cardinality :db.cardinality/one
                :db.install/_attribute :db.part/db } )))
     (let [result  (td/new-attribute :location :db.type/uuid) ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/uuid       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/uuid       :db/cardinality :db.cardinality/one
                :db.install/_attribute :db.part/db } )))
     (let [result  (td/new-attribute :location :db.type/uri) ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/uri       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/uri       :db/cardinality :db.cardinality/one
                :db.install/_attribute :db.part/db } )))
     (let [result  (td/new-attribute :location :db.type/ref) ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/ref       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/ref       :db/cardinality :db.cardinality/one
                :db.install/_attribute :db.part/db } ))))
 
   (testing "cardinality & unique"
     (let [result  (td/new-attribute :location :db.type/string) ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/string       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/string       :db/cardinality :db.cardinality/one
                :db.install/_attribute :db.part/db } )))
     (let [result  (td/new-attribute :location :db.type/string :db.cardinality/many) ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
+              {:db/id           _                     :db/ident       :location
                :db/valueType    :db.type/string       :db/cardinality :db.cardinality/many
                :db.install/_attribute :db.part/db } )))
     (let [result  (td/new-attribute :location :db.type/string :db.unique/value)  ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/string       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/string       :db/cardinality :db.cardinality/one
                :db/unique       :db.unique/value      :db.install/_attribute :db.part/db } )))
     (let [result  (td/new-attribute :location :db.type/string :db.unique/identity)  ]
       (is (matches? result
-              {:db/id           _                     :db/ident       :location 
-               :db/valueType    :db.type/string       :db/cardinality :db.cardinality/one 
+              {:db/id           _                     :db/ident       :location
+               :db/valueType    :db.type/string       :db/cardinality :db.cardinality/one
                :db/unique       :db.unique/identity   :db.install/_attribute :db.part/db } ))))
 )
 
@@ -173,8 +189,8 @@
     )
   )
   (testing "new-entity with partition"
-    (let [result  (td/new-entity  :dummy.part/name   {:person/name "dilbert" :job/type :job.type/sucky} ) 
-          dbid    (grab :db/id result) 
+    (let [result  (td/new-entity  :dummy.part/name   {:person/name "dilbert" :job/type :job.type/sucky} )
+          dbid    (grab :db/id result)
           part1   (first dbid)
           part2   (second dbid) ]
       ; result: {:db/id #db/id[:dummy.part/name -1000003] :person/name "dilbert" :job/type :job.type/sucky}
