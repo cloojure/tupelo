@@ -441,7 +441,7 @@
   (with-out-str (pprint arg)))
 
 ; #todo add to README
-(defn string->lines
+(defn str->lines
   "Returns a lazy seq of lines from a string"
   [string-arg]
   (line-seq (BufferedReader. (StringReader. string-arg))))

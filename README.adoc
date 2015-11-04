@@ -186,140 +186,6 @@ the previous result.
 ;=> "We need to order 2 items." )
 ----
 
-=== The Truth Is Not Ambiguous
-
-Clojure marries the worlds of Java and Lisp. Unfortunately, these two worlds have different ideas of
-truth, so Clojure accepts both `false` and `nil` as _false_. Sometimes, however, you want to coerce
-logical values into literal _true_ or _false_ values, so we provide a simple way to do that:
-
-----
-(truthy? arg)
-  Returns true if arg is logical true (neither nil nor false);
-  otherwise returns false.
-
-(falsey? arg)
-  Returns true if arg is logical false (either nil or false);
-  otherwise returns false. Equivalent to (not (truthy? arg)).
-----
-Since `truthy?` and `falsey?` are functions (instead of special forms or
-macros), we can use them as an argument to `filter` or any other place that a
-higher-order-function is required:
-[source,clojure]
-----
-(def data [true :a 'my-symbol 1 "hello" \x false nil])
-(filter truthy? data)
-;=> [true :a my-symbol 1 "hello" \x]
-(filter falsey? data)
-;=> [false nil]
-
-(is (every? truthy? [true :a 'my-symbol 1 "hello" \x] ))
-(is (every? falsey? [false nil] ))
-
-(let [count-if (comp count filter) ]
-  (let [num-true    (count-if truthy? data)   ; <= better than (count-if boolean data)
-        num-false   (count-if falsey? data) ] ; <= better than (count-if not     data)
-    (is (and  (= 6 num-true)
-              (= 2 num-false) )))))
-----
-
-=== Convenience in Testing Seq's
-
-These functions aren't in clojure.core, but people keep writing into the mailing list
-wondering where they are. Well, now they are available:
-
-----
-(any? pred coll)
-  For any predicate & collection, returns true if (pred x) is 
-  logical true for any x in coll; otherwise returns false. Like
-  clojure.core/some, but returns only true or false.
-
-(not-empty? coll)
-  For any collection, returns true if coll contains any items; 
-  otherwise returns false. Equivalent to (not (empty? coll)).
-----
-The unit test shows these functions in action
-[source,clojure]
-----
-(is (= true   (any? odd? [1 2 3] ) ))
-(is (= false  (any? odd? [2 4 6] ) ))
-(is (= false  (any? odd? []      ) ))
-
-(is (= (map not-empty? ["1"   [1]   '(1)  {:1 1}  #{1} ] )
-                       [true  true  true  true    true ]  ))
-(is (= (map not-empty? [""     []      '()    {}     #{}    nil   ] )
-                       [false  false   false  false  false  false ] ))
-----
-
-=== Focus on Vectors
-
-Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you just want
-everything to stay in a nice, eager, random-access vector. Here is an easy way to build up
-a vector result:
-
-[source,clojure]
-----
-(conjv base-coll value)
-(conjv base-coll value & values)
-  Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.
-  The result is always returned as a vector.
-
-=> (conjv '(1 2) 3)
-[1 2 3]
-=> (conjv [1 2] 3 4 5 6)
-[1 2 3 4 5 6]
-----
-
-Similarly, we may wish to use an eager (non-lazy) version of `for` which always returns results
-in a vector:
-
-[source,clojure]
-----
-(is (= (forv [x (range 4)] (* x x))
-       [0 1 4 9] ))
-----
-
-=== Gluing Together Like Collections
-
-The `concat` function can sometimes have rather surprising results:
-[source,clojure]
-----
-  (is (= (concat {:a 1} {:b 2} {:c 3} )
-               [ [:a 1] [:b 2] [:c 3] ] ))
-----
-In this example, the user probably meant to merge the 3 maps into one. The
-`conj` function can also surprise the user:
-[source,clojure]
-----
-  (is (= (conj [1 2] [3 4])
-               [1 2  [3 4] ] ))
-----
-
-Here the user probably wanted to get `[1 2 3 4]` back, but instead got a nested
-vector by mistake.
-
-Instead of having to wonder if the items to be combined will be merged, nested, or
-converted into another data type, we provide the `glue` function to *always*
-combine like collections together into a result collection of the same type:
-
-[source,clojure]
-----
-; Glues together like collections:
-(is (= (glue [ 1 2] [ 3 4] [ 5 6] )     [ 1 2 3 4 5 6 ]  ))
-(is (= (glue {:a 1} {:b 2} {:c 3} )     {:a 1 :c 3 :b 2} ))
-(is (= (glue #{1 2} #{3 4} #{6 5} )    #{ 1 2 6 5 3 4 }  ))
-
-; If you want to convert to a sorted set or map, just put an empty one first:
-(is (= (glue (sorted-map) {:a 1} {:b 2} {:c 3})   {:a 1 :b 2 :c 3} ))
-(is (= (glue (sorted-set) #{1 2} #{3 4} #{6 5})  #{ 1 2 3 4 5 6  } ))
-----
-
-An `Exception` will be thrown if the collections to be 'glued' are not all of
-the same type. The allowable input types are:
-
-  - mixed lists & vectors
-  - all maps (sorted or not)
-  - all sets (sorted or not)
-
 === Map Value Lookup
 
 Maps are convenient, especially when keywords are used as functions to look up a value in
@@ -402,20 +268,102 @@ function in the old clojure-contrib library named `dissoc-in` which had the
 unpredictable behavior of recursively (& silently) deleting all keys in `keys-vec`
 corresponding to empty maps.
 
-=== Extracting *_Only_* Values
+=== Gluing Together Like Collections
 
-The pervasive use of seq's in Clojure means that scalar values often appear
-wrapped in a vector or some other sequence type.  One thus sees code like 
-`(first some-var)` and it is not always clear that the code is simply "unwrapping" a scalar value,
-since there could well be remaining values in the sequence. Indeed, it would be equivalent to use 
-`(last some-var)` as well, since first=last for a length-1 sequence. 
+The `concat` function can sometimes have rather surprising results:
+[source,clojure]
+----
+  (is (= (concat {:a 1} {:b 2} {:c 3} )
+               [ [:a 1] [:b 2] [:c 3] ] ))
+----
+In this example, the user probably meant to merge the 3 maps into one. The
+`conj` function can also surprise the user:
+[source,clojure]
+----
+  (is (= (conj [1 2] [3 4])
+               [1 2  [3 4] ] ))
+----
+
+Here the user probably wanted to get `[1 2 3 4]` back, but instead got a nested
+vector by mistake.
+
+Instead of having to wonder if the items to be combined will be merged, nested, or
+converted into another data type, we provide the `glue` function to *always*
+combine like collections together into a result collection of the same type:
 
 [source,clojure]
----- 
-(only seq-arg)
-  Ensures that a sequence is of length=1, and returns the only value present.
-  Throws an exception if the length of the sequence is not one.  Note that, 
-  for a length-1 sequence S, (first S), (last S) and (only S) are equivalent.
+----
+; Glues together like collections:
+(is (= (glue [ 1 2] [ 3 4] [ 5 6] )     [ 1 2 3 4 5 6 ]  ))
+(is (= (glue {:a 1} {:b 2} {:c 3} )     {:a 1 :c 3 :b 2} ))
+(is (= (glue #{1 2} #{3 4} #{6 5} )    #{ 1 2 6 5 3 4 }  ))
+
+; If you want to convert to a sorted set or map, just put an empty one first:
+(is (= (glue (sorted-map) {:a 1} {:b 2} {:c 3})   {:a 1 :b 2 :c 3} ))
+(is (= (glue (sorted-set) #{1 2} #{3 4} #{6 5})  #{ 1 2 3 4 5 6  } ))
+----
+
+An `Exception` will be thrown if the collections to be 'glued' are not all of
+the same type. The allowable input types are:
+
+  - mixed lists & vectors
+  - all maps (sorted or not)
+  - all sets (sorted or not)
+
+=== Convenience in Testing Seq's
+
+These functions aren't in clojure.core, but people keep writing into the mailing list
+wondering where they are. Well, now they are available:
+
+----
+(any? pred coll)
+  For any predicate & collection, returns true if (pred x) is 
+  logical true for any x in coll; otherwise returns false. Like
+  clojure.core/some, but returns only true or false.
+
+(not-empty? coll)
+  For any collection, returns true if coll contains any items; 
+  otherwise returns false. Equivalent to (not (empty? coll)).
+----
+The unit test shows these functions in action
+[source,clojure]
+----
+(is (= true   (any? odd? [1 2 3] ) ))
+(is (= false  (any? odd? [2 4 6] ) ))
+(is (= false  (any? odd? []      ) ))
+
+(is (= (map not-empty? ["1"   [1]   '(1)  {:1 1}  #{1} ] )
+                       [true  true  true  true    true ]  ))
+(is (= (map not-empty? [""     []      '()    {}     #{}    nil   ] )
+                       [false  false   false  false  false  false ] ))
+----
+
+=== Focus on Vectors
+
+Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you just want
+everything to stay in a nice, eager, random-access vector. Here is an easy way to build up
+a vector result:
+
+[source,clojure]
+----
+(conjv base-coll value)
+(conjv base-coll value & values)
+  Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.
+  The result is always returned as a vector.
+
+=> (conjv '(1 2) 3)
+[1 2 3]
+=> (conjv [1 2] 3 4 5 6)
+[1 2 3 4 5 6]
+----
+
+Similarly, we may wish to use an eager (non-lazy) version of `for` which always returns results
+in a vector:
+
+[source,clojure]
+----
+(is (= (forv [x (range 4)] (* x x))
+       [0 1 4 9] ))
 ----
 
 === Validating Intermediate Results
@@ -428,7 +376,7 @@ arbitrary validation, throwing an exception if a non-truthy result is returned:
 
 [source,clojure]
 ---- 
-  (validate tstfn tstval)
+(validate tstfn tstval)
   Used to validate intermediate results. Returns tstval if the result of 
   (tstfn tstval) is truthy.  Otherwise, throws IllegalStateException.
 ---- 
@@ -464,7 +412,19 @@ Exception converted into a default value.  That is when you need:
 
 (with-exception-default 0
   (Long/parseLong "12xy3"))
-0
+;=> 0
+----
+
+
+This feature is put to good use in link:http://cloojure.github.io/doc/tupelo/tupelo.parse.html[tupelo.parse], 
+where you will find functions that work like this:
+
+[source,clojure]
+----
+(parse-long "123")                  ; throws if parse error
+;=> 123
+(parse-long "1xy23" :default 666)   ; returns default val if parse error
+;=> 666
 ----
 
 === Floating Point Number Comparison
@@ -497,6 +457,80 @@ An extract from the unit tests illustrates the use of `rel=`
   (is (not (rel= 1 1.001 :tol 0.0001 )))
 ----
 
+=== String Operations
+
+Suppose you have a bunch of nested results and you just want to convert everything into a single
+string. In that case, `strcat` is for you:
+
+[source,clojure]
+----
+(is (= (strcat "I " [ \h \a \v [\e \space (byte-array [97]) 
+                      [ 32 "complicated" (Math/pow 2 5) '( "str" "ing") ]]] )
+       "I have a complicated string" ))
+----
+
+Or, you may wish to break a string up into a sequence of lines. Then use the `str\->lines` function:
+
+[source,clojure]
+----
+(ns xyz
+  (:require [clojure.string :as str] ...))
+(let [src-str   "line 1
+                 line 2
+
+                 line 4"
+      lines     (forv [line (str->lines src-str) ]
+                  (str/trim line)) ]
+  (is (= lines ["line 1"
+                "line 2"
+                ""
+                "line 4" ] ))))
+----
+
+Sometimes, you may wish to clip a string to a maximum length for ease of display. In that case, use `clip-str`:
+
+[source,clojure]
+----
+(is (= "abc"        (clip-str 3 "abcdefg")))
+(is (= "{:a 1, :"   (clip-str 8 (sorted-map :a 1 :b 2) )))
+----
+
+=== The Truth Is Not Ambiguous
+
+Clojure marries the worlds of Java and Lisp. Unfortunately, these two worlds have different ideas of
+truth, so Clojure accepts both `false` and `nil` as _false_. Sometimes, however, you want to coerce
+logical values into literal _true_ or _false_ values, so we provide a simple way to do that:
+
+----
+(truthy? arg)
+  Returns true if arg is logical true (neither nil nor false);
+  otherwise returns false.
+
+(falsey? arg)
+  Returns true if arg is logical false (either nil or false);
+  otherwise returns false. Equivalent to (not (truthy? arg)).
+----
+Since `truthy?` and `falsey?` are functions (instead of special forms or
+macros), we can use them as an argument to `filter` or any other place that a
+higher-order-function is required:
+[source,clojure]
+----
+(def data [true :a 'my-symbol 1 "hello" \x false nil])
+(filter truthy? data)
+;=> [true :a my-symbol 1 "hello" \x]
+(filter falsey? data)
+;=> [false nil]
+
+(is (every? truthy? [true :a 'my-symbol 1 "hello" \x] ))
+(is (every? falsey? [false nil] ))
+
+(let [count-if (comp count filter) ]
+  (let [num-true    (count-if truthy? data)   ; <= better than (count-if boolean data)
+        num-false   (count-if falsey? data) ] ; <= better than (count-if not     data)
+    (is (and  (= 6 num-true)
+              (= 2 num-false) )))))
+----
+
 === Keeping & Dropping Elements of a Sequence
 
 When processing sequences of data, we often need to extract a sequence of desired data, or,
@@ -526,42 +560,20 @@ the code.  Of course, these are just thin (& lazy) wrappers around the built-in 
 functions, but they are much less ambiguous. I think they make the code easier to read and the
 intent more obvious.
 
-=== String Operations
+=== Extracting *_Only_* Values
 
-Suppose you have a bunch of nested results and you just want to convert everything into a single
-string. In that case, `strcat` is you:
-
-[source,clojure]
-----
-(is (= (strcat "I " [ \h \a \v [\e \space (byte-array [97]) 
-                      [ 32 "complicated" (Math/pow 2 5) '( "str" "ing") ]]] )
-       "I have a complicated string" ))
-----
-
-Or, you may wish to break a string up into a sequence of lines. Then use the `string\->lines` function:
+The pervasive use of seq's in Clojure means that scalar values often appear
+wrapped in a vector or some other sequence type.  One thus sees code like 
+`(first some-var)` and it is not always clear that the code is simply "unwrapping" a scalar value,
+since there could well be remaining values in the sequence. Indeed, it would be equivalent to use 
+`(last some-var)` as well, since first=last for a length-1 sequence. 
 
 [source,clojure]
-----
-(ns xyz
-  (:require [clojure.string :as str] ...))
-(let [src-str   "line 1
-                 line 2
-
-                 line 4"
-      lines     (forv [line (string->lines src-str) ]
-                  (str/trim line)) ]
-  (is (= lines ["line 1"
-                "line 2"
-                ""
-                "line 4" ] ))))
-----
-
-Sometimes, you may wish to clip a string to a maximum length for ease of display. In that case, use `clip-str`:
-
-[source,clojure]
-----
-(is (= "abc"        (clip-str 3 "abcdefg")))
-(is (= "{:a 1, :"   (clip-str 8 (sorted-map :a 1 :b 2) )))
+---- 
+(only seq-arg)
+  Ensures that a sequence is of length=1, and returns the only value present.
+  Throws an exception if the length of the sequence is not one.  Note that, 
+  for a length-1 sequence S, (first S), (last S) and (only S) are equivalent.
 ----
 
 === Identifying Sequences
@@ -607,7 +619,7 @@ test namespace:
 
 == Requirements
 
- - Clojure 1.6.0
+ - Clojure 1.7.0
  - Java 1.8
 
 == License
