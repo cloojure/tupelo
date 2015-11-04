@@ -469,31 +469,19 @@ string. In that case, `strcat` is for you:
        "I have a complicated string" ))
 ----
 
-Or, you may wish to break a string up into a sequence of lines. Then use the `str\->lines` function:
-
-[source,clojure]
-----
-(ns xyz
-  (:require [clojure.string :as str] ...))
-(let [src-str   "line 1
-                 line 2
-
-                 line 4"
-      lines     (forv [line (str->lines src-str) ]
-                  (str/trim line)) ]
-  (is (= lines ["line 1"
-                "line 2"
-                ""
-                "line 4" ] ))))
-----
 
 Sometimes, you may wish to clip a string to a maximum length for ease of display. In that case, use `clip-str`:
 
 [source,clojure]
 ----
-(is (= "abc"        (clip-str 3 "abcdefg")))
-(is (= "{:a 1, :"   (clip-str 8 (sorted-map :a 1 :b 2) )))
+(is (= "abc"             (clip-str  3 "abcdefg")))
+(is (= "{:a 1, :"        (clip-str  8 (sorted-map :a 1 :b 2) )))
+(is (= "{:a 1, :b 2}"    (clip-str 99 (sorted-map :a 1 :b 2) )))
 ----
+
+Notice that clip-str will accept any argument type (map, sequence, etc), and convert it into a
+string for you. Also, it will work correctly even if the clip-length is an upper bound; shorter
+strings are returned unchanged.
 
 === The Truth Is Not Ambiguous
 

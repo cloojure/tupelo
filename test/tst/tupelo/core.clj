@@ -399,18 +399,6 @@
     (is (= 26 (count str-val)))
     (is (= 26 (count (re-seq #"[a-z]" str-val))))))
 
-(deftest t-str->lines
-  (let [src-str   "line 1
-                   line 2
-
-                   line 4"
-        lines     (forv [line (str->lines src-str) ]
-                    (str/trim line)) ]
-    (is (= lines ["line 1"
-                  "line 2"
-                  ""
-                  "line 4" ] ))))
-
 (deftest t-clip-str
   (testing "single string"
     (is (= ""         (clip-str 0 "abcdefg")))
