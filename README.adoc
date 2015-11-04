@@ -568,6 +568,9 @@ wrapped in a vector or some other sequence type.  One thus sees code like
 since there could well be remaining values in the sequence. Indeed, it would be equivalent to use 
 `(last some-var)` as well, since first=last for a length-1 sequence. 
 
+Instead, we use the function `only` to emphasize that we are simply _unwrapping_ a single value from
+the sequence:
+
 [source,clojure]
 ---- 
 (only seq-arg)
