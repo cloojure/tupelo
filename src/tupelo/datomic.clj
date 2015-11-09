@@ -506,7 +506,7 @@
   [db-val :- s/Any]
   (let [candidate-eids    (map :e (datoms db-val :aevt :db/txInstant))
             ; All transaction entities must have attr :db/txInstant
-        tx-eids           (filter #(is-transaction? db-val %) candidate-eids)
+        tx-eids           (keep-if #(is-transaction? db-val %) candidate-eids)
             ; filter in case any user entities have attr :db/txInstant
         result            (map #(entity-map db-val %) tx-eids) ]
     result))

@@ -262,26 +262,25 @@ layers will be constructed as necessary, which is consistant with the behavior
 of both `clojure.core/assoc-in` and `clojure.core/update-in` (note that `nil` is
 the value of the final map entry, not the empty map `{}` as for the other examples). 
 
-The name `dissoc-in` is chosen to emphasize that only the map entry
-corresponding to the last key `kZ` is cleared. This also avoids confusion with a
-function in the old clojure-contrib library named `dissoc-in` which had the
-unpredictable behavior of recursively (& silently) deleting all keys in `keys-vec`
-corresponding to empty maps.
+Note that only the map entry corresponding to the last key `kZ` is cleared. This
+differs from the `dissoc-in` function in the old clojure-contrib library which
+had the unpredictable behavior of recursively (& silently) deleting all keys in
+`keys-vec` corresponding to empty maps.
 
 === Gluing Together Like Collections
 
 The `concat` function can sometimes have rather surprising results:
 [source,clojure]
 ----
-  (is (= (concat {:a 1} {:b 2} {:c 3} )
-               [ [:a 1] [:b 2] [:c 3] ] ))
+(is (= (concat {:a 1} {:b 2} {:c 3} )
+             [ [:a 1] [:b 2] [:c 3] ] ))
 ----
 In this example, the user probably meant to merge the 3 maps into one. The
 `conj` function can also surprise the user:
 [source,clojure]
 ----
-  (is (= (conj [1 2] [3 4])
-               [1 2  [3 4] ] ))
+(is (= (conj [1 2] [3 4])
+             [1 2  [3 4] ] ))
 ----
 
 Here the user probably wanted to get `[1 2 3 4]` back, but instead got a nested
@@ -450,11 +449,11 @@ An extract from the unit tests illustrates the use of `rel=`
 
 [source,clojure]
 ----
-  (is      (rel= 123450000 123456789 :digits 4 ))
-  (is (not (rel= 123450000 123456789 :digits 6 )))
+(is      (rel= 123450000 123456789 :digits 4 ))
+(is (not (rel= 123450000 123456789 :digits 6 )))
 
-  (is      (rel= 1 1.001 :tol 0.01 ))
-  (is (not (rel= 1 1.001 :tol 0.0001 )))
+(is      (rel= 1 1.001 :tol 0.01 ))
+(is (not (rel= 1 1.001 :tol 0.0001 )))
 ----
 
 === String Operations
@@ -482,42 +481,6 @@ Sometimes, you may wish to clip a string to a maximum length for ease of display
 Notice that clip-str will accept any argument type (map, sequence, etc), and convert it into a
 string for you. Also, it will work correctly even if the clip-length is an upper bound; shorter
 strings are returned unchanged.
-
-=== The Truth Is Not Ambiguous
-
-Clojure marries the worlds of Java and Lisp. Unfortunately, these two worlds have different ideas of
-truth, so Clojure accepts both `false` and `nil` as _false_. Sometimes, however, you want to coerce
-logical values into literal _true_ or _false_ values, so we provide a simple way to do that:
-
-----
-(truthy? arg)
-  Returns true if arg is logical true (neither nil nor false);
-  otherwise returns false.
-
-(falsey? arg)
-  Returns true if arg is logical false (either nil or false);
-  otherwise returns false. Equivalent to (not (truthy? arg)).
-----
-Since `truthy?` and `falsey?` are functions (instead of special forms or
-macros), we can use them as an argument to `filter` or any other place that a
-higher-order-function is required:
-[source,clojure]
-----
-(def data [true :a 'my-symbol 1 "hello" \x false nil])
-(filter truthy? data)
-;=> [true :a my-symbol 1 "hello" \x]
-(filter falsey? data)
-;=> [false nil]
-
-(is (every? truthy? [true :a 'my-symbol 1 "hello" \x] ))
-(is (every? falsey? [false nil] ))
-
-(let [count-if (comp count filter) ]
-  (let [num-true    (count-if truthy? data)   ; <= better than (count-if boolean data)
-        num-false   (count-if falsey? data) ] ; <= better than (count-if not     data)
-    (is (and  (= 6 num-true)
-              (= 2 num-false) )))))
-----
 
 === Keeping & Dropping Elements of a Sequence
 
@@ -565,6 +528,45 @@ the sequence:
   Ensures that a sequence is of length=1, and returns the only value present.
   Throws an exception if the length of the sequence is not one.  Note that, 
   for a length-1 sequence S, (first S), (last S) and (only S) are equivalent.
+----
+
+=== The Truth Is Not Ambiguous
+
+Clojure marries the worlds of Java and Lisp. Unfortunately, these two worlds have different ideas of
+truth, so Clojure accepts both `false` and `nil` as _false_. Sometimes, however, you want to coerce
+logical values into literal _true_ or _false_ values, so we provide a simple way to do that:
+
+[source,clojure]
+----
+(truthy? arg)
+  Returns true if arg is logical true (neither nil nor false);
+  otherwise returns false.
+
+(falsey? arg)
+  Returns true if arg is logical false (either nil or false);
+  otherwise returns false. Equivalent to (not (truthy? arg)).
+----
+
+Since `truthy?` and `falsey?` are functions (instead of special forms or
+macros), we can use them as an argument to `filter` or any other place that a
+higher-order-function is required:
+
+[source,clojure]
+----
+(def data [true :a 'my-symbol 1 "hello" \x false nil])
+(filter truthy? data)
+;=> [true :a my-symbol 1 "hello" \x]
+(filter falsey? data)
+;=> [false nil]
+
+(is (every? truthy? [true :a 'my-symbol 1 "hello" \x] ))
+(is (every? falsey? [false nil] ))
+
+(let [count-if (comp count keep-if) ]
+  (let [num-true    (count-if truthy? data)   ; <= better than (count-if boolean data)
+        num-false   (count-if falsey? data) ] ; <= better than (count-if not     data)
+    (is (and  (= 6 num-true)
+              (= 2 num-false) )))))
 ----
 
 === Identifying Sequences

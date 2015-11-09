@@ -99,12 +99,12 @@
 (deftest t-truthy-falsey
   (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]
     (testing "basic usage"
-      (let [truthies    (filter boolean data)       ; coerce to primitive type
-            falsies     (filter not     data) ]     ; unnatural syntax
+      (let [truthies    (keep-if boolean data)       ; coerce to primitive type
+            falsies     (keep-if not     data) ]     ; unnatural syntax
         (is (and  (= truthies [true :a 'my-symbol 1 "hello" \x] )
                   (= falsies  [false nil] ) )))
-      (let [truthies    (filter truthy? data)
-            falsies     (filter falsey? data) ]
+      (let [truthies    (keep-if truthy? data)
+            falsies     (keep-if falsey? data) ]
         (is (and  (= truthies [true :a 'my-symbol 1 "hello" \x] )
                   (= falsies  [false nil] ) ))
         (is (every? truthy? [true :a 'my-symbol 1 "hello" \x] ))
@@ -113,7 +113,7 @@
         (is (not-any? truthy? falsies))))
 
     (testing "improved usage"
-      (let [count-if (comp count filter) ]
+      (let [count-if (comp count keep-if) ]
         (let [num-true    (count-if boolean data)   ; awkward phrasing
               num-false   (count-if not     data) ] ; doesn't feel natural
           (is (and  (= 6 num-true)

@@ -130,8 +130,8 @@
                                :where  [ [?eid :person/name ?name]      ; pattern-matching rules specify how the variables
                                          [?eid :location    ?loc ] ] )  ;   must be related (implicit join)
   ]
-    (is (s/validate  ts/TupleSet  tuple-set))       ; verify expected type using Prismatic Schema
-    (is (s/validate #{ [s/Any] }  tuple-set))       ; literal definition of TupleSet
+    (s/validate  ts/TupleSet  tuple-set)       ; verify expected type using Prismatic Schema
+    (s/validate #{ [s/Any] }  tuple-set)       ; literal definition of TupleSet
     (is (= tuple-set #{ ["Dr No"       "Caribbean"]      ; Even though London is repeated, each tuple is
                         ["James Bond"  "London"]         ; still unique. Otherwise, any duplicate tuples
                         ["M"           "London"] } )))   ; will be discarded since output is a clojure set.
@@ -204,7 +204,7 @@
                                         :where  [ [?eid :location] ] )        ; find any ?eid with a :location attr
         result-sort     (sort-by #(-> % first :location) result-pull)
   ]
-    (is (s/validate [ts/TupleMap] result-pull))    ; a list of tuples of maps
+    (s/validate [ts/TupleMap] result-pull)    ; a list of tuples of maps
     (is (= result-sort  [ [ {:location "Caribbean"} ] 
                           [ {:location "London"   } ]
                           [ {:location "London"   } ] ] )))
@@ -221,7 +221,7 @@
                           { :person/name "Honey Rider" :location "Caribbean" :weapon/type #{:weapon/knife} } ))
         [honey-eid]  (td/eids tx-result)  ; retrieve Honey Rider's EID from the seq (destructuring)
   ]
-    (is (s/validate ts/Eid honey-eid))  ; verify the expected type
+    (s/validate ts/Eid honey-eid)  ; verify the expected type
     (is (= :people ; verify the partition name for Honey's EID
            (td/partition-name (live-db) honey-eid)))
 

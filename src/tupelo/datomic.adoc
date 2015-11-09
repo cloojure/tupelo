@@ -19,20 +19,20 @@ link:../../test/tst/tupelo/datomic_bond.clj[in the unit test]).
 
 [source,clojure]
 ----
-(ns ...
+(ns bond
   (:require [tupelo.datomic   :as td]
             [tupelo.schema    :as ts]))
 
-  ; Create some new attributes. Required args are the attribute name (an optionally namespaced
-  ; keyword) and the attribute type (full listing at http://docs.datomic.com/schema.html). We wrap
-  ; the new attribute definitions in a transaction and immediately commit them into the DB.
-  (td/transact *conn* ;   required              required              zero-or-more
-                      ;  <attr name>         <attr value type>       <optional specs ...>
-    (td/new-attribute   :person/name         :db.type/string         :db.unique/value)      ; each name      is unique
-    (td/new-attribute   :person/secret-id    :db.type/long           :db.unique/value)      ; each secret-id is unique
-    (td/new-attribute   :weapon/type         :db.type/ref            :db.cardinality/many)  ; one may have many weapons
-    (td/new-attribute   :location            :db.type/string)     ; all default values
-    (td/new-attribute   :favorite-weapon     :db.type/keyword ))  ; all default values
+; Create some new attributes. Required args are the attribute name (an optionally namespaced
+; keyword) and the attribute type (full listing at http://docs.datomic.com/schema.html). We wrap
+; the new attribute definitions in a transaction and immediately commit them into the DB.
+(td/transact *conn* ;   required              required              zero-or-more
+                    ;  <attr name>         <attr value type>       <optional specs ...>
+  (td/new-attribute   :person/name         :db.type/string         :db.unique/value)      ; each name      is unique
+  (td/new-attribute   :person/secret-id    :db.type/long           :db.unique/value)      ; each secret-id is unique
+  (td/new-attribute   :weapon/type         :db.type/ref            :db.cardinality/many)  ; one may have many weapons
+  (td/new-attribute   :location            :db.type/string)     ; all default values
+  (td/new-attribute   :favorite-weapon     :db.type/keyword ))  ; all default values
 ----
 
 For the `:weapon/type` attribute, we want to use an enumerated type since there are only a limited
@@ -40,14 +40,14 @@ number of choices available to our antagonists:
 
 [source,clojure]
 ----
-  ; Create some "enum" values. These are degenerate entities that serve the same purpose as an
-  ; enumerated value in Java (these entities will never have any attributes). Again, we
-  ; wrap our new enum values in a transaction and commit them into the DB. 
-  (td/transact *conn* 
-    (td/new-enum :weapon/gun)
-    (td/new-enum :weapon/knife)
-    (td/new-enum :weapon/guile)
-    (td/new-enum :weapon/wit))
+; Create some "enum" values. These are degenerate entities that serve the same purpose as an
+; enumerated value in Java (these entities will never have any attributes). Again, we
+; wrap our new enum values in a transaction and commit them into the DB. 
+(td/transact *conn* 
+  (td/new-enum :weapon/gun)
+  (td/new-enum :weapon/knife)
+  (td/new-enum :weapon/guile)
+  (td/new-enum :weapon/wit))
 ----
 
 There are several other naming possibilities for this (or any) attribute:
@@ -72,28 +72,28 @@ values and literals here, and we don't have to worry about any Datomic specific 
 
 [source,clojure]
 ----
-  ; Create some antagonists and load them into the db.  We can specify some of the
-  ; attribute-value pairs at the time of creation, and add others later. Note that
-  ; whenever we are adding multiple values for an attribute in a single step (e.g.
-  ; :weapon/type), we must wrap all of the values in a set. Note that the set
-  ; implies there can never be duplicate weapons for any one person.  As before,
-  ; we immediately commit the new entities into the DB.
-  (td/transact *conn* 
-    (td/new-entity { :person/name "James Bond" :location "London"     :weapon/type #{ :weapon/gun :weapon/wit   } } )
-    (td/new-entity { :person/name "M"          :location "London"     :weapon/type #{ :weapon/gun :weapon/guile } } )
-    (td/new-entity { :person/name "Dr No"      :location "Caribbean"  :weapon/type    :weapon/gun                 } ))
+; Create some antagonists and load them into the db.  We can specify some of the
+; attribute-value pairs at the time of creation, and add others later. Note that
+; whenever we are adding multiple values for an attribute in a single step (e.g.
+; :weapon/type), we must wrap all of the values in a set. Note that the set
+; implies there can never be duplicate weapons for any one person.  As before,
+; we immediately commit the new entities into the DB.
+(td/transact *conn* 
+  (td/new-entity { :person/name "James Bond" :location "London"     :weapon/type #{ :weapon/gun :weapon/wit   } } )
+  (td/new-entity { :person/name "M"          :location "London"     :weapon/type #{ :weapon/gun :weapon/guile } } )
+  (td/new-entity { :person/name "Dr No"      :location "Caribbean"  :weapon/type    :weapon/gun                 } ))
 ----
 
 And, just like that, we have values persisted in the DB! Let's check that they are really there:
 
 [source,clojure]
 ----
-  ; Verify the antagonists were added to the DB
-  (let [people (get-people (live-db)) ]
-    (is (= people   
-           #{ {:person/name "James Bond"    :location "London"      :weapon/type #{:weapon/wit    :weapon/gun} }
-              {:person/name "M"             :location "London"      :weapon/type #{:weapon/guile  :weapon/gun} }
-              {:person/name "Dr No"         :location "Caribbean"   :weapon/type #{:weapon/gun               } } } )))
+; Verify the antagonists were added to the DB
+(let [people (get-people (live-db)) ]
+  (is (= people   
+         #{ {:person/name "James Bond"    :location "London"      :weapon/type #{:weapon/wit    :weapon/gun} }
+            {:person/name "M"             :location "London"      :weapon/type #{:weapon/guile  :weapon/gun} }
+            {:person/name "Dr No"         :location "Caribbean"   :weapon/type #{:weapon/gun               } } } )))
 ----
 
 == EntitySpec, EntityID, and LookupRef
@@ -114,35 +114,34 @@ of EntitySpec:
 
 [source,clojure]
 ----
-  ; Using James' name, lookup his EntityId (EID). 
-  (let [james-eid   (td/query-value  :let    [$ (live-db)]     ; like Clojure let
-                                     :find   [?eid]
-                                     :where  [ [?eid :person/name "James Bond"] ] )
-        ; Retrieve James' attr-val pairs as a map. An entity can be referenced by either EID or LookupRef
-        james-map   (td/entity-map (live-db) james-eid)                       ; use EID  
-        james-map2  (td/entity-map (live-db) [:person/name "James Bond"] )    ; use LookupRef
-                   ; td/entity-map returns a map of attr-vals given an EntitySpec
-  ]
-    (is (= james-map {:person/name "James Bond" :location "London" :weapon/type #{:weapon/wit :weapon/gun} } ))
-    (is (= james-map james-map2 ))
+; Using James' name, lookup his EntityId (EID). 
+(let [james-eid   (td/query-value  :let    [$ (live-db)]     ; like Clojure let
+                                   :find   [?eid]
+                                   :where  [ [?eid :person/name "James Bond"] ] )
+      ; Retrieve James' attr-val pairs as a map. An entity can be referenced by either EID or LookupRef
+      james-map   (td/entity-map (live-db) james-eid)                       ; use EID  
+      james-map2  (td/entity-map (live-db) [:person/name "James Bond"] )    ; use LookupRef
+                 ; td/entity-map returns a map of attr-vals given an EntitySpec
+]
+  (is (= james-map {:person/name "James Bond" :location "London" :weapon/type #{:weapon/wit :weapon/gun} } ))
+  (is (= james-map james-map2 ))
 ----
 
 We can also use either type of EntitySpec for update
 
 [source,clojure]
 ----
-    ; Update the database with more weapons.  If we overwrite some items that are
-    ; already present (e.g. :weapon/gun) it is idempotent (no duplicates are
-    ; allowed).  The first arg to td/update is an EntitySpec (either EntityId or
-    ; LookupRef) and determines the Entity that is updated.
-    (td/transact *conn* 
-      (td/update james-eid   ; update using EID
-          { :weapon/type #{ :weapon/gun :weapon/knife }
-            :person/secret-id 007 } )   ; Note that James has a secret-id but no one else does
+  ; Update the database with more weapons.  If we overwrite some items that are
+  ; already present (e.g. :weapon/gun) it is idempotent (no duplicates are
+  ; allowed).  The first arg to td/update is an EntitySpec (either EntityId or
+  ; LookupRef) and determines the Entity that is updated.
+  (td/transact *conn* 
+    (td/update james-eid   ; update using EID
+        { :weapon/type #{ :weapon/gun :weapon/knife }
+          :person/secret-id 007 } )   ; Note that James has a secret-id but no one else does
 
-      (td/update [:person/name "Dr No"] ; update using LookupRef
-        { :weapon/type #{ :weapon/gun :weapon/knife :weapon/guile } } )))
-
+    (td/update [:person/name "Dr No"] ; update using LookupRef
+      { :weapon/type #{ :weapon/gun :weapon/knife :weapon/guile } } )))
 ----
 
 As expected, our database contains the updated values for Dr No and James Bond. Notice that, since
@@ -151,12 +150,12 @@ antagonists have only a single gun:
 
 [source,clojure]
 ----
-  ; Verify current status. Notice there are no duplicate weapons.
-  (let [people (get-people (live-db)) ]
-    (is (= people   
-      #{ { :person/name "James Bond" :location "London" :weapon/type #{:weapon/wit :weapon/knife :weapon/gun} :person/secret-id 7 }
-         { :person/name "M" :location "London"          :weapon/type #{:weapon/guile :weapon/gun} }
-         { :person/name "Dr No" :location "Caribbean"   :weapon/type #{:weapon/guile :weapon/knife :weapon/gun} } } )))
+; Verify current status. Notice there are no duplicate weapons.
+(let [people (get-people (live-db)) ]
+  (is (= people   
+    #{ { :person/name "James Bond" :location "London" :weapon/type #{:weapon/wit :weapon/knife :weapon/gun} :person/secret-id 7 }
+       { :person/name "M" :location "London"          :weapon/type #{:weapon/guile :weapon/gun} }
+       { :person/name "Dr No" :location "Caribbean"   :weapon/type #{:weapon/guile :weapon/knife :weapon/gun} } } )))
 ----
 
 A Note that James Bond is the only person with an entry for `:person/secret-id`.
@@ -189,13 +188,12 @@ James a non-existent weapon, Datomic will generate an exception:
 
 [source,clojure]
 ----
-  ; Try to add non-existent weapon. This throws an Exception since the 
-  ; bogus kw does not match up with an entity.
-  (is (thrown? Exception   @(td/transact *conn* 
-                              (td/update [:person/name "James Bond"] ; update using a LookupRef
-                                { :weapon/type #{ :there.is/no-such-kw } } ))))
-                                ; bogus value for :weapon/type causes exception
-
+; Try to add non-existent weapon. This throws an Exception since the 
+; bogus kw does not match up with an entity.
+(is (thrown? Exception   @(td/transact *conn* 
+                            (td/update [:person/name "James Bond"] ; update using a LookupRef
+                              { :weapon/type #{ :there.is/no-such-kw } } ))))
+                              ; bogus value for :weapon/type causes exception
 ----
 
 == Query Functions in Tupelo Datomic
@@ -208,19 +206,18 @@ is an example of Tupelo Datomic query in action:
 
 [source,clojure]
 ----
-  ; For general queries, use td/query.  It returns a set of tuples (TupleSet).  Any duplicated
-  ; tuples will be discarded
-  (let [tuple-set   (td/query  :let    [$ (live-db)]
-                               :find   [?name ?loc] ; <- shape of output tuples
-                               :where  [ [?eid :person/name ?name]      ; pattern-matching rules specify how the variables
-                                         [?eid :location    ?loc ] ] )  ;   must be related (implicit join)
-  ]
-    (is (s/validate  ts/TupleSet  tuple-set))       ; verify expected type using Prismatic Schema
-    (is (s/validate #{ [s/Any] }  tuple-set))       ; literal definition of TupleSet
-    (is (= tuple-set #{ ["Dr No"       "Caribbean"]      ; Even though London is repeated, each tuple is
-                        ["James Bond"  "London"]         ; still unique. Otherwise, any duplicate tuples
-                        ["M"           "London"] } )))   ; will be discarded since output is a clojure set.
-
+; For general queries, use td/query.  It returns a set of tuples (TupleSet).  Any duplicated
+; tuples will be discarded
+(let [tuple-set   (td/query  :let    [$ (live-db)]
+                             :find   [?name ?loc] ; <- shape of output tuples
+                             :where  [ [?eid :person/name ?name]      ; pattern-matching rules specify how the variables
+                                       [?eid :location    ?loc ] ] )  ;   must be related (implicit join)
+]
+  (s/validate  ts/TupleSet  tuple-set)       ; verify expected type using Prismatic Schema
+  (s/validate #{ [s/Any] }  tuple-set)       ; literal definition of TupleSet
+  (is (= tuple-set #{ ["Dr No"       "Caribbean"]      ; Even though London is repeated, each tuple is
+                      ["James Bond"  "London"]         ; still unique. Otherwise, any duplicate tuples
+                      ["M"           "London"] } )))   ; will be discarded since output is a clojure set.
 ----
 
 Tupelo Datomic modifies the original Datomic query syntax compared to
@@ -240,17 +237,17 @@ than a set of tuples of scalars:
 
 [source,clojure]
 ----
-  ; If you want just a single attribute as output, you can get a set of values (rather than a set of
-  ; tuples) using td/query-attr.  As usual, any duplicate values will be discarded.
-  (let [names   (td/query-attr :let    [$ (live-db)]
-                               :find   [?name] ; <- a single attr-val output allows use of td/query-attr
-                               :where  [ [?eid :person/name ?name] ] )
-        cities  (td/query-attr :let    [$ (live-db)]
-                               :find   [?loc]  ; <- a single attr-val output allows use of td/query-attr
-                               :where  [ [?eid :location ?loc] ] )
-  ]
-    (is (= names    #{"Dr No" "James Bond" "M"} ))  ; all names are present, since unique
-    (is (= cities   #{"Caribbean" "London"} )))     ; duplicate "London" discarded
+; If you want just a single attribute as output, you can get a set of values (rather than a set of
+; tuples) using td/query-attr.  As usual, any duplicate values will be discarded.
+(let [names   (td/query-attr :let    [$ (live-db)]
+                             :find   [?name] ; <- a single attr-val output allows use of td/query-attr
+                             :where  [ [?eid :person/name ?name] ] )
+      cities  (td/query-attr :let    [$ (live-db)]
+                             :find   [?loc]  ; <- a single attr-val output allows use of td/query-attr
+                             :where  [ [?eid :location ?loc] ] )
+]
+  (is (= names    #{"Dr No" "James Bond" "M"} ))  ; all names are present, since unique
+  (is (= cities   #{"Caribbean" "London"} )))     ; duplicate "London" discarded
 ----
 
 A parallel case is when we want results for just a single entity, but multiple values are needed.
@@ -259,23 +256,23 @@ In this case, we don't need to wrap the result tuple in a set and we can use the
 
 [source,clojure]
 ----
-  ; If you want just a single tuple as output, you can get it (rather than a set of
-  ; tuples) using td/query-entity.  It is an error if more than one tuple is found.
-  (let [beachy  (td/query-entity :let    [$    (live-db)     ; assign multiple query variables
-                                          ?loc "Caribbean"]  ; just like clojure 'let' special form
+; If you want just a single tuple as output, you can get it (rather than a set of
+; tuples) using td/query-entity.  It is an error if more than one tuple is found.
+(let [beachy  (td/query-entity :let    [$    (live-db)     ; assign multiple query variables
+                                        ?loc "Caribbean"]  ; just like clojure 'let' special form
+                               :find   [?eid ?name] ; <- output tuple shape
+                               :where  [ [?eid :person/name ?name      ]
+                                         [?eid :location    ?loc] ] )
+      busy    (try ; error - both James & M are in London
+                (td/query-entity :let    [$    (live-db)
+                                          ?loc "London"]
                                  :find   [?eid ?name] ; <- output tuple shape
-                                 :where  [ [?eid :person/name ?name      ]
-                                           [?eid :location    ?loc] ] )
-        busy    (try ; error - both James & M are in London
-                  (td/query-entity :let    [$    (live-db)
-                                            ?loc "London"]
-                                   :find   [?eid ?name] ; <- output tuple shape
-                                   :where  [ [?eid :person/name ?name]
-                                             [?eid :location    ?loc ] ] )
-                  (catch Exception ex (.toString ex)))
-  ]
-    (is (matches? beachy [_ "Dr No"] ))           ; found 1 match as expected
-    (is (re-seq #"IllegalStateException" busy)))  ; Exception thrown/caught since 2 people in London
+                                 :where  [ [?eid :person/name ?name]
+                                           [?eid :location    ?loc ] ] )
+                (catch Exception ex (.toString ex)))
+]
+  (is (matches? beachy [_ "Dr No"] ))           ; found 1 match as expected
+  (is (re-seq #"IllegalStateException" busy)))  ; Exception thrown/caught since 2 people in London
 ----
 
 Of course, in some instances you may want only the value of only a single attribute for a single
@@ -284,31 +281,31 @@ value instead of a set of tuples of scalars:
 
 [source,clojure]
 ----
-  ; If you know there is (or should be) only a single scalar answer, you can get the scalar value as
-  ; output using td/query-value. It is an error if more than one tuple or value is present.
-  (let [beachy  (td/query-value  :let    [$    (live-db)     ; assign multiple query variables 
-                                          ?loc "Caribbean"]  ; just like clojure 'let' special form
-                                 :find   [?name]
-                                 :where  [ [?eid :person/name ?name]
-                                           [?eid :location    ?loc ] ] )
-        busy    (try ; error - multiple results for London
-                  (td/query-value  :let    [$    (live-db)
-                                            ?loc "London"]
-                                   :find   [?eid]
-                                   :where  [ [?eid :person/name  ?name]
-                                             [?eid :location     ?loc ] ] )
-                  (catch Exception ex (.toString ex)))
-        multi   (try ; error - tuple [?eid ?name] is not scalar
-                  (td/query-value  :let    [$    (live-db)
-                                            ?loc "Caribbean"]
-                                   :find   [?eid ?name]
-                                   :where  [ [?eid :person/name  ?name]
-                                             [?eid :location     ?loc ] ] )
-                  (catch Exception ex (.toString ex)))
-  ]
-    (is (= beachy "Dr No"))                       ; found 1 match as expected
-    (is (re-seq #"IllegalStateException" busy))   ; Exception thrown/caught since 2 people in London
-    (is (re-seq #"IllegalStateException" multi))) ; Exception thrown/caught since 2 people in London
+; If you know there is (or should be) only a single scalar answer, you can get the scalar value as
+; output using td/query-value. It is an error if more than one tuple or value is present.
+(let [beachy  (td/query-value  :let    [$    (live-db)     ; assign multiple query variables 
+                                        ?loc "Caribbean"]  ; just like clojure 'let' special form
+                               :find   [?name]
+                               :where  [ [?eid :person/name ?name]
+                                         [?eid :location    ?loc ] ] )
+      busy    (try ; error - multiple results for London
+                (td/query-value  :let    [$    (live-db)
+                                          ?loc "London"]
+                                 :find   [?eid]
+                                 :where  [ [?eid :person/name  ?name]
+                                           [?eid :location     ?loc ] ] )
+                (catch Exception ex (.toString ex)))
+      multi   (try ; error - tuple [?eid ?name] is not scalar
+                (td/query-value  :let    [$    (live-db)
+                                          ?loc "Caribbean"]
+                                 :find   [?eid ?name]
+                                 :where  [ [?eid :person/name  ?name]
+                                           [?eid :location     ?loc ] ] )
+                (catch Exception ex (.toString ex)))
+]
+  (is (= beachy "Dr No"))                       ; found 1 match as expected
+  (is (re-seq #"IllegalStateException" busy))   ; Exception thrown/caught since 2 people in London
+  (is (re-seq #"IllegalStateException" multi))) ; Exception thrown/caught since 2 people in London
 ----
 
 === Using the Datomic Pull API
@@ -320,17 +317,17 @@ entities:
 
 [source,clojure]
 ----
-  ; If you wish to retain duplicate results on output, you must use td/query-pull and the Datomic
-  ; Pull API to return a list of results (instead of a set).
-  (let [result-pull     (td/query-pull  :let    [$ (live-db)]                 ; $ is the implicit db name
-                                        :find   [ (pull ?eid [:location]) ]   ; output :location for each ?eid found
-                                        :where  [ [?eid :location] ] )        ; find any ?eid with a :location attr
-        result-sort     (sort-by #(-> % first :location) result-pull)
-  ]
-    (is (s/validate [ts/TupleMap] result-pull))    ; a list of tuples of maps
-    (is (= result-sort  [ [ {:location "Caribbean"} ] 
-                          [ {:location "London"   } ]
-                          [ {:location "London"   } ] ] )))
+; If you wish to retain duplicate results on output, you must use td/query-pull and the Datomic
+; Pull API to return a list of results (instead of a set).
+(let [result-pull     (td/query-pull  :let    [$ (live-db)]                 ; $ is the implicit db name
+                                      :find   [ (pull ?eid [:location]) ]   ; output :location for each ?eid found
+                                      :where  [ [?eid :location] ] )        ; find any ?eid with a :location attr
+      result-sort     (sort-by #(-> % first :location) result-pull)
+]
+  (s/validate [ts/TupleMap] result-pull)    ; a list of tuples of maps
+  (is (= result-sort  [ [ {:location "Caribbean"} ] 
+                        [ {:location "London"   } ]
+                        [ {:location "London"   } ] ] )))
 ----
 
 == Using Datomic Partitions
@@ -346,19 +343,19 @@ In Tupelo Datomic, we may easily create and use partitions:
 
 [source,clojure]
 ----
-  ; Create a partition named :people (we could namespace it like :db.part/people if we wished)
-  (td/transact *conn* 
-    (td/new-partition :people ))
+; Create a partition named :people (we could namespace it like :db.part/people if we wished)
+(td/transact *conn* 
+  (td/new-partition :people ))
 
-  ; Create Honey Rider and add her to the :people partition
-  (let [tx-result   @(td/transact *conn* 
-                        (td/new-entity :people ; <- partition is first arg (optional) to td/new-entity 
-                          { :person/name "Honey Rider" :location "Caribbean" :weapon/type #{:weapon/knife} } ))
-        [honey-eid]  (td/eids tx-result)  ; retrieve Honey Rider's EID from the seq (destructuring)
-  ]
-    (is (s/validate ts/Eid honey-eid))  ; verify the expected type
-    (is (= :people ; verify the partition name for Honey's EID
-           (td/partition-name (live-db) honey-eid))))
+; Create Honey Rider and add her to the :people partition
+(let [tx-result   @(td/transact *conn* 
+                      (td/new-entity :people ; <- partition is first arg (optional) to td/new-entity 
+                        { :person/name "Honey Rider" :location "Caribbean" :weapon/type #{:weapon/knife} } ))
+      [honey-eid]  (td/eids tx-result)  ; retrieve Honey Rider's EID from the seq (destructuring)
+]
+  (s/validate ts/Eid honey-eid)  ; verify the expected type
+  (is (= :people ; verify the partition name for Honey's EID
+         (td/partition-name (live-db) honey-eid))))
 ----
 
 In addition to keeping related entities adjacent in storage, one may also look up all entities in a
@@ -366,13 +363,13 @@ given partition by using the `(td/partition-eids ...)` function:
 
 [source,clojure]
 ----
-    ; Show that only Honey is in the people partition
-    (let [people-eids           (td/partition-eids (live-db) :people)
-          people-entity-maps    (map #(td/entity-map (live-db) %) people-eids) ]
-                                     ; td/entity-map returns a map of attr-vals given an EntitySpec
-      (is (= people-entity-maps [
-               {:person/name "Honey Rider", :weapon/type #{:weapon/knife}, 
-                :location "Caribbean"} ] )))
+; Show that only Honey is in the people partition
+(let [people-eids           (td/partition-eids (live-db) :people)
+      people-entity-maps    (map #(td/entity-map (live-db) %) people-eids) ]
+                                 ; td/entity-map returns a map of attr-vals given an EntitySpec
+  (is (= people-entity-maps [
+           {:person/name "Honey Rider", :weapon/type #{:weapon/knife}, 
+            :location "Caribbean"} ] )))
 ----
 
 
