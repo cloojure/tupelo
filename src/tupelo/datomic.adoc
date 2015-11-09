@@ -35,6 +35,8 @@ link:../../test/tst/tupelo/datomic_bond.clj[in the unit test]).
   (td/new-attribute   :favorite-weapon     :db.type/keyword ))  ; all default values
 ----
 
+Notice that, when using `(td/transace ...)`, we don't need to wrap everything in a vector.
+
 For the `:weapon/type` attribute, we want to use an enumerated type since there are only a limited
 number of choices available to our antagonists:
 
@@ -53,19 +55,25 @@ number of choices available to our antagonists:
 There are several other naming possibilities for this (or any) attribute:
 
 ----
-original           "pure"           pseudo-namespace   random-namespace     no-namespace        simple
-                                                                          
-:weapon/gun     :weapon.type/gun      :weapon-gun       :big/gun            :big-gun            :gun
-:weapon/knife   :weapon.type/knife    :weapon-knife     :sharp/knife        :sharp-knife        :knife
-:weapon/guile   :weapon.type/guile    :weapon-guile     :effortless/guile   :effortless-guile   :guile
-:weapon/wit     :weapon.type/wit      :weapon-wit       :rapier/wit         :rapier-wit         :wit
+ original          "pure"          pseudo-namespace  random-namespace   simple
+:weapon/gun    :weapon.type/gun     :weapon-gun       :big/gun           :gun
+:weapon/knife  :weapon.type/knife   :weapon-knife     :sharp/knife       :knife
+:weapon/guile  :weapon.type/guile   :weapon-guile     :effortless/guile  :guile
+:weapon/wit    :weapon.type/wit     :weapon-wit       :rapier/wit        :wit
 ----
 
 To Datomic, all of these attribute naming styles are equally valid. In
 particular, Datomic applies no semantic difference between any of these
 choices. Datomic effectively treats any attribute name as an opaque string.  For
 simplicity, one may wish to omit any attribute namespaces until the project has
-grown large enought to warrant them.
+grown large enought to warrant them.  Note that two of our attributes (`:location` &
+`:favorite-weapon`) have no namespace.  We also could have omitted the namespace on the weapons
+themselves, using only `:gun`, `:knife`, `:guile`, and `:wit`.
+
+Note that the original Datomic docs use the "pure" convention for naming attributes and their
+values. In the "pure" convention, an attribute like `:weapon/type` would only have values like
+`:weapon.type/gun`, where the name of the attribute becomes the namespace for all of its possible
+values (with the slash replaced by a dot).
 
 Let's create a few antagonists and load them into the DB. Note that we are just using plain Clojure
 values and literals here, and we don't have to worry about any Datomic specific conversions.
@@ -158,7 +166,7 @@ antagonists have only a single gun:
        { :person/name "Dr No" :location "Caribbean"   :weapon/type #{:weapon/guile :weapon/knife :weapon/gun} } } )))
 ----
 
-A Note that James Bond is the only person with an entry for `:person/secret-id`.
+Note that James Bond is the only person with an entry for `:person/secret-id`.
 This points out an *_important_* conceptual point regarding Datomic:
 
 ==== The Datomic Conceptual Model:
@@ -190,11 +198,13 @@ James a non-existent weapon, Datomic will generate an exception:
 ----
 ; Try to add non-existent weapon. This throws an Exception since the 
 ; bogus kw does not match up with an entity.
-(is (thrown? Exception   @(td/transact *conn* 
-                            (td/update [:person/name "James Bond"] ; update using a LookupRef
-                              { :weapon/type #{ :there.is/no-such-kw } } ))))
-                              ; bogus value for :weapon/type causes exception
+(is (thrown? Exception @(td/transact *conn* 
+                          (td/update [:person/name "James Bond"] ; update using a LookupRef
+                            { :weapon/type #{ :there.is/no-such-kw } } ))))
+                            ; bogus value for :weapon/type causes exception
 ----
+If the valueType for the attribute `:weapon/type` was simply `:keyword` instead of being an _enum_,
+the addition of `:there.is/no-such-kw` would have succeeded, since it is a legal keyword. 
 
 == Query Functions in Tupelo Datomic
 
@@ -208,10 +218,10 @@ is an example of Tupelo Datomic query in action:
 ----
 ; For general queries, use td/query.  It returns a set of tuples (TupleSet).  Any duplicated
 ; tuples will be discarded
-(let [tuple-set   (td/query  :let    [$ (live-db)]
-                             :find   [?name ?loc] ; <- shape of output tuples
-                             :where  [ [?eid :person/name ?name]      ; pattern-matching rules specify how the variables
-                                       [?eid :location    ?loc ] ] )  ;   must be related (implicit join)
+(let [tuple-set  (td/query  :let    [$ (live-db)]
+                            :find   [?name ?loc] ; <- shape of output tuples
+                            :where  [ [?eid :person/name ?name]      ; pattern-matching rules specify how the variables
+                                      [?eid :location    ?loc ] ] )  ;   must be related (implicit join)
 ]
   (s/validate  ts/TupleSet  tuple-set)       ; verify expected type using Prismatic Schema
   (s/validate #{ [s/Any] }  tuple-set)       ; literal definition of TupleSet
@@ -251,13 +261,13 @@ than a set of tuples of scalars:
 ----
 
 A parallel case is when we want results for just a single entity, but multiple values are needed.
-In this case, we don't need to wrap the result tuple in a set and we can use the function
-`td/query-entity`, which returns a single tuple as output rather than a set of tuples:
+In this case, we don't need to wrap the resulting tuple in a set and we can use the function
+`td/query-entity`, which returns just a single tuple as output rather than a set of tuples:
 
 [source,clojure]
 ----
-; If you want just a single tuple as output, you can get it (rather than a set of
-; tuples) using td/query-entity.  It is an error if more than one tuple is found.
+; If you just want values from a single entity, you can get it in a plain tuple (rather than a set of
+; tuples) using td/query-entity.  It is an error if more than one entity is found.
 (let [beachy  (td/query-entity :let    [$    (live-db)     ; assign multiple query variables
                                         ?loc "Caribbean"]  ; just like clojure 'let' special form
                                :find   [?eid ?name] ; <- output tuple shape
@@ -282,7 +292,7 @@ value instead of a set of tuples of scalars:
 [source,clojure]
 ----
 ; If you know there is (or should be) only a single scalar answer, you can get the scalar value as
-; output using td/query-value. It is an error if more than one tuple or value is present.
+; output using td/query-value. It is an error if more than one value is returned.
 (let [beachy  (td/query-value  :let    [$    (live-db)     ; assign multiple query variables 
                                         ?loc "Caribbean"]  ; just like clojure 'let' special form
                                :find   [?name]

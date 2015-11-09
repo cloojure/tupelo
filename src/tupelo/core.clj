@@ -498,8 +498,8 @@
 
    sample:
 
-     (matches? {:a 1 [:b 2] :c 3}
-               {:a _ _      :c 3} )  ;=> true
+     (matches? {:a 1 :b [1 2 3] :c 3}
+               {:a _ :b _       :c 3} )  ;=> true
 
    Note that a wildcald can match either a primitive or a composite value."
   [data pattern]

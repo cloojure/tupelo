@@ -234,4 +234,7 @@
 
   )
 
+; #todo
+;  verify that datomic/q returns TupleSets (i.e. no duplicate tuples in result)
+
 )
