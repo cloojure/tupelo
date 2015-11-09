@@ -38,7 +38,7 @@
 (defn get-people
   "Returns a set of entity maps for all entities with the :person/name attribute"
   [db-val]
-  (let [eid-set (td/query-set :let    [$ db-val]
+  (let [eid-set (td/query-attr :let    [$ db-val]
                               :find   [?e]  ; <- could also use Datomic Pull API
                               :where  [ [?e :person/name] ] ) ]
     (into #{}
@@ -85,9 +85,9 @@
             {:person/name "Dr No"         :location "Caribbean"   :weapon/type #{:weapon/gun               } } } ))
 
   ; Using James' name, lookup his EntityId (EID). It is a java.lang.Long that is a unique ID across the whole DB.
-  (let [james-eid   (td/query-scalar  :let    [$ (live-db)]     ; like Clojure let
-                                      :find   [?eid]
-                                      :where  [ [?eid :person/name "James Bond"] ] )
+  (let [james-eid   (td/query-value  :let    [$ (live-db)]     ; like Clojure let
+                                     :find   [?eid]
+                                     :where  [ [?eid :person/name "James Bond"] ] )
         ; Retrieve James' attr-val pairs as a map. An entity can be referenced either by EID or by a
         ; LookupRef, which is a unique attribute-value pair expressed as a vector.
         james-map   (td/entity-map (live-db) james-eid)                       ; lookup by EID  
@@ -139,32 +139,32 @@
   ; #todo: rename to (td/query-attr ...) & update release notes
   ;
   ; If you want just a single attribute as output, you can get a set of attributes (rather than a set of
-  ; tuples) using td/query-set.  As usual, any duplicate values will be discarded. It is an error if
+  ; tuples) using td/query-attr.  As usual, any duplicate values will be discarded. It is an error if
   ; more than one attribute is present in the :find clause.
-  (let [names     (td/query-set :let    [$ (live-db)]
-                                :find   [?name] ; <- a single attr-val output allows use of td/query-set
-                                :where  [ [?eid :person/name ?name] ] )
-        cities    (td/query-set :let    [$ (live-db)]
-                                :find   [?loc]  ; <- a single attr-val output allows use of td/query-set
-                                :where  [ [?eid :location ?loc] ] )
+  (let [names     (td/query-attr :let    [$ (live-db)]
+                                 :find   [?name] ; <- a single attr-val output allows use of td/query-attr
+                                 :where  [ [?eid :person/name ?name] ] )
+        cities    (td/query-attr :let    [$ (live-db)]
+                                 :find   [?loc]  ; <- a single attr-val output allows use of td/query-attr
+                                 :where  [ [?eid :location ?loc] ] )
 
   ]
     (is (= names    #{"Dr No" "James Bond" "M"} ))  ; all names are present, since unique
     (is (= cities   #{"Caribbean" "London"} )))     ; duplicate "London" discarded
 
   ; If you want just a single tuple as output, you can get it (rather than a set of
-  ; tuples) using td/query-tuple.  It is an error if more than one tuple is found.
-  (let [beachy    (td/query-tuple :let    [$    (live-db)     ; assign multiple query variables
-                                           ?loc "Caribbean"]  ;   just like clojure 'let' special form
-                                  :find   [?eid ?name] ; <- output tuple shape
-                                  :where  [ [?eid :person/name ?name      ]
-                                            [?eid :location    ?loc] ] )
+  ; tuples) using td/query-entity.  It is an error if more than one tuple is found.
+  (let [beachy    (td/query-entity :let    [$    (live-db)     ; assign multiple query variables
+                                            ?loc "Caribbean"]  ;   just like clojure 'let' special form
+                                   :find   [?eid ?name] ; <- output tuple shape
+                                   :where  [ [?eid :person/name ?name      ]
+                                             [?eid :location    ?loc] ] )
         busy      (try ; error - both James & M are in London
-                    (td/query-tuple :let    [$ (live-db)
-                                             ?loc "London"]
-                                    :find   [?eid ?name] ; <- output tuple shape
-                                    :where  [ [?eid :person/name ?name]
-                                              [?eid :location    ?loc ] ] )
+                    (td/query-entity :let    [$ (live-db)
+                                              ?loc "London"]
+                                     :find   [?eid ?name] ; <- output tuple shape
+                                     :where  [ [?eid :person/name ?name]
+                                               [?eid :location    ?loc ] ] )
                     (catch Exception ex (.toString ex)))
   ]
     (is (matches? beachy [_ "Dr No"] ))           ; found 1 match as expected
@@ -172,25 +172,25 @@
 
 
   ; If you know there is (or should be) only a single scalar answer, you can get the scalar value as
-  ; output using td/query-scalar. It is an error if more than one tuple or value is present.
-  (let [beachy    (td/query-scalar  :let    [$    (live-db)     ; assign multiple query variables 
-                                             ?loc "Caribbean"]  ; just like clojure 'let' special form
-                                    :find   [?name]
-                                    :where  [ [?eid :person/name ?name]
-                                              [?eid :location    ?loc ] ] )
+  ; output using td/query-value. It is an error if more than one tuple or value is present.
+  (let [beachy    (td/query-value  :let    [$    (live-db)     ; assign multiple query variables 
+                                            ?loc "Caribbean"]  ; just like clojure 'let' special form
+                                   :find   [?name]
+                                   :where  [ [?eid :person/name ?name]
+                                             [?eid :location    ?loc ] ] )
         busy      (try ; error - multiple results for London
-                    (td/query-scalar  :let    [$    (live-db)
-                                               ?loc "London"]
-                                      :find   [?eid]
-                                      :where  [ [?eid :person/name  ?name]
-                                                [?eid :location     ?loc ] ] )
+                    (td/query-value  :let    [$    (live-db)
+                                              ?loc "London"]
+                                     :find   [?eid]
+                                     :where  [ [?eid :person/name  ?name]
+                                               [?eid :location     ?loc ] ] )
                     (catch Exception ex (.toString ex)))
         multi     (try ; error - tuple [?eid ?name] is not scalar
-                    (td/query-scalar  :let    [$    (live-db)
-                                               ?loc "Caribbean"]
-                                      :find   [?eid ?name]
-                                      :where  [ [?eid :person/name  ?name]
-                                                [?eid :location     ?loc ] ] )
+                    (td/query-value  :let    [$    (live-db)
+                                              ?loc "Caribbean"]
+                                     :find   [?eid ?name]
+                                     :where  [ [?eid :person/name  ?name]
+                                               [?eid :location     ?loc ] ] )
                     (catch Exception ex (.toString ex)))
   ]
     (is (= beachy "Dr No"))                       ; found 1 match as expected

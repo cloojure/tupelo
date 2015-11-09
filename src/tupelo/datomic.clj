@@ -295,57 +295,56 @@
         (into [] tuple#))))
 
 ; #todo: rename to (td/query-attr ...)  ?
-(defmacro query-set
-  "Returns a Set of unique scalar query results (i.e. #{s/Any}). Any duplicate values will be
+(defmacro query-attr
+  "Returns a Set of unique attribute values (i.e. #{s/Any}). Any duplicate values will be
    discarded. Usage:
 
-    (td/query-set :let    [$        (d/db *conn*)       ; assign multiple variables just like
+    (td/query-attr :let    [$        (d/db *conn*)       ; assign multiple variables just like
                            ?name    \"James Bond\"]     ;   in Clojure 'let' special form
-                  :find   [?e]
-                  :where  [ [?e :person/name ?name] ] )
+                   :find   [?e]
+                   :where  [ [?e :person/name ?name] ] )
   "
   [& args]
-  `(into #{}
-      (for [tuple# (query* ~@args)]
-        (if (= 1 (count tuple#))
-          (first tuple#)
+  `(set
+      (let [result-tupleset#  (query* ~@args)
+            first-tuple#      (first result-tupleset#)]
+        (when-not (= 1 (count first-tuple#))
           (throw (IllegalStateException.
-                  (str "query-set: tuple must hold only one item: " tuple#)))))))
+                  (str "query-attr: can return only one attr per entity " first-tuple#))))
+        (map only result-tupleset#))))
 
-(defmacro query-tuple
-  "Returns a single Tuple (i.e. [s/Any]) of query results. Usage:
+(defmacro query-entity
+  "A query that returns a Tuple for a single entity. Usage:
 
-    (td/query-tuple :let    [$ (d/db *conn*)]
-                    :find   [?eid ?name]  ; <- output tuple shape
-                    :where  [ [?eid :person/name ?name      ]
-                              [?eid :location    \"Caribbean\"] ] )
+    (td/query-entity :let    [$ (d/db *conn*)]
+                     :find   [?eid ?name]  ; <- output tuple shape
+                     :where  [ [?eid :person/name ?name      ]
+                               [?eid :location    \"Caribbean\"] ] )
 
-   It is an error if more than one tuple is found.
+   It is an error if more than one matching entity is found.
   "
   [& args]
-  `(let [result-set# (query* ~@args) ]
-      (if (= 1 (count result-set#))
-        (vec (first result-set#))
+  `(let [result-tupleset# (query* ~@args) ]
+      (when-not (= 1 (count result-tupleset#))
         (throw (IllegalStateException.
-                (str "query-tuple: result-set must hold only one tuple: " result-set#))))))
+                (str "query-entity: can return tuple for only one entity " result-tupleset#))))
+      (vec (first result-tupleset#))))
 
-; #todo: rename to (td/query-one ...)  ?
-(defmacro query-scalar
-  "Returns a scalar query result (i.e. s/Any).  Usage:
+(defmacro query-value
+  "A query that returns a single value.  Usage:
 
-    (td/query-scalar  :let    [$      (d/db *conn*)
-                               ?name  \"James Bond\"]
-                      :find   [?eid]
-                      :where  [ [?eid :person/name ?name] ] )
+    (td/query-value :let    [$      (d/db *conn*)
+                             ?name  \"James Bond\"]
+                    :find   [?eid]
+                    :where  [ [?eid :person/name ?name] ] )
 
-   It is an error if more than one tuple is found or if the tuple contains more than one scalar
-   value.  "
+   It is an error if more than one value is found."
   [& args]
-  `(let [tuple# (query-tuple ~@args) ] ; retrieve the single-tuple result
+  `(let [tuple# (query-entity ~@args) ] ; retrieve the single-tuple result
       (if (= 1 (count tuple#))
         (first tuple#)
         (throw (IllegalStateException.
-          (str "query-scalar: tuple must hold a single item: " tuple#))))))
+          (str "query-value: tuple must hold a single item: " tuple#))))))
 
 (defn- ^:no-doc contains-pull?  ; prevent codox ("lein doc") from processing
   "Returns true if a sequence of symbols includes 'pull'"
