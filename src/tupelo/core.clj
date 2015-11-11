@@ -324,7 +324,6 @@
 ; (defn round [dblVal :digits 2]
 ;   (round dblVal :exp (- *digits*)))
 
-
 (defn rel=
  "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative equality
   is specified as either (1) the N most significant digits are equal, or (2) the absolute
@@ -335,7 +334,7 @@
     (rel= 1         1.001       :tol    0.01)  ; true
   "
   [val1 val2 & {:as opts} ]
-  { :pre [  (number? val1) (number? val2) ]
+  { :pre  [ (number? val1) (number? val2) ]
     :post [ (contains? #{true false} %) ] }
   (let [ {:keys [digits tol] }  opts ]
     (when-not (or digits tol)
@@ -360,36 +359,36 @@
         (throw (IllegalArgumentException.
                   (str  ":digits must positive" \newline
                         "opts: " opts )))))
-    ; At this point, there were no invalid args and at least one of either :tol and
+    ; At this point, there were no invalid args and at least one of either :tol and/or
     ; :digits was specified.  So, return the answer.
-    (let [val1      (double val1)
-          val2      (double val2)
-          delta-abs (Math/abs (- val1 val2))
-          or-result
-            (truthy?  (or (zero? delta-abs)
-                          (and tol
-                            (let [tol-result (< delta-abs tol)
-                            ] tol-result ))
-                          (and digits
-                            (let [abs1            (Math/abs val1)
-                                  abs2            (Math/abs val2)
-                                  max-abs         (Math/max abs1 abs2)
-                                  delta-rel-abs   (/ delta-abs max-abs)
-                                  rel-tol         (Math/pow 10 (- digits))
-                                  dig-result      (< delta-rel-abs rel-tol)
-                            ] dig-result ))))
+    (let [val1        (double val1)
+          val2        (double val2)
+          delta-abs   (Math/abs (- val1 val2))
+          or-result   (truthy?
+                        (or (zero? delta-abs)
+                            (and tol
+                              (let [tol-result (< delta-abs tol) ]
+                                tol-result))
+                            (and digits
+                              (let [abs1            (Math/abs val1)
+                                    abs2            (Math/abs val2)
+                                    max-abs         (Math/max abs1 abs2)
+                                    delta-rel-abs   (/ delta-abs max-abs)
+                                    rel-tol         (Math/pow 10 (- digits))
+                                    dig-result      (< delta-rel-abs rel-tol) ]
+                                dig-result))))
     ]
-      or-result )))
+      or-result)))
 
-; #awt #todo:  add (thru a b)     -> [a..b] (inclusive)
-;                  (thru 1 3)     -> [ 1  2  3]
-;                  (thru \a \c)   -> [\a \b \c]
-;                  (thru :a :c)   -> [:a :b :c]
-;                  (thru 'a 'c)   -> ['a 'b 'c]
-;                  (thru 0.1 0.3 0.1)     -> [0.1  0.2  0.3]
-;                       (thru start stop step) uses integer steps and
-;                       (rel= curr stop :tol step) as ending criteria
-(rel= 1         1.001       :tol 0.01 )     ; true
+; #todo:  add (thru a b)     -> [a..b] (inclusive)
+;             (thru 1 3)     -> [ 1  2  3]
+;             (thru \a \c)   -> [\a \b \c]
+;             (thru :a :c)   -> [:a :b :c]
+;             (thru 'a 'c)   -> ['a 'b 'c]
+;             (thru 1   2   0.1)     -> [1.0  1.1  1.2 ... 2.0]
+;             (thru 0.1 0.3 0.1)     -> [0.1  0.2  0.3]
+;                  (thru start stop step) uses integer steps and
+;                  (rel= curr stop :tol step) as ending criteria
 ;       (thru :cc 1 5)   -> [1 2 3 4 5]
 ;       (thru :oc 1 5)   -> [  2 3 4 5]
 ;       (thru :co 1 5)   -> [1 2 3 4  ]  ; like (range ...)
