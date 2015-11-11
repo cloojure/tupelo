@@ -66,7 +66,7 @@ To Datomic, all of these attribute naming styles are equally valid. In
 particular, Datomic applies no semantic difference between any of these
 choices. Datomic effectively treats any attribute name as an opaque string.  For
 simplicity, one may wish to omit any attribute namespaces until the project has
-grown large enought to warrant them.  Note that two of our attributes (`:location` &
+grown large enough to warrant them.  Note that two of our attributes (`:location` &
 `:favorite-weapon`) have no namespace.  We also could have omitted the namespace on the weapons
 themselves, using only `:gun`, `:knife`, `:guile`, and `:wit`.
 
