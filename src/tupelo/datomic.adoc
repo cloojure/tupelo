@@ -184,9 +184,9 @@ A Clojure example equivalent to the above would look like:
    1003    { :person/name "Dr No"         :location "Caribbean"   ...                     } }
 ----
 
-except that the _actual_ EID values are randomly assigned by the Datomic
-Transactor; we only know that they are of type "positive 64-bit integer".
-
+except that the _actual_ EID values are randomly assigned by the Datomic Transactor; we only know
+that they are of type "positive 64-bit integer". Don't worry about running out of EIDs.  If you
+created a billion new EIDs each second, it would require 292 years before you ran out of them.
 
 == Enum Values
 
