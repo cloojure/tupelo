@@ -8,6 +8,7 @@ srcDir=$(pwd)/doc                       # absolute pathname of source
 destDir=${ghPagesDir}/${projName}       # absolute pathname of destination
 
 # Copy files
+mkdir --parents $destDir
 rm -rf $destDir
 echo "Copying:  $srcDir  ->  $destDir"
 cp -pr          $srcDir      $destDir
