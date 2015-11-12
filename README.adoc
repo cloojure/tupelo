@@ -157,7 +157,7 @@ using (pr-str ...) so that numbers and strings are unambiguous in the output:
 ----
 
 Sometimes you may prefer to print out the literal expression instead of a
-message. In this case, just use `spyx` (short for "spy expressions") :
+message. In this case, just use `spyx` (short for "spy expression") :
 [source,clojure]
 ----
 (as-> 1 x
