@@ -360,11 +360,10 @@
                                                   :where  [ [?e :person/name ?name] ] ))
   ]
     (= expanded-result
-       '(datomic.api/q (quote {:find [?e],
-                               :where [[?e :person/name ?name]],
-                               :in [a b]})
-                       (src 1) val-2) )))
-
+       '(datomic.api/q (quote { :find [?e]
+                                :in [a b]
+                                :where [[?e :person/name ?name]] } )
+                       (src 1) val-2))))
 
 ;---------------------------------------------------------------------------------------------------
 ; Informational functions
