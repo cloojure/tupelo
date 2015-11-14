@@ -30,11 +30,9 @@
 ;             :person/name     String    #{ <english alphabet> fn.2 ... }
 ;             :person/email    String    #{ <email constraints> fn.2 ... }
 ;             :person/phone    long      #{ <us=10 digits> fn.2 ... }
-;             :entity/type      attr      :entity.type/person
+;             :entity/type     attr      :entity.type/person
 ;
 ; Does then [?eid :entity/_type  :entity.type/person] yield a list of all "person" entities?
-;
-;
 ;---------------------------------------------------------------------------------------------------
 
 ; Prismatic Schema type definitions
@@ -84,11 +82,10 @@
 ; Core functions
 
 (s/defn new-partition :- ts/KeyMap
-  "Returns the tx-data to create a new partition in the DB. Usage:
+ "Returns the tx-data to create a new partition in the DB. Usage:
 
-    (td/transact *conn*
-      (partition ident)
-    )
+  (td/transact *conn*
+    (partition ident)) 
   "
   [ident :- s/Keyword]
   (when-not (keyword? ident)
@@ -98,21 +95,20 @@
     :db/ident                 ident } )     ; The "name" of our new partition
 
 (s/defn new-attribute    :- ts/KeyMap
-  "Returns the tx-data to create a new attribute in the DB.  Usage:
+ "Returns the tx-data to create a new attribute in the DB.  Usage:
 
     (td/transact *conn*
-      (attribute ident value-type & options)
-    )
+      (attribute ident value-type & options))
 
-   The first 2 params are required. Other params are optional and will use normal Datomic default
-   values (false or nil) if omitted. An attribute is assumed to be :db.cardinality/one unless
-   otherwise specified.  Optional values are:
+  The first 2 params are required. Other params are optional and will use normal Datomic default
+  values (false or nil) if omitted. An attribute is assumed to be :db.cardinality/one unless
+  otherwise specified.  Optional values are:
 
       :db.unique/value
       :db.unique/identity
       :db.cardinality/one     <- assumed by default
       :db.cardinality/many
-      :db/index
+      :db/index               <- assumed true by default
       :db/fulltext
       :db/isComponent
       :db/noHistory
