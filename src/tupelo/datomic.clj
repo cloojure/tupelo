@@ -274,7 +274,7 @@
   [& args]
   `(set
       (for [tuple# (query* ~@args) ]
-        (into [] tuple#))))
+        (vec tuple#))))
 
 ; #todo: rename to (td/query-attr ...)  ?
 (defmacro query-attr
