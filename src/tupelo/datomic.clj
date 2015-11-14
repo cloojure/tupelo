@@ -272,20 +272,19 @@
   variables $ and ?name in this case) are more closely aligned with their actual values. Also, the
   implicit DB $ must be explicitly tied to its data source in all cases (as shown above)."
   [& args]
-  `(set
-      (for [tuple# (query* ~@args) ]
-        (vec tuple#))))
+  `(set (for [tuple# (query* ~@args) ]
+          (vec tuple#))))
 
-; #todo: rename to (td/query-attr ...)  ?
 (defmacro query-attr
-  "Returns a Set of unique attribute values (i.e. #{s/Any}). Any duplicate values will be
-   discarded. Usage:
+ "Returns a set of unique attribute values (i.e. #{s/Any}). Any duplicate values will be
+  discarded. Usage:
 
     (td/query-attr :let    [$        (d/db *conn*)       ; assign multiple variables just like
-                           ?name    \"James Bond\"]     ;   in Clojure 'let' special form
+                           ?name    \"James Bond\"]      ;   in Clojure 'let' special form
                    :find   [?e]
                    :where  [ [?e :person/name ?name] ] )
-  "
+
+  It is an error if more than one attribute is returned."
   [& args]
   `(set
       (let [result-tupleset#  (query* ~@args)
@@ -296,15 +295,14 @@
         (map only result-tupleset#))))
 
 (defmacro query-entity
-  "A query that returns a Tuple for a single entity. Usage:
+ "Returns a result tuple for a single entity (i.e. [s/Any]). Usage:
 
     (td/query-entity :let    [$ (d/db *conn*)]
                      :find   [?eid ?name]  ; <- output tuple shape
                      :where  [ [?eid :person/name ?name      ]
                                [?eid :location    \"Caribbean\"] ] )
 
-   It is an error if more than one matching entity is found.
-  "
+  It is an error if more than one matching entity is found."
   [& args]
   `(let [result-tupleset# (query* ~@args) ]
       (when-not (= 1 (count result-tupleset#))
