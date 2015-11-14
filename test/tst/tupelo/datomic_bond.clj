@@ -225,13 +225,9 @@
 
     ; Show that only Honey is in the people partition
     (let [people-eids           (td/partition-eids (live-db) :people)
-          people-entity-maps    (map #(td/entity-map (live-db) %)  
-                                     people-eids) ]
-      (is (= people-entity-maps [
-               {:person/name "Honey Rider", :weapon/type #{:weapon/knife}, :location "Caribbean"} ] )))
-  )
+          people-entity-maps    (mapv  #(td/entity-map (live-db) %)  people-eids) ]
+      (is (= (only people-entity-maps)
+             {:person/name "Honey Rider", :weapon/type #{:weapon/knife}, :location "Caribbean"} ))))
 
-; #todo
-;  verify that datomic/q returns TupleSets (i.e. no duplicate tuples in result)
-
+; #todo verify that datomic/q returns TupleSets (i.e. no duplicate tuples in result)
 )
