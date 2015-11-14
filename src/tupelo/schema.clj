@@ -65,7 +65,8 @@
    "
   #{Tuple} )
 
-(def TupleMap     [ {s/Any s/Any} ] ) ; returned by Datomic pull api
+(def TupleMap     [ {s/Any s/Any} ] )   ; a single result  returned by Datomic pull api
+(def TupleMaps    [TupleMap] )          ; list of  results returned by Datomic pull api
 
 (def Vec1 [ (s/one s/Any "x1") ] )
 (def Vec2 [ (s/one s/Any "x1") (s/one s/Any "x2") ] )

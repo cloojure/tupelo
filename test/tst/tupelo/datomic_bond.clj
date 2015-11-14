@@ -200,11 +200,11 @@
                                         :where  [ [?eid :location] ] )        ; find any ?eid with a :location attr
         result-sort     (sort-by #(-> % only :location) result-pull)
   ]
-    (s/validate [ts/TupleMap] result-pull)    ; a list of tuples of maps
+    (s/validate [ts/TupleMap]   result-pull)  ; a list of tuples of maps
+    (s/validate  ts/TupleMaps   result-pull)  ; a list of tuples of maps
     (is (= result-sort  [ [ {:location "Caribbean"} ] 
                           [ {:location "London"   } ]
                           [ {:location "London"   } ] ] )))
-; #todo make "[ts/TupleMap]" -> ts/TupleList
 ; #todo show Exception if non-pull
 
   ; Create a partition named :people (we could namespace it like :db.part/people if we wished)
@@ -215,9 +215,11 @@
   (let [tx-result   @(td/transact *conn* 
                         (td/new-entity :people ; <- partition is first arg (optional) to td/new-entity 
                           { :person/name "Honey Rider" :location "Caribbean" :weapon/type #{:weapon/knife} } ))
-        [honey-eid]  (td/eids tx-result)  ; retrieve Honey Rider's EID from the seq (destructuring)
+        [honey-eid]  (td/eids tx-result)          ; retrieve Honey Rider's EID from the seq (destructuring)
+         honey-eid2  (only (td/eids tx-result))   ;   or use 'only' to unwrap it
   ]
     (s/validate ts/Eid honey-eid)  ; verify the expected type
+    (is (= honey-eid honey-eid2))
     (is (= :people ; verify the partition name for Honey's EID
            (td/partition-name (live-db) honey-eid)))
 
@@ -227,7 +229,6 @@
                                      people-eids) ]
       (is (= people-entity-maps [
                {:person/name "Honey Rider", :weapon/type #{:weapon/knife}, :location "Caribbean"} ] )))
-
   )
 
 ; #todo
