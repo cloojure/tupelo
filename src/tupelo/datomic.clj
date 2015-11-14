@@ -378,7 +378,7 @@
 ; #todo - need test
 (s/defn eid->ident :- s/Keyword
   "Returns the keyword ident value given an EID value"
-  [db-val     :- s/Any  ; #todo
+  [db-val     :- datomic.db.Db
    eid-val    :- ts/Eid]
   (d/q '{:find  [?ident .]
          :in    [$ ?eid]
@@ -418,7 +418,7 @@
       :added  - true/false (assertion/retraction) }
 
   Like (datomic.api/datoms ...), but returns a seq of plain Clojure maps.  "
-  [db-val   :- s/Any
+  [db-val   :- datomic.db.Db
    index    :- s/Keyword
    & components ]  ; #todo
   (for [datom (apply d/datoms db-val index components) ]
@@ -427,7 +427,7 @@
 ; #todo - need test
 (s/defn tx-datoms :- s/Any
   "Returns a vector of datom-maps from a TxResult"
-  [db-val     :- s/Any  ; #todo
+  [db-val     :- datomic.db.Db
    tx-result  :- ts/TxResult ]
   (let [tx-data     (:tx-data tx-result)  ; a seq of datoms
         fn-datom    (fn [arg]  
@@ -457,9 +457,8 @@
         eid-start     (d/entid-at db-val part-kw time-zero)     ; 1st possible eid
         datoms        (d/seek-datoms db-val :eavt eid-start)    ; all datoms >= eid-start
         eids-all      (distinct (map #(:e %) datoms))           ; pull out unique eids
-        eids-keep     (take-while  #(= part-kw (partition-name db-val %))   ; keep only eids in desired partition
-                                   eids-all)
-  ]
+        eids-keep     (take-while #(= part-kw (partition-name db-val %))  ; keep only eids in desired partition
+                                  eids-all) ]
     eids-keep))
 
 ; #todo from Craig Andera video (InfoQ 2013-12-12) of StrangLoop talk.
@@ -472,23 +471,22 @@
       (->> (d/seek-datoms db :eavt start-eid)
            (r/take-while #(< (:e %) end-eid)))))
 
-
 ; #todo - need test
 (s/defn is-transaction? :- s/Bool
   "Returns true if an entity is a transaction (i.e. it is in the :db.part/tx partition)"
-  [db-val   :- s/Any
+  [db-val       :- datomic.db.Db
    entity-spec  :- ts/EntitySpec ]
   (= :db.part/tx (partition-name db-val entity-spec)))
 
 ; #todo - need test
 (s/defn transactions :- [ ts/KeyMap ]
   "Returns a lazy sequence of entity-maps for all DB transactions"
-  [db-val :- s/Any]
-  (let [candidate-eids    (map :e (datoms db-val :aevt :db/txInstant))
-            ; All transaction entities must have attr :db/txInstant
+  [db-val :- datomic.db.Db]
+  (let [; All transaction entities must have attr :db/txInstant
+        candidate-eids    (map :e (datoms db-val :aevt :db/txInstant))
+        ; filter in case any user entities have attr :db/txInstant
         tx-eids           (keep-if #(is-transaction? db-val %) candidate-eids)
-            ; filter in case any user entities have attr :db/txInstant
-        result            (map #(entity-map db-val %) tx-eids) ]
+        result            (map #(entity-map db-val %) tx-eids) ] ; convert to entity-maps
     result))
 
 ; #todo need test
@@ -504,7 +502,6 @@
         txids   (mapv :tx datoms) ]
     (assert (apply = txids))  ; all datoms in tx have same txid
     (first txids)))           ; return the first one
-
 
 ;---------------------------------------------------------------------------------------------------
 ; #todo: make helper fn's for rule creation
@@ -544,3 +541,8 @@
 ;             person/address
 ;             person/phone
 ;   Need validator fns to ensure/verify person entity has all person/* attrs an no other attrs.
+;     need to add type field {:db/entity-type :person}
+;   Need map from :db/entity-type to validation-fn
+;     { :person  (fn [eid] (every?  #{:person/name :person/address :person/phone}
+;                                   #(keys (entity-map eid)) ))
+;     }
