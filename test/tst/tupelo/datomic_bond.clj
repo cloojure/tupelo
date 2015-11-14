@@ -1,7 +1,7 @@
 (ns tst.tupelo.datomic-bond
   (:require [tupelo.datomic   :as td]
             [tupelo.schema    :as ts]
-            [tupelo.core      :refer [spy spyx spyxx it-> safe-> matches? grab wild-match? forv submap? ]]
+            [tupelo.core      :refer [spy spyx spyxx it-> safe-> matches? grab wild-match? forv submap? only ]]
             [datomic.api      :as d]
             [schema.core      :as s]
   )
@@ -35,19 +35,17 @@
 (defn live-db [] (d/db *conn*))
 
 ; helper function
-(defn get-people
+(s/defn get-people :- ts/Set
   "Returns a set of entity maps for all entities with the :person/name attribute"
-  [db-val]
-  (let [eid-set (td/query-attr :let    [$ db-val]
+  [db-val :- s/Any]
+  (let [eids  (td/query-attr  :let    [$ db-val]
                               :find   [?e]  ; <- could also use Datomic Pull API
                               :where  [ [?e :person/name] ] ) ]
-    (into #{}
-      (for [eid eid-set]
-        (td/entity-map db-val eid)))))
+    (set  (for [eid eids]
+            (td/entity-map db-val eid)))))
 
 ;---------------------------------------------------------------------------------------------------
 (deftest t-james-bond
-
   ; Create some new attributes. Required args are the attribute name (an optionally namespaced
   ; keyword) and the attribute type (full listing at http://docs.datomic.com/schema.html). We wrap
   ; the new attribute definitions in a transaction and immediately commit them into the DB.
@@ -88,6 +86,7 @@
   (let [james-eid   (td/query-value  :let    [$ (live-db)]     ; like Clojure let
                                      :find   [?eid]
                                      :where  [ [?eid :person/name "James Bond"] ] )
+        _ (s/validate ts/Eid james-eid)  ; verify the expected type
         ; Retrieve James' attr-val pairs as a map. An entity can be referenced either by EID or by a
         ; LookupRef, which is a unique attribute-value pair expressed as a vector.
         james-map   (td/entity-map (live-db) james-eid)                       ; lookup by EID  
@@ -136,8 +135,6 @@
                         ["James Bond"  "London"]         ; still unique. Otherwise, any duplicate tuples
                         ["M"           "London"] } )))   ; will be discarded since output is a clojure set.
 
-  ; #todo: rename to (td/query-attr ...) & update release notes
-  ;
   ; If you want just a single attribute as output, you can get a set of attributes (rather than a set of
   ; tuples) using td/query-attr.  As usual, any duplicate values will be discarded. It is an error if
   ; more than one attribute is present in the :find clause.
@@ -147,7 +144,6 @@
         cities    (td/query-attr :let    [$ (live-db)]
                                  :find   [?loc]  ; <- a single attr-val output allows use of td/query-attr
                                  :where  [ [?eid :location ?loc] ] )
-
   ]
     (is (= names    #{"Dr No" "James Bond" "M"} ))  ; all names are present, since unique
     (is (= cities   #{"Caribbean" "London"} )))     ; duplicate "London" discarded
@@ -202,7 +198,7 @@
   (let [result-pull     (td/query-pull  :let    [$ (live-db)]                 ; $ is the implicit db name
                                         :find   [ (pull ?eid [:location]) ]   ; output :location for each ?eid found
                                         :where  [ [?eid :location] ] )        ; find any ?eid with a :location attr
-        result-sort     (sort-by #(-> % first :location) result-pull)
+        result-sort     (sort-by #(-> % only :location) result-pull)
   ]
     (s/validate [ts/TupleMap] result-pull)    ; a list of tuples of maps
     (is (= result-sort  [ [ {:location "Caribbean"} ] 

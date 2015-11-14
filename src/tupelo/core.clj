@@ -463,6 +463,9 @@
         outer-set   (set outer-map) ]
     (c.s/subset? inner-set outer-set)))
 
+; #todo reverse order? Allow this:  (wild-match? pattern data-1
+;                                                        data-2
+;                                                        data-3)  ; like (= x y z)
 (defn wild-match?  ; #todo need test & README
   "Returns true if the data value
    matches the pattern value.  The special keyword :* (colon-star) in the pattern value serves as
@@ -488,6 +491,9 @@
 ;   (spyx result) (spy-indent-dec) (flush)      ; for debug
     result))
 
+; #todo reverse order? Allow this:  (matches? pattern data-1
+;                                                     data-2
+;                                                     data-3)  ; like (= x y z)
 ; #todo need test & README
 (defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
@@ -505,6 +511,8 @@
   `(ccm/match ~data
        ~pattern   true
         :else     false ))
+
+; #todo: add (throwed? ...) for testing exceptions
 
 ;---------------------------------------------------------------------------------------------------
 ; Another benefit of test-all:  don't need "-test" suffix like in lein test:
