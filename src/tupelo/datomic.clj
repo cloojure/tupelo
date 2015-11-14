@@ -1,7 +1,7 @@
 (ns tupelo.datomic
   (:refer-clojure :exclude [update partition])
   (:require [datomic.api      :as d]
-            [tupelo.core      :refer [truthy? safe-> it-> spy spyx spyxx grab any? keep-if forv only]]
+            [tupelo.core      :refer [truthy? safe-> it-> spy spyx spyxx grab any? keep-if forv only glue]]
             [tupelo.schema    :as ts]
             [schema.core      :as s] )
   (:use clojure.pprint)
@@ -88,8 +88,8 @@
     (partition ident)) 
   "
   [ident :- s/Keyword]
-  (when-not (keyword? ident)
-    (throw (IllegalArgumentException. (str "attribute ident must be keyword: " ident ))))
+; (when-not (keyword? ident)
+;   (throw (IllegalArgumentException. (str "attribute ident must be keyword: " ident ))))
   { :db/id                    (d/tempid :db.part/db) ; The partition :db.part/db is built-in to Datomic
     :db.install/_partition    :db.part/db   ; Ceremony so Datomic "installs" our new partition
     :db/ident                 ident } )     ; The "name" of our new partition
@@ -115,10 +115,10 @@
       :db/doc                 <- *** currently unimplemented ***
   "
   [ ident       :- s/Keyword
-    value-type  :- s/Any
+    value-type  :- s/Keyword
    & options ]  ; #todo type spec?
-  (when-not (keyword? ident)
-    (throw (IllegalArgumentException. (str "attribute ident must be keyword: " ident ))))
+; (when-not (keyword? ident)
+;   (throw (IllegalArgumentException. (str "attribute ident must be keyword: " ident ))))
   (let [legal-attrvals-set (grab :db/valueType special-attrvals) ]
     (when-not (contains? legal-attrvals-set value-type)
       (throw (IllegalArgumentException. (str "attribute value-type invalid: " ident )))))
@@ -128,7 +128,7 @@
                         :db/index               true                  ; default for max speed
                         :db/ident               ident
                         :db/valueType           value-type }
-        option-specs  (into (sorted-map)
+        option-specs  (apply glue {}
                         (for [it options]
                           (cond
                             (= it :db.unique/value)         {:db/unique :db.unique/value}
@@ -141,50 +141,46 @@
                             (= it :db/isComponent)          {:db/isComponent true}
                             (= it :db/noHistory)            {:db/noHistory true}
                             (string? it)                    {:db/doc it}))) ; #todo finish this
-        tx-specs      (into base-specs option-specs)
+        tx-specs      (glue base-specs option-specs)
   ]
-    tx-specs
-  ))
+    tx-specs))
 
 ; #todo need test
 (s/defn new-entity  :- ts/KeyMap
-  "Returns the tx-data to create a new entity in the DB. Usage:
+ "Returns the tx-data to create a new entity in the DB. Usage:
 
     (td/transact *conn*
-      (new-entity attr-val-map)             ; default partition -> :db.part/user
-      (new-entity partition attr-val-map)   ; user-specified partition
-    )
+      (new-entity           attr-val-map)   ; default partition -> :db.part/user
+      (new-entity partition attr-val-map))  ; user-specified partition
 
-   where attr-val-map is a Clojure map containing attribute-value pairs to be added to the new
-   entity."
+  where attr-val-map is a Clojure map containing attribute-value pairs to be added to the new
+  entity."
   ( [ attr-val-map    :- ts/KeyMap ]
    (new-entity :db.part/user attr-val-map))
   ( [ -partition      :- s/Keyword
       attr-val-map    :- ts/KeyMap ]
-    (into {:db/id (d/tempid -partition) } attr-val-map)))
+    (glue {:db/id (d/tempid -partition) } attr-val-map)))
 
 ; #todo need test
 (s/defn new-enum :- ts/KeyMap   ; #todo add namespace version
-  "Returns the tx-data to create a new enumeration entity in the DB. Usage:
+ "Returns the tx-data to create a new enumeration entity in the DB. Usage:
 
     (td/transact *conn*
-      (new-enum ident)
-    )
+      (new-enum ident))
 
-  where ident is the (keyword) name for the new enumeration entity.  "
+  where ident is the (keyword) name for the new enumeration entity."
   [ident :- s/Keyword]
-  (when-not (keyword? ident)
-    (throw (IllegalArgumentException. (str "attribute ident must be keyword: " ident ))))
+; (when-not (keyword? ident)
+;   (throw (IllegalArgumentException. (str "attribute ident must be keyword: " ident ))))
   (new-entity {:db/ident ident} ))
 
 ; #todo  -  document entity-spec as EID or refspec in all doc-strings
 ; #todo  -  document use of "ident" in all doc-strings (EntityIdent?)
 (s/defn update :- ts/KeyMap
-  "Returns the tx-data to update an existing entity  Usage:
+ "Returns the tx-data to update an existing entity. Usage:
 
     (td/transact *conn*
-      (update entity-spec attr-val-map)
-    )
+      (update entity-spec attr-val-map))
 
    where attr-val-map is a Clojure map containing attribute-value pairs to be added to the new
    entity.  For attributes with :db.cardinality/one, Datomic will (automatically) retract the
@@ -192,15 +188,14 @@
    the new value will be accumulated into the current set of values."
   [entity-spec    :- ts/EntitySpec
    attr-val-map   :- ts/KeyMap ]
-    (into {:db/id entity-spec} attr-val-map))
+    (glue {:db/id entity-spec} attr-val-map))
 
 (s/defn retract-value :- ts/Vec4
   "Returns the tx-data to retract an attribute-value pair for an entity. Only a single
    attribute-value pair can be retracted for each call to retract-value.  Usage:
 
     (td/transact *conn*
-      (retract-value entity-spec attribute value)
-    )
+      (retract-value entity-spec attribute value))
 
    where the attribute-value pair must exist for the entity or the retraction will fail.  " ; #todo verify
   [entity-spec  :- ts/EntitySpec
@@ -209,12 +204,11 @@
   [:db/retract entity-spec attribute value] )
 
 (s/defn retract-entity :- ts/Vec2
-  "Returns the tx-data to retract all attribute-value pairs for an entity, as well as all references
-   to the entity by other entities. Usage:
+ "Returns the tx-data to retract all attribute-value pairs for an entity, as well as all references
+  to the entity by other entities. Usage:
 
     (td/transact *conn*
-      (retract-entity entity-spec)
-    )
+      (retract-entity entity-spec))
 
   If the retracted entity refers to any other entity through an attribute with :db/isComponent=true,
   the referenced entity will be recursively retracted as well."
@@ -223,13 +217,13 @@
 
 ; #todo need test
 (s/defn transact :- s/Any  ; #todo
-  "Like (datomic.api/transact ...) but does not require wrapping everything in a Clojure vector. Usage:
+ "Like (datomic.api/transact ...) but does not require wrapping everything in a Clojure vector. Usage:
 
     (td/transact *conn*
       (td/new-entity attr-val-map)                 ; default partition -> :db.part/user
       (td/update entity-spec-1 attr-val-map-1)
       (td/update entity-spec-2 attr-val-map-2))
-   "
+  "
   [conn & tx-specs]
   (d/transact conn tx-specs))
 
@@ -240,21 +234,15 @@
 ; #todo and scalar result (:find [?e .])
 (defmacro ^:no-doc query* ; #todo remember 'with'
   ; returns a HashSet of datomic entity objects
-  "Base function for improved API syntax for datomic.api/q query function (Entity API)"
+  "Base macro for improved API syntax for datomic.api/q query function (Entity API)"
   [& args]
   (let [args-map    (apply hash-map args)
-      ; _ (println args-map)
         let-vec     (grab :let args-map)
         let-map     (apply hash-map let-vec)
-      ; _ (println let-map)
         let-syms    (keys let-map)
-      ; _ (println let-syms)
         let-srcs    (vals let-map)
-      ; _ (println let-srcs)
         find-vec    (grab :find args-map)
-      ; _ (println \newline find-vec)
         where-vec   (grab :where args-map)
-      ; _ (println where-vec)
   ]
     (when-not (vector? let-vec)
       (throw (IllegalArgumentException. (str "query*: value for :let must be a vector; received=" let-vec))))
@@ -262,12 +250,10 @@
       (throw (IllegalArgumentException. (str "query*: value for :find must be a vector; received=" find-vec))))
     (when-not (vector? where-vec)
       (throw (IllegalArgumentException. (str "query*: value for :where must be a vector; received=" where-vec))))
-
    `(d/q  '{:find   ~find-vec
             :where  ~where-vec
             :in     [ ~@let-syms ] }
-        ~@let-srcs)
-  ))
+        ~@let-srcs)))
 
 ; #todo: rename :find -> :select or :return or :result ???
 (defmacro query
@@ -284,9 +270,9 @@
   quoting required. Most importantly, the :in keyword has been replaced with the :let keyword, and
   the syntax has been copied from the Clojure let special form so that both the query variables (the
   variables $ and ?name in this case) are more closely aligned with their actual values. Also, the
-  implicit DB $ must be explicitly tied to its data source in all cases (as shown above).  "
+  implicit DB $ must be explicitly tied to its data source in all cases (as shown above)."
   [& args]
-  `(into #{}
+  `(set
       (for [tuple# (query* ~@args) ]
         (into [] tuple#))))
 
