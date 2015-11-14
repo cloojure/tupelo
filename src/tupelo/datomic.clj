@@ -389,15 +389,15 @@
 ; (pr t1) => #datom[299067162756085 63 "Honey Rider" 13194139534324 true]
 ; #todo - need test
 (s/defn datom-map :- ts/DatomMap
-  "Returns a plain Clojure map of an datom's attribute-value pairs.
-   A datom map is structured as:
+ "Returns a plain Clojure map of an datom's attribute-value pairs.
+  A datom map is structured as:
 
-      { :e        entity id (eid)
-        :a        attribute eid
-        :v        value
-        :tx       transaction eid
-        :added    true/false (assertion/retraction) }
-   "
+    { :e      - entity id (eid)
+      :a      - attribute eid
+      :v      - value
+      :tx     - transaction eid
+      :added  - true/false (assertion/retraction) }
+  "
   [datom :- s/Any]  ; #todo
   { :e            (:e     datom)
     :a      (long (:a     datom)) ; must cast Integer -> Long
@@ -407,21 +407,21 @@
 
 ; #todo - need test
 ; #todo - make non-lazy?
-(s/defn datoms :- [ ts/DatomMap ]
-  "Returns a lazy sequence of Clojure maps of an datom's attribute-value pairs.
-   A datom map is structured as:
+(s/defn datoms :- [ts/DatomMap]
+ "Returns a lazy sequence of Clojure maps of an datom's attribute-value pairs.
+  A datom map is structured as:
 
-      { :e        entity id (eid)
-        :a        attribute eid
-        :v        value
-        :tx       transaction eid
-        :added    true/false (assertion/retraction) }
+    { :e      - entity id (eid)
+      :a      - attribute eid
+      :v      - value
+      :tx     - transaction eid
+      :added  - true/false (assertion/retraction) }
 
-   Like (datomic.api/datoms ...), but returns a seq of plain Clojure maps.  "
-  [db             :- s/Any
-   index          :- s/Keyword
+  Like (datomic.api/datoms ...), but returns a seq of plain Clojure maps.  "
+  [db-val   :- s/Any
+   index    :- s/Keyword
    & components ]  ; #todo
-  (for [datom (apply d/datoms db index components) ]
+  (for [datom (apply d/datoms db-val index components) ]
     (datom-map datom)))
 
 ; #todo - need test
@@ -429,17 +429,17 @@
   "Returns a vector of datom-maps from a TxResult"
   [db-val     :- s/Any  ; #todo
    tx-result  :- ts/TxResult ]
-  (let [tx-data       (:tx-data tx-result)  ; a seq of datoms
-        fn-datom      (fn [arg]
-                        (let [datom1  (datom-map arg)
-                              attr-eid    (:a datom1)
-                              attr-ident  (eid->ident db-val attr-eid)
-                              datom2  (assoc datom1 :a attr-ident)
-                        ]
-                          datom2 ))
-        tx-datoms      (mapv fn-datom tx-data)
+  (let [tx-data     (:tx-data tx-result)  ; a seq of datoms
+        fn-datom    (fn [arg]  
+                      "Replace attr-eid -> attr-ident in datom"
+                      (let [datom1      (datom-map arg)
+                            attr-eid    (:a datom1)
+                            attr-ident  (eid->ident db-val attr-eid)
+                            datom2      (assoc datom1 :a attr-ident) ]
+                        datom2 ))
+        tx-datoms    (mapv fn-datom tx-data)
     ]
-      tx-datoms ))
+      tx-datoms))
 
 ; #todo - need test
 (s/defn partition-name :- s/Keyword
