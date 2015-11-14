@@ -311,40 +311,41 @@
       (vec (first result-tupleset#))))
 
 (defmacro query-value
-  "A query that returns a single value.  Usage:
+ "Returns the value of a single attribute for a single entity.  Usage:
 
     (td/query-value :let    [$      (d/db *conn*)
                              ?name  \"James Bond\"]
-                    :find   [?eid]
+                    :find   [?eid]  ; <- output tuple shape
                     :where  [ [?eid :person/name ?name] ] )
 
-   It is an error if more than one value is found."
+   It is an error if more than one matching value is found."
   [& args]
-  `(let [tuple# (query-entity ~@args) ] ; retrieve the single-tuple result
-      (if (= 1 (count tuple#))
-        (first tuple#)
+  `(let [result-tuple# (query-entity ~@args) ] ; retrieve the single-tuple result
+      (when-not (= 1 (count result-tuple#))
         (throw (IllegalStateException.
-          (str "query-value: tuple must hold a single item: " tuple#))))))
+          (str "query-value: tuple must hold a single item: " result-tuple#))))
+        (only result-tuple#)))
 
 (defn- ^:no-doc contains-pull?  ; prevent codox ("lein doc") from processing
-  "Returns true if a sequence of symbols includes 'pull'"
+ "Returns true if a sequence of symbols includes 'pull'"
   [args-vec]
   (let [args-map    (apply hash-map args-vec)
         find-vec    (flatten [ (grab :find args-map) ] ) ]
     (any? #(= 'pull %) find-vec)))
 
 (defmacro query-pull
-  "Returns a TupleList [Tuple] of query results, where items may be duplicated. Intended only for
-   use with the Datomic Pull API. Usage:
+ "Returns a TupleList [Tuple] of query results, where items may be duplicated. Intended only for
+  use with the Datomic Pull API. Usage:
 
-     (td/query-pull  :let    [$ (d/db *conn*) ]
-                     :find   [ (pull ?eid [:location]) ]
-                     :where  [ [?eid :location] ] )
+    (td/query-pull  :let    [$ (d/db *conn*) ]
+                    :find   [ (pull ?eid [:location]) ]
+                    :where  [ [?eid :location] ] )
 
-   It is an error if the :find clause does not contain a Datomic Pull API request.  "
+  It is an error if the :find clause does not contain a Datomic Pull API request.  "
   [& args]
-  (assert (tupelo.datomic/contains-pull? args)
-          "query-pull: Only intended for queries using the Datomic Pull API")
+  (when-not (tupelo.datomic/contains-pull? args)
+    (throw (IllegalArgumentException. 
+             (str "query-pull: Only intended for queries using the Datomic Pull API"))))
   `(forv [tuple# (query* ~@args) ]
       (vec tuple#)))
 
