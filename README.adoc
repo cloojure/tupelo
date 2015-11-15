@@ -83,86 +83,108 @@ normally use `:refer :all` for `tupelo.core` in our namespaces:
 
 === Expression Debugging
 
-Ever been debugging some code and had trouble printing out intermediate
+Have you ever been debugging some code and had trouble printing out intermediate
 values?  For example:
 
 [source,clojure]
 ----
 (-> 1
-    (inc)
+    (inc)       ; want to print value in pipeline after "(inc)" expression
     (* 2))
 4
 ----
-Suppose you want to disply the value after the (inc) function. You can't just insert a
-(println) because the return value of `nil` will break the pipeline structure. Instead,
+Suppose you want to disply the value after the `(inc)` function. You can't just insert a
+`(println ...)` because the return value of `nil` will break the pipeline structure. Instead,
 just use `spy`:
 
 [source,clojure]
 ----
 (-> 1
     (inc)
-    (spy :msg "after inc")
+    (spy)       ; print value at this location in pipeline
     (* 2))
-;; after inc => 2
-4
+;; spy => 2     ; output from spy
+4               ; return value from the threading pipeline
 ----
-This tool is named `spy` since it can display values from inside either  a "thread-first" or a "thread-last" form
-(e.g. using `\->` or `\->>`) where they would normally be hidden.  
+This tool is named `spy` since it can display values from inside any threading form without
+affecting the result of the expression.  In this case, `spy` printed the value `2` resulting from
+the `(inc)` expression. Then, the value `2` continued to flow through the following expressions in
+the pipeline so that the return value of the expression is unchanged.  
+
+You can add in a string message to label each `spy` output:
+[source,clojure]
+----
+(-> 1
+    (inc)
+    (spy :msg "after inc")      ; add a custom message
+    (* 2))
+;; after inc => 2               ; spy output is labelled with message
+4                               ; return value is unchanged
+----
+Note that `spy` works equally well inside either a "thread-first" or a "thread-last" form
+(e.g. using `\->` or `\->>`), without requiring any changes.
 
 [source,clojure]
 ----
 (->> 1
     (inc)
-    (spy :msg "after inc")
+    (spy :msg "after inc")      ; spy works equally with both  ->  and  ->>  forms
     (* 2))
 ;; after inc => 2
 4
 ----
 
-Note that the same call to `spy` works in either `\->` or `\->>` forms.  The
-keyword `:msg` is required just before the message string, as it is this which
-allows the `spy` function to detect whether it is in a thread-first or
-thread-last form, and thus produce the correct output. As a bonus for debugging,
-the value is output using (pr-str ...) so that numbers and strings are
-unambiguous in the output:
+How does `spy` accomplish this trick? The answer is that the keyword `:msg` is required just before
+the message string, and it is this which allows `spy` to detect whether it is in a thread-first or
+thread-last form, and thus produce the correct output. As a bonus for debugging, the value is output
+using (pr-str ...) so that numbers and strings are unambiguous in the output:
 
 [source,clojure]
 ----
-> (-> 30 (+ 4) (spy :msg "dbg") (* 10))
-;; dbg => 34
+(-> 30 
+    (+ 4) 
+    (spy :msg "dbg")
+    (* 10))
+;; dbg => 34            ; integer result = 34
 340
 
-(-> "3" (str "4") (spy :msg "dbg") (str "0"))
-;; dbg => "34"
+(-> "3" 
+    (str "4")
+    (spy :msg "dbg")
+    (str "0"))
+;; dbg => "34"          ; string result = "34"
 "340"
 ----
 
 Sometimes you may prefer to print out the literal expression instead of a
-message. In this case, just use `spyx`:
+message. In this case, just use `spyx` (short for "spy expression") :
 [source,clojure]
 ----
 (as-> 1 x
       (spyx (inc x))
       (* 2 x))
-;; (inc x) => 2
+;; (inc x) => 2         ; the expression is used as the label
 4
 ----
-
-In other instances, you may wish to use `spyxx` display both the type and value of an expression:
+In other instances, you may wish to use `spyxx` to display the expression, its 
+type, and its value:
 [source,clojure]
 ----
 (defn mystery-fn [] (into (sorted-map) {:b 2 :a 1}))
 (spyxx (mystery-fn))
 ;; (mystery-fn) => clojure.lang.PersistentTreeMap->{:a 1, :b 2}
 ----
+Non-pure functions (i.e. those with side-effects) are safe to use with `spy`.
+Any expression supplied to spy will be evaluated only once.
 
-To be precise, the function signatures are:
-
+To be precise, the function signatures for `spy` are:
 [source,clojure]
 ----
-(spy :msg msg-str)    ; the ":msg" keyword literal is required
-(spyx expr)
-(spyxx expr)
+(spy <expr>)                ; print value of <expr> w/o custom message string
+(spy <expr> :msg msg-str)   ; works with ->   (the ":msg" keyword is required)
+(spy :msg msg-str <expr>)   ; works with ->>  (the ":msg" keyword is required)
+(spyx  <expr>)              ; prints <expr> and its value
+(spyxx <expr>)              ; prints <expr>, its type, and its value
 ----
 
 === Literate Threading Macro
@@ -179,10 +201,10 @@ the previous result.
 [source,clojure]
 ----
 (it-> 1
-      (inc it)
-      (+ it 3)
-      (/ 10 it)
-      (str "We need to order " it " items." )
+      (inc it)                                  ; thread-first or thread-last
+      (+ it 3)                                  ; thread-first
+      (/ 10 it)                                 ; thread-last
+      (str "We need to order " it " items." )   ; middle of 3 arguments
 ;=> "We need to order 2 items." )
 ----
 
@@ -201,13 +223,14 @@ Instead, use the function `grab` for keyword/map lookup:
    returns the value associated with :the-key as for (clojure.core/get the-map :the-key).  
    Throws an Exception if :the-key is not present in the-map."
 
-user=> (def m {:a 1 :b 2})
-user=> (grab :a m)
-1
-user=> (grab :c m)
+(def sidekicks {:batman "robin" :clark "lois"})
+(grab :batman sidekicks)
+;=> "robin"
+
+(grab :spiderman m)
 ;=> IllegalArgumentException Key not present in map:
-;=>   map: {:b 2, :a 1}
-;=>   key: :c
+map : {:batman "robin", :clark "lois"}
+keys: [:spiderman]
 ----
 The function `grab` should also be used in place of `clojure.core/get`. Simply reverse the order of arguments to
 match the "keyword-first, map-second" convention.
@@ -220,10 +243,10 @@ For looking up values in nested maps, the function `fetch-in` replaces `clojure.
    returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).  
    Throws an Exception if the path keys-vec is not present in the-map."
 
-user=> (def mm {:a 1 :b {:c 3}})
-user=> (fetch-in mm [:b :c])
+(def mm {:a 1 :b {:c 3}})
+(fetch-in mm [:b :c])
 3
-user=> (fetch-in mm [:b :z])
+(fetch-in mm [:b :z])
 ;=> IllegalArgumentException Key seq not present in map:
 ;=>   map : {:b {:c 3}, :a 1}
 ;=>   keys: [:b :z]
@@ -263,7 +286,7 @@ of both `clojure.core/assoc-in` and `clojure.core/update-in` (note that `nil` is
 the value of the final map entry, not the empty map `{}` as for the other examples). 
 
 Note that only the map entry corresponding to the last key `kZ` is cleared. This
-differs from the `dissoc-in` function in the old clojure-contrib library which
+differs from the `dissoc-in` function in the old clojure-contrib library whichjj
 had the unpredictable behavior of recursively (& silently) deleting all keys in
 `keys-vec` corresponding to empty maps.
 
@@ -275,8 +298,11 @@ The `concat` function can sometimes have rather surprising results:
 (is (= (concat {:a 1} {:b 2} {:c 3} )
              [ [:a 1] [:b 2] [:c 3] ] ))
 ----
-In this example, the user probably meant to merge the 3 maps into one. The
-`conj` function can also surprise the user:
+In this example, the user probably meant to merge the 3 maps into one. Instead, the three
+maps were mysteriously converted into length-2 vectors, which were then nested inside another
+sequence.
+
+The `conj` function can also surprise the user:
 [source,clojure]
 ----
 (is (= (conj [1 2] [3 4])
@@ -378,6 +404,10 @@ arbitrary validation, throwing an exception if a non-truthy result is returned:
 (validate tstfn tstval)
   Used to validate intermediate results. Returns tstval if the result of 
   (tstfn tstval) is truthy.  Otherwise, throws IllegalStateException.
+
+(is (= 3    (validate pos?        3    )))
+(is (= 3.14 (validate number?     3.14 )))
+(is (= 3.14 (validate #(< 3 % 4)  3.14 )))
 ---- 
 
 === Map Entries (Key-Value pairs)
@@ -513,14 +543,14 @@ intent more obvious.
 
 === Extracting *_Only_* Values
 
-The pervasive use of seq's in Clojure means that scalar values often appear
-wrapped in a vector or some other sequence type.  One thus sees code like 
-`(first some-var)` and it is not always clear that the code is simply "unwrapping" a scalar value,
-since there could well be remaining values in the sequence. Indeed, it would be equivalent to use 
-`(last some-var)` as well, since first=last for a length-1 sequence. 
+The pervasive use of seq's in Clojure means that scalar values often appear wrapped in a vector or
+some other sequence type.  As a result, one often sees code like `(first some-var)` and it is not
+always clear that the code is simply "unwrapping" a scalar value, since there could well be
+remaining values in the sequence. Indeed, for a length-1 sequence it would be equally valid 
+to use `(last some-var)` since first=last if there is only one item in the list.
 
-Instead, we use the function `only` to emphasize that we are simply _unwrapping_ a single value from
-the sequence:
+To clarify that we are simply _unwrapping_ a single value from
+the sequence, we may use the function `only`:
 
 [source,clojure]
 ---- 
