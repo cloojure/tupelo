@@ -440,11 +440,11 @@
   (with-out-str (pprint arg)))
 
 ; #todo add to README
-; (defn str->lines
-;   "Returns a lazy seq of lines from a string"
-;   [string-arg]
-;   (line-seq (BufferedReader. (StringReader. string-arg))))
-
+; #todo add test
+(defn str->lines
+  "Returns a lazy seq of lines from a string"
+  [string-arg]
+  (line-seq (BufferedReader. (StringReader. string-arg))))
 
 (defn clip-str
   "Converts all args to single string and clips any characters beyond nchars."
