@@ -33,14 +33,6 @@
   "The Clojure map representation of a Datom."
   { :e Eid  :a Eid  :v s/Any  :tx Eid  :added s/Bool } )
 
-(def TxResult
-  "A map returned by a successful transaction. Contains the keys 
-   :db-before, :db-after, :tx-data, and :tempids"
-  { :db-before    datomic.db.Db
-    :db-after     datomic.db.Db
-    :tx-data      [s/Any]  ; #todo (seq of datom)
-    :tempids      Map } )  ; #todo
-
 (def Set
   "Either a Clojure hash-set or a java.util.HashSet"
   (s/either #{s/Any} 

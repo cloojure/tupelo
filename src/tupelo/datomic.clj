@@ -1,9 +1,10 @@
 (ns tupelo.datomic
   (:refer-clojure :exclude [update partition])
-  (:require [datomic.api      :as d]
-            [tupelo.core      :refer [truthy? safe-> it-> spy spyx spyxx grab any? keep-if forv only glue]]
-            [tupelo.schema    :as ts]
-            [schema.core      :as s] )
+  (:require [datomic.api            :as d]
+            [tupelo.core            :refer [truthy? safe-> it-> spy spyx spyxx grab any? keep-if forv only glue]]
+            [tupelo.schema          :as ts]
+            [tupelo.schema-datomic  :as tsd]
+            [schema.core            :as s] )
   (:use clojure.pprint)
   (:gen-class))
 
@@ -428,7 +429,7 @@
 (s/defn tx-datoms :- s/Any
   "Returns a vector of datom-maps from a TxResult"
   [db-val     :- datomic.db.Db
-   tx-result  :- ts/TxResult ]
+   tx-result  :- tsd/TxResult ]
   (let [tx-data     (:tx-data tx-result)  ; a seq of datoms
         fn-datom    (fn [arg]  
                       "Replace attr-eid -> attr-ident in datom"
@@ -492,12 +493,12 @@
 ; #todo need test
 (s/defn eids :- [ts/Eid]
   "Returns a collection of the EIDs created in a transaction."
-  [tx-result :- ts/TxResult]
+  [tx-result :- tsd/TxResult]
   (vals (grab :tempids tx-result)))
 
 (s/defn txid  :- ts/Eid
   "Returns the EID of a transaction"
-  [tx-result :- ts/TxResult]
+  [tx-result :- tsd/TxResult]
   (let [datoms  (grab :tx-data tx-result)
         txids   (mapv :tx datoms) ]
     (assert (apply = txids))  ; all datoms in tx have same txid

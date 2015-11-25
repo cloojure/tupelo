@@ -191,6 +191,7 @@
       (reduce into colls)
       (throw (IllegalArgumentException.
                 (str  "colls must be all identical type; coll-types:" coll-types ))))))
+      ; #todo look at using (ex-info ...)
 
 (defn seqable?      ; from clojure.contrib.core/seqable
   "Returns true if (seq x) will succeed, false otherwise."
