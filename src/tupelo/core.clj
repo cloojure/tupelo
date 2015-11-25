@@ -9,7 +9,7 @@
   (:require [clojure.core                 :as clj]
             [clojure.string               :as str]
             [clojure.set                  :as c.s]
-            [clojure.pprint               :refer [pprint] ]
+            [clojure.pprint               :as c.pp ]
             [clojure.core.match           :as ccm ]
             [clojure.test                 :as test]
             [schema.core                  :as s]
@@ -438,7 +438,12 @@
 (defn pp-str
   "Returns a string that is the result of clojure.pprint/pprint"
   [arg]
-  (with-out-str (pprint arg)))
+  (with-out-str (c.pp/pprint arg)))
+
+(defn pprint
+  "Shortcut to clojure.pprint/pprint"
+  [arg]
+  (c.pp/pprint arg))
 
 ; #todo add to README
 ; #todo add test
