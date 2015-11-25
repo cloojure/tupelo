@@ -464,6 +464,10 @@
         outer-set   (set outer-map) ]
     (c.s/subset? inner-set outer-set)))
 
+; #todo need conversion from Long -> hex string="1234-4567-89ab-cdef"
+; #todo need rand-id/randid/rid/rid-str (rand id) -> 64 bit hex string="1234-4567-89ab-cdef"
+; i[12] = Random.nextInt(); bytes += i[12].toHexString()
+
 ; #todo reverse order? Allow this:  (wild-match? pattern data-1
 ;                                                        data-2
 ;                                                        data-3)  ; like (= x y z)
