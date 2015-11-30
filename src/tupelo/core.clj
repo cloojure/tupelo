@@ -243,8 +243,11 @@
       (= 1   num-keys)      (dissoc the-map key-to-clear)
       :else                 (update-in the-map parent-keys dissoc key-to-clear))))
 
-; #awt TODO:  add in clear-nil-entries to recursively delete all k-v pairs
-;               where val is nil or empty?
+; #todo:  add in clear-nil-entries to recursively delete all k-v pairs where val is nil or empty?
+
+; #todo:  create safe-map ns with non-nil/non-dup versions of assoc-in, update-in, dissoc-in (&
+; singles). Basically like compiler-like guarentees against misspellings, duplicate entries, missing
+; entries.
 
 (s/defn only  :- s/Any
   "(only seq-arg)
