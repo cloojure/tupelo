@@ -443,7 +443,7 @@
   [arg]
   (with-out-str (c.pp/pprint arg)))
 
-(defn pprint
+#_(defn pprint
   "Shortcut to clojure.pprint/pprint"
   [arg]
   (c.pp/pprint arg))

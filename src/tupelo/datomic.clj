@@ -5,7 +5,6 @@
             [tupelo.schema          :as ts]
             [tupelo.schema-datomic  :as tsd]
             [schema.core            :as s] )
-  (:use clojure.pprint)
   (:gen-class))
 
 ;---------------------------------------------------------------------------------------------------
