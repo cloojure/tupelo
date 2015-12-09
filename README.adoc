@@ -641,9 +641,15 @@ test namespace:
 ----
 
 == Requirements
-
  - Clojure 1.7.0
  - Java 1.8
+
+== To Do
+ - types
+ - schema (& schema-datomic)
+ - re-work csv
+ - kill y64?
+ - Update all NS docstrings
 
 == License
 
