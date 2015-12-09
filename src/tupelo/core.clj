@@ -12,6 +12,7 @@
             [clojure.pprint               :as c.pp ]
             [clojure.core.match           :as ccm ]
             [clojure.test                 :as test]
+            [cheshire.core                :as cc]
             [schema.core                  :as s]
             [tupelo.types                 :as types]
             [tupelo.schema                :as ts]
@@ -443,10 +444,18 @@
   [arg]
   (with-out-str (c.pp/pprint arg)))
 
-#_(defn pprint
+(defn ppr   ; #todo experimental
   "Shortcut to clojure.pprint/pprint"
   [arg]
   (c.pp/pprint arg))
+
+(defn json->clj [arg]   ; #todo experimental
+  "Shortcut to cheshire.core/parse-string"
+  (cc/parse-string arg true)) ; true => keywordize-keys
+
+(defn clj->json [arg]   ; #todo experimental
+  "Shortcut to cheshire.core/generate-string"
+  (cc/generate-string arg))
 
 ; #todo add to README
 ; #todo add test

@@ -10,6 +10,7 @@
                   [clojure-csv/clojure-csv          "2.0.1"]
                   [clj-time                         "0.7.0"]
                   [criterium                        "0.4.3"]
+                  [cheshire                         "5.5.0"]
                   [prismatic/schema                 "0.4.3"]
                   [com.datomic/datomic-pro          "0.9.5173" :exclusions [joda-time]]
                 ]
