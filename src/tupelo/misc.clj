@@ -37,13 +37,13 @@
   (-> str-in
       str/trim
       (str/replace #"[^a-zA-Z0-9]" "-")))
-  ; AWTAWT TODO: replace with other lib
+  ; #todo replace with other lib
 
 (defn str->kw
  "Returns a keyword constructed from the normalized str-in"
   [str-in]
   (keyword (normalize-str str-in)))
-  ; AWTAWT TODO: replace with other lib
+  ; #todo replace with other lib
 
 (defn kw->dbstr 
   "Converts a keyword to a database compatible string (e.g. all hyphens converted to
@@ -60,7 +60,7 @@
 (defn take-dist
  "Returns a sequence of n items from a collection, distributed
   evenly between first & last elements, which are always included."
-  ; AWTAWT TODO: write tests, incl degenerate cases of N=0,1,2, etc
+  ; #todo write tests, incl degenerate cases of N=0,1,2, etc
   [n coll]
   {:pre [(pos? n)] }
   (if (= n 1)
@@ -112,11 +112,13 @@
   "A seq of 1-char strings of all printable characters from space (32) to tilde (126)"
   (mapv str (char-seq \space \~)))
 
+; #todo document in README
 (def ^:no-doc dots-per-row 100)
 (def ^:no-doc dot-count (atom 0))
-(defn dot-reset []
-  (reset! dot-count 0))
-(defn dot [] 
+(defn dot 
+ "Prints a single dot (flushed) to the console, keeping a running count of dots printed.  Wraps to a
+  newline when 100 dots have been printed. Displays the running dot count at the beginning of each line."
+  [] 
   (let [num-dots  @dot-count
         new-val   (inc num-dots) ]
     (when (zero? (rem num-dots dots-per-row))
@@ -126,4 +128,8 @@
       (newline))
     (flush)
     (reset! dot-count new-val)))
+(defn dot-reset 
+  "Resets the dot counter to zero"
+  []
+  (reset! dot-count 0))
 
