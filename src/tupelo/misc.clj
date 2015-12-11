@@ -112,3 +112,18 @@
   "A seq of 1-char strings of all printable characters from space (32) to tilde (126)"
   (mapv str (char-seq \space \~)))
 
+(def ^:no-doc dots-per-row 100)
+(def ^:no-doc dot-count (atom 0))
+(defn dot-reset []
+  (reset! dot-count 0))
+(defn dot [] 
+  (let [num-dots  @dot-count
+        new-val   (inc num-dots) ]
+    (when (zero? (rem num-dots dots-per-row))
+      (print (format "%6d " num-dots)))
+    (print \.) 
+    (when (zero? (rem new-val dots-per-row))
+      (newline))
+    (flush)
+    (reset! dot-count new-val)))
+

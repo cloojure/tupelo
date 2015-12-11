@@ -93,7 +93,7 @@ values?  For example:
     (* 2))
 4
 ----
-Suppose you want to disply the value after the `(inc)` function. You can't just insert a
+Suppose you want to display the value after the `(inc)` function. You can't just insert a
 `(println ...)` because the return value of `nil` will break the pipeline structure. Instead,
 just use `spy`:
 
