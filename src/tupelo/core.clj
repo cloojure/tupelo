@@ -444,7 +444,7 @@
   [arg]
   (with-out-str (c.pp/pprint arg)))
 
-(defn ppr   ; #todo experimental
+(defn pretty   ; #todo experimental
   "Shortcut to clojure.pprint/pprint"
   [arg]
   (c.pp/pprint arg))
