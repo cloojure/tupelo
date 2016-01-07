@@ -6,7 +6,7 @@ Leiningen coordinates:
 
 image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 
-=== Full API Documentation:  http://cloojure.github.io/doc/tupelo
+=== The Tupelo API Docs http://cloojure.github.io/doc/tupelo[are posted on GitHub Pages]
 
 == Tupelo Overview
 
@@ -26,7 +26,8 @@ Please see the xref:tupelo-core-overview[tupelo.core] docs further below.
 
 ==== Tupelo Datomic - A library of helper functions for Datomic. 
 
-Please see the link:src/tupelo/datomic.adoc[tupelo.datomic] docs.
+Tupelo Datomic has been split out into an independent project.  Please 
+see https://github.com/cloojure/tupelo-datomic[tupelo.datomic] for details.
 
 ==== Tupelo CSV - Functions for using CSV (Comma Separate Value) files
 

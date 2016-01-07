@@ -1,4 +1,4 @@
-(defproject tupelo "0.1.58"
+(defproject tupelo "0.1.59"
   :description "Tupelo:  Making Clojure Even Sweeter"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
@@ -32,6 +32,6 @@
   :test-selectors { :default    (complement :slow)
                     :slow       :slow }
 
-  :jvm-opts ["-Xms2g" "-Xmx12g" ]
+  :jvm-opts ["-Xms1g" "-Xmx4g" ]
 ; :jvm-opts ["-Xms4g" "-Xmx8g" "-server"]
 )
