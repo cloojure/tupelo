@@ -128,6 +128,9 @@
       (newline))
     (flush)
     (reset! dot-count new-val)))
+(defn dot-total []
+  (newline)
+  (println (format "%6d total" @dot-count)))
 (defn dot-reset 
   "Resets the dot counter to zero"
   []
