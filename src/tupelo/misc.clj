@@ -124,6 +124,7 @@
     (when (zero? (rem num-dots dots-per-row))
       (print (format "%6d " num-dots)))
     (print \.) 
+    (flush)
     (when (zero? (rem new-val dots-per-row))
       (newline))
     (flush)
