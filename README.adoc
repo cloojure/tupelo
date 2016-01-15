@@ -515,7 +515,7 @@ strings are returned unchanged.
 
 Have you ever wanted to read a text file and get a sequence of lines back?  Clojure has `line-seq`
 but this only accepts a `Reader` as input and `slurp` returns a `String`.  Well, the function
-`str->lines` accepts a String and returns a seq of Strings - just what you want!  If you have a file
+`str\->lines` accepts a String and returns a seq of Strings - just what you want!  If you have a file
 `sample.txt` like:
 
 ----
@@ -524,7 +524,7 @@ again
 and again!
 ----
 
-The result of `(str->lines (slurp "sample.txt")` is the sequence:
+The result of `(str\->lines (slurp "sample.txt")` is the sequence:
 
 ----
 ["hello there"
