@@ -439,26 +439,28 @@
   ]
     result ))
 
+; #todo add test & README
 (defn pp-str
   "Returns a string that is the result of clojure.pprint/pprint"
   [arg]
   (with-out-str (c.pp/pprint arg)))
 
+; #todo add test & README
 (defn pretty   ; #todo experimental
   "Shortcut to clojure.pprint/pprint"
   [arg]
   (c.pp/pprint arg))
 
+; #todo add test & README
 (defn json->clj [arg]   ; #todo experimental
   "Shortcut to cheshire.core/parse-string"
   (cc/parse-string arg true)) ; true => keywordize-keys
 
+; #todo add test & README
 (defn clj->json [arg]   ; #todo experimental
   "Shortcut to cheshire.core/generate-string"
   (cc/generate-string arg))
 
-; #todo add to README
-; #todo add test
 (defn str->lines
   "Returns a lazy seq of lines from a string"
   [string-arg]
