@@ -41,8 +41,8 @@
     (is (= cmd "create table tmp (\n  aa int not null,\n  bb text) ;"))
     (try
       (jdbc/db-do-commands db-spec cmd )
-      (jdbc/db-do-commands db-spec "insert into tmp (aa,bb) values (1,'one'); ")
-      (jdbc/db-do-commands db-spec "insert into tmp (aa,bb) values (2,'two'); ")
+      (jdbc/insert! db-spec :tmp {:aa 1 :bb "one"}
+                                 {:aa 2 :bb "two"} )
       (jdbc/query db-spec (sql/select "*" :tmp))
       (jdbc/db-do-commands db-spec (drop-table :tmp))
     (catch Exception ex
@@ -81,14 +81,14 @@
 
     (jdbc/db-do-commands db-spec 
       (create-table :tmp1 {:aa (not-null :int)  :bb :text} ))
-    (jdbc/db-do-commands db-spec "insert into tmp1 (aa,bb) values (1,'one'); ")
-    (jdbc/db-do-commands db-spec "insert into tmp1 (aa,bb) values (2,'two'); ")
+    (jdbc/insert! db-spec :tmp1 {:aa 1 :bb "one"}
+                                {:aa 2 :bb "two"} )
   ; (spyx (jdbc/query db-spec (sql/select "*" :tmp1)))
 
     (jdbc/db-do-commands db-spec 
       (create-table :tmp2 {:aa (not-null :int)  :cc :text} ))
-    (jdbc/db-do-commands db-spec "insert into tmp2 (aa,cc) values (1,'cc-one'); ")
-    (jdbc/db-do-commands db-spec "insert into tmp2 (aa,cc) values (2,'cc-two'); ")
+    (jdbc/insert! db-spec :tmp2 {:aa 1 :cc "cc-one"}
+                                {:aa 2 :cc "cc-two"} )
   ; (spyx (jdbc/query db-spec (sql/select "*" :tmp2)))
 
     (newline)
