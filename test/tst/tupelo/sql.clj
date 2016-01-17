@@ -60,7 +60,10 @@
   (is (= "using (aa)"                       (tm/collapse-whitespace (using :aa)))))
 
 (deftest t-on
-  (is (= "on (t1.aa = t2.aa)"     (tm/collapse-whitespace (on "t1.aa = t2.aa")))))
+  (is (= "on (t1.aa = t2.aa)"     (tm/collapse-whitespace (spyx (on "t1.aa = t2.aa"))))))
+
+(deftest t-where
+  (is (= "where (t1.aa = t2.aa)"  (tm/collapse-whitespace (spyx (where "t1.aa = t2.aa"))))))
 
 (deftest t-select
   (is (= "select user_name, phone, id from user_info"

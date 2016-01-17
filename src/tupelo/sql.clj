@@ -98,6 +98,11 @@
   (str/join ", "
     (mapv kw->db args)))
 
+(s/defn where :- s/Str
+  "Format where clause"
+  [arg :- s/Str]
+  (format "where (%s)" arg))
+
 (s/defn select :- s/Str
   "Format SQL select statement; eg: 
      (select :user-name :phone :id :from :user-info) 
@@ -127,7 +132,7 @@
 (s/defn on :- s/Str
   "Format a ON clause to specify a join condition"
   [arg :- s/Str]
-  (format "on (%s)" (kw->db arg)))
+  (format "on (%s)" arg))
 
 (s/defn join :- s/Str
   "Performs a join between two sub-expressions."
@@ -139,7 +144,6 @@
                       (contains? exp-map :using)  (apply using  (grab :using exp-map))
                       (contains? exp-map :on)     (on           (grab :on    exp-map))
                       :else (throw (IllegalArgumentException. "join: missing join-exp")))
-        _ (spyx join-exp)
 
         ; #todo make :ll & :rr user-selectable?
         result      (tm/collapse-whitespace ; #todo need utils for shifting lines (right)
