@@ -131,14 +131,14 @@
 
 (s/defn join :- s/Str
   "Performs a join between two sub-expressions."
-  [exp-map :- ts/KeyMap] ; #todo only tested for 2-way join for now
-  (let [left-exp    (grab :ll exp-map)  ; #todo verify "select .*"
-        right-exp   (grab :rr exp-map)  ; #todo verify "select .*"
+  [exp-map :- ts/KeyMap]
+  (let [left-exp    (grab :ll exp-map)
+        right-exp   (grab :rr exp-map)
         out-exp     (grab :out exp-map)
         join-exp    (cond
                       (contains? exp-map :using)  (apply using  (grab :using exp-map))
                       (contains? exp-map :on)     (on           (grab :on    exp-map))
-                      :else (assert false "join: missing join-exp"))
+                      :else (throw (IllegalArgumentException. "join: missing join-exp")))
         _ (spyx join-exp)
 
         ; #todo make :ll & :rr user-selectable?
