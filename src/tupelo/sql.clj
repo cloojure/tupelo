@@ -105,16 +105,16 @@
 
 (s/defn select :- s/Str
   "Format SQL select statement; eg: 
-     (select :user-name :phone :id :from :user-info) 
-     (select :*                    :from :log-data) 
-     (select \"count(*)\"          :from :big-table)
+     (select :user-name :phone :id :user-info) 
+     (select :*                    :log-data) 
+     (select \"count(*)\"          :big-table)
    "  ; #todo add examples to all docstrings
   [& args :- [s/Any] ] ; #todo ts/Tuple ???
-  (let [num-cols    (- (count args) 2)
+  (let [num-cols    (- (count args) 1)
         cols        (take num-cols args)
         tails       (drop num-cols args)
         from-kw     (first tails)
-        _ (assert (= :from from-kw))    ; #todo test this
+;       _ (assert (= :from from-kw))    ; #todo test this
         table       (last tails) 
         cols-str    (apply out cols)
         table-str   (kw->db table) 

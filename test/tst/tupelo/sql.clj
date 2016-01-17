@@ -4,8 +4,8 @@
         clojure.test)
   (:require [clojure.string         :as str]
             [clojure.java.jdbc      :as jdbc]
-            [java-jdbc.ddl          :as ddl]
-            [java-jdbc.sql          :as sql]
+          ; [java-jdbc.ddl          :as ddl]
+          ; [java-jdbc.sql          :as sql]
             [schema.core            :as s]
             [tupelo.misc            :as tm] )
   (:import  com.mchange.v2.c3p0.ComboPooledDataSource))
@@ -43,7 +43,7 @@
       (jdbc/db-do-commands db-spec cmd )
       (jdbc/insert! db-spec :tmp {:aa 1 :bb "one"}
                                  {:aa 2 :bb "two"} )
-      (jdbc/query db-spec (sql/select "*" :tmp))
+      (jdbc/query db-spec (select :* :tmp))
       (jdbc/db-do-commands db-spec (drop-table :tmp))
     (catch Exception ex
       (do (spyx ex)
@@ -67,12 +67,12 @@
 
 (deftest t-select
   (is (= "select user_name, phone, id from user_info"
-         (tm/collapse-whitespace (select :user-name  :phone  :id  :from :user-info))
-         (tm/collapse-whitespace (select "user-name,  phone" "id" :from "user-info"))))
+         (tm/collapse-whitespace (select :user-name  :phone  :id  :user-info))
+         (tm/collapse-whitespace (select "user-name,  phone" "id" "user-info"))))
   (is (= "select * from log_data"
-         (tm/collapse-whitespace (select :* :from :log-data))))
+         (tm/collapse-whitespace (select :* :log-data))))
   (is (= "select count(*) from big_table"
-         (tm/collapse-whitespace (select "count(*)" :from :big-table)))))
+         (tm/collapse-whitespace (select "count(*)" :big-table)))))
 
 (deftest t-natural-join
   (try
@@ -83,32 +83,32 @@
       (create-table :tmp1 {:aa (not-null :int)  :bb :text} ))
     (jdbc/insert! db-spec :tmp1 {:aa 1 :bb "one"}
                                 {:aa 2 :bb "two"} )
-  ; (spyx (jdbc/query db-spec (sql/select "*" :tmp1)))
+  ; (spyx (jdbc/query db-spec (select "*" :tmp1)))
 
     (jdbc/db-do-commands db-spec 
       (create-table :tmp2 {:aa (not-null :int)  :cc :text} ))
     (jdbc/insert! db-spec :tmp2 {:aa 1 :cc "cc-one"}
                                 {:aa 2 :cc "cc-two"} )
-  ; (spyx (jdbc/query db-spec (sql/select "*" :tmp2)))
+  ; (spyx (jdbc/query db-spec (select "*" :tmp2)))
 
     (newline)
     (println "live query results:")
     (prn (jdbc/query db-spec 
-      (spyx (join { :ll         (select :*  :from :tmp1)
-                    :rr         (select "*" :from "tmp2")  ; mixed is ok
+      (spyx (join { :ll         (select :*  :tmp1)
+                    :rr         (select "*" "tmp2")  ; mixed is ok
                     :using      [:aa]
                     :select     [:*]
                   } ))))
     (newline)
     (prn (jdbc/query db-spec 
-      (spyx (join { :ll         (select :* :from :tmp1)
-                    :rr         (select :* :from :tmp2) 
+      (spyx (join { :ll         (select :* :tmp1)
+                    :rr         (select :* :tmp2) 
                     :on         "ll.aa = rr.aa"
                     :select     [:*]
                   } ))))
 
   (is (= "select count(*) from big_table"
-         (tm/collapse-whitespace (select "count(*)" :from :big-table))))
+         (tm/collapse-whitespace (select "count(*)" :big-table))))
 
   (catch Exception ex
     (do (spyx ex)
