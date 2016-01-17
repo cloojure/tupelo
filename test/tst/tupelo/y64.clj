@@ -4,7 +4,6 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-
 (ns tst.tupelo.y64
   (:require [clojure.string                         :as str]
           ; [clojure.test.check                     :as tc]

@@ -5,7 +5,11 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.types
-  (:use tupelo.types clojure.test))
+  (:use tupelo.types clojure.test)
+  (:require [schema.core :as s] ))
+
+; Prismatic Schema type definitions
+(s/set-fn-validation! true)   ; #todo add to Schema docs
 
 (deftest t-boolean?
   (is (boolean? true))

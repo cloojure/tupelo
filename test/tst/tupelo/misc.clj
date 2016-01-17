@@ -8,8 +8,12 @@
   (:use tupelo.misc 
         tupelo.core
         clojure.test )
-  (:require [clojure.string     :as str]
+  (:require [clojure.string   :as str]
+            [schema.core      :as s] 
             [tupelo.misc      :as misc] ))
+
+; Prismatic Schema type definitions
+(s/set-fn-validation! true)   ; #todo add to Schema docs
 
 (set! *warn-on-reflection* true)
 
@@ -18,14 +22,6 @@
     (is (= "abc def g hij kl" 
             (misc/collapse-whitespace "  abc    def			g 
                                        hij kl	 " )))))
-
-(deftest kw->dbstr-t
-  (testing "basic usage"
-    (is (= "abc_def_gh" (misc/kw->dbstr :abc-def-gh)))))
-
-(deftest dbstr->kw-t
-  (testing "basic usage"
-    (is (= :abc-def-gh (misc/dbstr->kw "ABC_DEF_GH")))))
 
 (deftest str->kw-t
   (testing "basic usage"

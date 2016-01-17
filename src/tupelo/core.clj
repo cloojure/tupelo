@@ -20,6 +20,10 @@
   (:import [java.io BufferedReader StringReader] )
   (:gen-class))
 
+; Prismatic Schema type definitions
+(s/set-fn-validation! true)   ; #todo add to Schema docs
+
+
 (def  ^:no-doc spy-indent-level (atom 0))
 (defn ^:no-doc spy-indent-spaces []
   (str/join (repeat (* 2 @spy-indent-level) \space)))
@@ -449,10 +453,12 @@
   [arg]
   (c.pp/pprint arg))
 
+; #todo need test & doc
 (defn json->clj [arg]   ; #todo experimental
   "Shortcut to cheshire.core/parse-string"
   (cc/parse-string arg true)) ; true => keywordize-keys
 
+; #todo need test & doc
 (defn clj->json [arg]   ; #todo experimental
   "Shortcut to cheshire.core/generate-string"
   (cc/generate-string arg))

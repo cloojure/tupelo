@@ -6,8 +6,13 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.types
   "Type conversion and detection."
-  (:require [clojure.string :as str])
+  (:require [clojure.string   :as str]
+            [schema.core      :as s] )
   (:gen-class))
+
+; Prismatic Schema type definitions
+(s/set-fn-validation! true)   ; #todo add to Schema docs
+
 
 (def ^:const UTF-8-Charset-Name "UTF-8")
 

@@ -4,8 +4,7 @@
   (:require [schema.core      :as s]))
 
 (set! *warn-on-reflection* false)
-;
-;---------------------------------------------------------------------------------------------------
+
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 

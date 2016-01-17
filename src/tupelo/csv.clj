@@ -9,9 +9,14 @@
   (:require [clojure.string             :as str]
             [clojure.java.io            :as io]
             [clojure-csv.core           :as csv]
-            [tupelo.misc              :as cool-misc] 
-            [tupelo.core              :refer :all] )
+            [schema.core                :as s] 
+            [tupelo.misc                :as cool-misc] 
+            [tupelo.core                :refer :all] )
   (:import  [java.io Reader StringReader] ))
+
+; Prismatic Schema type definitions
+(s/set-fn-validation! true)   ; #todo add to Schema docs
+
 
 (defn- get-labels-and-data-lines
   [opts parsed-lines]

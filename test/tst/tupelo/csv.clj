@@ -4,13 +4,16 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-
 (ns tst.tupelo.csv
-  (:require [clojure.string             :as str]
-            [clojure.java.io            :as io]
-            [tupelo.csv               :refer :all]
-            [clojure.test               :refer :all] )
+  (:use tupelo.csv
+        clojure.test)
+  (:require [clojure.string         :as str]
+            [clojure.java.io        :as io]
+            [schema.core            :as s] )
   (:import  [java.io Reader StringReader] ))
+
+; Prismatic Schema type definitions
+(s/set-fn-validation! true)   ; #todo add to Schema docs
 
 (def test1-str-no-label
 "01002,00006,4

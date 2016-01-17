@@ -7,8 +7,13 @@
 (ns tupelo.misc
   "Miscellaneous functions."
   (:require [clojure.string       :as str]
-            [clojure.java.shell   :as shell] )
+            [clojure.java.shell   :as shell] 
+            [schema.core          :as s] )
   (:use tupelo.core))
+
+; Prismatic Schema type definitions
+(s/set-fn-validation! true)   ; #todo add to Schema docs
+
 
 (def ^:dynamic *os-shell* "/bin/bash")  ; could also use /bin/zsh, etc
 
@@ -19,16 +24,6 @@
   (-> it
       str/trim
       (str/replace #"\s+" " ")))
-
-(defn- dasherize 
-  "Replace underscores with dashes"
-  [s]
-  (str/replace s "_" "-"))
-
-(defn- undasherize
-  "Replace dashes with underscores"
-  [s]
-  (str/replace s "-" "_"))
 
 (defn normalize-str
  "Returns a 'normalized' version of str-in, stripped of leading/trailing
@@ -44,18 +39,6 @@
   [str-in]
   (keyword (normalize-str str-in)))
   ; #todo replace with other lib
-
-(defn kw->dbstr 
-  "Converts a keyword to a database compatible string (e.g. all hyphens converted to
-  underscores)"
-  [kw]
-  (undasherize (name kw)))
-
-(defn dbstr->kw
-  "Converts a keyword to a database compatible string (e.g. all hyphens converted to
-  underscores)"
-  [kw]
-  (keyword (str/lower-case (dasherize kw))))
 
 (defn take-dist
  "Returns a sequence of n items from a collection, distributed

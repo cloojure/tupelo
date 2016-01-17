@@ -9,7 +9,12 @@
   (:refer-clojure :exclude [get get-in] )
   (:require [clojure.string   :as str]
             [clojure.core     :as clj]
+            [schema.core      :as s] 
             [tupelo.core      :as tc] ))
+
+; Prismatic Schema type definitions
+(s/set-fn-validation! true)   ; #todo add to Schema docs
+
 
 ; If necessary, can copy the following syntax to override clojure/core vars
 ;       (:refer-clojure :exclude [* - + == /])
