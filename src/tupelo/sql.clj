@@ -98,13 +98,6 @@
   (str/join ", "
     (mapv kw->db args)))
 
-(s/defn using :- s/Str
-  "Format a USING clause to specify a join condition"
-  [& args]
-  (format "using (%s)" 
-       (str/join ", "
-        (mapv kw->db args))))
-
 (s/defn select :- s/Str
   "Format SQL select statement; eg: 
      (select :user-name :phone :id :from :user-info) 
@@ -124,32 +117,30 @@
   ]
     result))
 
-(s/defn natural-join :- s/Str
-  "Performs a join between two sub-expressions."
-  [exp-map :- ts/KeyMap] ; #todo only tested for 2-way join for now
-  (let [left-exp    (grab :ll exp-map)  ; #todo verify "select .*"
-        right-exp   (grab :rr exp-map)  ; #todo verify "select .*"
-        out-exp     (grab :out exp-map)
-        ; #todo make :ll & :rr user-selectable?
-        result      (tm/collapse-whitespace ; #todo need utils for shifting lines (right)
-                      (format "with
-                                 ll as (%s),
-                                 rr as (%s)
-                               select %s from 
-                                 (ll natural join rr) ;" 
-                          left-exp right-exp (apply out out-exp)))
-  ]
-    (println result)
-    result
-  ))  
+(s/defn using :- s/Str
+  "Format a USING clause to specify a join condition"
+  [& args]
+  (format "using (%s)" 
+       (str/join ", "
+        (mapv kw->db args))))
+
+(s/defn on :- s/Str
+  "Format a ON clause to specify a join condition"
+  [arg :- s/Str]
+  (format "on (%s)" (kw->db arg)))
 
 (s/defn join :- s/Str
   "Performs a join between two sub-expressions."
   [exp-map :- ts/KeyMap] ; #todo only tested for 2-way join for now
   (let [left-exp    (grab :ll exp-map)  ; #todo verify "select .*"
         right-exp   (grab :rr exp-map)  ; #todo verify "select .*"
-        using-exp   (grab :using exp-map)
         out-exp     (grab :out exp-map)
+        join-exp    (cond
+                      (contains? exp-map :using)  (apply using  (grab :using exp-map))
+                      (contains? exp-map :on)     (on           (grab :on    exp-map))
+                      :else (assert false "join: missing join-exp"))
+        _ (spyx join-exp)
+
         ; #todo make :ll & :rr user-selectable?
         result      (tm/collapse-whitespace ; #todo need utils for shifting lines (right)
                       (format "with
@@ -159,7 +150,7 @@
                                  (ll join rr %s) ;" 
                         left-exp right-exp 
                         (apply out out-exp)
-                  (spyx (apply using using-exp))
+                        join-exp
                       ))
   ]
     (println result)

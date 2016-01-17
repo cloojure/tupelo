@@ -59,6 +59,9 @@
   (is (= "using (user_name, phone, id)"     (tm/collapse-whitespace (using :user-name :phone :id))))
   (is (= "using (aa)"                       (tm/collapse-whitespace (using :aa)))))
 
+(deftest t-on
+  (is (= "on (t1.aa = t2.aa)"     (tm/collapse-whitespace (on "t1.aa = t2.aa")))))
+
 (deftest t-select
   (is (= "select user_name, phone, id from user_info"
          (tm/collapse-whitespace (select :user-name :phone :id :from :user-info))))
@@ -87,17 +90,21 @@
     (newline)
     (println "live query results:")
     (prn (jdbc/query db-spec 
-      (spyx (natural-join { :ll (select :* :from :tmp1)
-                            :rr (select :* :from :tmp2) 
-                            :out [:*]
-                          } ))))
-    (newline)
-    (prn (jdbc/query db-spec 
       (spyx (join { :ll (select :* :from :tmp1)
                     :rr (select :* :from :tmp2) 
                     :using [:aa]
                     :out [:*]
                   } ))))
+    (newline)
+    (prn (jdbc/query db-spec 
+      (spyx (join { :ll (select :* :from :tmp1)
+                    :rr (select :* :from :tmp2) 
+                    :on "ll.aa = rr.aa"
+                    :out [:*]
+                  } ))))
+
+  (is (= "select count(*) from big_table"
+         (tm/collapse-whitespace (select "count(*)" :from :big-table))))
 
   (catch Exception ex
     (do (spyx ex)
