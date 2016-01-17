@@ -90,17 +90,17 @@
     (newline)
     (println "live query results:")
     (prn (jdbc/query db-spec 
-      (spyx (join { :ll (select :* :from :tmp1)
-                    :rr (select :* :from :tmp2) 
-                    :using [:aa]
-                    :out [:*]
+      (spyx (join { :ll         (select :* :from :tmp1)
+                    :rr         (select "* :from  tmp2") 
+                    :using      [:aa]
+                    :select     [:*]
                   } ))))
     (newline)
     (prn (jdbc/query db-spec 
-      (spyx (join { :ll (select :* :from :tmp1)
-                    :rr (select :* :from :tmp2) 
-                    :on "ll.aa = rr.aa"
-                    :out [:*]
+      (spyx (join { :ll         (select :* :from :tmp1)
+                    :rr         (select :* :from :tmp2) 
+                    :on         "ll.aa = rr.aa"
+                    :select     [:*]
                   } ))))
 
   (is (= "select count(*) from big_table"

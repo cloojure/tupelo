@@ -132,9 +132,9 @@
 (s/defn join :- s/Str
   "Performs a join between two sub-expressions."
   [exp-map :- ts/KeyMap]
-  (let [left-exp    (grab :ll exp-map)
-        right-exp   (grab :rr exp-map)
-        out-exp     (grab :out exp-map)
+  (let [left-exp    (grab :ll     exp-map)
+        right-exp   (grab :rr     exp-map)
+        select-exp  (grab :select exp-map)
         join-exp    (cond
                       (contains? exp-map :using)  (apply using  (grab :using exp-map))
                       (contains? exp-map :on)     (on           (grab :on    exp-map))
@@ -149,7 +149,7 @@
                                select %s from 
                                  (ll join rr %s) ;" 
                         left-exp right-exp 
-                        (apply out out-exp)
+                        (apply out select-exp)
                         join-exp
                       ))
   ]
