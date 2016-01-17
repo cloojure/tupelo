@@ -19,6 +19,11 @@
   [s]
   (str/replace s "-" "_"))
 
+(defn version
+  "Query the PostgreSQL version number"
+  []
+  "select version();")
+
 (s/defn kw->db :- s/Str
   "Converts a keyword to a database compatible string (e.g. all hyphens converted to underscores)"
   [kw :- s/Any]  ; #todo (either s/Keyword s/Str)
@@ -92,6 +97,14 @@
   [& args :- [s/Any] ] ; #todo why ts/Tuple fail???
   (str/join ", "
     (mapv kw->db args)))
+
+(s/defn using :- s/Str
+  "Format a USING clause to specify a join condition"
+  [& args]
+  (format "using (%s)" 
+       (str/join ", "
+        (mapv kw->db args))))
+
 (s/defn select :- s/Str
   "Format SQL select statement; eg: 
      (select :user-name :phone :id :from :user-info) 
@@ -123,12 +136,36 @@
                                  ll as (%s),
                                  rr as (%s)
                                select %s from 
-                                 ll natural join rr ;" 
+                                 (ll natural join rr) ;" 
                           left-exp right-exp (apply out out-exp)))
   ]
     (println result)
     result
   ))  
+
+(s/defn join :- s/Str
+  "Performs a join between two sub-expressions."
+  [exp-map :- ts/KeyMap] ; #todo only tested for 2-way join for now
+  (let [left-exp    (grab :ll exp-map)  ; #todo verify "select .*"
+        right-exp   (grab :rr exp-map)  ; #todo verify "select .*"
+        using-exp   (grab :using exp-map)
+        out-exp     (grab :out exp-map)
+        ; #todo make :ll & :rr user-selectable?
+        result      (tm/collapse-whitespace ; #todo need utils for shifting lines (right)
+                      (format "with
+                                 ll as (%s),
+                                 rr as (%s)
+                               select %s from 
+                                 (ll join rr %s) ;" 
+                        left-exp right-exp 
+                        (apply out out-exp)
+                  (spyx (apply using using-exp))
+                      ))
+  ]
+    (println result)
+    result
+  ))  
+
         ; select
         ;   dashboards.name,
         ;   log_counts.ct

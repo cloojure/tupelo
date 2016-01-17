@@ -13,7 +13,7 @@
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
-(set! *warn-on-reflection* true)
+(set! *warn-on-reflection* false)
 
 ; #todo git basic pg_hba.conf into git
 ; #todo blog about scm of pg *.conf files
@@ -37,8 +37,8 @@
 ; int integer int4 int8 
 ; numeric
 (deftest t-create-table
-  (let [cmd   (create-table :tmp {:id :serial  :aa (not-null :int)  :bb :text} ) ]
-    (is (= cmd "create table tmp (\n  id serial,\n  aa int not null,\n  bb text) ;"))
+  (let [cmd   (create-table :tmp {:aa (not-null :int)  :bb :text} ) ]
+    (is (= cmd "create table tmp (\n  aa int not null,\n  bb text) ;"))
     (try
       (jdbc/db-do-commands db-spec cmd )
       (jdbc/db-do-commands db-spec "insert into tmp (aa,bb) values (1,'one'); ")
@@ -55,6 +55,10 @@
   (is (= "*"                        (tm/collapse-whitespace (out :*))))
   (is (= "count(*)"                 (tm/collapse-whitespace (out "count(*)")))))
 
+(deftest t-using
+  (is (= "using (user_name, phone, id)"     (tm/collapse-whitespace (using :user-name :phone :id))))
+  (is (= "using (aa)"                       (tm/collapse-whitespace (using :aa)))))
+
 (deftest t-select
   (is (= "select user_name, phone, id from user_info"
          (tm/collapse-whitespace (select :user-name :phone :id :from :user-info))))
@@ -69,24 +73,31 @@
     (jdbc/db-do-commands db-spec (drop-table-if-exists :tmp2))
 
     (jdbc/db-do-commands db-spec 
-      (create-table :tmp1 {:id :serial  :aa (not-null :int)  :bb :text} ))
+      (create-table :tmp1 {:aa (not-null :int)  :bb :text} ))
     (jdbc/db-do-commands db-spec "insert into tmp1 (aa,bb) values (1,'one'); ")
     (jdbc/db-do-commands db-spec "insert into tmp1 (aa,bb) values (2,'two'); ")
   ; (spyx (jdbc/query db-spec (sql/select "*" :tmp1)))
 
     (jdbc/db-do-commands db-spec 
-      (create-table :tmp2 {:id :serial  :aa (not-null :int)  :cc :text} ))
+      (create-table :tmp2 {:aa (not-null :int)  :cc :text} ))
     (jdbc/db-do-commands db-spec "insert into tmp2 (aa,cc) values (1,'cc-one'); ")
     (jdbc/db-do-commands db-spec "insert into tmp2 (aa,cc) values (2,'cc-two'); ")
   ; (spyx (jdbc/query db-spec (sql/select "*" :tmp2)))
 
     (newline)
     (println "live query results:")
-    (spyx (jdbc/query db-spec 
-            (natural-join { :ll (select :* :from :tmp1)
+    (prn (jdbc/query db-spec 
+      (spyx (natural-join { :ll (select :* :from :tmp1)
                             :rr (select :* :from :tmp2) 
                             :out [:*]
-                          } )))
+                          } ))))
+    (newline)
+    (prn (jdbc/query db-spec 
+      (spyx (join { :ll (select :* :from :tmp1)
+                    :rr (select :* :from :tmp2) 
+                    :using [:aa]
+                    :out [:*]
+                  } ))))
 
   (catch Exception ex
     (do (spyx ex)
