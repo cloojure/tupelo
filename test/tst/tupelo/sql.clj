@@ -32,6 +32,36 @@
 (deftest t-db->kw
   (is (= :abc-def-gh (db->kw "ABC_DEF_GH"))))
 
+(deftest t-keyval
+  (is (= [:a 1] (keyval {:a 1})))
+  (is (thrown? Exception (keyval {:a 1 :b 2}))))
+
+(deftest t-db-args
+  (is (= "aa"                       (db-args :aa)))
+  (is (= "aa bb cc"                 (db-args :aa "bb" :cc)))
+  (is (= "user_name phone id"       (db-args :user-name :phone :id)))
+  (is (= "*"                        (db-args :*)))
+  (is (= "count(*)"                 (db-args "count(*)"))))
+
+(deftest t-db-list
+  (is (= "aa"                     (db-list :aa)))
+  (is (= "aa, bb, cc"             (db-list :aa "bb" :cc)))
+  (is (= "user_name, phone, id"   (db-list :user-name :phone :id))))
+
+(deftest t-left
+  (is (= { :left  "a b c" } (left  :a "b" :c))))
+(deftest t-right
+  (is (= { :right "a b c" } (right :a "b" :c))))
+
+(deftest t-drop-table
+  (let [cmd   (drop-table :tmp) ]
+    (is (= "drop table tmp ;\n" cmd))))
+
+(deftest t-drop-table-if-exists
+  (let [cmd   (drop-table-if-exists :tmp) ]
+    (is (= "drop table if exists tmp ;\n" cmd))
+    (jdbc/db-do-commands db-spec cmd )))
+
 ; int integer int4 int8 
 ; numeric
 (deftest t-create-table
@@ -59,10 +89,6 @@
         (spyx (.getNextException ex))
         (System/exit 1)))))
 
-(deftest t-out
-  (is (= "user_name, phone, id"     (tm/collapse-whitespace (out :user-name :phone :id))))
-  (is (= "*"                        (tm/collapse-whitespace (out :*))))
-  (is (= "count(*)"                 (tm/collapse-whitespace (out "count(*)")))))
 
 (deftest t-using
   (is (= "using (user_name, phone, id)"     (tm/collapse-whitespace (using :user-name :phone :id))))
@@ -83,7 +109,7 @@
   (is (= "select count(*) from big_table"
          (tm/collapse-whitespace (select "count(*)" :big-table)))))
 
-(deftest t-join
+#_(deftest t-join
   (try
     (jdbc/db-do-commands db-spec (drop-table-if-exists :tmp1))
     (jdbc/db-do-commands db-spec (drop-table-if-exists :tmp2))
@@ -103,11 +129,11 @@
     (newline)
     (println "live query results:")
     (prn (jdbc/query db-spec 
-      (spyx (join { :ll         (select :*  :tmp1)
-                    :rr         (select "*" "tmp2")  ; mixed is ok
+      (spyx (join { :t1 (select :*  :tmp1)  }
+                  { :t2 (select "*" "tmp2") }  ; mixed is ok
                     :using      [:aa]
                     :select     [:*]
-                  } ))))
+                  ))))
     (newline)
     (prn (jdbc/query db-spec 
       (spyx (join { :ll         (select :* :tmp1)
@@ -124,12 +150,3 @@
         (spyx (.getNextException ex))
         (System/exit 1)))))
 
-(deftest t-drop-table-if-exists
-  (let [cmd   (drop-table-if-exists :tmp) ]
-    (is (= "drop table if exists tmp ;\n" cmd))
-    (jdbc/db-do-commands db-spec cmd ))
-)
-
-(deftest t-keyval
-  (is (= [:a 1] (keyval {:a 1})))
-  (is (thrown? Exception (keyval {:a 1 :b 2}))))

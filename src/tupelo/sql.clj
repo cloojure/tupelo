@@ -35,6 +35,51 @@
   [arg :- s/Str]
   (keyword (str/lower-case (dasherize arg))))
 
+(s/defn db-args :- s/Str
+  "Format scalar args to db strings. (db-args :aa \"bb\" :cc) -> \"aa bb cc\" "
+  [& args] ; #todo kw or string
+  (str/join " " (map kw->db args)))
+
+(s/defn db-list :- s/Str
+  "Format scalar args to db strings. (db-list :aa \"bb\" :cc) -> \"aa, bb, cc\" "
+  [& args] ; #todo kw or str
+  (str/join ", " (map kw->db args)))
+
+(s/defn left :- ts/KeyMap
+  "Format left side of a join condition"
+  [& args]
+  { :left (apply db-args args) } )
+
+(s/defn right :- ts/KeyMap
+  "Format right side of a join condition"
+  [& args]
+  { :right (apply db-args args) } )
+
+(s/defn using :- s/Str
+  "Format a USING clause to specify a join condition"
+  [& args]
+  (format "using (%s)" (apply db-list args)))
+
+(s/defn on :- s/Str
+  "Format a ON clause to specify a join condition"
+  [arg :- s/Str]
+  (format "on (%s)" arg))
+
+(s/defn where :- s/Str
+  "Format where clause"
+  [arg :- s/Str]
+  (format "where (%s)" arg))
+
+(s/defn keyval 
+  "Accept a map with exactly 1 entry, returning the single key & value as a length-2 vector"
+  [arg :- ts/KeyMap]
+  (s/validate ts/Vec2 (keyvals arg)))
+
+(s/defn not-null :- s/Str
+  "Adds the suffix 'not null' to argument."
+  [arg]
+  (format "%s not null" (kw->db arg)))
+
 (s/defn drop-table :- s/Str
   "Drop (delete) a table from the database. It is an error if the table does not exist."
   [name :- s/Keyword]
@@ -44,11 +89,6 @@
   "Drop (delete) a table from the database, w/o error if no table exists."
   [name :- s/Keyword]
   (format "drop table if exists %s ;\n" (kw->db name)))
-
-(s/defn not-null :- s/Str
-  "Adds the suffix 'not null' to argument."
-  [arg]
-  (format "%s not null" (kw->db arg)))
 
 (s/def ColSpec ts/KeyMap )    ; #todo -> { :kw  [:kw | colType] } ; #todo -> pig-squeal.types
 (s/defn create-table  :- s/Str
@@ -92,16 +132,6 @@
 ;                          :group-by ... 
 ;                          :order-by ...  } )
 ;       e.g.       (select [tbl-name col-lst & options-map] )
-(s/defn out :- s/Str
-  "Format output part (e.g. '*', et al) for 'select * from ...' & friends"
-  [& args :- [s/Any] ] ; #todo why ts/Tuple fail???
-  (str/join ", "
-    (mapv kw->db args)))
-
-(s/defn where :- s/Str
-  "Format where clause"
-  [arg :- s/Str]
-  (format "where (%s)" arg))
 
 (s/defn select :- s/Str
   "Format SQL select statement; eg: 
@@ -111,60 +141,40 @@
    "  ; #todo add examples to all docstrings
   [& args :- [s/Any] ] ; #todo ts/Tuple ???
   (let [num-cols    (- (count args) 1)
-        cols        (take num-cols args)
+        col-names   (take num-cols args)
         tails       (drop num-cols args)
         from-kw     (first tails)
-;       _ (assert (= :from from-kw))    ; #todo test this
         table       (last tails) 
-        cols-str    (apply out cols)
-        table-str   (kw->db table) 
+        cols-str    (apply db-list col-names)
+        table-str   (kw->db table)
         result      (format "select %s from %s" cols-str table-str)
   ]
     result))
 
-(s/defn using :- s/Str
-  "Format a USING clause to specify a join condition"
-  [& args]
-  (format "using (%s)" 
-       (str/join ", "
-        (mapv kw->db args))))
-
-(s/defn on :- s/Str
-  "Format a ON clause to specify a join condition"
-  [arg :- s/Str]
-  (format "on (%s)" arg))
-
-(s/defn keyval 
-  "Accept a map with exactly 1 entry, returning the single key & value as a length-2 vector"
-  [arg :- ts/KeyMap]
-  (s/validate ts/Vec2 (keyvals arg)))
-
 
 (s/defn join :- s/Str
   "Performs a join between two sub-expressions."
-  [ left    :- ts/KeyMap
-    right   :- ts/KeyMap
+  [ lhs     :- ts/KeyMap
+    rhs     :- ts/KeyMap
     exp-map :- ts/KeyMap ]
   (let [
-        [left-name  left-exp ]    (keyval left)
-        [right-name right-exp]    (keyval right)
-        select-exp  (grab :select exp-map)
-        join-exp    (cond
-                      (contains? exp-map :using)  (apply using  (grab :using exp-map))
-                      (contains? exp-map :on)     (on           (grab :on    exp-map))
-                      :else (throw (IllegalArgumentException. "join: missing join-exp")))
-
-        ; #todo make :ll & :rr user-selectable?
-        result      (tm/collapse-whitespace ; #todo need utils for shifting lines (right)
-                      (format "with
-                                 ll as (%s),
-                                 rr as (%s)
-                               select %s from 
-                                 (ll join rr %s) ;" 
-                        left-exp right-exp 
-                        (apply out select-exp)
-                        join-exp
-                      ))
+    [left-name  left-exp ]    (keyval lhs)
+    [right-name right-exp]    (keyval rhs)
+    select-exp  (grab :select exp-map)
+    join-exp    (cond
+                  (contains? exp-map :using)  (apply using  (grab :using exp-map))
+                  (contains? exp-map :on)     (on           (grab :on    exp-map))
+                  :else (throw (IllegalArgumentException. "join: missing join-exp")))
+    result      (tm/collapse-whitespace ; #todo need utils for shifting lines (right)
+                  (format "with
+                             ll as (%s),
+                             rr as (%s)
+                           select %s from 
+                             (ll join rr %s) ;" 
+                    left-exp right-exp 
+                    (apply db-args select-exp)
+                    join-exp
+                  ))
   ]
     (println result)
     result
