@@ -64,7 +64,8 @@
 
 (deftest t-select
   (is (= "select user_name, phone, id from user_info"
-         (tm/collapse-whitespace (select :user-name :phone :id :from :user-info))))
+         (tm/collapse-whitespace (select :user-name  :phone  :id  :from :user-info))
+         (tm/collapse-whitespace (select "user-name,  phone" "id" :from "user-info"))))
   (is (= "select * from log_data"
          (tm/collapse-whitespace (select :* :from :log-data))))
   (is (= "select count(*) from big_table"
@@ -90,8 +91,8 @@
     (newline)
     (println "live query results:")
     (prn (jdbc/query db-spec 
-      (spyx (join { :ll         (select :* :from :tmp1)
-                    :rr         (select "* :from  tmp2") 
+      (spyx (join { :ll         (select :*  :from :tmp1)
+                    :rr         (select "*" :from "tmp2")  ; mixed is ok
                     :using      [:aa]
                     :select     [:*]
                   } ))))
