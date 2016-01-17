@@ -27,12 +27,10 @@
     } )
 
 (deftest t-kw->db
-  (testing "basic usage"
-    (is (= "abc_def_gh" (kw->db :abc-def-gh)))))
+  (is (= "abc_def_gh" (kw->db :abc-def-gh))))
 
 (deftest t-db->kw
-  (testing "basic usage"
-    (is (= :abc-def-gh (db->kw "ABC_DEF_GH")))))
+  (is (= :abc-def-gh (db->kw "ABC_DEF_GH"))))
 
 ; int integer int4 int8 
 ; numeric
@@ -49,6 +47,17 @@
       (do (spyx ex)
           (spyx (.getNextException ex))
           (System/exit 1))))))
+
+(deftest t-arrays
+  (try
+    (spyx (jdbc/db-do-commands db-spec "create table ta (name text, vals integer[]) ;"))
+    (spyx (jdbc/db-do-commands db-spec "insert into  ta values ('aa', '{1,2,3}' ) ;"))
+    (spyx (jdbc/query db-spec (select :* :ta)))
+    (jdbc/db-do-commands db-spec (drop-table :ta))
+  (catch Exception ex
+    (do (spyx ex)
+        (spyx (.getNextException ex))
+        (System/exit 1)))))
 
 (deftest t-out
   (is (= "user_name, phone, id"     (tm/collapse-whitespace (out :user-name :phone :id))))
@@ -74,7 +83,7 @@
   (is (= "select count(*) from big_table"
          (tm/collapse-whitespace (select "count(*)" :big-table)))))
 
-(deftest t-natural-join
+(deftest t-join
   (try
     (jdbc/db-do-commands db-spec (drop-table-if-exists :tmp1))
     (jdbc/db-do-commands db-spec (drop-table-if-exists :tmp2))
@@ -120,3 +129,7 @@
     (is (= "drop table if exists tmp ;\n" cmd))
     (jdbc/db-do-commands db-spec cmd ))
 )
+
+(deftest t-keyval
+  (is (= [:a 1] (keyval {:a 1})))
+  (is (thrown? Exception (keyval {:a 1 :b 2}))))

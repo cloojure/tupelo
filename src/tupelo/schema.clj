@@ -60,9 +60,10 @@
 (def TupleMap     [ {s/Any s/Any} ] )   ; a single result  returned by Datomic pull api
 (def TupleMaps    [TupleMap] )          ; list of  results returned by Datomic pull api
 
-(def Vec1 [ (s/one s/Any "x1") ] )
-(def Vec2 [ (s/one s/Any "x1") (s/one s/Any "x2") ] )
-(def Vec3 [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") ] )
+(def Vec  [ s/Any ] )  ; arbitrary length vector (or any sequence)
+(def Vec1 [ (s/one s/Any "x1") ] )  ; length-1 vector
+(def Vec2 [ (s/one s/Any "x1") (s/one s/Any "x2") ] ) ; length-2 vector
+(def Vec3 [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") ] )  ; length-3 vector
 (def Vec4 [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") (s/one s/Any "x4") ] )
 (def Vec5 [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") (s/one s/Any "x4") (s/one s/Any "x5") ] )
 

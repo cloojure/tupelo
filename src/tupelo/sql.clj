@@ -75,7 +75,7 @@
 ;     2 |  2 | cc-two
 ;   (2 rows)
 ;
-;   alan=> select xx.aa a,xx.bb b,yy.cc  from tmp1 xx natural join (select * from tmp2) yy;
+;   alan=> select xx.aa a,xx.bb b,yy.cc  from tmp1 as xx natural join (select * from tmp2) as yy;
 ;    a |  b  |   cc   
 ;   ---+-----+--------
 ;    1 | one | cc-one
@@ -134,11 +134,20 @@
   [arg :- s/Str]
   (format "on (%s)" arg))
 
+(s/defn keyval 
+  "Accept a map with exactly 1 entry, returning the single key & value as a length-2 vector"
+  [arg :- ts/KeyMap]
+  (s/validate ts/Vec2 (keyvals arg)))
+
+
 (s/defn join :- s/Str
   "Performs a join between two sub-expressions."
-  [exp-map :- ts/KeyMap]
-  (let [left-exp    (grab :ll     exp-map)
-        right-exp   (grab :rr     exp-map)
+  [ left    :- ts/KeyMap
+    right   :- ts/KeyMap
+    exp-map :- ts/KeyMap ]
+  (let [
+        [left-name  left-exp ]    (keyval left)
+        [right-name right-exp]    (keyval right)
         select-exp  (grab :select exp-map)
         join-exp    (cond
                       (contains? exp-map :using)  (apply using  (grab :using exp-map))
