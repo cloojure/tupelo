@@ -117,18 +117,17 @@
   [spec]
   (assert (= 1 (count spec)))
   (let [[alias expr]  (grab :cte spec) 
-        expr-str      (spyx (sql/format expr)) ]
-    (spyx (format "%s AS %s" (name alias) (str expr-str)))))
+        expr-str      (spyx (only (sql/format expr))) ]
+    (spyx (format "%s AS (%s)" (name alias) expr-str))))
 
 (defn format-with 
   [spec]
   (assert (= 1 (count spec)))
   (let [ctes  (grab :with spec) ]
     (assert (vector? ctes))
-    (str join " " 
-      "with "
-      (forv [cte ctes]
-            (format-cte cte)))))
+    (str "with "  (str/join ", " 
+                    (forv [cte ctes]
+                      (format-cte cte))))))
 
 
         ; select

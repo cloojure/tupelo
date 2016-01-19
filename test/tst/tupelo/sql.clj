@@ -139,7 +139,9 @@
               (spyx (tsql/cte [:t1 (-> (select :*) (from :tmp1)) ] ))
               (spyx (tsql/cte [:t2 (-> (select :*) (from :tmp2)) ] ))) ]
     (spyx cmd)
-    (spyx (tsql/format-with cmd))
+    (newline)
+    (prn "(tsql/format-with cmd):")
+    (prn  (tsql/format-with cmd) )
   )
 
   ; (newline)
