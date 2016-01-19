@@ -47,6 +47,26 @@
   [& args] ; #todo kw or str
   (str/join ", " (map kw->db args)))
 
+#_(s/defn on :- s/Str
+  "Format a ON clause to specify a join condition"
+  [arg :- s/Str]
+  (format "on (%s)" arg))
+
+(s/defn where :- s/Str
+  "Format where clause"
+  [arg :- s/Str]
+  (format "where (%s)" arg))
+
+(s/defn keyval 
+  "Accept a map with exactly 1 entry, returning the single key & value as a length-2 vector"
+  [arg :- ts/KeyMap]
+  (s/validate ts/Vec2 (keyvals arg)))
+
+(s/defn not-null :- s/Str
+  "Adds the suffix 'not null' to argument."
+  [arg]
+  (format "%s not null" (kw->db arg)))
+
 (s/defn drop-table :- s/Str
   "Drop (delete) a table from the database. It is an error if the table does not exist."
   [name :- s/Keyword]
@@ -100,6 +120,23 @@
 ;                          :order-by ...  } )
 ;       e.g.       (select [tbl-name col-lst & options-map] )
 
+(s/defn select :- s/Str
+  "Format SQL select statement; eg: 
+     (select [:user-name :phone :id] :user-info) 
+     (select [:*                   ] :log-data) 
+     (select [:count-*             ] :big-table)
+   "  ; #todo add examples to all docstrings
+  [& args :- [s/Any] ] ; #todo ts/Tuple ???
+  (let [num-cols    (- (count args) 1)
+        col-names   (take num-cols args)
+        tails       (drop num-cols args)
+        from-kw     (first tails)
+        table       (last tails) 
+        cols-str    (apply db-list col-names)
+        table-str   (kw->db table)
+        result      (format "select %s from %s" cols-str table-str)
+  ]
+    result))
 
 (defn with
   [& args]
@@ -130,6 +167,36 @@
       (forv [cte ctes]
             (format-cte cte)))))
 
+;(defn join [&args] nil)
+;(defn join
+; "Performs a join between two sub-expressions."
+; [ lhs     
+;   rhs     
+;   exp-map ]
+; (let [
+;   [left-name  left-exp ]    (keyval lhs)
+;   [right-name right-exp]    (keyval rhs)
+;   select-exp  (grab :select exp-map)
+;
+;   join-exp    ""
+;   join-exp    (cond
+;                 (contains? exp-map :using)  (apply using  (grab :using exp-map))
+;                 (contains? exp-map :on)     (on           (grab :on    exp-map))
+;                 :else (throw (IllegalArgumentException. "join: missing join-exp")))
+;
+;   result      (tm/collapse-whitespace ; #todo need utils for shifting lines (right)
+;                 (format "with
+;                            ll as (%s),
+;                            rr as (%s)
+;                          select %s from 
+;                            (ll join rr %s) ;" 
+;                   left-exp right-exp 
+;                   (apply db-args select-exp)
+;                   join-exp))
+; ]
+;   (println result)
+;   result
+; ))  
 
         ; select
         ;   dashboards.name,
@@ -170,3 +237,6 @@
         ; WHERE region IN (SELECT region FROM top_regions)
         ; GROUP BY region, product;
 
+(defn -main []
+  (println "main - enter")
+)

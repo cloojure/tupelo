@@ -36,6 +36,10 @@
 (deftest t-db->kw
   (is (= :abc-def-gh (tsql/db->kw "ABC_DEF_GH"))))
 
+(deftest t-keyval
+  (is (= [:a 1]           (tsql/keyval {:a 1})))
+  (is (thrown? Exception  (tsql/keyval {:a 1 :b 2}))))
+
 (deftest t-db-args
   (is (= "aa"                       (tsql/db-args :aa)))
   (is (= "aa bb cc"                 (tsql/db-args :aa "bb" :cc)))
@@ -47,6 +51,11 @@
   (is (= "aa"                     (tsql/db-list :aa)))
   (is (= "aa, bb, cc"             (tsql/db-list :aa "bb" :cc)))
   (is (= "user_name, phone, id"   (tsql/db-list :user-name :phone :id))))
+
+; (deftest t-left
+;   (is (= { :left  "a b c" } (left  :a "b" :c))))
+; (deftest t-right
+;   (is (= { :right "a b c" } (right :a "b" :c))))
 
 (deftest t-drop-table
   (let [cmd   (tsql/drop-table :tmp) ]
@@ -60,13 +69,13 @@
 ; int integer int4 int8 
 ; numeric
 (deftest t-create-table
-  (let [cmd   (tsql/create-table :tmp {:aa :int  :bb :text} ) ]
+  (let [cmd   (tsql/create-table :tmp {:aa (tsql/not-null :int)  :bb :text} ) ]
     (is (= cmd "create table tmp (\n  aa int not null,\n  bb text) ;"))
     (try
       (jdbc/db-do-commands db-spec cmd )
       (jdbc/insert! db-spec :tmp {:aa 1 :bb "one"}
                                  {:aa 2 :bb "two"} )
-      (jdbc/query db-spec "select * from tmp")
+      (jdbc/query db-spec (tsql/select :* :tmp))
       (jdbc/db-do-commands db-spec (tsql/drop-table :tmp))
     (catch Exception ex
       (do (spyx ex)
@@ -75,20 +84,39 @@
 
 (deftest t-arrays
   (try
-    (jdbc/db-do-commands db-spec (tsql/drop-table-if-exists :ta))
     (spyx (jdbc/db-do-commands db-spec "create table ta (name text, vals integer[]) ;"))
     (spyx (jdbc/db-do-commands db-spec "insert into  ta values ('aa', '{1,2,3}' ) ;"))
-    (spyx (jdbc/query db-spec "select * from ta"))
+    (spyx (jdbc/query db-spec (tsql/select :* :ta)))
+    (jdbc/db-do-commands db-spec (tsql/drop-table :ta))
   (catch Exception ex
     (do (spyx ex)
         (spyx (.getNextException ex))
         (System/exit 1)))))
+
+(deftest t-where
+  (is (= "where (t1.aa = t2.aa)"  (tm/collapse-whitespace (spyx (tsql/where "t1.aa = t2.aa"))))))
+
+(deftest t-select
+  (is (= "select user_name, phone, id from user_info"
+         (tm/collapse-whitespace (tsql/select :user-name  :phone  :id  :user-info))
+         (tm/collapse-whitespace (tsql/select "user-name,  phone" "id" "user-info"))))
+  (is (= "select * from log_data"
+         (tm/collapse-whitespace (tsql/select :* :log-data))))
+  (is (= "select count(*) from big_table"
+         (tm/collapse-whitespace (tsql/select "count(*)" :big-table)))))
 
 (deftest t-with
   (is (= {:with [:a :b] } (tsql/with :a :b))))
 
 (deftest t-cte
   (is (= {:cte :x} (tsql/cte :x))))
+
+; (deftest t-using
+;   (is (= { :using [:user-name :phone :id] }   (spyx (tsql/using :user-name :phone :id))))
+;   (is (= { :using [:aa] }                     (tsql/using :aa))))
+; 
+; (deftest t-on
+;   (is (= "on (t1.aa = t2.aa)"     (tm/collapse-whitespace (spyx (on "t1.aa = t2.aa"))))))
 
 (deftest t-join
   (try
@@ -97,15 +125,15 @@
     (jdbc/db-do-commands db-spec (tsql/drop-table-if-exists :tmp3))
 
     (jdbc/db-do-commands db-spec 
-      (tsql/create-table :tmp1 {:aa :int  :bb :text} ))
+      (tsql/create-table :tmp1 {:aa (tsql/not-null :int)  :bb :text} ))
     (jdbc/insert! db-spec :tmp1 {:aa 1 :bb "one"}
                                 {:aa 2 :bb "two"} )
     (jdbc/db-do-commands db-spec 
-      (tsql/create-table :tmp2 {:aa :int  :cc :text} ))
+      (tsql/create-table :tmp2 {:aa (tsql/not-null :int)  :cc :text} ))
     (jdbc/insert! db-spec :tmp2 {:aa 1 :cc "cc-one"}
                                 {:aa 2 :cc "cc-two"} )
     (jdbc/db-do-commands db-spec 
-      (tsql/create-table :tmp3 {:aa :int  :dd :text} ))
+      (tsql/create-table :tmp3 {:aa (tsql/not-null :int)  :dd :text} ))
 
     (spy :msg "jdbc/execute!"
       (jdbc/execute! db-spec 
