@@ -159,3 +159,44 @@
     (do (spyx ex)
         (spyx (.getNextException ex))
         (System/exit 1)))))
+
+(deftest t-hsql
+  (try
+    (jdbc/db-do-commands db-spec (tsql/drop-table-if-exists :tmp1))
+    (jdbc/db-do-commands db-spec (tsql/drop-table-if-exists :tmp2))
+    (jdbc/db-do-commands db-spec (tsql/drop-table-if-exists :tmp3))
+
+    (jdbc/db-do-commands db-spec 
+      (tsql/create-table :tmp1 {:aa :int  :bb :text} ))
+    (jdbc/insert! db-spec :tmp1 {:aa 1 :bb "one"}
+                                {:aa 2 :bb "two"} )
+    (jdbc/db-do-commands db-spec 
+      (tsql/create-table :tmp2 {:aa :int  :cc :text} ))
+    (jdbc/insert! db-spec :tmp2 {:aa 1 :cc "cc-one"}
+                                {:aa 2 :cc "cc-two"} )
+    (jdbc/db-do-commands db-spec 
+      (tsql/create-table :tmp3 {:aa :int  :dd :text} ))
+    (spy :msg "jdbc/execute!"
+      (jdbc/execute! db-spec 
+        (spyx (-> (insert-into :tmp3) 
+                  (values [ {:aa 1 :dd "dd-1"}
+                            {:aa 2 :dd "dd-2"} ] )
+                  (hsql/format)))))
+
+    (newline)
+    (let [cmd     (spyx (hsql/format 
+                    { :select [:*] 
+                      :from [:tmp1] } )) ]
+      (prn (jdbc/query db-spec cmd)))
+
+    (let [cmd (spyx (-> :select [:*]
+                        :from [:tmp1 :t1]
+                        :join [:tmp2 [:= :t1.aa :tmp2.aa]] }
+                        (hsql/format)))
+    ]
+      (prn (jdbc/query db-spec cmd)))
+
+  (catch Exception ex
+    (do (spyx ex)
+        (spyx (.getNextException ex))
+        (System/exit 1)))))
