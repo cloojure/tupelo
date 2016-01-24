@@ -8,7 +8,7 @@
           ; [java-jdbc.sql          :as sql]
             [schema.core            :as s]
             [tupelo.misc            :as tm] 
-            [honeysql.core          :as sql] 
+            [honeysql.core          :as hsql] 
             [honeysql.helpers       :refer :all]
             [tupelo.sql             :as tsql]
   )
@@ -112,7 +112,7 @@
         (spyx (-> (insert-into :tmp3) 
                   (values [ {:aa 1 :dd "dd-1"}
                             {:aa 2 :dd "dd-2"} ] )
-                  (sql/format)))))
+                  (hsql/format)))))
 
 
     (newline)
@@ -120,17 +120,17 @@
     (spyx (from :tmp1))
 
     (newline)
-    (let [cmd (spyx (-> (select :*) (from :tmp1) sql/format)) ]
+    (let [cmd (spyx (-> (select :*) (from :tmp1) hsql/format)) ]
       (prn (jdbc/query db-spec cmd)))
-    (let [cmd (spyx (-> (select :*) (from :tmp2) sql/format)) ]
+    (let [cmd (spyx (-> (select :*) (from :tmp2) hsql/format)) ]
       (prn (jdbc/query db-spec cmd)))
-    (let [cmd (spyx (-> (select :*) (from :tmp3) sql/format)) ]
+    (let [cmd (spyx (-> (select :*) (from :tmp3) hsql/format)) ]
       (prn (jdbc/query db-spec cmd)))
 
     (let [cmd (spyx (-> (select :*) 
                         (from [:tmp1 :t1])
                         (join [:tmp2 :t2] [:= :t1.aa :t2.aa] )
-                        (sql/format)))
+                        (hsql/format)))
     ]
       (prn (jdbc/query db-spec cmd)))
 
