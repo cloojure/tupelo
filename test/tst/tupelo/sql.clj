@@ -189,11 +189,30 @@
                       :from [:tmp1] } )) ]
       (prn (jdbc/query db-spec cmd)))
 
-    (let [cmd (spyx (-> :select [:*]
-                        :from [:tmp1 :t1]
-                        :join [:tmp2 [:= :t1.aa :tmp2.aa]] }
-                        (hsql/format)))
+    (let [cmd     (spyx (hsql/format
+                    { :select [:*]
+                      :from [[:tmp1 :t1]]
+                      :join [[:tmp2 :t2] [:= :t1.aa :t2.aa]]
+                    } ))
     ]
+      (prn (jdbc/query db-spec cmd)))
+
+    (let [cmd  (tm/collapse-whitespace 
+                  "with 
+                    t1 as 
+                      (select * from tmp1),
+                    t2 as
+                      (select * from tmp2),
+                    t12 as
+                      (select * from t1 inner join t2 
+                        on (t1.aa = t2.aa))
+                  select * from t12 ;" ) ]
+;                   t3 as
+;                     (select * from tmp3),
+;                   t123 as
+;                     (select * from t12 inner join t3
+;                       on (t12.aa = t3.aa))
+      (spyx cmd)
       (prn (jdbc/query db-spec cmd)))
 
   (catch Exception ex
