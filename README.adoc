@@ -178,6 +178,14 @@ type, and its value:
 Non-pure functions (i.e. those with side-effects) are safe to use with `spy`.
 Any expression supplied to spy will be evaluated only once.
 
+Sometimes you may just want to save some repetition for a simple printout:
+[source,clojure]
+----
+(def answer 42)
+(spyx answer)
+;; answer => 42
+----
+
 To be precise, the function signatures for `spy` are:
 [source,clojure]
 ----
@@ -207,6 +215,22 @@ the previous result.
       (/ 10 it)                                 ; thread-last
       (str "We need to order " it " items." )   ; middle of 3 arguments
 ;=> "We need to order 2 items." )
+----
+
+Here is a more complicated example. Note that we can assign into a local `let` block from the `it`
+placeholder value:
+[source,clojure]
+----
+(it-> 3
+      (spy :msg 1 it)
+      (let [x it]
+        (inc x))
+      (spy it :msg 2)
+      (* it 2)
+      (spy it))
+;; 1 => 3
+;; 2 => 4
+;; it => 8
 ----
 
 === Map Value Lookup
