@@ -287,7 +287,7 @@ of both `clojure.core/assoc-in` and `clojure.core/update-in` (note that `nil` is
 the value of the final map entry, not the empty map `{}` as for the other examples). 
 
 Note that only the map entry corresponding to the last key `kZ` is cleared. This
-differs from the `dissoc-in` function in the old clojure-contrib library whichjj
+differs from the `dissoc-in` function in the old clojure-contrib library which
 had the unpredictable behavior of recursively (& silently) deleting all keys in
 `keys-vec` corresponding to empty maps.
 

@@ -205,15 +205,32 @@
                       (select * from tmp2),
                     t12 as
                       (select * from t1 inner join t2 
-                        on (t1.aa = t2.aa))
-                  select * from t12 ;" ) ]
-;                   t3 as
-;                     (select * from tmp3),
-;                   t123 as
-;                     (select * from t12 inner join t3
-;                       on (t12.aa = t3.aa))
+                        using (aa)),
+                    t3 as
+                      (select * from tmp3),
+                    t123 as
+                      (select * from t12 inner join t3
+                        on (t12.aa = t3.aa))
+                  select * from t123 ;" ) ]
       (spyx cmd)
       (prn (jdbc/query db-spec cmd)))
+
+    (let [cmd  (tm/collapse-whitespace 
+                  "with 
+                    t1 as 
+                      (select * from tmp1),
+                    t2 as
+                      (select * from tmp2),
+                    t12 as
+                      (select * from t1 natural join t2),
+                    t3 as
+                      (select * from tmp3),
+                    t123 as
+                      (select * from t12 natural join t3)
+                  select * from t123 ;" ) ]
+      (spyx cmd)
+      (prn (jdbc/query db-spec cmd)))
+
 
   (catch Exception ex
     (do (spyx ex)
