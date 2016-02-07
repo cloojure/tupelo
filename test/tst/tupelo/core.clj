@@ -347,8 +347,10 @@
 
   (is      (rel= 1 1.001 :digits 3 ))
   (is (not (rel= 1 1.001 :digits 4 )))
-  (is      (rel= 123450000 123456789 :digits 4 ))
-  (is (not (rel= 123450000 123456789 :digits 6 )))
+  (is      (rel=   123450000   123456789 :digits 4 ))
+  (is (not (rel=   123450000   123456789 :digits 6 )))
+  (is      (rel= 0.123450000 0.123456789 :digits 4 ))
+  (is (not (rel= 0.123450000 0.123456789 :digits 6 )))
 
   (is      (rel= 1 1.001 :tol 0.01 ))
   (is (not (rel= 1 1.001 :tol 0.0001 )))

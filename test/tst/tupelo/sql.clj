@@ -61,7 +61,7 @@
 ; numeric
 (deftest t-create-table
   (let [cmd   (tsql/create-table :tmp {:aa :int  :bb :text} ) ]
-    (is (= cmd "create table tmp (\n  aa int not null,\n  bb text) ;"))
+    (is (= cmd "create table tmp (\n  aa int,\n  bb text) ;"))
     (try
       (jdbc/db-do-commands db-spec cmd )
       (jdbc/insert! db-spec :tmp {:aa 1 :bb "one"}
