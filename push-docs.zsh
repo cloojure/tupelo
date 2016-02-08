@@ -1,11 +1,11 @@
 #!/bin/zsh
 
 # Controlling values
-readonly ghPagesDir=~/gh-pages          # must be absolute pathname
+readonly ghPagesDir=~/gh-pages                  # must be absolute pathname
 readonly projName="tupelo"
 
-srcDir=$(pwd)/doc                       # absolute pathname of source
-destDir=${ghPagesDir}/${projName}       # absolute pathname of destination
+srcDir=$(pwd)/target/base+system+user+dev/doc   # absolute pathname of source
+destDir=${ghPagesDir}/${projName}               # absolute pathname of destination
 
 # Copy files
 mkdir --parents $destDir
