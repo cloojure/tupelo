@@ -343,7 +343,9 @@
   (is (thrown? IllegalArgumentException  (rel= 1 1 :tol     "xx"    )))
   (is (thrown? IllegalArgumentException  (rel= 1 1 :xxtol   0.01    )))
 
-  (is      (rel= 0 0 :digits 3 ))
+  (is      (rel=   0   0   :digits 3 ))
+  (is      (rel=  42  42   :digits 99 ))
+  (is      (rel=  42  42.0 :digits 99 ))
 
   (is      (rel= 1 1.001 :digits 3 ))
   (is (not (rel= 1 1.001 :digits 4 )))

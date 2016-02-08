@@ -504,12 +504,17 @@ An extract from the unit tests illustrates the use of `rel=`
 
 [source,clojure]
 ----
-(is      (rel= 123450000 123456789 :digits 4 ))
-(is (not (rel= 123450000 123456789 :digits 6 )))
+(is      (rel=   123450000   123456789 :digits 4 ))       ; .12345 * 10^9
+(is (not (rel=   123450000   123456789 :digits 6 )))
+(is      (rel= 0.123450000 0.123456789 :digits 4 ))       ; .12345 * 1
+(is (not (rel= 0.123450000 0.123456789 :digits 6 )))
 
-(is      (rel= 1 1.001 :tol 0.01 ))
+(is      (rel= 1 1.001 :tol 0.01 ))                       ; :tol value is absolute error
 (is (not (rel= 1 1.001 :tol 0.0001 )))
 ----
+
+Note that, for the :digits variant, _'equality'_ is truly relative, since only the N most significant
+digits of each value must match.
 
 === String Operations
 
