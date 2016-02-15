@@ -519,19 +519,7 @@
 ;   (spyx result) (spy-indent-dec) (flush)      ; for debug
     result))
 
-; #todo reverse order? Allow this:  (matches? pattern data-1
-;                                                     data-2
-;                                                     data-3)  ; like (= x y z)
 ; #todo need test & README
-(defn matches-helper
-  [pattern values]
-  (spy :msg 2 pattern)
-  (spy :msg 3 values)
-  (forv [value values]
-    `(ccm/match ~value
-         ~pattern   true
-          :else     false )))
-
 (defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
    matches the pattern value.  Underscores serve as wildcard values. Usage:
@@ -551,10 +539,6 @@
             `(ccm/match ~value
                  ~pattern   true
                   :else     false ))))
-
-; `(ccm/match ~data
-;      ~pattern   true
-;       :else     false ))
 
 ; #todo: add (throwed? ...) for testing exceptions
 

@@ -479,6 +479,24 @@
   (is (not (seqable? \a ))))
 
 (deftest t-matches
+  (is      (matches?  []    [] ))
+  (is      (matches?  [1]   [1] ))
+  (is (not (matches?  [1]   [2] )))
+  ;        (matches?  [1]   [1 2] )))  ***** error *****
+  (is      (matches?  [_]   [1] ))
+  (is      (matches?  [_]   [nil] ))
+  (is      (matches?  [_]   [1] [2] [3]))
+  (is      (matches?  [1 2] [1 2] ))
+  (is      (matches?  [_ 2] [1 2] ))
+  (is      (matches?  [1 _] [1 2] ))
+  (is      (matches?  [1 _] [1 2] [1 3] [1 nil] ))
+
+  (is      (matches?  {:a 1} {:a 1} ))
+  (is (not (matches?  {:a 1} {:a 2} )))
+  (is (not (matches?  {:a 1} {:b 1} )))
+  (is      (matches?  {:a _} {:a 1} {:a 2} {:a 3} ))
+  ;        (matches?  { _ 1} {:a 1} )   ***** error *****
+
   (is      (matches?  {:a _ :b _       :c 3} 
                       {:a 1 :b [1 2 3] :c 3} ))
   (is (not (matches?  {:a _ :b _       :c 4} 
