@@ -519,7 +519,6 @@
 ;   (spyx result) (spy-indent-dec) (flush)      ; for debug
     result))
 
-; #todo need test & README
 (defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
    matches the pattern value.  Underscores serve as wildcard values. Usage:
