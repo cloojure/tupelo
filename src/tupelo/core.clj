@@ -523,22 +523,38 @@
 ;                                                     data-2
 ;                                                     data-3)  ; like (= x y z)
 ; #todo need test & README
+(defn matches-helper
+  [pattern values]
+  (spy :msg 2 pattern)
+  (spy :msg 3 values)
+  (forv [value values]
+    `(ccm/match ~value
+         ~pattern   true
+          :else     false )))
+
 (defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
    matches the pattern value.  Underscores serve as wildcard values. Usage:
 
-     (matches? data pattern)
+     (matches? pattern & data)
 
    sample:
 
-     (matches? {:a 1 :b [1 2 3] :c 3}
-               {:a _ :b _       :c 3} )  ;=> true
+     (matches?  {:a _ :b _       :c 3} 
+                {:a 1 :b [1 2 3] :c 3}
+                {:a 2 :b 99      :c 3}
+                {:a 3 :b nil     :c 3} )  ;=> true
 
    Note that a wildcald can match either a primitive or a composite value."
-  [data pattern]
-  `(ccm/match ~data
-       ~pattern   true
-        :else     false ))
+  [pattern & values]
+  `(and ~@(forv [value values]
+            `(ccm/match ~value
+                 ~pattern   true
+                  :else     false ))))
+
+; `(ccm/match ~data
+;      ~pattern   true
+;       :else     false ))
 
 ; #todo: add (throwed? ...) for testing exceptions
 

@@ -478,6 +478,30 @@
   (is (not (seqable?  1 )))
   (is (not (seqable? \a ))))
 
+(deftest t-matches
+  (is      (matches?  {:a _ :b _       :c 3} 
+                      {:a 1 :b [1 2 3] :c 3} ))
+  (is (not (matches?  {:a _ :b _       :c 4} 
+                      {:a 1 :b [1 2 3] :c 3} )))
+  (is (not (matches?  {:a _ :b _       :c 3} 
+                      {:a 1 :b [1 2 3] :c 4} )))
+  (is (not (matches?  {:a 9 :b _       :c 3} 
+                      {:a 1 :b [1 2 3] :c 3} )))
+
+  (is      (matches?  {:a _ :b _       :c 3} 
+                      {:a 1 :b [1 2 3] :c 3}
+                      {:a 2 :b 99      :c 3}
+                      {:a 3 :b nil     :c 3} ))
+  (is (not (matches?  {:a _ :b _       :c 3} 
+                      {:a 1 :b [1 2 3] :c 9}
+                      {:a 2 :b 99      :c 3}
+                      {:a 3 :b nil     :c 3} )))
+  (is (not (matches?  {:a _ :b _       :c 3} 
+                      {:a 1 :b [1 2 3] :c 3}
+                      {:a 2 :b 99      :c 3}
+                      {:a 3 :b nil     :c 9} )))
+)
+
 (deftest t-wild-match
   (testing "vectors"
     (let [vv [1 2  3]
