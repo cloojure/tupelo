@@ -503,8 +503,8 @@
 
    sample:
 
-     (matches? {:a 1   :b 2}
-               {:a :*  :b 2} )  ;=> true
+     (wild-match  {:a 1   :b 2}
+                  {:a :*  :b 2} )  ;=> true
 
    Note that a wildcald can match either a primitive or a composite value."
   [data pattern]
@@ -524,10 +524,11 @@
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
    matches the pattern value.  Underscores serve as wildcard values. Usage:
 
-     (matches? pattern & data)
+     (matches? pattern & values)
 
    sample:
 
+     (matches?  [1 _ 3] [1 2 3] )         ;=> true
      (matches?  {:a _ :b _       :c 3} 
                 {:a 1 :b [1 2 3] :c 3}
                 {:a 2 :b 99      :c 3}

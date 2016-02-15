@@ -435,6 +435,27 @@ arbitrary validation, throwing an exception if a non-truthy result is returned:
 (is (= 3.14 (validate #(< 3 % 4)  3.14 )))
 ---- 
 
+=== Convenient Wild-Card Matches
+
+Sometimes in testing, we want to verify that a key-value pair is present in a map, but we
+don't know or care what the value is.  For example, Datomic returns maps containing the key
+`:db/id`, but the associated value is unpredictable. Tupelo provides the `(matches? ...)` 
+expression to make these tests a snap:
+
+[source,clojure]
+---- 
+(matches? pattern & values)
+
+(matches? { :a 1 :b _       } 
+          { :a 1 :b 99      }
+          { :a 1 :b [1 2 3] }
+          { :a 1 :b nil     } )   ;=> true
+(matches? [1 _ 3] [1 2 3] )       ;=> true
+---- 
+Note that a wildcald can match either a primitive or a composite value. It works for both maps
+and vectors. The only restriction is that the wildcard symbol `_` (underscore) cannot be used as
+a key in the pattern-map (it can be used anywhere in a vector-pattern)."
+
 === Map Entries (Key-Value pairs)
 
 Sometimes you want to extract the keys & values from a map for manipulation or extension

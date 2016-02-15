@@ -490,6 +490,7 @@
   (is      (matches?  [_ 2] [1 2] ))
   (is      (matches?  [1 _] [1 2] ))
   (is      (matches?  [1 _] [1 2] [1 3] [1 nil] ))
+  (is      (matches?  [1 _ 3] [1 2 3] [1 nil 3] ))
 
   (is      (matches?  {:a 1} {:a 1} ))
   (is (not (matches?  {:a 1} {:a 2} )))
