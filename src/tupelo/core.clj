@@ -81,17 +81,17 @@
         2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
         prints 'spy => 5' to stdout.  "
   ( [arg1 arg2 arg3]
-    (cond (= :msg arg1) (do (println (str (spy-indent-spaces) arg2 " => " (pr-str arg3))) arg3)  ; for ->>
-          (= :msg arg2) (do (println (str (spy-indent-spaces) arg3 " => " (pr-str arg1))) arg1)  ; for ->
+    (cond (= :msg arg1) (do (println (str (spy-indent-spaces) arg2 " => " (pr-str arg3))) arg3)  ; ->>  case
+          (= :msg arg2) (do (println (str (spy-indent-spaces) arg3 " => " (pr-str arg1))) arg1)  ; ->   case
           :else (throw (IllegalArgumentException.  (str
                            "spy: either first or 2nd arg must be :msg \n   args:"
                            (pr-str [arg1 arg2 arg3]))))))
 
   ( [msg value] ; 2-arg arity assumes value is last arg
-    (do (println (str msg " => " (pr-str value))) value))
+    (spy :msg msg value))
 
   ( [value] ; 1-arg arity uses a generic "spy" message
-    (spy "spy" value)))
+    (spy :msg "spy" value)))
 
 (defmacro spyx
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
@@ -493,16 +493,17 @@
 
 (defn- wild-match-1
   [pattern value]
-; (spy-indent-inc) (spyxx pattern) (spyxx value) (flush)       ; for debug
-  (let [result  (truthy?
-                  (cond
-                    (= pattern :*)      true
-                    (= pattern value )  true
-                    (coll? value)       (every? truthy? (mapv wild-match-1 pattern value))
-                    :default            false))
-  ]
-;   (spyx result) (spy-indent-dec) (flush)      ; for debug
-    result))
+  (with-spy-indent
+    ;(spy :msg "pattern" pattern) (spy :msg "value  " value) (flush)       ; for debug
+    (let [result  (truthy?
+                    (cond
+                      (= pattern :*)      true
+                      (= pattern value )  true
+                      (coll? value)       (every? truthy? (mapv wild-match-1 pattern value))
+                      :default            false))
+    ]
+      ;(spy :msg "result " result) (flush)      ; for debug
+      result)))
 
 (defn wild-match?  ; #todo need test & README
   "Returns true if a pattern is matched by one or more values.
