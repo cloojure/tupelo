@@ -491,33 +491,35 @@
 ; #todo need rand-id/randid/rid/rid-str (rand id) -> 64 bit hex string="1234-4567-89ab-cdef"
 ; i[12] = Random.nextInt(); bytes += i[12].toHexString()
 
-; #todo reverse order? Allow this:  (wild-match? pattern data-1
-;                                                        data-2
-;                                                        data-3)  ; like (= x y z)
-(defn wild-match?  ; #todo need test & README
-  "Returns true if the data value
-   matches the pattern value.  The special keyword :* (colon-star) in the pattern value serves as
-   a wildcard value. Usage:
-
-     (matches? data pattern)
-
-   sample:
-
-     (wild-match  {:a 1   :b 2}
-                  {:a :*  :b 2} )  ;=> true
-
-   Note that a wildcald can match either a primitive or a composite value."
-  [pattern data]
-; (spy-indent-inc) (spyxx pattern) (spyxx data) (flush)       ; for debug
-  (let [result    (truthy?
-                    (cond
-                      (= pattern :*)       true
-                      (= data pattern)     true
-                      (coll? data)      (apply = true (mapv wild-match? pattern data))
-                      :default          false))
+(defn- wild-match-1
+  [pattern value]
+; (spy-indent-inc) (spyxx pattern) (spyxx value) (flush)       ; for debug
+  (let [result  (truthy?
+                  (cond
+                    (= pattern :*)      true
+                    (= pattern value )  true
+                    (coll? value)       (every? truthy? (mapv wild-match-1 pattern value))
+                    :default            false))
   ]
 ;   (spyx result) (spy-indent-dec) (flush)      ; for debug
     result))
+
+(defn wild-match?  ; #todo need test & README
+  "Returns true if a pattern is matched by one or more values.
+   The special keyword :* (colon-star) in the pattern serves as
+   a wildcard value. Usage:
+
+     (matches? pattern & values)
+
+   sample:
+
+     (wild-match {:a :*  :b 2} {:a 1   :b 2})  ;=> true
+
+   Note that a wildcald can match either a primitive or a composite value."
+  [pattern & values]
+  (every? truthy? 
+    (forv [value values] 
+      (wild-match-1 pattern value))))
 
 (defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value

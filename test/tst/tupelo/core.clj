@@ -523,19 +523,31 @@
 
 (deftest t-wild-match
   (testing "vectors"
-    (let [vv [1 2  3]
-          tt [1 2  3]
-          ww [1 :* 3]
-          zz [1 2  4] ]
-      (is (wild-match? tt vv))
-      (is (not (wild-match? zz vv))))
-    (let [vv [1  [2 3]]
-          tt [1  [2 3]]
-          ww [:* [2 3]]
-          zz [9  [2 3]] ]
-      (is (wild-match? tt vv))
-      (is (wild-match? ww vv))
-      (is not (wild-match? zz vv)))
+    (is      (wild-match? [1 2  3]
+                          [1 2  3] ))
+    (is      (wild-match? [1 :* 3]
+                          [1 2  3] ))
+    (is      (wild-match? [1 :* 3]
+                          [1 2  3]
+                          [1 9  3] ))
+    (is (not (wild-match? [1 2  3]
+                          [1 2  9] )))
+
+    (is      (wild-match? [1  [2 3]]
+                          [1  [2 3]] ))
+    (is      (wild-match? [:* [2 3]]
+                          [1  [2 3]] ))
+    (is      (wild-match? [:* [2 3]]
+                          [1  [2 3]]
+                          [9  [2 3]] ))
+    (is      (wild-match? [1  [2 :*]]
+                          [1  [2 33]]
+                          [1  [2 99]] ))
+    (is      (wild-match? [1  :*]
+                          [1   2]
+                          [1  [2 3]] ))
+    (is (not (wild-match? [1  [2 3]]
+                          [1  [2 9]] )))
   )
   (testing "maps"
     (let [vv {:a 1 }
