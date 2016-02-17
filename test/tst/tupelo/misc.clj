@@ -66,11 +66,11 @@
     (is (thrown? RuntimeException (shell-cmd "LLLls -ldF *")))))
 
 (deftest t-dots
-  (is (= "       0 .........\n       9 total\n"
+  (is (= "         0 .........\n         9 total\n"
          (with-out-str (with-dots (doseq [x (range 9)]
                                     (dot))))))
   (dots-config! {:dots-per-row 10  :decimation 3} )
-  (is (= "       0 ..........\n      30 ..........\n      60 ..........\n      90 ...\n      99 total\n"
+  (is (= "         0 ..........\n        30 ..........\n        60 ..........\n        90 ...\n        99 total\n"
          (with-out-str (with-dots (doseq [x (range 99)]
                                     (dot)))))))
 

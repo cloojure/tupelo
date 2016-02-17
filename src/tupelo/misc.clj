@@ -113,7 +113,7 @@
         old-count         @dot-counter
         new-count         (swap! dot-counter inc) ]
     (when (zero? (rem old-count counts-per-row))
-      (print (format "%8d " old-count)))
+      (print (format "%10d " old-count)))
     (when (zero? (rem old-count decimation))
       (print \.))
     (flush)
@@ -128,6 +128,6 @@
      (reset! dot-counter 0)
      (let [result#  (do ~@body) ]
       (newline)
-      (println (format "%8d total" @dot-counter))
+      (println (format "%10d total" @dot-counter))
       result#)))
 
