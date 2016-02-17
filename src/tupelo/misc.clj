@@ -96,27 +96,38 @@
   (mapv str (char-seq \space \~)))
 
 ; #todo document in README
-(def ^:no-doc dots-per-row 100)
-(def ^:no-doc dot-count (atom 0))
+(def ^:no-doc dot-counter   (atom 0))
+(def ^:no-doc dots-ctx      (atom { :dots-per-row   100
+                                    :decimation       1 } ))
+(defn dots-config!  ; #todo need docstring
+  [ctx]  ; #todo check pos integers
+  (swap! dots-ctx conj ctx))
+
 (defn dot 
  "Prints a single dot (flushed) to the console, keeping a running count of dots printed.  Wraps to a
   newline when 100 dots have been printed. Displays the running dot count at the beginning of each line."
   [] 
-  (let [num-dots  @dot-count
-        new-val   (inc num-dots) ]
-    (when (zero? (rem num-dots dots-per-row))
-      (print (format "%6d " num-dots)))
-    (print \.) 
+  (let [
+        decimation        (grab :decimation @dots-ctx)
+        counts-per-row    (* decimation (grab :dots-per-row @dots-ctx))
+        old-count         @dot-counter
+        new-count         (swap! dot-counter inc) ]
+    (when (zero? (rem old-count counts-per-row))
+      (print (format "%8d " old-count)))
+    (when (zero? (rem old-count decimation))
+      (print \.))
     (flush)
-    (when (zero? (rem new-val dots-per-row))
+    (when (zero? (rem new-count counts-per-row))
       (newline))
-    (flush)
-    (reset! dot-count new-val)))
-(defn dot-total []
-  (newline)
-  (println (format "%6d total" @dot-count)))
-(defn dot-reset 
-  "Resets the dot counter to zero"
-  []
-  (reset! dot-count 0))
+    (flush)))
+
+(defmacro with-dots
+  "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
+  [& body]
+  `(do
+     (reset! dot-counter 0)
+     (let [result#  (do ~@body) ]
+      (newline)
+      (println (format "%8d total" @dot-counter))
+      result#)))
 

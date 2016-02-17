@@ -1,15 +1,15 @@
-;   Copyright (c) Alan Thompson. All rights reserved. 
+;   Copyright (c) Alan Thompson. All rights reserved.
 ;   The use and distribution terms for this software are covered by the Eclipse Public
 ;   License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.misc
-  (:use tupelo.misc 
+  (:use tupelo.misc
         tupelo.core
         clojure.test )
   (:require [clojure.string   :as str]
-            [schema.core      :as s] 
+            [schema.core      :as s]
             [tupelo.misc      :as misc] ))
 
 ; Prismatic Schema type definitions
@@ -19,8 +19,8 @@
 
 (deftest collapse-whitespace-t
   (testing "basic usage"
-    (is (= "abc def g hij kl" 
-            (misc/collapse-whitespace "  abc    def			g 
+    (is (= "abc def g hij kl"
+            (misc/collapse-whitespace "  abc    def			g
                                        hij kl	 " )))))
 
 (deftest str->kw-t
@@ -64,4 +64,13 @@
 
   (testing "errors"
     (is (thrown? RuntimeException (shell-cmd "LLLls -ldF *")))))
+
+(deftest t-dots
+  (is (= "       0 .........\n       9 total\n"
+         (with-out-str (with-dots (doseq [x (range 9)]
+                                    (dot))))))
+  (dots-config! {:dots-per-row 10  :decimation 3} )
+  (is (= "       0 ..........\n      30 ..........\n      60 ..........\n      90 ...\n      99 total\n"
+         (with-out-str (with-dots (doseq [x (range 99)]
+                                    (dot)))))))
 

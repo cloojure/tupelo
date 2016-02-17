@@ -119,7 +119,6 @@
        (spy-indent-dec)
        result#)))
 
-
 (s/defn truthy? :- s/Bool
   "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
   [arg :- s/Any]
