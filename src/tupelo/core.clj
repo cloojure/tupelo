@@ -493,7 +493,7 @@
 (defn- wild-match-1
   [pattern value]
   (with-spy-indent
-    (spy :msg "pattern" pattern) (spy :msg "value  " value) (flush)       ; for debug
+    ; (spy :msg "pattern" pattern) (spy :msg "value  " value) (flush)       ; for debug
     (let [result  (truthy?
                     (cond
                       (= pattern :*)      true
@@ -504,7 +504,7 @@
                                                 (every? truthy? (mapv wild-match-1 pattern value)))
                       :default            false))
     ]
-      (spy :msg "result " result) (flush)      ; for debug
+      ; (spy :msg "result " result) (flush)      ; for debug
       result)))
 
 (defn wild-match?  ; #todo need test & README
