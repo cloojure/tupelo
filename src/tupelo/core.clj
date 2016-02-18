@@ -493,15 +493,18 @@
 (defn- wild-match-1
   [pattern value]
   (with-spy-indent
-    ;(spy :msg "pattern" pattern) (spy :msg "value  " value) (flush)       ; for debug
+    (spy :msg "pattern" pattern) (spy :msg "value  " value) (flush)       ; for debug
     (let [result  (truthy?
                     (cond
                       (= pattern :*)      true
                       (= pattern value )  true
-                      (coll? value)       (every? truthy? (mapv wild-match-1 pattern value))
+                      (map? pattern)      (wild-match-1 (seq (glue (sorted-map) pattern))
+                                                        (seq (glue (sorted-map) value  )))
+                      (coll? value)       (and  (= (count pattern) (count value))
+                                                (every? truthy? (mapv wild-match-1 pattern value)))
                       :default            false))
     ]
-      ;(spy :msg "result " result) (flush)      ; for debug
+      (spy :msg "result " result) (flush)      ; for debug
       result)))
 
 (defn wild-match?  ; #todo need test & README
@@ -519,7 +522,10 @@
   [pattern & values]
   (every? truthy? 
     (forv [value values] 
-      (wild-match-1 pattern value))))
+      (if (map? pattern)
+        (wild-match-1 (glue (sorted-map) pattern)
+                      (glue (sorted-map) value))
+        (wild-match-1 pattern value)))))
 
 (defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value

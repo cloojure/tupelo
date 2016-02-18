@@ -478,6 +478,8 @@
   (is (not (seqable?  1 )))
   (is (not (seqable? \a ))))
 
+; #todo add different lengths a/b
+; #todo add missing entries a/b
 (deftest t-matches
   (is      (matches?  []    [] ))
   (is      (matches?  [1]   [1] ))
@@ -521,8 +523,26 @@
                       {:a 3 :b nil     :c 9} )))
 )
 
+; #todo add different lengths a/b
+; #todo add missing entries a/b
 (deftest t-wild-match
   (testing "vectors"
+    (is      (wild-match? [1]  [1] ))
+    (is      (wild-match? [1]  [1] [1] ))
+    (is      (wild-match? [:*] [1] [1] ))
+    (is      (wild-match? [:*] [1] [9] ))
+
+    (is      (wild-match? [1] [1] ))
+    (is      (wild-match? [1] [1] [1] ))
+
+    (is (not (wild-match? [1] [ ] )))
+    (is (not (wild-match? [ ] [1] )))
+    (is (not (wild-match? [1] [ ] [ ] )))
+    (is (not (wild-match? [ ] [1] [ ] )))
+    (is (not (wild-match? [ ] [ ] [1] )))
+    (is (not (wild-match? [1] [1] [ ] )))
+    (is (not (wild-match? [1] [ ] [1] )))
+
     (is      (wild-match? [1 2  3]
                           [1 2  3] ))
     (is      (wild-match? [1 :* 3]
@@ -532,6 +552,10 @@
                           [1 9  3] ))
     (is (not (wild-match? [1 2  3]
                           [1 2  9] )))
+    (is (not (wild-match? [1 2   ]
+                          [1 2  9] )))
+    (is (not (wild-match? [1 2  3]
+                          [1 2   ] )))
 
     (is      (wild-match? [1  [2 3]]
                           [1  [2 3]] ))
@@ -550,6 +574,17 @@
                           [1  [2 9]] )))
   )
   (testing "maps"
+    (is (wild-match? {:a 1 } {:a 1} ))
+    (is (wild-match? {:a :*} {:a 1} ))
+    (is (wild-match? {:a :*} {:a 1} {:a 1} ))
+    (is (wild-match? {:a :*} {:a 1} {:a 9} ))
+
+    (is (not (wild-match? {:a 1 } {:a 9} )))
+    (is (not (wild-match? {:a 1 } {:a 1 :b 2} )))
+    (is (not (wild-match? {:a :*} {:b 1} )))
+    (is (not (wild-match? {:a :*} {:a 1} {:b 1} )))
+    (is (not (wild-match? {:a :*} {:a 1 :b 2} )))
+
     (let [vv {:a 1 }
           tt {:a 1 }
 ;         w1 {:* 1 }  ; #todo can't match keys now
