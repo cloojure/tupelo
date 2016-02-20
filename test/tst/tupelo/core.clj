@@ -654,5 +654,14 @@
       (is (not (wild-match? z2 vv)))
     )
   )
+  (testing "sets"
+    (is      (wild-match? #{1} #{1} ))
+    (is (not (wild-match? #{1} #{9} )))
+    (is (not (wild-match? #{1} #{:a :b} )))
+    (is      (wild-match? #{1  #{:a :b}}
+                          #{1  #{:a :b} }))
+    (is (not (wild-match? #{1  #{:a :c}}
+                          #{1  #{:a :x} })))
+  )
 )
 
