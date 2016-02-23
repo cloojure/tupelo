@@ -595,8 +595,6 @@
     ]
       (is (wild-match? tt vv))
       (is (wild-match? w2 vv))
-;     (is (wild-match? w3 vv)) ; #todo
-;     (is (wild-match? w4 vv))
       (is (wild-match? w5 vv))
       (is (not (wild-match? zz vv)))
     )
