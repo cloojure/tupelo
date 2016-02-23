@@ -587,26 +587,20 @@
 
     (let [vv {:a 1 }
           tt {:a 1 }
-;         w1 {:* 1 }  ; #todo can't match keys now
           w2 {:a :*}
           zz {:a 2 }
     ]
       (is (wild-match? tt vv))
-;     (is (wild-match? w1 vv)) ; #todo
       (is (wild-match? w2 vv))
       (is (not (wild-match? zz vv)))
     )
-    (let [vv {:a 1 :b {:c 3}}
-          tt {:a 1 :b {:c 3}}
-;         w1 {:* 1 :b {:c 3}}  ; #todo
+    (let [vv {:a 1  :b {:c 3}}
+          tt {:a 1  :b {:c 3}}
           w2 {:a :* :b {:c 3}}
-;         w3 {:a 1 :* {:c 3}}  ; #todo
-;         w4 {:a 1 :b {:* 3}}  ; #todo
-          w5 {:a 1 :b {:c :*}}
-          zz {:a 2 :b {:c 3}}
+          w5 {:a 1  :b {:c :*}}
+          zz {:a 2  :b {:c 3}}
     ]
       (is (wild-match? tt vv))
-;     (is (wild-match? w1 vv)) ; #todo
       (is (wild-match? w2 vv))
 ;     (is (wild-match? w3 vv)) ; #todo
 ;     (is (wild-match? w4 vv))
@@ -620,7 +614,6 @@
           w1 [:* 1  :b {:c  3} ]
           w2 [:a :* :b {:c  3} ]
           w3 [:a 1  :* {:c  3} ]
-;         w4 [:a 1  :b {:*  3} ]
           w5 [:a 1  :b {:c :*} ]
           zz [:a 2  :b {:c  3} ]
     ]
@@ -628,7 +621,6 @@
       (is (wild-match? w1 vv))
       (is (wild-match? w2 vv))
       (is (wild-match? w3 vv))
-;     (is (wild-match? w4 vv))
       (is (wild-match? w5 vv))
       (is (not (wild-match? zz vv)))
     )
@@ -636,18 +628,14 @@
   (testing "vecs & maps 2"
     (let [vv {:a 1  :b [:c  3] }
           tt {:a 1  :b [:c  3] }
-;         w1 {:* 1  :b [:c  3] }
           w2 {:a :* :b [:c  3] }
-;         w3 {:a 1  :* [:c  3] }
           w4 {:a 1  :b [:*  3] }
           w5 {:a 1  :b [:c :*] }
           z1 {:a 2  :b [:c  3] }
           z2 {:a 1  :b [:c  9] }
     ]
       (is (wild-match? tt vv))
-;     (is (wild-match? w1 vv))
       (is (wild-match? w2 vv))
-;     (is (wild-match? w3 vv))
       (is (wild-match? w4 vv))
       (is (wild-match? w5 vv))
       (is (not (wild-match? z1 vv)))
