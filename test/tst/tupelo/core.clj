@@ -576,8 +576,10 @@
   (testing "maps"
     (is (wild-match? {:a 1 } {:a 1} ))
     (is (wild-match? {:a :*} {:a 1} ))
-    (is (wild-match? {:a :*} {:a 1} {:a 1} ))
-    (is (wild-match? {:a :*} {:a 1} {:a 9} ))
+    (is (wild-match? {:a :*} {:a 1 } {:a 1 } ))
+    (is (wild-match? {:a :*} {:a 1 } {:a 9 } ))
+    (is (wild-match? {:a :*} {:a :*} {:a 9 } ))
+    (is (wild-match? {:a :*} {:a :*} {:a :*} ))
 
     (is (not (wild-match? {:a 1 } {:a 9} )))
     (is (not (wild-match? {:a 1 } {:a 1 :b 2} )))
@@ -585,15 +587,6 @@
     (is (not (wild-match? {:a :*} {:a 1} {:b 1} )))
     (is (not (wild-match? {:a :*} {:a 1 :b 2} )))
 
-    (let [vv {:a 1 }
-          tt {:a 1 }
-          w2 {:a :*}
-          zz {:a 2 }
-    ]
-      (is (wild-match? tt vv))
-      (is (wild-match? w2 vv))
-      (is (not (wild-match? zz vv)))
-    )
     (let [vv {:a 1  :b {:c 3}}
           tt {:a 1  :b {:c 3}}
           w2 {:a :* :b {:c 3}}
