@@ -697,9 +697,10 @@ style for other basic test functions, we provide the function `not-nil?` as the 
 
 === Identifying Sequences
 
-In some situations, a function may need to verify that an argument is _seqable_, that is, that it
-may be interpreted as a sequence of values.  Clojure doesn't have a built-in function for this, but
-we can copy one from the old `clojure.contrib.core/seqable`:
+In some situations, a function may need to verify that an argument is _seqable_, that is, will a
+call to `(seq some-value)` succeed?  If so, `some-value` may be interpreted as a sequence of values.
+Clojure doesn't have a built-in function for this (please note that `seqable?` is different from
+`clojure.core/seq?`), but we can copy one from the old `clojure.contrib.core/seqable`:
 
 [source,clojure]
 ----
