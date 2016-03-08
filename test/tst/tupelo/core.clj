@@ -124,6 +124,26 @@
                     (= 2 num-false) )))))
   ))
 
+(deftest t-not-nil?
+  (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]
+    (testing "basic usage"
+      (let [notties   (keep-if not-nil? data)
+            nillies   (drop-if not-nil? data) ]
+        (is (and  (= notties [true :a 'my-symbol 1 "hello" \x false] )
+                  (= nillies [nil] )))
+        (is (every?   not-nil? notties))
+        (is (every?       nil? [nil] ))
+        (is (not-any?     nil? notties))
+        (is (not-any? not-nil? nillies))))
+
+    (testing "improved usage"
+      (let [count-if (comp count keep-if) ]
+        (let [num-invalid     (count-if nil?     data)
+              num-valid-1     (count-if some?    data)    ; awkward phrasing, doesn't feel natural
+              num-valid-2     (count-if not-nil? data) ]  ; matches intent much better
+          (is (and  (= 7 num-valid-1 num-valid-2 )
+                    (= 1 num-invalid) )))))))
+
 (deftest t-any
   (is (= true   (any? odd? [1 2 3] ) ))
   (is (= false  (any? odd? [2 4 6] ) ))

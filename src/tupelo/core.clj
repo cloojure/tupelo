@@ -147,6 +147,12 @@
    coll :- [s/Any]]
   (truthy? (some pred coll)) )
 
+(s/defn not-nil? :- s/Bool
+  "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)), 
+   or the poorly-named clojure.core/some? "
+  [arg :- s/Any]
+  (not (nil? arg)))
+
 (s/defn not-empty? :- s/Bool
   "For any collection coll, returns true if coll contains any items; otherwise returns false.
    Equivalent to (not (empty? coll))."
