@@ -676,6 +676,7 @@ argument. It also has the poorly named function `some?` which returns the _value
 _scalar_ argument satisfies `(not (nil? arg))`. It is easy to confuse `some` and `some?`, not only
 in their return type but also in the argument they accept (sequence or scalar).  In keeping with the
 style for other basic test functions, we provide the function `not-nil?` as the opposite of `nil?`.
+The unit tests show how `not-nil?` leads to a more natural code syntax:
 
 [source,clojure]
 ----
