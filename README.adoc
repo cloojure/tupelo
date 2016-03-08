@@ -672,7 +672,7 @@ higher-order-function is required:
 === Keeping It Simple with `not-nil?` 
 
 Clojure has the build-in function `some` to return the first _truthy value_ from a _sequence_
-argument. It also has the poorly named function `some?` which returns the _value `true_` if a
+argument. It also has the poorly named function `some?` which returns the _value_ `true` if a
 _scalar_ argument satisfies `(not (nil? arg))`. It is easy to confuse `some` and `some?`, not only
 in their return type but also in the argument they accept (sequence or scalar).  In keeping with the
 style for other basic test functions, we provide the function `not-nil?` as the opposite of `nil?`.
