@@ -691,8 +691,8 @@ for other basic test functions, we provide the function `not-nil?` as the opposi
     (let [num-valid-1     (count-if some?    data)    ; awkward phrasing, doesn't feel natural
           num-valid-2     (count-if not-nil? data)    ; matches intent much better
           num-nil         (count-if nil?     data) ]  ; intent is plain
-      (is (and  (= 7 num-valid-1 num-valid-2 )
-                (= 1 num-nil))))))
+      (is (and (= 7 num-valid-1 num-valid-2 )
+               (= 1 num-nil))))))
 ----
 
 === Identifying Sequences
