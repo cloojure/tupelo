@@ -138,11 +138,11 @@
 
     (testing "improved usage"
       (let [count-if (comp count keep-if) ]
-        (let [num-invalid     (count-if nil?     data)
-              num-valid-1     (count-if some?    data)    ; awkward phrasing, doesn't feel natural
-              num-valid-2     (count-if not-nil? data) ]  ; matches intent much better
+        (let [num-valid-1     (count-if some?    data)  ; awkward phrasing, doesn't feel natural
+              num-valid-2     (count-if not-nil? data)  ; matches intent much better
+              num-nil     (count-if nil?     data) ]    ; intent is plain
           (is (and  (= 7 num-valid-1 num-valid-2 )
-                    (= 1 num-invalid) )))))))
+                    (= 1 num-nil) )))))))
 
 (deftest t-any
   (is (= true   (any? odd? [1 2 3] ) ))

@@ -684,17 +684,15 @@ for other basic test functions, we provide the function `not-nil?` as the opposi
         nillies   (drop-if not-nil? data) ]
     (is (and  (= notties [true :a 'my-symbol 1 "hello" \x false] )
               (= nillies [nil] )))
-    (is (every?   not-nil? notties))
-    (is (every?       nil? nillies))
-    (is (not-any?     nil? notties))
-    (is (not-any? not-nil? nillies)))
+    (is (every?   not-nil? notties))        ; the 'not' can be used
+    (is (not-any?     nil? notties)))       ;   in either first or 2nd positon
 
   (let [count-if (comp count keep-if) ]
-    (let [num-invalid     (count-if nil?     data)
-          num-valid-1     (count-if some?    data)    ; awkward phrasing, doesn't feel natural
-          num-valid-2     (count-if not-nil? data) ]  ; matches intent much better
+    (let [num-valid-1     (count-if some?    data)    ; awkward phrasing, doesn't feel natural
+          num-valid-2     (count-if not-nil? data)    ; matches intent much better
+          num-nil         (count-if nil?     data) ]  ; intent is plain
       (is (and  (= 7 num-valid-1 num-valid-2 )
-                (= 1 num-invalid) )))))
+                (= 1 num-nil))))))
 ----
 
 === Identifying Sequences
