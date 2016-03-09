@@ -663,5 +663,6 @@
                 "again"
                 "and again!"]
   ]
-    (is (= r1 (mapv str/trim (str->lines s1))))))
+    (is (= r1 (map str/trim (str->lines s1))))
+    (is (= r1 (map str/trim (str/split-lines s1))))))
 
