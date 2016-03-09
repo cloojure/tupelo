@@ -423,17 +423,6 @@
     (is (= 26 (count str-val)))
     (is (= 26 (count (re-seq #"[a-z]" str-val))))))
 
-(deftest t-str->lines
-  (let [s1    "  hello there 
-                 again
-                 and again!   "
-        r1     ["hello there"
-                "again"
-                "and again!"]
-  ]
-    (is (= r1 (mapv str/trim (str->lines s1))))))
-
-
 (deftest t-clip-str
   (testing "single string"
     (is (= ""         (clip-str 0 "abcdefg")))
@@ -663,4 +652,16 @@
                           #{1  #{:a :x} })))
   )
 )
+
+;---------------------------------------------------------------------------------------------------
+
+(deftest ^:deprecated ^:no-doc t-str->lines
+  (let [s1    "  hello there 
+                 again
+                 and again!   "
+        r1     ["hello there"
+                "again"
+                "and again!"]
+  ]
+    (is (= r1 (mapv str/trim (str->lines s1))))))
 
