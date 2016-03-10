@@ -24,10 +24,10 @@ namespaces, each with a single area of focus. These are:
 
 Please see the xref:tupelo-core-overview[tupelo.core] docs further below.
 
-==== Tupelo Datomic - A library of helper functions for Datomic. 
+==== Tupelo-Datomic - A library of helper functions for Datomic. 
 
-Tupelo Datomic has been split out into an independent project.  Please 
-see https://github.com/cloojure/tupelo-datomic[tupelo.datomic] for details.
+The *_tupelo-datomic_* library has been split out into an independent project.  Please 
+see https://github.com/cloojure/tupelo-datomic[the tupelo-datomic project] for details.
 
 ==== Tupelo CSV - Functions for using CSV (Comma Separate Value) files
 
