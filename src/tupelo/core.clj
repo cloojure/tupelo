@@ -408,7 +408,6 @@
 ;       (thru :co 1 5)   -> [1 2 3 4  ]  ; like (range ...)
 ;       (thru :oo 1 5)   -> [  2 3 4  ]
 
-; #todo add to README
 (defn keep-if
   "Returns a lazy sequence of items in coll for which (pred item) is true (alias for clojure.core/filter)"
   [pred coll]
@@ -420,10 +419,10 @@
   (clojure.core/remove pred coll))
 
 (defn strcat
-  "Concat all arguments into a single string result."
+  "Recursively concat all arguments into a single string result."
   [& args]
   (let [
-    ; We need to use flatten twice since the inner one doesn't changes a string into a
+    ; We need to use flatten twice since the inner one doesn't change a string into a
     ; sequence of chars, nor does it affect byte-array, et al.  We eventually get
     ; seq-of-scalars which can look like [ \a \b 77 78 \66 \z ]
     seq-of-scalars  (flatten
@@ -487,7 +486,8 @@
         outer-set   (set outer-map) ]
     (c.s/subset? inner-set outer-set)))
 
-; #todo need conversion from Long -> hex string="1234-4567-89ab-cdef"
+;                                               "1234.4567.89ab.cdef"  also valid for read
+; #todo need conversion from Long -> hex string="1234-4567-89ab-cdef" (& inverse)
 ; #todo need rand-id/randid/rid/rid-str (rand id) -> 64 bit hex string="1234-4567-89ab-cdef"
 ; i[12] = Random.nextInt(); bytes += i[12].toHexString()
 

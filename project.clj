@@ -32,6 +32,6 @@
   :test-selectors { :default    (complement :slow)
                     :slow       :slow }
 
-  :jvm-opts ["-Xms1g" "-Xmx4g" ]
-; :jvm-opts ["-Xms4g" "-Xmx8g" "-server"]
+  :jvm-opts ^:replace ["-Xms1g" "-Xmx4g" ]
+; :jvm-opts ^:replace ["-Xms4g" "-Xmx8g" "-server"]
 )
