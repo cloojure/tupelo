@@ -40,6 +40,14 @@ sequences and maps. Please see the link:src/tupelo/csv.adoc[tupelo.csv] docs.
 
 Please see the link:http://cloojure.github.io/doc/tupelo/tupelo.parse.html[tupelo.parse] docs.
 
+==== Tupelo Schema - Type Definitions 
+
+Enables type checking in Clojure code via link:https://github.com/plumatic/schema[Prismatic Schema].
+Please see link:https://github.com/cloojure/tupelo/blob/master/src/tupelo/schema.clj[the source code] for
+definitions, and
+link:https://github.com/cloojure/tupelo-datomic/blob/master/test/tst/tupelo_datomic/bond.clj[the
+James Bond example code] for examples of the type-checking in action.
+
 ==== Tupelo Misc - A grab bag of functions that don't fit anywhere else (yet!)
 
 Please see the link:http://cloojure.github.io/doc/tupelo/tupelo.misc.html[tupelo.misc] docs.
