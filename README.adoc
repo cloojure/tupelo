@@ -11,9 +11,9 @@ image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 == Tupelo Overview
 
 Have you ever wanted to do something simple but clojure.core doesn't support it? Or, maybe
-you are wishing for an enhanced version of a standard function. The goal of Tupelo is to
-add support for these convenience features, so that you have a simple way of using either
-the enhanced version or the original version.
+you are wishing for an enhanced version of a standard function.  If so, then *Tupelo* is for
+you! The goal of Tupelo is to add support for these convenience features, so that you have a simple
+way of using either the enhanced version or the original version.
 
 == Tupelo Organization
 
