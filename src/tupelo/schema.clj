@@ -57,8 +57,9 @@
    "
   #{Tuple} )
 
-(def TupleMap     [ {s/Any s/Any} ] )   ; a single result  returned by Datomic pull api
-(def TupleMaps    [TupleMap] )          ; list of  results returned by Datomic pull api
+(def MapList      [Map] )         ; a list of Maps
+(def TupleMap     [Map] )         ; a single  result  returned by Datomic pull api  ; #todo needs (s/one ...) ??? or MapList?
+(def TupleMaps    [TupleMap] )    ; a list of results returned by Datomic pull api
 
 (def Vec  [ s/Any ] )  ; arbitrary length vector (or any sequence)
 (def Vec1 [ (s/one s/Any "x1") ] )  ; length-1 vector
