@@ -93,6 +93,9 @@
   ( [value] ; 1-arg arity uses a generic "spy" message
     (spy :msg "spy" value)))
 
+; #todo need to write (spy-let ...) => (let [ x 1  _ (spyx x)
+;                                             y 2  _ (spyx y) ]   ...)
+
 (defmacro spyx
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
    expression, printing both the expression and its value to stdout, then returns the value."
@@ -260,15 +263,17 @@
 ; entries.
 
 (s/defn only  :- s/Any
-  "(only seq-arg)
+  "(only seqable-arg)
   Ensures that a sequence is of length=1, and returns the only value present.
   Throws an exception if the length of the sequence is not one.
   Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
-  [seq-arg :- [s/Any]]
-  (let [seq-len (count seq-arg)]
+  [seqable-arg :- s/Any]
+  (when-not (seqable? seqable-arg)
+    (throw (IllegalArgumentException. (str "only: arg not seqable:" seqable-arg))))
+  (let [seq-len (count seqable-arg)]
     (when-not (= 1 seq-len)
       (throw (IllegalArgumentException. (str "only: length != 1; length=" seq-len)))))
-  (first seq-arg))
+  (first seqable-arg))
 
 (defn keyvals
   "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
