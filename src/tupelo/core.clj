@@ -424,7 +424,7 @@
   (clojure.core/remove pred coll))
 
 (defn strcat
-  "Recursively concat all arguments into a single string result."
+  "Recursively concatenate all arguments into a single string result."
   [& args]
   (let [
     ; We need to use flatten twice since the inner one doesn't change a string into a
@@ -445,7 +445,7 @@
                                 (types/object-array?    it))
                           (seq it)
                           it )))
-    ; Coerce any integer values into character equivalents (e.g. 65 -> \A), then concat
+    ; Coerce any integer values into character equivalents (e.g. 65 -> \A), then combine
     ; into a single string.
     result  (apply str
               (map char seq-of-scalars))
