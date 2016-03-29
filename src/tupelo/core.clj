@@ -197,7 +197,8 @@
   (let [coll-types        (mapv type colls)
         listy?            (fn [coll] (or (vector? coll)
                                          (list?   coll)
-                                         (= clojure.lang.LongRange (class coll)))) ]
+                                         (= clojure.lang.LongRange (class coll))))  ; from (range ...)
+  ]
     (cond 
       (every? listy? colls)   (reduce into  []  colls)
       (every? map?   colls)   (reduce into  {}  colls)
