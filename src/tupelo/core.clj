@@ -195,16 +195,16 @@
    "
   [& colls]
   (let [coll-types        (mapv type colls)
-        vec-or-list?      (fn [coll] (or (vector? coll)
-                                         (list?   coll)))
-        all-same-types    (or (every? vec-or-list?  colls)      ; true if list or vector
-                              (every? set?          colls)      ; true if set (sorted or not)
-                              (every? map?          colls)) ]   ; true if map (sorted or not)
-    (if all-same-types
-      (reduce into colls)
-      (throw (IllegalArgumentException.
-                (str  "colls must be all identical type; coll-types:" coll-types ))))))
-      ; #todo look at using (ex-info ...)
+        listy?            (fn [coll] (or (vector? coll)
+                                         (list?   coll)
+                                         (= clojure.lang.LongRange (class coll)))) ]
+    (cond 
+      (every? listy? colls)   (reduce into  []  colls)
+      (every? map?   colls)   (reduce into  {}  colls)
+      (every? set?   colls)   (reduce into #{}  colls)
+      :else                   (throw (IllegalArgumentException.
+                                (str  "colls must be all identical type; coll-types:" coll-types ))))))
+                                ; #todo look at using (ex-info ...)
 
 (defn seqable?      ; from clojure.contrib.core/seqable
   "Returns true if (seq x) will succeed, false otherwise."
