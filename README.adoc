@@ -288,7 +288,7 @@ For looking up values in nested maps, the function `fetch-in` replaces `clojure.
 === Map Dissociation
 
 Clojure has functions `assoc` & `assoc-in`, `update` & `update-in`, and `dissoc`. However, there
-is no function `dissoc-in`.  The function `dissoc-in` provides the desired functionality:
+is no function `dissoc-in`.  The Tupelo function `dissoc-in` provides the desired functionality:
 
 [source,clojure]
 ----
