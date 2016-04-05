@@ -733,18 +733,18 @@ test namespace:
  - Java 1.8
 
 == To Do
- - types
- - schema (& schema-datomic)
- - re-work csv
- - kill y64?
- - Update all NS docstrings
- - zipcode distance testing
- - lein plugin
- - make CLJS compatible
- - more docs for other namespaces
- - add more test.check
- - add spy-let, spy-defn, spy-validate, etc
- - blog posts
+  types
+  schema (& schema-datomic)
+  re-work csv
+  kill y64?
+  Update all NS docstrings
+  zipcode distance testing
+  lein plugin
+  make CLJS compatible
+  more docs for other namespaces
+  add more test.check
+  add spy-let, spy-defn, spy-validate, etc
+  blog posts
 
 == License
 
