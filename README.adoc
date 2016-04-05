@@ -112,7 +112,7 @@ just use `spy`:
     (inc)
     (spy)       ; print value at this location in pipeline
     (* 2))
-;; spy => 2     ; output from spy
+; spy => 2      ; output from spy
 4               ; return value from the threading pipeline
 ----
 This tool is named `spy` since it can display values from inside any threading form without
@@ -127,7 +127,7 @@ You can add in a string message to label each `spy` output:
     (inc)
     (spy :msg "after inc")      ; add a custom message
     (* 2))
-;; after inc => 2               ; spy output is labelled with message
+; after inc => 2                ; spy output is labelled with message
 4                               ; return value is unchanged
 ----
 Note that `spy` works equally well inside either a "thread-first" or a "thread-last" form
@@ -139,7 +139,7 @@ Note that `spy` works equally well inside either a "thread-first" or a "thread-l
     (inc)
     (spy :msg "after inc")      ; spy works equally with both  ->  and  ->>  forms
     (* 2))
-;; after inc => 2
+; after inc => 2
 4
 ----
 
@@ -154,14 +154,14 @@ using (pr-str ...) so that numbers and strings are unambiguous in the output:
     (+ 4) 
     (spy :msg "dbg")
     (* 10))
-;; dbg => 34            ; integer result = 34
+; dbg => 34            ; integer result = 34
 340
 
 (-> "3" 
     (str "4")
     (spy :msg "dbg")
     (str "0"))
-;; dbg => "34"          ; string result = "34"
+; dbg => "34"          ; string result = "34"
 "340"
 ----
 
@@ -172,7 +172,7 @@ message. In this case, just use `spyx` (short for "spy expression") :
 (as-> 1 x
       (spyx (inc x))
       (* 2 x))
-;; (inc x) => 2         ; the expression is used as the label
+; (inc x) => 2         ; the expression is used as the label
 4
 ----
 In other instances, you may wish to use `spyxx` to display the expression, its 
@@ -181,7 +181,7 @@ type, and its value:
 ----
 (defn mystery-fn [] (into (sorted-map) {:b 2 :a 1}))
 (spyxx (mystery-fn))
-;; (mystery-fn) => clojure.lang.PersistentTreeMap->{:a 1, :b 2}
+; (mystery-fn) => clojure.lang.PersistentTreeMap->{:a 1, :b 2}
 ----
 Non-pure functions (i.e. those with side-effects) are safe to use with `spy`.
 Any expression supplied to spy will be evaluated only once.
@@ -191,7 +191,7 @@ Sometimes you may just want to save some repetition for a simple printout:
 ----
 (def answer 42)
 (spyx answer)
-;; answer => 42
+; answer => 42
 ----
 
 To be precise, the function signatures for `spy` are:
@@ -235,10 +235,10 @@ placeholder value:
         (inc x))
       (spy it :msg 2)
       (* it 2)
-      (spy it))
-;; 1 => 3
-;; 2 => 4
-;; it => 8
+      (spyx it))
+; 1 => 3
+; 2 => 4
+; it => 8
 ----
 
 === Map Value Lookup
@@ -276,10 +276,10 @@ For looking up values in nested maps, the function `fetch-in` replaces `clojure.
    returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).  
    Throws an Exception if the path keys-vec is not present in the-map."
 
-(def mm {:a 1 :b {:c 3}})
-(fetch-in mm [:b :c])
+(def my-map {:a 1 :b {:c 3}})
+(fetch-in my-map [:b :c])
 3
-(fetch-in mm [:b :z])
+(fetch-in my-map [:b :z])
 ;=> IllegalArgumentException Key seq not present in map:
 ;=>   map : {:b {:c 3}, :a 1}
 ;=>   keys: [:b :z]
@@ -304,12 +304,12 @@ The unit test shows the functions in action:
 
 [source,clojure]
 ----
-(let [mm {:a { :b { :c "c" }}} ]
-  (is (= (dissoc-in mm []         ) mm ))
-  (is (= (dissoc-in mm [:a      ] ) {} ))
-  (is (= (dissoc-in mm [:a :b   ] ) {:a {}} ))
-  (is (= (dissoc-in mm [:a :b :c] ) {:a { :b {}}} ))
-  (is (= (dissoc-in mm [:a :x :y] ) {:a { :b { :c "c" }
+(let [my-map {:a { :b { :c "c" }}} ]
+  (is (= (dissoc-in my-map []         ) my-map ))
+  (is (= (dissoc-in my-map [:a      ] ) {} ))
+  (is (= (dissoc-in my-map [:a :b   ] ) {:a {}} ))
+  (is (= (dissoc-in my-map [:a :b :c] ) {:a { :b {}}} ))
+  (is (= (dissoc-in my-map [:a :x :y] ) {:a { :b { :c "c" }
                                              :x nil }} )))
 ----
 
@@ -738,6 +738,13 @@ test namespace:
  - re-work csv
  - kill y64?
  - Update all NS docstrings
+ - zipcode distance testing
+ - lein plugin
+ - make CLJS compatible
+ - more docs for other namespaces
+ - add more test.check
+ - add spy-let, spy-defn, spy-validate, etc
+ - blog posts
 
 == License
 
