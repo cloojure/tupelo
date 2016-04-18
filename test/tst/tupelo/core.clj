@@ -154,6 +154,11 @@
     (is (every?     not-empty? ["1" [1] '(1) {:1 1} #{1}    ] ))
     (is (not-any?   not-empty? [""  []  '()  {}     #{}  nil] ))
 
+    (is (= (keep-if not-empty?  ["1" [1] '(1) {:1 1} #{1} ] )
+                                ["1" [1] '(1) {:1 1} #{1} ] ))
+    (is (= (drop-if     empty?  [""  []  '()  {}     #{}  nil] )
+                                [] ))
+
     (is (= (map not-empty? ["1" [1] '(1) {:1 1} #{1} ] )
            [true true true true true]  ))
     (is (= (map not-empty? ["" [] '() {} #{} nil] )
