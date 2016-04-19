@@ -137,11 +137,11 @@
   "(validate tstfn tstval)
   Used to validate intermediate results. Returns tstval if the result of
   (tstfn tstval) is truthy.  Otherwise, throws IllegalStateException."
-  ([tstfn tstval]
-    (let [result (tstfn tstval)]
-      (when-not (truthy? result)
-        (throw (IllegalStateException. (str "validate: validation failure, result=" result ))))
-      tstval)))
+  [tstfn tstval]
+  (let [tst-result (tstfn tstval)]
+    (when-not (truthy? tst-result)
+      (throw (IllegalStateException. (str "validation failure, tst-result=" tst-result ))))
+    tstval))
 
 (s/defn any? :- s/Bool
   "For any predicate pred & collection coll, returns true if (pred x) is logical true for any x in

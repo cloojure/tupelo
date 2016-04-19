@@ -356,8 +356,8 @@
   (is (= [0 1 2]  (validate vector? (vec (range 3)))))
   (is (= nil      (validate nil? (next []))))
   (is (= [0 1 2]  (validate #(= 3 (count %)) [0 1 2])))
-  (is (thrown? IllegalStateException (validate number? "hello")))
-  (is (thrown? IllegalStateException (validate truthy? nil)))
+  (is (thrown? Exception (validate number? "hello")))
+  (is (thrown? Exception (validate truthy? nil)))
 )
 
 (deftest t-keyvals
