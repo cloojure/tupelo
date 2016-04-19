@@ -241,7 +241,42 @@
                             {:a 1 :b 2   :c 3 :d 4   :e 5 :f 6} ))
   (is (= (seq (glue (sorted-map) {:a 1   :b 2} {:c 3   :d 4   :e 5} {:f 6}))
                                [ [:a 1] [:b 2] [:c 3] [:d 4] [:e 5] [:f 6] ] ))
+
+  (is (= (glue  {:band :VanHalen :singer :Dave} {:singer :Sammy} )
+                {:band :VanHalen                 :singer :Sammy} ))
 )
+
+(deftest t-append
+  (is (thrown? Exception  (append [1 2]       )))
+  (is (= [1 2 3    ]      (append [1 2] 3     )))
+  (is (= [1 2 3 4  ]      (append [1 2] 3 4   )))
+  (is (= [1 2 3 4 5]      (append [1 2] 3 4 5 )))
+
+  (is (thrown? Exception  (append '(1 2)       )))
+  (is (= [1 2 3    ]      (append '(1 2) 3     )))
+  (is (= [1 2 3 4  ]      (append '(1 2) 3 4   )))
+  (is (= [1 2 3 4 5]      (append '(1 2) 3 4 5 )))
+
+  (is (thrown? Exception (append   {:a 1} 99     )))
+  (is (thrown? Exception (append   {:a 1} {:b 2} )))
+  (is (thrown? Exception (append  #{:a 1} 99     )))
+  (is (thrown? Exception (append  #{:a 1} #{99}  ))))
+
+(deftest t-prepend
+  (is (thrown? Exception  (prepend       [2 1] )))
+  (is (= [    3 2 1]      (prepend     3 [2 1] )))
+  (is (= [  4 3 2 1]      (prepend   4 3 [2 1] )))
+  (is (= [5 4 3 2 1]      (prepend 5 4 3 [2 1] )))
+
+  (is (thrown? Exception  (prepend       '(2 1) )))
+  (is (= [    3 2 1]      (prepend     3 '(2 1) )))
+  (is (= [  4 3 2 1]      (prepend   4 3 '(2 1) )))
+  (is (= [5 4 3 2 1]      (prepend 5 4 3 '(2 1) )))
+
+  (is (thrown? Exception (prepend   99     {:a 1} )))
+  (is (thrown? Exception (prepend   {:b 2} {:a 1} )))
+  (is (thrown? Exception (prepend   99    #{:a 1} )))
+  (is (thrown? Exception (prepend  #{99}  #{:a 1} ))))
 
 (deftest t-grab
   (let [map1  {:a 1 :b 2}]

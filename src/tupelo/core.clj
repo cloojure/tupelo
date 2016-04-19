@@ -181,6 +181,7 @@
   [& body]
   `(vec (for ~@body)))
 
+; #todo add (glue str1 str2)
 (defn glue
   "Glues together like collections:
 
@@ -192,17 +193,39 @@
 
      (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
      (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
-   "
+
+   If there are duplicate keys when using glue for maps or sets, then \"the last one wins\":
+
+     (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
   [& colls]
-  (let [coll-types        (mapv type colls)
-  ]
-    (cond 
-      (every? sequential? colls)  (reduce into  []  colls)
-      (every? map?        colls)  (reduce into  {}  colls)
-      (every? set?        colls)  (reduce into #{}  colls)
-      :else                   (throw (IllegalArgumentException.
-                                (str  "colls must be all identical type; coll-types:" coll-types ))))))
+  (cond 
+    (every? sequential? colls)  (reduce into  []  colls)
+    (every? map?        colls)  (reduce into  {}  colls)
+    (every? set?        colls)  (reduce into #{}  colls)
+    :else                   (throw (IllegalArgumentException.
+                              (str  "colls must be all same type; found types=" (mapv type colls))))))
                                 ; #todo look at using (ex-info ...)
+
+(s/defn append :- ts/List
+  "Given a sequential object (vector or list), add one or more elements to the end."
+  [ listy    :- ts/List
+    & elems  :- [s/Any] ]
+  (when-not (sequential? listy)
+    (throw (IllegalArgumentException. (str "Sequential collection required, found=" listy))))
+  (when (empty? elems)
+    (throw (IllegalArgumentException. (str "Nothing to append! elems=" elems))))
+  (vec (concat listy elems)))
+
+(s/defn prepend :- ts/List
+  "Given a sequential object (vector or list), add one or more elements to the beginning"
+  [ & args ]
+  (let [elems     (butlast  args)
+        listy     (last     args) ]
+    (when-not (sequential? listy)
+      (throw (IllegalArgumentException. (str "Sequential collection required, found=" listy))))
+    (when (empty? elems)
+      (throw (IllegalArgumentException. (str "Nothing to prepend! elems=" elems))))
+    (vec (concat elems listy))))
 
 (defn seqable?      ; from clojure.contrib.core/seqable
   "Returns true if (seq x) will succeed, false otherwise."
