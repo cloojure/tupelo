@@ -195,14 +195,11 @@
    "
   [& colls]
   (let [coll-types        (mapv type colls)
-        listy?            (fn [coll] (or (vector? coll)
-                                         (list?   coll)
-                                         (= clojure.lang.LongRange (class coll))))  ; from (range ...)
   ]
     (cond 
-      (every? listy? colls)   (reduce into  []  colls)
-      (every? map?   colls)   (reduce into  {}  colls)
-      (every? set?   colls)   (reduce into #{}  colls)
+      (every? sequential? colls)  (reduce into  []  colls)
+      (every? map?        colls)  (reduce into  {}  colls)
+      (every? set?        colls)  (reduce into #{}  colls)
       :else                   (throw (IllegalArgumentException.
                                 (str  "colls must be all identical type; coll-types:" coll-types ))))))
                                 ; #todo look at using (ex-info ...)
