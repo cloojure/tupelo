@@ -204,6 +204,27 @@ To be precise, the function signatures for `spy` are:
 (spyxx <expr>)              ; prints <expr>, its type, and its value
 ----
 
+If you are debugging a series of nested function calls, it can often be handy to indent the `spy`
+output to help in visualizing the call sequence. Using `with-spy-indent` will give you just what you
+want:
+
+[source,clojure]
+----
+(doseq [x [:a :b]]
+  (spyx x)
+  (with-spy-indent
+    (doseq [y (range 3)]
+      (spyx y))))
+x => :a
+  y => 0
+  y => 1
+  y => 2
+x => :b
+  y => 0
+  y => 1
+  y => 2
+----
+
 === Literate Threading Macro
 
 We all love to use the threading macros `\->` and `\->>` for certain tasks, but they only work if
