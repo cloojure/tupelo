@@ -13,7 +13,7 @@
                   [cheshire                         "5.5.0"]
                   [prismatic/schema                 "1.0.4"]
                 ]
-  :plugins  [ [codox "0.9.1"] ]
+  :plugins  [ [lein-codox "0.9.4"] ]
   :codox {:src-dir-uri "http://github.com/cloojure/tupelo/blob/master/"
           :src-linenum-anchor-prefix "L"}
   :deploy-repositories {  "snapshots" :clojars
