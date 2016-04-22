@@ -25,6 +25,7 @@
   :profiles { ; :dev      { :certificates ["clojars.pom"] }
               :uberjar  { :aot :all }
             }
+  :global-vars { *warn-on-reflection* false }
 
   ; "lein test"         will not  run tests marked with the ":slow" metadata
   ; "lein test :slow"   will only run tests marked with the ":slow" metadata

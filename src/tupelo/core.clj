@@ -22,6 +22,7 @@
 
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
+; #todo add to project.clj (esp for tupelo-app template, user/dev profile)
 
 
 (def  ^:no-doc spy-indent-level (atom 0))
