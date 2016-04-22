@@ -77,14 +77,15 @@ the enhanced version or the original version.
 
 The goal in using `tupelo.core` is that you can just plop it into any namespace without
 having to worry about any conflicts with `clojure.core` functionality. So, both the core functions
-and the added/enhanced functions are both available for use at all times. As such, we use
-normally use `:refer :all` for `tupelo.core` in our namespaces:
+and the added/enhanced functions are both available for use at all times. As such, we 
+normally specify `(:use tupelo.core)` in our namespace declaration:
 
 [source,clojure]
 ----
 (ns my.proj
-  (:require [tupelo.core    :refer :all]
-            [tupelo.datomic :as td]
+  (:use tupelo.core)
+  (:require [tupelo.datomic   :as td]
+            [clojure.string   :as str]
             ... ))
 ----
 
