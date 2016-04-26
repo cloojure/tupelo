@@ -626,7 +626,6 @@
   ))
 
 ;---------------------------------------------------------------------------------------------------
-
 ; duplicate of str/split-lines
 (defn ^:deprecated ^:no-doc str->lines
   "Returns a lazy seq of lines from a string"
