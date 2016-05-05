@@ -38,6 +38,10 @@
   (s/either #{s/Any} 
             java.util.HashSet ))
 
+(def List
+  "An ordered sequence of items of indeterminate length."
+  [s/Any] )
+
 (def Tuple
   "A specific type of sequential collection, typically a vector of constant length where each
    element has a pre-defined interpretation."

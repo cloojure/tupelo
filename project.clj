@@ -1,4 +1,4 @@
-(defproject tupelo "0.1.67"
+(defproject tupelo "0.1.68"
   :description "Tupelo:  Making Clojure Even Sweeter"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
@@ -13,7 +13,7 @@
                   [cheshire                         "5.5.0"]
                   [prismatic/schema                 "1.0.4"]
                 ]
-  :plugins  [ [codox "0.9.1"] ]
+  :plugins  [ [lein-codox "0.9.4"] ]
   :codox {:src-dir-uri "http://github.com/cloojure/tupelo/blob/master/"
           :src-linenum-anchor-prefix "L"}
   :deploy-repositories {  "snapshots" :clojars
@@ -25,6 +25,7 @@
   :profiles { ; :dev      { :certificates ["clojars.pom"] }
               :uberjar  { :aot :all }
             }
+  :global-vars { *warn-on-reflection* false }
 
   ; "lein test"         will not  run tests marked with the ":slow" metadata
   ; "lein test :slow"   will only run tests marked with the ":slow" metadata

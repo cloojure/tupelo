@@ -2,7 +2,7 @@
 
 = Making Clojure Even Sweeter
 
-Leiningen coordinates:   
+Leiningen coordinates:
 
 image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 
@@ -20,13 +20,13 @@ way of using either the enhanced version or the original version.
 The functionality of the Tupelo library is divided into a number of
 namespaces, each with a single area of focus. These are:
 
-==== Tupelo Core - A library of helper functions for core Clojure. 
+==== Tupelo Core - A library of helper functions for core Clojure.
 
 Please see the xref:tupelo-core-overview[tupelo.core] docs further below.
 
-==== Tupelo-Datomic - A library of helper functions for Datomic. 
+==== Tupelo-Datomic - A library of helper functions for Datomic.
 
-The *_tupelo-datomic_* library has been split out into an independent project.  Please 
+The *_tupelo-datomic_* library has been split out into an independent project.  Please
 see https://github.com/cloojure/tupelo-datomic[the tupelo-datomic project] for details.
 
 ==== Tupelo CSV - Functions for using CSV (Comma Separate Value) files
@@ -36,11 +36,11 @@ and useful functions for parsing CSV (Comma Separated Value) text data, but it d
 the convenience one may wish. Tupelo CSV emphasizes the idomatic Clojure usage of data, using
 sequences and maps. Please see the link:src/tupelo/csv.adoc[tupelo.csv] docs.
 
-==== Tupelo Parse - Functions to ease text parsing 
+==== Tupelo Parse - Functions to ease text parsing
 
 Please see the link:http://cloojure.github.io/doc/tupelo/tupelo.parse.html[tupelo.parse] docs.
 
-==== Tupelo Schema - Type Definitions 
+==== Tupelo Schema - Type Definitions
 
 Enables type checking in Clojure code via link:https://github.com/plumatic/schema[Prismatic Schema].
 Please see link:https://github.com/cloojure/tupelo/blob/master/src/tupelo/schema.clj[the source code] for
@@ -52,11 +52,11 @@ James Bond example code] for examples of the type-checking in action.
 
 Please see the link:http://cloojure.github.io/doc/tupelo/tupelo.misc.html[tupelo.misc] docs.
 
-==== tupelo.base64 - Convert to/from base64 encoding. 
+==== tupelo.base64 - Convert to/from base64 encoding.
 
 Please see the link:http://cloojure.github.io/doc/tupelo/tupelo.base64.html[tupelo.base64] docs.
 
-==== tupelo.base64url - Convert to/from base64url encoding. 
+==== tupelo.base64url - Convert to/from base64url encoding.
 
 Please see the link:http://cloojure.github.io/doc/tupelo/tupelo.base64url.html[tupelo.base64url] docs.
 
@@ -77,14 +77,15 @@ the enhanced version or the original version.
 
 The goal in using `tupelo.core` is that you can just plop it into any namespace without
 having to worry about any conflicts with `clojure.core` functionality. So, both the core functions
-and the added/enhanced functions are both available for use at all times. As such, we use
-normally use `:refer :all` for `tupelo.core` in our namespaces:
+and the added/enhanced functions are both available for use at all times. As such, we 
+normally specify `(:use tupelo.core)` in our namespace declaration:
 
 [source,clojure]
 ----
 (ns my.proj
-  (:require [tupelo.core    :refer :all]
-            [tupelo.datomic :as td]
+  (:use tupelo.core)
+  (:require [tupelo.datomic   :as td]
+            [clojure.string   :as str]
             ... ))
 ----
 
@@ -118,7 +119,7 @@ just use `spy`:
 This tool is named `spy` since it can display values from inside any threading form without
 affecting the result of the expression.  In this case, `spy` printed the value `2` resulting from
 the `(inc)` expression. Then, the value `2` continued to flow through the following expressions in
-the pipeline so that the return value of the expression is unchanged.  
+the pipeline so that the return value of the expression is unchanged.
 
 You can add in a string message to label each `spy` output:
 [source,clojure]
@@ -150,14 +151,14 @@ using (pr-str ...) so that numbers and strings are unambiguous in the output:
 
 [source,clojure]
 ----
-(-> 30 
-    (+ 4) 
+(-> 30
+    (+ 4)
     (spy :msg "dbg")
     (* 10))
 ; dbg => 34            ; integer result = 34
 340
 
-(-> "3" 
+(-> "3"
     (str "4")
     (spy :msg "dbg")
     (str "0"))
@@ -175,7 +176,7 @@ message. In this case, just use `spyx` (short for "spy expression") :
 ; (inc x) => 2         ; the expression is used as the label
 4
 ----
-In other instances, you may wish to use `spyxx` to display the expression, its 
+In other instances, you may wish to use `spyxx` to display the expression, its
 type, and its value:
 [source,clojure]
 ----
@@ -202,6 +203,27 @@ To be precise, the function signatures for `spy` are:
 (spy :msg msg-str <expr>)   ; works with ->>  (the ":msg" keyword is required)
 (spyx  <expr>)              ; prints <expr> and its value
 (spyxx <expr>)              ; prints <expr>, its type, and its value
+----
+
+If you are debugging a series of nested function calls, it can often be handy to indent the `spy`
+output to help in visualizing the call sequence. Using `with-spy-indent` will give you just what you
+want:
+
+[source,clojure]
+----
+(doseq [x [:a :b]]
+  (spyx x)
+  (with-spy-indent
+    (doseq [y (range 3)]
+      (spyx y))))
+x => :a
+  y => 0
+  y => 1
+  y => 2
+x => :b
+  y => 0
+  y => 1
+  y => 2
 ----
 
 === Literate Threading Macro
@@ -252,8 +274,8 @@ Instead, use the function `grab` for keyword/map lookup:
 [source,clojure]
 ----
 (grab k m)
-  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map), 
-   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).  
+  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
+   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
    Throws an Exception if :the-key is not present in the-map."
 
 (def sidekicks {:batman "robin" :clark "lois"})
@@ -272,8 +294,8 @@ For looking up values in nested maps, the function `fetch-in` replaces `clojure.
 [source,clojure]
 ----
 (fetch-in m ks)
-  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec), 
-   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).  
+  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
+   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
    Throws an Exception if the path keys-vec is not present in the-map."
 
 (def my-map {:a 1 :b {:c 3}})
@@ -293,10 +315,10 @@ is no function `dissoc-in`.  The Tupelo function `dissoc-in` provides the desire
 [source,clojure]
 ----
 (dissoc-in the-map keys-vec)
-  "A sane version of dissoc-in that will not delete intermediate keys. 
-   When invoked as (dissoc-in the-map [:k1 :k2 :k3... :kZ]), acts like 
-   (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only 
-   the map entry containing the last key :kZ is removed, and all map entries 
+  "A sane version of dissoc-in that will not delete intermediate keys.
+   When invoked as (dissoc-in the-map [:k1 :k2 :k3... :kZ]), acts like
+   (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only
+   the map entry containing the last key :kZ is removed, and all map entries
    higher than kZ in the hierarchy are unaffected."
 ----
 
@@ -316,7 +338,7 @@ The unit test shows the functions in action:
 Note that if non-existant keys are included in `keys-vec`, any missing map
 layers will be constructed as necessary, which is consistant with the behavior
 of both `clojure.core/assoc-in` and `clojure.core/update-in` (note that `nil` is
-the value of the final map entry, not the empty map `{}` as for the other examples). 
+the value of the final map entry, not the empty map `{}` as for the other examples).
 
 Note that only the map entry corresponding to the last key `kZ` is cleared. This
 differs from the `dissoc-in` function in the old clojure-contrib library which
@@ -368,22 +390,58 @@ the same type. The allowable input types are:
   - all maps (sorted or not)
   - all sets (sorted or not)
 
+=== Adding Values to the Beginning or End of a Sequence
+
+Clojure has the `cons`, `conj`, and `concat` functions, but it is not obvious how they should be
+used to add a new value to the beginning of a vector or list:
+
+[source,clojure]
+----
+; Add to the end
+> (concat [1 2] 3)    ;=> IllegalArgumentException
+> (cons   [1 2] 3)    ;=> IllegalArgumentException
+> (conj   [1 2] 3)    ;=> [1 2 3]
+> (conj   [1 2] 3 4)  ;=> [1 2 3]
+
+; Add to the beginning
+> (conj     1 [2 3] ) ;=> ClassCastException
+> (concat   1 [2 3] ) ;=> IllegalArgumentException
+> (cons     1 [2 3] ) ;=> (1 2 3)
+> (cons   1 2 [3 4] ) ;=> ArityException
+----
+
+These failures are irritating and unproductive, and the error messages don't make it obvious what
+went wrong.  Instead, use the simple `prepend` and `append` functions to add new elements to the
+beginning or end of a sequence, respectively:
+
+[source,clojure]
+----
+  (append [1 2] 3  )   ;=> [1 2 3  ]
+  (append [1 2] 3 4)   ;=> [1 2 3 4]
+
+  (prepend   3 [2 1])  ;=> [  3 2 1]
+  (prepend 4 3 [2 1])  ;=> [4 3 2 1]
+----
+
 === Convenience in Testing Seq's
 
 These functions aren't in clojure.core, but people keep writing into the mailing list
 wondering where they are. Well, now they are available:
 
+[source,clojure]
 ----
 (any? pred coll)
-  For any predicate & collection, returns true if (pred x) is 
+  For any predicate & collection, returns true if (pred x) is
   logical true for any x in coll; otherwise returns false. Like
   clojure.core/some, but returns only true or false.
 
 (not-empty? coll)
-  For any collection, returns true if coll contains any items; 
+  For any collection, returns true if coll contains any items;
   otherwise returns false. Equivalent to (not (empty? coll)).
 ----
+
 The unit test shows these functions in action
+
 [source,clojure]
 ----
 (is (= true   (any? odd? [1 2 3] ) ))
@@ -439,33 +497,33 @@ perform a limited amount of type testing.  The `(validate ...)` function perform
 arbitrary validation, throwing an exception if a non-truthy result is returned:
 
 [source,clojure]
----- 
+----
 (validate tstfn tstval)
-  Used to validate intermediate results. Returns tstval if the result of 
+  Used to validate intermediate results. Returns tstval if the result of
   (tstfn tstval) is truthy.  Otherwise, throws IllegalStateException.
 
 (is (= 3    (validate pos?        3    )))
 (is (= 3.14 (validate number?     3.14 )))
 (is (= 3.14 (validate #(< 3 % 4)  3.14 )))
----- 
+----
 
 === Convenient Wild-Card Matches
 
 Sometimes in testing, we want to verify that a key-value pair is present in a map, but we
 don't know or care what the value is.  For example, Datomic returns maps containing the key
-`:db/id`, but the associated value is unpredictable. Tupelo provides the `(matches? ...)` 
+`:db/id`, but the associated value is unpredictable. Tupelo provides the `(matches? ...)`
 expression to make these tests a snap:
 
 [source,clojure]
----- 
+----
 (matches? pattern & values)
 
-(matches? { :a 1 :b _       } 
+(matches? { :a 1 :b _       }
           { :a 1 :b 99      }
           { :a 1 :b [1 2 3] }
           { :a 1 :b nil     } )   ;=> true
 (matches? [1 _ 3] [1 2 3] )       ;=> true
----- 
+----
 Note that a wildcald can match either a primitive or a composite value. It works for both maps
 and vectors. The only restriction is that the wildcard symbol `_` (underscore) cannot be used as
 a key in the pattern-map (it can be used anywhere in a vector-pattern)."
@@ -479,7 +537,7 @@ Here is very handy function for that:
 [source,clojure]
 ----
 (keyvals m)
-  For any map m, returns the keys & values of m as a vector, 
+  For any map m, returns the keys & values of m as a vector,
   suitable for reconstructing via (apply hash-map (keyvals m)).
 
 (keyvals {:a 1 :b 2})
@@ -505,7 +563,7 @@ Exception converted into a default value.  That is when you need:
 ----
 
 
-This feature is put to good use in link:http://cloojure.github.io/doc/tupelo/tupelo.parse.html[tupelo.parse], 
+This feature is put to good use in link:http://cloojure.github.io/doc/tupelo/tupelo.parse.html[tupelo.parse],
 where you will find functions that work like this:
 
 [source,clojure]
@@ -532,7 +590,7 @@ digits that must match or the maximum error tolerance allowed:
   Returns true if 2 double-precision numbers are relatively equal, else false.
   Relative equality is specified as either (1) the N most significant digits are
   equal, or (2) the absolute difference is less than a tolerance value.  Input
-  values are coerced to double before comparison.  
+  values are coerced to double before comparison.
 ----
 
 An extract from the unit tests illustrates the use of `rel=`
@@ -558,7 +616,7 @@ string. In that case, `strcat` is for you:
 
 [source,clojure]
 ----
-(is (= (strcat "I " [ \h \a \v [\e \space (byte-array [97]) 
+(is (= (strcat "I " [ \h \a \v [\e \space (byte-array [97])
                       [ 32 "complicated" (Math/pow 2 5) '( "str" "ing") ]]] )
        "I have a complicated string" ))
 ----
@@ -580,13 +638,13 @@ strings are returned unchanged.
 === Keeping & Dropping Elements of a Sequence
 
 When processing sequences of data, we often need to extract a sequence of desired data, or,
-conversely, remove all of the undesired elements. 
+conversely, remove all of the undesired elements.
 Have you ever been left wondering which of these two forms is correct?
 
 [source,clojure]
 ----
 (let [result (filter even? (range 10)) ]
-  (assert (or (= result [ 1 3 5 7 9 ] )     ; is it "remove bad" (falsey) 
+  (assert (or (= result [ 1 3 5 7 9 ] )     ; is it "remove bad" (falsey)
               (= result [ 0 2 4 6 8 ] ))))  ; or    "keep good"  (truthy) ???
 ----
 
@@ -611,17 +669,17 @@ intent more obvious.
 The pervasive use of seq's in Clojure means that scalar values often appear wrapped in a vector or
 some other sequence type.  As a result, one often sees code like `(first some-var)` and it is not
 always clear that the code is simply "unwrapping" a scalar value, since there could well be
-remaining values in the sequence. Indeed, for a length-1 sequence it would be equally valid 
+remaining values in the sequence. Indeed, for a length-1 sequence it would be equally valid
 to use `(last some-var)` since first=last if there is only one item in the list.
 
 To clarify that we are simply _unwrapping_ a single value from
 the sequence, we may use the function `only`:
 
 [source,clojure]
----- 
+----
 (only seq-arg)
   Ensures that a sequence is of length=1, and returns the only value present.
-  Throws an exception if the length of the sequence is not one.  Note that, 
+  Throws an exception if the length of the sequence is not one.  Note that,
   for a length-1 sequence S, (first S), (last S) and (only S) are equivalent.
 ----
 
@@ -664,7 +722,7 @@ higher-order-function is required:
               (= 2 num-false) )))))
 ----
 
-=== Keeping It Simple with `not-nil?` 
+=== Keeping It Simple with `not-nil?`
 
 Clojure has the build-in function `some` to return the first _truthy value_ from a _sequence_
 argument. It also has the poorly named function `some?` which returns the _value_ `true` if a
@@ -754,7 +812,7 @@ test namespace:
 
 == License
 
-Copyright © 2015 Alan Thompson. 
+Copyright © 2015 Alan Thompson.
 
 Distributed under the Eclipse Public License, the same as Clojure.
 
