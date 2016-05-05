@@ -150,19 +150,18 @@
   (is (= false  (any? odd? []      ) )))
 
 (deftest t-not-empty
-  (testing "basic usage"
-    (is (every?     not-empty? ["1" [1] '(1) {:1 1} #{1}    ] ))
-    (is (not-any?   not-empty? [""  []  '()  {}     #{}  nil] ))
+  (is (every?     not-empty? ["1" [1] '(1) {:1 1} #{1}    ] ))
+  (is (not-any?   not-empty? [""  []  '()  {}     #{}  nil] ))
 
-    (is (= (keep-if not-empty?  ["1" [1] '(1) {:1 1} #{1} ] )
-                                ["1" [1] '(1) {:1 1} #{1} ] ))
-    (is (= (drop-if     empty?  [""  []  '()  {}     #{}  nil] )
-                                [] ))
+  (is (= (map not-empty? ["1" [1] '(1) {:1 1} #{1} ] )
+         [true true true true true]  ))
+  (is (= (map not-empty? ["" [] '() {} #{} nil] )
+         [false false false false false false ] ))
 
-    (is (= (map not-empty? ["1" [1] '(1) {:1 1} #{1} ] )
-           [true true true true true]  ))
-    (is (= (map not-empty? ["" [] '() {} #{} nil] )
-           [false false false false false false ] ))))
+  (is (= (keep-if not-empty?  ["1" [1] '(1) {:1 1} #{1} ] )
+                              ["1" [1] '(1) {:1 1} #{1} ] ))
+  (is (= (keep-if not-empty?  [""  []  '()  {}     #{}  nil] )
+                              [] )))
 
 (deftest t-conjv
   (testing "basic usage"

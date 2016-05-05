@@ -394,6 +394,12 @@ The unit test shows these functions in action
                        [true  true  true  true    true ]  ))
 (is (= (map not-empty? [""     []      '()    {}     #{}    nil   ] )
                        [false  false   false  false  false  false ] ))
+
+(is (= (keep-if not-empty?  ["1" [1] '(1) {:1 1} #{1} ] )
+                            ["1" [1] '(1) {:1 1} #{1} ] ))
+(is (= (keep-if not-empty?  [""  []  '()  {}     #{}  nil] )
+                            [] ))
+
 ----
 
 === Focus on Vectors
