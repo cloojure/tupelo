@@ -164,6 +164,8 @@
   [coll]
   (truthy? (seq coll)))
 
+; #todo:  mapz, forz, filterz, ...?
+
 (s/defn conjv :- [s/Any]
   "Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.
    The result is always returned as a vector."
