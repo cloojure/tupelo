@@ -786,6 +786,15 @@ test namespace:
   then execute clojure.test/run-tests on both of the test namespaces.
 ----
 
+== Other useful libraries
+
+There are several other libraries that provide useful value-added functionality to clojure.core:
+
+  - link:https://github.com/weavejester/medley[Medley]
+  - link:https://github.com/plumatic/plumbing[Plumatic Plumbing]
+  - link:https://github.com/marick/suchwow[Such Wow] 
+  - link:http://www.clojure-toolbox.com/[The Clojure Toolbox] - For a comprehehsive list of Clojure libraries
+
 == Requirements
  - Clojure 1.7.0
  - Java 1.8
@@ -795,6 +804,7 @@ test namespace:
   schema (& schema-datomic)
   re-work csv
   kill y64?
+  make keep-if & drop-if work for maps
   Update all NS docstrings
   zipcode distance testing
   lein plugin
