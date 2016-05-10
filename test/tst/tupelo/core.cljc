@@ -442,6 +442,10 @@
            (drop-if   (fn [k v] (even? k))  m1)
             {11  1,   21 1
              13  3,   23 3} ))
+    (is (= (keep-if   (fn [k v] (even? k))  m1)
+           (drop-if   (fn [k v] (odd?  k))  m1)
+            {10  0,   20 90
+             12  2,   22 2} ))
   ))
 
 (tst/defspec ^:slow t-keep-if-drop-if 9999
