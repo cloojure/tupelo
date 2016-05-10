@@ -455,7 +455,9 @@
                                     cum-set))
                                 #{}
                                 (seq coll))
-  ))
+    :else               (throw (IllegalArgumentException.
+                           (str "keep-if: coll must be sequential? or map? or set, class="
+                             (class coll))))))
 
 (defn drop-if
   "Returns a lazy sequence of items in coll for which (pred item) is false (alias for clojure.core/remove)"

@@ -434,7 +434,11 @@
                       (drop-if even? (range 10))))
 
   ; If we supply a 2-arg fn when filtering a sequence, we get an Exception
-  (is (thrown? clojure.lang.ArityException (keep-if (fn [arg1 arg2] :dummy) #{1 2 3} ))))
+  (is (thrown? clojure.lang.ArityException (keep-if (fn [arg1 arg2] :dummy) #{1 2 3} )))
+
+  ; Verify throw if coll is not a sequential, map, or set.
+  (is (thrown? IllegalArgumentException (keep-if truthy? 2 )))
+  (is (thrown? IllegalArgumentException (keep-if truthy? :some-kw ))))
 
 (deftest t-keep-if-map
   (let [m1  {10  0,   20 0
