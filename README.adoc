@@ -692,13 +692,13 @@ function:
          12  2,   22 2
          13  3,   23 3} )
 
-(is (= (keep-if   (fn [k v] (odd?  k))  mm)
-       (drop-if   (fn [k v] (even? k))  mm)
+(is (= (keep-if   (fn [k v] (odd?  v))  mm)
+       (drop-if   (fn [k v] (even? v))  mm)
         {11  1,   21 1
          13  3,   23 3} ))
 
-(is (=  (keep-if  (fn [k v] (< k 19))  m1)
-        (drop-if  (fn [k v] (> k 19))  m1)
+(is (= (keep-if  (fn [k v] (< k 19))  mm)
+       (drop-if  (fn [k v] (> k 19))  mm)
         {10  0
          11  1
          12  2
