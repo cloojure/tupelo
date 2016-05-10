@@ -709,8 +709,8 @@ As with sets, the functions recognized that a map was supplied, accepted a 2-arg
 returned back a map to the user.
 
 Both `keep-if` and `drop-if` will throw an Exception if the predicate function supplied has the
-wrong arity, or if the supplied collection is not one of either sequential (vector or list), map, or set
-data types.
+wrong arity, or if the supplied collection is not one of either the sequential (vector or list),
+map, or set data types.
 
 
 === Extracting *_Only_* Values
