@@ -401,7 +401,7 @@ used to add a new value to the beginning of a vector or list:
 > (concat [1 2] 3)    ;=> IllegalArgumentException
 > (cons   [1 2] 3)    ;=> IllegalArgumentException
 > (conj   [1 2] 3)    ;=> [1 2 3]
-> (conj   [1 2] 3 4)  ;=> [1 2 3]
+> (conj   [1 2] 3 4)  ;=> [1 2 3 4]
 
 ; Add to the beginning
 > (conj     1 [2 3] ) ;=> ClassCastException
