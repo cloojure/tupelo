@@ -660,9 +660,58 @@ the predicate. Wouldn't be nicer (and much less ambiguous) if you could just wri
 ----
 
 It seems to me that `keep-if` and `drop-if` are much more natural names and remove ambiguity from
-the code.  Of course, these are just thin (& lazy) wrappers around the built-in `clojure.core`
+the code.  Of course, these are just thin wrappers around the built-in `clojure.core`
 functions, but they are much less ambiguous. I think they make the code easier to read and the
 intent more obvious.
+
+=== Keeping & Dropping Elements from a Map or Set
+
+The two functions `keep-if` and `drop-if` can be used equally well in order to retain or remote
+elements form a clojure map or set. The semantics for sets look the same as for a sequence (vector
+or list). The predicate can be any 1-arg function:
+
+[source,clojure]
+----
+(keep-if even? #{1 2 3 4 5} )
+;=> #{4 2}
+(drop-if even? #{1 2 3 4 5} )
+;=> #{1 3 5}
+----
+
+Notice that the functions recognized the input collection as a set, and returned a set as the
+result.  Very convenient.
+
+For maps, each element is a MapEntry, which contains both a key and value. `keep-if` and `drop-if`
+understand maps, and will destructure each MapEntry. Thus, the predicate function can be any 2-arg
+function:
+
+[source,clojure]
+----
+(def mm {10  0,   20 0
+         11  1,   21 1
+         12  2,   22 2
+         13  3,   23 3} )
+
+(is (= (keep-if   (fn [k v] (odd?  k))  mm)
+       (drop-if   (fn [k v] (even? k))  mm)
+        {11  1,   21 1
+         13  3,   23 3} ))
+
+(is (=  (keep-if  (fn [k v] (< k 19))  m1)
+        (drop-if  (fn [k v] (> k 19))  m1)
+        {10  0
+         11  1
+         12  2
+         13  3} ))
+----
+
+As with sets, the functions recognized that a map was supplied, accepted a 2-arg predicate function, and
+returned back a map to the user.
+
+Both `keep-if` and `drop-if` will throw an Exception if the predicate function supplied has the
+wrong arity, or if the supplied collection is not one of either sequential (vector or list), map, or set
+data types.
+
 
 === Extracting *_Only_* Values
 

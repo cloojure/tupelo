@@ -439,28 +439,27 @@
 
 
 (defn keep-if
-  "Returns a lazy sequence of items in coll for which (pred item) is true (alias for clojure.core/filter)"
+  "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
   [pred coll]
   (cond
-    (sequential? coll)  (clojure.core/filter pred coll)
+    (sequential? coll)  (vec (clojure.core/filter pred coll))
     (map? coll)         (reduce (fn [cum-map entry] 
                                   (if (pred (key entry) (val entry))
                                     (conj cum-map entry)
                                     cum-map))
                                 {}
                                 (seq coll))
-    (set? coll)         (reduce (fn [cum-set elem] 
+    (set? coll)         (reduce (fn [cum-set elem]
                                   (if (pred elem)
                                     (conj cum-set elem)
                                     cum-set))
                                 #{}
                                 (seq coll))
     :else               (throw (IllegalArgumentException.
-                           (str "keep-if: coll must be sequential? or map? or set, class="
-                             (class coll))))))
+                           (str "keep-if: coll must be sequential, map, or set, class=" (class coll))))))
 
 (defn drop-if
-  "Returns a lazy sequence of items in coll for which (pred item) is false (alias for clojure.core/remove)"
+  "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
   [pred coll]
   (keep-if (complement pred) coll))
 

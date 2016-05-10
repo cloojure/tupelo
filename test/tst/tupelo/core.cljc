@@ -453,6 +453,12 @@
            (drop-if   (fn [k v] (odd?  k))  m1)     (drop-if   (fn [k v] (odd?  v))  m1)     
             {10  0,   20 0
              12  2,   22 2} ))
+    (is (=  (keep-if   (fn [k v] (< k 19))  m1)
+            (drop-if   (fn [k v] (> k 19))  m1)
+            {10  0
+             11  1
+             12  2
+             13  3} ))
     (is (=  (keep-if   (fn [k v] (= 1 (int (/ k 10))))  m1)
             (drop-if   (fn [k v] (= 2 (int (/ k 10))))  m1)
             {10  0
