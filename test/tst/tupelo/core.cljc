@@ -433,6 +433,17 @@
   (is (= [1 3 5 7 9]  (keep-if odd?  (range 10))
                       (drop-if even? (range 10)))))
 
+(deftest t-keep-if-map
+  (let [m1  {10  0,   20 0
+             11  1,   21 1
+             12  2,   22 2
+             13  3,   23 3} ]
+    (is (= (keep-if   (fn [k v] (odd?  k))  m1)
+           (drop-if   (fn [k v] (even? k))  m1)
+            {11  1,   21 1
+             13  3,   23 3} ))
+  ))
+
 (tst/defspec ^:slow t-keep-if-drop-if 9999
   (prop/for-all [vv (gen/vector gen/int) ]
     (let [even-1      (keep-if   even?  vv)

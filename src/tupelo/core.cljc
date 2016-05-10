@@ -437,15 +437,24 @@
 ;       (thru :co 1 5)   -> [1 2 3 4  ]  ; like (range ...)
 ;       (thru :oo 1 5)   -> [  2 3 4  ]
 
+
 (defn keep-if
   "Returns a lazy sequence of items in coll for which (pred item) is true (alias for clojure.core/filter)"
   [pred coll]
-  (clojure.core/filter pred coll))
+  (cond
+    (sequential? coll)  (clojure.core/filter pred coll)
+    (map? coll)         (reduce (fn [cum-map entry] 
+                                  (if (pred (key entry) (val entry))
+                                    (conj cum-map entry)
+                                    cum-map))
+                                {}
+                                (seq coll))
+  ))
 
 (defn drop-if
   "Returns a lazy sequence of items in coll for which (pred item) is false (alias for clojure.core/remove)"
   [pred coll]
-  (clojure.core/remove pred coll))
+  (keep-if (complement pred) coll))
 
 (defn strcat
   "Recursively concatenate all arguments into a single string result."
