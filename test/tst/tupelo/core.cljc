@@ -481,7 +481,7 @@
     (is (thrown? clojure.lang.ArityException (keep-if (fn [arg1 arg2] :dummy) #{1 2 3} )))
   ))
 
-(tst/defspec ^:slow t-keep-if-drop-if 9999
+(tst/defspec ^:slow t-keep-if-drop-if 999
   (prop/for-all [vv (gen/vector gen/int) ]
     (let [even-1      (keep-if   even?  vv)
           even-2      (drop-if   odd?   vv)
@@ -493,7 +493,7 @@
       (and  (= even-1 even-2 even-filt)
             (=  odd-1  odd-2  odd-rem)))))
 
-(tst/defspec ^:slow t-keep-if-drop-if-set 9999
+(tst/defspec ^:slow t-keep-if-drop-if-set 999
   (prop/for-all [ss (gen/set gen/int) ]
     (let [even-1      (keep-if   even?  ss)
           even-2      (drop-if   odd?   ss)
@@ -505,7 +505,7 @@
       (and  (= even-1 even-2 even-filt)
             (=  odd-1  odd-2  odd-rem)))))
 
-(tst/defspec ^:slow t-keep-if-drop-if-map 99  ; seems to hang if (< 99 limit)
+(tst/defspec ^:slow t-keep-if-drop-if-map-key 99  ; seems to hang if (< 99 limit)
   (prop/for-all [mm (gen/map gen/int gen/keyword {:max-elements 99} ) ]
     (let [even-1      (keep-if  (fn [k v] (even? k))  mm)
           even-2      (drop-if  (fn [k v] (odd?  k))  mm)
@@ -514,6 +514,19 @@
           odd-1      (keep-if  (fn [k v] (odd?  k))  mm)
           odd-2      (drop-if  (fn [k v] (even? k))  mm)
           odd-rem    (into {} (remove #(even? (key %)) (seq mm)))
+    ]
+      (and  (= even-1 even-2 even-filt)
+            (=  odd-1  odd-2  odd-rem)))))
+
+(tst/defspec ^:slow t-keep-if-drop-if-map-value 99  ; seems to hang if (< 99 limit)
+  (prop/for-all [mm (gen/map gen/keyword gen/int {:max-elements 99} ) ]
+    (let [even-1      (keep-if  (fn [k v] (even? v))  mm)
+          even-2      (drop-if  (fn [k v] (odd?  v))  mm)
+          even-filt   (into {} (filter #(even? (val %)) (seq mm)))
+
+          odd-1      (keep-if  (fn [k v] (odd?  v))  mm)
+          odd-2      (drop-if  (fn [k v] (even? v))  mm)
+          odd-rem    (into {} (remove #(even? (val %)) (seq mm)))
     ]
       (and  (= even-1 even-2 even-filt)
             (=  odd-1  odd-2  odd-rem)))))
