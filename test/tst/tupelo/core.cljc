@@ -442,10 +442,29 @@
            (drop-if   (fn [k v] (even? k))  m1)
             {11  1,   21 1
              13  3,   23 3} ))
-    (is (= (keep-if   (fn [k v] (even? k))  m1)
-           (drop-if   (fn [k v] (odd?  k))  m1)
-            {10  0,   20 90
+    (is (= (keep-if   (fn [k v] (even? k))  m1)     (keep-if   (fn [k v] (even? v))  m1) 
+           (drop-if   (fn [k v] (odd?  k))  m1)     (drop-if   (fn [k v] (odd?  v))  m1)     
+            {10  0,   20 0
              12  2,   22 2} ))
+    (is (=  (keep-if   (fn [k v] (= 1 (int (/ k 10))))  m1)
+            (drop-if   (fn [k v] (= 2 (int (/ k 10))))  m1)
+            {10  0
+             11  1
+             12  2
+             13  3} ))
+    (is (=  (keep-if   (fn [k v] (= 2 (int (/ k 10))))  m1)
+            (drop-if   (fn [k v] (= 1 (int (/ k 10))))  m1)
+            {20  0
+             21  1
+             22  2
+             23  3} ))
+    (is (=  (keep-if   (fn [k v] (<= v 1   ))  m1)
+            (drop-if   (fn [k v] (<=   2 v ))  m1)
+            {10  0,   20 0
+             11  1,   21 1 } ))
+
+    ; If we supply a 1-arg fn when filtering a map, we get an Exception
+    (is (thrown? clojure.lang.ArityException (keep-if (fn [arg] :dummy) {:a 1} )))
   ))
 
 (tst/defspec ^:slow t-keep-if-drop-if 9999
