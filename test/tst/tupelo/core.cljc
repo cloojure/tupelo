@@ -431,7 +431,10 @@
   (is (= [0 2 4 6 8]  (keep-if even? (range 10))
                       (drop-if odd?  (range 10))))
   (is (= [1 3 5 7 9]  (keep-if odd?  (range 10))
-                      (drop-if even? (range 10)))))
+                      (drop-if even? (range 10))))
+
+  ; If we supply a 2-arg fn when filtering a sequence, we get an Exception
+  (is (thrown? clojure.lang.ArityException (keep-if (fn [arg1 arg2] :dummy) #{1 2 3} ))))
 
 (deftest t-keep-if-map
   (let [m1  {10  0,   20 0
@@ -467,6 +470,17 @@
     (is (thrown? clojure.lang.ArityException (keep-if (fn [arg] :dummy) {:a 1} )))
   ))
 
+(deftest t-keep-if-set
+  (let [s1  (into (sorted-set) (range 10)) ]
+    (is (= #{0 2 4 6 8}   (keep-if even? s1)
+                          (drop-if odd?  s1)))
+    (is (= #{1 3 5 7 9}   (keep-if odd?  s1)
+                          (drop-if even? s1)))
+
+    ; If we supply a 2-arg fn when filtering a set, we get an Exception
+    (is (thrown? clojure.lang.ArityException (keep-if (fn [arg1 arg2] :dummy) #{1 2 3} )))
+  ))
+
 (tst/defspec ^:slow t-keep-if-drop-if 9999
   (prop/for-all [vv (gen/vector gen/int) ]
     (let [even-1      (keep-if   even?  vv)
@@ -477,8 +491,32 @@
           odd-2       (drop-if   even?  vv)
           odd-rem     (remove    even?  vv) ]
       (and  (= even-1 even-2 even-filt)
-            (=  odd-1  odd-2  odd-rem))
-    )))
+            (=  odd-1  odd-2  odd-rem)))))
+
+(tst/defspec ^:slow t-keep-if-drop-if-set 9999
+  (prop/for-all [ss (gen/set gen/int) ]
+    (let [even-1      (keep-if   even?  ss)
+          even-2      (drop-if   odd?   ss)
+          even-filt   (into #{} (filter even? (seq ss)))
+
+          odd-1       (keep-if   odd?   ss)
+          odd-2       (drop-if   even?  ss)
+          odd-rem     (into #{} (remove even? (seq ss))) ]
+      (and  (= even-1 even-2 even-filt)
+            (=  odd-1  odd-2  odd-rem)))))
+
+(tst/defspec ^:slow t-keep-if-drop-if-map 99  ; seems to hang if (< 99 limit)
+  (prop/for-all [mm (gen/map gen/int gen/keyword {:max-elements 99} ) ]
+    (let [even-1      (keep-if  (fn [k v] (even? k))  mm)
+          even-2      (drop-if  (fn [k v] (odd?  k))  mm)
+          even-filt   (into {} (filter #(even? (key %)) (seq mm)))
+
+          odd-1      (keep-if  (fn [k v] (odd?  k))  mm)
+          odd-2      (drop-if  (fn [k v] (even? k))  mm)
+          odd-rem    (into {} (remove #(even? (key %)) (seq mm)))
+    ]
+      (and  (= even-1 even-2 even-filt)
+            (=  odd-1  odd-2  odd-rem)))))
 
 (deftest t-strcat
   (is (= "a" (strcat \a  )) (strcat [\a]  ))

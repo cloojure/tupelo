@@ -449,6 +449,12 @@
                                     cum-map))
                                 {}
                                 (seq coll))
+    (set? coll)         (reduce (fn [cum-set elem] 
+                                  (if (pred elem)
+                                    (conj cum-set elem)
+                                    cum-set))
+                                #{}
+                                (seq coll))
   ))
 
 (defn drop-if
