@@ -443,12 +443,12 @@
   [pred coll]
   (cond
     (sequential? coll)  (vec (clojure.core/filter pred coll))
-    (map? coll)         (reduce (fn [cum-map entry] 
-                                  (if (pred (key entry) (val entry))
-                                    (conj cum-map entry)
-                                    cum-map))
-                                {}
-                                (seq coll))
+    (map? coll)         (reduce-kv  (fn [cum-map k v] 
+                                      (if (pred k v)
+                                        (assoc cum-map k v)
+                                        cum-map))
+                                    {}
+                                    coll)
     (set? coll)         (reduce (fn [cum-set elem]
                                   (if (pred elem)
                                     (conj cum-set elem)
