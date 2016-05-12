@@ -241,15 +241,6 @@
       (string? x)
       (instance? java.util.Map x)))
 
-(declare fetch-in)
-(s/defn grab :- s/Any
-  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
-   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
-   Throws an Exception if :the-key is not present in the-map."
-  [the-key    :- s/Keyword
-   the-map    :- ts/KeyMap ]
-  (fetch-in the-map [the-key] ))
-
 (s/defn fetch-in :- s/Any
   "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
    returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
@@ -263,6 +254,14 @@
                       "  map : " the-map  \newline
                       "  keys: " keys-vec  \newline )))
       result )))
+
+(s/defn grab :- s/Any
+  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
+   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
+   Throws an Exception if :the-key is not present in the-map."
+  [the-key    :- s/Keyword
+   the-map    :- ts/KeyMap ]
+  (fetch-in the-map [the-key] ))
 
 (s/defn dissoc-in :- s/Any
   "A sane version of dissoc-in that will not delete intermediate keys.
