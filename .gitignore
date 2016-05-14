@@ -10,6 +10,5 @@ pom.xml.asc
 *.class
 /.lein-*
 /.nrepl-port
-doc
 .idea
 *.iml
