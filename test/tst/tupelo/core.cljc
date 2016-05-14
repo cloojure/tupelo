@@ -208,12 +208,6 @@
     (is (= (map map?        objs) [false false   true  true    false false] ))
     (is (= (map set?        objs) [false false   false false   true  true ] )))
 
-  (is (thrown? IllegalArgumentException   (spyxx (glue   [1 2]   {:a 1} ))))
-  (is (thrown? IllegalArgumentException   (spyxx (glue   [1 2]  #{:a 1} ))))
-  (is (thrown? IllegalArgumentException   (spyxx (glue  '(1 2)   {:a 1} ))))
-  (is (thrown? IllegalArgumentException   (spyxx (glue  '(1 2)  #{:a 1} ))))
-  (is (thrown? IllegalArgumentException   (spyxx (glue  #{1 2}   {:a 1} ))))
-
   (is (= (glue [1 2] [3 4] [5 6])        [1 2 3 4 5 6]))
   (is (= (glue [] [1 2] )                [1 2] ))
   (is (= (glue [1 2] [] )                [1 2] ))
@@ -249,6 +243,39 @@
 
   (is (= (glue  {:band :VanHalen :singer :Dave} {:singer :Sammy} )
                 {:band :VanHalen                 :singer :Sammy} ))
+
+  (is (= (glue \a )           "a" ))
+  (is (= (glue "a")           "a" ))
+  (is (= (glue \a "")         "a" ))
+  (is (= (glue "" "a")        "a" ))
+  (is (= (glue \a  \b)        "ab" ))
+  (is (= (glue "a" "b")       "ab" ))
+  (is (= (glue "a" \b)        "ab" ))
+  (is (= (glue \a  "b")       "ab" ))
+  (is (= (glue "" "a" \b)     "ab" ))
+  (is (= (glue "" \a  "b")    "ab" ))
+  (is (= (glue "a" "" \b)     "ab" ))
+  (is (= (glue \a  "" "b")    "ab" ))
+  (is (= (glue "a" \b  "")    "ab" ))
+  (is (= (glue \a  "b" "")    "ab" ))
+  (is (= (glue \a  "b" "")    "ab" ))
+  (is (= (glue "I" " like " \a " nap!" )    "I like a nap!" ))
+
+  (is (thrown? IllegalArgumentException   (glue   [1 2]     {:a 1} )))
+  (is (thrown? IllegalArgumentException   (glue  '(1 2)     {:a 1} )))
+  (is (thrown? IllegalArgumentException   (glue   [1 2]    #{:a 1} )))
+  (is (thrown? IllegalArgumentException   (glue  '(1 2)    #{:a 1} )))
+  (is (thrown? IllegalArgumentException   (glue   [1 2]    "hello" )))
+  (is (thrown? IllegalArgumentException   (glue  '(1 2)    "hello" )))
+  (is (thrown? IllegalArgumentException   (glue   {:a 1}   #{:a 1} )))
+  (is (thrown? IllegalArgumentException   (glue   {:a 1}   "hello" )))
+  (is (thrown? IllegalArgumentException   (glue   #{:a 1}  "hello" )))
+
+  (is (thrown? IllegalArgumentException   (glue   [1 2]     nil )))
+  (is (thrown? IllegalArgumentException   (glue  '(1 2)     nil )))
+  (is (thrown? IllegalArgumentException   (glue   {:a 1}    nil )))
+  (is (thrown? IllegalArgumentException   (glue   #{:a 1}   nil )))
+  (is (thrown? IllegalArgumentException   (glue   "hello"   nil )))
 )
 
 (deftest t-append

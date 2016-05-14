@@ -200,12 +200,14 @@
 
      (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
   [& colls]
-  (cond 
-    (every? sequential? colls)  (reduce into  []  colls)
-    (every? map?        colls)  (reduce into  {}  colls)
-    (every? set?        colls)  (reduce into #{}  colls)
-    :else                   (throw (IllegalArgumentException.
-                              (str  "colls must be all same type; found types=" (mapv type colls))))))
+  (let [string-or-char? #(or (string? %) (char? %)) ]
+    (cond
+      (every? sequential?       colls)  (reduce into  []  colls)
+      (every? map?              colls)  (reduce into  {}  colls)
+      (every? set?              colls)  (reduce into #{}  colls)
+      (every? string-or-char?   colls)  (apply str colls)
+      :else                   (throw (IllegalArgumentException.
+                                (str  "colls must be all same type; found types=" (mapv type colls)))))))
                                 ; #todo look at using (ex-info ...)
 
 (s/defn append :- ts/List
