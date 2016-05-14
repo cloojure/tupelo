@@ -8,10 +8,9 @@
   "tupelo - Making Clojure even sweeter"
   (:require [clojure.core                 :as clj]
             [clojure.string               :as str]
-            [clojure.set                  :as c.s]
-            [clojure.pprint               :as c.pp ]
+            [clojure.set                  :as set]
+            [clojure.pprint               :as cpp ]
             [clojure.core.match           :as ccm ]
-            [clojure.test                 :as test]
             [cheshire.core                :as cc]
             [schema.core                  :as s]
             [tupelo.types                 :as types]
@@ -162,7 +161,7 @@
    Equivalent to (not (empty? coll))."
 ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
   [coll]
-  (truthy? (seq coll)))
+  (not (empty? coll)))
 
 ; #todo:  mapz, forz, filterz, ...?
 
@@ -495,13 +494,13 @@
 (defn pp-str
   "Returns a string that is the result of clojure.pprint/pprint"
   [arg]
-  (with-out-str (c.pp/pprint arg)))
+  (with-out-str (cpp/pprint arg)))
 
 ; #todo add test & README
 (defn pretty   ; #todo experimental
   "Shortcut to clojure.pprint/pprint"
   [arg]
-  (c.pp/pprint arg))
+  (cpp/pprint arg))
 
 ; #todo add test & README
 (defn json->clj [arg]   ; #todo experimental
@@ -528,7 +527,7 @@
     outer-map   :- {s/Any s/Any} ]  ; #todo
   (let [inner-set   (set inner-map)
         outer-set   (set outer-map) ]
-    (c.s/subset? inner-set outer-set)))
+    (set/subset? inner-set outer-set)))
 
 ;                                               "1234.4567.89ab.cdef"  also valid for read
 ; #todo need conversion from Long -> hex string="1234-4567-89ab-cdef" (& inverse)
