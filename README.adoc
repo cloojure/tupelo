@@ -34,7 +34,7 @@ see https://github.com/cloojure/tupelo-datomic[the tupelo-datomic project] for d
 The standard link:http://github.com/davidsantiago/clojure-csv[clojure-csv library] has well-tested
 and useful functions for parsing CSV (Comma Separated Value) text data, but it does not offer all of
 the convenience one may wish. Tupelo CSV emphasizes the idomatic Clojure usage of data, using
-sequences and maps. Please see the link:src/tupelo/csv.adoc[tupelo.csv] docs.
+sequences and maps. Please see the link:doc/csv.adoc[tupelo.csv] docs.
 
 ==== Tupelo Parse - Functions to ease text parsing
 
