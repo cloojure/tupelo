@@ -160,8 +160,8 @@
 
   (is (= (keep-if not-empty?  ["1" [1] '(1) {:1 1} #{1} ] )
                               ["1" [1] '(1) {:1 1} #{1} ] ))
-  (is (= (keep-if not-empty?  [""  []  '()  {}     #{}  nil] )
-                              [                            ] )))
+  (is (= (drop-if not-empty?  [""  []  '()  {}     #{}  nil] )
+                              [""  []  '()  {}     #{}  nil] )))
 
 (deftest t-conjv
   (testing "basic usage"
