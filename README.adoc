@@ -457,8 +457,8 @@ The unit test shows these functions in action
 
 (is (= (keep-if not-empty?  ["1" [1] '(1) {:1 1} #{1} ] )
                             ["1" [1] '(1) {:1 1} #{1} ] ))
-(is (= (keep-if not-empty?  [""  []  '()  {}     #{}  nil] )
-                            [] ))
+(is (= (drop-if not-empty?  [""  []  '()  {}     #{}  nil] )
+                            [""  []  '()  {}     #{}  nil] ))
 
 ----
 
