@@ -161,7 +161,7 @@
   (is (= (keep-if not-empty?  ["1" [1] '(1) {:1 1} #{1} ] )
                               ["1" [1] '(1) {:1 1} #{1} ] ))
   (is (= (keep-if not-empty?  [""  []  '()  {}     #{}  nil] )
-                              [] )))
+                              [                            ] )))
 
 (deftest t-conjv
   (testing "basic usage"
@@ -259,7 +259,7 @@
   (is (= (glue "a" \b  "")    "ab" ))
   (is (= (glue \a  "b" "")    "ab" ))
   (is (= (glue \a  "b" "")    "ab" ))
-  (is (= (glue "I" " like " \a " nap!" )    "I like a nap!" ))
+  (is (= (glue "I" \space "like " \a " nap!" )    "I like a nap!" ))
 
   (is (thrown? IllegalArgumentException   (glue   [1 2]     {:a 1} )))
   (is (thrown? IllegalArgumentException   (glue  '(1 2)     {:a 1} )))

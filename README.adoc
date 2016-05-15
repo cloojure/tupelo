@@ -373,7 +373,7 @@ combine like collections together into a result collection of the same type:
 
 [source,clojure]
 ----
-; Glues together like collections:
+; Glue together like collections:
 (is (= (glue [ 1 2] [ 3 4] [ 5 6] )       [ 1 2 3 4 5 6 ]  ))
 (is (= (glue {:a 1} {:b 2} {:c 3} )       {:a 1 :c 3 :b 2} ))
 (is (= (glue #{1 2} #{3 4} #{6 5} )      #{ 1 2 6 5 3 4 }  ))
@@ -861,7 +861,6 @@ There are several other libraries that provide useful value-added functionality 
   schema (& schema-datomic)
   re-work csv
   kill y64?
-  make keep-if & drop-if work for maps
   Update all NS docstrings
   zipcode distance testing
   lein plugin
@@ -873,7 +872,7 @@ There are several other libraries that provide useful value-added functionality 
 
 == License
 
-Copyright © 2015 Alan Thompson.
+Copyright © 2016 Alan Thompson.
 
 Distributed under the Eclipse Public License, the same as Clojure.
 

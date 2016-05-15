@@ -185,20 +185,21 @@
 
 ; #todo add (glue str1 str2)
 (defn glue
-  "Glues together like collections:
+ "Glues together like collections:
 
-     (glue [1 2] [3 4] [5 6])         -> [1 2 3 4 5 6]
-     (glue {:a 1} {:b 2} {:c 3})      -> {:a 1 :c 3 :b 2}
-     (glue #{1 2} #{3 4} #{6 5})      -> #{1 2 6 5 3 4}
+    (glue [1 2] [3 4] [5 6])                -> [1 2 3 4 5 6]
+    (glue {:a 1} {:b 2} {:c 3})             -> {:a 1 :c 3 :b 2}
+    (glue #{1 2} #{3 4} #{6 5})             -> #{1 2 6 5 3 4}
+    (glue \"I\" \" like \" \\a \" nap!\" )  -> \"I like a nap!\"
 
-   If you want to convert to a sorted set or map, just put an empty one first:
+  If you want to convert to a sorted set or map, just put an empty one first:
 
-     (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
-     (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
+    (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
+    (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
 
-   If there are duplicate keys when using glue for maps or sets, then \"the last one wins\":
+  If there are duplicate keys when using glue for maps or sets, then \"the last one wins\":
 
-     (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
+    (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
   [& colls]
   (let [string-or-char? #(or (string? %) (char? %)) ]
     (cond
