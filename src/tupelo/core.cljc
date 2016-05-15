@@ -542,18 +542,24 @@
       ; (spy :msg "result " result) (flush)      ; for debug
       result)))
 
-(defn wild-match?  ; #todo need test & README
-  "Returns true if a pattern is matched by one or more values.
-   The special keyword :* (colon-star) in the pattern serves as
-   a wildcard value. Usage:
+(defn wild-match?
+ "Returns true if a pattern is matched by one or more values.  The special keyword :* (colon-star)
+  in the pattern serves as a wildcard value.  Note that a wildcald can match either a primitive or a
+  composite value: Usage:
 
-     (matches? pattern & values)
+    (wild-match? pattern & values)
 
-   sample:
+  samples:
 
-     (wild-match {:a :*  :b 2} {:a 1   :b 2})  ;=> true
-
-   Note that a wildcald can match either a primitive or a composite value."
+    (wild-match?  {:a :* :b 2} 
+                  {:a 1  :b 2})         ;=> true
+   
+    (wild-match?  [1 :* 3]
+                  [1 2  3]
+                  [1 9  3] ))           ;=> true
+   
+    (wild-match?  {:a :*       :b 2} 
+                  {:a [1 2 3]  :b 2})   ;=> true "
   [pattern & values]
   (every? truthy? 
     (forv [value values] 
