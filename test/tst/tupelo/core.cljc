@@ -276,7 +276,7 @@
   (is (thrown? IllegalArgumentException   (glue   {:a 1}    nil )))
   (is (thrown? IllegalArgumentException   (glue   #{:a 1}   nil )))
   (is (thrown? IllegalArgumentException   (glue   "hello"   nil )))
-)
+  )
 
 (deftest t-append
   (is (thrown? Exception  (append [1 2]       )))
