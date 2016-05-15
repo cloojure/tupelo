@@ -425,6 +425,8 @@ beginning or end of a sequence, respectively:
   (prepend 4 3 [2 1])  ;=> [4 3 2 1]
 ----
 
+Both `prepend` and `append` always return a vector result.
+
 === Convenience in Testing Seq's
 
 These functions aren't in clojure.core, but people keep writing into the mailing list
@@ -464,25 +466,9 @@ The unit test shows these functions in action
 
 === Focus on Vectors
 
-Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you just want
-everything to stay in a nice, eager, random-access vector. Here is an easy way to build up
-a vector result:
-
-[source,clojure]
-----
-(conjv base-coll value)
-(conjv base-coll value & values)
-  Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.
-  The result is always returned as a vector.
-
-=> (conjv '(1 2) 3)
-[1 2 3]
-=> (conjv [1 2] 3 4 5 6)
-[1 2 3 4 5 6]
-----
-
-Similarly, we may wish to use an eager (non-lazy) version of `for` which always returns results
-in a vector:
+Clojure's seq abstraction (and lazy seq's) is very useful, but sometimes you just want everything to
+stay in a nice, eager, random-access vector.  Here is an eager (non-lazy) version of `for` which
+always returns results in a vector:
 
 [source,clojure]
 ----
