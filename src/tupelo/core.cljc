@@ -165,18 +165,6 @@
 
 ; #todo:  mapz, forz, filterz, ...?
 
-(s/defn conjv :- [s/Any]
-  "Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.
-   The result is always returned as a vector."
-  ; From Stuart Sierra post 2014-2-10
-  ( [base-coll  :- [s/Any]
-     value      :-  s/Any ]
-      (conj (vec base-coll) value) )
-  ( [base-coll  :- [s/Any]
-     value      :-  s/Any
-     & values   :- [s/Any] ]
-      (apply conj (vec base-coll) value values) ))
-
 (defmacro forv
   "Like clojure.core/for but returns results in a vector.  Equivalent to (into [] (for ...)). Not
    lazy."
@@ -645,9 +633,27 @@
   ))
 
 ;---------------------------------------------------------------------------------------------------
+; DEPRECATED functions
+
 ; duplicate of str/split-lines
 (defn ^:deprecated ^:no-doc str->lines
-  "Returns a lazy seq of lines from a string"
+  "***** DEPRECATED:  duplicate of str/split-lines *****
+
+  Returns a lazy seq of lines from a string"
   [string-arg]
   (line-seq (BufferedReader. (StringReader. string-arg))))
+
+(s/defn ^:deprecated ^:no-doc conjv :- [s/Any]
+ "***** DEPRECATED:  replaced by tupelo.core/append *****
+
+  Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.
+  The result is always returned as a vector."
+  ; From Stuart Sierra post 2014-2-10
+  ( [base-coll  :- [s/Any]
+     value      :-  s/Any ]
+    (conj (vec base-coll) value) )
+  ( [base-coll  :- [s/Any]
+     value      :-  s/Any
+     & values   :- [s/Any] ]
+    (apply conj (vec base-coll) value values) ))
 

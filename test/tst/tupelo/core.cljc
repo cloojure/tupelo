@@ -163,31 +163,6 @@
   (is (= (drop-if not-empty?  [""  []  '()  {}     #{}  nil] )
                               [""  []  '()  {}     #{}  nil] )))
 
-(deftest t-conjv
-  (testing "basic usage"
-    (is (= [  2  ]  (conjv  []  2   )))
-    (is (= [  2  ]  (conjv '()  2   )))
-    (is (= [  2 3]  (conjv  []  2  3)))
-    (is (= [  2 3]  (conjv '()  2  3)))
-
-    (is (= [1 2 3]  (conjv  [1] 2  3)))
-    (is (= [1 2 3]  (conjv '(1) 2  3)))
-    (is (= [1 2 3]  (conjv  [1  2] 3)))
-    (is (= [1 2 3]  (conjv '(1  2) 3)))
-
-    (is (= [1 2 3 4]  (conjv  [1  2] 3 4)))
-    (is (= [1 2 3 4]  (conjv '(1  2) 3 4)))
-    (is (= [1 2 3 4]  (conjv  [1] 2  3 4)))
-    (is (= [1 2 3 4]  (conjv '(1) 2  3 4))) )
-
-  (testing "vector elements"
-    (is (=    [ [1 2] [3 4]  [5 6] ]
-      (conjv '( [1 2] [3 4]) [5 6] ) )))
-
-  (testing "lazy seqs/apply"
-    (is (= [0 1 2 3 4 5] (conjv (range 4) 4 5)))
-    (is (= [0 1 2 3 4 5] (apply conjv [0] (range 1 6)))) ))
-
 (deftest t-forv
   (is (= (forv [x (range 4)] (* x x))
          [0 1 4 9] ))
@@ -279,6 +254,7 @@
   )
 
 (deftest t-append
+  (is (thrown? Exception  (append  1 2        )))
   (is (thrown? Exception  (append [1 2]       )))
   (is (= [1 2 3    ]      (append [1 2] 3     )))
   (is (= [1 2 3 4  ]      (append [1 2] 3 4   )))
@@ -292,7 +268,28 @@
   (is (thrown? Exception (append   {:a 1} 99     )))
   (is (thrown? Exception (append   {:a 1} {:b 2} )))
   (is (thrown? Exception (append  #{:a 1} 99     )))
-  (is (thrown? Exception (append  #{:a 1} #{99}  ))))
+  (is (thrown? Exception (append  #{:a 1} #{99}  )))
+
+  (testing "old conjv tests"
+    (is (= [  2  ]  (append  []  2   )))
+    (is (= [  2  ]  (append '()  2   )))
+    (is (= [  2 3]  (append  []  2  3)))
+    (is (= [  2 3]  (append '()  2  3)))
+
+    (is (= [1 2 3]  (append  [1] 2  3)))
+    (is (= [1 2 3]  (append '(1) 2  3)))
+    (is (= [1 2 3]  (append  [1  2] 3)))
+    (is (= [1 2 3]  (append '(1  2) 3)))
+
+    (is (= [1 2 3 4]  (append  [1  2] 3 4)))
+    (is (= [1 2 3 4]  (append '(1  2) 3 4)))
+    (is (= [1 2 3 4]  (append  [1] 2  3 4)))
+    (is (= [1 2 3 4]  (append '(1) 2  3 4)))
+
+    (is (= [[1 2] [3 4] [5 6]] (append  [[1 2] [3 4]]  [5 6] )))
+
+    (is (= [0 1 2 3 4 5] (append (range 4) 4 5)))
+    (is (= [0 1 2 3 4 5] (apply append [0] (range 1 6))))))
 
 (deftest t-prepend
   (is (thrown? Exception  (prepend       [2 1] )))
