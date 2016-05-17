@@ -10,9 +10,9 @@
                   [org.clojure/core.match           "0.3.0-alpha4"]
                   [clojure-csv/clojure-csv          "2.0.2"]
                   [clj-time                         "0.11.0"]
-                  [criterium                        "0.4.3"]
-                  [cheshire                         "5.5.0"]
-                  [prismatic/schema                 "1.0.4"]
+                  [criterium                        "0.4.4"]
+                  [cheshire                         "5.6.1"]
+                  [prismatic/schema                 "1.1.1"]
                 ]
   :plugins  [ [lein-codox "0.9.4"] ]
   :codox {:src-dir-uri "http://github.com/cloojure/tupelo/blob/master/"
