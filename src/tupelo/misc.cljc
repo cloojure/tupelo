@@ -105,7 +105,15 @@
 
 (defn dot 
  "Prints a single dot (flushed) to the console, keeping a running count of dots printed.  Wraps to a
-  newline when 100 dots have been printed. Displays the running dot count at the beginning of each line."
+  newline when 100 dots have been printed. Displays the running dot count at the beginning of each line.
+  Usage:
+
+    (tm/dots-config! {:decimation 10} )
+    (tm/with-dots
+      (doseq [ii (range 200)]
+        (tm/dot)
+        (Thread/sleep 10))))
+  "
   [] 
   (let [
         decimation        (grab :decimation @dots-ctx)
