@@ -73,4 +73,10 @@
   (is (= "         0 ..........\n        30 ..........\n        60 ..........\n        90 ...\n        99 total\n"
          (with-out-str (with-dots (doseq [x (range 99)]
                                     (dot)))))))
-
+(deftest t-permute
+  (is (=  (permute [        ])  []))
+  (is (=  (permute [:a      ])  [[:a]] ))
+  (is (=  (permute [:a :b   ])  [[:a :b] [:b :a]] ))
+  (is (=  (permute [:a :b :c])  [[:a :b :c] [:a :c :b]
+                                 [:b :a :c] [:b :c :a]
+                                 [:c :a :b] [:c :b :a]] )))

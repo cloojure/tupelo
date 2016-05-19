@@ -6,10 +6,11 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.misc
   "Miscellaneous functions."
-  (:require [clojure.string       :as str]
-            [clojure.java.shell   :as shell] 
-            [schema.core          :as s] )
-  (:use tupelo.core))
+  (:use tupelo.core)
+  (:require [clojure.string :as str]
+            [clojure.java.shell :as shell]
+            [schema.core :as s]
+            [tupelo.schema :as ts] ))
 
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
@@ -139,3 +140,18 @@
       (println (format "%10d total" @dot-counter))
       result#)))
 
+(s/defn permute :- [ts/List]
+  "Given a vector of values, return a list of all possible permutations.
+
+      ***** WARNING: number of returned Vectors is (factorial (count values)) *****
+  "
+  [values :- ts/List]
+  (let [num-values (count values)]
+    (if (= 1 num-values)
+      [values]
+      (apply glue
+        (forv [ii (range num-values)]
+          (let [head-val       (nth values ii)
+                remaining-vals (drop-idx values ii)]
+            (forv [rest-perm (permute remaining-vals)]
+              (prepend head-val rest-perm))))))))

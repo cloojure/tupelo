@@ -220,6 +220,12 @@
       (throw (IllegalArgumentException. (str "Nothing to prepend! elems=" elems))))
     (vec (concat elems listy))))
 
+(defn drop-idx ; #todo need more tests & readme
+  "Removes the element at idx from the collection."
+  [coll idx]
+  (glue (take       idx  coll)
+        (drop  (inc idx) coll)))
+
 (defn seqable?      ; from clojure.contrib.core/seqable
   "Returns true if (seq x) will succeed, false otherwise."
   [x]

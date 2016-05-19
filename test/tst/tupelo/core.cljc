@@ -643,6 +643,19 @@
       (is (= "#{1 2 3 4 5}" (clip-str 16 tst-set )))))
 )
 
+(deftest t-drop-idx
+  (is (= [         ] (drop-idx []        0)))
+  (is (= [         ] (drop-idx (range 1) 0)))
+
+  (is (= [  1      ] (drop-idx (range 2) 0)))
+  (is (= [0        ] (drop-idx (range 2) 1)))
+
+  (is (= [  1 2 3 4] (drop-idx (range 5) 0)))
+  (is (= [0   2 3 4] (drop-idx (range 5) 1)))
+  (is (= [0 1   3 4] (drop-idx (range 5) 2)))
+  (is (= [0 1 2   4] (drop-idx (range 5) 3)))
+  (is (= [0 1 2 3  ] (drop-idx (range 5) 4))))
+
 (deftest t-seqable
   (is (seqable?   "abc"))
   (is (seqable?   {1 2 3 4} ))
