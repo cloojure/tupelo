@@ -99,10 +99,52 @@
 )
 
 (deftest t-permute-set
-  (is (= (permute #{:a      }) #{ [:a      ]            } ))
-  (is (= (permute #{:a :b   }) #{ [:a :b   ] [:b :a   ] } ))
-  (is (= (permute #{:a :b :c}) #{ [:a :b :c] [:a :c :b]
-                                  [:b :a :c] [:b :c :a]
-                                  [:c :a :b] [:c :b :a] } ))
-  (is (thrown? IllegalArgumentException (permute #{} )))
+  (is (= (permute-set-1 #{:a      }) #{ [:a      ]            } ))
+  (is (= (permute-set-1 #{:a :b   }) #{ [:a :b   ] [:b :a   ] } ))
+  (is (= (permute-set-1 #{:a :b :c}) #{ [:a :b :c] [:a :c :b]
+                                        [:b :a :c] [:b :c :a]
+                                        [:c :a :b] [:c :b :a] } ))
+; (is (thrown? IllegalArgumentException (permute-set-1 #{} )))
 )
+
+(deftest t-factorial
+  (is (=     (factorial 0)          1))
+  (is (=     (factorial 1)          1))
+  (is (=     (factorial 2)          2))
+  (is (=     (factorial 3)          6))
+  (is (=     (factorial 4)         24))
+  (is (=     (factorial 5)        120))
+  (is (=     (factorial 6)        720))
+  (is (=     (factorial 7)       5040))
+  (is (=     (factorial 8)      40320))
+  (is (=     (factorial 9)     362880))
+  (is (=     (factorial 10)   3628800))
+  (is (rel=  (factorial 15) 1.307674368e+12 :digits 8))
+  (is (thrown? Exception (factorial 1.5)))
+  (is (thrown? Exception (factorial -1)))
+  (is (thrown? Exception (factorial -1)))
+)
+
+(deftest t-permute-lazy
+  (is (=  (permute [:a      ])  [[:a]] ))
+  (is (=  (permute [:a :b   ])  [[:a :b] [:b :a]] ))
+  (is (=  (permute [:a :b :c])  [[:a :b :c] [:a :c :b]
+                                            [:b :a :c] [:b :c :a]
+                                            [:c :a :b] [:c :b :a]] ))
+  (is (thrown? IllegalArgumentException (permute [] ))))
+
+(deftest ^:slow t-permute-lazy-count
+  (let [check-num-perm (fn [n] (is (= (spy :msg (format "(check-num-perm %d)" n)
+                                        (count (permute (thru 1 n))))
+                                     (factorial n)))) ]
+    (check-num-perm 1)
+    (check-num-perm 2)
+    (check-num-perm 3)
+    (check-num-perm 4)
+    (check-num-perm 5)
+    (check-num-perm 6)
+    (check-num-perm 7)
+    (check-num-perm 8)
+    (check-num-perm 9)
+  ))
+

@@ -196,13 +196,61 @@
             #{}
             (permute-set-1 remaining-vals)))))))
 
-(s/defn permute :- #{ts/Vec}
+; fails around N=8
+(s/defn permute-lazy-stackoverflow-1
+  [values :- ts/List ]
+  (let [num-values (count values)]
+    (if (= 1 num-values)
+      [values]
+      (apply concat
+        (forv [ii (range num-values)]
+          (let [head-val       (nth values ii)
+                remaining-vals (drop-idx values ii)]
+            (reduce (fn [accum rest-perm]
+                      (concat (lazy-seq accum)
+                        [(lazy-seq (cons head-val rest-perm))]))
+              []
+              (permute-lazy-stackoverflow-1 remaining-vals))))))))
+
+(s/defn permute-lazy-1 :- ts/TupleList
+  [values :- ts/List ]
+  (let [num-values (count values)]
+    (if (= 1 num-values)
+      [values]
+      (apply concat
+        (forv [ii (range num-values)]
+          (let [head-val       (nth values ii)
+                remaining-vals (drop-idx values ii)]
+            (reduce (fn [accum rest-perm]
+                      (conj accum
+                        (lazy-seq (cons head-val rest-perm))))
+              []
+              (permute-lazy-1 remaining-vals))))))))
+
+(s/defn permute :- ts/TupleList
   "Given a vector of values, return a set of all possible permutations.
 
       ***** WARNING: number of returned Vectors is (factorial (count values)) *****
   "
-  [values :- #{s/Any}]
+  [values :- ts/List]
   (when (empty? values)
     (throw (IllegalArgumentException.
              (str "permute: cannot permute empty set: " values))))
-  (permute-set-1 values))
+  (permute-lazy-1 values))
+
+; #todo need other arieties
+; #todo need docs & tests
+(defn thru
+  [first last]
+  (range first (inc last)))
+
+(s/defn factorial  :- s/Int
+  "Computes the factorial of N"
+  [n :- s/Int]
+  (when (neg? n)
+    (throw (IllegalArgumentException.
+             (str "factorial: N must be a non-negative integer=" n))))
+  (if (zero? n)
+    1
+    (* n (factorial (dec n)))))
+
