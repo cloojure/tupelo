@@ -141,6 +141,22 @@
       (println (format "%10d total" @dot-counter))
       result#)))
 
+; #todo need other arieties
+; #todo need docs & tests
+(defn thru
+  [first last]
+  (range first (inc last)))
+
+(s/defn factorial :- s/Int
+  "Computes the factorial of N"
+  [n :- s/Int]
+  (when (neg? n)
+    (throw (IllegalArgumentException.
+             (str "factorial: N must be a non-negative integer=" n))))
+  (if (zero? n)
+    1
+    (apply * (thru 1 n))))
+
 (s/defn permute-multiset-1 :- ts/TupleList
   [values :- ts/List]
   (let [num-values (count values)]
@@ -227,6 +243,37 @@
               []
               (permute-lazy-1 remaining-vals))))))))
 
+(s/defn permute-tail-1 :- ts/TupleList
+  [values :- ts/List]
+  (let [num-values (count values)]
+    (if (= 1 num-values)
+      [values]
+      (let [head-val       (first values)
+            remaining-vals (rest values) ]
+        (apply concat
+          (for [curr-perm (permute-tail-1 remaining-vals)]
+            (for [jj (thru 0 (count curr-perm))]
+              (concat (take jj curr-perm)
+                [head-val]
+                (drop jj curr-perm)))))))))
+
+(s/defn permute-tail-2 :- ts/TupleList
+  [values :- ts/List]
+  (let [num-values (count values)]
+    (if (= 1 num-values)
+      [values]
+      (let [head-val       (first values)
+            remaining-vals (rest values) ]
+        (apply concat
+          (for [curr-perm (permute-tail-2 remaining-vals)]
+            (reduce  (fn [accum jj]
+                       (conj accum
+                         (concat (take jj curr-perm)
+                                 [head-val]
+                                 (drop jj curr-perm))))
+              []
+              (thru 0 (count curr-perm)))))))))
+
 (s/defn permute :- ts/TupleList
   "Given a vector of values, return a set of all possible permutations.
 
@@ -236,21 +283,6 @@
   (when (empty? values)
     (throw (IllegalArgumentException.
              (str "permute: cannot permute empty set: " values))))
-  (permute-lazy-1 values))
+  (permute-tail-2 values))
 
-; #todo need other arieties
-; #todo need docs & tests
-(defn thru
-  [first last]
-  (range first (inc last)))
-
-(s/defn factorial  :- s/Int
-  "Computes the factorial of N"
-  [n :- s/Int]
-  (when (neg? n)
-    (throw (IllegalArgumentException.
-             (str "factorial: N must be a non-negative integer=" n))))
-  (if (zero? n)
-    1
-    (* n (factorial (dec n)))))
 
