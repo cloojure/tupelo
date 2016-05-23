@@ -9,6 +9,7 @@
   (:use tupelo.core)
   (:require [clojure.string :as str]
             [clojure.java.shell :as shell]
+            [clojure.set :as set]
             [schema.core :as s]
             [tupelo.schema :as ts] ))
 
@@ -186,7 +187,7 @@
   [values :- #{s/Any} ]
   (if (empty? values)
     #{ [] }
-    (apply glue
+    (apply set/union
       (for [head-val values]
         (let [remaining-vals (disj values head-val)]
           (reduce (fn [accum rest-perm]
