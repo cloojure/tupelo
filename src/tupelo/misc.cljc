@@ -197,7 +197,7 @@
             (permute-set-1 remaining-vals)))))))
 
 (s/defn permute :- #{ts/Vec}
-  "Given a vector of values, return a list of all possible permutations.
+  "Given a vector of values, return a set of all possible permutations.
 
       ***** WARNING: number of returned Vectors is (factorial (count values)) *****
   "
@@ -205,4 +205,4 @@
   (when (empty? values)
     (throw (IllegalArgumentException.
              (str "permute: cannot permute empty set: " values))))
-  (permute-set-1 (set values)))
+  (permute-set-1 values))
