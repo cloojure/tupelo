@@ -427,6 +427,29 @@ beginning or end of a sequence, respectively:
 
 Both `prepend` and `append` always return a vector result.
 
+=== Removing Values from a Sequence
+
+Suppose you want to remove an element form a sequence. 
+Did you know that Clojure has no equivalent to Java's `List.remove(int index)` function? Well, now it does:
+
+[source,clojure]
+----
+(s/defn drop-idx :- ts/List
+  "Removes an element from a collection at the specified index."
+  [coll     :- ts/List
+   index    :- s/Int]
+  ...)
+
+(is (= [  1 2 3 4] (drop-idx (range 5) 0)))
+(is (= [0   2 3 4] (drop-idx (range 5) 1)))
+(is (= [0 1   3 4] (drop-idx (range 5) 2)))
+(is (= [0 1 2   4] (drop-idx (range 5) 3)))
+(is (= [0 1 2 3  ] (drop-idx (range 5) 4)))
+----
+
+Unlike the raw `take` and `drop` functions on which it is based, `drop-idx` will throw an exception
+for invalid values of `index`.
+
 === Convenience in Testing Seq's
 
 These functions aren't in clojure.core, but people keep writing into the mailing list

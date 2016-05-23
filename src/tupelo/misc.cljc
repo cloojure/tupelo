@@ -149,9 +149,10 @@
   (let [num-values (count values)]
     (if (= 1 num-values)
       [values]
-      (apply glue
-        (forv [ii (range num-values)]
+      (apply concat
+        (for [ii (range num-values)]
           (let [head-val       (nth values ii)
                 remaining-vals (drop-idx values ii)]
-            (forv [rest-perm (permute remaining-vals)]
+            (for [rest-perm (permute remaining-vals)]
               (prepend head-val rest-perm))))))))
+

@@ -66,6 +66,7 @@
     (is (thrown? RuntimeException (shell-cmd "LLLls -ldF *")))))
 
 (deftest t-dots
+  (dots-config! {:dots-per-row 10  :decimation 1} )
   (is (= "         0 .........\n         9 total\n"
          (with-out-str (with-dots (doseq [x (range 9)]
                                     (dot))))))

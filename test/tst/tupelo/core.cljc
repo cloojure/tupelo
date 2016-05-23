@@ -27,8 +27,7 @@
           side-effect-add!  (fn [ & args ]
                               (let [result (apply + args) ]
                                 (swap! side-effect-cum-sum + result)
-                                result))
-    ]
+                                result)) ]
       (is (= "hi => 5"
           (str/trim (with-out-str (spy (side-effect-add! 2 3) :msg "hi"))) ))
       (is (= "hi => 5"
@@ -644,17 +643,19 @@
 )
 
 (deftest t-drop-idx
-  (is (= [         ] (drop-idx []        0)))
   (is (= [         ] (drop-idx (range 1) 0)))
-
   (is (= [  1      ] (drop-idx (range 2) 0)))
   (is (= [0        ] (drop-idx (range 2) 1)))
-
   (is (= [  1 2 3 4] (drop-idx (range 5) 0)))
   (is (= [0   2 3 4] (drop-idx (range 5) 1)))
   (is (= [0 1   3 4] (drop-idx (range 5) 2)))
   (is (= [0 1 2   4] (drop-idx (range 5) 3)))
-  (is (= [0 1 2 3  ] (drop-idx (range 5) 4))))
+  (is (= [0 1 2 3  ] (drop-idx (range 5) 4)))
+
+  (is (thrown? IllegalArgumentException (drop-idx []         0)))
+  (is (thrown? IllegalArgumentException (drop-idx (range 5) -1)))
+  (is (thrown? IllegalArgumentException (drop-idx (range 5)  5)))
+  (is (thrown? IllegalArgumentException (drop-idx (range 5)  6))) )
 
 (deftest t-seqable
   (is (seqable?   "abc"))

@@ -151,7 +151,7 @@
   (truthy? (some pred coll)) )
 
 (s/defn not-nil? :- s/Bool
-  "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)), 
+  "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
    or the poorly-named clojure.core/some? "
   [arg :- s/Any]
   (not (nil? arg)))
@@ -220,15 +220,23 @@
       (throw (IllegalArgumentException. (str "Nothing to prepend! elems=" elems))))
     (vec (concat elems listy))))
 
-(defn drop-idx ; #todo need more tests & readme
-  "Removes the element at idx from the collection."
-  [coll idx]
-  (glue (take       idx  coll)
-        (drop  (inc idx) coll)))
+(s/defn drop-idx :- ts/List
+  ; #todo need more tests & readme
+  "Removes an element from a collection at the specified index."
+  [coll     :- ts/List
+   index    :- s/Int]
+  (when (neg? index)
+    (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
+  (when (<= (count coll) index)
+    (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
+                                        " (count coll)=" (count coll)
+                                        " index=" index ))))
+  (glue (take       index  coll)
+        (drop  (inc index) coll)))
 
-(defn seqable?      ; from clojure.contrib.core/seqable
+(s/defn seqable? :- s/Bool      ; from clojure.contrib.core/seqable
   "Returns true if (seq x) will succeed, false otherwise."
-  [x]
+  [x :- s/Any]
   (or (seq? x)
       (instance? clojure.lang.Seqable x)
       (nil? x)
@@ -438,7 +446,7 @@
   [pred coll]
   (cond
     (sequential? coll)  (vec (clojure.core/filter pred coll))
-    (map? coll)         (reduce-kv  (fn [cum-map k v] 
+    (map? coll)         (reduce-kv  (fn [cum-map k v]
                                       (if (pred k v)
                                         (assoc cum-map k v)
                                         cum-map))
@@ -557,18 +565,18 @@
 
   samples:
 
-    (wild-match?  {:a :* :b 2} 
+    (wild-match?  {:a :* :b 2}
                   {:a 1  :b 2})         ;=> true
-   
+
     (wild-match?  [1 :* 3]
                   [1 2  3]
                   [1 9  3] ))           ;=> true
-   
-    (wild-match?  {:a :*       :b 2} 
+
+    (wild-match?  {:a :*       :b 2}
                   {:a [1 2 3]  :b 2})   ;=> true "
   [pattern & values]
-  (every? truthy? 
-    (forv [value values] 
+  (every? truthy?
+    (forv [value values]
       (if (map? pattern)
         (wild-match-1 (glue (sorted-map) pattern)
                       (glue (sorted-map) value))
@@ -583,7 +591,7 @@
    sample:
 
      (matches?  [1 _ 3] [1 2 3] )         ;=> true
-     (matches?  {:a _ :b _       :c 3} 
+     (matches?  {:a _ :b _       :c 3}
                 {:a 1 :b [1 2 3] :c 3}
                 {:a 2 :b 99      :c 3}
                 {:a 3 :b nil     :c 3} )  ;=> true
