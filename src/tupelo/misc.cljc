@@ -140,11 +140,7 @@
       (println (format "%10d total" @dot-counter))
       result#)))
 
-(s/defn permute :- [ts/List]
-  "Given a vector of values, return a list of all possible permutations.
-
-      ***** WARNING: number of returned Vectors is (factorial (count values)) *****
-  "
+(s/defn permute-1 :- ts/TupleList
   [values :- ts/List]
   (let [num-values (count values)]
     (if (= 1 num-values)
@@ -153,6 +149,28 @@
         (for [ii (range num-values)]
           (let [head-val       (nth values ii)
                 remaining-vals (drop-idx values ii)]
-            (for [rest-perm (permute remaining-vals)]
+            (for [rest-perm (permute-1 remaining-vals)]
               (prepend head-val rest-perm))))))))
 
+(s/defn permute-2 :- ts/TupleList
+  [values :- ts/List]
+  (let [num-values (count values)]
+    (if (= 1 num-values)
+      [values]
+      (apply concat
+        (for [ii (range num-values)]
+          (let [head-val       (nth values ii)
+                remaining-vals (drop-idx values ii)]
+            (reduce (fn [accum rest-perm]
+                      (append accum
+                        (prepend head-val rest-perm)))
+              []
+              (permute-2 remaining-vals))))))))
+
+(s/defn permute :- ts/TupleList
+  "Given a vector of values, return a list of all possible permutations.
+
+      ***** WARNING: number of returned Vectors is (factorial (count values)) *****
+  "
+  [values :- ts/List]
+  (permute-2 values))
