@@ -140,7 +140,7 @@
       (println (format "%10d total" @dot-counter))
       result#)))
 
-(s/defn permute-1 :- ts/TupleList
+(s/defn permute-multiset-1 :- ts/TupleList
   [values :- ts/List]
   (let [num-values (count values)]
     (if (= 1 num-values)
@@ -149,10 +149,10 @@
         (for [ii (range num-values)]
           (let [head-val       (nth values ii)
                 remaining-vals (drop-idx values ii)]
-            (for [rest-perm (permute-1 remaining-vals)]
+            (for [rest-perm (permute-multiset-1 remaining-vals)]
               (prepend head-val rest-perm))))))))
 
-(s/defn permute-2 :- ts/TupleList
+(s/defn permute-multiset-2 :- ts/TupleList
   [values :- ts/List]
   (let [num-values (count values)]
     (if (= 1 num-values)
@@ -165,12 +165,43 @@
                       (append accum
                         (prepend head-val rest-perm)))
               []
-              (permute-2 remaining-vals))))))))
+              (permute-multiset-2 remaining-vals))))))))
 
-(s/defn permute :- ts/TupleList
+(s/defn permute-multiset-3 :- ts/TupleList
+  [values :- ts/List]
+  (let [num-values (count values)]
+    (if (zero? num-values)
+      [[]]
+      (apply concat
+        (for [ii (range num-values)]
+          (let [head-val       (nth values ii)
+                remaining-vals (drop-idx values ii)]
+            (reduce (fn [accum rest-perm]
+                      (append accum
+                        (glue [head-val] rest-perm)))
+              []
+              (permute-multiset-3 remaining-vals))))))))
+
+(s/defn permute-set-1 :- #{ts/Vec}
+  [values :- #{s/Any} ]
+  (if (empty? values)
+    #{ [] }
+    (apply glue
+      (for [head-val values]
+        (let [remaining-vals (disj values head-val)]
+          (reduce (fn [accum rest-perm]
+                    (conj accum
+                      (prepend head-val rest-perm)))
+            #{}
+            (permute-set-1 remaining-vals)))))))
+
+(s/defn permute :- #{ts/Vec}
   "Given a vector of values, return a list of all possible permutations.
 
       ***** WARNING: number of returned Vectors is (factorial (count values)) *****
   "
-  [values :- ts/List]
-  (permute-2 values))
+  [values :- #{s/Any}]
+  (when (empty? values)
+    (throw (IllegalArgumentException.
+             (str "permute: cannot permute empty set: " values))))
+  (permute-set-1 (set values)))

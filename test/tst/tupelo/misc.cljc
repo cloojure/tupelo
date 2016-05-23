@@ -74,10 +74,36 @@
   (is (= "         0 ..........\n        30 ..........\n        60 ..........\n        90 ...\n        99 total\n"
          (with-out-str (with-dots (doseq [x (range 99)]
                                     (dot)))))))
-(deftest t-permute
-  (is (=  (permute [        ])  []))
-  (is (=  (permute [:a      ])  [[:a]] ))
-  (is (=  (permute [:a :b   ])  [[:a :b] [:b :a]] ))
-  (is (=  (permute [:a :b :c])  [[:a :b :c] [:a :c :b]
-                                 [:b :a :c] [:b :c :a]
-                                 [:c :a :b] [:c :b :a]] )))
+(deftest t-permute-multiset
+
+; (is (=  (permute-multiset-1 [        ])  [])  ; #todo should be error
+  (is (=  (permute-multiset-1 [:a      ])  [[:a]] ))
+  (is (=  (permute-multiset-1 [:a :b   ])  [[:a :b] [:b :a]] ))
+  (is (=  (permute-multiset-1 [:a :b :c])  [[:a :b :c] [:a :c :b]
+                                            [:b :a :c] [:b :c :a]
+                                            [:c :a :b] [:c :b :a]] ))
+
+; (is (=  (permute-multiset-2 [        ])  []))  ; #todo should be error
+  (is (=  (permute-multiset-2 [:a      ])  [[:a]] ))
+  (is (=  (permute-multiset-2 [:a :b   ])  [[:a :b] [:b :a]] ))
+  (is (=  (permute-multiset-2 [:a :b :c])  [[:a :b :c] [:a :c :b]
+                                            [:b :a :c] [:b :c :a]
+                                            [:c :a :b] [:c :b :a]] ))
+
+; (is (=  (permute-multiset-3 [        ])  [[]]))  ; #todo should be error
+  (is (=  (permute-multiset-3 [:a      ])  [[:a]] ))
+  (is (=  (permute-multiset-3 [:a :b   ])  [[:a :b] [:b :a]] ))
+  (is (=  (permute-multiset-3 [:a :b :c])  [[:a :b :c] [:a :c :b]
+                                            [:b :a :c] [:b :c :a]
+                                            [:c :a :b] [:c :b :a]] ))
+)
+
+(deftest t-permute-set
+  (is (= (permute #{:a      }) #{ [:a      ]            } ))
+  (is (= (permute #{:a :b   }) #{ [:a :b   ] [:b :a   ] } ))
+  (is (= (permute #{:a :b :c}) #{ [:a :b :c] [:a :c :b]
+                                  [:b :a :c] [:b :c :a]
+                                  [:c :a :b] [:c :b :a] } ))
+
+  (is (thrown? IllegalArgumentException (permute #{} )))
+)
