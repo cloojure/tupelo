@@ -231,21 +231,6 @@
               []
               (permute-lazy-stackoverflow-1 remaining-vals))))))))
 
-(s/defn permute-lazy-1 :- ts/TupleList
-  [values :- ts/List ]
-  (let [num-values (count values)]
-    (if (= 1 num-values)
-      [values]
-      (apply concat
-        (forv [ii (range num-values)]
-          (let [head-val       (nth values ii)
-                remaining-vals (drop-idx values ii)]
-            (reduce (fn [accum rest-perm]
-                      (conj accum
-                        (lazy-seq (cons head-val rest-perm))))
-              []
-              (permute-lazy-1 remaining-vals))))))))
-
 (s/defn permute-tail-1 :- ts/TupleList
   [values :- ts/List]
   (let [num-values (count values)]
@@ -291,6 +276,21 @@
                               (drop jj curr-perm)))))
                 []
                 (permute-tail-3 (rest values)))))))
+
+(s/defn permute-lazy-1 :- ts/TupleList
+  [values :- ts/List ]
+  (let [num-values (count values)]
+    (if (= 1 num-values)
+      [values]
+      (apply concat
+        (forv [ii (range num-values)]
+          (let [head-val       (nth values ii)
+                remaining-vals (drop-idx values ii)]
+            (reduce (fn [accum rest-perm]
+                      (conj accum
+                        (lazy-seq (cons head-val rest-perm))))
+              []
+              (permute-lazy-1 remaining-vals))))))))
 
 (s/defn permute :- ts/TupleList
   "Given a vector of values, return a set of all possible permutations.
