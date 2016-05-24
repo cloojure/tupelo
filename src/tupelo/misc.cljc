@@ -274,6 +274,21 @@
               []
               (thru 0 (count curr-perm)))))))))
 
+(s/defn permute-tail-3 :- ts/TupleList
+  [values :- ts/List]
+  (if (= 1 (count values))
+    [values]
+    (let [head-val (first values)]
+      (apply concat
+        (reduce (fn [accum curr-perm]
+                  (conj accum
+                    (for [jj (thru 0 (count curr-perm))]
+                      (concat (take jj curr-perm)
+                              [head-val]
+                              (drop jj curr-perm)))))
+                []
+                (permute-tail-3 (rest values)))))))
+
 (s/defn permute :- ts/TupleList
   "Given a vector of values, return a set of all possible permutations.
 
@@ -283,6 +298,6 @@
   (when (empty? values)
     (throw (IllegalArgumentException.
              (str "permute: cannot permute empty set: " values))))
-  (permute-tail-2 values))
+  (permute-tail-3 values))
 
 

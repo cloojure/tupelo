@@ -140,6 +140,12 @@
   (is (= (set (permute-tail-2 [:a]))        #{ [:a      ]            } ))
   (is (= (set (permute-tail-2 [:a :b]))     #{ [:a :b   ] [:b :a   ] } ))
   (is (= (set (permute-tail-2 [:a :b :c]))  #{ [:a :b :c] [:a :c :b]
+                                              [:b :a :c] [:b :c :a]
+                                              [:c :a :b] [:c :b :a] } )))
+(deftest t-permute-tail-3
+  (is (= (set (permute-tail-3 [:a]))        #{ [:a      ]            } ))
+  (is (= (set (permute-tail-3 [:a :b]))     #{ [:a :b   ] [:b :a   ] } ))
+  (is (= (set (permute-tail-3 [:a :b :c]))  #{ [:a :b :c] [:a :c :b]
                                                [:b :a :c] [:b :c :a]
                                                [:c :a :b] [:c :b :a] } )))
 (deftest t-factorial
