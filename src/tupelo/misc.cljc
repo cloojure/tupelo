@@ -11,7 +11,10 @@
             [clojure.java.shell :as shell]
             [clojure.set :as set]
             [schema.core :as s]
-            [tupelo.schema :as ts] ))
+            [tupelo.schema :as ts]
+            [tupelo.async :as tas]
+            [clojure.core.async :refer [ go go-loop chan buffer close! thread alts! alts!! timeout ]]
+  ))
 
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
@@ -299,5 +302,9 @@
     (throw (IllegalArgumentException.
              (str "permute: cannot permute empty set: " values))))
   (permute-tail-3 values))
+
+(def perm-chan (chan 99))
+
+
 
 

@@ -74,6 +74,23 @@
   (is (= "         0 ..........\n        30 ..........\n        60 ..........\n        90 ...\n        99 total\n"
          (with-out-str (with-dots (doseq [x (range 99)]
                                     (dot)))))))
+(deftest t-factorial
+  (is (=     (factorial 0)          1))
+  (is (=     (factorial 1)          1))
+  (is (=     (factorial 2)          2))
+  (is (=     (factorial 3)          6))
+  (is (=     (factorial 4)         24))
+  (is (=     (factorial 5)        120))
+  (is (=     (factorial 6)        720))
+  (is (=     (factorial 7)       5040))
+  (is (=     (factorial 8)      40320))
+  (is (=     (factorial 9)     362880))
+  (is (=     (factorial 10)   3628800))
+  (is (rel=  (factorial 15) 1.307674368e+12 :digits 10))
+  (is (thrown? Exception (factorial 1.5)))
+  (is (thrown? Exception (factorial -1)))
+  (is (thrown? Exception (factorial -1))))
+
 (deftest t-permute-multiset
 
 ; (is (=  (permute-multiset-1 [        ])  [])  ; #todo should be error
@@ -146,29 +163,13 @@
   (is (= (set (permute-tail-3 [:a]))        #{ [:a      ]            } ))
   (is (= (set (permute-tail-3 [:a :b]))     #{ [:a :b   ] [:b :a   ] } ))
   (is (= (set (permute-tail-3 [:a :b :c]))  #{ [:a :b :c] [:a :c :b]
-                                               [:b :a :c] [:b :c :a]
-                                               [:c :a :b] [:c :b :a] } )))
-(deftest t-factorial
-  (is (=     (factorial 0)          1))
-  (is (=     (factorial 1)          1))
-  (is (=     (factorial 2)          2))
-  (is (=     (factorial 3)          6))
-  (is (=     (factorial 4)         24))
-  (is (=     (factorial 5)        120))
-  (is (=     (factorial 6)        720))
-  (is (=     (factorial 7)       5040))
-  (is (=     (factorial 8)      40320))
-  (is (=     (factorial 9)     362880))
-  (is (=     (factorial 10)   3628800))
-  (is (rel=  (factorial 15) 1.307674368e+12 :digits 10))
-  (is (thrown? Exception (factorial 1.5)))
-  (is (thrown? Exception (factorial -1)))
-  (is (thrown? Exception (factorial -1))))
+                                              [:b :a :c] [:b :c :a]
+                                              [:c :a :b] [:c :b :a] } )))
 
 (deftest t-sample
   (let [data [1 2 3]]
     (is (= (drop 0 data) [1 2 3]))
     (is (= (drop 1 data) [  2 3]))
     (is (= (drop 2 data) [    3]))
-    (is (= (drop 3 data) [     ]))
-    ))
+    (is (= (drop 3 data) [     ])))
+)
