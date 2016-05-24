@@ -214,7 +214,8 @@
     (check-num-perm  7)
     (check-num-perm  8)
     (check-num-perm  9)
-    (check-num-perm 10)))
+  ; (check-num-perm 10)
+  ))
 
 (deftest ^:slow t-permute-nest-timing
   (let [size 9]
@@ -224,6 +225,7 @@
     (time (spyx (count (permute-nest-2 (thru 1 size))))))
 
     (comment
+      ; on 8-core Intel i7-4790 CPU @ 3.60GHz (size -> 10)
       > lein test :only tst.tupelo.misc/t-permute-nest-timing
       timing (count (permute-nest-1 (thru 1 10)))
       (count (permute-nest-1 (thru 1 size))) => 3628800

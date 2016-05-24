@@ -353,9 +353,7 @@
                 ; sync not needed since multiple close! is idempotent
                 (close! output-chan))) ; indicates no more results coming
             (Thread.)
-            (.start))
-      ; (Thread/sleep 100)
-      ))
+            (.start))))
 
     ; Return a lazy sequence of the results
     (gather-results)))
