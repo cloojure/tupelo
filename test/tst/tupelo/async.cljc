@@ -45,3 +45,5 @@
     (close! c0) 
     (is (false? (tas/put-later! c0 -1 (partial cb-tst false) )))
     (is (nil? (tas/take-now!  c0)))))
+
+; #todo maybe close! -> close-now! if current thread?

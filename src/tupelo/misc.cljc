@@ -292,6 +292,32 @@
               []
               (permute-lazy-1 remaining-vals))))))))
 
+(s/defn permute-nest-1 :- ts/TupleList
+  [values]
+  (let [perm-chan         (chan 99)
+        permute-nest*     (fn permute-nest* [heads tails]
+                            (if (empty? tails)
+                              (tas/put-now! perm-chan heads)
+                              (doseq [ii (range (count tails))]
+                                (let [curr-val   (nth tails ii)
+                                      next-heads (append heads curr-val)
+                                      next-tails (drop-idx tails ii)]
+                                  (permute-nest* next-heads next-tails)))))
+
+        gather-results    (fn gather-results []
+                            (lazy-seq
+                              (when-let [curr-val (tas/take-now! perm-chan) ]
+                                (cons curr-val (gather-results)))))
+        ]
+    ; Start generating solutions; will block when channel fills
+    (-> (fn []
+          (permute-nest* [] values) ; will place results on perm-chan
+          (close! perm-chan))       ; indicates no more results coming
+        (Thread.)
+        (.start))
+    ; Return a lazy sequence of the results
+    (gather-results)))
+
 (s/defn permute :- ts/TupleList
   "Given a vector of values, return a set of all possible permutations.
 
@@ -301,20 +327,25 @@
   (when (empty? values)
     (throw (IllegalArgumentException.
              (str "permute: cannot permute empty set: " values))))
-  (permute-lazy-1 values))
+  (permute-nest-1 values))
 
+(comment
 
-(s/defn permute-nest-1 ;  :- ts/TupleList
-  [heads :- ts/List
-   tails :- ts/List ]
-  (println (str "enter: heads=" heads "  tails=" tails))
-  (if (empty? tails)
-    (spy :msg "output:" heads)
-    (doseq [ii (range (count tails))]
-      (let [curr-val   (nth tails ii)
-            next-heads (append heads curr-val)
-            next-tails (drop-idx tails ii)]
-        (permute-nest-1 next-heads next-tails)))))
+  ; Create a finite-length lazy seq
+  (defn finite-lazy-builder [values]
+    (lazy-seq
+      (when-let [ss (seq values)]
+        (cons (first values)
+              (finite-lazy-builder (next values))))))
+  (println (finite-lazy-builder [1 2 3 4 5] ))
 
+  (->
+    (fn []
+      (doseq [ii (range 3)]
+        (println ii)
+        (Thread/sleep 999))
+      (println "done"))
+    (Thread.)
+    (.start))
 
-
+  )

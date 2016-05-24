@@ -169,7 +169,7 @@
 
 (deftest ^:slow t-permute-lazy-count
   (let [check-num-perm (fn [n] (is (= (spy :msg (format "(check-num-perm %d)" n)
-                                        (count (permute (thru 1 n))))
+                                        (count (set (permute (thru 1 n)))))
                                      (factorial n)))) ]
     (check-num-perm 1)
     (check-num-perm 2)
@@ -182,12 +182,11 @@
     (check-num-perm 9)))
 
 (deftest t-permute-nest-1
-  (is (vector (set (permute-nest-1 [] [:a]))        #{ [:a      ]            } ))
-  (newline) (newline)
-  (is (vector (set (permute-nest-1 [] [:a :b]))     #{ [:a :b   ] [:b :a   ] } ))
-  (newline) (newline)
-  (is (vector (set (permute-nest-1 [] [:a :b :c]))  #{ [:a :b :c] [:a :c :b]
-                                                       [:b :a :c] [:b :c :a]
-                                                       [:c :a :b] [:c :b :a] } ))
-  )
 
+  (is (set (permute-nest-1 [:a]))        #{ [:a      ]            } )
+  (is (set (permute-nest-1 [:a :b]))     #{ [:a :b   ] [:b :a   ] } )
+  (is (set (permute-nest-1 [:a :b :c]))  #{ [:a :b :c] [:a :c :b]
+                                            [:b :a :c] [:b :c :a]
+                                            [:c :a :b] [:c :b :a] } )
+)
+(permute-nest-1 [:a :b :c :d])
