@@ -128,8 +128,35 @@
   (is (=  (permute-lazy-1 [:a      ])  [[:a]] ))
   (is (=  (permute-lazy-1 [:a :b   ])  [[:a :b] [:b :a]] ))
   (is (=  (permute-lazy-1 [:a :b :c])  [[:a :b :c] [:a :c :b]
-                                            [:b :a :c] [:b :c :a]
-                                            [:c :a :b] [:c :b :a]] ))
+                                        [:b :a :c] [:b :c :a]
+                                        [:c :a :b] [:c :b :a]] ))
+  (is (thrown? IllegalArgumentException (permute [] ))))
+
+(deftest t-permute-tail-1
+  (is (= (set (permute-tail-1 [:a]))        #{ [:a      ]            } ))
+  (is (= (set (permute-tail-1 [:a :b]))     #{ [:a :b   ] [:b :a   ] } ))
+  (is (= (set (permute-tail-1 [:a :b :c]))  #{ [:a :b :c] [:a :c :b]
+                                               [:b :a :c] [:b :c :a]
+                                               [:c :a :b] [:c :b :a] } )))
+(deftest t-permute-tail-2
+  (is (= (set (permute-tail-2 [:a]))        #{ [:a      ]            } ))
+  (is (= (set (permute-tail-2 [:a :b]))     #{ [:a :b   ] [:b :a   ] } ))
+  (is (= (set (permute-tail-2 [:a :b :c]))  #{ [:a :b :c] [:a :c :b]
+                                               [:b :a :c] [:b :c :a]
+                                               [:c :a :b] [:c :b :a] } )))
+(deftest t-permute-tail-3
+  (is (= (set (permute-tail-3 [:a]))        #{ [:a      ]            } ))
+  (is (= (set (permute-tail-3 [:a :b]))     #{ [:a :b   ] [:b :a   ] } ))
+  (is (= (set (permute-tail-3 [:a :b :c]))  #{ [:a :b :c] [:a :c :b]
+                                               [:b :a :c] [:b :c :a]
+                                               [:c :a :b] [:c :b :a] } )))
+
+(deftest t-permute-gen
+  (is (= (set (permute [:a]))        #{ [:a      ]            } ))
+  (is (= (set (permute [:a :b]))     #{ [:a :b   ] [:b :a   ] } ))
+  (is (= (set (permute [:a :b :c]))  #{ [:a :b :c] [:a :c :b]
+                                       [:b :a :c] [:b :c :a]
+                                       [:c :a :b] [:c :b :a] } ))
   (is (thrown? IllegalArgumentException (permute [] ))))
 
 (deftest ^:slow t-permute-lazy-count
@@ -144,27 +171,7 @@
     (check-num-perm 6)
     (check-num-perm 7)
     (check-num-perm 8)
-    (check-num-perm 9)
-  ))
-
-(deftest t-permute-tail-1
-  (is (= (set (permute-tail-1 [:a]))        #{ [:a      ]            } ))
-  (is (= (set (permute-tail-1 [:a :b]))     #{ [:a :b   ] [:b :a   ] } ))
-  (is (= (set (permute-tail-1 [:a :b :c]))  #{ [:a :b :c] [:a :c :b]
-                                              [:b :a :c] [:b :c :a]
-                                              [:c :a :b] [:c :b :a] } )))
-(deftest t-permute-tail-2
-  (is (= (set (permute-tail-2 [:a]))        #{ [:a      ]            } ))
-  (is (= (set (permute-tail-2 [:a :b]))     #{ [:a :b   ] [:b :a   ] } ))
-  (is (= (set (permute-tail-2 [:a :b :c]))  #{ [:a :b :c] [:a :c :b]
-                                              [:b :a :c] [:b :c :a]
-                                              [:c :a :b] [:c :b :a] } )))
-(deftest t-permute-tail-3
-  (is (= (set (permute-tail-3 [:a]))        #{ [:a      ]            } ))
-  (is (= (set (permute-tail-3 [:a :b]))     #{ [:a :b   ] [:b :a   ] } ))
-  (is (= (set (permute-tail-3 [:a :b :c]))  #{ [:a :b :c] [:a :c :b]
-                                              [:b :a :c] [:b :c :a]
-                                              [:c :a :b] [:c :b :a] } )))
+    (check-num-perm 9)))
 
 (deftest t-sample
   (let [data [1 2 3]]

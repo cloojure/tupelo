@@ -301,9 +301,8 @@
   (when (empty? values)
     (throw (IllegalArgumentException.
              (str "permute: cannot permute empty set: " values))))
-  (permute-tail-3 values))
+  (permute-lazy-1 values))
 
-(def perm-chan (chan 99))
 
 
 
