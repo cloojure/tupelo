@@ -294,27 +294,69 @@
 
 (s/defn permute-nest-1 :- ts/TupleList
   [values]
-  (let [perm-chan         (chan 99)
-        permute-nest*     (fn permute-nest* [heads tails]
+  (let [output-chan       (chan 999) ; "arbitrary" size output buffer
+        permute-nest*     (fn permute-nest*
+                            [heads tails]
                             (if (empty? tails)
-                              (tas/put-now! perm-chan heads)
+                              (tas/put-now! output-chan heads)
                               (doseq [ii (range (count tails))]
                                 (let [curr-val   (nth tails ii)
                                       next-heads (append heads curr-val)
-                                      next-tails (drop-idx tails ii)]
+                                      next-tails (drop-idx tails ii) ]
                                   (permute-nest* next-heads next-tails)))))
 
         gather-results    (fn gather-results []
                             (lazy-seq
-                              (when-let [curr-val (tas/take-now! perm-chan) ]
+                              (when-let [curr-val (tas/take-now! output-chan) ]
                                 (cons curr-val (gather-results)))))
         ]
     ; Start generating solutions; will block when channel fills
     (-> (fn []
-          (permute-nest* [] values) ; will place results on perm-chan
-          (close! perm-chan))       ; indicates no more results coming
-        (Thread.)
-        (.start))
+          (permute-nest* [] values) ; will place results on output-chan
+          (close! output-chan))       ; indicates no more results coming
+      (Thread.)
+      (.start))
+    ; Return a lazy sequence of the results
+    (gather-results)))
+
+(s/defn permute-nest-2 :- ts/TupleList
+  [values]
+  (let [output-chan       (chan 999) ; "arbitrary" size output buffer
+        permute-nest*     (fn permute-nest*
+                            [heads tails]
+                            (if (empty? tails)
+                              (tas/put-now! output-chan heads)
+                              (doseq [ii (range (count tails))]
+                                (let [curr-val   (nth tails ii)
+                                      next-heads (append heads curr-val)
+                                      next-tails (drop-idx tails ii) ]
+                                  (permute-nest* next-heads next-tails)))))
+
+        gather-results    (fn gather-results []
+                            (lazy-seq
+                              (when-let [curr-val (tas/take-now! output-chan) ]
+                                (cons curr-val (gather-results)))))
+
+        threads-active    (atom (count values))
+  ]
+    ; Start a thread for each original value
+    (doseq [ii (range (count values)) ]
+      (let [curr-val   (nth values ii)
+            init-heads [curr-val]
+            init-tails (drop-idx values ii) ]
+        ; Start generating solutions; will block when channel fills
+        (-> (fn []
+            ; (println " starting init-heads=" init-heads "  init-tails=" init-tails)
+              (permute-nest* init-heads init-tails) ; will place results on output-chan
+              (swap! threads-active dec)
+              (when (zero? @threads-active) ; last worker to finish must close channel
+                ; sync not needed since multiple close! is idempotent
+                (close! output-chan))) ; indicates no more results coming
+            (Thread.)
+            (.start))
+      ; (Thread/sleep 100)
+      ))
+
     ; Return a lazy sequence of the results
     (gather-results)))
 
@@ -327,7 +369,7 @@
   (when (empty? values)
     (throw (IllegalArgumentException.
              (str "permute: cannot permute empty set: " values))))
-  (permute-nest-1 values))
+  (permute-nest-2 values))
 
 (comment
 

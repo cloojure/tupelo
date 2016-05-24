@@ -160,26 +160,81 @@
                                                [:c :a :b] [:c :b :a] } )))
 
 (deftest t-permute-gen
+  (is (thrown? IllegalArgumentException (permute [] )))
+
   (is (= (set (permute [:a]))        #{ [:a      ]            } ))
+; (newline) (newline)
   (is (= (set (permute [:a :b]))     #{ [:a :b   ] [:b :a   ] } ))
+; (newline) (newline)
   (is (= (set (permute [:a :b :c]))  #{ [:a :b :c] [:a :c :b]
-                                       [:b :a :c] [:b :c :a]
-                                       [:c :a :b] [:c :b :a] } ))
-  (is (thrown? IllegalArgumentException (permute [] ))))
+                                        [:b :a :c] [:b :c :a]
+                                        [:c :a :b] [:c :b :a] } ))
+; (newline) (newline)
+; (pretty (permute [:a :b :c :d]))
+  (is (= (set (permute [:a :b :c :d]))
+         #{ [ :a :b :c :d ]
+            [ :a :b :d :c ]
+            [ :a :c :b :d ]
+            [ :a :c :d :b ]
+            [ :a :d :b :c ]
+            [ :a :d :c :b ]
+
+            [ :b :a :c :d ]
+            [ :b :a :d :c ]
+            [ :b :c :a :d ]
+            [ :b :c :d :a ]
+            [ :b :d :a :c ]
+            [ :b :d :c :a ]
+
+            [ :c :a :b :d ]
+            [ :c :a :d :b ]
+            [ :c :b :a :d ]
+            [ :c :b :d :a ]
+            [ :c :d :a :b ]
+            [ :c :d :b :a ]
+
+            [ :d :a :b :c ]
+            [ :d :a :c :b ]
+            [ :d :b :a :c ]
+            [ :d :b :c :a ]
+            [ :d :c :a :b ]
+            [ :d :c :b :a ] } ))
+)
 
 (deftest ^:slow t-permute-lazy-count
   (let [check-num-perm (fn [n] (is (= (spy :msg (format "(check-num-perm %d)" n)
-                                        (count (set (permute (thru 1 n)))))
+                                        (count (permute (thru 1 n))))
                                      (factorial n)))) ]
-    (check-num-perm 1)
-    (check-num-perm 2)
-    (check-num-perm 3)
-    (check-num-perm 4)
-    (check-num-perm 5)
-    (check-num-perm 6)
-    (check-num-perm 7)
-    (check-num-perm 8)
-    (check-num-perm 9)))
+    (check-num-perm  1)
+    (check-num-perm  2)
+    (check-num-perm  3)
+    (check-num-perm  4)
+    (check-num-perm  5)
+    (check-num-perm  6)
+    (check-num-perm  7)
+    (check-num-perm  8)
+    (check-num-perm  9)
+    (check-num-perm 10)))
+
+(deftest ^:slow t-permute-nest-timing
+  (let [size 9]
+    (println (format "timing (count (permute-nest-1 (thru 1 %d)))" size))
+    (time (spyx (count (permute-nest-1 (thru 1 size)))))
+    (println (format "timing (count (permute-nest-2 (thru 1 %d)))" size))
+    (time (spyx (count (permute-nest-2 (thru 1 size))))))
+
+    (comment
+      > lein test :only tst.tupelo.misc/t-permute-nest-timing
+      timing (count (permute-nest-1 (thru 1 10)))
+      (count (permute-nest-1 (thru 1 size))) => 3628800
+      "Elapsed time: 40525.615739 msecs"
+      timing (count (permute-nest-2 (thru 1 10)))
+      (count (permute-nest-2 (thru 1 size))) => 3628800
+      "Elapsed time: 17750.659604 msecs"
+    ))
+
+
+
 
 (deftest t-permute-nest-1
 
