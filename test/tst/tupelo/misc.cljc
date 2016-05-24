@@ -17,6 +17,14 @@
 
 (set! *warn-on-reflection* true)
 
+(deftest t-sample
+  (let [data [1 2 3]]
+    (is (= (drop 0 data) [1 2 3]))
+    (is (= (drop 1 data) [  2 3]))
+    (is (= (drop 2 data) [    3]))
+    (is (= (drop 3 data) [     ])))
+)
+
 (deftest collapse-whitespace-t
   (testing "basic usage"
     (is (= "abc def g hij kl"
@@ -173,10 +181,13 @@
     (check-num-perm 8)
     (check-num-perm 9)))
 
-(deftest t-sample
-  (let [data [1 2 3]]
-    (is (= (drop 0 data) [1 2 3]))
-    (is (= (drop 1 data) [  2 3]))
-    (is (= (drop 2 data) [    3]))
-    (is (= (drop 3 data) [     ])))
-)
+(deftest t-permute-nest-1
+  (is (vector (set (permute-nest-1 [] [:a]))        #{ [:a      ]            } ))
+  (newline) (newline)
+  (is (vector (set (permute-nest-1 [] [:a :b]))     #{ [:a :b   ] [:b :a   ] } ))
+  (newline) (newline)
+  (is (vector (set (permute-nest-1 [] [:a :b :c]))  #{ [:a :b :c] [:a :c :b]
+                                                       [:b :a :c] [:b :c :a]
+                                                       [:c :a :b] [:c :b :a] } ))
+  )
+

@@ -283,7 +283,7 @@
     (if (= 1 num-values)
       [values]
       (apply concat
-        (forv [ii (range num-values)]
+        (for [ii (range num-values)]
           (let [head-val       (nth values ii)
                 remaining-vals (drop-idx values ii)]
             (reduce (fn [accum rest-perm]
@@ -304,6 +304,17 @@
   (permute-lazy-1 values))
 
 
+(s/defn permute-nest-1 ;  :- ts/TupleList
+  [heads :- ts/List
+   tails :- ts/List ]
+  (println (str "enter: heads=" heads "  tails=" tails))
+  (if (empty? tails)
+    (spy :msg "output:" heads)
+    (doseq [ii (range (count tails))]
+      (let [curr-val   (nth tails ii)
+            next-heads (append heads curr-val)
+            next-tails (drop-idx tails ii)]
+        (permute-nest-1 next-heads next-tails)))))
 
 
 
