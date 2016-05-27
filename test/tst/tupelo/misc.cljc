@@ -10,7 +10,10 @@
         clojure.test )
   (:require [clojure.string   :as str]
             [schema.core      :as s]
-            [tupelo.misc      :as misc] ))
+            [tupelo.misc      :as misc]
+            [clojure.math.combinatorics  :as combo]
+            [criterium.core :as crit]
+  ))
 
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
@@ -204,42 +207,75 @@
 (deftest ^:slow t-permute-lazy-count
   (let [check-num-perm (fn [n] (is (= (spy :msg (format "(check-num-perm %d)" n)
                                         (count (permute (thru 1 n))))
-                                     (factorial n)))) ]
-    (check-num-perm  1)
-    (check-num-perm  2)
-    (check-num-perm  3)
-    (check-num-perm  4)
-    (check-num-perm  5)
-    (check-num-perm  6)
-    (check-num-perm  7)
-    (check-num-perm  8)
-    (check-num-perm  9)
-  ; (check-num-perm 10)
+                                     (factorial n))))
+        check-same-perm     (fn [n]
+                              (println "checking n=" n)
+                              (is (= (into #{} (combo/permutations (thru 1 n)))
+                                     (into #{} (permute-multiset-1 (thru 1 n))))))
+    ]
+
+    (check-same-perm  1)
+    (check-same-perm  2)
+    (check-same-perm  3)
+    (check-same-perm  4)
+    (check-same-perm  5)
+    (check-same-perm  6)
+    (check-same-perm  7)
+    (check-same-perm  8)
   ))
 
 (deftest ^:slow t-permute-nest-timing
-  (let [size 9]
-    (println (format "timing (count (permute-nest-1 (thru 1 %d)))" size))
-    (time (spyx (count (permute-nest-1 (thru 1 size)))))
-    (println (format "timing (count (permute-nest-2 (thru 1 %d)))" size))
-    (time (spyx (count (permute-nest-2 (thru 1 size))))))
+  (let [size 8]
+    (newline)
+    (println "size=" size)
 
-    (comment
-      ; on 8-core Intel i7-4790 CPU @ 3.60GHz (size -> 10)
-      > lein test :only tst.tupelo.misc/t-permute-nest-timing
-      timing (count (permute-nest-1 (thru 1 10)))
-      (count (permute-nest-1 (thru 1 size))) => 3628800
-      "Elapsed time: 40525.615739 msecs"
-      timing (count (permute-nest-2 (thru 1 10)))
-      (count (permute-nest-2 (thru 1 size))) => 3628800
-      "Elapsed time: 17750.659604 msecs"
-    ))
+    (newline)
+    (println "permute-multiset-1")
+    (crit/quick-bench (into [] (permute-multiset-1 (thru 1 size))))
 
+    (newline)
+    (println "permute-multiset-2")
+    (crit/quick-bench (into [] (permute-multiset-2 (thru 1 size))))
 
+    (newline)
+    (println "permute-multiset-3")
+    (crit/quick-bench (into [] (permute-multiset-3 (thru 1 size))))
+
+    (newline)
+    (println "permute-set-1")
+    (crit/quick-bench (into [] (permute-set-1 (set (thru 1 size)))))
+
+    (newline)
+    (println "permute-tail-1")
+    (crit/quick-bench (into [] (permute-tail-1 (thru 1 size))))
+
+    (newline)
+    (println "permute-tail-2")
+    (crit/quick-bench (into [] (permute-tail-2 (thru 1 size))))
+
+    (newline)
+    (println "permute-tail-3")
+    (crit/quick-bench (into [] (permute-tail-3 (thru 1 size))))
+
+    (newline)
+    (println "permute-lazy-1")
+    (crit/quick-bench (into [] (permute-lazy-1 (thru 1 size))))
+
+    (newline)
+    (println "permute-nest-1")
+    (crit/quick-bench (into [] (permute-nest-1 (thru 1 size))))
+
+    (newline)
+    (println "permute-nest-2")
+    (crit/quick-bench (into [] (permute-nest-2 (thru 1 size))))
+
+    (newline)
+    (println "combo/permutations")
+    (crit/quick-bench (into [] (combo/permutations (thru 1 size))))
+))
 
 
 (deftest t-permute-nest-1
-
   (is (set (permute-nest-1 [:a]))        #{ [:a      ]            } )
   (is (set (permute-nest-1 [:a :b]))     #{ [:a :b   ] [:b :a   ] } )
   (is (set (permute-nest-1 [:a :b :c]))  #{ [:a :b :c] [:a :c :b]

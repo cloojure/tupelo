@@ -8,6 +8,7 @@
                   [org.clojure/core.async           "0.2.374"]
                   [org.clojure/test.check           "0.9.0"]
                   [org.clojure/core.match           "0.3.0-alpha4"]
+                  [org.clojure/math.combinatorics   "0.1.2"]
                   [clojure-csv/clojure-csv          "2.0.2"]
                   [clj-time                         "0.11.0"]
                   [criterium                        "0.4.4"]

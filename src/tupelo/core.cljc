@@ -220,6 +220,9 @@
       (throw (IllegalArgumentException. (str "Nothing to prepend! elems=" elems))))
     (vec (concat elems listy))))
 
+; #todo need (insert-at coll idx)
+
+; #todo rename to (drop-at coll idx) or (remove-at coll idx)  ???
 (s/defn drop-idx :- ts/List
   ; #todo need more tests & readme
   "Removes an element from a collection at the specified index."
@@ -229,8 +232,7 @@
     (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
   (when (<= (count coll) index)
     (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
-                                        " (count coll)=" (count coll)
-                                        " index=" index ))))
+                                        " (count coll)=" (count coll) " index=" index ))))
   (glue (take       index  coll)
         (drop  (inc index) coll)))
 
