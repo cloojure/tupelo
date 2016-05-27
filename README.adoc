@@ -434,21 +434,47 @@ Did you know that Clojure has no equivalent to Java's `List.remove(int index)` f
 
 [source,clojure]
 ----
-(s/defn drop-idx :- ts/List
+(s/defn drop-at :- ts/List
   "Removes an element from a collection at the specified index."
   [coll     :- ts/List
    index    :- s/Int]
   ...)
 
-(is (= [  1 2 3 4] (drop-idx (range 5) 0)))
-(is (= [0   2 3 4] (drop-idx (range 5) 1)))
-(is (= [0 1   3 4] (drop-idx (range 5) 2)))
-(is (= [0 1 2   4] (drop-idx (range 5) 3)))
-(is (= [0 1 2 3  ] (drop-idx (range 5) 4)))
+(is (= [  1 2 3 4] (drop-at (range 5) 0)))
+(is (= [0   2 3 4] (drop-at (range 5) 1)))
+(is (= [0 1   3 4] (drop-at (range 5) 2)))
+(is (= [0 1 2   4] (drop-at (range 5) 3)))
+(is (= [0 1 2 3  ] (drop-at (range 5) 4)))
 ----
 
-Unlike the raw `take` and `drop` functions on which it is based, `drop-idx` will throw an exception
+Unlike the raw `take` and `drop` functions on which it is based, `drop-at` will throw an exception
 for invalid values of `index`.
+
+=== Inserting Values into a Sequence
+
+Suppose you want to insert an element into a sequence. Tupelo has you covered here as well:
+
+[source,clojure]
+----
+s/defn insert-at :- ts/List
+  "Inserts an element into a collection at the specified index."
+  [coll     :- ts/List
+   index    :- s/Int
+   elem     :- s/Any]
+  ...)
+
+(is (= [9]     (insert-at [] 0 9)))
+
+(is (= [9 0]   (insert-at [0] 0 9)))
+(is (= [0 9]   (insert-at [0] 1 9)))
+
+(is (= [9 0 1] (insert-at [0 1] 0 9)))
+(is (= [0 9 1] (insert-at [0 1] 1 9)))
+(is (= [0 1 9] (insert-at [0 1] 2 9)))
+----
+
+As with `assoc`, you are allowed to insert the new element into the first empty slot after all
+existing elements, but no further.  `insert-at` will throw an exception for invalid values of `index`.
 
 === Convenience in Testing Seq's
 
@@ -857,28 +883,6 @@ Clojure doesn't have a built-in function for this (please note that `seqable?` i
 
 (is (not (seqable?  1 )))
 (is (not (seqable? \a )))
-----
-
-=== REPL Driven Testing
-
-Developing at the REPL is productive & cool, but it can be a pain to reload source files
-modified in an external editor.  This is especially so when simultaneously editing both
-the core program and the corresponding test code.  The function `test-all` will reload
-both a namespace and its corresponding test namespace from file, then invoke the corresponding
-test namespace:
-
-[source,clojure]
-----
-(test-all & ns-names)
-  Convenience fn to reload a namespace & the corresponding test namespace from disk and
-  execute tests in the REPL.  Assumes canonical project test file organization with
-  parallel src/... & test/tst/... directories, where a 'tst.' prefix is added to all src
-  namespaces to generate the cooresponding test namespace.  Example:
-
-    (test-all 'tupelo.core 'tupelo.csv)
-
-  This will reload tupelo.core, tst.tupelo.core, tupelo.csv, tst.tupelo.csv and
-  then execute clojure.test/run-tests on both of the test namespaces.
 ----
 
 == Other useful libraries

@@ -221,9 +221,21 @@
     (vec (concat elems listy))))
 
 ; #todo need (insert-at coll idx)
+(s/defn insert-at :- ts/List
+  ; #todo need more tests & readme
+  "Inserts an element into a collection at the specified index."
+  [coll     :- ts/List
+   index    :- s/Int
+   elem     :- s/Any]
+  (when (neg? index)
+    (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
+  (when (< (count coll) index)
+    (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
+                                        " (count coll)=" (count coll) " index=" index ))))
+  (glue (take  index coll)    [elem]
+        (drop  index coll)))
 
-; #todo rename to (drop-at coll idx) or (remove-at coll idx)  ???
-(s/defn drop-idx :- ts/List
+(s/defn drop-at :- ts/List
   ; #todo need more tests & readme
   "Removes an element from a collection at the specified index."
   [coll     :- ts/List
@@ -607,52 +619,11 @@
 
 ; #todo: add (throwed? ...) for testing exceptions
 
-;---------------------------------------------------------------------------------------------------
-; Another benefit of test-all:  don't need "-test" suffix like in lein test:
-; ~/tupelo > lein test :only tupelo.core
-; lein test user
-; Ran 0 tests containing 0 assertions.     ***** Nearly silent failure *****
-; 0 failures, 0 errors.
-;
-; ~/tupelo > lein test :only tst.tupelo.core
-; lein test tst.tupelo.core
-; Ran 8 tests containing 44 assertions.     ***** Runs correctly *****
-; 0 failures, 0 errors.
-;
-; ~/tupelo > lein test :only tst.tupelo.core/convj-test
-; lein test tst.tupelo.core
-; Ran 1 tests containing 3 assertions.
-; 0 failures, 0 errors.
-;
-; #todo:  add run-tests with syntax like lein test :only
-;   (run-tests 'tst.tupelo.core)              ; whole namespace
-;   (run-tests 'tst.tupelo.core/convj-test)   ; one function only
-;
-; #todo make it handle either tst.orig.namespace or orig.namespace-test
-; #todo make it a macro to accept unquoted namespace values
-
-(defn test-all
-  "Convenience fn to reload a namespace & the corresponding test namespace from disk and
-  execute tests in the REPL.  Assumes canonical project test file organization with
-  parallel src/... & test/tst/... directories, where a 'tst.' prefix is added to all src
-  namespaces to generate the cooresponding test namespace.  Example:
-
-    (test-all 'tupelo.core 'tupelo.csv)
-
-  This will reload tupelo.core, tst.tupelo.core, tupelo.csv, tst.tupelo.csv and
-  then execute clojure.test/run-tests on both of the test namespaces."
-  [& ns-list]
-  (let [test-ns-list    (for [curr-ns ns-list]
-                          (let [curr-ns-test (symbol (str "tst." curr-ns)) ]
-                            (println (str "testing " curr-ns " & " curr-ns-test))
-                            (require curr-ns curr-ns-test :reload)
-                            curr-ns-test ))
-  ]
-    (println "-----------------------------------------------------------------------------")
-    (apply clojure.test/run-tests test-ns-list)
-    (println "-----------------------------------------------------------------------------")
-    (newline)
-  ))
+; #todo need other arieties
+; #todo need docs & tests
+(defn thru
+  [first last]
+  (range first (inc last)))
 
 ;---------------------------------------------------------------------------------------------------
 ; DEPRECATED functions
@@ -678,4 +649,51 @@
      value      :-  s/Any
      & values   :- [s/Any] ]
     (apply conj (vec base-coll) value values) ))
+
+;---------------------------------------------------------------------------------------------------
+; Another benefit of test-all:  don't need "-test" suffix like in lein test:
+; ~/tupelo > lein test :only tupelo.core
+; lein test user
+; Ran 0 tests containing 0 assertions.     ***** Nearly silent failure *****
+; 0 failures, 0 errors.
+;
+; ~/tupelo > lein test :only tst.tupelo.core
+; lein test tst.tupelo.core
+; Ran 8 tests containing 44 assertions.     ***** Runs correctly *****
+; 0 failures, 0 errors.
+;
+; ~/tupelo > lein test :only tst.tupelo.core/convj-test
+; lein test tst.tupelo.core
+; Ran 1 tests containing 3 assertions.
+; 0 failures, 0 errors.
+;
+; #todo:  add run-tests with syntax like lein test :only
+;   (run-tests 'tst.tupelo.core)              ; whole namespace
+;   (run-tests 'tst.tupelo.core/convj-test)   ; one function only
+;
+; #todo make it handle either tst.orig.namespace or orig.namespace-test
+; #todo make it a macro to accept unquoted namespace values
+
+(defn ^:deprecated ^:no-doc test-all
+  "Convenience fn to reload a namespace & the corresponding test namespace from disk and
+  execute tests in the REPL.  Assumes canonical project test file organization with
+  parallel src/... & test/tst/... directories, where a 'tst.' prefix is added to all src
+  namespaces to generate the cooresponding test namespace.  Example:
+
+    (test-all 'tupelo.core 'tupelo.csv)
+
+  This will reload tupelo.core, tst.tupelo.core, tupelo.csv, tst.tupelo.csv and
+  then execute clojure.test/run-tests on both of the test namespaces."
+  [& ns-list]
+  (let [test-ns-list    (for [curr-ns ns-list]
+                          (let [curr-ns-test (symbol (str "tst." curr-ns)) ]
+                            (println (str "testing " curr-ns " & " curr-ns-test))
+                            (require curr-ns curr-ns-test :reload)
+                            curr-ns-test ))
+  ]
+    (println "-----------------------------------------------------------------------------")
+    (apply clojure.test/run-tests test-ns-list)
+    (println "-----------------------------------------------------------------------------")
+    (newline)
+  ))
 
