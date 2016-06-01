@@ -5,6 +5,10 @@
 
 (s/set-fn-validation! true)
 
+(def Vector
+  "A 2-D array of values (a vector of vectors)."
+  [s/Any] )
+
 (def Array
   "A 2-D array of values (a vector of vectors)."
   [[s/Any]] )
@@ -51,7 +55,7 @@
           (< -1 jj (num-cols arr)) ] }
   (assoc-in arr [ii jj] newVal))
 
-(s/defn get-row :- [s/Any]
+(s/defn get-row :- Vector
   "Gets an Array row"
   [arr  :- Array
    ii   :- s/Int ]
@@ -59,7 +63,7 @@
   (forv [jj (range (num-cols arr)) ]
     (get-elem arr ii jj)))
 
-(s/defn get-rows :- [s/Any]
+(s/defn get-rows :- Array
   "Gets an Array row"
   [arr  :- Array
    i-min   :- s/Int
@@ -69,7 +73,7 @@
   (forv [ii (range i-min i-max) ]
     (get-row arr ii)))
 
-(s/defn get-col :- [s/Any]
+(s/defn get-col :- Vector
   "Gets an Array column"
   [arr  :- Array
    jj   :- s/Int ]
@@ -77,7 +81,7 @@
   (forv [ii (range (num-rows arr)) ]
     (get-elem arr ii jj)))
 
-(s/defn get-cols :- [s/Any]
+(s/defn get-cols :- Array
   "Gets an Array row"
   [arr    :- Array
    j-min  :- s/Int
@@ -123,7 +127,8 @@
               (= (get-elem arr ii jj)
                  (get-elem arr jj ii)))))))
 
-(defn toString [arr]
+(s/defn toString :- s/Str
+  [arr :- Array]
   (with-out-str
     (dotimes [ii (num-rows arr)]
       (dotimes [jj (num-cols arr)]
