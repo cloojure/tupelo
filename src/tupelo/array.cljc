@@ -14,7 +14,7 @@
   Return a new Array of size=[nrows ncols] initialized to zero (or init-val if supplied)"
   ( [nrows  :- s/Int
      ncols  :- s/Int]
-      (create nrows ncols 0))
+      (create nrows ncols nil))
   ( [nrows      :- s/Int
      ncols      :- s/Int
      init-val   :- s/Any]
@@ -67,8 +67,18 @@
   (forv [ii (range (num-rows arr)) ]
     (get-elem arr ii jj)))
 
+(s/defn transpose :- Array
+  [arr :- Array]
+  (let [nrows  (num-rows arr)
+        ncols  (num-cols arr)
+        result (atom (create ncols nrows))]
+    (dotimes [ii (num-rows arr)]
+      (dotimes [jj (num-cols arr)]
+        (swap! result set-elem jj ii (get-elem arr ii jj))))
+    @result ))
 
-    (s/defn symmetric? :- s/Bool
+
+(s/defn symmetric? :- s/Bool
   [arr  :- Array ]
   (let [nrows (num-rows arr)
         ncols (num-cols arr) ]
