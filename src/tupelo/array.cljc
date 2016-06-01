@@ -31,17 +31,6 @@
   [arr :- Array]
   (count (arr 0)))
 
-; #todo -> elem-set/elem-get
-(s/defn set-elem :- Array
-  "Puts a value into an Array element, returning the updated Array."
-  [arr  :- Array
-   ii      :- s/Int
-   jj      :- s/Int
-   newVal  :- s/Any]
-  {:pre [ (< -1 ii (num-rows arr))
-         (< -1 jj (num-cols arr)) ] }
-  (assoc-in arr [ii jj] newVal))
-
 (s/defn get-elem :- s/Any
   "Gets an Array element"
   [arr  :- Array
@@ -51,6 +40,17 @@
           (< -1 jj (num-cols arr)) ] }
   (get-in arr [ii jj]))
 
+; #todo -> elem-set/elem-get
+(s/defn set-elem :- Array
+  "Puts a value into an Array element, returning the updated Array."
+  [arr     :- Array
+   ii      :- s/Int
+   jj      :- s/Int
+   newVal  :- s/Any]
+  {:pre [ (< -1 ii (num-rows arr))
+          (< -1 jj (num-cols arr)) ] }
+  (assoc-in arr [ii jj] newVal))
+
 (s/defn get-row :- [s/Any]
   "Gets an Array row"
   [arr  :- Array
@@ -59,6 +59,16 @@
   (forv [jj (range (num-cols arr)) ]
     (get-elem arr ii jj)))
 
+(s/defn get-rows :- [s/Any]
+  "Gets an Array row"
+  [arr  :- Array
+   i-min   :- s/Int
+   i-max   :- s/Int ]
+  {:pre [(< -1 i-min (num-rows arr))
+         (< i-min i-max (inc (num-rows arr))) ]}
+  (forv [ii (range i-min i-max) ]
+    (get-row arr ii)))
+
 (s/defn get-col :- [s/Any]
   "Gets an Array column"
   [arr  :- Array
@@ -66,6 +76,16 @@
   {:pre [ (<= 0 jj) (< jj (num-cols arr)) ] }
   (forv [ii (range (num-rows arr)) ]
     (get-elem arr ii jj)))
+
+(s/defn get-cols :- [s/Any]
+  "Gets an Array row"
+  [arr    :- Array
+   j-min  :- s/Int
+   j-max  :- s/Int ]
+  {:pre [(< -1 j-min (num-cols arr))
+         (< j-min j-max (inc (num-cols arr))) ]}
+  (forv [jj (range j-min j-max) ]
+    (get-col arr jj)))
 
 (s/defn transpose :- Array
   [orig :- Array]

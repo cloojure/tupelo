@@ -95,6 +95,47 @@
     )
   )
 
+(deftest t-get-rows
+  (let [demo  [[00 01 02 03]
+               [10 11 12 13]
+               [20 21 22 23]]
+        ]
+    (is (thrown? AssertionError (tar/get-rows demo 0 0)))
+    (is (= (tar/get-rows demo 0 1)  [[00 01 02 03]] ))
+    (is (= (tar/get-rows demo 0 2)  [[00 01 02 03]
+                                     [10 11 12 13]] ))
+    (is (= (tar/get-rows demo 0 3)  [[00 01 02 03]
+                                     [10 11 12 13]
+                                     [20 21 22 23]] ))
+    (is (= (tar/get-rows demo 1 3)  [[10 11 12 13]
+                                     [20 21 22 23]] ))
+    (is (= (tar/get-rows demo 2 3)  [[20 21 22 23]] ))
+    (is (thrown? AssertionError (tar/get-rows demo 3 3)))))
+
+(deftest t-get-cols
+  (let [demo  [[00 01 02 03]
+               [10 11 12 13]
+               [20 21 22 23]]
+       ]
+  (is (thrown? AssertionError (tar/get-cols demo 0 0)))
+  (is (= (tar/get-cols demo 0 1)   [[00 10 20]] ))
+  (is (= (tar/get-cols demo 0 2)   [[00 10 20]
+                                    [01 11 21]] ))
+  (is (= (tar/get-cols demo 0 3)   [[00 10 20]
+                                    [01 11 21]
+                                    [02 12 22]] ))
+  (is (= (tar/get-cols demo 0 4)   [[00 10 20]
+                                    [01 11 21]
+                                    [02 12 22]
+                                    [03 13 23]] ))
+  (is (= (tar/get-cols demo 1 4)   [[01 11 21]
+                                    [02 12 22]
+                                    [03 13 23]] ))
+  (is (= (tar/get-cols demo 2 4)   [[02 12 22]
+                                    [03 13 23]] ))
+  (is (= (tar/get-cols demo 3 4)   [[03 13 23]] ))
+  (is (thrown? AssertionError (tar/get-cols demo 4 4)))))
+
 (deftest t-symmetric
   (is (tar/symmetric? [[1 2]
                        [2 1]]))
