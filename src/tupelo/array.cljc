@@ -127,6 +127,8 @@
               (= (get-elem arr ii jj)
                  (get-elem arr jj ii)))))))
 
+; #todo add-row, add-col, set-row, set-col, drop-row, drop-col
+
 (s/defn toString :- s/Str
   [arr :- Array]
   (with-out-str
