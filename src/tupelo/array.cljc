@@ -38,8 +38,8 @@
    ii      :- s/Int
    jj      :- s/Int
    newVal  :- s/Any]
-  {:pre [ (<= 0 ii) (< ii (num-rows arr))
-          (<= 0 jj) (< jj (num-cols arr)) ] }
+  {:pre [ (< -1 ii (num-rows arr))
+         (< -1 jj (num-cols arr)) ] }
   (assoc-in arr [ii jj] newVal))
 
 (s/defn get-elem :- s/Any
@@ -47,36 +47,50 @@
   [arr  :- Array
    ii      :- s/Int
    jj      :- s/Int ]
-  {:pre [ (<= 0 ii) (< ii (num-rows arr))
-          (<= 0 jj) (< jj (num-cols arr)) ] }
+  {:pre [ (< -1 ii (num-rows arr))
+          (< -1 jj (num-cols arr)) ] }
   (get-in arr [ii jj]))
 
 (s/defn get-row :- [s/Any]
   "Gets an Array row"
   [arr  :- Array
    ii   :- s/Int ]
-  {:pre [ (<= 0 ii) (< ii (num-rows arr)) ] }
+  {:pre [ (< -1 ii (num-rows arr)) ] }
   (forv [jj (range (num-cols arr)) ]
     (get-elem arr ii jj)))
 
 (s/defn get-col :- [s/Any]
   "Gets an Array column"
   [arr  :- Array
-   jj      :- s/Int ]
+   jj   :- s/Int ]
   {:pre [ (<= 0 jj) (< jj (num-cols arr)) ] }
   (forv [ii (range (num-rows arr)) ]
     (get-elem arr ii jj)))
 
 (s/defn transpose :- Array
-  [arr :- Array]
-  (let [nrows  (num-rows arr)
-        ncols  (num-cols arr)
-        result (atom (create ncols nrows))]
-    (dotimes [ii (num-rows arr)]
-      (dotimes [jj (num-cols arr)]
-        (swap! result set-elem jj ii (get-elem arr ii jj))))
-    @result ))
+  [orig :- Array]
+  (forv [jj (range (num-cols orig)) ]
+    (get-col orig jj)))
 
+(s/defn flip-ud :- Array
+  [orig :- Array]
+  (forv [ii (reverse (range (num-rows orig))) ]
+    (get-row orig ii)))
+
+(s/defn flip-lr :- Array
+  [orig :- Array]
+  (forv [ii (range (num-rows orig))]
+    (vec (reverse (get-row orig ii)))))
+
+(s/defn rot-left :- Array
+  [orig :- Array]
+  (forv [jj (reverse (range (num-cols orig)))]
+    (get-col orig jj)))
+
+(s/defn rot-right :- Array
+  [orig :- Array]
+  (forv [jj (range (num-cols orig))]
+    (vec (reverse (get-col orig jj))))) ; reverse yields a seq, not a vec! doh!
 
 (s/defn symmetric? :- s/Bool
   [arr  :- Array ]
