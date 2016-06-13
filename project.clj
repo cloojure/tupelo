@@ -1,16 +1,17 @@
-(defproject tupelo "0.1.73"
+(defproject tupelo "0.9.0"
   :description "Tupelo:  Making Clojure Even Sweeter"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [ [org.clojure/clojure              "1.7.0"]
-                  [org.clojure/core.incubator       "0.1.3"]
+  :dependencies [ [org.clojure/clojure              "1.9.0-alpha5"]
+                  [org.clojure/core.incubator       "0.1.4"]
                   [org.clojure/core.async           "0.2.374"]
                   [org.clojure/test.check           "0.9.0"]
                   [org.clojure/core.match           "0.3.0-alpha4"]
-                  [org.clojure/math.combinatorics   "0.1.2"]
+                  [org.clojure/math.combinatorics   "0.1.3"]
+                  [org.clojure/tools.analyzer       "0.6.9"]
                   [clojure-csv/clojure-csv          "2.0.2"]
-                  [clj-time                         "0.11.0"]
+                  [clj-time                         "0.12.0"]
                   [criterium                        "0.4.4"]
                   [cheshire                         "5.6.1"]
                   [prismatic/schema                 "1.1.1"]

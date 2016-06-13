@@ -895,7 +895,7 @@ There are several other libraries that provide useful value-added functionality 
   - link:http://www.clojure-toolbox.com/[The Clojure Toolbox] - For a comprehehsive list of Clojure libraries
 
 == Requirements
- - Clojure 1.7.0
+ - Clojure 1.9.0
  - Java 1.8
 
 == To Do
@@ -911,6 +911,10 @@ There are several other libraries that provide useful value-added functionality 
   add more test.check
   add spy-let, spy-defn, spy-validate, etc
   blog posts
+
+== Change Log
+
+Please see the link:doc/changelog.adoc[the Change Log for details] docs.
 
 == License
 

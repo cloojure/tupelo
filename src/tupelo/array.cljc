@@ -1,7 +1,6 @@
 (ns tupelo.array
   (:use tupelo.core)
-  (:require
-    [schema.core        :as s] ))
+  (:require [schema.core :as s] ))
 
 (s/set-fn-validation! true)
 

@@ -1,0 +1,13 @@
+
+= Tupelo: Making Clojure Even Sweeter
+
+== Change Log
+
+.2016-6-12 Beginning with version 0.9.0 Tupelo will require
+- Clojure 1.9.0-alpha5 or later
+- Java 1.8
+
+Copyright © 2016 Alan Thompson.
+
+Distributed under the Eclipse Public License, the same as Clojure.
+

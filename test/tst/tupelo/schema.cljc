@@ -1,7 +1,7 @@
 (ns tst.tupelo.schema
   (:use tupelo.schema
         clojure.test )
-  (:require [schema.core      :as s]))
+  (:require [schema.core :as s]))
 
 (set! *warn-on-reflection* false)
 

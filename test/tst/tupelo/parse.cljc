@@ -8,7 +8,7 @@
   (:use clojure.test
         tupelo.core)
   (:require [tupelo.parse :as tpar]
-            [schema.core            :as s] )
+            [schema.core  :as s] )
   (:import   [java.lang.Math] ))
 
 ; Prismatic Schema type definitions

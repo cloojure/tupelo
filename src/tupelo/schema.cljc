@@ -1,5 +1,5 @@
 (ns tupelo.schema
-  (:require [schema.core      :as s] )
+  (:require [schema.core :as s] )
   (:import [java.util HashSet] )
   (:gen-class))
 

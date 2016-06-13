@@ -28,11 +28,10 @@
 (def ^:private Class-short-array        (.getClass (short-array     0)))
 
 
-(defn boolean?
+#_(defn ^{:deprecated "1.9.0-alpha5" } boolean?
   "Returns true is the arg is a Boolean (true or false). Else returns false."
   [arg]
   (or (= true arg) (= false arg)))
-
 
 (defn byte-array?
   "Returns true is the arg is a byte array, else false."
