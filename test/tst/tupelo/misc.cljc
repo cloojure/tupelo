@@ -12,7 +12,6 @@
             [schema.core      :as s]
             [tupelo.misc      :as misc]
             [clojure.math.combinatorics  :as combo]
-            [criterium.core :as crit]
   ))
 
 ; Prismatic Schema type definitions
