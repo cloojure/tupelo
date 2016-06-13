@@ -13,7 +13,6 @@
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
-
 (def ^:const UTF-8-Charset-Name "UTF-8")
 
 ; An instance of the java.lang.Class<XXXX[]> (e.g. java.lang.Class<Byte[]>). 
@@ -34,15 +33,15 @@
   [arg]
   (or (= true arg) (= false arg)))
 
-(defn byte-array?
-  "Returns true is the arg is a byte array, else false."
-  [arg]
-  (= Class-byte-array (.getClass arg)))
-
 (defn boolean-array?
   "Returns true is the arg is a boolean array, else false."
   [arg]
   (= Class-boolean-array (.getClass arg)))
+
+(defn byte-array?
+  "Returns true is the arg is a byte array, else false."
+  [arg]
+  (= Class-byte-array (.getClass arg)))
 
 (defn char-array?
   "Returns true is the arg is a char array, else false."
@@ -80,7 +79,7 @@
   (= Class-short-array (.getClass arg)))
 
 
-(defn str->bytes
+(defn str->bytes  ; #todo move to tupelo.misc
   "Converts a String to a byte array using the UTF-8 Charset"
   [^String arg]
   {:pre  [ (string? arg) ] 
@@ -88,7 +87,7 @@
   [arg]
   (.getBytes arg UTF-8-Charset-Name))
 
-(defn bytes->str
+(defn bytes->str  ; #todo move to tupelo.misc
   "Converts a byte array to a String using the UTF-8 Charset"
   [arg]
   {:pre  [ (byte-array? arg) ] 

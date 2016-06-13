@@ -14,8 +14,6 @@
   (:use tupelo.core
         clojure.test ))
 
-(spyx *clojure-version*)
-
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
