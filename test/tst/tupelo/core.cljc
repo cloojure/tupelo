@@ -640,21 +640,6 @@
       (is (= "#{1 2 3 4 5}" (clip-str 16 tst-set )))))
 )
 
-(deftest t-drop-at
-  (is (= [         ] (drop-at (range 1) 0)))
-  (is (= [  1      ] (drop-at (range 2) 0)))
-  (is (= [0        ] (drop-at (range 2) 1)))
-  (is (= [  1 2 3 4] (drop-at (range 5) 0)))
-  (is (= [0   2 3 4] (drop-at (range 5) 1)))
-  (is (= [0 1   3 4] (drop-at (range 5) 2)))
-  (is (= [0 1 2   4] (drop-at (range 5) 3)))
-  (is (= [0 1 2 3  ] (drop-at (range 5) 4)))
-
-  (is (thrown? IllegalArgumentException (drop-at []         0)))
-  (is (thrown? IllegalArgumentException (drop-at (range 5) -1)))
-  (is (thrown? IllegalArgumentException (drop-at (range 5)  5)))
-  (is (thrown? IllegalArgumentException (drop-at (range 5)  6))))
-
 (deftest t-insert-at
   (is (= [9] (insert-at [] 0 9)))
 
@@ -672,8 +657,41 @@
   (is (thrown? IllegalArgumentException (insert-at [0]  2 9)))
 
   (is (thrown? IllegalArgumentException (insert-at [0 1] -1 9)))
-  (is (thrown? IllegalArgumentException (insert-at [0 1]  3 9)))
-  )
+  (is (thrown? IllegalArgumentException (insert-at [0 1]  3 9))))
+
+(deftest t-drop-at
+  (is (= [] (drop-at (range 1) 0)))
+
+  (is (= [  1] (drop-at (range 2) 0)))
+  (is (= [0  ] (drop-at (range 2) 1)))
+
+  (is (= [  1 2 3 4] (drop-at (range 5) 0)))
+  (is (= [0   2 3 4] (drop-at (range 5) 1)))
+  (is (= [0 1   3 4] (drop-at (range 5) 2)))
+  (is (= [0 1 2   4] (drop-at (range 5) 3)))
+  (is (= [0 1 2 3  ] (drop-at (range 5) 4)))
+
+  (is (thrown? IllegalArgumentException (drop-at []         0)))
+  (is (thrown? IllegalArgumentException (drop-at (range 5) -1)))
+  (is (thrown? IllegalArgumentException (drop-at (range 5)  5)))
+  (is (thrown? IllegalArgumentException (drop-at (range 5)  6))))
+
+(deftest t-replace-at
+  (is (= [9] (replace-at (range 1) 0 9)))
+
+  (is (= [9 1] (replace-at (range 2) 0 9)))
+  (is (= [0 9] (replace-at (range 2) 1 9)))
+
+  (is (= [9 1 2 3 4] (replace-at (range 5) 0 9)))
+  (is (= [0 9 2 3 4] (replace-at (range 5) 1 9)))
+  (is (= [0 1 9 3 4] (replace-at (range 5) 2 9)))
+  (is (= [0 1 2 9 4] (replace-at (range 5) 3 9)))
+  (is (= [0 1 2 3 9] (replace-at (range 5) 4 9)))
+
+  (is (thrown? IllegalArgumentException (replace-at []         0 9)))
+  (is (thrown? IllegalArgumentException (replace-at (range 5) -1 9)))
+  (is (thrown? IllegalArgumentException (replace-at (range 5)  5 9)))
+  (is (thrown? IllegalArgumentException (replace-at (range 5)  6 9))))
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
 (deftest t-seqable

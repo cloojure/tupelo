@@ -219,9 +219,7 @@
       (throw (IllegalArgumentException. (str "Nothing to prepend! elems=" elems))))
     (vec (concat elems listy))))
 
-; #todo need (insert-at coll idx)
 (s/defn insert-at :- ts/List
-  ; #todo need more tests & readme
   "Inserts an element into a collection at the specified index."
   [coll     :- ts/List
    index    :- s/Int
@@ -235,7 +233,6 @@
         (drop  index coll)))
 
 (s/defn drop-at :- ts/List
-  ; #todo need more tests & readme
   "Removes an element from a collection at the specified index."
   [coll     :- ts/List
    index    :- s/Int]
@@ -245,6 +242,19 @@
     (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
                                         " (count coll)=" (count coll) " index=" index ))))
   (glue (take       index  coll)
+    (drop  (inc index) coll)))
+
+(s/defn replace-at :- ts/List
+  "Replaces an element in a collection at the specified index."
+  [coll     :- ts/List
+   index    :- s/Int
+   elem     :- s/Any]
+  (when (neg? index)
+    (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
+  (when (<= (count coll) index)
+    (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
+                                        " (count coll)=" (count coll) " index=" index ))))
+  (glue (take       index  coll)   [elem]
         (drop  (inc index) coll)))
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
