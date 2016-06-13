@@ -6,12 +6,11 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.base64
   "Convert to/from traditional base64 encoding."
+  (:use tupelo.core)
   (:require [clojure.string :as str]
             [tupelo.misc    :as misc]
             [tupelo.types   :as types]
-            [schema.core    :as s]
-            [criterium.core :as crit])
-  (:use tupelo.core )
+            [schema.core    :as s])
   (:gen-class))
 
 ; Prismatic Schema type definitions
@@ -61,18 +60,3 @@
   [code-str :- s/Str]
   (-> code-str decode-str->bytes types/bytes->str))
 
-(defn ^:private exercise-code []
-  (doseq [step [50 20 7]]
-    (let [orig        (byte-array (mapv #(.byteValue %) (range 0 400 step)))
-          b64-str     (encode-bytes->str  orig)
-          result      (decode-str->bytes  b64-str) ] ))
-  (doseq [num-chars [1 2 3 7 20]]
-    (let [orig        (str/join (misc/take-dist num-chars misc/printable-chars))
-          b64-str     (encode-str  orig)
-          result      (decode-str  b64-str) ] )))
-
-(defn ^:private quick-bench []
-  (crit/quick-bench (exercise-code)))
-
-(defn ^:private bench []
-  (crit/bench (exercise-code)))

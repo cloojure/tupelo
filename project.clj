@@ -12,7 +12,6 @@
                   [org.clojure/tools.analyzer       "0.6.9"]
                   [clojure-csv/clojure-csv          "2.0.2"]
                   [clj-time                         "0.12.0"]
-                  [criterium                        "0.4.4"]
                   [cheshire                         "5.6.1"]
                   [prismatic/schema                 "1.1.1"]
                 ]

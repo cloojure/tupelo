@@ -5,7 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tupelo.core
-  "tupelo - Making Clojure even sweeter"
+  "Tupelo - Making Clojure even sweeter"
   (:require [clojure.core                 :as clj]
             [clojure.string               :as str]
             [clojure.set                  :as set]
@@ -14,8 +14,7 @@
             [cheshire.core                :as cc]
             [schema.core                  :as s]
             [tupelo.types                 :as types]
-            [tupelo.schema                :as ts]
-            )
+            [tupelo.schema                :as ts] )
   (:import [java.io BufferedReader StringReader] )
   (:gen-class))
 
