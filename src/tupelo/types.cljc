@@ -28,6 +28,7 @@
 (def ^:private Class-short-array        (.getClass (short-array     0)))
 
 
+; As of Clojure 1.9.0-alpha5, boolean? is native to clojure
 #_(defn ^{:deprecated "1.9.0-alpha5" } boolean?
   "Returns true is the arg is a Boolean (true or false). Else returns false."
   [arg]

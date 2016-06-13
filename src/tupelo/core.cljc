@@ -248,6 +248,7 @@
   (glue (take       index  coll)
         (drop  (inc index) coll)))
 
+; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
 #_(s/defn ^{:deprecated "1.9.0-alpha5" } seqable? :- s/Bool      ; from clojure.contrib.core/seqable
   "Returns true if (seq x) will succeed, false otherwise."
   [x :- s/Any]

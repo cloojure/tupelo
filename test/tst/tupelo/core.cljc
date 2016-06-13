@@ -677,7 +677,7 @@
   (is (thrown? IllegalArgumentException (insert-at [0 1]  3 9)))
   )
 
-
+; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
 (deftest t-seqable
   (is (seqable?   "abc"))
   (is (seqable?   {1 2 3 4} ))
