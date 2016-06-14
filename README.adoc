@@ -882,7 +882,9 @@ The unit tests show how `not-nil?` leads to a more natural code syntax:
                (= 1 num-nil))))))
 ----
 
-=== [line-through]#Identifying Sequences#  [bold]*Now included in core Clojure 1.9.0-alpha5!*
+=== Identifying Sequences  
+
+*Now included in core Clojure 1.9.0-alpha5!*
 
 In some situations, a function may need to verify that an argument is _seqable_, that is, will a
 call to `(seq some-arg)` succeed?  If so, `some-arg` may be interpreted as a sequence of values.
