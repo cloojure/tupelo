@@ -553,8 +553,8 @@ arbitrary validation, throwing an exception if a non-truthy result is returned:
 [source,clojure]
 ----
 (validate tstfn tstval)
-  Used to validate intermediate results. Returns tstval if the result of
-  (tstfn tstval) is truthy.  Otherwise, throws IllegalStateException.
+ "Used to validate intermediate results. Returns tstval if the result of
+  (tstfn tstval) is truthy.  Otherwise, throws IllegalStateException."
 
 (is (= 3    (validate pos?        3    )))
 (is (= 3.14 (validate number?     3.14 )))
@@ -620,8 +620,8 @@ Here is very handy function for that:
 [source,clojure]
 ----
 (keyvals m)
-  For any map m, returns the keys & values of m as a vector,
-  suitable for reconstructing via (apply hash-map (keyvals m)).
+ "For any map m, returns the keys & values of m as a vector,
+  suitable for reconstructing via (apply hash-map (keyvals m))."
 
 (keyvals {:a 1 :b 2})
 ;=> [:b 2 :a 1]
@@ -637,7 +637,7 @@ Exception converted into a default value.  That is when you need:
 [source,clojure]
 ----
 (with-exception-default default-val & body)
-  Evaluates body & returns its result.  In the event of an exception the
+ "Evaluates body & returns its result.  In the event of an exception the
   specified default value is returned instead of the exception."
 
 (with-exception-default 0
@@ -670,10 +670,10 @@ digits that must match or the maximum error tolerance allowed:
 [source,clojure]
 ----
 (rel= val1 val2 & opts)
-  Returns true if 2 double-precision numbers are relatively equal, else false.
+ "Returns true if 2 double-precision numbers are relatively equal, else false.
   Relative equality is specified as either (1) the N most significant digits are
   equal, or (2) the absolute difference is less than a tolerance value.  Input
-  values are coerced to double before comparison.
+  values are coerced to double before comparison."
 ----
 
 An extract from the unit tests illustrates the use of `rel=`
@@ -810,9 +810,9 @@ the sequence, we may use the function `only`:
 [source,clojure]
 ----
 (only seq-arg)
-  Ensures that a sequence is of length=1, and returns the only value present.
+ "Ensures that a sequence is of length=1, and returns the only value present.
   Throws an exception if the length of the sequence is not one.  Note that,
-  for a length-1 sequence S, (first S), (last S) and (only S) are equivalent.
+  for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
 ----
 
 === The Truth Is Not Ambiguous
@@ -824,12 +824,12 @@ logical values into literal _true_ or _false_ values, so we provide a simple way
 [source,clojure]
 ----
 (truthy? arg)
-  Returns true if arg is logical true (neither nil nor false);
-  otherwise returns false.
+ "Returns true if arg is logical true (neither nil nor false);
+  otherwise returns false."
 
 (falsey? arg)
-  Returns true if arg is logical false (either nil or false);
-  otherwise returns false. Equivalent to (not (truthy? arg)).
+ "Returns true if arg is logical false (either nil or false);
+  otherwise returns false. Equivalent to (not (truthy? arg))."
 ----
 
 Since `truthy?` and `falsey?` are functions (instead of special forms or
@@ -882,7 +882,7 @@ The unit tests show how `not-nil?` leads to a more natural code syntax:
                (= 1 num-nil))))))
 ----
 
-=== Identifying Sequences
+=== [line-through]#Identifying Sequences#  [bold]*Now included in core Clojure 1.9.0-alpha5!*
 
 In some situations, a function may need to verify that an argument is _seqable_, that is, will a
 call to `(seq some-arg)` succeed?  If so, `some-arg` may be interpreted as a sequence of values.
