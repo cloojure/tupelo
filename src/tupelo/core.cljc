@@ -219,6 +219,18 @@
       (throw (IllegalArgumentException. (str "Nothing to prepend! elems=" elems))))
     (vec (concat elems listy))))
 
+(s/defn drop-at :- ts/List
+  "Removes an element from a collection at the specified index."
+  [coll     :- ts/List
+   index    :- s/Int]
+  (when (neg? index)
+    (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
+  (when (<= (count coll) index)
+    (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
+                                        " (count coll)=" (count coll) " index=" index ))))
+  (glue (take       index  coll)
+    (drop  (inc index) coll)))
+
 (s/defn insert-at :- ts/List
   "Inserts an element into a collection at the specified index."
   [coll     :- ts/List
@@ -231,18 +243,6 @@
                                         " (count coll)=" (count coll) " index=" index ))))
   (glue (take  index coll)    [elem]
         (drop  index coll)))
-
-(s/defn drop-at :- ts/List
-  "Removes an element from a collection at the specified index."
-  [coll     :- ts/List
-   index    :- s/Int]
-  (when (neg? index)
-    (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
-  (when (<= (count coll) index)
-    (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
-                                        " (count coll)=" (count coll) " index=" index ))))
-  (glue (take       index  coll)
-    (drop  (inc index) coll)))
 
 (s/defn replace-at :- ts/List
   "Replaces an element in a collection at the specified index."
