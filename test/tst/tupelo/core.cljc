@@ -652,8 +652,7 @@
 
   (is (thrown? IllegalArgumentException (drop-at []         0)))
   (is (thrown? IllegalArgumentException (drop-at (range 3) -1)))
-  (is (thrown? IllegalArgumentException (drop-at (range 3)  3)))
-  (is (thrown? IllegalArgumentException (drop-at (range 3)  4))))
+  (is (thrown? IllegalArgumentException (drop-at (range 3)  3))))
 
 (deftest t-insert-at
   (is (= [9] (insert-at [] 0 9)))
@@ -686,8 +685,7 @@
 
   (is (thrown? IllegalArgumentException (replace-at []         0 9)))
   (is (thrown? IllegalArgumentException (replace-at (range 3) -1 9)))
-  (is (thrown? IllegalArgumentException (replace-at (range 3)  3 9)))
-  (is (thrown? IllegalArgumentException (replace-at (range 3)  4 9))))
+  (is (thrown? IllegalArgumentException (replace-at (range 3)  3 9))))
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
 (deftest t-seqable
