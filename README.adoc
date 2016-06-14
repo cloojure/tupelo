@@ -48,7 +48,7 @@ definitions, and
 link:https://github.com/cloojure/tupelo-datomic/blob/master/test/tst/tupelo_datomic/bond.clj[the
 James Bond example code] for examples of the type-checking in action.
 
-==== Tupelo Types - A helper namespace for Plumatic Schema
+==== Tupelo Types - A collection of functions for testing object types
 
 Please see the link:http://cloojure.github.io/doc/tupelo/tupelo.types.html[tupelo.types] docs.
 
