@@ -463,11 +463,6 @@ s/defn insert-at :- ts/List
    elem     :- s/Any]
   ...)
 
-(is (= [9] (insert-at [] 0 9)))
-
-(is (= [9 0] (insert-at [0] 0 9)))
-(is (= [0 9] (insert-at [0] 1 9)))
-
 (is (= [9 0 1] (insert-at [0 1] 0 9)))
 (is (= [0 9 1] (insert-at [0 1] 1 9)))
 (is (= [0 1 9] (insert-at [0 1] 2 9)))
@@ -488,11 +483,6 @@ And, of course, you can also replace an element in a sequence:
    index    :- s/Int
    elem     :- s/Any]
    ...)
-
-(is (= [9] (replace-at (range 1) 0 9)))
-
-(is (= [9 1] (replace-at (range 2) 0 9)))
-(is (= [0 9] (replace-at (range 2) 1 9)))
 
 (is (= [9 1 2 3 4] (replace-at (range 5) 0 9)))
 (is (= [0 9 2 3 4] (replace-at (range 5) 1 9)))
