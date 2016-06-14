@@ -3,7 +3,7 @@
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [ [org.clojure/clojure              "1.9.0-alpha5"]
+  :dependencies [ [org.clojure/clojure              "1.9.0-alpha6"]
                   [org.clojure/core.incubator       "0.1.4"]
                   [org.clojure/core.async           "0.2.382"]
                   [org.clojure/test.check           "0.9.0"]
