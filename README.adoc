@@ -501,13 +501,13 @@ wondering where they are. Well, now they are available:
 [source,clojure]
 ----
 (any? pred coll)
-  For any predicate & collection, returns true if (pred x) is
+ "For any predicate & collection, returns true if (pred x) is
   logical true for any x in coll; otherwise returns false. Like
-  clojure.core/some, but returns only true or false.
+  clojure.core/some, but returns only true or false."
 
 (not-empty? coll)
-  For any collection, returns true if coll contains any items;
-  otherwise returns false. Equivalent to (not (empty? coll)).
+ "For any collection, returns true if coll contains any items;
+  otherwise returns false. Equivalent to (not (empty? coll))."
 ----
 
 The unit test shows these functions in action
