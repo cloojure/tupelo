@@ -884,25 +884,25 @@ The unit tests show how `not-nil?` leads to a more natural code syntax:
 
 === Identifying Sequences  
 
-*Update 2016-6-13: Now included in core Clojure 1.9.0-alpha5!*
+*Update 2016-6-13: Now included in clojure.core 1.9.0-alpha5!*
 
-  In some situations, a function may need to verify that an argument is _seqable_, that is, will a
-  call to `(seq some-arg)` succeed?  If so, `some-arg` may be interpreted as a sequence of values.
-  Clojure doesn't have a built-in function for this (please note that `seqable?` is different from
-  `seq?`), but we can copy an solution from the old `clojure.contrib.core/seqable`:
+    In some situations, a function may need to verify that an argument is _seqable_, that is, will a
+    call to `(seq some-arg)` succeed?  If so, `some-arg` may be interpreted as a sequence of values.
+    Clojure doesn't have a built-in function for this (please note that `seqable?` is different from
+    `seq?`), but we can copy an solution from the old `clojure.contrib.core/seqable`:
 
-  [source,clojure]
-  ----
-  (is (seqable?   "abc"))
-  (is (seqable?   {1 2 3 4} ))
-  (is (seqable?  #{1 2 3} ))
-  (is (seqable?  '(1 2 3) ))
-  (is (seqable?   [1 2 3] ))
-  (is (seqable?   (byte-array [1 2] )))
+[source,clojure]
+----
+    (is (seqable?   "abc"))
+    (is (seqable?   {1 2 3 4} ))
+    (is (seqable?  #{1 2 3} ))
+    (is (seqable?  '(1 2 3) ))
+    (is (seqable?   [1 2 3] ))
+    (is (seqable?   (byte-array [1 2] )))
 
-  (is (not (seqable?  1 )))
-  (is (not (seqable? \a )))
-  ----
+    (is (not (seqable?  1 )))
+    (is (not (seqable? \a )))
+----
 
 == Other useful libraries
 
