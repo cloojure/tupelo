@@ -4,7 +4,14 @@
 
 Leiningen coordinates:
 
-image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
+For Clojure 1.8, please use 
+
+  [tupelo "0.1.72"] 
+
+Versions 0.9.* of Tupelo are currently in flux adapting to the 1.9.0-alpha* versions of Clojure
+under development.  Please avoid these versions until the Clojure 1.9.0 API settles down.
+
+    image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 
 === The Tupelo API Docs http://cloojure.github.io/doc/tupelo[are posted on GitHub Pages]
 
