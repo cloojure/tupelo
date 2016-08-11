@@ -6,14 +6,15 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.misc
   (:use tupelo.misc
-        tupelo.core
         clojure.test )
   (:require [clojure.string   :as str]
             [schema.core      :as s]
+            [tupelo.core      :as t]
             [tupelo.misc      :as misc]
             [clojure.math.combinatorics  :as combo]
   ))
 
+(t/refer-tupelo)
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
@@ -85,18 +86,18 @@
          (with-out-str (with-dots (doseq [x (range 99)]
                                     (dot)))))))
 (deftest t-factorial
-  (is (=     (factorial 0)          1))
-  (is (=     (factorial 1)          1))
-  (is (=     (factorial 2)          2))
-  (is (=     (factorial 3)          6))
-  (is (=     (factorial 4)         24))
-  (is (=     (factorial 5)        120))
-  (is (=     (factorial 6)        720))
-  (is (=     (factorial 7)       5040))
-  (is (=     (factorial 8)      40320))
-  (is (=     (factorial 9)     362880))
-  (is (=     (factorial 10)   3628800))
-  (is (rel=  (factorial 15) 1.307674368e+12 :digits 10))
+  (is (=       (factorial 0)          1))
+  (is (=       (factorial 1)          1))
+  (is (=       (factorial 2)          2))
+  (is (=       (factorial 3)          6))
+  (is (=       (factorial 4)         24))
+  (is (=       (factorial 5)        120))
+  (is (=       (factorial 6)        720))
+  (is (=       (factorial 7)       5040))
+  (is (=       (factorial 8)      40320))
+  (is (=       (factorial 9)     362880))
+  (is (=       (factorial 10)   3628800))
+  (is (t/rel=  (factorial 15) 1.307674368e+12 :digits 10))
   (is (thrown? Exception (factorial 1.5)))
   (is (thrown? Exception (factorial -1)))
   (is (thrown? Exception (factorial -1))))

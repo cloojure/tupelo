@@ -9,11 +9,12 @@
   (:require [clojure.string             :as str]
             [clojure.java.io            :as io]
             [clojure-csv.core           :as csv]
-            [schema.core                :as s] 
-            [tupelo.misc                :as cool-misc] 
-            [tupelo.core                :refer :all] )
+            [schema.core                :as s]
+            [tupelo.core                :as t]
+            [tupelo.misc                :as cool-misc] )
   (:import  [java.io Reader StringReader] ))
 
+(t/refer-tupelo)
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
@@ -51,7 +52,7 @@
         csv-reader      (if (string? csv-input) 
                             (StringReader. csv-input)
                             csv-input )
-        parsed-lines    (apply csv/parse-csv csv-reader (keyvals opts))
+        parsed-lines    (apply csv/parse-csv csv-reader (t/keyvals opts))
         {:keys [labels-kw data-lines]}  
                         (get-labels-and-data-lines opts parsed-lines)
         data-fn         (:data-fn opts) 
@@ -93,4 +94,4 @@
   [csv-input & {:as opts} ] 
   (let [opts (or opts {} ) ] 
     (row-maps->col-vecs 
-      (apply parse-csv->row-maps csv-input (keyvals opts)))))
+      (apply parse-csv->row-maps csv-input (t/keyvals opts)))))

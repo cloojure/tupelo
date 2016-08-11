@@ -5,17 +5,24 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.core
+  (:refer-clojure :exclude [any? ] )
+  (:use tupelo.core
+        clojure.test )
   (:require [clojure.string                         :as str]
+            [clojure.spec                           :as s]
+            [clojure.spec.gen                       :as sgen]
             [clojure.test.check.generators          :as gen]
             [clojure.test.check.properties          :as prop]
             [clojure.test.check.clojure-test        :as tst]
             [tupelo.misc                            :as tm]
-            [schema.core                            :as s] )
-  (:use tupelo.core
-        clojure.test ))
+            [schema.core                            :as schema])
+  )
 
 ; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
+(schema/set-fn-validation! true)   ; #todo add to Schema docs
+
+; (s/instrument-all)
+; (s/instrument #'tupelo.core/truthy?)  ; instrument just one var
 
 (deftest t-spy
   (testing "basic usage"
@@ -92,7 +99,11 @@
     (is (= "msg0 => 5\n"                    (with-out-str (fn0))))
     ))
 
+
 (deftest t-truthy-falsey
+  (is (truthy? 5))
+; (spyx (s/check-fn truthy? ))
+
   (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]
     (testing "basic usage"
       (let [truthies    (keep-if boolean data)       ; coerce to primitive type

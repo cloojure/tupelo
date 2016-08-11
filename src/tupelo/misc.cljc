@@ -6,16 +6,17 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.misc
   "Miscellaneous functions."
-  (:use tupelo.core)
   (:require [clojure.string :as str]
             [clojure.java.shell :as shell]
             [clojure.set :as set]
             [schema.core :as s]
+            [tupelo.core :as t]
             [tupelo.schema :as ts]
             [tupelo.async :as tas]
             [clojure.core.async :refer [ go go-loop chan buffer close! thread alts! alts!! timeout ]]
   ))
 
+(t/refer-tupelo)
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
@@ -86,7 +87,7 @@
   Example: 'ls -ldF *'  "
   [cmd-str]
   (let [result (shell/sh *os-shell* "-c" cmd-str)]
-    (if (= 0 (safe-> :exit result))
+    (if (= 0 (t/safe-> :exit result))
       result
       (throw (RuntimeException. 
                (str "shell-cmd: clojure.java.shell/sh failed. \n" 

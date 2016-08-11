@@ -10,9 +10,10 @@
   functions, these native-Clojure functions can be used as higher-order functions in maps,
   function arguments, etc.  Each function also provides an optional default-value which
   will be returned if there is an exception during parsing."
-  (:use tupelo.core)
-  (:require [schema.core  :as s] ))
+  (:require [schema.core  :as s]
+            [tupelo.core :as t] ))
 
+(t/refer-tupelo)
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
@@ -32,7 +33,7 @@
         default-val (get opts-map :default ::none) ]
     (if (= default-val ::none)
       (Byte/parseByte str-val)
-      (with-exception-default default-val (Byte/parseByte str-val)) )))
+      (t/with-exception-default default-val (Byte/parseByte str-val)))))
 
 (defn parse-short
  "( [str-val]
@@ -46,7 +47,7 @@
         default-val (get opts-map :default ::none) ]
     (if (= default-val ::none)
       (Short/parseShort str-val)
-      (with-exception-default default-val (Short/parseShort str-val)) )))
+      (t/with-exception-default default-val (Short/parseShort str-val)) )))
 
 (defn parse-int
  "( [str-val]
@@ -60,7 +61,7 @@
         default-val (get opts-map :default ::none) ]
     (if (= default-val ::none)
       (Integer/parseInt str-val)
-      (with-exception-default default-val (Integer/parseInt str-val)) )))
+      (t/with-exception-default default-val (Integer/parseInt str-val)) )))
 
 (defn parse-long
  "( [str-val]
@@ -74,7 +75,7 @@
         default-val (get opts-map :default ::none) ]
     (if (= default-val ::none)
       (Long/parseLong str-val)
-      (with-exception-default default-val (Long/parseLong str-val)) )))
+      (t/with-exception-default default-val (Long/parseLong str-val)) )))
 
 (defn parse-float
  "( [str-val]
@@ -88,7 +89,7 @@
         default-val (get opts-map :default ::none) ]
     (if (= default-val ::none)
       (Float/parseFloat str-val)
-      (with-exception-default default-val (Float/parseFloat str-val)) )))
+      (t/with-exception-default default-val (Float/parseFloat str-val)) )))
 
 (defn parse-double
  "( [str-val]
@@ -102,7 +103,7 @@
         default-val (get opts-map :default ::none) ]
     (if (= default-val ::none)
       (Double/parseDouble str-val)
-      (with-exception-default default-val (Double/parseDouble str-val)) )))
+      (t/with-exception-default default-val (Double/parseDouble str-val)) )))
 
 #_(defn parse-xxxx
  "( [str-val]
@@ -116,7 +117,7 @@
         default-val (get opts-map :default ::none) ]
     (if (= default-val ::none)
       (XXXX/parseXXXX str-val)
-      (with-exception-default default-val (XXXX/parseXXXX str-val)) )))
+      (t/with-exception-default default-val (XXXX/parseXXXX str-val)) )))
 
 ; #awt TODO:  finish other parse* functions
 

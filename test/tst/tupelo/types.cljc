@@ -6,10 +6,11 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.types
   (:use tupelo.types
-        tupelo.core
         clojure.test)
-  (:require [schema.core :as s] ))
+  (:require [schema.core :as s]
+            [tupelo.core :as t] ))
 
+(t/refer-tupelo)
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 

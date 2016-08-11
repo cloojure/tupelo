@@ -6,13 +6,14 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.base64url
   "Convert to/from traditional base64url encoding."
-  (:use tupelo.core)
   (:require [clojure.string :as str]
+            [tupelo.core    :as t]
             [tupelo.misc    :as misc]
             [tupelo.types   :as types]
             [schema.core    :as s])
   (:gen-class))
 
+(t/refer-tupelo)
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 

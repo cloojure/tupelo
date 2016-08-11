@@ -1,7 +1,8 @@
 (ns tupelo.array
-  (:use tupelo.core)
-  (:require [schema.core :as s] ))
+  (:require [schema.core :as s]
+            [tupelo.core :as t] ))
 
+(t/refer-tupelo)
 (s/set-fn-validation! true)
 
 (def Vector

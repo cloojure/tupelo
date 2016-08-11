@@ -16,14 +16,15 @@
     http://en.wikipedia.org/wiki/Base64  
     http://www.yuiblog.com/blog/2010/07/06/in-the-yui-3-gallery-base64-and-y64-encoding/
   "
-  (:use tupelo.core)
   (:require [clojure.string     :as str]
             [tupelo.base64      :as b64]
+            [tupelo.core :as t]
             [tupelo.misc        :as misc]
             [tupelo.types       :as types]
             [schema.core        :as s] )
   (:gen-class))
 
+(t/refer-tupelo)
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 

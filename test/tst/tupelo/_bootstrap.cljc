@@ -6,13 +6,13 @@
 ;   software.
 (ns tst.tupelo._bootstrap
   "This namespace is used to perform one-time tasks during testing, such as printing the clojure version"
-  (:use tupelo.core
-        clojure.test )
-  (:require [schema.core :as s] ))
+  (:use clojure.test )
+  (:require [schema.core :as s]
+            [tupelo.core :as t] ))
 
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
 (deftest t-bootstrap
-  (spyx *clojure-version*)
+  (t/spyx *clojure-version*)
   (is true))

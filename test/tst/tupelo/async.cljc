@@ -5,10 +5,11 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.async
-  (:use tupelo.core
+  (:use tupelo.async
         clojure.test)
   (:require [clojure.string         :as str]
             [schema.core            :as s]
+            [tupelo.core            :as t]
             [tupelo.async           :as tas]
             [clojure.core.async :refer [ go go-loop chan buffer close! thread alts! alts!! timeout close!  ]]
   ))

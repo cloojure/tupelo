@@ -1,12 +1,13 @@
 (ns tst.tupelo.array
-  (:use clojure.test
-        tupelo.core)
+  (:use clojure.test)
   (:require
     [schema.test :as st]
     [tupelo.array :as tar]
     [tupelo.misc :as tm]
+    [tupelo.core :as t]
     [clojure.string :as str]))
 
+(t/refer-tupelo)
 (use-fixtures :once st/validate-schemas)
 
 (deftest t-arrays

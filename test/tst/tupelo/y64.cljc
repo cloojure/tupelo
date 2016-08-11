@@ -7,17 +7,18 @@
 (ns tst.tupelo.y64
   (:require [clojure.string                         :as str]
           ; [clojure.test.check                     :as tc]
+            [clojure.test.check.clojure-test        :as tst]
             [clojure.test.check.generators          :as gen]
             [clojure.test.check.properties          :as prop]
-            [clojure.test.check.clojure-test        :as tst]
-            [tupelo.y64                             :as y64]
-            [tupelo.misc                            :as misc] 
-            [tupelo.types                           :as types] 
-            [schema.core                            :as s] )
-  (:use tupelo.core
-        clojure.test)
+            [schema.core                            :as s]
+            [tupelo.core :as t]
+            [tupelo.misc                            :as misc]
+            [tupelo.types                           :as types]
+            [tupelo.y64                             :as y64] )
+  (:use clojure.test)
   (:gen-class))
 
+(t/refer-tupelo)
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 

@@ -6,14 +6,12 @@
 ;   software.
 (ns tupelo.async
   "tupelo - Making Clojure even sweeter"
-  (:require [clojure.core                 :as clj]
-            [clojure.core.async           :as clj.async]
-            [schema.core                  :as s]
-            [tupelo.types                 :as types]
-            [tupelo.schema                :as ts]
-            )
+  (:require [clojure.core.async :as async]
+            [tupelo.core :as t]
+            [schema.core :as s] )
   (:gen-class))
 
+(t/refer-tupelo)
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 ; #todo add to project.clj (esp for tupelo-app template, user/dev profile)
@@ -27,20 +25,20 @@
 ; #todo add tests
 ; #todo add docs to README
 (defmacro put-go! [& args]
-  `(clj.async/>! ~@args))
+  `(async/>! ~@args))
 
 (defmacro take-go! [& args]
-  `(clj.async/<! ~@args))
+  `(async/<! ~@args))
 
 (defn put-now! [& args]
-  (apply clj.async/>!! args))
+  (apply async/>!! args))
 
 (defn take-now! [& args]
-  (apply clj.async/<!! args))
+  (apply async/<!! args))
 
 (defn put-later! [& args]
-  (apply clj.async/put! args))
+  (apply async/put! args))
 
 (defn take-later! [& args]
-  (apply clj.async/take! args))
+  (apply async/take! args))
 
