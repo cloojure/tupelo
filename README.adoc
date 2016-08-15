@@ -174,10 +174,10 @@ Sometimes you may prefer to print out the literal expression instead of a
 message. In this case, just use `spyx` (short for "spy expression") :
 [source,clojure]
 ----
-(as-> 1 x
-      (spyx (inc x))
-      (* 2 x))
-; (inc x) => 2         ; the expression is used as the label
+(it-> 1
+      (spyx (inc it))
+      (* 2 it))
+; (inc it) => 2     ; the expression is used as the label
 4
 ----
 In other instances, you may wish to use `spyxx` to display the expression, its
@@ -391,10 +391,10 @@ combine like collections together into a result collection of the same type:
 An `Exception` will be thrown if the collections to be 'glued' are not all of
 the same type. The allowable input types are:
 
-  - mixed lists & vectors
+  - all sequential: any mix of lists & vectors (vector result)
   - all maps (sorted or not)
   - all sets (sorted or not)
-  - mixed strings & characters
+  - all textual: any mix of strings & characters (string result)
 
 === Adding Values to the Beginning or End of a Sequence
 
@@ -408,12 +408,16 @@ used to add a new value to the beginning of a vector or list:
 > (cons   [1 2] 3)    ;=> IllegalArgumentException
 > (conj   [1 2] 3)    ;=> [1 2 3]
 > (conj   [1 2] 3 4)  ;=> [1 2 3 4]
+> (conj  '(1 2) 3)    ;=> (3 1 2)       ; oops
+> (conj  '(1 2) 3 4)  ;=> (4 3 1 2)     ; oops
 
 ; Add to the beginning
-> (conj     1 [2 3] ) ;=> ClassCastException
-> (concat   1 [2 3] ) ;=> IllegalArgumentException
-> (cons     1 [2 3] ) ;=> (1 2 3)
-> (cons   1 2 [3 4] ) ;=> ArityException
+> (conj     1  [2 3] ) ;=> ClassCastException
+> (concat   1  [2 3] ) ;=> IllegalArgumentException
+> (cons     1  [2 3] ) ;=> (1 2 3)
+> (cons   1 2  [3 4] ) ;=> ArityException
+> (cons     1 '(2 3) ) ;=> (1 2 3)
+> (cons   1 2 '(3 4) ) ;=> ArityException 
 ----
 
 These failures are irritating and unproductive, and the error messages don't make it obvious what
