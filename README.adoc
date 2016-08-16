@@ -82,7 +82,7 @@ the enhanced version or the original version.
 The goal in using `tupelo.core` is that you can just plop it into any namespace without
 having to worry about any conflicts with `clojure.core` functionality. So, both the core functions
 and the added/enhanced functions are both available for use at all times. As such, we 
-normally specify `(:use tupelo.core)` in our namespace declaration:
+normally refer tupelo.core into our namespace as follows:
 
 [source,clojure]
 ----
