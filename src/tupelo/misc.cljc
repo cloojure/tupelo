@@ -23,7 +23,7 @@
 
 (def ^:dynamic *os-shell* "/bin/bash")  ; could also use /bin/zsh, etc
 
-(defn collapse-whitespace
+(defn collapse-whitespace ; #todo readme & blog
  "Replaces all consecutive runs of whitespace characters (including newlines) with a single space.
   Removes any leading or trailing whitespace. Returns a string composed of all tokens
   separated by a single space."
@@ -32,7 +32,7 @@
     str/trim
       (str/replace #"\s+" " ")))
 
-(s/defn equals-ignore-spacing :- s/Bool; #todo add to readme
+(s/defn equals-ignore-spacing :- s/Bool  ; #todo readme & blog
   "Compares arguments for equality using tupelo.misc/collapse-whitespace.
    Equivalent to separating tokens by whitespace and comparing the resulting sequences."
   [& args :- [s/Str]]
