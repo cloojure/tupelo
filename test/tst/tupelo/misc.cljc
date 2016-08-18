@@ -29,10 +29,50 @@
 )
 
 (deftest collapse-whitespace-t
-  (testing "basic usage"
-    (is (= "abc def g hij kl"
-            (misc/collapse-whitespace "  abc    def			g
-                                       hij kl	 " )))))
+  (is (= "abc def g hij kl"
+          (misc/collapse-whitespace "  abc    def			g
+                                     hij kl	 " ))))
+
+(deftest t-equals-ignore-spacing
+  (is (equals-ignore-spacing "a" ))
+  (is (equals-ignore-spacing "a" "  a "))
+  (is (equals-ignore-spacing "a" "  a  " "   a" "a   "))
+
+  (is (equals-ignore-spacing "    
+Whenever you find yourself on the side of the majority, it is time to pause and reflect.
+Don't go around saying the world owes you a living. The world owes you nothing. It was here first.
+I have never let my schooling interfere with my education.
+If you tell the truth, you don't have to remember anything.
+Mark Twain          "
+      
+"		Whenever you find yourself on the side of the majority, it is time to pause and reflect.
+      Don't go around saying the world owes you a living. The world owes you nothing. It was here first.
+      I have never let my schooling interfere with my education.
+      If you tell the truth, you don't have to remember anything.
+      Mark Twain			"
+
+"      Whenever you find yourself on the side of the
+       majority, it is time to pause and reflect.      Don't go
+       around saying the world owes you a living. 	The world
+       		owes you nothing. 		It was here first.  I have never
+       let my schooling interfere with my education.  If you
+       tell the truth, you don't have to remember
+       anything.
+       Mark Twain      		" )))
+
+(deftest t-double-quotes<->single-quotes
+  (is (= (double-quotes->single-quotes (str \")) (str \')))
+  (is (= (single-quotes->double-quotes (str \')) (str \")))
+  (let [s1 "I said, 'Yes, please.'"
+        s2 "I said, \"Yes, please.\"" ]
+      (is (= s1 (-> s2 double-quotes->single-quotes)))
+      (is (= s2 (-> s1 single-quotes->double-quotes)))
+      (is (= s2 (-> s2
+                  double-quotes->single-quotes
+                  single-quotes->double-quotes)))
+      (is (= s1 (-> s1
+                  single-quotes->double-quotes
+                  double-quotes->single-quotes)))))
 
 (deftest str->kw-t
   (testing "basic usage"

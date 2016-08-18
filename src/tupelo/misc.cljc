@@ -13,8 +13,8 @@
             [tupelo.core :as t]
             [tupelo.schema :as ts]
             [tupelo.async :as tas]
-            [clojure.core.async :refer [ go go-loop chan buffer close! thread alts! alts!! timeout ]]
-  ))
+            [clojure.core.async :refer [go go-loop chan buffer close! thread alts! alts!! timeout]]
+            [clojure.string :as str]))
 
 (t/refer-tupelo)
 ; Prismatic Schema type definitions
@@ -25,18 +25,33 @@
 
 (defn collapse-whitespace
  "Replaces all consecutive runs of whitespace characters (including newlines) with a single space.
-  Also removes any leading or trailing whitespace."
+  Removes any leading or trailing whitespace. Returns a string composed of all tokens
+  separated by a single space."
   [it]
   (-> it
-      str/trim
+    str/trim
       (str/replace #"\s+" " ")))
+
+(s/defn equals-ignore-spacing :- s/Bool; #todo add to readme
+  "Compares arguments for equality using tupelo.misc/collapse-whitespace.
+   Equivalent to separating tokens by whitespace and comparing the resulting sequences."
+  [& args :- [s/Str]]
+  (let [ws-collapsed-args (mapv collapse-whitespace args)]
+    (apply = ws-collapsed-args)))
+
+(s/defn double-quotes->single-quotes :- s/Str ; #todo readme & blog
+  [arg :- s/Str]
+  (str/replace arg \" \'))
+(s/defn single-quotes->double-quotes :- s/Str ; #todo readme & blog
+  [arg :- s/Str]
+  (str/replace arg \' \"))
 
 (defn normalize-str
  "Returns a 'normalized' version of str-in, stripped of leading/trailing
   blanks, and with all non-alphanumeric chars converted to hyphens."
   [str-in]
   (-> str-in
-      str/trim
+    str/trim
       (str/replace #"[^a-zA-Z0-9]" "-")))
   ; #todo replace with other lib
 
