@@ -5,15 +5,16 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.string
-  (:use tupelo.string
-        clojure.test )
+  (:use clojure.test )
   (:require
+    [clojure.core :as cc]
     [clojure.string :as str]
     [clojure.test.check.generators :as gen]
     [clojure.test.check.properties :as prop]
     [clojure.test.check.clojure-test :as tst]
     [schema.core :as s]
     [tupelo.core :as t]
+    [tupelo.string :as ts]
   ))
 (t/refer-tupelo)
 
@@ -46,18 +47,18 @@
   (is (= "abc"  (str \a  \b  \c )))
 
   ; clojure.core/str failure cases
-  (is (not (= "abc" (drop 1 (str "xabc")))))
-  (is (not (= "abc" (take 3 (str "abcxxx")))))
+  (is (not (= "abc" (cc/drop 1 (str "xabc")))))
+  (is (not (= "abc" (cc/take 3 (str "abcxxx")))))
 
   ; Cannot fix it by using (str ...) on output of take/drop, since result is a LazySeq
-  (is (not (= "abc" (str (drop 1 (str "xabc"))))))
-  (is (not (= "abc" (str (take 3 (str "abcxxx"))))))
-  (is (truthy? (re-find #"clojure.lang.LazySeq@.*" (str (drop 1 (str "xabc"))))))
-  (is (truthy? (re-find #"clojure.lang.LazySeq@.*" (str (take 3 (str "abcxxx"))))))
+  (is (not (= "abc" (str (cc/drop 1 (str "xabc"))))))
+  (is (not (= "abc" (str (cc/take 3 (str "abcxxx"))))))
+  (is (truthy? (re-find #"clojure.lang.LazySeq@.*" (str (cc/drop 1 (str "xabc"))))))
+  (is (truthy? (re-find #"clojure.lang.LazySeq@.*" (str (cc/take 3 (str "abcxxx"))))))
 
   ; Can fix it using str/join
-  (is (= "abc" (str/join (drop 1 (str "xabc")))))
-  (is (= "abc" (str/join (take 3 (str "abcxxx")))))
+  (is (= "abc" (str/join (cc/drop 1 (str "xabc")))))
+  (is (= "abc" (str/join (cc/take 3 (str "abcxxx")))))
 
   ; Demo that str/join takes a single collection arg
   (is (= "" (str/join [ "" ])))
@@ -85,16 +86,16 @@
   (is (not (str/starts-with? "ab" "abc"))))
 
 (deftest t-tupstr-take
-  (is (= ""    (tupstr-take 0 "abc")))
-  (is (= "a"   (tupstr-take 1 "abc")))
-  (is (= "ab"  (tupstr-take 2 "abc")))
-  (is (= "abc" (tupstr-take 3 "abc")))
-  (is (= "abc" (tupstr-take 4 "abc"))))
+  (is (= ""    (ts/take 0 "abc")))
+  (is (= "a"   (ts/take 1 "abc")))
+  (is (= "ab"  (ts/take 2 "abc")))
+  (is (= "abc" (ts/take 3 "abc")))
+  (is (= "abc" (ts/take 4 "abc"))))
 
 (deftest t-tupstr-drop
-  (is (= "abc" (tupstr-drop 0 "abc")))
-  (is (= "bc"  (tupstr-drop 1 "abc")))
-  (is (= "c"   (tupstr-drop 2 "abc")))
-  (is (= ""    (tupstr-drop 3 "abc")))
-  (is (= ""    (tupstr-drop 4 "abc"))))
+  (is (= "abc" (ts/drop 0 "abc")))
+  (is (= "bc"  (ts/drop 1 "abc")))
+  (is (= "c"   (ts/drop 2 "abc")))
+  (is (= ""    (ts/drop 3 "abc")))
+  (is (= ""    (ts/drop 4 "abc"))))
 

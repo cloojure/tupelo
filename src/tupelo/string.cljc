@@ -18,13 +18,15 @@
 (s/set-fn-validation! true)  ; #todo add to Schema docs
 ; #todo add to project.clj (esp for tupelo-app template, user/dev profile)
 
-(s/defn tupstr-drop :- s/Str  ; #todo -> tupelo.string
+; #todo add readme
+
+(s/defn drop :- s/Str  ; #todo -> tupelo.string
   "Drops the first N chars of a string, returning a string result."
   [n    :- s/Int
    txt  :- s/Str]
   (str/join (cc/drop n txt)))
 
-(s/defn tupstr-take :- s/Str  ; #todo -> tupelo.string
+(s/defn take :- s/Str  ; #todo -> tupelo.string
   "Drops the first N chars of a string, returning a string result."
   [n    :- s/Int
    txt  :- s/Str]
