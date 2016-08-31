@@ -6,7 +6,7 @@ Leiningen coordinates:
 
 image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 
-=== The Tupelo API Docs http://cloojure.github.io/doc/tupelo[are posted on GitHub Pages]
+=== The Tupelo API Docs link:http://cloojure.github.io/doc/tupelo[are posted on GitHub Pages]
 
 == Tupelo Overview
 
@@ -39,6 +39,10 @@ sequences and maps. Please see the link:doc/csv.adoc[tupelo.csv] docs.
 ==== Tupelo Parse - Functions to ease text parsing
 
 Please see the link:http://cloojure.github.io/doc/tupelo/tupelo.parse.html[tupelo.parse] docs.
+
+==== Tupelo String - Functions to ease string operations
+
+Please see the link:http://cloojure.github.io/doc/tupelo/tupelo.string.html[tupelo.string] docs.
 
 ==== Tupelo Schema - Type Definitions
 
@@ -697,6 +701,9 @@ Note that, for the :digits variant, _'equality'_ is truly relative, since only t
 digits of each value must match.
 
 === String Operations
+
+Be sure to see the dedicated functions 
+link:http://cloojure.github.io/doc/tupelo/tupelo.string.html[in the tupelo.string namespace!]
 
 Suppose you have a bunch of nested results and you just want to convert everything into a single
 string. In that case, `strcat` is for you:
