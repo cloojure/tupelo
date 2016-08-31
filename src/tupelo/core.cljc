@@ -512,7 +512,7 @@
         ; sequence of chars, nor does it affect byte-array, et al.  We eventually get
         ; seq-of-scalars which can look like [ \a \b 77 78 \66 \z ]
         seq-of-scalars (flatten
-                         (for [it (flatten [args])]
+                         (for [it (keep-if not-nil? (flatten [args])) ]
                            ; Note that "sequential?" returns false for sets, strings, and the various
                            ; array types.
                            (if (or (sequential? it)
@@ -529,7 +529,8 @@
         ; Coerce any integer values into character equivalents (e.g. 65 -> \A), then combine
         ; into a single string.
         result         (apply str
-                         (map char seq-of-scalars))
+                         (map char
+                           (keep-if not-nil? seq-of-scalars)))
         ]
     result))
 

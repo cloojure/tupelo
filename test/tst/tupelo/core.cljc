@@ -583,13 +583,14 @@
   (is (= "ab" (strcat "a" ["b"] )) (strcat ["a"  "b"] ))
   (is (= "ab" (strcat 97   98   )) (strcat [97]  98   ))
   (is (= "ab" (strcat 97  [98]  )) (strcat [97   98]  ))
+  (is (= "ab" (strcat ""  "ab"  )) (strcat ["" \a "b"]))
 
   (is (= "abcd" (strcat              97  98   "cd" )))
   (is (= "abcd" (strcat             [97  98]  "cd" )))
   (is (= "abcd" (strcat (byte-array [97  98]) "cd" )))
 
-  (is (= (strcat "I " [ \h \a \v [\e \space (byte-array [97]) 
-                        [ 32 "complicated" (Math/pow 2 5) '( "str" "ing") ]]] )
+  (is (= (strcat "I " [ \h \a nil \v [\e \space nil (byte-array [97])
+                        [ nil 32 "complicated" (Math/pow 2 5) '( "str" nil "ing") ]]] )
          "I have a complicated string" ))
 
   (let [chars-set   (into #{} (tm/char-seq \a \z))

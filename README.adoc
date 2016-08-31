@@ -703,11 +703,11 @@ string. In that case, `strcat` is for you:
 
 [source,clojure]
 ----
-(is (= (strcat "I " [ \h \a \v [\e \space (byte-array [97])
-                      [ 32 "complicated" (Math/pow 2 5) '( "str" "ing") ]]] )
+(is (= (strcat "I " [ \h \a nil \v [\e \space (byte-array [97])
+                      [ nil 32 "complicated" (Math/pow 2 5) '( "str" nil "ing") ]]] )
        "I have a complicated string" ))
 ----
-
+Note that any `nil` values map to the empty string as with `clojure.core/str`.
 
 Sometimes, you may wish to clip a string to a maximum length for ease of display. In that case, use `clip-str`:
 
