@@ -12,7 +12,7 @@
     [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t]
-    [tupelo.core :as tsch]
+    [tupelo.schema :as tsch]
   ))
 (t/refer-tupelo)
 
@@ -22,16 +22,18 @@
 
 ; #todo add readme
 
+(def StringOrCharSeq (s/if string? s/Str tsch/StrVec))
+
 (s/defn drop :- tsch/StrVec
   "Drops the first N chars of a sequence, returning a StrVec result."
   [n    :- s/Int
-   txt  :- tsch/List]
+   txt  :- StringOrCharSeq ]
   (vec (cc/drop n (seq txt))))
 
 (s/defn take :- tsch/StrVec
   "Drops the first N chars of a sequence, returning a StrVec result."
   [n    :- s/Int
-   txt  :- tsch/List]
+   txt  :- StringOrCharSeq]
   (vec (cc/take n (seq txt))))
 
 (s/defn ->string :- s/Str
