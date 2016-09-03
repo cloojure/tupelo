@@ -23,6 +23,7 @@
 
 (def ^:dynamic *os-shell* "/bin/bash")  ; could also use /bin/zsh, etc
 
+; #todo -> tupelo.string
 (defn collapse-whitespace ; #todo readme & blog
  "Replaces all consecutive runs of whitespace characters (including newlines) with a single space.
   Removes any leading or trailing whitespace. Returns a string composed of all tokens
@@ -32,6 +33,7 @@
     str/trim
       (str/replace #"\s+" " ")))
 
+; #todo -> tupelo.string
 (s/defn equals-ignore-spacing :- s/Bool  ; #todo readme & blog
   "Compares arguments for equality using tupelo.misc/collapse-whitespace.
    Equivalent to separating tokens by whitespace and comparing the resulting sequences."
@@ -39,13 +41,16 @@
   (let [ws-collapsed-args (mapv collapse-whitespace args)]
     (apply = ws-collapsed-args)))
 
+; #todo -> tupelo.string
 (s/defn double-quotes->single-quotes :- s/Str ; #todo readme & blog
   [arg :- s/Str]
   (str/replace arg \" \'))
+; #todo -> tupelo.string
 (s/defn single-quotes->double-quotes :- s/Str ; #todo readme & blog
   [arg :- s/Str]
   (str/replace arg \' \"))
 
+; #todo -> tupelo.string
 (defn normalize-str
  "Returns a 'normalized' version of str-in, stripped of leading/trailing
   blanks, and with all non-alphanumeric chars converted to hyphens."
@@ -55,6 +60,7 @@
       (str/replace #"[^a-zA-Z0-9]" "-")))
   ; #todo replace with other lib
 
+; #todo -> tupelo.string
 (defn str->kw
  "Returns a keyword constructed from the normalized str-in"
   [str-in]
@@ -74,6 +80,7 @@
                                  (last coll) ] ) ] 
       result )))
 
+; #todo -> tupelo.string
 (defn char-seq
   "Given two characters (or numerical equivalents), returns a seq of characters
   (inclusive) from the first to the second.  Characters must be in ascending order."
@@ -89,6 +96,7 @@
         "  start-val=" start-val "  stop-val=" stop-val))))
     (mapv char (range start-val (inc stop-val)))))
 
+; #todo -> tupelo.string
 (defn seq->str
   "Convert a seq into a string (using pr) with a space preceding each value"
   [seq-in]
@@ -112,6 +120,7 @@
                     "result:"      (:out  result) "\n" 
               ))))))
 
+; #todo -> tupelo.string
 (def printable-chars
   "A seq of 1-char strings of all printable characters from space (32) to tilde (126)"
   (mapv str (char-seq \space \~)))

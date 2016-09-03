@@ -42,6 +42,10 @@
   "An ordered sequence of items of indeterminate length."
   [s/Any] )
 
+(def StrVec
+  "An ordered sequence of characters of indeterminate length."
+  [Character] )
+
 (def Tuple
   "A specific type of sequential collection, typically a vector of constant length where each
    element has a pre-defined interpretation."

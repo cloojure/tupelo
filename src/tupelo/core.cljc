@@ -556,7 +556,7 @@
   "Shortcut to cheshire.core/generate-string"
   (cc/generate-string arg))
 
-(defn clip-str
+(defn clip-str      ; #todo -> tupelo.string?
   "Converts all args to single string and clips any characters beyond nchars."
   [nchars & args]
   (it-> (apply str args)
