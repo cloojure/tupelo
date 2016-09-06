@@ -877,7 +877,79 @@
   )
 )
 
+(deftest t-starts-with?
+  (is   (starts-with? (range 0 3) (range 0 0)))
+
+  (is   (starts-with? (range 0 3) (range 0 1)))
+  (is   (starts-with? (range 0 3) (range 0 2)))
+  (is   (starts-with? (range 0 3) (range 0 3)))
+
+  (isnt (starts-with? (range 0 3) (range 1 2)))
+  (isnt (starts-with? (range 0 3) (range 1 3)))
+
+  (isnt (starts-with? (range 0 3) (range 2 3)))
+
+  (isnt (starts-with? (range 1 3) (range 0 1)))
+  (isnt (starts-with? (range 1 3) (range 0 2)))
+  (isnt (starts-with? (range 1 3) (range 0 3)))
+
+  (is   (starts-with? (range 1 3) (range 1 2)))
+  (is   (starts-with? (range 1 3) (range 1 3)))
+
+  (isnt (starts-with? (range 1 3) (range 2 3)))
+
+  (isnt (starts-with? (range 2 3) (range 0 1)))
+  (isnt (starts-with? (range 2 3) (range 0 2)))
+  (isnt (starts-with? (range 2 3) (range 0 3)))
+
+  (isnt (starts-with? (range 2 3) (range 1 2)))
+  (isnt (starts-with? (range 2 3) (range 1 3)))
+
+  (is   (starts-with? (range 2 3) (range 2 3)))
+
+  (isnt (starts-with? (range 3 3) (range 0 1)))
+  (isnt (starts-with? (range 3 3) (range 0 2)))
+  (isnt (starts-with? (range 3 3) (range 0 3)))
+  )
+
+(deftest t-split-when
+  (is= [ [] [0   1   2   3   4]    ] (split-when #(= 0 (first %)) (range 5)))
+  (is= [    [0] [1   2   3   4]    ] (split-when #(= 1 (first %)) (range 5)))
+  (is= [    [0   1] [2   3   4]    ] (split-when #(= 2 (first %)) (range 5)))
+  (is= [    [0   1   2] [3   4]    ] (split-when #(= 3 (first %)) (range 5)))
+  (is= [    [0   1   2   3] [4]    ] (split-when #(= 4 (first %)) (range 5)))
+  (is= [    [0   1   2   3   4] [] ] (split-when #(= 5 (first %)) (range 5)))
+  (is= [    [0   1   2   3   4] [] ] (split-when #(= 9 (first %)) (range 5)))
+
+  (is (= [[\a \b \c] [\d \e \f]] (split-when #(starts-with? % "de")
+                                              "abcdef")))
+)
+
+(deftest t-split-match
+  (is (= [ [] [\a   \b   \c   \d   \e   \f]      ] (split-match "abcdef" "a" )))
+  (is (= [ [] [\a   \b   \c   \d   \e   \f]      ] (split-match "abcdef" "ab")))
+  (is (= [    [\a] [\b   \c   \d   \e   \f]      ] (split-match "abcdef" "bc")))
+  (is (= [    [\a   \b] [\c   \d   \e   \f]      ] (split-match "abcdef" "cde")))
+  (is (= [    [\a   \b   \c] [\d   \e   \f]      ] (split-match "abcdef" "de")))
+  (is (= [    [\a   \b   \c   \d] [\e   \f]      ] (split-match "abcdef" "ef")))
+  (is (= [    [\a   \b   \c   \d   \e] [\f]      ] (split-match "abcdef" "f" )))
+  (is (= [    [\a   \b   \c   \d   \e   \f]  []  ] (split-match "abcdef" "fg")))
+  (is (= [    [\a   \b   \c   \d   \e   \f]  []  ] (split-match "abcdef" "gh")))
+
+  (is (= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [-1]    )))
+  (is (= [ [] [0   1   2   3   4   5]      ]       (split-match (range 6) [0]     )))
+  (is (= [ [] [0   1   2   3   4   5]      ]       (split-match (range 6) [0 1]   )))
+  (is (= [    [0   1] [2   3   4   5]      ]       (split-match (range 6) [2 3]   )))
+  (is (= [    [0   1   2] [3   4   5]      ]       (split-match (range 6) [3 4 5] )))
+  (is (= [    [0   1   2   3] [4   5]      ]       (split-match (range 6) [4 5]   )))
+  (is (= [    [0   1   2   3   4] [5]      ]       (split-match (range 6) [5]     )))
+  (is (= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [5 6]   )))
+  (is (= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [6 7]   )))
+)
+
+
 ;---------------------------------------------------------------------------------------------------
+; Deprecated functions
 
 (deftest ^:deprecated ^:no-doc t-str->lines
   (let [s1    "  hello there 

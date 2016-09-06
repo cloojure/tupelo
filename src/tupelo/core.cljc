@@ -650,6 +650,70 @@
   [first last]
   (range first (inc last)))
 
+; #todo readme
+(defn split-when    ; #todo schema
+  "Splits a collection based on a predicate with a collection argument.
+  Finds the first index N such that (pred (drop N coll)) is true. Returns a length-2 vector
+  of [ (take N coll) (drop N coll) ]. If pred is never satisified, [ coll [] ] is returned."
+  [pred coll]
+  (loop [left  []
+         right (vec coll)]
+    (if (or (pred right) (= [] right))
+      [left right]
+      (recur  (append left (first right))
+        (rest right)))))
+
+; #todo readme
+(sch/defn starts-with? :- sch/Bool
+  "Returns true when the initial elements of coll match those of tgt"
+  [coll tgt]    ; #todo schema
+  (let [tgt-vec (vec tgt)]
+    (if (< (count coll) (count tgt-vec))
+      false
+      (let [coll-vals (take (count tgt-vec) coll)]
+        (= coll-vals tgt-vec)))))
+
+; #todo readme
+(defn split-match    ; #todo schema
+  "Splits a collection src by matching with a sub-sequence tgt of length L.
+  Finds the first index N such that (= tgt (->> coll (drop N) (take L))) is true.
+  Returns a length-2 vector of [ (take N coll) (drop N coll) ].
+  If no match is found, [ coll [] ] is returned."
+  [coll tgt]
+  (split-when
+    (fn [partial-coll] (starts-with? partial-coll (vec tgt)))
+    coll))
+
+;-----------------------------------------------------------------------------
+; testing macros
+
+(defmacro isnt      ; #todo document in readme
+  "Use (isnt ...) instead of (is (not ...)) when using clojure.test"
+  [& body]
+  `(clojure.test/is (not ~@body)))
+
+(defmacro is=  ; #todo document in readme
+  "Use (is= ...) instead of (is (= ...)) when using clojure.test"
+  [& body]
+  `(clojure.test/is (= ~@body)))
+
+(defmacro isnt=  ; #todo document in readme
+  "Use (isnt= ...) instead of (is (not= ...)) when using clojure.test"
+  [& body]
+  `(clojure.test/is (= (not ~@body))))
+
+(defn refer-tupelo  ; #todo document in readme
+  "Refer a number of commonly used tupelo.core functions into the current namespace so they can
+   be used without namespace qualification."
+  []
+  (refer 'tupelo.core :only
+    '[ spy spyx spyxx with-spy-indent truthy? falsey? not-nil? not-empty?
+       forv glue append prepend grab dissoc-in only it-> keep-if drop-if
+       strcat pp-str pretty json->clj clj->json clip-str thru
+       starts-with? split-when split-match
+       isnt is= isnt=
+     ] ))
+
 ;---------------------------------------------------------------------------------------------------
 ; DEPRECATED functions
 
@@ -722,11 +786,3 @@
     (newline)
     ))
 
-(defn refer-tupelo
-  "Refer a number of commonly used tupelo.core functions into the current namespace so they can
-   be used without namespace qualification."
-  []
-  (refer 'tupelo.core :only
-    '[spy spyx spyxx with-spy-indent truthy? falsey? not-nil? not-empty?
-      forv glue append prepend grab dissoc-in only it-> keep-if drop-if
-      strcat pp-str pretty json->clj clj->json clip-str thru ] ))

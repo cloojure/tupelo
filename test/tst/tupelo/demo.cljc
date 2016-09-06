@@ -4,18 +4,13 @@
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
-(ns tst.tupelo.strvec
-  (:use clojure.test )
+(ns tst.tupelo.demo
+  (:use clojure.test)
   (:require
-    [clojure.core :as cc]
     [clojure.string :as str]
-    [clojure.test.check.generators :as gen]
-    [clojure.test.check.properties :as prop]
-    [clojure.test.check.clojure-test :as tst]
+    [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.core :as t]
-    [tupelo.strvec :as ts]
-  ))
+    [tupelo.core :as t] ))
 (t/refer-tupelo)
 
 ; Prismatic Schema type definitions
@@ -24,18 +19,22 @@
 ; #todo add generative testing?
 ; #todo add clojure.spec testing?
 
-
 (deftest t-take
-  (is (= [        ] (ts/take 0 "abc")))
-  (is (= [\a      ] (ts/take 1 "abc")))
-  (is (= [\a \b   ] (ts/take 2 "abc")))
-  (is (= [\a \b \c] (ts/take 3 "abc")))
-  (is (= [\a \b \c] (ts/take 4 "abc"))))
+  (is= [        ] (take 0 "abc"))
+  (is= [\a      ] (take 1 "abc"))
+  (is= [\a \b   ] (take 2 "abc"))
+  (is= [\a \b \c] (take 3 "abc"))
+  (is= [\a \b \c] (take 4 "abc")))
 
 (deftest t-drop
-  (is (= [\a \b \c] (ts/drop 0 "abc")))
-  (is (= [   \b \c] (ts/drop 1 "abc")))
-  (is (= [      \c] (ts/drop 2 "abc")))
-  (is (= [        ] (ts/drop 3 "abc")))
-  (is (= [        ] (ts/drop 4 "abc"))))
+  (is= [\a \b \c] (drop 0 "abc"))
+  (is= [   \b \c] (drop 1 "abc"))
+  (is= [      \c] (drop 2 "abc"))
+  (is= [        ] (drop 3 "abc"))
+  (is= [        ] (drop 4 "abc")))
+
+(deftest t-string
+  (is= [\a \b \c] (vec "abc"))
+  (is= "abc" (str/join [\a \b \c] ))
+)
 
