@@ -651,19 +651,6 @@
   (range first (inc last)))
 
 ; #todo readme
-(defn split-when    ; #todo schema
-  "Splits a collection based on a predicate with a collection argument.
-  Finds the first index N such that (pred (drop N coll)) is true. Returns a length-2 vector
-  of [ (take N coll) (drop N coll) ]. If pred is never satisified, [ coll [] ] is returned."
-  [pred coll]
-  (loop [left  []
-         right (vec coll)]
-    (if (or (pred right) (= [] right))
-      [left right]
-      (recur  (append left (first right))
-        (rest right)))))
-
-; #todo readme
 (sch/defn starts-with? :- sch/Bool
   "Returns true when the initial elements of coll match those of tgt"
   [coll tgt]    ; #todo schema
@@ -672,6 +659,19 @@
       false
       (let [coll-vals (take (count tgt-vec) coll)]
         (= coll-vals tgt-vec)))))
+
+; #todo readme
+(defn split-when    ; #todo schema
+  "Splits a collection based on a predicate with a collection argument.
+  Finds the first index N such that (pred (drop N coll)) is true. Returns a length-2 vector
+  of [ (take N coll) (drop N coll) ]. If pred is never satisified, [ coll [] ] is returned."
+  [pred coll]
+  (loop [left  []
+         right (vec coll)]
+    (if (or (pred right) (empty? right))
+      [left right]
+      (recur  (append left (first right))
+        (rest right)))))
 
 ; #todo readme
 (defn split-match    ; #todo schema
@@ -688,17 +688,17 @@
 ; testing macros
 
 (defmacro isnt      ; #todo document in readme
-  "Use (isnt ...) instead of (is (not ...)) when using clojure.test"
+  "Use (isnt ...) instead of (is (not ...)) for clojure.test"
   [& body]
   `(clojure.test/is (not ~@body)))
 
 (defmacro is=  ; #todo document in readme
-  "Use (is= ...) instead of (is (= ...)) when using clojure.test"
+  "Use (is= ...) instead of (is (= ...)) for clojure.test"
   [& body]
   `(clojure.test/is (= ~@body)))
 
 (defmacro isnt=  ; #todo document in readme
-  "Use (isnt= ...) instead of (is (not= ...)) when using clojure.test"
+  "Use (isnt= ...) instead of (is (not= ...)) for clojure.test"
   [& body]
   `(clojure.test/is (= (not ~@body))))
 
