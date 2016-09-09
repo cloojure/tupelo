@@ -705,17 +705,39 @@
   [& body]
   `(clojure.test/is (= (not ~@body))))
 
-; #todo add tests
+(defn throws?-impl
+  [& forms]
+  (if (= clojure.lang.Symbol (class (first forms)))
+    ; symbol 1st arg => expected Throwable provided
+    (do
+    ; (println "symbol found")
+      `(clojure.test/is
+         (try
+           ~@(rest forms)
+           false        ; fail if no exception thrown
+           (catch ~(first forms) t1#
+             true) ; if catch expected type, test succeeds
+           (catch Throwable t2#
+             false))) ; if thrown type is unexpected, test fails
+    )
+    (do ; expected Throwable not provided
+    ; (println "symbol not found")
+      `(clojure.test/is
+         (try
+           ~@forms
+           false        ; fail if no exception thrown
+           (catch Throwable t3#
+             true))) ; if anything is thrown, test succeeds
+    )))
+
 (defmacro throws?  ; #todo document in readme
-  "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test"
-  [expected-throwable & body]
-  `(clojure.test/is
-     (try
-       ~@body
-       false        ; fail if no exception thrown
-       (catch ~expected-throwable t1# true) ; if catch expected type, test succeeds
-       (catch Throwable t2# false) ; if thrown type is unexpected, test fails
-     )))
+  "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
+
+     (throws? (/ 1 0))                      ; catches any Throwable
+     (throws? ArithmeticException (/ 1 0))  ; catches specified Throwable (or subclass)
+  "
+  [& forms]
+  (apply throws?-impl forms))
 
 (defn refer-tupelo  ; #todo document in readme
   "Refer a number of commonly used tupelo.core functions into the current namespace so they can

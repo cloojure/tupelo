@@ -243,49 +243,49 @@
   (is= (glue \a  "b" "")    "ab" )
   (is= (glue "I" \space "like " \a " nap!" )    "I like a nap!" )
 
-  (throws? IllegalArgumentException   (glue   [1 2]     {:a 1} ))
-  (throws? IllegalArgumentException   (glue  '(1 2)     {:a 1} ))
-  (throws? IllegalArgumentException   (glue   [1 2]    #{:a 1} ))
-  (throws? IllegalArgumentException   (glue  '(1 2)    #{:a 1} ))
-  (throws? IllegalArgumentException   (glue   [1 2]    "hello" ))
-  (throws? IllegalArgumentException   (glue  '(1 2)    "hello" ))
-  (throws? IllegalArgumentException   (glue   {:a 1}   #{:a 1} ))
-  (throws? IllegalArgumentException   (glue   {:a 1}   "hello" ))
-  (throws? IllegalArgumentException   (glue   #{:a 1}  "hello" ))
-  (throws? IllegalArgumentException   (glue   [1 2]     nil    ))
-  (throws? IllegalArgumentException   (glue  '(1 2)     nil    ))
-  (throws? IllegalArgumentException   (glue   {:a 1}    nil    ))
-  (throws? IllegalArgumentException   (glue   #{:a 1}   nil    ))
-  (throws? IllegalArgumentException   (glue   "hello"   nil    ))
+  (throws? (glue   [1 2]     {:a 1} ))
+  (throws? (glue  '(1 2)     {:a 1} ))
+  (throws? (glue   [1 2]    #{:a 1} ))
+  (throws? (glue  '(1 2)    #{:a 1} ))
+  (throws? (glue   [1 2]    "hello" ))
+  (throws? (glue  '(1 2)    "hello" ))
+  (throws? (glue   {:a 1}   #{:a 1} ))
+  (throws? (glue   {:a 1}   "hello" ))
+  (throws? (glue   #{:a 1}  "hello" ))
+  (throws? (glue   [1 2]     nil    ))
+  (throws? (glue  '(1 2)     nil    ))
+  (throws? (glue   {:a 1}    nil    ))
+  (throws? (glue   #{:a 1}   nil    ))
+  (throws? (glue   "hello"   nil    ))
 )
 
 (deftest t-append
-  (throws? Exception  (append  1 2        ))
-  (throws? Exception  (append [1 2]       ))
-  (is= [1 2 3    ]      (append [1 2] 3     ))
-  (is= [1 2 3 4  ]      (append [1 2] 3 4   ))
-  (is= [1 2 3 4 5]      (append [1 2] 3 4 5 ))
+  (throws?            (append  1 2        ))
+  (throws?            (append [1 2]       ))
+  (is= [1 2 3    ]    (append [1 2] 3     ))
+  (is= [1 2 3 4  ]    (append [1 2] 3 4   ))
+  (is= [1 2 3 4 5]    (append [1 2] 3 4 5 ))
 
-  (throws? Exception  (append '(1 2)       ))
-  (is= [1 2 3    ]      (append '(1 2) 3     ))
-  (is= [1 2 3 4  ]      (append '(1 2) 3 4   ))
-  (is= [1 2 3 4 5]      (append '(1 2) 3 4 5 ))
+  (throws?            (append '(1 2)       ))
+  (is= [1 2 3    ]    (append '(1 2) 3     ))
+  (is= [1 2 3 4  ]    (append '(1 2) 3 4   ))
+  (is= [1 2 3 4 5]    (append '(1 2) 3 4 5 ))
 
-  (throws? Exception (append   {:a 1} 99     ))
-  (throws? Exception (append   {:a 1} {:b 2} ))
-  (throws? Exception (append  #{:a 1} 99     ))
-  (throws? Exception (append  #{:a 1} #{99}  ))
+  (throws?            (append   {:a 1} 99     ))
+  (throws?            (append   {:a 1} {:b 2} ))
+  (throws?            (append  #{:a 1} 99     ))
+  (throws?            (append  #{:a 1} #{99}  ))
 
   (testing "old conjv tests"
-    (is= [  2  ]  (append  []  2   ))
-    (is= [  2  ]  (append '()  2   ))
-    (is= [  2 3]  (append  []  2  3))
-    (is= [  2 3]  (append '()  2  3))
+    (is= [  2  ]    (append  []  2   ))
+    (is= [  2  ]    (append '()  2   ))
+    (is= [  2 3]    (append  []  2  3))
+    (is= [  2 3]    (append '()  2  3))
 
-    (is= [1 2 3]  (append  [1] 2  3))
-    (is= [1 2 3]  (append '(1) 2  3))
-    (is= [1 2 3]  (append  [1  2] 3))
-    (is= [1 2 3]  (append '(1  2) 3))
+    (is= [1 2 3]    (append  [1] 2  3))
+    (is= [1 2 3]    (append '(1) 2  3))
+    (is= [1 2 3]    (append  [1  2] 3))
+    (is= [1 2 3]    (append '(1  2) 3))
 
     (is= [1 2 3 4]  (append  [1  2] 3 4))
     (is= [1 2 3 4]  (append '(1  2) 3 4))
@@ -298,26 +298,26 @@
     (is= [0 1 2 3 4 5] (apply append [0] (range 1 6)))))
 
 (deftest t-prepend
-  (is (thrown? Exception  (prepend       [2 1] )))
-  (is (= [    3 2 1]      (prepend     3 [2 1] )))
-  (is (= [  4 3 2 1]      (prepend   4 3 [2 1] )))
-  (is (= [5 4 3 2 1]      (prepend 5 4 3 [2 1] )))
+  (throws?            (prepend       [2 1] ))
+  (is= [    3 2 1]    (prepend     3 [2 1] ))
+  (is= [  4 3 2 1]    (prepend   4 3 [2 1] ))
+  (is= [5 4 3 2 1]    (prepend 5 4 3 [2 1] ))
 
-  (is (thrown? Exception  (prepend       '(2 1) )))
-  (is (= [    3 2 1]      (prepend     3 '(2 1) )))
-  (is (= [  4 3 2 1]      (prepend   4 3 '(2 1) )))
-  (is (= [5 4 3 2 1]      (prepend 5 4 3 '(2 1) )))
+  (throws?            (prepend       '(2 1) ))
+  (is= [    3 2 1]    (prepend     3 '(2 1) ))
+  (is= [  4 3 2 1]    (prepend   4 3 '(2 1) ))
+  (is= [5 4 3 2 1]    (prepend 5 4 3 '(2 1) ))
 
-  (is (thrown? Exception (prepend   99     {:a 1} )))
-  (is (thrown? Exception (prepend   {:b 2} {:a 1} )))
-  (is (thrown? Exception (prepend   99    #{:a 1} )))
-  (is (thrown? Exception (prepend  #{99}  #{:a 1} ))))
+  (throws?            (prepend   99     {:a 1} ))
+  (throws?            (prepend   {:b 2} {:a 1} ))
+  (throws?            (prepend   99    #{:a 1} ))
+  (throws?            (prepend  #{99}  #{:a 1} )))
 
 (deftest t-grab
   (let [map1  {:a 1 :b 2}]
-    (is (= 1                                  (grab :a map1)))
-    (is (= 2                                  (grab :b map1)))
-    (is (thrown?    IllegalArgumentException  (grab :c map1))) ))
+    (is= 1    (grab :a map1))
+    (is= 2    (grab :b map1))
+    (throws?  (grab :c map1)) ))
 
 (deftest t-fetch-in
   (testing "basic usage"
@@ -325,14 +325,14 @@
                  :a2 { :b1 "b1"
                        :b2 { :c1 "c1"
                              :c2 "c2" }}} ]
-      (is (= (fetch-in map1 [:a1] ) "a1" ))
-      (is (= (fetch-in map1 [:a2 :b1] ) "b1" ))
-      (is (= (fetch-in map1 [:a2 :b2 :c1] ) "c1" ))
-      (is (= (fetch-in map1 [:a2 :b2 :c2] ) "c2" ))
-      (is (thrown? IllegalArgumentException  (fetch-in map1 [:a9]) ))
-      (is (thrown? IllegalArgumentException  (fetch-in map1 [:a2 :b9]) ))
-      (is (thrown? IllegalArgumentException  (fetch-in map1 [:a2 :b2 :c9]) ))
-    )))
+
+      (is= "a1" (fetch-in map1 [:a1] ))
+      (is= "b1" (fetch-in map1 [:a2 :b1] ))
+      (is= "c1" (fetch-in map1 [:a2 :b2 :c1] ))
+      (is= "c2" (fetch-in map1 [:a2 :b2 :c2] ))
+      (throws?  (fetch-in map1 [:a9] ))
+      (throws?  (fetch-in map1 [:a2 :b9] ))
+      (throws?  (fetch-in map1 [:a2 :b2 :c9] )))))
 
 (deftest t-dissoc-in
   (let [mm    {:a { :b { :c "c" }}} ]
@@ -946,6 +946,18 @@
   (is= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [6 7]   ))
 )
 
+(deftest t-throws
+  ; (println "t-throws enter")
+  ; (newline) (spyx (throws?-impl '(/ 1 2)))
+  ; (newline) (spyx (throws?-impl 'Exception '(/ 1 2)))
+  ; (newline) (spyx (throws?-impl 'ArithmeticException '(/ 1 2)))
+
+  (throws? (/ 1 0))
+  (throws? Exception (/ 1 0))             ; catches specified Throwable (or subclass)
+  (throws? ArithmeticException (/ 1 0))   ; catches specified Throwable (or subclass)
+
+  ; (println "t-throws exit")
+)
 
 ;---------------------------------------------------------------------------------------------------
 ; Deprecated functions
