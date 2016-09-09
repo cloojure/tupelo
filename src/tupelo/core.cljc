@@ -687,20 +687,35 @@
 ;-----------------------------------------------------------------------------
 ; testing macros
 
+; #todo add tests
 (defmacro isnt      ; #todo document in readme
   "Use (isnt ...) instead of (is (not ...)) for clojure.test"
   [& body]
   `(clojure.test/is (not ~@body)))
 
+; #todo add tests
 (defmacro is=  ; #todo document in readme
   "Use (is= ...) instead of (is (= ...)) for clojure.test"
   [& body]
   `(clojure.test/is (= ~@body)))
 
+; #todo add tests
 (defmacro isnt=  ; #todo document in readme
   "Use (isnt= ...) instead of (is (not= ...)) for clojure.test"
   [& body]
   `(clojure.test/is (= (not ~@body))))
+
+; #todo add tests
+(defmacro throws?  ; #todo document in readme
+  "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test"
+  [expected-throwable & body]
+  `(clojure.test/is
+     (try
+       ~@body
+       false        ; fail if no exception thrown
+       (catch ~expected-throwable t1# true) ; if catch expected type, test succeeds
+       (catch Throwable t2# false) ; if thrown type is unexpected, test fails
+     )))
 
 (defn refer-tupelo  ; #todo document in readme
   "Refer a number of commonly used tupelo.core functions into the current namespace so they can
@@ -711,7 +726,7 @@
        forv glue append prepend grab dissoc-in only it-> keep-if drop-if
        strcat pp-str pretty json->clj clj->json clip-str thru
        starts-with? split-when split-match
-       isnt is= isnt=
+       isnt is= isnt= throws?
      ] ))
 
 ;---------------------------------------------------------------------------------------------------
