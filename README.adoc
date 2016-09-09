@@ -260,16 +260,20 @@ placeholder value:
 [source,clojure]
 ----
 (it-> 3
-      (spy :msg 1 it)
+      (spy :msg :initial it)
       (let [x it]
         (inc x))
-      (spy it :msg 2)
+      (spy it :msg 222)
       (* it 2)
       (spyx it))
-; 1 => 3
-; 2 => 4
+; :initial => 3
+; 222 => 4
 ; it => 8
+8           ; return value
 ----
+
+Note that the `:msg` argument does not need to be a string. As shown above, keywords, integers, etc
+may be used.
 
 === Map Value Lookup
 
@@ -358,9 +362,10 @@ had the unpredictable behavior of recursively (& silently) deleting all keys in
 The `concat` function can sometimes have rather surprising results:
 [source,clojure]
 ----
-(is (= (concat {:a 1} {:b 2} {:c 3} )
-             [ [:a 1] [:b 2] [:c 3] ] ))
+(concat {:a 1} {:b 2} {:c 3} )
+;=>   ( [:a 1] [:b 2] [:c 3] )
 ----
+
 In this example, the user probably meant to merge the 3 maps into one. Instead, the three
 maps were mysteriously converted into length-2 vectors, which were then nested inside another
 sequence.
@@ -368,8 +373,8 @@ sequence.
 The `conj` function can also surprise the user:
 [source,clojure]
 ----
-(is (= (conj [1 2] [3 4])
-             [1 2  [3 4] ] ))
+(conj [1 2] [3 4] )
+;=>   [1 2  [3 4] ]
 ----
 
 Here the user probably wanted to get `[1 2 3 4]` back, but instead got a nested
