@@ -12,12 +12,13 @@
             [clojure.pprint :as pprint]
             [clojure.string :as str]
             [clojure.set :as set]
-            [clojure.spec :as sp]
+           ;[clojure.spec :as sp]
+           ;[clojure.spec.gen :as sp.gen]
             [cheshire.core :as cc]
             [schema.core :as sk]
             [tupelo.types :as types]
             [tupelo.schema :as ts]
-            )
+            [clojure.spec :as sp])
   (:import [java.io BufferedReader StringReader])
   (:gen-class))
 
@@ -136,9 +137,9 @@
   (if arg true false))
 
 ; #todo how to test the :ret part?
-; (s/fdef truthy?
-;   :args ::s/any
-;   :ret boolean?)
+;(sp/fdef truthy?
+;  :args clj/any?
+;  :ret clj/boolean?)
 
 (sk/defn falsey? :- sk/Bool
   "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
@@ -156,7 +157,7 @@
       (throw (IllegalStateException. (str "validation failure, tst-result=" tst-result))))
     tstval))
 
-(sk/defn any? :- sk/Bool
+(sk/defn any? :- sk/Bool ; #todo rename to has-any? (& opposite has-none?). Add warning re new any?
   "For any predicate pred & collection coll, returns true if (pred x) is logical true for any x in
    coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
   [pred :- sk/Any

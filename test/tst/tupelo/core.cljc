@@ -8,18 +8,21 @@
   (:refer-clojure :exclude [any? ] )
   (:use tupelo.core
         clojure.test )
-  (:require [clojure.string                         :as str]
-            [clojure.spec                           :as sp]
-            [clojure.spec.gen                       :as spg]
-            [clojure.test.check.generators          :as gen]
-            [clojure.test.check.properties          :as prop]
-            [clojure.test.check.clojure-test        :as tst]
-            [tupelo.misc                            :as tm]
-            [schema.core                            :as schema])
-  )
+  (:require
+    [clojure.core :as clj]
+   ;[clojure.spec :as sp]
+   ;[clojure.spec.gen :as sp.gen]
+   ;[clojure.spec.test :as sp.test]
+    [clojure.string :as str]
+    [clojure.test.check.clojure-test :as tst]
+    [clojure.test.check.generators :as gen]
+    [clojure.test.check.properties :as prop]
+    [schema.core :as sk]
+    [tupelo.misc :as tm]
+  ))
 
 ; Prismatic Schema type definitions
-(schema/set-fn-validation! true)   ; #todo add to Schema docs
+(sk/set-fn-validation! true)   ; #todo add to Schema docs
 
 ; (s/instrument-all)
 ; (s/instrument #'tupelo.core/truthy?)  ; instrument just one var
@@ -99,6 +102,8 @@
     (is (= "msg0 => 5\n"                    (with-out-str (fn0))))
     ))
 
+(deftest t-truthy-spec
+)
 
 (deftest t-truthy-falsey
   (is (truthy? 5))
@@ -169,6 +174,14 @@
                               ["1" [1] '(1) {:1 1} #{1} ] ))
   (is (= (drop-if not-empty?  [""  []  '()  {}     #{}  nil] )
                               [""  []  '()  {}     #{}  nil] )))
+
+;(sp/def ::vector (sp/coll-of clj/any :kind vector?))
+;(deftest t-forv-spec
+;  (is   (sp/valid? ::vector [1 2 3]))
+;  (isnt (sp/valid? ::vector '(1 2 3)))
+;  (isnt (sp/valid? ::vector {:a 1}))
+; ;(spyx (sp/exercise ::vector))
+;)
 
 (deftest t-forv
   (is (= (forv [x (range 4)] (* x x))
