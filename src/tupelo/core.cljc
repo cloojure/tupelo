@@ -12,9 +12,9 @@
             [clojure.pprint :as pprint]
             [clojure.string :as str]
             [clojure.set :as set]
-    ;[clojure.spec :as s]
+            [clojure.spec :as sp]
             [cheshire.core :as cc]
-            [schema.core :as sch]
+            [schema.core :as sk]
             [tupelo.types :as types]
             [tupelo.schema :as ts]
             )
@@ -22,7 +22,7 @@
   (:gen-class))
 
 ; Prismatic Schema type definitions
-(sch/set-fn-validation! true)                               ; #todo add to Schema docs
+(sk/set-fn-validation! true)                               ; #todo add to Schema docs
 ; #todo add to project.clj (esp for tupelo-app template, user/dev profile)
 
 
@@ -125,9 +125,9 @@
        result#)))
 
 ; original
-#_(s/defn truthy? :- sch/Bool
+#_(s/defn truthy? :- sk/Bool
     "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
-    [arg :- sch/Any]
+    [arg :- sk/Any]
     (if arg true false))
 
 (defn truthy?
@@ -140,10 +140,10 @@
 ;   :args ::s/any
 ;   :ret boolean?)
 
-(sch/defn falsey? :- sch/Bool
+(sk/defn falsey? :- sk/Bool
   "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
    to (not (truthy? arg))."
-  [arg :- sch/Any]
+  [arg :- sk/Any]
   (if arg false true))
 
 (defn validate
@@ -156,20 +156,20 @@
       (throw (IllegalStateException. (str "validation failure, tst-result=" tst-result))))
     tstval))
 
-(sch/defn any? :- sch/Bool
+(sk/defn any? :- sk/Bool
   "For any predicate pred & collection coll, returns true if (pred x) is logical true for any x in
    coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
-  [pred :- sch/Any
-   coll :- [sch/Any]]
+  [pred :- sk/Any
+   coll :- [sk/Any]]
   (truthy? (some pred coll)))
 
-(sch/defn not-nil? :- sch/Bool
+(sk/defn not-nil? :- sk/Bool
   "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
    or the poorly-named clojure.core/some? "
-  [arg :- sch/Any]
+  [arg :- sk/Any]
   (not (nil? arg)))
 
-(sch/defn not-empty? :- sch/Bool
+(sk/defn not-empty? :- sk/Bool
   "For any collection coll, returns true if coll contains any items; otherwise returns false.
    Equivalent to (not (empty? coll))."
   ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
@@ -212,17 +212,17 @@
                      (str "colls must be all same type; found types=" (mapv type colls)))))))
 ; #todo look at using (ex-info ...)
 
-(sch/defn append :- ts/List
+(sk/defn append :- ts/List
   "Given a sequential object (vector or list), add one or more elements to the end."
   [listy :- ts/List
-   & elems :- [sch/Any]]
+   & elems :- [sk/Any]]
   (when-not (sequential? listy)
     (throw (IllegalArgumentException. (str "Sequential collection required, found=" listy))))
   (when (empty? elems)
     (throw (IllegalArgumentException. (str "Nothing to append! elems=" elems))))
   (vec (concat listy elems)))
 
-(sch/defn prepend :- ts/List
+(sk/defn prepend :- ts/List
   "Given a sequential object (vector or list), add one or more elements to the beginning"
   [& args]
   (let [elems (butlast args)
@@ -233,10 +233,10 @@
       (throw (IllegalArgumentException. (str "Nothing to prepend! elems=" elems))))
     (vec (concat elems listy))))
 
-(sch/defn drop-at :- ts/List
+(sk/defn drop-at :- ts/List
   "Removes an element from a collection at the specified index."
   [coll :- ts/List
-   index :- sch/Int]
+   index :- sk/Int]
   (when (neg? index)
     (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
   (when (<= (count coll) index)
@@ -245,11 +245,11 @@
   (glue (take index coll)
     (drop (inc index) coll)))
 
-(sch/defn insert-at :- ts/List
+(sk/defn insert-at :- ts/List
   "Inserts an element into a collection at the specified index."
   [coll :- ts/List
-   index :- sch/Int
-   elem :- sch/Any]
+   index :- sk/Int
+   elem :- sk/Any]
   (when (neg? index)
     (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
   (when (< (count coll) index)
@@ -258,11 +258,11 @@
   (glue (take index coll) [elem]
     (drop index coll)))
 
-(sch/defn replace-at :- ts/List
+(sk/defn replace-at :- ts/List
   "Replaces an element in a collection at the specified index."
   [coll :- ts/List
-   index :- sch/Int
-   elem :- sch/Any]
+   index :- sk/Int
+   elem :- sk/Any]
   (when (neg? index)
     (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
   (when (<= (count coll) index)
@@ -272,9 +272,9 @@
     (drop (inc index) coll)))
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
-#_(sch/defn ^{:deprecated "1.9.0-alpha5"} seqable? :- sch/Bool ; from clojure.contrib.core/seqable
+#_(sk/defn ^{:deprecated "1.9.0-alpha5"} seqable? :- sk/Bool ; from clojure.contrib.core/seqable
     "Returns true if (seq x) will succeed, false otherwise."
-    [x :- sch/Any]
+    [x :- sk/Any]
     (or (seq? x)
       (instance? clojure.lang.Seqable x)
       (nil? x)
@@ -283,12 +283,12 @@
       (string? x)
       (instance? java.util.Map x)))
 
-(sch/defn fetch-in :- sch/Any
+(sk/defn fetch-in :- sk/Any
   "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
    returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
    Throws an Exception if the path keys-vec is not present in the-map."
   [the-map :- ts/KeyMap
-   keys-vec :- [sch/Keyword]]
+   keys-vec :- [sk/Keyword]]
   (let [result (clj/get-in the-map keys-vec ::not-found)]
     (if (= result ::not-found)
       (throw (IllegalArgumentException.
@@ -297,22 +297,22 @@
                  "  keys: " keys-vec \newline)))
       result)))
 
-(sch/defn grab :- sch/Any
+(sk/defn grab :- sk/Any
   "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
    returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
    Throws an Exception if :the-key is not present in the-map."
-  [the-key :- sch/Keyword
+  [the-key :- sk/Keyword
    the-map :- ts/KeyMap]
   (fetch-in the-map [the-key]))
 
-(sch/defn dissoc-in :- sch/Any
+(sk/defn dissoc-in :- sk/Any
   "A sane version of dissoc-in that will not delete intermediate keys.
    When invoked as (dissoc-in the-map [:k1 :k2 :k3... :kZ]), acts like
    (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only
    the map entry containing the last key :kZ is removed, and all map entries
    higher than kZ in the hierarchy are unaffected."
   [the-map :- ts/KeyMap
-   keys-vec :- [sch/Keyword]]
+   keys-vec :- [sk/Keyword]]
   (let [num-keys     (count keys-vec)
         key-to-clear (last keys-vec)
         parent-keys  (butlast keys-vec)]
@@ -327,12 +327,12 @@
 ; singles). Basically like compiler-like guarentees against misspellings, duplicate entries, missing
 ; entries.
 
-(sch/defn only :- sch/Any
+(sk/defn only :- sk/Any
   "(only seqable-arg)
   Ensures that a sequence is of length=1, and returns the only value present.
   Throws an exception if the length of the sequence is not one.
   Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
-  [seqable-arg :- sch/Any]
+  [seqable-arg :- sk/Any]
   (when-not (seqable? seqable-arg)
     (throw (IllegalArgumentException. (str "only: arg not seqable:" seqable-arg))))
   (let [seq-len (count seqable-arg)]
@@ -564,11 +564,11 @@
     (apply str it)))
 
 ; #todo need test & README
-(sch/defn submap? :- Boolean
+(sk/defn submap? :- Boolean
   "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
    another map.  Similar to clojure.set/subset?"
-  [inner-map :- {sch/Any sch/Any}                           ; #todo
-   outer-map :- {sch/Any sch/Any}]                          ; #todo
+  [inner-map :- {sk/Any sk/Any}                           ; #todo
+   outer-map :- {sk/Any sk/Any}]                          ; #todo
   (let [inner-set (set inner-map)
         outer-set (set outer-map)]
     (set/subset? inner-set outer-set)))
@@ -651,7 +651,7 @@
   (range first (inc last)))
 
 ; #todo readme
-(sch/defn starts-with? :- sch/Bool
+(sk/defn starts-with? :- sk/Bool
   "Returns true when the initial elements of coll match those of tgt"
   [coll tgt]    ; #todo schema
   (let [tgt-vec (vec tgt)]
@@ -762,18 +762,18 @@
   [string-arg]
   (line-seq (BufferedReader. (StringReader. string-arg))))
 
-(sch/defn ^:deprecated ^:no-doc conjv :- [sch/Any]
+(sk/defn ^:deprecated ^:no-doc conjv :- [sk/Any]
   "***** DEPRECATED:  replaced by tupelo.core/append *****
 
    Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.
    The result is always returned as a vector."
   ; From Stuart Sierra post 2014-2-10
-  ([base-coll :- [sch/Any]
-    value :- sch/Any]
+  ([base-coll :- [sk/Any]
+    value :- sk/Any]
     (conj (vec base-coll) value))
-  ([base-coll :- [sch/Any]
-    value :- sch/Any
-    & values :- [sch/Any]]
+  ([base-coll :- [sk/Any]
+    value :- sk/Any
+    & values :- [sk/Any]]
     (apply conj (vec base-coll) value values)))
 
 ;---------------------------------------------------------------------------------------------------

@@ -9,8 +9,8 @@
   (:use tupelo.core
         clojure.test )
   (:require [clojure.string                         :as str]
-            [clojure.spec                           :as s]
-            [clojure.spec.gen                       :as sgen]
+            [clojure.spec                           :as sp]
+            [clojure.spec.gen                       :as spg]
             [clojure.test.check.generators          :as gen]
             [clojure.test.check.properties          :as prop]
             [clojure.test.check.clojure-test        :as tst]
