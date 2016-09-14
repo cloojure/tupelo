@@ -376,6 +376,9 @@
            ~@(interleave (repeat g) (map pstep forms))]
        ~g)))
 
+; #todo make an it?-> (fff ppp it? qqq) to halt thread if encounter nil result (then returns nil)
+; #todo make an it!-> (fff ppp it! qqq) to throw if encounter nil (replace safe->) (maybe val->)
+
 (defmacro it->
   "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
       (it-> 1
