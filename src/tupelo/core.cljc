@@ -6,7 +6,7 @@
 ;   software.
 (ns tupelo.core
   "Tupelo - Making Clojure even sweeter"
-  (:refer-clojure :exclude [any? ] )
+ ;(:refer-clojure :exclude [] )
   (:require [clojure.core :as clj]
             [clojure.core.match :as ccm]
             [clojure.pprint :as pprint]
@@ -157,12 +157,20 @@
       (throw (IllegalStateException. (str "validation failure, tst-result=" tst-result))))
     tstval))
 
-(sk/defn any? :- sk/Bool ; #todo rename to has-any? (& opposite has-none?). Add warning re new any?
-  "For any predicate pred & collection coll, returns true if (pred x) is logical true for any x in
+(sk/defn has-some? :- sk/Bool ; #todo rename to has-any?   Add warning re new clj/any?
+  "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
    coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
-  [pred :- sk/Any
-   coll :- [sk/Any]]
+  [pred :-  sk/Any
+   coll :- [sk/Any] ]
   (truthy? (some pred coll)))
+    ; NOTE: was `any?` prior to new `clojure.core/any?` added in clojure 1.9.0-alpha10
+
+(sk/defn has-none? :- sk/Bool
+  "For any predicate pred & collection coll, returns false if (pred x) is logical true for at least one x in
+   coll; otherwise returns true.  Equivalent to clojure.core/not-any?, but inverse of has-some?."
+  [pred :-  sk/Any
+   coll :- [sk/Any] ]
+  (falsey? (some pred coll)))
 
 (sk/defn not-nil? :- sk/Bool
   "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),

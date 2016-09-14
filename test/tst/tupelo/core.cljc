@@ -5,7 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.core
-  (:refer-clojure :exclude [any? ] )
+ ;(:refer-clojure :exclude [] )
   (:use tupelo.core
         clojure.test )
   (:require
@@ -121,8 +121,8 @@
                   (= falsies  [false nil] ) ))
         (is (every? truthy? [true :a 'my-symbol 1 "hello" \x] ))
         (is (every? falsey? [false nil] ))
-        (is (not-any? falsey? truthies))
-        (is (not-any? truthy? falsies))))
+        (is (has-none? falsey? truthies))
+        (is (has-none? truthy? falsies))))
 
     (testing "improved usage"
       (let [count-if (comp count keep-if) ]
@@ -143,27 +143,27 @@
             nillies   (drop-if not-nil? data) ]
         (is (and  (= notties [true :a 'my-symbol 1 "hello" \x false] )
                   (= nillies [nil] )))
-        (is (every?   not-nil? notties))
-        (is (every?       nil? [nil] ))
-        (is (not-any?     nil? notties))
-        (is (not-any? not-nil? nillies))))
+        (is (every?    not-nil? notties))
+        (is (every?        nil? [nil] ))
+        (is (has-none?     nil? notties))
+        (is (has-none? not-nil? nillies))))
 
     (testing "improved usage"
       (let [count-if (comp count keep-if) ]
         (let [num-valid-1     (count-if some?    data)  ; awkward phrasing, doesn't feel natural
               num-valid-2     (count-if not-nil? data)  ; matches intent much better
-              num-nil     (count-if nil?     data) ]    ; intent is plain
+              num-nil         (count-if nil?     data) ]    ; intent is plain
           (is (and  (= 7 num-valid-1 num-valid-2 )
                     (= 1 num-nil) )))))))
 
 (deftest t-any
-  (is (= true   (any? odd? [1 2 3] ) ))
-  (is (= false  (any? odd? [2 4 6] ) ))
-  (is (= false  (any? odd? []      ) )))
+  (is (= true   (has-some? odd? [1 2 3] ) ))
+  (is (= false  (has-some? odd? [2 4 6] ) ))
+  (is (= false  (has-some? odd? []      ) )))
 
 (deftest t-not-empty
-  (is (every?     not-empty? ["1" [1] '(1) {:1 1} #{1}    ] ))
-  (is (not-any?   not-empty? [""  []  '()  {}     #{}  nil] ))
+  (is (every?      not-empty? ["1" [1] '(1) {:1 1} #{1}    ] ))
+  (is (has-none?   not-empty? [""  []  '()  {}     #{}  nil] ))
 
   (is (= (map not-empty? ["1" [1] '(1) {:1 1} #{1} ] )
          [true true true true true]  ))
