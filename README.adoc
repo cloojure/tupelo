@@ -508,29 +508,20 @@ As with `drop-at`, `replace-at` will throw an exception for invalid values of `i
 
 === Convenience in Testing Seq's
 
-These functions aren't in clojure.core, but people keep writing into the mailing list
-wondering where they are. Well, now they are available:
+Clojure has an `empty?` function to indicate if a collection has zero elements or is `nil` (i.e. not
+present).  However, clojure has no corresponding `not-empty?` function, and people have written into
+the mailing wondering where it is.  Well, now it is available:
 
 [source,clojure]
 ----
-(any? pred coll)
- "For any predicate & collection, returns true if (pred x) is
-  logical true for any x in coll; otherwise returns false. Like
-  clojure.core/some, but returns only true or false."
-
 (not-empty? coll)
  "For any collection, returns true if coll contains any items;
   otherwise returns false. Equivalent to (not (empty? coll))."
 ----
-
-The unit test shows these functions in action
+The unit test shows it in action:
 
 [source,clojure]
 ----
-(is (= true   (any? odd? [1 2 3] ) ))
-(is (= false  (any? odd? [2 4 6] ) ))
-(is (= false  (any? odd? []      ) ))
-
 (is (= (map not-empty? ["1"   [1]   '(1)  {:1 1}  #{1} ] )
                        [true  true  true  true    true ]  ))
 (is (= (map not-empty? [""     []      '()    {}     #{}    nil   ] )
@@ -540,7 +531,56 @@ The unit test shows these functions in action
                             ["1" [1] '(1) {:1 1} #{1} ] ))
 (is (= (drop-if not-empty?  [""  []  '()  {}     #{}  nil] )
                             [""  []  '()  {}     #{}  nil] ))
+----
 
+A similar, but more complicated, situation exists in the case of `not-any?`.  
+Clojure has the `not-any?` function to indicate if a predicate is false for all items
+in a collection. However, there has never been a corresponding `any?` function such that
+
+[source,clojure]
+----
+  (= (not-any?  pred coll) 
+     (not (any? pred coll)))
+----
+for any predicate and collection. The situation has become more confusion as of Clojure
+  1.9.0-alpha10 since a completely unrelated function `any?` has been added in support of
+  `clojure.spec`.  The new `any?` function is defined as:
+
+[source,clojure]
+----
+(defn any?
+  "Returns true given any argument."
+  [x] true)
+----
+So the new `any?` function is a semantic mismatch to the `not-any?` function and 
+is completely unrelated to testing a collection using a predicate.
+
+The Tupelo library attempts to resolve this confusion situation by providing both positive and
+negative versions of the collection test with a name which does not conflict with either
+`any?` or `not-any?` in `clojure.core`:
+
+[source,clojure]
+----
+(has-some? pred coll)
+  "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
+   coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
+
+(has-none? pred coll)
+  "For any predicate pred & collection coll, returns false if (pred x) is logical true for at least one x in
+   coll; otherwise returns true.  Equivalent to clojure.core/not-any?, and is the inverse of has-some?."
+----
+
+The unit test shows these functions in action:
+
+[source,clojure]
+----
+(is (= true   (has-some? odd? [1 2 3] ) ))
+(is (= false  (has-some? odd? [2 4 6] ) ))
+(is (= false  (has-some? odd? []      ) ))
+
+(is (= false  (has-none? odd? [1 2 3] ) ))
+(is (= true   (has-none? odd? [2 4 6] ) ))
+(is (= true   (has-none? odd? []      ) ))
 ----
 
 === Focus on Vectors

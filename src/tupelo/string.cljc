@@ -50,3 +50,5 @@
     (forv [line (str/split-lines txt) ]
       (str (indent n line) \newline))))
 
+; #todo add undent (verify only leading whitespace removed)
+; #todo add undent-lines

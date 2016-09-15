@@ -159,7 +159,11 @@
 (deftest t-any
   (is (= true   (has-some? odd? [1 2 3] ) ))
   (is (= false  (has-some? odd? [2 4 6] ) ))
-  (is (= false  (has-some? odd? []      ) )))
+  (is (= false  (has-some? odd? []      ) ))
+
+  (is (= false  (has-none? odd? [1 2 3] ) ))
+  (is (= true   (has-none? odd? [2 4 6] ) ))
+  (is (= true   (has-none? odd? []      ) )))
 
 (deftest t-not-empty
   (is (every?      not-empty? ["1" [1] '(1) {:1 1} #{1}    ] ))
