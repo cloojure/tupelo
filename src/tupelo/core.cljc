@@ -298,7 +298,7 @@
    Throws an Exception if the path keys-vec is not present in the-map."
   [the-map :- ts/KeyMap
    keys-vec :- [sk/Keyword]]
-  (let [result (clj/get-in the-map keys-vec ::not-found)]
+  (let [result (get-in the-map keys-vec ::not-found)]
     (if (= result ::not-found)
       (throw (IllegalArgumentException.
                (str "Key seq not present in map:" \newline
