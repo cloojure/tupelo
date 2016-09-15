@@ -5,9 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.core
- ;(:refer-clojure :exclude [] )
-  (:use tupelo.core
-        clojure.test )
+  (:use clojure.test )
   (:require
     [clojure.core :as clj]
    ;[clojure.spec :as sp]
@@ -18,8 +16,10 @@
     [clojure.test.check.generators :as gen]
     [clojure.test.check.properties :as prop]
     [schema.core :as sk]
+    [tupelo.core :as t]
     [tupelo.misc :as tm]
   ))
+(t/refer-tupelo)
 
 ; Prismatic Schema type definitions
 (sk/set-fn-validation! true)   ; #todo add to Schema docs
@@ -397,14 +397,14 @@
   (is (thrown? IllegalArgumentException (only [:x :y]))))
 
 (deftest t-validate
-  (is (= 3        (validate pos? 3)))
-  (is (= 3.14     (validate number? 3.14 )))
-  (is (= 3.14     (validate #(< 3 % 4) 3.14 )))
-  (is (= [0 1 2]  (validate vector? (vec (range 3)))))
-  (is (= nil      (validate nil? (next []))))
-  (is (= [0 1 2]  (validate #(= 3 (count %)) [0 1 2])))
-  (is (thrown? Exception (validate number? "hello")))
-  (is (thrown? Exception (validate truthy? nil)))
+  (is (= 3        (t/validate pos? 3)))
+  (is (= 3.14     (t/validate number? 3.14 )))
+  (is (= 3.14     (t/validate #(< 3 % 4) 3.14 )))
+  (is (= [0 1 2]  (t/validate vector? (vec (range 3)))))
+  (is (= nil      (t/validate nil? (next []))))
+  (is (= [0 1 2]  (t/validate #(= 3 (count %)) [0 1 2])))
+  (is (thrown? Exception (t/validate number? "hello")))
+  (is (thrown? Exception (t/validate truthy? nil)))
 )
 
 (deftest t-keyvals
@@ -730,43 +730,43 @@
 ; #todo add different lengths a/b
 ; #todo add missing entries a/b
 (deftest t-matches
-  (is      (matches?  []    [] ))
-  (is      (matches?  [1]   [1] ))
-  (is (not (matches?  [1]   [2] )))
-  ;        (matches?  [1]   [1 2] )))  ***** error *****
-  (is      (matches?  [_]   [1] ))
-  (is      (matches?  [_]   [nil] ))
-  (is      (matches?  [_]   [1] [2] [3]))
-  (is      (matches?  [1 2] [1 2] ))
-  (is      (matches?  [_ 2] [1 2] ))
-  (is      (matches?  [1 _] [1 2] ))
-  (is      (matches?  [1 _] [1 2] [1 3] [1 nil] ))
-  (is      (matches?  [1 _ 3] [1 2 3] [1 nil 3] ))
+  (is      (t/matches?  []    [] ))
+  (is      (t/matches?  [1]   [1] ))
+  (is (not (t/matches?  [1]   [2] )))
+  ;        (t/matches?  [1]   [1 2] )))  ***** error *****
+  (is      (t/matches?  [_]   [1] ))
+  (is      (t/matches?  [_]   [nil] ))
+  (is      (t/matches?  [_]   [1] [2] [3]))
+  (is      (t/matches?  [1 2] [1 2] ))
+  (is      (t/matches?  [_ 2] [1 2] ))
+  (is      (t/matches?  [1 _] [1 2] ))
+  (is      (t/matches?  [1 _] [1 2] [1 3] [1 nil] ))
+  (is      (t/matches?  [1 _ 3] [1 2 3] [1 nil 3] ))
 
-  (is      (matches?  {:a 1} {:a 1} ))
-  (is (not (matches?  {:a 1} {:a 2} )))
-  (is (not (matches?  {:a 1} {:b 1} )))
-  (is      (matches?  {:a _} {:a 1} {:a 2} {:a 3} ))
-  ;        (matches?  { _ 1} {:a 1} )   ***** error *****
+  (is      (t/matches?  {:a 1} {:a 1} ))
+  (is (not (t/matches?  {:a 1} {:a 2} )))
+  (is (not (t/matches?  {:a 1} {:b 1} )))
+  (is      (t/matches?  {:a _} {:a 1} {:a 2} {:a 3} ))
+  ;        (t/matches?  { _ 1} {:a 1} )   ***** error *****
 
-  (is      (matches?  {:a _ :b _       :c 3} 
+  (is      (t/matches?  {:a _ :b _       :c 3} 
                       {:a 1 :b [1 2 3] :c 3} ))
-  (is (not (matches?  {:a _ :b _       :c 4} 
+  (is (not (t/matches?  {:a _ :b _       :c 4} 
                       {:a 1 :b [1 2 3] :c 3} )))
-  (is (not (matches?  {:a _ :b _       :c 3} 
+  (is (not (t/matches?  {:a _ :b _       :c 3} 
                       {:a 1 :b [1 2 3] :c 4} )))
-  (is (not (matches?  {:a 9 :b _       :c 3} 
+  (is (not (t/matches?  {:a 9 :b _       :c 3} 
                       {:a 1 :b [1 2 3] :c 3} )))
 
-  (is      (matches?  {:a _ :b _       :c 3} 
+  (is      (t/matches?  {:a _ :b _       :c 3} 
                       {:a 1 :b [1 2 3] :c 3}
                       {:a 2 :b 99      :c 3}
                       {:a 3 :b nil     :c 3} ))
-  (is (not (matches?  {:a _ :b _       :c 3} 
+  (is (not (t/matches?  {:a _ :b _       :c 3} 
                       {:a 1 :b [1 2 3] :c 9}
                       {:a 2 :b 99      :c 3}
                       {:a 3 :b nil     :c 3} )))
-  (is (not (matches?  {:a _ :b _       :c 3} 
+  (is (not (t/matches?  {:a _ :b _       :c 3} 
                       {:a 1 :b [1 2 3] :c 3}
                       {:a 2 :b 99      :c 3}
                       {:a 3 :b nil     :c 9} )))
@@ -987,6 +987,6 @@
                 "again"
                 "and again!"]
   ]
-    (is= r1 (map str/trim (str->lines s1)))
+    (is= r1 (map str/trim (t/str->lines s1)))
     (is= r1 (map str/trim (str/split-lines s1)))))
 

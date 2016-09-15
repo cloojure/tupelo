@@ -756,11 +756,11 @@
    be used without namespace qualification."
   []
   (refer 'tupelo.core :only
-    '[ spy spyx spyxx with-spy-indent truthy? falsey? not-nil? not-empty?
-       forv glue append prepend grab dissoc-in only it-> keep-if drop-if
-       strcat pp-str pretty json->clj clj->json clip-str thru
-       starts-with? split-when split-match
-       isnt is= isnt= throws?
+    '[ spy spyx spyxx with-spy-indent truthy? falsey? not-nil? not-empty? has-some? has-none?
+       forv glue append prepend grab dissoc-in fetch-in only it-> safe-> keep-if drop-if
+       keyvals strcat pp-str pretty json->clj clj->json clip-str thru rel= drop-at insert-at replace-at 
+       starts-with? split-when split-match wild-match? 
+       isnt is= isnt= throws? with-exception-default
      ] ))
 
 ;---------------------------------------------------------------------------------------------------
