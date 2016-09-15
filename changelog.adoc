@@ -3,7 +3,22 @@
 
 == Change Log
 
-.2016-9-14 *** Breaking Change ***
+.2016-9-14  New functions in `tupelo.string` namespace:
+- drop
+  "Drops the first N chars of a string, returning a string result."
+
+- take
+  "Drops the first N chars of a string, returning a string result."
+
+- indent
+  "Indents a string by pre-pending N spaces. Returns a string result."
+
+- indent-lines
+  "Splits out each line of txt using clojure.string/split-lines, then
+  indents each line by prepending N spaces. Joins lines together into
+  a single string result, with each line terminated by a single \newline."
+
+.2016-9-14 *Breaking Changes*
 - `tupelo.core/any?` renamed to `has-some?` to avoid conflict with new function `clojure.core/any?`
 - `tupelo.core/has-none?` added as synonym for `clojure.core/not-any?`
 

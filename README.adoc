@@ -949,7 +949,7 @@ There are several other libraries that provide useful value-added functionality 
 
 == Change Log
 
-Please see the link:changelog.adoc[the Change Log for details] docs.
+Please see the link:changelog.adoc[the ChangeLog for details] docs.
 
 == License
 

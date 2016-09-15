@@ -8,7 +8,7 @@
   "Tupelo - Making Clojure even sweeter"
   (:refer-clojure :exclude [drop take] )
   (:require
-    [clojure.core :as cc]
+    [clojure.core :as clj]
     [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t]
@@ -19,17 +19,34 @@
 (s/set-fn-validation! true)  ; #todo add to Schema docs
 ; #todo add to project.clj (esp for tupelo-app template, user/dev profile)
 
-; #todo add readme
 
-(s/defn drop :- s/Str  ; #todo -> tupelo.string
+
+(s/defn drop :- s/Str  ; #todo add readme
   "Drops the first N chars of a string, returning a string result."
   [n    :- s/Int
    txt  :- s/Str]
-  (str/join (cc/drop n txt)))
+  (str/join (clj/drop n txt)))
 
-(s/defn take :- s/Str  ; #todo -> tupelo.string
+(s/defn take :- s/Str  ; #todo add readme
   "Drops the first N chars of a string, returning a string result."
   [n    :- s/Int
    txt  :- s/Str]
-  (str/join (cc/take n txt)))
+  (str/join (clj/take n txt)))
+
+(s/defn indent :- s/Str  ; #todo add readme
+  "Indents a string by pre-pending N spaces. Returns a string result."
+  [n    :- s/Int
+   txt  :- s/Str]
+  (let [indent-str (str/join (repeat n \space))]
+    (str indent-str txt)))
+
+(s/defn indent-lines :- s/Str  ; #todo add readme
+  "Splits out each line of txt using clojure.string/split-lines, then
+  indents each line by prepending N spaces. Joins lines together into
+  a single string result, with each line terminated by a single \newline."
+  [n    :- s/Int
+   txt  :- s/Str]
+  (str/join
+    (forv [line (str/split-lines txt) ]
+      (str (indent n line) \newline))))
 
