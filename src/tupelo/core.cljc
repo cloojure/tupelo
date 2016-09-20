@@ -137,9 +137,9 @@
   (if arg true false))
 
 ; #todo how to test the :ret part?
-;(sp/fdef truthy?
-;  :args clj/any?
-;  :ret clj/boolean?)
+(sp/fdef truthy?
+  :args (sp/cat :arg any?)
+  :ret  boolean?)
 
 (sk/defn falsey? :- sk/Bool
   "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
@@ -213,10 +213,10 @@
   [& colls]
   (let [string-or-char? #(or (string? %) (char? %))]
     (cond
-      (every? sequential? colls) (reduce into [] colls)
-      (every? map? colls) (reduce into {} colls)
-      (every? set? colls) (reduce into #{} colls)
-      (every? string-or-char? colls) (apply str colls)
+      (every? sequential? colls)        (reduce into  [] colls)
+      (every? map? colls)               (reduce into  {} colls)
+      (every? set? colls)               (reduce into #{} colls)
+      (every? string-or-char? colls)    (apply str colls)
       :else (throw (IllegalArgumentException.
                      (str "colls must be all same type; found types=" (mapv type colls)))))))
 ; #todo look at using (ex-info ...)

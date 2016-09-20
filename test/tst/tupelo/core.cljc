@@ -8,9 +8,9 @@
   (:use clojure.test )
   (:require
     [clojure.core :as clj]
-   ;[clojure.spec :as sp]
-   ;[clojure.spec.gen :as sp.gen]
-   ;[clojure.spec.test :as sp.test]
+    [clojure.spec :as sp]
+    [clojure.spec.gen :as sp.gen]
+    [clojure.spec.test :as sp.test]
     [clojure.string :as str]
     [clojure.test.check.clojure-test :as tst]
     [clojure.test.check.generators :as gen]
