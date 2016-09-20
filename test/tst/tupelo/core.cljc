@@ -179,6 +179,35 @@
   (is (= (drop-if not-empty?  [""  []  '()  {}     #{}  nil] )
                               [""  []  '()  {}     #{}  nil] )))
 
+(deftest t-contains-key? ; #todo add to README
+  (is   (contains-key? {:a 1 :b 2} :a))
+  (is   (contains-key? {:a 1 :b 2} :b))
+  (isnt (contains-key? {:a 1 :b 2} :x))
+  (isnt (contains-key? {:a 1 :b 2} :c))
+  (isnt (contains-key? {:a 1 :b 2}  1))
+  (isnt (contains-key? {:a 1 :b 2}  2))
+
+  (is   (contains-key? #{:a 1 :b 2} :a))
+  (is   (contains-key? #{:a 1 :b 2} :b))
+  (is   (contains-key? #{:a 1 :b 2}  1))
+  (is   (contains-key? #{:a 1 :b 2}  2))
+  (isnt (contains-key? #{:a 1 :b 2} :x))
+  (isnt (contains-key? #{:a 1 :b 2} :c))
+
+  (throws? (contains-key? [:a 1 :b 2] :a))
+  (throws? (contains-key? [:a 1 :b 2] :1)))
+
+(deftest t-contains-val? ; #todo add to README
+  (is   (contains-val? {:a 1 :b 2} 1))
+  (is   (contains-val? {:a 1 :b 2} 2))
+  (isnt (contains-val? {:a 1 :b 2} 0))
+  (isnt (contains-val? {:a 1 :b 2} 3))
+  (isnt (contains-val? {:a 1 :b 2} :a))
+  (isnt (contains-val? {:a 1 :b 2} :b))
+
+  (throws? (contains-val?  [:a 1 :b 2] 1))
+  (throws? (contains-val? #{:a 1 :b 2} 1)))
+
 ;(sp/def ::vector (sp/coll-of clj/any :kind vector?))
 ;(deftest t-forv-spec
 ;  (is   (sp/valid? ::vector [1 2 3]))

@@ -172,6 +172,20 @@
    coll :- [sk/Any] ]
   (falsey? (some pred coll)))
 
+(sk/defn contains-key? :- sk/Bool
+  "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
+   coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
+  [map-or-set :- (sk/pred #(or (map? %) (set? %)))
+   elem :- sk/Any ]
+  (contains? map-or-set elem))
+
+(sk/defn contains-val? :- sk/Bool
+  "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
+   coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
+  [map :- ts/Map
+   elem :- sk/Any ]
+  (has-some? #{elem} (vals map)))
+
 (sk/defn not-nil? :- sk/Bool
   "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
    or the poorly-named clojure.core/some? "
@@ -756,7 +770,8 @@
    be used without namespace qualification."
   []
   (refer 'tupelo.core :only
-    '[ spy spyx spyxx with-spy-indent truthy? falsey? not-nil? not-empty? has-some? has-none?
+    '[ spy spyx spyxx with-spy-indent truthy? falsey?
+       not-nil? not-empty? has-some? has-none? contains-key? contains-val?
        forv glue append prepend grab dissoc-in fetch-in only it-> safe-> keep-if drop-if
        keyvals strcat pp-str pretty json->clj clj->json clip-str thru rel= drop-at insert-at replace-at 
        starts-with? split-when split-match wild-match? 
