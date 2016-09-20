@@ -92,12 +92,9 @@ normally refer tupelo.core into our namespace as follows:
 ----
 (ns my.proj
   (:require [tupelo.core     :as t]
-            [clojure.string  :as str]
             ... ))
 (t/refer-tupelo)  ; refer many of the most common functions into the current namespace
 ----
-
-=== tupelo.core - Basic functions
 
 === Expression Debugging
 
