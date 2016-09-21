@@ -208,6 +208,33 @@
   (throws? (contains-val?  [:a 1 :b 2] 1))
   (throws? (contains-val? #{:a 1 :b 2} 1)))
 
+(deftest t-contains-elem
+  (let [coll (range 3)]
+    (isnt (contains-elem? coll -1))
+    (is   (contains-elem? coll  0))
+    (is   (contains-elem? coll  1))
+    (is   (contains-elem? coll  2))
+    (isnt (contains-elem? coll  3)))
+
+  (let [coll [ 1 :two "three" \4]]
+    (isnt (contains-elem? coll  :no-way))
+    (is   (contains-elem? coll  1))
+    (is   (contains-elem? coll  :two))
+    (is   (contains-elem? coll  "three"))
+    (is   (contains-elem? coll  \4)))
+
+  (let [coll {1 :two "three" \4}]
+    (isnt (contains-elem? coll [1 :no-way] ))
+    (is   (contains-elem? coll [1 :two]))
+    (is   (contains-elem? coll ["three" \4])))
+
+  (let [coll #{1 :two "three" \4}]
+    (isnt (contains-elem? coll  :no-way))
+    (is   (contains-elem? coll  1))
+    (is   (contains-elem? coll  :two))
+    (is   (contains-elem? coll  "three"))
+    (is   (contains-elem? coll  \4))))
+
 ;(sp/def ::vector (sp/coll-of clj/any :kind vector?))
 ;(deftest t-forv-spec
 ;  (is   (sp/valid? ::vector [1 2 3]))

@@ -157,6 +157,7 @@
       (throw (IllegalStateException. (str "validation failure, tst-result=" tst-result))))
     tstval))
 
+; #todo -> README
 (sk/defn has-some? :- sk/Bool ; #todo rename to has-any?   Add warning re new clj/any?
   "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
    coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
@@ -165,6 +166,7 @@
   (truthy? (some pred coll)))
     ; NOTE: was `any?` prior to new `clojure.core/any?` added in clojure 1.9.0-alpha10
 
+; #todo -> README
 (sk/defn has-none? :- sk/Bool
   "For any predicate pred & collection coll, returns false if (pred x) is logical true for at least one x in
    coll; otherwise returns true.  Equivalent to clojure.core/not-any?, but inverse of has-some?."
@@ -172,13 +174,24 @@
    coll :- [sk/Any] ]
   (falsey? (some pred coll)))
 
+; #todo -> README
+(sk/defn contains-elem? :- sk/Bool
+  "For any collection coll & element tgt, returns true if coll contains at least one
+  instance of tgt; otherwise returns false. Note that, for maps, each element is a
+  vector (i.e MapEntry) of the form [key value]."
+  [coll :- sk/Any
+   tgt  :- sk/Any ]
+  (has-some? #{tgt} (seq coll)))
+
+; #todo -> README
 (sk/defn contains-key? :- sk/Bool
-  "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
+  "For any predicate pred & a map or set coll, returns true if (pred x) is logical true for at least one x in
    coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
   [map-or-set :- (sk/pred #(or (map? %) (set? %)))
    elem :- sk/Any ]
   (contains? map-or-set elem))
 
+; #todo -> README
 (sk/defn contains-val? :- sk/Bool
   "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
    coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
@@ -771,7 +784,7 @@
   []
   (refer 'tupelo.core :only
     '[ spy spyx spyxx with-spy-indent truthy? falsey?
-       not-nil? not-empty? has-some? has-none? contains-key? contains-val?
+       not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
        forv glue append prepend grab dissoc-in fetch-in only it-> safe-> keep-if drop-if
        keyvals strcat pp-str pretty json->clj clj->json clip-str thru rel= drop-at insert-at replace-at 
        starts-with? split-when split-match wild-match? 
