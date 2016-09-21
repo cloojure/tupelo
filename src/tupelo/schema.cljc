@@ -7,32 +7,8 @@
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
-(def Set     #{s/Any} )
 (def Map      {s/Any      s/Any} )
 (def KeyMap   {s/Keyword  s/Any} )
-
-(def Eid
-  "Each entity in the DB is uniquely specified its Entity ID (EID).  Indeed, allocation of a unique
-   EID is what 'creates' an entity in the DB."
-  Long)
-
-; #todo - clarify in all doc-strings that entity-spec = [EID or lookup-ref]
-(def LookupRef  
-  "If an entity has an attribute with either :db.unique/value or :db.unique/identity, that entity
-   can be uniquely specified using a lookup-ref (LookupRef). A lookup-ref is an attribute-value pair
-   expressed as a tuple:  [ <attribute> <value> ]"
-  [ (s/one s/Keyword  "attr")  
-    (s/one s/Any      "val" ) ] )
-
-(def EntitySpec 
-  "An EntitySpec is used to uniquely specify an entity in the DB. It consists of 
-   either an EID or a LookupRef."
-  (s/either Eid 
-            LookupRef))
-
-(def DatomMap
-  "The Clojure map representation of a Datom."
-  { :e Eid  :a Eid  :v s/Any  :tx Eid  :added s/Bool } )
 
 (def Set
   "Either a Clojure hash-set or a java.util.HashSet"
@@ -76,4 +52,30 @@
 (def Vec3 [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") ] )  ; length-3 vector
 (def Vec4 [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") (s/one s/Any "x4") ] )
 (def Vec5 [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") (s/one s/Any "x4") (s/one s/Any "x5") ] )
+
+;-----------------------------------------------------------------------------
+; Datomic-related stuff
+
+(def Eid
+  "Each entity in the DB is uniquely specified its Entity ID (EID).  Indeed, allocation of a unique
+   EID is what 'creates' an entity in the DB."
+  Long)
+
+; #todo - clarify in all doc-strings that entity-spec = [EID or lookup-ref]
+(def LookupRef
+  "If an entity has an attribute with either :db.unique/value or :db.unique/identity, that entity
+   can be uniquely specified using a lookup-ref (LookupRef). A lookup-ref is an attribute-value pair
+   expressed as a tuple:  [ <attribute> <value> ]"
+  [ (s/one s/Keyword  "attr")
+   (s/one s/Any      "val" ) ] )
+
+(def EntitySpec
+  "An EntitySpec is used to uniquely specify an entity in the DB. It consists of
+   either an EID or a LookupRef."
+  (s/either Eid
+    LookupRef))
+
+(def DatomMap
+  "The Clojure map representation of a Datom."
+  { :e Eid  :a Eid  :v s/Any  :tx Eid  :added s/Bool } )
 
