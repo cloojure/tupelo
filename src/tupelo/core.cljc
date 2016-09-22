@@ -240,9 +240,9 @@
   [& colls]
   (let [string-or-char? #(or (string? %) (char? %))]
     (cond
-      (every? sequential? colls)        (reduce into  [] colls)
-      (every? map? colls)               (reduce into  {} colls)
-      (every? set? colls)               (reduce into #{} colls)
+      (every? sequential? colls)        (reduce into [] colls) ; coerce to vector result
+      (every? map? colls)               (reduce into    colls) ; first item determines type of result
+      (every? set? colls)               (reduce into    colls) ; first item determines type of result
       (every? string-or-char? colls)    (apply str colls)
       :else (throw (IllegalArgumentException.
                      (str "colls must be all same type; found types=" (mapv type colls)))))))

@@ -291,10 +291,10 @@
   (is (= (glue (sorted-map) {:a 1} {:b 2} {:c 3})   {:a 1 :b 2 :c 3} ))
   (is (= (glue (sorted-set) #{1 2} #{3 4} #{6 5})   #{1 2 3 4 5 6}))
 
-  (is (= (glue (sorted-map) {:a 1 :b 2} {:c 3 :d 4} {:e 5 :f 6})
-                            {:a 1 :b 2   :c 3 :d 4   :e 5 :f 6} ))
-  (is (= (seq (glue (sorted-map) {:a 1   :b 2} {:c 3   :d 4   :e 5} {:f 6}))
-                               [ [:a 1] [:b 2] [:c 3] [:d 4] [:e 5] [:f 6] ] ))
+  (is (=      (glue (sorted-map) (hash-map :a 1   :b 2   :c 3   :d 4   :e 5   :f 6))
+                                          {:a 1   :b 2   :c 3   :d 4   :e 5   :f 6} ))
+  (is (= (seq (glue (sorted-map) (hash-map :a 1   :b 2   :c 3   :d 4   :e 5   :f 6)))
+                                        [ [:a 1] [:b 2] [:c 3] [:d 4] [:e 5] [:f 6] ] ))
 
   (is (= (glue  {:band :VanHalen :singer :Dave} {:singer :Sammy} )
                 {:band :VanHalen                 :singer :Sammy} ))
