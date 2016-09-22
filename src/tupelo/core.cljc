@@ -23,7 +23,7 @@
   (:gen-class))
 
 ; Prismatic Schema type definitions
-(sk/set-fn-validation! true)                               ; #todo add to Schema docs
+(sk/set-fn-validation! true)  ; #todo add to Schema docs
 ; #todo add to project.clj (esp for tupelo-app template, user/dev profile)
 
 
@@ -503,6 +503,7 @@
           ]
       or-result)))
 
+; #todo need docs & tests
 ; #todo:  add (thru a b)     -> [a..b] (inclusive)
 ;             (thru 1 3)     -> [ 1  2  3]
 ;             (thru \a \c)   -> [\a \b \c]
@@ -516,7 +517,27 @@
 ;       (thru :oc 1 5)   -> [  2 3 4 5]
 ;       (thru :co 1 5)   -> [1 2 3 4  ]  ; like (range ...)
 ;       (thru :oo 1 5)   -> [  2 3 4  ]
-
+(defn thru
+  "Returns a sequence of integers. Like clojure.core/range, but is inclusive of the right boundary value. "
+  ([end]
+   (range (inc end)))
+  ([start end]
+   (range start (inc end)))
+  ([start end step]
+   (let [delta          (- (double end) (double start))
+         nsteps-dbl     (/ (double delta) (double step))
+         nsteps-int     (Math/round nsteps-dbl)
+         rounding-error (Math/abs (- nsteps-dbl nsteps-int)) ]
+     (when (< 0.00001 rounding-error)
+       (throw (IllegalArgumentException. (str
+                                           "thru: non-integer number of steps \n   args:"
+                                           (pr-str [start end step])))))
+     (it-> (inc nsteps-int)
+           (range it)
+           (map #(* step %) it)
+           (map #(+ start %) it)
+           (vec it))))
+)
 
 (defn keep-if
   "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
@@ -682,12 +703,6 @@
                :else false))))
 
 ; #todo: add (throwed? ...) for testing exceptions
-
-; #todo need other arieties
-; #todo need docs & tests
-(defn thru
-  [first last]
-  (range first (inc last)))
 
 ; #todo readme
 (sk/defn starts-with? :- sk/Bool

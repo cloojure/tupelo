@@ -530,6 +530,197 @@
   (is (not (rel= 1 1.001 :tol 0.0001 )))
 )
 
+(deftest t-thru
+  (testing "positive step"
+    (is= [0      ] (t/thru 0))
+    (is= [0 1    ] (t/thru 1))
+    (is= [0 1 2  ] (t/thru 2))
+    (is= [0 1 2 3] (t/thru 3))
+
+    (is= [0      ] (t/thru 0 0))
+    (is= [0 1    ] (t/thru 0 1))
+    (is= [0 1 2  ] (t/thru 0 2))
+    (is= [0 1 2 3] (t/thru 0 3))
+
+    (is= [       ] (t/thru 1 0))
+    (is= [  1    ] (t/thru 1 1))
+    (is= [  1 2  ] (t/thru 1 2))
+    (is= [  1 2 3] (t/thru 1 3))
+
+    (is= [       ] (t/thru 2 0))
+    (is= [       ] (t/thru 2 1))
+    (is= [    2  ] (t/thru 2 2))
+    (is= [    2 3] (t/thru 2 3))
+
+    (is= [       ] (t/thru 3 0))
+    (is= [       ] (t/thru 3 1))
+    (is= [       ] (t/thru 3 2))
+    (is= [      3] (t/thru 3 3))
+
+    (is= [       ] (t/thru 4 0))
+    (is= [       ] (t/thru 4 1))
+    (is= [       ] (t/thru 4 2))
+    (is= [       ] (t/thru 4 3))
+
+
+    (is= [0      ] (t/thru 0 0 1))
+    (is= [0 1    ] (t/thru 0 1 1))
+    (is= [0 1 2  ] (t/thru 0 2 1))
+    (is= [0 1 2 3] (t/thru 0 3 1))
+
+    (is= [       ] (t/thru 1 0 1))
+    (is= [  1    ] (t/thru 1 1 1))
+    (is= [  1 2  ] (t/thru 1 2 1))
+    (is= [  1 2 3] (t/thru 1 3 1))
+
+    (is= [       ] (t/thru 2 0 1))
+    (is= [       ] (t/thru 2 1 1))
+    (is= [    2  ] (t/thru 2 2 1))
+    (is= [    2 3] (t/thru 2 3 1))
+
+    (is= [       ] (t/thru 3 0 1))
+    (is= [       ] (t/thru 3 1 1))
+    (is= [       ] (t/thru 3 2 1))
+    (is= [      3] (t/thru 3 3 1))
+
+    (is= [       ] (t/thru 4 0 1))
+    (is= [       ] (t/thru 4 1 1))
+    (is= [       ] (t/thru 4 2 1))
+    (is= [       ] (t/thru 4 3 1))
+
+
+    (is=        [0      ] (t/thru 0 0 2))
+    (throws?              (t/thru 0 1 2))
+    (is=        [0   2  ] (t/thru 0 2 2))
+    (throws?              (t/thru 0 3 2))
+
+    (throws?              (t/thru 1 0 2))
+    (is=        [  1    ] (t/thru 1 1 2))
+    (throws?              (t/thru 1 2 2))
+    (is=        [  1   3] (t/thru 1 3 2))
+
+    (is=        [       ] (t/thru 2 0 2))
+    (throws?              (t/thru 2 1 2))
+    (is=        [    2  ] (t/thru 2 2 2))
+    (throws?              (t/thru 2 3 2))
+
+    (throws?              (t/thru 3 0 2))
+    (is=        [       ] (t/thru 3 1 2))
+    (throws?              (t/thru 3 2 2))
+    (is=        [      3] (t/thru 3 3 2))
+
+
+    (is=        [0      ] (t/thru 0 0 3))
+    (throws?              (t/thru 0 1 3))
+    (throws?              (t/thru 0 2 3))
+    (is=        [0     3] (t/thru 0 3 3))
+
+    (throws?              (t/thru 1 0 3))
+    (is=        [  1    ] (t/thru 1 1 3))
+    (throws?              (t/thru 1 2 3))
+    (throws?              (t/thru 1 3 3))
+
+    (throws?              (t/thru 2 0 3))
+    (throws?              (t/thru 2 1 3))
+    (is=        [    2  ] (t/thru 2 2 3))
+    (throws?              (t/thru 2 3 3))
+
+    (is=        [       ] (t/thru 3 0 3))
+    (throws?              (t/thru 3 1 3))
+    (throws?              (t/thru 3 2 3))
+    (is=        [      3] (t/thru 3 3 3)))
+  (testing "negative step"
+    (is= [      0] (t/thru 0 0 -1))
+    (is= [    1 0] (t/thru 1 0 -1))
+    (is= [  2 1 0] (t/thru 2 0 -1))
+    (is= [3 2 1 0] (t/thru 3 0 -1))
+
+    (is= [       ] (t/thru 0 1 -1))
+    (is= [    1  ] (t/thru 1 1 -1))
+    (is= [  2 1  ] (t/thru 2 1 -1))
+    (is= [3 2 1  ] (t/thru 3 1 -1))
+
+    (is= [       ] (t/thru 0 2 -1))
+    (is= [       ] (t/thru 1 2 -1))
+    (is= [  2    ] (t/thru 2 2 -1))
+    (is= [3 2    ] (t/thru 3 2 -1))
+
+    (is= [       ] (t/thru 0 3 -1))
+    (is= [       ] (t/thru 1 3 -1))
+    (is= [       ] (t/thru 2 3 -1))
+    (is= [3      ] (t/thru 3 3 -1))
+
+
+    (is=         [      0] (t/thru 0 0 -2))
+    (throws?               (t/thru 1 0 -2))
+    (is=         [  2   0] (t/thru 2 0 -2))
+    (throws?               (t/thru 3 0 -2))
+
+    (throws?               (t/thru 0 1 -2))
+    (is=         [    1  ] (t/thru 1 1 -2))
+    (throws?               (t/thru 2 1 -2))
+    (is=         [3   1  ] (t/thru 3 1 -2))
+
+    (is=         [       ] (t/thru 0 2 -2))
+    (throws?               (t/thru 1 2 -2))
+    (is=         [  2    ] (t/thru 2 2 -2))
+    (throws?               (t/thru 3 2 -2))
+
+    (throws?               (t/thru 0 3 -2))
+    (is=         [       ] (t/thru 1 3 -2))
+    (throws?               (t/thru 2 3 -2))
+    (is=         [3      ] (t/thru 3 3 -2))
+
+
+    (is=         [      0] (t/thru 0 0 -3))
+    (throws?               (t/thru 1 0 -3))
+    (throws?               (t/thru 2 0 -3))
+    (is=         [3     0] (t/thru 3 0 -3))
+
+    (throws?               (t/thru 0 1 -3))
+    (is=         [    1  ] (t/thru 1 1 -3))
+    (throws?               (t/thru 2 1 -3))
+    (throws?               (t/thru 3 1 -3))
+
+    (throws?               (t/thru 0 2 -3))
+    (throws?               (t/thru 1 2 -3))
+    (is=         [  2    ] (t/thru 2 2 -3))
+    (throws?               (t/thru 3 2 -3))
+
+    (is=         [       ] (t/thru 0 3 -3))
+    (throws?               (t/thru 1 3 -3))
+    (throws?               (t/thru 2 3 -3))
+    (is=         [3      ] (t/thru 3 3 -3)))
+  (testing "combinations"
+    (is= [    0  2  4  6  8  10] (thru   0  10  2))
+    (is= [    0 -2 -4 -6 -8 -10] (thru   0 -10 -2))
+    (is= [       2  4  6  8  10] (thru   2  10  2))
+    (is= [      -2 -4 -6 -8 -10] (thru  -2 -10 -2))
+    (is= [ 2  0 -2 -4 -6 -8 -10] (thru   2 -10 -2))
+    (is= [-2  0  2  4  6  8  10] (thru  -2  10  2))
+
+    (is= [ 10  8  6  4  2  0   ] (thru  10   0 -2))
+    (is= [-10 -8 -6 -4 -2  0   ] (thru -10   0  2))
+    (is= [ 10  8  6  4  2      ] (thru  10   2 -2))
+    (is= [-10 -8 -6 -4 -2      ] (thru -10  -2  2))
+    (is= [ 10  8  6  4  2  0 -2] (thru  10  -2 -2))
+    (is= [-10 -8 -6 -4 -2  0  2] (thru -10   2  2))
+
+    (is= [    0  5  10] (thru   0  10  5))
+    (is= [    0 -5 -10] (thru   0 -10 -5))
+    (is= [       5  10] (thru   5  10  5))
+    (is= [      -5 -10] (thru  -5 -10 -5))
+    (is= [ 5  0 -5 -10] (thru   5 -10 -5))
+    (is= [-5  0  5  10] (thru  -5  10  5))
+
+    (is= [ 10  5  0   ] (thru  10   0 -5))
+    (is= [-10 -5  0   ] (thru -10   0  5))
+    (is= [ 10  5      ] (thru  10   5 -5))
+    (is= [-10 -5      ] (thru -10  -5  5))
+    (is= [ 10  5  0 -5] (thru  10  -5 -5))
+    (is= [-10 -5  0  5] (thru -10   5  5)))
+)
+
 (deftest t-keep-if
   (is (= [0 2 4 6 8]  (keep-if even? (range 10))
                       (drop-if odd?  (range 10))))

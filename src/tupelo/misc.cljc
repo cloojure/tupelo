@@ -15,8 +15,8 @@
             [tupelo.async :as tas]
             [clojure.core.async :refer [go go-loop chan buffer close! thread alts! alts!! timeout]]
             [clojure.string :as str]))
-
 (t/refer-tupelo)
+
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
@@ -94,7 +94,7 @@
       (throw (IllegalArgumentException. 
         (str "char-seq: start-char must come before stop-char."
         "  start-val=" start-val "  stop-val=" stop-val))))
-    (mapv char (range start-val (inc stop-val)))))
+    (mapv char (thru start-val stop-val))))
 
 ; #todo -> tupelo.string
 (defn seq->str
