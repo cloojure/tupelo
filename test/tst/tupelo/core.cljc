@@ -452,6 +452,13 @@
   (is (thrown? IllegalArgumentException (only [])))
   (is (thrown? IllegalArgumentException (only [:x :y]))))
 
+(deftest t-third
+  (is= nil (third [       ]))
+  (is= nil (third [1      ]))
+  (is= nil (third [1 2    ]))
+  (is= 3   (third [1 2 3  ]))
+  (is= 3   (third [1 2 3 4])))
+
 (deftest t-validate
   (is (= 3        (t/validate pos? 3)))
   (is (= 3.14     (t/validate number? 3.14 )))

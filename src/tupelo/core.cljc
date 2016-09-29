@@ -376,6 +376,13 @@
       (throw (IllegalArgumentException. (str "only: length != 1; length=" seq-len)))))
   (first seqable-arg))
 
+(sk/defn third :- sk/Any
+  "Returns the third item in a collection, or nil if fewer than three items are present. "
+  [seqable-arg :- sk/Any]
+  (when-not (seqable? seqable-arg)
+    (throw (IllegalArgumentException. (str "only: arg not seqable:" seqable-arg))))
+  (first (next (next seqable-arg))))
+
 (defn keyvals
   "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
    (apply hash-map (keyvals m)). (keyvals {:a 1 :b 2} => [:a 1 :b 2] "
@@ -800,7 +807,7 @@
   (refer 'tupelo.core :only
     '[ spy spyx spyxx with-spy-indent truthy? falsey?
        not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
-       forv glue append prepend grab dissoc-in fetch-in only it-> safe-> keep-if drop-if
+       forv glue append prepend grab dissoc-in fetch-in only third it-> safe-> keep-if drop-if
        keyvals strcat pp-str pretty json->clj clj->json clip-str thru rel= drop-at insert-at replace-at 
        starts-with? split-when split-match wild-match? 
        isnt is= isnt= throws? with-exception-default
