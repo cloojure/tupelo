@@ -125,6 +125,8 @@
        (spy-indent-dec)
        result#)))
 
+; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
+
 ; original
 #_(s/defn truthy? :- sk/Bool
     "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
