@@ -180,7 +180,7 @@ Sometimes you may prefer to print out the literal expression instead of a
 message. In this case, just use `spyx` (short for "spy expression") :
 [source,clojure]
 ----
-(it-> 1
+(it-> 1                 ; tupelo.core/it-> 
       (spyx (inc it))
       (* 2 it))
 ; (inc it) => 2     ; the expression is used as the label
