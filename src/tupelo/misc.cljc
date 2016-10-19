@@ -138,11 +138,13 @@
   newline when 100 dots have been printed. Displays the running dot count at the beginning of each line.
   Usage:
 
+    (ns xxx.core 
+      (:require [tupelo.misc :as tm]))
     (tm/dots-config! {:decimation 10} )
     (tm/with-dots
-      (doseq [ii (range 200)]
+      (doseq [ii (range 2345)]
         (tm/dot)
-        (Thread/sleep 10))))
+        (Thread/sleep 5)))
   "
   [] 
   (let [

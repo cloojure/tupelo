@@ -6,7 +6,6 @@
 ;   software.
 (ns tupelo.core
   "Tupelo - Making Clojure even sweeter"
- ;(:refer-clojure :exclude [] )
   (:require [clojure.core :as clj]
             [clojure.core.match :as ccm]
             [clojure.pprint :as pprint]
@@ -20,7 +19,7 @@
             [tupelo.schema :as ts]
             [clojure.spec :as sp])
   (:import [java.io BufferedReader StringReader])
-  (:gen-class))
+)
 
 ; Prismatic Schema type definitions
 (sk/set-fn-validation! true)  ; #todo add to Schema docs
