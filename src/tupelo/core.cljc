@@ -295,6 +295,7 @@
   (glue (take index coll) [elem]
     (drop index coll)))
 
+; #todo if was vector, could juse use (assoc the-vec index elem)
 (sk/defn replace-at :- ts/List
   "Replaces an element in a collection at the specified index."
   [coll :- ts/List
@@ -305,8 +306,9 @@
   (when (<= (count coll) index)
     (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
                                         " (count coll)=" (count coll) " index=" index))))
-  (glue (take index coll) [elem]
-    (drop (inc index) coll)))
+  (glue (take index coll) 
+        [elem]
+        (drop (inc index) coll)))
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
 #_(sk/defn ^{:deprecated "1.9.0-alpha5"} seqable? :- sk/Bool ; from clojure.contrib.core/seqable
