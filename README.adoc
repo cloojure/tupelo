@@ -6,11 +6,6 @@ Leiningen coordinates:
 
 image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 
-The current version of Tupelo makes use of `clojure.spec` and therefore requires Clojure
-`1.9.0-alpha13` or higher.  It also requires Java 1.8.  
-
-The newest version of Tupelo using Clojure 1.8 is `[tupelo "0.1.69"]`
-
 === The Tupelo API Docs link:http://cloojure.github.io/doc/tupelo[are posted on GitHub Pages]
 
 == Tupelo Overview
@@ -987,7 +982,7 @@ There are several other libraries that provide useful value-added functionality 
   - link:http://www.clojure-toolbox.com/[The Clojure Toolbox] - For a comprehehsive list of Clojure libraries
 
 == Requirements
- - Clojure 1.9.0
+ - Clojure 1.8.0
  - Java 1.8
 
 == To Do
