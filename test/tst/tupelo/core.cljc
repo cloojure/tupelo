@@ -970,16 +970,16 @@
   (is (thrown? IllegalArgumentException (replace-at (range 3)  3 9))))
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
-#_(deftest  ^{:deprecated "1.9.0-alpha5" } t-seqable
-  (is (seqable?   "abc"))
-  (is (seqable?   {1 2 3 4} ))
-  (is (seqable?  #{1 2 3} ))
-  (is (seqable?  '(1 2 3) ))
-  (is (seqable?   [1 2 3] ))
-  (is (seqable?   (byte-array [1 2] )))
+(deftest  ^{:deprecated "1.9.0-alpha5" } t-seqable
+  (is (t/seqable?   "abc"))
+  (is (t/seqable?   {1 2 3 4} ))
+  (is (t/seqable?  #{1 2 3} ))
+  (is (t/seqable?  '(1 2 3) ))
+  (is (t/seqable?   [1 2 3] ))
+  (is (t/seqable?   (byte-array [1 2] )))
 
-  (is (not (seqable?  1 )))
-  (is (not (seqable? \a ))))
+  (is (not (t/seqable?  1 )))
+  (is (not (t/seqable? \a ))))
 
 ; #todo add different lengths a/b
 ; #todo add missing entries a/b

@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.10"
+(defproject tupelo "0.9.11"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
@@ -23,7 +23,8 @@
   :codox {:src-dir-uri "http://github.com/cloojure/tupelo/blob/master/"
           :src-linenum-anchor-prefix "L"}
   :deploy-repositories {  "snapshots" :clojars
-                          "releases"  :clojars }
+                          "releases"  :clojars 
+                          :sign-releases false }
   :update :daily  ; :always  
   :main ^:skip-aot tupelo.core
   :target-path      "target/%s"
