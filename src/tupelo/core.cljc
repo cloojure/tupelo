@@ -6,20 +6,22 @@
 ;   software.
 (ns tupelo.core
   "Tupelo - Making Clojure even sweeter"
-  (:require [clojure.core :as clj]
-            [clojure.core.match :as ccm]
-            [clojure.pprint :as pprint]
-            [clojure.string :as str]
-            [clojure.set :as set]
-           ;[clojure.spec :as sp]
-           ;[clojure.spec.gen :as sp.gen]
-            [cheshire.core :as cc]
-            [schema.core :as sk]
-            [tupelo.types :as types]
-            [tupelo.schema :as ts]
-            [clojure.spec :as sp])
+  (:require 
+    [clojure.core :as clj]
+    [clojure.core.match :as ccm]
+    [clojure.pprint :as pprint]
+    [clojure.string :as str]
+    [clojure.set :as set]
+    [cheshire.core :as cc]
+    [schema.core :as sk]
+    [tupelo.types :as types]
+    [tupelo.schema :as ts]
+  )
   (:import [java.io BufferedReader StringReader])
 )
+
+   ;[clojure.spec :as sp]
+   ;[clojure.spec.gen :as sp.gen]
 
 ; Prismatic Schema type definitions
 (sk/set-fn-validation! true)  ; #todo add to Schema docs
@@ -138,9 +140,9 @@
   (if arg true false))
 
 ; #todo how to test the :ret part?
-(sp/fdef truthy?
-  :args (sp/cat :arg any?)
-  :ret  boolean?)
+; (sp/fdef truthy?
+;   :args (sp/cat :arg any?)
+;   :ret  boolean?)
 
 (sk/defn falsey? :- sk/Bool
   "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
@@ -311,7 +313,7 @@
         (drop (inc index) coll)))
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
-#_(sk/defn ^{:deprecated "1.9.0-alpha5"} seqable? :- sk/Bool ; from clojure.contrib.core/seqable
+(sk/defn ^{:deprecated "1.9.0-alpha5"} seqable? :- sk/Bool ; from clojure.contrib.core/seqable
     "Returns true if (seq x) will succeed, false otherwise."
     [x :- sk/Any]
     (or (seq? x)

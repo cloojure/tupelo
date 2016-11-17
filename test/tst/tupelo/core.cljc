@@ -8,9 +8,9 @@
   (:use clojure.test )
   (:require
     [clojure.core :as clj]
-    [clojure.spec :as sp]
-    [clojure.spec.gen :as sp.gen]
-    [clojure.spec.test :as sp.test]
+;   [clojure.spec :as sp]
+;   [clojure.spec.gen :as sp.gen]
+;   [clojure.spec.test :as sp.test]
     [clojure.string :as str]
     [clojure.test.check.clojure-test :as tst]
     [clojure.test.check.generators :as gen]
@@ -102,8 +102,8 @@
     (is (= "msg0 => 5\n"                    (with-out-str (fn0))))
     ))
 
-(deftest t-truthy-spec
-)
+; (deftest t-truthy-spec
+; )
 
 (deftest t-truthy-falsey
   (is (truthy? 5))
@@ -792,7 +792,7 @@
     (is (thrown? clojure.lang.ArityException (keep-if (fn [arg1 arg2] :dummy) #{1 2 3} )))
   ))
 
-(tst/defspec ^:slow t-keep-if-drop-if 999
+#_(tst/defspec ^:slow t-keep-if-drop-if 999
   (prop/for-all [vv (gen/vector gen/int) ]
     (let [even-1      (keep-if   even?  vv)
           even-2      (drop-if   odd?   vv)
@@ -804,7 +804,7 @@
       (and  (= even-1 even-2 even-filt)
             (=  odd-1  odd-2  odd-rem)))))
 
-(tst/defspec ^:slow t-keep-if-drop-if-set 999
+#_(tst/defspec ^:slow t-keep-if-drop-if-set 999
   (prop/for-all [ss (gen/set gen/int) ]
     (let [even-1      (keep-if   even?  ss)
           even-2      (drop-if   odd?   ss)
@@ -816,7 +816,7 @@
       (and  (= even-1 even-2 even-filt)
             (=  odd-1  odd-2  odd-rem)))))
 
-(tst/defspec ^:slow t-keep-if-drop-if-map-key 99  ; seems to hang if (< 99 limit)
+#_(tst/defspec ^:slow t-keep-if-drop-if-map-key 99  ; seems to hang if (< 99 limit)
   (prop/for-all [mm (gen/map gen/int gen/keyword {:max-elements 99} ) ]
     (let [even-1      (keep-if  (fn [k v] (even? k))  mm)
           even-2      (drop-if  (fn [k v] (odd?  k))  mm)
@@ -829,7 +829,7 @@
       (and  (= even-1 even-2 even-filt)
             (=  odd-1  odd-2  odd-rem)))))
 
-(tst/defspec ^:slow t-keep-if-drop-if-map-value 99  ; seems to hang if (< 99 limit)
+#_(tst/defspec ^:slow t-keep-if-drop-if-map-value 99  ; seems to hang if (< 99 limit)
   (prop/for-all [mm (gen/map gen/keyword gen/int {:max-elements 99} ) ]
     (let [even-1      (keep-if  (fn [k v] (even? v))  mm)
           even-2      (drop-if  (fn [k v] (odd?  v))  mm)
@@ -970,7 +970,7 @@
   (is (thrown? IllegalArgumentException (replace-at (range 3)  3 9))))
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
-(deftest  ^{:deprecated "1.9.0-alpha5" } t-seqable
+#_(deftest  ^{:deprecated "1.9.0-alpha5" } t-seqable
   (is (seqable?   "abc"))
   (is (seqable?   {1 2 3 4} ))
   (is (seqable?  #{1 2 3} ))

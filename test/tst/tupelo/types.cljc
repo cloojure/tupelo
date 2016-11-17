@@ -15,7 +15,7 @@
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
 ; As of Clojure 1.9.0-alpha5, boolean? is native to clojure
-(deftest t-boolean?
+#_(deftest t-boolean?
   (is (boolean? true))
   (is (boolean? false))
   (is (not (boolean? :hello)))
