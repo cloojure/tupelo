@@ -6,15 +6,17 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.misc
   "Miscellaneous functions."
-  (:require [clojure.string :as str]
-            [clojure.java.shell :as shell]
-            [clojure.set :as set]
-            [schema.core :as s]
-            [tupelo.core :as t]
-            [tupelo.schema :as ts]
-            [tupelo.async :as tas]
-            [clojure.core.async :refer [go go-loop chan buffer close! thread alts! alts!! timeout]]
-            [clojure.string :as str]))
+  (:require 
+    [clojure.core.async :refer [go go-loop chan buffer close! thread alts! alts!! timeout]]
+    [clojure.java.shell :as shell]
+    [clojure.set :as set]
+    [clojure.string :as str]
+    [clojure.string :as str] 
+    [schema.core :as s]
+    [tupelo.async :as tas]
+    [tupelo.core :as t]
+    [tupelo.schema :as ts]
+  ))
 (t/refer-tupelo)
 
 ; Prismatic Schema type definitions

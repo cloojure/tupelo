@@ -223,7 +223,6 @@
   [& body]
   `(vec (for ~@body)))
 
-; #todo add (glue str1 str2)
 (defn glue
   "Glues together like collections:
 
