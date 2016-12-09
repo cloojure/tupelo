@@ -315,6 +315,7 @@
   (is= (glue \a  "b" "")    "ab" )
   (is= (glue \a  "b" "")    "ab" )
   (is= (glue "I" \space "like " \a " nap!" )    "I like a nap!" )
+  (is= (apply glue [ "I" \space "like " \a " nap!"] )    "I like a nap!" )
 
   (throws? (glue   [1 2]     {:a 1} ))
   (throws? (glue  '(1 2)     {:a 1} ))
