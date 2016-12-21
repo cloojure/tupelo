@@ -20,7 +20,6 @@
     [tupelo.misc :as tm]
   ))
 (t/refer-tupelo)
-(println "java.version => " (java.lang.System/getProperty "java.version"))
 
 ; Prismatic Schema type definitions
 (sk/set-fn-validation! true)   ; #todo add to Schema docs

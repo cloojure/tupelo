@@ -27,6 +27,15 @@
 (sk/set-fn-validation! true)  ; #todo add to Schema docs
 ; #todo add to project.clj (esp for tupelo-app template, user/dev profile)
 
+(defn print-versions []
+  (let [version-str   (format "   Clojure %s    Java %s"  
+                                   (System/getProperty "java.version")
+                                   (clojure-version)) ]
+    (newline)
+    (println "-------------------------------------")
+    (println version-str)
+    (println "-------------------------------------")
+  ))
 
 (def ^:no-doc spy-indent-level (atom 0))
 (defn ^:no-doc spy-indent-spaces []
@@ -100,6 +109,7 @@
 ; #todo need to write (spy-let ...) => (let [ x 1  _ (spyx x)
 ;                                             y 2  _ (spyx y) ]   ...)
 
+; #todo allos spyx to have labels like (spyx :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
 (defmacro spyx
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
    expression, printing both the expression and its value to stdout, then returns the value."
@@ -323,6 +333,7 @@
       (string? x)
       (instance? java.util.Map x)))
 
+; #todo rename to "get-in-safe" ???
 (sk/defn fetch-in :- sk/Any
   "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
    returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
@@ -336,6 +347,8 @@
                  "  map : " the-map \newline
                  "  keys: " keys-vec \newline)))
       result)))
+
+; #todo make inverse named "get-safe" ???
 
 (sk/defn grab :- sk/Any
   "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
@@ -611,6 +624,7 @@
   [arg]
   (with-out-str (pprint/pprint arg)))
 
+; #todo rename to pp or pprint ?
 ; #todo add test & README
 (defn pretty                                                ; #todo experimental
   "Shortcut to clojure.pprint/pprint"
@@ -618,6 +632,7 @@
   (apply pprint/pprint args))
 
 ; #todo add test & README
+; #todo rename json->edn  ???
 (defn json->clj [arg]                                       ; #todo experimental
   "Shortcut to cheshire.core/parse-string"
   (cc/parse-string arg true))                               ; true => keywordize-keys

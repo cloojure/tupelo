@@ -13,6 +13,6 @@
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
+
 (deftest t-bootstrap
-  (t/spyx *clojure-version*)
-  (is true))
+  (t/print-versions))

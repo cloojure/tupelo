@@ -122,6 +122,35 @@
                     "result:"      (:out  result) "\n" 
               ))))))
 
+(comment  "stuff to make a generic run-shell-cmd"
+
+  (defn get-os []
+    (let [osname (System/getProperty "os.name")]
+      (condp re-seq (str/lower-case osname) ; required to match os.name="Windows 8.1"
+        #"win"    {:os "windows"}
+        #"nix"    {:os "unix"}
+        #"mac"    {:os "mac"}
+        false )))
+
+  (defn is-windows? []
+    (= "windows" (:os (get-os))))
+
+  (defn format-shell-cmd-vec [cmd-str]
+    (when-not (string? cmd-str)
+      (throw (IllegalArgumentException. (str "format-shell-cmd: cmd-str must be a string; received=" cmd-str))))
+    (if (is-windows?)
+        ["cmd.exe" "/c" cmd-str :dir "c:\\users"] ; windows
+        ["bash"    "-c" cmd-str                 ] ; linux
+    ))
+
+  (defn run-shell-cmd [cmd-str]
+    (when-not (string? cmd-str)
+      (throw (IllegalArgumentException. (str "format-shell-cmd: cmd-str must be a string; received=" cmd-str))))
+    (apply shell/sh (util/format-shell-cmd-vec cmd-str)))
+
+)
+
+
 ; #todo -> tupelo.string
 (def printable-chars
   "A seq of 1-char strings of all printable characters from space (32) to tilde (126)"
