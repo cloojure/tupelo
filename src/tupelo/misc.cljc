@@ -122,18 +122,15 @@
                     "result:"      (:out  result) "\n" 
               ))))))
 
+(defn get-os []
+  (let [os-name (spyx (System/getProperty "os.name")) ]
+    (condp re-find (str/lower-case os-name) ; required to match os.name="Windows 8.1"
+      #"windows"  :windows
+      #"linux"    :linux
+      #"mac"      :mac
+      (throw (RuntimeException. (str "get-os: Unknown operating system found: " os-name ))))))
+
 (comment  "stuff to make a generic run-shell-cmd"
-
-  (defn get-os []
-    (let [osname (System/getProperty "os.name")]
-      (condp re-seq (str/lower-case osname) ; required to match os.name="Windows 8.1"
-        #"win"    {:os "windows"}
-        #"nix"    {:os "unix"}
-        #"mac"    {:os "mac"}
-        false )))
-
-  (defn is-windows? []
-    (= "windows" (:os (get-os))))
 
   (defn format-shell-cmd-vec [cmd-str]
     (when-not (string? cmd-str)

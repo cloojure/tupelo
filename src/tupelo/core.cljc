@@ -281,6 +281,7 @@
       (throw (IllegalArgumentException. (str "Nothing to prepend! elems=" elems))))
     (vec (concat elems listy))))
 
+; #todo force to vector result
 (sk/defn drop-at :- ts/List
   "Removes an element from a collection at the specified index."
   [coll :- ts/List
@@ -293,6 +294,7 @@
   (glue (take index coll)
     (drop (inc index) coll)))
 
+; #todo force to vector result
 (sk/defn insert-at :- ts/List
   "Inserts an element into a collection at the specified index."
   [coll :- ts/List
@@ -306,7 +308,8 @@
   (glue (take index coll) [elem]
     (drop index coll)))
 
-; #todo if was vector, could juse use (assoc the-vec index elem)
+; #todo force to vector result
+; #todo if was vector, could just use (assoc the-vec idx new-val)
 (sk/defn replace-at :- ts/List
   "Replaces an element in a collection at the specified index."
   [coll :- ts/List
@@ -527,6 +530,11 @@
           ]
       or-result)))
 
+(defn rng
+  "An eager version clojure.core/range that always returns its result in a vector."
+  [& args]
+  (vec (apply range args)))
+
 ; #todo need docs & tests
 ; #todo:  add (thru a b)     -> [a..b] (inclusive)
 ;             (thru 1 3)     -> [ 1  2  3]
@@ -542,11 +550,11 @@
 ;       (thru :co 1 5)   -> [1 2 3 4  ]  ; like (range ...)
 ;       (thru :oo 1 5)   -> [  2 3 4  ]
 (defn thru
-  "Returns a sequence of integers. Like clojure.core/range, but is inclusive of the right boundary value. "
+  "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. "
   ([end]
-   (range (inc end)))
+   (rng (inc end)))
   ([start end]
-   (range start (inc end)))
+   (rng start (inc end)))
   ([start end step]
    (let [delta          (- (double end) (double start))
          nsteps-dbl     (/ (double delta) (double step))
@@ -557,7 +565,7 @@
                                            "thru: non-integer number of steps \n   args:"
                                            (pr-str [start end step])))))
      (it-> (inc nsteps-int)
-           (range it)
+           (rng it)
            (map #(* step %) it)
            (map #(+ start %) it)
            (vec it))))
@@ -827,7 +835,7 @@
     '[ spy spyx spyxx with-spy-indent truthy? falsey?
        not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
        forv glue append prepend grab dissoc-in fetch-in only third it-> safe-> keep-if drop-if
-       keyvals strcat pp-str pretty json->clj clj->json clip-str thru rel= drop-at insert-at replace-at 
+       keyvals strcat pp-str pretty json->clj clj->json clip-str rng thru rel= drop-at insert-at replace-at
        starts-with? split-when split-match wild-match? 
        isnt is= isnt= throws? with-exception-default
      ] ))

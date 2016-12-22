@@ -74,6 +74,9 @@ Mark Twain          "
                   single-quotes->double-quotes
                   double-quotes->single-quotes)))))
 
+(deftest t-get-os
+  (is (#{:windows :linux :mac} (misc/get-os))))
+
 (deftest str->kw-t
   (testing "basic usage"
     (is (= :abc-def-gh-qrs (misc/str->kw "abc def*gh_qrs")))))
