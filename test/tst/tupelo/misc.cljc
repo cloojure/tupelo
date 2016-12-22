@@ -101,33 +101,44 @@ Mark Twain          "
   (is (= " \\a \\b \\c"     (misc/seq->str "abc"))))
 
 (deftest shell-cmd-t
-  (testing "no errors"
-    (let [result (shell-cmd "ls -ldF *")]
-      (when false  ; set true -> debug print
-        (println "(:out result)" )
-        (println  (:out result)  ))
-      (is (= 0 (:exit result))))
-    (let [result (shell-cmd "ls /bin/bash")]
-      (is (= 0 (:exit result)))
-      (is (= 1 (count (re-seq #"/bin/bash" (:out result))))))
-    (binding [*os-shell* "/bin/sh"]
-      (let [result (shell-cmd "ls /bin/*sh")]
-        (is (= 0 (:exit result)))
-        (is (< 0 (count (re-seq #"/bin/bash" (:out result)))))))
-    )
+  (when (= :linux (get-os))
 
-  (testing "errors"
-    (is (thrown? RuntimeException (shell-cmd "LLLls -ldF *")))))
+    (testing "no errors"
+      (let [result (shell-cmd "ls -ldF *")]
+        (when false ; set true -> debug print
+          (println "(:out result)")
+          (println (:out result)))
+        (is (= 0 (:exit result))))
+      (let [result (shell-cmd "ls /bin/bash")]
+        (is (= 0 (:exit result)))
+        (is (= 1 (count (re-seq #"/bin/bash" (:out result))))))
+      (binding [*os-shell* "/bin/sh"]
+        (let [result (shell-cmd "ls /bin/*sh")]
+          (is (= 0 (:exit result)))
+          (is (< 0 (count (re-seq #"/bin/bash" (:out result)))))))
+      )
+
+    (testing "errors"
+      (is (thrown? RuntimeException (shell-cmd "LLLls -ldF *"))))))
 
 (deftest t-dots
   (dots-config! {:dots-per-row 10  :decimation 1} )
-  (is (= "         0 .........\n         9 total\n"
-         (with-out-str (with-dots (doseq [x (range 9)]
-                                    (dot))))))
-  (dots-config! {:dots-per-row 10  :decimation 3} )
-  (is (= "         0 ..........\n        30 ..........\n        60 ..........\n        90 ...\n        99 total\n"
-         (with-out-str (with-dots (doseq [x (range 99)]
+  (is (= (collapse-whitespace "         0 .........\n         9 total\n")
+         (collapse-whitespace (with-out-str
+                                (with-dots
+                                  (doseq [x (range 9)]
                                     (dot)))))))
+
+  (dots-config! {:dots-per-row 10  :decimation 3} )
+  (is (= (collapse-whitespace "  0 ..........
+                                30 ..........
+                                60 ..........
+                                90 ...
+                                99 total  ")
+        (collapse-whitespace (with-out-str
+                               (with-dots
+                                 (doseq [x (range 99)]
+                                   (dot))))))))
 (deftest t-factorial
   (is (=       (factorial 0)          1))
   (is (=       (factorial 1)          1))

@@ -37,25 +37,27 @@
                                 (swap! side-effect-cum-sum + result)
                                 result)) ]
       (is (= "hi => 5"
-          (str/trim (with-out-str (spy (side-effect-add! 2 3) :msg "hi"))) ))
+          (tm/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "hi"))) ))
       (is (= "hi => 5"
-          (str/trim (with-out-str (spy :msg "hi"  (side-effect-add! 2 3)))) ))
+          (tm/collapse-whitespace (with-out-str (spy :msg "hi"  (side-effect-add! 2 3)))) ))
       (is (= "(side-effect-add! 2 3) => 5"
-          (str/trim (with-out-str (spyx (side-effect-add! 2 3)))) ))
+          (tm/collapse-whitespace (with-out-str (spyx (side-effect-add! 2 3)))) ))
       (is (= 15 @side-effect-cum-sum)))
 
-    (is (= "first => 5\nsecond => 25"
-        (str/trim (with-out-str (-> 2
-                                    (+ 3)
-                                    (spy :msg "first" )
-                                    (* 5)
-                                    (spy :msg "second") )))))
-    (is (= "first => 5\nsecond => 25"
-        (str/trim (with-out-str (->> 2
-                                    (+ 3)
-                                    (spy :msg "first" )
-                                    (* 5)
-                                    (spy :msg "second") )))))
+    (is (= "first => 5 second => 25"
+        (tm/collapse-whitespace
+          (with-out-str (-> 2
+                            (+ 3)
+                            (spy :msg "first" )
+                            (* 5)
+                            (spy :msg "second") )))))
+    (is (= "first => 5 second => 25"
+        (tm/collapse-whitespace
+          (with-out-str (->> 2
+                             (+ 3)
+                             (spy :msg "first" )
+                             (* 5)
+                             (spy :msg "second") )))))
 
     (let [side-effect-cum-sum (atom 0)  ; side-effect running total
 
@@ -66,16 +68,16 @@
                                 result))
     ]
       (is (= "value => 5"
-          (str/trim (with-out-str (spy (side-effect-add! 2 3) :msg "value")))))
+          (tm/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "value")))))
       (is (= "value => 5"
-          (str/trim (with-out-str (spy :msg "value"  (side-effect-add! 2 3))))))
+          (tm/collapse-whitespace (with-out-str (spy :msg "value"  (side-effect-add! 2 3))))))
       (is (= 10 @side-effect-cum-sum))
 
-      (is (= "value => 5" (str/trim (with-out-str (spy "value" (+ 2 3) )))))
-      (is (=   "spy => 5" (str/trim (with-out-str (spy         (+ 2 3) )))))
+      (is (= "value => 5" (tm/collapse-whitespace (with-out-str (spy "value" (+ 2 3) )))))
+      (is (=   "spy => 5" (tm/collapse-whitespace (with-out-str (spy         (+ 2 3) )))))
 
       (is (= "(str \"abc\" \"def\") => \"abcdef\""
-          (str/trim (with-out-str (spyx (str "abc" "def") )))))
+          (tm/collapse-whitespace (with-out-str (spyx (str "abc" "def") )))))
 
       (is (thrown? IllegalArgumentException  (spy "some-msg" 42 :msg)))
     )))
@@ -84,10 +86,10 @@
   (let [val1  (into (sorted-map) {:a 1 :b 2})
         val2  (+ 2 3) ]
     (is (= "val1 => clojure.lang.PersistentTreeMap->{:a 1, :b 2}"
-        (str/trim (with-out-str (spyxx val1 )))  ))
+        (tm/collapse-whitespace (with-out-str (spyxx val1 )))  ))
 
     (is (= "val2 => java.lang.Long->5"
-        (str/trim (with-out-str (spyxx val2 ))) ))
+        (tm/collapse-whitespace (with-out-str (spyxx val2 ))) ))
   ))
 
 (deftest t-with-spy-indent
@@ -97,9 +99,9 @@
                         (spy :msg "msg1" (+ 2 3))
                         (fn2)))
         fn0   (fn [] (spy :msg "msg0" (+ 2 3))) ]
-    (is (= "  msg2 => 5\n"                  (with-out-str (fn2))))
-    (is (= "  msg1 => 5\n    msg2 => 5\n"   (with-out-str (fn1))))
-    (is (= "msg0 => 5\n"                    (with-out-str (fn0))))
+    (is (= "msg2 => 5"            (tm/collapse-whitespace (with-out-str (fn2)))))
+    (is (= "msg1 => 5 msg2 => 5"  (tm/collapse-whitespace (with-out-str (fn1)))))
+    (is (= "msg0 => 5"            (tm/collapse-whitespace (with-out-str (fn0)))))
     ))
 
 ; (deftest t-truthy-spec
