@@ -57,8 +57,8 @@
           (is (every? b64/base64-chars (seq b64-str)))
           (is (= orig result)))))))
 
-(tst/defspec ^:slow round-trip-bytes 9999
-  (if (t/is-java-1-8-plus?)
+(if (t/is-java-1-8-plus?)
+  (tst/defspec ^:slow round-trip-bytes 9999
     (prop/for-all [orig gen/bytes]
       (let [string-b64 (b64/encode-bytes->str orig)
             result     (b64/decode-str->bytes string-b64)]
@@ -67,8 +67,8 @@
         (= (seq orig) (seq result))))))
 
 ; Transform a string to a base64 string and back
-(tst/defspec ^:slow round-trip-string 9999
-  (if (t/is-java-1-8-plus?)
+(if (t/is-java-1-8-plus?)
+  (tst/defspec ^:slow round-trip-string 9999
     (prop/for-all [orig gen/string]
       (let [string-b64 (b64/encode-str orig)
             result     (b64/decode-str string-b64)]
