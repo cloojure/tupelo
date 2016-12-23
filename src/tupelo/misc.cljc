@@ -123,7 +123,7 @@
               ))))))
 
 (defn get-os []
-  (let [os-name (spyx (System/getProperty "os.name")) ]
+  (let [os-name (System/getProperty "os.name") ]
     (condp re-find (str/lower-case os-name) ; required to match os.name="Windows 8.1"
       #"windows"  :windows
       #"linux"    :linux

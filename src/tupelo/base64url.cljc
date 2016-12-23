@@ -26,31 +26,32 @@
                        (misc/char-seq  \0 \9) 
                        [\- \_ \=] ] )))
 
-(def ^:private encoder (java.util.Base64/getUrlEncoder))
-(def ^:private decoder (java.util.Base64/getUrlDecoder))
-
 (defn encode-bytes
   "Encodes a byte array into base64url, returning a new byte array."
   [data-bytes]
-  (types/byte-array? data-bytes) 
-  (.encode encoder data-bytes))
+  (min-java-1-8
+    (types/byte-array? data-bytes)
+    (.encode (java.util.Base64/getUrlEncoder) data-bytes)))
 
 (defn decode-bytes
   "Decodes a byte array from base64url, returning a new byte array."
   [code-bytes]
-  (types/byte-array? code-bytes) 
-  (.decode decoder code-bytes))
+  (min-java-1-8
+    (types/byte-array? code-bytes)
+    (.decode (java.util.Base64/getUrlDecoder) code-bytes)))
 
 (s/defn encode-bytes->str :- s/Str
   "Encodes a byte array into base64url, returning a String."
   [data-bytes]
-  (types/byte-array? data-bytes) 
-  (.encodeToString encoder data-bytes))
+  (min-java-1-8
+    (types/byte-array? data-bytes)
+    (.encodeToString (java.util.Base64/getUrlEncoder) data-bytes)))
 
 (s/defn decode-str->bytes
   "Decodes a base64url encoded String, returning a byte array"
   [code-str :- s/Str]
-  (.decode decoder code-str))
+  (min-java-1-8
+    (.decode (java.util.Base64/getUrlDecoder) code-str)))
 
 (s/defn encode-str :- s/Str
   "Encodes a String into base64url, returning a String."

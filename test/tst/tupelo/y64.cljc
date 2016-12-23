@@ -23,45 +23,50 @@
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
 (deftest t1
-  (let [orig        (byte-array [(byte \A)] )
-        y64-bytes   (y64/encode-bytes  orig)
-        result      (y64/decode-bytes  y64-bytes) ]
-    (is (every? y64/code-chars (map char y64-bytes)))
-    (is (= (seq orig) (seq result)))))
+  (if (t/is-java-1-8-plus?)
+    (let [orig      (byte-array [(byte \A)])
+          y64-bytes (y64/encode-bytes orig)
+          result    (y64/decode-bytes y64-bytes)]
+      (is (every? y64/code-chars (map char y64-bytes)))
+      (is (= (seq orig) (seq result))))))
 
 (deftest y64-basic
   (testing "y64 - bytes "
-    (doseq [step [50 20 7]]
-      (let [orig        (byte-array (mapv #(.byteValue %) (range 0 400 step)))
-            y64-bytes   (y64/encode-bytes  orig)
-            result      (y64/decode-bytes  y64-bytes) ]
-        (is (every? y64/code-chars (map char y64-bytes)))
-        (is (= (seq orig) (seq result))))))
+    (if (t/is-java-1-8-plus?)
+      (doseq [step [50 20 7]]
+        (let [orig      (byte-array (mapv #(.byteValue %) (range 0 400 step)))
+              y64-bytes (y64/encode-bytes orig)
+              result    (y64/decode-bytes y64-bytes)]
+          (is (every? y64/code-chars (map char y64-bytes)))
+          (is (= (seq orig) (seq result)))))))
   (testing "y64 - string"
-    (doseq [num-chars [1 2 3 7 20]]
-      (let [orig        (str/join (misc/take-dist num-chars misc/printable-chars))
-            y64-str     (y64/encode-str  orig)
-            result      (y64/decode-str  y64-str) ]
-        (is (every? y64/code-chars (seq y64-str)))
-        (is (= orig result))))))
+    (if (t/is-java-1-8-plus?)
+      (doseq [num-chars [1 2 3 7 20]]
+        (let [orig    (str/join (misc/take-dist num-chars misc/printable-chars))
+              y64-str (y64/encode-str orig)
+              result  (y64/decode-str y64-str)]
+          (is (every? y64/code-chars (seq y64-str)))
+          (is (= orig result)))))))
 
 ; Transform a seq of bytes to a y64 string and back
 (tst/defspec ^:slow round-trip-bytes 9999
-  (prop/for-all [orig gen/bytes]
-    (let [y64-str   (y64/encode-bytes->str  orig)
-          result    (y64/decode-str->bytes  y64-str) ]
-      (assert (every? y64/code-chars (seq y64-str)))
-      (assert (types/byte-array? result))
-      (= (seq orig) (seq result)))))
+  (if (t/is-java-1-8-plus?)
+    (prop/for-all [orig gen/bytes]
+      (let [y64-str (y64/encode-bytes->str orig)
+            result  (y64/decode-str->bytes y64-str)]
+        (assert (every? y64/code-chars (seq y64-str)))
+        (assert (types/byte-array? result))
+        (= (seq orig) (seq result))))))
 
 ; Transform a string to a y64 string and back
 (tst/defspec ^:slow round-trip-string 9999
-  (prop/for-all [orig gen/string]
-    (let [y64-str   (y64/encode-str  orig)
-          result    (y64/decode-str  y64-str) ]
-      (assert (every? y64/code-chars (seq y64-str)))
-      (assert (string? result))
-      (= orig result))))
+  (if (t/is-java-1-8-plus?)
+    (prop/for-all [orig gen/string]
+      (let [y64-str (y64/encode-str orig)
+            result  (y64/decode-str y64-str)]
+        (assert (every? y64/code-chars (seq y64-str)))
+        (assert (string? result))
+        (= orig result)))))
 
 (defn -main []
   (newline)
