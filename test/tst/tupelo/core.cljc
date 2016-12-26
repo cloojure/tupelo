@@ -1244,30 +1244,6 @@
 )
 
 ;---------------------------------------------------------------------------------------------------
-; Java version testing functions & macros
-
-(defn fn-any [] 42)
-(defn fn7 [] (min-java-1-7 7))
-(defn fn8 [] (min-java-1-8 8))
-
-(deftest t-java-version
-  (when false
-    (spyx (is-java-1-7?))
-    (spyx (is-java-1-8?))
-    (spyx (is-java-1-7-plus?))
-    (spyx (is-java-1-8-plus?)))
-
-  (when (is-java-1-7?)
-    (t/throws? (fn8)))
-
-  (when (is-java-1-8-plus?)
-    (is= 8 (fn8)))
-
-  (is= 7 (fn7))
-  (is= 42 (fn-any))
-)
-
-;---------------------------------------------------------------------------------------------------
 ; Deprecated functions
 
 (deftest ^:deprecated ^:no-doc t-str->lines

@@ -48,13 +48,3 @@
     `(do (throw (RuntimeException. "Unimplemented prior to Java 1.8: ")))))
 
 
-;---------------------------------------------------------------------------------------------------
-; Java version functions
-
-(defn base64-encoder []
-  (min-java-1-8
-    (java.util.Base64/getEncoder)))
-
-(defn base64-decoder []
-  (min-java-1-8
-    (java.util.Base64/getDecoder)))

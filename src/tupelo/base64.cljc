@@ -25,29 +25,37 @@
                        (misc/char-seq  \0 \9) 
                        [\+ \/ \=] ] )))
 
+(defn base64-encoder []
+  (ver/min-java-1-8
+    (java.util.Base64/getEncoder)))
+
+(defn base64-decoder []
+  (ver/min-java-1-8
+    (java.util.Base64/getDecoder)))
+
+
 (defn encode-bytes
   "Encodes a byte array into base64, returning a new byte array."
   [data-bytes]
   (assert (types/byte-array? data-bytes))
-  (.encode (ver/get-encoder) data-bytes))
+  (.encode (base64-encoder) data-bytes))
 
 (defn decode-bytes
   "Decodes a byte array from base64, returning a new byte array."
   [code-bytes]
   (assert (types/byte-array? code-bytes))
-  (.decode (ver/get-decoder)  code-bytes))
+  (.decode (base64-decoder)  code-bytes))
 
 (s/defn encode-bytes->str :- s/Str
   "Encodes a byte array into base64, returning a String."
   [data-bytes]
   (assert (types/byte-array? data-bytes))
-  (.encodeToString (ver/get-encoder) data-bytes))
+  (.encodeToString (base64-encoder) data-bytes))
 
 (s/defn decode-str->bytes
   "Decodes a base64 encoded String, returning a byte array"
   [code-str :- s/Str]
-  (min-java-1-8
-    (.decode (ver/get-decoder) code-str)))
+  (.decode (base64-decoder) code-str))
 
 (s/defn encode-str :- s/Str
   "Encodes a String into base64, returning a String."
