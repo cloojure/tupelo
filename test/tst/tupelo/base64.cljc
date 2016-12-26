@@ -6,18 +6,19 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.base64
   (:use clojure.test)
-  (:require [clojure.string                         :as str]
-            [clojure.test.check                     :as tc]
-            [clojure.test.check.generators          :as gen]
-            [clojure.test.check.properties          :as prop]
-            [clojure.test.check.clojure-test        :as tst]
-            [tupelo.base64                          :as b64]
-            [tupelo.core :as t]
-            [tupelo.misc                            :as misc]
-            [tupelo.types                           :as types] 
-            [schema.core                            :as s] )
-  (:gen-class))
-
+  (:require
+    [clojure.string                         :as str]
+    [clojure.test.check                     :as tc]
+    [clojure.test.check.generators          :as gen]
+    [clojure.test.check.properties          :as prop]
+    [clojure.test.check.clojure-test        :as tst]
+    [tupelo.base64                          :as b64]
+    [tupelo.core                            :as t]
+    [tupelo.misc                            :as misc]
+    [tupelo.types                           :as types]
+    [tupelo.version                         :as ver]
+    [schema.core                            :as s]
+  ))
 (t/refer-tupelo)
 
 ; Prismatic Schema type definitions
@@ -32,7 +33,7 @@
   (println "t1 - exit"))
 
 (deftest t1
-  (if (t/is-java-1-8-plus?)
+  (if (ver/is-java-1-8-plus?)
     (let [orig    (byte-array [(byte \A)])
           b64-str (b64/encode-bytes->str orig)
           result  (b64/decode-str->bytes b64-str)]
@@ -41,7 +42,7 @@
 
 (deftest b64-basic
   (testing "base64 - bytes "
-    (if (t/is-java-1-8-plus?)
+    (if (ver/is-java-1-8-plus?)
       (doseq [step [50 20 7]]
         (let [orig    (byte-array (mapv #(.byteValue %) (range 0 400 step)))
               b64-str (b64/encode-bytes->str orig)
@@ -49,7 +50,7 @@
           (is (every? b64/base64-chars (seq b64-str)))
           (is (= (seq orig) (seq result)))))))
   (testing "base64 - string"
-    (if (t/is-java-1-8-plus?)
+    (if (ver/is-java-1-8-plus?)
       (doseq [num-chars [1 2 3 7 20]]
         (let [orig    (str/join (misc/take-dist num-chars misc/printable-chars))
               b64-str (b64/encode-str orig)
@@ -57,7 +58,7 @@
           (is (every? b64/base64-chars (seq b64-str)))
           (is (= orig result)))))))
 
-(if (t/is-java-1-8-plus?)
+(if (ver/is-java-1-8-plus?)
   (tst/defspec ^:slow round-trip-bytes 9999
     (prop/for-all [orig gen/bytes]
       (let [string-b64 (b64/encode-bytes->str orig)
@@ -67,7 +68,7 @@
         (= (seq orig) (seq result))))))
 
 ; Transform a string to a base64 string and back
-(if (t/is-java-1-8-plus?)
+(if (ver/is-java-1-8-plus?)
   (tst/defspec ^:slow round-trip-string 9999
     (prop/for-all [orig gen/string]
       (let [string-b64 (b64/encode-str orig)

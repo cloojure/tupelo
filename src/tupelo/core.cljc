@@ -828,39 +828,6 @@
   (apply throws?-impl forms))
 
 
-;---------------------------------------------------------------------------------------------------
-; Java version testing functions & macros
-
-(defn java-version-matches?
-  [version-str]
-  {:pre [ (string? version-str) ] }
-  (let [idx-val (str/index-of (System/getProperty "java.version") version-str) ]
-    (and (not-nil? idx-val) (zero? idx-val))))
-
-(defn java-version-min?
-  [version-str]
-  {:pre [ (string? version-str) ] }
-  (neg? (compare version-str (System/getProperty "java.version"))))
-
-(defn is-java-1-7? []  (java-version-matches? "1.7"))
-(defn is-java-1-8? []  (java-version-matches? "1.8"))
-
-(defn is-java-1-7-plus? [] (java-version-min? "1.7"))
-(defn is-java-1-8-plus? [] (java-version-min? "1.8"))
-
-(defmacro min-java-1-7
-  [& forms]
-  (if (is-java-1-7-plus?)
-    `(do ~@forms)
-    `(do (throw (RuntimeException. "Unimplemented prior to Java 1.7: ")))))
-
-(defmacro min-java-1-8
-  [& forms]
-  (if (is-java-1-8-plus?)
-    `(do ~@forms)
-    `(do (throw (RuntimeException. "Unimplemented prior to Java 1.8: ")))))
-
-
 (defn refer-tupelo  ; #todo document in readme
   "Refer a number of commonly used tupelo.core functions into the current namespace so they can
    be used without namespace qualification."
@@ -872,8 +839,6 @@
       keyvals strcat pp-str pretty json->clj clj->json clip-str rng thru rel= drop-at insert-at replace-at
       starts-with? split-when split-match wild-match?
       isnt is= isnt= throws?
-      java-version-matches? java-version-min?
-      is-java-1-7? is-java-1-8? is-java-1-7-plus? is-java-1-8-plus? min-java-1-7 min-java-1-8
       with-exception-default ] ))
 
 ;---------------------------------------------------------------------------------------------------

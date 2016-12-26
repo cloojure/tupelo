@@ -10,6 +10,7 @@
             [tupelo.core    :as t]
             [tupelo.misc    :as misc]
             [tupelo.types   :as types]
+            [tupelo.version :as ver]
             [schema.core    :as s])
   (:gen-class))
 
@@ -29,29 +30,25 @@
 (defn encode-bytes
   "Encodes a byte array into base64url, returning a new byte array."
   [data-bytes]
-  (min-java-1-8
-    (types/byte-array? data-bytes)
-    (.encode (java.util.Base64/getUrlEncoder) data-bytes)))
+  (types/byte-array? data-bytes)
+  (.encode (ver/get-encoder) data-bytes))
 
 (defn decode-bytes
   "Decodes a byte array from base64url, returning a new byte array."
   [code-bytes]
-  (min-java-1-8
-    (types/byte-array? code-bytes)
-    (.decode (java.util.Base64/getUrlDecoder) code-bytes)))
+  (types/byte-array? code-bytes)
+  (.decode (ver/get-decoder) code-bytes))
 
 (s/defn encode-bytes->str :- s/Str
   "Encodes a byte array into base64url, returning a String."
   [data-bytes]
-  (min-java-1-8
-    (types/byte-array? data-bytes)
-    (.encodeToString (java.util.Base64/getUrlEncoder) data-bytes)))
+  (types/byte-array? data-bytes)
+  (.encodeToString (ver/get-encoder) data-bytes))
 
 (s/defn decode-str->bytes
   "Decodes a base64url encoded String, returning a byte array"
   [code-str :- s/Str]
-  (min-java-1-8
-    (.decode (java.util.Base64/getUrlDecoder) code-str)))
+  (.decode (ver/get-decoder) code-str))
 
 (s/defn encode-str :- s/Str
   "Encodes a String into base64url, returning a String."

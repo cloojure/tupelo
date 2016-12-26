@@ -10,13 +10,13 @@
             [tupelo.core    :as t]
             [tupelo.misc    :as misc]
             [tupelo.types   :as types]
-            [schema.core    :as s])
-  (:gen-class))
-
+            [tupelo.version :as ver]
+            [schema.core    :as s]
+  ))
 (t/refer-tupelo)
+
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
-
 
 (def base64-chars
   "A set of chars used for traditional base64 encoding (incl. padding char)"
@@ -28,29 +28,26 @@
 (defn encode-bytes
   "Encodes a byte array into base64, returning a new byte array."
   [data-bytes]
-  (min-java-1-8
-    (assert (types/byte-array? data-bytes))
-    (.encode (java.util.Base64/getEncoder) data-bytes)))
+  (assert (types/byte-array? data-bytes))
+  (.encode (ver/get-encoder) data-bytes))
 
 (defn decode-bytes
   "Decodes a byte array from base64, returning a new byte array."
   [code-bytes]
-  (min-java-1-8
-    (assert (types/byte-array? code-bytes))
-    (.decode (java.util.Base64/getDecoder) code-bytes)))
+  (assert (types/byte-array? code-bytes))
+  (.decode (ver/get-decoder)  code-bytes))
 
 (s/defn encode-bytes->str :- s/Str
   "Encodes a byte array into base64, returning a String."
   [data-bytes]
-  (min-java-1-8
-    (assert (types/byte-array? data-bytes))
-    (.encodeToString (java.util.Base64/getEncoder) data-bytes)))
+  (assert (types/byte-array? data-bytes))
+  (.encodeToString (ver/get-encoder) data-bytes))
 
 (s/defn decode-str->bytes
   "Decodes a base64 encoded String, returning a byte array"
   [code-str :- s/Str]
   (min-java-1-8
-    (.decode (java.util.Base64/getDecoder) code-str)))
+    (.decode (ver/get-decoder) code-str)))
 
 (s/defn encode-str :- s/Str
   "Encodes a String into base64, returning a String."
