@@ -627,7 +627,7 @@
     result))
 
 ; #todo add test & README
-(defn pp-str
+(defn pretty-str
   "Returns a string that is the result of clojure.pprint/pprint"
   [arg]
   (with-out-str (pprint/pprint arg)))
@@ -836,7 +836,7 @@
    '[ spy spyx spyxx with-spy-indent truthy? falsey?
       not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
       forv glue append prepend grab dissoc-in fetch-in only third it-> safe-> keep-if drop-if
-      keyvals strcat pp-str pretty json->clj clj->json clip-str rng thru rel= drop-at insert-at replace-at
+      keyvals strcat pretty pretty-str json->clj clj->json clip-str rng thru rel= drop-at insert-at replace-at
       starts-with? split-when split-match wild-match?
       isnt is= isnt= throws?
       with-exception-default ] ))
