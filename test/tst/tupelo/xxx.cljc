@@ -95,8 +95,8 @@
         content (grab :content node)]
     (if (empty? content)
       (spyx [[tag]])
-      (spy :mapv-prepend
-        (mapv #(prepend tag %)
+      (spy :mapv-cons
+        (mapv (partial cons tag)
           (spy :apply-concat
             (apply concat
               (spy :mapv-recurse
