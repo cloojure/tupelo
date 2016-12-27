@@ -22,20 +22,18 @@
 (def data {
   :tag :root
   :content [
-    { :tag :a :content [
-      {:tag :a1 :content [] }
-    ] }
-    { :tag :b :content [
-      {:tag :b1 :content [] }
-      {:tag :b2 :content [] }
-    ] }
-  {:tag :c :content [
-      {:tag :c1 :content [] }
-      {:tag :c2 :content [] }
-      {:tag :c3 :content [] }
-    ] }
-  ]
-}
+    { :tag :a
+      :content [
+        {:tag :a1 :content [] } ] }
+    { :tag :b
+      :content [
+        {:tag :b1 :content [] }
+        {:tag :b2 :content [] } ] }
+    { :tag :c
+      :content [
+        {:tag :c1 :content [] }
+        {:tag :c2 :content [] }
+        {:tag :c3 :content [] } ] } ] }
 )
 
 (defn walk-1* [result path-in node]
