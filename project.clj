@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.12"
+(defproject tupelo "0.9.13"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
@@ -13,7 +13,7 @@
     [clojure-csv/clojure-csv          "2.0.2"]
     [clj-time                         "0.12.0"]
     [cheshire                         "5.6.1"]
-    [expectations                     "2.1.8"]
+  ; [expectations                     "2.1.8"]
     [prismatic/schema                 "1.1.2"]
                 ]
   :profiles { :dev      {:dependencies [[org.clojure/test.check "0.9.0"]] }

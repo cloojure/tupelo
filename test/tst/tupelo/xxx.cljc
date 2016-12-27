@@ -6,7 +6,7 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.xxx
   (:use tupelo.xxx
-        expectations )
+        clojure.test)
   (:require [clojure.string   :as str]
             [schema.core      :as s]
             [tupelo.core      :as t]
@@ -89,9 +89,8 @@
 (newline)
 (println "-----------------------------------------------------------------------------")
 (defn walk-3 [node]
-; (newline)
   (let [tag     (grab :tag node)
-      ; _       (spyx tag)
+        ; _       (spyx tag)
         content (grab :content node)]
     (if (empty? content)
       (spyx [[tag]])
@@ -105,6 +104,39 @@
 (let [result (walk-3 data)]
   (newline)
   (println :walk-3)
+  (pretty result))
+
+(newline)
+(println "-----------------------------------------------------------------------------")
+(defn walk-4 [node]
+  (let [tag     (grab :tag node)
+        ; _       (spyx tag)
+        content (grab :content node)]
+    (if (empty? content)
+      (spyx [[tag]])
+      (spy :mapv-cons
+        (mapv #(prepend tag %)
+          (spy :mapcat
+            (mapcat walk-4 content)))))))
+
+(let [result (walk-4 data)]
+  (newline)
+  (println :walk-4)
+  (pretty result))
+
+(newline)
+(println "-----------------------------------------------------------------------------")
+(defn walk-5 [node]
+  (let [tag     (grab :tag node)
+        content (grab :content node)]
+    (if (empty? content)
+      [[tag]]
+      (mapv #(prepend tag %)
+        (mapcat walk-5 content)))))
+
+(let [result (walk-5 data)]
+  (newline)
+  (println :walk-5)
   (pretty result))
 
 
