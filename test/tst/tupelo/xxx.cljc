@@ -22,30 +22,71 @@
 (def data {
   :tag :root
   :content [
-    {:tag :a :content [
+    { :tag :a :content [
       {:tag :a1 :content [] }
-      {:tag :a2 :content [] }
     ] }
-    {:tag :b :content [
+    { :tag :b :content [
       {:tag :b1 :content [] }
       {:tag :b2 :content [] }
+    ] }
+  {:tag :c :content [
+      {:tag :c1 :content [] }
+      {:tag :c2 :content [] }
+      {:tag :c3 :content [] }
     ] }
   ]
 }
 )
 
-(defn walk* [path-in node]
+(defn walk-1* [result path-in node]
   (newline)
-  (spyx path-in)
-  (spyx (grab :tag node))
-  (doseq [child (grab :content node)]
-    (let [tag-child (grab :tag child)
-          path-new (t/append path-in tag-child)]
-      (walk* path-new child)))
-)
+  (let [tag      (grab :tag node)
+        _        (spyx tag)
+        path-new (t/append path-in tag)
+        _        (spyx path-new)
+        content  (grab :content node)]
+    (if (empty? content)
+      (do
+        (swap! result append path-new)
+        (println "....saved"))
+      (doseq [child content]
+        (walk-1* result path-new child)))))
 
-(defn walk [node]
-  (walk* [] node))
+(defn walk-1 [node]
+  (let [result    (atom [])
+        path      [] ]
+    (walk-1* result path node)
+    @result ))
 
-(spyx (walk data))
+(newline)
+(let [result (walk-1 data)]
+  (newline)
+  (println :walk-1)
+  (pretty result))
+
+(newline)
+(println "-----------------------------------------------------------------------------")
+
+(defn walk-2 [node]
+  (newline)
+  (let [tag     (grab :tag node)
+        _       (spyx tag)
+        content (grab :content node)]
+    (if (empty? content)
+      [[tag]]
+      (spy :mapv
+        (mapv #(prepend tag %)
+          (spy :apply-glue
+            (apply glue
+              (spy :forv
+                (forv [child content]
+                  (spy :walk-2
+                    (walk-2 child)))))))))))
+
+(let [result (walk-2 data)]
+  (newline)
+  (println :walk-2)
+  (pretty result))
+
+
 
