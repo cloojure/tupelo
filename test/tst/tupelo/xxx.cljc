@@ -86,5 +86,26 @@
   (println :walk-2)
   (pretty result))
 
+(newline)
+(println "-----------------------------------------------------------------------------")
+(defn walk-3 [node]
+; (newline)
+  (let [tag     (grab :tag node)
+      ; _       (spyx tag)
+        content (grab :content node)]
+    (if (empty? content)
+      (spyx [[tag]])
+      (spy :mapv-prepend
+        (mapv #(prepend tag %)
+          (spy :apply-concat
+            (apply concat
+              (spy :mapv-recurse
+                (mapv walk-3 content)))))))))
+
+(let [result (walk-3 data)]
+  (newline)
+  (println :walk-3)
+  (pretty result))
+
 
 
