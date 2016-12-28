@@ -381,6 +381,15 @@
 ; singles). Basically like compiler-like guarentees against misspellings, duplicate entries, missing
 ; entries.
 
+; #todo -> README
+; #todo variant: allow single or vec of default values
+(sk/defn select-values :- ts/List
+  "Returns a vector of values for each key, in the order specified."
+   [map   :- ts/KeyMap
+    keys  :- [sk/Keyword]]
+  (forv [key keys]
+    (grab key map)))
+
 (sk/defn only :- sk/Any
   "(only seqable-arg)
   Ensures that a sequence is of length=1, and returns the only value present.
@@ -833,8 +842,9 @@
   (refer 'tupelo.core :only
    '[ spy spyx spyxx with-spy-indent truthy? falsey?
       not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
-      forv glue append prepend grab dissoc-in fetch-in only third it-> safe-> keep-if drop-if
-      keyvals strcat nl pretty pretty-str json->clj clj->json clip-str rng thru rel=
+      forv glue append prepend grab dissoc-in fetch-in select-values keyvals only third
+      it-> safe-> keep-if drop-if
+      strcat nl pretty pretty-str json->clj clj->json clip-str rng thru rel=
       drop-at insert-at replace-at starts-with?
       split-when split-match wild-match?
       isnt is= isnt= throws?

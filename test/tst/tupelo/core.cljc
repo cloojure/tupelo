@@ -24,7 +24,7 @@
         forv glue append prepend grab dissoc-in fetch-in only third it-> safe-> keep-if drop-if
         keyvals strcat pretty pretty-str json->clj clj->json clip-str rng thru rel= drop-at insert-at replace-at
         starts-with? split-when split-match wild-match?
-        isnt is= isnt= throws?
+        isnt is= isnt= throws? select-values
         with-exception-default ]]
 
   ))
@@ -453,6 +453,32 @@
               {:a1 "a1"
                :a2 { :b1 "b1"
                      :b2 { :c1 "c1" }}} )))
+
+(deftest t-select-keys
+  (let [map1  {:a 1 :b 2 :c 3 :d 4 :e 5}]
+    (is= [1 2 3 4 5] (select-values map1 [:a :b :c :d :e]))
+    (is= [  2 3 4 5] (select-values map1 [   :b :c :d :e]))
+    (is= [    3 4 5] (select-values map1 [      :c :d :e]))
+    (is= [      4 5] (select-values map1 [         :d :e]))
+    (is= [        5] (select-values map1 [            :e]))
+
+    (is= [1 2 3 4 5] (select-values map1 [:a :b :c :d :e]))
+    (is= [1 2 3 4  ] (select-values map1 [:a :b :c :d   ]))
+    (is= [1 2 3    ] (select-values map1 [:a :b :c      ]))
+    (is= [1 2      ] (select-values map1 [:a :b         ]))
+    (is= [1        ] (select-values map1 [:a            ]))
+
+    (is= [  2 3 4 5] (select-values map1 [   :b :c :d :e]))
+    (is= [1   3 4 5] (select-values map1 [:a    :c :d :e]))
+    (is= [1 2   4 5] (select-values map1 [:a :b    :d :e]))
+    (is= [1 2 3   5] (select-values map1 [:a :b :c    :e]))
+    (is= [1 2 3 4  ] (select-values map1 [:a :b :c :d   ]))
+
+    (is= [3 1 4 2 5] (select-values map1 [:c :a :d :b :e]))
+    (is= []          (select-values map1 [] ))
+
+    (throws? (select-values map1 [:z]))
+  ))
 
 (deftest t-only
   (is= 42 (only [42]))
