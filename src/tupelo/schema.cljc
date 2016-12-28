@@ -1,11 +1,8 @@
 (ns tupelo.schema
+  "Prismatic Schema type definitions"
   (:require [schema.core :as s] )
   (:import [java.util HashSet] )
   (:gen-class))
-
-;---------------------------------------------------------------------------------------------------
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
 
 (def Map      {s/Any      s/Any} )
 (def KeyMap   {s/Keyword  s/Any} )

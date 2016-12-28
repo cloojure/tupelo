@@ -23,11 +23,7 @@
             [tupelo.types       :as types]
             [schema.core        :as s] )
   (:gen-class))
-
 (t/refer-tupelo)
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
-
 
 (def code-chars
   "A set of chars used for the Y64 encoding (incl. padding char)"

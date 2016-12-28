@@ -30,10 +30,6 @@
   ))
 (t/refer-tupelo)
 
-; Prismatic Schema type definitions
-; #todo add to Schema docs
-(s/set-fn-validation! true) ; enforce fn schemas
-
 ; (s/instrument-all)
 ; (s/instrument #'tupelo.core/truthy?)  ; instrument just one var
 

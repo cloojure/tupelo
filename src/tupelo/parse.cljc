@@ -12,11 +12,7 @@
   will be returned if there is an exception during parsing."
   (:require [schema.core  :as s]
             [tupelo.core :as t] ))
-
 (t/refer-tupelo)
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
-
 
 ; #todo:  write doc page
 ; #todo:  convert args from [str-val & opts] -> [str-val & {:as opts} ]

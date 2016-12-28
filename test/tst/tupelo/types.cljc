@@ -9,10 +9,7 @@
         clojure.test)
   (:require [schema.core :as s]
             [tupelo.core :as t] ))
-
 (t/refer-tupelo)
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
 
 ; As of Clojure 1.9.0-alpha5, boolean? is native to clojure
 #_(deftest t-boolean?

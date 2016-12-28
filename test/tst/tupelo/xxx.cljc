@@ -14,7 +14,6 @@
   ))
 (t/refer-tupelo)
 (set! *warn-on-reflection* true)
-(s/set-fn-validation! true) ; enforce fn schemas
 
 (def data {
            :tag :root
@@ -56,11 +55,7 @@
 
   (nl)
   (println "-----------------------------------------------------------------------------")
-  (let [result (walk-5 data)]
-    (nl) (println :walk-5) (pretty result))
-
-  (nl)
-  (println "-----------------------------------------------------------------------------")
+  (spyx (s/validate Path [:a :b]))
   (let [result (walk-6 data)]
     (nl) (println :walk-6) (pretty result))
 

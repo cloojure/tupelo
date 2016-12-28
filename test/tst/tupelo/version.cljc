@@ -5,7 +5,8 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.version
-  (:use clojure.test )
+  "Java version testing functions & macros"
+  (:use clojure.test)
   (:require
     [schema.core :as sk]
     [tupelo.core :as t]
@@ -13,11 +14,6 @@
   ))
 (t/refer-tupelo)
 
-; Prismatic Schema type definitions
-(sk/set-fn-validation! true)   ; #todo add to Schema docs
-
-;---------------------------------------------------------------------------------------------------
-; Java version testing functions & macros
 
 (defn fn-any [] 42)
 (defn fn7 [] (ver/min-java-1-7 7))

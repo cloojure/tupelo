@@ -13,11 +13,7 @@
             [tupelo.core                :as t]
             [tupelo.misc                :as cool-misc] )
   (:import  [java.io Reader StringReader] ))
-
 (t/refer-tupelo)
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
-
 
 (defn- get-labels-and-data-lines
   [opts parsed-lines]

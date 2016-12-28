@@ -5,18 +5,12 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tupelo.version
-  "Tupelo - Making Clojure even sweeter"
+  "Java version testing functions & macros"
   (:require 
     [clojure.string :as str]
     [schema.core :as sk]
     [tupelo.core :as t]
   ))
-
-; Prismatic Schema type definitions
-(sk/set-fn-validation! true)  ; #todo add to Schema docs
-
-;---------------------------------------------------------------------------------------------------
-; Java version testing functions & macros
 
 (defn java-version-matches?
   [version-str]
@@ -46,5 +40,4 @@
   (if (is-java-1-8-plus?)
     `(do ~@forms)
     `(do (throw (RuntimeException. "Unimplemented prior to Java 1.8: ")))))
-
 

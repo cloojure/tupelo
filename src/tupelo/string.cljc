@@ -15,11 +15,6 @@
   ))
 (t/refer-tupelo)
 
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)  ; #todo add to Schema docs
-; #todo add to project.clj (esp for tupelo-app template, user/dev profile)
-
-
 (s/defn drop :- s/Str  ; #todo add readme
   "Drops the first N chars of a string, returning a string result."
   [n    :- s/Int

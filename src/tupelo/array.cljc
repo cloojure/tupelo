@@ -1,9 +1,7 @@
 (ns tupelo.array
   (:require [schema.core :as s]
             [tupelo.core :as t] ))
-
 (t/refer-tupelo)
-(s/set-fn-validation! true)
 
 (def Vector
   "A 2-D array of values (a vector of vectors)."

@@ -10,11 +10,7 @@
             [tupelo.core :as t]
             [schema.core :as s] )
   (:gen-class))
-
 (t/refer-tupelo)
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
-; #todo add to project.clj (esp for tupelo-app template, user/dev profile)
 
 ; #todo finish this? 
 ; (defn refer-tupelo-async [] nil)

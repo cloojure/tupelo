@@ -18,10 +18,7 @@
             [schema.core                            :as s] )
   (:use clojure.test)
   (:gen-class))
-
 (t/refer-tupelo)
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
 
 (deftest t1
   (if (ver/is-java-1-8-plus?)

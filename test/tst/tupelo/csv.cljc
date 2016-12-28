@@ -12,9 +12,6 @@
             [schema.core            :as s] )
   (:import  [java.io Reader StringReader] ))
 
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
-
 (def test1-str-no-label
 "01002,00006,4
 01002,00277,5

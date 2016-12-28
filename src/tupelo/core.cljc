@@ -19,13 +19,8 @@
   )
   (:import [java.io BufferedReader StringReader])
 )
-
    ;[clojure.spec :as sp]
    ;[clojure.spec.gen :as sp.gen]
-
-; Prismatic Schema type definitions
-(sk/set-fn-validation! true)  ; #todo add to Schema docs
-; #todo add to project.clj (esp for tupelo-app template, user/dev profile)
 
 (defn nl
   "Abbreviated name for `newline` "

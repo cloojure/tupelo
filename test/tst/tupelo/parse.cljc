@@ -10,10 +10,7 @@
             [tupelo.core :as t]
             [schema.core  :as s] )
   (:import   [java.lang.Math] ))
-
 (t/refer-tupelo)
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
 
 (deftest parse-byte
   (testing "basic"

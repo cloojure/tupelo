@@ -14,9 +14,6 @@
             [clojure.core.async :refer [ go go-loop chan buffer close! thread alts! alts!! timeout close!  ]]
   ))
 
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
-
 (defn cb-tst [tst-val arg] 
  ;(spy :msg "cb-tst: " arg)
   (is (= tst-val arg)))

@@ -13,10 +13,7 @@
             [tupelo.misc      :as misc]
             [clojure.math.combinatorics  :as combo]
   ))
-
 (t/refer-tupelo)
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
 
 (set! *warn-on-reflection* true)
 

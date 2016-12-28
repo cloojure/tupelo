@@ -14,10 +14,6 @@
   ))
 (t/refer-tupelo)
 
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
-
-
 (defn walk-1* [result path-in node]
   (newline)
   (let [tag      (grab :tag node)
@@ -79,23 +75,11 @@
           (spy :mapcat
             (mapcat walk-4 content)))))))
 
-(defn walk-5
-  "Given a node, return a list of the paths to all leaf nodes."
-  [node]
-  (let [tag     (grab :tag node)
-        content (grab :content node)]
-    (if (empty? content)
-      [[tag]]
-      (mapv #(prepend tag %)
-        (mapcat walk-5 content)))))
-
 (def Path [s/Keyword])
 (def PathList [Path])
 (def MapList  [ts/KeyMap])
 (def Node {:tag     s/Any
            :content MapList})
-
-(spyx (s/validate Path [:a :b]))
 
 (s/defn walk-6 :- PathList
   "Given a node, return a list of the paths to all leaf nodes."
