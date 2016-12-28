@@ -27,15 +27,18 @@
 (sk/set-fn-validation! true)  ; #todo add to Schema docs
 ; #todo add to project.clj (esp for tupelo-app template, user/dev profile)
 
+(defn nl
+  "Abbreviated name for `newline` "
+  [] (newline))
+
 (defn print-versions []
   (let [version-str   (format "   Clojure %s    Java %s"  
                         (clojure-version)
                         (System/getProperty "java.version")) ]
-    (newline)
+    (nl)
     (println "-------------------------------------")
     (println version-str)
-    (println "-------------------------------------")
-  ))
+    (println "-------------------------------------")))
 
 (def ^:no-doc spy-indent-level (atom 0))
 (defn ^:no-doc spy-indent-spaces []
@@ -836,8 +839,9 @@
    '[ spy spyx spyxx with-spy-indent truthy? falsey?
       not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
       forv glue append prepend grab dissoc-in fetch-in only third it-> safe-> keep-if drop-if
-      keyvals strcat pretty pretty-str json->clj clj->json clip-str rng thru rel= drop-at insert-at replace-at
-      starts-with? split-when split-match wild-match?
+      keyvals strcat nl pretty pretty-str json->clj clj->json clip-str rng thru rel=
+      drop-at insert-at replace-at starts-with?
+      split-when split-match wild-match?
       isnt is= isnt= throws?
       with-exception-default ] ))
 

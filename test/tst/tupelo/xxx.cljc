@@ -9,7 +9,7 @@
         clojure.test)
   (:require [clojure.string :as str]
             [schema.core :as s]
-            [tupelo.core :as t :refer [pretty]]
+            [tupelo.core :as t :refer [pretty nl]]
             [tupelo.schema :as ts]
   ))
 (t/refer-tupelo)
@@ -35,48 +35,34 @@
 
 (deftest t-xxx
 
-  (newline)
+  (nl)
   (let [result (walk-1 data)]
-    (newline)
-    (println :walk-1)
-    (pretty result))
+    (nl) (println :walk-1) (pretty result))
 
-  (newline)
+  (nl)
   (println "-----------------------------------------------------------------------------")
-
   (let [result (walk-2 data)]
-    (newline)
-    (println :walk-2)
-    (pretty result))
+    (nl) (println :walk-2) (pretty result))
 
-  (newline)
+  (nl)
   (println "-----------------------------------------------------------------------------")
   (let [result (walk-3 data)]
-    (newline)
-    (println :walk-3)
-    (pretty result))
+    (nl) (println :walk-3) (pretty result))
 
-  (newline)
+  (nl)
   (println "-----------------------------------------------------------------------------")
   (let [result (walk-4 data)]
-    (newline)
-    (println :walk-4)
-    (pretty result))
+    (nl) (println :walk-4) (pretty result))
 
-  (newline)
+  (nl)
   (println "-----------------------------------------------------------------------------")
   (let [result (walk-5 data)]
-    (newline)
-    (println :walk-5)
-    (pretty result))
+    (nl) (println :walk-5) (pretty result))
 
-  (newline)
+  (nl)
   (println "-----------------------------------------------------------------------------")
-
   (let [result (walk-6 data)]
-    (newline)
-    (println :walk-6)
-    (pretty result))
+    (nl) (println :walk-6) (pretty result))
 
 
 
