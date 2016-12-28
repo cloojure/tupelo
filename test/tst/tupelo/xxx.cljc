@@ -7,17 +7,18 @@
 (ns tst.tupelo.xxx
   (:use tupelo.xxx
         clojure.test)
-  (:require [clojure.string   :as str]
-            [schema.core      :as s]
-            [tupelo.core      :as t]
-            [tupelo.misc      :as misc]
-            [clojure.math.combinatorics  :as combo]
+  (:require [clojure.string :as str]
+            [schema.core :as s]
+            [tupelo.core :as t]
+            [tupelo.misc :as misc]
+            [tupelo.schema :as ts]
+            [clojure.math.combinatorics :as combo]
   ))
 (t/refer-tupelo)
 (set! *warn-on-reflection* true)
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
+(s/set-fn-validation! true) ; enforce fn schemas
 
+(deftest t-xxx
 
 (def data {
   :tag :root
@@ -126,7 +127,9 @@
 
 (newline)
 (println "-----------------------------------------------------------------------------")
-(defn walk-5 [node]
+(defn walk-5
+  "Given a node, return a list of the paths to all leaf nodes."
+  [node]
   (let [tag     (grab :tag node)
         content (grab :content node)]
     (if (empty? content)
@@ -139,5 +142,32 @@
   (println :walk-5)
   (pretty result))
 
+(newline)
+(println "-----------------------------------------------------------------------------")
+
+(def Path [s/Keyword])
+(def PathList [Path])
+(def MapList  [ts/KeyMap])
+(def Node {:tag     s/Any
+           :content MapList})
+
+(spyx (s/validate Path [:a :b]))
+
+(s/defn walk-6 :- PathList
+  "Given a node, return a list of the paths to all leaf nodes."
+  [node :- Node]
+  (let [tag     (grab :tag node)
+        content (grab :content node)]
+    (if (empty? content)
+      [[tag]]
+      (mapv #(prepend tag %)
+        (mapcat walk-6 content)))))
+
+(let [result (walk-6 data)]
+  (newline)
+  (println :walk-6)
+  (pretty result))
 
 
+
+)

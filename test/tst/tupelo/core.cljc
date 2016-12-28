@@ -15,14 +15,15 @@
     [clojure.test.check.clojure-test :as tst]
     [clojure.test.check.generators :as gen]
     [clojure.test.check.properties :as prop]
-    [schema.core :as sk]
+    [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.misc :as tm]
   ))
 (t/refer-tupelo)
 
 ; Prismatic Schema type definitions
-(sk/set-fn-validation! true)   ; #todo add to Schema docs
+; #todo add to Schema docs
+(s/set-fn-validation! true) ; enforce fn schemas
 
 ; (s/instrument-all)
 ; (s/instrument #'tupelo.core/truthy?)  ; instrument just one var
@@ -36,28 +37,28 @@
                               (let [result (apply + args) ]
                                 (swap! side-effect-cum-sum + result)
                                 result)) ]
-      (is (= "hi => 5"
-          (tm/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "hi"))) ))
-      (is (= "hi => 5"
-          (tm/collapse-whitespace (with-out-str (spy :msg "hi"  (side-effect-add! 2 3)))) ))
-      (is (= "(side-effect-add! 2 3) => 5"
-          (tm/collapse-whitespace (with-out-str (spyx (side-effect-add! 2 3)))) ))
-      (is (= 15 @side-effect-cum-sum)))
+      (is= "hi => 5"
+          (tm/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "hi"))) )
+      (is= "hi => 5"
+          (tm/collapse-whitespace (with-out-str (spy :msg "hi"  (side-effect-add! 2 3)))) )
+      (is= "(side-effect-add! 2 3) => 5"
+          (tm/collapse-whitespace (with-out-str (spyx (side-effect-add! 2 3)))) )
+      (is= 15 @side-effect-cum-sum))
 
-    (is (= "first => 5 second => 25"
+    (is= "first => 5 second => 25"
         (tm/collapse-whitespace
           (with-out-str (-> 2
                             (+ 3)
                             (spy :msg "first" )
                             (* 5)
-                            (spy :msg "second") )))))
-    (is (= "first => 5 second => 25"
+                            (spy :msg "second") ))))
+    (is= "first => 5 second => 25"
         (tm/collapse-whitespace
           (with-out-str (->> 2
                              (+ 3)
                              (spy :msg "first" )
                              (* 5)
-                             (spy :msg "second") )))))
+                             (spy :msg "second") ))))
 
     (let [side-effect-cum-sum (atom 0)  ; side-effect running total
 
@@ -67,29 +68,29 @@
                                 (swap! side-effect-cum-sum + result)
                                 result))
     ]
-      (is (= "value => 5"
-          (tm/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "value")))))
-      (is (= "value => 5"
-          (tm/collapse-whitespace (with-out-str (spy :msg "value"  (side-effect-add! 2 3))))))
-      (is (= 10 @side-effect-cum-sum))
+      (is= "value => 5"
+          (tm/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "value"))))
+      (is= "value => 5"
+          (tm/collapse-whitespace (with-out-str (spy :msg "value"  (side-effect-add! 2 3)))))
+      (is= 10 @side-effect-cum-sum)
 
-      (is (= "value => 5" (tm/collapse-whitespace (with-out-str (spy "value" (+ 2 3) )))))
-      (is (=   "spy => 5" (tm/collapse-whitespace (with-out-str (spy         (+ 2 3) )))))
+      (is= "value => 5" (tm/collapse-whitespace (with-out-str (spy "value" (+ 2 3) ))))
+      (is=   "spy => 5" (tm/collapse-whitespace (with-out-str (spy         (+ 2 3) ))))
 
-      (is (= "(str \"abc\" \"def\") => \"abcdef\""
-          (tm/collapse-whitespace (with-out-str (spyx (str "abc" "def") )))))
+      (is= "(str \"abc\" \"def\") => \"abcdef\""
+          (tm/collapse-whitespace (with-out-str (spyx (str "abc" "def") ))))
 
-      (is (thrown? IllegalArgumentException  (spy "some-msg" 42 :msg)))
+      (throws? IllegalArgumentException  (spy "some-msg" 42 :msg))
     )))
 
 (deftest t-spyxx
   (let [val1  (into (sorted-map) {:a 1 :b 2})
         val2  (+ 2 3) ]
-    (is (= "val1 => clojure.lang.PersistentTreeMap->{:a 1, :b 2}"
-        (tm/collapse-whitespace (with-out-str (spyxx val1 )))  ))
+    (is= "val1 => clojure.lang.PersistentTreeMap->{:a 1, :b 2}"
+        (tm/collapse-whitespace (with-out-str (spyxx val1 )))  )
 
-    (is (= "val2 => java.lang.Long->5"
-        (tm/collapse-whitespace (with-out-str (spyxx val2 ))) ))
+    (is= "val2 => java.lang.Long->5"
+        (tm/collapse-whitespace (with-out-str (spyxx val2 ))) )
   ))
 
 (deftest t-with-spy-indent
@@ -99,9 +100,9 @@
                         (spy :msg "msg1" (+ 2 3))
                         (fn2)))
         fn0   (fn [] (spy :msg "msg0" (+ 2 3))) ]
-    (is (= "msg2 => 5"            (tm/collapse-whitespace (with-out-str (fn2)))))
-    (is (= "msg1 => 5 msg2 => 5"  (tm/collapse-whitespace (with-out-str (fn1)))))
-    (is (= "msg0 => 5"            (tm/collapse-whitespace (with-out-str (fn0)))))
+    (is= "msg2 => 5"            (tm/collapse-whitespace (with-out-str (fn2))))
+    (is= "msg1 => 5 msg2 => 5"  (tm/collapse-whitespace (with-out-str (fn1))))
+    (is= "msg0 => 5"            (tm/collapse-whitespace (with-out-str (fn0))))
     ))
 
 ; (deftest t-truthy-spec
@@ -159,27 +160,27 @@
                     (= 1 num-nil) )))))))
 
 (deftest t-any
-  (is (= true   (has-some? odd? [1 2 3] ) ))
-  (is (= false  (has-some? odd? [2 4 6] ) ))
-  (is (= false  (has-some? odd? []      ) ))
+  (is= true   (has-some? odd? [1 2 3] ) )
+  (is= false  (has-some? odd? [2 4 6] ) )
+  (is= false  (has-some? odd? []      ) )
 
-  (is (= false  (has-none? odd? [1 2 3] ) ))
-  (is (= true   (has-none? odd? [2 4 6] ) ))
-  (is (= true   (has-none? odd? []      ) )))
+  (is= false  (has-none? odd? [1 2 3] ) )
+  (is= true   (has-none? odd? [2 4 6] ) )
+  (is= true   (has-none? odd? []      ) ))
 
 (deftest t-not-empty
   (is (every?      not-empty? ["1" [1] '(1) {:1 1} #{1}    ] ))
   (is (has-none?   not-empty? [""  []  '()  {}     #{}  nil] ))
 
-  (is (= (map not-empty? ["1" [1] '(1) {:1 1} #{1} ] )
-         [true true true true true]  ))
-  (is (= (map not-empty? ["" [] '() {} #{} nil] )
-         [false false false false false false ] ))
+  (is= (map not-empty? ["1" [1] '(1) {:1 1} #{1} ] )
+         [true true true true true]  )
+  (is= (map not-empty? ["" [] '() {} #{} nil] )
+         [false false false false false false ] )
 
-  (is (= (keep-if not-empty?  ["1" [1] '(1) {:1 1} #{1} ] )
-                              ["1" [1] '(1) {:1 1} #{1} ] ))
-  (is (= (drop-if not-empty?  [""  []  '()  {}     #{}  nil] )
-                              [""  []  '()  {}     #{}  nil] )))
+  (is= (keep-if not-empty?  ["1" [1] '(1) {:1 1} #{1} ] )
+                            ["1" [1] '(1) {:1 1} #{1} ] )
+  (is= (drop-if not-empty?  [""  []  '()  {}     #{}  nil] )
+                            [""  []  '()  {}     #{}  nil] ))
 
 (deftest t-contains-key? ; #todo add to README
   (is   (contains-key?  {:a 1 :b 2} :a))
@@ -246,12 +247,12 @@
 ;)
 
 (deftest t-forv
-  (is (= (forv [x (range 4)] (* x x))
-         [0 1 4 9] ))
-  (is (= (forv [x (range 23)] (* x x))
-         (for  [x (range 23)] (* x x))))
-  (is (= (forv [x (range 5)  y (range 2 9)] (str x y))
-         (for  [x (range 5)  y (range 2 9)] (str x y)))))
+  (is= (forv [x (range 4)] (* x x))
+         [0 1 4 9] )
+  (is= (forv [x (range 23)] (* x x))
+       (for  [x (range 23)] (* x x)))
+  (is= (forv [x (range 5)  y (range 2 9)] (str x y))
+       (for  [x (range 5)  y (range 2 9)] (str x y))))
 
 (deftest t-glue
   ; unexpected results
@@ -261,45 +262,45 @@
                [1 2  [3 4] ] ))
 
   (let [objs   [ [] '()   {} (sorted-map)   #{} (sorted-set) ] ]
-    (is (= (map sequential? objs) [true  true    false false   false false] ))
-    (is (= (map map?        objs) [false false   true  true    false false] ))
-    (is (= (map set?        objs) [false false   false false   true  true ] )))
+    (is= (map sequential? objs) [true  true    false false   false false] )
+    (is= (map map?        objs) [false false   true  true    false false] )
+    (is= (map set?        objs) [false false   false false   true  true ] ))
 
-  (is (= (glue [1 2] [3 4] [5 6])        [1 2 3 4 5 6]))
-  (is (= (glue [] [1 2] )                [1 2] ))
-  (is (= (glue [1 2] [] )                [1 2] ))
-  (is (= (glue [] [1 2] [] )             [1 2] ))
+  (is= (glue [1 2] [3 4] [5 6])        [1 2 3 4 5 6])
+  (is= (glue [] [1 2] )                [1 2] )
+  (is= (glue [1 2] [] )                [1 2] )
+  (is= (glue [] [1 2] [] )             [1 2] )
 
-  (is (= (glue '(1 2) '(3 4) '(5 6))        [1 2 3 4 5 6]))
-  (is (= (glue '(1 2)  [3 4] '(5 6))        [1 2 3 4 5 6]))
-  (is (= (glue  [1 2] '(3 4) '(5 6))        [1 2 3 4 5 6]))
-  (is (= (glue '() '(1 2) )                 [1 2] ))
-  (is (= (glue '(1 2) '() )                 [1 2] ))
-  (is (= (glue '() '(1 2) '() )             [1 2] ))
+  (is= (glue '(1 2) '(3 4) '(5 6))        [1 2 3 4 5 6])
+  (is= (glue '(1 2)  [3 4] '(5 6))        [1 2 3 4 5 6])
+  (is= (glue  [1 2] '(3 4) '(5 6))        [1 2 3 4 5 6])
+  (is= (glue '() '(1 2) )                 [1 2] )
+  (is= (glue '(1 2) '() )                 [1 2] )
+  (is= (glue '() '(1 2) '() )             [1 2] )
 
-  (is (= (glue (range 3) (range 5))      [0 1 2 0 1 2 3 4] ))
+  (is= (glue (range 3) (range 5))      [0 1 2 0 1 2 3 4] )
 
-  (is (= (glue {:a 1} {:b 2} {:c 3})      {:a 1 :c 3 :b 2}))
-  (is (= (glue {:a 1} {:b 2} )            {:a 1 :b 2}))
-  (is (= (glue {:a 1} {} )                {:a 1} ))
-  (is (= (glue {} {:a 1} )                {:a 1} ))
-  (is (= (glue {} {:a 1} {} )             {:a 1} ))
+  (is= (glue {:a 1} {:b 2} {:c 3})      {:a 1 :c 3 :b 2})
+  (is= (glue {:a 1} {:b 2} )            {:a 1 :b 2})
+  (is= (glue {:a 1} {} )                {:a 1} )
+  (is= (glue {} {:a 1} )                {:a 1} )
+  (is= (glue {} {:a 1} {} )             {:a 1} )
 
-  (is (= (glue #{1 2} #{3 4} #{6 5})     #{1 2 6 5 3 4}))
-  (is (= (glue #{} #{1 2} )              #{1 2} ))
-  (is (= (glue #{1 2} #{} )              #{1 2} ))
-  (is (= (glue #{} #{1 2} #{} )          #{1 2} ))
+  (is= (glue #{1 2} #{3 4} #{6 5})     #{1 2 6 5 3 4})
+  (is= (glue #{} #{1 2} )              #{1 2} )
+  (is= (glue #{1 2} #{} )              #{1 2} )
+  (is= (glue #{} #{1 2} #{} )          #{1 2} )
 
-  (is (= (glue (sorted-map) {:a 1} {:b 2} {:c 3})   {:a 1 :b 2 :c 3} ))
-  (is (= (glue (sorted-set) #{1 2} #{3 4} #{6 5})   #{1 2 3 4 5 6}))
+  (is= (glue (sorted-map) {:a 1} {:b 2} {:c 3})   {:a 1 :b 2 :c 3} )
+  (is= (glue (sorted-set) #{1 2} #{3 4} #{6 5})   #{1 2 3 4 5 6})
 
-  (is (=      (glue (sorted-map) (hash-map :a 1   :b 2   :c 3   :d 4   :e 5   :f 6))
-                                          {:a 1   :b 2   :c 3   :d 4   :e 5   :f 6} ))
-  (is (= (seq (glue (sorted-map) (hash-map :a 1   :b 2   :c 3   :d 4   :e 5   :f 6)))
-                                        [ [:a 1] [:b 2] [:c 3] [:d 4] [:e 5] [:f 6] ] ))
+  (is=      (glue (sorted-map) (hash-map :a 1   :b 2   :c 3   :d 4   :e 5   :f 6))
+                                        {:a 1   :b 2   :c 3   :d 4   :e 5   :f 6} )
+  (is= (seq (glue (sorted-map) (hash-map :a 1   :b 2   :c 3   :d 4   :e 5   :f 6)))
+                                      [ [:a 1] [:b 2] [:c 3] [:d 4] [:e 5] [:f 6] ] )
 
-  (is (= (glue  {:band :VanHalen :singer :Dave} {:singer :Sammy} )
-                {:band :VanHalen                 :singer :Sammy} ))
+  (is= (glue  {:band :VanHalen :singer :Dave} {:singer :Sammy} )
+              {:band :VanHalen                 :singer :Sammy} )
 
   (is= (glue \a )           "a" )
   (is= (glue "a")           "a" )
@@ -412,48 +413,48 @@
 
 (deftest t-dissoc-in
   (let [mm    {:a { :b { :c "c" }}} ]
-    (is (= (dissoc-in mm []         )          mm ))
-    (is (= (dissoc-in mm [:a]       )          {} ))
-    (is (= (dissoc-in mm [:a :b]    )          {:a  {}} ))
-    (is (= (dissoc-in mm [:a :b :c] )          {:a  { :b  {}}} ))
-    (is (= (dissoc-in mm [:a :x :y] )          {:a  { :b  { :c "c" }
-                                                         :x  nil }} ))
-    (is (= (dissoc-in mm [:a :x :y :z] )       {:a  { :b  { :c "c" }
-                                                         :x  { :y nil }}} ))
-    (is (= (dissoc-in mm [:k1 :k2 :k3 :kz] )   {:a  { :b  { :c  "c" }}
-                                                   :k1 { :k2 { :k3 nil }}} )))
+    (is= (dissoc-in mm []         )          mm )
+    (is= (dissoc-in mm [:a]       )          {} )
+    (is= (dissoc-in mm [:a :b]    )          {:a  {}} )
+    (is= (dissoc-in mm [:a :b :c] )          {:a  { :b  {}}} )
+    (is= (dissoc-in mm [:a :x :y] )          {:a  { :b  { :c "c" }
+                                                         :x  nil }} )
+    (is= (dissoc-in mm [:a :x :y :z] )       {:a  { :b  { :c "c" }
+                                                    :x  { :y nil }}} )
+    (is= (dissoc-in mm [:k1 :k2 :k3 :kz] )   {:a  { :b  { :c  "c" }}
+                                              :k1 { :k2 { :k3 nil }}} ))
   (let [mm    {:a1 "a1"
                :a2 { :b1 "b1"
                      :b2 { :c1 "c1"
                            :c2 "c2" }}} ]
-    (is (= (dissoc-in mm [:a1] )
+    (is= (dissoc-in mm [:a1] )
               {:a2 { :b1 "b1"
                      :b2 { :c1 "c1"
-                           :c2 "c2" }}} ))
-    (is (= (dissoc-in mm [:a2] )
-              {:a1 "a1" } ))
-    (is (= (dissoc-in mm [:a2 :b1] )
+                           :c2 "c2" }}} )
+    (is= (dissoc-in mm [:a2] )
+              {:a1 "a1" } )
+    (is= (dissoc-in mm [:a2 :b1] )
               {:a1 "a1"
                :a2 { :b2 { :c1 "c1"
-                           :c2 "c2" }}} ))
-    (is (= (dissoc-in mm [:a2 :b2] )
+                           :c2 "c2" }}} )
+    (is= (dissoc-in mm [:a2 :b2] )
               {:a1 "a1"
-               :a2 { :b1 "b1" }} ))
-    (is (= (dissoc-in mm [:a2 :b2 :c1] )
-              {:a1 "a1"
-               :a2 { :b1 "b1"
-                     :b2 { :c2 "c2" }}} ))
-    (is (= (dissoc-in mm [:a2 :b2 :c2] )
+               :a2 { :b1 "b1" }} )
+    (is= (dissoc-in mm [:a2 :b2 :c1] )
               {:a1 "a1"
                :a2 { :b1 "b1"
-                     :b2 { :c1 "c1" }}} ))))
+                     :b2 { :c2 "c2" }}} )
+    (is= (dissoc-in mm [:a2 :b2 :c2] )
+              {:a1 "a1"
+               :a2 { :b1 "b1"
+                     :b2 { :c1 "c1" }}} )))
 
 (deftest t-only
-  (is (= 42 (only [42])))
-  (is (= :x (only [:x])))
-  (is (= "hello" (only ["hello"] )))
-  (is (thrown? IllegalArgumentException (only [])))
-  (is (thrown? IllegalArgumentException (only [:x :y]))))
+  (is= 42 (only [42]))
+  (is= :x (only [:x]))
+  (is= "hello" (only ["hello"] ))
+  (throws? IllegalArgumentException (only []))
+  (throws? IllegalArgumentException (only [:x :y])))
 
 (deftest t-third
   (is= nil (third [       ]))
