@@ -14,6 +14,7 @@
     [clojure.test.check.clojure-test :as tst]
     [schema.core :as s]
     [tupelo.core :as t]
+    [tupelo.version :as ver]
     [tupelo.string :as ts]
   ))
 (t/refer-tupelo)
@@ -72,15 +73,17 @@
 
 ; verify that (str/starts-with? ...) does what we think
 (deftest t-starts-with?
-  (is (str/starts-with? "abcde" "a"))
-  (is (str/starts-with? "abcde" "ab"))
-  (is (str/starts-with? "abcde" "abc"))
+  (ver/min-clojure-1-8
+    (is (str/starts-with? "abcde" "a"))
+    (is (str/starts-with? "abcde" "ab"))
+    (is (str/starts-with? "abcde" "abc"))
 
-  (is (not (str/starts-with? "abcde" "b")))
-  (is (not (str/starts-with? "abcde" "bc")))
+    (is (not (str/starts-with? "abcde" "b")))
+    (is (not (str/starts-with? "abcde" "bc")))
 
-  (is (not (str/starts-with? "a" "ab")))
-  (is (not (str/starts-with? "ab" "abc"))))
+    (is (not (str/starts-with? "a" "ab")))
+    (is (not (str/starts-with? "ab" "abc")))))
+
 
 (deftest t-tupstr-take
   (is (= ""    (ts/take 0 "abc")))

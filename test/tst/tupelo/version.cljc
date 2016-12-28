@@ -9,15 +9,14 @@
   (:use clojure.test)
   (:require
     [schema.core :as sk]
-    [tupelo.core :as t]
+    [tupelo.core :as t :refer [isnt is= spyx]]
     [tupelo.version :as ver]
   ))
 (t/refer-tupelo)
 
-
 (defn fn-any [] 42)
-(defn fn7 [] (ver/min-java-1-7 7))
-(defn fn8 [] (ver/min-java-1-8 8))
+(defn fn7 [] (ver/java-1-7-plus-or-throw 7))
+(defn fn8 [] (ver/java-1-8-plus-or-throw 8))
 
 (deftest t-java-version
   (when false
@@ -34,5 +33,25 @@
 
   (is= 7 (fn7))
   (is= 42 (fn-any))
+  )
+
+(deftest t-java-version
+  (when false
+    (spyx (ver/is-clojure-1-7-plus?))
+    (spyx (ver/is-clojure-1-8-plus?))
+    (spyx (ver/is-clojure-1-9-plus?)))
+
+  (binding [*clojure-version* {:major 1 :minor 7}]
+    (is   (ver/is-clojure-1-7-plus?))
+    (isnt (ver/is-clojure-1-8-plus?))
+    (isnt (ver/is-clojure-1-9-plus?)))
+  (binding [*clojure-version* {:major 1 :minor 8}]
+    (is   (ver/is-clojure-1-7-plus?))
+    (is   (ver/is-clojure-1-8-plus?))
+    (isnt (ver/is-clojure-1-9-plus?)))
+  (binding [*clojure-version* {:major 1 :minor 9}]
+    (is   (ver/is-clojure-1-7-plus?))
+    (is   (ver/is-clojure-1-8-plus?))
+    (is   (ver/is-clojure-1-9-plus?)))
 )
 
