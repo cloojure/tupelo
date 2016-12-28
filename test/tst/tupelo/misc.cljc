@@ -9,14 +9,11 @@
         clojure.test )
   (:require [clojure.string   :as str]
             [schema.core      :as s]
-            [tupelo.core      :as t]
+            [tupelo.core      :as t :refer [is= throws? ]]
             [tupelo.misc      :as misc]
             [clojure.math.combinatorics  :as combo]
   ))
-
 (t/refer-tupelo)
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
 
 (set! *warn-on-reflection* true)
 
@@ -140,19 +137,38 @@ Mark Twain          "
                                  (doseq [x (range 99)]
                                    (dot))))))))
 (deftest t-factorial
-  (is (=       (factorial 0)          1))
-  (is (=       (factorial 1)          1))
-  (is (=       (factorial 2)          2))
-  (is (=       (factorial 3)          6))
-  (is (=       (factorial 4)         24))
-  (is (=       (factorial 5)        120))
-  (is (=       (factorial 6)        720))
-  (is (=       (factorial 7)       5040))
-  (is (=       (factorial 8)      40320))
-  (is (=       (factorial 9)     362880))
-  (is (=       (factorial 10)   3628800))
+  (is=         (factorial 0)          1)
+  (is=         (factorial 1)          1)
+  (is=         (factorial 2)          2)
+  (is=         (factorial 3)          6)
+  (is=         (factorial 4)         24)
+  (is=         (factorial 5)        120)
+  (is=         (factorial 6)        720)
+  (is=         (factorial 7)       5040)
+  (is=         (factorial 8)      40320)
+  (is=         (factorial 9)     362880)
+  (is=         (factorial 10)   3628800)
   (is (t/rel=  (factorial 15) 1.307674368e+12 :digits 10))
-  (is (thrown? Exception (factorial 1.5)))
-  (is (thrown? Exception (factorial -1)))
-  (is (thrown? Exception (factorial -1))))
+  (throws? Exception (factorial 1.5))
+  (throws? Exception (factorial -1))
+  (throws? Exception (factorial -1)))
 
+(deftest t-increasing
+  (isnt (increasing? [1 2] [1]))
+  (isnt (increasing? [1 2] [1 1]))
+  (isnt (increasing? [1 2] [1 2]))
+  (is   (increasing? [1 2] [1 2 nil]))
+  (is   (increasing? [1 2] [1 2 3]))
+  (is   (increasing? [1 2] [1 3]))
+  (is   (increasing? [1 2] [2 1]))
+  (is   (increasing? [1 2] [2]))
+
+  (isnt (increasing-or-equal? [1 2] [1]))
+  (isnt (increasing-or-equal? [1 2] [1 1]))
+  (is   (increasing-or-equal? [1 2] [1 2]))
+  (is   (increasing-or-equal? [1 2] [1 2 nil]))
+  (is   (increasing-or-equal? [1 2] [1 2 3]))
+  (is   (increasing-or-equal? [1 2] [1 3]))
+  (is   (increasing-or-equal? [1 2] [2 1]))
+  (is   (increasing-or-equal? [1 2] [2]))
+)

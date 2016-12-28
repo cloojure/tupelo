@@ -13,11 +13,7 @@
             [tupelo.version :as ver]
             [schema.core    :as s])
   (:gen-class))
-
 (t/refer-tupelo)
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
-
 
 ; #todo -> code-chars (& other ns's)
 (def code-chars
@@ -28,11 +24,11 @@
                        [\- \_ \=] ] )))
 
 (defn base64url-encoder []
-  (ver/min-java-1-8
+  (ver/java-1-8-plus-or-throw
     (java.util.Base64/getUrlEncoder)))
 
 (defn base64url-decoder []
-  (ver/min-java-1-8
+  (ver/java-1-8-plus-or-throw
     (java.util.Base64/getUrlDecoder)))
 
 (defn encode-bytes

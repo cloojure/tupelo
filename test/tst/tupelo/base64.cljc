@@ -21,9 +21,6 @@
   ))
 (t/refer-tupelo)
 
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
-
 (def SetOfStr
   #{ s/Str } )
 

@@ -7,22 +7,28 @@
 (ns tst.tupelo.core
   (:use clojure.test )
   (:require
-    [clojure.core :as clj]
 ;   [clojure.spec :as sp]
 ;   [clojure.spec.gen :as sp.gen]
 ;   [clojure.spec.test :as sp.test]
     [clojure.string :as str]
-    [clojure.test.check.clojure-test :as tst]
-    [clojure.test.check.generators :as gen]
-    [clojure.test.check.properties :as prop]
-    [schema.core :as sk]
+;   [clojure.test.check.clojure-test :as tst]
+;   [clojure.test.check.generators :as gen]
+;   [clojure.test.check.properties :as prop]
+    [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.misc :as tm]
+
+    [tupelo.core :refer
+      [ spy spyx spyxx with-spy-indent truthy? falsey?
+        not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
+        forv glue append prepend grab dissoc-in fetch-in only third it-> safe-> keep-if drop-if
+        keyvals strcat pretty pretty-str json->clj clj->json clip-str rng thru rel= drop-at insert-at replace-at
+        starts-with? split-when split-match wild-match?
+        isnt is= isnt= throws? select-values
+        with-exception-default ]]
+
   ))
 (t/refer-tupelo)
-
-; Prismatic Schema type definitions
-(sk/set-fn-validation! true)   ; #todo add to Schema docs
 
 ; (s/instrument-all)
 ; (s/instrument #'tupelo.core/truthy?)  ; instrument just one var
@@ -36,28 +42,28 @@
                               (let [result (apply + args) ]
                                 (swap! side-effect-cum-sum + result)
                                 result)) ]
-      (is (= "hi => 5"
-          (tm/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "hi"))) ))
-      (is (= "hi => 5"
-          (tm/collapse-whitespace (with-out-str (spy :msg "hi"  (side-effect-add! 2 3)))) ))
-      (is (= "(side-effect-add! 2 3) => 5"
-          (tm/collapse-whitespace (with-out-str (spyx (side-effect-add! 2 3)))) ))
-      (is (= 15 @side-effect-cum-sum)))
+      (t/is= "hi => 5"
+          (tm/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "hi"))) )
+      (t/is= "hi => 5"
+          (tm/collapse-whitespace (with-out-str (spy :msg "hi"  (side-effect-add! 2 3)))) )
+      (t/is= "(side-effect-add! 2 3) => 5"
+          (tm/collapse-whitespace (with-out-str (spyx (side-effect-add! 2 3)))) )
+      (t/is= 15 @side-effect-cum-sum))
 
-    (is (= "first => 5 second => 25"
+    (is= "first => 5 second => 25"
         (tm/collapse-whitespace
           (with-out-str (-> 2
                             (+ 3)
                             (spy :msg "first" )
                             (* 5)
-                            (spy :msg "second") )))))
-    (is (= "first => 5 second => 25"
+                            (spy :msg "second") ))))
+    (is= "first => 5 second => 25"
         (tm/collapse-whitespace
           (with-out-str (->> 2
                              (+ 3)
                              (spy :msg "first" )
                              (* 5)
-                             (spy :msg "second") )))))
+                             (spy :msg "second") ))))
 
     (let [side-effect-cum-sum (atom 0)  ; side-effect running total
 
@@ -67,29 +73,29 @@
                                 (swap! side-effect-cum-sum + result)
                                 result))
     ]
-      (is (= "value => 5"
-          (tm/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "value")))))
-      (is (= "value => 5"
-          (tm/collapse-whitespace (with-out-str (spy :msg "value"  (side-effect-add! 2 3))))))
-      (is (= 10 @side-effect-cum-sum))
+      (is= "value => 5"
+          (tm/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "value"))))
+      (is= "value => 5"
+          (tm/collapse-whitespace (with-out-str (spy :msg "value"  (side-effect-add! 2 3)))))
+      (is= 10 @side-effect-cum-sum)
 
-      (is (= "value => 5" (tm/collapse-whitespace (with-out-str (spy "value" (+ 2 3) )))))
-      (is (=   "spy => 5" (tm/collapse-whitespace (with-out-str (spy         (+ 2 3) )))))
+      (is= "value => 5" (tm/collapse-whitespace (with-out-str (spy "value" (+ 2 3) ))))
+      (is=   "spy => 5" (tm/collapse-whitespace (with-out-str (spy         (+ 2 3) ))))
 
-      (is (= "(str \"abc\" \"def\") => \"abcdef\""
-          (tm/collapse-whitespace (with-out-str (spyx (str "abc" "def") )))))
+      (is= "(str \"abc\" \"def\") => \"abcdef\""
+          (tm/collapse-whitespace (with-out-str (spyx (str "abc" "def") ))))
 
-      (is (thrown? IllegalArgumentException  (spy "some-msg" 42 :msg)))
+      (throws? IllegalArgumentException  (spy "some-msg" 42 :msg))
     )))
 
 (deftest t-spyxx
   (let [val1  (into (sorted-map) {:a 1 :b 2})
         val2  (+ 2 3) ]
-    (is (= "val1 => clojure.lang.PersistentTreeMap->{:a 1, :b 2}"
-        (tm/collapse-whitespace (with-out-str (spyxx val1 )))  ))
+    (is= "val1 => clojure.lang.PersistentTreeMap->{:a 1, :b 2}"
+        (tm/collapse-whitespace (with-out-str (spyxx val1 )))  )
 
-    (is (= "val2 => java.lang.Long->5"
-        (tm/collapse-whitespace (with-out-str (spyxx val2 ))) ))
+    (is= "val2 => java.lang.Long->5"
+        (tm/collapse-whitespace (with-out-str (spyxx val2 ))) )
   ))
 
 (deftest t-with-spy-indent
@@ -99,9 +105,9 @@
                         (spy :msg "msg1" (+ 2 3))
                         (fn2)))
         fn0   (fn [] (spy :msg "msg0" (+ 2 3))) ]
-    (is (= "msg2 => 5"            (tm/collapse-whitespace (with-out-str (fn2)))))
-    (is (= "msg1 => 5 msg2 => 5"  (tm/collapse-whitespace (with-out-str (fn1)))))
-    (is (= "msg0 => 5"            (tm/collapse-whitespace (with-out-str (fn0)))))
+    (is= "msg2 => 5"            (tm/collapse-whitespace (with-out-str (fn2))))
+    (is= "msg1 => 5 msg2 => 5"  (tm/collapse-whitespace (with-out-str (fn1))))
+    (is= "msg0 => 5"            (tm/collapse-whitespace (with-out-str (fn0))))
     ))
 
 ; (deftest t-truthy-spec
@@ -159,27 +165,27 @@
                     (= 1 num-nil) )))))))
 
 (deftest t-any
-  (is (= true   (has-some? odd? [1 2 3] ) ))
-  (is (= false  (has-some? odd? [2 4 6] ) ))
-  (is (= false  (has-some? odd? []      ) ))
+  (is= true   (has-some? odd? [1 2 3] ) )
+  (is= false  (has-some? odd? [2 4 6] ) )
+  (is= false  (has-some? odd? []      ) )
 
-  (is (= false  (has-none? odd? [1 2 3] ) ))
-  (is (= true   (has-none? odd? [2 4 6] ) ))
-  (is (= true   (has-none? odd? []      ) )))
+  (is= false  (has-none? odd? [1 2 3] ) )
+  (is= true   (has-none? odd? [2 4 6] ) )
+  (is= true   (has-none? odd? []      ) ))
 
 (deftest t-not-empty
   (is (every?      not-empty? ["1" [1] '(1) {:1 1} #{1}    ] ))
   (is (has-none?   not-empty? [""  []  '()  {}     #{}  nil] ))
 
-  (is (= (map not-empty? ["1" [1] '(1) {:1 1} #{1} ] )
-         [true true true true true]  ))
-  (is (= (map not-empty? ["" [] '() {} #{} nil] )
-         [false false false false false false ] ))
+  (is= (map not-empty? ["1" [1] '(1) {:1 1} #{1} ] )
+         [true true true true true]  )
+  (is= (map not-empty? ["" [] '() {} #{} nil] )
+         [false false false false false false ] )
 
-  (is (= (keep-if not-empty?  ["1" [1] '(1) {:1 1} #{1} ] )
-                              ["1" [1] '(1) {:1 1} #{1} ] ))
-  (is (= (drop-if not-empty?  [""  []  '()  {}     #{}  nil] )
-                              [""  []  '()  {}     #{}  nil] )))
+  (is= (keep-if not-empty?  ["1" [1] '(1) {:1 1} #{1} ] )
+                            ["1" [1] '(1) {:1 1} #{1} ] )
+  (is= (drop-if not-empty?  [""  []  '()  {}     #{}  nil] )
+                            [""  []  '()  {}     #{}  nil] ))
 
 (deftest t-contains-key? ; #todo add to README
   (is   (contains-key?  {:a 1 :b 2} :a))
@@ -246,12 +252,12 @@
 ;)
 
 (deftest t-forv
-  (is (= (forv [x (range 4)] (* x x))
-         [0 1 4 9] ))
-  (is (= (forv [x (range 23)] (* x x))
-         (for  [x (range 23)] (* x x))))
-  (is (= (forv [x (range 5)  y (range 2 9)] (str x y))
-         (for  [x (range 5)  y (range 2 9)] (str x y)))))
+  (is= (forv [x (range 4)] (* x x))
+         [0 1 4 9] )
+  (is= (forv [x (range 23)] (* x x))
+       (for  [x (range 23)] (* x x)))
+  (is= (forv [x (range 5)  y (range 2 9)] (str x y))
+       (for  [x (range 5)  y (range 2 9)] (str x y))))
 
 (deftest t-glue
   ; unexpected results
@@ -261,45 +267,45 @@
                [1 2  [3 4] ] ))
 
   (let [objs   [ [] '()   {} (sorted-map)   #{} (sorted-set) ] ]
-    (is (= (map sequential? objs) [true  true    false false   false false] ))
-    (is (= (map map?        objs) [false false   true  true    false false] ))
-    (is (= (map set?        objs) [false false   false false   true  true ] )))
+    (is= (map sequential? objs) [true  true    false false   false false] )
+    (is= (map map?        objs) [false false   true  true    false false] )
+    (is= (map set?        objs) [false false   false false   true  true ] ))
 
-  (is (= (glue [1 2] [3 4] [5 6])        [1 2 3 4 5 6]))
-  (is (= (glue [] [1 2] )                [1 2] ))
-  (is (= (glue [1 2] [] )                [1 2] ))
-  (is (= (glue [] [1 2] [] )             [1 2] ))
+  (is= (glue [1 2] [3 4] [5 6])        [1 2 3 4 5 6])
+  (is= (glue [] [1 2] )                [1 2] )
+  (is= (glue [1 2] [] )                [1 2] )
+  (is= (glue [] [1 2] [] )             [1 2] )
 
-  (is (= (glue '(1 2) '(3 4) '(5 6))        [1 2 3 4 5 6]))
-  (is (= (glue '(1 2)  [3 4] '(5 6))        [1 2 3 4 5 6]))
-  (is (= (glue  [1 2] '(3 4) '(5 6))        [1 2 3 4 5 6]))
-  (is (= (glue '() '(1 2) )                 [1 2] ))
-  (is (= (glue '(1 2) '() )                 [1 2] ))
-  (is (= (glue '() '(1 2) '() )             [1 2] ))
+  (is= (glue '(1 2) '(3 4) '(5 6))        [1 2 3 4 5 6])
+  (is= (glue '(1 2)  [3 4] '(5 6))        [1 2 3 4 5 6])
+  (is= (glue  [1 2] '(3 4) '(5 6))        [1 2 3 4 5 6])
+  (is= (glue '() '(1 2) )                 [1 2] )
+  (is= (glue '(1 2) '() )                 [1 2] )
+  (is= (glue '() '(1 2) '() )             [1 2] )
 
-  (is (= (glue (range 3) (range 5))      [0 1 2 0 1 2 3 4] ))
+  (is= (glue (range 3) (range 5))      [0 1 2 0 1 2 3 4] )
 
-  (is (= (glue {:a 1} {:b 2} {:c 3})      {:a 1 :c 3 :b 2}))
-  (is (= (glue {:a 1} {:b 2} )            {:a 1 :b 2}))
-  (is (= (glue {:a 1} {} )                {:a 1} ))
-  (is (= (glue {} {:a 1} )                {:a 1} ))
-  (is (= (glue {} {:a 1} {} )             {:a 1} ))
+  (is= (glue {:a 1} {:b 2} {:c 3})      {:a 1 :c 3 :b 2})
+  (is= (glue {:a 1} {:b 2} )            {:a 1 :b 2})
+  (is= (glue {:a 1} {} )                {:a 1} )
+  (is= (glue {} {:a 1} )                {:a 1} )
+  (is= (glue {} {:a 1} {} )             {:a 1} )
 
-  (is (= (glue #{1 2} #{3 4} #{6 5})     #{1 2 6 5 3 4}))
-  (is (= (glue #{} #{1 2} )              #{1 2} ))
-  (is (= (glue #{1 2} #{} )              #{1 2} ))
-  (is (= (glue #{} #{1 2} #{} )          #{1 2} ))
+  (is= (glue #{1 2} #{3 4} #{6 5})     #{1 2 6 5 3 4})
+  (is= (glue #{} #{1 2} )              #{1 2} )
+  (is= (glue #{1 2} #{} )              #{1 2} )
+  (is= (glue #{} #{1 2} #{} )          #{1 2} )
 
-  (is (= (glue (sorted-map) {:a 1} {:b 2} {:c 3})   {:a 1 :b 2 :c 3} ))
-  (is (= (glue (sorted-set) #{1 2} #{3 4} #{6 5})   #{1 2 3 4 5 6}))
+  (is= (glue (sorted-map) {:a 1} {:b 2} {:c 3})   {:a 1 :b 2 :c 3} )
+  (is= (glue (sorted-set) #{1 2} #{3 4} #{6 5})   #{1 2 3 4 5 6})
 
-  (is (=      (glue (sorted-map) (hash-map :a 1   :b 2   :c 3   :d 4   :e 5   :f 6))
-                                          {:a 1   :b 2   :c 3   :d 4   :e 5   :f 6} ))
-  (is (= (seq (glue (sorted-map) (hash-map :a 1   :b 2   :c 3   :d 4   :e 5   :f 6)))
-                                        [ [:a 1] [:b 2] [:c 3] [:d 4] [:e 5] [:f 6] ] ))
+  (is=      (glue (sorted-map) (hash-map :a 1   :b 2   :c 3   :d 4   :e 5   :f 6))
+                                        {:a 1   :b 2   :c 3   :d 4   :e 5   :f 6} )
+  (is= (seq (glue (sorted-map) (hash-map :a 1   :b 2   :c 3   :d 4   :e 5   :f 6)))
+                                      [ [:a 1] [:b 2] [:c 3] [:d 4] [:e 5] [:f 6] ] )
 
-  (is (= (glue  {:band :VanHalen :singer :Dave} {:singer :Sammy} )
-                {:band :VanHalen                 :singer :Sammy} ))
+  (is= (glue  {:band :VanHalen :singer :Dave} {:singer :Sammy} )
+              {:band :VanHalen                 :singer :Sammy} )
 
   (is= (glue \a )           "a" )
   (is= (glue "a")           "a" )
@@ -412,48 +418,74 @@
 
 (deftest t-dissoc-in
   (let [mm    {:a { :b { :c "c" }}} ]
-    (is (= (dissoc-in mm []         )          mm ))
-    (is (= (dissoc-in mm [:a]       )          {} ))
-    (is (= (dissoc-in mm [:a :b]    )          {:a  {}} ))
-    (is (= (dissoc-in mm [:a :b :c] )          {:a  { :b  {}}} ))
-    (is (= (dissoc-in mm [:a :x :y] )          {:a  { :b  { :c "c" }
-                                                         :x  nil }} ))
-    (is (= (dissoc-in mm [:a :x :y :z] )       {:a  { :b  { :c "c" }
-                                                         :x  { :y nil }}} ))
-    (is (= (dissoc-in mm [:k1 :k2 :k3 :kz] )   {:a  { :b  { :c  "c" }}
-                                                   :k1 { :k2 { :k3 nil }}} )))
+    (is= (dissoc-in mm []         )          mm )
+    (is= (dissoc-in mm [:a]       )          {} )
+    (is= (dissoc-in mm [:a :b]    )          {:a  {}} )
+    (is= (dissoc-in mm [:a :b :c] )          {:a  { :b  {}}} )
+    (is= (dissoc-in mm [:a :x :y] )          {:a  { :b  { :c "c" }
+                                                         :x  nil }} )
+    (is= (dissoc-in mm [:a :x :y :z] )       {:a  { :b  { :c "c" }
+                                                    :x  { :y nil }}} )
+    (is= (dissoc-in mm [:k1 :k2 :k3 :kz] )   {:a  { :b  { :c  "c" }}
+                                              :k1 { :k2 { :k3 nil }}} ))
   (let [mm    {:a1 "a1"
                :a2 { :b1 "b1"
                      :b2 { :c1 "c1"
                            :c2 "c2" }}} ]
-    (is (= (dissoc-in mm [:a1] )
+    (is= (dissoc-in mm [:a1] )
               {:a2 { :b1 "b1"
                      :b2 { :c1 "c1"
-                           :c2 "c2" }}} ))
-    (is (= (dissoc-in mm [:a2] )
-              {:a1 "a1" } ))
-    (is (= (dissoc-in mm [:a2 :b1] )
+                           :c2 "c2" }}} )
+    (is= (dissoc-in mm [:a2] )
+              {:a1 "a1" } )
+    (is= (dissoc-in mm [:a2 :b1] )
               {:a1 "a1"
                :a2 { :b2 { :c1 "c1"
-                           :c2 "c2" }}} ))
-    (is (= (dissoc-in mm [:a2 :b2] )
+                           :c2 "c2" }}} )
+    (is= (dissoc-in mm [:a2 :b2] )
               {:a1 "a1"
-               :a2 { :b1 "b1" }} ))
-    (is (= (dissoc-in mm [:a2 :b2 :c1] )
-              {:a1 "a1"
-               :a2 { :b1 "b1"
-                     :b2 { :c2 "c2" }}} ))
-    (is (= (dissoc-in mm [:a2 :b2 :c2] )
+               :a2 { :b1 "b1" }} )
+    (is= (dissoc-in mm [:a2 :b2 :c1] )
               {:a1 "a1"
                :a2 { :b1 "b1"
-                     :b2 { :c1 "c1" }}} ))))
+                     :b2 { :c2 "c2" }}} )
+    (is= (dissoc-in mm [:a2 :b2 :c2] )
+              {:a1 "a1"
+               :a2 { :b1 "b1"
+                     :b2 { :c1 "c1" }}} )))
+
+(deftest t-select-keys
+  (let [map1  {:a 1 :b 2 :c 3 :d 4 :e 5}]
+    (is= [1 2 3 4 5] (select-values map1 [:a :b :c :d :e]))
+    (is= [  2 3 4 5] (select-values map1 [   :b :c :d :e]))
+    (is= [    3 4 5] (select-values map1 [      :c :d :e]))
+    (is= [      4 5] (select-values map1 [         :d :e]))
+    (is= [        5] (select-values map1 [            :e]))
+
+    (is= [1 2 3 4 5] (select-values map1 [:a :b :c :d :e]))
+    (is= [1 2 3 4  ] (select-values map1 [:a :b :c :d   ]))
+    (is= [1 2 3    ] (select-values map1 [:a :b :c      ]))
+    (is= [1 2      ] (select-values map1 [:a :b         ]))
+    (is= [1        ] (select-values map1 [:a            ]))
+
+    (is= [  2 3 4 5] (select-values map1 [   :b :c :d :e]))
+    (is= [1   3 4 5] (select-values map1 [:a    :c :d :e]))
+    (is= [1 2   4 5] (select-values map1 [:a :b    :d :e]))
+    (is= [1 2 3   5] (select-values map1 [:a :b :c    :e]))
+    (is= [1 2 3 4  ] (select-values map1 [:a :b :c :d   ]))
+
+    (is= [3 1 4 2 5] (select-values map1 [:c :a :d :b :e]))
+    (is= []          (select-values map1 [] ))
+
+    (throws? (select-values map1 [:z]))
+  ))
 
 (deftest t-only
-  (is (= 42 (only [42])))
-  (is (= :x (only [:x])))
-  (is (= "hello" (only ["hello"] )))
-  (is (thrown? IllegalArgumentException (only [])))
-  (is (thrown? IllegalArgumentException (only [:x :y]))))
+  (is= 42 (only [42]))
+  (is= :x (only [:x]))
+  (is= "hello" (only ["hello"] ))
+  (throws? IllegalArgumentException (only []))
+  (throws? IllegalArgumentException (only [:x :y])))
 
 (deftest t-third
   (is= nil (third [       ]))
@@ -463,67 +495,66 @@
   (is= 3   (third [1 2 3 4])))
 
 (deftest t-validate
-  (is (= 3        (t/validate pos? 3)))
-  (is (= 3.14     (t/validate number? 3.14 )))
-  (is (= 3.14     (t/validate #(< 3 % 4) 3.14 )))
-  (is (= [0 1 2]  (t/validate vector? (vec (range 3)))))
-  (is (= nil      (t/validate nil? (next []))))
-  (is (= [0 1 2]  (t/validate #(= 3 (count %)) [0 1 2])))
-  (is (thrown? Exception (t/validate number? "hello")))
-  (is (thrown? Exception (t/validate truthy? nil)))
+  (is= 3        (t/validate pos? 3))
+  (is= 3.14     (t/validate number? 3.14 ))
+  (is= 3.14     (t/validate #(< 3 % 4) 3.14 ))
+  (is= [0 1 2]  (t/validate vector? (vec (range 3))))
+  (is= nil      (t/validate nil? (next [])))
+  (is= [0 1 2]  (t/validate #(= 3 (count %)) [0 1 2]))
+  (throws? Exception (t/validate number? "hello"))
+  (throws? Exception (t/validate truthy? nil))
 )
 
 (deftest t-keyvals
   (testing "basic usage"
     (let [m1 {:a 1 :b 2 :c 3}
           m2 {:a 1 :b 2 :c [3 4]} ]
-      (is (= m1 (apply hash-map (keyvals m1))))
-      (is (= m2 (apply hash-map (keyvals m2))))
+      (is= m1 (apply hash-map (keyvals m1)))
+      (is= m2 (apply hash-map (keyvals m2)))
     )))
 ; AWTAWT TODO: add test.check
 
 (deftest t-safe->
-  (is (= 7 (safe-> 3 (* 2) (+ 1))))
+  (is= 7 (safe-> 3 (* 2) (+ 1)))
   (let [mm  {:a {:b 2}}]
-    (is (= (safe-> mm :a)     {:b 2} ))
-    (is (= (safe-> mm :a :b)      2))
-    (is (thrown? IllegalArgumentException   (safe-> mm :x)))
-    (is (thrown? IllegalArgumentException   (safe-> mm :a :x)))
-    (is (thrown? IllegalArgumentException   (safe-> mm :a :b :x)))
-  ))
+    (is= (safe-> mm :a)     {:b 2} )
+    (is= (safe-> mm :a :b)      2)
+    (throws? IllegalArgumentException   (safe-> mm :x))
+    (throws? IllegalArgumentException   (safe-> mm :a :x))
+    (throws? IllegalArgumentException   (safe-> mm :a :b :x))))
 
 (deftest t-it->
-  (is (= 2  (it-> 1
-                  (inc it)
-                  (+ 3 it)
-                  (/ 10 it))))
+  (is= 2 (it-> 1
+           (inc it)
+           (+ 3 it)
+           (/ 10 it)))
   (let [mm  {:a {:b 2}}]
-    (is (= (it-> mm (:a it)          )  {:b 2} ))
-    (is (= (it-> mm (it :a)  (:b it) )      2  ))))
+    (is= (it-> mm (:a it)          )  {:b 2} )
+    (is= (it-> mm (it :a)  (:b it) )      2  )))
 
 (deftest t-with-exception-default
   (testing "basic usage"
-    (is (thrown?    Exception                       (/ 1 0)))
-    (is (= nil      (with-exception-default nil     (/ 1 0))))
-    (is (= :dummy   (with-exception-default :dummy  (/ 1 0))))
-    (is (= 123      (with-exception-default 0       (Long/parseLong "123"))))
-    (is (= 0        (with-exception-default 0       (Long/parseLong "12xy3"))))
+    (throws?    Exception                       (/ 1 0))
+    (is= nil      (with-exception-default nil     (/ 1 0)))
+    (is= :dummy   (with-exception-default :dummy  (/ 1 0)))
+    (is= 123      (with-exception-default 0       (Long/parseLong "123")))
+    (is= 0        (with-exception-default 0       (Long/parseLong "12xy3")))
     ))
 
 (deftest t-rel=
   (is (rel= 1 1 :digits 4 ))
   (is (rel= 1 1 :tol    0.01 ))
 
-  (is (thrown? IllegalArgumentException  (rel= 1 1 )))
-  (is (thrown? IllegalArgumentException  (rel= 1 1 4)))
-  (is (thrown? IllegalArgumentException  (rel= 1 1 :xxdigits 4      )))
-  (is (thrown? IllegalArgumentException  (rel= 1 1 :digits   4.1    )))
-  (is (thrown? IllegalArgumentException  (rel= 1 1 :digits   0      )))
-  (is (thrown? IllegalArgumentException  (rel= 1 1 :digits  -4      )))
+  (throws? IllegalArgumentException  (rel= 1 1 ))
+  (throws? IllegalArgumentException  (rel= 1 1 4))
+  (throws? IllegalArgumentException  (rel= 1 1 :xxdigits 4      ))
+  (throws? IllegalArgumentException  (rel= 1 1 :digits   4.1    ))
+  (throws? IllegalArgumentException  (rel= 1 1 :digits   0      ))
+  (throws? IllegalArgumentException  (rel= 1 1 :digits  -4      ))
 
-  (is (thrown? IllegalArgumentException  (rel= 1 1 :tol    -0.01    )))
-  (is (thrown? IllegalArgumentException  (rel= 1 1 :tol     "xx"    )))
-  (is (thrown? IllegalArgumentException  (rel= 1 1 :xxtol   0.01    )))
+  (throws? IllegalArgumentException  (rel= 1 1 :tol    -0.01    ))
+  (throws? IllegalArgumentException  (rel= 1 1 :tol     "xx"    ))
+  (throws? IllegalArgumentException  (rel= 1 1 :xxtol   0.01    ))
 
   (is      (rel=   0   0   :digits 3 ))
   (is      (rel=  42  42   :digits 99 ))
@@ -742,68 +773,67 @@
 )
 
 (deftest t-keep-if
-  (is (= [0 2 4 6 8]  (keep-if even? (range 10))
-                      (drop-if odd?  (range 10))))
-  (is (= [1 3 5 7 9]  (keep-if odd?  (range 10))
-                      (drop-if even? (range 10))))
+  (is= [0 2 4 6 8]  (keep-if even? (range 10))
+                    (drop-if odd?  (range 10)))
+  (is= [1 3 5 7 9]  (keep-if odd?  (range 10))
+                    (drop-if even? (range 10)))
 
   ; If we supply a 2-arg fn when filtering a sequence, we get an Exception
-  (is (thrown? clojure.lang.ArityException (keep-if (fn [arg1 arg2] :dummy) #{1 2 3} )))
+  (throws? clojure.lang.ArityException (keep-if (fn [arg1 arg2] :dummy) #{1 2 3} ))
 
   ; Verify throw if coll is not a sequential, map, or set.
-  (is (thrown? IllegalArgumentException (keep-if truthy? 2 )))
-  (is (thrown? IllegalArgumentException (keep-if truthy? :some-kw ))))
+  (throws? IllegalArgumentException (keep-if truthy? 2 ))
+  (throws? IllegalArgumentException (keep-if truthy? :some-kw )))
 
 (deftest t-keep-if-map
   (let [m1  {10  0,   20 0
              11  1,   21 1
              12  2,   22 2
              13  3,   23 3} ]
-    (is (= (keep-if   (fn [k v] (odd?  k))  m1)
-           (drop-if   (fn [k v] (even? k))  m1)
-            {11  1,   21 1
-             13  3,   23 3} ))
-    (is (= (keep-if   (fn [k v] (even? k))  m1)     (keep-if   (fn [k v] (even? v))  m1) 
-           (drop-if   (fn [k v] (odd?  k))  m1)     (drop-if   (fn [k v] (odd?  v))  m1)     
+    (is= (keep-if   (fn [k v] (odd?  k))  m1)
+         (drop-if   (fn [k v] (even? k))  m1)
+          {11  1,   21 1
+           13  3,   23 3} )
+    (is= (keep-if   (fn [k v] (even? k))  m1)     (keep-if   (fn [k v] (even? v))  m1)
+         (drop-if   (fn [k v] (odd?  k))  m1)     (drop-if   (fn [k v] (odd?  v))  m1)
+          {10  0,   20 0
+           12  2,   22 2} )
+    (is=  (keep-if   (fn [k v] (< k 19))  m1)
+          (drop-if   (fn [k v] (> k 19))  m1)
+          {10  0
+           11  1
+           12  2
+           13  3} )
+    (is=  (keep-if   (fn [k v] (= 1 (int (/ k 10))))  m1)
+          (drop-if   (fn [k v] (= 2 (int (/ k 10))))  m1)
+          {10  0
+           11  1
+           12  2
+           13  3} )
+    (is=  (keep-if   (fn [k v] (= 2 (int (/ k 10))))  m1)
+          (drop-if   (fn [k v] (= 1 (int (/ k 10))))  m1)
+          {20  0
+           21  1
+           22  2
+           23  3} )
+    (is=  (keep-if   (fn [k v] (<= v 1   ))  m1)
+          (drop-if   (fn [k v] (<=   2 v ))  m1)
             {10  0,   20 0
-             12  2,   22 2} ))
-    (is (=  (keep-if   (fn [k v] (< k 19))  m1)
-            (drop-if   (fn [k v] (> k 19))  m1)
-            {10  0
-             11  1
-             12  2
-             13  3} ))
-    (is (=  (keep-if   (fn [k v] (= 1 (int (/ k 10))))  m1)
-            (drop-if   (fn [k v] (= 2 (int (/ k 10))))  m1)
-            {10  0
-             11  1
-             12  2
-             13  3} ))
-    (is (=  (keep-if   (fn [k v] (= 2 (int (/ k 10))))  m1)
-            (drop-if   (fn [k v] (= 1 (int (/ k 10))))  m1)
-            {20  0
-             21  1
-             22  2
-             23  3} ))
-    (is (=  (keep-if   (fn [k v] (<= v 1   ))  m1)
-            (drop-if   (fn [k v] (<=   2 v ))  m1)
-            {10  0,   20 0
-             11  1,   21 1 } ))
+             11  1,   21 1 } )
 
     ; If we supply a 1-arg fn when filtering a map, we get an Exception
-    (is (thrown? clojure.lang.ArityException (keep-if (fn [arg] :dummy) {:a 1} )))
+    (throws? clojure.lang.ArityException (keep-if (fn [arg] :dummy) {:a 1} ))
   ))
 
 (deftest t-keep-if-set
   (let [s1  (into (sorted-set) (range 10)) ]
-    (is (= #{0 2 4 6 8}   (keep-if even? s1)
-                          (drop-if odd?  s1)))
-    (is (= #{1 3 5 7 9}   (keep-if odd?  s1)
-                          (drop-if even? s1)))
+    (is= #{0 2 4 6 8}   (keep-if even? s1)
+                        (drop-if odd?  s1))
+    (is= #{1 3 5 7 9}   (keep-if odd?  s1)
+                        (drop-if even? s1))
 
     ; If we supply a 2-arg fn when filtering a set, we get an Exception
-    (is (thrown? clojure.lang.ArityException (keep-if (fn [arg1 arg2] :dummy) #{1 2 3} )))
-  ))
+    (throws? clojure.lang.ArityException (keep-if (fn [arg1 arg2] :dummy) #{1 2 3} ))))
 
 #_(tst/defspec ^:slow t-keep-if-drop-if 999
   (prop/for-all [vv (gen/vector gen/int) ]
@@ -936,51 +966,51 @@
 )
 
 (deftest t-drop-at
-  (is (= [] (drop-at (range 1) 0)))
+  (is= [] (drop-at (range 1) 0))
 
-  (is (= [  1] (drop-at (range 2) 0)))
-  (is (= [0  ] (drop-at (range 2) 1)))
+  (is= [  1] (drop-at (range 2) 0))
+  (is= [0  ] (drop-at (range 2) 1))
 
-  (is (= [  1 2] (drop-at (range 3) 0)))
-  (is (= [0   2] (drop-at (range 3) 1)))
-  (is (= [0 1  ] (drop-at (range 3) 2)))
+  (is= [  1 2] (drop-at (range 3) 0))
+  (is= [0   2] (drop-at (range 3) 1))
+  (is= [0 1  ] (drop-at (range 3) 2))
 
-  (is (thrown? IllegalArgumentException (drop-at []         0)))
-  (is (thrown? IllegalArgumentException (drop-at (range 3) -1)))
-  (is (thrown? IllegalArgumentException (drop-at (range 3)  3))))
+  (throws? IllegalArgumentException (drop-at []         0))
+  (throws? IllegalArgumentException (drop-at (range 3) -1))
+  (throws? IllegalArgumentException (drop-at (range 3)  3)))
 
 (deftest t-insert-at
-  (is (= [9] (insert-at [] 0 9)))
+  (is= [9] (insert-at [] 0 9))
 
-  (is (= [9 0] (insert-at [0] 0 9)))
-  (is (= [0 9] (insert-at [0] 1 9)))
+  (is= [9 0] (insert-at [0] 0 9))
+  (is= [0 9] (insert-at [0] 1 9))
 
-  (is (= [9 0 1] (insert-at [0 1] 0 9)))
-  (is (= [0 9 1] (insert-at [0 1] 1 9)))
-  (is (= [0 1 9] (insert-at [0 1] 2 9)))
+  (is= [9 0 1] (insert-at [0 1] 0 9))
+  (is= [0 9 1] (insert-at [0 1] 1 9))
+  (is= [0 1 9] (insert-at [0 1] 2 9))
 
-  (is (thrown? IllegalArgumentException (insert-at [] -1 9)))
-  (is (thrown? IllegalArgumentException (insert-at []  1 9)))
+  (throws? IllegalArgumentException (insert-at [] -1 9))
+  (throws? IllegalArgumentException (insert-at []  1 9))
 
-  (is (thrown? IllegalArgumentException (insert-at [0] -1 9)))
-  (is (thrown? IllegalArgumentException (insert-at [0]  2 9)))
+  (throws? IllegalArgumentException (insert-at [0] -1 9))
+  (throws? IllegalArgumentException (insert-at [0]  2 9))
 
-  (is (thrown? IllegalArgumentException (insert-at [0 1] -1 9)))
-  (is (thrown? IllegalArgumentException (insert-at [0 1]  3 9))))
+  (throws? IllegalArgumentException (insert-at [0 1] -1 9))
+  (throws? IllegalArgumentException (insert-at [0 1]  3 9)))
 
 (deftest t-replace-at
-  (is (= [9] (replace-at (range 1) 0 9)))
+  (is= [9] (replace-at (range 1) 0 9))
 
-  (is (= [9 1] (replace-at (range 2) 0 9)))
-  (is (= [0 9] (replace-at (range 2) 1 9)))
+  (is= [9 1] (replace-at (range 2) 0 9))
+  (is= [0 9] (replace-at (range 2) 1 9))
 
-  (is (= [9 1 2] (replace-at (range 3) 0 9)))
-  (is (= [0 9 2] (replace-at (range 3) 1 9)))
-  (is (= [0 1 9] (replace-at (range 3) 2 9)))
+  (is= [9 1 2] (replace-at (range 3) 0 9))
+  (is= [0 9 2] (replace-at (range 3) 1 9))
+  (is= [0 1 9] (replace-at (range 3) 2 9))
 
-  (is (thrown? IllegalArgumentException (replace-at []         0 9)))
-  (is (thrown? IllegalArgumentException (replace-at (range 3) -1 9)))
-  (is (thrown? IllegalArgumentException (replace-at (range 3)  3 9))))
+  (throws? IllegalArgumentException (replace-at []         0 9))
+  (throws? IllegalArgumentException (replace-at (range 3) -1 9))
+  (throws? IllegalArgumentException (replace-at (range 3)  3 9)))
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
 (deftest  ^{:deprecated "1.9.0-alpha5" } t-seqable
@@ -991,15 +1021,15 @@
   (is (t/seqable?   [1 2 3] ))
   (is (t/seqable?   (byte-array [1 2] )))
 
-  (is (not (t/seqable?  1 )))
-  (is (not (t/seqable? \a ))))
+  (isnt (t/seqable?  1 ))
+  (isnt (t/seqable? \a )))
 
 ; #todo add different lengths a/b
 ; #todo add missing entries a/b
 (deftest t-matches
   (is      (t/matches?  []    [] ))
   (is      (t/matches?  [1]   [1] ))
-  (is (not (t/matches?  [1]   [2] )))
+  (isnt    (t/matches?  [1]   [2] ))
   ;        (t/matches?  [1]   [1 2] )))  ***** error *****
   (is      (t/matches?  [_]   [1] ))
   (is      (t/matches?  [_]   [nil] ))
@@ -1011,83 +1041,83 @@
   (is      (t/matches?  [1 _ 3] [1 2 3] [1 nil 3] ))
 
   (is      (t/matches?  {:a 1} {:a 1} ))
-  (is (not (t/matches?  {:a 1} {:a 2} )))
-  (is (not (t/matches?  {:a 1} {:b 1} )))
+  (isnt    (t/matches?  {:a 1} {:a 2} ))
+  (isnt    (t/matches?  {:a 1} {:b 1} ))
   (is      (t/matches?  {:a _} {:a 1} {:a 2} {:a 3} ))
   ;        (t/matches?  { _ 1} {:a 1} )   ***** error *****
 
   (is      (t/matches?  {:a _ :b _       :c 3} 
-                      {:a 1 :b [1 2 3] :c 3} ))
-  (is (not (t/matches?  {:a _ :b _       :c 4} 
-                      {:a 1 :b [1 2 3] :c 3} )))
-  (is (not (t/matches?  {:a _ :b _       :c 3} 
-                      {:a 1 :b [1 2 3] :c 4} )))
-  (is (not (t/matches?  {:a 9 :b _       :c 3} 
-                      {:a 1 :b [1 2 3] :c 3} )))
+                        {:a 1 :b [1 2 3] :c 3} ))
+  (isnt    (t/matches?  {:a _ :b _       :c 4}
+                        {:a 1 :b [1 2 3] :c 3} ))
+  (isnt    (t/matches?  {:a _ :b _       :c 3}
+                        {:a 1 :b [1 2 3] :c 4} ))
+  (isnt    (t/matches?  {:a 9 :b _       :c 3}
+                        {:a 1 :b [1 2 3] :c 3} ))
 
   (is      (t/matches?  {:a _ :b _       :c 3} 
-                      {:a 1 :b [1 2 3] :c 3}
-                      {:a 2 :b 99      :c 3}
-                      {:a 3 :b nil     :c 3} ))
-  (is (not (t/matches?  {:a _ :b _       :c 3} 
-                      {:a 1 :b [1 2 3] :c 9}
-                      {:a 2 :b 99      :c 3}
-                      {:a 3 :b nil     :c 3} )))
-  (is (not (t/matches?  {:a _ :b _       :c 3} 
-                      {:a 1 :b [1 2 3] :c 3}
-                      {:a 2 :b 99      :c 3}
-                      {:a 3 :b nil     :c 9} )))
+                        {:a 1 :b [1 2 3] :c 3}
+                        {:a 2 :b 99      :c 3}
+                        {:a 3 :b nil     :c 3} ))
+  (isnt    (t/matches?  {:a _ :b _       :c 3}
+                        {:a 1 :b [1 2 3] :c 9}
+                        {:a 2 :b 99      :c 3}
+                        {:a 3 :b nil     :c 3} ))
+  (isnt    (t/matches?  {:a _ :b _       :c 3}
+                        {:a 1 :b [1 2 3] :c 3}
+                        {:a 2 :b 99      :c 3}
+                        {:a 3 :b nil     :c 9} ))
 )
 
 ; #todo add different lengths a/b
 ; #todo add missing entries a/b
 (deftest t-wild-match
   (testing "vectors"
-    (is      (wild-match? [1]  [1] ))
-    (is      (wild-match? [1]  [1] [1] ))
-    (is      (wild-match? [:*] [1] [1] ))
-    (is      (wild-match? [:*] [1] [9] ))
+    (is   (wild-match? [1]  [1] ))
+    (is   (wild-match? [1]  [1] [1] ))
+    (is   (wild-match? [:*] [1] [1] ))
+    (is   (wild-match? [:*] [1] [9] ))
 
-    (is      (wild-match? [1] [1] ))
-    (is      (wild-match? [1] [1] [1] ))
+    (is   (wild-match? [1] [1] ))
+    (is   (wild-match? [1] [1] [1] ))
 
-    (is (not (wild-match? [1] [ ] )))
-    (is (not (wild-match? [ ] [1] )))
-    (is (not (wild-match? [1] [ ] [ ] )))
-    (is (not (wild-match? [ ] [1] [ ] )))
-    (is (not (wild-match? [ ] [ ] [1] )))
-    (is (not (wild-match? [1] [1] [ ] )))
-    (is (not (wild-match? [1] [ ] [1] )))
+    (isnt (wild-match? [1] [ ] ))
+    (isnt (wild-match? [ ] [1] ))
+    (isnt (wild-match? [1] [ ] [ ] ))
+    (isnt (wild-match? [ ] [1] [ ] ))
+    (isnt (wild-match? [ ] [ ] [1] ))
+    (isnt (wild-match? [1] [1] [ ] ))
+    (isnt (wild-match? [1] [ ] [1] ))
 
-    (is      (wild-match? [1 2  3]
-                          [1 2  3] ))
-    (is      (wild-match? [1 :* 3]
-                          [1 2  3] ))
-    (is      (wild-match? [1 :* 3]
-                          [1 2  3]
-                          [1 9  3] ))
-    (is (not (wild-match? [1 2  3]
-                          [1 2  9] )))
-    (is (not (wild-match? [1 2   ]
-                          [1 2  9] )))
-    (is (not (wild-match? [1 2  3]
-                          [1 2   ] )))
+    (is   (wild-match? [1 2  3]
+                       [1 2  3] ))
+    (is   (wild-match? [1 :* 3]
+                       [1 2  3] ))
+    (is   (wild-match? [1 :* 3]
+                       [1 2  3]
+                       [1 9  3] ))
+    (isnt (wild-match? [1 2  3]
+                       [1 2  9] ))
+    (isnt (wild-match? [1 2   ]
+                       [1 2  9] ))
+    (isnt (wild-match? [1 2  3]
+                       [1 2   ] ))
 
-    (is      (wild-match? [1  [2 3]]
-                          [1  [2 3]] ))
-    (is      (wild-match? [:* [2 3]]
-                          [1  [2 3]] ))
-    (is      (wild-match? [:* [2 3]]
-                          [1  [2 3]]
-                          [9  [2 3]] ))
-    (is      (wild-match? [1  [2 :*]]
-                          [1  [2 33]]
-                          [1  [2 99]] ))
-    (is      (wild-match? [1  :*]
-                          [1   2]
-                          [1  [2 3]] ))
-    (is (not (wild-match? [1  [2 3]]
-                          [1  [2 9]] )))
+    (is   (wild-match? [1  [2 3]]
+                       [1  [2 3]] ))
+    (is   (wild-match? [:* [2 3]]
+                       [1  [2 3]] ))
+    (is   (wild-match? [:* [2 3]]
+                       [1  [2 3]]
+                       [9  [2 3]] ))
+    (is   (wild-match? [1  [2 :*]]
+                       [1  [2 33]]
+                       [1  [2 99]] ))
+    (is   (wild-match? [1  :*]
+                       [1   2]
+                       [1  [2 3]] ))
+    (isnt (wild-match? [1  [2 3]]
+                       [1  [2 9]] ))
   )
   (testing "maps"
     (is (wild-match? {:a 1 } {:a 1} ))
@@ -1097,11 +1127,11 @@
     (is (wild-match? {:a :*} {:a :*} {:a 9 } ))
     (is (wild-match? {:a :*} {:a :*} {:a :*} ))
 
-    (is (not (wild-match? {:a 1 } {:a 9} )))
-    (is (not (wild-match? {:a 1 } {:a 1 :b 2} )))
-    (is (not (wild-match? {:a :*} {:b 1} )))
-    (is (not (wild-match? {:a :*} {:a 1} {:b 1} )))
-    (is (not (wild-match? {:a :*} {:a 1 :b 2} )))
+    (isnt (wild-match? {:a 1 } {:a 9} ))
+    (isnt (wild-match? {:a 1 } {:a 1 :b 2} ))
+    (isnt (wild-match? {:a :*} {:b 1} ))
+    (isnt (wild-match? {:a :*} {:a 1} {:b 1} ))
+    (isnt (wild-match? {:a :*} {:a 1 :b 2} ))
 
     (let [vv {:a 1  :b {:c 3}}
           tt {:a 1  :b {:c 3}}
@@ -1109,11 +1139,10 @@
           w5 {:a 1  :b {:c :*}}
           zz {:a 2  :b {:c 3}}
     ]
-      (is (wild-match? tt vv))
-      (is (wild-match? w2 vv))
-      (is (wild-match? w5 vv))
-      (is (not (wild-match? zz vv)))
-    )
+      (is   (wild-match? tt vv))
+      (is   (wild-match? w2 vv))
+      (is   (wild-match? w5 vv))
+      (isnt (wild-match? zz vv)))
   )
   (testing "vecs & maps 1"
     (let [vv [:a 1  :b {:c  3} ]
@@ -1129,8 +1158,7 @@
       (is (wild-match? w2 vv))
       (is (wild-match? w3 vv))
       (is (wild-match? w5 vv))
-      (is (not (wild-match? zz vv)))
-    )
+      (isnt (wild-match? zz vv)))
   )
   (testing "vecs & maps 2"
     (let [vv {:a 1  :b [:c  3] }
@@ -1145,18 +1173,17 @@
       (is (wild-match? w2 vv))
       (is (wild-match? w4 vv))
       (is (wild-match? w5 vv))
-      (is (not (wild-match? z1 vv)))
-      (is (not (wild-match? z2 vv)))
-    )
+      (isnt (wild-match? z1 vv))
+      (isnt (wild-match? z2 vv)))
   )
   (testing "sets"
-    (is      (wild-match? #{1} #{1} ))
-    (is (not (wild-match? #{1} #{9} )))
-    (is (not (wild-match? #{1} #{:a :b} )))
-    (is      (wild-match? #{1  #{:a :b}}
-                          #{1  #{:a :b} }))
-    (is (not (wild-match? #{1  #{:a :c}}
-                          #{1  #{:a :x} })))
+    (is   (wild-match? #{1} #{1} ))
+    (isnt (wild-match? #{1} #{9} ))
+    (isnt (wild-match? #{1} #{:a :b} ))
+    (is   (wild-match? #{1  #{:a :b}}
+                       #{1  #{:a :b} }))
+    (isnt (wild-match? #{1  #{:a :c}}
+                       #{1  #{:a :x} }))
   )
 )
 

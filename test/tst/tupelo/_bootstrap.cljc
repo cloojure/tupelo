@@ -5,14 +5,15 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo._bootstrap
-  "This namespace is used to perform one-time tasks during testing, such as printing the clojure version"
+  "This namespace is used to perform one-time tasks during testing, such as printing the
+  Clojure version."
   (:use clojure.test )
   (:require [schema.core :as s]
             [tupelo.core :as t] ))
 
 ; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
-
+; #todo add to Schema docs
+; (s/set-fn-validation! true) ; enforce fn schemas
 
 (deftest t-bootstrap
   (t/print-versions))

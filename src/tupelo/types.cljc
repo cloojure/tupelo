@@ -10,9 +10,6 @@
             [schema.core      :as s] )
   (:gen-class))
 
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
-
 (def ^:const UTF-8-Charset-Name "UTF-8")
 
 ; An instance of the java.lang.Class<XXXX[]> (e.g. java.lang.Class<Byte[]>). 

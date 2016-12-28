@@ -4,11 +4,7 @@
             [tupelo.schema :as ts]
             [schema.core :as s] ))
 (t/refer-tupelo)
-
 (set! *warn-on-reflection* false)
-
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
 
 ; #todo add more tests (& test.check for Eid, etc)
 (deftest t-vecs

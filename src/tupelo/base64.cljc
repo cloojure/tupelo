@@ -15,9 +15,6 @@
   ))
 (t/refer-tupelo)
 
-; Prismatic Schema type definitions
-(s/set-fn-validation! true)   ; #todo add to Schema docs
-
 (def base64-chars
   "A set of chars used for traditional base64 encoding (incl. padding char)"
   (into #{} (flatten [ (misc/char-seq  \a \z)
@@ -26,11 +23,11 @@
                        [\+ \/ \=] ] )))
 
 (defn base64-encoder []
-  (ver/min-java-1-8
+  (ver/java-1-8-plus-or-throw
     (java.util.Base64/getEncoder)))
 
 (defn base64-decoder []
-  (ver/min-java-1-8
+  (ver/java-1-8-plus-or-throw
     (java.util.Base64/getDecoder)))
 
 
