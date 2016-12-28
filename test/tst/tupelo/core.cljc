@@ -464,67 +464,66 @@
   (is= 3   (third [1 2 3 4])))
 
 (deftest t-validate
-  (is (= 3        (t/validate pos? 3)))
-  (is (= 3.14     (t/validate number? 3.14 )))
-  (is (= 3.14     (t/validate #(< 3 % 4) 3.14 )))
-  (is (= [0 1 2]  (t/validate vector? (vec (range 3)))))
-  (is (= nil      (t/validate nil? (next []))))
-  (is (= [0 1 2]  (t/validate #(= 3 (count %)) [0 1 2])))
-  (is (thrown? Exception (t/validate number? "hello")))
-  (is (thrown? Exception (t/validate truthy? nil)))
+  (is= 3        (t/validate pos? 3))
+  (is= 3.14     (t/validate number? 3.14 ))
+  (is= 3.14     (t/validate #(< 3 % 4) 3.14 ))
+  (is= [0 1 2]  (t/validate vector? (vec (range 3))))
+  (is= nil      (t/validate nil? (next [])))
+  (is= [0 1 2]  (t/validate #(= 3 (count %)) [0 1 2]))
+  (throws? Exception (t/validate number? "hello"))
+  (throws? Exception (t/validate truthy? nil))
 )
 
 (deftest t-keyvals
   (testing "basic usage"
     (let [m1 {:a 1 :b 2 :c 3}
           m2 {:a 1 :b 2 :c [3 4]} ]
-      (is (= m1 (apply hash-map (keyvals m1))))
-      (is (= m2 (apply hash-map (keyvals m2))))
+      (is= m1 (apply hash-map (keyvals m1)))
+      (is= m2 (apply hash-map (keyvals m2)))
     )))
 ; AWTAWT TODO: add test.check
 
 (deftest t-safe->
-  (is (= 7 (safe-> 3 (* 2) (+ 1))))
+  (is= 7 (safe-> 3 (* 2) (+ 1)))
   (let [mm  {:a {:b 2}}]
-    (is (= (safe-> mm :a)     {:b 2} ))
-    (is (= (safe-> mm :a :b)      2))
-    (is (thrown? IllegalArgumentException   (safe-> mm :x)))
-    (is (thrown? IllegalArgumentException   (safe-> mm :a :x)))
-    (is (thrown? IllegalArgumentException   (safe-> mm :a :b :x)))
-  ))
+    (is= (safe-> mm :a)     {:b 2} )
+    (is= (safe-> mm :a :b)      2)
+    (throws? IllegalArgumentException   (safe-> mm :x))
+    (throws? IllegalArgumentException   (safe-> mm :a :x))
+    (throws? IllegalArgumentException   (safe-> mm :a :b :x))))
 
 (deftest t-it->
-  (is (= 2  (it-> 1
-                  (inc it)
-                  (+ 3 it)
-                  (/ 10 it))))
+  (is= 2 (it-> 1
+           (inc it)
+           (+ 3 it)
+           (/ 10 it)))
   (let [mm  {:a {:b 2}}]
-    (is (= (it-> mm (:a it)          )  {:b 2} ))
-    (is (= (it-> mm (it :a)  (:b it) )      2  ))))
+    (is= (it-> mm (:a it)          )  {:b 2} )
+    (is= (it-> mm (it :a)  (:b it) )      2  )))
 
 (deftest t-with-exception-default
   (testing "basic usage"
-    (is (thrown?    Exception                       (/ 1 0)))
-    (is (= nil      (with-exception-default nil     (/ 1 0))))
-    (is (= :dummy   (with-exception-default :dummy  (/ 1 0))))
-    (is (= 123      (with-exception-default 0       (Long/parseLong "123"))))
-    (is (= 0        (with-exception-default 0       (Long/parseLong "12xy3"))))
+    (throws?    Exception                       (/ 1 0))
+    (is= nil      (with-exception-default nil     (/ 1 0)))
+    (is= :dummy   (with-exception-default :dummy  (/ 1 0)))
+    (is= 123      (with-exception-default 0       (Long/parseLong "123")))
+    (is= 0        (with-exception-default 0       (Long/parseLong "12xy3")))
     ))
 
 (deftest t-rel=
   (is (rel= 1 1 :digits 4 ))
   (is (rel= 1 1 :tol    0.01 ))
 
-  (is (thrown? IllegalArgumentException  (rel= 1 1 )))
-  (is (thrown? IllegalArgumentException  (rel= 1 1 4)))
-  (is (thrown? IllegalArgumentException  (rel= 1 1 :xxdigits 4      )))
-  (is (thrown? IllegalArgumentException  (rel= 1 1 :digits   4.1    )))
-  (is (thrown? IllegalArgumentException  (rel= 1 1 :digits   0      )))
-  (is (thrown? IllegalArgumentException  (rel= 1 1 :digits  -4      )))
+  (throws? IllegalArgumentException  (rel= 1 1 ))
+  (throws? IllegalArgumentException  (rel= 1 1 4))
+  (throws? IllegalArgumentException  (rel= 1 1 :xxdigits 4      ))
+  (throws? IllegalArgumentException  (rel= 1 1 :digits   4.1    ))
+  (throws? IllegalArgumentException  (rel= 1 1 :digits   0      ))
+  (throws? IllegalArgumentException  (rel= 1 1 :digits  -4      ))
 
-  (is (thrown? IllegalArgumentException  (rel= 1 1 :tol    -0.01    )))
-  (is (thrown? IllegalArgumentException  (rel= 1 1 :tol     "xx"    )))
-  (is (thrown? IllegalArgumentException  (rel= 1 1 :xxtol   0.01    )))
+  (throws? IllegalArgumentException  (rel= 1 1 :tol    -0.01    ))
+  (throws? IllegalArgumentException  (rel= 1 1 :tol     "xx"    ))
+  (throws? IllegalArgumentException  (rel= 1 1 :xxtol   0.01    ))
 
   (is      (rel=   0   0   :digits 3 ))
   (is      (rel=  42  42   :digits 99 ))
