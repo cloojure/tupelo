@@ -205,8 +205,9 @@
     1
     (apply * (thru 1 n))))
 
-(s/defn increasing :- s/Bool
+(s/defn increasing? :- s/Bool
   "Returns true iff the vectors are in (strictly) lexicographically increasing order
+    [1 2]  [1]        -> false
     [1 2]  [1 1]      -> false
     [1 2]  [1 2]      -> false
     [1 2]  [1 2 nil]  -> true
@@ -234,10 +235,11 @@
       (= first-change :incr)        true
       (nil? first-change)           (< len-a len-b))))
 
-(s/defn increasing-or-equal :- s/Bool
+(s/defn increasing-or-equal? :- s/Bool
   "Returns true iff the vectors are in (strictly) lexicographically increasing order
+    [1 2]  [1]        -> false
     [1 2]  [1 1]      -> false
-    [1 2]  [1 2]      -> false
+    [1 2]  [1 2]      -> true
     [1 2]  [1 2 nil]  -> true
     [1 2]  [1 2 3]    -> true
     [1 2]  [1 3]      -> true
@@ -246,20 +248,7 @@
   "
   [a :- ts/List
    b :- ts/List]
-  (let [len-a        (count a)
-        len-b        (count b)
-        len-min      (min len-a len-b)
-        cmpr         (fn [x y] (cond
-                                 (= x y) :eq
-                                 (< x y) :incr
-                                 (> x y) :decr
-                                 :else (throw (IllegalStateException. "should never get here"))))
-        cmpr-res     (mapv cmpr a b)
-        first-change (first (drop-while #{:eq} cmpr-res)) ; nil if all :eq
-        ]
     (cond
-      (= a b)                       true
-      (= first-change :decr)        false
-      (= first-change :incr)        true
-      (nil? first-change)           (< len-a len-b))))
+      (= a b)   true
+      :else     (increasing? a b)))
 
