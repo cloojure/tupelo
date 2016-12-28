@@ -9,11 +9,101 @@
   (:require 
     [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.core :as t]
+    [tupelo.core :as t :refer [spyx spy glue grab append prepend forv]]
+    [tupelo.schema :as ts]
   ))
 (t/refer-tupelo)
 
 ; Prismatic Schema type definitions
 (s/set-fn-validation! true)   ; #todo add to Schema docs
 
+
+(defn walk-1* [result path-in node]
+  (newline)
+  (let [tag      (grab :tag node)
+        _        (spyx tag)
+        path-new (t/append path-in tag)
+        _        (spyx path-new)
+        content  (grab :content node)]
+    (if (empty? content)
+      (do
+        (swap! result append path-new)
+        (println "....saved"))
+      (doseq [child content]
+        (walk-1* result path-new child)))))
+
+(defn walk-1 [node]
+  (let [result    (atom [])
+        path      [] ]
+    (walk-1* result path node)
+    @result ))
+
+
+(defn walk-2 [node]
+  (newline)
+  (let [tag     (grab :tag node)
+        _       (spyx tag)
+        content (grab :content node)]
+    (if (empty? content)
+      [[tag]]
+      (spy :mapv
+        (mapv #(prepend tag %)
+          (spy :apply-glue
+            (apply glue
+              (spy :forv
+                (forv [child content]
+                  (spy :walk-2
+                    (walk-2 child)))))))))))
+
+(defn walk-3 [node]
+  (let [tag     (grab :tag node)
+        ; _       (spyx tag)
+        content (grab :content node)]
+    (if (empty? content)
+      (spyx [[tag]])
+      (spy :mapv-cons
+        (mapv (partial cons tag)
+          (spy :apply-concat
+            (apply concat
+              (spy :mapv-recurse
+                (mapv walk-3 content)))))))))
+
+(defn walk-4 [node]
+  (let [tag     (grab :tag node)
+        ; _       (spyx tag)
+        content (grab :content node)]
+    (if (empty? content)
+      (spyx [[tag]])
+      (spy :mapv-cons
+        (mapv #(prepend tag %)
+          (spy :mapcat
+            (mapcat walk-4 content)))))))
+
+(defn walk-5
+  "Given a node, return a list of the paths to all leaf nodes."
+  [node]
+  (let [tag     (grab :tag node)
+        content (grab :content node)]
+    (if (empty? content)
+      [[tag]]
+      (mapv #(prepend tag %)
+        (mapcat walk-5 content)))))
+
+(def Path [s/Keyword])
+(def PathList [Path])
+(def MapList  [ts/KeyMap])
+(def Node {:tag     s/Any
+           :content MapList})
+
+(spyx (s/validate Path [:a :b]))
+
+(s/defn walk-6 :- PathList
+  "Given a node, return a list of the paths to all leaf nodes."
+  [node :- Node]
+  (let [tag     (grab :tag node)
+        content (grab :content node)]
+    (if (empty? content)
+      [[tag]]
+      (mapv #(prepend tag %)
+        (mapcat walk-6 content)))))
 
