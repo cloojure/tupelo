@@ -248,7 +248,6 @@
   "
   [a :- ts/List
    b :- ts/List]
-    (cond
-      (= a b)   true
-      :else     (increasing? a b)))
+    (or (= a b)
+        (increasing? a b)))
 

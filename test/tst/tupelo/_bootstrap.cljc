@@ -6,14 +6,14 @@
 ;   software.
 (ns tst.tupelo._bootstrap
   "This namespace is used to perform one-time tasks during testing, such as printing the
-  Clojure version and enabling Plumatic Schema function validation."
+  Clojure version."
   (:use clojure.test )
   (:require [schema.core :as s]
             [tupelo.core :as t] ))
 
 ; Prismatic Schema type definitions
 ; #todo add to Schema docs
-(s/set-fn-validation! true) ; enforce fn schemas
+; (s/set-fn-validation! true) ; enforce fn schemas
 
 (deftest t-bootstrap
   (t/print-versions))

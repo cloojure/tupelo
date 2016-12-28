@@ -13,14 +13,17 @@
     [clojure.string :as str]
     [clojure.set :as set]
     [cheshire.core :as cc]
-    [schema.core :as sk]
+    [schema.core :as s]
     [tupelo.types :as types]
     [tupelo.schema :as ts]
   )
-  (:import [java.io BufferedReader StringReader])
-)
-   ;[clojure.spec :as sp]
-   ;[clojure.spec.gen :as sp.gen]
+  (:import [java.io BufferedReader StringReader]))
+;[clojure.spec :as sp]
+;[clojure.spec.gen :as sp.gen]
+
+; Prismatic Schema type definitions
+; #todo add to Schema docs
+(s/set-fn-validation! true) ; enforce fn schemas
 
 (defn nl
   "Abbreviated name for `newline` "
@@ -137,9 +140,9 @@
 ; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
 
 ; original
-#_(s/defn truthy? :- sk/Bool
+#_(s/defn truthy? :- s/Bool
     "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
-    [arg :- sk/Any]
+    [arg :- s/Any]
     (if arg true false))
 
 (defn truthy?
@@ -152,10 +155,10 @@
 ;   :args (sp/cat :arg any?)
 ;   :ret  boolean?)
 
-(sk/defn falsey? :- sk/Bool
+(s/defn falsey? :- s/Bool
   "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
    to (not (truthy? arg))."
-  [arg :- sk/Any]
+  [arg :- s/Any]
   (if arg false true))
 
 (defn validate
@@ -169,54 +172,54 @@
     tstval))
 
 ; #todo -> README
-(sk/defn has-some? :- sk/Bool ; #todo rename to has-any?   Add warning re new clj/any?
+(s/defn has-some? :- s/Bool ; #todo rename to has-any?   Add warning re new clj/any?
   "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
    coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
-  [pred :-  sk/Any
-   coll :- [sk/Any] ]
+  [pred :-  s/Any
+   coll :- [s/Any] ]
   (truthy? (some pred coll)))
     ; NOTE: was `any?` prior to new `clojure.core/any?` added in clojure 1.9.0-alpha10
 
 ; #todo -> README
-(sk/defn has-none? :- sk/Bool
+(s/defn has-none? :- s/Bool
   "For any predicate pred & collection coll, returns false if (pred x) is logical true for at least one x in
    coll; otherwise returns true.  Equivalent to clojure.core/not-any?, but inverse of has-some?."
-  [pred :-  sk/Any
-   coll :- [sk/Any] ]
+  [pred :-  s/Any
+   coll :- [s/Any] ]
   (falsey? (some pred coll)))
 
 ; #todo -> README
-(sk/defn contains-elem? :- sk/Bool
+(s/defn contains-elem? :- s/Bool
   "For any collection coll & element tgt, returns true if coll contains at least one
   instance of tgt; otherwise returns false. Note that, for maps, each element is a
   vector (i.e MapEntry) of the form [key value]."
-  [coll :- sk/Any
-   tgt  :- sk/Any ]
+  [coll :- s/Any
+   tgt  :- s/Any ]
   (has-some? #{tgt} (seq coll)))
 
 ; #todo -> README
-(sk/defn contains-key? :- sk/Bool
+(s/defn contains-key? :- s/Bool
   "For any predicate pred & a map or set coll, returns true if (pred x) is logical true for at least one x in
    coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
-  [map-or-set :- (sk/pred #(or (map? %) (set? %)))
-   elem :- sk/Any ]
+  [map-or-set :- (s/pred #(or (map? %) (set? %)))
+   elem :- s/Any ]
   (contains? map-or-set elem))
 
 ; #todo -> README
-(sk/defn contains-val? :- sk/Bool
+(s/defn contains-val? :- s/Bool
   "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
    coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
   [map :- ts/Map
-   elem :- sk/Any ]
+   elem :- s/Any ]
   (has-some? #{elem} (vals map)))
 
-(sk/defn not-nil? :- sk/Bool
+(s/defn not-nil? :- s/Bool
   "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
    or the poorly-named clojure.core/some? "
-  [arg :- sk/Any]
+  [arg :- s/Any]
   (not (nil? arg)))
 
-(sk/defn not-empty? :- sk/Bool
+(s/defn not-empty? :- s/Bool
   "For any collection coll, returns true if coll contains any items; otherwise returns false.
    Equivalent to (not (empty? coll))."
   ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
@@ -258,17 +261,17 @@
                      (str "colls must be all same type; found types=" (mapv type colls)))))))
 ; #todo look at using (ex-info ...)
 
-(sk/defn append :- ts/List
+(s/defn append :- ts/List
   "Given a sequential object (vector or list), add one or more elements to the end."
   [listy :- ts/List
-   & elems :- [sk/Any]]
+   & elems :- [s/Any]]
   (when-not (sequential? listy)
     (throw (IllegalArgumentException. (str "Sequential collection required, found=" listy))))
   (when (empty? elems)
     (throw (IllegalArgumentException. (str "Nothing to append! elems=" elems))))
   (vec (concat listy elems)))
 
-(sk/defn prepend :- ts/List
+(s/defn prepend :- ts/List
   "Given a sequential object (vector or list), add one or more elements to the beginning"
   [& args]
   (let [elems (butlast args)
@@ -280,10 +283,10 @@
     (vec (concat elems listy))))
 
 ; #todo force to vector result
-(sk/defn drop-at :- ts/List
+(s/defn drop-at :- ts/List
   "Removes an element from a collection at the specified index."
   [coll :- ts/List
-   index :- sk/Int]
+   index :- s/Int]
   (when (neg? index)
     (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
   (when (<= (count coll) index)
@@ -293,11 +296,11 @@
     (drop (inc index) coll)))
 
 ; #todo force to vector result
-(sk/defn insert-at :- ts/List
+(s/defn insert-at :- ts/List
   "Inserts an element into a collection at the specified index."
   [coll :- ts/List
-   index :- sk/Int
-   elem :- sk/Any]
+   index :- s/Int
+   elem :- s/Any]
   (when (neg? index)
     (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
   (when (< (count coll) index)
@@ -308,11 +311,11 @@
 
 ; #todo force to vector result
 ; #todo if was vector, could just use (assoc the-vec idx new-val)
-(sk/defn replace-at :- ts/List
+(s/defn replace-at :- ts/List
   "Replaces an element in a collection at the specified index."
   [coll :- ts/List
-   index :- sk/Int
-   elem :- sk/Any]
+   index :- s/Int
+   elem :- s/Any]
   (when (neg? index)
     (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
   (when (<= (count coll) index)
@@ -323,9 +326,9 @@
         (drop (inc index) coll)))
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
-(sk/defn ^{:deprecated "1.9.0-alpha5"} seqable? :- sk/Bool ; from clojure.contrib.core/seqable
+(s/defn ^{:deprecated "1.9.0-alpha5"} seqable? :- s/Bool ; from clojure.contrib.core/seqable
     "Returns true if (seq x) will succeed, false otherwise."
-    [x :- sk/Any]
+    [x :- s/Any]
     (or (seq? x)
       (instance? clojure.lang.Seqable x)
       (nil? x)
@@ -335,12 +338,12 @@
       (instance? java.util.Map x)))
 
 ; #todo rename to "get-in-safe" ???
-(sk/defn fetch-in :- sk/Any
+(s/defn fetch-in :- s/Any
   "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
    returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
    Throws an Exception if the path keys-vec is not present in the-map."
   [the-map :- ts/KeyMap
-   keys-vec :- [sk/Keyword]]
+   keys-vec :- [s/Keyword]]
   (let [result (get-in the-map keys-vec ::not-found)]
     (if (= result ::not-found)
       (throw (IllegalArgumentException.
@@ -351,22 +354,22 @@
 
 ; #todo make inverse named "get-safe" ???
 
-(sk/defn grab :- sk/Any
+(s/defn grab :- s/Any
   "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
    returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
    Throws an Exception if :the-key is not present in the-map."
-  [the-key :- sk/Keyword
+  [the-key :- s/Keyword
    the-map :- ts/KeyMap]
   (fetch-in the-map [the-key]))
 
-(sk/defn dissoc-in :- sk/Any
+(s/defn dissoc-in :- s/Any
   "A sane version of dissoc-in that will not delete intermediate keys.
    When invoked as (dissoc-in the-map [:k1 :k2 :k3... :kZ]), acts like
    (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only
    the map entry containing the last key :kZ is removed, and all map entries
    higher than kZ in the hierarchy are unaffected."
   [the-map :- ts/KeyMap
-   keys-vec :- [sk/Keyword]]
+   keys-vec :- [s/Keyword]]
   (let [num-keys     (count keys-vec)
         key-to-clear (last keys-vec)
         parent-keys  (butlast keys-vec)]
@@ -383,19 +386,19 @@
 
 ; #todo -> README
 ; #todo variant: allow single or vec of default values
-(sk/defn select-values :- ts/List
+(s/defn select-values :- ts/List
   "Returns a vector of values for each key, in the order specified."
    [map   :- ts/KeyMap
-    keys  :- [sk/Keyword]]
+    keys  :- [s/Keyword]]
   (forv [key keys]
     (grab key map)))
 
-(sk/defn only :- sk/Any
+(s/defn only :- s/Any
   "(only seqable-arg)
   Ensures that a sequence is of length=1, and returns the only value present.
   Throws an exception if the length of the sequence is not one.
   Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
-  [seqable-arg :- sk/Any]
+  [seqable-arg :- s/Any]
   (when-not (seqable? seqable-arg)
     (throw (IllegalArgumentException. (str "only: arg not seqable:" seqable-arg))))
   (let [seq-len (count seqable-arg)]
@@ -403,9 +406,9 @@
       (throw (IllegalArgumentException. (str "only: length != 1; length=" seq-len)))))
   (first seqable-arg))
 
-(sk/defn third :- sk/Any
+(s/defn third :- s/Any
   "Returns the third item in a collection, or nil if fewer than three items are present. "
-  [seqable-arg :- sk/Any]
+  [seqable-arg :- s/Any]
   (when-not (seqable? seqable-arg)
     (throw (IllegalArgumentException. (str "only: arg not seqable:" seqable-arg))))
   (first (next (next seqable-arg))))
@@ -665,11 +668,11 @@
     (apply str it)))
 
 ; #todo need test & README
-(sk/defn submap? :- Boolean
+(s/defn submap? :- Boolean
   "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
    another map.  Similar to clojure.set/subset?"
-  [inner-map :- {sk/Any sk/Any}                           ; #todo
-   outer-map :- {sk/Any sk/Any}]                          ; #todo
+  [inner-map :- {s/Any s/Any}                           ; #todo
+   outer-map :- {s/Any s/Any}]                          ; #todo
   (let [inner-set (set inner-map)
         outer-set (set outer-map)]
     (set/subset? inner-set outer-set)))
@@ -746,7 +749,7 @@
 ; #todo: add (throwed? ...) for testing exceptions
 
 ; #todo readme
-(sk/defn starts-with? :- sk/Bool
+(s/defn starts-with? :- s/Bool
   "Returns true when the initial elements of coll match those of tgt"
   [coll tgt]    ; #todo schema
   (let [tgt-vec (vec tgt)]
@@ -839,6 +842,7 @@
   "Refer a number of commonly used tupelo.core functions into the current namespace so they can
    be used without namespace qualification."
   []
+  (s/set-fn-validation! true) ; enforce fn schemas
   (refer 'tupelo.core :only
    '[ spy spyx spyxx with-spy-indent truthy? falsey?
       not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
@@ -861,18 +865,18 @@
   [string-arg]
   (line-seq (BufferedReader. (StringReader. string-arg))))
 
-(sk/defn ^:deprecated ^:no-doc conjv :- [sk/Any]
+(s/defn ^:deprecated ^:no-doc conjv :- [s/Any]
   "***** DEPRECATED:  replaced by tupelo.core/append *****
 
    Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.
    The result is always returned as a vector."
   ; From Stuart Sierra post 2014-2-10
-  ([base-coll :- [sk/Any]
-    value :- sk/Any]
+  ([base-coll :- [s/Any]
+    value :- s/Any]
     (conj (vec base-coll) value))
-  ([base-coll :- [sk/Any]
-    value :- sk/Any
-    & values :- [sk/Any]]
+  ([base-coll :- [s/Any]
+    value :- s/Any
+    & values :- [s/Any]]
     (apply conj (vec base-coll) value values)))
 
 ;---------------------------------------------------------------------------------------------------
