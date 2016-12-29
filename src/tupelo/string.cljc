@@ -11,9 +11,7 @@
     [clojure.core :as clj]
     [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.core :as t]
   ))
-(t/refer-tupelo)
 
 (s/defn drop :- s/Str  ; #todo add readme
   "Drops the first N chars of a string, returning a string result."
@@ -41,8 +39,27 @@
   [n    :- s/Int
    txt  :- s/Str]
   (str/join
-    (forv [line (str/split-lines txt) ]
+    (for [line (str/split-lines txt) ]
       (str (indent n line) \newline))))
+
+(s/defn increasing :- s/Bool
+  "Returns true if a pair of strings are in increasing lexicographic order."
+  [a :- s/Str
+   b :- s/Str ]
+  (neg? (compare a b)))
+
+(s/defn increasing-or-equal :- s/Bool
+  "Returns true if a pair of strings are in increasing lexicographic order, or equal."
+  [a :- s/Str
+   b :- s/Str ]
+  (or (= a b)
+      (increasing a b)))
+
+(defn index-of [search-str tgt-str]
+  (.indexOf search-str tgt-str))
+
+(defn starts-with? [search-str tgt-str]
+  (zero? (index-of search-str tgt-str)))
 
 ; #todo add undent (verify only leading whitespace removed)
 ; #todo add undent-lines

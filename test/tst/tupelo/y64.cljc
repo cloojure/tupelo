@@ -14,14 +14,13 @@
             [tupelo.core                            :as t]
             [tupelo.misc                            :as misc]
             [tupelo.types                           :as types]
-            [tupelo.version                         :as ver]
             [tupelo.y64                             :as y64] )
   (:use clojure.test)
   (:gen-class))
 (t/refer-tupelo)
 
 (deftest t1
-  (if (ver/is-java-1-8-plus?)
+  (if (t/is-java-1-8-plus?)
     (let [orig      (byte-array [(byte \A)])
           y64-bytes (y64/encode-bytes orig)
           result    (y64/decode-bytes y64-bytes)]
@@ -30,7 +29,7 @@
 
 (deftest y64-basic
   (testing "y64 - bytes "
-    (if (ver/is-java-1-8-plus?)
+    (if (t/is-java-1-8-plus?)
       (doseq [step [50 20 7]]
         (let [orig      (byte-array (mapv #(.byteValue %) (range 0 400 step)))
               y64-bytes (y64/encode-bytes orig)
@@ -38,7 +37,7 @@
           (is (every? y64/code-chars (map char y64-bytes)))
           (is (= (seq orig) (seq result)))))))
   (testing "y64 - string"
-    (if (ver/is-java-1-8-plus?)
+    (if (t/is-java-1-8-plus?)
       (doseq [num-chars [1 2 3 7 20]]
         (let [orig    (str/join (misc/take-dist num-chars misc/printable-chars))
               y64-str (y64/encode-str orig)
@@ -47,7 +46,7 @@
           (is (= orig result)))))))
 
 ; Transform a seq of bytes to a y64 string and back
-(if (ver/is-java-1-8-plus?)
+(if (t/is-java-1-8-plus?)
   (tst/defspec ^:slow round-trip-bytes 9999
     (prop/for-all [orig gen/bytes]
       (let [y64-str (y64/encode-bytes->str orig)
@@ -57,7 +56,7 @@
         (= (seq orig) (seq result))))))
 
 ; Transform a string to a y64 string and back
-(if (ver/is-java-1-8-plus?)
+(if (t/is-java-1-8-plus?)
   (tst/defspec ^:slow round-trip-string 9999
     (prop/for-all [orig gen/string]
       (let [y64-str (y64/encode-str orig)

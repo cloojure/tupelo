@@ -10,7 +10,6 @@
             [tupelo.core    :as t]
             [tupelo.misc    :as misc]
             [tupelo.types   :as types]
-            [tupelo.version :as ver]
             [schema.core    :as s])
   (:gen-class))
 (t/refer-tupelo)
@@ -24,11 +23,11 @@
                        [\- \_ \=] ] )))
 
 (defn base64url-encoder []
-  (ver/java-1-8-plus-or-throw
+  (t/java-1-8-plus-or-throw
     (java.util.Base64/getUrlEncoder)))
 
 (defn base64url-decoder []
-  (ver/java-1-8-plus-or-throw
+  (t/java-1-8-plus-or-throw
     (java.util.Base64/getUrlDecoder)))
 
 (defn encode-bytes

@@ -21,7 +21,7 @@
 (t/refer-tupelo)
 
 (deftest t1
-  (if (ver/is-java-1-8-plus?)
+  (if (t/is-java-1-8-plus?)
     (let [orig     (byte-array [(byte \A)])
           code-str (b64url/encode-bytes->str orig)
           result   (b64url/decode-str->bytes code-str)]
@@ -30,7 +30,7 @@
 
 (deftest b64-basic
   (testing "base64 - bytes "
-    (if (ver/is-java-1-8-plus?)
+    (if (t/is-java-1-8-plus?)
       (doseq [step [50 20 7]]
         (let [orig     (byte-array (mapv #(.byteValue %) (range 0 400 step)))
               code-str (b64url/encode-bytes->str orig)
@@ -38,7 +38,7 @@
           (is (every? b64url/code-chars (seq code-str)))
           (is (= (seq orig) (seq result)))))))
   (testing "base64 - string"
-    (if (ver/is-java-1-8-plus?)
+    (if (t/is-java-1-8-plus?)
       (doseq [num-chars [1 2 3 7 20]]
         (let [orig     (str/join (misc/take-dist num-chars misc/printable-chars))
               code-str (b64url/encode-str orig)
@@ -46,7 +46,7 @@
           (is (every? b64url/code-chars (seq code-str)))
           (is (= orig result)))))))
 
-(if (ver/is-java-1-8-plus?)
+(if (t/is-java-1-8-plus?)
   (tst/defspec ^:slow round-trip-bytes 9999
     (prop/for-all [orig gen/bytes]
       (let [string-b64 (b64url/encode-bytes->str orig)
@@ -56,7 +56,7 @@
         (= (seq orig) (seq result))))))
 
 ; Transform a string to a base64 string and back
-(if (ver/is-java-1-8-plus?)
+(if (t/is-java-1-8-plus?)
   (tst/defspec ^:slow round-trip-string 9999
     (prop/for-all [orig gen/string]
       (let [string-b64 (b64url/encode-str orig)

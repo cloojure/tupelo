@@ -30,7 +30,7 @@
   (println "t1 - exit"))
 
 (deftest t1
-  (if (ver/is-java-1-8-plus?)
+  (if (t/is-java-1-8-plus?)
     (let [orig    (byte-array [(byte \A)])
           b64-str (b64/encode-bytes->str orig)
           result  (b64/decode-str->bytes b64-str)]
@@ -39,7 +39,7 @@
 
 (deftest b64-basic
   (testing "base64 - bytes "
-    (if (ver/is-java-1-8-plus?)
+    (if (t/is-java-1-8-plus?)
       (doseq [step [50 20 7]]
         (let [orig    (byte-array (mapv #(.byteValue %) (range 0 400 step)))
               b64-str (b64/encode-bytes->str orig)
@@ -47,7 +47,7 @@
           (is (every? b64/base64-chars (seq b64-str)))
           (is (= (seq orig) (seq result)))))))
   (testing "base64 - string"
-    (if (ver/is-java-1-8-plus?)
+    (if (t/is-java-1-8-plus?)
       (doseq [num-chars [1 2 3 7 20]]
         (let [orig    (str/join (misc/take-dist num-chars misc/printable-chars))
               b64-str (b64/encode-str orig)
@@ -55,7 +55,7 @@
           (is (every? b64/base64-chars (seq b64-str)))
           (is (= orig result)))))))
 
-(if (ver/is-java-1-8-plus?)
+(if (t/is-java-1-8-plus?)
   (tst/defspec ^:slow round-trip-bytes 9999
     (prop/for-all [orig gen/bytes]
       (let [string-b64 (b64/encode-bytes->str orig)
@@ -65,7 +65,7 @@
         (= (seq orig) (seq result))))))
 
 ; Transform a string to a base64 string and back
-(if (ver/is-java-1-8-plus?)
+(if (t/is-java-1-8-plus?)
   (tst/defspec ^:slow round-trip-string 9999
     (prop/for-all [orig gen/string]
       (let [string-b64 (b64/encode-str orig)

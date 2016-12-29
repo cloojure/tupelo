@@ -5,13 +5,9 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.misc
-  (:use tupelo.misc
-        clojure.test )
+  (:use tupelo.misc tupelo.test clojure.test )
   (:require [clojure.string   :as str]
-            [schema.core      :as s]
-            [tupelo.core      :as t :refer [is= throws? ]]
-            [tupelo.misc      :as misc]
-            [clojure.math.combinatorics  :as combo]
+            [tupelo.core      :as t ]
   ))
 (t/refer-tupelo)
 
@@ -27,7 +23,7 @@
 
 (deftest collapse-whitespace-t
   (is (= "abc def g hij kl"
-          (misc/collapse-whitespace "  abc    def			g
+          (collapse-whitespace "  abc    def			g
                                      hij kl	 " ))))
 
 (deftest t-equals-ignore-spacing
@@ -72,30 +68,30 @@ Mark Twain          "
                   double-quotes->single-quotes)))))
 
 (deftest t-get-os
-  (is (#{:windows :linux :mac} (misc/get-os))))
+  (is (#{:windows :linux :mac} (get-os))))
 
 (deftest str->kw-t
   (testing "basic usage"
-    (is (= :abc-def-gh-qrs (misc/str->kw "abc def*gh_qrs")))))
+    (is (= :abc-def-gh-qrs (str->kw "abc def*gh_qrs")))))
 
 (deftest char-seq-t
-  (is (= [\a ]              (misc/char-seq \a \a)))
-  (is (= [\a \b]            (misc/char-seq \a \b)))
-  (is (= [\a \b \c]         (misc/char-seq \a \c)))
+  (is (= [\a ]              (char-seq \a \a)))
+  (is (= [\a \b]            (char-seq \a \b)))
+  (is (= [\a \b \c]         (char-seq \a \c)))
 
-  (is (= [\a ]              (misc/char-seq 97 97)))
-  (is (= [\a \b]            (misc/char-seq 97 98)))
-  (is (= [\a \b \c]         (misc/char-seq 97 99)))
+  (is (= [\a ]              (char-seq 97 97)))
+  (is (= [\a \b]            (char-seq 97 98)))
+  (is (= [\a \b \c]         (char-seq 97 99)))
 
-  (is (thrown? Exception    (misc/char-seq 987654321 987654321 )))
-  (is (thrown? Exception    (misc/char-seq \c \a)))
-  (is (thrown? Exception    (misc/char-seq 99 98)))
+  (is (thrown? Exception    (char-seq 987654321 987654321 )))
+  (is (thrown? Exception    (char-seq \c \a)))
+  (is (thrown? Exception    (char-seq 99 98)))
 )
 
 (deftest seq->str-t
-  (is (= " 1 2 3"           (misc/seq->str (byte-array [1 2 3]))))
-  (is (= " :a :b 3 4"     (misc/seq->str [:a :b 3 4])))
-  (is (= " \\a \\b \\c"     (misc/seq->str "abc"))))
+  (is (= " 1 2 3"           (seq->str (byte-array [1 2 3]))))
+  (is (= " :a :b 3 4"       (seq->str [:a :b 3 4])))
+  (is (= " \\a \\b \\c"     (seq->str "abc"))))
 
 (deftest shell-cmd-t
   (when (= :linux (get-os))
@@ -153,22 +149,3 @@ Mark Twain          "
   (throws? Exception (factorial -1))
   (throws? Exception (factorial -1)))
 
-(deftest t-increasing
-  (isnt (increasing? [1 2] [1]))
-  (isnt (increasing? [1 2] [1 1]))
-  (isnt (increasing? [1 2] [1 2]))
-  (is   (increasing? [1 2] [1 2 nil]))
-  (is   (increasing? [1 2] [1 2 3]))
-  (is   (increasing? [1 2] [1 3]))
-  (is   (increasing? [1 2] [2 1]))
-  (is   (increasing? [1 2] [2]))
-
-  (isnt (increasing-or-equal? [1 2] [1]))
-  (isnt (increasing-or-equal? [1 2] [1 1]))
-  (is   (increasing-or-equal? [1 2] [1 2]))
-  (is   (increasing-or-equal? [1 2] [1 2 nil]))
-  (is   (increasing-or-equal? [1 2] [1 2 3]))
-  (is   (increasing-or-equal? [1 2] [1 3]))
-  (is   (increasing-or-equal? [1 2] [2 1]))
-  (is   (increasing-or-equal? [1 2] [2]))
-)

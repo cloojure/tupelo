@@ -5,7 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.core
-  (:use clojure.test )
+  (:use clojure.test tupelo.test )
   (:require
 ;   [clojure.spec :as sp]
 ;   [clojure.spec.gen :as sp.gen]
@@ -17,21 +17,121 @@
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.misc :as tm]
-
-    [tupelo.core :refer
-      [ spy spyx spyxx with-spy-indent truthy? falsey?
-        not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
-        forv glue append prepend grab dissoc-in fetch-in only third it-> safe-> keep-if drop-if
-        keyvals strcat pretty pretty-str json->clj clj->json clip-str rng thru rel= drop-at insert-at replace-at
-        starts-with? split-when split-match wild-match?
-        isnt is= isnt= throws? select-values
-        with-exception-default ]]
-
   ))
 (t/refer-tupelo)
 
 ; (s/instrument-all)
 ; (s/instrument #'tupelo.core/truthy?)  ; instrument just one var
+
+;-----------------------------------------------------------------------------
+; Java version stuff
+
+(defn fn-any [] 42)
+(defn fn7 [] (t/java-1-7-plus-or-throw 7))
+(defn fn8 [] (t/java-1-8-plus-or-throw 8))
+
+(deftest t-java-version
+  (when (t/is-java-1-7?)
+    (throws? (fn8)))
+
+  (when (t/is-java-1-8-plus?)
+    (is= 8 (fn8)))
+
+  (is= 7 (fn7))
+  (is= 42 (fn-any))
+
+  (with-redefs [t/java-version (constantly "1.7")]
+    (is   (t/java-version-min? "1.7"))
+    (isnt (t/java-version-min? "1.7.0"))
+    (isnt (t/java-version-min? "1.7.0-b1234"))
+    (isnt (t/java-version-min? "1.8"))
+
+    (is   (t/java-version-matches? "1.7"))
+    (isnt (t/java-version-matches? "1.7.0"))
+    (isnt (t/java-version-matches? "1.7.0-b1234"))
+    (isnt (t/java-version-matches? "1.8"))
+    )
+  (with-redefs [t/java-version (constantly "1.7.0")]
+    (is   (t/java-version-min? "1.7"))
+    (is   (t/java-version-min? "1.7.0"))
+    (isnt (t/java-version-min? "1.7.0-b1234"))
+    (isnt (t/java-version-min? "1.8"))
+
+    (is   (t/java-version-matches? "1.7"))
+    (is   (t/java-version-matches? "1.7.0"))
+    (isnt (t/java-version-matches? "1.7.0-b1234"))
+    (isnt (t/java-version-matches? "1.8"))
+    )
+  (with-redefs [t/java-version (constantly "1.7.0-b1234")]
+    (is   (t/java-version-min? "1.7"))
+    (is   (t/java-version-min? "1.7.0"))
+    (is   (t/java-version-min? "1.7.0-b1234"))
+    (isnt (t/java-version-min? "1.8"))
+
+    (is   (t/java-version-matches? "1.7"))
+    (is   (t/java-version-matches? "1.7.0"))
+    (is   (t/java-version-matches? "1.7.0-b1234"))
+    (isnt (t/java-version-matches? "1.8"))
+    )
+
+  (with-redefs [t/java-version (constantly "1.7") ]
+    (when false
+      (println "testing java 1.7")
+      (spyx (t/is-java-1-7?))
+      (spyx (t/is-java-1-8?))
+      (spyx (t/is-java-1-7-plus?))
+      (spyx (t/is-java-1-8-plus?)))
+
+    (is   (t/is-java-1-7?))
+    (is   (t/is-java-1-7-plus?))
+    (isnt (t/is-java-1-8?))
+    (isnt (t/is-java-1-8-plus?))
+    )
+
+  (with-redefs [t/java-version (constantly "1.8") ]
+    (when false
+      (println "testing java 1.8")
+      (spyx (t/is-java-1-7?))
+      (spyx (t/is-java-1-8?))
+      (spyx (t/is-java-1-7-plus?))
+      (spyx (t/is-java-1-8-plus?)))
+
+    (isnt (t/is-java-1-7?))
+    (is   (t/is-java-1-7-plus?))
+    (is   (t/is-java-1-8?))
+    (is   (t/is-java-1-8-plus?))
+    )
+  )
+
+;-----------------------------------------------------------------------------
+; Clojure version stuff
+
+(deftest t-clojure-version
+  (binding [*clojure-version* {:major 1 :minor 7}]
+    (is   (t/is-clojure-1-7-plus?))
+    (isnt (t/is-clojure-1-8-plus?))
+    (isnt (t/is-clojure-1-9-plus?))
+    (is   (t/is-pre-clojure-1-8?))
+    (is   (t/is-pre-clojure-1-9?))
+    )
+  (binding [*clojure-version* {:major 1 :minor 8}]
+    (is   (t/is-clojure-1-7-plus?))
+    (is   (t/is-clojure-1-8-plus?))
+    (isnt (t/is-clojure-1-9-plus?))
+    (isnt (t/is-pre-clojure-1-8?))
+    (is   (t/is-pre-clojure-1-9?))
+    )
+  (binding [*clojure-version* {:major 1 :minor 9}]
+    (is   (t/is-clojure-1-7-plus?))
+    (is   (t/is-clojure-1-8-plus?))
+    (is   (t/is-clojure-1-9-plus?))
+    (isnt (t/is-pre-clojure-1-8?))
+    (isnt (t/is-pre-clojure-1-9?))
+    )
+  )
+
+;-----------------------------------------------------------------------------
+; spy stuff
 
 (deftest t-spy
   (testing "basic usage"
@@ -42,13 +142,13 @@
                               (let [result (apply + args) ]
                                 (swap! side-effect-cum-sum + result)
                                 result)) ]
-      (t/is= "hi => 5"
+      (is= "hi => 5"
           (tm/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "hi"))) )
-      (t/is= "hi => 5"
+      (is= "hi => 5"
           (tm/collapse-whitespace (with-out-str (spy :msg "hi"  (side-effect-add! 2 3)))) )
-      (t/is= "(side-effect-add! 2 3) => 5"
+      (is= "(side-effect-add! 2 3) => 5"
           (tm/collapse-whitespace (with-out-str (spyx (side-effect-add! 2 3)))) )
-      (t/is= 15 @side-effect-cum-sum))
+      (is= 15 @side-effect-cum-sum))
 
     (is= "first => 5 second => 25"
         (tm/collapse-whitespace
@@ -394,6 +494,26 @@
   (throws?            (prepend   {:b 2} {:a 1} ))
   (throws?            (prepend   99    #{:a 1} ))
   (throws?            (prepend  #{99}  #{:a 1} )))
+
+(deftest t-increasing
+  (isnt (increasing? [1 2] [1]))
+  (isnt (increasing? [1 2] [1 1]))
+  (isnt (increasing? [1 2] [1 2]))
+  (is   (increasing? [1 2] [1 2 nil]))
+  (is   (increasing? [1 2] [1 2 3]))
+  (is   (increasing? [1 2] [1 3]))
+  (is   (increasing? [1 2] [2 1]))
+  (is   (increasing? [1 2] [2]))
+
+  (isnt (increasing-or-equal? [1 2] [1]))
+  (isnt (increasing-or-equal? [1 2] [1 1]))
+  (is   (increasing-or-equal? [1 2] [1 2]))
+  (is   (increasing-or-equal? [1 2] [1 2 nil]))
+  (is   (increasing-or-equal? [1 2] [1 2 3]))
+  (is   (increasing-or-equal? [1 2] [1 3]))
+  (is   (increasing-or-equal? [1 2] [2 1]))
+  (is   (increasing-or-equal? [1 2] [2]))
+)
 
 (deftest t-grab
   (let [map1  {:a 1 :b 2}]
@@ -1014,15 +1134,17 @@
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
 (deftest  ^{:deprecated "1.9.0-alpha5" } t-seqable
-  (is (t/seqable?   "abc"))
-  (is (t/seqable?   {1 2 3 4} ))
-  (is (t/seqable?  #{1 2 3} ))
-  (is (t/seqable?  '(1 2 3) ))
-  (is (t/seqable?   [1 2 3] ))
-  (is (t/seqable?   (byte-array [1 2] )))
-
-  (isnt (t/seqable?  1 ))
-  (isnt (t/seqable? \a )))
+  (t/pre-clojure-1-9
+    (println "is-pre-clojure-1-9; seqable? test")
+    (is   (t/seqable?   "abc"))
+    (is   (t/seqable?   {1 2 3 4} ))
+    (is   (t/seqable?  #{1 2 3} ))
+    (is   (t/seqable?  '(1 2 3) ))
+    (is   (t/seqable?   [1 2 3] ))
+    (is   (t/seqable?   (byte-array [1 2] )))
+    (isnt (t/seqable?  1 ))
+    (isnt (t/seqable? \a ))
+  ))
 
 ; #todo add different lengths a/b
 ; #todo add missing entries a/b

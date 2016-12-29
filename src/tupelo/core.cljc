@@ -7,13 +7,13 @@
 (ns tupelo.core
   "Tupelo - Making Clojure even sweeter"
   (:require 
-    [clojure.core :as clj]
     [clojure.core.match :as ccm]
     [clojure.pprint :as pprint]
     [clojure.string :as str]
     [clojure.set :as set]
     [cheshire.core :as cc]
     [schema.core :as s]
+    [tupelo.string :as tstr]
     [tupelo.types :as types]
     [tupelo.schema :as ts]
   )
@@ -37,6 +37,168 @@
     (println "-------------------------------------")
     (println version-str)
     (println "-------------------------------------")))
+
+(defmacro forv
+  "Like clojure.core/for but returns results in a vector.  Equivalent to (into [] (for ...)). Not
+   lazy."
+  [& body]
+  `(vec (for ~@body)))
+
+; #todo rename to "get-in-safe" ???
+(s/defn fetch-in :- s/Any
+  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
+   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
+   Throws an Exception if the path keys-vec is not present in the-map."
+  [the-map :- ts/KeyMap
+   keys-vec :- [s/Keyword]]
+  (let [result (get-in the-map keys-vec ::not-found)]
+    (if (= result ::not-found)
+      (throw (IllegalArgumentException.
+               (str "Key seq not present in map:" \newline
+                 "  map : " the-map \newline
+                 "  keys: " keys-vec \newline)))
+      result)))
+
+; #todo make inverse named "get-safe" ???
+
+(s/defn grab :- s/Any
+  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
+   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
+   Throws an Exception if :the-key is not present in the-map."
+  [the-key :- s/Keyword
+   the-map :- ts/KeyMap]
+  (fetch-in the-map [the-key]))
+
+; #todo -> README
+; #todo variant: allow single or vec of default values
+(s/defn select-values :- ts/List
+  "Returns a vector of values for each key, in the order specified."
+  [map   :- ts/KeyMap
+   keys  :- [s/Keyword]]
+  (forv [key keys]
+    (grab key map)))
+
+(s/defn increasing? :- s/Bool
+  "Returns true iff the vectors are in (strictly) lexicographically increasing order
+    [1 2]  [1]        -> false
+    [1 2]  [1 1]      -> false
+    [1 2]  [1 2]      -> false
+    [1 2]  [1 2 nil]  -> true
+    [1 2]  [1 2 3]    -> true
+    [1 2]  [1 3]      -> true
+    [1 2]  [2 1]      -> true
+    [1 2]  [2]        -> true
+  "
+  [a :- ts/List
+   b :- ts/List]
+  (let [len-a        (count a)
+        len-b        (count b)
+        cmpr         (fn [x y] (cond
+                                 (= x y) :eq
+                                 (< x y) :incr
+                                 (> x y) :decr
+                                 :else (throw (IllegalStateException. "should never get here"))))
+        cmpr-res     (mapv cmpr a b)
+        first-change (first (drop-while #{:eq} cmpr-res)) ; nil if all :eq
+        ]
+    (cond
+      (= a b)                       false
+      (= first-change :decr)        false
+      (= first-change :incr)        true
+      (nil? first-change)           (< len-a len-b))))
+
+(s/defn increasing-or-equal? :- s/Bool
+  "Returns true iff the vectors are in (strictly) lexicographically increasing order
+    [1 2]  [1]        -> false
+    [1 2]  [1 1]      -> false
+    [1 2]  [1 2]      -> true
+    [1 2]  [1 2 nil]  -> true
+    [1 2]  [1 2 3]    -> true
+    [1 2]  [1 3]      -> true
+    [1 2]  [2 1]      -> true
+    [1 2]  [2]        -> true
+  "
+  [a :- ts/List
+   b :- ts/List]
+  (or (= a b)
+    (increasing? a b)))
+
+;-----------------------------------------------------------------------------
+; Java version stuff
+
+(s/defn java-version :- s/Str
+  []
+  (System/getProperty "java.version"))
+
+(s/defn java-version-matches? :- s/Bool
+  "Returns true if Java version exactly matches supplied string."
+  [version-str :- s/Str]
+  (tstr/starts-with? (java-version) version-str))
+
+(s/defn java-version-min? :- s/Bool
+  "Returns true if Java version is at least as great as supplied string.
+  Sort is by lexicographic (alphabetic) order."
+  [version-str :- s/Str]
+  (tstr/increasing-or-equal version-str (java-version)))
+
+(defn is-java-1-7? [] (java-version-matches? "1.7"))
+(defn is-java-1-8? [] (java-version-matches? "1.8"))
+
+(defn is-java-1-7-plus? [] (java-version-min? "1.7"))
+(defn is-java-1-8-plus? [] (java-version-min? "1.8"))
+
+(defmacro java-1-7-plus-or-throw
+  [& forms]
+  (if (is-java-1-7-plus?)
+    `(do ~@forms)
+    `(do (throw (RuntimeException. "Unimplemented prior to Java 1.7: ")))))
+
+(defmacro java-1-8-plus-or-throw
+  [& forms]
+  (if (is-java-1-8-plus?)
+    `(do ~@forms)
+    `(do (throw (RuntimeException. "Unimplemented prior to Java 1.8: ")))))
+
+; #todo need min-java-1-8  ???
+
+;-----------------------------------------------------------------------------
+; Clojure version stuff
+
+(defn is-clojure-1-7-plus? []
+  (increasing-or-equal? [1 7] (select-values *clojure-version* [:major :minor ])))
+
+(defn is-clojure-1-8-plus? []
+  (increasing-or-equal? [1 8] (select-values *clojure-version* [:major :minor ])))
+
+(defn is-clojure-1-9-plus? []
+  (increasing-or-equal? [1 9] (select-values *clojure-version* [:major :minor ])))
+
+(defn is-pre-clojure-1-8? []
+  (increasing? (select-values *clojure-version* [:major :minor ]) [1 8] ))
+(defn is-pre-clojure-1-9? []
+  (increasing? (select-values *clojure-version* [:major :minor ]) [1 9] ))
+
+
+; #todo add is-clojure-1-8-max?
+; #todo need clojure-1-8-plus-or-throw  ??
+
+(defmacro min-clojure-1-8
+  [& forms]
+  (if (is-clojure-1-8-plus?)
+    `(do ~@forms)))
+
+(defmacro min-clojure-1-9
+  [& forms]
+  (if (is-clojure-1-9-plus?)
+    `(do ~@forms)))
+
+(defmacro pre-clojure-1-9
+  [& forms]
+  (if (is-pre-clojure-1-9?)
+    `(do ~@forms)))
+
+;-----------------------------------------------------------------------------
+; spy stuff
 
 (def ^:no-doc spy-indent-level (atom 0))
 (defn ^:no-doc spy-indent-spaces []
@@ -228,12 +390,6 @@
 
 ; #todo:  mapz, forz, filterz, ...?
 
-(defmacro forv
-  "Like clojure.core/for but returns results in a vector.  Equivalent to (into [] (for ...)). Not
-   lazy."
-  [& body]
-  `(vec (for ~@body)))
-
 (defn glue
   "Glues together like collections:
 
@@ -325,42 +481,6 @@
         [elem]
         (drop (inc index) coll)))
 
-; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
-(s/defn ^{:deprecated "1.9.0-alpha5"} seqable? :- s/Bool ; from clojure.contrib.core/seqable
-    "Returns true if (seq x) will succeed, false otherwise."
-    [x :- s/Any]
-    (or (seq? x)
-      (instance? clojure.lang.Seqable x)
-      (nil? x)
-      (instance? Iterable x)
-      (-> x .getClass .isArray)
-      (string? x)
-      (instance? java.util.Map x)))
-
-; #todo rename to "get-in-safe" ???
-(s/defn fetch-in :- s/Any
-  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
-   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
-   Throws an Exception if the path keys-vec is not present in the-map."
-  [the-map :- ts/KeyMap
-   keys-vec :- [s/Keyword]]
-  (let [result (get-in the-map keys-vec ::not-found)]
-    (if (= result ::not-found)
-      (throw (IllegalArgumentException.
-               (str "Key seq not present in map:" \newline
-                 "  map : " the-map \newline
-                 "  keys: " keys-vec \newline)))
-      result)))
-
-; #todo make inverse named "get-safe" ???
-
-(s/defn grab :- s/Any
-  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
-   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
-   Throws an Exception if :the-key is not present in the-map."
-  [the-key :- s/Keyword
-   the-map :- ts/KeyMap]
-  (fetch-in the-map [the-key]))
 
 (s/defn dissoc-in :- s/Any
   "A sane version of dissoc-in that will not delete intermediate keys.
@@ -384,23 +504,12 @@
 ; singles). Basically like compiler-like guarentees against misspellings, duplicate entries, missing
 ; entries.
 
-; #todo -> README
-; #todo variant: allow single or vec of default values
-(s/defn select-values :- ts/List
-  "Returns a vector of values for each key, in the order specified."
-   [map   :- ts/KeyMap
-    keys  :- [s/Keyword]]
-  (forv [key keys]
-    (grab key map)))
-
 (s/defn only :- s/Any
   "(only seqable-arg)
   Ensures that a sequence is of length=1, and returns the only value present.
   Throws an exception if the length of the sequence is not one.
   Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
-  [seqable-arg :- s/Any]
-  (when-not (seqable? seqable-arg)
-    (throw (IllegalArgumentException. (str "only: arg not seqable:" seqable-arg))))
+  [seqable-arg :- ts/List]
   (let [seq-len (count seqable-arg)]
     (when-not (= 1 seq-len)
       (throw (IllegalArgumentException. (str "only: length != 1; length=" seq-len)))))
@@ -408,9 +517,7 @@
 
 (s/defn third :- s/Any
   "Returns the third item in a collection, or nil if fewer than three items are present. "
-  [seqable-arg :- s/Any]
-  (when-not (seqable? seqable-arg)
-    (throw (IllegalArgumentException. (str "only: arg not seqable:" seqable-arg))))
+  [seqable-arg :- ts/List]
   (first (next (next seqable-arg))))
 
 (defn keyvals
@@ -782,60 +889,18 @@
     (fn [partial-coll] (starts-with? partial-coll (vec tgt)))
     coll))
 
-;-----------------------------------------------------------------------------
-; testing macros
-
-; #todo add tests
-(defmacro isnt      ; #todo document in readme
-  "Use (isnt ...) instead of (is (not ...)) for clojure.test"
-  [& body]
-  `(clojure.test/is (not ~@body)))
-
-; #todo add tests
-(defmacro is=  ; #todo document in readme
-  "Use (is= ...) instead of (is (= ...)) for clojure.test"
-  [& body]
-  `(clojure.test/is (= ~@body)))
-
-; #todo add tests
-(defmacro isnt=  ; #todo document in readme
-  "Use (isnt= ...) instead of (is (not= ...)) for clojure.test"
-  [& body]
-  `(clojure.test/is (= (not ~@body))))
-
-(defn throws?-impl
-  [& forms]
-  (if (= clojure.lang.Symbol (class (first forms)))
-    ; symbol 1st arg => expected Throwable provided
-    (do
-    ; (println "symbol found")
-      `(clojure.test/is
-         (try
-           ~@(rest forms)
-           false        ; fail if no exception thrown
-           (catch ~(first forms) t1#
-             true) ; if catch expected type, test succeeds
-           (catch Throwable t2#
-             false))) ; if thrown type is unexpected, test fails
-    )
-    (do ; expected Throwable not provided
-    ; (println "symbol not found")
-      `(clojure.test/is
-         (try
-           ~@forms
-           false        ; fail if no exception thrown
-           (catch Throwable t3#
-             true))) ; if anything is thrown, test succeeds
-    )))
-
-(defmacro throws?  ; #todo document in readme
-  "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
-
-     (throws? (/ 1 0))                      ; catches any Throwable
-     (throws? ArithmeticException (/ 1 0))  ; catches specified Throwable (or subclass)
-  "
-  [& forms]
-  (apply throws?-impl forms))
+; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
+(when (is-pre-clojure-1-9?)
+  (s/defn ^{:deprecated "1.9.0-alpha5"} seqable? :- s/Bool ; from clojure.contrib.core/seqable
+    "Returns true if (seq x) will succeed, false otherwise."
+    [x :- s/Any]
+    (or (seq? x)
+      (instance? clojure.lang.Seqable x)
+      (nil? x)
+      (instance? Iterable x)
+      (-> x .getClass .isArray)
+      (string? x)
+      (instance? java.util.Map x))))
 
 
 (defn refer-tupelo  ; #todo document in readme
@@ -850,8 +915,7 @@
       it-> safe-> keep-if drop-if
       strcat nl pretty pretty-str json->clj clj->json clip-str rng thru rel=
       drop-at insert-at replace-at starts-with?
-      split-when split-match wild-match?
-      isnt is= isnt= throws?
+      split-when split-match wild-match? increasing? increasing-or-equal?
       with-exception-default ] ))
 
 ;---------------------------------------------------------------------------------------------------

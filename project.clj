@@ -6,6 +6,7 @@
   :dependencies [ 
    ;[org.clojure/clojure              "1.9.0-alpha14"]
     [org.clojure/clojure              "1.8.0"]
+   ;[org.clojure/clojure              "1.7.0"]
     [org.clojure/core.async           "0.2.382"]
     [org.clojure/core.match           "0.3.0-alpha4"]
     [org.clojure/math.combinatorics   "0.1.3"]

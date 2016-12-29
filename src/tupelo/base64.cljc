@@ -10,7 +10,6 @@
             [tupelo.core    :as t]
             [tupelo.misc    :as misc]
             [tupelo.types   :as types]
-            [tupelo.version :as ver]
             [schema.core    :as s]
   ))
 (t/refer-tupelo)
@@ -23,11 +22,11 @@
                        [\+ \/ \=] ] )))
 
 (defn base64-encoder []
-  (ver/java-1-8-plus-or-throw
+  (t/java-1-8-plus-or-throw
     (java.util.Base64/getEncoder)))
 
 (defn base64-decoder []
-  (ver/java-1-8-plus-or-throw
+  (t/java-1-8-plus-or-throw
     (java.util.Base64/getDecoder)))
 
 

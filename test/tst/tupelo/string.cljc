@@ -5,17 +5,15 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.string
-  (:use clojure.test )
+  (:use tupelo.test clojure.test )
   (:require
     [clojure.core :as cc]
     [clojure.string :as str]
     [clojure.test.check.generators :as gen]
     [clojure.test.check.properties :as prop]
     [clojure.test.check.clojure-test :as tst]
-    [schema.core :as s]
     [tupelo.core :as t]
-    [tupelo.version :as ver]
-    [tupelo.string :as ts]
+    [tupelo.string :as tstr]
   ))
 (t/refer-tupelo)
 
@@ -71,71 +69,112 @@
   (is      (= "abcde" (t/strcat ["" \a \b [\c ["d" \e]]] )))
 )
 
-; verify that (str/starts-with? ...) does what we think
+(deftest t-increasing
+  (isnt (tstr/increasing "abc" "a"))
+  (isnt (tstr/increasing "abc" "ab"))
+  (isnt (tstr/increasing "abc" "abc"))
+  (is   (tstr/increasing "abc" "abd"))
+  (is   (tstr/increasing "abc" "abcd"))
+  (is   (tstr/increasing "abc" "ad"))
+  (is   (tstr/increasing "abc" "b"))
+
+  (isnt (tstr/increasing-or-equal "abc" "a"))
+  (isnt (tstr/increasing-or-equal "abc" "ab"))
+  (is   (tstr/increasing-or-equal "abc" "abc"))
+  (is   (tstr/increasing-or-equal "abc" "abd"))
+  (is   (tstr/increasing-or-equal "abc" "abcd"))
+  (is   (tstr/increasing-or-equal "abc" "ad"))
+  (is   (tstr/increasing-or-equal "abc" "b"))
+)
+
+
+(deftest t-tupstr-take
+  (is (= ""    (tstr/take 0 "abc")))
+  (is (= "a"   (tstr/take 1 "abc")))
+  (is (= "ab"  (tstr/take 2 "abc")))
+  (is (= "abc" (tstr/take 3 "abc")))
+  (is (= "abc" (tstr/take 4 "abc"))))
+
+(deftest t-tupstr-drop
+  (is (= "abc" (tstr/drop 0 "abc")))
+  (is (= "bc"  (tstr/drop 1 "abc")))
+  (is (= "c"   (tstr/drop 2 "abc")))
+  (is (= ""    (tstr/drop 3 "abc")))
+  (is (= ""    (tstr/drop 4 "abc"))))
+
+(deftest t-indent
+  (is (= "abc"    (tstr/indent 0 "abc")))
+  (is (= " abc"   (tstr/indent 1 "abc")))
+  (is (= "  abc"  (tstr/indent 2 "abc")))
+  (is (= "   abc" (tstr/indent 3 "abc")))
+
+  (is (= "ab"    (tstr/indent 0 "ab")))
+  (is (= " ab"   (tstr/indent 1 "ab")))
+  (is (= "  ab"  (tstr/indent 2 "ab")))
+  (is (= "   ab" (tstr/indent 3 "ab")))
+
+  (is (= "a"    (tstr/indent 0 "a")))
+  (is (= " a"   (tstr/indent 1 "a")))
+  (is (= "  a"  (tstr/indent 2 "a")))
+  (is (= "   a" (tstr/indent 3 "a")))
+
+  (is (= ""    (tstr/indent 0 "")))
+  (is (= " "   (tstr/indent 1 "")))
+  (is (= "  "  (tstr/indent 2 "")))
+  (is (= "   " (tstr/indent 3 ""))))
+
+(deftest t-indent
+  ; clojure accepts either CR/LF or LF (CR=/return & LF=\newline) as line-separator
+  (is (= "abc\n"    (tstr/indent-lines 0      "abc"                    )))
+  (is (= "abc\n"    (tstr/indent-lines 0 (str "abc"         \newline  ))))
+  (is (= "abc\n"    (tstr/indent-lines 0 (str "abc" \return \newline  ))))
+
+  ; counterexample: clojure doesn't accept \formfeed or solo \return as line-separator
+  (isnt (= "abc\n"    (tstr/indent-lines 0 (str "abc" \formfeed ))))
+  (isnt (= "abc\n"    (tstr/indent-lines 0 (str "abc" \return   ))))
+
+  (is (= "  abc\n  def\n"    (tstr/indent-lines 2 (str "abc" \newline "def" ))))
+  (is (= "  abc\n  def\n"    (tstr/indent-lines 2 (str "abc" \newline "def" \newline ))))
+
+  (is (= "abc\ndef\n"         (tstr/indent-lines 0 (str "abc" \newline "def" ))))
+  (is (= " abc\n def\n"       (tstr/indent-lines 1 (str "abc" \newline "def" ))))
+  (is (= "  abc\n  def\n"     (tstr/indent-lines 2 (str "abc" \newline "def" ))))
+  (is (= "   abc\n   def\n"   (tstr/indent-lines 3 (str "abc" \newline "def" ))))
+)
+
+(deftest t-index-of
+  (is= 0 (tstr/index-of "abc" "a"))
+  (is= 0 (tstr/index-of "abc" "ab"))
+  (is= 0 (tstr/index-of "abc" "abc"))
+  (is= 1 (tstr/index-of "abc" "b"))
+  (is= 1 (tstr/index-of "abc" "bc"))
+  (is= 2 (tstr/index-of "abc" "c"))
+  (is= -1 (tstr/index-of "abc" "d"))
+)
+
 (deftest t-starts-with?
-  (ver/min-clojure-1-8
-    (is (str/starts-with? "abcde" "a"))
-    (is (str/starts-with? "abcde" "ab"))
-    (is (str/starts-with? "abcde" "abc"))
+  ; clojure.string
+  (t/min-clojure-1-8
+    (is      (str/starts-with? "abcde" "a"))
+    (is      (str/starts-with? "abcde" "ab"))
+    (is      (str/starts-with? "abcde" "abc"))
 
     (is (not (str/starts-with? "abcde" "b")))
     (is (not (str/starts-with? "abcde" "bc")))
 
     (is (not (str/starts-with? "a" "ab")))
-    (is (not (str/starts-with? "ab" "abc")))))
+    (is (not (str/starts-with? "ab" "abc")))
+  )
 
+  ; tupelo.string
+  (do
+    (is      (tstr/starts-with? "abcde" "a"))
+    (is      (tstr/starts-with? "abcde" "ab"))
+    (is      (tstr/starts-with? "abcde" "abc"))
 
-(deftest t-tupstr-take
-  (is (= ""    (ts/take 0 "abc")))
-  (is (= "a"   (ts/take 1 "abc")))
-  (is (= "ab"  (ts/take 2 "abc")))
-  (is (= "abc" (ts/take 3 "abc")))
-  (is (= "abc" (ts/take 4 "abc"))))
+    (is (not (tstr/starts-with? "abcde" "b")))
+    (is (not (tstr/starts-with? "abcde" "bc")))
 
-(deftest t-tupstr-drop
-  (is (= "abc" (ts/drop 0 "abc")))
-  (is (= "bc"  (ts/drop 1 "abc")))
-  (is (= "c"   (ts/drop 2 "abc")))
-  (is (= ""    (ts/drop 3 "abc")))
-  (is (= ""    (ts/drop 4 "abc"))))
-
-(deftest t-indent
-  (is (= "abc"    (ts/indent 0 "abc")))
-  (is (= " abc"   (ts/indent 1 "abc")))
-  (is (= "  abc"  (ts/indent 2 "abc")))
-  (is (= "   abc" (ts/indent 3 "abc")))
-
-  (is (= "ab"    (ts/indent 0 "ab")))
-  (is (= " ab"   (ts/indent 1 "ab")))
-  (is (= "  ab"  (ts/indent 2 "ab")))
-  (is (= "   ab" (ts/indent 3 "ab")))
-
-  (is (= "a"    (ts/indent 0 "a")))
-  (is (= " a"   (ts/indent 1 "a")))
-  (is (= "  a"  (ts/indent 2 "a")))
-  (is (= "   a" (ts/indent 3 "a")))
-
-  (is (= ""    (ts/indent 0 "")))
-  (is (= " "   (ts/indent 1 "")))
-  (is (= "  "  (ts/indent 2 "")))
-  (is (= "   " (ts/indent 3 ""))))
-
-(deftest t-indent
-  ; clojure accepts either CR/LF or LF (CR=/return & LF=\newline) as line-separator
-  (is (= "abc\n"    (ts/indent-lines 0      "abc"                    )))
-  (is (= "abc\n"    (ts/indent-lines 0 (str "abc"         \newline  ))))
-  (is (= "abc\n"    (ts/indent-lines 0 (str "abc" \return \newline  ))))
-
-  ; counterexample: clojure doesn't accept \formfeed or solo \return as line-separator
-  (isnt (= "abc\n"    (ts/indent-lines 0 (str "abc" \formfeed ))))
-  (isnt (= "abc\n"    (ts/indent-lines 0 (str "abc" \return   ))))
-
-  (is (= "  abc\n  def\n"    (ts/indent-lines 2 (str "abc" \newline "def" ))))
-  (is (= "  abc\n  def\n"    (ts/indent-lines 2 (str "abc" \newline "def" \newline ))))
-
-  (is (= "abc\ndef\n"         (ts/indent-lines 0 (str "abc" \newline "def" ))))
-  (is (= " abc\n def\n"       (ts/indent-lines 1 (str "abc" \newline "def" ))))
-  (is (= "  abc\n  def\n"     (ts/indent-lines 2 (str "abc" \newline "def" ))))
-  (is (= "   abc\n   def\n"   (ts/indent-lines 3 (str "abc" \newline "def" ))))
+    (is (not (tstr/starts-with? "a" "ab")))
+    (is (not (tstr/starts-with? "ab" "abc"))))
 )
-

@@ -1,5 +1,5 @@
 (ns tst.tupelo.schema
-  (:use clojure.test )
+  (:use tupelo.test clojure.test )
   (:require [tupelo.core :as t]
             [tupelo.schema :as ts]
             [schema.core :as s] ))
