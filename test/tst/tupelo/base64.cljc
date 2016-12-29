@@ -16,7 +16,6 @@
     [tupelo.core                            :as t]
     [tupelo.misc                            :as misc]
     [tupelo.types                           :as types]
-    [tupelo.version                         :as ver]
     [schema.core                            :as s]
   ))
 (t/refer-tupelo)

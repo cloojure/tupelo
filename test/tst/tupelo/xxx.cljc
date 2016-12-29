@@ -7,10 +7,9 @@
 (ns tst.tupelo.xxx
   (:use tupelo.xxx
         clojure.test)
-  (:require [clojure.string :as str]
-            [schema.core :as s]
-            [tupelo.core :as t :refer [pretty nl]]
-            [tupelo.schema :as ts]
+  (:require
+    [schema.core :as s]
+    [tupelo.core :as t :refer [pretty nl]]
   ))
 (t/refer-tupelo)
 (set! *warn-on-reflection* true)
@@ -20,7 +19,7 @@
            :content [
                      { :tag :a
                       :content [
-                                {:tag :a1 :content [] } ] }
+                               ] }
                      { :tag :b
                       :content [
                                 {:tag :b1 :content [] }
@@ -29,10 +28,15 @@
                       :content [
                                 {:tag :c1 :content [] }
                                 {:tag :c2 :content [] }
-                                {:tag :c3 :content [] } ] } ] }
+                                {:tag :c3 :content [
+                                                    { :tag :d
+                                                     :content [
+                                                               {:tag :d1 :content [] }
+                                                               {:tag :d2 :content [] } ] }
+                                                   ] } ] } ] }
 )
 
-#_(deftest t-xxx
+(deftest t-xxx
 
   (nl)
   (let [result (walk-1 data)]

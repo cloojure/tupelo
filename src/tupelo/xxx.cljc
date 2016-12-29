@@ -15,16 +15,12 @@
 (t/refer-tupelo)
 
 (defn walk-1* [result path-in node]
-  (newline)
   (let [tag      (grab :tag node)
-        _        (spyx tag)
         path-new (t/append path-in tag)
-        _        (spyx path-new)
         content  (grab :content node)]
+    (spyx path-new)
     (if (empty? content)
-      (do
-        (swap! result append path-new)
-        (println "....saved"))
+      (swap! result append path-new)
       (doseq [child content]
         (walk-1* result path-new child)))))
 
