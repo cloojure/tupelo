@@ -22,52 +22,9 @@
 (defn ^{:deprecated "0.9.15"} equals-ignore-spacing [& args] (apply ts/equals-ignore-spacing args))
 (defn ^{:deprecated "0.9.15"} double-quotes->single-quotes [& args] (apply ts/double-quotes->single-quotes args))
 (defn ^{:deprecated "0.9.15"} single-quotes->double-quotes [& args] (apply ts/single-quotes->double-quotes args))
-
-; #todo -> tupelo.string
-(defn normalize-str
- "Returns a 'normalized' version of str-in, stripped of leading/trailing
-  blanks, and with all non-alphanumeric chars converted to hyphens."
-  [str-in]
-  (-> str-in
-    str/trim
-      (str/replace #"[^a-zA-Z0-9]" "-")))
-  ; #todo replace with other lib
-
-; #todo -> tupelo.string
-(defn str->kw
- "Returns a keyword constructed from the normalized str-in"
-  [str-in]
-  (keyword (normalize-str str-in)))
-  ; #todo replace with other lib
-
-(defn take-dist
- "Returns a sequence of n items from a collection, distributed
-  evenly between first & last elements, which are always included."
-  ; #todo write tests, incl degenerate cases of N=0,1,2, etc
-  [n coll]
-  {:pre [(pos? n)] }
-  (if (= n 1)
-    (first coll)
-    (let [interval    (Math/round (double (/ (count coll) (- n 1))))
-          result      (flatten [ (take (- n 1) (take-nth interval coll))
-                                 (last coll) ] ) ] 
-      result )))
-
-; #todo -> tupelo.string
-(defn char-seq
-  "Given two characters (or numerical equivalents), returns a seq of characters
-  (inclusive) from the first to the second.  Characters must be in ascending order."
-  [start-char stop-char]
-  {:pre [ (char start-char) (char stop-char) ] }
-    ; These "dummy" casts are to ensure that any input integer values are within the valid
-    ; range for Unicode characters
-  (let [start-val   (int start-char)
-        stop-val    (int stop-char)]
-    (when-not (<= start-val stop-val)
-      (throw (IllegalArgumentException. 
-        (str "char-seq: start-char must come before stop-char."
-        "  start-val=" start-val "  stop-val=" stop-val))))
-    (mapv char (thru start-val stop-val))))
+(defn ^{:deprecated "0.9.15"} normalize-str [& args] (apply ts/normalize-str args))
+(defn ^{:deprecated "0.9.15"} str->kw [& args] (apply ts/str->kw args))
+(defn ^{:deprecated "0.9.15"} char-seq [& args] (apply t/char-seq args))
 
 ; #todo -> tupelo.string
 (defn seq->str
@@ -78,7 +35,20 @@
       (print \space)
       (pr it))))
 
-(defn shell-cmd 
+(defn take-dist
+  "Returns a sequence of n items from a collection, distributed
+   evenly between first & last elements, which are always included."
+  ; #todo write tests, incl degenerate cases of N=0,1,2, etc
+  [n coll]
+  {:pre [(pos? n)] }
+  (if (= n 1)
+    (first coll)
+    (let [interval    (Math/round (double (/ (count coll) (- n 1))))
+          result      (flatten [ (take (- n 1) (take-nth interval coll))
+                                (last coll) ] ) ]
+      result )))
+
+(defn shell-cmd
   "Run a command represented as a string in an OS shell (default=/bin/bash).
   Example: 'ls -ldF *'  "
   [cmd-str]

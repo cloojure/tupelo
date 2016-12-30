@@ -39,6 +39,24 @@
   [arg :- s/Str]
   (str/replace arg \' \"))
 
+; #todo need tests
+(defn normalize-str
+  "Returns a 'normalized' version of str-in, stripped of leading/trailing
+   blanks, and with all non-alphanumeric chars converted to hyphens."
+  [str-in]
+  (-> str-in
+    str/trim
+    (str/replace #"[^a-zA-Z0-9]" "-")))
+; #todo replace with other lib
+
+(defn str->kw       ; #todo need test, README
+  "Returns a keyword constructed from the normalized str-in"
+  [str-in]
+  (keyword (normalize-str str-in)))
+
+
+
+
 ;-----------------------------------------------------------------------------
 
 (s/defn drop :- s/Str  ; #todo add readme

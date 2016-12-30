@@ -713,6 +713,23 @@
   [pred coll]
   (keep-if (complement pred) coll))
 
+; #todo need test, readme
+(defn char-seq
+  "Given two characters (or numerical equivalents), returns a seq of characters
+  (inclusive) from the first to the second.  Characters must be in ascending order."
+  [start-char stop-char]
+  {:pre [ (char start-char) (char stop-char) ] }
+  ; These "dummy" casts are to ensure that any input integer values are within the valid
+  ; range for Unicode characters
+  (let [start-val   (int start-char)
+        stop-val    (int stop-char)]
+    (when-not (<= start-val stop-val)
+      (throw (IllegalArgumentException.
+               (str "char-seq: start-char must come before stop-char."
+                 "  start-val=" start-val "  stop-val=" stop-val))))
+    (mapv char (thru start-val stop-val))))
+
+
 (defn strcat
   "Recursively concatenate all arguments into a single string result."
   [& args]
