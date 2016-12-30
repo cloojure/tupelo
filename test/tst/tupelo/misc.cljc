@@ -21,40 +21,8 @@
     (is (= (drop 3 data) [     ])))
 )
 
-(deftest t-double-quotes<->single-quotes
-  (is (= (double-quotes->single-quotes (str \")) (str \')))
-  (is (= (single-quotes->double-quotes (str \')) (str \")))
-  (let [s1 "I said, 'Yes, please.'"
-        s2 "I said, \"Yes, please.\"" ]
-      (is (= s1 (-> s2 double-quotes->single-quotes)))
-      (is (= s2 (-> s1 single-quotes->double-quotes)))
-      (is (= s2 (-> s2
-                  double-quotes->single-quotes
-                  single-quotes->double-quotes)))
-      (is (= s1 (-> s1
-                  single-quotes->double-quotes
-                  double-quotes->single-quotes)))))
-
 (deftest t-get-os
   (is (#{:windows :linux :mac} (get-os))))
-
-(deftest str->kw-t
-  (testing "basic usage"
-    (is (= :abc-def-gh-qrs (str->kw "abc def*gh_qrs")))))
-
-(deftest char-seq-t
-  (is (= [\a ]              (char-seq \a \a)))
-  (is (= [\a \b]            (char-seq \a \b)))
-  (is (= [\a \b \c]         (char-seq \a \c)))
-
-  (is (= [\a ]              (char-seq 97 97)))
-  (is (= [\a \b]            (char-seq 97 98)))
-  (is (= [\a \b \c]         (char-seq 97 99)))
-
-  (is (thrown? Exception    (char-seq 987654321 987654321 )))
-  (is (thrown? Exception    (char-seq \c \a)))
-  (is (thrown? Exception    (char-seq 99 98)))
-)
 
 (deftest seq->str-t
   (is (= " 1 2 3"           (seq->str (byte-array [1 2 3]))))

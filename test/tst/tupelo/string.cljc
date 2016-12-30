@@ -102,6 +102,24 @@
                        anything.
                        Mark Twain      		" )))
 
+(deftest t-double-quotes<->single-quotes
+  (is (= (tstr/double-quotes->single-quotes (str \")) (str \')))
+  (is (= (tstr/single-quotes->double-quotes (str \')) (str \")))
+  (let [s1 "I said, 'Yes, please.'"
+        s2 "I said, \"Yes, please.\"" ]
+    (is (= s1 (-> s2 tstr/double-quotes->single-quotes)))
+    (is (= s2 (-> s1 tstr/single-quotes->double-quotes)))
+    (is (= s2 (-> s2
+                tstr/double-quotes->single-quotes
+                tstr/single-quotes->double-quotes)))
+    (is (= s1 (-> s1
+                tstr/single-quotes->double-quotes
+                tstr/double-quotes->single-quotes)))))
+
+(deftest str->kw-t
+  (testing "basic usage"
+    (is (= :abc-def-gh-qrs (tstr/str->kw "abc def*gh_qrs")))))
+
 
 
 

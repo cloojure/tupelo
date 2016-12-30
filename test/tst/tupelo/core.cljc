@@ -1085,6 +1085,20 @@
       (is (= "#{1 2 3 4 5}" (clip-str 16 tst-set )))))
 )
 
+(deftest char-seq-t
+  (is (= [\a ]              (char-seq \a \a)))
+  (is (= [\a \b]            (char-seq \a \b)))
+  (is (= [\a \b \c]         (char-seq \a \c)))
+
+  (is (= [\a ]              (char-seq 97 97)))
+  (is (= [\a \b]            (char-seq 97 98)))
+  (is (= [\a \b \c]         (char-seq 97 99)))
+
+  (is (thrown? Exception    (char-seq 987654321 987654321 )))
+  (is (thrown? Exception    (char-seq \c \a)))
+  (is (thrown? Exception    (char-seq 99 98)))
+  )
+
 
 
 (deftest t-drop-at
