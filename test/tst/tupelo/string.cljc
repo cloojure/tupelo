@@ -69,6 +69,53 @@
   (is      (= "abcde" (t/strcat ["" \a \b [\c ["d" \e]]] )))
 )
 
+
+(deftest collapse-whitespace-t
+  (is (= "abc def g hij kl"
+        (tstr/collapse-whitespace "  abc    def			g
+                                     hij kl	 " ))))
+
+(deftest t-equals-ignore-spacing
+  (is (tstr/equals-ignore-spacing "a" ))
+  (is (tstr/equals-ignore-spacing "a" "  a "))
+  (is (tstr/equals-ignore-spacing "a" "  a  " "   a" "a   "))
+
+  (is (tstr/equals-ignore-spacing "
+        Whenever you find yourself on the side of the majority, it is time to pause and reflect.
+        Don't go around saying the world owes you a living. The world owes you nothing. It was here first.
+        I have never let my schooling interfere with my education.
+        If you tell the truth, you don't have to remember anything.
+        Mark Twain          "
+
+"		Whenever you find yourself on the side of the majority, it is time to pause and reflect.
+                      Don't go around saying the world owes you a living. The world owes you nothing. It was here first.
+                      I have never let my schooling interfere with my education.
+                      If you tell the truth, you don't have to remember anything.
+                      Mark Twain			"
+
+"      Whenever you find yourself on the side of the
+                       majority, it is time to pause and reflect.      Don't go
+                       around saying the world owes you a living. 	The world
+                               owes you nothing. 		It was here first.  I have never
+                       let my schooling interfere with my education.  If you
+                       tell the truth, you don't have to remember
+                       anything.
+                       Mark Twain      		" )))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 (deftest t-increasing
   (isnt (tstr/increasing "abc" "a"))
   (isnt (tstr/increasing "abc" "ab"))

@@ -5,7 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.core
-  (:use clojure.test tupelo.test )
+  (:use tupelo.core clojure.test tupelo.test )
   (:require
 ;   [clojure.spec :as sp]
 ;   [clojure.spec.gen :as sp.gen]
@@ -1084,6 +1084,8 @@
       (is (= "#{1 2 3 "     (clip-str  8 tst-set )))
       (is (= "#{1 2 3 4 5}" (clip-str 16 tst-set )))))
 )
+
+
 
 (deftest t-drop-at
   (is= [] (drop-at (range 1) 0))
