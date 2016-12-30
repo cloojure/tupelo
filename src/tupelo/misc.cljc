@@ -25,15 +25,8 @@
 (defn ^{:deprecated "0.9.15"} normalize-str [& args] (apply ts/normalize-str args))
 (defn ^{:deprecated "0.9.15"} str->kw [& args] (apply ts/str->kw args))
 (defn ^{:deprecated "0.9.15"} char-seq [& args] (apply t/char-seq args))
-
-; #todo -> tupelo.string
-(defn seq->str
-  "Convert a seq into a string (using pr) with a space preceding each value"
-  [seq-in]
-  (with-out-str
-    (doseq [it (seq seq-in)]
-      (print \space)
-      (pr it))))
+(defn ^{:deprecated "0.9.15"} seq->str [& args] (apply t/seq->str args))
+(def  ^{:deprecated "0.9.15"} printable-chars  ts/printable-chars)
 
 (defn take-dist
   "Returns a sequence of n items from a collection, distributed
@@ -88,11 +81,6 @@
 
 )
 
-
-; #todo -> tupelo.string
-(def printable-chars
-  "A seq of 1-char strings of all printable characters from space (32) to tilde (126)"
-  (mapv str (char-seq \space \~)))
 
 ; #todo document in README
 (def ^:no-doc dot-counter   (atom 0))

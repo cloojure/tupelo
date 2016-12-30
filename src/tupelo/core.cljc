@@ -729,6 +729,13 @@
                  "  start-val=" start-val "  stop-val=" stop-val))))
     (mapv char (thru start-val stop-val))))
 
+(defn seq->str
+  "Convert a seq into a string (using pr) with a space preceding each value"
+  [seq-in]
+  (with-out-str
+    (doseq [it (seq seq-in)]
+      (print \space)
+      (pr it))))
 
 (defn strcat
   "Recursively concatenate all arguments into a single string result."

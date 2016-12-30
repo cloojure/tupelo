@@ -13,6 +13,11 @@
     [schema.core :as s]
   ))
 
+(def printable-chars
+  "A seq of 1-char strings of all printable characters from space (32) to tilde (126)"
+  (mapv str (range (int \space)
+              (inc (int \~)))))
+
 ; #todo -> tupelo.string
 (defn collapse-whitespace ; #todo readme & blog
   "Replaces all consecutive runs of whitespace characters (including newlines) with a single space.
@@ -53,9 +58,6 @@
   "Returns a keyword constructed from the normalized str-in"
   [str-in]
   (keyword (normalize-str str-in)))
-
-
-
 
 ;-----------------------------------------------------------------------------
 
