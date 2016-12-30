@@ -10,6 +10,7 @@
     [clojure.core.async :refer [go go-loop chan buffer close! thread alts! alts!! timeout]]
     [clojure.java.shell :as shell]
     [clojure.string :as str]
+    [tupelo.string :as ts]
     [schema.core :as s]
     [tupelo.core :as t]
   ))
@@ -17,32 +18,10 @@
 
 (def ^:dynamic *os-shell* "/bin/bash")  ; could also use /bin/zsh, etc
 
-; #todo -> tupelo.string
-(defn collapse-whitespace ; #todo readme & blog
- "Replaces all consecutive runs of whitespace characters (including newlines) with a single space.
-  Removes any leading or trailing whitespace. Returns a string composed of all tokens
-  separated by a single space."
-  [it]
-  (-> it
-    str/trim
-      (str/replace #"\s+" " ")))
-
-; #todo -> tupelo.string
-(s/defn equals-ignore-spacing :- s/Bool  ; #todo readme & blog
-  "Compares arguments for equality using tupelo.misc/collapse-whitespace.
-   Equivalent to separating tokens by whitespace and comparing the resulting sequences."
-  [& args :- [s/Str]]
-  (let [ws-collapsed-args (mapv collapse-whitespace args)]
-    (apply = ws-collapsed-args)))
-
-; #todo -> tupelo.string
-(s/defn double-quotes->single-quotes :- s/Str ; #todo readme & blog
-  [arg :- s/Str]
-  (str/replace arg \" \'))
-; #todo -> tupelo.string
-(s/defn single-quotes->double-quotes :- s/Str ; #todo readme & blog
-  [arg :- s/Str]
-  (str/replace arg \' \"))
+(defn ^{:deprecated "0.9.15"} collapse-whitespace [& args] (apply ts/collapse-whitespace args))
+(defn ^{:deprecated "0.9.15"} equals-ignore-spacing [& args] (apply ts/equals-ignore-spacing args))
+(defn ^{:deprecated "0.9.15"} double-quotes->single-quotes [& args] (apply ts/double-quotes->single-quotes args))
+(defn ^{:deprecated "0.9.15"} single-quotes->double-quotes [& args] (apply ts/single-quotes->double-quotes args))
 
 ; #todo -> tupelo.string
 (defn normalize-str
