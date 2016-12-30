@@ -120,6 +120,11 @@
   (testing "basic usage"
     (is (= :abc-def-gh-qrs (tstr/str->kw "abc def*gh_qrs")))))
 
+(deftest seq->str-t
+  (is (= " 1 2 3"           (t/seq->str (byte-array [1 2 3]))))
+  (is (= " :a :b 3 4"       (t/seq->str [:a :b 3 4])))
+  (is (= " \\a \\b \\c"     (t/seq->str "abc"))))
+
 
 
 

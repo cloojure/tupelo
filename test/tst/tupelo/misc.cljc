@@ -24,11 +24,6 @@
 (deftest t-get-os
   (is (#{:windows :linux :mac} (get-os))))
 
-(deftest seq->str-t
-  (is (= " 1 2 3"           (seq->str (byte-array [1 2 3]))))
-  (is (= " :a :b 3 4"       (seq->str [:a :b 3 4])))
-  (is (= " \\a \\b \\c"     (seq->str "abc"))))
-
 (deftest shell-cmd-t
   (when (= :linux (get-os))
 
