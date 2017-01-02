@@ -3,6 +3,18 @@
 
 == Change Log
 
+.2017-1-2  Version 0.9.15:  Moved functions from `tupelo.misc` namespace to `tupelo.string`
+- collapse-whitespace
+- equals-ignore-spacing
+- double-quotes->single-quotes
+- single-quotes->double-quotes
+- normalize-str
+- str->kw
+- char-seq
+- seq->str
+- printable-chars
+
+
 .2016-9-14  New functions in `tupelo.string` namespace:
 - drop
   "Drops the first N chars of a string, returning a string result."

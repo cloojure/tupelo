@@ -125,20 +125,6 @@
   (is (= " :a :b 3 4"       (t/seq->str [:a :b 3 4])))
   (is (= " \\a \\b \\c"     (t/seq->str "abc"))))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 (deftest t-increasing
   (isnt (tstr/increasing "abc" "a"))
   (isnt (tstr/increasing "abc" "ab"))
@@ -156,7 +142,6 @@
   (is   (tstr/increasing-or-equal "abc" "ad"))
   (is   (tstr/increasing-or-equal "abc" "b"))
 )
-
 
 (deftest t-tupstr-take
   (is (= ""    (tstr/take 0 "abc")))
