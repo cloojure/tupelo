@@ -15,6 +15,9 @@
   (is (= tst-val arg)))
 
 (deftest t-basic
+  ; go returns a channel containing its return value
+  (is= 42 (t/only (ta/vec (ca/go 42))))
+
   (let [ch (ca/chan 1) ]
     (ca/go
       (ta/put-go! ch 42)
