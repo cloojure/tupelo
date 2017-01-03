@@ -273,13 +273,46 @@
 ;                                             y 2  _ (spyx y) ]   ...)
 
 ; #todo allos spyx to have labels like (spyx :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
+
+(defn- spyx-proc
+  [exprs]
+; (println :spyx-proc :exprs exprs)
+; (println :spyx-proc :r1 )
+  (let [r1  (vec
+              (for [expr (butlast exprs) ]
+                `(println (str (spy-indent-spaces) '~expr " => " ~expr ))
+                ))
+        r2  (let [expr (last exprs) ]
+              `(let [spy-val# ~expr]
+                 (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val# )))
+                 spy-val#)
+              )
+        final-code `(do ~@r1 ~r2)
+        ]
+;   (newline) (newline)
+;   (println :spyx-proc :r1 )
+;   (pprint/pprint r1)
+
+;   (newline) (newline)
+;   (println :spyx-proc :r2 )
+;   (pprint/pprint r2)
+
+;   (newline) (newline)
+;   (println :spyx-proc :final-code )
+;   (pprint/pprint final-code)
+;   (newline) (newline)
+
+    final-code
+  )
+)
+
 (defmacro spyx
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
    expression, printing both the expression and its value to stdout, then returns the value."
-  [expr]
-  `(let [spy-val# ~expr]
-     (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val#)))
-     spy-val#))
+  [& exprs]
+  (spyx-proc exprs))
+
+
 
 (defmacro spyxx
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied

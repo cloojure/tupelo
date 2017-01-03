@@ -132,9 +132,32 @@
 
 ;-----------------------------------------------------------------------------
 ; spy stuff
-;(inc 0) => 1
-;(inc 1) => 2
-;(inc 2) => 3
+(deftest t-spyx
+  (with-out-str     ; discard all printed output
+    (is= 5 (spyx (+ 2 3)))
+
+    (is= "(+ 2 3) => 5"
+      (tm/collapse-whitespace
+        (with-out-str
+          (spyx (+ 2 3)))))
+
+    (is= 3 (spyx
+             (inc 0)
+             (inc 1)
+             (inc 2)))
+
+    (is= (tm/collapse-whitespace   "(inc 0) => 1
+                                    (inc 1) => 2
+                                    (inc 2) => 3 " )
+         (tm/collapse-whitespace
+           (with-out-str
+             (spyx
+               (inc 0)
+               (inc 1)
+               (inc 2)))))
+
+  )
+)
 
 (deftest t-spy
   (testing "basic usage"
