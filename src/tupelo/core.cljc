@@ -280,8 +280,9 @@
 ; (println :spyx-proc :r1 )
   (let [r1  (vec
               (for [expr (butlast exprs) ]
-                `(println (str (spy-indent-spaces) '~expr " => " ~expr ))
-                ))
+                (if (keyword? expr)
+                  `(println (str (spy-indent-spaces) ~expr))
+                  `(println (str (spy-indent-spaces) '~expr " => " ~expr)))))
         r2  (let [expr (last exprs) ]
               `(let [spy-val# ~expr]
                  (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val# )))
@@ -308,11 +309,10 @@
 
 (defmacro spyx
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expression, printing both the expression and its value to stdout, then returns the value."
+   expressions, printing both the expression and its value to stdout. Returns the value of the
+   last expression."
   [& exprs]
   (spyx-proc exprs))
-
-
 
 (defmacro spyxx
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied

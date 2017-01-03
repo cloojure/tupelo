@@ -146,13 +146,30 @@
              (inc 1)
              (inc 2)))
 
+    ; #todo -> readme
     (is= (tm/collapse-whitespace   "(inc 0) => 1
+                                    (inc 1) => 2
+                                    (inc 2) => 3 " )
+      (tm/collapse-whitespace
+        (with-out-str
+          (spyx
+            (inc 0)
+            (inc 1)
+            (inc 2)))))
+
+    ; #todo -> readme
+    (is= 3 (spyx
+             :some-kw
+             (inc 1)
+             (inc 2)))
+
+    (is= (tm/collapse-whitespace   ":some-kw
                                     (inc 1) => 2
                                     (inc 2) => 3 " )
          (tm/collapse-whitespace
            (with-out-str
              (spyx
-               (inc 0)
+               :some-kw
                (inc 1)
                (inc 2)))))
 
@@ -1177,7 +1194,6 @@
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
 (deftest  ^{:deprecated "1.9.0-alpha5" } t-seqable
   (t/pre-clojure-1-9
-    (println "is-pre-clojure-1-9; seqable? test")
     (is   (t/seqable?   "abc"))
     (is   (t/seqable?   {1 2 3 4} ))
     (is   (t/seqable?  #{1 2 3} ))
