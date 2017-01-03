@@ -22,11 +22,11 @@
                        [\+ \/ \=] ] )))
 
 (defn base64-encoder []
-  (t/java-1-8-plus-or-throw
+  (t/only-java-1-8-plus-or-throw
     (java.util.Base64/getEncoder)))
 
 (defn base64-decoder []
-  (t/java-1-8-plus-or-throw
+  (t/only-java-1-8-plus-or-throw
     (java.util.Base64/getDecoder)))
 
 

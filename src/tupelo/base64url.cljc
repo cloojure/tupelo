@@ -23,11 +23,11 @@
                        [\- \_ \=] ] )))
 
 (defn base64url-encoder []
-  (t/java-1-8-plus-or-throw
+  (t/only-java-1-8-plus-or-throw
     (java.util.Base64/getUrlEncoder)))
 
 (defn base64url-decoder []
-  (t/java-1-8-plus-or-throw
+  (t/only-java-1-8-plus-or-throw
     (java.util.Base64/getUrlDecoder)))
 
 (defn encode-bytes

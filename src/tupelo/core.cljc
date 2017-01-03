@@ -148,7 +148,7 @@
 (defn is-java-1-7-plus? [] (java-version-min? "1.7"))
 (defn is-java-1-8-plus? [] (java-version-min? "1.8"))
 
-(defmacro java-1-7-plus-or-throw
+(defmacro only-java-1-7-plus-or-throw
   "Wraps code that should only be included if JVM is Java 1.7 or higher. 
    Throws otherwise."
   [& forms]
@@ -156,7 +156,7 @@
     `(do ~@forms)
     `(do (throw (RuntimeException. "Unimplemented prior to Java 1.7: ")))))
 
-(defmacro java-1-8-plus-or-throw
+(defmacro only-java-1-8-plus-or-throw
   "Wraps code that should only be included if JVM is Java 1.8 or higher. 
    Throws otherwise."
   [& forms]
@@ -187,19 +187,19 @@
 ; #todo add is-clojure-1-8-max?
 ; #todo need clojure-1-8-plus-or-throw  ??
 
-(defmacro min-clojure-1-8
+(defmacro when-clojure-1-8-plus
   "Wraps code that should only be included for Clojure 1.8 or higher.  Otherwise, code is supressed."
   [& forms]
   (if (is-clojure-1-8-plus?)
     `(do ~@forms)))
 
-(defmacro min-clojure-1-9
+(defmacro when-clojure-1-9-plus
   "Wraps code that should only be included for Clojure 1.9 or higher.  Otherwise, code is supressed."
   [& forms]
   (if (is-clojure-1-9-plus?)
     `(do ~@forms)))
 
-(defmacro pre-clojure-1-9
+(defmacro when-not-clojure-1-9-plus
   "Wraps code that should only be included for Clojure versions prior to 1.9.  Otherwise, code is supressed."
   [& forms]
   (if (is-pre-clojure-1-9?)
@@ -994,7 +994,7 @@
     coll))
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
-(pre-clojure-1-9
+(when-not-clojure-1-9-plus
   (defn ^{:deprecated "1.9.0-alpha5"} seqable?  ; from clojure.contrib.core/seqable
     "Returns true if (seq x) will succeed, false otherwise."
     [x]

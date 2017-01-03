@@ -209,7 +209,7 @@
 
 (deftest t-starts-with?
   ; clojure.string
-  (t/min-clojure-1-8
+  (t/when-clojure-1-8-plus
     (is      (str/starts-with? "abcde" "a"))
     (is      (str/starts-with? "abcde" "ab"))
     (is      (str/starts-with? "abcde" "abc"))

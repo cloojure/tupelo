@@ -27,8 +27,8 @@
 ; Java version stuff
 
 (defn fn-any [] 42)
-(defn fn7 [] (t/java-1-7-plus-or-throw 7))
-(defn fn8 [] (t/java-1-8-plus-or-throw 8))
+(defn fn7 [] (t/only-java-1-7-plus-or-throw 7))
+(defn fn8 [] (t/only-java-1-8-plus-or-throw 8))
 
 (deftest t-java-version
   (when (t/is-java-1-7?)
@@ -1202,7 +1202,7 @@
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
 (deftest  ^{:deprecated "1.9.0-alpha5" } t-seqable
-  (t/pre-clojure-1-9
+  (t/when-not-clojure-1-9-plus
     (is   (t/seqable?   "abc"))
     (is   (t/seqable?   {1 2 3 4} ))
     (is   (t/seqable?  #{1 2 3} ))
