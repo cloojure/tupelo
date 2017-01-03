@@ -9,6 +9,7 @@
   (:require [clojure.core.async :as async]
             [tupelo.core :as t]
             [schema.core :as s] )
+  (:refer-clojure :exclude [vec] )
   (:gen-class))
 (t/refer-tupelo)
 
@@ -20,16 +21,26 @@
 
 ; #todo add tests
 ; #todo add docs to README
-(defmacro put-go! [& args]
-  `(async/>! ~@args))
+(defmacro put-go!
+  "Puts a value onto a channel. Only valid in a `go` block.
+   Will park if channel is full. Equivalent to clojure.core.async/>! "
+  [ch val]
+  `(async/>! ~ch ~val))
 
-(defmacro take-go! [& args]
-  `(async/<! ~@args))
+(defmacro take-go!
+  "Takes a value from a channel and returns it. Only valid in a `go` block.
+   Will park if no value is available. Equivalent to clojure.core.async/<!  "
+  [ch]
+  `(async/<! ~ch))
 
 (defn put-now! [& args]
+  "Puts a value onto a channel.
+  Will block if channel is full. Equivalent to `clojure.core.async/<!!`  "
   (apply async/>!! args))
 
 (defn take-now! [& args]
+  "Takes a value from a channel and returns it.
+  Will block if no value is available. Equivalent to `clojure.core.async/<!!`  "
   (apply async/<!! args))
 
 (defn put-later! [& args]
@@ -38,3 +49,7 @@
 (defn take-later! [& args]
   (apply async/take! args))
 
+(defn vec
+  "Extract all values from a channel into a vector."
+  [ch]
+  (take-now! (async/into [] ch)))
