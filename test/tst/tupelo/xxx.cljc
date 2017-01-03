@@ -36,7 +36,7 @@
                                                    ] } ] } ] }
 )
 
-(deftest t-xxx
+#_(deftest t-xxx
 
   (nl)
   (let [result (walk-1 data)]
