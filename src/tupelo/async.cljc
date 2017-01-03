@@ -33,20 +33,28 @@
   [ch]
   `(async/<! ~ch))
 
-(defn put-now! [& args]
+(defn put-now!
   "Puts a value onto a channel.
   Will block if channel is full. Equivalent to `clojure.core.async/<!!`  "
-  (apply async/>!! args))
+  [ch val]
+  (async/>!! ch val))
 
-(defn take-now! [& args]
+(defn take-now!
   "Takes a value from a channel and returns it.
   Will block if no value is available. Equivalent to `clojure.core.async/<!!`  "
-  (apply async/<!! args))
+  [ch]
+  (async/<!! ch))
 
-(defn put-later! [& args]
-  (apply async/put! args))
+(defn put-later!
+  "Puts a value onto a channel from another thread.
+  Equivalent to `clojure.core.async/put!` "
+  [port val & args]
+  (apply async/put! port val args))
 
-(defn take-later! [& args]
+(defn take-later!
+  "Takes a value from a channel & passes it to the supplied function, using another thread.
+  Equivalent to `clojure.core.async/take!` "
+  [& args]
   (apply async/take! args))
 
 (defn vec
