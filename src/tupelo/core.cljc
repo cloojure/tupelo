@@ -149,17 +149,14 @@
 (defn is-java-1-8-plus? [] (java-version-min? "1.8"))
 
 (defmacro if-java-1-7-plus
-  "Usage:  (if-java-1-7-plus  if-form  else-form)
-  Wraps code that should only be included if JVM is Java 1.7 or higher.
-   Throws otherwise."
+  "If JVM is Java 1.7 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
   [if-form else-form]
   (if (is-java-1-7-plus?)
     `(do ~if-form)
     `(do ~else-form)))
 
 (defmacro if-java-1-8-plus
-  "Wraps code that should only be included if JVM is Java 1.8 or higher. 
-   Throws otherwise."
+  "If JVM is Java 1.8 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
   [if-form else-form]
   (if (is-java-1-8-plus?)
       `(do ~if-form)
@@ -179,10 +176,8 @@
 (defn is-clojure-1-9-plus? []
   (increasing-or-equal? [1 9] (select-values *clojure-version* [:major :minor ])))
 
-(defn is-pre-clojure-1-8? []
-  (increasing? (select-values *clojure-version* [:major :minor ]) [1 8] ))
-(defn is-pre-clojure-1-9? []
-  (increasing? (select-values *clojure-version* [:major :minor ]) [1 9] ))
+(defn is-pre-clojure-1-8? [] (not (is-clojure-1-8-plus?)))
+(defn is-pre-clojure-1-9? [] (not (is-clojure-1-9-plus?)))
 
 
 ; #todo add is-clojure-1-8-max?

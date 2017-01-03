@@ -116,23 +116,20 @@
     (isnt (t/is-clojure-1-8-plus?))
     (isnt (t/is-clojure-1-9-plus?))
     (is   (t/is-pre-clojure-1-8?))
-    (is   (t/is-pre-clojure-1-9?))
-    )
+    (is   (t/is-pre-clojure-1-9?)))
   (binding [*clojure-version* {:major 1 :minor 8}]
     (is   (t/is-clojure-1-7-plus?))
     (is   (t/is-clojure-1-8-plus?))
     (isnt (t/is-clojure-1-9-plus?))
     (isnt (t/is-pre-clojure-1-8?))
-    (is   (t/is-pre-clojure-1-9?))
-    )
+    (is   (t/is-pre-clojure-1-9?)))
   (binding [*clojure-version* {:major 1 :minor 9}]
     (is   (t/is-clojure-1-7-plus?))
     (is   (t/is-clojure-1-8-plus?))
     (is   (t/is-clojure-1-9-plus?))
     (isnt (t/is-pre-clojure-1-8?))
-    (isnt (t/is-pre-clojure-1-9?))
-    )
-  )
+    (isnt (t/is-pre-clojure-1-9?)))
+)
 
 ;-----------------------------------------------------------------------------
 ; spy stuff
@@ -1214,8 +1211,7 @@
     (is   (t/seqable?   [1 2 3] ))
     (is   (t/seqable?   (byte-array [1 2] )))
     (isnt (t/seqable?  1 ))
-    (isnt (t/seqable? \a ))
-  ))
+    (isnt (t/seqable? \a ))))
 
 ; #todo add different lengths a/b
 ; #todo add missing entries a/b
