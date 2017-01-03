@@ -8,43 +8,75 @@
   (:use clojure.test tupelo.test)
   (:require [tupelo.core            :as t]
             [tupelo.async           :as ta]
-            [clojure.core.async     :as ca]
+            [clojure.core.async     :as ca :refer [go go-loop chan thread]]
   ))
 
-(defn cb-tst [tst-val arg] 
+(defn is-expected-val? [tst-val arg]
   (is (= tst-val arg)))
 
 (deftest t-basic
-  ; go returns a channel containing its return value
-  (is= 42 (t/only (ta/vec (ca/go 42))))
+  (is= 42 (t/only (ta/vec (go     42)))) ; returns a channel containing its return value
+  (is= 42 (t/only (ta/vec (thread 42)))) ; returns a channel containing its return value
 
-  (let [ch (ca/chan 1) ]
-    (ca/go
+  ; can create real threads
+  (let [ch (chan)]  ; zero-buffer channel
+    (thread
+      (ta/put-now! ch "here") ; these will block
+      (ta/put-now! ch "we")
+      (ta/put-now! ch "go"))
+    (is= "here" (ta/take-now! ch))
+    (is= "we"   (ta/take-now! ch))
+    (is= "go"   (ta/take-now! ch)))
+
+  ; or "lightweight" threads
+  (let [ch (chan)]  ; zero-buffer channel
+    (go (ta/put-go! ch "here"  )
+        (ta/put-go! ch "we")
+        (ta/put-go! ch "go")
+        (ta/put-go! ch "again"))
+    (is= ["here" "we" "go" "again"] ; vector ok since order determinate within go block
+      (ta/take-now!
+        (go [ (ta/take-go! ch)
+              (ta/take-go! ch)
+              (ta/take-go! ch)
+              (ta/take-go! ch) ] ))))
+
+  ; or "lightweight" threads
+  (let [ch (chan)]  ; zero-buffer channel
+    (go (doseq [val ["here" "we" "go" "again"]]
+          (ta/put-now! ch val)))
+    (is= ["here" "we" "go" "again"] ; vector ok since order determinate within go block
+         (for [_ (range 4)]
+           (ta/take-now! ch))))
+
+  (let [ch (chan 1) ]
+    (go
       (ta/put-go! ch 42)
       (is= 42 (ta/take-go! ch))))
 
-  (let [c9 (ca/chan 9) ]
+  (let [c9 (chan 9) ]
     (ta/put-now!   c9 88)
     (ta/put-later! c9 99)
 
     (is= 88 (ta/take-now! c9))
-    (ta/take-later! c9 (partial cb-tst 99)))
+    (ta/take-later! c9 (partial is-expected-val? 99)))
 
-  (let [ c0 (ca/chan) ]
-    (ta/put-later! c0 10 (partial cb-tst true))
-    (ta/put-later! c0 11 (partial cb-tst true))
-    (ta/put-later! c0 12 (partial cb-tst true))
+  (let [ c0 (chan) ]
+    ; #todo clean up this example
+    (ta/put-later! c0 10 (partial is-expected-val? true))
+    (ta/put-later! c0 11 (partial is-expected-val? true))
+    (ta/put-later! c0 12 (partial is-expected-val? true))
 
     (is= 10 (ta/take-now!  c0))
     (is= 11 (ta/take-now!  c0))
     (is= 12 (ta/take-now!  c0))
 
     (ca/close! c0)
-    (is (false? (ta/put-later! c0 -1 (partial cb-tst false) )))
+    (is (false? (ta/put-later! c0 -1 (partial is-expected-val? false) )))
     (is (nil? (ta/take-now!  c0))))
 
   (let [ch-0  (ca/to-chan (range 5))
-        ch-1  (ca/chan 99)
+        ch-1  (chan 99)
   ]
     (is= [0 1 2 3 4] (ta/vec ch-0))
     (doseq [val (range 5)]
@@ -52,9 +84,9 @@
     (ca/close! ch-1)
     (is= [0 1 2 3 4] (ta/vec ch-1)))
 
-  (let [ch-in  (ca/chan)
-        ch-out (ca/chan 99) ]
-    (ca/go-loop [cnt (ta/take-go! ch-in) ] ; same as (go (loop ...))
+  (let [ch-in  (chan)
+        ch-out (chan 99) ]
+    (go-loop [cnt (ta/take-go! ch-in) ] ; same as (go (loop ...))
       (ta/put-go! ch-out cnt)
       (if (pos? cnt)
         (recur (dec cnt))
@@ -64,14 +96,14 @@
     (is= [3 2 1 0] (ta/vec ch-out)))
 
   ; put-go! & take-go!
-  (let [ch-pipe  (ca/chan)
-        ch-out (ca/chan 99) ]
-    (ca/go-loop [cnt 3]
+  (let [ch-pipe  (chan)
+        ch-out (chan 99) ]
+    (go-loop [cnt 3]
       (ta/put-go! ch-pipe cnt)
       (if (pos? cnt)
         (recur (dec cnt))
         (ca/close! ch-pipe)))
-    (ca/go-loop [val (ta/take-go! ch-pipe)]
+    (go-loop [val (ta/take-go! ch-pipe)]
       (if (t/not-nil? val)
         (do (ta/put-go! ch-out val)
             (recur (ta/take-go! ch-pipe)))
@@ -79,14 +111,14 @@
     (is= [3 2 1 0] (ta/vec ch-out)))
 
   ; put-now! & take-now!
-  (let [ch-pipe  (ca/chan)
-        ch-out (ca/chan 99) ]
-    (ca/go-loop [cnt 3]
+  (let [ch-pipe  (chan)
+        ch-out (chan 99) ]
+    (go-loop [cnt 3]
       (ta/put-now! ch-pipe cnt)
       (if (pos? cnt)
         (recur (dec cnt))
         (ca/close! ch-pipe)))
-    (ca/go-loop [val (ta/take-now! ch-pipe)]
+    (go-loop [val (ta/take-now! ch-pipe)]
       (if (t/not-nil? val)
         (do (ta/put-now! ch-out val)
             (recur (ta/take-now! ch-pipe)))
@@ -94,14 +126,14 @@
     (is= [3 2 1 0] (ta/vec ch-out)))
 
   ; put-later! & take-now!  (NOTE: generally do not want to use take-later! function)
-  (let [ch-pipe  (ca/chan)
-        ch-out (ca/chan 99) ]
-    (ca/go-loop [cnt 3]
+  (let [ch-pipe  (chan)
+        ch-out (chan 99) ]
+    (go-loop [cnt 3]
       (ta/put-later! ch-pipe cnt)
       (if (pos? cnt)
         (recur (dec cnt))
         (ca/close! ch-pipe)))
-    (ca/go-loop [val (ta/take-now! ch-pipe)]
+    (go-loop [val (ta/take-now! ch-pipe)]
       (if (t/not-nil? val)
         (do (ta/put-later! ch-out val)
             (recur (ta/take-now! ch-pipe)))
@@ -134,8 +166,8 @@
 
   (let [
     ch-0                      (ca/to-chan (range 10))
-    ch-1                      (ca/chan 99)
-    ch-2                      (ca/chan 99)
+    ch-1                      (chan 99)
+    ch-2                      (chan 99)
     _                         (ca/pipeline 1 ch-1 (map err-5) ch-0)
     [ok-chan-1 fail-chan-1]   (ca/split is-ok? ch-1 99 99)
     _                         (ca/pipeline 1 ch-2 (map err-3) ok-chan-1)
