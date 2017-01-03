@@ -133,48 +133,57 @@
 ;-----------------------------------------------------------------------------
 ; spy stuff
 (deftest t-spyx
-  (with-out-str     ; discard all printed output
-    (is= 5 (spyx (+ 2 3)))
+  (is= "(+ 2 3) => 5"
+    (tm/collapse-whitespace
+      (with-out-str
+        (is= 5 (spyx (+ 2 3))))))
 
-    (is= "(+ 2 3) => 5"
-      (tm/collapse-whitespace
-        (with-out-str
-          (spyx (+ 2 3)))))
+  ; #todo -> readme
+  (is= (tm/collapse-whitespace   "(inc 0) => 1
+                                  (inc 1) => 2
+                                  (inc 2) => 3 " )
+    (tm/collapse-whitespace
+      (with-out-str
+        (is= 3 (spyx (inc 0)
+                     (inc 1)
+                     (inc 2))))))
 
-    (is= 3 (spyx
-             (inc 0)
-             (inc 1)
-             (inc 2)))
-
-    ; #todo -> readme
-    (is= (tm/collapse-whitespace   "(inc 0) => 1
-                                    (inc 1) => 2
-                                    (inc 2) => 3 " )
-      (tm/collapse-whitespace
-        (with-out-str
-          (spyx
-            (inc 0)
-            (inc 1)
-            (inc 2)))))
-
-    ; #todo -> readme
-    (is= 3 (spyx
-             :some-kw
-             (inc 1)
-             (inc 2)))
-
-    (is= (tm/collapse-whitespace   ":some-kw
-                                    (inc 1) => 2
-                                    (inc 2) => 3 " )
-         (tm/collapse-whitespace
-           (with-out-str
-             (spyx
-               :some-kw
-               (inc 1)
-               (inc 2)))))
-
-  )
+  ; #todo -> readme
+  (is= (tm/collapse-whitespace   ":some-kw
+                                  (inc 1) => 2
+                                  (inc 2) => 3 " )
+       (tm/collapse-whitespace
+         (with-out-str
+           (is= 3    (spyx :some-kw
+                           (inc 1)
+                           (inc 2))))))
 )
+
+; #todo blog about this nested (is= ...) testing technique
+(deftest t-spy-let
+  (is=
+    (tm/collapse-whitespace  " a => 1
+                               b => 5
+                               (-> (inc a) (* 2) inc) => 5 " )
+    (tm/collapse-whitespace
+      (with-out-str
+        (is= 13
+          (t/spy-let [a (inc 0)
+                      b (+ 2 3)]
+            (spyx (-> (inc a) (* 2) inc))
+            (-> b (* 2) (+ 3)))))))
+
+  (is= (tm/collapse-whitespace  " a => 1
+                                  b => 5 " )
+    (tm/collapse-whitespace
+      (with-out-str
+        (is= 17
+          (t/spy-let [a (inc 0)
+                      b (+ 2 3)]
+            (-> b (* (inc a)) (+ 7)))))))
+
+)
+
 
 (deftest t-spy
   (testing "basic usage"

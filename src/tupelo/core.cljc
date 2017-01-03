@@ -17,6 +17,7 @@
     [tupelo.types :as types]
     [tupelo.schema :as ts]
   )
+  (:refer-clojure :exclude [seqable?] )
   (:import [java.io BufferedReader StringReader]))
 ;[clojure.spec :as sp]
 ;[clojure.spec.gen :as sp.gen]
@@ -334,6 +335,45 @@
 
 ; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
 
+(defn- spy-let-proc
+  [exprs]
+  (let [decls (first exprs)
+        _     (when (not (even? (count decls)))
+                (throw (IllegalArgumentException. (str "spy-let-proc: uneven number of decls:" decls))))
+       ;_     (println :decls decls)
+        forms (rest exprs)
+        fmt-pair (fn [[dest src]]
+                  ;(println :fmt-pair dest "<=" src)
+                   [ dest src  '_ (list 'spyx dest)] )
+        pairs (vec (partition 2 decls))
+       ;_ (println :pairs pairs)
+        r1    (vec (mapcat  fmt-pair pairs ))
+
+        final-code  `(let ~r1 ~@forms )
+       ]
+
+      ; (newline) (newline)
+      ; (println :spyx-proc :r1 )
+      ; (pprint/pprint r1)
+
+      ; (newline) (newline)
+      ; (println :spyx-proc :forms )
+      ; (pprint/pprint forms)
+
+      ; (newline) (newline)
+      ; (println :spyx-proc :final-code )
+      ; (pprint/pprint final-code)
+      ; (newline) (newline)
+    final-code
+  )
+)
+
+(defmacro spy-let
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expressions, printing both the expression and its value to stdout. Returns the value of the
+   last expression."
+  [& exprs]
+  (spy-let-proc exprs))
 ; original
 #_(s/defn truthy? :- s/Bool
     "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
@@ -947,10 +987,10 @@
     coll))
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
-(when (is-pre-clojure-1-9?)
-  (s/defn ^{:deprecated "1.9.0-alpha5"} seqable? :- s/Bool ; from clojure.contrib.core/seqable
+(pre-clojure-1-9
+  (defn ^{:deprecated "1.9.0-alpha5"} seqable?  ; from clojure.contrib.core/seqable
     "Returns true if (seq x) will succeed, false otherwise."
-    [x :- s/Any]
+    [x]
     (or (seq? x)
       (instance? clojure.lang.Seqable x)
       (nil? x)
