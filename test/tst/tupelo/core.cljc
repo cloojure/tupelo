@@ -27,8 +27,12 @@
 ; Java version stuff
 
 (defn fn-any [] 42)
-(defn fn7 [] (t/only-java-1-7-plus-or-throw 7))
-(defn fn8 [] (t/only-java-1-8-plus-or-throw 8))
+(defn fn7 [] (t/if-java-1-7-plus
+               7
+               (throw (RuntimeException. "Unimplemented prior to Java 1.7: "))))
+(defn fn8 [] (t/if-java-1-8-plus
+               8
+               (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 
 (deftest t-java-version
   (when (t/is-java-1-7?)

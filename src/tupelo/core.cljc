@@ -148,21 +148,22 @@
 (defn is-java-1-7-plus? [] (java-version-min? "1.7"))
 (defn is-java-1-8-plus? [] (java-version-min? "1.8"))
 
-(defmacro only-java-1-7-plus-or-throw
-  "Wraps code that should only be included if JVM is Java 1.7 or higher. 
+(defmacro if-java-1-7-plus
+  "Usage:  (if-java-1-7-plus  if-form  else-form)
+  Wraps code that should only be included if JVM is Java 1.7 or higher.
    Throws otherwise."
-  [& forms]
+  [if-form else-form]
   (if (is-java-1-7-plus?)
-    `(do ~@forms)
-    `(do (throw (RuntimeException. "Unimplemented prior to Java 1.7: ")))))
+    `(do ~if-form)
+    `(do ~else-form)))
 
-(defmacro only-java-1-8-plus-or-throw
+(defmacro if-java-1-8-plus
   "Wraps code that should only be included if JVM is Java 1.8 or higher. 
    Throws otherwise."
-  [& forms]
+  [if-form else-form]
   (if (is-java-1-8-plus?)
-    `(do ~@forms)
-    `(do (throw (RuntimeException. "Unimplemented prior to Java 1.8: ")))))
+      `(do ~if-form)
+      `(do ~else-form)))
 
 ; #todo need min-java-1-8  ???
 

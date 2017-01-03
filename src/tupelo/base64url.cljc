@@ -23,12 +23,14 @@
                        [\- \_ \=] ] )))
 
 (defn base64url-encoder []
-  (t/only-java-1-8-plus-or-throw
-    (java.util.Base64/getUrlEncoder)))
+  (t/if-java-1-8-plus
+    (java.util.Base64/getUrlEncoder)
+    (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 
 (defn base64url-decoder []
-  (t/only-java-1-8-plus-or-throw
-    (java.util.Base64/getUrlDecoder)))
+  (t/if-java-1-8-plus
+    (java.util.Base64/getUrlDecoder)
+    (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 
 (defn encode-bytes
   "Encodes a byte array into base64url, returning a new byte array."

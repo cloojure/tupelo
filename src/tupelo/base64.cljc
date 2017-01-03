@@ -22,13 +22,14 @@
                        [\+ \/ \=] ] )))
 
 (defn base64-encoder []
-  (t/only-java-1-8-plus-or-throw
-    (java.util.Base64/getEncoder)))
+  (t/if-java-1-8-plus
+    (java.util.Base64/getEncoder)
+    (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 
 (defn base64-decoder []
-  (t/only-java-1-8-plus-or-throw
-    (java.util.Base64/getDecoder)))
-
+  (t/if-java-1-8-plus
+    (java.util.Base64/getDecoder)
+    (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 
 (defn encode-bytes
   "Encodes a byte array into base64, returning a new byte array."
