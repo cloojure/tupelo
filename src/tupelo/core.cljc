@@ -11,6 +11,7 @@
     [clojure.pprint :as pprint]
     [clojure.string :as str]
     [clojure.set :as set]
+    [clojure.test]
     [cheshire.core :as cc]
     [schema.core :as s]
     [tupelo.string :as tstr]
@@ -1066,6 +1067,7 @@
 ; #todo make it handle either tst.orig.namespace or orig.namespace-test
 ; #todo make it a macro to accept unquoted namespace values
 
+; #todo delete this
 (defn ^:deprecated ^:no-doc test-all
   "Convenience fn to reload a namespace & the corresponding test namespace from disk and
   execute tests in the REPL.  Assumes canonical project test file organization with
