@@ -267,16 +267,13 @@
                                                    "spy: either first or 2nd arg must be :msg \n   args:"
                                                    (pr-str [arg1 arg2 arg3]))))))
 
-  ([msg value]                                              ; 2-arg arity assumes value is last arg
+  ; #todo change 2-arg arity to assume keyword arg is message. If both are kw's, assume 1st is msg.
+  ([msg value]  ; 2-arg arity assumes value is last arg
    (spy :msg msg value))
 
   ([value]                                                  ; 1-arg arity uses a generic "spy" message
    (spy :msg "spy" value)))
 
-; #todo need to write (spy-let ...) => (let [ x 1  _ (spyx x)
-;                                             y 2  _ (spyx y) ]   ...)
-
-; #todo allos spyx to have labels like (spyx :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
 
 (defn- spyx-proc
   [exprs]
@@ -311,6 +308,7 @@
   )
 )
 
+; #todo allow spyx to have labels like (spyx :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
 (defmacro spyx
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
    expressions, printing both the expression and its value to stdout. Returns the value of the
@@ -377,6 +375,7 @@
    last expression."
   [& exprs]
   (spy-let-proc exprs))
+
 ; original
 #_(s/defn truthy? :- s/Bool
     "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
@@ -1009,7 +1008,7 @@
   []
   (s/set-fn-validation! true) ; enforce fn schemas
   (refer 'tupelo.core :only
-   '[ spy spyx spyxx with-spy-indent truthy? falsey?
+   '[ spy spy-let spyx spyxx with-spy-indent truthy? falsey?
       not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
       forv glue append prepend grab dissoc-in fetch-in select-values keyvals only third
       it-> safe-> keep-if drop-if
