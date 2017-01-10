@@ -276,6 +276,7 @@
    (spy :msg "spy" value)))
 
 
+; #todo stop (spyx :hello) result:   :hello => :hello
 (defn- spyx-proc
   [exprs]
 ; (println :spyx-proc :exprs exprs)
