@@ -11,6 +11,7 @@
     [clojure.java.shell :as shell]
     [clojure.string :as str]
     [tupelo.string :as ts]
+    [tupelo.schema :as tsc]
     [schema.core :as s]
     [tupelo.core :as t]
   ))
@@ -142,8 +143,9 @@
 
 
 ; #todo README & more tests
-(defn find-pattern
-  [pattern data]
+(s/defn find-pattern :- s/Int
+  [pattern  :- tsc/List
+   data     :- tsc/List ]
   (let [parts           (partition (count pattern) 1 data)
         patt-matches?   (fn [idx tst-pat] [idx (= tst-pat pattern) ] )
         idx-labelled    (map-indexed patt-matches? parts)
