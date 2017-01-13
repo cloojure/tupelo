@@ -83,5 +83,31 @@
 (deftest t-find-pattern
 ;              0 1 2  3    4    5    6    7   8 9]
   (let [data [ 0 1 2 0xAA 0xFA 0xFF 0xDA 0xDD 8 9] ]
-    (is= 5 (find-pattern  [0xFF 0xDA] data))))
+    (is= 5 (first (find-pattern [0xFF 0xDA] data))))
+  (let [data [ 0 1 2 3 0 1 2 3 0 1 2 3] ]
+    (is= [0 4 8]
+      (find-pattern [0      ] data)
+      (find-pattern [0 1    ] data)
+      (find-pattern [0 1 2  ] data)
+      (find-pattern [0 1 2 3] data))
+    (is= [1 5 9]
+      (find-pattern [1      ] data)
+      (find-pattern [1 2    ] data)
+      (find-pattern [1 2 3  ] data))
+    (is= [1 5]
+      (find-pattern [1 2 3 0] data))
+    (is= [2 6 10]
+      (find-pattern [2      ] data)
+      (find-pattern [2 3    ] data))
+    (is= [2 6]
+      (find-pattern [2 3 0  ] data)
+      (find-pattern [2 3 0 1] data)))
+  (is= [0] (find-pattern [0]   [0 1 2 3] ))
+  (is= [1] (find-pattern [1]   [0 1 2 3] ))
+  (is= [2] (find-pattern [2]   [0 1 2 3] ))
+  (is= [3] (find-pattern [3]   [0 1 2 3] ))
+  (is= [ ] (find-pattern [3 4] [0 1 2 3] ))
+  (is= [ ] (find-pattern [9]   [0 1 2 3] ))
+)
+
 

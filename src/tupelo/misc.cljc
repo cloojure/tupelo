@@ -11,7 +11,7 @@
     [clojure.java.shell :as shell]
     [clojure.string :as str]
     [tupelo.string :as ts]
-    [tupelo.schema :as tsc]
+    [tupelo.schema :as tsk]
     [schema.core :as s]
     [tupelo.core :as t]
   ))
@@ -144,14 +144,21 @@
 
 ; #todo -> tupelo.vector
 ; #todo README & more tests
-(s/defn find-pattern :- s/Int
-  [pattern  :- tsc/List
-   data     :- tsc/List ]
-  (let [parts           (partition (count pattern) 1 data)
-        patt-matches?   (fn [idx tst-pat] [idx (= tst-pat pattern) ] )
-        idx-labelled    (map-indexed patt-matches? parts)
-        idx-matches?    (fn [[idx matches]] (truthy? matches))
-        idx-that-match  (filter idx-matches? idx-labelled)
-        result          (first (first idx-that-match)) ]
-    result ))
+
+(s/defn find-pattern :- [s/Int]
+  "Searches for pattern-vec within data-vec, returning a lazy seq of indexes into data-vec."
+  [pattern-vec :- tsk/List
+   data-vec :- tsk/List]
+  (let [parts         (partition (count pattern-vec) 1 data-vec)
+        idxs          (keep-indexed
+                        (fn [idx candidate]
+                          (when (= candidate pattern-vec)
+                            idx))
+                        parts)]
+      idxs))
+
+
+
+
+
 
