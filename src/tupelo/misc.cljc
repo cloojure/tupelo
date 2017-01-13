@@ -142,6 +142,7 @@
 ;-----------------------------------------------------------------------------
 
 
+; #todo -> tupelo.vector
 ; #todo README & more tests
 (s/defn find-pattern :- s/Int
   [pattern  :- tsc/List
