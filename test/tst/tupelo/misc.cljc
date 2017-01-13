@@ -80,3 +80,8 @@
   (throws? Exception (factorial -1))
   (throws? Exception (factorial -1)))
 
+(deftest t-find-pattern
+;              0 1 2  3    4    5    6    7   8 9]
+  (let [data [ 0 1 2 0xAA 0xFA 0xFF 0xDA 0xDD 8 9] ]
+    (is= 5 (find-pattern  [0xFF 0xDA] data))))
+

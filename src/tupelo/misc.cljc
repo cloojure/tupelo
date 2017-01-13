@@ -138,3 +138,17 @@
     1
     (apply * (thru 1 n))))
 
+;-----------------------------------------------------------------------------
+
+
+; #todo README & more tests
+(defn find-pattern
+  [pattern data]
+  (let [parts           (partition (count pattern) 1 data)
+        patt-matches?   (fn [idx tst-pat] [idx (= tst-pat pattern) ] )
+        idx-labelled    (map-indexed patt-matches? parts)
+        idx-matches?    (fn [[idx matches]] (truthy? matches))
+        idx-that-match  (filter idx-matches? idx-labelled)
+        result          (first (first idx-that-match)) ]
+    result ))
+
