@@ -503,6 +503,34 @@ And, of course, you can also replace an element in a sequence:
 
 As with `drop-at`, `replace-at` will throw an exception for invalid values of `index`.
 
+=== Use `conjv` to append values
+
+Do you know what `conj` does when you pass it `nil` instead of a sequence?  It silently replaces it
+with an empty list:  `(conj nil 5)` => `(5)`  This can cause you to accumulate items in reverse
+order if you aren't aware of the default behavior:
+
+[source,clojure]
+----
+  (-> nil
+    (conj 1)
+    (conj 2)
+    (conj 3))
+  ;=> (3 2 1)
+----
+
+For convenience, it is probably to coerce the result to a vector, which is the job of `conjv`:
+
+[source,clojure]
+----
+  (-> nil
+    (conjv 1)
+    (conjv 2)
+    (conjv 3))
+  ;=> [1 2 3]
+----
+
+The result is always a vector (copied from Stuart Sierra post 2014-2-10).
+
 === Convenience in Testing Seq's
 
 Clojure has an `empty?` function to indicate if a collection has zero elements or is `nil` (i.e. not

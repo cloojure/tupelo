@@ -627,6 +627,32 @@
                :a2 { :b1 "b1"
                      :b2 { :c1 "c1" }}} )))
 
+(deftest t-conjv
+  (is= [nil    ] (t/conjv nil   nil ))
+  (is= [      9] (t/conjv nil     9 ))
+
+  (is= [1      ] (t/conjv nil 1     ))
+  (is= [1 2    ] (t/conjv nil 1 2   ))
+  (is= [1 2 3  ] (t/conjv nil 1 2 3 ))
+
+  (is= [1      ] (t/conjv  [] 1     ))
+  (is= [1 2    ] (t/conjv  [] 1 2   ))
+  (is= [1 2 3  ] (t/conjv  [] 1 2 3 ))
+  (is= [1      ] (t/conjv '() 1     ))
+  (is= [1 2    ] (t/conjv '() 1 2   ))
+  (is= [1 2 3  ] (t/conjv '() 1 2 3 ))
+
+  (is= [      9] (t/conjv  [     ] 9 ))
+  (is= [1     9] (t/conjv  [1    ] 9 ))
+  (is= [1 2   9] (t/conjv  [1 2  ] 9 ))
+  (is= [1 2 3 9] (t/conjv  [1 2 3] 9 ))
+
+  (is= [      9] (t/conjv '(     ) 9 ))
+  (is= [1     9] (t/conjv '(1    ) 9 ))
+  (is= [1 2   9] (t/conjv '(1 2  ) 9 ))
+  (is= [1 2 3 9] (t/conjv '(1 2 3) 9 ))
+)
+
 (deftest t-select-keys
   (let [map1  {:a 1 :b 2 :c 3 :d 4 :e 5}]
     (is= [1 2 3 4 5] (select-values map1 [:a :b :c :d :e]))

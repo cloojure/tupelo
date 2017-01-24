@@ -581,6 +581,20 @@
 ; singles). Basically like compiler-like guarentees against misspellings, duplicate entries, missing
 ; entries.
 
+(s/defn ^:deprecated conjv :- [s/Any]
+  "***** DEPRECATED:  replaced by tupelo.core/append *****
+
+   Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.
+   The result is always returned as a vector. Note that `(conjv nil 5)` -> `[5]`"
+  ; From Stuart Sierra post 2014-2-10
+  ([base-coll :- [s/Any]
+    value :- s/Any]
+    (conj (vec base-coll) value))
+  ([base-coll :- [s/Any]
+    value :- s/Any
+    & values :- [s/Any]]
+    (apply conj (vec base-coll) value values)))
+
 (s/defn only :- s/Any
   "(only seqable-arg)
   Ensures that a sequence is of length=1, and returns the only value present.
@@ -1012,7 +1026,7 @@
   (refer 'tupelo.core :only
    '[ spy spy-let spyx spyxx with-spy-indent truthy? falsey?
       not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
-      forv glue append prepend grab dissoc-in fetch-in select-values keyvals only third
+      forv conjv glue append prepend grab dissoc-in fetch-in select-values keyvals only third
       it-> safe-> keep-if drop-if
       strcat nl pretty pretty-str json->clj clj->json clip-str rng thru rel=
       drop-at insert-at replace-at starts-with?
@@ -1029,20 +1043,6 @@
   Returns a lazy seq of lines from a string"
   [string-arg]
   (line-seq (BufferedReader. (StringReader. string-arg))))
-
-(s/defn ^:deprecated ^:no-doc conjv :- [s/Any]
-  "***** DEPRECATED:  replaced by tupelo.core/append *****
-
-   Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.
-   The result is always returned as a vector."
-  ; From Stuart Sierra post 2014-2-10
-  ([base-coll :- [s/Any]
-    value :- s/Any]
-    (conj (vec base-coll) value))
-  ([base-coll :- [s/Any]
-    value :- s/Any
-    & values :- [s/Any]]
-    (apply conj (vec base-coll) value values)))
 
 ;---------------------------------------------------------------------------------------------------
 ; Another benefit of test-all:  don't need "-test" suffix like in lein test:

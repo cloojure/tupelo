@@ -158,7 +158,34 @@
       idxs))
 
 
-
-
-
+;  Make clojure versions of all pcapng stuff
+;
+;def split_float( fval ):
+;"""Splits a float into integer and fractional parts."""
+;frac, whole = math.modf( fval )
+;micros = int( round( frac * 1000000 ))
+;return int(whole), micros
+;
+;def curr_utc_timetuple():
+;"""Returns the current UTC time as a (secs, usecs) tuple."""
+;global test_ctx
+;if test_ctx['enable']:
+;utc_secs = test_ctx['utc_time']
+;else:
+;utc_secs = time.time()
+;secs, usecs = split_float( utc_secs )
+;return secs, usecs
+;
+;def curr_utc_secs():
+;"""Returns the current UTC time in integer seconds."""
+;secs, usecs = curr_utc_timetuple()
+;return secs
+;
+;def curr_utc_secs_hexstr()
+;"""Returns the current UTC time in integer seconds."""
+;return int32_to_hexstr(curr_utc_secs())
+;
+;
+;
+;
 
