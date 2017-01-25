@@ -877,6 +877,12 @@
   "Shortcut to cheshire.core/parse-string"
   (cc/parse-string arg true))                               ; true => keywordize-keys
 
+(defn int->kw [arg]
+  (keyword (str arg)))
+
+(defn kw->int [arg]
+  (Integer/parseInt (name arg)))
+
 ; #todo add test & README
 (defn clj->json [arg]                                       ; #todo experimental
   "Shortcut to cheshire.core/generate-string"
@@ -1029,7 +1035,7 @@
       forv conjv glue append prepend grab dissoc-in fetch-in select-values keyvals only third
       it-> safe-> keep-if drop-if
       strcat nl pretty pretty-str json->clj clj->json clip-str rng thru rel=
-      drop-at insert-at replace-at starts-with?
+      drop-at insert-at replace-at starts-with? int->kw kw->int
       split-when split-match wild-match? increasing? increasing-or-equal?
       with-exception-default ] ))
 

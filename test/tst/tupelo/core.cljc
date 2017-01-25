@@ -679,6 +679,11 @@
     (throws? (select-values map1 [:z]))
   ))
 
+(deftest t-int-kw
+  (is= :23 (int->kw  23))
+  (is=  23 (kw->int :23))
+)
+
 (deftest t-only
   (is= 42 (only [42]))
   (is= :x (only [:x]))
