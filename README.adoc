@@ -1033,7 +1033,7 @@ Please see the link:changelog.adoc[the ChangeLog for details] docs.
 
 == License
 
-Copyright © 2016 Alan Thompson.
+Copyright © 2017 Alan Thompson.
 
 Distributed under the Eclipse Public License, the same as Clojure.
 
