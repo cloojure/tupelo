@@ -580,7 +580,7 @@ for any predicate and collection. The situation has become more confusion as of 
 So the new `any?` function is a semantic mismatch to the `not-any?` function and 
 is completely unrelated to testing a collection using a predicate.
 
-The Tupelo library attempts to resolve this confusion situation by providing both positive and
+The Tupelo library attempts to resolve this confusing situation by providing both positive and
 negative versions of the collection test with a name which does not conflict with either
 `any?` or `not-any?` in `clojure.core`:
 
