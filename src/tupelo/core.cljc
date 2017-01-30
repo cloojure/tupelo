@@ -40,11 +40,23 @@
     (println version-str)
     (println "-------------------------------------")))
 
+(defn zip [& args]
+  "Zips together vectors like zipmap: (zip [:a :b :c] [1 2 3])
+  -> [ [:a 1] [:b 2] [:c 3] ]    Not lazy. "
+  (apply mapv vector args))
+(defn zipz [& args]
+  "Lazy version of zip"
+  (apply map vector args))
+
 (defmacro forv
-  "Like clojure.core/for but returns results in a vector.  Equivalent to (into [] (for ...)). Not
-   lazy."
+  "Like clojure.core/for but returns results in a vector.   Not lazy."
   [& body]
   `(vec (for ~@body)))
+
+(defmacro forz
+  "Lazy version of tupelo/forv. Equivalent to clojure.core/for."
+  [& body]
+  `(for ~@body))
 
 ; #todo rename to "get-in-safe" ???
 (s/defn fetch-in :- s/Any
@@ -1033,7 +1045,7 @@
    '[ spy spy-let spyx spyxx with-spy-indent truthy? falsey?
       not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
       forv conjv glue append prepend grab dissoc-in fetch-in select-values keyvals only third
-      it-> safe-> keep-if drop-if
+      it-> safe-> keep-if drop-if zip zipz
       strcat nl pretty pretty-str json->clj clj->json clip-str rng thru rel=
       drop-at insert-at replace-at starts-with? int->kw kw->int
       split-when split-match wild-match? increasing? increasing-or-equal?

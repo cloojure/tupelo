@@ -5,7 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.core
-  (:use tupelo.core clojure.test tupelo.test )
+  (:use clojure.test tupelo.test )
   (:require
 ;   [clojure.spec :as sp]
 ;   [clojure.spec.gen :as sp.gen]
@@ -395,6 +395,11 @@
     (is   (contains-elem? coll  :two))
     (is   (contains-elem? coll  "three"))
     (is   (contains-elem? coll  \4))))
+
+(deftest t-zip
+  (is= [ [:a 1] [:b 2] [:c 3] ]
+        (zip  [:a :b :c] [1 2 3])
+        (zipz [:a :b :c] [1 2 3])))
 
 ;(sp/def ::vector (sp/coll-of clj/any :kind vector?))
 ;(deftest t-forv-spec
@@ -1110,7 +1115,7 @@
                         [ nil 32 "complicated" (Math/pow 2 5) '( "str" nil "ing") ]]] )
          "I have a complicated string" ))
 
-  (let [chars-set   (into #{} (tm/char-seq \a \z))
+  (let [chars-set   (into #{} (t/char-seq \a \z))
         str-val     (strcat chars-set) ]
     (is (= 26 (count chars-set)))
     (is (= 26 (count str-val)))
@@ -1170,20 +1175,18 @@
 )
 
 (deftest char-seq-t
-  (is (= [\a ]              (char-seq \a \a)))
-  (is (= [\a \b]            (char-seq \a \b)))
-  (is (= [\a \b \c]         (char-seq \a \c)))
+  (is (= [\a ]              (t/char-seq \a \a)))
+  (is (= [\a \b]            (t/char-seq \a \b)))
+  (is (= [\a \b \c]         (t/char-seq \a \c)))
 
-  (is (= [\a ]              (char-seq 97 97)))
-  (is (= [\a \b]            (char-seq 97 98)))
-  (is (= [\a \b \c]         (char-seq 97 99)))
+  (is (= [\a ]              (t/char-seq 97 97)))
+  (is (= [\a \b]            (t/char-seq 97 98)))
+  (is (= [\a \b \c]         (t/char-seq 97 99)))
 
-  (is (thrown? Exception    (char-seq 987654321 987654321 )))
-  (is (thrown? Exception    (char-seq \c \a)))
-  (is (thrown? Exception    (char-seq 99 98)))
+  (is (thrown? Exception    (t/char-seq 987654321 987654321 )))
+  (is (thrown? Exception    (t/char-seq \c \a)))
+  (is (thrown? Exception    (t/char-seq 99 98)))
   )
-
-
 
 (deftest t-drop-at
   (is= [] (drop-at (range 1) 0))
