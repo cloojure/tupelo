@@ -18,7 +18,7 @@
     [tupelo.types :as types]
     [tupelo.schema :as ts]
   )
-  (:refer-clojure :exclude [seqable?] )
+  (:refer-clojure :exclude [map seqable?] )
   (:import [java.io BufferedReader StringReader]))
 ;[clojure.spec :as sp]
 ;[clojure.spec.gen :as sp.gen]
@@ -46,7 +46,7 @@
   (apply mapv vector args))
 (defn zipz [& args]
   "Lazy version of zip"
-  (apply map vector args))
+  (apply clojure.core/map vector args))
 
 (defmacro forv
   "Like clojure.core/for but returns results in a vector.   Not lazy."
@@ -57,6 +57,17 @@
   "Lazy version of tupelo/forv. Equivalent to clojure.core/for."
   [& body]
   `(for ~@body))
+
+; #todo replace clojure.core/map : not lazy; can add one of :trunc or :lazy modifiers
+; (map + (range 5))
+; (map + 0 (range 5))
+; (map + (range 5) :lazy)
+; (map vector [:a :b :c] (range 9) :trunc)  ; error w/o :trunc
+(defn map [& args]  (apply clojure.core/map args))
+; #todo (map-indexed ... :lazy)
+; #todo (mapcat ... :lazy)
+; #todo (for ... :lazy)
+; #todo (concat ... :lazy)
 
 ; #todo rename to "get-in-safe" ???
 (s/defn fetch-in :- s/Any
@@ -655,7 +666,7 @@
                                 result#))))
         ]
     `(let [~g ~expr
-           ~@(interleave (repeat g) (map pstep forms))]
+           ~@(interleave (repeat g) (clojure.core/map pstep forms))]
        ~g)))
 
 ; #todo make an it?-> (fff ppp it? qqq) to halt thread if encounter nil result (then returns nil)
@@ -786,8 +797,8 @@
                                            (pr-str [start end step])))))
      (it-> (inc nsteps-int)
            (rng it)
-           (map #(* step %) it)
-           (map #(+ start %) it)
+           (clojure.core/map #(* step %) it)
+           (clojure.core/map #(+ start %) it)
            (vec it))))
 )
 
@@ -865,7 +876,7 @@
         ; Coerce any integer values into character equivalents (e.g. 65 -> \A), then combine
         ; into a single string.
         result         (apply str
-                         (map char
+                         (clojure.core/map char
                            (keep-if not-nil? seq-of-scalars)))
         ]
     result))
