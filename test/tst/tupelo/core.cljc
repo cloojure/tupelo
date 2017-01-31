@@ -398,8 +398,7 @@
 
 (deftest t-zip
   (is= [ [:a 1] [:b 2] [:c 3] ]
-        (zip  [:a :b :c] [1 2 3])
-        (zipz [:a :b :c] [1 2 3])))
+        (zip  [:a :b :c] [1 2 3])))
 
 ;(sp/def ::vector (sp/coll-of clj/any :kind vector?))
 ;(deftest t-forv-spec

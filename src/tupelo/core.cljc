@@ -41,14 +41,15 @@
     (println "-------------------------------------")))
 
 (defn zip [& args]
-  "Zips together vectors like zipmap: (zip [:a :b :c] [1 2 3])
-  -> [ [:a 1] [:b 2] [:c 3] ]    Not lazy. "
-  (apply mapv vector args))
-(defn zipz [& args]
-  "Lazy version of zip"
-  (apply clojure.core/map vector args))
+  "Zips together vectors like zipmap (like in Python):
+   
+     (zip [:a :b :c] [1 2 3]) ->  [ [:a 1] [:b 2] [:c 3] ]     
 
-(defmacro forv
+   Use (zip ... :trunc) if you want to truncate all inputs to the lenght of the shortest.
+   Use (zip ... :lazy)  if you want it to be lazy.  "
+  (apply mapv vector args))
+
+(defmacro forv    ; #todo:   vfor
   "Like clojure.core/for but returns results in a vector.   Not lazy."
   [& body]
   `(vec (for ~@body)))
@@ -63,11 +64,15 @@
 ; (map + 0 (range 5))
 ; (map + (range 5) :lazy)
 ; (map vector [:a :b :c] (range 9) :trunc)  ; error w/o :trunc
-(defn map [& args]  (apply clojure.core/map args))
-; #todo (map-indexed ... :lazy)
-; #todo (mapcat ... :lazy)
-; #todo (for ... :lazy)
-; #todo (concat ... :lazy)
+(defn mapper [& args]   ; alts:  mapr  onto  morph  vmap
+  "An eager version of clojure.core/map
+   Use (zip ... :trunc) if you want to truncate all inputs to the lenght of the shortest.
+   Use (zip ... :lazy)  if you want it to be lazy.  "
+  (apply clojure.core/map args))
+; #todo (map-indexed ... :lazy)   vmap-indexed
+; #todo (mapcat ... :lazy)    vmapcat
+; #todo (for ... :lazy)       vfor
+; #todo (concat ... :lazy)    vconcat
 
 ; #todo rename to "get-in-safe" ???
 (s/defn fetch-in :- s/Any
@@ -781,7 +786,7 @@
 ;       (thru :co 1 5)   -> [1 2 3 4  ]  ; like (range ...)
 ;       (thru :oo 1 5)   -> [  2 3 4  ]
 (defn thru
-  "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. "
+  "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. Not lazy. "
   ([end]
    (rng (inc end)))
   ([start end]
@@ -1056,7 +1061,7 @@
    '[ spy spy-let spyx spyxx with-spy-indent truthy? falsey?
       not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
       forv conjv glue append prepend grab dissoc-in fetch-in select-values keyvals only third
-      it-> safe-> keep-if drop-if zip zipz
+      it-> safe-> keep-if drop-if zip 
       strcat nl pretty pretty-str json->clj clj->json clip-str rng thru rel=
       drop-at insert-at replace-at starts-with? int->kw kw->int
       split-when split-match wild-match? increasing? increasing-or-equal?
