@@ -396,9 +396,15 @@
     (is   (contains-elem? coll  "three"))
     (is   (contains-elem? coll  \4))))
 
-(deftest t-zip
-  (is= [ [:a 1] [:b 2] [:c 3] ]
-        (zip  [:a :b :c] [1 2 3])))
+(deftest t-master
+  (testing "zip"
+    (is= (zip [:a :b :c] [1 2 3])   [[:a 1] [:b 2] [:c 3]] )
+    (is= (zip [:a] [1])             [[:a 1]] )
+    (is= (zip [] [])                []  )
+    (is= (vector [])               [[]] )
+    (is= (mapv identity [] [])      []  )
+  )
+)
 
 ;(sp/def ::vector (sp/coll-of clj/any :kind vector?))
 ;(deftest t-forv-spec

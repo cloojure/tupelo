@@ -32,14 +32,15 @@
   [] (newline))
 
 (defn print-versions []
-  (let [version-str   (format "   Clojure %s    Java %s"  
-                        (clojure-version)
-                        (System/getProperty "java.version")) ]
+  (let [version-str   (format "   Clojure %s    Java %s"
+                        (clojure-version) (System/getProperty "java.version")) ]
     (nl)
     (println "-------------------------------------")
     (println version-str)
     (println "-------------------------------------")))
 
+; #todo add schema; result = ts/List[ ts/Pair ]
+; #todo add :trunc & assert;  add :lazy
 (defn zip [& args]
   "Zips together vectors like zipmap (like in Python):
    
