@@ -454,7 +454,7 @@
    coll; otherwise returns true.  Equivalent to clojure.core/not-any?, but inverse of has-some?."
   [pred :-  s/Any
    coll :- [s/Any] ]
-  (falsey? (some pred coll)))
+  (falsey? (some pred coll))) ; #todo -> (not (has-some? pred coll))
 
 (s/defn contains-elem? :- s/Bool
   "For any collection coll & element tgt, returns true if coll contains at least one
