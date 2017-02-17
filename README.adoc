@@ -610,10 +610,10 @@ The unit test shows these functions in action:
 
 === Searching for entries in Collections, Maps, and Sets
 
-There are convenient functions for this purpose [in the Tupelo library][1].  In particular, the
-functions `contains-elem?`, `contains-key?`, and `contains-val?` are very useful.  
+Sometimes we want an easy way to find out if an item is n a collection.  The Tupelo library supplies
+three convenient functions for this purpose: `contains-elem?`, `contains-key?`, and `contains-val?`.  
 
-`contains-elem?` is the most generic and is intended for vectors or any other clojure `seq`:
+The most generic function is `contains-elem?`, which is intended for vectors or any other clojure `seq`:
 
 [source,clojure]
 ----
@@ -730,7 +730,6 @@ And, for maps, you can also search for values with `contains-val?`:
 ----
 
 As seen in the test, each of these functions works correctly when for searching for `nil` values.
-
 
 === Focus on Vectors
 
