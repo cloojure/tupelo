@@ -340,6 +340,55 @@
   (is= (drop-if not-empty?  [""  []  '()  {}     #{}  nil] )
                             [""  []  '()  {}     #{}  nil] ))
 
+(deftest t-contains-elem
+  (testing "vecs"
+    (let [coll (range 3)]
+      (isnt (contains-elem? coll -1))
+      (is   (contains-elem? coll  0))
+      (is   (contains-elem? coll  1))
+      (is   (contains-elem? coll  2))
+      (isnt (contains-elem? coll  3))
+      (isnt (contains-elem? coll  nil)))
+
+    (let [coll [ 1 :two "three" \4]]
+      (isnt (contains-elem? coll  :no-way))
+      (isnt (contains-elem? coll  nil))
+      (is   (contains-elem? coll  1))
+      (is   (contains-elem? coll  :two))
+      (is   (contains-elem? coll  "three"))
+      (is   (contains-elem? coll  \4)))
+
+    (let [coll [:yes nil 3]]
+      (isnt (contains-elem? coll  :no-way))
+      (is   (contains-elem? coll  :yes))
+      (is   (contains-elem? coll  nil))))
+
+  (testing "maps"
+    (let [coll {1 :two "three" \4}]
+      (isnt (contains-elem? coll nil ))
+      (isnt (contains-elem? coll [1 :no-way] ))
+      (is   (contains-elem? coll [1 :two]))
+      (is   (contains-elem? coll ["three" \4])))
+    (let [coll {1 nil "three" \4}]
+      (isnt (contains-elem? coll [nil 1] ))
+      (is   (contains-elem? coll [1 nil] )))
+    (let [coll {nil 2 "three" \4}]
+      (isnt (contains-elem? coll [1 nil] ))
+      (is   (contains-elem? coll [nil 2] ))))
+
+  (testing "sets"
+    (let [coll #{1 :two "three" \4}]
+      (isnt (contains-elem? coll  :no-way))
+      (is   (contains-elem? coll  1))
+      (is   (contains-elem? coll  :two))
+      (is   (contains-elem? coll  "three"))
+      (is   (contains-elem? coll  \4)))
+
+    (let [coll #{:yes nil}]
+      (isnt (contains-elem? coll  :no-way))
+      (is   (contains-elem? coll  :yes))
+      (is   (contains-elem? coll  nil)))))
+
 (deftest t-contains-key? ; #todo add to README
   (is   (contains-key?  {:a 1 :b 2} :a))
   (is   (contains-key?  {:a 1 :b 2} :b))
@@ -348,12 +397,19 @@
   (isnt (contains-key?  {:a 1 :b 2}  1))
   (isnt (contains-key?  {:a 1 :b 2}  2))
 
+  (is   (contains-key?  {:a 1 nil   2} nil))
+  (isnt (contains-key?  {:a 1 :b  nil} nil))
+  (isnt (contains-key?  {:a 1 :b    2} nil))
+
   (is   (contains-key? #{:a 1 :b 2} :a))
   (is   (contains-key? #{:a 1 :b 2} :b))
   (is   (contains-key? #{:a 1 :b 2}  1))
   (is   (contains-key? #{:a 1 :b 2}  2))
   (isnt (contains-key? #{:a 1 :b 2} :x))
   (isnt (contains-key? #{:a 1 :b 2} :c))
+
+  (is   (contains-key? #{:a 5 nil   "hello"} nil))
+  (isnt (contains-key? #{:a 5 :doh! "hello"} nil))
 
   (throws? (contains-key? [:a 1 :b 2] :a))
   (throws? (contains-key? [:a 1 :b 2]  1)))
@@ -366,35 +422,12 @@
   (isnt (contains-val? {:a 1 :b 2} :a))
   (isnt (contains-val? {:a 1 :b 2} :b))
 
+  (is   (contains-val? {:a 1 :b nil} nil))
+  (isnt (contains-val? {:a 1 nil  2} nil))
+  (isnt (contains-val? {:a 1 :b   2} nil))
+
   (throws? (contains-val?  [:a 1 :b 2] 1))
   (throws? (contains-val? #{:a 1 :b 2} 1)))
-
-(deftest t-contains-elem
-  (let [coll (range 3)]
-    (isnt (contains-elem? coll -1))
-    (is   (contains-elem? coll  0))
-    (is   (contains-elem? coll  1))
-    (is   (contains-elem? coll  2))
-    (isnt (contains-elem? coll  3)))
-
-  (let [coll [ 1 :two "three" \4]]
-    (isnt (contains-elem? coll  :no-way))
-    (is   (contains-elem? coll  1))
-    (is   (contains-elem? coll  :two))
-    (is   (contains-elem? coll  "three"))
-    (is   (contains-elem? coll  \4)))
-
-  (let [coll {1 :two "three" \4}]
-    (isnt (contains-elem? coll [1 :no-way] ))
-    (is   (contains-elem? coll [1 :two]))
-    (is   (contains-elem? coll ["three" \4])))
-
-  (let [coll #{1 :two "three" \4}]
-    (isnt (contains-elem? coll  :no-way))
-    (is   (contains-elem? coll  1))
-    (is   (contains-elem? coll  :two))
-    (is   (contains-elem? coll  "three"))
-    (is   (contains-elem? coll  \4))))
 
 (deftest t-master
   (testing "zip"

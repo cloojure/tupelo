@@ -462,8 +462,9 @@
   instance of tgt; otherwise returns false. Note that, for maps, each element is a
   vector (i.e MapEntry) of the form [key value]."
   [coll :- s/Any
-   tgt  :- s/Any ]
-  (has-some? #{tgt} (seq coll)))
+   elem :- s/Any ]
+  (has-some? truthy?
+    (mapv #(= elem %) (seq coll))))
 
 ; #todo add (contains-keyval? map key val)
 
@@ -479,7 +480,8 @@
   "For any map, returns true if elem is present in the map for at least one key."
   [map :- ts/Map
    elem :- s/Any ]
-  (has-some? #{elem} (vals map)))
+  (has-some? truthy?
+    (mapv #(= elem %) (vals map))))
 
 (s/defn not-nil? :- s/Bool
   "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
