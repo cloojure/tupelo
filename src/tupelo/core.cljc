@@ -465,18 +465,18 @@
    tgt  :- s/Any ]
   (has-some? #{tgt} (seq coll)))
 
+; #todo add (contains-keyval? map key val)
+
 ; #todo -> README
 (s/defn contains-key? :- s/Bool
-  "For any predicate pred & a map or set coll, returns true if (pred x) is logical true for at least one x in
-   coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
+  "For any map or set, returns true if elem is a map key or set element, respectively"
   [map-or-set :- (s/pred #(or (map? %) (set? %)))
    elem :- s/Any ]
   (contains? map-or-set elem))
 
 ; #todo -> README
 (s/defn contains-val? :- s/Bool
-  "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
-   coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
+  "For any map, returns true if elem is present in the map for at least one key."
   [map :- ts/Map
    elem :- s/Any ]
   (has-some? #{elem} (vals map)))

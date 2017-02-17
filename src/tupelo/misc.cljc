@@ -29,6 +29,12 @@
 (defn ^{:deprecated "0.9.15"} seq->str [& args] (apply t/seq->str args))
 (def  ^{:deprecated "0.9.15"} printable-chars  ts/printable-chars)
 
+; #todo add functions:
+;   fibonacci-list(n)                 - 1ist n  fibo's
+;   fibonacci-list-bounded(maxVal)    - list of fibo's <= maxVal
+;   prime-list(n)                     - 1ist n  fibo's
+;   prime-list-bounded(maxVal)        - list of fibo's <= maxVal
+
 (defn take-dist
   "Returns a sequence of n items from a collection, distributed
    evenly between first & last elements, which are always included."
