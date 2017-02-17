@@ -389,7 +389,7 @@
       (is   (contains-elem? coll  :yes))
       (is   (contains-elem? coll  nil)))))
 
-(deftest t-contains-key? ; #todo add to README
+(deftest t-contains-key?
   (is   (contains-key?  {:a 1 :b 2} :a))
   (is   (contains-key?  {:a 1 :b 2} :b))
   (isnt (contains-key?  {:a 1 :b 2} :x))
@@ -414,7 +414,7 @@
   (throws? (contains-key? [:a 1 :b 2] :a))
   (throws? (contains-key? [:a 1 :b 2]  1)))
 
-(deftest t-contains-val? ; #todo add to README
+(deftest t-contains-val?
   (is   (contains-val? {:a 1 :b 2} 1))
   (is   (contains-val? {:a 1 :b 2} 2))
   (isnt (contains-val? {:a 1 :b 2} 0))

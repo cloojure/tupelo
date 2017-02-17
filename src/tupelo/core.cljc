@@ -456,7 +456,6 @@
    coll :- [s/Any] ]
   (falsey? (some pred coll)))
 
-; #todo -> README
 (s/defn contains-elem? :- s/Bool
   "For any collection coll & element tgt, returns true if coll contains at least one
   instance of tgt; otherwise returns false. Note that, for maps, each element is a
@@ -468,14 +467,12 @@
 
 ; #todo add (contains-keyval? map key val)
 
-; #todo -> README
 (s/defn contains-key? :- s/Bool
   "For any map or set, returns true if elem is a map key or set element, respectively"
   [map-or-set :- (s/pred #(or (map? %) (set? %)))
    elem :- s/Any ]
   (contains? map-or-set elem))
 
-; #todo -> README
 (s/defn contains-val? :- s/Bool
   "For any map, returns true if elem is present in the map for at least one key."
   [map :- ts/Map
