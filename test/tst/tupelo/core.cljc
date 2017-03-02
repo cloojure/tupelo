@@ -318,9 +318,9 @@
                     (= 1 num-nil) )))))))
 
 (deftest t-any
-  (is= true   (has-some? odd? [1 2 3] ) )
-  (is= false  (has-some? odd? [2 4 6] ) )
-  (is= false  (has-some? odd? []      ) )
+  (is= true   (t/has-some? odd? [1 2 3] ) )
+  (is= false  (t/has-some? odd? [2 4 6] ) )
+  (is= false  (t/has-some? odd? []      ) )
 
   (is= false  (has-none? odd? [1 2 3] ) )
   (is= true   (has-none? odd? [2 4 6] ) )
@@ -1530,6 +1530,38 @@
 
   ; (println "t-throws exit")
 )
+
+(deftest t-global
+  (testing "fibo stuff"
+    (is= (take  0  fibonacci-seq)  [] )
+    (is= (take  5  fibonacci-seq)  [0 1 1 2 3] )
+    (is= (take 10  fibonacci-seq)  [0 1 1 2 3 5 8 13 21 34] )
+
+    (is= (fibo-thru  0) [0] )
+    (is= (fibo-thru  1) [0 1 1] )
+    (is= (fibo-thru  2) [0 1 1 2] )
+    (is= (fibo-thru  3) [0 1 1 2 3] )
+    (is= (fibo-thru  4) [0 1 1 2 3] )
+    (is= (fibo-thru  5) [0 1 1 2 3 5] )
+    (is= (fibo-thru  6) [0 1 1 2 3 5] )
+    (is= (fibo-thru  7) [0 1 1 2 3 5] )
+    (is= (fibo-thru  8) [0 1 1 2 3 5 8] )
+    (is= (fibo-thru 34) [0 1 1 2 3 5 8 13 21 34] )
+
+    (is=  0 (fibo-nth 0))
+    (is=  1 (fibo-nth 1))
+    (is=  1 (fibo-nth 2))
+    (is=  2 (fibo-nth 3))
+    (is=  3 (fibo-nth 4))
+    (is=  5 (fibo-nth 5))
+    (is=  8 (fibo-nth 6))
+    (is= 13 (fibo-nth 7))
+    (is= 21 (fibo-nth 8))
+    (is= 34 (fibo-nth 9))
+  )
+
+)
+
 
 ;---------------------------------------------------------------------------------------------------
 ; Deprecated functions

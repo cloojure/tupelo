@@ -42,7 +42,7 @@
 ; #todo add schema; result = ts/List[ ts/Pair ]
 ; #todo add :trunc & assert;  add :lazy
 (defn zip [& args]
-  "Zips together vectors like zipmap (like in Python):
+  "Zips together vectors like zipmap (like Python zip):
    
      (zip [:a :b :c] [1 2 3]) ->  [ [:a 1] [:b 2] [:c 3] ]     
 
@@ -807,6 +807,7 @@
            (vec it))))
 )
 
+
 (defn keep-if
   "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
   [pred coll]
@@ -831,6 +832,32 @@
   "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
   [pred coll]
   (keep-if (complement pred) coll))
+
+(def fibonacci-seq
+  "A lazy seq of Fibonacci numbers
+   Note that, since 64-bit long arithmetic used, taking more than 92 values will
+   result in an integer overflow. This corresponds to 4660046610375530309"
+  (let [fibo-step (fn fibo-step [[val1 val2]]
+                    (let [next-val (+ val1 val2)]
+                      (lazy-seq (cons next-val (fibo-step [val2 next-val] ))))) ]
+    (cons 0 (cons 1 (fibo-step [0N 1N])))))
+
+(defn fibo-thru
+  "Returns a vector of Fibonacci numbers up to limit (inclusive). Note that a
+  limit much greater than 2^62 will cause integer overflow. This corresponds to
+  the first 91 Fibonacci numbers."
+  [limit]
+  (vec (take-while #(<= % limit) fibonacci-seq)))
+
+(defn fibo-nth
+  "Returns the N'th Fibonacci number (zero-based). Note that
+  N > 91 will cause integer overflow. This corresponds to approx 2^62 "
+  [N]
+  (it->
+    fibonacci-seq
+    (drop N it)
+    (first it)))
+
 
 ; #todo need test, readme
 (defn char-seq
@@ -1065,6 +1092,7 @@
       strcat nl pretty pretty-str json->clj clj->json clip-str rng thru rel=
       drop-at insert-at replace-at starts-with? int->kw kw->int
       split-when split-match wild-match? increasing? increasing-or-equal?
+      fibonacci-seq fibo-thru fibo-nth
       with-exception-default ] ))
 
 ;---------------------------------------------------------------------------------------------------
