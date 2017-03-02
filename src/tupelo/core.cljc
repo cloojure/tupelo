@@ -834,9 +834,7 @@
   (keep-if (complement pred) coll))
 
 (def fibonacci-seq
-  "A lazy seq of Fibonacci numbers
-   Note that, since 64-bit long arithmetic used, taking more than 92 values will
-   result in an integer overflow. This corresponds to 4660046610375530309"
+  "A lazy seq of Fibonacci numbers (memoized)."
   (let [fibo-step (fn fibo-step [[val1 val2]]
                     (let [next-val (+ val1 val2)]
                       (lazy-seq (cons next-val (fibo-step [val2 next-val] ))))) ]
@@ -844,20 +842,15 @@
 
 (defn fibo-thru
   "Returns a vector of Fibonacci numbers up to limit (inclusive). Note that a
-  limit much greater than 2^62 will cause integer overflow. This corresponds to
-  the first 91 Fibonacci numbers."
+  2^62  corresponds to 91'st Fibonacci number."
   [limit]
   (vec (take-while #(<= % limit) fibonacci-seq)))
 
 (defn fibo-nth
   "Returns the N'th Fibonacci number (zero-based). Note that
-  N > 91 will cause integer overflow. This corresponds to approx 2^62 "
+  N=91 corresponds to approx 2^62"
   [N]
-  (it->
-    fibonacci-seq
-    (drop N it)
-    (first it)))
-
+  (first (drop N fibonacci-seq)))
 
 ; #todo need test, readme
 (defn char-seq
