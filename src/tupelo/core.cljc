@@ -833,8 +833,9 @@
   [pred coll]
   (keep-if (complement pred) coll))
 
-(def fibonacci-seq
+(defn fibonacci-seq
   "A lazy seq of Fibonacci numbers (memoized)."
+  []
   (let [fibo-step (fn fibo-step [[val1 val2]]
                     (let [next-val (+ val1 val2)]
                       (lazy-seq (cons next-val (fibo-step [val2 next-val] ))))) ]
@@ -844,13 +845,13 @@
   "Returns a vector of Fibonacci numbers up to limit (inclusive). Note that a
   2^62  corresponds to 91'st Fibonacci number."
   [limit]
-  (vec (take-while #(<= % limit) fibonacci-seq)))
+  (vec (take-while #(<= % limit) (fibonacci-seq))))
 
 (defn fibo-nth
   "Returns the N'th Fibonacci number (zero-based). Note that
   N=91 corresponds to approx 2^62"
   [N]
-  (first (drop N fibonacci-seq)))
+  (first (drop N (fibonacci-seq))))
 
 ; #todo need test, readme
 (defn char-seq

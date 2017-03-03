@@ -1533,9 +1533,9 @@
 
 (deftest t-global
   (testing "fibo stuff"
-    (is= (take  0  fibonacci-seq)  [] )
-    (is= (take  5  fibonacci-seq)  [0 1 1 2 3] )
-    (is= (take 10  fibonacci-seq)  [0 1 1 2 3 5 8 13 21 34] )
+    (is= (take  0 (fibonacci-seq))  [] )
+    (is= (take  5 (fibonacci-seq))  [0 1 1 2 3] )
+    (is= (take 10 (fibonacci-seq))  [0 1 1 2 3 5 8 13 21 34] )
 
     (is= (fibo-thru  0) [0] )
     (is= (fibo-thru  1) [0 1 1] )
@@ -1558,6 +1558,7 @@
     (is= 13 (fibo-nth 7))
     (is= 21 (fibo-nth 8))
     (is= 34 (fibo-nth 9))
+    (is (< (Math/pow 2 62) (fibo-nth 91) (Math/pow 2 63)))
   )
 
 )
