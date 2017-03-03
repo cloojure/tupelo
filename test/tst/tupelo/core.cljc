@@ -1561,9 +1561,36 @@
     (is (< (Math/pow 2 62) (fibo-nth 91) (Math/pow 2 63)))
   )
 
-)
+  (testing "lazy-cons"
+    (let [lazy-next-int (fn lazy-next-int [n]
+                          (t/lazy-cons n (lazy-next-int (inc n))))
+          all-ints      (lazy-next-int 0)
+          ]
+      (is= (take 0 all-ints) [])
+      (is= (take 1 all-ints) [0] )
+      (is= (take 5 all-ints) [0 1 2 3 4] ))
 
+    (let [lazy-range (fn lazy-range
+                       [limit]
+                       (let [lazy-range-step (fn lazy-range-step [curr limit]
+                                               ; (spyx [curr limit]) (flush)
+                                               (when (< curr limit)
+                                                 (t/lazy-cons curr (lazy-range-step (inc curr) limit))))]
+                         (lazy-range-step 0 limit))) ]
+      (is= (lazy-range 0) nil)
+      (is= (lazy-range 1) [0])
+      (is= (lazy-range 5) [0 1 2 3 4]))
 
+    (let [lazy-countdown
+          (fn lazy-countdown [n]
+            (when (<= 0 n)
+              (lazy-cons n (lazy-countdown (dec n))))) ]
+      (is= (lazy-countdown  5) [5 4 3 2 1 0] )
+      (is= (lazy-countdown  1) [1 0] )
+      (is= (lazy-countdown  0) [0] )
+      (is= (lazy-countdown -1) nil )))
+
+) ; t-global
 ;---------------------------------------------------------------------------------------------------
 ; Deprecated functions
 

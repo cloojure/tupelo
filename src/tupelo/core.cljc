@@ -833,12 +833,20 @@
   [pred coll]
   (keep-if (complement pred) coll))
 
+(defmacro lazy-cons
+  "The simple way to create a lazy sequence:
+      (defn lazy-next-int [n]
+        (t/lazy-cons n (lazy-next-int (inc n))))
+      (def all-ints (lazy-next-int 0)) "
+  [curr-val next-form]
+  `(lazy-seq (cons ~curr-val ~next-form)))
+
 (defn fibonacci-seq
   "A lazy seq of Fibonacci numbers (memoized)."
   []
   (let [fibo-step (fn fibo-step [[val1 val2]]
                     (let [next-val (+ val1 val2)]
-                      (lazy-seq (cons next-val (fibo-step [val2 next-val] ))))) ]
+                      (lazy-cons next-val (fibo-step [val2 next-val] )))) ]
     (cons 0 (cons 1 (fibo-step [0N 1N])))))
 
 (defn fibo-thru
@@ -1087,7 +1095,7 @@
       drop-at insert-at replace-at starts-with? int->kw kw->int
       split-when split-match wild-match? increasing? increasing-or-equal?
       fibonacci-seq fibo-thru fibo-nth
-      with-exception-default ] ))
+      with-exception-default lazy-cons ] ))
 
 ;---------------------------------------------------------------------------------------------------
 ; DEPRECATED functions
