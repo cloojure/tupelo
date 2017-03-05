@@ -10,6 +10,7 @@
             [tupelo.async           :as ta]
             [clojure.core.async     :as ca :refer [go go-loop chan thread]]
   ))
+(t/refer-tupelo)
 
 (defn is-expected-val? [tst-val arg]
   (is (= tst-val arg)))
@@ -23,10 +24,12 @@
     (thread
       (ta/put-now! ch "here") ; these will block
       (ta/put-now! ch "we")
-      (ta/put-now! ch "go"))
+      (ta/put-now! ch "go")
+      (ca/close! ch))
     (is= "here" (ta/take-now! ch))
     (is= "we"   (ta/take-now! ch))
-    (is= "go"   (ta/take-now! ch)))
+    (is= "go"   (ta/take-now! ch))
+    (is= nil    (ta/take-now! ch)))
 
   ; or "lightweight" threads
   (let [ch (chan)]  ; zero-buffer channel
