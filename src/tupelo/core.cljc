@@ -28,6 +28,10 @@
 ; #todo add to Schema docs
 (s/set-fn-validation! true) ; enforce fn schemas
 
+; #todo need (defkw :fred) and (kw :fred) to catch errors like
+; (when (= person :frid)  ; (kw :frid) -> throws
+;    (println "Hi Barney!"))
+
 (defn nl
   "Abbreviated name for `newline` "
   [] (newline))
