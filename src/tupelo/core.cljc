@@ -850,7 +850,8 @@
   "Specifies the output channel default buffer size for `lazy-gen` forms"
   32)
 
-; #todo make a dynamic var/binding ?
+; #todo add to README
+; #todo fix SO posting:  defgen -> lazy-gen
 ; #todo make null case return [] instead of nil
 (defmacro lazy-gen [& forms]
   "Creates a 'generator function' that returns a lazy seq of results
