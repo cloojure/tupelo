@@ -853,8 +853,8 @@
 ; #todo make a dynamic var/binding ?
 ; #todo make null case return [] instead of nil
 (defmacro lazy-gen [& forms]
-  "Creates a 'generator function' that returns a lazy seq of results via the `(yield ...)`
-  special form, similar to Python."
+  "Creates a 'generator function' that returns a lazy seq of results
+  via `yield` (a la Python)."
   `(let [~'lazy-gen-output-buffer    (ca/chan lazy-gen-buffer-size)
          lazy-reader-fn#             (fn lazy-reader-fn# []
                                        (let [curr-item# (ca/<!! ~'lazy-gen-output-buffer)] ; #todo ta/take-now!
@@ -866,11 +866,11 @@
      (lazy-reader-fn#)))
 
 (defmacro yield
-  "Special form used to return lazy result values within generator functions (see `lazy-gen`)."
+  "Within a 'generator function' created by `lazy-gen`, populates the
+  lazy seq of results (a la Python)."
   [value]
   `(do
-     (ca/>! ~'lazy-gen-output-buffer ~value)
-   )) ; #todo ta/put-go!
+     (ca/>! ~'lazy-gen-output-buffer ~value))) ; #todo ta/put-go!
 
 
 (defn fibonacci-seq
