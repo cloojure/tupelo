@@ -846,35 +846,38 @@
   [curr-val next-form]
   `(lazy-seq (cons ~curr-val ~next-form)))
 
-(def defgen-buffer-size
-  "Specifies the output channel default buffer size for `defgen` forms"
+(def lazy-gen-buffer-size
+  "Specifies the output channel default buffer size for `lazy-gen` forms"
   32)
 
-(defmacro yield
-  "Special form used to return lazy result values within generator functions (see `defgen`)."
-  [value]
-  `(ca/>! ~'defgen-output-buffer ~value)) ; #todo ta/put-go!
+(def ^:dynamic ^:no-doc *lazy-gen-output-buffer*
+  "Dynamic var allows `lazy-gen`/`yield` to share the async output buffer" )
 
+; #todo make a dynamic var/binding ?
 ; #todo make null case return [] instead of nil
-; #todo convert from (defgen ...) -> (generator ...) to avoid function def complexity
-(defmacro defgen [& forms]
+(defmacro lazy-gen [& forms]
   "Creates a 'generator function' that returns a lazy seq of results via the `(yield ...)`
   special form, similar to Python."
-  (let [ [head-forms tail-forms]  (split-with #(not (vector? %1)) forms)
-        arglist                   (first tail-forms)
-        body-forms                (rest  tail-forms) ]
-    `(defn
-       ~@head-forms
-       ~arglist
-       (let [~'defgen-output-buffer     (ca/chan defgen-buffer-size) ; #todo make a dynamic var/binding ?
-             lazy-reader-fn#            (fn lazy-reader-fn# []
-                                          (let [curr-item# (ca/<!! ~'defgen-output-buffer)] ; #todo ta/take-now!
-                                            (when (not-nil? curr-item#)
-                                              (lazy-cons curr-item# (lazy-reader-fn#)))))]
-         (ca/go
-           ~@body-forms
-           (ca/close! ~'defgen-output-buffer))
-         (lazy-reader-fn#)))))
+  `(let [output-chnl#    (ca/chan lazy-gen-buffer-size)
+         lazy-reader-fn# (fn lazy-reader-fn# []
+                           (let [curr-item# (ca/<!! output-chnl#)] ; #todo ta/take-now!
+                             (when (not-nil? curr-item#)
+                               (lazy-cons curr-item# (lazy-reader-fn#)))))]
+     ; We only use the dynamic var in `yield` expressions. In this macro, we must use the
+     ; gensym `output-chnl#` or we get an error.
+     (binding [*lazy-gen-output-buffer* output-chnl#]
+       (ca/go
+         ~@forms
+         (ca/close! output-chnl#)))
+     (lazy-reader-fn#)))
+
+(defmacro yield
+  "Special form used to return lazy result values within generator functions (see `lazy-gen`)."
+  [value]
+  `(do
+     (ca/>! *lazy-gen-output-buffer* ~value)
+   )) ; #todo ta/put-go!
+
 
 (defn fibonacci-seq
   "A lazy seq of Fibonacci numbers (memoized)."
@@ -1130,7 +1133,7 @@
       drop-at insert-at replace-at starts-with? int->kw kw->int
       split-when split-match wild-match? increasing? increasing-or-equal?
       fibonacci-seq fibo-thru fibo-nth
-      with-exception-default lazy-cons defgen yield
+      with-exception-default lazy-cons lazy-gen yield
      ] ))
 
 ;---------------------------------------------------------------------------------------------------

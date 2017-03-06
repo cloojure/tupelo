@@ -1592,41 +1592,38 @@
 
 ;-----------------------------------------------------------------------------
 ; defgen/yield tests
-  (defgen empty-gen-fn [])
 
-  (defgen range-gen
-    ; "A generator 'range' function."
-    [limit]
-    (loop [cnt 0]
-      (when (< cnt limit)
-        (yield cnt)
-        (recur (inc cnt)))))
+  (let [empty-gen-fn (fn [] (lazy-gen)) ]
+    (is (nil? (empty-gen-fn))))
 
-  (defgen concat-gen
-    "A generator 'range' function."
-    [& collections]
-    (doseq [curr-coll collections]
-      (doseq [item curr-coll]
-        (yield item))))
+  (let [range-gen (fn [limit] ; "A generator 'range' function."
+                    (lazy-gen
+                      (loop [cnt 0]
+                        (when (< cnt limit)
+                          (yield cnt)
+                          (recur (inc cnt))))))]
 
-  (is (nil? (empty-gen-fn)))
+    (is= (range 1) (range-gen 1))
+    (is= (range 5) (range-gen 5))
+    (is= (range 10) (range-gen 10))
 
-  (is= (range  1) (range-gen  1))
-  (is= (range  5) (range-gen  5))
-  (is= (range 10) (range-gen 10))
+    ; Note different behavior for empty result
+    (is= [] (range 0))
+    (is= nil (range-gen 0))
+    (is= (seq (range 0))
+      (seq (range-gen 0))
+      nil))
 
-  ; Note different behavior for empty result
-  (is= []   (range     0))
-  (is= nil  (range-gen 0))
-  (is= (seq (range     0))
-       (seq (range-gen 0))
-       nil)
-
-  (let [c1 [1 2 3]
-        c2 [4 5 6]
-        c3 [7 8 9]
-        result (concat-gen c1 c2 c3) ]
-    (is= result (thru 1 9)))
+  (let [concat-gen (fn [& collections] ;A generator 'range' function.
+                     (lazy-gen
+                       (doseq [curr-coll collections]
+                         (doseq [item curr-coll]
+                           (yield item)))))]
+    (let [c1     [1 2 3]
+          c2     [4 5 6]
+          c3     [7 8 9]
+          result (concat-gen c1 c2 c3)]
+      (is= result (thru 1 9))))
 
   ; (lazy-seq nil) => ()
   ; (lazy-cons 3 (lazy-seq nil)) => (3)
