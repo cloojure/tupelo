@@ -855,6 +855,8 @@
   [value]
   `(ca/>! ~'defgen-output-buffer ~value)) ; #todo ta/put-go!
 
+; #todo make null case return [] instead of nil
+; #todo convert from (defgen ...) -> (generator ...) to avoid function def complexity
 (defmacro defgen [& forms]
   "Creates a 'generator function' that returns a lazy seq of results via the `(yield ...)`
   special form, similar to Python."
@@ -864,7 +866,7 @@
     `(defn
        ~@head-forms
        ~arglist
-       (let [~'defgen-output-buffer     (ca/chan defgen-buffer-size)
+       (let [~'defgen-output-buffer     (ca/chan defgen-buffer-size) ; #todo make a dynamic var/binding ?
              lazy-reader-fn#            (fn lazy-reader-fn# []
                                           (let [curr-item# (ca/<!! ~'defgen-output-buffer)] ; #todo ta/take-now!
                                             (when (not-nil? curr-item#)
