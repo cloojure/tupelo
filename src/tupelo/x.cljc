@@ -30,11 +30,9 @@
 (defmacro defgen [& forms]
   "Creates a 'generator function' that returns a lazy seq of results via the `(yield ...)`
   special form, similar to Python."
-  (let [
-        [head-forms tail-forms] (split-with #(not (vector? %1)) forms)
-        arglist    (first tail-forms)
-        body-forms (rest tail-forms)
-        ]
+  (let [ [head-forms tail-forms]  (split-with #(not (vector? %1)) forms)
+          arglist                 (first tail-forms)
+          body-forms              (rest  tail-forms) ]
     `(defn
        ~@head-forms
        ~arglist
