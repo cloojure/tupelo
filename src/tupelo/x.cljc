@@ -18,31 +18,3 @@
 
 (s/set-fn-validation! true) ; enforce fn schemas
 
-(def defgen-buffer-size
-  "Specifies the output channel default buffer size for `defgen` forms"
-  32)
-
-(defmacro yield
-  "Special form used to return lazy result values within generator functions (see `defgen`)."
-  [value]
-  `(ta/put-go! ~'lazy-buffer ~value))
-
-(defmacro defgen [& forms]
-  "Creates a 'generator function' that returns a lazy seq of results via the `(yield ...)`
-  special form, similar to Python."
-  (let [ [head-forms tail-forms]  (split-with #(not (vector? %1)) forms)
-          arglist                 (first tail-forms)
-          body-forms              (rest  tail-forms) ]
-    `(defn
-       ~@head-forms
-       ~arglist
-       (let [~'lazy-buffer      (chan defgen-buffer-size)
-             lazy-reader-fn#    (fn lazy-reader-fn# []
-                                  (let [curr-item# (ta/take-now! ~'lazy-buffer)]
-                                    (when (t/not-nil? curr-item#)
-                                      (t/lazy-cons curr-item# (lazy-reader-fn#)))))]
-         (go
-           ~@body-forms
-           (ca/close! ~'lazy-buffer))
-         (lazy-reader-fn#)))))
-

@@ -10,10 +10,10 @@
 ;   [clojure.spec :as sp]
 ;   [clojure.spec.gen :as sp.gen]
 ;   [clojure.spec.test :as sp.test]
-    [clojure.string :as str]
 ;   [clojure.test.check.clojure-test :as tst]
 ;   [clojure.test.check.generators :as gen]
 ;   [clojure.test.check.properties :as prop]
+    [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.misc :as tm]
@@ -1591,6 +1591,55 @@
       (is= (lazy-countdown -1) nil )))
 
 ) ; t-global
+
+;-----------------------------------------------------------------------------
+; defgen/yield tests
+
+(defgen empty-gen-fn [])
+(defgen range-gen
+  ; "A generator 'range' function."
+  [limit]
+  (loop [cnt 0]
+    (when (< cnt limit)
+      (yield cnt)
+      (recur (inc cnt)))))
+(defgen concat-gen
+  "A generator 'range' function."
+  [& collections]
+  (doseq [curr-coll collections]
+    (doseq [item curr-coll]
+      (yield item))))
+
+(deftest t-defgen
+  (is (nil? (empty-gen-fn)))
+
+  (is= (range  1) (range-gen  1))
+  (is= (range  5) (range-gen  5))
+  (is= (range 10) (range-gen 10))
+
+  ; Note different behavior for empty result
+  (is= []   (range     0))
+  (is= nil  (range-gen 0))
+  (is= (seq (range     0))
+       (seq (range-gen 0))
+       nil)
+
+  (let [c1 [1 2 3]
+        c2 [4 5 6]
+        c3 [7 8 9]
+        result (concat-gen c1 c2 c3) ]
+    (is= result (thru 1 9))))
+;(lazy-seq nil) => ()
+;(lazy-cons 3 (lazy-seq nil)) => (3)
+;(lazy-cons 2 (lazy-cons 3 (lazy-seq nil))) => (2 3)
+;(lazy-cons 1 (lazy-cons 2 (lazy-cons 3 (lazy-seq nil)))) => (1 2 3)
+;
+;(range-gen 5) => (0 1 2 3 4)
+;(range-gen 10) => (0 1 2 3 4 5 6 7 8 9)
+;(concat-gen [1 2 3] [4 5 6] [7 8 9]) => (1 2 3 4 5 6 7 8 9)
+;(empty-gen-fn) => nil
+
+
 ;---------------------------------------------------------------------------------------------------
 ; Deprecated functions
 

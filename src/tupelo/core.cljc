@@ -7,6 +7,7 @@
 (ns tupelo.core
   "Tupelo - Making Clojure even sweeter"
   (:require 
+    [clojure.core.async :as ca]
     [clojure.core.match :as ccm]
     [clojure.pprint :as pprint]
     [clojure.string :as str]
@@ -841,6 +842,34 @@
   [curr-val next-form]
   `(lazy-seq (cons ~curr-val ~next-form)))
 
+(def defgen-buffer-size
+  "Specifies the output channel default buffer size for `defgen` forms"
+  32)
+
+(defmacro yield
+  "Special form used to return lazy result values within generator functions (see `defgen`)."
+  [value]
+  `(ca/>! ~'defgen-output-buffer ~value)) ; #todo ta/put-go!
+
+(defmacro defgen [& forms]
+  "Creates a 'generator function' that returns a lazy seq of results via the `(yield ...)`
+  special form, similar to Python."
+  (let [ [head-forms tail-forms]  (split-with #(not (vector? %1)) forms)
+        arglist                   (first tail-forms)
+        body-forms                (rest  tail-forms) ]
+    `(defn
+       ~@head-forms
+       ~arglist
+       (let [~'defgen-output-buffer     (ca/chan defgen-buffer-size)
+             lazy-reader-fn#            (fn lazy-reader-fn# []
+                                          (let [curr-item# (ca/<!! ~'defgen-output-buffer)] ; #todo ta/take-now!
+                                            (when (not-nil? curr-item#)
+                                              (lazy-cons curr-item# (lazy-reader-fn#)))))]
+         (ca/go
+           ~@body-forms
+           (ca/close! ~'defgen-output-buffer))
+         (lazy-reader-fn#)))))
+
 (defn fibonacci-seq
   "A lazy seq of Fibonacci numbers (memoized)."
   []
@@ -1095,7 +1124,8 @@
       drop-at insert-at replace-at starts-with? int->kw kw->int
       split-when split-match wild-match? increasing? increasing-or-equal?
       fibonacci-seq fibo-thru fibo-nth
-      with-exception-default lazy-cons ] ))
+      with-exception-default lazy-cons defgen yield
+     ] ))
 
 ;---------------------------------------------------------------------------------------------------
 ; DEPRECATED functions
