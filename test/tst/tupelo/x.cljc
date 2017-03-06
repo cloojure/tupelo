@@ -30,9 +30,6 @@
       (yield cnt)
       (recur (inc cnt)))))
 
-(spyx (range-gen 5))
-(spyx (range-gen 10))
-
 (defgen concat-gen
   "A generator 'range' function."
   [& collections]
@@ -40,16 +37,21 @@
     (doseq [item curr-coll]
       (yield item))))
 
+(defgen empty-gen-fn [])
+
 (deftest t-global
-
   (is= (range 10) (range-gen 10))
-
   (let [c1 [1 2 3]
         c2 [4 5 6]
         c3 [7 8 9]
         result (concat-gen c1 c2 c3) ]
     (is= result (thru 1 9))
-    (spyx (concat-gen c1 c2 c3))
-  ))
+  )
+  (is (nil? (empty-gen-fn)))
+  )
+
+(spyx (range-gen 5))
+(spyx (range-gen 10))
 
 (spyx (concat-gen [1 2 3] [4 5 6] [7 8 9] ))
+(spyx (empty-gen-fn))
