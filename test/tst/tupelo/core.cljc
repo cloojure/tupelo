@@ -1590,27 +1590,25 @@
       (is= (lazy-countdown  0) [0] )
       (is= (lazy-countdown -1) nil )))
 
-) ; t-global
-
 ;-----------------------------------------------------------------------------
 ; defgen/yield tests
+  (defgen empty-gen-fn [])
 
-(defgen empty-gen-fn [])
-(defgen range-gen
-  ; "A generator 'range' function."
-  [limit]
-  (loop [cnt 0]
-    (when (< cnt limit)
-      (yield cnt)
-      (recur (inc cnt)))))
-(defgen concat-gen
-  "A generator 'range' function."
-  [& collections]
-  (doseq [curr-coll collections]
-    (doseq [item curr-coll]
-      (yield item))))
+  (defgen range-gen
+    ; "A generator 'range' function."
+    [limit]
+    (loop [cnt 0]
+      (when (< cnt limit)
+        (yield cnt)
+        (recur (inc cnt)))))
 
-(deftest t-defgen
+  (defgen concat-gen
+    "A generator 'range' function."
+    [& collections]
+    (doseq [curr-coll collections]
+      (doseq [item curr-coll]
+        (yield item))))
+
   (is (nil? (empty-gen-fn)))
 
   (is= (range  1) (range-gen  1))
@@ -1628,16 +1626,21 @@
         c2 [4 5 6]
         c3 [7 8 9]
         result (concat-gen c1 c2 c3) ]
-    (is= result (thru 1 9))))
-;(lazy-seq nil) => ()
-;(lazy-cons 3 (lazy-seq nil)) => (3)
-;(lazy-cons 2 (lazy-cons 3 (lazy-seq nil))) => (2 3)
-;(lazy-cons 1 (lazy-cons 2 (lazy-cons 3 (lazy-seq nil)))) => (1 2 3)
-;
-;(range-gen 5) => (0 1 2 3 4)
-;(range-gen 10) => (0 1 2 3 4 5 6 7 8 9)
-;(concat-gen [1 2 3] [4 5 6] [7 8 9]) => (1 2 3 4 5 6 7 8 9)
-;(empty-gen-fn) => nil
+    (is= result (thru 1 9)))
+
+  ; (lazy-seq nil) => ()
+  ; (lazy-cons 3 (lazy-seq nil)) => (3)
+  ; (lazy-cons 2 (lazy-cons 3 (lazy-seq nil))) => (2 3)
+  ; (lazy-cons 1 (lazy-cons 2 (lazy-cons 3 (lazy-seq nil)))) => (1 2 3)
+  ;
+  ; (range-gen 5) => (0 1 2 3 4)
+  ; (range-gen 10) => (0 1 2 3 4 5 6 7 8 9)
+  ; (concat-gen [1 2 3] [4 5 6] [7 8 9]) => (1 2 3 4 5 6 7 8 9)
+  ; (empty-gen-fn) => nil
+
+
+) ; t-global
+
 
 
 ;---------------------------------------------------------------------------------------------------
