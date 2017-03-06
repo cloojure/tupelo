@@ -1625,6 +1625,9 @@
           result (concat-gen c1 c2 c3)]
       (is= result (thru 1 9))))
 
+  ; Bare yield won't compile => java.lang.RuntimeException: Unable to resolve symbol: lazy-gen-output-buffer
+  ; (yield 99)
+
   ; (lazy-seq nil) => ()
   ; (lazy-cons 3 (lazy-seq nil)) => (3)
   ; (lazy-cons 2 (lazy-cons 3 (lazy-seq nil))) => (2 3)
