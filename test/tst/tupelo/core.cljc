@@ -1671,10 +1671,20 @@
       res-reduce
       res-for
       res-map
-      )
     )
+  )
 
-  ; Bare yield won't compile => java.lang.RuntimeException: Unable to resolve symbol: lazy-gen-output-buffer
+  (let [heads-pairs (fn [flips]
+                      (reduce +
+                        (let [flips (vec flips)]
+                          (lazy-gen
+                            (doseq [i (range (dec (count flips)))]
+                              (when (= :h (flips i) (flips (inc i)))
+                                (yield 1))))))) ]
+    (is= 3 (spyx (heads-pairs [:h :t :h :h :h :t :h :h]))))
+
+
+; Bare yield won't compile => java.lang.RuntimeException: Unable to resolve symbol: lazy-gen-output-buffer
   ; (yield 99)
 
   ; (lazy-seq nil) => ()

@@ -870,8 +870,7 @@
   "Within a 'generator function' created by `lazy-gen`, populates the
   lazy seq of results (a la Python)."
   [value]
-  `(do
-     (ca/>! ~'lazy-gen-output-buffer ~value))) ; #todo ta/put-go!
+  `(ca/>! ~'lazy-gen-output-buffer ~value)) ; #todo put-now/put-later & dynamic
 
 
 (defn fibonacci-seq
