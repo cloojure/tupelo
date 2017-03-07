@@ -1625,6 +1625,55 @@
           result (concat-gen c1 c2 c3)]
       (is= result (thru 1 9))))
 
+  (let [sq-yield   (fn [xs]
+                     (lazy-gen
+                       (doseq [x xs]
+                         (yield (* x x)))))
+
+        sq-recur   (fn [xs]
+                     (loop [cum-result []
+                            xs         xs]
+                       (if (empty? xs)
+                         cum-result
+                         (let [x (first xs)]
+                           (recur (conj cum-result (* x x))
+                             (rest xs))))))
+
+        sq-lazyseq (fn lazy-squares [xs]
+                     (when (not-empty? xs)
+                       (let [x (first xs)]
+                         (lazy-seq (cons (* x x) (lazy-squares (rest xs)))))))
+
+        sq-reduce  (fn [xs]
+                     (reduce (fn [cum-result x]
+                               (conj cum-result (* x x)))
+                       [] xs))
+
+        sq-for     (fn [xs]
+                     (for [x xs]
+                       (* x x)))
+
+        sq-map     (fn [xs]
+                     (map #(* % %) xs))
+
+        xs         (range 5)
+        res-yield  (spyx (sq-yield xs))
+        res-recur  (spyx (sq-recur xs))
+        res-lzsq   (spyx (sq-lazyseq xs))
+        res-reduce (spyx (sq-reduce xs))
+        res-for    (spyx (sq-for xs))
+        res-map    (spyx (sq-map xs))
+        ]
+    (is= [0 1 4 9 16]
+      res-yield
+      res-recur
+      res-lzsq
+      res-reduce
+      res-for
+      res-map
+      )
+    )
+
   ; Bare yield won't compile => java.lang.RuntimeException: Unable to resolve symbol: lazy-gen-output-buffer
   ; (yield 99)
 
