@@ -790,7 +790,8 @@
 ;       (thru :oc 1 5)   -> [  2 3 4 5]
 ;       (thru :co 1 5)   -> [1 2 3 4  ]  ; like (range ...)
 ;       (thru :oo 1 5)   -> [  2 3 4  ]
-(defn thru
+
+(defn thru          ; #todo make lazy: thruz or (thru 1 3 :lazy)
   "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. Not lazy. "
   ([end]
    (rng (inc end)))
@@ -853,6 +854,7 @@
 ; #todo add to README
 ; #todo fix SO posting:  defgen -> lazy-gen
 ; #todo make null case return [] instead of nil
+; #todo make eager version?  gen-vec, gen-seq, ...
 (defmacro lazy-gen [& forms]
   "Creates a 'generator function' that returns a lazy seq of results
   via `yield` (a la Python)."
@@ -868,9 +870,16 @@
 
 (defmacro yield
   "Within a 'generator function' created by `lazy-gen`, populates the
-  lazy seq of results (a la Python)."
+  lazy seq of results with the supplied value (a la Python)."
   [value]
   `(ca/>! ~'lazy-gen-output-buffer ~value)) ; #todo put-now/put-later & dynamic
+
+(defmacro yield-all
+  "Within a 'generator function' created by `lazy-gen`, populates the
+  lazy seq of results with each of the supplied values (a la Python)."
+  [values]
+  `(doseq [value# ~values]
+     (yield value#)))
 
 
 (defn fibonacci-seq
@@ -1127,7 +1136,7 @@
       drop-at insert-at replace-at starts-with? int->kw kw->int
       split-when split-match wild-match? increasing? increasing-or-equal?
       fibonacci-seq fibo-thru fibo-nth
-      with-exception-default lazy-cons lazy-gen yield
+      with-exception-default lazy-cons lazy-gen yield yield-all
      ] ))
 
 ;---------------------------------------------------------------------------------------------------

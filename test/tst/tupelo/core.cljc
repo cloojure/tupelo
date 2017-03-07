@@ -1683,6 +1683,43 @@
                                 (yield 1))))))) ]
     (is= 3 (spyx (heads-pairs [:h :t :h :h :h :t :h :h]))))
 
+  ; from S. Sierra blogpost: https://stuartsierra.com/2015/04/26/clojure-donts-concat
+  (let [next-results   (fn [n] (thru 1 n)) ; (thru 1 3) => [1 2 3]
+        build-result-1 (fn [n]
+                         (lazy-gen
+                           (loop [counter 1]
+                             (when (<= counter n)
+                               (doseq [item (next-results counter)] ; #todo -> yield-all
+                                 (yield item))
+                               (recur (inc counter))))))
+        build-result-2 (fn [n]
+                         (lazy-gen
+                           (doseq [counter (thru n)]
+                             (when (<= counter n)
+                               (doseq [item (next-results counter)] ; #todo -> yield-all
+                                 (yield item))))))
+        build-result-3 (fn [n]
+                         (lazy-gen
+                           (doseq [counter (thru n)]
+                             (t/yield-all (next-results counter)))))
+        ]
+    (spyx (build-result-1 3))
+    (spyx (build-result-2 3))
+    (spyx (build-result-3 3)))
+    ;=> build-result-1 3) => (1 1 2 1 2 3)
+    ;=> build-result-2 3) => (1 1 2 1 2 3)
+    ;=> build-result-3 3) => (1 1 2 1 2 3)
+
+  (let [cat-fn           (fn [coll] (lazy-gen
+                                      (yield-all (glue coll [1 2 3]))))
+        iter-result      (iterate cat-fn [1 2 3]) ; #todo some sort of bug here!
+        iter-cat-result  (time (nth iter-result 1200)) ; #todo hangs w. 2 'yield-all' if (50 < x < 60)
+        ]
+    (spyx (count iter-cat-result)))
+  ; "Elapsed time: 2425.967875 msecs"
+  ; (count iter-cat-result) => 3603
+
+
 
 ; Bare yield won't compile => java.lang.RuntimeException: Unable to resolve symbol: lazy-gen-output-buffer
   ; (yield 99)
@@ -1706,7 +1743,7 @@
 ; Deprecated functions
 
 (deftest ^:deprecated ^:no-doc t-str->lines
-  (let [s1    "  hello there 
+  (let [s1    "  hello there
                  again
                  and again!   "
         r1     ["hello there"
