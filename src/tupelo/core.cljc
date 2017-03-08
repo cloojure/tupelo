@@ -55,12 +55,13 @@
    Use (zip ... :lazy)  if you want it to be lazy.  "
   (apply mapv vector args))
 
-(defmacro forv    ; #todo: for-vec ?
+; #todo maybe just make tupelo.vec/for  etc   (tv/for ...) -> (vec (for ...))
+(defmacro forv    ; #todo: (for-vec ...)  or  (vfor ...)
   "Like clojure.core/for but returns results in a vector.   Not lazy."
   [& body]
   `(vec (for ~@body)))
 
-(defmacro forz
+(defmacro forz      ; #todo really?
   "Lazy version of tupelo/forv. Equivalent to clojure.core/for."
   [& body]
   `(for ~@body))
