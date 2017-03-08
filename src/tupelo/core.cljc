@@ -500,6 +500,12 @@
 
 ; #todo:  mapz, forz, filterz, ...?
 
+; #todo add flat-vec like (vec (flatten ...))
+(defn flat-vec
+  "Accepts any number of nested args and returns the flattened result as a vector."
+  [& args]
+  (vec (flatten args)))
+
 (defn glue
   "Glues together like collections:
 
@@ -871,16 +877,15 @@
 (defmacro yield
   "Within a 'generator function' created by `lazy-gen`, populates the
   lazy seq of results with the supplied value (a la Python)."
-  [value]
-  `(ca/>! ~'lazy-gen-output-buffer ~value)) ; #todo put-now/put-later & dynamic
+  [& values]
+  `(ca/>! ~'lazy-gen-output-buffer ~@values)) ; #todo put-now/put-later & dynamic
 
 (defmacro yield-all
   "Within a 'generator function' created by `lazy-gen`, populates the
-  lazy seq of results with each of the supplied values (a la Python)."
+  lazy seq of results with each of the supplied values."
   [values]
   `(doseq [value# ~values]
      (yield value#)))
-
 
 (defn fibonacci-seq
   "A lazy seq of Fibonacci numbers (memoized)."
@@ -1131,7 +1136,7 @@
    '[ spy spy-let spyx spyxx with-spy-indent truthy? falsey?
       not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
       forv conjv glue append prepend grab dissoc-in fetch-in select-values keyvals only third
-      it-> safe-> keep-if drop-if zip 
+      it-> safe-> keep-if drop-if zip flat-vec
       strcat nl pretty pretty-str json->clj clj->json clip-str rng thru rel=
       drop-at insert-at replace-at starts-with? int->kw kw->int
       split-when split-match wild-match? increasing? increasing-or-equal?

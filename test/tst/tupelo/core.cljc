@@ -1657,12 +1657,12 @@
                      (map #(* % %) xs))
 
         xs         (range 5)
-        res-yield  (spyx (sq-yield xs))
-        res-recur  (spyx (sq-recur xs))
-        res-lzsq   (spyx (sq-lazyseq xs))
-        res-reduce (spyx (sq-reduce xs))
-        res-for    (spyx (sq-for xs))
-        res-map    (spyx (sq-map xs))
+        res-yield  (sq-yield xs)
+        res-recur  (sq-recur xs)
+        res-lzsq   (sq-lazyseq xs)
+        res-reduce (sq-reduce xs)
+        res-for    (sq-for xs)
+        res-map    (sq-map xs)
         ]
     (is= [0 1 4 9 16]
       res-yield
@@ -1681,43 +1681,51 @@
                             (doseq [i (range (dec (count flips)))]
                               (when (= :h (flips i) (flips (inc i)))
                                 (yield 1))))))) ]
-    (is= 3 (spyx (heads-pairs [:h :t :h :h :h :t :h :h]))))
+    (is= 3 (heads-pairs [:h :t :h :h :h :t :h :h])))
 
   ; from S. Sierra blogpost: https://stuartsierra.com/2015/04/26/clojure-donts-concat
   (let [next-results   (fn [n] (thru 1 n)) ; (thru 1 3) => [1 2 3]
-        build-result-1 (fn [n]
+        build-1        (fn [n]
                          (lazy-gen
                            (loop [counter 1]
                              (when (<= counter n)
                                (doseq [item (next-results counter)] ; #todo -> yield-all
                                  (yield item))
                                (recur (inc counter))))))
-        build-result-2 (fn [n]
+        build-2        (fn [n]
                          (lazy-gen
                            (doseq [counter (thru n)]
                              (when (<= counter n)
                                (doseq [item (next-results counter)] ; #todo -> yield-all
                                  (yield item))))))
-        build-result-3 (fn [n]
+        build-3        (fn [n]
                          (lazy-gen
                            (doseq [counter (thru n)]
                              (t/yield-all (next-results counter)))))
-        ]
-    (spyx (build-result-1 3))
-    (spyx (build-result-2 3))
-    (spyx (build-result-3 3)))
-    ;=> build-result-1 3) => (1 1 2 1 2 3)
-    ;=> build-result-2 3) => (1 1 2 1 2 3)
-    ;=> build-result-3 3) => (1 1 2 1 2 3)
+        build-result-1 (build-1 3) ; => (1 1 2 1 2 3)
+        build-result-2 (build-2 3)
+        build-result-3 (build-3 3) ]
+    (is= [1 1 2 1 2 3] build-result-1 build-result-2 build-result-3 ))
 
-  (let [cat-fn           (fn [coll] (lazy-gen
+  (let [N                 99
+        cat-glue-fn      (fn [coll] (lazy-gen
                                       (yield-all (glue coll [1 2 3]))))
-        iter-result      (iterate cat-fn [1 2 3]) ; #todo some sort of bug here!
-        iter-cat-result  (time (nth iter-result 1200)) ; #todo hangs w. 2 'yield-all' if (50 < x < 60)
+        iter-glue        (iterate cat-glue-fn [1 2 3]) ; #todo some sort of bug here!
+        iter-glue-result (nth iter-glue N) ; #todo hangs w. 2 'yield-all' if (50 < x < 60)
+
+        cat-flat-fn      (fn [coll] (lazy-gen
+                                      (yield-all (flat-vec [coll [1 [2 [3]]]]))))
+        iter-flat        (iterate cat-flat-fn [1 2 3]) ; #todo some sort of bug here!
+        iter-flat-result (nth iter-flat N) ; #todo hangs w. 2 'yield-all' if (50 < x < 60)
         ]
-    (spyx (count iter-cat-result)))
-  ; "Elapsed time: 2425.967875 msecs"
-  ; (count iter-cat-result) => 3603
+    (when false
+      (spyx (count iter-glue-result))
+      (spyx (count iter-flat-result)))
+      ; for N = 1299
+      ; (count iter-glue-result) => 3900 "Elapsed time: 2453.917953 msecs"
+      ; (count iter-flat-result) => 3900 "Elapsed time: 2970.726412 msecs"
+    (is= iter-glue-result iter-flat-result))
+
 
 
 
