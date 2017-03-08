@@ -818,14 +818,14 @@
   (is (not (rel= 1 1.001 :tol 0.0001 )))
 )
 
-(deftest t-rng
-  (is (every? t/truthy? (forv [ul (range 0 4)] (vector? (t/rng ul)))))
+(deftest t-range-vec
+  (is (every? t/truthy? (forv [ul (range 0 4)] (vector? (t/range-vec ul)))))
 
-  (is (every? t/truthy? (forv [ul (range 0 4)] (= (t/rng ul) (range ul)))))
+  (is (every? t/truthy? (forv [ul (range 0 4)] (= (t/range-vec ul) (range ul)))))
 
   (is (every? t/truthy? (forv [lb (range 0 4)
                                ub (range lb 4) ]
-                          (= (t/rng lb ub) (range lb ub)))))
+                          (= (t/range-vec lb ub) (range lb ub)))))
 )
 
 (deftest t-thru

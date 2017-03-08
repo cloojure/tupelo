@@ -55,7 +55,7 @@
    Use (zip ... :lazy)  if you want it to be lazy.  "
   (apply mapv vector args))
 
-(defmacro forv    ; #todo:   vfor
+(defmacro forv    ; #todo: for-vec ?
   "Like clojure.core/for but returns results in a vector.   Not lazy."
   [& body]
   `(vec (for ~@body)))
@@ -777,7 +777,7 @@
           ]
       or-result)))
 
-(defn rng
+(defn range-vec     ; #todo README
   "An eager version clojure.core/range that always returns its result in a vector."
   [& args]
   (vec (apply range args)))
@@ -800,9 +800,9 @@
 (defn thru          ; #todo make lazy: thruz or (thru 1 3 :lazy)
   "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. Not lazy. "
   ([end]
-   (rng (inc end)))
+   (range-vec (inc end)))
   ([start end]
-   (rng start (inc end)))
+   (range-vec start (inc end)))
   ([start end step]
    (let [delta          (- (double end) (double start))
          nsteps-dbl     (/ (double delta) (double step))
@@ -813,7 +813,7 @@
                                            "thru: non-integer number of steps \n   args:"
                                            (pr-str [start end step])))))
      (it-> (inc nsteps-int)
-           (rng it)
+           (range-vec it)
            (clojure.core/map #(* step %) it)
            (clojure.core/map #(+ start %) it)
            (vec it))))
@@ -1137,7 +1137,7 @@
       not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
       forv conjv glue append prepend grab dissoc-in fetch-in select-values keyvals only third
       it-> safe-> keep-if drop-if zip flat-vec
-      strcat nl pretty pretty-str json->clj clj->json clip-str rng thru rel=
+      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
       drop-at insert-at replace-at starts-with? int->kw kw->int
       split-when split-match wild-match? increasing? increasing-or-equal?
       fibonacci-seq fibo-thru fibo-nth
