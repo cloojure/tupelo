@@ -501,7 +501,6 @@
 
 ; #todo:  mapz, forz, filterz, ...?
 
-; #todo add flat-vec like (vec (flatten ...))
 (defn flat-vec
   "Accepts any number of nested args and returns the flattened result as a vector."
   [& args]
@@ -854,7 +853,8 @@
   [curr-val next-form]
   `(lazy-seq (cons ~curr-val ~next-form)))
 
-(def ^:no-doc lazy-gen-buffer-size
+; #todo document use via binding
+(def ^:dynamic *lazy-gen-buffer-size*
   "Specifies the output channel default buffer size for `lazy-gen` forms"
   32)
 
@@ -865,7 +865,7 @@
 (defmacro lazy-gen [& forms]
   "Creates a 'generator function' that returns a lazy seq of results
   via `yield` (a la Python)."
-  `(let [~'lazy-gen-output-buffer    (ca/chan lazy-gen-buffer-size)
+  `(let [~'lazy-gen-output-buffer    (ca/chan *lazy-gen-buffer-size*)
          lazy-reader-fn#             (fn lazy-reader-fn# []
                                        (let [curr-item# (ca/<!! ~'lazy-gen-output-buffer)] ; #todo ta/take-now!
                                          (when (not-nil? curr-item#)

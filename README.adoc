@@ -739,9 +739,84 @@ always returns results in a vector:
 
 [source,clojure]
 ----
-(is (= (forv [x (range 4)] (* x x))
-       [0 1 4 9] ))
+(is= (forv [x (range 4)] (* x x))
+       [0 1 4 9] )
 ----
+
+For most purposes, it is is easy to use `(vec some-seq)` to convert an arbitrary sequence to a vector. In the
+event of nested data, we can use `(flat-vec ...)`. This works like `flatten` but is not lazy and returns
+results in a nice simple vector.
+
+[source,clojure]
+----
+  (is= [1 2 3 4 5] (flat-vec [[[1] 2] [3 [4 [5]]]]))
+----
+
+=== Simplified Lazy Sequence Generation
+
+Clojure training materials seem to vary somewhat in the recommended form for the generation of a lazy sequence. This
+is further complicated by the legacy function `lazy-cat` which can easily cause an out-of-memory error
+(see S. Sierra post).  An example of the simplest form is:
+
+[source,clojure]
+----
+(defn lazy-countdown [n]
+  (when (<= 0 n)
+    (lazy-cons n (lazy-countdown (dec n)))))
+
+(deftest t-all
+  (is= (lazy-countdown  5) [5 4 3 2 1 0] )
+  (is= (lazy-countdown  1) [1 0] )
+  (is= (lazy-countdown  0) [0] )
+  (is= (lazy-countdown -1) nil ))
+----
+
+The new macro `lazy-cons` accepts the output value as the first arg, and a recursive function call
+as the second arg. The recursive call will have delayed-execution and will not be invoked until it is required.
+The `(when <condition>)` form returns `nil` to signal the termination of the lazy sequence.
+
+*_Implementation note_*
+
+The structure of `when` and `lazy-cons` is not required, but is probably the simplest of multiple
+possible choices. The new macro `(lazy-cons val (recursive-call...))` itself is nothing but a simplification
+of the native form `(lazy-seq (cons val (recursive-call...)))` which reduces typing and the possibility of errors.
+
+Please note that this implementatino of `lazy-cons` bears no relation to the historical `lazy-cons` which was removed
+from Clojure circa 2008.
+
+=== Generator Functions for Lazy Sequences (a la Python)
+
+One of the nice features of Python is the ability to use Generator Functions. These allow a function to "yield"
+a result from anywhere in the code, which is placed in a lazy output buffer for consumption by the calling function.
+The generator function is "paused" until the output value is consumed, then resumes execution where it left off
+with all local state preserved.  This ability is especially handy when you have nested loops or other structures
+that make it inconvenient to return a result as the last expression in a function.
+
+[source,clojure]
+----
+(defn concat-gen    ; concat a list of collections
+[& collections]
+ (lazy-gen
+   (doseq [curr-coll collections]
+     (doseq [item curr-coll]
+       (yield item)))))
+
+(defn concat-gen-pair
+  [& collections]
+  (lazy-gen
+    (doseq [curr-coll collections]
+      (doseq [item curr-coll]
+        (yield-all [item item])))))
+
+(is= [1 2 3 4 5 6 7 8 9]                            (concat-gen       c1 c2 c3))
+(is= [1 1  2 2  3 3  4 4  5 5  6 6  7 7  8 8  9 9]  (concat-gen-pair  c1 c2 c3))
+----
+
+`lazy-gen` uses a `core.async` channel to buffer output, with a default buffer size of 32 (controlled by
+the dynamic var `*lazy-gen-buffer-size*`). Result values passed to `yield` generate a lazy sequence that is the
+result of the (lazy-gen ...) macro. The closely-related function `yield-all` inserts the elements of a collection
+onto the output stream instead of just a single value.  Besides `doseq`, `lazy-gen` is also very handy for
+generating a lazy seq within a `loop`-`recur` expression.
 
 === Validating Intermediate Results
 

@@ -1614,16 +1614,23 @@
       (seq (range-gen 0))
       nil))
 
-  (let [concat-gen (fn [& collections] ;A generator 'range' function.
-                     (lazy-gen
-                       (doseq [curr-coll collections]
-                         (doseq [item curr-coll]
-                           (yield item)))))]
-    (let [c1     [1 2 3]
-          c2     [4 5 6]
-          c3     [7 8 9]
-          result (concat-gen c1 c2 c3)]
-      (is= result (thru 1 9))))
+  (let [
+        concat-gen      (fn [& collections] ;A generator 'range' function.
+                          (lazy-gen
+                            (doseq [curr-coll collections]
+                              (doseq [item curr-coll]
+                                (yield item)))))
+        concat-gen-pair (fn [& collections] ;A generator 'range' function.
+                          (lazy-gen
+                            (doseq [curr-coll collections]
+                              (doseq [item curr-coll]
+                                (yield-all [item item])))))
+        c1              [1 2 3]
+        c2              [4 5 6]
+        c3              [7 8 9]
+  ]
+      (is= [1 2 3 4 5 6 7 8 9]                            (concat-gen c1 c2 c3))
+      (is= [1 1  2 2  3 3  4 4  5 5  6 6  7 7  8 8  9 9]  (concat-gen-pair c1 c2 c3)))
 
   (let [sq-yield   (fn [xs]
                      (lazy-gen
@@ -1726,9 +1733,6 @@
       ; (count iter-flat-result) => 3900 "Elapsed time: 2970.726412 msecs"
     (is= iter-glue-result iter-flat-result))
 
-
-
-
 ; Bare yield won't compile => java.lang.RuntimeException: Unable to resolve symbol: lazy-gen-output-buffer
   ; (yield 99)
 
@@ -1742,6 +1746,7 @@
   ; (concat-gen [1 2 3] [4 5 6] [7 8 9]) => (1 2 3 4 5 6 7 8 9)
   ; (empty-gen-fn) => nil
 
+  (is= [1 2 3 4 5] (flat-vec [[[1] 2] [3 [4 [5]]]]))
 
 ) ; t-global
 
