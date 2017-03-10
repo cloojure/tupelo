@@ -807,6 +807,10 @@ that make it inconvenient to return a result as the last expression in a functio
       (doseq [item curr-coll]
         (yield-all [item item])))))
 
+(def c1 [1 2 3])
+(def c2 [4 5 6])
+(def c3 [7 8 9])
+
 (is= [1 2 3 4 5 6 7 8 9]                            (concat-gen       c1 c2 c3))
 (is= [1 1  2 2  3 3  4 4  5 5  6 6  7 7  8 8  9 9]  (concat-gen-pair  c1 c2 c3))
 ----
