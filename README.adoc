@@ -1,5 +1,4 @@
 
-
 = Making Clojure Even Sweeter
 
 Leiningen coordinates:
