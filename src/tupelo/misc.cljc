@@ -29,6 +29,11 @@
 (defn ^{:deprecated "0.9.15"} seq->str [& args] (apply t/seq->str args))
 (def  ^{:deprecated "0.9.15"} printable-chars  ts/printable-chars)
 
+; #todo *warn-on-lazy* -> print warning on first usage of each lazy function:
+; #todo     for, map/indexed, flatten, line-seq, concat, distinct, drop/last/while, filter/remove/keep,
+; #todo     partition*, re-seq, take/nth/while
+
+
 ; #todo add functions:
 ;   fibonacci-list(n)                 - 1ist n  fibo's
 ;   fibonacci-list-bounded(maxVal)    - list of fibo's <= maxVal
@@ -163,6 +168,12 @@
                         parts)]
       idxs))
 
+;; Assuming require [clojure.tools.logging :as log]
+(defn log-uncaught-exceptions []
+  (Thread/setDefaultUncaughtExceptionHandler
+    (reify Thread$UncaughtExceptionHandler
+      (uncaughtException [_ thread ex]
+        (println ex "Uncaught exception on" (.getName thread)))))) ; or (log/error ...)
 
 ;  Make clojure versions of all pcapng stuff
 ;

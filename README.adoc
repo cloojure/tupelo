@@ -780,7 +780,7 @@ The structure of `when` and `lazy-cons` is not required, but is probably the sim
 possible choices. The new macro `(lazy-cons val (recursive-call...))` itself is nothing but a simplification
 of the native form `(lazy-seq (cons val (recursive-call...)))` which reduces typing and the possibility of errors.
 
-Please note that this implementatino of `lazy-cons` bears no relation to the historical `lazy-cons` which was removed
+Please note that this implementation of `lazy-cons` bears no relation to the historical `lazy-cons` which was removed
 from Clojure circa 2008.
 
 === Generator Functions for Lazy Sequences (a la Python)
