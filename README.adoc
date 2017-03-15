@@ -775,9 +775,9 @@ The new macro `lazy-cons` accepts the output value as the first arg, and a recur
 as the second arg. The recursive call will have delayed-execution and will not be invoked until it is required.
 The `(when <condition>)` form returns `nil` to signal the termination of the lazy sequence.
 
-*_Implementation note_*
+*_Implementation note:_*
 
-The structure of `when` and `lazy-cons` is not required, but is probably the simplest of multiple
+The canonical structure of `when` and `lazy-cons` shown above is not required, but is probably the simplest of multiple
 possible choices. The new form of `(lazy-cons val (recursive-call...))` is nothing but a simplification
 of the original `clojure.core` form `(lazy-seq (cons val (recursive-call...)))` which reduces typing and 
 the possibility of errors.
