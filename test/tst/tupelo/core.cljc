@@ -1600,7 +1600,7 @@
                     (lazy-gen
                       (loop [cnt 0]
                         (when (< cnt limit)
-                          (yield cnt)
+                          (assert (= cnt (yield cnt)))
                           (recur (inc cnt))))))]
 
     (is= (range 1) (range-gen 1))
@@ -1615,22 +1615,23 @@
       nil))
 
   (let [
-        concat-gen      (fn [& collections] ;A generator 'range' function.
-                          (lazy-gen
-                            (doseq [curr-coll collections]
-                              (doseq [item curr-coll]
-                                (yield item)))))
-        concat-gen-pair (fn [& collections] ;A generator 'range' function.
-                          (lazy-gen
-                            (doseq [curr-coll collections]
-                              (doseq [item curr-coll]
-                                (yield-all [item item])))))
+        concat-gen        (fn [& collections]
+                            (lazy-gen
+                              (doseq [curr-coll collections]
+                                (doseq [item curr-coll]
+                                  (yield item)))))
+        concat-gen-mirror (fn [& collections]
+                            (lazy-gen
+                              (doseq [curr-coll collections]
+                                (doseq [item curr-coll]
+                                  (let [items [item (- item)]]
+                                    (assert (= items (yield-all items))))))))
         c1              [1 2 3]
         c2              [4 5 6]
         c3              [7 8 9]
   ]
-      (is= [1 2 3 4 5 6 7 8 9]                            (concat-gen c1 c2 c3))
-      (is= [1 1  2 2  3 3  4 4  5 5  6 6  7 7  8 8  9 9]  (concat-gen-pair c1 c2 c3)))
+      (is= [1 2 3 4 5 6 7 8 9] (concat-gen c1 c2 c3))
+      (is= [1 -1  2 -2  3 -3  4 -4  5 -5  6 -6  7 -7  8 -8  9 -9]  (concat-gen-mirror c1 c2 c3)))
 
   (let [sq-yield   (fn [xs]
                      (lazy-gen

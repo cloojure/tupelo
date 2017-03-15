@@ -875,18 +875,22 @@
        (ca/close! ~'lazy-gen-output-buffer))
      (lazy-reader-fn#)))
 
-(defmacro yield
+(defmacro yield ; #todo put-now/put-later & dynamic
   "Within a 'generator function' created by `lazy-gen`, populates the
-  lazy seq of results with the supplied value (a la Python)."
-  [& values]
-  `(ca/>! ~'lazy-gen-output-buffer ~@values)) ; #todo put-now/put-later & dynamic
+  result lazy seq with the supplied value (a la Python). Returns the value."
+  [value]
+  `(do
+     (ca/>! ~'lazy-gen-output-buffer ~value)
+     ~value))
 
 (defmacro yield-all
   "Within a 'generator function' created by `lazy-gen`, populates the
-  lazy seq of results with each of the supplied values."
+  result lazy seq with each item from the supplied collection. Returns the collection."
   [values]
-  `(doseq [value# ~values]
-     (yield value#)))
+  `(do
+     (doseq [value# ~values]
+       (yield value#))
+     (vec ~values)))
 
 (defn fibonacci-seq
   "A lazy seq of Fibonacci numbers (memoized)."
