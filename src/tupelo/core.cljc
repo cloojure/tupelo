@@ -1120,8 +1120,7 @@
     coll))
 
 (s/defn partition-using
-  "(partition-using pred values)
-  Partitions a collection into vector of segments based on a predicate with a collection argument.
+  "Partitions a collection into vector of segments based on a predicate with a collection argument.
   The first segment is initialized by removing the first element from `values`, with subsequent
   elements similarly transferred as long as `(pred remaining-values)` is falsey. When
   `(pred remaining-values)` becomes truthy, the algorithm begins building the next segment.
