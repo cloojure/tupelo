@@ -1755,7 +1755,9 @@
       (is= (partition-using start-segment? [1 2 3 6 7 8])
         [[1 2] [3] [6 7 8]])
       (is= (partition-using start-segment? [1 2 3 6 7 8 9 12 13 15 16 17 18 18 18 3 4 5])
-        [[1 2] [3] [6 7 8] [9] [12 13] [15 16 17] [18] [18] [18] [3 4 5]])))
+        [[1 2] [3] [6 7 8] [9] [12 13] [15 16 17] [18] [18] [18] [3 4 5]]))
+    (throws? (partition-using even? 5))
+  )
 
 ) ; t-global
 

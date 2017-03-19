@@ -1119,8 +1119,18 @@
     (fn [partial-coll] (starts-with? partial-coll (vec tgt)))
     coll))
 
-(defn partition-using [pred vals-in]
-  (loop [vals   vals-in
+(s/defn partition-using
+  "(partition-using pred values)
+  Partitions a collection into vector of segments based on a predicate with a collection argument.
+  The first segment is initialized by removing the first element from `values`, with subsequent
+  elements similarly transferred as long as `(pred remaining-values)` is falsey. When
+  `(pred remaining-values)` becomes truthy, the algorithm begins building the next segment.
+  Thus, the first partition finds the smallest N (< 0 N) such that (pred (drop N values))
+  is true, and constructs the segment as (take N values). If pred is never satisified,
+  [values] is returned."
+  [pred :- s/Any    ; a predicate function  taking a list arg
+   values :- ts/List ]
+  (loop [vals   values
          result []]
     (if (empty? vals)
       result
