@@ -1119,6 +1119,18 @@
     (fn [partial-coll] (starts-with? partial-coll (vec tgt)))
     coll))
 
+(defn partition-using [pred vals-in]
+  (loop [vals   vals-in
+         result []]
+    (if (empty? vals)
+      result
+      (let [
+            out-first               (take 1 vals)
+            [out-rest unprocessed]  (split-when pred (next vals))
+            out-vals                (glue out-first out-rest)
+            new-result              (append result out-vals)]
+        (recur unprocessed new-result)))))
+
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
 (when-not-clojure-1-9-plus
   (defn ^{:deprecated "1.9.0-alpha5"} seqable?  ; from clojure.contrib.core/seqable
@@ -1145,7 +1157,7 @@
       it-> safe-> keep-if drop-if zip flat-vec
       strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
       drop-at insert-at replace-at starts-with? int->kw kw->int
-      split-when split-match wild-match? increasing? increasing-or-equal?
+      split-when split-match partition-using wild-match? increasing? increasing-or-equal?
       fibonacci-seq fibo-thru fibo-nth
       with-exception-default lazy-cons lazy-gen yield yield-all
      ] ))

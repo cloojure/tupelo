@@ -1518,6 +1518,7 @@
   (is= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [6 7]   ))
 )
 
+
 (deftest t-throws
   ; (println "t-throws enter")
   ; (newline) (spyx (throws?-impl '(/ 1 2)))
@@ -1748,6 +1749,13 @@
   ; (empty-gen-fn) => nil
 
   (is= [1 2 3 4 5] (flat-vec [[[1] 2] [3 [4 [5]]]]))
+
+  (testing "partition-using"
+    (let [start-segment? (fn [vals] (zero? (rem (first vals) 3))) ]
+      (is= (partition-using start-segment? [1 2 3 6 7 8])
+        [[1 2] [3] [6 7 8]])
+      (is= (partition-using start-segment? [1 2 3 6 7 8 9 12 13 15 16 17 18 18 18 3 4 5])
+        [[1 2] [3] [6 7 8] [9] [12 13] [15 16 17] [18] [18] [18] [3 4 5]])))
 
 ) ; t-global
 
