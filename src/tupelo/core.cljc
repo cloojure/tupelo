@@ -1102,10 +1102,11 @@
   [pred coll]
   (loop [left  []
          right (vec coll)]
-    (if (or (pred right) (empty? right))
+    (if (or (empty? right) ; don't call pred if no more data
+            (pred right))
       [left right]
       (recur  (append left (first right))
-        (rest right)))))
+              (rest right)))))
 
 ; #todo readme
 (defn split-match    ; #todo schema
@@ -1148,6 +1149,8 @@
       fibonacci-seq fibo-thru fibo-nth
       with-exception-default lazy-cons lazy-gen yield yield-all
      ] ))
+
+; #todo verify spy-let works after (t/refer-tupelo)
 
 ;---------------------------------------------------------------------------------------------------
 ; DEPRECATED functions
