@@ -1085,6 +1085,18 @@
 ; #todo: add (throwed? ...) for testing exceptions
 
 ; #todo readme
+(s/defn starts-with? :- s/Bool
+  "Returns true when the initial elements of coll match those of tgt"
+  [coll tgt]    ; #todo schema
+  (let [tgt-vec (vec tgt)
+        tgt-len (count tgt-vec)
+        ]
+    (if (< (count coll) tgt-len)
+      false
+      (let [coll-vals (take tgt-len coll)]
+        (= coll-vals tgt-vec)))))
+
+; #todo readme
 (defn index-using
   "Finds the first index N where (< N (count coll)) such that (pred (drop N coll)) is truthy.
   Returns `nil` if no match found."
@@ -1100,19 +1112,7 @@
             (recur (inc i))))))))
 
 ; #todo readme
-(s/defn starts-with? :- s/Bool
-  "Returns true when the initial elements of coll match those of tgt"
-  [coll tgt]    ; #todo schema
-  (let [tgt-vec (vec tgt)
-        tgt-len (count tgt-vec)
-        ]
-    (if (< (count coll) tgt-len)
-      false
-      (let [coll-vals (take tgt-len coll)]
-        (= coll-vals tgt-vec)))))
-
-; #todo readme
-(defn split-when    ; #todo schema
+(defn split-using    ; #todo schema
   "Splits a collection based on a predicate with a collection argument.
   Finds the first index N such that (pred (drop N coll)) is true. Returns a length-2 vector
   of [ (take N coll) (drop N coll) ]. If pred is never satisified, [ coll [] ] is returned."
@@ -1129,7 +1129,7 @@
   Returns a length-2 vector of [ (take N coll) (drop N coll) ].
   If no match is found, [ coll [] ] is returned."
   [coll tgt]
-  (split-when
+  (split-using
     (fn [partial-coll] (starts-with? partial-coll (vec tgt)))
     (vec coll)))
 
@@ -1149,10 +1149,12 @@
     (if (empty? vals)
       result
       (let [out-first  (take 1 vals)
-            [out-rest unprocessed] (split-when pred (next vals))
+            [out-rest unprocessed] (split-using pred (next vals))
             out-vals   (glue out-first out-rest)
             new-result (append result out-vals)]
         (recur unprocessed new-result)))))
+
+; #todo (first [] ) should throw instead of -> nil, etc.
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
 (when-not-clojure-1-9-plus
@@ -1180,7 +1182,7 @@
       it-> safe-> keep-if drop-if zip flat-vec
       strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
       drop-at insert-at replace-at starts-with? int->kw kw->int
-      split-when split-match partition-using wild-match? increasing? increasing-or-equal?
+      split-using split-match partition-using wild-match? increasing? increasing-or-equal?
       fibonacci-seq fibo-thru fibo-nth
       with-exception-default lazy-cons lazy-gen yield yield-all
      ] ))
