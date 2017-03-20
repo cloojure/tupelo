@@ -1085,13 +1085,30 @@
 ; #todo: add (throwed? ...) for testing exceptions
 
 ; #todo readme
+(defn index-using
+  "Finds the first index N where (< N (count coll)) such that (pred (drop N coll)) is truthy.
+  Returns `nil` if no match found."
+  [pred coll]
+  (let [all-vals (vec coll)
+        num-vals (count all-vals)]
+    (loop [i 0]
+      (if (<= num-vals i)
+        nil         ; did not find match
+        (let [curr-vals (subvec all-vals i)]
+          (if (pred curr-vals)
+            i
+            (recur (inc i))))))))
+
+; #todo readme
 (s/defn starts-with? :- s/Bool
   "Returns true when the initial elements of coll match those of tgt"
   [coll tgt]    ; #todo schema
-  (let [tgt-vec (vec tgt)]
-    (if (< (count coll) (count tgt-vec))
+  (let [tgt-vec (vec tgt)
+        tgt-len (count tgt-vec)
+        ]
+    (if (< (count coll) tgt-len)
       false
-      (let [coll-vals (take (count tgt-vec) coll)]
+      (let [coll-vals (take tgt-len coll)]
         (= coll-vals tgt-vec)))))
 
 ; #todo readme
@@ -1100,13 +1117,10 @@
   Finds the first index N such that (pred (drop N coll)) is true. Returns a length-2 vector
   of [ (take N coll) (drop N coll) ]. If pred is never satisified, [ coll [] ] is returned."
   [pred coll]
-  (loop [left  []
-         right (vec coll)]
-    (if (or (empty? right) ; don't call pred if no more data
-            (pred right))
-      [left right]
-      (recur  (append left (first right))
-              (rest right)))))
+  (let [N (index-using pred (vec coll)) ]
+    (if (nil? N)
+      [ coll [] ]
+      [ (take N coll) (drop N coll) ] )))
 
 ; #todo readme
 (defn split-match    ; #todo schema
@@ -1117,8 +1131,9 @@
   [coll tgt]
   (split-when
     (fn [partial-coll] (starts-with? partial-coll (vec tgt)))
-    coll))
+    (vec coll)))
 
+; #todo readme
 (s/defn partition-using
   "Partitions a collection into vector of segments based on a predicate with a collection argument.
   The first segment is initialized by removing the first element from `values`, with subsequent
@@ -1127,17 +1142,16 @@
   Thus, the first partition finds the smallest N (< 0 N) such that (pred (drop N values))
   is true, and constructs the segment as (take N values). If pred is never satisified,
   [values] is returned."
-  [pred :- s/Any    ; a predicate function  taking a list arg
+  [pred   :- s/Any    ; a predicate function  taking a list arg
    values :- ts/List ]
-  (loop [vals   values
+  (loop [vals   (vec values)
          result []]
     (if (empty? vals)
       result
-      (let [
-            out-first               (take 1 vals)
-            [out-rest unprocessed]  (split-when pred (next vals))
-            out-vals                (glue out-first out-rest)
-            new-result              (append result out-vals)]
+      (let [out-first  (take 1 vals)
+            [out-rest unprocessed] (split-when pred (next vals))
+            out-vals   (glue out-first out-rest)
+            new-result (append result out-vals)]
         (recur unprocessed new-result)))))
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure

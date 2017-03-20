@@ -1483,41 +1483,6 @@
   (isnt (starts-with? (range 3 3) (range 0 3)))
   )
 
-(deftest t-split-when
-  (is= [ [] [0   1   2   3   4]    ] (split-when #(= 0 (first %)) (range 5)))
-  (is= [    [0] [1   2   3   4]    ] (split-when #(= 1 (first %)) (range 5)))
-  (is= [    [0   1] [2   3   4]    ] (split-when #(= 2 (first %)) (range 5)))
-  (is= [    [0   1   2] [3   4]    ] (split-when #(= 3 (first %)) (range 5)))
-  (is= [    [0   1   2   3] [4]    ] (split-when #(= 4 (first %)) (range 5)))
-  (is= [    [0   1   2   3   4] [] ] (split-when #(= 5 (first %)) (range 5)))
-  (is= [    [0   1   2   3   4] [] ] (split-when #(= 9 (first %)) (range 5)))
-
-  (is (= [[\a \b \c] [\d \e \f]] (split-when #(starts-with? % "de")
-                                              "abcdef")))
-)
-
-(deftest t-split-match
-  (is= [ [] [\a   \b   \c   \d   \e   \f]      ] (split-match "abcdef" "a"   ))
-  (is= [ [] [\a   \b   \c   \d   \e   \f]      ] (split-match "abcdef" "ab"  ))
-  (is= [    [\a] [\b   \c   \d   \e   \f]      ] (split-match "abcdef" "bc"  ))
-  (is= [    [\a   \b] [\c   \d   \e   \f]      ] (split-match "abcdef" "cde" ))
-  (is= [    [\a   \b   \c] [\d   \e   \f]      ] (split-match "abcdef" "de"  ))
-  (is= [    [\a   \b   \c   \d] [\e   \f]      ] (split-match "abcdef" "ef"  ))
-  (is= [    [\a   \b   \c   \d   \e] [\f]      ] (split-match "abcdef" "f"   ))
-  (is= [    [\a   \b   \c   \d   \e   \f]  []  ] (split-match "abcdef" "fg"  ))
-  (is= [    [\a   \b   \c   \d   \e   \f]  []  ] (split-match "abcdef" "gh"  ))
-
-  (is= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [-1]    ))
-  (is= [ [] [0   1   2   3   4   5]      ]       (split-match (range 6) [0]     ))
-  (is= [ [] [0   1   2   3   4   5]      ]       (split-match (range 6) [0 1]   ))
-  (is= [    [0   1] [2   3   4   5]      ]       (split-match (range 6) [2 3]   ))
-  (is= [    [0   1   2] [3   4   5]      ]       (split-match (range 6) [3 4 5] ))
-  (is= [    [0   1   2   3] [4   5]      ]       (split-match (range 6) [4 5]   ))
-  (is= [    [0   1   2   3   4] [5]      ]       (split-match (range 6) [5]     ))
-  (is= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [5 6]   ))
-  (is= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [6 7]   ))
-)
-
 
 (deftest t-throws
   ; (println "t-throws enter")
@@ -1750,14 +1715,57 @@
 
   (is= [1 2 3 4 5] (flat-vec [[[1] 2] [3 [4 [5]]]]))
 
+  (testing "index-using"
+    (is= nil (t/index-using #(= [666]       %) (range 5)))
+    (is= 0   (t/index-using #(= [0 1 2 3 4] %) (range 5)))
+    (is= 1   (t/index-using #(= [  1 2 3 4] %) (range 5)))
+    (is= 2   (t/index-using #(= [    2 3 4] %) (range 5)))
+    (is= 3   (t/index-using #(= [      3 4] %) (range 5)))
+    (is= 4   (t/index-using #(= [        4] %) (range 5)))
+    (is= nil (t/index-using #(= [         ] %) (range 5))))
+
+  (testing "split-when"
+    (is= [ [] [0   1   2   3   4]    ] (split-when #(= 0 (first %)) (range 5)))
+    (is= [    [0] [1   2   3   4]    ] (split-when #(= 1 (first %)) (range 5)))
+    (is= [    [0   1] [2   3   4]    ] (split-when #(= 2 (first %)) (range 5)))
+    (is= [    [0   1   2] [3   4]    ] (split-when #(= 3 (first %)) (range 5)))
+    (is= [    [0   1   2   3] [4]    ] (split-when #(= 4 (first %)) (range 5)))
+    (is= [    [0   1   2   3   4] [] ] (split-when #(= 5 (first %)) (range 5)))
+    (is= [    [0   1   2   3   4] [] ] (split-when #(= 9 (first %)) (range 5)))
+
+    (is (= [[\a \b \c] [\d \e \f]] (split-when #(starts-with? % "de")
+                                     "abcdef"))))
+
+  (testing "split-match"
+    (is= [ [] [\a   \b   \c   \d   \e   \f]      ] (split-match "abcdef" "a"   ))
+    (is= [ [] [\a   \b   \c   \d   \e   \f]      ] (split-match "abcdef" "ab"  ))
+    (is= [    [\a] [\b   \c   \d   \e   \f]      ] (split-match "abcdef" "bc"  ))
+    (is= [    [\a   \b] [\c   \d   \e   \f]      ] (split-match "abcdef" "cde" ))
+    (is= [    [\a   \b   \c] [\d   \e   \f]      ] (split-match "abcdef" "de"  ))
+    (is= [    [\a   \b   \c   \d] [\e   \f]      ] (split-match "abcdef" "ef"  ))
+    (is= [    [\a   \b   \c   \d   \e] [\f]      ] (split-match "abcdef" "f"   ))
+    (is= [    [\a   \b   \c   \d   \e   \f]  []  ] (split-match "abcdef" "fg"  ))
+    (is= [    [\a   \b   \c   \d   \e   \f]  []  ] (split-match "abcdef" "gh"  ))
+
+    (is= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [-1]    ))
+    (is= [ [] [0   1   2   3   4   5]      ]       (split-match (range 6) [0]     ))
+    (is= [ [] [0   1   2   3   4   5]      ]       (split-match (range 6) [0 1]   ))
+    (is= [    [0   1] [2   3   4   5]      ]       (split-match (range 6) [2 3]   ))
+    (is= [    [0   1   2] [3   4   5]      ]       (split-match (range 6) [3 4 5] ))
+    (is= [    [0   1   2   3] [4   5]      ]       (split-match (range 6) [4 5]   ))
+    (is= [    [0   1   2   3   4] [5]      ]       (split-match (range 6) [5]     ))
+    (is= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [5 6]   ))
+    (is= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [6 7]   )))
+
   (testing "partition-using"
     (let [start-segment? (fn [vals] (zero? (rem (first vals) 3))) ]
       (is= (partition-using start-segment? [1 2 3 6 7 8])
         [[1 2] [3] [6 7 8]])
       (is= (partition-using start-segment? [1 2 3 6 7 8 9 12 13 15 16 17 18 18 18 3 4 5])
         [[1 2] [3] [6 7 8] [9] [12 13] [15 16 17] [18] [18] [18] [3 4 5]]))
-    (throws? (partition-using even? 5))
-  )
+    (throws? (partition-using even? 5)))
+
+
 
 ) ; t-global
 
