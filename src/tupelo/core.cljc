@@ -1117,10 +1117,10 @@
   Finds the first index N such that (pred (drop N coll)) is true. Returns a length-2 vector
   of [ (take N coll) (drop N coll) ]. If pred is never satisified, [ coll [] ] is returned."
   [pred coll]
-  (let [N (index-using pred (vec coll)) ]
+  (let [N (index-using pred (vec coll))]
     (if (nil? N)
-      [ coll [] ]
-      [ (take N coll) (drop N coll) ] )))
+      [coll []]
+      [(take N coll) (drop N coll)])))
 
 ; #todo readme
 (defn split-match    ; #todo schema
@@ -1148,10 +1148,12 @@
          result []]
     (if (empty? vals)
       result
-      (let [out-first  (take 1 vals)
-            [out-rest unprocessed] (split-using pred (next vals))
-            out-vals   (glue out-first out-rest)
-            new-result (append result out-vals)]
+      (let [
+        out-first  (take 1 vals)
+        [out-rest unprocessed] (split-using pred (rest vals))
+        out-vals   (glue out-first out-rest)
+        new-result (append result out-vals)
+      ]
         (recur unprocessed new-result)))))
 
 ; #todo (first [] ) should throw instead of -> nil, etc.
