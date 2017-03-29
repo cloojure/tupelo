@@ -35,6 +35,10 @@
   (let [ws-collapsed-args (mapv collapse-whitespace args)]
     (apply = ws-collapsed-args)))
 
+; #todo need (squash)         -> (collapse-whitespace (strcat args))       ; (smash ...)         ?
+; #todo need (squash-equals?) -> (apply = (mapv squash args))              ; (smash-equals? ...)  ?
+;    or (equals-base) or (equals-root) or (squash-equals) or (base-equals) or (core-equals) or (equals-collapse-string...)
+
 (s/defn double-quotes->single-quotes :- s/Str ; #todo readme & blog
   [arg :- s/Str]
   (str/replace arg \" \'))
