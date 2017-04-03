@@ -8,12 +8,14 @@
   "Miscellaneous functions."
   (:require 
     [clojure.core.async :refer [go go-loop chan buffer close! thread alts! alts!! timeout]]
+    [clojure.data.xml :as xml]
     [clojure.java.shell :as shell]
     [clojure.string :as str]
-    [tupelo.string :as ts]
-    [tupelo.schema :as tsk]
+    [clojure.walk :refer [postwalk]]
     [schema.core :as s]
     [tupelo.core :as t]
+    [tupelo.schema :as tsk]
+    [tupelo.string :as ts]
   ))
 (t/refer-tupelo)
 
@@ -149,6 +151,17 @@
   (if (zero? n)
     1
     (apply * (thru 1 n))))
+
+; #todo need tests & docs. Use for datomic Entity?
+(defn unlazy
+  [item]
+  (cond
+    (sequential? item)                              (vec item)
+    (or
+      (associative? item)
+      (= clojure.data.xml.Element (class item)))    (into {} item)
+    :else item
+    ))
 
 ;-----------------------------------------------------------------------------
 
