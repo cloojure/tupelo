@@ -110,4 +110,16 @@
   (is= [ ] (find-pattern [9]   [0 1 2 3] ))
 )
 
+(deftest t-global
+  (testing "unlazy"
+    (is= (range 5) (unlazy (range 5)))
+    (let [c1 {:a 1 :b (range 3) :c {:x (range 4) (range 5) "end"}}]
+      (is= c1 (unlazy c1)))
+    (let [l2  '({:a ("zero" 0)} {:a ("one" 1)} {:a ("two" 2)})
+          e2  (unlazy l2)]
+      (is= l2 e2)
+      (is= "one" (get-in e2 [1 :a 0] l2))
+      ; (throws? (spyx (get-in l2 [1 :a 0] l2)))    ; #todo: SHOULD throw
+    ))
 
+)

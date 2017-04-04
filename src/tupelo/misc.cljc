@@ -154,14 +154,15 @@
 
 ; #todo need tests & docs. Use for datomic Entity?
 (defn unlazy
-  [item]
-  (cond
-    (sequential? item)                              (vec item)
-    (or
-      (associative? item)
-      (= clojure.data.xml.Element (class item)))    (into {} item)
-    :else item
-    ))
+  [coll]
+  (let [unlazy-item (fn [item]
+                      (cond
+                        (sequential? item) (vec item)
+                        (map? item) (into {} item)
+                        :else item))
+        result    (postwalk unlazy-item coll)
+  ]
+    result ))
 
 ;-----------------------------------------------------------------------------
 
