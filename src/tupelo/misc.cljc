@@ -26,7 +26,7 @@
 (defn ^{:deprecated "0.9.15"} double-quotes->single-quotes [& args] (apply ts/double-quotes->single-quotes args))
 (defn ^{:deprecated "0.9.15"} single-quotes->double-quotes [& args] (apply ts/single-quotes->double-quotes args))
 (defn ^{:deprecated "0.9.15"} normalize-str [& args] (apply ts/normalize-str args))
-(defn ^{:deprecated "0.9.15"} str->kw [& args] (apply ts/str->kw args))
+(defn ^{:deprecated "0.9.15"} str->kw [& args] (apply ts/str->kw-normalized args))
 (defn ^{:deprecated "0.9.15"} char-seq [& args] (apply t/char-seq args))
 (defn ^{:deprecated "0.9.15"} seq->str [& args] (apply t/seq->str args))
 (def  ^{:deprecated "0.9.15"} printable-chars  ts/chars-text )

@@ -40,7 +40,7 @@
 (defn lowercase?          [& args] (every? #(contains? chars-lowercase %) (i/strcat args)))
 (defn uppercase?          [& args] (every? #(contains? chars-uppercase %) (i/strcat args)))
 (defn digit?              [& args] (every? #(contains? chars-digit %) (i/strcat args)))
-(defn alpha?              [& args] (every? #(contains? chars-alpha %) (i/spyx (i/strcat args))))
+(defn alpha?              [& args] (every? #(contains? chars-alpha %) (i/strcat args)))
 (defn visible?            [& args] (every? #(contains? chars-visible %) (i/strcat args)))
 (defn text?               [& args] (every? #(contains? chars-text %) (i/strcat args)))
 
@@ -85,10 +85,16 @@
 ; #todo replace with other lib
 
 ; %todo define current mode only for (str->kw "ab*cd #()xyz" :sloppy), else throw
-(defn str->kw       ; #todo need test, README
+(defn str->kw-normalized       ; #todo need test, README
   "Returns a keyword constructed from a normalized string"
   [arg]
   (keyword (normalize-str arg)))
+
+; #todo throw if bad string
+(defn str->kw       ; #todo need test, README
+  "Returns a keyword constructed from a normalized string"
+  [arg]
+  (keyword arg))
 
 (defn kw->str       ; #todo need test, README
   "Returns the string version of a keyword, stripped of the leading ':' (colon)."
@@ -104,6 +110,18 @@
   "Converts a string from a-kabob-case-value to a_snake_case_value"
   [arg]
   (str/replace arg \- \_ ))
+
+(defn kw-snake->kabob [kw]
+  (-> kw
+    (kw->str)
+    (snake->kabob)
+    (str->kw)))
+
+(defn kw-kabob->snake [kw]
+  (->> kw
+    (kw->str)
+    (kabob->snake)
+    (str->kw)))
 
 ;-----------------------------------------------------------------------------
 
