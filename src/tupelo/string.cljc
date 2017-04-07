@@ -84,10 +84,26 @@
     (str/replace #"[^a-zA-Z0-9]" "-")))
 ; #todo replace with other lib
 
+; %todo define current mode only for (str->kw "ab*cd #()xyz" :sloppy), else throw
 (defn str->kw       ; #todo need test, README
-  "Returns a keyword constructed from the normalized str-in"
-  [str-in]
-  (keyword (normalize-str str-in)))
+  "Returns a keyword constructed from a normalized string"
+  [arg]
+  (keyword (normalize-str arg)))
+
+(defn kw->str       ; #todo need test, README
+  "Returns the string version of a keyword, stripped of the leading ':' (colon)."
+  [arg]
+  (str/join (cc/drop 1 (str arg))))
+
+(defn snake->kabob
+  "Converts a string from a_snake_case_value to a-kabob-case-value"
+  [arg]
+  (str/replace arg \_ \- ))
+
+(defn kabob->snake
+  "Converts a string from a-kabob-case-value to a_snake_case_value"
+  [arg]
+  (str/replace arg \- \_ ))
 
 ;-----------------------------------------------------------------------------
 

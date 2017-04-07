@@ -116,9 +116,12 @@
                 ts/single-quotes->double-quotes
                 ts/double-quotes->single-quotes)))))
 
-(deftest str->kw-t
-  (testing "basic usage"
-    (is (= :abc-def-gh-qrs (ts/str->kw "abc def*gh_qrs")))))
+(dotest
+  (is= :abc-def-gh-qrs (ts/str->kw "abc def*gh_qrs"))
+  (is= "abc" (ts/kw->str :abc))
+  (is= (ts/snake->kabob "some_multiple_word_str") "some-multiple-word-str")
+  (is= (ts/kabob->snake "some-multiple-word-str") "some_multiple_word_str")
+  )
 
 (deftest seq->str-t
   (is (= " 1 2 3"           (t/seq->str (byte-array [1 2 3]))))

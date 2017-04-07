@@ -6,7 +6,8 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.test
   "Testing functions."
-)
+  (:require [clojure.test.check :as tc]
+  ))
 
 ;-----------------------------------------------------------------------------
 ; testing macros
@@ -62,6 +63,14 @@
   "
   [& forms]
   (apply throws?-impl forms))
+
+; #todo maybe "testgrp"
+(defmacro dotest [& body] ; #todo README & tests
+  (let [test-name-sym (symbol (str "test-line-" (:line (meta &form))))]
+    `(clojure.test/deftest ~test-name-sym ~@body)))
+
+(defmacro check [& body] ; #todo README & tests
+  `(is (grab :result (tc/quick-check ~@body))))
 
 
 ; #todo: gen/elements -> clojure.check/rand-nth
