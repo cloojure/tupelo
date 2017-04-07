@@ -8,7 +8,7 @@
   (:use clojure.test)
   (:require
     [clojure.string                         :as str]
-    [clojure.test.check                     :as tc]
+    [clojure.test.check                     :as check]
     [clojure.test.check.generators          :as gen]
     [clojure.test.check.properties          :as prop]
     [clojure.test.check.clojure-test        :as tst]
@@ -16,6 +16,7 @@
     [tupelo.core                            :as t]
     [tupelo.misc                            :as misc]
     [tupelo.types                           :as types]
+    [tupelo.string                          :as ts]
     [schema.core                            :as s]
   ))
 (t/refer-tupelo)
@@ -48,7 +49,7 @@
   (testing "base64 - string"
     (if (t/is-java-1-8-plus?)
       (doseq [num-chars [1 2 3 7 20]]
-        (let [orig    (str/join (misc/take-dist num-chars misc/printable-chars))
+        (let [orig    (str/join (misc/take-dist num-chars (vec ts/chars-text)))
               b64-str (b64/encode-str orig)
               result  (b64/decode-str b64-str)]
           (is (every? b64/base64-chars (seq b64-str)))
@@ -75,9 +76,9 @@
 
 (defn -main []
   (newline)
-  (println "printable-chars" (pr-str misc/printable-chars))
+  (println "printable-chars" (pr-str ts/chars-text))
   (newline)
-  (doseq [curr-char misc/printable-chars]
+  (doseq [curr-char ts/chars-text]
     (newline)
     (doseq [prefix ["" "a" "ab" "abc"] ]
       (let [orig-str    (str prefix curr-char)

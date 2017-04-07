@@ -15,6 +15,7 @@
     [org.clojure/data.xml             "0.0.8"]
     [org.clojure/math.combinatorics   "0.1.4"]
     [org.clojure/tools.analyzer       "0.6.9"]
+    [potemkin                         "0.4.3"]
     [prismatic/schema                 "1.1.3"]
   ; [expectations                     "2.1.8"]
                 ]

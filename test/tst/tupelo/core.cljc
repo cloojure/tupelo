@@ -10,7 +10,7 @@
 ;   [clojure.spec :as sp]
 ;   [clojure.spec.gen :as sp.gen]
 ;   [clojure.spec.test :as sp.test]
-;   [clojure.test.check.clojure-test :as tst]
+;   [clojure.test.check.clojure-test :as check]
 ;   [clojure.test.check.generators :as gen]
 ;   [clojure.test.check.properties :as prop]
     [clojure.string :as str]
@@ -1155,9 +1155,11 @@
 
   (let [chars-set   (into #{} (t/char-seq \a \z))
         str-val     (strcat chars-set) ]
-    (is (= 26 (count chars-set)))
-    (is (= 26 (count str-val)))
-    (is (= 26 (count (re-seq #"[a-z]" str-val))))))
+    (is= 26 (count chars-set))
+    (is= 26 (count str-val))
+    (is= 26 (count (re-seq #"[a-z]" str-val)))
+    (is= "abc" (str/join (t/char-seq \a \c)))
+    ))
 
 (deftest t-clip-str
   (testing "single string"

@@ -8,15 +8,41 @@
   "Tupelo - Making Clojure even sweeter"
   (:refer-clojure :exclude [drop take] )
   (:require
-    [clojure.core :as clj]
+    [clojure.core :as cc]
     [clojure.string :as str]
+    [potemkin.namespaces :as pns]
     [schema.core :as s]
+    [tupelo.impl :as i]
   ))
 
-(def printable-chars
-  "A seq of 1-char strings of all printable characters from space (32) to tilde (126)"
-  (mapv str (range (int \space)
-              (inc (int \~)))))
+(pns/import-fn i/char-seq)
+
+; #todo: docstrings
+(def chars-whitespace-horiz   (set [\space \tab]))
+(def chars-whitespace-eol     (set [\return \newline \formfeed]))
+(def chars-whitespace         (into chars-whitespace-horiz chars-whitespace-eol))
+(def chars-lowercase          (into (sorted-set) (char-seq \a \z)))
+(def chars-uppercase          (into (sorted-set) (char-seq \A \Z)))
+(def chars-digit              (into (sorted-set) (char-seq \0 \9)))
+(def chars-alpha              (reduce into [chars-lowercase chars-uppercase] ))
+(def chars-alphanumeric       (reduce into [chars-alpha chars-digit] ))
+(def chars-visible
+  "Set of all visible (printing) ASCII chars from exclamation point (33) to tilde (126). Excludes all whitespace & control chars."
+  (into (sorted-set) (mapv char (i/thru 33 126))))
+(def chars-text
+  "Set of chars used in 'normal' text. Includes all visible chars plus whitespace & EOL chars."
+  (into chars-visible chars-whitespace))
+
+(defn alphanumeric?       [& args] (every? #(contains? chars-alphanumeric %) (i/strcat args)))
+(defn whitespace-horiz?   [& args] (every? #(contains? chars-whitespace-horiz %) (i/strcat args)))
+(defn whitespace-eol?     [& args] (every? #(contains? chars-whitespace-eol %) (i/strcat args)))
+(defn whitespace?         [& args] (every? #(contains? chars-whitespace %) (i/strcat args)))
+(defn lowercase?          [& args] (every? #(contains? chars-lowercase %) (i/strcat args)))
+(defn uppercase?          [& args] (every? #(contains? chars-uppercase %) (i/strcat args)))
+(defn digit?              [& args] (every? #(contains? chars-digit %) (i/strcat args)))
+(defn alpha?              [& args] (every? #(contains? chars-alpha %) (i/spyx (i/strcat args))))
+(defn visible?            [& args] (every? #(contains? chars-visible %) (i/strcat args)))
+(defn text?               [& args] (every? #(contains? chars-text %) (i/strcat args)))
 
 ; #todo -> tupelo.string
 (defn collapse-whitespace ; #todo readme & blog
@@ -69,13 +95,13 @@
   "Drops the first N chars of a string, returning a string result."
   [n    :- s/Int
    txt  :- s/Str]
-  (str/join (clj/drop n txt)))
+  (str/join (cc/drop n txt)))
 
 (s/defn take :- s/Str  ; #todo add readme
   "Drops the first N chars of a string, returning a string result."
   [n    :- s/Int
    txt  :- s/Str]
-  (str/join (clj/take n txt)))
+  (str/join (cc/take n txt)))
 
 (s/defn indent :- s/Str  ; #todo add readme
   "Indents a string by pre-pending N spaces. Returns a string result."

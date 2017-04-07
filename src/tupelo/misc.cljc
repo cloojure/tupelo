@@ -29,7 +29,7 @@
 (defn ^{:deprecated "0.9.15"} str->kw [& args] (apply ts/str->kw args))
 (defn ^{:deprecated "0.9.15"} char-seq [& args] (apply t/char-seq args))
 (defn ^{:deprecated "0.9.15"} seq->str [& args] (apply t/seq->str args))
-(def  ^{:deprecated "0.9.15"} printable-chars  ts/printable-chars)
+(def  ^{:deprecated "0.9.15"} printable-chars  ts/chars-text )
 
 ; #todo *warn-on-lazy* -> print warning on first usage of each lazy function:
 ; #todo     for, map/indexed, flatten, line-seq, concat, distinct, drop/last/while, filter/remove/keep,
@@ -48,12 +48,13 @@
   ; #todo write tests, incl degenerate cases of N=0,1,2, etc
   [n coll]
   {:pre [(pos? n)] }
-  (if (= n 1)
-    (first coll)
-    (let [interval    (Math/round (double (/ (count coll) (- n 1))))
-          result      (flatten [ (take (- n 1) (take-nth interval coll))
-                                (last coll) ] ) ]
-      result )))
+  (let [coll (vec coll)]
+    (if (= n 1)
+      [ (first coll) ]
+      (let [interval (Math/round (double (/ (count coll) (- n 1))))
+            result   (flatten [(take (- n 1) (take-nth interval coll))
+                               (last coll)])]
+        result))))
 
 (defn shell-cmd
   "Run a command represented as a string in an OS shell (default=/bin/bash).

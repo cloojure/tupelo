@@ -14,15 +14,15 @@
     [clojure.set :as set]
     [clojure.test]
     [cheshire.core :as cc]
+    [potemkin.namespaces :as pns]
     [schema.core :as s]
+    [tupelo.impl :as impl]
     [tupelo.string :as tstr]
     [tupelo.types :as types]
     [tupelo.schema :as ts]
   )
   (:refer-clojure :exclude [map seqable?] )
   (:import [java.io BufferedReader StringReader]))
-;[clojure.spec :as sp]
-;[clojure.spec.gen :as sp.gen]
 
 ; Prismatic Schema type definitions
 ; #todo add to Schema docs
@@ -239,121 +239,14 @@
   (if (is-pre-clojure-1-9?)
     `(do ~@forms)))
 
-;-----------------------------------------------------------------------------
-; spy stuff
-
-(def ^:no-doc spy-indent-level (atom 0))
-(defn ^:no-doc spy-indent-spaces []
-  (str/join (repeat (* 2 @spy-indent-level) \space)))
-
-(defn ^:no-doc spy-indent-reset
-  "Reset the spy indent level to zero."
-  []
-  (reset! spy-indent-level 0))
-
-(defn ^:no-doc spy-indent-inc
-  "Increase the spy indent level by one."
-  []
-  (swap! spy-indent-level inc))
-
-(defn ^:no-doc spy-indent-dec
-  "Decrease the spy indent level by one."
-  []
-  (swap! spy-indent-level dec))
-
-(defn spy
-  "A form of (println ...) to ease debugging display of either intermediate values in threading
-   forms or function return values. There are three variants.  Usage:
-
-    (spy :msg <msg-string>)
-        This variant is intended for use in either thread-first (->) or thread-last (->>)
-        forms.  The keyword :msg is used to identify the message string and works equally
-        well for both the -> and ->> operators. Spy prints both <msg-string>  and the
-        threading value to stdout, then returns the value for further propogation in the
-        threading form. For example, both of the following:
-            (->   2
-                  (+ 3)
-                  (spy :msg \"sum\" )
-                  (* 4))
-            (->>  2
-                  (+ 3)
-                  (spy :msg \"sum\" )
-                  (* 4))
-        will print 'sum => 5' to stdout.
-
-    (spy <msg-string> <value>)
-        This variant is intended for simpler use cases such as function return values.
-        Function return value expressions often invoke other functions and cannot be
-        easily displayed since (println ...) swallows the return value and returns nil
-        itself.  Spy will output both <msg-string> and the value, then return the value
-        for use by further processing.  For example, the following:
-            (println (* 2
-                       (spy \"sum\" (+ 3 4))))
-      will print:
-            sum => 7
-            14
-      to stdout.
-
-    (spy <value>)
-        This variant is intended for use in very simple situations and is the same as the
-        2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
-        prints 'spy => 5' to stdout.  "
-  ([arg1 arg2 arg3]
-   (cond (= :msg arg1) (do (println (str (spy-indent-spaces) arg2 " => " (pr-str arg3))) arg3) ; ->>  case
-         (= :msg arg2) (do (println (str (spy-indent-spaces) arg3 " => " (pr-str arg1))) arg1) ; ->   case
-         :else (throw (IllegalArgumentException. (str
-                                                   "spy: either first or 2nd arg must be :msg \n   args:"
-                                                   (pr-str [arg1 arg2 arg3]))))))
-
-  ; #todo change 2-arg arity to assume keyword arg is message. If both are kw's, assume 1st is msg.
-  ([msg value]  ; 2-arg arity assumes value is last arg
-   (spy :msg msg value))
-
-  ([value]                                                  ; 1-arg arity uses a generic "spy" message
-   (spy :msg "spy" value)))
-
-
-; #todo stop (spyx :hello) result:   :hello => :hello
-(defn- spyx-proc
-  [exprs]
-; (println :spyx-proc :exprs exprs)
-; (println :spyx-proc :r1 )
-  (let [r1  (vec
-              (for [expr (butlast exprs) ]
-                (if (keyword? expr)
-                  `(println (str (spy-indent-spaces) ~expr))
-                  `(println (str (spy-indent-spaces) '~expr " => " ~expr)))))
-        r2  (let [expr (last exprs) ]
-              `(let [spy-val# ~expr]
-                 (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val# )))
-                 spy-val#)
-              )
-        final-code `(do ~@r1 ~r2)
-        ]
-;   (newline) (newline)
-;   (println :spyx-proc :r1 )
-;   (pprint/pprint r1)
-
-;   (newline) (newline)
-;   (println :spyx-proc :r2 )
-;   (pprint/pprint r2)
-
-;   (newline) (newline)
-;   (println :spyx-proc :final-code )
-;   (pprint/pprint final-code)
-;   (newline) (newline)
-
-    final-code
-  )
-)
-
-; #todo allow spyx to have labels like (spyx :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
-(defmacro spyx
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expressions, printing both the expression and its value to stdout. Returns the value of the
-   last expression."
-  [& exprs]
-  (spyx-proc exprs))
+(pns/import-def impl/spy-indent-level)
+(pns/import-fn impl/spy-indent-spaces)
+(pns/import-fn impl/spy-indent-reset)
+(pns/import-fn impl/spy-indent-inc)
+(pns/import-fn impl/spy-indent-dec)
+(pns/import-fn impl/spy)
+(pns/import-fn impl/spyx-proc)
+(pns/import-macro impl/spyx)
 
 (defmacro spyxx
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
@@ -488,73 +381,18 @@
   (has-some? truthy?
     (mapv #(= elem %) (vals map))))
 
-(s/defn not-nil? :- s/Bool
-  "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
-   or the poorly-named clojure.core/some? "
-  [arg :- s/Any]
-  (not (nil? arg)))
+(pns/import-fn impl/not-nil?)
+(pns/import-fn impl/not-empty?)
 
-(s/defn not-empty? :- s/Bool
-  "For any collection coll, returns true if coll contains any items; otherwise returns false.
-   Equivalent to (not (empty? coll))."
-  ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
-  [coll]
-  (not (empty? coll)))
-
-; #todo:  mapz, forz, filterz, ...?
 
 (defn flat-vec
   "Accepts any number of nested args and returns the flattened result as a vector."
   [& args]
   (vec (flatten args)))
 
-(defn glue
-  "Glues together like collections:
-
-     (glue [1 2] [3 4] [5 6])                -> [1 2 3 4 5 6]
-     (glue {:a 1} {:b 2} {:c 3})             -> {:a 1 :c 3 :b 2}
-     (glue #{1 2} #{3 4} #{6 5})             -> #{1 2 6 5 3 4}
-     (glue \"I\" \" like \" \\a \" nap!\" )  -> \"I like a nap!\"
-
-   If you want to convert to a sorted set or map, just put an empty one first:
-
-     (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
-     (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
-
-   If there are duplicate keys when using glue for maps or sets, then \"the last one wins\":
-
-     (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
-  [& colls]
-  (let [string-or-char? #(or (string? %) (char? %))]
-    (cond
-      (every? sequential? colls)        (reduce into [] colls) ; coerce to vector result
-      (every? map? colls)               (reduce into    colls) ; first item determines type of result
-      (every? set? colls)               (reduce into    colls) ; first item determines type of result
-      (every? string-or-char? colls)    (apply str colls)
-      :else (throw (IllegalArgumentException.
-                     (str "colls must be all same type; found types=" (mapv type colls)))))))
-; #todo look at using (ex-info ...)
-
-(s/defn append :- ts/List
-  "Given a sequential object (vector or list), add one or more elements to the end."
-  [listy :- ts/List
-   & elems :- [s/Any]]
-  (when-not (sequential? listy)
-    (throw (IllegalArgumentException. (str "Sequential collection required, found=" listy))))
-  (when (empty? elems)
-    (throw (IllegalArgumentException. (str "Nothing to append! elems=" elems))))
-  (vec (concat listy elems)))
-
-(s/defn prepend :- ts/List
-  "Given a sequential object (vector or list), add one or more elements to the beginning"
-  [& args]
-  (let [elems (butlast args)
-        listy (last args)]
-    (when-not (sequential? listy)
-      (throw (IllegalArgumentException. (str "Sequential collection required, found=" listy))))
-    (when (empty? elems)
-      (throw (IllegalArgumentException. (str "Nothing to prepend! elems=" elems))))
-    (vec (concat elems listy))))
+(pns/import-fn impl/glue)
+(pns/import-fn impl/append)
+(pns/import-fn impl/prepend)
 
 ; #todo force to vector result
 (s/defn drop-at :- ts/List
@@ -690,19 +528,7 @@
 ; #todo make an it?-> (fff ppp it? qqq) to halt thread if encounter nil result (then returns nil)
 ; #todo make an it!-> (fff ppp it! qqq) to throw if encounter nil (replace safe->) (maybe val->)
 
-(defmacro it->
-  "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
-      (it-> 1
-            (inc it)
-            (+ it 3)
-            (/ 10 it))
-      ;=> 2
-   "
-  [expr & forms]
-  `(let [~'it ~expr
-         ~@(interleave (repeat 'it) forms)
-         ]
-     ~'it))
+(pns/import-macro impl/it-> )
 
 (defmacro with-exception-default
   "Evaluates body & returns its result.  In the event of an exception, default-val is returned
@@ -779,73 +605,10 @@
           ]
       or-result)))
 
-(defn range-vec     ; #todo README
-  "An eager version clojure.core/range that always returns its result in a vector."
-  [& args]
-  (vec (apply range args)))
-
-; #todo need docs & tests
-; #todo:  add (thru a b)     -> [a..b] (inclusive)
-;             (thru 1 3)     -> [ 1  2  3]
-;             (thru \a \c)   -> [\a \b \c]
-;             (thru :a :c)   -> [:a :b :c]
-;             (thru 'a 'c)   -> ['a 'b 'c]
-;             (thru 1   2   0.1)     -> [1.0  1.1  1.2 ... 2.0]
-;             (thru 0.1 0.3 0.1)     -> [0.1  0.2  0.3]
-;                  (thru start stop step) uses integer steps and
-;                  (rel= curr stop :tol step) as ending criteria
-;       (thru :cc 1 5)   -> [1 2 3 4 5]
-;       (thru :oc 1 5)   -> [  2 3 4 5]
-;       (thru :co 1 5)   -> [1 2 3 4  ]  ; like (range ...)
-;       (thru :oo 1 5)   -> [  2 3 4  ]
-
-(defn thru          ; #todo make lazy: thruz or (thru 1 3 :lazy)
-  "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. Not lazy. "
-  ([end]
-   (range-vec (inc end)))
-  ([start end]
-   (range-vec start (inc end)))
-  ([start end step]
-   (let [delta          (- (double end) (double start))
-         nsteps-dbl     (/ (double delta) (double step))
-         nsteps-int     (Math/round nsteps-dbl)
-         rounding-error (Math/abs (- nsteps-dbl nsteps-int)) ]
-     (when (< 0.00001 rounding-error)
-       (throw (IllegalArgumentException. (str
-                                           "thru: non-integer number of steps \n   args:"
-                                           (pr-str [start end step])))))
-     (it-> (inc nsteps-int)
-           (range-vec it)
-           (clojure.core/map #(* step %) it)
-           (clojure.core/map #(+ start %) it)
-           (vec it))))
-)
-
-
-(defn keep-if
-  "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
-  [pred coll]
-  (cond
-    (sequential? coll) (vec (clojure.core/filter pred coll))
-    (map? coll) (reduce-kv (fn [cum-map k v]
-                             (if (pred k v)
-                               (assoc cum-map k v)
-                               cum-map))
-                  {}
-                  coll)
-    (set? coll) (reduce (fn [cum-set elem]
-                          (if (pred elem)
-                            (conj cum-set elem)
-                            cum-set))
-                  #{}
-                  (seq coll))
-    :else (throw (IllegalArgumentException.
-                   (str "keep-if: coll must be sequential, map, or set, class=" (class coll))))))
-
-(defn drop-if
-  "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
-  [pred coll]
-  (keep-if (complement pred) coll))
+(pns/import-fn impl/range-vec)
+(pns/import-fn impl/thru)
+(pns/import-fn impl/keep-if)
+(pns/import-fn impl/drop-if)
 
 (defmacro lazy-cons
   "The simple way to create a lazy sequence:
@@ -938,35 +701,7 @@
       (print \space)
       (pr it))))
 
-(defn strcat
-  "Recursively concatenate all arguments into a single string result."
-  [& args]
-  (let [
-        ; We need to use flatten twice since the inner one doesn't change a string into a
-        ; sequence of chars, nor does it affect byte-array, et al.  We eventually get
-        ; seq-of-scalars which can look like [ \a \b 77 78 \66 \z ]
-        seq-of-scalars (flatten
-                         (for [it (keep-if not-nil? (flatten [args])) ]
-                           ; Note that "sequential?" returns false for sets, strings, and the various
-                           ; array types.
-                           (if (or (sequential? it)
-                                 (set? it)
-                                 (string? it)
-                                 (types/byte-array? it)
-                                 (types/char-array? it)
-                                 (types/int-array? it)
-                                 (types/long-array? it)
-                                 (types/short-array? it)
-                                 (types/object-array? it))
-                             (seq it)
-                             it)))
-        ; Coerce any integer values into character equivalents (e.g. 65 -> \A), then combine
-        ; into a single string.
-        result         (apply str
-                         (clojure.core/map char
-                           (keep-if not-nil? seq-of-scalars)))
-        ]
-    result))
+(pns/import-fn impl/strcat)
 
 ; #todo add test & README
 (defn pretty-str

@@ -63,3 +63,5 @@
   [& forms]
   (apply throws?-impl forms))
 
+
+; #todo: gen/elements -> clojure.check/rand-nth

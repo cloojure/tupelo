@@ -13,7 +13,7 @@
     [clojure.test.check.properties :as prop]
     [clojure.test.check.clojure-test :as tst]
     [tupelo.core :as t]
-    [tupelo.string :as tstr]
+    [tupelo.string :as ts]
   ))
 (t/refer-tupelo)
 
@@ -72,15 +72,15 @@
 
 (deftest collapse-whitespace-t
   (is (= "abc def g hij kl"
-        (tstr/collapse-whitespace "  abc    def			g
+        (ts/collapse-whitespace "  abc    def			g
                                      hij kl	 " ))))
 
 (deftest t-equals-ignore-spacing
-  (is (tstr/equals-ignore-spacing "a" ))
-  (is (tstr/equals-ignore-spacing "a" "  a "))
-  (is (tstr/equals-ignore-spacing "a" "  a  " "   a" "a   "))
+  (is (ts/equals-ignore-spacing "a" ))
+  (is (ts/equals-ignore-spacing "a" "  a "))
+  (is (ts/equals-ignore-spacing "a" "  a  " "   a" "a   "))
 
-  (is (tstr/equals-ignore-spacing "
+  (is (ts/equals-ignore-spacing "
         Whenever you find yourself on the side of the majority, it is time to pause and reflect.
         Don't go around saying the world owes you a living. The world owes you nothing. It was here first.
         I have never let my schooling interfere with my education.
@@ -103,22 +103,22 @@
                        Mark Twain      		" )))
 
 (deftest t-double-quotes<->single-quotes
-  (is (= (tstr/double-quotes->single-quotes (str \")) (str \')))
-  (is (= (tstr/single-quotes->double-quotes (str \')) (str \")))
+  (is (= (ts/double-quotes->single-quotes (str \")) (str \')))
+  (is (= (ts/single-quotes->double-quotes (str \')) (str \")))
   (let [s1 "I said, 'Yes, please.'"
         s2 "I said, \"Yes, please.\"" ]
-    (is (= s1 (-> s2 tstr/double-quotes->single-quotes)))
-    (is (= s2 (-> s1 tstr/single-quotes->double-quotes)))
+    (is (= s1 (-> s2 ts/double-quotes->single-quotes)))
+    (is (= s2 (-> s1 ts/single-quotes->double-quotes)))
     (is (= s2 (-> s2
-                tstr/double-quotes->single-quotes
-                tstr/single-quotes->double-quotes)))
+                ts/double-quotes->single-quotes
+                ts/single-quotes->double-quotes)))
     (is (= s1 (-> s1
-                tstr/single-quotes->double-quotes
-                tstr/double-quotes->single-quotes)))))
+                ts/single-quotes->double-quotes
+                ts/double-quotes->single-quotes)))))
 
 (deftest str->kw-t
   (testing "basic usage"
-    (is (= :abc-def-gh-qrs (tstr/str->kw "abc def*gh_qrs")))))
+    (is (= :abc-def-gh-qrs (ts/str->kw "abc def*gh_qrs")))))
 
 (deftest seq->str-t
   (is (= " 1 2 3"           (t/seq->str (byte-array [1 2 3]))))
@@ -126,85 +126,85 @@
   (is (= " \\a \\b \\c"     (t/seq->str "abc"))))
 
 (deftest t-increasing
-  (isnt (tstr/increasing "abc" "a"))
-  (isnt (tstr/increasing "abc" "ab"))
-  (isnt (tstr/increasing "abc" "abc"))
-  (is   (tstr/increasing "abc" "abd"))
-  (is   (tstr/increasing "abc" "abcd"))
-  (is   (tstr/increasing "abc" "ad"))
-  (is   (tstr/increasing "abc" "b"))
+  (isnt (ts/increasing "abc" "a"))
+  (isnt (ts/increasing "abc" "ab"))
+  (isnt (ts/increasing "abc" "abc"))
+  (is   (ts/increasing "abc" "abd"))
+  (is   (ts/increasing "abc" "abcd"))
+  (is   (ts/increasing "abc" "ad"))
+  (is   (ts/increasing "abc" "b"))
 
-  (isnt (tstr/increasing-or-equal "abc" "a"))
-  (isnt (tstr/increasing-or-equal "abc" "ab"))
-  (is   (tstr/increasing-or-equal "abc" "abc"))
-  (is   (tstr/increasing-or-equal "abc" "abd"))
-  (is   (tstr/increasing-or-equal "abc" "abcd"))
-  (is   (tstr/increasing-or-equal "abc" "ad"))
-  (is   (tstr/increasing-or-equal "abc" "b"))
+  (isnt (ts/increasing-or-equal "abc" "a"))
+  (isnt (ts/increasing-or-equal "abc" "ab"))
+  (is   (ts/increasing-or-equal "abc" "abc"))
+  (is   (ts/increasing-or-equal "abc" "abd"))
+  (is   (ts/increasing-or-equal "abc" "abcd"))
+  (is   (ts/increasing-or-equal "abc" "ad"))
+  (is   (ts/increasing-or-equal "abc" "b"))
 )
 
 (deftest t-tupstr-take
-  (is (= ""    (tstr/take 0 "abc")))
-  (is (= "a"   (tstr/take 1 "abc")))
-  (is (= "ab"  (tstr/take 2 "abc")))
-  (is (= "abc" (tstr/take 3 "abc")))
-  (is (= "abc" (tstr/take 4 "abc"))))
+  (is (= ""    (ts/take 0 "abc")))
+  (is (= "a"   (ts/take 1 "abc")))
+  (is (= "ab"  (ts/take 2 "abc")))
+  (is (= "abc" (ts/take 3 "abc")))
+  (is (= "abc" (ts/take 4 "abc"))))
 
 (deftest t-tupstr-drop
-  (is (= "abc" (tstr/drop 0 "abc")))
-  (is (= "bc"  (tstr/drop 1 "abc")))
-  (is (= "c"   (tstr/drop 2 "abc")))
-  (is (= ""    (tstr/drop 3 "abc")))
-  (is (= ""    (tstr/drop 4 "abc"))))
+  (is (= "abc" (ts/drop 0 "abc")))
+  (is (= "bc"  (ts/drop 1 "abc")))
+  (is (= "c"   (ts/drop 2 "abc")))
+  (is (= ""    (ts/drop 3 "abc")))
+  (is (= ""    (ts/drop 4 "abc"))))
 
 (deftest t-indent
-  (is (= "abc"    (tstr/indent 0 "abc")))
-  (is (= " abc"   (tstr/indent 1 "abc")))
-  (is (= "  abc"  (tstr/indent 2 "abc")))
-  (is (= "   abc" (tstr/indent 3 "abc")))
+  (is (= "abc"    (ts/indent 0 "abc")))
+  (is (= " abc"   (ts/indent 1 "abc")))
+  (is (= "  abc"  (ts/indent 2 "abc")))
+  (is (= "   abc" (ts/indent 3 "abc")))
 
-  (is (= "ab"    (tstr/indent 0 "ab")))
-  (is (= " ab"   (tstr/indent 1 "ab")))
-  (is (= "  ab"  (tstr/indent 2 "ab")))
-  (is (= "   ab" (tstr/indent 3 "ab")))
+  (is (= "ab"    (ts/indent 0 "ab")))
+  (is (= " ab"   (ts/indent 1 "ab")))
+  (is (= "  ab"  (ts/indent 2 "ab")))
+  (is (= "   ab" (ts/indent 3 "ab")))
 
-  (is (= "a"    (tstr/indent 0 "a")))
-  (is (= " a"   (tstr/indent 1 "a")))
-  (is (= "  a"  (tstr/indent 2 "a")))
-  (is (= "   a" (tstr/indent 3 "a")))
+  (is (= "a"    (ts/indent 0 "a")))
+  (is (= " a"   (ts/indent 1 "a")))
+  (is (= "  a"  (ts/indent 2 "a")))
+  (is (= "   a" (ts/indent 3 "a")))
 
-  (is (= ""    (tstr/indent 0 "")))
-  (is (= " "   (tstr/indent 1 "")))
-  (is (= "  "  (tstr/indent 2 "")))
-  (is (= "   " (tstr/indent 3 ""))))
+  (is (= ""    (ts/indent 0 "")))
+  (is (= " "   (ts/indent 1 "")))
+  (is (= "  "  (ts/indent 2 "")))
+  (is (= "   " (ts/indent 3 ""))))
 
 (deftest t-indent
   ; clojure accepts either CR/LF or LF (CR=/return & LF=\newline) as line-separator
-  (is (= "abc\n"    (tstr/indent-lines 0      "abc"                    )))
-  (is (= "abc\n"    (tstr/indent-lines 0 (str "abc"         \newline  ))))
-  (is (= "abc\n"    (tstr/indent-lines 0 (str "abc" \return \newline  ))))
+  (is (= "abc\n"    (ts/indent-lines 0      "abc"                    )))
+  (is (= "abc\n"    (ts/indent-lines 0 (str "abc"         \newline  ))))
+  (is (= "abc\n"    (ts/indent-lines 0 (str "abc" \return \newline  ))))
 
   ; counterexample: clojure doesn't accept \formfeed or solo \return as line-separator
-  (isnt (= "abc\n"    (tstr/indent-lines 0 (str "abc" \formfeed ))))
-  (isnt (= "abc\n"    (tstr/indent-lines 0 (str "abc" \return   ))))
+  (isnt (= "abc\n"    (ts/indent-lines 0 (str "abc" \formfeed ))))
+  (isnt (= "abc\n"    (ts/indent-lines 0 (str "abc" \return   ))))
 
-  (is (= "  abc\n  def\n"    (tstr/indent-lines 2 (str "abc" \newline "def" ))))
-  (is (= "  abc\n  def\n"    (tstr/indent-lines 2 (str "abc" \newline "def" \newline ))))
+  (is (= "  abc\n  def\n"    (ts/indent-lines 2 (str "abc" \newline "def" ))))
+  (is (= "  abc\n  def\n"    (ts/indent-lines 2 (str "abc" \newline "def" \newline ))))
 
-  (is (= "abc\ndef\n"         (tstr/indent-lines 0 (str "abc" \newline "def" ))))
-  (is (= " abc\n def\n"       (tstr/indent-lines 1 (str "abc" \newline "def" ))))
-  (is (= "  abc\n  def\n"     (tstr/indent-lines 2 (str "abc" \newline "def" ))))
-  (is (= "   abc\n   def\n"   (tstr/indent-lines 3 (str "abc" \newline "def" ))))
+  (is (= "abc\ndef\n"         (ts/indent-lines 0 (str "abc" \newline "def" ))))
+  (is (= " abc\n def\n"       (ts/indent-lines 1 (str "abc" \newline "def" ))))
+  (is (= "  abc\n  def\n"     (ts/indent-lines 2 (str "abc" \newline "def" ))))
+  (is (= "   abc\n   def\n"   (ts/indent-lines 3 (str "abc" \newline "def" ))))
 )
 
 (deftest t-index-of
-  (is= 0 (tstr/index-of "abc" "a"))
-  (is= 0 (tstr/index-of "abc" "ab"))
-  (is= 0 (tstr/index-of "abc" "abc"))
-  (is= 1 (tstr/index-of "abc" "b"))
-  (is= 1 (tstr/index-of "abc" "bc"))
-  (is= 2 (tstr/index-of "abc" "c"))
-  (is= -1 (tstr/index-of "abc" "d"))
+  (is= 0 (ts/index-of "abc" "a"))
+  (is= 0 (ts/index-of "abc" "ab"))
+  (is= 0 (ts/index-of "abc" "abc"))
+  (is= 1 (ts/index-of "abc" "b"))
+  (is= 1 (ts/index-of "abc" "bc"))
+  (is= 2 (ts/index-of "abc" "c"))
+  (is= -1 (ts/index-of "abc" "d"))
 )
 
 (deftest t-starts-with?
@@ -223,13 +223,45 @@
 
   ; tupelo.string
   (do
-    (is      (tstr/starts-with? "abcde" "a"))
-    (is      (tstr/starts-with? "abcde" "ab"))
-    (is      (tstr/starts-with? "abcde" "abc"))
+    (is      (ts/starts-with? "abcde" "a"))
+    (is      (ts/starts-with? "abcde" "ab"))
+    (is      (ts/starts-with? "abcde" "abc"))
 
-    (is (not (tstr/starts-with? "abcde" "b")))
-    (is (not (tstr/starts-with? "abcde" "bc")))
+    (is (not (ts/starts-with? "abcde" "b")))
+    (is (not (ts/starts-with? "abcde" "bc")))
 
-    (is (not (tstr/starts-with? "a" "ab")))
-    (is (not (tstr/starts-with? "ab" "abc"))))
+    (is (not (ts/starts-with? "a" "ab")))
+    (is (not (ts/starts-with? "ab" "abc"))))
+
+  ;-----------------------------------------------------------------------------
+  ; break out
+  (is   (ts/alphanumeric? \a))
+  (is   (ts/alphanumeric? [\a]))
+  (is   (ts/alphanumeric? "a"))
+  (is   (ts/alphanumeric? "abc"))
+  (isnt (ts/alphanumeric? "*"))
+  (isnt (ts/alphanumeric? "ab*de"))
+  (isnt (ts/alphanumeric? \=))
+
+  (is (ts/whitespace-horiz?                ts/chars-whitespace-horiz))
+  (is (ts/whitespace-eol?                  ts/chars-whitespace-eol))
+  (is (ts/whitespace?                      ts/chars-whitespace))
+  (is (ts/lowercase?                       ts/chars-lowercase))
+  (is (ts/uppercase?                       ts/chars-uppercase))
+  (is (ts/digit?                           ts/chars-digit))
+  (is (ts/alpha?                           ts/chars-alpha))
+  (is (ts/visible?                         ts/chars-visible))
+  (is (ts/text?                            ts/chars-text))
+
+  (is (apply ts/whitespace-horiz?          (vec ts/chars-whitespace-horiz)))
+  (is (apply ts/whitespace-eol?            (vec ts/chars-whitespace-eol)))
+  (is (apply ts/whitespace?                (vec ts/chars-whitespace)))
+  (is (apply ts/lowercase?                 (vec ts/chars-lowercase)))
+  (is (apply ts/uppercase?                 (vec ts/chars-uppercase)))
+  (is (apply ts/digit?                     (vec ts/chars-digit)))
+  (is (apply ts/alpha?                     (vec ts/chars-alpha)))
+  (is (apply ts/visible?                   (vec ts/chars-visible)))
+  (is (apply ts/text?                      (vec ts/chars-text)))
+
 )
+
