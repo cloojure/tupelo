@@ -81,32 +81,8 @@
 ; #todo (for ... :lazy)       vfor
 ; #todo (concat ... :lazy)    vconcat
 
-; #todo rename to "get-in-safe" ???
-; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)
-; #todo make throw if any index invalid
-(s/defn fetch-in :- s/Any
-  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
-   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
-   Throws an Exception if the path keys-vec is not present in the-map."
-  [the-map :- ts/KeyMap
-   keys-vec :- [s/Keyword]]
-  (let [result (get-in the-map keys-vec ::not-found)]
-    (if (= result ::not-found)
-      (throw (IllegalArgumentException.
-               (str "Key seq not present in map:" \newline
-                 "  map : " the-map \newline
-                 "  keys: " keys-vec \newline)))
-      result)))
-
-; #todo make inverse named "get-safe" ???
-
-(s/defn grab :- s/Any
-  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
-   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
-   Throws an Exception if :the-key is not present in the-map."
-  [the-key :- s/Keyword
-   the-map :- ts/KeyMap]
-  (fetch-in the-map [the-key]))
+(pns/import-fn impl/fetch-in)
+(pns/import-fn impl/grab)
 
 ; #todo -> README
 ; #todo variant: allow single or vec of default values
@@ -824,10 +800,9 @@
 ; #todo readme
 (s/defn starts-with? :- s/Bool
   "Returns true when the initial elements of coll match those of tgt"
-  [coll tgt]    ; #todo schema
-  (let [tgt-vec (vec tgt)
-        tgt-len (count tgt-vec)
-        ]
+  [coll tgt-in]     ; #todo schema
+  (let [tgt-vec (vec tgt-in)
+        tgt-len (count tgt-vec) ]
     (if (< (count coll) tgt-len)
       false
       (let [coll-vals (take tgt-len coll)]

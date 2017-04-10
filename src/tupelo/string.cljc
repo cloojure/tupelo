@@ -13,25 +13,33 @@
     [potemkin.namespaces :as pns]
     [schema.core :as s]
     [tupelo.impl :as i]
-  ))
+    [tupelo.schema :as tsk]))
 
 (pns/import-fn i/char-seq)
 
 ; #todo: docstrings
-(def chars-whitespace-horiz   (set [\space \tab]))
-(def chars-whitespace-eol     (set [\return \newline \formfeed]))
-(def chars-whitespace         (into chars-whitespace-horiz chars-whitespace-eol))
-(def chars-lowercase          (into (sorted-set) (char-seq \a \z)))
-(def chars-uppercase          (into (sorted-set) (char-seq \A \Z)))
-(def chars-digit              (into (sorted-set) (char-seq \0 \9)))
-(def chars-alpha              (reduce into [chars-lowercase chars-uppercase] ))
-(def chars-alphanumeric       (reduce into [chars-alpha chars-digit] ))
-(def chars-visible
+(s/def chars-whitespace-horiz   :- tsk/Set
+  (set [\space \tab]))
+(s/def chars-whitespace-eol     :- tsk/Set
+  (set [\return \newline \formfeed]))
+(s/def chars-whitespace         :- tsk/Set
+  (i/glue chars-whitespace-horiz chars-whitespace-eol))
+(s/def chars-lowercase          :- tsk/Set
+  (into (sorted-set) (char-seq \a \z)))
+(s/def chars-uppercase          :- tsk/Set
+  (into (sorted-set) (char-seq \A \Z)))
+(s/def chars-digit              :- tsk/Set
+  (into (sorted-set) (char-seq \0 \9)))
+(s/def chars-alpha              :- tsk/Set
+  (i/glue chars-lowercase chars-uppercase ))
+(s/def chars-alphanumeric       :- tsk/Set
+  (i/glue chars-alpha chars-digit ))
+(s/def chars-visible  :- tsk/Set
   "Set of all visible (printing) ASCII chars from exclamation point (33) to tilde (126). Excludes all whitespace & control chars."
   (into (sorted-set) (mapv char (i/thru 33 126))))
-(def chars-text
+(s/def chars-text   :- tsk/Set
   "Set of chars used in 'normal' text. Includes all visible chars plus whitespace & EOL chars."
-  (into chars-visible chars-whitespace))
+  (i/glue chars-visible chars-whitespace))
 
 (defn alphanumeric?       [& args] (every? #(contains? chars-alphanumeric %) (i/strcat args)))
 (defn whitespace-horiz?   [& args] (every? #(contains? chars-whitespace-horiz %) (i/strcat args)))
