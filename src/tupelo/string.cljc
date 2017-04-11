@@ -73,16 +73,16 @@
 ; #todo need (squash-equals?) -> (apply = (mapv squash args))              ; (smash-equals? ...)  ?
 ;    or (equals-base) or (equals-root) or (squash-equals) or (base-equals) or (core-equals) or (equals-collapse-string...)
 
-(s/defn quote-double->single :- s/Str ; #todo readme & blog
+(s/defn quotes->single :- s/Str ; #todo readme & blog
   [arg :- s/Str]
   (str/replace arg \" \'))
 
-(s/defn quote-single->double :- s/Str ; #todo readme & blog
+(s/defn quotes->double :- s/Str ; #todo readme & blog
   [arg :- s/Str]
   (str/replace arg \' \"))
 
-(defn ^:deprecated ^:no-doc double-quotes->single-quotes [& args] (apply quote-double->single args))
-(defn ^:deprecated ^:no-doc single-quotes->double-quotes [& args] (apply quote-single->double args))
+(defn ^:deprecated ^:no-doc double-quotes->single-quotes [& args] (apply quotes->single args))
+(defn ^:deprecated ^:no-doc single-quotes->double-quotes [& args] (apply quotes->double args))
 
 ; #todo need tests
 (defn normalize-str

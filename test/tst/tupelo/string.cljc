@@ -102,19 +102,17 @@
                        anything.
                        Mark Twain      		" )))
 
-(deftest t-double-quotes<->single-quotes
-  (is (= (ts/quote-double->single (str \")) (str \')))
-  (is (= (ts/quote-single->double (str \')) (str \")))
+(dotest
+  (is= (ts/quotes->single (str \")) (str \'))
+  (is= (ts/quotes->double (str \')) (str \"))
   (let [s1 "I said, 'Yes, please.'"
         s2 "I said, \"Yes, please.\"" ]
-    (is (= s1 (-> s2 ts/double-quotes->single-quotes)))
-    (is (= s2 (-> s1 ts/single-quotes->double-quotes)))
-    (is (= s2 (-> s2
-                ts/double-quotes->single-quotes
-                ts/single-quotes->double-quotes)))
-    (is (= s1 (-> s1
-                ts/single-quotes->double-quotes
-                ts/double-quotes->single-quotes)))))
+    (is= s1 (-> s2 ts/quotes->single))
+    (is= s2 (-> s1 ts/quotes->double))
+    (is= s2 (-> s2 ts/quotes->single
+                   ts/quotes->double))
+    (is= s1 (-> s1 ts/quotes->double
+                   ts/quotes->single))))
 
 (dotest
   (is= :abc-def-gh-qrs (ts/str->kw-normalized "abc def*gh_qrs"))
