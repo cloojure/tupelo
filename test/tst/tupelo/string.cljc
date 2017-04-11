@@ -103,8 +103,8 @@
                        Mark Twain      		" )))
 
 (deftest t-double-quotes<->single-quotes
-  (is (= (ts/double-quotes->single-quotes (str \")) (str \')))
-  (is (= (ts/single-quotes->double-quotes (str \')) (str \")))
+  (is (= (ts/quote-double->single (str \")) (str \')))
+  (is (= (ts/quote-single->double (str \')) (str \")))
   (let [s1 "I said, 'Yes, please.'"
         s2 "I said, \"Yes, please.\"" ]
     (is (= s1 (-> s2 ts/double-quotes->single-quotes)))
