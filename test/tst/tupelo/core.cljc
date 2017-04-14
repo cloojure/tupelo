@@ -327,8 +327,8 @@
   (is= true   (has-none? odd? []      ) ))
 
 (deftest t-not-empty
-  (is (every?      not-empty? ["1" [1] '(1) {:1 1} #{1}    ] ))
-  (is (has-none?   not-empty? [""  []  '()  {}     #{}  nil] ))
+  (is (every?      not-empty? ["one" [1] '(1) {:1 1} #{1}     ] ))
+  (is (has-none?   not-empty? [ ""   [ ] '( ) {}     #{ }  nil] ))
 
   (is= (map not-empty? ["1" [1] '(1) {:1 1} #{1} ] )
          [true true true true true]  )
@@ -338,7 +338,10 @@
   (is= (keep-if not-empty?  ["1" [1] '(1) {:1 1} #{1} ] )
                             ["1" [1] '(1) {:1 1} #{1} ] )
   (is= (drop-if not-empty?  [""  []  '()  {}     #{}  nil] )
-                            [""  []  '()  {}     #{}  nil] ))
+                            [""  []  '()  {}     #{}  nil] )
+
+  (throws? IllegalArgumentException (not-empty? 5))
+  (throws? IllegalArgumentException (not-empty? 3.14)))
 
 (deftest t-contains-elem
   (testing "vecs"

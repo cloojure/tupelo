@@ -49,13 +49,33 @@
   [coll]
   (gen/elements coll))
 
+(defn constantly
+  "Returns a generator which always yields the supplied argument w/o.
+  Equivalent to `gen/return` "
+  [arg]
+  (gen/return arg))
+
 (defn vector+
   "Return a non-empty vector (1 or more items) selected using the supplied generator."
   [gen-arg]
   (gen/not-empty (gen/vector gen-arg)))
 
+; returns exactly 1 char
+(def char-whitespace-horiz      (rand-nth ts/chars-whitespace-horiz))
+(def char-whitespace-eol        (rand-nth ts/chars-whitespace-eol))
+(def char-whitespace            (rand-nth ts/chars-whitespace))
 (def char-alpha                 (rand-nth ts/chars-alpha))
 (def char-alphanumeric          (rand-nth ts/chars-alphanumeric))
+
+; returns a string (len = 0 or more)
+(def whitespace-horiz           (txt-join (gen/vector char-whitespace-horiz)))
+(def whitespace-eol             (txt-join (gen/vector char-whitespace-eol)))
+(def whitespace                 (txt-join (gen/vector char-whitespace)))
+
+; returns a string (len = 1 or more)
+(def whitespace-horiz+          (txt-join (vector+ char-whitespace-horiz)))
+(def whitespace-eol+            (txt-join (vector+ char-whitespace-eol)))
+(def whitespace+                (txt-join (vector+ char-whitespace)))
 
 (def word-alpha                 (txt-join       (gen/vector char-alpha)))
 (def word-alphanumeric          (txt-join       (gen/vector char-alphanumeric)))

@@ -20,6 +20,10 @@
   )
 )
 
+; #todo
+; need option for (take 3 coll :exact)
+; need option for (drop 3 coll :exact)
+
 ;-----------------------------------------------------------------------------
 ; spy stuff
 

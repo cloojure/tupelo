@@ -20,23 +20,32 @@
 ; #todo: docstrings
 (s/def chars-whitespace-horiz   :- tsk/Set
   (set [\space \tab]))
+
 (s/def chars-whitespace-eol     :- tsk/Set
-  (set [\return \newline \formfeed]))
+  (set [\return \newline]))
+
 (s/def chars-whitespace         :- tsk/Set
   (i/glue chars-whitespace-horiz chars-whitespace-eol))
+
 (s/def chars-lowercase          :- tsk/Set
   (into (sorted-set) (char-seq \a \z)))
+
 (s/def chars-uppercase          :- tsk/Set
   (into (sorted-set) (char-seq \A \Z)))
+
 (s/def chars-digit              :- tsk/Set
   (into (sorted-set) (char-seq \0 \9)))
+
 (s/def chars-alpha              :- tsk/Set
   (i/glue chars-lowercase chars-uppercase ))
+
 (s/def chars-alphanumeric       :- tsk/Set
   (i/glue chars-alpha chars-digit ))
+
 (s/def chars-visible  :- tsk/Set
   "Set of all visible (printing) ASCII chars from exclamation point (33) to tilde (126). Excludes all whitespace & control chars."
   (into (sorted-set) (mapv char (i/thru 33 126))))
+
 (s/def chars-text   :- tsk/Set
   "Set of chars used in 'normal' text. Includes all visible chars plus whitespace & EOL chars."
   (i/glue chars-visible chars-whitespace))
@@ -51,6 +60,15 @@
 (defn alpha?              [& args] (every? #(contains? chars-alpha %) (i/strcat args)))
 (defn visible?            [& args] (every? #(contains? chars-visible %) (i/strcat args)))
 (defn text?               [& args] (every? #(contains? chars-text %) (i/strcat args)))
+
+; #todo make general version vec -> vec; str-specific version str -> str
+; #todo need (substring {:start I :stop J                 } ) ; half-open (or :stop)
+; #todo need (substring {:start I :stop J :inclusive true } ) ; closed interval
+; #todo need (substring {:start I :count N })
+
+; #todo need (idx "abcdef" 2) -> [ \c ]
+; #todo need (indexes "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5]) -> [ \b \d \f ]
+; #todo need (idxs    "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5])   ; like matlab
 
 ; #todo -> tupelo.string
 (defn collapse-whitespace ; #todo readme & blog
