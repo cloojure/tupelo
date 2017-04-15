@@ -42,6 +42,9 @@
 ;   prime-list(n)                     - 1ist n  fibo's
 ;   prime-list-bounded(maxVal)        - list of fibo's <= maxVal
 
+; #todo
+; (defn instaparse-failure? [result] (= (class result) instaparse.gll.Failure))
+
 (defn take-dist
   "Returns a sequence of n items from a collection, distributed
    evenly between first & last elements, which are always included."
