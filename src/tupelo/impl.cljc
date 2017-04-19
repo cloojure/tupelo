@@ -15,7 +15,7 @@
     [clojure.test]
     [cheshire.core :as cc]
     [schema.core :as s]
-    [tupelo.schema :as ts]
+    [tupelo.schema :as tsk]
     [tupelo.types :as types]
   )
 )
@@ -239,9 +239,9 @@
                      (str "colls must be all same type; found types=" (mapv type colls)))))))
 ; #todo look at using (ex-info ...)
 
-(s/defn append :- ts/List
+(s/defn append :- tsk/List
   "Given a sequential object (vector or list), add one or more elements to the end."
-  [listy :- ts/List
+  [listy :- tsk/List
    & elems :- [s/Any]]
   (when-not (sequential? listy)
     (throw (IllegalArgumentException. (str "Sequential collection required, found=" listy))))
@@ -249,7 +249,7 @@
     (throw (IllegalArgumentException. (str "Nothing to append! elems=" elems))))
   (vec (concat listy elems)))
 
-(s/defn prepend :- ts/List
+(s/defn prepend :- tsk/List
   "Given a sequential object (vector or list), add one or more elements to the beginning"
   [& args]
   (let [elems (butlast args)
@@ -337,8 +337,8 @@
   "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
    returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
    Throws an Exception if the path keys-vec is not present in the-map."
-  [the-map :- ts/KeyMap
-   keys-vec :- [s/Keyword]]
+  [the-map   :- tsk/Map
+   keys-vec  :- tsk/Vec ]
   (let [result (get-in the-map keys-vec ::not-found)]
     (if (= result ::not-found)
       (throw (IllegalArgumentException.
@@ -354,5 +354,5 @@
    returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
    Throws an Exception if :the-key is not present in the-map."
   [the-key :- s/Keyword
-   the-map :- ts/KeyMap]
+   the-map :- tsk/KeyMap]
   (fetch-in the-map [the-key]))

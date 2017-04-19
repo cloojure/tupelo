@@ -625,15 +625,18 @@
     (let [map1  {:a1 "a1"
                  :a2 { :b1 "b1"
                        :b2 { :c1 "c1"
-                             :c2 "c2" }}} ]
-
-      (is= "a1" (fetch-in map1 [:a1] ))
-      (is= "b1" (fetch-in map1 [:a2 :b1] ))
-      (is= "c1" (fetch-in map1 [:a2 :b2 :c1] ))
-      (is= "c2" (fetch-in map1 [:a2 :b2 :c2] ))
-      (throws?  (fetch-in map1 [:a9] ))
-      (throws?  (fetch-in map1 [:a2 :b9] ))
-      (throws?  (fetch-in map1 [:a2 :b2 :c9] )))))
+                             :c2 "c2" }}
+                 nil "NIL"
+                 :nil nil} ]
+      (is= "a1"  (fetch-in map1 [:a1]))
+      (is= "b1"  (fetch-in map1 [:a2 :b1]))
+      (is= "c1"  (fetch-in map1 [:a2 :b2 :c1]))
+      (is= "c2"  (fetch-in map1 [:a2 :b2 :c2]))
+      (is= "NIL" (fetch-in map1 [nil]))
+      (is= nil   (fetch-in map1 [:nil]))
+      (throws?   (fetch-in map1 [:a9]))
+      (throws?   (fetch-in map1 [:a2 :b9]))
+      (throws?   (fetch-in map1 [:a2 :b2 :c9])))))
 
 (deftest t-dissoc-in
   (let [mm    {:a { :b { :c "c" }}} ]

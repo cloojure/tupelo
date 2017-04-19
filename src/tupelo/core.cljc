@@ -688,9 +688,13 @@
 ; #todo rename to pp or pprint ?
 ; #todo add test & README
 (defn pretty                                                ; #todo experimental
-  "Shortcut to clojure.pprint/pprint"
-  [& args]
-  (apply pprint/pprint args))
+  "Shortcut to clojure.pprint/pprint. Returns it argument."
+  ([arg]
+   (pprint/pprint arg)
+   arg)
+  ([arg writer]
+   (pprint/pprint arg writer)
+   arg))
 
 ; #todo add test & README
 ; #todo rename json->edn  ???
