@@ -388,7 +388,7 @@
             (doseq [child-tree contents]
               (find-tag-impl result path-new child-tree tgt-path-new))))))))
 (defn find-tag [tree tgt-path]
-  (let [result (atom #{})]
+  (let [result (atom #{}) ]
     (find-tag-impl result [] tree tgt-path)
     @result))
 
