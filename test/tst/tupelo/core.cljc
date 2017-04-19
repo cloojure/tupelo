@@ -615,10 +615,19 @@
 )
 
 (deftest t-grab
-  (let [map1  {:a 1 :b 2}]
-    (is= 1    (grab :a map1))
-    (is= 2    (grab :b map1))
-    (throws?  (grab :c map1)) ))
+  (let [map1  { :a 1 :b 2 :c nil
+               nil :NIL
+               "hi" "hello"
+               5 "five"}]
+    (is= 1           (grab :a   map1))
+    (is= 2           (grab :b   map1))
+    (is= nil         (grab :c   map1))
+    (is= :NIL        (grab nil  map1))
+    (is= "hello"     (grab "hi"  map1))
+    (is= "five"      (grab 5  map1))
+    (throws?  (grab :z map1))
+    (throws?  (grab 42 map1))
+    ))
 
 (deftest t-fetch-in
   (testing "basic usage"

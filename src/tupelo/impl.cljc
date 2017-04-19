@@ -353,6 +353,6 @@
   "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
    returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
    Throws an Exception if :the-key is not present in the-map."
-  [the-key :- s/Keyword
-   the-map :- tsk/KeyMap]
+  [the-key :- s/Any
+   the-map :- tsk/Map]
   (fetch-in the-map [the-key]))
