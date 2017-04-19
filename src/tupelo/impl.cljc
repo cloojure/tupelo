@@ -369,8 +369,8 @@
       (if (or (= tgt tag) (= tgt :*))
         (if (empty? tgt-path-new)
           (do
-            (let [soln {:path  path
-                        :found tree}]
+            (let [soln {:parent-path  path
+                        :subtree tree}]
               (swap! result glue #{soln})))
           (do
             (let [path-new (append path tag)]
@@ -381,8 +381,8 @@
           (doseq [child-tree contents]
             (find-tag-impl result path-new child-tree tgt-path)))
         (if (empty? tgt-path-new)
-          (let [soln {:path  path
-                      :found tree}]
+          (let [soln {:parent-path  path
+                      :subtree tree}]
             (swap! result glue #{soln}))
           (let [path-new (append path tag)]
             (doseq [child-tree contents]

@@ -1801,39 +1801,39 @@
     (is (empty? (t/find-tag tree-1 [:a :b :z])))
 
     (is= (t/find-tag tree-1 [:a])
-      #{{:path [] :found [:a [:b 1] [:b 2] [:b [:c 1] [:c 2]]]}})
+      #{{:parent-path [] :subtree [:a [:b 1] [:b 2] [:b [:c 1] [:c 2]]]}})
     (is= (t/find-tag tree-1 [:a :b])
-      #{{:path [:a] :found [:b 1]}
-        {:path [:a] :found [:b 2]}
-        {:path [:a] :found [:b [:c 1] [:c 2]]}})
+      #{{:parent-path [:a] :subtree [:b 1]}
+        {:parent-path [:a] :subtree [:b 2]}
+        {:parent-path [:a] :subtree [:b [:c 1] [:c 2]]}})
     (is= (t/find-tag tree-1 [:a :b :c])
-      #{ {:path [:a :b] :found [:c 1]}
-        {:path [:a :b] :found [:c 2]} })
+      #{ {:parent-path [:a :b] :subtree [:c 1]}
+        {:parent-path [:a :b] :subtree [:c 2]} })
 
     (is= (t/find-tag tree-1 [:* :b])
-      #{{:path [:a], :found [:b 1]}
-        {:path [:a], :found [:b 2]}
-        {:path [:a], :found [:b [:c 1] [:c 2]]}})
+      #{{:parent-path [:a], :subtree [:b 1]}
+        {:parent-path [:a], :subtree [:b 2]}
+        {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]}})
     (is= (t/find-tag tree-1 [:a :*])
-      #{{:path [:a], :found [:b 1]}
-        {:path [:a], :found [:b 2]}
-        {:path [:a], :found [:b [:c 1] [:c 2]]} })
+      #{{:parent-path [:a], :subtree [:b 1]}
+        {:parent-path [:a], :subtree [:b 2]}
+        {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]} })
     (is= (t/find-tag tree-1 [:a :* :c])
-      #{{:path [:a :b], :found [:c 1]}
-        {:path [:a :b], :found [:c 2]}})
+      #{{:parent-path [:a :b], :subtree [:c 1]}
+        {:parent-path [:a :b], :subtree [:c 2]}})
 
     (is= (t/find-tag tree-1 [:a :**])
-      #{{:path [:a], :found [:b 1]}
-        {:path [:a], :found [:b 2]}
-        {:path [:a], :found [:b [:c 1] [:c 2]]}
-        {:path [:a :b], :found [:c 1]}
-        {:path [:a :b], :found [:c 2]}})
+      #{{:parent-path [:a], :subtree [:b 1]}
+        {:parent-path [:a], :subtree [:b 2]}
+        {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]}
+        {:parent-path [:a :b], :subtree [:c 1]}
+        {:parent-path [:a :b], :subtree [:c 2]}})
     (is= (t/find-tag tree-1 [:a :** :c])
-      #{{:path [:a :b], :found [:c 1]}
-        {:path [:a :b], :found [:c 2]}})
+      #{{:parent-path [:a :b], :subtree [:c 1]}
+        {:parent-path [:a :b], :subtree [:c 2]}})
     (is= (t/find-tag tree-1 [:** :c])
-      #{{:path [:a :b], :found [:c 1]}
-        {:path [:a :b], :found [:c 2]}})
+      #{{:parent-path [:a :b], :subtree [:c 1]}
+        {:parent-path [:a :b], :subtree [:c 2]}})
   )
   (let [bad-tree [:a
                   [:* 1]

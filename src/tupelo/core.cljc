@@ -902,7 +902,7 @@
       strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
       drop-at insert-at replace-at starts-with? int->kw kw->int
       split-using split-match partition-using wild-match? increasing? increasing-or-equal?
-      fibonacci-seq fibo-thru fibo-nth
+      fibonacci-seq fibo-thru fibo-nth find-tag
       with-exception-default lazy-cons lazy-gen yield yield-all
      ] ))
 
