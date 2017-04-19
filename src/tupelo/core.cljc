@@ -83,6 +83,7 @@
 
 (pns/import-fn impl/fetch-in)
 (pns/import-fn impl/grab)
+(pns/import-fn impl/find-tag)
 
 ; #todo -> README
 ; #todo variant: allow single or vec of default values

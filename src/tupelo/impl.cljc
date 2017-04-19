@@ -356,3 +356,39 @@
   [the-key :- s/Any
    the-map :- tsk/Map]
   (fetch-in the-map [the-key]))
+
+(defn- ^:no-doc find-tag-impl [result path tree tgt-path]
+  (when (empty? tgt-path)
+    (throw (IllegalStateException. "find*: tgt-path is empty")))
+  (when (sequential? tree)
+    (let [tgt          (first tgt-path)
+          tgt-path-new (rest tgt-path)
+          [tag & contents] tree]
+      (when (or (= tag :*) (= tag :**))
+        (throw (IllegalArgumentException. (str "fing-tag*: found reserved tag " tag " in tree"))))
+      (if (or (= tgt tag) (= tgt :*))
+        (if (empty? tgt-path-new)
+          (do
+            (let [soln {:path  path
+                        :found tree}]
+              (swap! result glue #{soln})))
+          (do
+            (let [path-new (append path tag)]
+              (doseq [child-tree contents]
+                (find-tag-impl result path-new child-tree tgt-path-new))))))
+      (when (= tgt :**)
+        (let [path-new (append path tag)] ; non-consuming recursion
+          (doseq [child-tree contents]
+            (find-tag-impl result path-new child-tree tgt-path)))
+        (if (empty? tgt-path-new)
+          (let [soln {:path  path
+                      :found tree}]
+            (swap! result glue #{soln}))
+          (let [path-new (append path tag)]
+            (doseq [child-tree contents]
+              (find-tag-impl result path-new child-tree tgt-path-new))))))))
+(defn find-tag [tree tgt-path]
+  (let [result (atom #{})]
+    (find-tag-impl result [] tree tgt-path)
+    @result))
+
