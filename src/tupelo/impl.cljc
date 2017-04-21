@@ -610,13 +610,6 @@
     (find-tree (hiccup->enlive tree) tgt-path)))
 
 (defn find-leaf-hiccup [tree tgt-path leaf-val]
-  (let [subtree-solns     (find-tree-hiccup tree tgt-path)
-        tgt-path-terminal (last tgt-path)
-        tgt-leaf-node     [tgt-path-terminal leaf-val]
-        results           (into #{}
-                            (for [soln subtree-solns
-                                  :when (or (= tgt-leaf-node (grab :subtree soln))
-                                          (= leaf-val :*))]
-                              soln)) ]
-    results ))
+  (map-subtree->hiccup
+    (find-leaf (hiccup->enlive tree) tgt-path leaf-val)))
 
