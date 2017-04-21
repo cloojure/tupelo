@@ -528,55 +528,6 @@
 ;#todo write fn enlive-remove-attrs
 
 ;---------------------------------------------------------------------------------------------------
-(defn find-tree-hiccup [tree tgt-path]
-  ;(println "=============================================================================")
-  (when (empty? tree)
-    (throw (IllegalStateException. "find-tree: tree is empty")))
-  (when (empty? tgt-path)
-    (throw (IllegalStateException. "find-tree: tgt-path is empty")))
-  (when (= :** (last tgt-path))
-    (throw (IllegalArgumentException. "find-tree: recursive-wildcard `:**` cannot terminate tgt-path")))
-
-  (let [result (atom #{})
-        find-tree-impl
-               (fn fn-find-tree-impl [result parents tree tgt-path]
-                 (when (sequential? tree) ; avoid trying to process value on leaf like [:a 1]
-                   (when (and (not-empty? tree) (not-empty? tgt-path))
-                     (let [tgt           (first tgt-path)
-                           tgt-path-rest (rest tgt-path)
-                           [tag & contents] tree]
-                       (when (or (= tag :*) (= tag :**))
-                         (throw (IllegalArgumentException. (str "fing-tag*: found reserved tag " tag " in tree"))))
-                       (if (or (= tgt tag) (= tgt :*))
-                         (do
-                           (if (empty? tgt-path-rest)
-                             (let [soln {:parent-path parents
-                                         :subtree     tree}]
-                               (swap! result glue #{soln}))
-                             (let [parents-new (append parents tag)]
-                               (doseq [child-tree contents]
-                                 (fn-find-tree-impl result parents-new child-tree tgt-path-rest)))))
-                         (when (= tgt :**)
-                           (when (not-empty? tgt-path-rest) ; :** wildcard cannot terminate the tgt-path
-                             (let [parents-new (append parents tag)]
-                               (fn-find-tree-impl result parents  tree tgt-path-rest)
-                               (doseq [child-tree contents]
-                                 (fn-find-tree-impl result parents-new child-tree tgt-path)))))))))) ]
-    (find-tree-impl result [] tree tgt-path)
-    @result))
-
-(defn find-leaf-hiccup [tree tgt-path leaf-val]
-  (let [subtree-solns     (find-tree-hiccup tree tgt-path)
-        tgt-path-terminal (last tgt-path)
-        tgt-leaf-node     [tgt-path-terminal leaf-val]
-        results           (into #{}
-                            (for [soln subtree-solns
-                                  :when (or (= tgt-leaf-node (grab :subtree soln))
-                                          (= leaf-val :*))]
-                              soln)) ]
-    results ))
-
-;---------------------------------------------------------------------------------------------------
 (defn find-tree
   "Searches an Enlive-format tree for the specified tgt-path"
   [tree tgt-path]
@@ -638,7 +589,7 @@
 (defn find-leaf [tree tgt-path leaf-val]
   (let [subtree-solns     (find-tree tree tgt-path)
         tgt-path-terminal (last tgt-path)
-        tgt-leaf-node     (hiccup->enlive [tgt-path-terminal leaf-val])
+        tgt-leaf-node     {:tag tgt-path-terminal :attrs {} :content [leaf-val]}
         results           (into #{}
                             (for [soln subtree-solns
                                   :when (or (= tgt-leaf-node (grab :subtree soln))
@@ -646,4 +597,26 @@
                               soln)) ]
     results ))
 
+
+;---------------------------------------------------------------------------------------------------
+(defn- map-subtree->hiccup
+  [soln-set]
+  (into #{}
+    (for [soln soln-set]
+      (update-in soln [:subtree] enlive->hiccup))))
+
+(defn find-tree-hiccup [tree tgt-path]
+  (map-subtree->hiccup
+    (find-tree (hiccup->enlive tree) tgt-path)))
+
+(defn find-leaf-hiccup [tree tgt-path leaf-val]
+  (let [subtree-solns     (find-tree-hiccup tree tgt-path)
+        tgt-path-terminal (last tgt-path)
+        tgt-leaf-node     [tgt-path-terminal leaf-val]
+        results           (into #{}
+                            (for [soln subtree-solns
+                                  :when (or (= tgt-leaf-node (grab :subtree soln))
+                                          (= leaf-val :*))]
+                              soln)) ]
+    results ))
 
