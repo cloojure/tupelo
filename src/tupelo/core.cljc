@@ -212,8 +212,8 @@
 (pns/import-fn impl/spy-indent-inc)
 (pns/import-fn impl/spy-indent-dec)
 (pns/import-fn impl/spy)
-(pns/import-fn impl/spyx-proc)
 (pns/import-macro impl/spyx)
+(pns/import-macro impl/spyx-pretty)
 
 (pns/import-macro impl/spyxx )
 (pns/import-macro impl/with-spy-indent )
@@ -412,16 +412,7 @@
     & values :- [s/Any]]
     (apply conj (vec base-coll) value values)))
 
-(s/defn only :- s/Any
-  "(only seqable-arg)
-  Ensures that a sequence is of length=1, and returns the only value present.
-  Throws an exception if the length of the sequence is not one.
-  Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
-  [seqable-arg :- ts/List]
-  (let [seq-len (count seqable-arg)]
-    (when-not (= 1 seq-len)
-      (throw (IllegalArgumentException. (str "only: length != 1; length=" seq-len)))))
-  (first seqable-arg))
+(pns/import-fn impl/only )
 
 (s/defn third :- s/Any
   "Returns the third item in a collection, or nil if fewer than three items are present. "
@@ -781,7 +772,7 @@
   []
   (s/set-fn-validation! true) ; enforce fn schemas
   (refer 'tupelo.core :only
-   '[ spy spy-let spyx spyxx with-spy-indent truthy? falsey?
+   '[ spy spy-let spyx spyx-pretty spyxx with-spy-indent truthy? falsey?
       not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
       forv conjv glue append prepend grab dissoc-in fetch-in select-values keyvals only third
       it-> safe-> keep-if drop-if zip flat-vec

@@ -147,6 +147,29 @@
      (println (str (spy-indent-spaces) '~expr " => " class-name# "->" (pr-str spy-val#)))
      spy-val#))
 
+(defn- spyx-pretty-proc
+  [exprs]
+  (let [r1  (vec
+              (for [expr (butlast exprs) ]
+                (if (keyword? expr)
+                  `(println (str  ~expr))
+                  `(println (str  '~expr " => " ~expr)))))
+        r2  (let [expr (last exprs) ]
+              `(let [spy-val# ~expr]
+                 (println (str  '~expr " => " ))
+                 (pprint/pprint spy-val# )
+                 spy-val#)
+              )
+        final-code `(do ~@r1 ~r2) ]
+    final-code
+  ))
+
+; #todo allow spyx-pretty to have labels like (spyx-pretty :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
+(defmacro spyx-pretty
+  "Like `spyx` but with pretty printing (clojure.pprint/pprint)"
+  [& exprs]
+  (spyx-pretty-proc exprs))
+
 (defmacro with-spy-indent
   "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
   [& body]
@@ -190,6 +213,19 @@
    to (not (truthy? arg))."
   [arg :- s/Any]
   (if arg false true))
+
+(defn only
+  "(only coll-in)
+  Ensures that a sequence is of length=1, and returns the only value present.
+  Throws an exception if the length of the sequence is not one.
+  Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
+  [coll-in]
+  (when-not (or (sequential? coll-in) (set? coll-in) )
+    (throw (IllegalArgumentException. (str "only: arg must be vector/list or set; arg=" coll-in))))
+  (let [num-items (count coll-in)]
+    (when-not (= 1 num-items)
+      (throw (IllegalArgumentException. (str "only: num-items must=1; num-items=" num-items)))))
+  (first coll-in))
 
 ;-----------------------------------------------------------------------------
 (defmacro it->
@@ -587,6 +623,7 @@
     @result))
 
 (defn find-leaf [tree tgt-path leaf-val]
+  "Searches an Enlive-format tree for the specified tgt-path & leaf value."
   (let [subtree-solns     (find-tree tree tgt-path)
         tgt-path-terminal (last tgt-path)
         tgt-leaf-node     {:tag tgt-path-terminal :attrs {} :content [leaf-val]}
@@ -597,19 +634,23 @@
                               soln)) ]
     results ))
 
-
-;---------------------------------------------------------------------------------------------------
-(defn- map-subtree->hiccup
+(defn- find-tree-result->hiccup
   [soln-set]
   (into #{}
     (for [soln soln-set]
       (update-in soln [:subtree] enlive->hiccup))))
 
 (defn find-tree-hiccup [tree tgt-path]
-  (map-subtree->hiccup
+  "Searches an Hiccup-format tree for the specified tgt-path,
+  returning a Hiccup-format result."
+  (find-tree-result->hiccup
     (find-tree (hiccup->enlive tree) tgt-path)))
 
 (defn find-leaf-hiccup [tree tgt-path leaf-val]
-  (map-subtree->hiccup
+  "Searches an Hiccup-format tree for the specified tgt-path & leaf value,
+  returning a Hiccup-format result."
+  (find-tree-result->hiccup
     (find-leaf (hiccup->enlive tree) tgt-path leaf-val)))
+
+;---------------------------------------------------------------------------------------------------
 
