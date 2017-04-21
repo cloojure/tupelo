@@ -1792,57 +1792,81 @@
                 [:b 2]
                 [:b
                  [:c 1]
-                 [:c 2]]]]
-    (is (empty? (t/find-tag tree-1 [:z])))
-    (is (empty? (t/find-tag tree-1 [:z :b])))
-    (is (empty? (t/find-tag tree-1 [:z :b :c])))
-    (is (empty? (t/find-tag tree-1 [:a :z])))
-    (is (empty? (t/find-tag tree-1 [:a :z :c])))
-    (is (empty? (t/find-tag tree-1 [:a :b :z])))
+                 [:c 2]]
+                [:c 9]]]
+    (is (empty? (t/find-tree tree-1 [:z])))
+    (is (empty? (t/find-tree tree-1 [:z :b])))
+    (is (empty? (t/find-tree tree-1 [:z :b :c])))
+    (is (empty? (t/find-tree tree-1 [:a :z])))
+    (is (empty? (t/find-tree tree-1 [:a :z :c])))
+    (is (empty? (t/find-tree tree-1 [:a :b :z])))
 
-    (is= (t/find-tag tree-1 [:a])
-      #{{:parent-path [] :subtree [:a [:b 1] [:b 2] [:b [:c 1] [:c 2]]]}})
-    (is= (t/find-tag tree-1 [:a :b])
+    (is= (t/find-tree tree-1 [:a])
+      #{{:parent-path [] :subtree [:a [:b 1] [:b 2] [:b [:c 1] [:c 2]]
+                                   [:c 9]]}})
+    (is= (t/find-tree tree-1 [:a :b])
       #{{:parent-path [:a] :subtree [:b 1]}
         {:parent-path [:a] :subtree [:b 2]}
         {:parent-path [:a] :subtree [:b [:c 1] [:c 2]]}})
-    (is= (t/find-tag tree-1 [:a :b :c])
-      #{ {:parent-path [:a :b] :subtree [:c 1]}
-        {:parent-path [:a :b] :subtree [:c 2]} })
+    (is= (t/find-tree tree-1 [:a :b :c])
+      #{{:parent-path [:a :b] :subtree [:c 1]}
+        {:parent-path [:a :b] :subtree [:c 2]}})
 
-    (is= (t/find-tag tree-1 [:* :b])
+    (is= (t/find-tree tree-1 [:* :b])
       #{{:parent-path [:a], :subtree [:b 1]}
         {:parent-path [:a], :subtree [:b 2]}
         {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]}})
-    (is= (t/find-tag tree-1 [:a :*])
+    (is= (t/find-tree tree-1 [:a :*])
       #{{:parent-path [:a], :subtree [:b 1]}
         {:parent-path [:a], :subtree [:b 2]}
-        {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]} })
-    (is= (t/find-tag tree-1 [:a :* :c])
+        {:parent-path [:a], :subtree [:c 9]}
+        {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]}})
+    (is= (t/find-tree tree-1 [:a :* :c])
       #{{:parent-path [:a :b], :subtree [:c 1]}
         {:parent-path [:a :b], :subtree [:c 2]}})
 
-    (is= (t/find-tag tree-1 [:a :**])
+    (is= (pretty (t/find-tree tree-1 [:a :** :*]))
       #{{:parent-path [:a], :subtree [:b 1]}
         {:parent-path [:a], :subtree [:b 2]}
+        {:parent-path [:a], :subtree [:c 9]}
         {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]}
         {:parent-path [:a :b], :subtree [:c 1]}
         {:parent-path [:a :b], :subtree [:c 2]}})
-    (is= (t/find-tag tree-1 [:a :** :c])
+    (is= (t/find-tree tree-1 [:** :c])
       #{{:parent-path [:a :b], :subtree [:c 1]}
-        {:parent-path [:a :b], :subtree [:c 2]}})
-    (is= (t/find-tag tree-1 [:** :c])
+        {:parent-path [:a :b], :subtree [:c 2]}
+        {:parent-path [:a], :subtree [:c 9]}})
+
+    (is= (t/find-tree tree-1 [:a :** :c])
       #{{:parent-path [:a :b], :subtree [:c 1]}
-        {:parent-path [:a :b], :subtree [:c 2]}})
-  )
+        {:parent-path [:a :b], :subtree [:c 2]}
+        {:parent-path [:a], :subtree [:c 9]}}))
+    (let [tree-2 [:a
+                  [:b 1]
+                  [:c 9]] ]
+      (println "-------------------------------------------------------")
+      (throws? (pretty (t/find-tree tree-2 [:**])))
+      (throws? (pretty (t/find-tree tree-2 [:a :**])))
+
+      (is= (pretty (t/find-tree tree-2 [:a :** :c]))
+        #{{:parent-path [:a], :subtree [:c 9]}})
+      (is= (pretty (t/find-tree tree-2 [:a :** :** :c]))
+        #{{:parent-path [:a], :subtree [:c 9]}})
+      (is= (pretty (t/find-tree tree-2 [:** :c]))
+        #{{:parent-path [:a], :subtree [:c 9]}})
+
+      (is= (pretty (t/find-tree tree-2 [:** :*]))
+        #{{:parent-path [  ], :subtree [:a [:b 1] [:c 9]]}
+          {:parent-path [:a], :subtree [:b 1]}
+          {:parent-path [:a], :subtree [:c 9]} }))
   (let [bad-tree [:a
                   [:* 1]
                   [:b 2]]]
-    (throws? (t/find-tag bad-tree [:a :b])))
+    (throws? (t/find-tree bad-tree [:a :b])))
   (let [bad-tree [:a
                   [:** 1]
                   [:b 2]]]
-    (throws? (t/find-tag bad-tree [:a :b])))
+    (throws? (t/find-tree bad-tree [:a :b])))
 )
 
 

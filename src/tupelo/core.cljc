@@ -55,17 +55,9 @@
    Use (zip ... :lazy)  if you want it to be lazy.  "
   (apply mapv vector args))
 
+(pns/import-macro impl/forv)
+
 ; #todo maybe just make tupelo.vec/for  etc   (tv/for ...) -> (vec (for ...))
-(defmacro forv    ; #todo: (for-vec ...)  or  (vfor ...)
-  "Like clojure.core/for but returns results in a vector.   Not lazy."
-  [& body]
-  `(vec (for ~@body)))
-
-(defmacro forz      ; #todo really?
-  "Lazy version of tupelo/forv. Equivalent to clojure.core/for."
-  [& body]
-  `(for ~@body))
-
 ; #todo replace clojure.core/map : not lazy; can add one of :trunc or :lazy modifiers
 ; (map + (range 5))
 ; (map + 0 (range 5))
@@ -83,16 +75,10 @@
 
 (pns/import-fn impl/fetch-in)
 (pns/import-fn impl/grab)
-(pns/import-fn impl/find-tag)
+(pns/import-fn impl/find-tree)
 
-; #todo -> README
-; #todo variant: allow single or vec of default values
-(s/defn select-values :- ts/List
-  "Returns a vector of values for each key, in the order specified."
-  [map   :- ts/KeyMap
-   keys  :- [s/Keyword]]
-  (forv [key keys]
-    (grab key map)))
+
+(pns/import-fn impl/select-values )
 
 (s/defn increasing? :- s/Bool
   "Returns true iff the vectors are in (strictly) lexicographically increasing order
@@ -225,24 +211,8 @@
 (pns/import-fn impl/spyx-proc)
 (pns/import-macro impl/spyx)
 
-(defmacro spyxx
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expression, printing both the expression, its type, and its value to stdout, then returns the value."
-  [expr]
-  `(let [spy-val#    ~expr
-         class-name# (-> spy-val# class .getName)]
-     (println (str (spy-indent-spaces) '~expr " => " class-name# "->" (pr-str spy-val#)))
-     spy-val#))
-
-(defmacro with-spy-indent
-  "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
-  [& body]
-  `(do
-     (spy-indent-inc)
-     (let [result# (do ~@body)]
-       (spy-indent-dec)
-       result#)))
-
+(pns/import-macro impl/spyxx )
+(pns/import-macro impl/with-spy-indent )
 ; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
 
 (defn- spy-let-proc
@@ -291,21 +261,8 @@
     [arg :- s/Any]
     (if arg true false))
 
-(defn truthy?
-  "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
-  [arg]
-  (if arg true false))
-
-; #todo how to test the :ret part?
-; (sp/fdef truthy?
-;   :args (sp/cat :arg any?)
-;   :ret  boolean?)
-
-(s/defn falsey? :- s/Bool
-  "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
-   to (not (truthy? arg))."
-  [arg :- s/Any]
-  (if arg false true))
+(pns/import-fn impl/truthy? )
+(pns/import-fn impl/falsey? )
 
 (defn validate
   "(validate tstfn tstval)
@@ -679,23 +636,8 @@
       (pr it))))
 
 (pns/import-fn impl/strcat)
-
-; #todo add test & README
-(defn pretty-str
-  "Returns a string that is the result of clojure.pprint/pprint"
-  [arg]
-  (with-out-str (pprint/pprint arg)))
-
-; #todo rename to pp or pprint ?
-; #todo add test & README
-(defn pretty                                                ; #todo experimental
-  "Shortcut to clojure.pprint/pprint. Returns it argument."
-  ([arg]
-   (pprint/pprint arg)
-   arg)
-  ([arg writer]
-   (pprint/pprint arg writer)
-   arg))
+(pns/import-fn impl/pretty-str)
+(pns/import-fn impl/pretty)
 
 ; #todo add test & README
 ; #todo rename json->edn  ???
@@ -736,69 +678,9 @@
 ; #todo need rand-id/randid/rid/rid-str (rand id) -> 64 bit hex string="1234-4567-89ab-cdef"
 ; i[12] = Random.nextInt(); bytes += i[12].toHexString()
 
-(defn- wild-match-1
-  [pattern value]
-  (with-spy-indent
-    ; (spy :msg "pattern" pattern) (spy :msg "value  " value) (flush)       ; for debug
-    (let [result (truthy?
-                   (cond
-                     (= pattern :*) true
-                     (= pattern value) true
-                     (map? pattern) (wild-match-1 (seq (glue (sorted-map) pattern))
-                                      (seq (glue (sorted-map) value)))
-                     (coll? value) (and (= (count pattern) (count value))
-                                     (every? truthy? (mapv wild-match-1 pattern value)))
-                     :default false))
-          ]
-      ; (spy :msg "result " result) (flush)      ; for debug
-      result)))
-
-(defn wild-match?
-  "Returns true if a pattern is matched by one or more values.  The special keyword :* (colon-star)
-   in the pattern serves as a wildcard value.  Note that a wildcald can match either a primitive or a
-   composite value: Usage:
-
-     (wild-match? pattern & values)
-
-   samples:
-
-     (wild-match?  {:a :* :b 2}
-                   {:a 1  :b 2})         ;=> true
-
-     (wild-match?  [1 :* 3]
-                   [1 2  3]
-                   [1 9  3] ))           ;=> true
-
-     (wild-match?  {:a :*       :b 2}
-                   {:a [1 2 3]  :b 2})   ;=> true "
-  [pattern & values]
-  (every? truthy?
-    (forv [value values]
-      (if (map? pattern)
-        (wild-match-1 (glue (sorted-map) pattern)
-          (glue (sorted-map) value))
-        (wild-match-1 pattern value)))))
-
-(defmacro matches?
-  "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
-   matches the pattern value.  Underscores serve as wildcard values. Usage:
-
-     (matches? pattern & values)
-
-   sample:
-
-     (matches?  [1 _ 3] [1 2 3] )         ;=> true
-     (matches?  {:a _ :b _       :c 3}
-                {:a 1 :b [1 2 3] :c 3}
-                {:a 2 :b 99      :c 3}
-                {:a 3 :b nil     :c 3} )  ;=> true
-
-   Note that a wildcald can match either a primitive or a composite value."
-  [pattern & values]
-  `(and ~@(forv [value values]
-            `(ccm/match ~value
-               ~pattern true
-               :else false))))
+(pns/import-fn impl/wild-match-1 )
+(pns/import-fn impl/wild-match? )
+(pns/import-macro impl/matches? )
 
 ; #todo: add (throwed? ...) for testing exceptions
 
@@ -902,7 +784,7 @@
       strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
       drop-at insert-at replace-at starts-with? int->kw kw->int
       split-using split-match partition-using wild-match? increasing? increasing-or-equal?
-      fibonacci-seq fibo-thru fibo-nth find-tag
+      fibonacci-seq fibo-thru fibo-nth find-tree
       with-exception-default lazy-cons lazy-gen yield yield-all
      ] ))
 

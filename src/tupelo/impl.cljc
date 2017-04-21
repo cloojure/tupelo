@@ -138,7 +138,58 @@
   [& exprs]
   (spyx-proc exprs))
 
+(defmacro spyxx
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expression, printing both the expression, its type, and its value to stdout, then returns the value."
+  [expr]
+  `(let [spy-val#    ~expr
+         class-name# (-> spy-val# class .getName)]
+     (println (str (spy-indent-spaces) '~expr " => " class-name# "->" (pr-str spy-val#)))
+     spy-val#))
 
+(defmacro with-spy-indent
+  "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
+  [& body]
+  `(do
+     (spy-indent-inc)
+     (let [result# (do ~@body)]
+       (spy-indent-dec)
+       result#)))
+
+
+; #todo add test & README
+(defn pretty-str
+  "Returns a string that is the result of clojure.pprint/pprint"
+  [arg]
+  (with-out-str (pprint/pprint arg)))
+
+; #todo rename to pp or pprint ?
+; #todo add test & README
+(defn pretty                                                ; #todo experimental
+  "Shortcut to clojure.pprint/pprint. Returns it argument."
+  ([arg]
+   (pprint/pprint arg)
+   arg)
+  ([arg writer]
+   (pprint/pprint arg writer)
+   arg))
+
+
+(defn truthy?
+  "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
+  [arg]
+  (if arg true false))
+
+; #todo how to test the :ret part?
+; (sp/fdef truthy?
+;   :args (sp/cat :arg any?)
+;   :ret  boolean?)
+
+(s/defn falsey? :- s/Bool
+  "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
+   to (not (truthy? arg))."
+  [arg :- s/Any]
+  (if arg false true))
 
 ;-----------------------------------------------------------------------------
 (defmacro it->
@@ -357,38 +408,150 @@
    the-map :- tsk/Map]
   (fetch-in the-map [the-key]))
 
-(defn- ^:no-doc find-tag-impl [result path tree tgt-path]
+
+(defmacro forv    ; #todo: (for-vec ...)  or  (vfor ...)
+  "Like clojure.core/for but returns results in a vector.   Not lazy."
+  [& body]
+  `(vec (for ~@body)))
+
+(defn- wild-match-1
+  [pattern value]
+  (with-spy-indent
+    ; (spy :msg "pattern" pattern) (spy :msg "value  " value) (flush)       ; for debug
+    (let [result (truthy?
+                   (cond
+                     (= pattern :*) true
+                     (= pattern value) true
+                     (map? pattern) (wild-match-1 (seq (glue (sorted-map) pattern))
+                                      (seq (glue (sorted-map) value)))
+                     (coll? value) (and (= (count pattern) (count value))
+                                     (every? truthy? (mapv wild-match-1 pattern value)))
+                     :default false))
+          ]
+      ; (spy :msg "result " result) (flush)      ; for debug
+      result)))
+
+(defn wild-match?
+  "Returns true if a pattern is matched by one or more values.  The special keyword :* (colon-star)
+   in the pattern serves as a wildcard value.  Note that a wildcald can match either a primitive or a
+   composite value: Usage:
+
+     (wild-match? pattern & values)
+
+   samples:
+
+     (wild-match?  {:a :* :b 2}
+                   {:a 1  :b 2})         ;=> true
+
+     (wild-match?  [1 :* 3]
+                   [1 2  3]
+                   [1 9  3] ))           ;=> true
+
+     (wild-match?  {:a :*       :b 2}
+                   {:a [1 2 3]  :b 2})   ;=> true "
+  [pattern & values]
+  (every? truthy?
+    (forv [value values]
+      (if (map? pattern)
+        (wild-match-1 (glue (sorted-map) pattern)
+          (glue (sorted-map) value))
+        (wild-match-1 pattern value)))))
+
+(defmacro matches?
+  "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
+   matches the pattern value.  Underscores serve as wildcard values. Usage:
+
+     (matches? pattern & values)
+
+   sample:
+
+     (matches?  [1 _ 3] [1 2 3] )         ;=> true
+     (matches?  {:a _ :b _       :c 3}
+                {:a 1 :b [1 2 3] :c 3}
+                {:a 2 :b 99      :c 3}
+                {:a 3 :b nil     :c 3} )  ;=> true
+
+   Note that a wildcald can match either a primitive or a composite value."
+  [pattern & values]
+  `(and ~@(forv [value values]
+            `(ccm/match ~value
+               ~pattern true
+               :else false))))
+
+; #todo -> README
+; #todo variant: allow single or vec of default values
+(s/defn select-values :- tsk/List
+  "Returns a vector of values for each key, in the order specified."
+  [map   :- tsk/KeyMap
+   keys  :- [s/Keyword]]
+  (forv [key keys]
+    (grab key map)))
+
+
+(defn find-tree [tree tgt-path]
+  (println "=============================================================================")
+  (when (empty? tree)
+    (throw (IllegalStateException. "find-tree: tree is empty")))
   (when (empty? tgt-path)
-    (throw (IllegalStateException. "find*: tgt-path is empty")))
-  (when (sequential? tree)
-    (let [tgt          (first tgt-path)
-          tgt-path-new (rest tgt-path)
-          [tag & contents] tree]
-      (when (or (= tag :*) (= tag :**))
-        (throw (IllegalArgumentException. (str "fing-tag*: found reserved tag " tag " in tree"))))
-      (if (or (= tgt tag) (= tgt :*))
-        (if (empty? tgt-path-new)
-          (do
-            (let [soln {:parent-path  path
-                        :subtree tree}]
-              (swap! result glue #{soln})))
-          (do
-            (let [path-new (append path tag)]
-              (doseq [child-tree contents]
-                (find-tag-impl result path-new child-tree tgt-path-new))))))
-      (when (= tgt :**)
-        (let [path-new (append path tag)] ; non-consuming recursion
-          (doseq [child-tree contents]
-            (find-tag-impl result path-new child-tree tgt-path)))
-        (if (empty? tgt-path-new)
-          (let [soln {:parent-path  path
-                      :subtree tree}]
-            (swap! result glue #{soln}))
-          (let [path-new (append path tag)]
-            (doseq [child-tree contents]
-              (find-tag-impl result path-new child-tree tgt-path-new))))))))
-(defn find-tag [tree tgt-path]
-  (let [result (atom #{}) ]
-    (find-tag-impl result [] tree tgt-path)
+    (throw (IllegalStateException. "find-tree: tgt-path is empty")))
+  (when (= :** (last tgt-path))
+    (throw (IllegalArgumentException. "find-tree: recursive-wildcard `:**` cannot terminate tgt-path")))
+
+  (let [result (atom #{})
+        find-tree-impl
+               (fn fn-find-tree-impl [result parents tree tgt-path]
+                 (newline)
+                 (println :result) (pretty @result)
+                 (spyx parents)
+                 (spyx tree)
+                 (spyx tgt-path)
+                 (when (sequential? tree) ; avoid trying to process value on leaf like [:a 1]
+                   (when (and (not-empty? tree) (not-empty? tgt-path))
+                     (let [tgt           (first tgt-path)
+                           tgt-path-rest (rest tgt-path)
+                           [tag & contents] tree]
+                       (when (or (= tag :*) (= tag :**))
+                         (throw (IllegalArgumentException. (str "fing-tag*: found reserved tag " tag " in tree"))))
+                       (spyx tgt)
+                       (spyx tgt-path-rest)
+
+                       (if (or (= tgt tag) (= tgt :*))
+                         (do
+                           (println :200 "match tag:" tag)
+                           (if (empty? tgt-path-rest)
+                             (let [soln {:parent-path parents
+                                         :subtree     tree}]
+                               (println :210 "empty soln:" soln)
+                               (swap! result glue #{soln}))
+                             (let [parents-new (append parents tag)]
+                               (println :220 "not-empty parents-new:" parents-new)
+                               (doseq [child-tree contents]
+                                 (println :230 "child-tree:" child-tree)
+                                 (fn-find-tree-impl result parents-new child-tree tgt-path-rest)))))
+                         (when (= tgt :**)
+                           (println :300 "tgt = :**")
+                           (when (not-empty? tgt-path-rest) ; :** wildcard cannot terminate the tgt-path
+                             (let [parents-new (append parents tag)]
+                               (println :320 ":** parents-new:" parents-new)
+                               (println (str :331 "  recurse  parents:" parents "   tree:" tree "  tgt-path-rest:" tgt-path-rest))
+                               (fn-find-tree-impl result parents  tree tgt-path-rest)
+                               (doseq [child-tree contents]
+                                 (println :330 ":** child-tree:" child-tree)
+                                 (println (str :332 "    recurse  parents-new:" parents-new "  tgt-path:" tgt-path))
+                                 (fn-find-tree-impl result parents-new child-tree tgt-path))))))))))
+
+  ]
+    (find-tree-impl result [] tree tgt-path)
     @result))
+
+(defn find-leaf [tree tgt-path leaf-val]
+  (let [subtree-solns     (find-tree tree tgt-path)
+        tgt-path-terminal (last tgt-path)
+        tgt-leaf-node     [tgt-path-terminal leaf-val]
+        results           (forv [soln subtree-solns
+                                 :when (= tgt-leaf-node (grab :subtree soln))
+                                ]
+                            soln )
+       ]
+    results ))
 
