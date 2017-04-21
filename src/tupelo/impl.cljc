@@ -570,9 +570,25 @@
           (if (map? v2)
             {:tag     tag
              :attrs   v2
-             :content (vec (for [child (rest less-1)]
-                             (hiccup->enlive child)))}
+             :content (forv [child (rest less-1)]
+                        (hiccup->enlive child))}
             {:tag     tag
              :attrs   {}
-             :content (vec (for [child less-1]
-                             (hiccup->enlive child)))} )) ) )) )
+             :content (forv [child less-1]
+                        (hiccup->enlive child))}))))))
+
+(defn enlive->hiccup
+  [tree-node]
+  (if-not (map? tree-node)
+    tree-node       ; leaf - just return it
+    ; #todo maybe a let-keys macro for this?
+    (let [tag        (grab :tag tree-node)
+          attrs      (grab :attrs tree-node)
+          content    (grab :content tree-node)
+          tag-attrs  (if (empty? attrs)
+                       [tag]
+                       [tag attrs])
+          content-tx (forv [child content]
+                       (enlive->hiccup child))
+          result      (glue tag-attrs content-tx) ]
+      result)))

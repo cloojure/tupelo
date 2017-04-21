@@ -1899,27 +1899,37 @@
                 [:c {:k3 "v3" :k4 4}
                  [:d 4]]]
        ]
-    (is= (pretty (hiccup->enlive tree-2))
+    (is= (hiccup->enlive tree-2)
       {:tag   :a,
        :attrs {},
        :content
               [{:tag :b, :attrs {}, :content [2]}
                {:tag :c, :attrs {}, :content [3]}]})
 
-    (is= (pretty (hiccup->enlive tree-3))
+    (is= (hiccup->enlive tree-3)
       {:tag   :a,
        :attrs {:k1 "v1"},
        :content
               [{:tag :b, :attrs {}, :content [2]}
                {:tag :c, :attrs {}, :content [3]}]})
 
-    (is= (pretty (hiccup->enlive tree-4))
+    (is= (hiccup->enlive tree-4)
       {:tag   :a,
        :attrs {:k1 "v1"},
        :content
               [{:tag :b, :attrs {}, :content [2]}
                {:tag :c, :attrs {:k3 "v3" :k4 4}, :content [
                                                             {:tag :d :attrs {} :content [4]}]}]})
+    ; #todo add generative testing
+    (is=
+      (-> tree-2 hiccup->enlive)
+      (-> tree-2 hiccup->enlive enlive->hiccup hiccup->enlive))
+    (is=
+      (-> tree-3 hiccup->enlive)
+      (-> tree-3 hiccup->enlive enlive->hiccup hiccup->enlive))
+    (is=
+      (-> tree-4 hiccup->enlive)
+      (-> tree-4 hiccup->enlive enlive->hiccup hiccup->enlive))
   ))
 
 ;---------------------------------------------------------------------------------------------------
