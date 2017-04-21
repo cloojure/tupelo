@@ -76,10 +76,12 @@
 (pns/import-fn impl/select-values )
 (pns/import-fn impl/fetch-in)
 (pns/import-fn impl/grab)
-(pns/import-fn impl/find-tree)
-(pns/import-fn impl/find-leaf)
 (pns/import-fn impl/hiccup->enlive )
 (pns/import-fn impl/enlive->hiccup )
+(pns/import-fn impl/find-tree-hiccup)
+(pns/import-fn impl/find-leaf-hiccup)
+(pns/import-fn impl/find-tree)
+(pns/import-fn impl/find-leaf)
 
 
 (s/defn increasing? :- s/Bool
@@ -786,7 +788,8 @@
       strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
       drop-at insert-at replace-at starts-with? int->kw kw->int
       split-using split-match partition-using wild-match? increasing? increasing-or-equal?
-      fibonacci-seq fibo-thru fibo-nth find-tree find-leaf hiccup->enlive enlive->hiccup
+      fibonacci-seq fibo-thru fibo-nth hiccup->enlive enlive->hiccup
+      find-tree find-leaf find-tree-hiccup find-leaf-hiccup
       with-exception-default lazy-cons lazy-gen yield yield-all
      ] ))
 

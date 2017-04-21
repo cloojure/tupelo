@@ -487,74 +487,6 @@
   (forv [key keys]
     (grab key map)))
 
-
-(defn find-tree [tree tgt-path]
-  ;(println "=============================================================================")
-  (when (empty? tree)
-    (throw (IllegalStateException. "find-tree: tree is empty")))
-  (when (empty? tgt-path)
-    (throw (IllegalStateException. "find-tree: tgt-path is empty")))
-  (when (= :** (last tgt-path))
-    (throw (IllegalArgumentException. "find-tree: recursive-wildcard `:**` cannot terminate tgt-path")))
-
-  (let [result (atom #{})
-        find-tree-impl
-               (fn fn-find-tree-impl [result parents tree tgt-path]
-                 ;(newline)
-                 ;(println :result) (pretty @result)
-                 ;(spyx parents)
-                 ;(spyx tree)
-                 ;(spyx tgt-path)
-                 (when (sequential? tree) ; avoid trying to process value on leaf like [:a 1]
-                   (when (and (not-empty? tree) (not-empty? tgt-path))
-                     (let [tgt           (first tgt-path)
-                           tgt-path-rest (rest tgt-path)
-                           [tag & contents] tree]
-                       (when (or (= tag :*) (= tag :**))
-                         (throw (IllegalArgumentException. (str "fing-tag*: found reserved tag " tag " in tree"))))
-                       ;(spyx tgt)
-                       ;(spyx tgt-path-rest)
-
-                       (if (or (= tgt tag) (= tgt :*))
-                         (do
-                           ;(println :200 "match tag:" tag)
-                           (if (empty? tgt-path-rest)
-                             (let [soln {:parent-path parents
-                                         :subtree     tree}]
-                               ;(println :210 "empty soln:" soln)
-                               (swap! result glue #{soln}))
-                             (let [parents-new (append parents tag)]
-                               ;(println :220 "not-empty parents-new:" parents-new)
-                               (doseq [child-tree contents]
-                                 ;(println :230 "child-tree:" child-tree)
-                                 (fn-find-tree-impl result parents-new child-tree tgt-path-rest)))))
-                         (when (= tgt :**)
-                           ;(println :300 "tgt = :**")
-                           (when (not-empty? tgt-path-rest) ; :** wildcard cannot terminate the tgt-path
-                             (let [parents-new (append parents tag)]
-                               ;(println :320 ":** parents-new:" parents-new)
-                               ;(println (str :331 "  recurse  parents:" parents "   tree:" tree "  tgt-path-rest:" tgt-path-rest))
-                               (fn-find-tree-impl result parents  tree tgt-path-rest)
-                               (doseq [child-tree contents]
-                                 ;(println :330 ":** child-tree:" child-tree)
-                                 ;(println (str :332 "    recurse  parents-new:" parents-new "  tgt-path:" tgt-path))
-                                 (fn-find-tree-impl result parents-new child-tree tgt-path))))))))))
-
-  ]
-    (find-tree-impl result [] tree tgt-path)
-    @result))
-
-(defn find-leaf [tree tgt-path leaf-val]
-  (let [subtree-solns     (find-tree tree tgt-path)
-        tgt-path-terminal (last tgt-path)
-        tgt-leaf-node     [tgt-path-terminal leaf-val]
-        results           (into #{}
-                            (for [soln subtree-solns
-                                  :when (or (= tgt-leaf-node (grab :subtree soln))
-                                          (= leaf-val :*))]
-                              soln)) ]
-    results ))
-
 (defn hiccup->enlive
   "Converts a tree of data from Hiccup -> Enlive format"
   [tree-node]
@@ -592,3 +524,126 @@
                        (enlive->hiccup child))
           result      (glue tag-attrs content-tx) ]
       result)))
+
+;#todo write fn enlive-remove-attrs
+
+;---------------------------------------------------------------------------------------------------
+(defn find-tree-hiccup [tree tgt-path]
+  ;(println "=============================================================================")
+  (when (empty? tree)
+    (throw (IllegalStateException. "find-tree: tree is empty")))
+  (when (empty? tgt-path)
+    (throw (IllegalStateException. "find-tree: tgt-path is empty")))
+  (when (= :** (last tgt-path))
+    (throw (IllegalArgumentException. "find-tree: recursive-wildcard `:**` cannot terminate tgt-path")))
+
+  (let [result (atom #{})
+        find-tree-impl
+               (fn fn-find-tree-impl [result parents tree tgt-path]
+                 (when (sequential? tree) ; avoid trying to process value on leaf like [:a 1]
+                   (when (and (not-empty? tree) (not-empty? tgt-path))
+                     (let [tgt           (first tgt-path)
+                           tgt-path-rest (rest tgt-path)
+                           [tag & contents] tree]
+                       (when (or (= tag :*) (= tag :**))
+                         (throw (IllegalArgumentException. (str "fing-tag*: found reserved tag " tag " in tree"))))
+                       (if (or (= tgt tag) (= tgt :*))
+                         (do
+                           (if (empty? tgt-path-rest)
+                             (let [soln {:parent-path parents
+                                         :subtree     tree}]
+                               (swap! result glue #{soln}))
+                             (let [parents-new (append parents tag)]
+                               (doseq [child-tree contents]
+                                 (fn-find-tree-impl result parents-new child-tree tgt-path-rest)))))
+                         (when (= tgt :**)
+                           (when (not-empty? tgt-path-rest) ; :** wildcard cannot terminate the tgt-path
+                             (let [parents-new (append parents tag)]
+                               (fn-find-tree-impl result parents  tree tgt-path-rest)
+                               (doseq [child-tree contents]
+                                 (fn-find-tree-impl result parents-new child-tree tgt-path)))))))))) ]
+    (find-tree-impl result [] tree tgt-path)
+    @result))
+
+(defn find-leaf-hiccup [tree tgt-path leaf-val]
+  (let [subtree-solns     (find-tree-hiccup tree tgt-path)
+        tgt-path-terminal (last tgt-path)
+        tgt-leaf-node     [tgt-path-terminal leaf-val]
+        results           (into #{}
+                            (for [soln subtree-solns
+                                  :when (or (= tgt-leaf-node (grab :subtree soln))
+                                          (= leaf-val :*))]
+                              soln)) ]
+    results ))
+
+;---------------------------------------------------------------------------------------------------
+(defn find-tree
+  "Searches an Enlive-format tree for the specified tgt-path"
+  [tree tgt-path]
+  ;(println "=============================================================================")
+  (when (empty? tree)
+    (throw (IllegalStateException. "find-tree: tree is empty")))
+  (when (empty? tgt-path)
+    (throw (IllegalStateException. "find-tree: tgt-path is empty")))
+  (when (= :** (last tgt-path))
+    (throw (IllegalArgumentException. "find-tree: recursive-wildcard `:**` cannot terminate tgt-path")))
+
+  (let [result (atom #{})
+        find-tree-impl
+               (fn fn-find-tree-impl [result parents tree tgt-path]
+                 ;(newline)
+                 ;(println :result) (pretty @result)
+                 ;(spyx parents)
+                 ;(spyx tree)
+                 ;(spyx tgt-path)
+                 (when (map? tree) ; avoid trying to process value `1` on leaf like [:a 1]
+                   (when (and (not-empty? tree) (not-empty? tgt-path))
+                     (let [tgt           (first tgt-path)
+                           tgt-path-rest (rest tgt-path)
+                           tag           (grab :tag tree)
+                           content       (grab :content tree) ]
+                       (when (or (= tag :*) (= tag :**))
+                         (throw (IllegalArgumentException. (str "fing-tag*: found reserved tag " tag " in tree"))))
+                       ;(spyx tgt)
+                       ;(spyx tgt-path-rest)
+                       (if (or (= tgt tag) (= tgt :*))
+                         (do
+                           ;(println :200 "match tag:" tag)
+                           (if (empty? tgt-path-rest)
+                             (let [soln {:parent-path parents
+                                         :subtree     tree}]
+                               ;(println :210 "empty soln:" soln)
+                               (swap! result glue #{soln}))
+                             (let [parents-new (append parents tag)]
+                               ;(println :220 "not-empty parents-new:" parents-new)
+                               (doseq [child-tree content]
+                                 ;(println :230 "child-tree:" child-tree)
+                                 (fn-find-tree-impl result parents-new child-tree tgt-path-rest)))))
+                         (when (= tgt :**)
+                           ;(println :300 "tgt = :**")
+                           (when (not-empty? tgt-path-rest) ; :** wildcard cannot terminate the tgt-path
+                             (let [parents-new (append parents tag)]
+                               ;(println :320 ":** parents-new:" parents-new)
+                               ;(println (str :331 "  recurse  parents:" parents "   tree:" tree "  tgt-path-rest:" tgt-path-rest))
+                               (fn-find-tree-impl result parents  tree tgt-path-rest)
+                               (doseq [child-tree content]
+                                 ;(println :330 ":** child-tree:" child-tree)
+                                 ;(println (str :332 "    recurse  parents-new:" parents-new "  tgt-path:" tgt-path))
+                                 (fn-find-tree-impl result parents-new child-tree tgt-path))))))))))
+
+  ]
+    (find-tree-impl result [] tree tgt-path)
+    @result))
+
+(defn find-leaf [tree tgt-path leaf-val]
+  (let [subtree-solns     (find-tree tree tgt-path)
+        tgt-path-terminal (last tgt-path)
+        tgt-leaf-node     (hiccup->enlive [tgt-path-terminal leaf-val])
+        results           (into #{}
+                            (for [soln subtree-solns
+                                  :when (or (= tgt-leaf-node (grab :subtree soln))
+                                          (= leaf-val :*)) ]
+                              soln)) ]
+    results ))
+
+

@@ -1787,104 +1787,199 @@
 ) ; t-global
 
 (dotest
-  (let [tree-1 [:a
-                [:b 1]
-                [:b 2]
-                [:b
-                 [:c 1]
-                 [:c 2]]
-                [:c 9]]]
-    (is (empty? (t/find-tree tree-1 [:z])))
-    (is (empty? (t/find-tree tree-1 [:z :b])))
-    (is (empty? (t/find-tree tree-1 [:z :b :c])))
-    (is (empty? (t/find-tree tree-1 [:a :z])))
-    (is (empty? (t/find-tree tree-1 [:a :z :c])))
-    (is (empty? (t/find-tree tree-1 [:a :b :z])))
+  (let [map-subtree->hiccup (fn fn-map-subtree->hiccup [soln-set]
+                              (into #{}
+                                (for [soln soln-set]
+                                  (update-in soln [:subtree] enlive->hiccup))))]
+    (let [tree-1        [:a
+                         [:b 1]
+                         [:b 2]
+                         [:b
+                          [:c 1]
+                          [:c 2]]
+                         [:c 9]]
+          tree-1-enlive (hiccup->enlive tree-1)]
+      ;---------------------------------------------------------------------------------------------------
+      (is (empty? (t/find-tree-hiccup tree-1 [:z])))
+      (is (empty? (t/find-tree-hiccup tree-1 [:z :b])))
+      (is (empty? (t/find-tree-hiccup tree-1 [:z :b :c])))
+      (is (empty? (t/find-tree-hiccup tree-1 [:a :z])))
+      (is (empty? (t/find-tree-hiccup tree-1 [:a :z :c])))
+      (is (empty? (t/find-tree-hiccup tree-1 [:a :b :z])))
 
-    (is= (t/find-tree tree-1 [:a])
-      #{{:parent-path [] :subtree [:a [:b 1] [:b 2] [:b [:c 1] [:c 2]]
-                                   [:c 9]]}})
-    (is= (t/find-tree tree-1 [:a :b])
-      #{{:parent-path [:a] :subtree [:b 1]}
-        {:parent-path [:a] :subtree [:b 2]}
-        {:parent-path [:a] :subtree [:b [:c 1] [:c 2]]}})
-    (is= (t/find-tree tree-1 [:a :b :c])
-      #{{:parent-path [:a :b] :subtree [:c 1]}
-        {:parent-path [:a :b] :subtree [:c 2]}})
+      (is= (t/find-tree-hiccup tree-1 [:a])
+        #{{:parent-path [] :subtree [:a [:b 1] [:b 2] [:b [:c 1] [:c 2]]
+                                     [:c 9]]}})
+      (is= (t/find-tree-hiccup tree-1 [:a :b])
+        #{{:parent-path [:a] :subtree [:b 1]}
+          {:parent-path [:a] :subtree [:b 2]}
+          {:parent-path [:a] :subtree [:b [:c 1] [:c 2]]}})
+      (is= (t/find-tree-hiccup tree-1 [:a :b :c])
+        #{{:parent-path [:a :b] :subtree [:c 1]}
+          {:parent-path [:a :b] :subtree [:c 2]}})
 
-    (is= (t/find-tree tree-1 [:* :b])
-      #{{:parent-path [:a], :subtree [:b 1]}
-        {:parent-path [:a], :subtree [:b 2]}
-        {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]}})
-    (is= (t/find-tree tree-1 [:a :*])
-      #{{:parent-path [:a], :subtree [:b 1]}
-        {:parent-path [:a], :subtree [:b 2]}
-        {:parent-path [:a], :subtree [:c 9]}
-        {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]}})
-    (is= (t/find-tree tree-1 [:a :* :c])
-      #{{:parent-path [:a :b], :subtree [:c 1]}
-        {:parent-path [:a :b], :subtree [:c 2]}})
+      (is= (t/find-tree-hiccup tree-1 [:* :b])
+        #{{:parent-path [:a], :subtree [:b 1]}
+          {:parent-path [:a], :subtree [:b 2]}
+          {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]}})
+      (is= (t/find-tree-hiccup tree-1 [:a :*])
+        #{{:parent-path [:a], :subtree [:b 1]}
+          {:parent-path [:a], :subtree [:b 2]}
+          {:parent-path [:a], :subtree [:c 9]}
+          {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]}})
+      (is= (t/find-tree-hiccup tree-1 [:a :* :c])
+        #{{:parent-path [:a :b], :subtree [:c 1]}
+          {:parent-path [:a :b], :subtree [:c 2]}})
 
-    (is= (t/find-tree tree-1 [:a :** :*])
-      #{{:parent-path [:a], :subtree [:b 1]}
-        {:parent-path [:a], :subtree [:b 2]}
-        {:parent-path [:a], :subtree [:c 9]}
-        {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]}
-        {:parent-path [:a :b], :subtree [:c 1]}
-        {:parent-path [:a :b], :subtree [:c 2]}})
-    (is= (t/find-tree tree-1 [:** :c])
-      #{{:parent-path [:a :b], :subtree [:c 1]}
-        {:parent-path [:a :b], :subtree [:c 2]}
-        {:parent-path [:a   ], :subtree [:c 9]}})
+      (is= (t/find-tree-hiccup tree-1 [:a :** :*])
+        #{{:parent-path [:a], :subtree [:b 1]}
+          {:parent-path [:a], :subtree [:b 2]}
+          {:parent-path [:a], :subtree [:c 9]}
+          {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]}
+          {:parent-path [:a :b], :subtree [:c 1]}
+          {:parent-path [:a :b], :subtree [:c 2]}})
+      (is= (t/find-tree-hiccup tree-1 [:** :c])
+        #{{:parent-path [:a :b], :subtree [:c 1]}
+          {:parent-path [:a :b], :subtree [:c 2]}
+          {:parent-path [:a], :subtree [:c 9]}})
 
-    (is= (t/find-tree tree-1 [:a :** :c])
-      #{{:parent-path [:a :b], :subtree [:c 1]}
-        {:parent-path [:a :b], :subtree [:c 2]}
-        {:parent-path [:a   ], :subtree [:c 9]}}))
+      (is= (t/find-tree-hiccup tree-1 [:a :** :c])
+        #{{:parent-path [:a :b], :subtree [:c 1]}
+          {:parent-path [:a :b], :subtree [:c 2]}
+          {:parent-path [:a], :subtree [:c 9]}})
+      ;---------------------------------------------------------------------------------------------------
+      (is (empty? (t/find-tree tree-1-enlive [:z])))
+      (is (empty? (t/find-tree tree-1-enlive [:z :b])))
+      (is (empty? (t/find-tree tree-1-enlive [:z :b :c])))
+      (is (empty? (t/find-tree tree-1-enlive [:a :z])))
+      (is (empty? (t/find-tree tree-1-enlive [:a :z :c])))
+      (is (empty? (t/find-tree tree-1-enlive [:a :b :z])))
 
-    (let [tree-2 [:a
-                  [:b 1]
-                  [:c 3]] ]
-      (throws? (t/find-tree tree-2 [:**]))
-      (throws? (t/find-tree tree-2 [:a :**]))
-      (is= (t/find-tree tree-2 [:a :** :c])
+      (is= (map-subtree->hiccup (t/find-tree tree-1-enlive [:a]))
+        #{{:parent-path [] :subtree [:a [:b 1] [:b 2] [:b [:c 1] [:c 2]]
+                                     [:c 9]]}})
+      (is= (map-subtree->hiccup (t/find-tree tree-1-enlive [:a :b]))
+        #{{:parent-path [:a] :subtree [:b 1]}
+          {:parent-path [:a] :subtree [:b 2]}
+          {:parent-path [:a] :subtree [:b [:c 1] [:c 2]]}})
+      (is= (map-subtree->hiccup (t/find-tree tree-1-enlive [:a :b :c]))
+        #{{:parent-path [:a :b] :subtree [:c 1]}
+          {:parent-path [:a :b] :subtree [:c 2]}})
+
+      (is= (map-subtree->hiccup (t/find-tree tree-1-enlive [:* :b]))
+        #{{:parent-path [:a], :subtree [:b 1]}
+          {:parent-path [:a], :subtree [:b 2]}
+          {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]}})
+      (is= (map-subtree->hiccup (t/find-tree tree-1-enlive [:a :*]))
+        #{{:parent-path [:a], :subtree [:b 1]}
+          {:parent-path [:a], :subtree [:b 2]}
+          {:parent-path [:a], :subtree [:c 9]}
+          {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]}})
+      (is= (map-subtree->hiccup (t/find-tree tree-1-enlive [:a :* :c]))
+        #{{:parent-path [:a :b], :subtree [:c 1]}
+          {:parent-path [:a :b], :subtree [:c 2]}})
+
+      (is= (map-subtree->hiccup (t/find-tree tree-1-enlive [:a :** :*]))
+        #{{:parent-path [:a], :subtree [:b 1]}
+          {:parent-path [:a], :subtree [:b 2]}
+          {:parent-path [:a], :subtree [:c 9]}
+          {:parent-path [:a], :subtree [:b [:c 1] [:c 2]]}
+          {:parent-path [:a :b], :subtree [:c 1]}
+          {:parent-path [:a :b], :subtree [:c 2]}})
+      (is= (map-subtree->hiccup (t/find-tree tree-1-enlive [:** :c]))
+        #{{:parent-path [:a :b], :subtree [:c 1]}
+          {:parent-path [:a :b], :subtree [:c 2]}
+          {:parent-path [:a], :subtree [:c 9]}})
+
+      (is= (map-subtree->hiccup (t/find-tree tree-1-enlive [:a :** :c]))
+        #{{:parent-path [:a :b], :subtree [:c 1]}
+          {:parent-path [:a :b], :subtree [:c 2]}
+          {:parent-path [:a], :subtree [:c 9]}})
+    )
+
+    (let [tree-2        [:a
+                         [:b 1]
+                         [:c 3]]
+          tree-2-enlive (hiccup->enlive tree-2)]
+      ;---------------------------------------------------------------------------------------------------
+      (throws? (t/find-tree-hiccup tree-2 [:**]))
+      (throws? (t/find-tree-hiccup tree-2 [:a :**]))
+      (is= (t/find-tree-hiccup tree-2 [:a :** :c])
         #{{:parent-path [:a], :subtree [:c 3]}})
-      (is= (t/find-tree tree-2 [:a :** :** :c])
+      (is= (t/find-tree-hiccup tree-2 [:a :** :** :c])
         #{{:parent-path [:a], :subtree [:c 3]}})
-      (is= (t/find-tree tree-2 [:** :c])
+      (is= (t/find-tree-hiccup tree-2 [:** :c])
         #{{:parent-path [:a], :subtree [:c 3]}})
-      (is= (t/find-tree tree-2 [:** :*])
-        #{{:parent-path [  ], :subtree [:a [:b 1] [:c 3]]}
+      (is= (t/find-tree-hiccup tree-2 [:** :*])
+        #{{:parent-path [], :subtree [:a [:b 1] [:c 3]]}
           {:parent-path [:a], :subtree [:b 1]}
-          {:parent-path [:a], :subtree [:c 3]} })
+          {:parent-path [:a], :subtree [:c 3]}})
 
-      (throws? (t/find-leaf tree-2 [:**] 13))
-      (throws? (t/find-leaf tree-2 [:a :**] 13))
-      (is= (t/find-leaf tree-2 [:a :** :b] 1)
+      (throws? (t/find-leaf-hiccup tree-2 [:**] 13))
+      (throws? (t/find-leaf-hiccup tree-2 [:a :**] 13))
+      (is= (t/find-leaf-hiccup tree-2 [:a :** :b] 1)
         #{{:parent-path [:a], :subtree [:b 1]}})
-      (is= (t/find-leaf tree-2 [:a :** :** :b] 1)
+      (is= (t/find-leaf-hiccup tree-2 [:a :** :** :b] 1)
         #{{:parent-path [:a], :subtree [:b 1]}})
-      (is= (t/find-leaf tree-2 [:** :b] 1)
+      (is= (t/find-leaf-hiccup tree-2 [:** :b] 1)
         #{{:parent-path [:a], :subtree [:b 1]}})
-      (is= (t/find-leaf tree-2 [:a :** :c] 3)
+      (is= (t/find-leaf-hiccup tree-2 [:a :** :c] 3)
         #{{:parent-path [:a], :subtree [:c 3]}})
-      (is= (t/find-leaf tree-2 [:a :** :** :c] 3)
+      (is= (t/find-leaf-hiccup tree-2 [:a :** :** :c] 3)
         #{{:parent-path [:a], :subtree [:c 3]}})
-      (is= (t/find-leaf tree-2 [:** :c] 3)
+      (is= (t/find-leaf-hiccup tree-2 [:** :c] 3)
         #{{:parent-path [:a], :subtree [:c 3]}})
 
-      (is= (t/find-leaf tree-2 [:** :*] :*)
-        #{{:parent-path [  ], :subtree [:a [:b 1] [:c 3]]}
+      (is= (t/find-leaf-hiccup tree-2 [:** :*] :*)
+        #{{:parent-path [], :subtree [:a [:b 1] [:c 3]]}
           {:parent-path [:a], :subtree [:b 1]}
-          {:parent-path [:a], :subtree [:c 3]} }))
+          {:parent-path [:a], :subtree [:c 3]}})
+      ;---------------------------------------------------------------------------------------------------
+      (throws? (t/find-tree tree-2-enlive [:**]))
+      (throws? (t/find-tree tree-2-enlive [:a :**]))
+      (is= (map-subtree->hiccup (t/find-tree tree-2-enlive [:a :** :c]))
+        #{{:parent-path [:a], :subtree [:c 3]}})
+      (is= (map-subtree->hiccup (t/find-tree tree-2-enlive [:a :** :** :c]))
+        #{{:parent-path [:a], :subtree [:c 3]}})
+      (is= (map-subtree->hiccup (t/find-tree tree-2-enlive [:** :c]))
+        #{{:parent-path [:a], :subtree [:c 3]}})
+      (is= (map-subtree->hiccup (t/find-tree tree-2-enlive [:** :*]))
+        #{{:parent-path [], :subtree [:a [:b 1] [:c 3]]}
+          {:parent-path [:a], :subtree [:b 1]}
+          {:parent-path [:a], :subtree [:c 3]}})
+
+      (throws? (t/find-leaf tree-2-enlive [:**] 13))
+      (throws? (t/find-leaf tree-2-enlive [:a :**] 13))
+      (is= (map-subtree->hiccup (t/find-leaf tree-2-enlive [:a :** :b] 1))
+        #{{:parent-path [:a], :subtree [:b 1]}})
+      (is= (map-subtree->hiccup (t/find-leaf tree-2-enlive [:a :** :** :b] 1))
+        #{{:parent-path [:a], :subtree [:b 1]}})
+      (is= (map-subtree->hiccup (t/find-leaf tree-2-enlive [:** :b] 1))
+        #{{:parent-path [:a], :subtree [:b 1]}})
+      (is= (map-subtree->hiccup (t/find-leaf tree-2-enlive [:a :** :c] 3))
+        #{{:parent-path [:a], :subtree [:c 3]}})
+      (is= (map-subtree->hiccup (t/find-leaf tree-2-enlive [:a :** :** :c] 3))
+        #{{:parent-path [:a], :subtree [:c 3]}})
+      (is= (map-subtree->hiccup (t/find-leaf tree-2-enlive [:** :c] 3))
+        #{{:parent-path [:a], :subtree [:c 3]}})
+
+      (is= (map-subtree->hiccup (t/find-leaf tree-2-enlive [:** :*] :*))
+        #{{:parent-path [], :subtree [:a [:b 1] [:c 3]]}
+          {:parent-path [:a], :subtree [:b 1]}
+          {:parent-path [:a], :subtree [:c 3]}})
+    )
+  )
+  ;---------------------------------------------------------------------------------------------------
   (let [bad-tree [:a
                   [:* 1]
                   [:b 2]]]
-    (throws? (t/find-tree bad-tree [:a :b])))
+    (throws? (t/find-tree-hiccup bad-tree [:a :b]))
+    (throws? (t/find-tree (hiccup->enlive bad-tree) [:a :b])))
   (let [bad-tree [:a
                   [:** 1]
                   [:b 2]]]
-    (throws? (t/find-tree bad-tree [:a :b])))
+    (throws? (t/find-tree-hiccup bad-tree [:a :b]))
+    (throws? (t/find-tree (hiccup->enlive bad-tree) [:a :b])))
 )
 
 (dotest
