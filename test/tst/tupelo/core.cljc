@@ -1825,7 +1825,7 @@
       #{{:parent-path [:a :b], :subtree [:c 1]}
         {:parent-path [:a :b], :subtree [:c 2]}})
 
-    (is= (pretty (t/find-tree tree-1 [:a :** :*]))
+    (is= (t/find-tree tree-1 [:a :** :*])
       #{{:parent-path [:a], :subtree [:b 1]}
         {:parent-path [:a], :subtree [:b 2]}
         {:parent-path [:a], :subtree [:c 9]}
@@ -1841,24 +1841,45 @@
       #{{:parent-path [:a :b], :subtree [:c 1]}
         {:parent-path [:a :b], :subtree [:c 2]}
         {:parent-path [:a], :subtree [:c 9]}}))
+
     (let [tree-2 [:a
                   [:b 1]
                   [:c 9]] ]
-      (println "-------------------------------------------------------")
-      (throws? (pretty (t/find-tree tree-2 [:**])))
-      (throws? (pretty (t/find-tree tree-2 [:a :**])))
-
-      (is= (pretty (t/find-tree tree-2 [:a :** :c]))
+      (throws? (t/find-tree tree-2 [:**]))
+      (throws? (t/find-tree tree-2 [:a :**]))
+      (is= (t/find-tree tree-2 [:a :** :c])
         #{{:parent-path [:a], :subtree [:c 9]}})
-      (is= (pretty (t/find-tree tree-2 [:a :** :** :c]))
+      (is= (t/find-tree tree-2 [:a :** :** :c])
         #{{:parent-path [:a], :subtree [:c 9]}})
-      (is= (pretty (t/find-tree tree-2 [:** :c]))
+      (is= (t/find-tree tree-2 [:** :c])
         #{{:parent-path [:a], :subtree [:c 9]}})
-
-      (is= (pretty (t/find-tree tree-2 [:** :*]))
+      (is= (t/find-tree tree-2 [:** :*])
         #{{:parent-path [  ], :subtree [:a [:b 1] [:c 9]]}
           {:parent-path [:a], :subtree [:b 1]}
-          {:parent-path [:a], :subtree [:c 9]} }))
+          {:parent-path [:a], :subtree [:c 9]} })
+
+      (throws? (t/find-leaf tree-2 [:**] 13))
+      (throws? (t/find-leaf tree-2 [:a :**] 13))
+      (is= (t/find-leaf tree-2 [:a :** :b] 1)
+        #{{:parent-path [:a], :subtree [:b 1]}})
+      (is= (t/find-leaf tree-2 [:a :** :** :b] 1)
+        #{{:parent-path [:a], :subtree [:b 1]}})
+      (is= (t/find-leaf tree-2 [:** :b] 1)
+        #{{:parent-path [:a], :subtree [:b 1]}})
+      (is= (t/find-leaf tree-2 [:a :** :c] 9)
+        #{{:parent-path [:a], :subtree [:c 9]}})
+      (is= (t/find-leaf tree-2 [:a :** :** :c] 9)
+        #{{:parent-path [:a], :subtree [:c 9]}})
+      (is= (t/find-leaf tree-2 [:** :c] 9)
+        #{{:parent-path [:a], :subtree [:c 9]}})
+
+      (is= (pretty (t/find-leaf tree-2 [:** :*] :*))
+        #{{:parent-path [  ], :subtree [:a [:b 1] [:c 9]]}
+          {:parent-path [:a], :subtree [:b 1]}
+          {:parent-path [:a], :subtree [:c 9]} })
+
+
+    )
   (let [bad-tree [:a
                   [:* 1]
                   [:b 2]]]
