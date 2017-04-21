@@ -619,7 +619,12 @@
                                  (fn-find-tree-impl result parents-new child-tree tgt-path))))))))))
 
   ]
-    (find-tree-impl result [] tree tgt-path)
+    (try
+      (find-tree-impl result [] tree tgt-path)
+      (catch Exception e
+      (throw (RuntimeException. (str "find-tree: failed for tree=" tree \newline
+                                  "  tgt-path=" tgt-path \newline
+                                  "  caused by=" (.getMessage e))))))
     @result))
 
 (defn find-leaf [tree tgt-path leaf-val]
