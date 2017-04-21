@@ -1876,10 +1876,7 @@
       (is= (t/find-leaf tree-2 [:** :*] :*)
         #{{:parent-path [  ], :subtree [:a [:b 1] [:c 3]]}
           {:parent-path [:a], :subtree [:b 1]}
-          {:parent-path [:a], :subtree [:c 3]} })
-
-
-    )
+          {:parent-path [:a], :subtree [:c 3]} }))
   (let [bad-tree [:a
                   [:* 1]
                   [:b 2]]]
@@ -1890,6 +1887,40 @@
     (throws? (t/find-tree bad-tree [:a :b])))
 )
 
+(dotest
+  (let [tree-2 [:a
+                [:b 2]
+                [:c 3]]
+        tree-3 [:a {:k1 "v1"}
+                [:b 2]
+                [:c 3]]
+        tree-4 [:a {:k1 "v1"}
+                [:b 2]
+                [:c {:k3 "v3" :k4 4}
+                 [:d 4]]]
+       ]
+    (is= (pretty (hiccup->enlive tree-2))
+      {:tag   :a,
+       :attrs {},
+       :content
+              [{:tag :b, :attrs {}, :content [2]}
+               {:tag :c, :attrs {}, :content [3]}]})
+
+    (is= (pretty (hiccup->enlive tree-3))
+      {:tag   :a,
+       :attrs {:k1 "v1"},
+       :content
+              [{:tag :b, :attrs {}, :content [2]}
+               {:tag :c, :attrs {}, :content [3]}]})
+
+    (is= (pretty (hiccup->enlive tree-4))
+      {:tag   :a,
+       :attrs {:k1 "v1"},
+       :content
+              [{:tag :b, :attrs {}, :content [2]}
+               {:tag :c, :attrs {:k3 "v3" :k4 4}, :content [
+                                                            {:tag :d :attrs {} :content [4]}]}]})
+  ))
 
 ;---------------------------------------------------------------------------------------------------
 ; Deprecated functions

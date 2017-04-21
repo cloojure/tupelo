@@ -555,3 +555,24 @@
                               soln)) ]
     results ))
 
+(defn hiccup->enlive
+  "Converts a tree of data from Hiccup -> Enlive format"
+  [tree-node]
+  (if-not (sequential? tree-node)
+    tree-node       ; leaf - just return it
+    (let [tag    (first tree-node)
+          less-1 (rest tree-node)]
+      (if (empty? less-1)
+        {:tag     tag
+         :attrs   {}
+         :content []}
+        (let [v2 (first less-1)]
+          (if (map? v2)
+            {:tag     tag
+             :attrs   v2
+             :content (vec (for [child (rest less-1)]
+                             (hiccup->enlive child)))}
+            {:tag     tag
+             :attrs   {}
+             :content (vec (for [child less-1]
+                             (hiccup->enlive child)))} )) ) )) )

@@ -73,12 +73,13 @@
 ; #todo (for ... :lazy)       vfor
 ; #todo (concat ... :lazy)    vconcat
 
+(pns/import-fn impl/select-values )
 (pns/import-fn impl/fetch-in)
 (pns/import-fn impl/grab)
 (pns/import-fn impl/find-tree)
 (pns/import-fn impl/find-leaf)
+(pns/import-fn impl/hiccup->enlive )
 
-(pns/import-fn impl/select-values )
 
 (s/defn increasing? :- s/Bool
   "Returns true iff the vectors are in (strictly) lexicographically increasing order
@@ -784,7 +785,7 @@
       strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
       drop-at insert-at replace-at starts-with? int->kw kw->int
       split-using split-match partition-using wild-match? increasing? increasing-or-equal?
-      fibonacci-seq fibo-thru fibo-nth find-tree find-leaf
+      fibonacci-seq fibo-thru fibo-nth find-tree find-leaf hiccup->enlive
       with-exception-default lazy-cons lazy-gen yield yield-all
      ] ))
 
