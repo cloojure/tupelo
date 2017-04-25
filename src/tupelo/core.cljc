@@ -82,6 +82,8 @@
 (pns/import-fn impl/find-leaf-hiccup)
 (pns/import-fn impl/find-tree)
 (pns/import-fn impl/find-leaf)
+(pns/import-fn impl/get-tree)
+(pns/import-fn impl/get-leaf)
 
 
 (s/defn increasing? :- s/Bool
@@ -252,6 +254,7 @@
   )
 )
 
+; #todo spy-let should also print the return value
 (defmacro spy-let
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
    expressions, printing both the expression and its value to stdout. Returns the value of the
@@ -780,7 +783,7 @@
       drop-at insert-at replace-at starts-with? int->kw kw->int
       split-using split-match partition-using wild-match? increasing? increasing-or-equal?
       fibonacci-seq fibo-thru fibo-nth hiccup->enlive enlive->hiccup
-      find-tree find-leaf find-tree-hiccup find-leaf-hiccup
+      find-tree find-leaf find-tree-hiccup find-leaf-hiccup get-tree get-leaf
       with-exception-default lazy-cons lazy-gen yield yield-all
      ] ))
 
