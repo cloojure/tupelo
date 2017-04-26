@@ -221,7 +221,7 @@
 (pns/import-macro impl/with-spy-indent )
 ; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
 
-(defn- spy-let-proc
+(defn- spy-let-impl
   [exprs]
   (let [decls (first exprs)
         _     (when (not (even? (count decls)))
@@ -250,9 +250,7 @@
       ; (println :spyx-proc :final-code )
       ; (pprint/pprint final-code)
       ; (newline) (newline)
-    final-code
-  )
-)
+    final-code ))
 
 ; #todo spy-let should also print the return value
 (defmacro spy-let
@@ -260,7 +258,12 @@
    expressions, printing both the expression and its value to stdout. Returns the value of the
    last expression."
   [& exprs]
-  (spy-let-proc exprs))
+  (spy-let-impl exprs))
+
+; #todo need let-keys or grab-keys macro (let-keys [[a b c] my-map] ...) ->
+; #todo (let [a (grab :a my-map)
+; #todo       b (grab :b my-map)
+; #todo       c (grab :c my-map) ] ... )
 
 ; original
 #_(s/defn truthy? :- s/Bool
