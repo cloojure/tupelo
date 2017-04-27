@@ -514,7 +514,7 @@
                ~pattern true
                :else false))))
 
-; #todo -> need grab-keys fn (safe select-keys)
+; #todo could do variant `submap-by-keys` & throw on missing
 (s/defn grab-keys :- tsk/Map
   "Returns a new map containing entries for specified keys. Throws for missing keys."
   [map   :- tsk/Map
@@ -532,6 +532,7 @@
   (forv [key keys]
     (grab key map)))
 
+; #todo could do variant `submap-by-keys` & throw on missing
 (s/defn keep-map-keys :- tsk/Map
   "Given a source map, returns a subset map containing only target keys."
   [map        :- tsk/Map
@@ -542,6 +543,7 @@
           :when (contains? tgt-keys entry-key) ]
       entry )))
 
+; #todo could do variant `submap-by-vals` & throw on missing
 (s/defn keep-map-vals :- tsk/Map
   "Given a source map, returns a subset map containing only target values."
   [map        :- tsk/Map
