@@ -514,14 +514,43 @@
                ~pattern true
                :else false))))
 
+; #todo -> need grab-keys fn (safe select-keys)
+(s/defn grab-keys :- tsk/Map
+  "Returns a new map containing entries for specified keys. Throws for missing keys."
+  [map   :- tsk/Map
+   keep-keys  :- tsk/Set]
+  (apply glue {}
+    (for [key keep-keys]
+      {key (grab key map)})))
+
 ; #todo -> README
 ; #todo variant: allow single or vec of default values
-(s/defn select-values :- tsk/List
-  "Returns a vector of values for each key, in the order specified."
+(s/defn map-keys->vals :- tsk/List
+  "Returns a vector of values for each key, in the order specified. Throws for missing keys."
   [map   :- tsk/KeyMap
    keys  :- [s/Keyword]]
   (forv [key keys]
     (grab key map)))
+
+(s/defn keep-map-keys :- tsk/Map
+  "Given a source map, returns a subset map containing only target keys."
+  [map        :- tsk/Map
+   tgt-keys   :- tsk/Set]
+  (into {}
+    (for [entry map
+          :let [entry-key (key entry)]
+          :when (contains? tgt-keys entry-key) ]
+      entry )))
+
+(s/defn keep-map-vals :- tsk/Map
+  "Given a source map, returns a subset map containing only target values."
+  [map        :- tsk/Map
+   tgt-vals   :- tsk/Set]
+  (into {}
+    (for [entry map
+          :let [entry-val (val entry)]
+          :when (contains? tgt-vals entry-val) ]
+      entry )))
 
 (defn hiccup->enlive
   "Converts a tree of data from Hiccup -> Enlive format"
@@ -672,4 +701,8 @@
     only))
 
 ;---------------------------------------------------------------------------------------------------
+(defn select-entries
+  "Returns a new map containing key-value entries selected from the supplied map"
+  [map-arg ]
+  )
 

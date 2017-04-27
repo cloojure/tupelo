@@ -73,7 +73,10 @@
 ; #todo (for ... :lazy)       vfor
 ; #todo (concat ... :lazy)    vconcat
 
-(pns/import-fn impl/select-values )
+(pns/import-fn impl/map-keys->vals )
+(pns/import-fn impl/grab-keys )
+(pns/import-fn impl/keep-map-keys )
+(pns/import-fn impl/keep-map-vals )
 (pns/import-fn impl/fetch-in)
 (pns/import-fn impl/grab)
 (pns/import-fn impl/hiccup->enlive )
@@ -175,13 +178,13 @@
 ; Clojure version stuff
 
 (defn is-clojure-1-7-plus? []
-  (increasing-or-equal? [1 7] (select-values *clojure-version* [:major :minor ])))
+  (increasing-or-equal? [1 7] (map-keys->vals *clojure-version* [:major :minor ])))
 
 (defn is-clojure-1-8-plus? []
-  (increasing-or-equal? [1 8] (select-values *clojure-version* [:major :minor ])))
+  (increasing-or-equal? [1 8] (map-keys->vals *clojure-version* [:major :minor ])))
 
 (defn is-clojure-1-9-plus? []
-  (increasing-or-equal? [1 9] (select-values *clojure-version* [:major :minor ])))
+  (increasing-or-equal? [1 9] (map-keys->vals *clojure-version* [:major :minor ])))
 
 (defn is-pre-clojure-1-8? [] (not (is-clojure-1-8-plus?)))
 (defn is-pre-clojure-1-9? [] (not (is-clojure-1-9-plus?)))
@@ -778,17 +781,18 @@
   []
   (s/set-fn-validation! true) ; enforce fn schemas
   (refer 'tupelo.core :only
-   '[ spy spy-let spyx spyx-pretty spyxx with-spy-indent truthy? falsey?
-      not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
-      forv conjv glue append prepend grab dissoc-in fetch-in select-values keyvals only third
-      it-> safe-> keep-if drop-if zip flat-vec
-      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
-      drop-at insert-at replace-at starts-with? int->kw kw->int
-      split-using split-match partition-using wild-match? increasing? increasing-or-equal?
-      fibonacci-seq fibo-thru fibo-nth hiccup->enlive enlive->hiccup
-      find-tree find-leaf find-tree-hiccup find-leaf-hiccup get-tree get-leaf
-      with-exception-default lazy-cons lazy-gen yield yield-all
-     ] ))
+   '[spy spy-let spyx spyx-pretty spyxx with-spy-indent truthy? falsey?
+     not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
+     forv conjv glue append prepend grab dissoc-in fetch-in map-keys->vals keyvals
+     grab-keys keep-map-keys keep-map-vals
+     only third it-> safe-> keep-if drop-if zip flat-vec
+     strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
+     drop-at insert-at replace-at starts-with? int->kw kw->int
+     split-using split-match partition-using wild-match? increasing? increasing-or-equal?
+     fibonacci-seq fibo-thru fibo-nth hiccup->enlive enlive->hiccup
+     find-tree find-leaf find-tree-hiccup find-leaf-hiccup get-tree get-leaf
+     with-exception-default lazy-cons lazy-gen yield yield-all
+    ] ))
 
 ; #todo verify spy-let works after (t/refer-tupelo)
 

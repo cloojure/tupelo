@@ -3,6 +3,9 @@
 
 == Change Log
 
+.2017-4-26  Version 0.9.38:  *Breaking Change*
+- renamed `select-values` -> `map-keys->vals` (ref. puppetlabs.kitchensink.core/select-values)
+
 .2017-1-2  Version 0.9.15:  Moved functions from `tupelo.misc` namespace to `tupelo.string`
 - collapse-whitespace
 - equals-ignore-spacing

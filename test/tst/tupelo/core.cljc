@@ -711,31 +711,60 @@
   (is= [1 2 3 9] (t/conjv '(1 2 3) 9 ))
 )
 
-(deftest t-select-keys
+(dotest
   (let [map1  {:a 1 :b 2 :c 3 :d 4 :e 5}]
-    (is= [1 2 3 4 5] (select-values map1 [:a :b :c :d :e]))
-    (is= [  2 3 4 5] (select-values map1 [   :b :c :d :e]))
-    (is= [    3 4 5] (select-values map1 [      :c :d :e]))
-    (is= [      4 5] (select-values map1 [         :d :e]))
-    (is= [        5] (select-values map1 [            :e]))
+    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (grab-keys map1 #{ :a :b :c :d :e } ))
+    (is= {     :b 2 :c 3 :d 4 :e 5} (grab-keys map1 #{    :b :c :d :e } ))
+    (is= {          :c 3 :d 4 :e 5} (grab-keys map1 #{       :c :d :e } ))
+    (is= {               :d 4 :e 5} (grab-keys map1 #{          :d :e } ))
+    (is= {                    :e 5} (grab-keys map1 #{             :e } ))
+    (is= {} (grab-keys map1 #{} ))
+    (throws? (map-keys->vals map1 [:z]))
 
-    (is= [1 2 3 4 5] (select-values map1 [:a :b :c :d :e]))
-    (is= [1 2 3 4  ] (select-values map1 [:a :b :c :d   ]))
-    (is= [1 2 3    ] (select-values map1 [:a :b :c      ]))
-    (is= [1 2      ] (select-values map1 [:a :b         ]))
-    (is= [1        ] (select-values map1 [:a            ]))
+    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (keep-map-keys map1 #{ :a :b :c :d :e  :x :y :z } ))
+    (is= {     :b 2 :c 3 :d 4 :e 5} (keep-map-keys map1 #{    :b :c :d :e  :x :y :z } ))
+    (is= {          :c 3 :d 4 :e 5} (keep-map-keys map1 #{       :c :d :e  :x :y :z } ))
+    (is= {               :d 4 :e 5} (keep-map-keys map1 #{          :d :e  :x :y :z } ))
+    (is= {                    :e 5} (keep-map-keys map1 #{             :e  :x :y :z } ))
+    (is= {                        } (keep-map-keys map1 #{                 :x :y :z } ))
+    (is= {} (grab-keys map1 #{} ))
 
-    (is= [  2 3 4 5] (select-values map1 [   :b :c :d :e]))
-    (is= [1   3 4 5] (select-values map1 [:a    :c :d :e]))
-    (is= [1 2   4 5] (select-values map1 [:a :b    :d :e]))
-    (is= [1 2 3   5] (select-values map1 [:a :b :c    :e]))
-    (is= [1 2 3 4  ] (select-values map1 [:a :b :c :d   ]))
+    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (keep-map-vals map1 #{ 1 2 3 4 5  99 } ))
+    (is= {     :b 2 :c 3 :d 4 :e 5} (keep-map-vals map1 #{   2 3 4 5  99 } ))
+    (is= {          :c 3 :d 4 :e 5} (keep-map-vals map1 #{     3 4 5  99 } ))
+    (is= {               :d 4 :e 5} (keep-map-vals map1 #{       4 5  99 } ))
+    (is= {                    :e 5} (keep-map-vals map1 #{         5  99 } ))
+    (is= {                        } (keep-map-vals map1 #{            99 } ))
+    (is= {} (grab-keys map1 #{} ))
+    (is= { 0 :even 2 :even } (keep-map-vals { 0 :even 1 :odd 2 :even 3 :odd }
+                                             #{ :even :prime } ))
 
-    (is= [3 1 4 2 5] (select-values map1 [:c :a :d :b :e]))
-    (is= []          (select-values map1 [] ))
+  )
 
-    (throws? (select-values map1 [:z]))
-  ))
+  (let [map1  {:a 1 :b 2 :c 3 :d 4 :e 5}]
+    (is= [1 2 3 4 5] (map-keys->vals map1 [:a :b :c :d :e]))
+    (is= [  2 3 4 5] (map-keys->vals map1 [   :b :c :d :e]))
+    (is= [    3 4 5] (map-keys->vals map1 [      :c :d :e]))
+    (is= [      4 5] (map-keys->vals map1 [         :d :e]))
+    (is= [        5] (map-keys->vals map1 [            :e]))
+
+    (is= [1 2 3 4 5] (map-keys->vals map1 [:a :b :c :d :e]))
+    (is= [1 2 3 4  ] (map-keys->vals map1 [:a :b :c :d   ]))
+    (is= [1 2 3    ] (map-keys->vals map1 [:a :b :c      ]))
+    (is= [1 2      ] (map-keys->vals map1 [:a :b         ]))
+    (is= [1        ] (map-keys->vals map1 [:a            ]))
+
+    (is= [  2 3 4 5] (map-keys->vals map1 [   :b :c :d :e]))
+    (is= [1   3 4 5] (map-keys->vals map1 [:a    :c :d :e]))
+    (is= [1 2   4 5] (map-keys->vals map1 [:a :b    :d :e]))
+    (is= [1 2 3   5] (map-keys->vals map1 [:a :b :c    :e]))
+    (is= [1 2 3 4  ] (map-keys->vals map1 [:a :b :c :d   ]))
+
+    (is= [3 1 4 2 5] (map-keys->vals map1 [:c :a :d :b :e]))
+    (is= []          (map-keys->vals map1 [] ))
+
+    (throws? (map-keys->vals map1 [:z])))
+)
 
 (deftest t-int-kw
   (is= :23 (int->kw  23))
