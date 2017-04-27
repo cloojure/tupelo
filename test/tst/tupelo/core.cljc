@@ -721,12 +721,12 @@
     (is= {} (grab-keys map1 #{} ))
     (throws? (map-keys->vals map1 [:z]))
 
-    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (keep-map-keys map1 #{ :a :b :c :d :e  :x :y :z } ))
-    (is= {     :b 2 :c 3 :d 4 :e 5} (keep-map-keys map1 #{    :b :c :d :e  :x :y :z } ))
-    (is= {          :c 3 :d 4 :e 5} (keep-map-keys map1 #{       :c :d :e  :x :y :z } ))
-    (is= {               :d 4 :e 5} (keep-map-keys map1 #{          :d :e  :x :y :z } ))
-    (is= {                    :e 5} (keep-map-keys map1 #{             :e  :x :y :z } ))
-    (is= {                        } (keep-map-keys map1 #{                 :x :y :z } ))
+    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (keep-map-keys map1 #{ :a :b :c :d :e  :z } ))
+    (is= {     :b 2 :c 3 :d 4 :e 5} (keep-map-keys map1 #{    :b :c :d :e  :z } ))
+    (is= {          :c 3 :d 4 :e 5} (keep-map-keys map1 #{       :c :d :e  :z } ))
+    (is= {               :d 4 :e 5} (keep-map-keys map1 #{          :d :e  :z } ))
+    (is= {                    :e 5} (keep-map-keys map1 #{             :e  :z } ))
+    (is= {                        } (keep-map-keys map1 #{                 :z } ))
     (is= {} (grab-keys map1 #{} ))
 
     (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (keep-map-vals map1 #{ 1 2 3 4 5  99 } ))
