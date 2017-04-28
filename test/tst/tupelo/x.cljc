@@ -8,10 +8,54 @@
   "Experimental new code"
   (:use clojure.test tupelo.test tupelo.x)
   (:require
-    [clojure.core.async :as ca :refer [go go-loop chan thread]]
-    [clojure.pprint :refer [pprint]]
-    [tupelo.core :as t :refer [lazy-cons]]
-    [tupelo.async :as ta]
-    ))
+    [clojure.string :as str]
+    [clj-uuid :as uuid]
+    [schema.core :as s]
+    [tupelo.core :as t]
+    [tupelo.misc :as tm]
+    [tupelo.schema :as tsk]
+  )
+  (:import
+    [java.nio ByteBuffer]
+    [java.util UUID ]
+  ))
 (t/refer-tupelo)
 
+(nl)
+(dotimes [i 10]
+  (let [uuid (tm/sha-uuid)
+        id4  (clip-str 4 uuid) ]
+    (spyx [id4 uuid])))
+(nl)
+(spyx (tm/str->sha "hello"))
+
+(defrecord Node [attrs children])    ; ns -> tupelo.datatree
+(defrecord Leaf [attrs value])    ; ns -> tupelo.datatree
+
+(def DataTreeMember
+  "Either an internal Node or a Leaf"
+  (s/either Node Leaf))
+
+(s/defn node  :- Node
+  [attrs :- tsk/Map
+   children :- [DataTreeMember]]
+  (let [uuid (tm/sha-uuid)
+        id4  (clip-str 4 uuid)
+        attrs (assoc attrs :uuid uuid  :id4 id4) ]
+    (->Node attrs children)))
+
+(s/defn leaf  :- Leaf
+  [attrs :- tsk/Map
+   value :- s/Any]
+  (let [uuid (tm/sha-uuid)
+        id4  (clip-str 4 uuid)
+        attrs (assoc attrs :uuid uuid  :id4 id4) ]
+    (->Leaf attrs value)))
+
+(nl) (def x (spyx-pretty (leaf {:tag :char :color :red} "x")))
+(nl) (def y (spyx-pretty (leaf {:tag :char :color :red} "y")))
+(nl) (def z (spyx-pretty (leaf {:tag :char :color :red} "z")))
+(nl) (def a (spyx-pretty (node {:tag :root :color :white} [x y z])))
+
+
+(spyx (tm/sha-uuid))

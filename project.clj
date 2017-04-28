@@ -9,6 +9,7 @@
     [cheshire                         "5.7.0"]
     [clj-time                         "0.13.0"]
     [clojure-csv/clojure-csv          "2.0.2"]
+    [danlentz/clj-uuid                "0.1.7"]
     [org.clojure/core.async           "0.2.395"]
     [org.clojure/core.match           "0.3.0-alpha4"]
     [org.clojure/data.xml             "0.0.8"]

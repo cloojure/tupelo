@@ -110,7 +110,7 @@
   (is= [ ] (find-pattern [9]   [0 1 2 3] ))
 )
 
-(deftest t-global
+(dotest
   (testing "unlazy"
     (is= (range 5) (unlazy (range 5)))
     (let [c1 {:a 1 :b (range 3) :c {:x (range 4) (range 5) "end"}}]
@@ -120,6 +120,19 @@
       (is= l2 e2)
       (is= "one" (get-in e2 [1 :a 0] l2))
       ; (throws? (spyx (get-in l2 [1 :a 0] l2)))    ; #todo: SHOULD throw
-    ))
+    )))
 
-)
+(dotest
+  (is= (bytes->hex-str (byte-array (range 32)))
+    (str
+      "00" "01" "02" "03" "04" "05" "06" "07" "08" "09" "0a" "0b" "0c" "0d" "0e" "0f"
+      "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "1a" "1b" "1c" "1d" "1e" "1f"))
+  (is= (bytes->hex-str (byte-array (range (- 256 16) 256)))
+    (str "f0" "f1" "f2" "f3" "f4" "f5" "f6" "f7" "f8" "f9" "fa" "fb" "fc" "fd" "fe" "ff" ))
+
+  (let [uuid-val    #uuid "0b37e120-2c65-11e7-aa8d-91b7120fbbd1" ]  ; tagged-literal literal for UUID type
+    (is= uuid-val #uuid "0b37e120-2c65-11e7-aa8d-91b7120fbbd1")
+    (is= (class uuid-val) java.util.UUID )
+    (is= (pr-str uuid-val) "#uuid \"0b37e120-2c65-11e7-aa8d-91b7120fbbd1\"" )
+    (is= (uuid->str uuid-val) "e604d9bbcfb53cee6c3f305992c4a1531972b7a1" )
+    (is= (str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d")))

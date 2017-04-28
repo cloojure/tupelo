@@ -12,12 +12,46 @@
     [clojure.java.shell :as shell]
     [clojure.string :as str]
     [clojure.walk :refer [postwalk]]
+    [clj-uuid :as uuid]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
+  )
+  (:import
+    [java.nio ByteBuffer]
+    [java.security MessageDigest]
+    [java.util UUID ]
   ))
 (t/refer-tupelo)
+
+;  #todo Make clojure versions of all pcapng stuff
+;
+; def split_float( fval ):
+; """Splits a float into integer and fractional parts."""
+; frac, whole = math.modf( fval )
+; micros = int( round( frac * 1000000 ))
+; return int(whole), micros
+;
+; def curr_utc_timetuple():
+; """Returns the current UTC time as a (secs, usecs) tuple."""
+; global test_ctx
+; if test_ctx['enable']:
+; utc_secs = test_ctx['utc_time']
+; else:
+; utc_secs = time.time()
+; secs, usecs = split_float( utc_secs )
+; return secs, usecs
+;
+; def curr_utc_secs():
+; """Returns the current UTC time in integer seconds."""
+; secs, usecs = curr_utc_timetuple()
+; return secs
+;
+; def curr_utc_secs_hexstr()
+; """Returns the current UTC time in integer seconds."""
+; return int32_to_hexstr(curr_utc_secs())
+
 
 (def ^:dynamic *os-shell* "/bin/bash")  ; could also use /bin/zsh, etc
 
@@ -168,9 +202,45 @@
   ]
     result ))
 
+; -----------------------------------------------------------------------------
+; #todo maybe move to tupelo.bytes ns
+
+(defn bytes->hex-str
+  "Converts a byte array to a hex string, where each byte becomes 2 hex digits."
+  [bytes]
+  (str/join (map #(format "%02x" %) bytes)))
+
+(defn long->bytes [x]
+  (it-> (ByteBuffer/allocate Long/BYTES)
+    (.putLong it x)
+    (.array it)))
+
+(s/defn uuid->str :- s/Str
+  "Converts a UUID to a hex string"
+  [uuid :- java.util.UUID]
+  (let [sha-1-instance (MessageDigest/getInstance "SHA")
+        bytes-big      (long->bytes (.getMostSignificantBits ^UUID uuid))
+        bytes-little   (long->bytes (.getLeastSignificantBits ^UUID uuid)) ]
+    (.update sha-1-instance bytes-big)
+    (.update sha-1-instance bytes-little)
+    (let [bytes (.digest sha-1-instance)]
+      (bytes->hex-str bytes))))
+
+(s/defn str->sha :- s/Str
+  "Returns a sha-1 hex string given an input string"
+  [str-arg :- s/Str]
+  (let [sha-1-instance (MessageDigest/getInstance "SHA")]
+    (doseq [ch str-arg]
+      (.update sha-1-instance (byte ch)))
+    (bytes->hex-str (.digest sha-1-instance))))
+
+(s/defn sha-uuid :- s/Str
+  "Returns a string that is the SHA-1 hash of the `uuid/v1`."
+  []
+  (uuid->str (spyx (uuid/v1))))
+
+
 ;-----------------------------------------------------------------------------
-
-
 ; #todo -> tupelo.vector
 ; #todo README & more tests
 
@@ -193,34 +263,4 @@
       (uncaughtException [_ thread ex]
         (println ex "Uncaught exception on" (.getName thread)))))) ; or (log/error ...)
 
-;  Make clojure versions of all pcapng stuff
-;
-;def split_float( fval ):
-;"""Splits a float into integer and fractional parts."""
-;frac, whole = math.modf( fval )
-;micros = int( round( frac * 1000000 ))
-;return int(whole), micros
-;
-;def curr_utc_timetuple():
-;"""Returns the current UTC time as a (secs, usecs) tuple."""
-;global test_ctx
-;if test_ctx['enable']:
-;utc_secs = test_ctx['utc_time']
-;else:
-;utc_secs = time.time()
-;secs, usecs = split_float( utc_secs )
-;return secs, usecs
-;
-;def curr_utc_secs():
-;"""Returns the current UTC time in integer seconds."""
-;secs, usecs = curr_utc_timetuple()
-;return secs
-;
-;def curr_utc_secs_hexstr()
-;"""Returns the current UTC time in integer seconds."""
-;return int32_to_hexstr(curr_utc_secs())
-;
-;
-;
-;
 
