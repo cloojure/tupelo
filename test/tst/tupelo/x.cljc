@@ -21,14 +21,6 @@
   ))
 (t/refer-tupelo)
 
-(nl)
-(dotimes [i 10]
-  (let [uuid (tm/sha-uuid)
-        id4  (clip-str 4 uuid) ]
-    (spyx [id4 uuid])))
-(nl)
-(spyx (tm/str->sha "hello"))
-
 (defrecord Node [attrs children])    ; ns -> tupelo.datatree
 (defrecord Leaf [attrs value])    ; ns -> tupelo.datatree
 
@@ -58,4 +50,3 @@
 (nl) (def a (spyx-pretty (node {:tag :root :color :white} [x y z])))
 
 
-(spyx (tm/sha-uuid))

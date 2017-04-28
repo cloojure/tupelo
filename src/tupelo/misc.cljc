@@ -237,7 +237,7 @@
 (s/defn sha-uuid :- s/Str
   "Returns a string that is the SHA-1 hash of the `uuid/v1`."
   []
-  (uuid->str (spyx (uuid/v1))))
+  (uuid->str (uuid/v1)))
 
 
 ;-----------------------------------------------------------------------------

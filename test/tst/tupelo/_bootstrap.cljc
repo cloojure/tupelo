@@ -10,9 +10,13 @@
   (:use clojure.test tupelo.test )
   (:require [schema.core :as s]
             [tupelo.core :as t] ))
+(t/refer-tupelo)
 
 ; Prismatic Schema type definitions
 ; #todo add to Schema docs
 (s/set-fn-validation! true) ; enforce fn schemas
 
-(dotest (t/print-versions))
+(dotest
+  (t/print-versions)
+ ;(spyx (s/fn-validation?))
+)

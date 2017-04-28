@@ -850,3 +850,6 @@
     (newline)
     ))
 
+(defn -main [& args]
+  (println "main - enter")
+  (spyx (s/fn-validation?)))
