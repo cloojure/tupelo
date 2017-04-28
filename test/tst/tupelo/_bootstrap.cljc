@@ -7,7 +7,7 @@
 (ns tst.tupelo._bootstrap
   "This namespace is used to perform one-time tasks during testing, such as printing the
   Clojure version."
-  (:use clojure.test )
+  (:use clojure.test tupelo.test )
   (:require [schema.core :as s]
             [tupelo.core :as t] ))
 
@@ -15,5 +15,4 @@
 ; #todo add to Schema docs
 (s/set-fn-validation! true) ; enforce fn schemas
 
-(deftest t-bootstrap
-  (t/print-versions))
+(dotest (t/print-versions))
