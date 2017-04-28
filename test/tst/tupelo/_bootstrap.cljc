@@ -13,7 +13,7 @@
 
 ; Prismatic Schema type definitions
 ; #todo add to Schema docs
-; (s/set-fn-validation! true) ; enforce fn schemas
+(s/set-fn-validation! true) ; enforce fn schemas
 
 (deftest t-bootstrap
   (t/print-versions))

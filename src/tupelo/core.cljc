@@ -24,10 +24,6 @@
   (:refer-clojure :exclude [map seqable?] )
   (:import [java.io BufferedReader StringReader]))
 
-; Prismatic Schema type definitions
-; #todo add to Schema docs
-(s/set-fn-validation! true) ; enforce fn schemas
-
 ; #todo need (defkw :fred) and (kw :fred) to catch errors like
 ; (when (= person :frid)  ; (kw :frid) -> throws
 ;    (println "Hi Barney!"))
@@ -779,7 +775,6 @@
   "Refer a number of commonly used tupelo.core functions into the current namespace so they can
    be used without namespace qualification."
   []
-  (s/set-fn-validation! true) ; enforce fn schemas
   (refer 'tupelo.core :only
    '[spy spy-let spyx spyx-pretty spyxx with-spy-indent truthy? falsey?
      not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?

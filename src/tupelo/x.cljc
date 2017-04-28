@@ -16,5 +16,4 @@
   ))
 (t/refer-tupelo)
 
-(s/set-fn-validation! true) ; enforce fn schemas
 
