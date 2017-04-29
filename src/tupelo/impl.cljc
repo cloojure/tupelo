@@ -533,10 +533,11 @@
 
 ; #todo -> README
 (s/defn submap-by-keys :- tsk/Map
-  "Returns a new map containing entries for specified keys. Throws for missing keys. Usage:
+  "Returns a new map containing entries with the specified keys. Throws for missing keys,
+  unless `:missing-ok` is specified. Usage:
 
-      (submap-by-keys {:a 1 :b 2} #{:a}             )  =>  {:a 1}
-      (submap-by-keys {:a 1 :b 2} #{:a} :missing-ok )  =>  {:a 1}
+      (submap-by-keys {:a 1 :b 2} #{:a   }             )  =>  {:a 1}
+      (submap-by-keys {:a 1 :b 2} #{:a :z} :missing-ok )  =>  {:a 1}
   "
   [map :- tsk/Map
    keep-keys :- tsk/Set
@@ -553,7 +554,12 @@
 
 ; #todo -> README
 (s/defn submap-by-vals :- tsk/Map
-  "Given a source map, returns a subset map containing only target values."
+  "Returns a new map containing entries with the specified vals. Throws for missing vals,
+  unless `:missing-ok` is specified. Usage:
+
+      (submap-by-vals {:a 1 :b 2 :A 1} #{1  }             )  =>  {:a 1 :A 1}
+      (submap-by-vals {:a 1 :b 2 :A 1} #{1 9} :missing-ok )  =>  {:a 1 :A 1}
+  "
   [map-arg :- tsk/Map
    keep-vals :- tsk/Set
    & opts]
