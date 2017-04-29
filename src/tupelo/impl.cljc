@@ -20,9 +20,16 @@
   )
 )
 
-; #todo
-; need option for (take 3 coll :exact)
-; need option for (drop 3 coll :exact)
+; #todo need option for (take 3 coll :exact)
+; #todo need option for (drop 3 coll :exact)
+
+(defmacro with-exception-default
+  "Evaluates body & returns its result.  In the event of an exception, default-val is returned
+   instead of the exception."
+  [default-val & body]
+  `(try
+     ~@body
+     (catch Exception e# ~default-val)))
 
 ;-----------------------------------------------------------------------------
 ; spy stuff
@@ -525,13 +532,43 @@
                :else false))))
 
 ; #todo could do variant `submap-by-keys` & throw on missing
-(s/defn grab-keys :- tsk/Map
-  "Returns a new map containing entries for specified keys. Throws for missing keys."
-  [map   :- tsk/Map
-   keep-keys  :- tsk/Set]
-  (apply glue {}
-    (for [key keep-keys]
-      {key (grab key map)})))
+(s/defn submap-by-keys :- tsk/Map
+  "Returns a new map containing entries for specified keys. Throws for missing keys. Usage:
+
+      (submap-by-keys {:a 1 :b 2} #{:a}             )  =>  {:a 1}
+      (submap-by-keys {:a 1 :b 2} #{:a} :missing-ok )  =>  {:a 1}
+  "
+  [map :- tsk/Map
+   keep-keys :- tsk/Set
+   & opts]
+  (assert (set? keep-keys))
+  (if (= opts [:missing-ok])
+    (apply glue {}
+      (for [key keep-keys]
+        (with-exception-default {}
+          {key (grab key map)})))
+    (apply glue {}
+      (for [key keep-keys]
+        {key (grab key map)}))))
+
+; #todo could do variant `submap-by-vals` & throw on missing
+(s/defn submap-by-vals :- tsk/Map
+  "Given a source map, returns a subset map containing only target values."
+  [map-arg :- tsk/Map
+   keep-vals :- tsk/Set
+   & opts]
+  (assert (set? keep-vals))
+  (let [found-map    (into {}
+                       (for [entry map-arg
+                             :let [entry-val (val entry)]
+                             :when (contains? keep-vals entry-val)]
+                         entry))
+        found-vals   (into #{} (vals found-map))
+        missing-vals (set/difference keep-vals found-vals)]
+    (if (or (empty? missing-vals) (= opts [:missing-ok]))
+      found-map
+      (throw (IllegalArgumentException.
+               (format "submap-by-vals: missing values= %s  map-arg= %s  " missing-vals (pretty-str map-arg)))))))
 
 ; #todo -> README
 ; #todo variant: allow single or vec of default values
@@ -541,28 +578,6 @@
    keys  :- [s/Keyword]]
   (forv [key keys]
     (grab key map)))
-
-; #todo could do variant `submap-by-keys` & throw on missing
-(s/defn keep-map-keys :- tsk/Map
-  "Given a source map, returns a subset map containing only target keys."
-  [map        :- tsk/Map
-   tgt-keys   :- tsk/Set]
-  (into {}
-    (for [entry map
-          :let [entry-key (key entry)]
-          :when (contains? tgt-keys entry-key) ]
-      entry )))
-
-; #todo could do variant `submap-by-vals` & throw on missing
-(s/defn keep-map-vals :- tsk/Map
-  "Given a source map, returns a subset map containing only target values."
-  [map        :- tsk/Map
-   tgt-vals   :- tsk/Set]
-  (into {}
-    (for [entry map
-          :let [entry-val (val entry)]
-          :when (contains? tgt-vals entry-val) ]
-      entry )))
 
 (defn hiccup->enlive
   "Converts a tree of data from Hiccup -> Enlive format"

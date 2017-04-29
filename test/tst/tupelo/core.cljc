@@ -713,33 +713,43 @@
 
 (dotest
   (let [map1  {:a 1 :b 2 :c 3 :d 4 :e 5}]
-    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (grab-keys map1 #{ :a :b :c :d :e } ))
-    (is= {     :b 2 :c 3 :d 4 :e 5} (grab-keys map1 #{    :b :c :d :e } ))
-    (is= {          :c 3 :d 4 :e 5} (grab-keys map1 #{       :c :d :e } ))
-    (is= {               :d 4 :e 5} (grab-keys map1 #{          :d :e } ))
-    (is= {                    :e 5} (grab-keys map1 #{             :e } ))
-    (is= {} (grab-keys map1 #{} ))
-    (throws? (map-keys->vals map1 [:z]))
+    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (submap-by-keys map1 #{ :a :b :c :d :e } ))
+    (is= {     :b 2 :c 3 :d 4 :e 5} (submap-by-keys map1 #{    :b :c :d :e } ))
+    (is= {          :c 3 :d 4 :e 5} (submap-by-keys map1 #{       :c :d :e } ))
+    (is= {               :d 4 :e 5} (submap-by-keys map1 #{          :d :e } ))
+    (is= {                    :e 5} (submap-by-keys map1 #{             :e } ))
+    (is= {                        } (submap-by-keys map1 #{                } ))
+    (throws? (submap-by-keys map1 #{:z}))
 
-    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (keep-map-keys map1 #{ :a :b :c :d :e  :z } ))
-    (is= {     :b 2 :c 3 :d 4 :e 5} (keep-map-keys map1 #{    :b :c :d :e  :z } ))
-    (is= {          :c 3 :d 4 :e 5} (keep-map-keys map1 #{       :c :d :e  :z } ))
-    (is= {               :d 4 :e 5} (keep-map-keys map1 #{          :d :e  :z } ))
-    (is= {                    :e 5} (keep-map-keys map1 #{             :e  :z } ))
-    (is= {                        } (keep-map-keys map1 #{                 :z } ))
-    (is= {} (grab-keys map1 #{} ))
+    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (submap-by-keys map1 #{ :a :b :c :d :e  :z } :missing-ok))
+    (is= {     :b 2 :c 3 :d 4 :e 5} (submap-by-keys map1 #{    :b :c :d :e  :z } :missing-ok))
+    (is= {          :c 3 :d 4 :e 5} (submap-by-keys map1 #{       :c :d :e  :z } :missing-ok))
+    (is= {               :d 4 :e 5} (submap-by-keys map1 #{          :d :e  :z } :missing-ok))
+    (is= {                    :e 5} (submap-by-keys map1 #{             :e  :z } :missing-ok))
+    (is= {                        } (submap-by-keys map1 #{                 :z } :missing-ok))
 
-    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (keep-map-vals map1 #{ 1 2 3 4 5  99 } ))
-    (is= {     :b 2 :c 3 :d 4 :e 5} (keep-map-vals map1 #{   2 3 4 5  99 } ))
-    (is= {          :c 3 :d 4 :e 5} (keep-map-vals map1 #{     3 4 5  99 } ))
-    (is= {               :d 4 :e 5} (keep-map-vals map1 #{       4 5  99 } ))
-    (is= {                    :e 5} (keep-map-vals map1 #{         5  99 } ))
-    (is= {                        } (keep-map-vals map1 #{            99 } ))
-    (is= {} (grab-keys map1 #{} ))
-    (is= { 0 :even 2 :even } (keep-map-vals { 0 :even 1 :odd 2 :even 3 :odd }
-                                             #{ :even :prime } ))
+    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (submap-by-vals map1 #{ 1 2 3 4 5 } ))
+    (is= {     :b 2 :c 3 :d 4 :e 5} (submap-by-vals map1 #{   2 3 4 5 } ))
+    (is= {          :c 3 :d 4 :e 5} (submap-by-vals map1 #{     3 4 5 } ))
+    (is= {               :d 4 :e 5} (submap-by-vals map1 #{       4 5 } ))
+    (is= {                    :e 5} (submap-by-vals map1 #{         5 } ))
+    (is= {                        } (submap-by-vals map1 #{           } ))
+    (throws? (submap-by-vals map1 #{ 99 }))
 
-  )
+    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (submap-by-vals map1 #{ 1 2 3 4 5  99 } :missing-ok ))
+    (is= {     :b 2 :c 3 :d 4 :e 5} (submap-by-vals map1 #{   2 3 4 5  99 } :missing-ok ))
+    (is= {          :c 3 :d 4 :e 5} (submap-by-vals map1 #{     3 4 5  99 } :missing-ok ))
+    (is= {               :d 4 :e 5} (submap-by-vals map1 #{       4 5  99 } :missing-ok ))
+    (is= {                    :e 5} (submap-by-vals map1 #{         5  99 } :missing-ok ))
+    (is= {                        } (submap-by-vals map1 #{            99 } :missing-ok ))
+    (is= {                        } (submap-by-vals map1 #{               } :missing-ok ))
+
+    (is= { 0 :even 2 :even } (submap-by-vals
+                               { 0 :even 1 :odd 2 :even 3 :odd }
+                               #{ :even } ))
+    (is= { 0 :even 2 :even } (submap-by-vals
+                               { 0 :even 1 :odd 2 :even 3 :odd }
+                               #{ :even :prime } :missing-ok )))
 
   (let [map1  {:a 1 :b 2 :c 3 :d 4 :e 5}]
     (is= [1 2 3 4 5] (map-keys->vals map1 [:a :b :c :d :e]))

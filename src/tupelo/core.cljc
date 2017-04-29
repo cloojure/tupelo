@@ -70,11 +70,10 @@
 ; #todo (concat ... :lazy)    vconcat
 
 (pns/import-fn impl/map-keys->vals )
-(pns/import-fn impl/grab-keys )
-(pns/import-fn impl/keep-map-keys )
-(pns/import-fn impl/keep-map-vals )
 (pns/import-fn impl/fetch-in)
 (pns/import-fn impl/grab)
+(pns/import-fn impl/submap-by-keys )
+(pns/import-fn impl/submap-by-vals )
 (pns/import-fn impl/hiccup->enlive )
 (pns/import-fn impl/enlive->hiccup )
 (pns/import-fn impl/find-tree-hiccup)
@@ -454,14 +453,8 @@
 ; #todo make an it!-> (fff ppp it! qqq) to throw if encounter nil (replace safe->) (maybe val->)
 
 (pns/import-macro impl/it-> )
+(pns/import-macro impl/with-exception-default )
 
-(defmacro with-exception-default
-  "Evaluates body & returns its result.  In the event of an exception, default-val is returned
-   instead of the exception."
-  [default-val & body]
-  `(try
-     ~@body
-     (catch Exception e# ~default-val)))
 
 ; (defn round [dblVal :incr   (/ 1 3)]            ; #todo add
 ;   (let [factor (Math/pow 10 *digits*)]
@@ -769,8 +762,8 @@
   (refer 'tupelo.core :only
    '[spy spy-let spyx spyx-pretty spyxx with-spy-indent truthy? falsey?
      not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
-     forv conjv glue append prepend grab dissoc-in fetch-in map-keys->vals keyvals
-     grab-keys keep-map-keys keep-map-vals
+     forv conjv glue append prepend grab dissoc-in fetch-in
+     submap-by-keys submap-by-vals map-keys->vals keyvals
      validate only third it-> safe-> keep-if drop-if zip flat-vec
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
      drop-at insert-at replace-at starts-with? int->kw kw->int
