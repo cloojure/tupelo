@@ -209,13 +209,13 @@
 (defn bytes->hex-str
   "Converts a byte array to a hex string, where each byte becomes 2 hex digits."
   [bytes]
-  (assert (tt/byte-array? bytes))
+  (validate tt/byte-array? bytes)
   (str/join (map #(format "%02x" %) bytes)))
 
 (s/defn long->bytes
   "Converts a Long into an array of bytes (big-endian)."
   [arg]
-  (assert (tt/long? arg))
+  (validate tt/long? arg)
   (it-> (ByteBuffer/allocate Long/BYTES)
     (.putLong it arg)
     (.array it)))

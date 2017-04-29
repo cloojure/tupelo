@@ -214,6 +214,16 @@
   [arg :- s/Any]
   (if arg false true))
 
+(defn validate
+  "(validate tst-fn tst-val)
+  Used to validate intermediate results. Returns tst-val if the result of
+  (tst-fn tst-val) is truthy.  Otherwise, throws IllegalStateException."
+  [tst-fn tst-val]
+  (let [tst-result (tst-fn tst-val)]
+    (when-not (truthy? tst-result)
+      (throw (IllegalStateException. (format "validate: tst-val=%s, tst-result=%s" tst-val tst-result))))
+    tst-val))
+
 (defn only
   "(only coll-in)
   Ensures that a sequence is of length=1, and returns the only value present.

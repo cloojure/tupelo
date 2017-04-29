@@ -272,16 +272,7 @@
 
 (pns/import-fn impl/truthy? )
 (pns/import-fn impl/falsey? )
-
-(defn validate
-  "(validate tstfn tstval)
-  Used to validate intermediate results. Returns tstval if the result of
-  (tstfn tstval) is truthy.  Otherwise, throws IllegalStateException."
-  [tstfn tstval]
-  (let [tst-result (tstfn tstval)]
-    (when-not (truthy? tst-result)
-      (throw (IllegalStateException. (str "validation failure, tst-result=" tst-result))))
-    tstval))
+(pns/import-fn impl/validate )
 
 ; #todo -> README
 (s/defn has-some? :- s/Bool ; #todo rename to has-any?   Add warning re new clj/any?
@@ -780,7 +771,7 @@
      not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
      forv conjv glue append prepend grab dissoc-in fetch-in map-keys->vals keyvals
      grab-keys keep-map-keys keep-map-vals
-     only third it-> safe-> keep-if drop-if zip flat-vec
+     validate only third it-> safe-> keep-if drop-if zip flat-vec
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
      drop-at insert-at replace-at starts-with? int->kw kw->int
      split-using split-match partition-using wild-match? increasing? increasing-or-equal?
