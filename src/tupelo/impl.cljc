@@ -531,7 +531,7 @@
                ~pattern true
                :else false))))
 
-; #todo could do variant `submap-by-keys` & throw on missing
+; #todo -> README
 (s/defn submap-by-keys :- tsk/Map
   "Returns a new map containing entries for specified keys. Throws for missing keys. Usage:
 
@@ -551,7 +551,7 @@
       (for [key keep-keys]
         {key (grab key map)}))))
 
-; #todo could do variant `submap-by-vals` & throw on missing
+; #todo -> README
 (s/defn submap-by-vals :- tsk/Map
   "Given a source map, returns a subset map containing only target values."
   [map-arg :- tsk/Map
