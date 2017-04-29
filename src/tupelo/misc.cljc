@@ -212,9 +212,12 @@
   (assert (tt/byte-array? bytes))
   (str/join (map #(format "%02x" %) bytes)))
 
-(s/defn long->bytes [x]
+(s/defn long->bytes
+  "Converts a Long into an array of bytes (big-endian)."
+  [arg]
+  (assert (tt/long? arg))
   (it-> (ByteBuffer/allocate Long/BYTES)
-    (.putLong it x)
+    (.putLong it arg)
     (.array it)))
 
 (def uuid->str

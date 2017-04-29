@@ -6,7 +6,7 @@
 ;   software.
 (ns tupelo.gen
   "Tupelo - Making Clojure even sweeter"
-  (:refer-clojure :exclude [rand-nth] )
+  (:refer-clojure :exclude [rand-nth constantly] )
   (:require
     [clojure.core :as cc]
     [clojure.string :as str]
