@@ -133,7 +133,7 @@
     (is (double? (Double. 42.0)))
     (is (character? (Character. (char 97)))))
   (let [float-val (Float. 42.0)
-        long-val  (Long. 42)]
+        long-val  (Long.  42)]
     (isnt (character? float-val))
     (isnt (byte? float-val))
     (isnt (short? float-val))
