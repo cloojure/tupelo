@@ -17,6 +17,7 @@
     [tupelo.core :as t]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
+    [tupelo.types :as tt]
   )
   (:import
     [java.nio ByteBuffer]
@@ -208,31 +209,36 @@
 (defn bytes->hex-str
   "Converts a byte array to a hex string, where each byte becomes 2 hex digits."
   [bytes]
+  (assert (tt/byte-array? bytes))
   (str/join (map #(format "%02x" %) bytes)))
 
-(defn long->bytes [x]
+(s/defn long->bytes [x]
   (it-> (ByteBuffer/allocate Long/BYTES)
     (.putLong it x)
     (.array it)))
 
-(s/defn uuid->str :- s/Str
-  "Converts a UUID to a hex string"
-  [uuid :- java.util.UUID]
-  (let [sha-1-instance (MessageDigest/getInstance "SHA")
-        bytes-big      (long->bytes (.getMostSignificantBits ^UUID uuid))
-        bytes-little   (long->bytes (.getLeastSignificantBits ^UUID uuid)) ]
-    (.update sha-1-instance bytes-big)
-    (.update sha-1-instance bytes-little)
-    (let [bytes (.digest sha-1-instance)]
-      (bytes->hex-str bytes))))
-
-(s/defn str->sha :- s/Str
-  "Returns a sha-1 hex string given an input string"
-  [str-arg :- s/Str]
+(def uuid->str
+  "Returns the SHA-1 hex string for a UUID"
   (let [sha-1-instance (MessageDigest/getInstance "SHA")]
-    (doseq [ch str-arg]
-      (.update sha-1-instance (byte ch)))
-    (bytes->hex-str (.digest sha-1-instance))))
+    (s/fn uuid->str :- s/Str
+      [uuid :- java.util.UUID]
+      (let [bytes-big    (long->bytes (.getMostSignificantBits  ^UUID uuid))
+            bytes-little (long->bytes (.getLeastSignificantBits ^UUID uuid))]
+        (.reset sha-1-instance)
+        (.update sha-1-instance bytes-big)
+        (.update sha-1-instance bytes-little)
+        (let [bytes (.digest sha-1-instance)]
+          (bytes->hex-str bytes))))))
+
+(def str->sha
+  "Returns the SHA-1 hex string for a string"
+  (let [sha-1-instance (MessageDigest/getInstance "SHA")]
+    (s/fn str->sha :- s/Str
+      [str-arg :- s/Str]
+      (.reset sha-1-instance)
+      (doseq [ch str-arg]
+        (.update sha-1-instance (byte ch)))
+      (bytes->hex-str (.digest sha-1-instance)))))
 
 (s/defn sha-uuid :- s/Str
   "Returns a string that is the SHA-1 hash of the `uuid/v1`."

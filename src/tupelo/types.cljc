@@ -6,6 +6,7 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.types
   "Type conversion and detection."
+  (:refer-clojure :exclude [integer? float?])
   (:require [clojure.string   :as str]
             [schema.core      :as s] )
   (:gen-class))
@@ -30,6 +31,7 @@
   [arg]
   (or (= true arg) (= false arg)))
 
+; #todo change to using `instance?`
 (defn boolean-array?
   "Returns true is the arg is a boolean array, else false."
   [arg]
@@ -75,7 +77,43 @@
   [arg]
   (= Class-short-array (.getClass arg)))
 
+;-----------------------------------------------------------------------------
+(defn byte?
+  "Returns true is the arg is a Byte, else false."
+  [arg]
+  (instance? java.lang.Byte arg))
 
+(defn short?
+  "Returns true is the arg is a Short, else false."
+  [arg]
+  (instance? java.lang.Short arg))
+
+(defn integer?
+  "Returns true is the arg is a Integer, else false."
+  [arg]
+  (instance? java.lang.Integer arg))
+
+(defn long?
+  "Returns true is the arg is a Long, else false."
+  [arg]
+  (instance? java.lang.Long arg))
+
+(defn float?
+  "Returns true is the arg is a Float, else false."
+  [arg]
+  (instance? java.lang.Float arg))
+
+(defn double?
+  "Returns true is the arg is a Double, else false."
+  [arg]
+  (instance? java.lang.Double arg))
+
+(defn character?
+  "Returns true is the arg is a Character, else false."
+  [arg]
+  (instance? java.lang.Character arg))
+
+;-----------------------------------------------------------------------------
 (defn str->bytes  ; #todo move to tupelo.misc
   "Converts a String to a byte array using the UTF-8 Charset"
   [^String arg]

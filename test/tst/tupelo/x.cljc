@@ -21,9 +21,9 @@
   ))
 (t/refer-tupelo)
 
-(defrecord Node [attrs children])    ; ns -> tupelo.datatree
-(defrecord Leaf [attrs value])    ; ns -> tupelo.datatree
-
+;-----------------------------------------------------------------------------
+(defrecord Node [attrs children])     ; ns -> tupelo.datatree
+(defrecord Leaf [attrs value])        ; ns -> tupelo.datatree
 (def DataTreeMember
   "Either an internal Node or a Leaf"
   (s/either Node Leaf))

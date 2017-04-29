@@ -5,14 +5,13 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.types
-  (:use tupelo.types
-        clojure.test)
+  (:use tupelo.types tupelo.test clojure.test)
   (:require [schema.core :as s]
             [tupelo.core :as t] ))
 (t/refer-tupelo)
 
 ; As of Clojure 1.9.0-alpha5, boolean? is native to clojure
-#_(deftest t-boolean?
+#_(dotest
   (is (boolean? true))
   (is (boolean? false))
   (is (not (boolean? :hello)))
@@ -24,7 +23,7 @@
   (is (not (boolean? \K)))
 )
 
-(deftest t-boolean-array?
+(dotest
   (is (identity (boolean-array? (boolean-array  [true false]))))
   (is (not      (boolean-array? (byte-array     (range 3)))))
   (is (not      (boolean-array? (char-array     [\a \b \c]))))
@@ -35,7 +34,7 @@
   (is (not      (boolean-array? (object-array   ["hello" 5 nil]))))
   (is (not      (boolean-array? (short-array    (range 3))))))
 
-(deftest t-byte-array?
+(dotest
   (is (not      (byte-array? (boolean-array  [true false]))))
   (is (identity (byte-array? (byte-array     (range 3)))))
   (is (not      (byte-array? (char-array     [\a \b \c]))))
@@ -46,7 +45,7 @@
   (is (not      (byte-array? (object-array   ["hello" 5 nil]))))
   (is (not      (byte-array? (short-array    (range 3))))))
 
-(deftest t-char-array?
+(dotest
   (is (not      (char-array? (boolean-array  [true false]))))
   (is (not      (char-array? (byte-array     (range 3)))))
   (is (identity (char-array? (char-array     [\a \b \c]))))
@@ -57,7 +56,7 @@
   (is (not      (char-array? (object-array   ["hello" 5 nil]))))
   (is (not      (char-array? (short-array    (range 3))))))
 
-(deftest t-double-array?
+(dotest
   (is (not      (double-array? (boolean-array  [true false]))))
   (is (not      (double-array? (byte-array     (range 3)))))
   (is (not      (double-array? (char-array     [\a \b \c]))))
@@ -68,7 +67,7 @@
   (is (not      (double-array? (object-array   ["hello" 5 nil]))))
   (is (not      (double-array? (short-array    (range 3))))))
 
-(deftest t-float-array?
+(dotest
   (is (not      (float-array? (boolean-array  [true false]))))
   (is (not      (float-array? (byte-array     (range 3)))))
   (is (not      (float-array? (char-array     [\a \b \c]))))
@@ -79,7 +78,7 @@
   (is (not      (float-array? (object-array   ["hello" 5 nil]))))
   (is (not      (float-array? (short-array    (range 3))))))
 
-(deftest t-int-array?
+(dotest
   (is (not      (int-array? (boolean-array  [true false]))))
   (is (not      (int-array? (byte-array     (range 3)))))
   (is (not      (int-array? (char-array     [\a \b \c]))))
@@ -90,7 +89,7 @@
   (is (not      (int-array? (object-array   ["hello" 5 nil]))))
   (is (not      (int-array? (short-array    (range 3))))))
 
-(deftest t-long-array?
+(dotest
   (is (not      (long-array? (boolean-array  [true false]))))
   (is (not      (long-array? (byte-array     (range 3)))))
   (is (not      (long-array? (char-array     [\a \b \c]))))
@@ -101,7 +100,7 @@
   (is (not      (long-array? (object-array   ["hello" 5 nil]))))
   (is (not      (long-array? (short-array    (range 3))))))
 
-(deftest t-object-array?
+(dotest
   (is (not      (object-array? (boolean-array  [true false]))))
   (is (not      (object-array? (byte-array     (range 3)))))
   (is (not      (object-array? (char-array     [\a \b \c]))))
@@ -112,7 +111,7 @@
   (is (identity (object-array? (object-array   ["hello" 5 nil]))))
   (is (not      (object-array? (short-array    (range 3))))))
 
-(deftest t-short-array?
+(dotest
   (is (not      (short-array? (boolean-array  [true false]))))
   (is (not      (short-array? (byte-array     (range 3)))))
   (is (not      (short-array? (char-array     [\a \b \c]))))
@@ -123,7 +122,26 @@
   (is (not      (short-array? (object-array   ["hello" 5 nil]))))
   (is (identity (short-array? (short-array    (range 3))))))
 
-(deftest t-str->bytes
+(dotest
+  (do
+    (is (byte? (Byte. (byte 42))))
+    (is (short? (Short. (short 42))))
+    (is (integer? (Integer. 42)))
+    (is (long? (Long. 42)))
+    (is (float? (Float. 42.0)))
+    (is (double? (Double. 42.0)))
+    (is (character? (Character. (char 97)))))
+  (let [float-val (Float. 42.0)
+        long-val  (Long. 42)]
+    (isnt (character? float-val))
+    (isnt (byte? float-val))
+    (isnt (short? float-val))
+    (isnt (integer? float-val))
+    (isnt (long? float-val))
+    (isnt (float? long-val))
+    (isnt (double? long-val))))
+
+(dotest
   (is (= [65 66 67] (into [] (str->bytes "ABC"))))
   (is (= "ABC" (bytes->str (byte-array [65 66 67]))))
   (is (= "Hello World!" (-> "Hello World!" (str->bytes) (bytes->str)))))
