@@ -23,6 +23,23 @@
 ; #todo need option for (take 3 coll :exact)
 ; #todo need option for (drop 3 coll :exact)
 
+; #todo add test & README
+(defn pretty-str
+  "Returns a string that is the result of clojure.pprint/pprint"
+  [arg]
+  (with-out-str (pprint/pprint arg)))
+
+; #todo rename to pp or pprint ?
+; #todo add test & README
+(defn pretty                                                ; #todo experimental
+  "Shortcut to clojure.pprint/pprint. Returns it argument."
+  ([arg]
+   (pprint/pprint arg)
+   arg)
+  ([arg writer]
+   (pprint/pprint arg writer)
+   arg))
+
 (defmacro with-exception-default
   "Evaluates body & returns its result.  In the event of an exception, default-val is returned
    instead of the exception."
@@ -171,6 +188,7 @@
     final-code
   ))
 
+; #todo On all spy* make print file & line number
 ; #todo allow spyx-pretty to have labels like (spyx-pretty :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
 (defmacro spyx-pretty
   "Like `spyx` but with pretty printing (clojure.pprint/pprint)"
@@ -186,23 +204,85 @@
        (spy-indent-dec)
        result#)))
 
+(defn- spy-let-impl
+  [exprs]
+  (let [decls (first exprs)
+        _     (when (not (even? (count decls)))
+                (throw (IllegalArgumentException. (str "spy-let-proc: uneven number of decls:" decls))))
+        ;_     (println :decls decls)
+        forms (rest exprs)
+        fmt-pair (fn [[dest src]]
+                   ;(println :fmt-pair dest "<=" src)
+                   [ dest src  '_ (list 'spyx dest)] )
+        pairs (vec (partition 2 decls))
+        ;_ (println :pairs pairs)
+        r1    (vec (mapcat  fmt-pair pairs ))
 
-; #todo add test & README
-(defn pretty-str
-  "Returns a string that is the result of clojure.pprint/pprint"
-  [arg]
-  (with-out-str (pprint/pprint arg)))
+        final-code  `(let ~r1 ~@forms )
+        ]
 
-; #todo rename to pp or pprint ?
-; #todo add test & README
-(defn pretty                                                ; #todo experimental
-  "Shortcut to clojure.pprint/pprint. Returns it argument."
-  ([arg]
-   (pprint/pprint arg)
-   arg)
-  ([arg writer]
-   (pprint/pprint arg writer)
-   arg))
+    ; (newline) (newline)
+    ; (println :spyx-proc :r1 )
+    ; (pprint/pprint r1)
+
+    ; (newline) (newline)
+    ; (println :spyx-proc :forms )
+    ; (pprint/pprint forms)
+
+    ; (newline) (newline)
+    ; (println :spyx-proc :final-code )
+    ; (pprint/pprint final-code)
+    ; (newline) (newline)
+    final-code ))
+
+; #todo spy-let should also print the return value
+(defmacro spy-let
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expressions, printing both the expression and its value to stdout. Returns the value of the
+   last expression."
+  [& exprs]
+  (spy-let-impl exprs))
+
+;-----------------------------------------------------------------------------
+(defn- spy-let-pretty-impl
+  [exprs]
+  (let [decls (first exprs)
+        _     (when (not (even? (count decls)))
+                (throw (IllegalArgumentException. (str "spy-let-pretty-impl: uneven number of decls:" decls))))
+        ;_     (println :decls decls)
+        forms (rest exprs)
+        fmt-pair (fn [[dest src]]
+                   ;(println :fmt-pair dest "<=" src)
+                   [ dest src  '_ (list 'spyx-pretty dest)] )
+        pairs (vec (partition 2 decls))
+        ;_ (println :pairs pairs)
+        r1    (vec (mapcat  fmt-pair pairs ))
+
+        final-code  `(let ~r1 ~@forms )
+        ]
+
+    ; (newline) (newline)
+    ; (println :spyx-proc :r1 )
+    ; (pprint/pprint r1)
+
+    ; (newline) (newline)
+    ; (println :spyx-proc :forms )
+    ; (pprint/pprint forms)
+
+    ; (newline) (newline)
+    ; (println :spyx-proc :final-code )
+    ; (pprint/pprint final-code)
+    ; (newline) (newline)
+    final-code ))
+
+(defmacro spy-let-pretty
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expressions, printing both the expression and its value to stdout. Returns the value of the
+   last expression."
+  [& exprs]
+  (spy-let-pretty-impl exprs))
+
+;-----------------------------------------------------------------------------
 
 
 (defn truthy?

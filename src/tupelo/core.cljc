@@ -214,49 +214,12 @@
 (pns/import-fn impl/spy)
 (pns/import-macro impl/spyx)
 (pns/import-macro impl/spyx-pretty)
-
 (pns/import-macro impl/spyxx )
 (pns/import-macro impl/with-spy-indent )
+(pns/import-macro impl/spy-let )
+(pns/import-macro impl/spy-let-pretty )
+
 ; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
-
-(defn- spy-let-impl
-  [exprs]
-  (let [decls (first exprs)
-        _     (when (not (even? (count decls)))
-                (throw (IllegalArgumentException. (str "spy-let-proc: uneven number of decls:" decls))))
-       ;_     (println :decls decls)
-        forms (rest exprs)
-        fmt-pair (fn [[dest src]]
-                  ;(println :fmt-pair dest "<=" src)
-                   [ dest src  '_ (list 'spyx dest)] )
-        pairs (vec (partition 2 decls))
-       ;_ (println :pairs pairs)
-        r1    (vec (mapcat  fmt-pair pairs ))
-
-        final-code  `(let ~r1 ~@forms )
-       ]
-
-      ; (newline) (newline)
-      ; (println :spyx-proc :r1 )
-      ; (pprint/pprint r1)
-
-      ; (newline) (newline)
-      ; (println :spyx-proc :forms )
-      ; (pprint/pprint forms)
-
-      ; (newline) (newline)
-      ; (println :spyx-proc :final-code )
-      ; (pprint/pprint final-code)
-      ; (newline) (newline)
-    final-code ))
-
-; #todo spy-let should also print the return value
-(defmacro spy-let
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expressions, printing both the expression and its value to stdout. Returns the value of the
-   last expression."
-  [& exprs]
-  (spy-let-impl exprs))
 
 ; #todo need let-keys or grab-keys macro (let-keys [[a b c] my-map] ...) ->
 ; #todo (let [a (grab :a my-map)
@@ -760,7 +723,7 @@
    be used without namespace qualification."
   []
   (refer 'tupelo.core :only
-   '[spy spy-let spyx spyx-pretty spyxx with-spy-indent truthy? falsey?
+   '[spy spy-let spy-let-pretty spyx spyx-pretty spyxx with-spy-indent truthy? falsey?
      not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
      forv conjv glue append prepend grab dissoc-in fetch-in
      submap-by-keys submap-by-vals map-keys->vals keyvals

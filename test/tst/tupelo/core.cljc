@@ -34,7 +34,7 @@
                8
                (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 
-(deftest t-java-version
+(dotest
   (when (t/is-java-1-7?)
     (throws? (fn8)))
 
@@ -110,7 +110,7 @@
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
 
-(deftest t-clojure-version
+(dotest
   (binding [*clojure-version* {:major 1 :minor 7}]
     (is   (t/is-clojure-1-7-plus?))
     (isnt (t/is-clojure-1-8-plus?))
@@ -133,7 +133,7 @@
 
 ;-----------------------------------------------------------------------------
 ; spy stuff
-(deftest t-spyx
+(dotest
   (is= "(+ 2 3) => 5"
     (tm/collapse-whitespace
       (with-out-str
@@ -161,7 +161,7 @@
 )
 
 ; #todo blog about this nested (is= ...) testing technique
-(deftest t-spy-let
+(dotest
   (is=
     (tm/collapse-whitespace  " a => 1
                                b => 5
@@ -186,7 +186,7 @@
 )
 
 
-(deftest t-spy
+(dotest
   (testing "basic usage"
     (let [side-effect-cum-sum (atom 0)  ; side-effect running total
 
@@ -241,7 +241,7 @@
       (throws? IllegalArgumentException  (spy "some-msg" 42 :msg))
     )))
 
-(deftest t-spyxx
+(dotest
   (let [val1  (into (sorted-map) {:a 1 :b 2})
         val2  (+ 2 3) ]
     (is= "val1 => clojure.lang.PersistentTreeMap->{:a 1, :b 2}"
@@ -251,7 +251,7 @@
         (tm/collapse-whitespace (with-out-str (spyxx val2 ))) )
   ))
 
-(deftest t-with-spy-indent
+(dotest
   (let [fn2   (fn []  (with-spy-indent
                         (spy :msg "msg2" (+ 2 3))))
         fn1   (fn []  (with-spy-indent
@@ -263,10 +263,10 @@
     (is= "msg0 => 5"            (tm/collapse-whitespace (with-out-str (fn0))))
     ))
 
-; (deftest t-truthy-spec
+; (dotest
 ; )
 
-(deftest t-truthy-falsey
+(dotest
   (is (truthy? 5))
 ; (spyx (s/check-fn truthy? ))
 
@@ -297,7 +297,7 @@
                     (= 2 num-false) )))))
   ))
 
-(deftest t-not-nil?
+(dotest
   (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]
     (testing "basic usage"
       (let [notties   (keep-if not-nil? data)
@@ -317,7 +317,7 @@
           (is (and  (= 7 num-valid-1 num-valid-2 )
                     (= 1 num-nil) )))))))
 
-(deftest t-any
+(dotest
   (is= true   (t/has-some? odd? [1 2 3] ) )
   (is= false  (t/has-some? odd? [2 4 6] ) )
   (is= false  (t/has-some? odd? []      ) )
@@ -326,7 +326,7 @@
   (is= true   (has-none? odd? [2 4 6] ) )
   (is= true   (has-none? odd? []      ) ))
 
-(deftest t-not-empty
+(dotest
   (is (every?      not-empty? ["one" [1] '(1) {:1 1} #{1}     ] ))
   (is (has-none?   not-empty? [ ""   [ ] '( ) {}     #{ }  nil] ))
 
@@ -343,7 +343,7 @@
   (throws? IllegalArgumentException (not-empty? 5))
   (throws? IllegalArgumentException (not-empty? 3.14)))
 
-(deftest t-contains-elem
+(dotest
   (testing "vecs"
     (let [coll (range 3)]
       (isnt (contains-elem? coll -1))
@@ -392,7 +392,7 @@
       (is   (contains-elem? coll  :yes))
       (is   (contains-elem? coll  nil)))))
 
-(deftest t-contains-key?
+(dotest
   (is   (contains-key?  {:a 1 :b 2} :a))
   (is   (contains-key?  {:a 1 :b 2} :b))
   (isnt (contains-key?  {:a 1 :b 2} :x))
@@ -417,7 +417,7 @@
   (throws? (contains-key? [:a 1 :b 2] :a))
   (throws? (contains-key? [:a 1 :b 2]  1)))
 
-(deftest t-contains-val?
+(dotest
   (is   (contains-val? {:a 1 :b 2} 1))
   (is   (contains-val? {:a 1 :b 2} 2))
   (isnt (contains-val? {:a 1 :b 2} 0))
@@ -432,7 +432,7 @@
   (throws? (contains-val?  [:a 1 :b 2] 1))
   (throws? (contains-val? #{:a 1 :b 2} 1)))
 
-(deftest t-master
+(dotest
   (testing "zip"
     (is= (zip [:a :b :c] [1 2 3])   [[:a 1] [:b 2] [:c 3]] )
     (is= (zip [:a] [1])             [[:a 1]] )
@@ -443,14 +443,14 @@
 )
 
 ;(sp/def ::vector (sp/coll-of clj/any :kind vector?))
-;(deftest t-forv-spec
+;(dotest
 ;  (is   (sp/valid? ::vector [1 2 3]))
 ;  (isnt (sp/valid? ::vector '(1 2 3)))
 ;  (isnt (sp/valid? ::vector {:a 1}))
 ; ;(spyx (sp/exercise ::vector))
 ;)
 
-(deftest t-forv
+(dotest
   (is= (forv [x (range 4)] (* x x))
          [0 1 4 9] )
   (is= (forv [x (range 23)] (* x x))
@@ -458,7 +458,7 @@
   (is= (forv [x (range 5)  y (range 2 9)] (str x y))
        (for  [x (range 5)  y (range 2 9)] (str x y))))
 
-(deftest t-glue
+(dotest
   ; unexpected results
   (is (= (concat {:a 1} {:b 2} {:c 3} )
                [ [:a 1] [:b 2] [:c 3] ] ))
@@ -540,7 +540,7 @@
   (throws? (glue   "hello"   nil    ))
 )
 
-(deftest t-append
+(dotest
   (throws?            (append  1 2        ))
   (throws?            (append [1 2]       ))
   (is= [1 2 3    ]    (append [1 2] 3     ))
@@ -578,7 +578,7 @@
     (is= [0 1 2 3 4 5] (append (range 4) 4 5))
     (is= [0 1 2 3 4 5] (apply append [0] (range 1 6)))))
 
-(deftest t-prepend
+(dotest
   (throws?            (prepend       [2 1] ))
   (is= [    3 2 1]    (prepend     3 [2 1] ))
   (is= [  4 3 2 1]    (prepend   4 3 [2 1] ))
@@ -594,7 +594,7 @@
   (throws?            (prepend   99    #{:a 1} ))
   (throws?            (prepend  #{99}  #{:a 1} )))
 
-(deftest t-increasing
+(dotest
   (isnt (increasing? [1 2] [1]))
   (isnt (increasing? [1 2] [1 1]))
   (isnt (increasing? [1 2] [1 2]))
@@ -614,7 +614,7 @@
   (is   (increasing-or-equal? [1 2] [2]))
 )
 
-(deftest t-grab
+(dotest
   (let [map1  { :a 1 :b 2 :c nil
                nil :NIL
                "hi" "hello"
@@ -629,7 +629,7 @@
     (throws?  (grab 42 map1))
     ))
 
-(deftest t-fetch-in
+(dotest
   (testing "basic usage"
     (let [map1  {:a1 "a1"
                  :a2 { :b1 "b1"
@@ -647,7 +647,7 @@
       (throws?   (fetch-in map1 [:a2 :b9]))
       (throws?   (fetch-in map1 [:a2 :b2 :c9])))))
 
-(deftest t-dissoc-in
+(dotest
   (let [mm    {:a { :b { :c "c" }}} ]
     (is= (dissoc-in mm []         )          mm )
     (is= (dissoc-in mm [:a]       )          {} )
@@ -685,7 +685,7 @@
                :a2 { :b1 "b1"
                      :b2 { :c1 "c1" }}} )))
 
-(deftest t-conjv
+(dotest
   (is= [nil    ] (t/conjv nil   nil ))
   (is= [      9] (t/conjv nil     9 ))
 
@@ -776,26 +776,26 @@
     (throws? (map-keys->vals map1 [:z])))
 )
 
-(deftest t-int-kw
+(dotest
   (is= :23 (int->kw  23))
   (is=  23 (kw->int :23))
 )
 
-(deftest t-only
+(dotest
   (is= 42 (only [42]))
   (is= :x (only [:x]))
   (is= "hello" (only ["hello"] ))
   (throws? IllegalArgumentException (only []))
   (throws? IllegalArgumentException (only [:x :y])))
 
-(deftest t-third
+(dotest
   (is= nil (third [       ]))
   (is= nil (third [1      ]))
   (is= nil (third [1 2    ]))
   (is= 3   (third [1 2 3  ]))
   (is= 3   (third [1 2 3 4])))
 
-(deftest t-validate
+(dotest
   (is= 3        (t/validate pos? 3))
   (is= 3.14     (t/validate number? 3.14 ))
   (is= 3.14     (t/validate #(< 3 % 4) 3.14 ))
@@ -806,7 +806,7 @@
   (throws? Exception (t/validate truthy? nil))
 )
 
-(deftest t-keyvals
+(dotest
   (testing "basic usage"
     (let [m1 {:a 1 :b 2 :c 3}
           m2 {:a 1 :b 2 :c [3 4]} ]
@@ -815,7 +815,7 @@
     )))
 ; AWTAWT TODO: add test.check
 
-(deftest t-safe->
+(dotest
   (is= 7 (safe-> 3 (* 2) (+ 1)))
   (let [mm  {:a {:b 2}}]
     (is= (safe-> mm :a)     {:b 2} )
@@ -824,7 +824,7 @@
     (throws? IllegalArgumentException   (safe-> mm :a :x))
     (throws? IllegalArgumentException   (safe-> mm :a :b :x))))
 
-(deftest t-it->
+(dotest
   (is= 2 (it-> 1
            (inc it)
            (+ 3 it)
@@ -833,7 +833,7 @@
     (is= (it-> mm (:a it)          )  {:b 2} )
     (is= (it-> mm (it :a)  (:b it) )      2  )))
 
-(deftest t-with-exception-default
+(dotest
   (testing "basic usage"
     (throws?    Exception                       (/ 1 0))
     (is= nil      (with-exception-default nil     (/ 1 0)))
@@ -842,7 +842,7 @@
     (is= 0        (with-exception-default 0       (Long/parseLong "12xy3")))
     ))
 
-(deftest t-rel=
+(dotest
   (is (rel= 1 1 :digits 4 ))
   (is (rel= 1 1 :tol    0.01 ))
 
@@ -872,7 +872,7 @@
   (is (not (rel= 1 1.001 :tol 0.0001 )))
 )
 
-(deftest t-range-vec
+(dotest
   (is (every? t/truthy? (forv [ul (range 0 4)] (vector? (t/range-vec ul)))))
 
   (is (every? t/truthy? (forv [ul (range 0 4)] (= (t/range-vec ul) (range ul)))))
@@ -882,7 +882,7 @@
                           (= (t/range-vec lb ub) (range lb ub)))))
 )
 
-(deftest t-thru
+(dotest
   (testing "positive step"
     (is= [0      ] (t/thru 0))
     (is= [0 1    ] (t/thru 1))
@@ -1073,7 +1073,7 @@
     (is= [-10 -5  0  5] (thru -10   5  5)))
 )
 
-(deftest t-keep-if
+(dotest
   (is= [0 2 4 6 8]  (keep-if even? (range 10))
                     (drop-if odd?  (range 10)))
   (is= [1 3 5 7 9]  (keep-if odd?  (range 10))
@@ -1086,7 +1086,7 @@
   (throws? IllegalArgumentException (keep-if truthy? 2 ))
   (throws? IllegalArgumentException (keep-if truthy? :some-kw )))
 
-(deftest t-keep-if-map
+(dotest
   (let [m1  {10  0,   20 0
              11  1,   21 1
              12  2,   22 2
@@ -1126,7 +1126,7 @@
     (throws? clojure.lang.ArityException (keep-if (fn [arg] :dummy) {:a 1} ))
   ))
 
-(deftest t-keep-if-set
+(dotest
   (let [s1  (into (sorted-set) (range 10)) ]
     (is= #{0 2 4 6 8}   (keep-if even? s1)
                         (drop-if odd?  s1))
@@ -1186,7 +1186,7 @@
       (and  (= even-1 even-2 even-filt)
             (=  odd-1  odd-2  odd-rem)))))
 
-(deftest t-strcat
+(dotest
   (is (= "a" (strcat \a  )) (strcat [\a]  ))
   (is (= "a" (strcat "a" )) (strcat ["a"] ))
   (is (= "a" (strcat 97  )) (strcat [97]  ))
@@ -1215,7 +1215,7 @@
     (is= "abc" (str/join (t/char-seq \a \c)))
     ))
 
-(deftest t-clip-str
+(dotest
   (testing "single string"
     (is (= ""         (clip-str 0 "abcdefg")))
     (is (= "a"        (clip-str 1 "abcdefg")))
@@ -1268,7 +1268,7 @@
       (is (= "#{1 2 3 4 5}" (clip-str 16 tst-set )))))
 )
 
-(deftest char-seq-t
+(dotest
   (is (= [\a ]              (t/char-seq \a \a)))
   (is (= [\a \b]            (t/char-seq \a \b)))
   (is (= [\a \b \c]         (t/char-seq \a \c)))
@@ -1282,7 +1282,7 @@
   (is (thrown? Exception    (t/char-seq 99 98)))
   )
 
-(deftest t-drop-at
+(dotest
   (is= [] (drop-at (range 1) 0))
 
   (is= [  1] (drop-at (range 2) 0))
@@ -1296,7 +1296,7 @@
   (throws? IllegalArgumentException (drop-at (range 3) -1))
   (throws? IllegalArgumentException (drop-at (range 3)  3)))
 
-(deftest t-insert-at
+(dotest
   (is= [9] (insert-at [] 0 9))
 
   (is= [9 0] (insert-at [0] 0 9))
@@ -1315,7 +1315,7 @@
   (throws? IllegalArgumentException (insert-at [0 1] -1 9))
   (throws? IllegalArgumentException (insert-at [0 1]  3 9)))
 
-(deftest t-replace-at
+(dotest
   (is= [9] (replace-at (range 1) 0 9))
 
   (is= [9 1] (replace-at (range 2) 0 9))
@@ -1329,21 +1329,9 @@
   (throws? IllegalArgumentException (replace-at (range 3) -1 9))
   (throws? IllegalArgumentException (replace-at (range 3)  3 9)))
 
-; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
-(deftest  ^{:deprecated "1.9.0-alpha5" } t-seqable
-  (t/when-not-clojure-1-9-plus
-    (is   (t/seqable?   "abc"))
-    (is   (t/seqable?   {1 2 3 4} ))
-    (is   (t/seqable?  #{1 2 3} ))
-    (is   (t/seqable?  '(1 2 3) ))
-    (is   (t/seqable?   [1 2 3] ))
-    (is   (t/seqable?   (byte-array [1 2] )))
-    (isnt (t/seqable?  1 ))
-    (isnt (t/seqable? \a ))))
-
 ; #todo add different lengths a/b
 ; #todo add missing entries a/b
-(deftest t-matches
+(dotest
   (is      (t/matches?  []    [] ))
   (is      (t/matches?  [1]   [1] ))
   (isnt    (t/matches?  [1]   [2] ))
@@ -1388,7 +1376,7 @@
 
 ; #todo add different lengths a/b
 ; #todo add missing entries a/b
-(deftest t-wild-match
+(dotest
   (testing "vectors"
     (is   (wild-match? [1]  [1] ))
     (is   (wild-match? [1]  [1] [1] ))
@@ -1504,7 +1492,7 @@
   )
 )
 
-(deftest t-starts-with?
+(dotest
   (is   (starts-with? (range 0 3) (range 0 0)))
 
   (is   (starts-with? (range 0 3) (range 0 1)))
@@ -1540,7 +1528,7 @@
   )
 
 
-(deftest t-throws
+(dotest
   ; (println "t-throws enter")
   ; (newline) (spyx (throws?-impl '(/ 1 2)))
   ; (newline) (spyx (throws?-impl 'Exception '(/ 1 2)))
@@ -1553,7 +1541,7 @@
   ; (println "t-throws exit")
 )
 
-(deftest t-global
+(dotest
   (testing "fibo stuff"
     (is= (take  0 (fibonacci-seq))  [] )
     (is= (take  5 (fibonacci-seq))  [0 1 1 2 3] )
@@ -2070,7 +2058,21 @@
 ;---------------------------------------------------------------------------------------------------
 ; Deprecated functions
 
-(deftest ^:deprecated ^:no-doc t-str->lines
+; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
+(dotest
+  ; ^{:deprecated "1.9.0-alpha5" }
+  (t/when-not-clojure-1-9-plus
+    (is   (t/seqable?   "abc"))
+    (is   (t/seqable?   {1 2 3 4} ))
+    (is   (t/seqable?  #{1 2 3} ))
+    (is   (t/seqable?  '(1 2 3) ))
+    (is   (t/seqable?   [1 2 3] ))
+    (is   (t/seqable?   (byte-array [1 2] )))
+    (isnt (t/seqable?  1 ))
+    (isnt (t/seqable? \a ))))
+
+(dotest
+  ; ^:deprecated ^:no-doc
   (let [s1    "  hello there
                  again
                  and again!   "

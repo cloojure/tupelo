@@ -23,14 +23,19 @@
 
 ;-----------------------------------------------------------------------------
 (defrecord Node [attrs children])     ; ns -> tupelo.datatree
-(defrecord Leaf [attrs value])        ; ns -> tupelo.datatree
-(def DataTreeMember
+(defrecord Leaf [attrs value])
+(defrecord Ref  [ref-uuid])
+
+(def DataTreeValue
   "Either an internal Node or a Leaf"
   (s/either Node Leaf))
+(def DataTreeObject
+  "Either an internal Node or a Leaf"
+  (s/either Node Leaf Ref))
 
 (s/defn node  :- Node
   [attrs :- tsk/Map
-   children :- [DataTreeMember]]
+   children :- [DataTreeValue]]
   (let [uuid (tm/sha-uuid)
         id4  (clip-str 4 uuid)
         attrs (assoc attrs :uuid uuid  :id4 id4) ]
@@ -44,9 +49,14 @@
         attrs (assoc attrs :uuid uuid  :id4 id4) ]
     (->Leaf attrs value)))
 
+(s/defn ref  :- Ref
+  [val :- DataTreeValue]
+  (spyx-pretty val)
+  (->Ref (fetch-in val [:attrs :uuid])))
+
 (nl) (def x (spyx-pretty (leaf {:tag :char :color :red} "x")))
 (nl) (def y (spyx-pretty (leaf {:tag :char :color :red} "y")))
 (nl) (def z (spyx-pretty (leaf {:tag :char :color :red} "z")))
 (nl) (def a (spyx-pretty (node {:tag :root :color :white} [x y z])))
-
+(nl) (spyx (ref a ))
 
