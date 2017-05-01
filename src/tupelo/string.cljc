@@ -79,8 +79,8 @@
   "Replaces all consecutive runs of whitespace characters (including newlines) with a single space.
    Removes any leading or trailing whitespace. Returns a string composed of all tokens
    separated by a single space."
-  [it]
-  (-> it
+  [arg]
+  (-> arg
     str/trim
     (str/replace #"\s+" " ")))
 
