@@ -425,6 +425,19 @@ used to add a new value to the beginning of a vector or list:
 > (cons   1 2 '(3 4) ) ;=> ArityException 
 ----
 
+Do you know what `conj` does when you pass it `nil` instead of a sequence?  It silently replaces it
+with an empty list:  `(conj nil 5)` => `(5)`  This can cause you to accumulate items in reverse
+order if you aren't aware of the default behavior:
+
+[source,clojure]
+----
+  (-> nil
+    (conj 1)
+    (conj 2)
+    (conj 3))
+  ;=> (3 2 1)
+----
+
 These failures are irritating and unproductive, and the error messages don't make it obvious what
 went wrong.  Instead, use the simple `prepend` and `append` functions to add new elements to the
 beginning or end of a sequence, respectively:
@@ -501,24 +514,6 @@ And, of course, you can also replace an element in a sequence:
 ----
 
 As with `drop-at`, `replace-at` will throw an exception for invalid values of `index`.
-
-=== Use `conjv` to append values
-
-Do you know what `conj` does when you pass it `nil` instead of a sequence?  It silently replaces it
-with an empty list:  `(conj nil 5)` => `(5)`  This can cause you to accumulate items in reverse
-order if you aren't aware of the default behavior:
-
-[source,clojure]
-----
-  (-> nil
-    (conj 1)
-    (conj 2)
-    (conj 3))
-  ;=> (3 2 1)
-----
-
-For safety, it is probably to use `append`:
-
 
 === Convenience in Testing Seq's
 
