@@ -14,6 +14,7 @@
     [tupelo.core :as t]
     [tupelo.misc :as tm]
     [tupelo.schema :as tsk]
+    [tupelo.string :as ts]
   )
   (:import
     [java.nio ByteBuffer]
@@ -83,6 +84,13 @@
   [arg :- tsk/KeyMap]
   (= #{ :attrs :value } (set (keys arg))))
 
+(s/defn hid? :- s/Bool
+  [arg :- s/Keyword]
+  (assert (keyword? arg))
+  (let [name-str (name arg)]
+    (and (ts/hex? name-str)
+         (= 40 (count name-str)))))
+
 (dotest
   (let [x (add-leaf {:tag :char :color :red} "x")
         y (add-leaf {:tag :char :color :red} "y")
@@ -91,13 +99,13 @@
         x-elem (grab-elem x)
         y-elem (grab-elem y)
         z-elem (grab-elem z)
-        r-elem (grab-elem r)
-        ]
-    (is= true (leaf? x-elem) (leaf? y-elem) (leaf? z-elem))
-    (is= true (node? r-elem))
-    (is= (spyx-pretty x-elem)
+        r-elem (grab-elem r) ]
+    (is (and (hid? x) (hid? y) (hid? z) (hid? r)))
+    (is (and (leaf? x-elem) (leaf? y-elem) (leaf? z-elem)))
+    (is (node? r-elem))
+    (is= x-elem
       {:attrs {:tag :char, :color :red}, :value "x"} )
-    (is= (spyx-pretty r-elem)
+    (is= r-elem
       {:attrs {:tag :root, :color :white},
        :kids  [{:attrs {:tag :char, :color :red}, :value "x"}
                {:attrs {:tag :char, :color :red}, :value "y"}

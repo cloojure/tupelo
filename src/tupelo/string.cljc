@@ -36,6 +36,9 @@
 (s/def chars-digit              :- tsk/Set
   (into (sorted-set) (char-seq \0 \9)))
 
+(s/def chars-hex :- tsk/Set
+  (into (sorted-set) (flatten [ (char-seq \a \f) (char-seq \A \F) (char-seq \0 \9) ] )))
+
 (s/def chars-alpha              :- tsk/Set
   (i/glue chars-lowercase chars-uppercase ))
 
@@ -57,6 +60,7 @@
 (defn lowercase?          [& args] (every? #(contains? chars-lowercase %) (i/strcat args)))
 (defn uppercase?          [& args] (every? #(contains? chars-uppercase %) (i/strcat args)))
 (defn digit?              [& args] (every? #(contains? chars-digit %) (i/strcat args)))
+(defn hex?                [& args] (every? #(contains? chars-hex %) (i/strcat args)))
 (defn alpha?              [& args] (every? #(contains? chars-alpha %) (i/strcat args)))
 (defn visible?            [& args] (every? #(contains? chars-visible %) (i/strcat args)))
 (defn text?               [& args] (every? #(contains? chars-text %) (i/strcat args)))
