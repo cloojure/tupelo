@@ -115,29 +115,28 @@
 (s/defn update-attrs :- tsk/KeyMap
   "Use the supplied function & arguments to update the attrs map for a Node or Leaf as in clojure.core/update"
   [hid :- HID
-   update-fn   ; signature: (fn-update attrs-curr x y z & more) -> attrs-new
-   & update-fn-args ]
+   fn-update-attrs   ; signature: (fn-update attrs-curr x y z & more) -> attrs-new
+   & fn-update-attrs-args ]
   (let [elem-curr  (grab hid @db)
         attrs-curr (grab :attrs elem-curr)
-        attrs-new  (apply update-fn attrs-curr update-fn-args)
+        attrs-new  (apply fn-update-attrs attrs-curr fn-update-attrs-args)
         elem-new   (glue elem-curr {:attrs attrs-new})]
     (swap! db glue {hid elem-new})
     elem-new))
 
 (s/defn update-attr :- tsk/KeyMap
   "Use the supplied function & arguments to update the attr value for a Node or Leaf as in clojure.core/update"
-  [hid        :- HID
-   attr       :- s/Keyword
-   update-fn  ; signature: (fn-update attr-curr x y z & more) -> attrs-new
-   & update-fn-args ]
-  (let [elem-curr  (grab hid @db)
-        attrs-curr (grab :attrs elem-curr)
-        attr-curr  (grab attr attrs-curr)
-        attr-new   (apply update-fn attr-curr update-fn-args)
-        attrs-new  (glue attrs-curr {attr attr-new} )
-        elem-new   (glue elem-curr {:attrs attrs-new})]
-    (swap! db glue {hid elem-new})
-    elem-new))
+  [hid :- HID
+   attr :- s/Keyword
+   fn-update-attr        ; signature: (fn-update-attr attr-curr x y z & more) -> attrs-new
+   & fn-update-attr-args]
+  (let [fn-update-attrs (fn fn-update-attrs [attrs-curr]
+                         (let [attr-curr (grab attr attrs-curr)
+                               attr-new  (apply fn-update-attr attr-curr fn-update-attr-args)
+                               attrs-new (glue attrs-curr {attr attr-new})
+                               ]
+                           attrs-new))]
+    (update-attrs hid fn-update-attrs)))
 
 (dotest
   (reset-db!)
