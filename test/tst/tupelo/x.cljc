@@ -40,9 +40,26 @@
 (def Element (s/either Node Leaf))
 
 (def HID s/Keyword) ; #todo find way to validate
+
+(s/defn node? :- s/Bool
+  [arg :- tsk/KeyMap]
+  (= #{ :attrs :kids } (set (keys arg))))
+
+(s/defn leaf? :- s/Bool
+  [arg :- tsk/KeyMap]
+  (= #{ :attrs :value } (set (keys arg))))
+
+(s/defn hid? :- s/Bool
+  [arg :- s/Keyword]
+  (assert (keyword? arg))
+  (let [name-str (name arg)]
+    (and (ts/hex? name-str)
+      (= 40 (count name-str)))))
+
 (s/defn new-hid :- HID
   []
   (keyword (tm/sha-uuid)))
+
 (s/defn hid->id4  :- s/Keyword
   [hid :- HID]
   (keyword (clip-str 4 (name hid))))
@@ -65,47 +82,33 @@
     hid))
 
 ; #todo need to recurse with set of parent hid's to avoid cycles
-(s/defn grab-elem :- tsk/KeyMap
+(s/defn hid->tree :- tsk/KeyMap
   [hid :- HID]
   (let [elem (grab hid @db)
         base-result (into {} elem)]
     (if (instance? Node elem)
       ; Node: need to recursively resolve children
-      (let [kids   (mapv grab-elem (grab :kids elem))
+      (let [kids   (mapv hid->tree (grab :kids elem))
             resolved-result (assoc base-result :kids kids) ]
         resolved-result)
       ; Leaf: nothing to do
       base-result)))
-
-(s/defn node? :- s/Bool
-  [arg :- tsk/KeyMap]
-  (= #{ :attrs :kids } (set (keys arg))))
-(s/defn leaf? :- s/Bool
-  [arg :- tsk/KeyMap]
-  (= #{ :attrs :value } (set (keys arg))))
-
-(s/defn hid? :- s/Bool
-  [arg :- s/Keyword]
-  (assert (keyword? arg))
-  (let [name-str (name arg)]
-    (and (ts/hex? name-str)
-         (= 40 (count name-str)))))
 
 (dotest
   (let [x (add-leaf {:tag :char :color :red} "x")
         y (add-leaf {:tag :char :color :red} "y")
         z (add-leaf {:tag :char :color :red} "z")
         r (add-node {:tag :root :color :white} [x y z])
-        x-elem (grab-elem x)
-        y-elem (grab-elem y)
-        z-elem (grab-elem z)
-        r-elem (grab-elem r) ]
+        x-tree (hid->tree x)
+        y-tree (hid->tree y)
+        z-tree (hid->tree z)
+        r-tree (hid->tree r) ]
     (is (and (hid? x) (hid? y) (hid? z) (hid? r)))
-    (is (and (leaf? x-elem) (leaf? y-elem) (leaf? z-elem)))
-    (is (node? r-elem))
-    (is= x-elem
+    (is (and (leaf? x-tree) (leaf? y-tree) (leaf? z-tree)))
+    (is (node? r-tree))
+    (is= x-tree
       {:attrs {:tag :char, :color :red}, :value "x"} )
-    (is= r-elem
+    (is= r-tree
       {:attrs {:tag :root, :color :white},
        :kids  [{:attrs {:tag :char, :color :red}, :value "x"}
                {:attrs {:tag :char, :color :red}, :value "y"}
