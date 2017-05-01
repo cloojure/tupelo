@@ -54,9 +54,10 @@
   (spyx-pretty val)
   (->Ref (fetch-in val [:attrs :uuid])))
 
-(nl) (def x (spyx-pretty (leaf {:tag :char :color :red} "x")))
-(nl) (def y (spyx-pretty (leaf {:tag :char :color :red} "y")))
-(nl) (def z (spyx-pretty (leaf {:tag :char :color :red} "z")))
-(nl) (def a (spyx-pretty (node {:tag :root :color :white} [x y z])))
-(nl) (spyx (ref a ))
-
+(when false
+  (nl) (def x (spyx-pretty (leaf {:tag :char :color :red} "x")))
+  (nl) (def y (spyx-pretty (leaf {:tag :char :color :red} "y")))
+  (nl) (def z (spyx-pretty (leaf {:tag :char :color :red} "z")))
+  (nl) (def a (spyx-pretty (node {:tag :root :color :white} [x y z])))
+  (nl) (spyx (ref a ))
+)
