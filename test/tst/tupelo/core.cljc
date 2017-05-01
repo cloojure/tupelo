@@ -544,6 +544,7 @@
 (dotest
   (throws?            (append  1 2        ))
   (throws?            (append [1 2]       ))
+  (throws?            (append nil   3     ))
   (is= [1 2 3    ]    (append [1 2] 3     ))
   (is= [1 2 3 4  ]    (append [1 2] 3 4   ))
   (is= [1 2 3 4 5]    (append [1 2] 3 4 5 ))
@@ -581,6 +582,7 @@
 
 (dotest
   (throws?            (prepend       [2 1] ))
+  (throws?            (prepend     3  nil  ))
   (is= [    3 2 1]    (prepend     3 [2 1] ))
   (is= [  4 3 2 1]    (prepend   4 3 [2 1] ))
   (is= [5 4 3 2 1]    (prepend 5 4 3 [2 1] ))

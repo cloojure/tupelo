@@ -290,6 +290,7 @@
 (pns/import-fn impl/append)
 (pns/import-fn impl/prepend)
 
+; #todo rename -> drop-idx
 ; #todo force to vector result
 (s/defn drop-at :- ts/List
   "Removes an element from a collection at the specified index."
@@ -303,6 +304,7 @@
   (glue (take index coll)
     (drop (inc index) coll)))
 
+; #todo rename -> insert-idx
 ; #todo force to vector result
 (s/defn insert-at :- ts/List
   "Inserts an element into a collection at the specified index."
@@ -317,6 +319,7 @@
   (glue (take index coll) [elem]
     (drop index coll)))
 
+; #todo rename -> replace-idx
 ; #todo force to vector result
 ; #todo if was vector, could just use (assoc the-vec idx new-val)
 (s/defn replace-at :- ts/List
@@ -332,6 +335,9 @@
   (glue (take index coll) 
         [elem]
         (drop (inc index) coll)))
+
+; #todo use (idx    coll int-or-kw) as `get` replacement?
+; #todo use (idx-in coll [kw's]) as `fetch-in` replacement?
 
 
 (s/defn dissoc-in :- s/Any
@@ -356,7 +362,7 @@
 ; singles). Basically like compiler-like guarentees against misspellings, duplicate entries, missing
 ; entries.
 
-(s/defn ^:deprecated conjv :- [s/Any]
+(s/defn ^:deprecated conjv :- [s/Any] ; #todo remove
   "***** DEPRECATED:  replaced by tupelo.core/append *****
 
    Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.

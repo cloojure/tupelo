@@ -517,18 +517,8 @@ order if you aren't aware of the default behavior:
   ;=> (3 2 1)
 ----
 
-For convenience, it is probably to coerce the result to a vector, which is the job of `conjv`:
+For safety, it is probably to use `append`:
 
-[source,clojure]
-----
-  (-> nil
-    (conjv 1)
-    (conjv 2)
-    (conjv 3))
-  ;=> [1 2 3]
-----
-
-The result is always a vector (copied from Stuart Sierra post 2014-2-10).
 
 === Convenience in Testing Seq's
 
