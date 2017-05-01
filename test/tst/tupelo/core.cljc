@@ -470,7 +470,8 @@
     (is= (map map?        objs) [false false   true  true    false false] )
     (is= (map set?        objs) [false false   false false   true  true ] ))
 
-  (is= (glue [1 2] [3 4] [5 6])        [1 2 3 4 5 6])
+  (is= (glue [1 2]  [3 4] [5 6])        [1 2 3 4 5 6])
+  (is= (glue [1 2] '(3 4) [5 6])        [1 2 3 4 5 6])
   (is= (glue [] [1 2] )                [1 2] )
   (is= (glue [1 2] [] )                [1 2] )
   (is= (glue [] [1 2] [] )             [1 2] )
