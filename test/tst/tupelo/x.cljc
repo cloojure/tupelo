@@ -23,6 +23,8 @@
 (t/refer-tupelo)
 
 ; #todo  move to tupelo.x-tree (tupelo.x-datapig ?)
+; forest  data-forest  ForestDb forest-db
+  ; Sherwood  weald  wald  boreal
 
 ; :hid is short for Hash ID, the SHA-1 hash of a v1/UUID expressed as a hexadecimal keyword
 ; format { :hid Element }
@@ -86,29 +88,6 @@
     (swap! db glue {hid leaf})
     hid))
 
-(s/defn merge-attrs :- tsk/KeyMap
-  "Merge the supplied attrs map into the attrs of a Node or Leaf"
-  [hid :- HID
-   attrs-new :- tsk/KeyMap]
-  (let [elem-curr  (grab hid @db)
-        attrs-curr (grab :attrs elem-curr)
-        attrs-new  (glue attrs-curr attrs-new)
-        elem-new   (glue elem-curr {:attrs attrs-new})]
-    (swap! db glue {hid elem-new})
-    elem-new))
-
-(s/defn update-attrs :- tsk/KeyMap
-  "Use the supplied function & arguments to update the attrs for a Node or Leaf as in clojure.core/update"
-  [hid :- HID
-   update-fn   ; signature: (fn-update attrs-curr x y z & more) -> attrs-new
-   & update-fn-args ]
-  (let [elem-curr  (grab hid @db)
-        attrs-curr (grab :attrs elem-curr)
-        attrs-new  (apply update-fn attrs-curr update-fn-args)
-        elem-new   (glue elem-curr {:attrs attrs-new})]
-    (swap! db glue {hid elem-new})
-    elem-new))
-
 ; #todo need to recurse with set of parent hid's to avoid cycles
 (s/defn hid->tree :- tsk/KeyMap
   [hid :- HID]
@@ -121,6 +100,44 @@
         resolved-result)
       ; Leaf: nothing to do
       base-result)))
+
+(s/defn merge-attrs :- tsk/KeyMap
+  "Merge the supplied attrs map into the attrs of a Node or Leaf"
+  [hid :- HID
+   attrs-new :- tsk/KeyMap]
+  (let [elem-curr  (grab hid @db)
+        attrs-curr (grab :attrs elem-curr)
+        attrs-new  (glue attrs-curr attrs-new)
+        elem-new   (glue elem-curr {:attrs attrs-new})]
+    (swap! db glue {hid elem-new})
+    elem-new))
+
+(s/defn update-attrs :- tsk/KeyMap
+  "Use the supplied function & arguments to update the attrs map for a Node or Leaf as in clojure.core/update"
+  [hid :- HID
+   update-fn   ; signature: (fn-update attrs-curr x y z & more) -> attrs-new
+   & update-fn-args ]
+  (let [elem-curr  (grab hid @db)
+        attrs-curr (grab :attrs elem-curr)
+        attrs-new  (apply update-fn attrs-curr update-fn-args)
+        elem-new   (glue elem-curr {:attrs attrs-new})]
+    (swap! db glue {hid elem-new})
+    elem-new))
+
+(s/defn update-attr :- tsk/KeyMap
+  "Use the supplied function & arguments to update the attr value for a Node or Leaf as in clojure.core/update"
+  [hid        :- HID
+   attr       :- s/Keyword
+   update-fn  ; signature: (fn-update attr-curr x y z & more) -> attrs-new
+   & update-fn-args ]
+  (let [elem-curr  (grab hid @db)
+        attrs-curr (grab :attrs elem-curr)
+        attr-curr  (grab attr attrs-curr)
+        attr-new   (apply update-fn attr-curr update-fn-args)
+        attrs-new  (glue attrs-curr {attr attr-new} )
+        elem-new   (glue elem-curr {:attrs attrs-new})]
+    (swap! db glue {hid elem-new})
+    elem-new))
 
 (dotest
   (reset-db!)
@@ -153,11 +170,25 @@
     (is= r-tree
       {:attrs {:tag :root, :color :white :cnt 0},
        :kids  [{:attrs {:tag :char, :color :red :cnt 0}, :value "x"} ]})
+
     (update-attrs x #(update % :cnt inc))
     (update-attrs x #(update % :cnt inc))
     (update-attrs r #(update % :cnt inc))
     (is= (hid->tree r)
       {:attrs {:tag :root, :color :white, :cnt 1},
        :kids  [{:attrs {:tag :char, :color :red, :cnt 2}, :value "x"}]})
+
+    (update-attr x :cnt  inc)
+    (update-attr x :cnt  inc)
+    (update-attr r :cnt  inc)
+    (is= (hid->tree r)
+      {:attrs {:tag :root, :color :white, :cnt 2},
+       :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :value "x"}]})
+
+    (update-attr r :cnt * 3)
+    (update-attr r :cnt + 7)
+    (is= (hid->tree r)
+      {:attrs {:tag :root, :color :white, :cnt 13},
+       :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :value "x"}]})
 
   ))
