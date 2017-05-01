@@ -28,6 +28,11 @@
 ; format { :hid Element }
 (def db (atom {}))
 
+(defn reset-db!
+  "Drop all data from the db."
+  []
+  (reset! db {}))
+
 ; #todo need an attribute registry { :kw fn-validate }
 ; #todo need fn's to add/delete attributes; to delete verify no uses exist. Change = delete then re-add
 ; #todo on any data change, run validate fn
@@ -70,7 +75,7 @@
   ; #todo verify kids exist
   (let [hid  (new-hid)
         node (->Node attrs kids)]
-    (swap! db assoc hid node)
+    (swap! db glue {hid node})
     hid))
 
 (s/defn add-leaf :- HID
@@ -78,8 +83,31 @@
    value :- s/Any]
   (let [hid  (new-hid)
         leaf (->Leaf attrs value)]
-    (swap! db assoc hid leaf)
+    (swap! db glue {hid leaf})
     hid))
+
+(s/defn merge-attrs :- tsk/KeyMap
+  "Merge the supplied attrs map into the attrs of a Node or Leaf"
+  [hid :- HID
+   attrs-new :- tsk/KeyMap]
+  (let [elem-curr  (grab hid @db)
+        attrs-curr (grab :attrs elem-curr)
+        attrs-new  (glue attrs-curr attrs-new)
+        elem-new   (glue elem-curr {:attrs attrs-new})]
+    (swap! db glue {hid elem-new})
+    elem-new))
+
+(s/defn update-attrs :- tsk/KeyMap
+  "Use the supplied function & arguments to update the attrs for a Node or Leaf as in clojure.core/update"
+  [hid :- HID
+   update-fn   ; signature: (fn-update attrs-curr x y z & more) -> attrs-new
+   & update-fn-args ]
+  (let [elem-curr  (grab hid @db)
+        attrs-curr (grab :attrs elem-curr)
+        attrs-new  (apply update-fn attrs-curr update-fn-args)
+        elem-new   (glue elem-curr {:attrs attrs-new})]
+    (swap! db glue {hid elem-new})
+    elem-new))
 
 ; #todo need to recurse with set of parent hid's to avoid cycles
 (s/defn hid->tree :- tsk/KeyMap
@@ -95,6 +123,7 @@
       base-result)))
 
 (dotest
+  (reset-db!)
   (let [x (add-leaf {:tag :char :color :red} "x")
         y (add-leaf {:tag :char :color :red} "y")
         z (add-leaf {:tag :char :color :red} "z")
@@ -106,12 +135,29 @@
     (is (and (hid? x) (hid? y) (hid? z) (hid? r)))
     (is (and (leaf? x-tree) (leaf? y-tree) (leaf? z-tree)))
     (is (node? r-tree))
-    (is= x-tree
-      {:attrs {:tag :char, :color :red}, :value "x"} )
+    (is= x-tree {:attrs {:tag :char, :color :red}, :value "x"} )
     (is= r-tree
       {:attrs {:tag :root, :color :white},
        :kids  [{:attrs {:tag :char, :color :red}, :value "x"}
                {:attrs {:tag :char, :color :red}, :value "y"}
                {:attrs {:tag :char, :color :red}, :value "z"}]})
+    (merge-attrs x {:color :green})
+    (is= (hid->tree x) {:attrs {:tag :char, :color :green}, :value "x"} )))
+
+(dotest
+  (reset-db!)
+  (let [x (add-leaf {:tag :char :color :red :cnt 0} "x")
+        r (add-node {:tag :root :color :white :cnt 0} [x])
+        x-tree (hid->tree x)
+        r-tree (hid->tree r) ]
+    (is= r-tree
+      {:attrs {:tag :root, :color :white :cnt 0},
+       :kids  [{:attrs {:tag :char, :color :red :cnt 0}, :value "x"} ]})
+    (update-attrs x #(update % :cnt inc))
+    (update-attrs x #(update % :cnt inc))
+    (update-attrs r #(update % :cnt inc))
+    (is= (hid->tree r)
+      {:attrs {:tag :root, :color :white, :cnt 1},
+       :kids  [{:attrs {:tag :char, :color :red, :cnt 2}, :value "x"}]})
 
   ))

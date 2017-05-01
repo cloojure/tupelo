@@ -362,22 +362,11 @@
 ; singles). Basically like compiler-like guarentees against misspellings, duplicate entries, missing
 ; entries.
 
-(s/defn ^:deprecated conjv :- [s/Any] ; #todo remove
-  "***** DEPRECATED:  replaced by tupelo.core/append *****
-
-   Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.
-   The result is always returned as a vector. Note that `(conjv nil 5)` -> `[5]`"
-  ; From Stuart Sierra post 2014-2-10
-  ([base-coll :- [s/Any]
-    value :- s/Any]
-    (conj (vec base-coll) value))
-  ([base-coll :- [s/Any]
-    value :- s/Any
-    & values :- [s/Any]]
-    (apply conj (vec base-coll) value values)))
-
 (pns/import-fn impl/only )
 
+; #todo (first [] ) should throw instead of -> nil, etc.
+; #todo (second [1] ) should throw instead of -> nil, etc.
+; #todo should throw if not 3 items in seq
 (s/defn third :- s/Any
   "Returns the third item in a collection, or nil if fewer than three items are present. "
   [seqable-arg :- ts/List]
@@ -708,22 +697,6 @@
       ]
         (recur unprocessed new-result)))))
 
-; #todo (first [] ) should throw instead of -> nil, etc.
-
-; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
-(when-not-clojure-1-9-plus
-  (defn ^{:deprecated "1.9.0-alpha5"} seqable?  ; from clojure.contrib.core/seqable
-    "Returns true if (seq x) will succeed, false otherwise."
-    [x]
-    (or (seq? x)
-      (instance? clojure.lang.Seqable x)
-      (nil? x)
-      (instance? Iterable x)
-      (-> x .getClass .isArray)
-      (string? x)
-      (instance? java.util.Map x))))
-
-
 (defn refer-tupelo  ; #todo document in readme
   "Refer a number of commonly used tupelo.core functions into the current namespace so they can
    be used without namespace qualification."
@@ -746,6 +719,19 @@
 
 ;---------------------------------------------------------------------------------------------------
 ; DEPRECATED functions
+
+; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
+(when-not-clojure-1-9-plus
+  (defn ^{:deprecated "1.9.0-alpha5"} seqable?  ; from clojure.contrib.core/seqable
+    "Returns true if (seq x) will succeed, false otherwise."
+    [x]
+    (or (seq? x)
+      (instance? clojure.lang.Seqable x)
+      (nil? x)
+      (instance? Iterable x)
+      (-> x .getClass .isArray)
+      (string? x)
+      (instance? java.util.Map x))))
 
 ; duplicate of str/split-lines
 (defn ^:deprecated ^:no-doc str->lines
@@ -802,6 +788,20 @@
     (println "-----------------------------------------------------------------------------")
     (newline)
     ))
+
+(s/defn ^:deprecated conjv :- [s/Any] ; #todo remove
+  "***** DEPRECATED:  replaced by tupelo.core/append *****
+
+   Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.
+   The result is always returned as a vector. Note that `(conjv nil 5)` -> `[5]`"
+  ; From Stuart Sierra post 2014-2-10
+  ([base-coll :- [s/Any]
+    value :- s/Any]
+    (conj (vec base-coll) value))
+  ([base-coll :- [s/Any]
+    value :- s/Any
+    & values :- [s/Any]]
+    (apply conj (vec base-coll) value values)))
 
 (defn -main [& args]
   (println "main - enter")
