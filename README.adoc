@@ -10,7 +10,7 @@ image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 == Tupelo Overview
 
 Have you ever wanted to do something simple but clojure.core doesn't support it? Or, maybe you are
-wishing for an enhanced version of a standard function.  If so, then *Tupelo* is for you!  Tupelo is
+wishing for an enhanced version of a standard function.  If so, then Tupelo is for you!  Tupelo is
 a library of helper and convenience functions to make working with Clojure simpler, easier, and more
 bulletproof.
 
