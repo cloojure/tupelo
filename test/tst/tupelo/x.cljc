@@ -21,43 +21,86 @@
   ))
 (t/refer-tupelo)
 
-;-----------------------------------------------------------------------------
-(defrecord Node [attrs children])     ; ns -> tupelo.datatree
-(defrecord Leaf [attrs value])
-(defrecord Ref  [ref-uuid])
+; #todo  move to tupelo.x-tree (tupelo.x-datapig ?)
 
-(def DataTreeValue
-  "Either an internal Node or a Leaf"
-  (s/either Node Leaf))
-(def DataTreeObject
-  "Either an internal Node or a Leaf"
-  (s/either Node Leaf Ref))
+; :hid is short for Hash ID, the SHA-1 hash of a v1/UUID expressed as a hexadecimal keyword
+; format { :hid Element }
+(def db (atom {}))
 
-(s/defn node  :- Node
-  [attrs :- tsk/Map
-   children :- [DataTreeValue]]
-  (let [uuid (tm/sha-uuid)
-        id4  (clip-str 4 uuid)
-        attrs (assoc attrs :uuid uuid  :id4 id4) ]
-    (->Node attrs children)))
+; #todo need an attribute registry { :kw fn-validate }
+; #todo need fn's to add/delete attributes; to delete verify no uses exist. Change = delete then re-add
+; #todo on any data change, run validate fn
+; #todo Global validation fn's;  apply all that match; implied wildcards for missing attr/vals
+;   :attrs {:type :int            } => <parse-int works>
+;   :attrs {:type :int :color :red} => <must be even>
 
-(s/defn leaf  :- Leaf
-  [attrs :- tsk/Map
+(defrecord Node [attrs kids] )    ; { :attrs { :k1 v1 :k2 v2 ... }  :kids  [ hid...] }
+(defrecord Leaf [attrs value])    ; { :attrs { :k1 v1 :k2 v2 ... }  :value s/Any     }
+(def Element (s/either Node Leaf))
+
+(def HID s/Keyword) ; #todo find way to validate
+(s/defn new-hid :- HID
+  []
+  (keyword (tm/sha-uuid)))
+(s/defn hid->id4  :- s/Keyword
+  [hid :- HID]
+  (keyword (clip-str 4 (name hid))))
+
+(s/defn add-node :- HID
+  [attrs :- tsk/KeyMap
+   kids :- [s/Keyword]]
+  ; #todo verify kids exist
+  (let [hid  (new-hid)
+        node (->Node attrs kids)]
+    (swap! db assoc hid node)
+    hid))
+
+(s/defn add-leaf :- HID
+  [attrs :- tsk/KeyMap
    value :- s/Any]
-  (let [uuid (tm/sha-uuid)
-        id4  (clip-str 4 uuid)
-        attrs (assoc attrs :uuid uuid  :id4 id4) ]
-    (->Leaf attrs value)))
+  (let [hid  (new-hid)
+        leaf (->Leaf attrs value)]
+    (swap! db assoc hid leaf)
+    hid))
 
-(s/defn ref  :- Ref
-  [val :- DataTreeValue]
-  (spyx-pretty val)
-  (->Ref (fetch-in val [:attrs :uuid])))
+; #todo need to recurse with set of parent hid's to avoid cycles
+(s/defn grab-elem :- tsk/KeyMap
+  [hid :- HID]
+  (let [elem (grab hid @db)
+        base-result (into {} elem)]
+    (if (instance? Node elem)
+      ; Node: need to recursively resolve children
+      (let [kids   (mapv grab-elem (grab :kids elem))
+            resolved-result (assoc base-result :kids kids) ]
+        resolved-result)
+      ; Leaf: nothing to do
+      base-result)))
 
-(when false
-  (nl) (def x (spyx-pretty (leaf {:tag :char :color :red} "x")))
-  (nl) (def y (spyx-pretty (leaf {:tag :char :color :red} "y")))
-  (nl) (def z (spyx-pretty (leaf {:tag :char :color :red} "z")))
-  (nl) (def a (spyx-pretty (node {:tag :root :color :white} [x y z])))
-  (nl) (spyx (ref a ))
-)
+(s/defn node? :- s/Bool
+  [arg :- tsk/KeyMap]
+  (= #{ :attrs :kids } (set (keys arg))))
+(s/defn leaf? :- s/Bool
+  [arg :- tsk/KeyMap]
+  (= #{ :attrs :value } (set (keys arg))))
+
+(dotest
+  (let [x (add-leaf {:tag :char :color :red} "x")
+        y (add-leaf {:tag :char :color :red} "y")
+        z (add-leaf {:tag :char :color :red} "z")
+        r (add-node {:tag :root :color :white} [x y z])
+        x-elem (grab-elem x)
+        y-elem (grab-elem y)
+        z-elem (grab-elem z)
+        r-elem (grab-elem r)
+        ]
+    (is= true (leaf? x-elem) (leaf? y-elem) (leaf? z-elem))
+    (is= true (node? r-elem))
+    (is= (spyx-pretty x-elem)
+      {:attrs {:tag :char, :color :red}, :value "x"} )
+    (is= (spyx-pretty r-elem)
+      {:attrs {:tag :root, :color :white},
+       :kids  [{:attrs {:tag :char, :color :red}, :value "x"}
+               {:attrs {:tag :char, :color :red}, :value "y"}
+               {:attrs {:tag :char, :color :red}, :value "z"}]})
+
+  ))
