@@ -245,15 +245,33 @@
     leaf-new))
 
 
+(s/defn set-kids :- Node
+  "Merge the supplied kids map into the kids of a Node or Leaf"
+  [hid :- HID
+   kids-new :- [HID]]
+  (let [node-curr  (hid->node hid)
+        node-new   (glue node-curr {:kids kids-new})]
+    (set-elem! hid node-new)
+    node-new))
+
+(s/defn update-kids :- tsk/KeyMap
+  "Use the supplied function & arguments to update the kids map for a Node or Leaf as in clojure.core/update"
+  [hid :- HID
+   fn-update-kids   ; signature: (fn-update kids-curr x y z & more) -> kids-new
+   & fn-update-kids-args]
+  (let [elem-curr (hid->elem hid)
+        kids-curr (grab :kids elem-curr)
+        kids-new  (apply fn-update-kids kids-curr fn-update-kids-args)
+        elem-new  (glue elem-curr {:kids kids-new})]
+    (set-elem! hid elem-new)
+    elem-new))
+
+
 ; for Node's
 ; #todo reset-kids
 ; #todo update-kids
 ; #todo add-kid
 ; #todo remove-kid
-
-; for Leaf's
-; #todo reset-value
-; #todo update-value
 
 ; for any elem
 ; #todo remove-elem (need to make like "cascade")

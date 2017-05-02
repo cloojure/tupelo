@@ -108,4 +108,33 @@
     (update-value y * 6)
     (is= (hid->leaf y) (->Leaf {:tag :char} 42))
 
-  ))
+    (let [a (add-leaf {:name :michael} "do")
+          b (add-leaf {:name :tito} "re")
+          c (add-leaf {:name :germain} "mi")]
+      (set-kids r [a b c])
+      (is= (hid->tree r)
+        {:attrs {:tag :root, :color :white},
+         :kids  [{:attrs {:name :michael}, :value "do"}
+                 {:attrs {:name :tito}, :value "re"}
+                 {:attrs {:name :germain}, :value "mi"}]})
+      (update-kids r
+        (fn sort-kids [kids]
+          (sort-by #(grab :name (hid->attrs %)) kids)))
+      (is= (hid->tree r)
+        {:attrs {:tag :root, :color :white},
+         :kids
+                [{:attrs {:name :germain}, :value "mi"}
+                 {:attrs {:name :michael}, :value "do"}
+                 {:attrs {:name :tito}, :value "re"}]}
+        )
+      (update-kids r
+        (fn sort-kids [kids]
+          (sort-by #(hid->value %) kids)))
+      (is= (hid->tree r)
+        {:attrs {:tag :root, :color :white},
+         :kids  [{:attrs {:name :michael}, :value "do"}
+                 {:attrs {:name :germain}, :value "mi"}
+                 {:attrs {:name :tito}, :value "re"}]}
+        )
+      ))
+  )
