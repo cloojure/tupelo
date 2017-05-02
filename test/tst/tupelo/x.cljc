@@ -102,4 +102,10 @@
     (is= (hid->leaf y) (->Leaf {:tag :char, :color :red} "y"))
     (is= (remove-attr y :color) (->Leaf {:tag :char} "y") )
 
+    (is= (set-value y "YYY") (->Leaf {:tag :char} "YYY"))
+    (is= (set-value y 0) (->Leaf {:tag :char} 0))
+    (update-value y + 7)
+    (update-value y * 6)
+    (is= (hid->leaf y) (->Leaf {:tag :char} 42))
+
   ))

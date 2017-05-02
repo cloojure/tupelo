@@ -151,6 +151,7 @@
    value :- s/Any ]
   (set-elem! hid (->Leaf attrs value)))
 
+
 (s/defn add-node :- HID
   [attrs :- tsk/KeyMap
    kids :- [s/Keyword]] ; #todo verify kids exist
@@ -165,6 +166,7 @@
   (let [hid (new-hid)]
     (set-leaf hid attrs value)
     hid))
+
 
 (s/defn set-attrs :- tsk/KeyMap
   "Merge the supplied attrs map into the attrs of a Node or Leaf"
@@ -202,7 +204,7 @@
   "Use the supplied function & arguments to update the attr value for a Node or Leaf as in clojure.core/update"
   [hid :- HID
    attr :- s/Keyword
-   fn-update-attr        ; signature: (fn-update-attr attr-curr x y z & more) -> attrs-new
+   fn-update-attr        ; signature: (fn-update-attr attr-curr x y z & more) -> attr-new
    & fn-update-attr-args]
   (let [elem-curr  (hid->elem hid)
         attr-curr  (fetch-in elem-curr [:attrs attr] )
@@ -220,6 +222,29 @@
                             attrs-new))]
     (update-attrs hid fn-update-attrs)))
 
+
+(s/defn set-value :- Leaf
+  "Merge the supplied value map into the value of a Node or Leaf"
+  [hid :- HID
+   value-new :- s/Any]
+  (let [leaf-curr  (hid->leaf hid)
+        leaf-new   (glue leaf-curr {:value value-new})]
+    (set-elem! hid leaf-new)
+    leaf-new))
+
+(s/defn update-value :- Leaf
+  "Merge the supplied value map into the value of a Node or Leaf"
+  [hid :- HID
+   fn-update-value  ; signature: (fn-update-value value-curr x y z & more) -> value-new
+   & fn-update-value-args]
+  (let [leaf-curr  (hid->leaf hid)
+        value-curr (grab :value leaf-curr)
+        value-new  (apply fn-update-value value-curr fn-update-value-args)
+        leaf-new   (glue leaf-curr {:value value-new})]
+    (set-elem! hid leaf-new)
+    leaf-new))
+
+
 ; for Node's
 ; #todo reset-kids
 ; #todo update-kids
@@ -231,8 +256,7 @@
 ; #todo update-value
 
 ; for any elem
-; #todo remove-attr
-; #todo remove-elem (need to
+; #todo remove-elem (need to make like "cascade")
 
 ; #todo list-roots
 ; #todo list-non-roots
