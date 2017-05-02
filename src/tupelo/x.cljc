@@ -192,12 +192,12 @@
    attr :- s/Keyword
    fn-update-attr        ; signature: (fn-update-attr attr-curr x y z & more) -> attrs-new
    & fn-update-attr-args]
-  (let [fn-update-attrs (fn fn-update-attrs [attrs-curr]
-                          (let [attr-curr (grab attr attrs-curr)
-                                attr-new  (apply fn-update-attr attr-curr fn-update-attr-args)
-                                attrs-new (glue attrs-curr {attr attr-new}) ]
-                            attrs-new))]
-    (update-attrs hid fn-update-attrs)))
+  (let [elem-curr  (hid->elem hid)
+        attr-curr  (fetch-in elem-curr [:attrs attr] )
+        attr-new   (apply fn-update-attr attr-curr fn-update-attr-args)
+        elem-new   (assoc-in elem-curr [:attrs attr] attr-new) ]
+    (set-elem! hid elem-new)
+    elem-new))
 
 (s/defn remove-attr :- tsk/KeyMap
   "Use the supplied function & arguments to update the attr value for a Node or Leaf as in clojure.core/update"

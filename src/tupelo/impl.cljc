@@ -517,6 +517,7 @@
 ; #todo rename to "get-in-safe" ???
 ; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)
 ; #todo make throw if any index invalid
+; #todo need parallel safe (assoc-in m [ks] v) (assoc-in m [ks] v :missing-ok)
 (s/defn fetch-in :- s/Any
   "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
    returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
