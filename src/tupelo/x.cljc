@@ -266,6 +266,17 @@
     (set-elem! hid elem-new)
     elem-new))
 
+(s/defn add-kids :- tsk/KeyMap
+  "Use the supplied function & arguments to update the kids map for a Node or Leaf as in clojure.core/update"
+  [hid :- HID
+   kids :- [HID]]
+  (let [elem-curr (hid->elem hid)
+        kids-curr (grab :kids elem-curr)
+        kids-new  (glue kids-curr kids)
+        elem-new  (glue elem-curr {:kids kids-new})]
+    (set-elem! hid elem-new)
+    elem-new))
+
 
 ; for Node's
 ; #todo reset-kids

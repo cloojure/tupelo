@@ -134,7 +134,21 @@
         {:attrs {:tag :root, :color :white},
          :kids  [{:attrs {:name :michael}, :value "do"}
                  {:attrs {:name :germain}, :value "mi"}
-                 {:attrs {:name :tito}, :value "re"}]}
-        )
-      ))
-  )
+                 {:attrs {:name :tito}, :value "re"}]} )))
+
+  (clear-db!)
+  (let [x (add-leaf {:tag :char :color :red} "x")
+        y (add-leaf {:tag :char :color :green} "y")
+        z (add-leaf {:tag :char :color :blue} "z")
+        r (add-node {:tag :root :color :white} []) ]
+    (is= (hid->kids r) [])
+    (add-kids r [x]) (is= (hid->kids r) [x])
+    (add-kids r [y]) (is= (hid->kids r) [x y])
+    (add-kids r [z]) (is= (hid->kids r) [x y z])
+    (is= (hid->tree r)
+      {:attrs {:tag :root, :color :white},
+       :kids
+              [{:attrs {:tag :char, :color :red}, :value "x"}
+               {:attrs {:tag :char, :color :green}, :value "y"}
+               {:attrs {:tag :char, :color :blue}, :value "z"}]} ))
+)
