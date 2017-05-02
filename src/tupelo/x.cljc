@@ -29,8 +29,8 @@
 ; format { :hid Element }
 (def db (atom {}))
 
-(defn reset-db!
-  "Drop all data from the db."
+(defn clear-db!
+  "Clear all data from the db."
   []
   (reset! db {}))
 
@@ -70,6 +70,13 @@
   [hid :- HID]
   (keyword (clip-str 4 (name hid))))
 
+
+(s/defn hid->wid  :- s/Keyword
+  "Uses an HID to look up a human-friendly Word-ID (WID) from an English dictionary.
+  Useful for debugging purposes."
+  [hid :- HID]
+  nil)              ; #todo
+
 (s/defn hid->elem :- Element
   [hid :- HID]
   (grab hid @db))
@@ -95,42 +102,44 @@
   (grab :value (hid->leaf hid)))
 
 
-(s/defn ^:private reset-elem!
+; #todo naming choices
+; #todo reset! vs  set
+; #todo swap!  vs  update
+; #todo remove  vs  delete  vs drop
+
+(s/defn ^:private set-elem!
   "Unconditionally reset the value of an Element in the db"
   [hid :- HID
    elem :- Element]
   (swap! db glue {hid elem} ))
 
-(s/defn reset-node!
+(s/defn set-node
   "Unconditionally reset the value of an Node in the db"
   [hid :- HID
    attrs :- tsk/KeyMap
    kids :- [HID] ]
-  (reset-elem! hid (->Node attrs kids)))
+  (set-elem! hid (->Node attrs kids)))
 
-(s/defn reset-leaf!
+(s/defn set-leaf
   "Unconditionally reset the value of an Leaf in the db"
   [hid :- HID
    attrs :- tsk/KeyMap
    value :- s/Any ]
-  (reset-elem! hid (->Leaf attrs value)))
-
-
+  (set-elem! hid (->Leaf attrs value)))
 
 (s/defn add-node :- HID
   [attrs :- tsk/KeyMap
    kids :- [s/Keyword]] ; #todo verify kids exist
   (let [hid  (new-hid) ]
-    (reset-node! hid attrs kids)
+    (set-node hid attrs kids)
     hid))
 
 (s/defn add-leaf :- HID
   [attrs :- tsk/KeyMap
    value :- s/Any]
   (let [hid  (new-hid) ]
-    (reset-leaf! hid attrs value)
+    (set-leaf hid attrs value)
     hid))
-
 
 ; #todo need to recurse with set of parent hid's to avoid cycles
 (s/defn hid->tree :- tsk/KeyMap
@@ -145,14 +154,13 @@
       ; Leaf: nothing to do
       base-result)))
 
-
-(s/defn reset-attrs :- tsk/KeyMap
+(s/defn set-attrs :- tsk/KeyMap
   "Merge the supplied attrs map into the attrs of a Node or Leaf"
   [hid :- HID
    attrs-new :- tsk/KeyMap]
   (let [elem-curr  (hid->elem hid)
         elem-new   (glue elem-curr {:attrs attrs-new})]
-    (reset-elem! hid elem-new)
+    (set-elem! hid elem-new)
     elem-new))
 
 (s/defn merge-attrs :- tsk/KeyMap
@@ -163,7 +171,7 @@
         attrs-curr (grab :attrs elem-curr)
         attrs-new  (glue attrs-curr attrs-in)
         elem-new   (glue elem-curr {:attrs attrs-new})]
-    (reset-elem! hid elem-new)
+    (set-elem! hid elem-new)
     elem-new))
 
 (s/defn update-attrs :- tsk/KeyMap
@@ -175,7 +183,7 @@
         attrs-curr (grab :attrs elem-curr)
         attrs-new  (apply fn-update-attrs attrs-curr fn-update-attrs-args)
         elem-new   (glue elem-curr {:attrs attrs-new})]
-    (reset-elem! hid elem-new)
+    (set-elem! hid elem-new)
     elem-new))
 
 (s/defn update-attr :- tsk/KeyMap
@@ -187,8 +195,7 @@
   (let [fn-update-attrs (fn fn-update-attrs [attrs-curr]
                           (let [attr-curr (grab attr attrs-curr)
                                 attr-new  (apply fn-update-attr attr-curr fn-update-attr-args)
-                                attrs-new (glue attrs-curr {attr attr-new})
-                                ]
+                                attrs-new (glue attrs-curr {attr attr-new}) ]
                             attrs-new))]
     (update-attrs hid fn-update-attrs)))
 
@@ -200,10 +207,6 @@
                           (let [attrs-new (dissoc attrs-curr attr) ]
                             attrs-new))]
     (update-attrs hid fn-update-attrs)))
-
-; #todo naming choices
-; #todo reset! vs  set
-; #todo swap!  vs  update
 
 ; for Node's
 ; #todo reset-kids

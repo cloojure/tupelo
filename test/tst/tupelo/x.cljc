@@ -21,7 +21,7 @@
 (t/refer-tupelo)
 
 (dotest
-  (reset-db!)
+  (clear-db!)
   (let [x (add-leaf {:tag :char :color :red} "x")
         y (add-leaf {:tag :char :color :red} "y")
         z (add-leaf {:tag :char :color :red} "z")
@@ -53,12 +53,12 @@
     (is= (hid->kids r) [x y z])
     (is= (hid->value z) "z")
 
-    (reset-attrs z {:type :tuna, :name :charlie})
+    (set-attrs z {:type :tuna, :name :charlie})
     (is= (hid->attrs z) {:type :tuna, :name :charlie})
   ))
 
 (dotest
-  (reset-db!)
+  (clear-db!)
   (let [x (add-leaf {:tag :char :color :red :cnt 0} "x")
         r (add-node {:tag :root :color :white :cnt 0} [x])
         x-tree (hid->tree x)
@@ -88,7 +88,7 @@
        :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :value "x"}]})))
 
 (dotest
-  (reset-db!)
+  (clear-db!)
   (let [x (add-leaf {:tag :char :color :red} "x")
         y (add-leaf {:tag :char :color :red} "y")
         z (add-leaf {:tag :char :color :red} "z")
@@ -96,12 +96,10 @@
     (is= (hid->kids r) [x y z])
     (is= (hid->value z) "z")
 
-    (reset-attrs z {:type :tuna, :name :charlie})
+    (set-attrs z {:type :tuna, :name :charlie})
     (is= (hid->attrs z) {:type :tuna, :name :charlie})
 
-    (is= (into {} (hid->leaf y))
-      {:attrs {:tag :char, :color :red}, :value "y"} )
-    (is= (into {} (remove-attr y :color))
-      {:attrs {:tag :char}, :value "y"} )
+    (is= (hid->leaf y) (->Leaf {:tag :char, :color :red} "y"))
+    (is= (remove-attr y :color) (->Leaf {:tag :char} "y") )
 
-    ))
+  ))
