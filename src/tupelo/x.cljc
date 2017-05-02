@@ -115,6 +115,8 @@
    value :- s/Any ]
   (reset-elem! hid (->Leaf attrs value)))
 
+
+
 (s/defn add-node :- HID
   [attrs :- tsk/KeyMap
    kids :- [s/Keyword]] ; #todo verify kids exist
@@ -190,14 +192,27 @@
                             attrs-new))]
     (update-attrs hid fn-update-attrs)))
 
+(s/defn remove-attr :- tsk/KeyMap
+  "Use the supplied function & arguments to update the attr value for a Node or Leaf as in clojure.core/update"
+  [hid :- HID
+   attr :- s/Keyword ]
+  (let [fn-update-attrs (fn fn-update-attrs [attrs-curr]
+                          (let [attrs-new (dissoc attrs-curr attr) ]
+                            attrs-new))]
+    (update-attrs hid fn-update-attrs)))
+
+; #todo naming choices
+; #todo reset! vs  set
+; #todo swap!  vs  update
+
 ; for Node's
+; #todo reset-kids
+; #todo update-kids
 ; #todo add-kid
 ; #todo remove-kid
-; #todo set-kids
-; #todo update-kids
-; #todo update-kid
 
 ; for Leaf's
+; #todo reset-value
 ; #todo update-value
 
 ; for any elem

@@ -85,6 +85,23 @@
     (update-attr r :cnt + 7)
     (is= (hid->tree r)
       {:attrs {:tag :root, :color :white, :cnt 13},
-       :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :value "x"}]})
+       :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :value "x"}]})))
 
-  ))
+(dotest
+  (reset-db!)
+  (let [x (add-leaf {:tag :char :color :red} "x")
+        y (add-leaf {:tag :char :color :red} "y")
+        z (add-leaf {:tag :char :color :red} "z")
+        r (add-node {:tag :root :color :white} [x y z]) ]
+    (is= (hid->kids r) [x y z])
+    (is= (hid->value z) "z")
+
+    (reset-attrs z {:type :tuna, :name :charlie})
+    (is= (hid->attrs z) {:type :tuna, :name :charlie})
+
+    (is= (into {} (hid->leaf y))
+      {:attrs {:tag :char, :color :red}, :value "y"} )
+    (is= (into {} (remove-attr y :color))
+      {:attrs {:tag :char}, :value "y"} )
+
+    ))
