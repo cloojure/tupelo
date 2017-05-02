@@ -159,6 +159,36 @@
     (is= (hid->kids r) [])
     (is= (hid->tree r)
       {:attrs {:tag :root, :color :white},
-       :kids  []})
-  )
+       :kids  []}))
+
+  (clear-db!)
+  (let [x (add-leaf {:tag :char :color :red} "x")
+        y (add-leaf {:tag :char :color :green} "y")
+        z (add-leaf {:tag :char :color :blue} "z")
+
+        a (add-node {:tag :r1 :color :white} [x y z])
+        b (add-node {:tag :r2 :color :grey } [x y z])
+        c (add-node {:tag :r3 :color :black} [x y z])
+  ]
+    (is= (hid->kids a) [x y z])
+    (is= (hid->kids b) [x y z])
+    (is= (hid->kids c) [x y z])
+    (is= (hid->tree a) {:attrs {:tag :r1, :color :white},
+                        :kids
+                               [{:attrs {:tag :char, :color :red}, :value "x"}
+                                {:attrs {:tag :char, :color :green}, :value "y"}
+                                {:attrs {:tag :char, :color :blue}, :value "z"} ]} )
+    (remove-elems #{y z})
+    (is= (hid->kids a) [x])
+    (is= (hid->kids b) [x])
+    (is= (hid->kids c) [x])
+    (is= (hid->tree c) {:attrs {:tag :r3, :color :black},
+                        :kids [{:attrs {:tag :char, :color :red}, :value "x"} ]} )
+    (throws? (remove-elems #{x y}))
+
+    (remove-elems #{x})
+    (is= (hid->kids a) [])
+    (is= (hid->kids b) [])
+    (is= (hid->kids c) [])
+    (is= (hid->tree c) {:attrs {:tag :r3, :color :black}, :kids []} ))
 )

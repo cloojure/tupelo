@@ -42,6 +42,10 @@
 ;   :attrs {:type :int            } => <parse-int works>
 ;   :attrs {:type :int :color :red} => <must be even>
 
+; #todo kids save a parent reference set?
+; #todo need to make operate on a copy of the DB; only save result if not throw
+; #todo     => maybe switch to a ref instead of atom
+
 (defrecord Node [attrs kids] )    ; { :attrs { :k1 v1 :k2 v2 ... }  :kids  [ hid...] }
 (defrecord Leaf [attrs value])    ; { :attrs { :k1 v1 :k2 v2 ... }  :value s/Any     }
 (def Element (s/either Node Leaf))
@@ -86,7 +90,7 @@
   "Returns true iff an HID exists in the db"
   [hid :- HID]
   (when-not (hid-exists? hid)
-    (throw (IllegalArgumentException. "validate-hid: HID does not exist=" hid )))
+    (throw (IllegalArgumentException. (str "validate-hid: HID does not exist=" hid))))
   hid)
 
 (s/defn hid->elem :- Element
@@ -138,6 +142,8 @@
    elem :- Element]
   (swap! db glue {hid elem} ))
 
+; #todo avoid self-cycles
+; #todo avoid descendant-cycles
 (s/defn set-node
   "Unconditionally reset the value of an Node in the db"
   [hid :- HID
@@ -153,9 +159,11 @@
   (set-elem! hid (->Leaf attrs value)))
 
 
+; #todo avoid self-cycles
+; #todo avoid descendant-cycles
 (s/defn add-node :- HID
   [attrs :- tsk/KeyMap
-   kids :- [s/Keyword]] ; #todo verify kids exist
+   kids :- [s/Keyword]]
   (doseq [kid kids] (validate-hid kid))
   (let [hid (new-hid)]
     (set-node hid attrs kids)
@@ -246,6 +254,8 @@
     leaf-new))
 
 
+; #todo avoid self-cycles
+; #todo avoid descendant-cycles
 (s/defn set-kids :- Node
   "Resets the kids of a Node to the supplied list"
   [hid :- HID
@@ -255,6 +265,8 @@
     (set-elem! hid node-new)
     node-new))
 
+; #todo avoid self-cycles
+; #todo avoid descendant-cycles
 (s/defn update-kids :- tsk/KeyMap
   "Use the supplied function & arguments to update the kids map for a Node or Leaf as in clojure.core/update"
   [hid :- HID
@@ -267,6 +279,8 @@
     (set-elem! hid elem-new)
     elem-new))
 
+; #todo avoid self-cycles
+; #todo avoid descendant-cycles
 (s/defn add-kids :- tsk/KeyMap
   "Appends a list of kids a Node"
   [hid :- HID
@@ -280,22 +294,38 @@
 
 (s/defn remove-kids :- tsk/KeyMap
   "Removes all a set of children from a Node (including any duplcates)."
-  [hid :- HID
-   kids-leaving :- #{HID}]
-  (let [elem-curr       (hid->elem hid)
-        kids-curr       (grab :kids elem-curr)
-        missing-kids    (set/difference kids-leaving (into #{} kids-curr))
-        _               (when (not-empty? missing-kids)
-                          (throw (IllegalArgumentException. "remove-kids: missing-kids found=" missing-kids)))
-        kid-is-leaving? (fn fn-kid-is-leaving? [kid] (contains-key? kids-leaving kid))
-        kids-new        (drop-if kid-is-leaving? kids-curr)
-        elem-new        (glue elem-curr {:kids kids-new})]
-    (set-elem! hid elem-new)
-    elem-new))
+  ([hid :- HID
+    kids-leaving :- #{HID}]
+    (remove-kids hid kids-leaving false))
+  ([hid :- HID
+    kids-leaving :- #{HID}
+    missing-kids-ok :- s/Bool]
+    (let [report-missing-kids (not missing-kids-ok)
+          node-curr           (hid->node hid)
+          kids-curr           (grab :kids node-curr)
+          missing-kids        (set/difference kids-leaving (into #{} kids-curr))
+          _                   (when (and (not-empty? missing-kids) report-missing-kids)
+                                (throw (IllegalArgumentException.
+                                         (str "remove-kids: missing-kids found=" missing-kids))))
+          kid-is-leaving?     (fn fn-kid-is-leaving? [kid] (contains-key? kids-leaving kid))
+          kids-new            (drop-if kid-is-leaving? kids-curr)
+          node-new            (glue node-curr {:kids kids-new}) ]
+      (set-elem! hid node-new)
+      node-new)))
 
-
-; for any elem
-; #todo remove-elem (need to make like "cascade")
+(s/defn remove-elems :- #{HID}
+  "Removes a set of elements and all references to them from the database. May create orphaned elements."
+  [hids-leaving :- #{HID}]
+  (doseq [hid hids-leaving]
+    (validate-hid hid))
+  (doseq [hid hids-leaving]
+    (swap! db dissoc hid))
+  (let [hids-staying (keys @db)]
+    (doseq [hid hids-staying]
+      (let [elem (hid->elem hid)]
+        (when (instance? Node elem)
+          (remove-kids hid hids-leaving true))))) ; true => missing-kids-ok
+  hids-leaving)
 
 ; #todo list-roots
 ; #todo list-non-roots
