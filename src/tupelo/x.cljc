@@ -11,6 +11,7 @@
     [clojure.core.async     :as ca :refer [go go-loop chan thread]]
     [clojure.pprint :as pprint]
     [clojure.string :as str]
+    [clojure.set :as set]
     [schema.core :as s]
     [tupelo.async :as ta]
     [tupelo.core :as t]
@@ -246,7 +247,7 @@
 
 
 (s/defn set-kids :- Node
-  "Merge the supplied kids map into the kids of a Node or Leaf"
+  "Resets the kids of a Node to the supplied list"
   [hid :- HID
    kids-new :- [HID]]
   (let [node-curr  (hid->node hid)
@@ -267,22 +268,31 @@
     elem-new))
 
 (s/defn add-kids :- tsk/KeyMap
-  "Use the supplied function & arguments to update the kids map for a Node or Leaf as in clojure.core/update"
+  "Appends a list of kids a Node"
   [hid :- HID
-   kids :- [HID]]
+   kids-new :- [HID]]
   (let [elem-curr (hid->elem hid)
         kids-curr (grab :kids elem-curr)
-        kids-new  (glue kids-curr kids)
+        kids-new  (glue kids-curr kids-new)
         elem-new  (glue elem-curr {:kids kids-new})]
     (set-elem! hid elem-new)
     elem-new))
 
+(s/defn remove-kids :- tsk/KeyMap
+  "Removes all a set of children from a Node (including any duplcates)."
+  [hid :- HID
+   kids-leaving :- #{HID}]
+  (let [elem-curr       (hid->elem hid)
+        kids-curr       (grab :kids elem-curr)
+        missing-kids    (set/difference kids-leaving (into #{} kids-curr))
+        _               (when (not-empty? missing-kids)
+                          (throw (IllegalArgumentException. "remove-kids: missing-kids found=" missing-kids)))
+        kid-is-leaving? (fn fn-kid-is-leaving? [kid] (contains-key? kids-leaving kid))
+        kids-new        (drop-if kid-is-leaving? kids-curr)
+        elem-new        (glue elem-curr {:kids kids-new})]
+    (set-elem! hid elem-new)
+    elem-new))
 
-; for Node's
-; #todo reset-kids
-; #todo update-kids
-; #todo add-kid
-; #todo remove-kid
 
 ; for any elem
 ; #todo remove-elem (need to make like "cascade")
