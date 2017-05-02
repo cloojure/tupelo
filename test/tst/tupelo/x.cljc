@@ -13,130 +13,12 @@
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.misc :as tm]
-    [tupelo.schema :as tsk]
-    [tupelo.string :as ts]
   )
   (:import
     [java.nio ByteBuffer]
     [java.util UUID ]
   ))
 (t/refer-tupelo)
-
-; #todo  move to tupelo.x-tree (tupelo.x-datapig ?)
-; forest  data-forest  ForestDb forest-db
-  ; Sherwood  weald  wald  boreal
-
-; :hid is short for Hash ID, the SHA-1 hash of a v1/UUID expressed as a hexadecimal keyword
-; format { :hid Element }
-(def db (atom {}))
-
-(defn reset-db!
-  "Drop all data from the db."
-  []
-  (reset! db {}))
-
-; #todo need an attribute registry { :kw fn-validate }
-; #todo need fn's to add/delete attributes; to delete verify no uses exist. Change = delete then re-add
-; #todo on any data change, run validate fn
-; #todo Global validation fn's;  apply all that match; implied wildcards for missing attr/vals
-;   :attrs {:type :int            } => <parse-int works>
-;   :attrs {:type :int :color :red} => <must be even>
-
-(defrecord Node [attrs kids] )    ; { :attrs { :k1 v1 :k2 v2 ... }  :kids  [ hid...] }
-(defrecord Leaf [attrs value])    ; { :attrs { :k1 v1 :k2 v2 ... }  :value s/Any     }
-(def Element (s/either Node Leaf))
-
-(def HID s/Keyword) ; #todo find way to validate
-
-(s/defn node? :- s/Bool
-  [arg :- tsk/KeyMap]
-  (= #{ :attrs :kids } (set (keys arg))))
-
-(s/defn leaf? :- s/Bool
-  [arg :- tsk/KeyMap]
-  (= #{ :attrs :value } (set (keys arg))))
-
-(s/defn hid? :- s/Bool
-  [arg :- s/Keyword]
-  (assert (keyword? arg))
-  (let [name-str (name arg)]
-    (and (ts/hex? name-str)
-      (= 40 (count name-str)))))
-
-(s/defn new-hid :- HID
-  []
-  (keyword (tm/sha-uuid)))
-
-(s/defn hid->id4  :- s/Keyword
-  [hid :- HID]
-  (keyword (clip-str 4 (name hid))))
-
-(s/defn add-node :- HID
-  [attrs :- tsk/KeyMap
-   kids :- [s/Keyword]]
-  ; #todo verify kids exist
-  (let [hid  (new-hid)
-        node (->Node attrs kids)]
-    (swap! db glue {hid node})
-    hid))
-
-(s/defn add-leaf :- HID
-  [attrs :- tsk/KeyMap
-   value :- s/Any]
-  (let [hid  (new-hid)
-        leaf (->Leaf attrs value)]
-    (swap! db glue {hid leaf})
-    hid))
-
-; #todo need to recurse with set of parent hid's to avoid cycles
-(s/defn hid->tree :- tsk/KeyMap
-  [hid :- HID]
-  (let [elem (grab hid @db)
-        base-result (into {} elem)]
-    (if (instance? Node elem)
-      ; Node: need to recursively resolve children
-      (let [kids   (mapv hid->tree (grab :kids elem))
-            resolved-result (assoc base-result :kids kids) ]
-        resolved-result)
-      ; Leaf: nothing to do
-      base-result)))
-
-(s/defn merge-attrs :- tsk/KeyMap
-  "Merge the supplied attrs map into the attrs of a Node or Leaf"
-  [hid :- HID
-   attrs-new :- tsk/KeyMap]
-  (let [elem-curr  (grab hid @db)
-        attrs-curr (grab :attrs elem-curr)
-        attrs-new  (glue attrs-curr attrs-new)
-        elem-new   (glue elem-curr {:attrs attrs-new})]
-    (swap! db glue {hid elem-new})
-    elem-new))
-
-(s/defn update-attrs :- tsk/KeyMap
-  "Use the supplied function & arguments to update the attrs map for a Node or Leaf as in clojure.core/update"
-  [hid :- HID
-   fn-update-attrs   ; signature: (fn-update attrs-curr x y z & more) -> attrs-new
-   & fn-update-attrs-args ]
-  (let [elem-curr  (grab hid @db)
-        attrs-curr (grab :attrs elem-curr)
-        attrs-new  (apply fn-update-attrs attrs-curr fn-update-attrs-args)
-        elem-new   (glue elem-curr {:attrs attrs-new})]
-    (swap! db glue {hid elem-new})
-    elem-new))
-
-(s/defn update-attr :- tsk/KeyMap
-  "Use the supplied function & arguments to update the attr value for a Node or Leaf as in clojure.core/update"
-  [hid :- HID
-   attr :- s/Keyword
-   fn-update-attr        ; signature: (fn-update-attr attr-curr x y z & more) -> attrs-new
-   & fn-update-attr-args]
-  (let [fn-update-attrs (fn fn-update-attrs [attrs-curr]
-                         (let [attr-curr (grab attr attrs-curr)
-                               attr-new  (apply fn-update-attr attr-curr fn-update-attr-args)
-                               attrs-new (glue attrs-curr {attr attr-new})
-                               ]
-                           attrs-new))]
-    (update-attrs hid fn-update-attrs)))
 
 (dotest
   (reset-db!)
@@ -157,8 +39,23 @@
        :kids  [{:attrs {:tag :char, :color :red}, :value "x"}
                {:attrs {:tag :char, :color :red}, :value "y"}
                {:attrs {:tag :char, :color :red}, :value "z"}]})
+    (is (wild-match?
+          {:attrs {:tag :root, :color :white},
+           :kids  [:* :* :*]}
+          (hid->node r)))
+
     (merge-attrs x {:color :green})
-    (is= (hid->tree x) {:attrs {:tag :char, :color :green}, :value "x"} )))
+    (is= (hid->tree x) (into {} (hid->leaf x))
+      {:attrs {:tag :char, :color :green}, :value "x"} )
+
+    (is= (hid->attrs r) {:tag :root, :color :white})
+    (is= (hid->attrs z) {:tag :char, :color :red})
+    (is= (hid->kids r) [x y z])
+    (is= (hid->value z) "z")
+
+    (reset-attrs z {:type :tuna, :name :charlie})
+    (is= (hid->attrs z) {:type :tuna, :name :charlie})
+  ))
 
 (dotest
   (reset-db!)
