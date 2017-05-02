@@ -542,6 +542,9 @@ The unit test shows it in action:
                             [""  []  '()  {}     #{}  nil] ))
 ----
 
+Just to confuse things, Clojure does have the similarly named functions `empty` and `not-empty`.
+Be sure to avoid these two functions for predicate tests.
+
 A similar, but more complicated, situation exists in the case of `not-any?`.  
 Clojure has the `not-any?` function to indicate if a predicate is false for all items
 in a collection. However, there has never been a corresponding `any?` function such that

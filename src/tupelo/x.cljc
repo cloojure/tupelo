@@ -70,12 +70,23 @@
   [hid :- HID]
   (keyword (clip-str 4 (name hid))))
 
-
 (s/defn hid->wid  :- s/Keyword
   "Uses an HID to look up a human-friendly Word-ID (WID) from an English dictionary.
   Useful for debugging purposes."
   [hid :- HID]
   nil)              ; #todo
+
+(s/defn hid-exists?
+  "Returns true iff an HID exists in the db"
+  [hid :- HID]
+  (contains-key? @db hid))
+
+(s/defn validate-hid
+  "Returns true iff an HID exists in the db"
+  [hid :- HID]
+  (when-not (hid-exists? hid)
+    (throw (IllegalArgumentException. "validate-hid: HID does not exist=" hid )))
+  hid)
 
 (s/defn hid->elem :- Element
   [hid :- HID]
@@ -100,6 +111,19 @@
 (s/defn hid->value :- s/Any
   [hid :- HID]
   (grab :value (hid->leaf hid)))
+
+; #todo need to recurse with set of parent hid's to avoid cycles
+(s/defn hid->tree :- tsk/KeyMap
+  [hid :- HID]
+  (let [elem (hid->elem hid)
+        base-result (into {} elem)]
+    (if (instance? Node elem)
+      ; Node: need to recursively resolve children
+      (let [kids   (mapv hid->tree (grab :kids elem))
+            resolved-result (assoc base-result :kids kids) ]
+        resolved-result)
+      ; Leaf: nothing to do
+      base-result)))
 
 
 ; #todo naming choices
@@ -130,29 +154,17 @@
 (s/defn add-node :- HID
   [attrs :- tsk/KeyMap
    kids :- [s/Keyword]] ; #todo verify kids exist
-  (let [hid  (new-hid) ]
+  (doseq [kid kids] (validate-hid kid))
+  (let [hid (new-hid)]
     (set-node hid attrs kids)
     hid))
 
 (s/defn add-leaf :- HID
   [attrs :- tsk/KeyMap
    value :- s/Any]
-  (let [hid  (new-hid) ]
+  (let [hid (new-hid)]
     (set-leaf hid attrs value)
     hid))
-
-; #todo need to recurse with set of parent hid's to avoid cycles
-(s/defn hid->tree :- tsk/KeyMap
-  [hid :- HID]
-  (let [elem (hid->elem hid)
-        base-result (into {} elem)]
-    (if (instance? Node elem)
-      ; Node: need to recursively resolve children
-      (let [kids   (mapv hid->tree (grab :kids elem))
-            resolved-result (assoc base-result :kids kids) ]
-        resolved-result)
-      ; Leaf: nothing to do
-      base-result)))
 
 (s/defn set-attrs :- tsk/KeyMap
   "Merge the supplied attrs map into the attrs of a Node or Leaf"
