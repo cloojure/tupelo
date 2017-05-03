@@ -424,23 +424,24 @@
 
 ; #todo find-elem, find-node, find-leaf
 ; #todo find-elem, find-node, find-leaf
+; #todo find-roots function (& root for sole root or throw)
 
 ;---------------------------------------------------------------------------------------------------
 (comment
 
 (defn- ^:no-doc find-tree-impl
-  [result-atom parents tree tgt-path]
+  [result-atom parents root tgt-path]
   (newline)
   (println :result-atom) (pretty @result-atom)
   (spyx parents)
-  (spyx tree)
+  (spyx root)
   (spyx tgt-path)
-  (when (map? tree) ; avoid trying to process value `1` on leaf like [:a 1]
-    (when (and (not-empty? tree) (not-empty? tgt-path))
+  (when (map? root) ; avoid trying to process value `1` on leaf like [:a 1]
+    (when (and (not-empty? root) (not-empty? tgt-path))
       (let [tgt           (first tgt-path)
             tgt-path-rest (rest tgt-path)
-            tag           (grab :tag tree)
-            content       (grab :content tree)]
+            tag           (grab :tag root)
+            content       (grab :content root)]
         (when (or (= tag :*) (= tag :**))
           (throw (IllegalArgumentException. (str "fing-tag*: found reserved tag " tag " in tree"))))
         (spyx tgt)
@@ -450,7 +451,7 @@
             (println :200 "match tag:" tag)
             (if (empty? tgt-path-rest)
               (let [soln {:parent-path parents
-                          :subtree     tree}]
+                          :subtree     root}]
                 (println :210 "empty soln:" soln)
                 (swap! result-atom glue #{soln}))
               (let [parents-new (append parents tag)]
@@ -463,8 +464,8 @@
             (when (not-empty? tgt-path-rest) ; :** wildcard cannot terminate the tgt-path
               (let [parents-new (append parents tag)]
                 (println :320 ":** parents-new:" parents-new)
-                (println (str :331 "  recurse  parents:" parents "   tree:" tree "  tgt-path-rest:" tgt-path-rest))
-                (find-tree-impl result-atom parents tree tgt-path-rest)
+                (println (str :331 "  recurse  parents:" parents "   root:" root "  tgt-path-rest:" tgt-path-rest))
+                (find-tree-impl result-atom parents root tgt-path-rest)
                 (doseq [child-tree content]
                   (println :330 ":** child-tree:" child-tree)
                   (println (str :332 "    recurse  parents-new:" parents-new "  tgt-path:" tgt-path))
@@ -472,9 +473,9 @@
 
 (defn find-tree ; #todo need update-tree & update-leaf fn's
   "Searches an Enlive-format tree for the specified tgt-path"
-  [tree tgt-path]
+  [db root tgt-path]
   (println "=============================================================================")
-  (when (empty? tree)
+  (when (empty? root)
     (throw (IllegalStateException. "find-tree: tree is empty")))
   (when (empty? tgt-path)
     (throw (IllegalStateException. "find-tree: tgt-path is empty")))
@@ -483,9 +484,9 @@
 
   (let [result-atom (atom #{}) ]
     (try
-      (find-tree-impl result-atom [] tree tgt-path)
+      (find-tree-impl result-atom [] root tgt-path)
       (catch Exception e
-        (throw (RuntimeException. (str "find-tree: failed for tree=" tree \newline
+        (throw (RuntimeException. (str "find-tree: failed for tree=" root \newline
                                     "  tgt-path=" tgt-path \newline
                                     "  caused by=" (.getMessage e))))))
     @result-atom))
