@@ -10,8 +10,8 @@
     [clj-uuid :as uuid]
     [clojure.core.async     :as ca :refer [go go-loop chan thread]]
     [clojure.pprint :as pprint]
-    [clojure.string :as str]
     [clojure.set :as set]
+    [clojure.string :as str]
     [schema.core :as s]
     [tupelo.async :as ta]
     [tupelo.core :as t]
@@ -134,6 +134,21 @@
    hid :- HID]
   (grab :value (hid->leaf db hid)))
 
+(s/defn hid-node?
+  "Returns true iff an HID is a Node"
+  [db
+   hid :- HID]
+  (validate-db db)
+  (instance? Node (hid->elem db hid)))
+
+(s/defn hid-leaf?
+  "Returns true iff an HID is a Leaf"
+  [db
+   hid :- HID]
+  (validate-db db)
+  (instance? Leaf (hid->elem db hid)))
+
+
 ; #todo need to recurse with set of parent hid's to avoid cycles
 (s/defn hid->tree :- tsk/KeyMap
   [db
@@ -180,6 +195,12 @@
    value :- s/Any ]
   (set-elem! db hid (->Leaf attrs value)))
 
+(s/defn validate-attrs
+  [attrs :- tsk/KeyMap]
+  (let [illegal-value? (s/fn fn-illegal-value [arg] (or (= arg :*) (= arg :**)))]
+    (when (has-some? illegal-value? (keyvals attrs))
+      (throw (IllegalArgumentException. (str "validate-attrs: failed attrs=" (pr-str attrs)))))
+    attrs))
 
 ; #todo avoid self-cycles
 ; #todo avoid descendant-cycles
@@ -192,6 +213,7 @@
                 attrs-arg
                 {(validate keyword? attrs-arg) nil} )
         hid (new-hid)]
+    (validate-attrs attrs)
     (set-node db hid attrs kids)
     hid))
 
@@ -203,23 +225,19 @@
                 attrs-arg
                 {(validate keyword? attrs-arg) nil} )
         hid (new-hid)]
+    (validate-attrs attrs)
     (set-leaf db hid attrs value)
     hid))
 
-
-(s/defn enlive-node? :- s/Bool ; #todo add test and -> tupelo.core
-  [arg]
-  (and (map? arg)
-    (= #{:tag :attrs :content} (set (keys arg)))))
 
 (s/defn add-tree :- HID
   "Adds an Enlive-format tree to the DB. Tag values are converted to nil attributes:
   [:a ...] -> {:a nil ...}..."
   [db tree]
-  (assert (enlive-node? tree))
+  (assert (te/enlive-node? tree))
   (let [attrs    (glue {(grab :tag tree) nil} (grab :attrs tree))
         children (grab :content tree) ]
-    (if (every? enlive-node? children)
+    (if (every? te/enlive-node? children)
       (let [kids (glue [] (for [child children] (add-tree db child))) ]
         (add-node db attrs kids))
       (add-leaf db attrs children))))
@@ -236,6 +254,7 @@
   [db
    hid :- HID
    attrs-new :- tsk/KeyMap]
+  (validate-attrs attrs-new)
   (let [elem-curr  (hid->elem db hid)
         elem-new   (glue elem-curr {:attrs attrs-new})]
     (set-elem! db hid elem-new)
@@ -250,6 +269,7 @@
         attrs-curr (grab :attrs elem-curr)
         attrs-new  (glue attrs-curr attrs-in)
         elem-new   (glue elem-curr {:attrs attrs-new})]
+    (validate-attrs attrs-new)
     (set-elem! db hid elem-new)
     elem-new))
 
@@ -263,6 +283,7 @@
         attrs-curr (grab :attrs elem-curr)
         attrs-new  (apply fn-update-attrs attrs-curr fn-update-attrs-args)
         elem-new   (glue elem-curr {:attrs attrs-new})]
+    (validate-attrs attrs-new)
     (set-elem! db hid elem-new)
     elem-new))
 
@@ -270,13 +291,14 @@
   "Use the supplied function & arguments to update the attr value for a Node or Leaf as in clojure.core/update"
   [db
    hid :- HID
-   attr :- s/Keyword
+   attr-name :- s/Keyword
    fn-update-attr        ; signature: (fn-update-attr attr-curr x y z & more) -> attr-new
    & fn-update-attr-args]
   (let [elem-curr  (hid->elem db hid)
-        attr-curr  (fetch-in elem-curr [:attrs attr] )
-        attr-new   (apply fn-update-attr attr-curr fn-update-attr-args)
-        elem-new   (assoc-in elem-curr [:attrs attr] attr-new) ]
+        attr-val-curr  (fetch-in elem-curr [:attrs attr-name] )
+        attr-val-new   (apply fn-update-attr attr-val-curr fn-update-attr-args)
+        elem-new   (assoc-in elem-curr [:attrs attr-name] attr-val-new) ]
+    (validate-attrs (grab :attrs elem-new))
     (set-elem! db hid elem-new)
     elem-new))
 
@@ -428,68 +450,70 @@
 ; #todo find-roots function (& root for sole root or throw)
 
 ;---------------------------------------------------------------------------------------------------
-(comment
+(comment)
 
-(defn- ^:no-doc find-tree-impl
-  [result-atom parents root tgt-path]
+(s/defn ^:no-doc find-tree-impl
+  [result-atom
+   parents :- [HID]
+   db
+   hid :- HID
+   tgt-path :- [(s/either s/Keyword tsk/KeyMap)]
+  ]
+  (validate-db db)
   (newline)
   (println :result-atom) (pretty @result-atom)
   (spyx parents)
-  (spyx root)
+  (spyx hid)
+  (spyx (hid->elem db hid))
   (spyx tgt-path)
-  (when (map? root) ; avoid trying to process value `1` on leaf like [:a 1]
-    (when (and (not-empty? root) (not-empty? tgt-path))
-      (let [tgt           (first tgt-path)
-            tgt-path-rest (rest tgt-path)
-            tag           (grab :tag root)
-            content       (grab :content root)]
-        (when (or (= tag :*) (= tag :**))
-          (throw (IllegalArgumentException. (str "fing-tag*: found reserved tag " tag " in tree"))))
-        (spyx tgt)
-        (spyx tgt-path-rest)
-        (if (or (= tgt tag) (= tgt :*))
-          (do
-            (println :200 "match tag:" tag)
-            (if (empty? tgt-path-rest)
-              (let [soln {:parent-path parents
-                          :subtree     root}]
-                (println :210 "empty soln:" soln)
-                (swap! result-atom glue #{soln}))
-              (let [parents-new (append parents tag)]
-                (println :220 "not-empty parents-new:" parents-new)
-                (doseq [child-tree content]
-                  (println :230 "child-tree:" child-tree)
-                  (find-tree-impl result-atom parents-new child-tree tgt-path-rest)))))
-          (when (= tgt :**)
-            (println :300 "tgt = :**")
-            (when (not-empty? tgt-path-rest) ; :** wildcard cannot terminate the tgt-path
-              (let [parents-new (append parents tag)]
-                (println :320 ":** parents-new:" parents-new)
-                (println (str :331 "  recurse  parents:" parents "   root:" root "  tgt-path-rest:" tgt-path-rest))
-                (find-tree-impl result-atom parents root tgt-path-rest)
-                (doseq [child-tree content]
-                  (println :330 ":** child-tree:" child-tree)
-                  (println (str :332 "    recurse  parents-new:" parents-new "  tgt-path:" tgt-path))
-                  (find-tree-impl result-atom parents-new child-tree tgt-path))))))))))
+  (when (not-empty? tgt-path)
+    (spy-let [tgt (first tgt-path)
+              tgt-path-rest (rest tgt-path)
+              attrs (hid->attrs db hid)]
+      (let [parents-new (append parents hid)]
+        (when (or (spyx (= tgt :*)) (spyx (elem-matches? db hid tgt)))
+          (println :200 (str "match attrs=" attrs "  hid=" hid))
+          (if (spyx (empty? tgt-path-rest))
+            (let [soln {:parents parents-new}]
+              (println :210 "empty soln:" soln)
+              (swap! result-atom glue #{soln}))
+            (do
+              (println :220 "NOT (empty? tgt-path-rest) parents-new=" parents-new )
+              (when (spyx (hid-node? db hid))
+                (println :221)
+                (doseq [kid (hid->kids db hid)]
+                  (println :230 "kid=" (hid->attrs db kid))
+                  (find-tree-impl result-atom parents-new db kid tgt-path-rest))))))
+        (when (= tgt :**)
+          (println :300 "tgt = :**")
+          (when (not-empty? tgt-path-rest) ; :** wildcard cannot terminate the tgt-path
+            (println :320 ":** parents-new:" parents-new)
+            (println (str :330 "  recurse  parents:" parents "   hid:" hid "  tgt-path-rest:" tgt-path-rest))
+            (find-tree-impl result-atom parents db hid tgt-path-rest)
+            (when (node? hid)
+              (doseq [kid (hid->kids db hid)]
+                (println :340 ":** kid:" (hid->attrs db kid))
+                (println (str :350 "    recurse  parents-new:" parents-new "  tgt-path:" tgt-path))
+                (find-tree-impl result-atom parents-new db kid tgt-path)))))))))
 
-(defn find-tree ; #todo need update-tree & update-leaf fn's
+(defn find-tree     ; #todo need update-tree & update-leaf fn's
   "Searches an Enlive-format tree for the specified tgt-path"
   [db root tgt-path]
   (println "=============================================================================")
-  (when (empty? root)
-    (throw (IllegalStateException. "find-tree: tree is empty")))
+  (validate-db db)
+  (validate-hid db root)
   (when (empty? tgt-path)
     (throw (IllegalStateException. "find-tree: tgt-path is empty")))
   (when (= :** (last tgt-path))
     (throw (IllegalArgumentException. "find-tree: recursive-wildcard `:**` cannot terminate tgt-path")))
 
-  (let [result-atom (atom #{}) ]
+  (let [result-atom (atom #{})]
     (try
-      (find-tree-impl result-atom [] root tgt-path)
+      (find-tree-impl result-atom [] db root tgt-path)
       (catch Exception e
         (throw (RuntimeException. (str "find-tree: failed for tree=" root \newline
                                     "  tgt-path=" tgt-path \newline
                                     "  caused by=" (.getMessage e))))))
     @result-atom))
 
-)
+

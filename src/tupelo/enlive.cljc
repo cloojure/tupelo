@@ -7,19 +7,16 @@
 (ns tupelo.enlive
   "Experimental new code"
   (:require
-    [clj-uuid :as uuid]
     [clojure.core.async     :as ca :refer [go go-loop chan thread]]
-    [clojure.pprint :as pprint]
-    [clojure.string :as str]
-    [clojure.set :as set]
     [schema.core :as s]
-    [tupelo.async :as ta]
     [tupelo.core :as t]
-    [tupelo.misc :as tm]
-    [tupelo.schema :as tsk]
-    [tupelo.string :as ts]
   ))
 (t/refer-tupelo)
+
+(s/defn enlive-node? :- s/Bool ; #todo add test and -> tupelo.core
+  [arg]
+  (and (map? arg)
+    (= #{:tag :attrs :content} (set (keys arg)))))
 
 (defn hiccup->enlive
   "Converts a tree of data from Hiccup -> Enlive format"

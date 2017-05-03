@@ -31,8 +31,13 @@
         z-tree (hid->tree db z)
         r-tree (hid->tree db r) ]
     (is (and (hid? x) (hid? y) (hid? z) (hid? r)))
+
+    (is (and (hid-leaf? db x) (hid-leaf? db y) (hid-leaf? db z)))
+    (is (hid-node? db r))
+
     (is (and (leaf? x-tree) (leaf? y-tree) (leaf? z-tree)))
     (is (node? r-tree))
+
     (is= x-tree {:attrs {:tag :char, :color :red}, :value "x"} )
     (is= r-tree
       {:attrs {:tag :root, :color :white},
@@ -296,3 +301,30 @@
                 :kids  [{:attrs {:c nil}, :value [4]}
                         {:attrs {:c nil}, :value [5]}]}
                {:attrs {:c nil}, :value [9]}]} )))
+
+(defn print-solns [db solns]
+  (nl)
+  (doseq [soln solns]
+    (nl)
+    (println "-------------------------------------------------------")
+    (let [path (grab :parents soln)
+          parents (butlast path)
+          subtree (last path)]
+      (doseq [hid parents]
+        (pretty (hid->attrs db hid)))
+      (pretty (hid->tree db subtree))))
+  )
+(dotest
+  (let [db (new-db)
+        aa (add-node db :a
+             [(add-leaf db :b 1)
+              (add-leaf db :b 2)
+              (add-node db :b
+                [(add-leaf db :c 4)
+                 (add-leaf db :c 5)])
+              (add-leaf db :c 9)]) ]
+    (spyx-pretty (hid->tree db aa))
+    (print-solns db (spyx (find-tree db aa [:a])))
+    (print-solns db (spyx (find-tree db aa [:a :b])))
+
+  ) )
