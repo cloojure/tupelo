@@ -15,6 +15,7 @@
     [schema.core :as s]
     [tupelo.async :as ta]
     [tupelo.core :as t]
+    [tupelo.enlive :as te]
     [tupelo.misc :as tm]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
@@ -227,7 +228,7 @@
   "Adds a Hiccup-format tree to the DB. Tag values are converted to nil attributes:
   [:a ...] -> {:a nil ...}..."
   [db tree]
-  (add-tree db (hiccup->enlive tree)))
+  (add-tree db (te/hiccup->enlive tree)))
 
 
 (s/defn set-attrs :- tsk/KeyMap
