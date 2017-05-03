@@ -460,8 +460,8 @@
         (throw (IllegalArgumentException.
                  (str ":digits must positive" \newline
                    "opts: " opts)))))
-    ; At this point, there were no invalid args and at least one of either :tol and/or
-    ; :digits was specified.  So, return the answer.
+    ; At this point, there were no invalid args and at least one of
+    ; either :tol and/or :digits was specified.  So, return the answer.
     (let [val1      (double val1)
           val2      (double val2)
           delta-abs (Math/abs (- val1 val2))

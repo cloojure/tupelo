@@ -327,6 +327,21 @@
           (remove-kids hid hids-leaving true))))) ; true => missing-kids-ok
   hids-leaving)
 
+(s/defn matches-map?
+  [pattern :- tsk/KeyMap
+   data :- tsk/KeyMap]
+  (let [pattern-keys (keys pattern)
+            pattern-keys-set (set pattern-keys)
+            data-keys-set (set (keys data))
+            pattern-keys-missing (set/difference pattern-keys-set data-keys-set)]
+    (if (not-empty? pattern-keys-missing)
+      false
+      (let [data-tst     (submap-by-keys data pattern-keys-set)
+            ; replace any nil values with wildcard :*
+            pattern-wild (apply glue (for [[k v] pattern]
+                                       {k (if (nil? v) :* v)}))]
+        (wild-match? pattern-wild data-tst)))))
+
 ; #todo list-roots
 ; #todo list-non-roots
 ; #todo list-leaves

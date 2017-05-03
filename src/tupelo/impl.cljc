@@ -620,7 +620,7 @@
       (submap-by-keys {:a 1 :b 2} #{:a   }             )  =>  {:a 1}
       (submap-by-keys {:a 1 :b 2} #{:a :z} :missing-ok )  =>  {:a 1}
   "
-  [map :- tsk/Map
+  [map-arg :- tsk/Map
    keep-keys :- tsk/Set
    & opts]
   (assert (set? keep-keys))
@@ -628,10 +628,10 @@
     (apply glue {}
       (for [key keep-keys]
         (with-exception-default {}
-          {key (grab key map)})))
+          {key (grab key map-arg)})))
     (apply glue {}
       (for [key keep-keys]
-        {key (grab key map)}))))
+        {key (grab key map-arg)}))))
 
 ; #todo -> README
 (s/defn submap-by-vals :- tsk/Map

@@ -190,5 +190,19 @@
     (is= (hid->kids a) [])
     (is= (hid->kids b) [])
     (is= (hid->kids c) [])
-    (is= (hid->tree c) {:attrs {:tag :r3, :color :black}, :kids []} ))
+    (is= (hid->tree c) {:attrs {:tag :r3, :color :black}, :kids []} )))
+
+(dotest
+  (is (matches-map? {:a 1 :b 2} {:a 1 :b 2}))
+  (is (matches-map? {:a nil :b 2} {:a 1 :b 2}))
+  (is (matches-map? {:a :* :b 2} {:a 1 :b 2}))
+  (is (matches-map? {:a 1} {:a 1 :b 2}))
+  (is (matches-map? {:a nil} {:a 1 :b 2}))
+  (is (matches-map? {:a :*} {:a 1 :b 2}))
+  (is (matches-map? {:a nil :b :*} {:a 1 :b 2}))
+  (is (matches-map? {:a :* :b nil} {:a 1 :b 2}))
+
+  (isnt (matches-map? {:a 9} {:a 1 :b 2}))
+  (isnt (matches-map? {:c nil} {:a 1 :b 2}))
+  (isnt (matches-map? {:c :*} {:a 1 :b 2}))
 )
