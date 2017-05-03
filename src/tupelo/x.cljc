@@ -327,20 +327,27 @@
           (remove-kids hid hids-leaving true))))) ; true => missing-kids-ok
   hids-leaving)
 
-(s/defn matches-map?
-  [pattern :- tsk/KeyMap
-   data :- tsk/KeyMap]
-  (let [pattern-keys (keys pattern)
-            pattern-keys-set (set pattern-keys)
-            data-keys-set (set (keys data))
-            pattern-keys-missing (set/difference pattern-keys-set data-keys-set)]
-    (if (not-empty? pattern-keys-missing)
-      false
-      (let [data-tst     (submap-by-keys data pattern-keys-set)
-            ; replace any nil values with wildcard :*
-            pattern-wild (apply glue (for [[k v] pattern]
-                                       {k (if (nil? v) :* v)}))]
-        (wild-match? pattern-wild data-tst)))))
+(s/defn elem-matches?
+  [hid :- HID
+   pattern-in :- s/Any]
+  (let [attrs   (hid->attrs hid)
+        pattern (cond
+                  (map?         pattern-in)  pattern-in
+                  (sequential?  pattern-in)  (zipmap pattern-in (repeat nil))
+                  (keyword?     pattern-in)  {pattern-in nil}
+                  :else (throw (IllegalArgumentException.
+                                 (str "elem-matches?: illegal pattern-in=" pattern-in))))]
+    (let [pattern-keys         (keys pattern)
+          pattern-keys-set     (set pattern-keys)
+          attrs-keys-set       (set (keys attrs))
+          pattern-keys-missing (set/difference pattern-keys-set attrs-keys-set)]
+      (if (not-empty? pattern-keys-missing)
+        false
+        (let [attrs-tst    (submap-by-keys attrs pattern-keys-set)
+              ; replace any nil values with wildcard :*
+              pattern-wild (apply glue (for [[k v] pattern]
+                                         {k (if (nil? v) :* v)}))]
+          (wild-match? pattern-wild attrs-tst))))))
 
 ; #todo list-roots
 ; #todo list-non-roots
