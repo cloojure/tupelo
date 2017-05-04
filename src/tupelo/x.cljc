@@ -452,7 +452,18 @@
 ;---------------------------------------------------------------------------------------------------
 (comment)
 
-(s/defn ^:no-doc find-tree-impl
+(defn format-solns [db solns]
+  (set
+    (for [soln solns]
+      (let [path soln
+            parents (butlast path)
+            subtree (last path)]
+        (append
+          (forv [hid parents]
+            (hid->attrs db hid))
+          (hid->tree db subtree))))))
+
+(s/defn ^:no-doc find-paths-impl
   [result-atom
    parents :- [HID]
    db
@@ -460,46 +471,48 @@
    tgt-path :- [(s/either s/Keyword tsk/KeyMap)]
   ]
   (validate-db db)
-  (newline)
-  (println :result-atom) (pretty @result-atom)
-  (spyx parents)
-  (spyx hid)
-  (spyx (hid->elem db hid))
-  (spyx tgt-path)
+  ;(newline)
+  ;(println :result-atom) (format-solns db @result-atom)
+  ;(spy :parents (mapv #(hid->attrs db %) parents))
+  ;(spy :hid (hid->attrs db hid))
+  ;(println :hid-tree ) (pretty (hid->tree db hid))
+  ;(spyx tgt-path)
   (when (not-empty? tgt-path)
-    (spy-let [tgt (first tgt-path)
+    (let [tgt (first tgt-path)
               tgt-path-rest (rest tgt-path)
               attrs (hid->attrs db hid)]
       (let [parents-new (append parents hid)]
-        (when (or (spyx (= tgt :*)) (spyx (elem-matches? db hid tgt)))
-          (println :200 (str "match attrs=" attrs "  hid=" hid))
-          (if (spyx (empty? tgt-path-rest))
-            (let [soln {:parents parents-new}]
-              (println :210 "empty soln:" soln)
+        (when (or (= tgt :*) (elem-matches? db hid tgt))
+          ;(println :200 (str "match attrs=" attrs ))
+          (if (empty? tgt-path-rest)
+            (let [soln parents-new]
+              ;(println :210 "empty soln:" (mapv #(hid->attrs db %) soln))
               (swap! result-atom glue #{soln}))
             (do
-              (println :220 "NOT (empty? tgt-path-rest) parents-new=" parents-new )
-              (when (spyx (hid-node? db hid))
-                (println :221)
+              ;(println :220 "NOT (empty? tgt-path-rest) parents-new=" (mapv #(hid->attrs db %) parents-new))
+              (when (hid-node? db hid)
+                ;(println :221)
                 (doseq [kid (hid->kids db hid)]
-                  (println :230 "kid=" (hid->attrs db kid))
-                  (find-tree-impl result-atom parents-new db kid tgt-path-rest))))))
+                  ;(println :230 "kid=" (hid->attrs db kid))
+                  (find-paths-impl result-atom parents-new db kid tgt-path-rest))))))
         (when (= tgt :**)
-          (println :300 "tgt = :**")
+          ;(println :300 "tgt = :**")
           (when (not-empty? tgt-path-rest) ; :** wildcard cannot terminate the tgt-path
-            (println :320 ":** parents-new:" parents-new)
-            (println (str :330 "  recurse  parents:" parents "   hid:" hid "  tgt-path-rest:" tgt-path-rest))
-            (find-tree-impl result-atom parents db hid tgt-path-rest)
-            (when (node? hid)
+            ;(println :320 ":** parents-new:" (mapv #(hid->attrs db %) parents-new))
+            ;(println (str :330 "  recurse  parents:" (mapv #(hid->attrs db %) parents)
+            ;           "   hid:" (hid->attrs db hid) "  tgt-path-rest:" tgt-path-rest))
+            (find-paths-impl result-atom parents db hid tgt-path-rest)
+            (when (hid-node? db hid)
               (doseq [kid (hid->kids db hid)]
-                (println :340 ":** kid:" (hid->attrs db kid))
-                (println (str :350 "    recurse  parents-new:" parents-new "  tgt-path:" tgt-path))
-                (find-tree-impl result-atom parents-new db kid tgt-path)))))))))
+                ;(println :340 ":** kid:" (hid->attrs db kid))
+                ;(println (str :350 "    recurse  parents-new:" (mapv #(hid->attrs db %) parents-new)
+                ;           "  tgt-path:" tgt-path))
+                (find-paths-impl result-atom parents-new db kid tgt-path)))))))))
 
-(defn find-tree     ; #todo need update-tree & update-leaf fn's
+(defn find-paths    ; #todo need update-tree & update-leaf fn's
   "Searches an Enlive-format tree for the specified tgt-path"
   [db root tgt-path]
-  (println "=============================================================================")
+  ;(println "=============================================================================")
   (validate-db db)
   (validate-hid db root)
   (when (empty? tgt-path)
@@ -508,12 +521,21 @@
     (throw (IllegalArgumentException. "find-tree: recursive-wildcard `:**` cannot terminate tgt-path")))
 
   (let [result-atom (atom #{})]
-    (try
-      (find-tree-impl result-atom [] db root tgt-path)
-      (catch Exception e
-        (throw (RuntimeException. (str "find-tree: failed for tree=" root \newline
-                                    "  tgt-path=" tgt-path \newline
-                                    "  caused by=" (.getMessage e))))))
+    (find-paths-impl result-atom [] db root tgt-path)
     @result-atom))
+
+(defn- has-matching-leaf
+  [db path tgt-val]
+  (let [tail-hid  (last path)
+        tail-elem (hid->elem db tail-hid)]
+    (and (hid-leaf? db tail-hid)
+      (or (= tgt-val (grab :value tail-elem))
+        (= tgt-val :*)))))
+
+(defn find-leaves
+  [db root tgt-path tgt-val]
+  (let [paths      (find-paths db root tgt-path)
+        leaf-paths (keep-if #(has-matching-leaf db % tgt-val) paths) ]
+    leaf-paths))
 
 

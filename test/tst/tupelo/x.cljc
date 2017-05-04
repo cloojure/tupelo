@@ -302,18 +302,6 @@
                         {:attrs {:c nil}, :value [5]}]}
                {:attrs {:c nil}, :value [9]}]} )))
 
-(defn print-solns [db solns]
-  (nl)
-  (doseq [soln solns]
-    (nl)
-    (println "-------------------------------------------------------")
-    (let [path (grab :parents soln)
-          parents (butlast path)
-          subtree (last path)]
-      (doseq [hid parents]
-        (pretty (hid->attrs db hid)))
-      (pretty (hid->tree db subtree))))
-  )
 (dotest
   (let [db (new-db)
         aa (add-node db :a
@@ -323,8 +311,155 @@
                 [(add-leaf db :c 4)
                  (add-leaf db :c 5)])
               (add-leaf db :c 9)]) ]
-    (spyx-pretty (hid->tree db aa))
-    (print-solns db (spyx (find-tree db aa [:a])))
-    (print-solns db (spyx (find-tree db aa [:a :b])))
 
-  ) )
+    (is (empty? (find-paths db aa [:z])))
+    (is (empty? (find-paths db aa [:z :b])))
+    (is (empty? (find-paths db aa [:z :b :c])))
+    (is (empty? (find-paths db aa [:a :z])))
+    (is (empty? (find-paths db aa [:a :z :c])))
+    (is (empty? (find-paths db aa [:a :b :z])))
+
+    (is= (format-solns db (find-paths db aa [:a]))
+      #{[{:attrs {:a nil},
+          :kids
+                 [{:attrs {:b nil}, :value 1}
+                  {:attrs {:b nil}, :value 2}
+                  {:attrs {:b nil},
+                   :kids  [{:attrs {:c nil}, :value 4}
+                           {:attrs {:c nil}, :value 5}]}
+                  {:attrs {:c nil}, :value 9}]}]})
+    (is= (format-solns db (find-paths db aa [:a :b]))
+      #{[{:a nil}
+         {:attrs {:b nil}, :value 1}]
+        [{:a nil}
+         {:attrs {:b nil}, :value 2}]
+        [{:a nil}
+         {:attrs {:b nil},
+          :kids  [{:attrs {:c nil}, :value 4}
+                  {:attrs {:c nil}, :value 5}]}]})
+    (is= (format-solns db (find-paths db aa [:a :c]))
+      #{ [ {:a nil}
+          {:attrs {:c nil}, :value 9} ] } )
+    (is= (format-solns db (find-paths db aa [:a :b :c]))
+      #{[{:a nil} {:b nil} {:attrs {:c nil}, :value 5}]
+        [{:a nil} {:b nil} {:attrs {:c nil}, :value 4}]} )
+    (is= (format-solns db (find-paths db aa [:* :b]))
+      #{[{:a nil} {:attrs {:b nil}, :value 1}]
+        [{:a nil} {:attrs {:b nil}, :value 2}]
+        [{:a nil}
+         {:attrs {:b nil},
+          :kids  [{:attrs {:c nil}, :value 4}
+                  {:attrs {:c nil}, :value 5}]}]})
+    (is= (format-solns db (find-paths db aa [:a :*]))
+      #{[{:a nil} {:attrs {:b nil}, :value 1}]
+        [{:a nil} {:attrs {:b nil}, :value 2}]
+        [{:a nil}
+         {:attrs {:b nil},
+          :kids  [{:attrs {:c nil}, :value 4}
+                  {:attrs {:c nil}, :value 5}]}]
+        [{:a nil} {:attrs {:c nil}, :value 9}]})
+    (is= (format-solns db (find-paths db aa [:a :* :c]))
+      #{[{:a nil} {:b nil} {:attrs {:c nil}, :value 5}]
+        [{:a nil} {:b nil} {:attrs {:c nil}, :value 4}]})))
+
+(dotest
+  (let [db (new-db)
+        aa (add-node db :a
+             [(add-leaf db {:b :b1} 1)
+              (add-leaf db {:b :b2} 2)
+              (add-node db {:b :b3}
+                [(add-leaf db {:c :c4} 4)
+                 (add-leaf db {:c :c5} 5)])
+              (add-leaf db {:c :c9} 9)]) ]
+    (is= (format-solns db (find-paths db aa [:a :** :*]))
+      #{[{:a nil} {:attrs {:b :b1}, :value 1}]
+        [{:a nil} {:attrs {:b :b2}, :value 2}]
+        [{:a nil} {:b :b3} {:attrs {:c :c4}, :value 4}]
+        [{:a nil} {:b :b3} {:attrs {:c :c5}, :value 5}]
+        [{:a nil}
+         {:attrs {:b :b3},
+          :kids  [{:attrs {:c :c4}, :value 4}
+                  {:attrs {:c :c5}, :value 5}]}]
+        [{:a nil} {:attrs {:c :c9}, :value 9}]})
+
+    (is= (format-solns db (find-paths db aa [:** :c]))
+    #{[{:a nil} {:b :b3} {:attrs {:c :c4}, :value 4}]
+      [{:a nil} {:b :b3} {:attrs {:c :c5}, :value 5}]
+      [{:a nil}          {:attrs {:c :c9}, :value 9}] } )
+
+    (is= (format-solns db (find-paths db aa [:a :** :c]))
+      #{[{:a nil} {:b :b3} {:attrs {:c :c4}, :value 4}]
+        [{:a nil} {:b :b3} {:attrs {:c :c5}, :value 5}]
+        [{:a nil}          {:attrs {:c :c9}, :value 9}] } ) )
+
+  (let [db (new-db)
+        aa (add-node db {:a :a1}
+             [(add-leaf db {:b :b2} 2)
+              (add-leaf db {:c :c3} 3)
+             ]) ]
+    (throws? (format-solns db (find-paths db aa [:**])))
+    (throws? (format-solns db (find-paths db aa [:a :**])))
+    (is= (format-solns db (find-paths db aa [:a :** :c]))
+      #{[{:a :a1} {:attrs {:c :c3}, :value 3}]})
+    (is= (format-solns db (find-paths db aa [:a :** :** :c]))
+      #{[{:a :a1} {:attrs {:c :c3}, :value 3}]})
+    (is= (format-solns db (find-paths db aa [:** :c]))
+      #{[{:a :a1} {:attrs {:c :c3}, :value 3}]})
+    (is= (format-solns db (find-paths db aa [:** :*]))
+      #{[{:attrs {:a :a1},
+          :kids  [{:attrs {:b :b2}, :value 2}
+                  {:attrs {:c :c3}, :value 3}]}]
+        [{:a :a1} {:attrs {:b :b2}, :value 2}]
+        [{:a :a1} {:attrs {:c :c3}, :value 3}]} )
+
+    (throws? (format-solns db (find-leaves db aa [:**] 13)))
+    (throws? (format-solns db (find-leaves db aa [:a :**] 13)))
+    (is= (format-solns db (find-leaves db aa [:a :b] 2))
+      #{[{:a :a1} {:attrs {:b :b2}, :value 2}]} )
+    (is= (format-solns db (find-leaves db aa [:a :** :b] 2))
+      #{[{:a :a1} {:attrs {:b :b2}, :value 2}]} )
+    (is= (format-solns db (find-leaves db aa [:a :** :** :b] 2))
+      #{[{:a :a1} {:attrs {:b :b2}, :value 2}]} )
+    (is= (format-solns db (find-leaves db aa [:** :b] 2))
+      #{[{:a :a1} {:attrs {:b :b2}, :value 2}]} )
+    (is= (format-solns db (find-leaves db aa [:a :c] 3))
+      #{[{:a :a1} {:attrs {:c :c3}, :value 3}]} )
+    (is= (format-solns db (find-leaves db aa [:* :c] 3))
+      #{[{:a :a1} {:attrs {:c :c3}, :value 3}]} )
+    (is= (format-solns db (find-leaves db aa [:a :*] 3))
+      #{[{:a :a1} {:attrs {:c :c3}, :value 3}]} )
+    (is= (format-solns db (find-leaves db aa [:** :*] 3))
+      #{[{:a :a1} {:attrs {:c :c3}, :value 3}]} )
+    (is= (format-solns db (find-leaves db aa [:a :** :c] 3))
+      #{[{:a :a1} {:attrs {:c :c3}, :value 3}]} )
+    (is= (format-solns db (find-leaves db aa [:a :** :** :c] 3))
+      #{[{:a :a1} {:attrs {:c :c3}, :value 3}]} )
+    (is= (format-solns db (find-leaves db aa [:** :*] :*))
+      #{[{:a :a1} {:attrs {:b :b2}, :value 2}]
+        [{:a :a1} {:attrs {:c :c3}, :value 3}]} )
+
+    (throws? (format-solns db (find-paths db aa [:**])))
+    (throws? (format-solns db (find-paths db aa [:a :**]))))
+
+  (throws?
+    (let [db (new-db)
+          aa (add-node db {:a :a1}
+               [(add-leaf db {:* :b2} 2)
+                (add-leaf db {:c :c3} 3) ])] ))
+  (throws?
+    (let [db (new-db)
+          aa (add-node db {:a :a1}
+               [(add-leaf db {:b :*} 2)
+                (add-leaf db {:c :c3} 3) ])] ))
+  (throws?
+    (let [db (new-db)
+          aa (add-node db {:a :a1}
+               [(add-leaf db {:** :b2} 2)
+                (add-leaf db {:c :c3} 3) ])] ))
+  (throws?
+    (let [db (new-db)
+          aa (add-node db {:a :a1}
+               [(add-leaf db {:b :**} 2)
+                (add-leaf db {:c :c3} 3) ])] ))
+
+)
