@@ -27,12 +27,14 @@
 ; forest  data-forest  ForestDb forest-db
 ; Sherwood  weald  wald  boreal
 
+; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
 (def ^:dynamic *db* nil)
 
 (defn validate-db []
   (when-not (map? *db*)
     (throw (IllegalArgumentException. (str "validate-db: failed db=" *db*)))))
 
+; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
 (defmacro with-db
   [db-arg & forms]
   `(binding [*db* ~db-arg]

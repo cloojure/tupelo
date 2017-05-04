@@ -129,6 +129,7 @@
 
         db2   (with-db db1
                 (let [{:keys [x y z r]} @state]
+                  (is= (hid->elem y) (->Leaf {:tag :char} "y"))
                   (is= (set-value y "YYY") (->Leaf {:tag :char} "YYY"))
                   (is= (set-value y 0) (->Leaf {:tag :char} 0))
                   (update-value y + 7)
@@ -138,10 +139,11 @@
         ; db1 is unaffected by changes that created db2
         db3   (with-db db1
                 (let [{:keys [x y z r]} @state]
-                  (is= (hid->elem y) (->Leaf {:tag :char} "y"))))
+                  (is= (hid->elem y) (->Leaf {:tag :char} "y")))) ; still has db1 value
 
         db4   (with-db db2
                 (let [{:keys [x y z r]} @state
+                      _ (is= (hid->leaf y) (->Leaf {:tag :char} 42)) ; still has db2 value
                       a (add-leaf {:name :michael} "do")
                       b (add-leaf {:name :tito} "re")
                       c (add-leaf {:name :germain} "mi")]
