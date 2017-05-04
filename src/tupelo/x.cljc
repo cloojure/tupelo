@@ -28,24 +28,24 @@
 ; Sherwood  weald  wald  boreal
 
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
-(def ^:dynamic *db* nil)
+(def ^:dynamic *forest** nil)
 
-(defn validate-db []
-  (when-not (map? *db*)
-    (throw (IllegalArgumentException. (str "validate-db: failed db=" *db*)))))
+(defn validate-forest []
+  (when-not (map? *forest**)
+    (throw (IllegalArgumentException. (str "validate-forest: failed forest=" *forest**)))))
 
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
-(defmacro with-db
-  [db-arg & forms]
-  `(binding [*db* ~db-arg]
-     (validate-db)
+(defmacro with-forest ; #todo -> with-forest
+  [forest-arg & forms]
+  `(binding [*forest** ~forest-arg]
+     (validate-forest)
      ~@forms
-     *db*))
+     *forest**))
 
 ; :hid is short for Hash ID, the SHA-1 hash of a v1/UUID expressed as a hexadecimal keyword
 ; format { :hid Element }
-(defn new-db
-  "Returns a new, empty db."
+(defn new-forest ; #todo -> new-forest
+  "Returns a new, empty forest."
   []
   {})
 
@@ -99,15 +99,15 @@
   nil)              ; #todo
 
 (s/defn validate-hid
-  "Returns true iff an HID exists in the db"
+  "Returns true iff an HID exists in the forest"
   [hid :- HID]
-  (when-not (contains-key? *db* hid)
+  (when-not (contains-key? *forest** hid)
     (throw (IllegalArgumentException. (str "validate-hid: HID does not exist=" hid))))
   hid)
 
 (s/defn hid->elem :- Element
   [hid :- HID]
-  (grab hid *db*))
+  (grab hid *forest**))
 
 (s/defn hid->node :- Node
   [hid :- HID]
@@ -158,16 +158,16 @@
 ; #todo remove  vs  delete  vs drop
 
 (s/defn ^:private set-elem
-  "Unconditionally sets the value of an Element in the db"
+  "Unconditionally sets the value of an Element in the forest"
   [hid :- HID
    elem :- Element]
-  (set! *db* (glue *db* {hid elem} ))
+  (set! *forest** (glue *forest** {hid elem} ))
   elem)
 
 ; #todo avoid self-cycles
 ; #todo avoid descendant-cycles
 (s/defn set-node
-  "Unconditionally sets the value of a Node in the db"
+  "Unconditionally sets the value of a Node in the forest"
   [hid :- HID
    attrs :- tsk/KeyMap
    kids :- [HID] ]
@@ -176,7 +176,7 @@
     node))
 
 (s/defn set-leaf
-  "Unconditionally sets the value of a Leaf in the db"
+  "Unconditionally sets the value of a Leaf in the forest"
   [hid :- HID
    attrs :- tsk/KeyMap
    value :- s/Any ]
@@ -378,13 +378,13 @@
   [hids-leaving :- #{HID}]
   (doseq [hid hids-leaving]
     (validate-hid hid))
-  (set! *db* (reduce
-               (fn fn-dissoc-elems [curr-db hid]
-                 (dissoc curr-db hid))
-               *db*
+  (set! *forest** (reduce
+               (fn fn-dissoc-elems [curr-forest hid]
+                 (dissoc curr-forest hid))
+               *forest**
                hids-leaving))
   ; Remove any kid references to deleted elements
-  (let [hids-staying (keys *db*)]
+  (let [hids-staying (keys *forest**)]
     (doseq [hid hids-staying]
       (let [elem (hid->elem hid)]
         (when (instance? Node elem)
