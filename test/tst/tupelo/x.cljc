@@ -542,3 +542,78 @@
           [{:a :a3} {:attrs {:c :b2, :color :blue}, :value 3}] }) )))
 
 ; #todo need to test find-paths using attrs
+(dotest
+  (with-forest (new-forest)
+    (let [aa (add-node {:color :red}
+               [(add-leaf {:color :green} 2)
+                (add-leaf {:color :blue} 3)])]
+      (is= (format-solns (find-paths aa [{:color :red}]))
+        #{[{:attrs {:color :red},
+            :kids  [{:attrs {:color :green}, :value 2}
+                    {:attrs {:color :blue}, :value 3}]}]})
+      (is= (format-solns (find-paths aa [{:color :red} {:color :green}]))
+        #{[{:color :red},
+           {:attrs {:color :green}, :value 2} ]})
+      (is= (format-solns (find-paths aa [:** {:color :green}]))
+        #{[{:color :red},
+           {:attrs {:color :green}, :value 2} ]}) )))
+
+(dotest
+  (with-forest (new-forest)
+    (let [x (add-node {:tag :a :id :a1}
+              [(add-leaf {:tag :b :color :red} 2)
+               (add-leaf {:tag :b :color :red} 3)])
+          y (add-node {:tag :a :id :a2}
+              [(add-leaf {:tag :b :color :green} 2)
+               (add-leaf {:tag :b :color :green} 3)])
+          z (add-node {:tag :a :id :a3}
+              [(add-leaf {:tag :c :color :blue} 2)
+               (add-leaf {:tag :c :color :blue} 3)]) ]
+
+      (is= (format-solns (find-paths (root-hids) [{:tag :a}]))
+        #{[{:attrs {:tag :a, :id :a1},
+            :kids  [{:attrs {:tag :b, :color :red}, :value 2}
+                    {:attrs {:tag :b, :color :red}, :value 3}]}]
+          [{:attrs {:tag :a, :id :a2},
+            :kids  [{:attrs {:tag :b, :color :green}, :value 2}
+                    {:attrs {:tag :b, :color :green}, :value 3}]}]
+          [{:attrs {:tag :a, :id :a3},
+            :kids  [{:attrs {:tag :c, :color :blue}, :value 2}
+                    {:attrs {:tag :c, :color :blue}, :value 3}]}] })
+      (is= (format-solns (find-paths (root-hids) [{:id :a2}]))
+        #{[{:attrs {:tag :a, :id :a2},
+            :kids  [{:attrs {:tag :b, :color :green}, :value 2}
+                    {:attrs {:tag :b, :color :green}, :value 3}]}] })
+      (is= (format-solns (find-paths (root-hids) [:** {:color :green}]))
+        #{[{:tag :a, :id :a2} {:attrs {:tag :b, :color :green}, :value 2}]
+          [{:tag :a, :id :a2} {:attrs {:tag :b, :color :green}, :value 3}]})
+
+      ; Actual return value looks like this:
+      ; (is= (spyx-pretty (find-paths (root-hids) [:** {:color :green}]))
+      ;   #{[:e41495fcd783b2b33bf68df959b53d2471d8043f :13893f7cf114a456bc286ffb6536ab076c5a3272]
+      ;     [:e41495fcd783b2b33bf68df959b53d2471d8043f :a825b2abfd07a9db00ab70a3d24a61349d4d0082]})
+      (is (wild-match? [[:* :*]
+                        [:* :*]]
+            (vec
+              (into (sorted-set)
+                (find-paths (root-hids) [:** {:color :green}])))))
+
+      (is= (format-solns (find-leaves (root-hids) [:** {:tag :b}] 2))
+        #{[{:tag :a, :id :a1} {:attrs {:tag :b, :color :red}, :value 2}]
+          [{:tag :a, :id :a2} {:attrs {:tag :b, :color :green}, :value 2}]})
+      (is= (format-solns (find-leaves (root-hids) [{:tag :a} :*] 2))
+        #{[{:tag :a, :id :a2} {:attrs {:tag :b, :color :green}, :value 2}]
+          [{:tag :a, :id :a3} {:attrs {:tag :c, :color :blue}, :value 2}]
+          [{:tag :a, :id :a1} {:attrs {:tag :b, :color :red}, :value 2}]})
+      (is= (format-solns (find-leaves (root-hids) [{:tag :a} {:tag :c}] :*))
+        #{[{:tag :a, :id :a3} {:attrs {:tag :c, :color :blue}, :value 2}]
+          [{:tag :a, :id :a3} {:attrs {:tag :c, :color :blue}, :value 3}]})
+
+      ; Actual return value looks like this:
+      ;   #{[:bfdb71187fc7fc1182e1776d9d50f6f6e1f72646 :dca3a96d1811b28f8cbc8a0e15ddd7670c9ed654]
+      ;     [:bfdb71187fc7fc1182e1776d9d50f6f6e1f72646 :0288e8f77e17e289f02d62229304960f1ddac39b]})
+      (is (wild-match? [[:* :*]
+                        [:* :*]]
+            (vec
+              (into (sorted-set)
+                (find-leaves (root-hids) [{:tag :a} {:tag :c}] :*))))) )))
