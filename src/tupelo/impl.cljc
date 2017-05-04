@@ -666,3 +666,11 @@
   (forv [key keys]
     (grab key map)))
 
+(defmacro label-value-map
+  "Called with a list of symbols like `(label-value-map a b c)` returns a labeled map
+   like {:a a :b b :c c} with the values for a, b, & c."
+  [& symbols]
+  (let [map-vec (forv [symbol symbols]
+                  {(keyword symbol) symbol})]
+    `(glue ~@map-vec) ) )
+

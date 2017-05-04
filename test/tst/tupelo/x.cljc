@@ -121,7 +121,7 @@
                          y (add-leaf {:tag :char :color :red} "y")
                          z (add-leaf {:tag :char :color :red} "z")
                          r (add-node {:tag :root :color :white} [x y z])]
-                     (reset! state {:x x :y y :z z :r r})
+                     (reset! state (label-value-map x y z r))
                      (is= (hid->kids r) [x y z])
                      (is= (hid->value z) "z")
 
@@ -589,7 +589,7 @@
           [{:tag :a, :id :a2} {:attrs {:tag :b, :color :green}, :value 3}]})
 
       ; Actual return value looks like this:
-      ; (is= (spyx-pretty (find-paths (root-hids) [:** {:color :green}]))
+      ; (find-paths (root-hids) [:** {:color :green}]) =>
       ;   #{[:e41495fcd783b2b33bf68df959b53d2471d8043f :13893f7cf114a456bc286ffb6536ab076c5a3272]
       ;     [:e41495fcd783b2b33bf68df959b53d2471d8043f :a825b2abfd07a9db00ab70a3d24a61349d4d0082]})
       (is (wild-match? [[:* :*]
@@ -615,6 +615,7 @@
           [{:tag :a, :id :a3} {:attrs {:tag :c, :color :blue}, :value 3}]})
 
       ; Actual return value looks like this:
+      ; (find-leaves (root-hids) [{:tag :a} {:tag :c}] :*) =>
       ;   #{[:bfdb71187fc7fc1182e1776d9d50f6f6e1f72646 :dca3a96d1811b28f8cbc8a0e15ddd7670c9ed654]
       ;     [:bfdb71187fc7fc1182e1776d9d50f6f6e1f72646 :0288e8f77e17e289f02d62229304960f1ddac39b]})
       (is (wild-match? [[:* :*]
@@ -622,3 +623,4 @@
             (vec
               (into (sorted-set)
                 (find-leaves (root-hids) [{:tag :a} {:tag :c}] :*))))) )))
+
