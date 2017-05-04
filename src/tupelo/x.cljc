@@ -165,7 +165,6 @@
       ; Leaf: nothing to do
       base-result)))
 
-
 ; #todo naming choices
 ; #todo reset! vs  set
 ; #todo swap!  vs  update

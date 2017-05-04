@@ -38,7 +38,6 @@
     (is (and (hid? x) (hid? y) (hid? z) (hid? r)))
 
     (is (and (leaf-hid? db x) (leaf-hid? db y) (leaf-hid? db z)))
-
     (is (and (leaf-elem? x-tree) (leaf-elem? y-tree) (leaf-elem? z-tree)))
     (is (and (leaf-elem? x-elem) (leaf-elem? y-elem) (leaf-elem? z-elem)))
 
@@ -55,6 +54,18 @@
     (is (wild-match?
           {:attrs {:tag :root, :color :white},
            :kids  [:* :* :*]}
+          (hid->node db r)))
+    (is (wild-match?
+          {:attrs {:tag :root :color :*},
+           :kids  [:* :* :*]}
+          (hid->node db r)))
+    (isnt (wild-match?
+            {:attrs {:tag :root :color :*},
+             :kids  [:* :*]}
+          (hid->node db r)))
+    (is (wild-match?
+          {:attrs {:tag :root :color :*},
+           :kids  :* }
           (hid->node db r)))
 
     (merge-attrs db x {:color :green})
