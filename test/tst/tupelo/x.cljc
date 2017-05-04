@@ -34,7 +34,8 @@
           y-elem (hid->elem y)
           z-elem (hid->elem z)
           r-elem (hid->elem r)
-          ]
+
+          roots (root-hids)]
       (is (and (hid? x) (hid? y) (hid? z) (hid? r)))
 
       (is (and (leaf-hid? x) (leaf-hid? y) (leaf-hid? z)))
@@ -44,6 +45,9 @@
       (is (node-hid? r))
       (is (node-elem? r-tree))
       (is (node-elem? r-elem))
+
+      (is= #{r} roots)
+      (not= #{x} roots)
 
       (is= x-tree {:attrs {:tag :char, :color :red}, :value "x"})
       (is= r-tree
@@ -230,6 +234,7 @@
 (dotest
   (with-forest (new-forest)
     (let [x (add-leaf {:a 1 :b 2} "x")]
+      (is= #{x} (root-hids))
       (is (elem-matches? x {:a 1 :b 2}))
       (is (elem-matches? x {:a nil :b 2}))
       (is (elem-matches? x {:a :* :b 2}))

@@ -28,19 +28,19 @@
 ; Sherwood  weald  wald  boreal
 
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
-(def ^:dynamic *forest** nil)
+(def ^:dynamic *forest* nil)
 
 (defn validate-forest []
-  (when-not (map? *forest**)
-    (throw (IllegalArgumentException. (str "validate-forest: failed forest=" *forest**)))))
+  (when-not (map? *forest*)
+    (throw (IllegalArgumentException. (str "validate-forest: failed forest=" *forest*)))))
 
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
 (defmacro with-forest ; #todo -> with-forest
   [forest-arg & forms]
-  `(binding [*forest** ~forest-arg]
+  `(binding [*forest* ~forest-arg]
      (validate-forest)
      ~@forms
-     *forest**))
+     *forest*))
 
 ; :hid is short for Hash ID, the SHA-1 hash of a v1/UUID expressed as a hexadecimal keyword
 ; format { :hid Element }
@@ -101,13 +101,13 @@
 (s/defn validate-hid
   "Returns true iff an HID exists in the forest"
   [hid :- HID]
-  (when-not (contains-key? *forest** hid)
+  (when-not (contains-key? *forest* hid)
     (throw (IllegalArgumentException. (str "validate-hid: HID does not exist=" hid))))
   hid)
 
 (s/defn hid->elem :- Element
   [hid :- HID]
-  (grab hid *forest**))
+  (grab hid *forest*))
 
 (s/defn hid->node :- Node
   [hid :- HID]
@@ -161,7 +161,7 @@
   "Unconditionally sets the value of an Element in the forest"
   [hid :- HID
    elem :- Element]
-  (set! *forest** (glue *forest** {hid elem} ))
+  (set! *forest* (glue *forest* {hid elem} ))
   elem)
 
 ; #todo avoid self-cycles
@@ -378,13 +378,13 @@
   [hids-leaving :- #{HID}]
   (doseq [hid hids-leaving]
     (validate-hid hid))
-  (set! *forest** (reduce
+  (set! *forest* (reduce
                (fn fn-dissoc-elems [curr-forest hid]
                  (dissoc curr-forest hid))
-               *forest**
+               *forest*
                hids-leaving))
   ; Remove any kid references to deleted elements
-  (let [hids-staying (keys *forest**)]
+  (let [hids-staying (keys *forest*)]
     (doseq [hid hids-staying]
       (let [elem (hid->elem hid)]
         (when (instance? Node elem)
@@ -508,4 +508,18 @@
         leaf-paths (keep-if #(has-matching-leaf % tgt-val) paths) ]
     leaf-paths))
 
+(s/defn root-hids :- #{HID}
+  "Return a vector of all root HID's"
+  []
+  (let [all-hids  (set (keys *forest*))
+        kid-hids  (reduce
+                    (fn [cum-kids hid]
+                      (let [elem (hid->elem hid)]
+                        (if (node-elem? elem)
+                          (into cum-kids (grab :kids elem))
+                          cum-kids)))
+                    #{}
+                    all-hids)
+        root-hids (set/difference all-hids kid-hids)]
+    root-hids))
 
