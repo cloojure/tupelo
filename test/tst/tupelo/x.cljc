@@ -111,54 +111,64 @@
          :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :value "x"}]}))))
 
 (dotest
-  (with-db (new-db)
-    (let [
-          x (add-leaf {:tag :char :color :red} "x")
-          y (add-leaf {:tag :char :color :red} "y")
-          z (add-leaf {:tag :char :color :red} "z")
-          r (add-node {:tag :root :color :white} [x y z])]
-      (is= (hid->kids r) [x y z])
-      (is= (hid->value z) "z")
+  (let [state (atom {})
+        db1   (with-db (new-db)
+                (let [x (add-leaf {:tag :char :color :red} "x")
+                      y (add-leaf {:tag :char :color :red} "y")
+                      z (add-leaf {:tag :char :color :red} "z")
+                      r (add-node {:tag :root :color :white} [x y z])]
+                  (reset! state {:x x :y y :z z :r r})
+                  (is= (hid->kids r) [x y z])
+                  (is= (hid->value z) "z")
 
-      (set-attrs z {:type :tuna, :name :charlie})
-      (is= (hid->attrs z) {:type :tuna, :name :charlie})
+                  (set-attrs z {:type :tuna, :name :charlie})
+                  (is= (hid->attrs z) {:type :tuna, :name :charlie})
 
-      (is= (hid->leaf y) (->Leaf {:tag :char, :color :red} "y"))
-      (is= (remove-attr y :color) (->Leaf {:tag :char} "y"))
+                  (is= (hid->leaf y) (->Leaf {:tag :char, :color :red} "y"))
+                  (is= (remove-attr y :color) (->Leaf {:tag :char} "y"))))
 
-      (is= (set-value y "YYY") (->Leaf {:tag :char} "YYY"))
-      (is= (set-value y 0) (->Leaf {:tag :char} 0))
-      (update-value y + 7)
-      (update-value y * 6)
-      (is= (hid->leaf y) (->Leaf {:tag :char} 42))
+        db2   (with-db db1
+                (let [{:keys [x y z r]} @state]
+                  (is= (set-value y "YYY") (->Leaf {:tag :char} "YYY"))
+                  (is= (set-value y 0) (->Leaf {:tag :char} 0))
+                  (update-value y + 7)
+                  (update-value y * 6)
+                  (is= (hid->leaf y) (->Leaf {:tag :char} 42))))
 
-      (let [a (add-leaf {:name :michael} "do")
-            b (add-leaf {:name :tito} "re")
-            c (add-leaf {:name :germain} "mi")]
-        (set-kids r [a b c])
-        (is= (hid->tree r)
-          {:attrs {:tag :root, :color :white},
-           :kids  [{:attrs {:name :michael}, :value "do"}
-                   {:attrs {:name :tito}, :value "re"}
-                   {:attrs {:name :germain}, :value "mi"}]})
-        (update-kids r
-          (fn sort-kids [kids]
-            (sort-by #(grab :name (hid->attrs %)) kids)))
-        (is= (hid->tree r)
-          {:attrs {:tag :root, :color :white},
-           :kids
-                  [{:attrs {:name :germain}, :value "mi"}
-                   {:attrs {:name :michael}, :value "do"}
-                   {:attrs {:name :tito}, :value "re"}]}
-          )
-        (update-kids r
-          (fn sort-kids [kids]
-            (sort-by #(hid->value %) kids)))
-        (is= (hid->tree r)
-          {:attrs {:tag :root, :color :white},
-           :kids  [{:attrs {:name :michael}, :value "do"}
-                   {:attrs {:name :germain}, :value "mi"}
-                   {:attrs {:name :tito}, :value "re"}]}))))
+        ; db1 is unaffected by changes that created db2
+        db3   (with-db db1
+                (let [{:keys [x y z r]} @state]
+                  (is= (hid->elem y) (->Leaf {:tag :char} "y"))))
+
+        db4   (with-db db2
+                (let [{:keys [x y z r]} @state
+                      a (add-leaf {:name :michael} "do")
+                      b (add-leaf {:name :tito} "re")
+                      c (add-leaf {:name :germain} "mi")]
+                  (set-kids r [a b c])
+                  (is= (hid->tree r)
+                    {:attrs {:tag :root, :color :white},
+                     :kids  [{:attrs {:name :michael}, :value "do"}
+                             {:attrs {:name :tito}, :value "re"}
+                             {:attrs {:name :germain}, :value "mi"}]})
+                  (update-kids r
+                    (fn sort-kids [kids]
+                      (sort-by #(grab :name (hid->attrs %)) kids)))
+                  (is= (hid->tree r)
+                    {:attrs {:tag :root, :color :white},
+                     :kids
+                            [{:attrs {:name :germain}, :value "mi"}
+                             {:attrs {:name :michael}, :value "do"}
+                             {:attrs {:name :tito}, :value "re"}]}
+                    )
+                  (update-kids r
+                    (fn sort-kids [kids]
+                      (sort-by #(hid->value %) kids)))
+                  (is= (hid->tree r)
+                    {:attrs {:tag :root, :color :white},
+                     :kids  [{:attrs {:name :michael}, :value "do"}
+                             {:attrs {:name :germain}, :value "mi"}
+                             {:attrs {:name :tito}, :value "re"}]}))) ])
 
   (with-db (new-db)
     (let [x (add-leaf {:tag :char :color :red} "x")
