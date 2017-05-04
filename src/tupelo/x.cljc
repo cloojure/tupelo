@@ -78,11 +78,11 @@
     (= #{:attrs :value} (set (keys elem)))))
 
 (s/defn hid? :- s/Bool
-  [arg :- s/Keyword]
-  (assert (keyword? arg))
-  (let [name-str (name arg)]
-    (and (ts/hex? name-str)
-      (= 40 (count name-str)))))
+  [arg]
+  (and (keyword? arg)
+    (let [name-str (name arg)]
+      (and (ts/hex? name-str)
+        (= 40 (count name-str))))))
 
 (s/defn new-hid :- HID
   []
@@ -138,6 +138,21 @@
   "Returns true iff an HID is a Leaf"
   [hid :- HID]
   (instance? Leaf (hid->elem hid)))
+
+(s/defn root-hids :- #{HID}
+  "Return a vector of all root HID's"
+  []
+  (let [all-hids  (set (keys *forest*))
+        kid-hids  (reduce
+                    (fn [cum-kids hid]
+                      (let [elem (hid->elem hid)]
+                        (if (node-elem? elem)
+                          (into cum-kids (grab :kids elem))
+                          cum-kids)))
+                    #{}
+                    all-hids)
+        root-hids (set/difference all-hids kid-hids)]
+    root-hids))
 
 ; #todo need to recurse with set of parent hid's to avoid cycles
 (s/defn hid->tree :- tsk/KeyMap
@@ -448,6 +463,7 @@
   ;(spy :hid (hid->attrs hid))
   ;(println :hid-tree ) (pretty (hid->tree hid))
   ;(spyx tgt-path)
+  (validate-hid hid)
   (when (not-empty? tgt-path)
     (let [tgt (first tgt-path)
               tgt-path-rest (rest tgt-path)
@@ -482,16 +498,19 @@
 
 (defn find-paths    ; #todo need update-tree & update-leaf fn's
   "Searches an Enlive-format tree for the specified tgt-path"
-  [root tgt-path]
-  ;(println "=============================================================================")
-  (validate-hid root)
+  [root-spec tgt-path]
   (when (empty? tgt-path)
-    (throw (IllegalStateException. "find-tree: tgt-path is empty")))
+    (throw (IllegalStateException. "find-paths: tgt-path is empty")))
   (when (= :** (last tgt-path))
-    (throw (IllegalArgumentException. "find-tree: recursive-wildcard `:**` cannot terminate tgt-path")))
+    (throw (IllegalArgumentException. "find-paths: recursive-wildcard `:**` cannot terminate tgt-path")))
 
-  (let [result-atom (atom #{})]
-    (find-paths-impl result-atom [] root tgt-path)
+  (let [result-atom (atom #{})
+        roots (cond
+                (hid? root-spec) [root-spec] ; scalar arg -> wrap in a vector
+                (sequential? root-spec) root-spec ; sequential arg -> use it as-is
+                :else (throw (IllegalArgumentException. (str "find-paths: invalid root-spec=" root-spec)))) ]
+    (doseq [root roots]
+      (find-paths-impl result-atom [] root tgt-path))
     @result-atom))
 
 (defn- has-matching-leaf
@@ -503,23 +522,8 @@
         (= tgt-val :*)))))
 
 (defn find-leaves
-  [root tgt-path tgt-val]
-  (let [paths      (find-paths root tgt-path)
+  [root-spec tgt-path tgt-val]
+  (let [paths      (find-paths root-spec tgt-path)
         leaf-paths (keep-if #(has-matching-leaf % tgt-val) paths) ]
     leaf-paths))
-
-(s/defn root-hids :- #{HID}
-  "Return a vector of all root HID's"
-  []
-  (let [all-hids  (set (keys *forest*))
-        kid-hids  (reduce
-                    (fn [cum-kids hid]
-                      (let [elem (hid->elem hid)]
-                        (if (node-elem? elem)
-                          (into cum-kids (grab :kids elem))
-                          cum-kids)))
-                    #{}
-                    all-hids)
-        root-hids (set/difference all-hids kid-hids)]
-    root-hids))
 

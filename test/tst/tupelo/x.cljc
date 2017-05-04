@@ -491,3 +491,18 @@
                 (add-leaf {:c :c3} 3)])))
 )
 
+(with-forest (new-forest)
+  (let [x (add-node {:a :a1}
+             [(add-leaf {:b :b1 :color :red} 2)
+              (add-leaf {:b :b2 :color :red} 3) ])
+        y (add-node {:a :a2}
+            [(add-leaf {:b :b1 :color :green} 2)
+             (add-leaf {:b :b2 :color :green} 3) ])
+        z (add-node {:a :a3}
+             [(add-leaf {:b :b1 :color :blue} 2)
+              (add-leaf {:b :b2 :color :blue} 3) ])
+
+        ]
+    (spyx (root-hids))
+    (spyx-pretty (mapv hid->tree (root-hids)))
+    (is= (spyx-pretty (format-solns (find-paths (root-hids) [:** :b]))))))
