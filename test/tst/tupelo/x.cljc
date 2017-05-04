@@ -29,14 +29,22 @@
         x-tree (hid->tree db x)
         y-tree (hid->tree db y)
         z-tree (hid->tree db z)
-        r-tree (hid->tree db r) ]
+        r-tree (hid->tree db r)
+        x-elem (hid->elem db x)
+        y-elem (hid->elem db y)
+        z-elem (hid->elem db z)
+        r-elem (hid->elem db r)
+  ]
     (is (and (hid? x) (hid? y) (hid? z) (hid? r)))
 
-    (is (and (hid-leaf? db x) (hid-leaf? db y) (hid-leaf? db z)))
-    (is (hid-node? db r))
+    (is (and (leaf-hid? db x) (leaf-hid? db y) (leaf-hid? db z)))
 
-    (is (and (leaf? x-tree) (leaf? y-tree) (leaf? z-tree)))
-    (is (node? r-tree))
+    (is (and (leaf-elem? x-tree) (leaf-elem? y-tree) (leaf-elem? z-tree)))
+    (is (and (leaf-elem? x-elem) (leaf-elem? y-elem) (leaf-elem? z-elem)))
+
+    (is (node-hid? db r))
+    (is (node-elem? r-tree))
+    (is (node-elem? r-elem))
 
     (is= x-tree {:attrs {:tag :char, :color :red}, :value "x"} )
     (is= r-tree

@@ -59,13 +59,15 @@
 
 (def HID s/Keyword) ; #todo find way to validate
 
-(s/defn node? :- s/Bool
-  [arg :- tsk/KeyMap]
-  (= #{ :attrs :kids } (set (keys arg))))
+(s/defn node-elem? :- s/Bool
+  [elem :- tsk/KeyMap]
+  (or (instance? Node elem)
+    (= #{:attrs :kids} (set (keys elem)))))
 
-(s/defn leaf? :- s/Bool
-  [arg :- tsk/KeyMap]
-  (= #{ :attrs :value } (set (keys arg))))
+(s/defn leaf-elem? :- s/Bool
+  [elem :- tsk/KeyMap]
+  (or (instance? Leaf elem)
+    (= #{:attrs :value} (set (keys elem)))))
 
 (s/defn hid? :- s/Bool
   [arg :- s/Keyword]
@@ -112,12 +114,12 @@
 (s/defn hid->node :- Node
   [db
    hid :- HID]
-  (validate node? (hid->elem db hid)))
+  (validate node-elem? (hid->elem db hid)))
 
 (s/defn hid->leaf :- Leaf
   [db
    hid :- HID]
-  (validate leaf? (hid->elem db hid)))
+  (validate leaf-elem? (hid->elem db hid)))
 
 (s/defn hid->attrs :- tsk/KeyMap
   [db
@@ -134,14 +136,14 @@
    hid :- HID]
   (grab :value (hid->leaf db hid)))
 
-(s/defn hid-node?
+(s/defn node-hid?
   "Returns true iff an HID is a Node"
   [db
    hid :- HID]
   (validate-db db)
   (instance? Node (hid->elem db hid)))
 
-(s/defn hid-leaf?
+(s/defn leaf-hid?
   "Returns true iff an HID is a Leaf"
   [db
    hid :- HID]
@@ -490,7 +492,7 @@
               (swap! result-atom glue #{soln}))
             (do
               ;(println :220 "NOT (empty? tgt-path-rest) parents-new=" (mapv #(hid->attrs db %) parents-new))
-              (when (hid-node? db hid)
+              (when (node-hid? db hid)
                 ;(println :221)
                 (doseq [kid (hid->kids db hid)]
                   ;(println :230 "kid=" (hid->attrs db kid))
@@ -502,7 +504,7 @@
             ;(println (str :330 "  recurse  parents:" (mapv #(hid->attrs db %) parents)
             ;           "   hid:" (hid->attrs db hid) "  tgt-path-rest:" tgt-path-rest))
             (find-paths-impl result-atom parents db hid tgt-path-rest)
-            (when (hid-node? db hid)
+            (when (node-hid? db hid)
               (doseq [kid (hid->kids db hid)]
                 ;(println :340 ":** kid:" (hid->attrs db kid))
                 ;(println (str :350 "    recurse  parents-new:" (mapv #(hid->attrs db %) parents-new)
@@ -528,7 +530,7 @@
   [db path tgt-val]
   (let [tail-hid  (last path)
         tail-elem (hid->elem db tail-hid)]
-    (and (hid-leaf? db tail-hid)
+    (and (leaf-hid? db tail-hid)
       (or (= tgt-val (grab :value tail-elem))
         (= tgt-val :*)))))
 
