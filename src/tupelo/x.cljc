@@ -507,7 +507,7 @@
   (let [result-atom (atom #{})
         roots (cond
                 (hid? root-spec) [root-spec] ; scalar arg -> wrap in a vector
-                (sequential? root-spec) root-spec ; sequential arg -> use it as-is
+                (set? root-spec) root-spec ; set of root hids -> use it as-is
                 :else (throw (IllegalArgumentException. (str "find-paths: invalid root-spec=" root-spec)))) ]
     (doseq [root roots]
       (find-paths-impl result-atom [] root tgt-path))

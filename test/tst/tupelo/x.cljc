@@ -491,18 +491,57 @@
                 (add-leaf {:c :c3} 3)])))
 )
 
-(with-forest (new-forest)
-  (let [x (add-node {:a :a1}
-             [(add-leaf {:b :b1 :color :red} 2)
-              (add-leaf {:b :b2 :color :red} 3) ])
-        y (add-node {:a :a2}
-            [(add-leaf {:b :b1 :color :green} 2)
-             (add-leaf {:b :b2 :color :green} 3) ])
-        z (add-node {:a :a3}
-             [(add-leaf {:b :b1 :color :blue} 2)
-              (add-leaf {:b :b2 :color :blue} 3) ])
+(dotest
+  (with-forest (new-forest)
+    (let [x (add-node {:a :a1}
+              [(add-leaf {:b :b1 :color :red} 2)
+               (add-leaf {:b :b2 :color :red} 3)])
+          y (add-node {:a :a2}
+              [(add-leaf {:b :b1 :color :green} 2)
+               (add-leaf {:b :b2 :color :green} 3)])
+          z (add-node {:a :a3}
+              [(add-leaf {:c :b1 :color :blue} 2)
+               (add-leaf {:c :b2 :color :blue} 3)])
 
-        ]
-    (spyx (root-hids))
-    (spyx-pretty (mapv hid->tree (root-hids)))
-    (is= (spyx-pretty (format-solns (find-paths (root-hids) [:** :b]))))))
+          ]
+      (is= (set (mapv hid->tree (root-hids)))
+        #{{:attrs {:a :a1},
+           :kids  [{:attrs {:b :b1, :color :red}, :value 2}
+                   {:attrs {:b :b2, :color :red}, :value 3}]}
+          {:attrs {:a :a2},
+           :kids  [{:attrs {:b :b1, :color :green}, :value 2}
+                   {:attrs {:b :b2, :color :green}, :value 3}]}
+          {:attrs {:a :a3},
+           :kids  [{:attrs {:c :b1, :color :blue}, :value 2}
+                   {:attrs {:c :b2, :color :blue}, :value 3}]}})
+
+      (is= (format-solns (find-paths (root-hids) [:a]))
+        #{[{:attrs {:a :a1},
+            :kids
+                   [{:attrs {:b :b1, :color :red}, :value 2}
+                    {:attrs {:b :b2, :color :red}, :value 3}]}]
+          [{:attrs {:a :a2},
+            :kids
+                   [{:attrs {:b :b1, :color :green}, :value 2}
+                    {:attrs {:b :b2, :color :green}, :value 3}]}]
+          [{:attrs {:a :a3},
+            :kids
+                   [{:attrs {:c :b1, :color :blue}, :value 2}
+                    {:attrs {:c :b2, :color :blue}, :value 3}]}]})
+      (is= (format-solns (find-paths (root-hids) [:a :b]))
+        #{[{:a :a1} {:attrs {:b :b1, :color :red}, :value 2}]
+          [{:a :a1} {:attrs {:b :b2, :color :red}, :value 3}]
+          [{:a :a2} {:attrs {:b :b1, :color :green}, :value 2}]
+          [{:a :a2} {:attrs {:b :b2, :color :green}, :value 3}]})
+
+      (is= (format-solns (find-leaves (root-hids) [:a :b] 3))
+        #{[{:a :a1} {:attrs {:b :b2, :color :red}, :value 3}]
+          [{:a :a2} {:attrs {:b :b2, :color :green}, :value 3}]})
+
+      (is= (format-solns (find-leaves (root-hids) [:a :c] 3))
+        #{ [{:a :a3} {:attrs {:c :b2, :color :blue}, :value 3}] })
+
+      (is= (format-solns (find-leaves (root-hids) [:** :*] 3))
+        #{[{:a :a1} {:attrs {:b :b2, :color :red}, :value 3}]
+          [{:a :a2} {:attrs {:b :b2, :color :green}, :value 3}]
+          [{:a :a3} {:attrs {:c :b2, :color :blue}, :value 3}] }) )))
