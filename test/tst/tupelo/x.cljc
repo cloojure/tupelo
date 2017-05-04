@@ -501,9 +501,7 @@
                (add-leaf {:b :b2 :color :green} 3)])
           z (add-node {:a :a3}
               [(add-leaf {:c :b1 :color :blue} 2)
-               (add-leaf {:c :b2 :color :blue} 3)])
-
-          ]
+               (add-leaf {:c :b2 :color :blue} 3)]) ]
       (is= (set (mapv hid->tree (root-hids)))
         #{{:attrs {:a :a1},
            :kids  [{:attrs {:b :b1, :color :red}, :value 2}
@@ -545,3 +543,5 @@
         #{[{:a :a1} {:attrs {:b :b2, :color :red}, :value 3}]
           [{:a :a2} {:attrs {:b :b2, :color :green}, :value 3}]
           [{:a :a3} {:attrs {:c :b2, :color :blue}, :value 3}] }) )))
+
+; #todo need to test find-paths using attrs
