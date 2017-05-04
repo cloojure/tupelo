@@ -601,6 +601,11 @@
       (is= (format-solns (find-leaves (root-hids) [:** {:tag :b}] 2))
         #{[{:tag :a, :id :a1} {:attrs {:tag :b, :color :red}, :value 2}]
           [{:tag :a, :id :a2} {:attrs {:tag :b, :color :green}, :value 2}]})
+      (is= (format-solns (find-leaves x [:** {:tag :b}] 2))
+        #{[{:tag :a, :id :a1} {:attrs {:tag :b, :color :red}, :value 2}] })
+      (is= (format-solns (find-leaves #{z y} [{:tag :a} :*] 2))
+        #{[{:tag :a, :id :a2} {:attrs {:tag :b, :color :green}, :value 2}]
+          [{:tag :a, :id :a3} {:attrs {:tag :c, :color :blue}, :value 2}] })
       (is= (format-solns (find-leaves (root-hids) [{:tag :a} :*] 2))
         #{[{:tag :a, :id :a2} {:attrs {:tag :b, :color :green}, :value 2}]
           [{:tag :a, :id :a3} {:attrs {:tag :c, :color :blue}, :value 2}]
