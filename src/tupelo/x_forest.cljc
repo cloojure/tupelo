@@ -4,16 +4,14 @@
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
-(ns tupelo.x
-  "Experimental new code"
+(ns tupelo.x-forest
+  "Allows the use of multiple tree structures. Provides tools to create, manipulate, and query
+  the the trees individually and/or collectively."
   (:require
-    [clj-uuid :as uuid]
     [clojure.core.async     :as ca :refer [go go-loop chan thread]]
-    [clojure.pprint :as pprint]
     [clojure.set :as set]
     [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.async :as ta]
     [tupelo.core :as t]
     [tupelo.enlive :as te]
     [tupelo.misc :as tm]
@@ -21,7 +19,6 @@
     [tupelo.string :as ts]
   ))
 (t/refer-tupelo)
-
 
 ; #todo  move to tupelo.x-tree (tupelo.x-datapig ?)
 ; forest  data-forest  ForestDb forest-db
