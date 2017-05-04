@@ -515,16 +515,13 @@
 
       (is= (format-solns (find-paths (root-hids) [:a]))
         #{[{:attrs {:a :a1},
-            :kids
-                   [{:attrs {:b :b1, :color :red}, :value 2}
+            :kids  [{:attrs {:b :b1, :color :red}, :value 2}
                     {:attrs {:b :b2, :color :red}, :value 3}]}]
           [{:attrs {:a :a2},
-            :kids
-                   [{:attrs {:b :b1, :color :green}, :value 2}
+            :kids  [{:attrs {:b :b1, :color :green}, :value 2}
                     {:attrs {:b :b2, :color :green}, :value 3}]}]
           [{:attrs {:a :a3},
-            :kids
-                   [{:attrs {:c :b1, :color :blue}, :value 2}
+            :kids  [{:attrs {:c :b1, :color :blue}, :value 2}
                     {:attrs {:c :b2, :color :blue}, :value 3}]}]})
       (is= (format-solns (find-paths (root-hids) [:a :b]))
         #{[{:a :a1} {:attrs {:b :b1, :color :red}, :value 2}]
