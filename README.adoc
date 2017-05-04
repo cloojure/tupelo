@@ -1191,6 +1191,10 @@ Clojure doesn't have a built-in function for this (please note that `seqable?` i
 (is (not (seqable? \a )))
 ----
 
+== Change Log
+
+Please see the link:changelog.adoc[the ChangeLog for details] docs.
+
 == Other useful libraries
 
 There are several other libraries that provide useful value-added functionality to clojure.core:
@@ -1201,10 +1205,23 @@ There are several other libraries that provide useful value-added functionality 
   - link:http://www.clojure-toolbox.com/[The Clojure Toolbox] - For a comprehehsive list of Clojure libraries
 
 == Requirements
+
  - Clojure 1.8.0
  - Java 1.8
 
-== To Do
+== License
+
+Copyright © 2015-2017  Alan Thompson
+
+Distributed under the Eclipse Public License, the same as Clojure.
+
+Developed using *IntelliJ IDEA* with the *Cursive* Clojure plugin.
+
+image:resources/intellij-idea-logo-400.png[IntelliJ,200,200]
+image:resources/cursive-logo-300.png[Cursive]
+
+==== ToDo List (#todo)
+
   types
   schema (& schema-datomic)
   re-work csv
@@ -1218,13 +1235,4 @@ There are several other libraries that provide useful value-added functionality 
   add spy-let, spy-defn, spy-validate, etc
   blog posts
 
-== Change Log
-
-Please see the link:changelog.adoc[the ChangeLog for details] docs.
-
-== License
-
-Copyright © 2017 Alan Thompson.
-
-Distributed under the Eclipse Public License, the same as Clojure.
 
