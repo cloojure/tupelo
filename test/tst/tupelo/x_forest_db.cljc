@@ -6,7 +6,7 @@
 ;   software.
 (ns tst.tupelo.x-forest-db
   "Experimental new code"
-  (:use clojure.test tupelo.test tupelo.x)
+  (:use clojure.test tupelo.test tupelo.x-forest-db)
   (:require
     [clojure.string :as str]
     [clj-uuid :as uuid]
