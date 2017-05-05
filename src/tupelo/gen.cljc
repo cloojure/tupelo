@@ -66,6 +66,7 @@
 (def char-whitespace            (rand-nth ts/chars-whitespace))
 (def char-alpha                 (rand-nth ts/chars-alpha))
 (def char-alphanumeric          (rand-nth ts/chars-alphanumeric))
+; #todo char-visible, char-visible-no-dquote, char-visible-no-squote,
 
 ; returns a string (len = 0 or more)
 (def whitespace-horiz           (txt-join (gen/vector char-whitespace-horiz)))
@@ -77,11 +78,13 @@
 (def whitespace-eol+            (txt-join (vector+ char-whitespace-eol)))
 (def whitespace+                (txt-join (vector+ char-whitespace)))
 
+; returns a string (len = 0 or more)
 (def word-alpha                 (txt-join       (gen/vector char-alpha)))
 (def word-alphanumeric          (txt-join       (gen/vector char-alphanumeric)))
 (def words-alpha                (txt-join-space (gen/vector word-alpha)))
 (def words-alphanumeric         (txt-join-space (gen/vector word-alphanumeric)))
 
+; returns a string (len = 1 or more)
 (def word-alpha+                (txt-join       (vector+ char-alpha)))
 (def word-alphanumeric+         (txt-join       (vector+ char-alphanumeric)))
 (def words-alpha+               (txt-join-space (vector+ word-alpha+)))

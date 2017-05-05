@@ -9,6 +9,7 @@
   (:refer-clojure :exclude [drop take] )
   (:require
     [clojure.core :as cc]
+    [clojure.set :as set]
     [clojure.string :as str]
     [potemkin.namespaces :as pns]
     [schema.core :as s]
@@ -46,8 +47,18 @@
   (i/glue chars-alpha chars-digit ))
 
 (s/def chars-visible  :- tsk/Set
-  "Set of all visible (printing) ASCII chars from exclamation point (33) to tilde (126). Excludes all whitespace & control chars."
+  "Set of all visible (printing) ASCII chars from exclamation point (33) to tilde (126).
+  Excludes all whitespace & control chars."
   (into (sorted-set) (mapv char (i/thru 33 126))))
+
+(s/def chars-visible-no-dquote :- tsk/Set
+  "All visible (printing) ASCII chars except double-quote."
+  (set/difference chars-visible #{\"}))
+
+(s/def chars-visible-no-squote :- tsk/Set
+  "All visible (printing) ASCII chars except double-quote."
+  (set/difference chars-visible #{\'}))
+
 
 (s/def chars-text   :- tsk/Set
   "Set of chars used in 'normal' text. Includes all visible chars plus whitespace & EOL chars."
