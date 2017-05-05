@@ -1215,7 +1215,10 @@ Copyright © 2015-2017  Alan Thompson
 
 Distributed under the Eclipse Public License, the same as Clojure.
 
-Developed using *IntelliJ IDEA* with the *Cursive* Clojure plugin.
+ link:http://cloojure.github.io/doc/tupelo[are posted on GitHub Pages]
+
+Developed using link:https://www.jetbrains.com/idea/[*IntelliJ IDEA*] 
+with the link:https://cursive-ide.com/[*Cursive* Clojure plugin].
 
 image:resources/intellij-idea-logo-400.png[IntelliJ,200,200]
 image:resources/cursive-logo-300.png[Cursive]
