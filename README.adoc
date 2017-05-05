@@ -1213,9 +1213,7 @@ There are several other libraries that provide useful value-added functionality 
 
 Copyright © 2015-2017  Alan Thompson
 
-Distributed under the Eclipse Public License, the same as Clojure.
-
- link:http://cloojure.github.io/doc/tupelo[are posted on GitHub Pages]
+Distributed under the link:https://www.eclipse.org/legal/epl-v10.html[Eclipse Public License], the same as Clojure.
 
 Developed using link:https://www.jetbrains.com/idea/[*IntelliJ IDEA*] 
 with the link:https://cursive-ide.com/[*Cursive* Clojure plugin].
