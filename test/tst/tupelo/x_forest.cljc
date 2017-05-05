@@ -296,13 +296,13 @@
                     (add-leaf :c 9)])
           ]
       (is= (hid->tree root-1)
-        {:attrs {:a nil},
-         :kids  [{:attrs {:b nil}, :value [1]}
-                 {:attrs {:b nil}, :value [2]}
-                 {:attrs {:b nil},
-                  :kids  [{:attrs {:c nil}, :value [4]}
-                          {:attrs {:c nil}, :value [5]}]}
-                 {:attrs {:c nil}, :value [9]}]})
+        {:attrs {:tag :a},
+         :kids  [{:attrs {:tag :b}, :value [1]}
+                 {:attrs {:tag :b}, :value [2]}
+                 {:attrs {:tag :b},
+                  :kids  [{:attrs {:tag :c}, :value [4]}
+                          {:attrs {:tag :c}, :value [5]}]}
+                 {:attrs {:tag :c}, :value [9]}]})
       (is=
         (hid->tree aa)
         (hid->tree root-2)
@@ -328,13 +328,13 @@
           root-1 (add-tree-hiccup tree-1)
           ]
       (is= (hid->tree root-1)
-        {:attrs {:a nil},
-         :kids  [{:attrs {:b nil}, :value [1 2 3]}
-                 {:attrs {:b nil}, :value [2]}
-                 {:attrs {:b nil},
-                  :kids  [{:attrs {:c nil}, :value [4]}
-                          {:attrs {:c nil}, :value [5]}]}
-                 {:attrs {:c nil}, :value [9]}]}))))
+        {:attrs {:tag :a},
+         :kids  [{:attrs {:tag :b}, :value [1 2 3]}
+                 {:attrs {:tag :b}, :value [2]}
+                 {:attrs {:tag :b},
+                  :kids  [{:attrs {:tag :c}, :value [4]}
+                          {:attrs {:tag :c}, :value [5]}]}
+                 {:attrs {:tag :c}, :value [9]}]}))))
 
 (dotest
   (with-forest (new-forest)
@@ -371,6 +371,16 @@
            {:attrs {:b nil},
             :kids  [{:attrs {:c nil}, :value 4}
                     {:attrs {:c nil}, :value 5}]}]})
+
+        (is (wild-match? [[:* :*]
+                          [:* :*]
+                          [:* :*]]
+              (vec (into (sorted-set) (find-paths aa [:a :b])))))
+        ; Actual results: (find-paths aa [:a :b]) =>
+        ;   #{ [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :b40b6f37e6a746f815b092a8590cefe5cf37121a]
+        ;      [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :76859beedd81468b4ee3cc5f17a5fdcf7a34a787]
+        ;      [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :5c0cb1ba6657ba0ac40cc5099f2be091b5637a3b] }
+
       (is= (format-solns (find-paths aa [:a :c]))
         #{[{:a nil}
            {:attrs {:c nil}, :value 9}]})

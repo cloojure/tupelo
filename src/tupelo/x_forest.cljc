@@ -20,6 +20,17 @@
   ))
 (t/refer-tupelo)
 
+; Benefits compared to nested maps like Enlive:
+;   generalizes attrs/values; no special role for `tag` like enlive
+;   clearly separates the roles of interior nodes vs terminal leaves
+;   can get a handle to an individual node; don't need to navigate from root
+;     can build up tree one node at a time
+;   native can only transform 1 node -> 1 node
+;     forest can delete a subtree; native can only replace with `nil` or equiv
+;     forest can replace a subtree with 2 or more nodes
+;   still immutable, native Clojure maps at base
+;      `with-forest` macro restricted to a single thread at a time
+
 ; #todo  move to tupelo.x-tree (tupelo.x-datapig ?)
 ; forest  data-forest  ForestDb forest-db
 ; Sherwood  weald  wald  boreal
@@ -233,7 +244,7 @@
   [:a ...] -> {:a nil ...}..."
   [tree]
   (assert (te/enlive-node? tree))
-  (let [attrs    (glue {(grab :tag tree) nil} ; or { :tag <tag-val> }
+  (let [attrs    (glue {:tag (grab :tag tree)} ; or { :tag <tag-val> }
                    (grab :attrs tree))
         children (grab :content tree) ]
     (if (every? te/enlive-node? children)
