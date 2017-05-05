@@ -1811,8 +1811,19 @@
         [[3] [6 7] [9]])
       (is= (partition-using start-segment? [1 2 3 6 7 8 9 12 13 15 16 17 18 18 18 3 4 5])
         [[1 2] [3] [6 7 8] [9] [12 13] [15 16 17] [18] [18] [18] [3 4 5]]))
-    (throws? (partition-using even? 5)))
-)
+    (throws? (partition-using even? 5))))
+
+(dotest
+  (let [some-fn (fn []
+                  (let [a 1
+                        b 2
+                        c 3
+                        d 4
+                        e 5]
+                    (label-value-map a b c d e))) ]
+    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (some-fn))
+    (let [ {:keys [a b c d e]} (some-fn) ]
+      (is= [a b c d e] [1 2 3 4 5]))))
 
 ;---------------------------------------------------------------------------------------------------
 ; Deprecated functions
