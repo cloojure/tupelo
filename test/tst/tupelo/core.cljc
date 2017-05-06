@@ -1813,6 +1813,7 @@
         [[1 2] [3] [6 7 8] [9] [12 13] [15 16 17] [18] [18] [18] [3 4 5]]))
     (throws? (partition-using even? 5))))
 
+
 (dotest
   (let [some-fn (fn []
                   (let [a 1
@@ -1822,8 +1823,16 @@
                         e 5]
                     (label-value-map a b c d e))) ]
     (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (some-fn))
+
     (let [ {:keys [a b c d e]} (some-fn) ]
-      (is= [a b c d e] [1 2 3 4 5]))))
+      (is= [a b c d e] [1 2 3 4 5]))
+
+    (let-keys [a b c d e] (some-fn)
+      (is= [a b c d e] [1 2 3 4 5]))
+
+    (throws?
+      (let-keys [x y z] (some-fn)
+        (println "shouldn't ever get here")))))
 
 ;---------------------------------------------------------------------------------------------------
 ; Deprecated functions
