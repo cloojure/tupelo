@@ -280,6 +280,7 @@
 (pns/import-fn impl/glue)
 (pns/import-fn impl/append)
 (pns/import-fn impl/prepend)
+(pns/import-fn impl/macro?)
 
 (pns/import-macro impl/label-value-map)
 (pns/import-macro impl/let-keys)
@@ -698,7 +699,8 @@
   (refer 'tupelo.core :only
    '[spy spy-let spy-let-pretty spyx spyx-pretty spyxx with-spy-indent truthy? falsey?
      not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
-     forv conjv glue label-value-map let-keys append prepend grab dissoc-in fetch-in
+     forv conjv glue label-value-map let-keys macro?
+     append prepend grab dissoc-in fetch-in
      submap-by-keys submap-by-vals map-keys->vals keyvals
      validate only third it-> safe-> keep-if drop-if zip flat-vec
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=

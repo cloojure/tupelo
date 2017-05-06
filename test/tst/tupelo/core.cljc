@@ -1833,6 +1833,12 @@
     (throws?
       (let-keys [x y z] (some-fn)
         (println "shouldn't ever get here")))))
+(dotest
+  (is   (macro? 'and))
+  (is   (macro? '->))
+  (isnt (macro? '+))
+  (isnt (macro? 'if)))
+
 
 ;---------------------------------------------------------------------------------------------------
 ; Deprecated functions

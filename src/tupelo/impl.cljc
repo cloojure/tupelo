@@ -695,3 +695,12 @@
           [sym (list 'grab kw the-map)]))
      ~@forms))
 
+(defn macro?
+  "Returns true if a quoted symbol resolves to a macro. Usage:
+
+    (println (macro? 'and))  ;=> true
+  "
+  [s]
+  (-> s resolve meta :macro boolean))
+    ; from Alex Miller StackOverflow answer 2017-5-6
+
