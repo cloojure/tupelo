@@ -316,12 +316,17 @@
   [arg]
   (-> arg enlive->tree add-tree))
 
+(s/defn hiccup->tree :- tsk/KeyMap
+  "Adds a Hiccup-format tree to the DB. Tag values are converted to nil attributes:
+  [:a ...] -> {:a nil ...}..."
+  [arg]
+  (-> arg hiccup->enlive enlive->tree))
+
 (s/defn add-tree-hiccup :- HID
   "Adds a Hiccup-format tree to the DB. Tag values are converted to nil attributes:
   [:a ...] -> {:a nil ...}..."
   [arg]
-  (add-tree-enlive
-    (hiccup->enlive arg)))
+  (-> arg hiccup->tree add-tree ))
 
 (s/defn set-attrs :- tsk/KeyMap
   "Merge the supplied attrs map into the attrs of a Node or Leaf"
