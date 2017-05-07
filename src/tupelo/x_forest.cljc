@@ -263,12 +263,6 @@
     (not-empty? arg) ; and cannot be empty
     (map? (first arg)))) ; and the first item must be a map of attrs
 
-(s/defn bush-node? :- s/Bool ; #todo add test
-  [arg]
-  (and (vector? arg) ; it must be a vector
-    (not-empty? arg) ; and cannot be empty
-    (map? (first arg)))) ; and the first item must be a map of attrs
-
 (s/defn add-tree :- HID
   "Adds a tree to the DB. ."
   [tree]
@@ -279,7 +273,7 @@
                                      (for [child (grab :kids tree)]
                                        (add-tree child)))]
                           (add-node attrs kids))
-      (tree-leaf? tree) (add-leaf attrs (grab :kids tree))
+      (tree-leaf? tree) (add-leaf attrs (grab :value tree))
       :else (throw (IllegalArgumentException. (str "add-tree: invalid element=" tree))))))
 
 (s/defn bush->tree :- HID ; #todo add test
@@ -299,13 +293,13 @@
   [bush]
   (add-tree (bush->tree bush)))
 
-(s/defn enlive->tree :- tsk/Vec ; #todo add test
+(s/defn enlive->tree :- tsk/KeyMap ; #todo add test
   "Convert an Enlive-format data structure to a tree. "
-  [tree]
-  (assert (enlive-node? tree))
-  (with-map-fields tree [attrs content]
+  [enlive-tree]
+  (assert (enlive-node? enlive-tree))
+  (with-map-fields enlive-tree [attrs content]
     (assert (not (contains? (keys attrs) :tag)))
-    (let [attrs (glue attrs (submap-by-keys tree [:tag]))]
+    (let [attrs (glue attrs (submap-by-keys enlive-tree #{:tag}))]
       (if (every? enlive-node? content)
         (let [kids (glue [] (for [child content] (enlive->tree child)))]
           (label-value-map attrs kids))
@@ -314,26 +308,20 @@
 
 (s/defn enlive->bush :- tsk/Vec ; #todo add test
   "Convert an Enlive-format data structure to a enlive-tree. "
-  [enlive-tree]
-  (-> enlive-tree enlive->tree tree->bush))
+  [arg]
+  (-> arg enlive->tree tree->bush))
 
 (s/defn add-tree-enlive :- HID
   "Adds an Enlive-format tree to the DB. "
-  [tree]
-  (assert (enlive-node? tree))
-  (let [attrs    (glue {:tag (grab :tag tree)} ; or { :tag <tag-val> }
-                   (grab :attrs tree))
-        children (grab :content tree) ]
-    (if (every? enlive-node? children)
-      (let [kids (glue [] (for [child children] (add-tree-enlive child))) ]
-        (add-node attrs kids))
-      (add-leaf attrs children))))
+  [arg]
+  (-> arg enlive->tree add-tree))
 
 (s/defn add-tree-hiccup :- HID
   "Adds a Hiccup-format tree to the DB. Tag values are converted to nil attributes:
   [:a ...] -> {:a nil ...}..."
-  [tree]
-  (add-tree-enlive (hiccup->enlive tree)))
+  [arg]
+  (add-tree-enlive
+    (hiccup->enlive arg)))
 
 (s/defn set-attrs :- tsk/KeyMap
   "Merge the supplied attrs map into the attrs of a Node or Leaf"
