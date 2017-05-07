@@ -223,49 +223,15 @@
 (pns/import-fn impl/falsey? )
 (pns/import-fn impl/validate )
 
-; #todo -> README
-(s/defn has-some? :- s/Bool ; #todo rename to has-any?   Add warning re new clj/any?
-  "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
-   coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
-  [pred :-  s/Any
-   coll :- [s/Any] ]
-  (truthy? (some pred coll)))
-    ; NOTE: was `any?` prior to new `clojure.core/any?` added in clojure 1.9.0-alpha10
-
-; #todo -> README
-(s/defn has-none? :- s/Bool
-  "For any predicate pred & collection coll, returns false if (pred x) is logical true for at least one x in
-   coll; otherwise returns true.  Equivalent to clojure.core/not-any?, but inverse of has-some?."
-  [pred :-  s/Any
-   coll :- [s/Any] ]
-  (falsey? (some pred coll))) ; #todo -> (not (has-some? pred coll))
-
-(s/defn contains-elem? :- s/Bool
-  "For any collection coll & element tgt, returns true if coll contains at least one
-  instance of tgt; otherwise returns false. Note that, for maps, each element is a
-  vector (i.e MapEntry) of the form [key value]."
-  [coll :- s/Any
-   elem :- s/Any ]
-  (has-some? truthy?
-    (mapv #(= elem %) (seq coll))))
-
-; #todo add (contains-keyval? map key val)
-
-(s/defn contains-key? :- s/Bool
-  "For any map or set, returns true if elem is a map key or set element, respectively"
-  [map-or-set :- (s/pred #(or (map? %) (set? %)))
-   elem :- s/Any ]
-  (contains? map-or-set elem))
-
-(s/defn contains-val? :- s/Bool
-  "For any map, returns true if elem is present in the map for at least one key."
-  [map :- ts/Map
-   elem :- s/Any ]
-  (has-some? truthy?
-    (mapv #(= elem %) (vals map))))
+(pns/import-fn impl/has-some? )
+(pns/import-fn impl/has-none? )
+(pns/import-fn impl/contains-elem? )
+(pns/import-fn impl/contains-key? )
+(pns/import-fn impl/contains-val? )
 
 (pns/import-fn impl/not-nil?)
 (pns/import-fn impl/not-empty?)
+(pns/import-fn impl/keyvals )
 
 
 (defn flat-vec
@@ -279,7 +245,6 @@
 (pns/import-fn impl/macro?)
 
 (pns/import-macro impl/label-value-map)
-(pns/import-macro impl/let-keys)
 (pns/import-macro impl/with-map-fields)
 
 ; #todo rename -> drop-idx
@@ -363,15 +328,6 @@
   "Returns the third item in a collection, or nil if fewer than three items are present. "
   [seqable-arg :- ts/List]
   (first (next (next seqable-arg))))
-
-(defn keyvals
-  "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
-   (apply hash-map (keyvals m)). (keyvals {:a 1 :b 2} => [:a 1 :b 2] "
-  [m]
-  {:pre  [(map? m)]
-   :post [(vector? %)]}
-  (reduce #(conj %1 (first %2) (second %2))
-    [] (seq m)))
 
 ; #awt #todo: Test failure of (safe-> 3 (* 2) (+ 1))
 ; #awt #todo: add tests
@@ -590,13 +546,6 @@
   "Shortcut to cheshire.core/generate-string"
   (cc/generate-string arg))
 
-(defn clip-str      ; #todo -> tupelo.string?
-  "Converts all args to single string and clips any characters beyond nchars."
-  [nchars & args]
-  (it-> (apply str args)
-    (take nchars it)
-    (apply str it)))
-
 ; #todo need test & README
 (s/defn submap? :- Boolean
   "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
@@ -612,6 +561,7 @@
 ; #todo need rand-id/randid/rid/rid-str (rand id) -> 64 bit hex string="1234-4567-89ab-cdef"
 ; i[12] = Random.nextInt(); bytes += i[12].toHexString()
 
+(pns/import-fn impl/clip-str )
 (pns/import-fn impl/wild-match-1 )
 (pns/import-fn impl/wild-match? )
 (pns/import-macro impl/matches? )
@@ -699,7 +649,7 @@
   (refer 'tupelo.core :only
    '[spy spy-let spy-let-pretty spyx spyx-pretty spyxx with-spy-indent truthy? falsey?
      not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
-     forv conjv glue label-value-map let-keys with-map-fields macro?
+     forv conjv glue label-value-map with-map-fields macro?
      append prepend grab dissoc-in fetch-in
      submap-by-keys submap-by-vals map-keys->vals keyvals
      validate only third it-> safe-> keep-if drop-if zip flat-vec

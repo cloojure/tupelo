@@ -5,7 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.x-forest
-  (:use tupelo.x-forest tupelo.test clojure.test)
+  (:use tupelo.x-forest tupelo.test tupelo.impl clojure.test)
   (:require
     [clojure.string :as str]
     [clj-uuid :as uuid]
@@ -17,7 +17,6 @@
     [java.nio ByteBuffer]
     [java.util UUID ]
   ))
-(t/refer-tupelo)
 
 (dotest
   (with-forest (new-forest)
@@ -38,12 +37,12 @@
       (is (and (hid? x) (hid? y) (hid? z) (hid? r)))
 
       (is (and (leaf-hid? x) (leaf-hid? y) (leaf-hid? z)))
-      (is (and (leaf-elem? x-tree) (leaf-elem? y-tree) (leaf-elem? z-tree)))
-      (is (and (leaf-elem? x-elem) (leaf-elem? y-elem) (leaf-elem? z-elem)))
+      (is (and (tree-leaf? x-tree) (tree-leaf? y-tree) (tree-leaf? z-tree)))
+      (is (and (tree-leaf? x-elem) (tree-leaf? y-elem) (tree-leaf? z-elem)))
 
       (is (node-hid? r))
-      (is (node-elem? r-tree))
-      (is (node-elem? r-elem))
+      (is (tree-node? r-tree))
+      (is (tree-node? r-elem))
 
       (is= #{r} roots)
       (not= #{x} roots)
@@ -663,3 +662,4 @@
             [{:tag :c} 4]
             [{:tag :c} 51 52 53]]
           [{:tag :c} 9]]  ))))
+

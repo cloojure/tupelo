@@ -7,6 +7,7 @@
 (ns tupelo.x-forest
   "Allows the use of multiple tree structures. Provides tools to create, manipulate, and query
   the the trees individually and/or collectively."
+  (:use tupelo.impl)
   (:require
     [clojure.core.async     :as ca :refer [go go-loop chan thread]]
     [clojure.set :as set]
@@ -18,7 +19,6 @@
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
   ))
-(t/refer-tupelo)
 
 ; Benefits compared to nested maps like Enlive:
 ;   generalizes attrs/values; no special role for `tag` like enlive
@@ -75,15 +75,19 @@
 
 (def HID s/Keyword) ; #todo find way to validate
 
-(s/defn node-elem? :- s/Bool
+(s/defn tree-node? :- s/Bool
   [elem :- tsk/KeyMap]
   (or (instance? Node elem)
     (= #{:attrs :kids} (set (keys elem)))))
 
-(s/defn leaf-elem? :- s/Bool
+(s/defn tree-leaf? :- s/Bool
   [elem :- tsk/KeyMap]
   (or (instance? Leaf elem)
     (= #{:attrs :value} (set (keys elem)))))
+
+(s/defn tree-elem? :- s/Bool
+  [elem :- tsk/KeyMap]
+  (or (tree-node? elem) (tree-leaf? elem)))
 
 (s/defn hid? :- s/Bool
   [arg]
@@ -107,7 +111,7 @@
   nil)              ; #todo
 
 (s/defn validate-hid
-  "Returns true iff an HID exists in the forest"
+  "Returns true iff an HID exists in the forest, else throws."
   [hid :- HID]
   (when-not (contains-key? *forest* hid)
     (throw (IllegalArgumentException. (str "validate-hid: HID does not exist=" hid))))
@@ -119,11 +123,11 @@
 
 (s/defn hid->node :- Node
   [hid :- HID]
-  (validate node-elem? (hid->elem hid)))
+  (validate tree-node? (hid->elem hid)))
 
 (s/defn hid->leaf :- Leaf
   [hid :- HID]
-  (validate leaf-elem? (hid->elem hid)))
+  (validate tree-leaf? (hid->elem hid)))
 
 (s/defn hid->attrs :- tsk/KeyMap
   [hid :- HID]
@@ -154,7 +158,7 @@
         kid-hids  (reduce
                     (fn [cum-kids hid]
                       (let [elem (hid->elem hid)]
-                        (if (node-elem? elem)
+                        (if (tree-node? elem)
                           (into cum-kids (grab :kids elem))
                           cum-kids)))
                     #{}
@@ -165,29 +169,29 @@
 ; #todo need to recurse with set of parent hid's to avoid cycles
 (s/defn hid->tree :- tsk/KeyMap
   [hid :- HID]
-  (let [elem (hid->elem hid)
+  (let [elem        (hid->elem hid)
         base-result (into {} elem)]
     (if (instance? Node elem)
       ; Node: need to recursively resolve children
-      (let [kids   (mapv hid->tree (grab :kids elem))
-            resolved-result (assoc base-result :kids kids) ]
+      (let [kids            (mapv hid->tree (grab :kids elem))
+            resolved-result (assoc base-result :kids kids)]
         resolved-result)
       ; Leaf: nothing else to do
       base-result)))
 
-; #todo need to recurse with set of parent hid's to avoid cycles
+(s/defn tree->bush :- tsk/Vec
+  [tree-elem :- tsk/Map]
+  (assert (tree-elem? tree-elem))
+  (if (tree-node? tree-elem)
+    (let [bush-kids (mapv tree->bush (grab :kids tree-elem))
+          bush-node (prepend (grab :attrs tree-elem) bush-kids)]
+      bush-node)
+    (let [bush-leaf (prepend (grab :attrs tree-elem) (grab :value tree-elem))]
+      bush-leaf)))  ; #todo throw if not node or leaf
+
 (s/defn hid->bush :- tsk/Vec
   [hid :- HID]
-  (if (node-hid? hid)
-    ; node: need to recursively resolve children
-    (let [node   (hid->node hid)
-          kids   (mapv hid->bush (grab :kids node))
-          result (prepend (grab :attrs node) kids)]
-      result)
-    ; format Leaf
-    (let [leaf   (hid->leaf hid)
-          result (prepend (grab :attrs leaf) (grab :value leaf))]
-      result)))
+  (-> (validate-hid hid) hid->tree tree->bush))
 
 ; #todo naming choices
 ; #todo reset! vs  set
@@ -253,16 +257,75 @@
     (set-leaf hid attrs value)
     hid))
 
+(s/defn bush-node? :- s/Bool ; #todo add test
+  [arg]
+  (and (vector? arg) ; it must be a vector
+    (not-empty? arg) ; and cannot be empty
+    (map? (first arg)))) ; and the first item must be a map of attrs
+
+(s/defn bush-node? :- s/Bool ; #todo add test
+  [arg]
+  (and (vector? arg) ; it must be a vector
+    (not-empty? arg) ; and cannot be empty
+    (map? (first arg)))) ; and the first item must be a map of attrs
+
 (s/defn add-tree :- HID
-  "Adds an Enlive-format tree to the DB. Tag values are converted to nil attributes:
-  [:a ...] -> {:a nil ...}..."
+  "Adds a tree to the DB. ."
+  [tree]
+  (assert (tree-elem? tree))
+  (let [attrs (grab :attrs tree)]
+    (cond
+      (tree-node? tree) (let [kids (glue [] ; glue to an empty vec in case no kids
+                                     (for [child (grab :kids tree)]
+                                       (add-tree child)))]
+                          (add-node attrs kids))
+      (tree-leaf? tree) (add-leaf attrs (grab :kids tree))
+      :else (throw (IllegalArgumentException. (str "add-tree: invalid element=" tree))))))
+
+(s/defn bush->tree :- HID ; #todo add test
+  "Converts a bush to a tree"
+  [bush]
+  (assert (bush-node? bush))
+  (let [attrs  (first bush)
+        others (rest bush)]
+    (if (every? bush-node? others)
+      (let [kids (glue [] (for [child others] (bush->tree child)))]
+        (label-value-map attrs kids))
+      (let [value others]
+        (label-value-map attrs value)))))
+
+(s/defn add-bush :- HID
+  "Adds a bush to the DB. ."
+  [bush]
+  (add-tree (bush->tree bush)))
+
+(s/defn enlive->tree :- tsk/Vec ; #todo add test
+  "Convert an Enlive-format data structure to a tree. "
+  [tree]
+  (assert (enlive-node? tree))
+  (with-map-fields tree [attrs content]
+    (assert (not (contains? (keys attrs) :tag)))
+    (let [attrs (glue attrs (submap-by-keys tree [:tag]))]
+      (if (every? enlive-node? content)
+        (let [kids (glue [] (for [child content] (enlive->tree child)))]
+          (label-value-map attrs kids))
+        (let [value content]
+          (label-value-map attrs value))))))
+
+(s/defn enlive->bush :- tsk/Vec ; #todo add test
+  "Convert an Enlive-format data structure to a enlive-tree. "
+  [enlive-tree]
+  (-> enlive-tree enlive->tree tree->bush))
+
+(s/defn add-tree-enlive :- HID
+  "Adds an Enlive-format tree to the DB. "
   [tree]
   (assert (enlive-node? tree))
   (let [attrs    (glue {:tag (grab :tag tree)} ; or { :tag <tag-val> }
                    (grab :attrs tree))
         children (grab :content tree) ]
     (if (every? enlive-node? children)
-      (let [kids (glue [] (for [child children] (add-tree child))) ]
+      (let [kids (glue [] (for [child children] (add-tree-enlive child))) ]
         (add-node attrs kids))
       (add-leaf attrs children))))
 
@@ -270,7 +333,7 @@
   "Adds a Hiccup-format tree to the DB. Tag values are converted to nil attributes:
   [:a ...] -> {:a nil ...}..."
   [tree]
-  (add-tree (hiccup->enlive tree)))
+  (add-tree-enlive (hiccup->enlive tree)))
 
 (s/defn set-attrs :- tsk/KeyMap
   "Merge the supplied attrs map into the attrs of a Node or Leaf"
