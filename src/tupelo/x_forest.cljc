@@ -179,20 +179,6 @@
       ; Leaf: nothing else to do
       base-result)))
 
-(s/defn tree->bush :- tsk/Vec
-  [tree-elem :- tsk/Map]
-  (assert (tree-elem? tree-elem))
-  (if (tree-node? tree-elem)
-    (let [bush-kids (mapv tree->bush (grab :kids tree-elem))
-          bush-node (prepend (grab :attrs tree-elem) bush-kids)]
-      bush-node)
-    (let [bush-leaf (prepend (grab :attrs tree-elem) (grab :value tree-elem))]
-      bush-leaf)))  ; #todo throw if not node or leaf
-
-(s/defn hid->bush :- tsk/Vec
-  [hid :- HID]
-  (-> (validate-hid hid) hid->tree tree->bush))
-
 ; #todo naming choices
 ; #todo reset! vs  set
 ; #todo swap!  vs  update
@@ -257,14 +243,8 @@
     (set-leaf hid attrs value)
     hid))
 
-(s/defn bush-node? :- s/Bool ; #todo add test
-  [arg]
-  (and (vector? arg) ; it must be a vector
-    (not-empty? arg) ; and cannot be empty
-    (map? (first arg)))) ; and the first item must be a map of attrs
-
 (s/defn add-tree :- HID
-  "Adds a tree to the DB. ."
+  "Adds a tree to the forest."
   [tree]
   (assert (tree-elem? tree))
   (let [attrs (grab :attrs tree)]
@@ -276,11 +256,17 @@
       (tree-leaf? tree) (add-leaf attrs (grab :value tree))
       :else (throw (IllegalArgumentException. (str "add-tree: invalid element=" tree))))))
 
-(s/defn bush->tree :- HID ; #todo add test
+(s/defn bush-node? :- s/Bool ; #todo add test
+  [arg]
+  (and (vector? arg) ; it must be a vector
+    (not-empty? arg) ; and cannot be empty
+    (map? (xfirst arg)))) ; and the first item must be a map of attrs
+
+(s/defn bush->tree :- tsk/KeyMap ; #todo add test
   "Converts a bush to a tree"
   [bush]
   (assert (bush-node? bush))
-  (let [attrs  (first bush)
+  (let [attrs  (xfirst bush)
         others (rest bush)]
     (if (every? bush-node? others)
       (let [kids (glue [] (for [child others] (bush->tree child)))]
@@ -288,10 +274,28 @@
       (let [value others]
         (label-value-map attrs value)))))
 
-(s/defn add-bush :- HID
-  "Adds a bush to the DB. ."
-  [bush]
-  (add-tree (bush->tree bush)))
+(s/defn tree->bush :- tsk/Vec
+  [tree-elem :- tsk/Map]
+  (assert (tree-elem? tree-elem))
+  (if (tree-node? tree-elem)
+    (let [bush-kids (mapv tree->bush (grab :kids tree-elem))
+          bush-node (prepend (grab :attrs tree-elem) bush-kids)]
+      bush-node)
+    (let [bush-leaf (prepend (grab :attrs tree-elem) (grab :value tree-elem))]
+      bush-leaf)))  ; #todo throw if not node or leaf
+
+(s/defn tree->enlive :- tsk/KeyMap
+  [tree-elem :- tsk/Map]
+  (assert (tree-elem? tree-elem))
+  (let [tree-attrs   (grab :attrs tree-elem)
+        enlive-base  (submap-by-keys tree-attrs #{:tag})
+        enlive-attrs (into {} (drop-if #(= :tag (key %)) (vec tree-attrs)))]
+    (if (tree-node? tree-elem)
+      (let [enlive-kids (mapv tree->enlive (grab :kids tree-elem))
+            enlive-node (glue enlive-base {:attrs enlive-attrs :content enlive-kids})]
+        enlive-node)
+      (let [enlive-leaf (glue enlive-base {:attrs enlive-attrs :content (grab :value tree-elem)})]
+        enlive-leaf)))) ; #todo throw if not node or leaf
 
 (s/defn enlive->tree :- tsk/KeyMap ; #todo add test
   "Convert an Enlive-format data structure to a tree. "
@@ -307,26 +311,44 @@
           (label-value-map attrs value))))))
 
 (s/defn enlive->bush :- tsk/Vec ; #todo add test
-  "Convert an Enlive-format data structure to a enlive-tree. "
-  [arg]
+  "Converts an Enlive-format data structure to a Bush. "
+  [arg :- tsk/KeyMap]
   (-> arg enlive->tree tree->bush))
 
-(s/defn add-tree-enlive :- HID
-  "Adds an Enlive-format tree to the DB. "
-  [arg]
-  (-> arg enlive->tree add-tree))
+(s/defn bush->enlive :- tsk/KeyMap ; #todo add test
+  "Converts a Bush to an Enlive-format data structure"
+  [bush :- tsk/Vec]
+  (-> bush bush->tree tree->enlive))
 
 (s/defn hiccup->tree :- tsk/KeyMap
-  "Adds a Hiccup-format tree to the DB. Tag values are converted to nil attributes:
-  [:a ...] -> {:a nil ...}..."
-  [arg]
+  "Converts a Hiccup-format data structure to a Tree."
+  [arg :- tsk/Vec]
   (-> arg hiccup->enlive enlive->tree))
 
+(s/defn tree->hiccup :- tsk/Vec
+  "Converts a Tree to a Hiccup-format data structure."
+  [arg :- tsk/KeyMap]
+  (-> arg tree->enlive enlive->hiccup ))
+
+(s/defn add-bush :- HID
+  "Adds a bush to the forest"
+  [bush]
+  (add-tree (bush->tree bush)))
+
+(s/defn add-tree-enlive :- HID
+  "Adds an Enlive-format tree to the forest "
+  [arg]
+  (add-tree (enlive->tree arg)))
+
 (s/defn add-tree-hiccup :- HID
-  "Adds a Hiccup-format tree to the DB. Tag values are converted to nil attributes:
+  "Adds a Hiccup-format tree to the forest. Tag values are converted to nil attributes:
   [:a ...] -> {:a nil ...}..."
   [arg]
-  (-> arg hiccup->tree add-tree ))
+  (add-tree (hiccup->tree arg)))
+
+(s/defn hid->bush :- tsk/Vec
+  [hid :- HID]
+  (-> (validate-hid hid) hid->tree tree->bush))
 
 (s/defn set-attrs :- tsk/KeyMap
   "Merge the supplied attrs map into the attrs of a Node or Leaf"
@@ -543,8 +565,8 @@
   ;(spyx tgt-path)
   (validate-hid hid)
   (when (not-empty? tgt-path)
-    (let [tgt (first tgt-path)
-              tgt-path-rest (rest tgt-path)
+    (let [tgt (xfirst tgt-path)
+              tgt-path-rest (xrest tgt-path)
               attrs (hid->attrs hid)]
       (let [parents-new (append parents hid)]
         (when (or (= tgt :*) (elem-matches? hid tgt))

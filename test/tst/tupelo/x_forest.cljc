@@ -317,23 +317,52 @@
 
 (dotest
   (with-forest (new-forest)
-    (let [tree-1 [:a
-                  [:b 1 2 3]
-                  [:b 2]
-                  [:b
-                   [:c 4]
-                   [:c 5]]
-                  [:c 9]]
-          root-1 (add-tree-hiccup tree-1)
-          ]
-      (is= (hid->tree root-1)
+    (let [hiccup-1 [:a
+                    [:b 1 2 3]
+                    [:b 2]
+                    [:b
+                     [:c 4]
+                     [:c 5]]
+                    [:c 9]]
+          hid-1    (add-tree-hiccup hiccup-1)
+          tree-1   (hid->tree hid-1)
+          bush-1   (hid->bush hid-1)
+          enlive-1 (tree->enlive tree-1)]
+      (is= tree-1
         {:attrs {:tag :a},
          :kids  [{:attrs {:tag :b}, :value [1 2 3]}
                  {:attrs {:tag :b}, :value [2]}
                  {:attrs {:tag :b},
                   :kids  [{:attrs {:tag :c}, :value [4]}
                           {:attrs {:tag :c}, :value [5]}]}
-                 {:attrs {:tag :c}, :value [9]}]}))))
+                 {:attrs {:tag :c}, :value [9]}]})
+      (is= bush-1
+        [{:tag :a}
+         [{:tag :b} 1 2 3]
+         [{:tag :b} 2]
+         [{:tag :b}
+          [{:tag :c} 4]
+          [{:tag :c} 5]]
+         [{:tag :c} 9]])
+      (is= enlive-1
+        {:tag   :a,
+         :attrs {},
+         :content
+                [{:tag :b, :attrs {}, :content [1 2 3]}
+                 {:tag :b, :attrs {}, :content [2]}
+                 {:tag   :b,
+                  :attrs {},
+                  :content
+                         [{:tag :c, :attrs {}, :content [4]}
+                          {:tag :c, :attrs {}, :content [5]}]}
+                 {:tag :c, :attrs {}, :content [9]}]})
+      (is= tree-1 (-> tree-1 tree->bush bush->tree))
+      (is= tree-1 (-> tree-1 tree->hiccup hiccup->tree))
+      (is= tree-1 (-> tree-1 tree->enlive enlive->tree))
+      (is= bush-1 (-> bush-1 bush->tree tree->bush))
+      (is= bush-1 (-> bush-1 bush->enlive enlive->bush))
+      (is= hiccup-1 (-> hiccup-1 hiccup->tree tree->hiccup))
+      (is= enlive-1 (-> enlive-1 enlive->tree tree->enlive)))))
 
 (dotest
   (with-forest (new-forest)

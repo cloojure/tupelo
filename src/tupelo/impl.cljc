@@ -6,6 +6,7 @@
 ;   software.
 (ns ^:no-doc tupelo.impl
   "Tupelo - Making Clojure even sweeter"
+  (:refer-clojure :exclude [first rest])
   (:require 
     [clojure.core.async :as ca]
     [clojure.core.match :as ccm]
@@ -22,6 +23,22 @@
 
 ; #todo need option for (take 3 coll :exact)
 ; #todo need option for (drop 3 coll :exact)
+
+; #todo -> tests
+(s/defn xfirst :- s/Any
+  "Returns the first value in a list or vector. Throws if empty."
+  [arg :- [s/Any]]
+  (when (or (nil? arg) (empty? arg))
+    (throw (IllegalArgumentException. (str "first: invalid arg:" arg))))
+  (clojure.core/first arg))
+
+; #todo -> tests
+(s/defn xrest :- s/Any
+  "Returns a vector containing all but the first value in a list or vector. Throws if (zero? (count arg))."
+  [arg :- [s/Any]]
+  (when (or (nil? arg) (zero? (count arg)))
+    (throw (IllegalArgumentException. (str "first: invalid arg:" arg))))
+  (vec (clojure.core/rest arg)))
 
 ; #todo add test & README
 (defn pretty-str
@@ -206,11 +223,11 @@
 
 (defn- spy-let-impl
   [exprs]
-  (let [decls (first exprs)
+  (let [decls (xfirst exprs)
         _     (when (not (even? (count decls)))
                 (throw (IllegalArgumentException. (str "spy-let-proc: uneven number of decls:" decls))))
         ;_     (println :decls decls)
-        forms (rest exprs)
+        forms (xrest exprs)
         fmt-pair (fn [[dest src]]
                    ;(println :fmt-pair dest "<=" src)
                    [ dest src  '_ (list 'spyx dest)] )
@@ -246,11 +263,11 @@
 ;-----------------------------------------------------------------------------
 (defn- spy-let-pretty-impl
   [exprs]
-  (let [decls (first exprs)
+  (let [decls (xfirst exprs)
         _     (when (not (even? (count decls)))
                 (throw (IllegalArgumentException. (str "spy-let-pretty-impl: uneven number of decls:" decls))))
         ;_     (println :decls decls)
-        forms (rest exprs)
+        forms (xrest exprs)
         fmt-pair (fn [[dest src]]
                    ;(println :fmt-pair dest "<=" src)
                    [ dest src  '_ (list 'spyx-pretty dest)] )
@@ -322,7 +339,7 @@
   (let [num-items (count coll-in)]
     (when-not (= 1 num-items)
       (throw (IllegalArgumentException. (str "only: num-items must=1; num-items=" num-items)))))
-  (first coll-in))
+  (clojure.core/first coll-in))
 
 ;-----------------------------------------------------------------------------
 (defmacro it->
@@ -391,7 +408,7 @@
   [m]
   {:pre  [(map? m)]
    :post [(vector? %)]}
-  (reduce #(conj %1 (first %2) (second %2))
+  (reduce #(conj %1 (xfirst %2) (second %2))
     [] (seq m)))
 
 (defn range-vec     ; #todo README
@@ -772,17 +789,17 @@
   [tree-node]
   (if-not (sequential? tree-node)
     tree-node       ; leaf - just return it
-    (let [tag    (first tree-node)
-          less-1 (rest tree-node)]
+    (let [tag    (xfirst tree-node)
+          less-1 (xrest tree-node)]
       (if (empty? less-1)
         {:tag     tag
          :attrs   {}
          :content []}
-        (let [v2 (first less-1)]
+        (let [v2 (xfirst less-1)]
           (if (map? v2)
             {:tag     tag
              :attrs   v2
-             :content (forv [child (rest less-1)]
+             :content (forv [child (xrest less-1)]
                         (hiccup->enlive child))}
             {:tag     tag
              :attrs   {}
