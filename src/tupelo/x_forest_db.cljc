@@ -235,10 +235,10 @@
   "Adds an Enlive-format tree to the DB. Tag values are converted to nil attributes:
   [:a ...] -> {:a nil ...}..."
   [db tree]
-  (assert (te/enlive-node? tree))
+  (assert (t/enlive-node? tree))
   (let [attrs    (glue {(grab :tag tree) nil} (grab :attrs tree))
         children (grab :content tree) ]
-    (if (every? te/enlive-node? children)
+    (if (every? t/enlive-node? children)
       (let [kids (glue [] (for [child children] (add-tree db child))) ]
         (add-node db attrs kids))
       (add-leaf db attrs children))))
@@ -247,7 +247,7 @@
   "Adds a Hiccup-format tree to the DB. Tag values are converted to nil attributes:
   [:a ...] -> {:a nil ...}..."
   [db tree]
-  (add-tree db (te/hiccup->enlive tree)))
+  (add-tree db (t/hiccup->enlive tree)))
 
 
 (s/defn set-attrs :- tsk/KeyMap

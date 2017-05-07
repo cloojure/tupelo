@@ -212,10 +212,6 @@
 
 ; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
 
-; #todo need let-keys or grab-keys macro (let-keys [[a b c] my-map] ...) ->
-; #todo (let [a (grab :a my-map)
-; #todo       b (grab :b my-map)
-; #todo       c (grab :c my-map) ] ... )
 
 ; original
 #_(s/defn truthy? :- s/Bool
@@ -284,6 +280,7 @@
 
 (pns/import-macro impl/label-value-map)
 (pns/import-macro impl/let-keys)
+(pns/import-macro impl/with-map-fields)
 
 ; #todo rename -> drop-idx
 ; #todo force to vector result
@@ -618,6 +615,9 @@
 (pns/import-fn impl/wild-match-1 )
 (pns/import-fn impl/wild-match? )
 (pns/import-macro impl/matches? )
+(pns/import-fn impl/hiccup->enlive )
+(pns/import-fn impl/enlive->hiccup )
+(pns/import-fn impl/enlive-node? )
 
 ; #todo: add (throwed? ...) for testing exceptions
 
@@ -699,14 +699,14 @@
   (refer 'tupelo.core :only
    '[spy spy-let spy-let-pretty spyx spyx-pretty spyxx with-spy-indent truthy? falsey?
      not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
-     forv conjv glue label-value-map let-keys macro?
+     forv conjv glue label-value-map let-keys with-map-fields macro?
      append prepend grab dissoc-in fetch-in
      submap-by-keys submap-by-vals map-keys->vals keyvals
      validate only third it-> safe-> keep-if drop-if zip flat-vec
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
      drop-at insert-at replace-at starts-with? int->kw kw->int
      split-using split-match partition-using wild-match? increasing? increasing-or-equal?
-     fibonacci-seq fibo-thru fibo-nth
+     fibonacci-seq fibo-thru fibo-nth hiccup->enlive enlive->hiccup enlive-node?
      with-exception-default lazy-cons lazy-gen yield yield-all
     ] ))
 

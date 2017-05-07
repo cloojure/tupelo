@@ -1821,17 +1821,19 @@
                         c 3
                         d 4
                         e 5]
-                    (label-value-map a b c d e))) ]
-    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (some-fn))
+                    (label-value-map a b c d e)))
 
-    (let [ {:keys [a b c d e]} (some-fn) ]
+       the-map (some-fn) ]
+    (is= the-map {:a 1 :b 2 :c 3 :d 4 :e 5})
+
+    (let [{:keys [a b c d e]} the-map]
       (is= [a b c d e] [1 2 3 4 5]))
 
-    (let-keys [a b c d e] (some-fn)
+    (with-map-fields the-map [a b c d e]
       (is= [a b c d e] [1 2 3 4 5]))
 
     (throws?
-      (let-keys [x y z] (some-fn)
+      (with-map-fields the-map [x y z]
         (println "shouldn't ever get here")))))
 (dotest
   (is   (macro? 'and))

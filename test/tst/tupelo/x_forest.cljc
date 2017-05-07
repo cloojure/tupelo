@@ -633,3 +633,33 @@
               (into (sorted-set)
                 (find-leaves (root-hids) [{:tag :a} {:tag :c}] :*))))) )))
 
+
+(dotest
+  (with-forest (new-forest)
+    (let [root-hid (add-tree-hiccup
+                     [:a
+                      [:b 1]
+                      [:b 21 22 23]
+                      [:b
+                       [:c 4]
+                       [:c 51 52 53]]
+                      [:c 9]])
+          tree     (hid->tree root-hid)
+          bush     (hid->bush root-hid)]
+      (is= tree
+        {:attrs {:tag :a},
+         :kids
+                [{:attrs {:tag :b}, :value [1]}
+                 {:attrs {:tag :b}, :value [21 22 23]}
+                 {:attrs {:tag :b},
+                  :kids  [{:attrs {:tag :c}, :value [4]}
+                          {:attrs {:tag :c}, :value [51 52 53]}]}
+                 {:attrs {:tag :c}, :value [9]}]})
+      (is= bush
+        [{:tag :a}
+          [{:tag :b} 1]
+          [{:tag :b} 21 22 23]
+          [{:tag :b}
+            [{:tag :c} 4]
+            [{:tag :c} 51 52 53]]
+          [{:tag :c} 9]]  ))))

@@ -175,6 +175,20 @@
       ; Leaf: nothing else to do
       base-result)))
 
+; #todo need to recurse with set of parent hid's to avoid cycles
+(s/defn hid->bush :- tsk/Vec
+  [hid :- HID]
+  (if (node-hid? hid)
+    ; node: need to recursively resolve children
+    (let [node   (hid->node hid)
+          kids   (mapv hid->bush (grab :kids node))
+          result (prepend (grab :attrs node) kids)]
+      result)
+    ; format Leaf
+    (let [leaf   (hid->leaf hid)
+          result (prepend (grab :attrs leaf) (grab :value leaf))]
+      result)))
+
 ; #todo naming choices
 ; #todo reset! vs  set
 ; #todo swap!  vs  update
@@ -243,11 +257,11 @@
   "Adds an Enlive-format tree to the DB. Tag values are converted to nil attributes:
   [:a ...] -> {:a nil ...}..."
   [tree]
-  (assert (te/enlive-node? tree))
+  (assert (enlive-node? tree))
   (let [attrs    (glue {:tag (grab :tag tree)} ; or { :tag <tag-val> }
                    (grab :attrs tree))
         children (grab :content tree) ]
-    (if (every? te/enlive-node? children)
+    (if (every? enlive-node? children)
       (let [kids (glue [] (for [child children] (add-tree child))) ]
         (add-node attrs kids))
       (add-leaf attrs children))))
@@ -256,7 +270,7 @@
   "Adds a Hiccup-format tree to the DB. Tag values are converted to nil attributes:
   [:a ...] -> {:a nil ...}..."
   [tree]
-  (add-tree (te/hiccup->enlive tree)))
+  (add-tree (hiccup->enlive tree)))
 
 (s/defn set-attrs :- tsk/KeyMap
   "Merge the supplied attrs map into the attrs of a Node or Leaf"

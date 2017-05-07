@@ -13,49 +13,6 @@
   ))
 (t/refer-tupelo)
 
-(s/defn enlive-node? :- s/Bool ; #todo add test and -> tupelo.core
-  [arg]
-  (and (map? arg)
-    (= #{:tag :attrs :content} (set (keys arg)))))
-
-(defn hiccup->enlive
-  "Converts a tree of data from Hiccup -> Enlive format"
-  [tree-node]
-  (if-not (sequential? tree-node)
-    tree-node       ; leaf - just return it
-    (let [tag    (first tree-node)
-          less-1 (rest tree-node)]
-      (if (empty? less-1)
-        {:tag     tag
-         :attrs   {}
-         :content []}
-        (let [v2 (first less-1)]
-          (if (map? v2)
-            {:tag     tag
-             :attrs   v2
-             :content (forv [child (rest less-1)]
-                        (hiccup->enlive child))}
-            {:tag     tag
-             :attrs   {}
-             :content (forv [child less-1]
-                        (hiccup->enlive child))}))))))
-
-(defn enlive->hiccup
-  [tree-node]
-  (if-not (map? tree-node)
-    tree-node       ; leaf - just return it
-    ; #todo maybe a let-keys macro for this?
-    (let [tag        (grab :tag tree-node)
-          attrs      (grab :attrs tree-node)
-          content    (grab :content tree-node)
-          tag-attrs  (if (empty? attrs)
-                       [tag]
-                       [tag attrs])
-          content-tx (forv [child content]
-                       (enlive->hiccup child))
-          result      (glue tag-attrs content-tx) ]
-      result)))
-
 ;#todo write fn enlive-remove-attrs
 
 ;---------------------------------------------------------------------------------------------------
