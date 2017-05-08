@@ -725,8 +725,6 @@
         #{[{:color :red}
            [{:color :green} 2]]}))))
 
-(comment
-
 (dotest
   (with-forest (new-forest)
     (let [x (add-node {:tag :a :id :a1}
@@ -739,23 +737,27 @@
               [(add-leaf {:tag :c :color :blue} 2)
                (add-leaf {:tag :c :color :blue} 3)]) ]
 
-      (is= (format-solns (find-paths (root-hids) [{:tag :a}]))
-        #{[{:attrs {:tag :a, :id :a1},
-            :kids  [{:attrs {:tag :b, :color :red}, :value 2}
-                    {:attrs {:tag :b, :color :red}, :value 3}]}]
-          [{:attrs {:tag :a, :id :a2},
-            :kids  [{:attrs {:tag :b, :color :green}, :value 2}
-                    {:attrs {:tag :b, :color :green}, :value 3}]}]
-          [{:attrs {:tag :a, :id :a3},
-            :kids  [{:attrs {:tag :c, :color :blue}, :value 2}
-                    {:attrs {:tag :c, :color :blue}, :value 3}]}] })
-      (is= (format-solns (find-paths (root-hids) [{:id :a2}]))
-        #{[{:attrs {:tag :a, :id :a2},
-            :kids  [{:attrs {:tag :b, :color :green}, :value 2}
-                    {:attrs {:tag :b, :color :green}, :value 3}]}] })
-      (is= (format-solns (find-paths (root-hids) [:** {:color :green}]))
-        #{[{:tag :a, :id :a2} {:attrs {:tag :b, :color :green}, :value 2}]
-          [{:tag :a, :id :a2} {:attrs {:tag :b, :color :green}, :value 3}]})
+      (is= (format-solns-bush (find-paths (root-hids) [{:tag :a}]))
+        #{[{:tag :a, :id :a2}
+           [{:tag :b, :color :green} 2]
+           [{:tag :b, :color :green} 3]]
+          [{:tag :a, :id :a3}
+           [{:tag :c, :color :blue} 2]
+           [{:tag :c, :color :blue} 3]]
+          [{:tag :a, :id :a1}
+           [{:tag :b, :color :red} 2]
+           [{:tag :b, :color :red} 3]]})
+
+      (is= (format-solns-bush (find-paths (root-hids) [{:id :a2}]))
+        #{[{:tag :a, :id :a2}
+           [{:tag :b, :color :green} 2]
+           [{:tag :b, :color :green} 3]]})
+
+      (is= (format-solns-bush (find-paths (root-hids) [:** {:color :green}]))
+        #{[{:tag :a, :id :a2}
+           [{:tag :b, :color :green} 2]]
+          [{:tag :a, :id :a2}
+           [{:tag :b, :color :green} 3]] })
 
       ; Actual return value looks like this:
       ; (find-paths (root-hids) [:** {:color :green}]) =>
@@ -767,21 +769,26 @@
               (into (sorted-set)
                 (find-paths (root-hids) [:** {:color :green}])))))
 
-      (is= (format-solns (find-leaves (root-hids) [:** {:tag :b}] 2))
-        #{[{:tag :a, :id :a1} {:attrs {:tag :b, :color :red}, :value 2}]
-          [{:tag :a, :id :a2} {:attrs {:tag :b, :color :green}, :value 2}]})
-      (is= (format-solns (find-leaves x [:** {:tag :b}] 2))
-        #{[{:tag :a, :id :a1} {:attrs {:tag :b, :color :red}, :value 2}] })
-      (is= (format-solns (find-leaves #{z y} [{:tag :a} :*] 2))
-        #{[{:tag :a, :id :a2} {:attrs {:tag :b, :color :green}, :value 2}]
-          [{:tag :a, :id :a3} {:attrs {:tag :c, :color :blue}, :value 2}] })
-      (is= (format-solns (find-leaves (root-hids) [{:tag :a} :*] 2))
-        #{[{:tag :a, :id :a2} {:attrs {:tag :b, :color :green}, :value 2}]
-          [{:tag :a, :id :a3} {:attrs {:tag :c, :color :blue}, :value 2}]
-          [{:tag :a, :id :a1} {:attrs {:tag :b, :color :red}, :value 2}]})
-      (is= (format-solns (find-leaves (root-hids) [{:tag :a} {:tag :c}] :*))
-        #{[{:tag :a, :id :a3} {:attrs {:tag :c, :color :blue}, :value 2}]
-          [{:tag :a, :id :a3} {:attrs {:tag :c, :color :blue}, :value 3}]})
+      (is= (format-solns-bush (find-leaves (root-hids) [:** {:tag :b}] [2]))
+        #{[{:tag :a, :id :a2}
+           [{:tag :b, :color :green} 2]]
+          [{:tag :a, :id :a1}
+           [{:tag :b, :color :red} 2]]})
+
+      (is= (format-solns-bush (find-leaves x [:** {:tag :b}] [2]))
+        #{[{:tag :a, :id :a1}
+           [{:tag :b, :color :red} 2]]} )
+
+      (is= (format-solns-bush (find-leaves #{z y} [{:tag :a} :*] [2]))
+        #{[{:tag :a, :id :a2} [{:tag :b, :color :green} 2]]
+          [{:tag :a, :id :a3} [{:tag :c, :color :blue} 2]]})
+      (is= (format-solns-bush (find-leaves (root-hids) [{:tag :a} :*] [2]))
+        #{[{:tag :a, :id :a2} [{:tag :b, :color :green} 2]]
+          [{:tag :a, :id :a1} [{:tag :b, :color :red} 2]]
+          [{:tag :a, :id :a3} [{:tag :c, :color :blue} 2]]})
+      (is= (format-solns-bush (find-leaves (root-hids) [{:tag :a} {:tag :c}] :*))
+        #{[{:tag :a, :id :a3} [{:tag :c, :color :blue} 3]]
+          [{:tag :a, :id :a3} [{:tag :c, :color :blue} 2]]})
 
       ; Actual return value looks like this:
       ; (find-leaves (root-hids) [{:tag :a} {:tag :c}] :*) =>
@@ -792,7 +799,6 @@
             (vec
               (into (sorted-set)
                 (find-leaves (root-hids) [{:tag :a} {:tag :c}] :*))))) )))
-
 
 (dotest
   (with-forest (new-forest)
@@ -824,4 +830,3 @@
             [{:tag :c} 51 52 53]]
           [{:tag :c} 9]]  ))))
 
-)
