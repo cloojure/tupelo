@@ -402,6 +402,10 @@
   [hid :- HID]
   (-> (validate-hid hid) hid->tree tree->bush))
 
+(s/defn hid->hiccup :- tsk/Vec
+  [hid :- HID]
+  (-> (validate-hid hid) hid->tree tree->hiccup))
+
 (s/defn set-attrs :- tsk/KeyMap
   "Merge the supplied attrs map into the attrs of a Node or Leaf"
   [hid :- HID
