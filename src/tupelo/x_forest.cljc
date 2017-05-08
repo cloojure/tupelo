@@ -111,8 +111,7 @@
 ; #todo     => maybe switch to a ref instead of atom
 
 (defrecord Node [attrs kids] )    ; { :attrs { :k1 v1 :k2 v2 ... }  :kids  [ hid...] }
-(defrecord Leaf [attrs value])    ; { :attrs { :k1 v1 :k2 v2 ... }  :value [s/Any]     }
-; #todo value -> content
+(defrecord Leaf [attrs content])    ; { :attrs { :k1 v1 :k2 v2 ... }  :content [s/Any]     }
 (def Element (s/either Node Leaf))
 
 (def HID s/Keyword) ; #todo find way to validate
@@ -125,7 +124,7 @@
 (s/defn tree-leaf? :- s/Bool
   [elem :- tsk/KeyMap]
   (or (instance? Leaf elem)
-    (= #{:attrs :value} (set (keys elem)))))
+    (= #{:attrs :content} (set (keys elem)))))
 
 (s/defn tree-elem? :- s/Bool
   [elem :- tsk/KeyMap]
@@ -179,9 +178,9 @@
   [hid :- HID]
   (grab :kids (hid->node hid)))
 
-(s/defn hid->value :- s/Any
+(s/defn hid->content :- s/Any
   [hid :- HID]
-  (grab :value (hid->leaf hid)))
+  (grab :content (hid->leaf hid)))
 
 (s/defn node-hid?
   "Returns true iff an HID is a Node"
@@ -298,7 +297,7 @@
                                      (for [child (grab :kids tree)]
                                        (add-tree child)))]
                           (add-node attrs kids))
-      (tree-leaf? tree) (apply add-leaf attrs (grab :value tree))
+      (tree-leaf? tree) (apply add-leaf attrs (grab :content tree))
       :else (throw (IllegalArgumentException. (str "add-tree: invalid element=" tree))))))
 
 (s/defn bush-node? :- s/Bool ; #todo add test
@@ -312,12 +311,11 @@
   [bush]
   (assert (bush-node? bush))
   (let [attrs  (xfirst bush)
-        others (rest bush)]
-    (if (every? bush-node? others)
-      (let [kids (glue [] (for [child others] (bush->tree child)))]
+        content (xrest bush)]
+    (if (every? bush-node? content)
+      (let [kids (glue [] (for [child content] (bush->tree child)))]
         (label-value-map attrs kids))
-      (let [value others]
-        (label-value-map attrs value)))))
+      (label-value-map attrs content))))
 
 (s/defn tree->bush :- tsk/Vec
   [tree-elem :- tsk/Map]
@@ -326,7 +324,7 @@
     (let [bush-kids (mapv tree->bush (grab :kids tree-elem))
           bush-node (prepend (grab :attrs tree-elem) bush-kids)]
       bush-node)
-    (let [bush-leaf (prepend (grab :attrs tree-elem) (grab :value tree-elem))]
+    (let [bush-leaf (prepend (grab :attrs tree-elem) (grab :content tree-elem))]
       bush-leaf)))  ; #todo throw if not node or leaf
 
 (s/defn tree->enlive :- tsk/KeyMap
@@ -339,7 +337,7 @@
       (let [enlive-kids (mapv tree->enlive (grab :kids tree-elem))
             enlive-node (glue enlive-base {:attrs enlive-attrs :content enlive-kids})]
         enlive-node)
-      (let [enlive-leaf (glue enlive-base {:attrs enlive-attrs :content (grab :value tree-elem)})]
+      (let [enlive-leaf (glue enlive-base {:attrs enlive-attrs :content (grab :content tree-elem)})]
         enlive-leaf)))) ; #todo throw if not node or leaf
 
 (s/defn enlive->tree :- tsk/KeyMap ; #todo add test
@@ -352,8 +350,7 @@
       (if (every? enlive-node? content)
         (let [kids (glue [] (for [child content] (enlive->tree child)))]
           (label-value-map attrs kids))
-        (let [value content]
-          (label-value-map attrs value))))))
+        (label-value-map attrs content)))))
 
 (s/defn enlive->bush :- tsk/Vec ; #todo add test
   "Converts an Enlive-format data structure to a Bush. "
@@ -463,24 +460,24 @@
                             attrs-new))]
     (update-attrs hid fn-update-attrs)))
 
-(s/defn set-value :- Leaf
+(s/defn set-content :- Leaf
   "Resets the value of a Leaf"
   [hid :- HID
-   value-new :- s/Any]
+   content-new :- s/Any]
   (let [leaf-curr  (hid->leaf hid)
-        leaf-new   (glue leaf-curr {:value value-new})]
+        leaf-new   (glue leaf-curr {:content content-new})]
     (set-elem hid leaf-new)
     leaf-new))
 
 (s/defn update-value :- Leaf
-  "Updates the value of a Leaf using a function"
+  "Given a leaf with a single content value, updates that value using a function"
   [hid :- HID
    fn-update-value  ; signature: (fn-update-value value-curr x y z & more) -> value-new
    & fn-update-value-args]
   (let [leaf-curr  (hid->leaf hid)
-        value-curr (only (grab :value leaf-curr))
+        value-curr (only (grab :content leaf-curr))
         value-new  (apply fn-update-value value-curr fn-update-value-args)
-        leaf-new   (glue leaf-curr {:value [value-new]})]
+        leaf-new   (glue leaf-curr {:content [value-new]})]
     (set-elem hid leaf-new)
     leaf-new))
 
@@ -701,12 +698,12 @@
   (let [tail-hid  (last path)
         tail-elem (hid->elem tail-hid)]
     (and (leaf-hid? tail-hid)
-      (or (= tgt-val (grab :value tail-elem))
+      (or (= tgt-val (grab :content tail-elem))
         (= tgt-val :*)))))
 
 (defn find-leaves
-  [root-spec tgt-path tgt-val]
+  [root-spec tgt-path tgt-content]
   (let [paths      (find-paths root-spec tgt-path)
-        leaf-paths (keep-if #(has-matching-leaf % tgt-val) paths) ]
+        leaf-paths (keep-if #(has-matching-leaf % tgt-content) paths) ]
     leaf-paths))
 
