@@ -13,6 +13,7 @@
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.misc :as tm]
+    [tupelo.x-forest :as tf]
   )
   (:import
     [java.nio ByteBuffer]
@@ -24,7 +25,7 @@
   (let [map-subtree->hiccup (fn fn-map-subtree->hiccup [soln-set]
                               (into #{}
                                 (for [soln soln-set]
-                                  (update-in soln [:subtree] enlive->hiccup))))]
+                                  (update-in soln [:subtree] tf/enlive->hiccup))))]
     (let [tree-1        [:a
                          [:b 1]
                          [:b 2]
@@ -32,7 +33,7 @@
                           [:c 1]
                           [:c 2]]
                          [:c 9]]
-          tree-1-enlive (hiccup->enlive tree-1)]
+          tree-1-enlive (tf/hiccup->enlive tree-1)]
       ;---------------------------------------------------------------------------------------------------
       (is (empty? (find-tree-hiccup tree-1 [:z])))
       (is (empty? (find-tree-hiccup tree-1 [:z :b])))
@@ -134,7 +135,7 @@
     (let [tree-2        [:a
                          [:b 1]
                          [:c 3]]
-          tree-2-enlive (hiccup->enlive tree-2)]
+          tree-2-enlive (tf/hiccup->enlive tree-2)]
       ;---------------------------------------------------------------------------------------------------
       (throws? (find-tree-hiccup tree-2 [:**]))
       (throws? (find-tree-hiccup tree-2 [:a :**]))
@@ -209,56 +210,12 @@
                   [:* 1]
                   [:b 2]]]
     (throws? (find-tree-hiccup bad-tree [:a :b]))
-    (throws? (find-tree (hiccup->enlive bad-tree) [:a :b])))
+    (throws? (find-tree (tf/hiccup->enlive bad-tree) [:a :b])))
   (let [bad-tree [:a
                   [:** 1]
                   [:b 2]]]
     (throws? (find-tree-hiccup bad-tree [:a :b]))
-    (throws? (find-tree (hiccup->enlive bad-tree) [:a :b])))
+    (throws? (find-tree (tf/hiccup->enlive bad-tree) [:a :b])))
   )
 
-(dotest
-  (let [tree-2 [:a
-                [:b 2]
-                [:c 3]]
-        tree-3 [:a {:k1 "v1"}
-                [:b 2]
-                [:c 3]]
-        tree-4 [:a {:k1 "v1"}
-                [:b 2]
-                [:c {:k3 "v3" :k4 4}
-                 [:d 4]]]
-        ]
-    (is= (hiccup->enlive tree-2)
-      {:tag   :a,
-       :attrs {},
-       :content
-              [{:tag :b, :attrs {}, :content [2]}
-               {:tag :c, :attrs {}, :content [3]}]})
-
-    (is= (hiccup->enlive tree-3)
-      {:tag   :a,
-       :attrs {:k1 "v1"},
-       :content
-              [{:tag :b, :attrs {}, :content [2]}
-               {:tag :c, :attrs {}, :content [3]}]})
-
-    (is= (hiccup->enlive tree-4)
-      {:tag   :a,
-       :attrs {:k1 "v1"},
-       :content
-              [{:tag :b, :attrs {}, :content [2]}
-               {:tag :c, :attrs {:k3 "v3" :k4 4}, :content [
-                                                            {:tag :d :attrs {} :content [4]}]}]})
-    ; #todo add generative testing
-    (is=
-      (-> tree-2 hiccup->enlive)
-      (-> tree-2 hiccup->enlive enlive->hiccup hiccup->enlive))
-    (is=
-      (-> tree-3 hiccup->enlive)
-      (-> tree-3 hiccup->enlive enlive->hiccup hiccup->enlive))
-    (is=
-      (-> tree-4 hiccup->enlive)
-      (-> tree-4 hiccup->enlive enlive->hiccup hiccup->enlive))
-    ))
 

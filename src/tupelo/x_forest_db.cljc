@@ -7,18 +7,15 @@
 (ns tupelo.x-forest-db
   "Experimental new code"
   (:require
-    [clj-uuid :as uuid]
     [clojure.core.async     :as ca :refer [go go-loop chan thread]]
-    [clojure.pprint :as pprint]
     [clojure.set :as set]
-    [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.async :as ta]
     [tupelo.core :as t]
     [tupelo.enlive :as te]
     [tupelo.misc :as tm]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
+    [tupelo.x-forest :as tf]
   ))
 (t/refer-tupelo)
 
@@ -235,10 +232,10 @@
   "Adds an Enlive-format tree to the DB. Tag values are converted to nil attributes:
   [:a ...] -> {:a nil ...}..."
   [db tree]
-  (assert (t/enlive-node? tree))
+  (assert (tf/enlive-node? tree))
   (let [attrs    (glue {(grab :tag tree) nil} (grab :attrs tree))
         children (grab :content tree) ]
-    (if (every? t/enlive-node? children)
+    (if (every? tf/enlive-node? children)
       (let [kids (glue [] (for [child children] (add-tree db child))) ]
         (add-node db attrs kids))
       (add-leaf db attrs children))))
@@ -247,7 +244,7 @@
   "Adds a Hiccup-format tree to the DB. Tag values are converted to nil attributes:
   [:a ...] -> {:a nil ...}..."
   [db tree]
-  (add-tree db (t/hiccup->enlive tree)))
+  (add-tree db (tf/hiccup->enlive tree)))
 
 
 (s/defn set-attrs :- tsk/KeyMap
@@ -427,7 +424,7 @@
                   (sequential?  pattern-in)  (zipmap pattern-in (repeat nil))
                   (keyword?     pattern-in)  {pattern-in nil}
                   :else (throw (IllegalArgumentException.
-                                 (str "elem-matches?: illegal pattern-in=" pattern-in))))]
+                                 (str "hid-matches?: illegal pattern-in=" pattern-in))))]
     (let [pattern-keys         (keys pattern)
           pattern-keys-set     (set pattern-keys)
           attrs-keys-set       (set (keys attrs))

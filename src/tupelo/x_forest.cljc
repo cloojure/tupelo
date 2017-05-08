@@ -14,7 +14,6 @@
     [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t]
-    [tupelo.enlive :as te]
     [tupelo.misc :as tm]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
@@ -30,6 +29,48 @@
 ;     forest can replace a subtree with 2 or more nodes
 ;   still immutable, native Clojure maps at base
 ;      `with-forest` macro restricted to a single thread at a time
+
+(s/defn enlive-node? :- s/Bool ; #todo add test and -> tupelo.core
+  [arg]
+  (and (map? arg)
+    (= #{:tag :attrs :content} (set (keys arg)))))
+
+(defn hiccup->enlive
+  "Converts a tree of data from Hiccup -> Enlive format"
+  [tree-node]
+  (if-not (sequential? tree-node)
+    tree-node       ; leaf - just return it
+    (let [tag    (xfirst tree-node)
+          less-1 (xrest tree-node)]
+      (if (empty? less-1)
+        {:tag     tag
+         :attrs   {}
+         :content []}
+        (let [v2 (xfirst less-1)]
+          (if (map? v2)
+            {:tag     tag
+             :attrs   v2
+             :content (forv [child (xrest less-1)]
+                        (hiccup->enlive child))}
+            {:tag     tag
+             :attrs   {}
+             :content (forv [child less-1]
+                        (hiccup->enlive child))}))))))
+
+(defn enlive->hiccup
+  [tree-node]
+  (if-not (map? tree-node)
+    tree-node       ; leaf - just return it
+    (with-map-fields tree-node [tag attrs content]
+      (let [tag-attrs  (if (empty? attrs)
+                         [tag]
+                         [tag attrs])
+            content-tx (forv [child content]
+                         (enlive->hiccup child))
+            result     (glue tag-attrs content-tx)]
+        result))))
+
+
 
 ; #todo  move to tupelo.x-tree (tupelo.x-datapig ?)
 ; forest  data-forest  ForestDb forest-db
@@ -70,7 +111,8 @@
 ; #todo     => maybe switch to a ref instead of atom
 
 (defrecord Node [attrs kids] )    ; { :attrs { :k1 v1 :k2 v2 ... }  :kids  [ hid...] }
-(defrecord Leaf [attrs value])    ; { :attrs { :k1 v1 :k2 v2 ... }  :value s/Any     }
+(defrecord Leaf [attrs value])    ; { :attrs { :k1 v1 :k2 v2 ... }  :value [s/Any]     }
+; #todo value -> content
 (def Element (s/either Node Leaf))
 
 (def HID s/Keyword) ; #todo find way to validate
@@ -206,8 +248,8 @@
   "Unconditionally sets the value of a Leaf in the forest"
   [hid :- HID
    attrs :- tsk/KeyMap
-   value :- s/Any ]
-  (let [leaf (->Leaf attrs value)]
+   content :- [s/Any]]
+  (let [leaf (->Leaf attrs content)]
     (set-elem hid leaf)
     leaf))
 
@@ -226,7 +268,7 @@
   (doseq [kid kids] (validate-hid kid))
   (let [attrs (if (map? attrs-arg)
                 attrs-arg
-                {(validate keyword? attrs-arg) nil} )
+                {:tag (validate keyword? attrs-arg)} )
         hid (new-hid)]
     (validate-attrs attrs)
     (set-node hid attrs kids)
@@ -234,13 +276,13 @@
 
 (s/defn add-leaf :- HID
   [attrs-arg :- (s/either tsk/KeyMap s/Keyword)
-   value :- s/Any]
+   & content]         ; #todo   :- s/Any
   (let [attrs (if (map? attrs-arg)
                 attrs-arg
-                {(validate keyword? attrs-arg) nil} )
+                {:tag (validate keyword? attrs-arg)} )
         hid (new-hid)]
     (validate-attrs attrs)
-    (set-leaf hid attrs value)
+    (set-leaf hid attrs (vec content))
     hid))
 
 (s/defn add-tree :- HID
@@ -329,6 +371,16 @@
   "Converts a Tree to a Hiccup-format data structure."
   [arg :- tsk/KeyMap]
   (-> arg tree->enlive enlive->hiccup ))
+
+(s/defn hiccup->bush :- tsk/Vec
+  "Converts a Hiccup-format data structure to a Bush."
+  [arg :- tsk/Vec]
+  (-> arg hiccup->tree tree->bush))
+
+(s/defn bush->hiccup :- tsk/Vec
+  "Converts a Bush to a Hiccup-format data structure."
+  [arg :- tsk/Vec]
+  (-> arg bush->tree tree->hiccup ))
 
 (s/defn add-bush :- HID
   "Adds a bush to the forest"
@@ -506,16 +558,16 @@
           (remove-kids hid hids-leaving true))))) ; true => missing-kids-ok
   hids-leaving)
 
-(s/defn elem-matches?
+(s/defn hid-matches?
   [hid :- HID
    pattern-in :- s/Any]
   (let [attrs   (hid->attrs hid)
         pattern (cond
                   (map?         pattern-in)  pattern-in
                   (sequential?  pattern-in)  (zipmap pattern-in (repeat nil))
-                  (keyword?     pattern-in)  {pattern-in nil}
+                  (keyword?     pattern-in)  {:tag pattern-in}
                   :else (throw (IllegalArgumentException.
-                                 (str "elem-matches?: illegal pattern-in=" pattern-in))))]
+                                 (str "hid-matches?: illegal pattern-in=" pattern-in))))]
     (let [pattern-keys         (keys pattern)
           pattern-keys-set     (set pattern-keys)
           attrs-keys-set       (set (keys attrs))
@@ -542,14 +594,42 @@
 
 (defn format-solns [solns]
   (set
-    (for [soln solns]
-      (let [path soln
-            parents (butlast path)
+    (for [path solns]
+      (let [parents (butlast path)
             subtree (last path)]
         (append
           (forv [hid parents]
             (hid->attrs hid))
           (hid->tree subtree))))))
+
+(defn format-soln-bush [soln]
+  (let [elem (xfirst soln)
+        others (xrest soln) ]
+    (if (empty? others)
+      (hid->bush elem)
+      [ (hid->attrs elem) (format-soln-bush others) ] )))
+
+(defn format-solns-bush [solns]
+  (set
+    (forv [soln solns]
+      (format-soln-bush soln))))
+
+(defn format-soln-hiccup [soln]
+  (let [hid-curr   (xfirst soln)
+        hid-others (xrest soln)
+        tree-enlive   (tree->enlive (hid->tree hid-curr))
+        tag    (grab :tag tree-enlive)
+        attrs    (grab :attrs tree-enlive) ]
+      (when (not-empty? attrs)
+        (throw (IllegalStateException. (str "format-soln-hiccup: attrs not empty=" attrs))))
+    (if (empty? hid-others)
+      (enlive->hiccup (spy :300 tree-enlive))
+      [ tag (format-soln-hiccup hid-others) ] )))
+
+(defn format-solns-hiccup [solns]
+  (set
+    (forv [soln solns]
+      (format-soln-hiccup soln))))
 
 (s/defn ^:no-doc find-paths-impl
   [result-atom
@@ -569,7 +649,7 @@
               tgt-path-rest (xrest tgt-path)
               attrs (hid->attrs hid)]
       (let [parents-new (append parents hid)]
-        (when (or (= tgt :*) (elem-matches? hid tgt))
+        (when (or (= tgt :*) (hid-matches? hid tgt))
           ;(println :200 (str "match attrs=" attrs ))
           (if (empty? tgt-path-rest)
             (let [soln parents-new]

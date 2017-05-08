@@ -18,7 +18,52 @@
     [java.util UUID ]
   ))
 
-(dotest
+#_(dotest
+  (let [tree-2 [:a
+                [:b 2]
+                [:c 3]]
+        tree-3 [:a {:k1 "v1"}
+                [:b 2]
+                [:c 3]]
+        tree-4 [:a {:k1 "v1"}
+                [:b 2]
+                [:c {:k3 "v3" :k4 4}
+                 [:d 4]]]
+        ]
+    (is= (hiccup->enlive tree-2)
+      {:tag   :a,
+       :attrs {},
+       :content
+              [{:tag :b, :attrs {}, :content [2]}
+               {:tag :c, :attrs {}, :content [3]}]})
+
+    (is= (hiccup->enlive tree-3)
+      {:tag   :a,
+       :attrs {:k1 "v1"},
+       :content
+              [{:tag :b, :attrs {}, :content [2]}
+               {:tag :c, :attrs {}, :content [3]}]})
+
+    (is= (hiccup->enlive tree-4)
+      {:tag   :a,
+       :attrs {:k1 "v1"},
+       :content
+              [{:tag :b, :attrs {}, :content [2]}
+               {:tag :c, :attrs {:k3 "v3" :k4 4}, :content [
+                                                            {:tag :d :attrs {} :content [4]}]}]})
+    ; #todo add generative testing
+    (is=
+      (-> tree-2 hiccup->enlive)
+      (-> tree-2 hiccup->enlive enlive->hiccup hiccup->enlive))
+    (is=
+      (-> tree-3 hiccup->enlive)
+      (-> tree-3 hiccup->enlive enlive->hiccup hiccup->enlive))
+    (is=
+      (-> tree-4 hiccup->enlive)
+      (-> tree-4 hiccup->enlive enlive->hiccup hiccup->enlive))
+    ))
+
+#_(dotest
   (with-forest (new-forest)
     (let [x      (add-leaf {:tag :char :color :red} "x")
           y      (add-leaf {:tag :char :color :red} "y")
@@ -82,7 +127,7 @@
       (set-attrs z {:type :tuna, :name :charlie})
       (is= (hid->attrs z) {:type :tuna, :name :charlie}))))
 
-(dotest
+#_(dotest
   (with-forest (new-forest)
     (let [x (add-leaf {:tag :char :color :red :cnt 0} "x")
           r (add-node {:tag :root :color :white :cnt 0} [x])
@@ -112,7 +157,7 @@
         {:attrs {:tag :root, :color :white, :cnt 13},
          :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :value "x"}]}))))
 
-(dotest
+#_(dotest
   (let [state    (atom {})
         forest-1 (with-forest (new-forest)
                    (let [x (add-leaf {:tag :char :color :red} "x")
@@ -229,37 +274,49 @@
       (is= (hid->kids c) [])
       (is= (hid->tree c) {:attrs {:tag :r3, :color :black}, :kids []}))))
 
-(dotest
+#_(dotest
   (with-forest (new-forest)
     (let [x (add-leaf {:a 1 :b 2} "x")]
       (is= #{x} (root-hids))
-      (is (elem-matches? x {:a 1 :b 2}))
-      (is (elem-matches? x {:a nil :b 2}))
-      (is (elem-matches? x {:a :* :b 2}))
-      (is (elem-matches? x {:a 1}))
-      (is (elem-matches? x {:a nil}))
-      (is (elem-matches? x {:a :*}))
-      (is (elem-matches? x {:a nil :b :*}))
-      (is (elem-matches? x {:a :* :b nil}))
-      (is (elem-matches? x {}))
-      (isnt (elem-matches? x {:a 9}))
-      (isnt (elem-matches? x {:a 1 :c nil}))
-      (isnt (elem-matches? x {:c nil}))
-      (isnt (elem-matches? x {:c :*}))
+      (is (hid-matches? x {:a 1 :b 2}))
+      (is (hid-matches? x {:a nil :b 2}))
+      (is (hid-matches? x {:a :* :b 2}))
+      (is (hid-matches? x {:a 1}))
+      (is (hid-matches? x {:a nil}))
+      (is (hid-matches? x {:a :*}))
+      (is (hid-matches? x {:a nil :b :*}))
+      (is (hid-matches? x {:a :* :b nil}))
+      (is (hid-matches? x {}))
+      (isnt (hid-matches? x {:a 9}))
+      (isnt (hid-matches? x {:a 1 :c nil}))
+      (isnt (hid-matches? x {:c nil}))
+      (isnt (hid-matches? x {:c :*}))
 
-      (is (elem-matches? x [:a :b]))
-      (is (elem-matches? x [:a]))
-      (is (elem-matches? x [:b]))
-      (is (elem-matches? x []))
-      (isnt (elem-matches? x [:a :b :c]))
-      (isnt (elem-matches? x [:a :c]))
-      (isnt (elem-matches? x [:c]))
+      (is (hid-matches? x [:a :b]))
+      (is (hid-matches? x [:a]))
+      (is (hid-matches? x [:b]))
+      (is (hid-matches? x []))
+      (isnt (hid-matches? x [:a :b :c]))
+      (isnt (hid-matches? x [:a :c]))
+      (isnt (hid-matches? x [:c]))
 
-      (is (elem-matches? x :a))
-      (is (elem-matches? x :b))
-      (isnt (elem-matches? x :c)))))
+      (isnt (hid-matches? x :a))
+      (isnt (hid-matches? x :b))
+      (isnt (hid-matches? x :c))))
+  (with-forest (new-forest)
+    (let [root-hid (add-tree-hiccup
+                     [:a
+                      [:b 1]
+                      [:b 2]
+                      [:b
+                       [:c 4]
+                       [:c 5]]
+                      [:c 9]])]
+      (is (hid-matches? root-hid :a))
+      (is (hid-matches? root-hid {:tag :a}))
+  )))
 
-(dotest
+#_(dotest
   (with-forest (new-forest)
     (let [tree-1 [:a
                   [:b 1]
@@ -270,21 +327,21 @@
                   [:c 9]]
           root-1 (add-tree-hiccup tree-1)
 
-          b1     (add-leaf {:b nil} 1)
-          b2     (add-leaf {:b nil} 2)
-          c4     (add-leaf {:c nil} 4)
-          c5     (add-leaf {:c nil} 5)
-          c9     (add-leaf {:c nil} 9)
-          b3     (add-node {:b nil} [c4 c5])
-          aa     (add-node {:a nil} [b1 b2 b3 c9])
+          b1     (add-leaf {:tag :b} 1)
+          b2     (add-leaf {:tag :b} 2)
+          c4     (add-leaf {:tag :c} 4)
+          c5     (add-leaf {:tag :c} 5)
+          c9     (add-leaf {:tag :c} 9)
+          b3     (add-node {:tag :b} [c4 c5])
+          aa     (add-node {:tag :a} [b1 b2 b3 c9])
 
-          root-2 (add-node {:a nil}
-                   [(add-leaf {:b nil} 1)
-                    (add-leaf {:b nil} 2)
-                    (add-node {:b nil}
-                      [(add-leaf {:c nil} 4)
-                       (add-leaf {:c nil} 5)])
-                    (add-leaf {:c nil} 9)])
+          root-2 (add-node {:tag :a}
+                   [(add-leaf {:tag :b} 1)
+                    (add-leaf {:tag :b} 2)
+                    (add-node {:tag :b}
+                      [(add-leaf {:tag :c} 4)
+                       (add-leaf {:tag :c} 5)])
+                    (add-leaf {:tag :c} 9)])
 
           root-3 (add-node :a
                    [(add-leaf :b 1)
@@ -294,6 +351,7 @@
                        (add-leaf :c 5)])
                     (add-leaf :c 9)])
           ]
+      (println :101)
       (is= (hid->tree root-1)
         {:attrs {:tag :a},
          :kids  [{:attrs {:tag :b}, :value [1]}
@@ -306,14 +364,14 @@
         (hid->tree aa)
         (hid->tree root-2)
         (hid->tree root-3)
-        {:attrs {:a nil},
+        {:attrs {:tag :a},
          :kids
-                [{:attrs {:b nil}, :value 1}
-                 {:attrs {:b nil}, :value 2}
-                 {:attrs {:b nil},
-                  :kids  [{:attrs {:c nil}, :value 4}
-                          {:attrs {:c nil}, :value 5}]}
-                 {:attrs {:c nil}, :value 9}]}))))
+                [{:attrs {:tag :b}, :value [1]}
+                 {:attrs {:tag :b}, :value [2]}
+                 {:attrs {:tag :b},
+                  :kids  [{:attrs {:tag :c}, :value [4]}
+                          {:attrs {:tag :c}, :value [5]}]}
+                 {:attrs {:tag :c}, :value [9]}]}))))
 
 (dotest
   (with-forest (new-forest)
@@ -324,26 +382,23 @@
                      [:c 4]
                      [:c 5]]
                     [:c 9]]
-          hid-1    (add-tree-hiccup hiccup-1)
-          tree-1   (hid->tree hid-1)
-          bush-1   (hid->bush hid-1)
-          enlive-1 (tree->enlive tree-1)]
-      (is= tree-1
-        {:attrs {:tag :a},
-         :kids  [{:attrs {:tag :b}, :value [1 2 3]}
-                 {:attrs {:tag :b}, :value [2]}
-                 {:attrs {:tag :b},
-                  :kids  [{:attrs {:tag :c}, :value [4]}
-                          {:attrs {:tag :c}, :value [5]}]}
-                 {:attrs {:tag :c}, :value [9]}]})
-      (is= bush-1
-        [{:tag :a}
-         [{:tag :b} 1 2 3]
-         [{:tag :b} 2]
-         [{:tag :b}
-          [{:tag :c} 4]
-          [{:tag :c} 5]]
-         [{:tag :c} 9]])
+          enlive-1 (hiccup->enlive hiccup-1)
+          tree-1    (hiccup->tree hiccup-1)
+          tree-2    (enlive->tree enlive-1)
+          bush-1    (hiccup->bush hiccup-1)
+          bush-2    (tree->bush tree-1)
+          tree-3    (bush->tree bush-1)
+
+          hiccup-2a (enlive->hiccup enlive-1)
+          hiccup-2b (tree->hiccup tree-1)
+          hiccup-2c (tree->hiccup tree-2)
+          hiccup-2d (bush->hiccup bush-1)
+
+          ;hid-2    (add-tree-hiccup hiccup-1)
+          ;tree-3   (hid->tree hid-2)
+          ;bush-2   (hid->bush hid-2)
+          ;enlive-2 (tree->enlive tree-2)
+          ]
       (is= enlive-1
         {:tag   :a,
          :attrs {},
@@ -356,73 +411,116 @@
                          [{:tag :c, :attrs {}, :content [4]}
                           {:tag :c, :attrs {}, :content [5]}]}
                  {:tag :c, :attrs {}, :content [9]}]})
+      (is= tree-1
+        {:attrs {:tag :a},
+         :kids
+                [{:attrs {:tag :b}, :value [1 2 3]}
+                 {:attrs {:tag :b}, :value [2]}
+                 {:attrs {:tag :b},
+                  :kids  [{:attrs {:tag :c}, :value [4]}
+                          {:attrs {:tag :c}, :value [5]}]}
+                 {:attrs {:tag :c}, :value [9]}]})
+      (is= tree-2 tree-1)
+      (is= tree-3 tree-1)
+      (is= bush-1
+        [{:tag :a}
+         [{:tag :b} 1 2 3]
+         [{:tag :b} 2]
+         [{:tag :b} [{:tag :c} 4] [{:tag :c} 5]]
+         [{:tag :c} 9]])
+      (is= bush-2 bush-1)
+
+      (is= hiccup-1
+        hiccup-2a
+        hiccup-2b
+        hiccup-2c
+        hiccup-2d)
+      (is= hiccup-1 (enlive->hiccup (hiccup->enlive hiccup-1)))
+      (is= enlive-1 (hiccup->enlive (enlive->hiccup enlive-1)))
+
+      (is= enlive-1 (tree->enlive tree-2))
+
+      (is= hiccup-1 (-> hiccup-1 hiccup->tree tree->hiccup))
+      (is= enlive-1 (-> enlive-1 enlive->tree tree->enlive))
+
       (is= tree-1 (-> tree-1 tree->bush bush->tree))
+
       (is= tree-1 (-> tree-1 tree->hiccup hiccup->tree))
       (is= tree-1 (-> tree-1 tree->enlive enlive->tree))
       (is= bush-1 (-> bush-1 bush->tree tree->bush))
       (is= bush-1 (-> bush-1 bush->enlive enlive->bush))
-      (is= hiccup-1 (-> hiccup-1 hiccup->tree tree->hiccup))
-      (is= enlive-1 (-> enlive-1 enlive->tree tree->enlive)))))
 
-(dotest
+    )))
+
+#_(dotest
   (with-forest (new-forest)
-    (let [aa (add-node :a
-               [(add-leaf :b 1)
-                (add-leaf :b 2)
-                (add-node :b
-                  [(add-leaf :c 4)
-                   (add-leaf :c 5)])
-                (add-leaf :c 9)])]
+    (let [root-hid (add-node :a
+                     [(add-leaf :b 1)
+                      (add-leaf :b 2)
+                      (add-node :b
+                        [(add-leaf :c 4)
+                         (add-leaf :c 5)])
+                      (add-leaf :c 9)])]
 
-      (is (empty? (find-paths aa [:z])))
-      (is (empty? (find-paths aa [:z :b])))
-      (is (empty? (find-paths aa [:z :b :c])))
-      (is (empty? (find-paths aa [:a :z])))
-      (is (empty? (find-paths aa [:a :z :c])))
-      (is (empty? (find-paths aa [:a :b :z])))
+      (is (empty? (find-paths root-hid [:z])))
+      (is (empty? (find-paths root-hid [:z :b])))
+      (is (empty? (find-paths root-hid [:z :b :c])))
+      (is (empty? (find-paths root-hid [:a :z])))
+      (is (empty? (find-paths root-hid [:a :z :c])))
+      (is (empty? (find-paths root-hid [:a :b :z])))
 
-      (is= (format-solns (find-paths aa [:a]))
-        #{[{:attrs {:a nil},
-            :kids
-                   [{:attrs {:b nil}, :value 1}
-                    {:attrs {:b nil}, :value 2}
-                    {:attrs {:b nil},
-                     :kids  [{:attrs {:c nil}, :value 4}
-                             {:attrs {:c nil}, :value 5}]}
-                    {:attrs {:c nil}, :value 9}]}]})
-      (is= (format-solns (find-paths aa [:a :b]))
-        #{[{:a nil}
-           {:attrs {:b nil}, :value 1}]
-          [{:a nil}
-           {:attrs {:b nil}, :value 2}]
-          [{:a nil}
-           {:attrs {:b nil},
-            :kids  [{:attrs {:c nil}, :value 4}
-                    {:attrs {:c nil}, :value 5}]}]})
+      (is= (format-solns-bush (find-paths root-hid [:a]))
+        #{[{:tag :a}
+           [{:tag :b} [1]]
+           [{:tag :b} [2]]
+           [{:tag :b}
+            [{:tag :c} [4]]
+            [{:tag :c} [5]]]
+           [{:tag :c} [9]]]})
 
-        (is (wild-match? [[:* :*]
-                          [:* :*]
-                          [:* :*]]
-              (vec (into (sorted-set) (find-paths aa [:a :b])))))
-        ; Actual results: (find-paths aa [:a :b]) =>
-        ;   #{ [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :b40b6f37e6a746f815b092a8590cefe5cf37121a]
-        ;      [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :76859beedd81468b4ee3cc5f17a5fdcf7a34a787]
-        ;      [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :5c0cb1ba6657ba0ac40cc5099f2be091b5637a3b] }
+      (is= (format-solns-hiccup (find-paths root-hid [:a]))
+        #{[:a
+           [:b 1]
+           [:b 2]
+           [:b
+            [:c 4]
+            [:c 5]]
+           [:c 9]]}
 
-      (is= (format-solns (find-paths aa [:a :c]))
+
+        )
+(comment
+
+      (is= (format-solns-bush (find-paths root-hid [:a :b]))
+        #{[{:tag :a} [{:tag :b} [1]]]
+          [{:tag :a} [{:tag :b} [2]]]
+          [{:tag :a} [{:tag :b}
+                      [{:tag :c} [4]]
+                      [{:tag :c} [5]]]]} )
+
+      (is (wild-match? [[:* :*]
+                        [:* :*]
+                        [:* :*]]
+            (vec (into (sorted-set) (find-paths root-hid [:a :b])))))
+      ; Actual results: (find-paths aa [:a :b]) =>
+      ;   #{ [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :b40b6f37e6a746f815b092a8590cefe5cf37121a]
+      ;      [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :76859beedd81468b4ee3cc5f17a5fdcf7a34a787]
+      ;      [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :5c0cb1ba6657ba0ac40cc5099f2be091b5637a3b] }
+
+      (is= (format-solns (find-paths root-hid [:a :c]))
         #{[{:a nil}
            {:attrs {:c nil}, :value 9}]})
-      (is= (format-solns (find-paths aa [:a :b :c]))
+      (is= (format-solns (find-paths root-hid [:a :b :c]))
         #{[{:a nil} {:b nil} {:attrs {:c nil}, :value 5}]
           [{:a nil} {:b nil} {:attrs {:c nil}, :value 4}]})
-      (is= (format-solns (find-paths aa [:* :b]))
+      (is= (format-solns (find-paths root-hid [:* :b]))
         #{[{:a nil} {:attrs {:b nil}, :value 1}]
           [{:a nil} {:attrs {:b nil}, :value 2}]
           [{:a nil}
            {:attrs {:b nil},
             :kids  [{:attrs {:c nil}, :value 4}
                     {:attrs {:c nil}, :value 5}]}]})
-      (is= (format-solns (find-paths aa [:a :*]))
+      (is= (format-solns (find-paths root-hid [:a :*]))
         #{[{:a nil} {:attrs {:b nil}, :value 1}]
           [{:a nil} {:attrs {:b nil}, :value 2}]
           [{:a nil}
@@ -430,9 +528,14 @@
             :kids  [{:attrs {:c nil}, :value 4}
                     {:attrs {:c nil}, :value 5}]}]
           [{:a nil} {:attrs {:c nil}, :value 9}]})
-      (is= (format-solns (find-paths aa [:a :* :c]))
+      (is= (format-solns (find-paths root-hid [:a :* :c]))
         #{[{:a nil} {:b nil} {:attrs {:c nil}, :value 5}]
-          [{:a nil} {:b nil} {:attrs {:c nil}, :value 4}]}))))
+          [{:a nil} {:b nil} {:attrs {:c nil}, :value 4}]})
+)
+
+      )))
+
+(comment
 
 (dotest
   (with-forest (new-forest)
@@ -692,3 +795,4 @@
             [{:tag :c} 51 52 53]]
           [{:tag :c} 9]]  ))))
 
+)

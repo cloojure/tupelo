@@ -28,9 +28,7 @@
 ; (when (= person :frid)  ; (kw :frid) -> throws
 ;    (println "Hi Barney!"))
 
-(defn nl
-  "Abbreviated name for `newline` "
-  [] (newline))
+(pns/import-fn impl/nl )
 
 (defn print-versions []
   (let [version-str   (format "   Clojure %s    Java %s"
@@ -565,9 +563,6 @@
 (pns/import-fn impl/wild-match-1 )
 (pns/import-fn impl/wild-match? )
 (pns/import-macro impl/matches? )
-(pns/import-fn impl/hiccup->enlive )
-(pns/import-fn impl/enlive->hiccup )
-(pns/import-fn impl/enlive-node? )
 
 ; #todo: add (throwed? ...) for testing exceptions
 
@@ -656,7 +651,7 @@
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
      drop-at insert-at replace-at starts-with? int->kw kw->int
      split-using split-match partition-using wild-match? increasing? increasing-or-equal?
-     fibonacci-seq fibo-thru fibo-nth hiccup->enlive enlive->hiccup enlive-node?
+     fibonacci-seq fibo-thru fibo-nth
      with-exception-default lazy-cons lazy-gen yield yield-all
     ] ))
 

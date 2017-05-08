@@ -24,6 +24,10 @@
 ; #todo need option for (take 3 coll :exact)
 ; #todo need option for (drop 3 coll :exact)
 
+(defn nl
+  "Abbreviated name for `newline` "
+  [] (newline))
+
 ; #todo -> tests
 (s/defn xfirst :- s/Any
   "Returns the first value in a list or vector. Throws if empty."
@@ -778,44 +782,4 @@
   [s]
   (-> s resolve meta :macro boolean))
     ; from Alex Miller StackOverflow answer 2017-5-6
-
-(s/defn enlive-node? :- s/Bool ; #todo add test and -> tupelo.core
-  [arg]
-  (and (map? arg)
-    (= #{:tag :attrs :content} (set (keys arg)))))
-
-(defn hiccup->enlive
-  "Converts a tree of data from Hiccup -> Enlive format"
-  [tree-node]
-  (if-not (sequential? tree-node)
-    tree-node       ; leaf - just return it
-    (let [tag    (xfirst tree-node)
-          less-1 (xrest tree-node)]
-      (if (empty? less-1)
-        {:tag     tag
-         :attrs   {}
-         :content []}
-        (let [v2 (xfirst less-1)]
-          (if (map? v2)
-            {:tag     tag
-             :attrs   v2
-             :content (forv [child (xrest less-1)]
-                        (hiccup->enlive child))}
-            {:tag     tag
-             :attrs   {}
-             :content (forv [child less-1]
-                        (hiccup->enlive child))}))))))
-
-(defn enlive->hiccup
-  [tree-node]
-  (if-not (map? tree-node)
-    tree-node       ; leaf - just return it
-    (with-map-fields tree-node [tag attrs content]
-      (let [tag-attrs  (if (empty? attrs)
-                         [tag]
-                         [tag attrs])
-            content-tx (forv [child content]
-                         (enlive->hiccup child))
-            result     (glue tag-attrs content-tx)]
-        result))))
 

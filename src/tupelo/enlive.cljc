@@ -10,6 +10,7 @@
     [clojure.core.async     :as ca :refer [go go-loop chan thread]]
     [schema.core :as s]
     [tupelo.core :as t]
+    [tupelo.x-forest :as tf]
   ))
 (t/refer-tupelo)
 
@@ -95,19 +96,19 @@
   [soln-set]
   (into #{}
     (for [soln soln-set]
-      (update-in soln [:subtree] enlive->hiccup))))
+      (update-in soln [:subtree] tf/enlive->hiccup))))
 
 (defn find-tree-hiccup [tree tgt-path]
   "Searches an Hiccup-format tree for the specified tgt-path,
   returning a Hiccup-format result."
   (find-tree-result->hiccup
-    (find-tree (hiccup->enlive tree) tgt-path)))
+    (find-tree (tf/hiccup->enlive tree) tgt-path)))
 
 (defn find-leaf-hiccup [tree tgt-path leaf-val]
   "Searches an Hiccup-format tree for the specified tgt-path & leaf value,
   returning a Hiccup-format result."
   (find-tree-result->hiccup
-    (find-leaf (hiccup->enlive tree) tgt-path leaf-val)))
+    (find-leaf (tf/hiccup->enlive tree) tgt-path leaf-val)))
 
 ; Enlive format   #todo: need *-hiccup versin?
 (defn get-tree      ; #todo need test & README
