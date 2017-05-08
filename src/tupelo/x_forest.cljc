@@ -592,44 +592,17 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-(defn format-solns [solns]
-  (set
-    (for [path solns]
-      (let [parents (butlast path)
-            subtree (last path)]
-        (append
-          (forv [hid parents]
-            (hid->attrs hid))
-          (hid->tree subtree))))))
-
-(defn format-soln-bush [soln]
+(defn format-soln [soln]
   (let [elem (xfirst soln)
         others (xrest soln) ]
     (if (empty? others)
       (hid->bush elem)
-      [ (hid->attrs elem) (format-soln-bush others) ] )))
+      [ (hid->attrs elem) (format-soln others) ])))
 
-(defn format-solns-bush [solns]
+(defn format-solns [solns]
   (set
     (forv [soln solns]
-      (format-soln-bush soln))))
-
-(defn format-soln-hiccup [soln]
-  (let [hid-curr   (xfirst soln)
-        hid-others (xrest soln)
-        tree-enlive   (tree->enlive (hid->tree hid-curr))
-        tag    (grab :tag tree-enlive)
-        attrs    (grab :attrs tree-enlive) ]
-      (when (not-empty? attrs)
-        (throw (IllegalStateException. (str "format-soln-hiccup: attrs not empty=" attrs))))
-    (if (empty? hid-others)
-      (enlive->hiccup tree-enlive)
-      [ tag (format-soln-hiccup hid-others) ] )))
-
-(defn format-solns-hiccup [solns]
-  (set
-    (forv [soln solns]
-      (format-soln-hiccup soln))))
+      (format-soln soln))))
 
 (s/defn ^:no-doc find-paths-impl
   [result-atom
