@@ -337,13 +337,12 @@
   Ensures that a sequence is of length=1, and returns the only value present.
   Throws an exception if the length of the sequence is not one.
   Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
-  [coll-in]
-  (when-not (or (sequential? coll-in) (set? coll-in) )
-    (throw (IllegalArgumentException. (str "only: arg must be vector/list or set; arg=" coll-in))))
-  (let [num-items (count coll-in)]
+  [coll]
+  (let [coll-seq  (seq coll)
+        num-items (count coll-seq)]
     (when-not (= 1 num-items)
-      (throw (IllegalArgumentException. (str "only: num-items must=1; num-items=" num-items)))))
-  (clojure.core/first coll-in))
+      (throw (IllegalArgumentException. (str "only: num-items must=1; num-items=" num-items))))
+    (clojure.core/first coll-seq)))
 
 ;-----------------------------------------------------------------------------
 (defmacro it->
