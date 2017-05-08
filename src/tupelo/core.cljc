@@ -242,8 +242,8 @@
 (pns/import-fn impl/prepend)
 (pns/import-fn impl/macro?)
 
-(pns/import-macro impl/label-value-map)
-(pns/import-macro impl/with-map-fields)
+(pns/import-macro impl/vals->map)
+(pns/import-macro impl/with-map-vals)
 
 ; #todo rename -> drop-idx
 ; #todo force to vector result
@@ -644,7 +644,7 @@
   (refer 'tupelo.core :only
    '[spy spy-let spy-let-pretty spyx spyx-pretty spyxx with-spy-indent truthy? falsey?
      not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
-     forv conjv glue label-value-map with-map-fields macro?
+     forv conjv glue vals->map with-map-vals macro?
      append prepend grab dissoc-in fetch-in
      submap-by-keys submap-by-vals map-keys->vals keyvals
      validate only third it-> safe-> keep-if drop-if zip flat-vec

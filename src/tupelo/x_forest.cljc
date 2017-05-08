@@ -61,7 +61,7 @@
   [tree-node]
   (if-not (map? tree-node)
     tree-node       ; leaf - just return it
-    (with-map-fields tree-node [tag attrs content]
+    (with-map-vals tree-node [tag attrs content]
       (let [tag-attrs  (if (empty? attrs)
                          [tag]
                          [tag attrs])
@@ -314,8 +314,8 @@
         content (xrest bush)]
     (if (every? bush-node? content)
       (let [kids (glue [] (for [child content] (bush->tree child)))]
-        (label-value-map attrs kids))
-      (label-value-map attrs content))))
+        (vals->map attrs kids))
+      (vals->map attrs content))))
 
 (s/defn tree->bush :- tsk/Vec
   [tree-elem :- tsk/Map]
@@ -344,13 +344,13 @@
   "Convert an Enlive-format data structure to a tree. "
   [enlive-tree]
   (assert (enlive-node? enlive-tree))
-  (with-map-fields enlive-tree [attrs content]
+  (with-map-vals enlive-tree [attrs content]
     (assert (not (contains? (keys attrs) :tag)))
     (let [attrs (glue attrs (submap-by-keys enlive-tree #{:tag}))]
       (if (every? enlive-node? content)
         (let [kids (glue [] (for [child content] (enlive->tree child)))]
-          (label-value-map attrs kids))
-        (label-value-map attrs content)))))
+          (vals->map attrs kids))
+        (vals->map attrs content)))))
 
 (s/defn enlive->bush :- tsk/Vec ; #todo add test
   "Converts an Enlive-format data structure to a Bush. "
