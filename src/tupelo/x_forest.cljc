@@ -604,7 +604,7 @@
     (forv [soln solns]
       (format-soln soln))))
 
-(s/defn ^:no-doc find-paths-impl
+(s/defn ^:private ^:no-doc find-paths-impl
   [result-atom
    parents :- [HID]
    hid :- HID
@@ -649,6 +649,8 @@
                 ;           "  tgt-path:" tgt-path))
                 (find-paths-impl result-atom parents-new kid tgt-path)))))))))
 
+; #todo need a find-paths-pred that takes a predicate fn to choose
+; #todo maybe a fn like postwalk to apply transformation fn to each node recursively
 (defn find-paths    ; #todo need update-tree & update-leaf fn's
   "Searches an Enlive-format tree for the specified tgt-path"
   [root-spec tgt-path]
