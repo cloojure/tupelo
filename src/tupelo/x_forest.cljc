@@ -249,6 +249,9 @@
   [hid :- HID
    attrs :- tsk/KeyMap
    content :- [s/Any]]
+  ; debug
+  ;(when (vector? (first content))
+  ;   (throw (RuntimeException. (str "found vec/vec=" content))))
   (let [leaf (->Leaf attrs content)]
     (set-elem hid leaf)
     leaf))
@@ -295,7 +298,7 @@
                                      (for [child (grab :kids tree)]
                                        (add-tree child)))]
                           (add-node attrs kids))
-      (tree-leaf? tree) (add-leaf attrs (grab :value tree))
+      (tree-leaf? tree) (apply add-leaf attrs (grab :value tree))
       :else (throw (IllegalArgumentException. (str "add-tree: invalid element=" tree))))))
 
 (s/defn bush-node? :- s/Bool ; #todo add test
@@ -475,9 +478,9 @@
    fn-update-value  ; signature: (fn-update-value value-curr x y z & more) -> value-new
    & fn-update-value-args]
   (let [leaf-curr  (hid->leaf hid)
-        value-curr (grab :value leaf-curr)
+        value-curr (only (grab :value leaf-curr))
         value-new  (apply fn-update-value value-curr fn-update-value-args)
-        leaf-new   (glue leaf-curr {:value value-new})]
+        leaf-new   (glue leaf-curr {:value [value-new]})]
     (set-elem hid leaf-new)
     leaf-new))
 
@@ -623,7 +626,7 @@
       (when (not-empty? attrs)
         (throw (IllegalStateException. (str "format-soln-hiccup: attrs not empty=" attrs))))
     (if (empty? hid-others)
-      (enlive->hiccup (spy :300 tree-enlive))
+      (enlive->hiccup tree-enlive)
       [ tag (format-soln-hiccup hid-others) ] )))
 
 (defn format-solns-hiccup [solns]

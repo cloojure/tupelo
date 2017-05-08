@@ -18,7 +18,7 @@
     [java.util UUID ]
   ))
 
-#_(dotest
+(dotest
   (let [tree-2 [:a
                 [:b 2]
                 [:c 3]]
@@ -28,8 +28,7 @@
         tree-4 [:a {:k1 "v1"}
                 [:b 2]
                 [:c {:k3 "v3" :k4 4}
-                 [:d 4]]]
-        ]
+                 [:d 4]]] ]
     (is= (hiccup->enlive tree-2)
       {:tag   :a,
        :attrs {},
@@ -63,7 +62,7 @@
       (-> tree-4 hiccup->enlive enlive->hiccup hiccup->enlive))
     ))
 
-#_(dotest
+(dotest
   (with-forest (new-forest)
     (let [x      (add-leaf {:tag :char :color :red} "x")
           y      (add-leaf {:tag :char :color :red} "y")
@@ -92,12 +91,12 @@
       (is= #{r} roots)
       (not= #{x} roots)
 
-      (is= x-tree {:attrs {:tag :char, :color :red}, :value "x"})
+      (is= x-tree {:attrs {:tag :char, :color :red}, :value ["x"]})
       (is= r-tree
         {:attrs {:tag :root, :color :white},
-         :kids  [{:attrs {:tag :char, :color :red}, :value "x"}
-                 {:attrs {:tag :char, :color :red}, :value "y"}
-                 {:attrs {:tag :char, :color :red}, :value "z"}]})
+         :kids  [{:attrs {:tag :char, :color :red}, :value ["x"]}
+                 {:attrs {:tag :char, :color :red}, :value ["y"]}
+                 {:attrs {:tag :char, :color :red}, :value ["z"]}]})
       (is (wild-match?
             {:attrs {:tag :root, :color :white},
              :kids  [:* :* :*]}
@@ -117,17 +116,17 @@
 
       (merge-attrs x {:color :green})
       (is= (hid->tree x) (into {} (hid->leaf x))
-        {:attrs {:tag :char, :color :green}, :value "x"})
+        {:attrs {:tag :char, :color :green}, :value ["x"]})
 
       (is= (hid->attrs r) {:tag :root, :color :white})
       (is= (hid->attrs z) {:tag :char, :color :red})
       (is= (hid->kids r) [x y z])
-      (is= (hid->value z) "z")
+      (is= (hid->value z) ["z"])
 
       (set-attrs z {:type :tuna, :name :charlie})
       (is= (hid->attrs z) {:type :tuna, :name :charlie}))))
 
-#_(dotest
+(dotest
   (with-forest (new-forest)
     (let [x (add-leaf {:tag :char :color :red :cnt 0} "x")
           r (add-node {:tag :root :color :white :cnt 0} [x])
@@ -135,29 +134,29 @@
           r-tree (hid->tree r)]
       (is= r-tree
         {:attrs {:tag :root, :color :white :cnt 0},
-         :kids  [{:attrs {:tag :char, :color :red :cnt 0}, :value "x"}]})
+         :kids  [{:attrs {:tag :char, :color :red :cnt 0}, :value ["x"]}]})
 
       (update-attrs x #(update % :cnt inc))
       (update-attrs x #(update % :cnt inc))
       (update-attrs r #(update % :cnt inc))
       (is= (hid->tree r)
         {:attrs {:tag :root, :color :white, :cnt 1},
-         :kids  [{:attrs {:tag :char, :color :red, :cnt 2}, :value "x"}]})
+         :kids  [{:attrs {:tag :char, :color :red, :cnt 2}, :value ["x"]}]})
 
       (update-attr x :cnt inc)
       (update-attr x :cnt inc)
       (update-attr r :cnt inc)
       (is= (hid->tree r)
         {:attrs {:tag :root, :color :white, :cnt 2},
-         :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :value "x"}]})
+         :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :value ["x"]}]})
 
       (update-attr r :cnt * 3)
       (update-attr r :cnt + 7)
       (is= (hid->tree r)
         {:attrs {:tag :root, :color :white, :cnt 13},
-         :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :value "x"}]}))))
+         :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :value ["x"]}]}))))
 
-#_(dotest
+(dotest
   (let [state    (atom {})
         forest-1 (with-forest (new-forest)
                    (let [x (add-leaf {:tag :char :color :red} "x")
@@ -166,57 +165,57 @@
                          r (add-node {:tag :root :color :white} [x y z])]
                      (reset! state (label-value-map x y z r))
                      (is= (hid->kids r) [x y z])
-                     (is= (hid->value z) "z")
+                     (is= (hid->value z) ["z"])
 
                      (set-attrs z {:type :tuna, :name :charlie})
                      (is= (hid->attrs z) {:type :tuna, :name :charlie})
 
-                     (is= (hid->leaf y) (->Leaf {:tag :char, :color :red} "y"))
-                     (is= (remove-attr y :color) (->Leaf {:tag :char} "y"))))
+                     (is= (hid->leaf y) (->Leaf {:tag :char, :color :red} ["y"]))
+                     (is= (remove-attr y :color) (->Leaf {:tag :char} ["y"]))))
 
         forest-2 (with-forest forest-1
                    (let [{:keys [x y z r]} @state]
-                     (is= (hid->elem y) (->Leaf {:tag :char} "y"))
-                     (is= (set-value y "YYY") (->Leaf {:tag :char} "YYY"))
-                     (is= (set-value y 0) (->Leaf {:tag :char} 0))
+                     (is= (hid->elem y) (->Leaf {:tag :char} ["y"]))
+                     (is= (set-value y ["YYY"]) (->Leaf {:tag :char} ["YYY"]))
+                     (is= (set-value y [0]) (->Leaf {:tag :char} [0]))
                      (update-value y + 7)
                      (update-value y * 6)
-                     (is= (hid->leaf y) (->Leaf {:tag :char} 42))))
+                     (is= (hid->leaf y) (->Leaf {:tag :char} [42]))))
 
         ; forest-1 is unaffected by changes that created forest-2
         forest-3 (with-forest forest-1
                    (let [{:keys [x y z r]} @state]
-                     (is= (hid->elem y) (->Leaf {:tag :char} "y")))) ; still has forest-1 value
+                     (is= (hid->elem y) (->Leaf {:tag :char} ["y"])))) ; still has forest-1 value
 
         forest-4 (with-forest forest-2
                    (let [{:keys [x y z r]} @state
-                         _ (is= (hid->leaf y) (->Leaf {:tag :char} 42)) ; still has forest-2 value
+                         _ (is= (hid->leaf y) (->Leaf {:tag :char} [42])) ; still has forest-2 value
                          a (add-leaf {:name :michael} "do")
                          b (add-leaf {:name :tito} "re")
                          c (add-leaf {:name :germain} "mi")]
                      (set-kids r [a b c])
                      (is= (hid->tree r)
                        {:attrs {:tag :root, :color :white},
-                        :kids  [{:attrs {:name :michael}, :value "do"}
-                                {:attrs {:name :tito}, :value "re"}
-                                {:attrs {:name :germain}, :value "mi"}]})
+                        :kids  [{:attrs {:name :michael}, :value ["do"]}
+                                {:attrs {:name :tito}, :value ["re"]}
+                                {:attrs {:name :germain}, :value ["mi"]}]})
                      (update-kids r
                        (fn sort-kids [kids]
                          (sort-by #(grab :name (hid->attrs %)) kids)))
                      (is= (hid->tree r)
                        {:attrs {:tag :root, :color :white},
-                        :kids  [{:attrs {:name :germain}, :value "mi"}
-                                {:attrs {:name :michael}, :value "do"}
-                                {:attrs {:name :tito}, :value "re"}]}
+                        :kids  [{:attrs {:name :germain}, :value ["mi"]}
+                                {:attrs {:name :michael}, :value ["do"]}
+                                {:attrs {:name :tito}, :value ["re"]}]}
                        )
                      (update-kids r
                        (fn sort-kids [kids]
                          (sort-by #(hid->value %) kids)))
                      (is= (hid->tree r)
                        {:attrs {:tag :root, :color :white},
-                        :kids  [{:attrs {:name :michael}, :value "do"}
-                                {:attrs {:name :germain}, :value "mi"}
-                                {:attrs {:name :tito}, :value "re"}]})))])
+                        :kids  [{:attrs {:name :michael}, :value ["do"]}
+                                {:attrs {:name :germain}, :value ["mi"]}
+                                {:attrs {:name :tito}, :value ["re"]}]})))])
 
   (with-forest (new-forest)
     (let [x (add-leaf {:tag :char :color :red} "x")
@@ -230,9 +229,9 @@
       (is= (hid->tree r)
         {:attrs {:tag :root, :color :white},
          :kids
-                [{:attrs {:tag :char, :color :red}, :value "x"}
-                 {:attrs {:tag :char, :color :green}, :value "y"}
-                 {:attrs {:tag :char, :color :blue}, :value "z"}]})
+                [{:attrs {:tag :char, :color :red}, :value ["x"]}
+                 {:attrs {:tag :char, :color :green}, :value ["y"]}
+                 {:attrs {:tag :char, :color :blue}, :value ["z"]}]})
 
       (remove-kids r #{z x})
       (is= (hid->kids r) [y])
@@ -257,15 +256,15 @@
       (is= (hid->kids c) [x y z])
       (is= (hid->tree a) {:attrs {:tag :r1, :color :white},
                           :kids
-                                 [{:attrs {:tag :char, :color :red}, :value "x"}
-                                  {:attrs {:tag :char, :color :green}, :value "y"}
-                                  {:attrs {:tag :char, :color :blue}, :value "z"}]})
+                                 [{:attrs {:tag :char, :color :red}, :value ["x"]}
+                                  {:attrs {:tag :char, :color :green}, :value ["y"]}
+                                  {:attrs {:tag :char, :color :blue}, :value ["z"]}]})
       (remove-elems #{y z})
       (is= (hid->kids a) [x])
       (is= (hid->kids b) [x])
       (is= (hid->kids c) [x])
       (is= (hid->tree c) {:attrs {:tag :r3, :color :black},
-                          :kids  [{:attrs {:tag :char, :color :red}, :value "x"}]})
+                          :kids  [{:attrs {:tag :char, :color :red}, :value ["x"]}]})
       (throws? (remove-elems #{x y}))
 
       (remove-elems #{x})
@@ -274,7 +273,7 @@
       (is= (hid->kids c) [])
       (is= (hid->tree c) {:attrs {:tag :r3, :color :black}, :kids []}))))
 
-#_(dotest
+(dotest
   (with-forest (new-forest)
     (let [x (add-leaf {:a 1 :b 2} "x")]
       (is= #{x} (root-hids))
@@ -316,16 +315,16 @@
       (is (hid-matches? root-hid {:tag :a}))
   )))
 
-#_(dotest
+(dotest
   (with-forest (new-forest)
-    (let [tree-1 [:a
+    (let [hiccup-1 [:a
                   [:b 1]
                   [:b 2]
                   [:b
                    [:c 4]
                    [:c 5]]
                   [:c 9]]
-          root-1 (add-tree-hiccup tree-1)
+          root-1 (add-tree-hiccup hiccup-1)
 
           b1     (add-leaf {:tag :b} 1)
           b2     (add-leaf {:tag :b} 2)
@@ -351,17 +350,25 @@
                        (add-leaf :c 5)])
                     (add-leaf :c 9)])
           ]
-      (println :101)
-      (is= (hid->tree root-1)
-        {:attrs {:tag :a},
-         :kids  [{:attrs {:tag :b}, :value [1]}
-                 {:attrs {:tag :b}, :value [2]}
-                 {:attrs {:tag :b},
-                  :kids  [{:attrs {:tag :c}, :value [4]}
-                          {:attrs {:tag :c}, :value [5]}]}
-                 {:attrs {:tag :c}, :value [9]}]})
+      (is= (hid->tree b1) {:attrs {:tag :b}, :value [1]})
+      (is= (hid->tree b2) {:attrs {:tag :b}, :value [2]})
+      (is= (hid->tree c4) {:attrs {:tag :c}, :value [4]})
+      (is= (hid->tree c5) {:attrs {:tag :c}, :value [5]})
+      (is= (hid->tree c9) {:attrs {:tag :c}, :value [9]})
+      (is= (hid->tree b3) {:attrs {:tag :b},
+                           :kids  [{:attrs {:tag :c}, :value [4]} {:attrs {:tag :c}, :value [5]}]})
+      (is= (hid->tree aa) {:attrs {:tag :a},
+                           :kids  [{:attrs {:tag :b}, :value [1]}
+                                   {:attrs {:tag :b}, :value [2]}
+                                   {:attrs {:tag :b},
+                                    :kids  [{:attrs {:tag :c}, :value [4]}
+                                            {:attrs {:tag :c}, :value [5]}]}
+                                   {:attrs {:tag :c}, :value [9]}]})
+
+      (is (validate-hid root-1))
       (is=
         (hid->tree aa)
+        (hid->tree root-1)
         (hid->tree root-2)
         (hid->tree root-3)
         {:attrs {:tag :a},
@@ -369,9 +376,9 @@
                 [{:attrs {:tag :b}, :value [1]}
                  {:attrs {:tag :b}, :value [2]}
                  {:attrs {:tag :b},
-                  :kids  [{:attrs {:tag :c}, :value [4]}
-                          {:attrs {:tag :c}, :value [5]}]}
-                 {:attrs {:tag :c}, :value [9]}]}))))
+                  :kids [{:attrs {:tag :c}, :value [4]} {:attrs {:tag :c}, :value [5]}]}
+                 {:attrs {:tag :c}, :value [9]}]})
+    )))
 
 (dotest
   (with-forest (new-forest)
@@ -452,7 +459,7 @@
 
     )))
 
-#_(dotest
+(dotest
   (with-forest (new-forest)
     (let [root-hid (add-node :a
                      [(add-leaf :b 1)
@@ -471,12 +478,10 @@
 
       (is= (format-solns-bush (find-paths root-hid [:a]))
         #{[{:tag :a}
-           [{:tag :b} [1]]
-           [{:tag :b} [2]]
-           [{:tag :b}
-            [{:tag :c} [4]]
-            [{:tag :c} [5]]]
-           [{:tag :c} [9]]]})
+           [{:tag :b} 1]
+           [{:tag :b} 2]
+           [{:tag :b} [{:tag :c} 4] [{:tag :c} 5]]
+           [{:tag :c} 9]]})
 
       (is= (format-solns-hiccup (find-paths root-hid [:a]))
         #{[:a
@@ -489,14 +494,13 @@
 
 
         )
-(comment
 
       (is= (format-solns-bush (find-paths root-hid [:a :b]))
-        #{[{:tag :a} [{:tag :b} [1]]]
-          [{:tag :a} [{:tag :b} [2]]]
+        #{[{:tag :a} [{:tag :b} 1]]
+          [{:tag :a} [{:tag :b} 2]]
           [{:tag :a} [{:tag :b}
-                      [{:tag :c} [4]]
-                      [{:tag :c} [5]]]]} )
+                      [{:tag :c} 4]
+                      [{:tag :c} 5]]]} )
 
       (is (wild-match? [[:* :*]
                         [:* :*]
@@ -507,35 +511,44 @@
       ;      [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :76859beedd81468b4ee3cc5f17a5fdcf7a34a787]
       ;      [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :5c0cb1ba6657ba0ac40cc5099f2be091b5637a3b] }
 
-      (is= (format-solns (find-paths root-hid [:a :c]))
-        #{[{:a nil}
-           {:attrs {:c nil}, :value 9}]})
-      (is= (format-solns (find-paths root-hid [:a :b :c]))
-        #{[{:a nil} {:b nil} {:attrs {:c nil}, :value 5}]
-          [{:a nil} {:b nil} {:attrs {:c nil}, :value 4}]})
-      (is= (format-solns (find-paths root-hid [:* :b]))
-        #{[{:a nil} {:attrs {:b nil}, :value 1}]
-          [{:a nil} {:attrs {:b nil}, :value 2}]
-          [{:a nil}
-           {:attrs {:b nil},
-            :kids  [{:attrs {:c nil}, :value 4}
-                    {:attrs {:c nil}, :value 5}]}]})
-      (is= (format-solns (find-paths root-hid [:a :*]))
-        #{[{:a nil} {:attrs {:b nil}, :value 1}]
-          [{:a nil} {:attrs {:b nil}, :value 2}]
-          [{:a nil}
-           {:attrs {:b nil},
-            :kids  [{:attrs {:c nil}, :value 4}
-                    {:attrs {:c nil}, :value 5}]}]
-          [{:a nil} {:attrs {:c nil}, :value 9}]})
-      (is= (format-solns (find-paths root-hid [:a :* :c]))
-        #{[{:a nil} {:b nil} {:attrs {:c nil}, :value 5}]
-          [{:a nil} {:b nil} {:attrs {:c nil}, :value 4}]})
-)
+      (is= (format-solns-bush (find-paths root-hid [:a :c]))
+        #{[{:tag :a}
+           [{:tag :c} 9]]} )
 
-      )))
+      (is= (format-solns-bush (find-paths root-hid [:a :b :c]))
+        #{[{:tag :a}
+           [{:tag :b}
+            [{:tag :c} 4]]]
+          [{:tag :a}
+           [{:tag :b}
+            [{:tag :c} 5]]]})
 
-(comment
+      (is= (format-solns-bush (find-paths root-hid [:* :b]))
+        #{[{:tag :a}
+           [{:tag :b}
+            [{:tag :c} 4]
+            [{:tag :c} 5]]]
+          [{:tag :a}
+           [{:tag :b} 2]]
+          [{:tag :a}
+           [{:tag :b} 1]]})
+
+      (is= (format-solns-bush (find-paths root-hid [:a :*]))
+        #{[{:tag :a}
+           [{:tag :b} 1]]
+          [{:tag :a}
+           [{:tag :b} 2]]
+          [{:tag :a}
+           [{:tag :b}
+            [{:tag :c} 4]
+            [{:tag :c} 5]]]
+          [{:tag :a}
+           [{:tag :c} 9]] } )
+
+      (is= (format-solns-bush (find-paths root-hid [:a :* :c]))
+        #{[{:tag :a} [{:tag :b} [{:tag :c} 4]]]
+          [{:tag :a} [{:tag :b} [{:tag :c} 5]]]})
+    )))
 
 (dotest
   (with-forest (new-forest)
@@ -546,75 +559,86 @@
                   [(add-leaf {:c :c4} 4)
                    (add-leaf {:c :c5} 5)])
                 (add-leaf {:c :c9} 9)])]
-      (is= (format-solns (find-paths aa [:a :** :*]))
-        #{[{:a nil} {:attrs {:b :b1}, :value 1}]
-          [{:a nil} {:attrs {:b :b2}, :value 2}]
-          [{:a nil} {:b :b3} {:attrs {:c :c4}, :value 4}]
-          [{:a nil} {:b :b3} {:attrs {:c :c5}, :value 5}]
-          [{:a nil}
-           {:attrs {:b :b3},
-            :kids  [{:attrs {:c :c4}, :value 4}
-                    {:attrs {:c :c5}, :value 5}]}]
-          [{:a nil} {:attrs {:c :c9}, :value 9}]})
+      (is= (format-solns-bush (find-paths aa [:a :** :*]))
+        #{[{:tag :a} [{:b :b1} 1]]
+          [{:tag :a} [{:b :b2} 2]]
+          [{:tag :a} [{:c :c9} 9]]
+          [{:tag :a} [{:b :b3}
+                      [{:c :c4} 4]
+                      [{:c :c5} 5]]]
+          [{:tag :a} [{:b :b3} [{:c :c4} 4]]]
+          [{:tag :a} [{:b :b3} [{:c :c5} 5]]]
+          })
 
-      (is= (format-solns (find-paths aa [:** :c]))
-        #{[{:a nil} {:b :b3} {:attrs {:c :c4}, :value 4}]
-          [{:a nil} {:b :b3} {:attrs {:c :c5}, :value 5}]
-          [{:a nil} {:attrs {:c :c9}, :value 9}]})
+      (is= (format-solns-bush (find-paths aa [:** {:c :*}]))
+        #{[{:tag :a} [{:b :b3} [{:c :c5} 5]]]
+          [{:tag :a} [{:b :b3} [{:c :c4} 4]]]
+          [{:tag :a} [{:c :c9} 9]]})
 
-      (is= (format-solns (find-paths aa [:a :** :c]))
-        #{[{:a nil} {:b :b3} {:attrs {:c :c4}, :value 4}]
-          [{:a nil} {:b :b3} {:attrs {:c :c5}, :value 5}]
-          [{:a nil} {:attrs {:c :c9}, :value 9}]})))
+      (is= (format-solns-bush (find-paths aa [:a :** {:c :*}]))
+        #{[{:tag :a} [{:b :b3} [{:c :c5} 5]]]
+          [{:tag :a} [{:b :b3} [{:c :c4} 4]]]
+          [{:tag :a} [{:c :c9} 9]]})))
 
   (with-forest (new-forest)
-    (let [aa (add-node {:a :a1}
-               [(add-leaf {:b :b2} 2)
-                (add-leaf {:c :c3} 3)
-                ])]
-      (throws? (format-solns (find-paths aa [:**])))
-      (throws? (format-solns (find-paths aa [:a :**])))
-      (is= (format-solns (find-paths aa [:a :** :c]))
-        #{[{:a :a1} {:attrs {:c :c3}, :value 3}]})
-      (is= (format-solns (find-paths aa [:a :** :** :c]))
-        #{[{:a :a1} {:attrs {:c :c3}, :value 3}]})
-      (is= (format-solns (find-paths aa [:** :c]))
-        #{[{:a :a1} {:attrs {:c :c3}, :value 3}]})
-      (is= (format-solns (find-paths aa [:** :*]))
-        #{[{:attrs {:a :a1},
-            :kids  [{:attrs {:b :b2}, :value 2}
-                    {:attrs {:c :c3}, :value 3}]}]
-          [{:a :a1} {:attrs {:b :b2}, :value 2}]
-          [{:a :a1} {:attrs {:c :c3}, :value 3}]})
+    (let [aa (add-node {:tag :a}
+               [(add-leaf {:tag :b} 2)
+                (add-leaf {:tag :c} 3) ])]
+      (throws? (find-paths aa [:**]))
+      (throws? (find-paths aa [:a :**]))
+      (is=
+        (format-solns-bush (find-paths aa [:a :** :c]))
+        (format-solns-bush (find-paths aa [:a :** :** :c]))
+        (format-solns-bush (find-paths aa [:** :c]))
+        #{[{:tag :a} [{:tag :c} 3]]})
+      (is= (format-solns-bush (find-paths aa [:** :*]))
+        #{[{:tag :a} [{:tag :b} 2] [{:tag :c} 3]]
+          [{:tag :a} [{:tag :b} 2]]
+          [{:tag :a} [{:tag :c} 3]]})
+      (is= (hid->tree aa)
+        {:attrs {:tag :a},
+         :kids  [{:attrs {:tag :b}, :value [2]}
+                 {:attrs {:tag :c}, :value [3]}]})
 
-      (throws? (format-solns (find-leaves aa [:**] 13)))
-      (throws? (format-solns (find-leaves aa [:a :**] 13)))
-      (is= (format-solns (find-leaves aa [:a :b] 2))
-        #{[{:a :a1} {:attrs {:b :b2}, :value 2}]})
-      (is= (format-solns (find-leaves aa [:a :** :b] 2))
-        #{[{:a :a1} {:attrs {:b :b2}, :value 2}]})
-      (is= (format-solns (find-leaves aa [:a :** :** :b] 2))
-        #{[{:a :a1} {:attrs {:b :b2}, :value 2}]})
-      (is= (format-solns (find-leaves aa [:** :b] 2))
-        #{[{:a :a1} {:attrs {:b :b2}, :value 2}]})
-      (is= (format-solns (find-leaves aa [:a :c] 3))
-        #{[{:a :a1} {:attrs {:c :c3}, :value 3}]})
-      (is= (format-solns (find-leaves aa [:* :c] 3))
-        #{[{:a :a1} {:attrs {:c :c3}, :value 3}]})
-      (is= (format-solns (find-leaves aa [:a :*] 3))
-        #{[{:a :a1} {:attrs {:c :c3}, :value 3}]})
-      (is= (format-solns (find-leaves aa [:** :*] 3))
-        #{[{:a :a1} {:attrs {:c :c3}, :value 3}]})
-      (is= (format-solns (find-leaves aa [:a :** :c] 3))
-        #{[{:a :a1} {:attrs {:c :c3}, :value 3}]})
-      (is= (format-solns (find-leaves aa [:a :** :** :c] 3))
-        #{[{:a :a1} {:attrs {:c :c3}, :value 3}]})
-      (is= (format-solns (find-leaves aa [:** :*] :*))
-        #{[{:a :a1} {:attrs {:b :b2}, :value 2}]
-          [{:a :a1} {:attrs {:c :c3}, :value 3}]})
+      (throws? (find-leaves aa [:**] 13))
+      (throws? (find-leaves aa [:a :**] 13))
 
-      (throws? (format-solns (find-paths aa [:**])))
-      (throws? (format-solns (find-paths aa [:a :**])))))
+      (is= (format-solns-bush (find-leaves aa [:a :b] [2]))
+        #{[{:tag :a} [{:tag :b} 2]]} )
+
+      (is= (format-solns-bush (find-leaves aa [:a :** :b] [2]))
+        #{[{:tag :a} [{:tag :b} 2]]})
+
+      (is= (format-solns-bush (find-leaves aa [:a :** :** :b] [2]))
+        #{[{:tag :a} [{:tag :b} 2]]})
+
+      (is= (format-solns-bush (find-leaves aa [:** :b] [2]))
+        #{[{:tag :a} [{:tag :b} 2]]} )
+
+      (is= (format-solns-bush (find-leaves aa [:a :c] [3]))
+        #{[{:tag :a} [{:tag :c} 3]]})
+
+      (is= (format-solns-bush (find-leaves aa [:* :c] [3]))
+        #{[{:tag :a} [{:tag :c} 3]]} )
+
+      (is= (format-solns-bush (find-leaves aa [:a :*] [3]))
+        #{[{:tag :a} [{:tag :c} 3]]})
+
+      (is= (format-solns-bush (find-leaves aa [:** :*] [3]))
+        #{[{:tag :a} [{:tag :c} 3]]})
+
+      (is= (format-solns-bush (find-leaves aa [:a :** :c] [3]))
+        #{[{:tag :a} [{:tag :c} 3]]} )
+
+      (is= (format-solns-bush (find-leaves aa [:a :** :** :c] [3]))
+        #{[{:tag :a} [{:tag :c} 3]]} )
+
+      (is= (format-solns-bush (find-leaves aa [:** :*] :*))
+        #{[{:tag :a} [{:tag :b} 2]]
+          [{:tag :a} [{:tag :c} 3]]} )
+
+      (throws? (find-paths aa [:**]))
+      (throws? (find-paths aa [:a :**]))))
 
   (with-forest (new-forest)
     (throws? (add-node {:a :a1}
@@ -641,45 +665,46 @@
                (add-leaf {:b :b2 :color :green} 3)])
           z (add-node {:a :a3}
               [(add-leaf {:c :b1 :color :blue} 2)
-               (add-leaf {:c :b2 :color :blue} 3)]) ]
+               (add-leaf {:c :b2 :color :blue} 3)])]
       (is= (set (mapv hid->tree (root-hids)))
-        #{{:attrs {:a :a1},
-           :kids  [{:attrs {:b :b1, :color :red}, :value 2}
-                   {:attrs {:b :b2, :color :red}, :value 3}]}
-          {:attrs {:a :a2},
-           :kids  [{:attrs {:b :b1, :color :green}, :value 2}
-                   {:attrs {:b :b2, :color :green}, :value 3}]}
+        #{{:attrs {:a :a2},
+           :kids  [{:attrs {:b :b1, :color :green}, :value [2]}
+                   {:attrs {:b :b2, :color :green}, :value [3]}]}
+          {:attrs {:a :a1},
+           :kids  [{:attrs {:b :b1, :color :red}, :value [2]}
+                   {:attrs {:b :b2, :color :red}, :value [3]}]}
           {:attrs {:a :a3},
-           :kids  [{:attrs {:c :b1, :color :blue}, :value 2}
-                   {:attrs {:c :b2, :color :blue}, :value 3}]}})
+           :kids  [{:attrs {:c :b1, :color :blue}, :value [2]}
+                   {:attrs {:c :b2, :color :blue}, :value [3]}]}})
 
-      (is= (format-solns (find-paths (root-hids) [:a]))
+      (is= (format-solns (find-paths (root-hids) [{:a :*}]))
         #{[{:attrs {:a :a1},
-            :kids  [{:attrs {:b :b1, :color :red}, :value 2}
-                    {:attrs {:b :b2, :color :red}, :value 3}]}]
+            :kids  [{:attrs {:b :b1, :color :red}, :value [2]}
+                    {:attrs {:b :b2, :color :red}, :value [3]}]}]
           [{:attrs {:a :a2},
-            :kids  [{:attrs {:b :b1, :color :green}, :value 2}
-                    {:attrs {:b :b2, :color :green}, :value 3}]}]
+            :kids  [{:attrs {:b :b1, :color :green}, :value [2]}
+                    {:attrs {:b :b2, :color :green}, :value [3]}]}]
           [{:attrs {:a :a3},
-            :kids  [{:attrs {:c :b1, :color :blue}, :value 2}
-                    {:attrs {:c :b2, :color :blue}, :value 3}]}]})
-      (is= (format-solns (find-paths (root-hids) [:a :b]))
-        #{[{:a :a1} {:attrs {:b :b1, :color :red}, :value 2}]
-          [{:a :a1} {:attrs {:b :b2, :color :red}, :value 3}]
-          [{:a :a2} {:attrs {:b :b1, :color :green}, :value 2}]
-          [{:a :a2} {:attrs {:b :b2, :color :green}, :value 3}]})
+            :kids  [{:attrs {:c :b1, :color :blue}, :value [2]}
+                    {:attrs {:c :b2, :color :blue}, :value [3]}]}]})
 
-      (is= (format-solns (find-leaves (root-hids) [:a :b] 3))
-        #{[{:a :a1} {:attrs {:b :b2, :color :red}, :value 3}]
-          [{:a :a2} {:attrs {:b :b2, :color :green}, :value 3}]})
+      (is= (format-solns-bush (find-paths (root-hids) [{:a :*} {:b :*}]))
+        #{[{:a :a1} [{:b :b1, :color :red} 2]]
+          [{:a :a1} [{:b :b2, :color :red} 3]]
+          [{:a :a2} [{:b :b1, :color :green} 2]]
+          [{:a :a2} [{:b :b2, :color :green} 3]]})
 
-      (is= (format-solns (find-leaves (root-hids) [:a :c] 3))
-        #{ [{:a :a3} {:attrs {:c :b2, :color :blue}, :value 3}] })
+      (is= (format-solns-bush (find-leaves (root-hids) [{:a :*} {:b :*}] [3]))
+        #{[{:a :a1} [{:b :b2, :color :red} 3]]
+          [{:a :a2} [{:b :b2, :color :green} 3]]})
 
-      (is= (format-solns (find-leaves (root-hids) [:** :*] 3))
-        #{[{:a :a1} {:attrs {:b :b2, :color :red}, :value 3}]
-          [{:a :a2} {:attrs {:b :b2, :color :green}, :value 3}]
-          [{:a :a3} {:attrs {:c :b2, :color :blue}, :value 3}] }) )))
+      (is= (format-solns-bush (find-leaves (root-hids) [{:a :*} {:c :*}] [3]))
+        #{[{:a :a3} [{:c :b2, :color :blue} 3]]})
+
+      (is= (format-solns-bush (find-leaves (root-hids) [:** :*] [3]))
+        #{[{:a :a1} [{:b :b2, :color :red} 3]]
+          [{:a :a2} [{:b :b2, :color :green} 3]]
+          [{:a :a3} [{:c :b2, :color :blue} 3]] }))))
 
 ; #todo need to test find-paths using attrs
 (dotest
@@ -687,16 +712,20 @@
     (let [aa (add-node {:color :red}
                [(add-leaf {:color :green} 2)
                 (add-leaf {:color :blue} 3)])]
-      (is= (format-solns (find-paths aa [{:color :red}]))
-        #{[{:attrs {:color :red},
-            :kids  [{:attrs {:color :green}, :value 2}
-                    {:attrs {:color :blue}, :value 3}]}]})
-      (is= (format-solns (find-paths aa [{:color :red} {:color :green}]))
-        #{[{:color :red},
-           {:attrs {:color :green}, :value 2} ]})
-      (is= (format-solns (find-paths aa [:** {:color :green}]))
-        #{[{:color :red},
-           {:attrs {:color :green}, :value 2} ]}) )))
+      (is= (format-solns-bush (find-paths aa [{:color :red}]))
+        #{[{:color :red}
+           [{:color :green} 2]
+           [{:color :blue} 3]]})
+
+      (is= (format-solns-bush (find-paths aa [{:color :red} {:color :green}]))
+        #{[{:color :red}
+           [{:color :green} 2]]})
+
+      (is= (format-solns-bush (find-paths aa [:** {:color :green}]))
+        #{[{:color :red}
+           [{:color :green} 2]]}))))
+
+(comment
 
 (dotest
   (with-forest (new-forest)
