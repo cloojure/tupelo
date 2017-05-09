@@ -526,12 +526,13 @@
 (s/defn remove-kids :- tsk/KeyMap
   "Removes all a set of children from a Node (including any duplcates)."
   ([hid :- HID
-    kids-leaving :- #{HID}]
+    kids-leaving :- (s/either [HID] #{HID})]
     (remove-kids hid kids-leaving false))
   ([hid :- HID
-    kids-leaving :- #{HID}
+    kids-leaving :- (s/either [HID] #{HID})
     missing-kids-ok :- s/Bool]
-    (let [report-missing-kids (not missing-kids-ok)
+    (let [kids-leaving        (set kids-leaving)
+          report-missing-kids (not missing-kids-ok)
           node-curr           (hid->node hid)
           kids-curr           (grab :kids node-curr)
           missing-kids        (set/difference kids-leaving (into #{} kids-curr))
@@ -540,7 +541,7 @@
                                          (str "remove-kids: missing-kids found=" missing-kids))))
           kid-is-leaving?     (fn fn-kid-is-leaving? [kid] (contains-key? kids-leaving kid))
           kids-new            (drop-if kid-is-leaving? kids-curr)
-          node-new            (glue node-curr {:kids kids-new}) ]
+          node-new            (glue node-curr {:kids kids-new})]
       (set-elem hid node-new)
       node-new)))
 
@@ -671,6 +672,10 @@
     (doseq [root roots]
       (find-paths-impl result-atom [] root tgt-path))
     @result-atom))
+
+(defn find-hid     ; #todo need test
+  [root-spec tgt-path]
+  (last (only (find-paths root-spec tgt-path))))
 
 (defn- has-matching-leaf
   [path tgt-val]
