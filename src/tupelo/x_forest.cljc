@@ -110,6 +110,9 @@
 ; #todo need to make operate on a copy of the DB; only save result if not throw
 ; #todo     => maybe switch to a ref instead of atom
 
+; #todo RootedForest - has self-contained roots: #{HID}
+; #todo validate-tree: kids ordered or not, exact or extras ok
+
 (defrecord Node [attrs kids] )    ; { :attrs { :k1 v1 :k2 v2 ... }  :kids  [ hid...] }
 (defrecord Leaf [attrs content])    ; { :attrs { :k1 v1 :k2 v2 ... }  :content [s/Any]     }
 (def Element (s/either Node Leaf))
@@ -523,6 +526,8 @@
     (set-elem hid elem-new)
     elem-new))
 
+; #todo (s/defn remove-orphans [roots-to-keep] ...)
+
 (s/defn remove-kids :- tsk/KeyMap
   "Removes all a set of children from a Node (including any duplcates)."
   ([hid :- HID
@@ -542,6 +547,14 @@
           kid-is-leaving?     (fn fn-kid-is-leaving? [kid] (contains-key? kids-leaving kid))
           kids-new            (drop-if kid-is-leaving? kids-curr)
           node-new            (glue node-curr {:kids kids-new})]
+      (set-elem hid node-new)
+      node-new)))
+
+(s/defn remove-all-kids :- tsk/KeyMap
+  "Removes all a set of children from a Node (including any duplcates)."
+  ([hid :- HID ]
+    (let [node-curr           (hid->node hid)
+          node-new            (glue node-curr {:kids []})]
       (set-elem hid node-new)
       node-new)))
 
