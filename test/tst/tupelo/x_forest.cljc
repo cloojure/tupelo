@@ -591,40 +591,40 @@
          :kids  [{:attrs {:tag :b}, :content [2]}
                  {:attrs {:tag :c}, :content [3]}]})
 
-      (throws? (find-leaves aa [:**] [13]))
-      (throws? (find-leaves aa [:a :**] [13]))
+      (throws? (find-paths-leaf aa [:**] [13]))
+      (throws? (find-paths-leaf aa [:a :**] [13]))
 
-      (is= (format-solns (find-leaves aa [:a :b] [2]))
+      (is= (format-solns (find-paths-leaf aa [:a :b] [2]))
         #{[{:tag :a} [{:tag :b} 2]]} )
 
-      (is= (format-solns (find-leaves aa [:a :** :b] [2]))
+      (is= (format-solns (find-paths-leaf aa [:a :** :b] [2]))
         #{[{:tag :a} [{:tag :b} 2]]})
 
-      (is= (format-solns (find-leaves aa [:a :** :** :b] [2]))
+      (is= (format-solns (find-paths-leaf aa [:a :** :** :b] [2]))
         #{[{:tag :a} [{:tag :b} 2]]})
 
-      (is= (format-solns (find-leaves aa [:** :b] [2]))
+      (is= (format-solns (find-paths-leaf aa [:** :b] [2]))
         #{[{:tag :a} [{:tag :b} 2]]} )
 
-      (is= (format-solns (find-leaves aa [:a :c] [3]))
+      (is= (format-solns (find-paths-leaf aa [:a :c] [3]))
         #{[{:tag :a} [{:tag :c} 3]]})
 
-      (is= (format-solns (find-leaves aa [:* :c] [3]))
+      (is= (format-solns (find-paths-leaf aa [:* :c] [3]))
         #{[{:tag :a} [{:tag :c} 3]]} )
 
-      (is= (format-solns (find-leaves aa [:a :*] [3]))
+      (is= (format-solns (find-paths-leaf aa [:a :*] [3]))
         #{[{:tag :a} [{:tag :c} 3]]})
 
-      (is= (format-solns (find-leaves aa [:** :*] [3]))
+      (is= (format-solns (find-paths-leaf aa [:** :*] [3]))
         #{[{:tag :a} [{:tag :c} 3]]})
 
-      (is= (format-solns (find-leaves aa [:a :** :c] [3]))
+      (is= (format-solns (find-paths-leaf aa [:a :** :c] [3]))
         #{[{:tag :a} [{:tag :c} 3]]} )
 
-      (is= (format-solns (find-leaves aa [:a :** :** :c] [3]))
+      (is= (format-solns (find-paths-leaf aa [:a :** :** :c] [3]))
         #{[{:tag :a} [{:tag :c} 3]]} )
 
-      (is= (format-solns (find-leaves aa [:** :*] :*))
+      (is= (format-solns (find-paths-leaf aa [:** :*] :*))
         #{[{:tag :a} [{:tag :b} 2]]
           [{:tag :a} [{:tag :c} 3]]} )
 
@@ -685,14 +685,14 @@
           [{:a :a2} [{:b :b1, :color :green} 2]]
           [{:a :a2} [{:b :b2, :color :green} 3]]})
 
-      (is= (format-solns (find-leaves (root-hids) [{:a :*} {:b :*}] [3]))
+      (is= (format-solns (find-paths-leaf (root-hids) [{:a :*} {:b :*}] [3]))
         #{[{:a :a1} [{:b :b2, :color :red} 3]]
           [{:a :a2} [{:b :b2, :color :green} 3]]})
 
-      (is= (format-solns (find-leaves (root-hids) [{:a :*} {:c :*}] [3]))
+      (is= (format-solns (find-paths-leaf (root-hids) [{:a :*} {:c :*}] [3]))
         #{[{:a :a3} [{:c :b2, :color :blue} 3]]})
 
-      (is= (format-solns (find-leaves (root-hids) [:** :*] [3]))
+      (is= (format-solns (find-paths-leaf (root-hids) [:** :*] [3]))
         #{[{:a :a1} [{:b :b2, :color :red} 3]]
           [{:a :a2} [{:b :b2, :color :green} 3]]
           [{:a :a3} [{:c :b2, :color :blue} 3]] }))))
@@ -760,24 +760,31 @@
               (into (sorted-set)
                 (find-paths (root-hids) [:** {:color :green}])))))
 
-      (is= (format-solns (find-leaves (root-hids) [:** {:tag :b}] [2]))
+      (is= (format-solns (find-paths-leaf (root-hids) [:** {:tag :b}] [2]))
         #{[{:tag :a, :id :a2}
            [{:tag :b, :color :green} 2]]
           [{:tag :a, :id :a1}
            [{:tag :b, :color :red} 2]]})
 
-      (is= (format-solns (find-leaves x [:** {:tag :b}] [2]))
+      (is= (format-solns (find-paths-leaf x [:** {:tag :b}] [2]))
         #{[{:tag :a, :id :a1}
            [{:tag :b, :color :red} 2]]} )
 
-      (is= (format-solns (find-leaves #{z y} [{:tag :a} :*] [2]))
+      (is= (find-leaf x [:** {:tag :b}] [2])
+        (map->Leaf {:attrs {:tag :b, :color :red}, :content [2]}))
+
+      (is= (find-leaf (root-hids) [:** {:color :blue}] [2])
+        (map->Leaf {:attrs {:tag :c, :color :blue}, :content [2]}))
+
+
+      (is= (format-solns (find-paths-leaf #{z y} [{:tag :a} :*] [2]))
         #{[{:tag :a, :id :a2} [{:tag :b, :color :green} 2]]
           [{:tag :a, :id :a3} [{:tag :c, :color :blue} 2]]})
-      (is= (format-solns (find-leaves (root-hids) [{:tag :a} :*] [2]))
+      (is= (format-solns (find-paths-leaf (root-hids) [{:tag :a} :*] [2]))
         #{[{:tag :a, :id :a2} [{:tag :b, :color :green} 2]]
           [{:tag :a, :id :a1} [{:tag :b, :color :red} 2]]
           [{:tag :a, :id :a3} [{:tag :c, :color :blue} 2]]})
-      (is= (format-solns (find-leaves (root-hids) [{:tag :a} {:tag :c}] :*))
+      (is= (format-solns (find-paths-leaf (root-hids) [{:tag :a} {:tag :c}] :*))
         #{[{:tag :a, :id :a3} [{:tag :c, :color :blue} 3]]
           [{:tag :a, :id :a3} [{:tag :c, :color :blue} 2]]})
 
@@ -789,7 +796,7 @@
                         [:* :*]]
             (vec
               (into (sorted-set)
-                (find-leaves (root-hids) [{:tag :a} {:tag :c}] :*))))) )))
+                (find-paths-leaf (root-hids) [{:tag :a} {:tag :c}] :*))))))))
 
 (dotest
   (with-forest (new-forest)

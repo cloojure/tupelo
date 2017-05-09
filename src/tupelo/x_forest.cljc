@@ -680,9 +680,14 @@
       (or (= tgt-val (grab :content tail-elem))
         (= tgt-val :*)))))
 
-(defn find-leaves
+(defn find-paths-leaf
   [root-spec tgt-path tgt-content]
   (let [paths      (find-paths root-spec tgt-path)
         leaf-paths (keep-if #(has-matching-leaf % tgt-content) paths) ]
     leaf-paths))
+
+(defn find-leaf
+  [root-spec tgt-path tgt-content]
+  (hid->leaf (last (only (find-paths-leaf root-spec tgt-path tgt-content))))
+)
 
