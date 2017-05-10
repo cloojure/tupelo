@@ -1493,7 +1493,23 @@
     (isnt (wild-match? #{1  #{:a :c}}
                        #{1  #{:a :x} }))
   )
-)
+  (testing "subset stuff"
+    (isnt (wild-match?         #{1 2} #{1 2 3 4} ))
+    (isnt (wild-match-ctx? {}  #{1 2} #{1 2 3 4} ))
+    (is   (wild-match-ctx? {:subset-ok true}  #{1 2} #{1 2 3 4} ))
+
+    (isnt (wild-match?         {:a 1} {:a 1 :b 2} ))
+    (isnt (wild-match-ctx? {}  {:a 1} {:a 1 :b 2} ))
+    (is   (wild-match-ctx? {:submap-ok true}  {:a 1} {:a 1 :b 2} ))
+
+    (isnt (wild-match?                        '(1 2) '(1 2 3 4) ))
+    (isnt (wild-match-ctx? {}                 '(1 2) '(1 2 3 4) ))
+    (is   (wild-match-ctx? {:subvec-ok true}  '(1 2) '(1 2 3 4) ))
+
+    (isnt (wild-match?                         [1 2]  [1 2 3 4] ))
+    (isnt (wild-match-ctx? {}                  [1 2]  [1 2 3 4] ))
+    (is   (wild-match-ctx? {:subvec-ok true}   [1 2]  [1 2 3 4] ))
+  ))
 
 (dotest
   (is   (starts-with? (range 0 3) (range 0 0)))
