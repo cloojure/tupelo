@@ -815,4 +815,37 @@
   ([pattern & values]
    (apply wild-match-ctx? {} pattern values)))
 
+(defn set-match-impl
+  [ctx pattern data]
+  (with-spy-indent
+    (or
+      (= pattern data)
+      (if (empty? pattern)
+        (empty? data) ; #todo or :subset-ok
+        (let [pat         (xfirst (seq pattern))
+              pattern-new (set/difference pattern #{pat})]
+          (if (= pat :*)
+            ; wildcard pattern
+            (loop [items (seq data)]
+              (if (empty? items)
+                false
+                (let [item     (xfirst items)
+                      data-new (set/difference data #{item})]
+                  (if (set-match-impl ctx pattern-new data-new)
+                    true
+                    (recur (xrest items))))))
+            ; non-wildcard pattern
+            (and (contains? data pat)
+              (let [data-new (set/difference data #{pat})]
+                (set-match-impl ctx pattern-new data-new)))))))))
 
+(defn set-match-ctx? [ctx-in pattern & values]
+  (let [ctx (glue {:subset-ok false} ctx-in)]
+  (every? truthy?
+    (for [value values]
+      (set-match-impl ctx pattern value)))))
+
+(defn set-match? [pattern & values]
+  (every? truthy?
+      (for [value values]
+        (set-match-impl {} pattern value))))

@@ -16,6 +16,7 @@
     [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t]
+    [tupelo.impl :as i]
     [tupelo.misc :as tm]
   ))
 (t/refer-tupelo)
@@ -1492,24 +1493,39 @@
                        #{1  #{:a :b} }))
     (isnt (wild-match? #{1  #{:a :c}}
                        #{1  #{:a :x} }))
-  )
-  (testing "subset stuff"
-    (isnt (wild-match?         #{1 2} #{1 2 3 4} ))
-    (isnt (wild-match-ctx? {}  #{1 2} #{1 2 3 4} ))
-    (is   (wild-match-ctx? {:subset-ok true}  #{1 2} #{1 2 3 4} ))
-
-    (isnt (wild-match?         {:a 1} {:a 1 :b 2} ))
-    (isnt (wild-match-ctx? {}  {:a 1} {:a 1 :b 2} ))
-    (is   (wild-match-ctx? {:submap-ok true}  {:a 1} {:a 1 :b 2} ))
-
-    (isnt (wild-match?                        '(1 2) '(1 2 3 4) ))
-    (isnt (wild-match-ctx? {}                 '(1 2) '(1 2 3 4) ))
-    (is   (wild-match-ctx? {:subvec-ok true}  '(1 2) '(1 2 3 4) ))
-
-    (isnt (wild-match?                         [1 2]  [1 2 3 4] ))
-    (isnt (wild-match-ctx? {}                  [1 2]  [1 2 3 4] ))
-    (is   (wild-match-ctx? {:subvec-ok true}   [1 2]  [1 2 3 4] ))
   ))
+
+(dotest
+  (isnt (wild-match? #{1 2} #{1 2 3 4}))
+  (isnt (wild-match-ctx? {} #{1 2} #{1 2 3 4}))
+  (is (wild-match-ctx? {:subset-ok true} #{1 2} #{1 2 3 4}))
+
+  (isnt (wild-match? {:a 1} {:a 1 :b 2}))
+  (isnt (wild-match-ctx? {} {:a 1} {:a 1 :b 2}))
+  (is (wild-match-ctx? {:submap-ok true} {:a 1} {:a 1 :b 2}))
+
+  (isnt (wild-match? '(1 2) '(1 2 3 4)))
+  (isnt (wild-match-ctx? {} '(1 2) '(1 2 3 4)))
+  (is (wild-match-ctx? {:subvec-ok true} '(1 2) '(1 2 3 4)))
+
+  (isnt (wild-match? [1 2] [1 2 3 4]))
+  (isnt (wild-match-ctx? {} [1 2] [1 2 3 4]))
+  (is (wild-match-ctx? {:subvec-ok true} [1 2] [1 2 3 4])))
+
+(dotest
+  (i/set-match? #{1 2 3 4 5} #{1 2 3 4 5})
+  (i/set-match? #{:* 2 3 4 5} #{1 2 3 4 5})
+  (i/set-match? #{1 :* 3 4 5} #{1 2 3 4 5})
+  (i/set-match? #{1 2 :* 4 5} #{1 2 3 4 5})
+  (i/set-match? #{1 2 3 :* 5} #{1 2 3 4 5})
+  (i/set-match? #{1 2 3 4 :*} #{1 2 3 4 5})
+
+  (i/set-match? #{1 2 3} #{1 2 3})
+  (i/set-match? #{:* 2 3} #{1 2 3})
+  (i/set-match? #{1 :* 3} #{1 2 3})
+  (i/set-match? #{1 2 :*} #{1 2 3})
+
+)
 
 (dotest
   (is   (starts-with? (range 0 3) (range 0 0)))
