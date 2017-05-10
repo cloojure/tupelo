@@ -1513,18 +1513,46 @@
   (is (wild-match-ctx? {:subvec-ok true} [1 2] [1 2 3 4])))
 
 (dotest
-  (i/set-match? #{1 2 3 4 5} #{1 2 3 4 5})
-  (i/set-match? #{:* 2 3 4 5} #{1 2 3 4 5})
-  (i/set-match? #{1 :* 3 4 5} #{1 2 3 4 5})
-  (i/set-match? #{1 2 :* 4 5} #{1 2 3 4 5})
-  (i/set-match? #{1 2 3 :* 5} #{1 2 3 4 5})
-  (i/set-match? #{1 2 3 4 :*} #{1 2 3 4 5})
+  (is (i/set-match? #{1 2 3} #{1 2 3}))
+  (is (i/set-match? #{:* 2 3} #{1 2 3}))
+  (is (i/set-match? #{1 :* 3} #{1 2 3}))
+  (is (i/set-match? #{1 2 :*} #{1 2 3}))
 
-  (i/set-match? #{1 2 3} #{1 2 3})
-  (i/set-match? #{:* 2 3} #{1 2 3})
-  (i/set-match? #{1 :* 3} #{1 2 3})
-  (i/set-match? #{1 2 :*} #{1 2 3})
+  (is (i/set-match? #{1 2 3 4 5} #{1 2 3 4 5}))
+  (is (i/set-match? #{:* 2 3 4 5} #{1 2 3 4 5}))
+  (is (i/set-match? #{1 :* 3 4 5} #{1 2 3 4 5}))
+  (is (i/set-match? #{1 2 :* 4 5} #{1 2 3 4 5}))
+  (is (i/set-match? #{1 2 3 :* 5} #{1 2 3 4 5}))
+  (is (i/set-match? #{1 2 3 4 :*} #{1 2 3 4 5}))
 
+  (is   (wild-coll? [:* 2 3]))
+  (is   (wild-coll? [1 [:* 3]]))
+  (is   (wild-coll? [1 [2 [:*]]]))
+  (isnt (wild-coll? [1 2 3]))
+  (isnt (wild-coll? [1 [2 3]]))
+  (isnt (wild-coll? [1 [2 [3]]]))
+
+  (is   (wild-coll? #{:* 2 3}))
+  (is   (wild-coll? #{1 #{:* 3}}))
+  (is   (wild-coll? #{1 #{2 #{:*}}}))
+  (isnt (wild-coll? #{1 2 3}))
+  (isnt (wild-coll? #{1 #{2 3}}))
+  (isnt (wild-coll? #{1 #{2 #{3}}}))
+
+  (is   (wild-coll? {:* 1 :b 2 :c 3}))
+  (is   (wild-coll? {:a {:* 2 :c 3}}))
+  (is   (wild-coll? {:a {:b {:* 3}}}))
+  (is   (wild-coll? {:a :* :b 2 :c 3}))
+  (is   (wild-coll? {:a {:b :* :c 3}}))
+  (is   (wild-coll? {:a {:b {:c :*}}}))
+  (isnt (wild-coll? {:a 1 :b 2 :c 3}))
+  (isnt (wild-coll? {:a {:b 2 :c 3}}))
+  (isnt (wild-coll? {:a {:b {:c 3}}}))
+
+
+  ;(is (i/set-match?
+  ;      #{#{1 2 3} #{4 5 :*}}
+  ;      #{#{1 2 3} #{4 5 6}}))
 )
 
 (dotest

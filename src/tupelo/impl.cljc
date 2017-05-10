@@ -815,6 +815,15 @@
   ([pattern & values]
    (apply wild-match-ctx? {} pattern values)))
 
+(s/defn wild-coll? :- s/Bool
+  "Returns true if any element in a nested collection is the wildcard :*"
+  [coll :- s/Any ]
+  (has-some? truthy?
+    (for [item coll]
+      (if (coll? item)
+        (wild-coll? item)
+        (= :* item)))))
+
 (defn set-match-impl
   [ctx pattern data]
   (with-spy-indent
