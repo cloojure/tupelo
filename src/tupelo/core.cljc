@@ -560,7 +560,7 @@
 ; i[12] = Random.nextInt(); bytes += i[12].toHexString()
 
 (pns/import-fn impl/clip-str )
-(pns/import-fn impl/wild-match-1 )
+(pns/import-fn impl/wild-match-impl )
 (pns/import-fn impl/wild-match? )
 (pns/import-macro impl/matches? )
 

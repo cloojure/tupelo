@@ -623,48 +623,6 @@
   [& body]
   `(vec (for ~@body)))
 
-(defn- wild-match-1
-  [pattern value]
-  (with-spy-indent
-    ; (spy :msg "pattern" pattern) (spy :msg "value  " value) (flush)       ; for debug
-    (let [result (truthy?
-                   (cond
-                     (= pattern :*) true
-                     (= pattern value) true
-                     (map? pattern) (wild-match-1 (seq (glue (sorted-map) pattern))
-                                      (seq (glue (sorted-map) value)))
-                     (coll? value) (and (= (count pattern) (count value))
-                                     (every? truthy? (mapv wild-match-1 pattern value)))
-                     :default false))
-          ]
-      ; (spy :msg "result " result) (flush)      ; for debug
-      result)))
-
-(defn wild-match?
-  "Returns true if a pattern is matched by one or more values.  The special keyword :* (colon-star)
-   in the pattern serves as a wildcard value.  Note that a wildcald can match either a primitive or a
-   composite value: Usage:
-
-     (wild-match? pattern & values)
-
-   samples:
-
-     (wild-match?  {:a :* :b 2}
-                   {:a 1  :b 2})         ;=> true
-
-     (wild-match?  [1 :* 3]
-                   [1 2  3]
-                   [1 9  3] ))           ;=> true
-
-     (wild-match?  {:a :*       :b 2}
-                   {:a [1 2 3]  :b 2})   ;=> true "
-  [pattern & values]
-  (every? truthy?
-    (forv [value values]
-      (if (map? pattern)
-        (wild-match-1 (glue (sorted-map) pattern)
-          (glue (sorted-map) value))
-        (wild-match-1 pattern value)))))
 
 (defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
@@ -781,4 +739,80 @@
   [s]
   (-> s resolve meta :macro boolean))
     ; from Alex Miller StackOverflow answer 2017-5-6
+
+(s/defn ^:private ^:no-doc wild-match-impl
+  [ctx :- tsk/KeyMap ; #todo more precise schema needed { :submap-ok s/Bool ... }
+   pattern :- s/Any
+   value :- s/Any ]
+  (with-map-vals ctx [submap-ok subset-ok subvec-ok]
+    (let [result (truthy?
+                   (cond
+                     (= pattern :*)       true
+                     (= pattern value)    true
+
+                     (and (map? pattern) (map? value))
+                         (let [keyset-pat (set (keys pattern))
+                               keyset-val (set (keys value))]
+                           (and
+                             (or (= keyset-pat keyset-val)
+                               (and submap-ok ; #todo need test
+                                 (set/subset? keyset-pat keyset-val)))
+                             (every? truthy?
+                               (forv [key keyset-pat]
+                                 (wild-match-impl ctx
+                                   (grab key pattern)
+                                   (grab key value))))))
+
+                     (and (set? pattern) (set? value)) ; #todo need test
+                         (or (= pattern value)
+                           (and subset-ok
+                             (set/subset? pattern value)))
+
+                     (and (coll? pattern) (coll? value))
+                         (and (or (= (count pattern) (count value))
+                                subvec-ok)  ; #todo need test
+                           (every? truthy?
+                             (mapv #(wild-match-impl ctx %1 %2) pattern value)))
+
+                     :default false)) ]
+      result)))
+
+(defn wild-match-ctx?
+  "Returns true if a pattern is matched by one or more values.  The special keyword :* (colon-star)
+   in the pattern serves as a wildcard value.  Note that a wildcald can match either a primitive or a
+   composite value: Usage:
+
+     (wild-match-ctx? ctx pattern & values)
+
+   samples:
+
+     (wild-match-ctx? ctx {:a :* :b 2}
+                          {:a 1  :b 2})         ;=> true
+
+     (wild-match-ctx? ctx [1 :* 3]
+                          [1 2  3]
+                          [1 9  3] ))           ;=> true
+
+     (wild-match-ctx? ctx {:a :*       :b 2}
+                          {:a [1 2 3]  :b 2})   ;=> true
+
+   wild-match? accepts a context map as an optional first argument which defaults to:
+
+     (let [ctx {:submap-ok false
+                :subset-ok false
+                :subvec-ok false}]
+       (wild-match-ctx? ctx pattern values))) "
+  [ctx-in pattern & values]
+  (let [ctx (glue {:submap-ok false
+                   :subset-ok false
+                   :subvec-ok false} ctx-in)]
+    (every? truthy?
+      (for [value values]
+        (wild-match-impl ctx pattern value)))))
+
+(defn wild-match?
+  "Simple wrapper for wild-match-ctx? using the default context"
+  ([pattern & values]
+   (apply wild-match-ctx? {} pattern values)))
+
 
