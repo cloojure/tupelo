@@ -777,7 +777,7 @@
                      :default false)) ]
       result)))
 
-(defn wild-match-ctx?
+(defn wild-match-ctx? ; #todo readme
   "Returns true if a pattern is matched by one or more values.  The special keyword :* (colon-star)
    in the pattern serves as a wildcard value.  Note that a wildcald can match either a primitive or a
    composite value: Usage:
@@ -810,43 +810,53 @@
       (for [value values]
         (wild-match-impl ctx pattern value)))))
 
-(defn wild-match?
+(defn wild-match? ; #todo readme
   "Simple wrapper for wild-match-ctx? using the default context"
   ([pattern & values]
    (apply wild-match-ctx? {} pattern values)))
 
-(s/defn wild-coll? :- s/Bool
-  "Returns true if any element in a nested collection is the wildcard :*"
-  [coll :- s/Any ]
-  (has-some? truthy?
+
+(s/defn unnest :- [s/Any] ; #todo readme
+  "Given a collection, performs a depth-first recursive walk returning scalar args (int, string, keyword, etc)
+   in a single 1-D vector."
+  [coll]
+  (apply glue
     (for [item coll]
       (if (coll? item)
-        (wild-coll? item)
-        (= :* item)))))
+        (unnest item)
+        [item]))))
+
+(s/defn wild-item? :- s/Bool
+  "Returns true if any element in a nested collection is the wildcard :*"
+  [item :- s/Any]
+  (has-some? #(= :* %) (unnest [item])))
 
 (defn set-match-impl
   [ctx pattern data]
-  (with-spy-indent
-    (or
-      (= pattern data)
-      (if (empty? pattern)
-        (empty? data) ; #todo or :subset-ok
-        (let [pat         (xfirst (seq pattern))
-              pattern-new (set/difference pattern #{pat})]
-          (if (= pat :*)
-            ; wildcard pattern
-            (loop [items (seq data)]
-              (if (empty? items)
-                false
-                (let [item     (xfirst items)
-                      data-new (set/difference data #{item})]
-                  (if (set-match-impl ctx pattern-new data-new)
-                    true
-                    (recur (xrest items))))))
-            ; non-wildcard pattern
-            (and (contains? data pat)
-              (let [data-new (set/difference data #{pat})]
-                (set-match-impl ctx pattern-new data-new)))))))))
+  (or
+    (= pattern :*)
+    (= pattern data)
+    (if (empty? pattern)
+      (empty? data) ; #todo or :subset-ok
+      (let [sub-pat     (xfirst (seq pattern))
+            pattern-new (set/difference pattern #{sub-pat})]
+        (if (wild-item? sub-pat)
+          ; wildcard pattern
+          (loop [items (seq data)]
+            (if (empty? items)
+              false
+              (let [item     (xfirst items)
+                    data-new (set/difference data #{item})]
+                (if (and
+                      (set-match-impl ctx sub-pat item)
+                      (set-match-impl ctx pattern-new data-new)
+                      )
+                  true
+                  (recur (xrest items))))))
+          ; non-wildcard pattern
+          (and (contains? data sub-pat)
+            (let [data-new (set/difference data #{sub-pat})]
+              (set-match-impl ctx pattern-new data-new))))))))
 
 (defn set-match-ctx? [ctx-in pattern & values]
   (let [ctx (glue {:subset-ok false} ctx-in)]

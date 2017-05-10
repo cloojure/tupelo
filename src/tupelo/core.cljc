@@ -431,6 +431,7 @@
 (pns/import-fn impl/thru)
 (pns/import-fn impl/keep-if)
 (pns/import-fn impl/drop-if)
+(pns/import-fn impl/unnest )
 
 (defmacro lazy-cons
   "The simple way to create a lazy sequence:
@@ -562,7 +563,7 @@
 (pns/import-fn impl/clip-str )
 (pns/import-fn impl/wild-match? )
 (pns/import-fn impl/wild-match-ctx? )
-(pns/import-fn impl/wild-coll? )
+(pns/import-fn impl/wild-item? )
 (pns/import-macro impl/matches? )
 
 ; #todo: add (throwed? ...) for testing exceptions
@@ -651,9 +652,9 @@
      validate only third it-> safe-> keep-if drop-if zip flat-vec
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
      drop-at insert-at replace-at starts-with? int->kw kw->int
-     split-using split-match partition-using wild-match? wild-match-ctx? wild-coll?
+     split-using split-match partition-using wild-match? wild-match-ctx? wild-item?
      increasing? increasing-or-equal?
-     fibonacci-seq fibo-thru fibo-nth
+     fibonacci-seq fibo-thru fibo-nth unnest
      with-exception-default lazy-cons lazy-gen yield yield-all
     ] ))
 
