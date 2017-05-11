@@ -6,12 +6,12 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.csv
   "Utils for reading CSV (comma-separated-value) formatted files."
-  (:require [clojure.string             :as str]
-            [clojure.java.io            :as io]
-            [clojure-csv.core           :as csv]
-            [schema.core                :as s]
-            [tupelo.core                :as t]
-            [tupelo.misc                :as cool-misc] )
+  (:require
+    [clojure.string :as str]
+    [clojure-csv.core :as csv]
+    [schema.core :as s]
+    [tupelo.core :as t]
+    [tupelo.string :as ts])
   (:import  [java.io Reader StringReader] ))
 (t/refer-tupelo)
 
@@ -20,9 +20,9 @@
   (if (:labels opts)  ; if user supplied col label keywords
     { :labels-kw    (:labels opts)    ; use them
       :data-lines   parsed-lines }  ; all lines are data
-  ;else, convert first row of strings -> col label keywords
-    { :labels-kw    (mapv cool-misc/str->kw (first parsed-lines))
-      :data-lines   (rest parsed-lines) } ))  ; rest of lines are data
+    ;else, convert first row of strings -> col label keywords
+    {:labels-kw  (mapv ts/str->kw-normalized (first parsed-lines))
+     :data-lines (rest parsed-lines)}))  ; rest of lines are data
 ; AWTAWT TODO: add default label-fn (comp trim safe-char )
 
 ; AWTAWT TODO: change to allow line-seq, FILE, etc? (document!)

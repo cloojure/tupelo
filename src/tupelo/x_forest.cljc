@@ -98,7 +98,6 @@
   []
   {})
 
-
 ; #todo need an attribute registry { :kw fn-validate }
 ; #todo need fn's to add/delete attributes; to delete verify no uses exist. Change = delete then re-add
 ; #todo on any data change, run validate fn

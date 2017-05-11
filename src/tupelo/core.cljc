@@ -29,6 +29,17 @@
 ;    (println "Hi Barney!"))
 
 (pns/import-fn impl/nl )
+(pns/import-fn impl/xfirst )
+(pns/import-fn impl/xrest )
+(pns/import-fn impl/vec->list )
+
+(pns/import-fn impl/kw->sym )
+(pns/import-fn impl/kw->str )
+(pns/import-fn impl/str->kw )
+(pns/import-fn impl/str->sym )
+(pns/import-fn impl/sym->kw )
+(pns/import-fn impl/sym->str )
+
 
 (defn print-versions []
   (let [version-str   (format "   Clojure %s    Java %s"
@@ -500,21 +511,21 @@
   [N]
   (first (drop N (fibonacci-seq))))
 
-; #todo need test, readme
-(defn char-seq
-  "Given two characters (or numerical equivalents), returns a seq of characters
-  (inclusive) from the first to the second.  Characters must be in ascending order."
-  [start-char stop-char]
-  {:pre [ (char start-char) (char stop-char) ] }
-  ; These "dummy" casts are to ensure that any input integer values are within the valid
-  ; range for Unicode characters
-  (let [start-val   (int start-char)
-        stop-val    (int stop-char)]
-    (when-not (<= start-val stop-val)
-      (throw (IllegalArgumentException.
-               (str "char-seq: start-char must come before stop-char."
-                 "  start-val=" start-val "  stop-val=" stop-val))))
-    (mapv char (thru start-val stop-val))))
+; #todo remove? (in impl)
+;(defn char-seq
+;  "Given two characters (or numerical equivalents), returns a seq of characters
+;  (inclusive) from the first to the second.  Characters must be in ascending order."
+;  [start-char stop-char]
+;  {:pre [ (char start-char) (char stop-char) ] }
+;  ; These "dummy" casts are to ensure that any input integer values are within the valid
+;  ; range for Unicode characters
+;  (let [start-val   (int start-char)
+;        stop-val    (int stop-char)]
+;    (when-not (<= start-val stop-val)
+;      (throw (IllegalArgumentException.
+;               (str "char-seq: start-char must come before stop-char."
+;                 "  start-val=" start-val "  stop-val=" stop-val))))
+;    (mapv char (thru start-val stop-val))))
 
 (defn seq->str
   "Convert a seq into a string (using pr) with a space preceding each value"
@@ -525,6 +536,7 @@
       (pr it))))
 
 (pns/import-fn impl/strcat)
+(pns/import-fn impl/char-seq)
 (pns/import-fn impl/pretty-str)
 (pns/import-fn impl/pretty)
 
@@ -646,12 +658,13 @@
   (refer 'tupelo.core :only
    '[spy spy-let spy-let-pretty spyx spyx-pretty spyxx with-spy-indent truthy? falsey?
      not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
-     forv conjv glue vals->map with-map-vals macro?
+     forv conjv glue vals->map with-map-vals macro? char-seq
      append prepend grab dissoc-in fetch-in
      submap-by-keys submap-by-vals map-keys->vals keyvals
      validate only third it-> safe-> keep-if drop-if zip flat-vec
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
-     drop-at insert-at replace-at starts-with? int->kw kw->int
+     drop-at insert-at replace-at starts-with? int->kw kw->int vec->list
+     xfirst xrest kw->sym kw->str str->sym str->kw sym->kw sym->str
      split-using split-match partition-using wild-match? wild-match-ctx? wild-item?
      increasing? increasing-or-equal?
      fibonacci-seq fibo-thru fibo-nth unnest

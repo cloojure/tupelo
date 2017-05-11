@@ -8,6 +8,7 @@
   (:use tupelo.misc tupelo.test clojure.test )
   (:require [clojure.string   :as str]
             [tupelo.core      :as t ]
+            [tupelo.string    :as ts ]
   ))
 (t/refer-tupelo)
 
@@ -47,19 +48,19 @@
 
 (deftest t-dots
   (dots-config! {:dots-per-row 10  :decimation 1} )
-  (is (= (collapse-whitespace "         0 .........\n         9 total\n")
-         (collapse-whitespace (with-out-str
+  (is (= (ts/collapse-whitespace "         0 .........\n         9 total\n")
+         (ts/collapse-whitespace (with-out-str
                                 (with-dots
                                   (doseq [x (range 9)]
                                     (dot)))))))
 
   (dots-config! {:dots-per-row 10  :decimation 3} )
-  (is (= (collapse-whitespace "  0 ..........
+  (is (= (ts/collapse-whitespace "  0 ..........
                                 30 ..........
                                 60 ..........
                                 90 ...
                                 99 total  ")
-        (collapse-whitespace (with-out-str
+        (ts/collapse-whitespace (with-out-str
                                (with-dots
                                  (doseq [x (range 99)]
                                    (dot))))))))

@@ -13,6 +13,7 @@
             [tupelo.base64url                       :as b64url]
             [tupelo.core :as t]
             [tupelo.misc                            :as misc]
+            [tupelo.string                          :as ts]
             [tupelo.types                           :as types]
             [schema.core                            :as s] )
   (:use clojure.test)
@@ -39,7 +40,7 @@
   (testing "base64 - string"
     (if (t/is-java-1-8-plus?)
       (doseq [num-chars [1 2 3 7 20]]
-        (let [orig     (str/join (misc/take-dist num-chars misc/printable-chars))
+        (let [orig     (str/join (misc/take-dist num-chars ts/chars-text))
               code-str (b64url/encode-str orig)
               result   (b64url/decode-str code-str)]
           (is (every? b64url/code-chars (seq code-str)))
@@ -66,9 +67,9 @@
 
 (defn -main []
   (newline)
-  (println "printable-chars" (pr-str misc/printable-chars))
+  (println "ts/chars-text" (pr-str ts/chars-text))
   (newline)
-  (doseq [curr-char misc/printable-chars]
+  (doseq [curr-char ts/chars-text]
     (newline)
     (doseq [prefix ["" "a" "ab" "abc"] ]
       (let [orig-str    (str prefix curr-char)

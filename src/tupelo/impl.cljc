@@ -44,6 +44,34 @@
     (throw (IllegalArgumentException. (str "first: invalid arg:" arg))))
   (vec (clojure.core/rest arg)))
 
+(s/defn kw->sym :- s/Symbol
+  [arg :- s/Keyword]
+  (symbol (name arg)))
+
+(s/defn kw->str :- s/Str
+  [arg :- s/Keyword]
+  (name arg))
+
+(s/defn sym->str :- s/Str
+  [arg :- s/Symbol]
+  (name arg))
+
+(s/defn sym->kw :- s/Keyword
+  [arg :- s/Symbol]
+  (keyword arg))
+
+(s/defn str->sym :- s/Symbol
+  [arg :- s/Str]
+  (symbol arg))
+
+(s/defn str->kw :- s/Keyword
+  [arg :- s/Str]
+  (keyword arg))
+
+(s/defn vec->list :- [s/Any]
+  [arg :- [s/Any]]
+  (apply list arg))
+
 ; #todo add test & README
 (defn pretty-str
   "Returns a string that is the result of clojure.pprint/pprint"
@@ -455,6 +483,7 @@
        (clojure.core/map #(+ start %) it)
        (vec it))))
   )
+
 ; #todo need test, readme
 (defn char-seq
   "Given two characters (or numerical equivalents), returns a seq of characters

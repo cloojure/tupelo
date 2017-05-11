@@ -27,9 +27,9 @@
 
 (def code-chars
   "A set of chars used for the Y64 encoding (incl. padding char)"
-  (into #{} (flatten [ (misc/char-seq  \a \z)
-                       (misc/char-seq  \A \Z)
-                       (misc/char-seq  \0 \9) 
+  (into #{} (flatten [ (char-seq  \a \z)
+                       (char-seq  \A \Z)
+                       (char-seq  \0 \9)
                        [\. \_ \-] ] )))
 
 (def ^:private b64-code-62  (byte \+ ))

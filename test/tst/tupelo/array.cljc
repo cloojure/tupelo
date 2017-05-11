@@ -5,6 +5,7 @@
     [tupelo.array :as tar]
     [tupelo.misc :as tm]
     [tupelo.core :as t]
+    [tupelo.string :as ts]
     [clojure.string :as str]))
 
 (t/refer-tupelo)
@@ -64,8 +65,8 @@
     (dotimes [ii 3]
       (dotimes [jj 4]
         (swap! a34 tar/set-elem ii jj (+ (* ii 10) jj))))
-    (is (= (tm/collapse-whitespace (tar/toString @a34))
-           (tm/collapse-whitespace " 0       1       2       3
+    (is (= (ts/collapse-whitespace (tar/toString @a34))
+           (ts/collapse-whitespace " 0       1       2       3
                                     10      11      12      13
                                     20      21      22      23" )))
 

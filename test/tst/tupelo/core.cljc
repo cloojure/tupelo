@@ -18,6 +18,7 @@
     [tupelo.core :as t]
     [tupelo.impl :as i]
     [tupelo.misc :as tm]
+    [tupelo.string :as ts]
   ))
 (t/refer-tupelo)
 
@@ -136,25 +137,25 @@
 ; spy stuff
 (dotest
   (is= "(+ 2 3) => 5"
-    (tm/collapse-whitespace
+    (ts/collapse-whitespace
       (with-out-str
         (is= 5 (spyx (+ 2 3))))))
 
   ; #todo -> readme
-  (is= (tm/collapse-whitespace   "(inc 0) => 1
+  (is= (ts/collapse-whitespace   "(inc 0) => 1
                                   (inc 1) => 2
                                   (inc 2) => 3 " )
-    (tm/collapse-whitespace
+    (ts/collapse-whitespace
       (with-out-str
         (is= 3 (spyx (inc 0)
                      (inc 1)
                      (inc 2))))))
 
   ; #todo -> readme
-  (is= (tm/collapse-whitespace   ":some-kw
+  (is= (ts/collapse-whitespace   ":some-kw
                                   (inc 1) => 2
                                   (inc 2) => 3 " )
-       (tm/collapse-whitespace
+       (ts/collapse-whitespace
          (with-out-str
            (is= 3    (spyx :some-kw
                            (inc 1)
@@ -164,10 +165,10 @@
 ; #todo blog about this nested (is= ...) testing technique
 (dotest
   (is=
-    (tm/collapse-whitespace  " a => 1
+    (ts/collapse-whitespace  " a => 1
                                b => 5
                                (-> (inc a) (* 2) inc) => 5 " )
-    (tm/collapse-whitespace
+    (ts/collapse-whitespace
       (with-out-str
         (is= 13
           (t/spy-let [a (inc 0)
@@ -175,9 +176,9 @@
             (spyx (-> (inc a) (* 2) inc))
             (-> b (* 2) (+ 3)))))))
 
-  (is= (tm/collapse-whitespace  " a => 1
+  (is= (ts/collapse-whitespace  " a => 1
                                   b => 5 " )
-    (tm/collapse-whitespace
+    (ts/collapse-whitespace
       (with-out-str
         (is= 17
           (t/spy-let [a (inc 0)
@@ -197,22 +198,22 @@
                                 (swap! side-effect-cum-sum + result)
                                 result)) ]
       (is= "hi => 5"
-          (tm/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "hi"))) )
+          (ts/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "hi"))) )
       (is= "hi => 5"
-          (tm/collapse-whitespace (with-out-str (spy :msg "hi"  (side-effect-add! 2 3)))) )
+          (ts/collapse-whitespace (with-out-str (spy :msg "hi"  (side-effect-add! 2 3)))) )
       (is= "(side-effect-add! 2 3) => 5"
-          (tm/collapse-whitespace (with-out-str (spyx (side-effect-add! 2 3)))) )
+          (ts/collapse-whitespace (with-out-str (spyx (side-effect-add! 2 3)))) )
       (is= 15 @side-effect-cum-sum))
 
     (is= "first => 5 second => 25"
-        (tm/collapse-whitespace
+        (ts/collapse-whitespace
           (with-out-str (-> 2
                             (+ 3)
                             (spy :msg "first" )
                             (* 5)
                             (spy :msg "second") ))))
     (is= "first => 5 second => 25"
-        (tm/collapse-whitespace
+        (ts/collapse-whitespace
           (with-out-str (->> 2
                              (+ 3)
                              (spy :msg "first" )
@@ -228,16 +229,16 @@
                                 result))
     ]
       (is= "value => 5"
-          (tm/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "value"))))
+          (ts/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "value"))))
       (is= "value => 5"
-          (tm/collapse-whitespace (with-out-str (spy :msg "value"  (side-effect-add! 2 3)))))
+          (ts/collapse-whitespace (with-out-str (spy :msg "value"  (side-effect-add! 2 3)))))
       (is= 10 @side-effect-cum-sum)
 
-      (is= "value => 5" (tm/collapse-whitespace (with-out-str (spy "value" (+ 2 3) ))))
-      (is=   "spy => 5" (tm/collapse-whitespace (with-out-str (spy         (+ 2 3) ))))
+      (is= "value => 5" (ts/collapse-whitespace (with-out-str (spy "value" (+ 2 3) ))))
+      (is=   "spy => 5" (ts/collapse-whitespace (with-out-str (spy         (+ 2 3) ))))
 
       (is= "(str \"abc\" \"def\") => \"abcdef\""
-          (tm/collapse-whitespace (with-out-str (spyx (str "abc" "def") ))))
+          (ts/collapse-whitespace (with-out-str (spyx (str "abc" "def") ))))
 
       (throws? IllegalArgumentException  (spy "some-msg" 42 :msg))
     )))
@@ -246,10 +247,10 @@
   (let [val1  (into (sorted-map) {:a 1 :b 2})
         val2  (+ 2 3) ]
     (is= "val1 => clojure.lang.PersistentTreeMap->{:a 1, :b 2}"
-        (tm/collapse-whitespace (with-out-str (spyxx val1 )))  )
+        (ts/collapse-whitespace (with-out-str (spyxx val1 )))  )
 
     (is= "val2 => java.lang.Long->5"
-        (tm/collapse-whitespace (with-out-str (spyxx val2 ))) )
+        (ts/collapse-whitespace (with-out-str (spyxx val2 ))) )
   ))
 
 (dotest
@@ -259,9 +260,9 @@
                         (spy :msg "msg1" (+ 2 3))
                         (fn2)))
         fn0   (fn [] (spy :msg "msg0" (+ 2 3))) ]
-    (is= "msg2 => 5"            (tm/collapse-whitespace (with-out-str (fn2))))
-    (is= "msg1 => 5 msg2 => 5"  (tm/collapse-whitespace (with-out-str (fn1))))
-    (is= "msg0 => 5"            (tm/collapse-whitespace (with-out-str (fn0))))
+    (is= "msg2 => 5"            (ts/collapse-whitespace (with-out-str (fn2))))
+    (is= "msg1 => 5 msg2 => 5"  (ts/collapse-whitespace (with-out-str (fn1))))
+    (is= "msg0 => 5"            (ts/collapse-whitespace (with-out-str (fn0))))
     ))
 
 ; (dotest
@@ -1944,7 +1945,17 @@
   (isnt (macro? '+))
   (isnt (macro? 'if)))
 
+(dotest
+  (is= 'abc (kw->sym :abc))
+  (is= "abc" (kw->str :abc))
+  (is= 'abc (str->sym "abc"))
+  (is= :abc (str->kw "abc"))
+  (is= :abc (sym->kw 'abc))
+  (is= "abc" (sym->str 'abc)))
 
+
+
+; #todo move to tst.tupelo.core.deprecated
 ;---------------------------------------------------------------------------------------------------
 ; Deprecated functions
 

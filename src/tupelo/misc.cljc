@@ -56,16 +56,6 @@
 
 (def ^:dynamic *os-shell* "/bin/bash")  ; could also use /bin/zsh, etc
 
-(defn ^{:deprecated "0.9.15"} collapse-whitespace [& args] (apply ts/collapse-whitespace args))
-(defn ^{:deprecated "0.9.15"} equals-ignore-spacing [& args] (apply ts/equals-ignore-spacing args))
-(defn ^{:deprecated "0.9.15"} double-quotes->single-quotes [& args] (apply ts/double-quotes->single-quotes args))
-(defn ^{:deprecated "0.9.15"} single-quotes->double-quotes [& args] (apply ts/single-quotes->double-quotes args))
-(defn ^{:deprecated "0.9.15"} normalize-str [& args] (apply ts/normalize-str args))
-(defn ^{:deprecated "0.9.15"} str->kw [& args] (apply ts/str->kw-normalized args))
-(defn ^{:deprecated "0.9.15"} char-seq [& args] (apply t/char-seq args))
-(defn ^{:deprecated "0.9.15"} seq->str [& args] (apply t/seq->str args))
-(def  ^{:deprecated "0.9.15"} printable-chars  ts/chars-text )
-
 ; #todo *warn-on-lazy* -> print warning on first usage of each lazy function:
 ; #todo     for, map/indexed, flatten, line-seq, concat, distinct, drop/last/while, filter/remove/keep,
 ; #todo     partition*, re-seq, take/nth/while
