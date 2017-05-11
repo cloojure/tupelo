@@ -550,7 +550,7 @@
   (keyword (str arg)))
 
 (defn kw->int [arg]
-  (Integer/parseInt (name arg)))
+  (Integer/parseInt (kw->str arg)))
 
 ; #todo add test & README
 (defn clj->json [arg]                                       ; #todo experimental

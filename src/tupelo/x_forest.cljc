@@ -135,7 +135,7 @@
 (s/defn hid? :- s/Bool
   [arg]
   (and (keyword? arg)
-    (let [name-str (name arg)]
+    (let [name-str (kw->str arg)]
       (and (ts/hex? name-str)
         (= 40 (count name-str))))))
 
@@ -145,7 +145,7 @@
 
 (s/defn hid->id4  :- s/Keyword
   [hid :- HID]
-  (keyword (clip-str 4 (name hid))))
+  (keyword (clip-str 4 (kw->str hid))))
 
 (s/defn hid->wid  :- s/Keyword
   "Uses an HID to look up a human-friendly Word-ID (WID) from an English dictionary.
