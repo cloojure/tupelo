@@ -407,7 +407,7 @@
 (s/defn keyvals :- [s/Any]
   "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
    (apply hash-map (keyvals m)). (keyvals {:a 1 :b 2} => [:a 1 :b 2] "
-  [m :- {s/Any s/Any} ]
+  [m :- tsk/Map ]
   (reduce into [] (seq m)))
 
 (defn range-vec     ; #todo README;  maybe xrange?  maybe kill this?
