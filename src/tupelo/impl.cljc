@@ -404,16 +404,13 @@
   (has-some? truthy?
     (mapv #(= elem %) (vals map))))
 
-(defn keyvals
+(s/defn keyvals :- [s/Any]
   "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
    (apply hash-map (keyvals m)). (keyvals {:a 1 :b 2} => [:a 1 :b 2] "
-  [m]
-  {:pre  [(map? m)]
-   :post [(vector? %)]}
-  (reduce #(conj %1 (xfirst %2) (second %2))
-    [] (seq m)))
+  [m :- {s/Any s/Any} ]
+  (reduce into [] (seq m)))
 
-(defn range-vec     ; #todo README
+(defn range-vec     ; #todo README;  maybe xrange?  maybe kill this?
   "An eager version clojure.core/range that always returns its result in a vector."
   [& args]
   (vec (apply range args)))
