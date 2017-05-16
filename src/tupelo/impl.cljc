@@ -21,8 +21,7 @@
   )
 )
 
-; #todo need option for (take 3 coll :exact)
-; #todo need option for (drop 3 coll :exact)
+; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
 
 (defn nl
   "Abbreviated name for `newline` "
@@ -35,6 +34,8 @@
   (when (or (nil? arg) (empty? arg))
     (throw (IllegalArgumentException. (str "first: invalid arg:" arg))))
   (clojure.core/first arg))
+
+; #todo -> xsecond, xthird
 
 ; #todo -> tests
 (s/defn xrest :- s/Any
