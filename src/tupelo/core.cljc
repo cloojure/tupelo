@@ -211,11 +211,15 @@
 (pns/import-fn impl/spy-indent-reset)
 (pns/import-fn impl/spy-indent-inc)
 (pns/import-fn impl/spy-indent-dec)
+
+(pns/import-macro impl/with-spy-indent )
+(pns/import-macro impl/with-spy-enabled )
+(pns/import-macro impl/check-spy-enabled )
+
 (pns/import-fn impl/spy)
 (pns/import-macro impl/spyx)
 (pns/import-macro impl/spyx-pretty)
 (pns/import-macro impl/spyxx )
-(pns/import-macro impl/with-spy-indent )
 (pns/import-macro impl/spy-let )
 (pns/import-macro impl/spy-let-pretty )
 
@@ -656,8 +660,10 @@
    be used without namespace qualification."
   []
   (refer 'tupelo.core :only
-   '[spy spy-let spy-let-pretty spyx spyx-pretty spyxx with-spy-indent truthy? falsey?
-     not-nil? not-empty? has-some? has-none? contains-key? contains-val? contains-elem?
+   '[spy spy-let spy-let-pretty spyx spyx-pretty spyxx
+     with-spy-indent with-spy-enabled check-spy-enabled
+     truthy? falsey? not-nil? not-empty? has-some? has-none?
+     contains-key? contains-val? contains-elem?
      forv conjv glue vals->map with-map-vals macro? char-seq
      append prepend grab dissoc-in fetch-in
      submap-by-keys submap-by-vals map-keys->vals keyvals

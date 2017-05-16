@@ -101,7 +101,23 @@
 ;-----------------------------------------------------------------------------
 ; spy stuff
 
+(def ^:dynamic *spy-enabled* true)
+(def ^:dynamic *spy-enabled-map* {})
+
+(defmacro with-spy-enabled ; #todo README & test
+  [tag ; :- s/Keyword #todo schema for macros?
+   & forms ]
+  `(binding [*spy-enabled-map* (assoc *spy-enabled-map* ~tag true)]
+     ~@forms))
+
+(defmacro check-spy-enabled ; #todo README & test
+  [tag ; :- s/Keyword #todo schema for macros?
+   & forms]
+  `(binding [*spy-enabled* (get *spy-enabled-map* ~tag false)]
+     ~@forms))
+
 (def ^:no-doc spy-indent-level (atom 0))
+
 (defn ^:no-doc spy-indent-spaces []
   (str/join (repeat (* 2 @spy-indent-level) \space)))
 
@@ -158,51 +174,40 @@
         2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
         prints 'spy => 5' to stdout.  "
   ([arg1 arg2 arg3]
-   (cond (= :msg arg1) (do (println (str (spy-indent-spaces) arg2 " => " (pr-str arg3))) arg3) ; ->>  case
-         (= :msg arg2) (do (println (str (spy-indent-spaces) arg3 " => " (pr-str arg1))) arg1) ; ->   case
-         :else (throw (IllegalArgumentException. (str
-                                                   "spy: either first or 2nd arg must be :msg \n   args:"
-                                                   (pr-str [arg1 arg2 arg3]))))))
+   (cond
+     (= :msg arg1) (do
+                     (when *spy-enabled*
+                       (println (str (spy-indent-spaces) arg2 " => " (pr-str arg3))))
+                     arg3)
 
+     (= :msg arg2) (do
+                     (when *spy-enabled*
+                       (println (str (spy-indent-spaces) arg3 " => " (pr-str arg1))))
+                     arg1)
+
+     :else (throw (IllegalArgumentException. (str "spy: either first or 2nd arg must be :msg \n   args:"
+                                               (pr-str [arg1 arg2 arg3]))))))
   ; #todo change 2-arg arity to assume keyword arg is message. If both are kw's, assume 1st is msg.
   ([msg value]  ; 2-arg arity assumes value is last arg
    (spy :msg msg value))
-
-  ([value]                                                  ; 1-arg arity uses a generic "spy" message
+  ([value] ; 1-arg arity uses a generic "spy" message
    (spy :msg "spy" value)))
 
 ; #todo stop (spyx :hello) result:   :hello => :hello
 (defn- spyx-proc
   [exprs]
-; (println :spyx-proc :exprs exprs)
-; (println :spyx-proc :r1 )
-  (let [r1  (vec
-              (for [expr (butlast exprs) ]
-                (if (keyword? expr)
-                  `(println (str (spy-indent-spaces) ~expr))
-                  `(println (str (spy-indent-spaces) '~expr " => " ~expr)))))
-        r2  (let [expr (last exprs) ]
-              `(let [spy-val# ~expr]
-                 (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val# )))
-                 spy-val#)
-              )
-        final-code `(do ~@r1 ~r2)
-        ]
-;   (newline) (newline)
-;   (println :spyx-proc :r1 )
-;   (pprint/pprint r1)
-
-;   (newline) (newline)
-;   (println :spyx-proc :r2 )
-;   (pprint/pprint r2)
-
-;   (newline) (newline)
-;   (println :spyx-proc :final-code )
-;   (pprint/pprint final-code)
-;   (newline) (newline)
-
-    final-code
-  ))
+  (let [r1         (for [expr (butlast exprs)]
+                     (when *spy-enabled*
+                       (if (keyword? expr)
+                         `(println (str (spy-indent-spaces) ~expr))
+                         `(println (str (spy-indent-spaces) '~expr " => " ~expr)))))
+        r2         (let [expr (last exprs)]
+                     `(let [spy-val# ~expr]
+                        (when *spy-enabled*
+                          (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val#))))
+                        spy-val#))
+        final-code `(do ~@r1 ~r2) ]
+    final-code))
 
 ; #todo allow spyx to have labels like (spyx :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
 (defmacro spyx
@@ -218,25 +223,25 @@
   [expr]
   `(let [spy-val#    ~expr
          class-name# (-> spy-val# class .getName)]
-     (println (str (spy-indent-spaces) '~expr " => " class-name# "->" (pr-str spy-val#)))
+     (when *spy-enabled*
+       (println (str (spy-indent-spaces) '~expr " => " class-name# "->" (pr-str spy-val#))))
      spy-val#))
 
 (defn- spyx-pretty-proc
   [exprs]
-  (let [r1  (vec
-              (for [expr (butlast exprs) ]
-                (if (keyword? expr)
-                  `(println (str  ~expr))
-                  `(println (str  '~expr " => " ~expr)))))
-        r2  (let [expr (last exprs) ]
-              `(let [spy-val# ~expr]
-                 (println (str  '~expr " => " ))
-                 (pprint/pprint spy-val# )
-                 spy-val#)
-              )
-        final-code `(do ~@r1 ~r2) ]
-    final-code
-  ))
+  (let [r1         (for [expr (butlast exprs)]
+                     (when *spy-enabled*
+                       (if (keyword? expr)
+                         `(println (str ~expr))
+                         `(println (str '~expr " => " ~expr)))))
+        r2         (let [expr (last exprs)]
+                     `(let [spy-val# ~expr]
+                        (when *spy-enabled*
+                          (println (str '~expr " => "))
+                          (pprint/pprint spy-val#))
+                        spy-val#))
+        final-code `(do ~@r1 ~r2)]
+    final-code))
 
 ; #todo On all spy* make print file & line number
 ; #todo allow spyx-pretty to have labels like (spyx-pretty :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
@@ -259,30 +264,13 @@
   (let [decls (xfirst exprs)
         _     (when (not (even? (count decls)))
                 (throw (IllegalArgumentException. (str "spy-let-proc: uneven number of decls:" decls))))
-        ;_     (println :decls decls)
         forms (xrest exprs)
         fmt-pair (fn [[dest src]]
-                   ;(println :fmt-pair dest "<=" src)
-                   [ dest src  '_ (list 'spyx dest)] )
+                   [ dest src
+                     '_ (list 'spyx dest)] ) ; #todo gensym instead of underscore?
         pairs (vec (partition 2 decls))
-        ;_ (println :pairs pairs)
-        r1    (vec (mapcat  fmt-pair pairs ))
-
-        final-code  `(let ~r1 ~@forms )
-        ]
-
-    ; (newline) (newline)
-    ; (println :spyx-proc :r1 )
-    ; (pprint/pprint r1)
-
-    ; (newline) (newline)
-    ; (println :spyx-proc :forms )
-    ; (pprint/pprint forms)
-
-    ; (newline) (newline)
-    ; (println :spyx-proc :final-code )
-    ; (pprint/pprint final-code)
-    ; (newline) (newline)
+        r1    (vec (mapcat fmt-pair pairs ))
+        final-code  `(let ~r1 ~@forms ) ]
     final-code ))
 
 ; #todo spy-let should also print the return value
@@ -299,30 +287,13 @@
   (let [decls (xfirst exprs)
         _     (when (not (even? (count decls)))
                 (throw (IllegalArgumentException. (str "spy-let-pretty-impl: uneven number of decls:" decls))))
-        ;_     (println :decls decls)
         forms (xrest exprs)
         fmt-pair (fn [[dest src]]
-                   ;(println :fmt-pair dest "<=" src)
-                   [ dest src  '_ (list 'spyx-pretty dest)] )
+                   [dest src
+                    '_ (list 'spyx-pretty dest)] ) ; #todo gensym instead of underscore?
         pairs (vec (partition 2 decls))
-        ;_ (println :pairs pairs)
         r1    (vec (mapcat  fmt-pair pairs ))
-
-        final-code  `(let ~r1 ~@forms )
-        ]
-
-    ; (newline) (newline)
-    ; (println :spyx-proc :r1 )
-    ; (pprint/pprint r1)
-
-    ; (newline) (newline)
-    ; (println :spyx-proc :forms )
-    ; (pprint/pprint forms)
-
-    ; (newline) (newline)
-    ; (println :spyx-proc :final-code )
-    ; (pprint/pprint final-code)
-    ; (newline) (newline)
+        final-code  `(let ~r1 ~@forms ) ]
     final-code ))
 
 (defmacro spy-let-pretty
@@ -333,7 +304,6 @@
   (spy-let-pretty-impl exprs))
 
 ;-----------------------------------------------------------------------------
-
 
 (defn truthy?
   "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
