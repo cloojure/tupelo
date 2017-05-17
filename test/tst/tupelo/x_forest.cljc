@@ -8,7 +8,6 @@
   (:use tupelo.x-forest tupelo.test tupelo.impl clojure.test)
   (:require
     [clojure.string :as str]
-    [clj-uuid :as uuid]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.misc :as tm]

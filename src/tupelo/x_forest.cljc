@@ -14,6 +14,7 @@
     [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t]
+    [tupelo.impl :as i]
     [tupelo.misc :as tm]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
@@ -347,7 +348,7 @@
   [enlive-tree]
   (assert (enlive-node? enlive-tree))
   (with-map-vals enlive-tree [attrs content]
-    (assert (not (contains? (keys attrs) :tag)))
+    (assert (not (contains-key? attrs :tag)))
     (let [attrs (glue attrs (submap-by-keys enlive-tree #{:tag}))]
       (if (every? enlive-node? content)
         (let [kids (glue [] (for [child content] (enlive->tree child)))]
@@ -688,6 +689,14 @@
 (defn find-hid     ; #todo need test
   [root-spec tgt-path]
   (last (only (find-paths root-spec tgt-path))))
+
+(defn find-tree     ; #todo need test
+  [root-spec tgt-path]
+  (hid->tree (find-hid root-spec tgt-path)))
+
+(defn find-leaf-content
+  [root-spec tgt-path]
+  (grab :content (find-tree root-spec tgt-path)))
 
 (defn- has-matching-leaf
   [path tgt-val]
