@@ -85,18 +85,18 @@
     (throw (IllegalArgumentException. (str "validate-forest: failed forest=" *forest*)))))
 
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
+(defmacro with-forest ; #todo swap names?
+  [forest-arg & forms]
+  `(binding [*forest* ~forest-arg]
+     (validate-forest)
+     ~@forms ))
+
 (defmacro with-forest-result ; #todo swap names?
   [forest-arg & forms]
   `(binding [*forest* ~forest-arg]
      (validate-forest)
      ~@forms
      *forest*))
-
-(defmacro with-forest ; #todo swap names?
-  [forest-arg & forms]
-  `(binding [*forest* ~forest-arg]
-     (validate-forest)
-     ~@forms ))
 
 ; :hid is short for Hash ID, the SHA-1 hash of a v1/UUID expressed as a hexadecimal keyword
 ; format { :hid Element }
