@@ -157,7 +157,7 @@
 
 (dotest
   (let [state    (atom {})
-        forest-1 (with-forest (new-forest)
+        forest-1 (with-forest-result (new-forest)
                    (let [x (add-leaf {:tag :char :color :red} "x")
                          y (add-leaf {:tag :char :color :red} "y")
                          z (add-leaf {:tag :char :color :red} "z")
@@ -172,7 +172,7 @@
                      (is= (hid->leaf y) (->Leaf {:tag :char, :color :red} ["y"]))
                      (is= (remove-attr y :color) (->Leaf {:tag :char} ["y"]))))
 
-        forest-2 (with-forest forest-1
+        forest-2 (with-forest-result forest-1
                    (let [{:keys [x y z r]} @state]
                      (is= (hid->elem y) (->Leaf {:tag :char} ["y"]))
                      (is= (set-content y ["YYY"]) (->Leaf {:tag :char} ["YYY"]))
@@ -182,11 +182,11 @@
                      (is= (hid->leaf y) (->Leaf {:tag :char} [42]))))
 
         ; forest-1 is unaffected by changes that created forest-2
-        forest-3 (with-forest forest-1
+        forest-3 (with-forest-result forest-1
                    (let [{:keys [x y z r]} @state]
                      (is= (hid->elem y) (->Leaf {:tag :char} ["y"])))) ; still has forest-1 value
 
-        forest-4 (with-forest forest-2
+        forest-4 (with-forest-result forest-2
                    (let [{:keys [x y z r]} @state
                          _ (is= (hid->leaf y) (->Leaf {:tag :char} [42])) ; still has forest-2 value
                          a (add-leaf {:name :michael} "do")
