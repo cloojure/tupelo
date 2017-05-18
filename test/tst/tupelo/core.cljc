@@ -1496,6 +1496,7 @@
                        #{1  #{:a :x} }))
   ))
 
+(defrecord SampleRec [a b])
 (dotest
   (isnt (wild-match? #{1 2} #{1 2 3 4}))
   (isnt (wild-match-ctx? {} #{1 2} #{1 2 3 4}))
@@ -1511,7 +1512,17 @@
 
   (isnt (wild-match? [1 2] [1 2 3 4]))
   (isnt (wild-match-ctx? {} [1 2] [1 2 3 4]))
-  (is (wild-match-ctx? {:subvec-ok true} [1 2] [1 2 3 4])))
+  (is (wild-match-ctx? {:subvec-ok true} [1 2] [1 2 3 4]))
+
+  (is (sub-match? #{1 2} #{1 2 3 4}))
+  (is (sub-match? {:a 1} {:a 1 :b 2}))
+  (is (sub-match? '(1 2) '(1 2 3 4)))
+  (is (sub-match? [1 2] [1 2 3 4]))
+
+  (let [sr (->SampleRec 1 2)]
+    (isnt= sr {:a 1 :b 2})
+    (is (sub-match? sr {:a 1 :b 2}))
+    (is (sub-match? {:a 1 :b 2} sr))) )
 
 (dotest
   (is (i/set-match? #{1 2 3} #{1 2 3}))

@@ -766,10 +766,15 @@
                              (set/subset? pattern value)))
 
                      (and (coll? pattern) (coll? value))
-                         (and (or (= (count pattern) (count value))
-                                subvec-ok)  ; #todo need test
-                           (every? truthy?
-                             (mapv #(wild-match-impl ctx %1 %2) pattern value)))
+                     (let [num-pat     (count pattern)
+                           num-val     (count value)
+                           lengths-ok? (or (= num-pat num-val) ; #todo need test
+                                         (and subvec-ok
+                                           (<= num-pat num-val))) ]
+                       (and lengths-ok?
+                         (every? truthy?
+                           (mapv #(wild-match-impl ctx %1 %2)
+                             pattern value)))) ; will truncate shortest collection
 
                      :default false)) ]
       result)))
@@ -812,6 +817,13 @@
   ([pattern & values]
    (apply wild-match-ctx? {} pattern values)))
 
+(defn sub-match? ; #todo readme & test
+  "Simple wrapper for wild-match-ctx? where all types of sub-matching are enabled."
+  ([pattern & values]
+   (let [ctx {:submap-ok true
+              :subset-ok true
+              :subvec-ok true}]
+     (apply wild-match-ctx? ctx pattern values))))
 
 (s/defn unnest :- [s/Any] ; #todo readme
   "Given a collection, performs a depth-first recursive walk returning scalar args (int, string, keyword, etc)

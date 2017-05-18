@@ -29,7 +29,7 @@
 (defmacro isnt=  ; #todo document in readme
   "Use (isnt= ...) instead of (is (not= ...)) for clojure.test"
   [& body]
-  `(clojure.test/is (= (not ~@body))))
+  `(clojure.test/is (not (= ~@body))))
 
 (defn throws?-impl
   [& forms]

@@ -577,8 +577,9 @@
 ; i[12] = Random.nextInt(); bytes += i[12].toHexString()
 
 (pns/import-fn impl/clip-str )
-(pns/import-fn impl/wild-match? )
 (pns/import-fn impl/wild-match-ctx? )
+(pns/import-fn impl/wild-match? )
+(pns/import-fn impl/sub-match? )
 (pns/import-fn impl/wild-item? )
 (pns/import-macro impl/matches? )
 
@@ -671,7 +672,7 @@
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
      drop-at insert-at replace-at starts-with? int->kw kw->int vec->list
      xfirst xrest kw->sym kw->str str->sym str->kw sym->kw sym->str
-     split-using split-match partition-using wild-match? wild-match-ctx? wild-item?
+     split-using split-match partition-using wild-match? sub-match? wild-match-ctx? wild-item?
      increasing? increasing-or-equal?
      fibonacci-seq fibo-thru fibo-nth unnest
      with-exception-default lazy-cons lazy-gen yield yield-all
