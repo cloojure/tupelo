@@ -1514,15 +1514,26 @@
   (isnt (wild-match-ctx? {} [1 2] [1 2 3 4]))
   (is (wild-match-ctx? {:subvec-ok true} [1 2] [1 2 3 4]))
 
-  (is (sub-match? #{1 2} #{1 2 3 4}))
-  (is (sub-match? {:a 1} {:a 1 :b 2}))
-  (is (sub-match? '(1 2) '(1 2 3 4)))
-  (is (sub-match? [1 2] [1 2 3 4]))
+  (isnt (wild-submatch? #{1 :*}    #{1 2 3 4}))
+  (is (wild-submatch?   #{1 2}     #{1 2 3 4}))
+  (is (wild-submatch?    {:a :*}    {:a 1 :b 2}))
+  (is (wild-submatch?   '(1 :* 3)  '(1 2 3 4)))
+  (is (wild-submatch?    [1 :* 3]   [1 2 3 4]))
 
-  (let [sr (->SampleRec 1 2)]
-    (isnt= sr {:a 1 :b 2})
-    (is (sub-match? sr {:a 1 :b 2}))
-    (is (sub-match? {:a 1 :b 2} sr))) )
+  (is (submatch? #{1 2} #{1 2 3 4}))
+  (is (submatch? {:a 1} {:a 1 :b 2}))
+  (is (submatch? '(1 2) '(1 2 3 4)))
+  (is (submatch? [1 2 3] [1 2 3 4]))
+  (isnt (submatch? [1 :* 3] [1 2 3 4]))
+  (isnt (submatch? {:a :*} {:a 1 :b 2}))
+  (isnt (submatch? #{1 :*} #{1 2 3 4}))
+
+  (let [sample-rec (->SampleRec 1 2)]
+    (isnt= sample-rec {:a 1 :b 2})
+    (is (wild-submatch? sample-rec {:a 1 :b 2}))
+    (is (wild-submatch? {:a 1 :b 2} sample-rec))
+    (is (submatch? sample-rec {:a 1 :b 2}))
+    (is (submatch? {:a 1 :b 2} sample-rec))))
 
 (dotest
   (is (i/set-match? #{1 2 3} #{1 2 3}))

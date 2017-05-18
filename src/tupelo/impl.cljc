@@ -751,11 +751,13 @@
   [ctx :- tsk/KeyMap ; #todo more precise schema needed { :submap-ok s/Bool ... }
    pattern :- s/Any
    value :- s/Any ]
-  (with-map-vals ctx [submap-ok subset-ok subvec-ok]
+  (with-map-vals ctx [submap-ok subset-ok subvec-ok wildcard-ok]
     (let [result (truthy?
                    (cond
-                     (= pattern :*)       true
-                     (= pattern value)    true
+                     (= pattern value)   true
+
+                     (and wildcard-ok
+                       (= pattern :*))   true
 
                      (and (map? pattern) (map? value))
                          (let [keyset-pat (set (keys pattern))
@@ -776,15 +778,14 @@
                              (set/subset? pattern value)))
 
                      (and (coll? pattern) (coll? value))
-                     (let [num-pat     (count pattern)
-                           num-val     (count value)
-                           lengths-ok? (or (= num-pat num-val) ; #todo need test
-                                         (and subvec-ok
-                                           (<= num-pat num-val))) ]
-                       (and lengths-ok?
-                         (every? truthy?
-                           (mapv #(wild-match-impl ctx %1 %2)
-                             pattern value)))) ; will truncate shortest collection
+                         (let [num-pat     (count pattern)
+                               num-val     (count value)
+                               lengths-ok? (or (= num-pat num-val) ; #todo need test
+                                             (and subvec-ok
+                                               (<= num-pat num-val)))]
+                           (and lengths-ok?
+                             (every? truthy?
+                               (mapv #(wild-match-impl ctx %1 %2) pattern value)))) ; truncates shortest
 
                      :default false)) ]
       result)))
@@ -815,9 +816,10 @@
                 :subvec-ok false}]
        (wild-match-ctx? ctx pattern values))) "
   [ctx-in pattern & values]
-  (let [ctx (glue {:submap-ok false
-                   :subset-ok false
-                   :subvec-ok false} ctx-in)]
+  (let [ctx (glue {:submap-ok   false
+                   :subset-ok   false
+                   :subvec-ok   false
+                   :wildcard-ok true} ctx-in)]
     (every? truthy?
       (for [value values]
         (wild-match-impl ctx pattern value)))))
@@ -827,12 +829,23 @@
   ([pattern & values]
    (apply wild-match-ctx? {} pattern values)))
 
-(defn sub-match? ; #todo readme & test
+(defn wild-submatch? ; #todo readme & test
   "Simple wrapper for wild-match-ctx? where all types of sub-matching are enabled."
   ([pattern & values]
-   (let [ctx {:submap-ok true
-              :subset-ok true
-              :subvec-ok true}]
+   (let [ctx {:submap-ok   true
+              :subset-ok   true
+              :subvec-ok   true
+              :wildcard-ok true}]
+     (apply wild-match-ctx? ctx pattern values))))
+
+; #todo re-impl w/o wildcard stuff
+(defn submatch? ; #todo readme & test
+  "Simple wrapper for wild-match-ctx? where all types of sub-matching are enabled."
+  ([pattern & values]
+   (let [ctx {:submap-ok   true
+              :subset-ok   true
+              :subvec-ok   true
+              :wildcard-ok false}]
      (apply wild-match-ctx? ctx pattern values))))
 
 (s/defn unnest :- [s/Any] ; #todo readme
