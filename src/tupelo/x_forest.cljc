@@ -616,17 +616,18 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-(defn format-soln [soln]
+(defn format-path [soln]
   (let [elem (xfirst soln)
         others (xrest soln) ]
     (if (empty? others)
       (hid->bush elem)
-      [ (hid->attrs elem) (format-soln others) ])))
+      [ (hid->attrs elem) (format-path others) ])))
 
-(defn format-solns [solns]
+(defn format-paths [solns]
   (set
     (forv [soln solns]
-      (format-soln soln))))
+      (format-path soln))))
+
 
 (s/defn ^:private ^:no-doc find-paths-impl
   [result-atom
@@ -634,12 +635,6 @@
    hid :- HID
    tgt-path :- [(s/either s/Keyword tsk/KeyMap)]
   ]
-  ;(newline)
-  ;(println :result-atom) (format-solns @result-atom)
-  ;(spy :parents (mapv #(hid->attrs %) parents))
-  ;(spy :hid (hid->attrs hid))
-  ;(println :hid-tree ) (pretty (hid->tree hid))
-  ;(spyx tgt-path)
   (validate-hid hid)
   (when (not-empty? tgt-path)
     (let [tgt (xfirst tgt-path)
