@@ -692,15 +692,19 @@
       (find-paths-impl result-atom [] root tgt-path))
     @result-atom))
 
+(defn find-hids     ; #todo need test
+  [root-spec tgt-path]
+  (mapv last (find-paths root-spec tgt-path)))
+
 (defn find-hid     ; #todo need test
   [root-spec tgt-path]
-  (last (only (find-paths root-spec tgt-path))))
+  (only (find-hids root-spec tgt-path)))
 
 (defn find-tree     ; #todo need test
   [root-spec tgt-path]
   (hid->tree (find-hid root-spec tgt-path)))
 
-(defn find-leaf-content
+(defn find-leaf-content     ; #todo need test
   [root-spec tgt-path]
   (grab :content (find-tree root-spec tgt-path)))
 
