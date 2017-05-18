@@ -561,16 +561,6 @@
   "Shortcut to cheshire.core/generate-string"
   (cc/generate-string arg))
 
-; #todo need test & README
-(s/defn submap? :- Boolean
-  "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
-   another map.  Similar to clojure.set/subset?"
-  [inner-map :- {s/Any s/Any}                           ; #todo
-   outer-map :- {s/Any s/Any}]                          ; #todo
-  (let [inner-set (set inner-map)
-        outer-set (set outer-map)]
-    (set/subset? inner-set outer-set)))
-
 ;                                               "1234.4567.89ab.cdef"  also valid for read
 ; #todo need conversion from Long -> hex string="1234-4567-89ab-cdef" (& inverse)
 ; #todo need rand-id/randid/rid/rid-str (rand id) -> 64 bit hex string="1234-4567-89ab-cdef"
@@ -579,6 +569,7 @@
 (pns/import-fn impl/clip-str )
 (pns/import-fn impl/wild-match-ctx? )
 (pns/import-fn impl/wild-match? )
+(pns/import-fn impl/submap? )
 (pns/import-fn impl/sub-match? )
 (pns/import-fn impl/wild-item? )
 (pns/import-macro impl/matches? )
@@ -667,7 +658,7 @@
      contains-key? contains-val? contains-elem?
      forv conjv glue vals->map with-map-vals macro? char-seq
      append prepend grab dissoc-in fetch-in
-     submap-by-keys submap-by-vals map-keys->vals keyvals
+     submap? submap-by-keys submap-by-vals map-keys->vals keyvals
      validate only third it-> safe-> keep-if drop-if zip flat-vec
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
      drop-at insert-at replace-at starts-with? int->kw kw->int vec->list

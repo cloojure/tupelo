@@ -687,6 +687,16 @@
       (throw (IllegalArgumentException.
                (format "submap-by-vals: missing values= %s  map-arg= %s  " missing-vals (pretty-str map-arg)))))))
 
+; #todo need test & README
+(s/defn submap? :- Boolean
+  "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
+   another map.  Similar to clojure.set/subset?"
+  [inner-map :- {s/Any s/Any}                           ; #todo
+   outer-map :- {s/Any s/Any}]                          ; #todo
+  (let [inner-set (set inner-map)
+        outer-set (set outer-map)]
+    (set/subset? inner-set outer-set)))
+
 ; #todo -> README
 ; #todo variant: allow single or vec of default values
 (s/defn map-keys->vals :- tsk/List
