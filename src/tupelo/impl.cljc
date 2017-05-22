@@ -240,7 +240,9 @@
                           (println (str '~expr " => "))
                           (pprint/pprint spy-val#))
                         spy-val#))
-        final-code `(do ~@r1 ~r2)]
+        final-code `(do
+                      (newline)
+                      ~@r1 ~r2)]
     final-code))
 
 ; #todo On all spy* make print file & line number
@@ -259,7 +261,7 @@
        (spy-indent-dec)
        result#)))
 
-(defn- spy-let-impl
+(defn- let-spy-impl
   [exprs]
   (let [decls (xfirst exprs)
         _     (when (not (even? (count decls)))
@@ -274,15 +276,19 @@
     final-code ))
 
 ; #todo spy-let should also print the return value
-(defmacro spy-let
+(defmacro spy-let   ; #todo -> deprecated
+  [& exprs]
+  (let-spy-impl exprs))
+
+(defmacro let-spy
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
    expressions, printing both the expression and its value to stdout. Returns the value of the
    last expression."
   [& exprs]
-  (spy-let-impl exprs))
+  (let-spy-impl exprs))
 
 ;-----------------------------------------------------------------------------
-(defn- spy-let-pretty-impl
+(defn- let-spy-pretty-impl
   [exprs]
   (let [decls (xfirst exprs)
         _     (when (not (even? (count decls)))
@@ -296,12 +302,16 @@
         final-code  `(let ~r1 ~@forms ) ]
     final-code ))
 
-(defmacro spy-let-pretty
+(defmacro spy-let-pretty   ; #todo -> deprecated
+  [& exprs]
+  (let-spy-pretty-impl exprs))
+
+(defmacro let-spy-pretty
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
    expressions, printing both the expression and its value to stdout. Returns the value of the
    last expression."
   [& exprs]
-  (spy-let-pretty-impl exprs))
+  (let-spy-pretty-impl exprs))
 
 ;-----------------------------------------------------------------------------
 

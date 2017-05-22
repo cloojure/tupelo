@@ -220,8 +220,12 @@
 (pns/import-macro impl/spyx)
 (pns/import-macro impl/spyx-pretty)
 (pns/import-macro impl/spyxx )
-(pns/import-macro impl/spy-let )
-(pns/import-macro impl/spy-let-pretty )
+
+(pns/import-macro impl/let-spy )
+(pns/import-macro impl/let-spy-pretty )
+
+(pns/import-macro impl/spy-let )    ; #todo -> deprecated
+(pns/import-macro impl/spy-let-pretty )   ; #todo -> deprecated
 
 ; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
 
@@ -653,7 +657,9 @@
    be used without namespace qualification."
   []
   (refer 'tupelo.core :only
-   '[spy spy-let spy-let-pretty spyx spyx-pretty spyxx
+   '[spy spyx spyx-pretty spyxx
+     spy-let spy-let-pretty   ; #todo -> deprecated
+     let-spy let-spy-pretty
      with-spy-indent with-spy-enabled check-spy-enabled
      truthy? falsey? not-nil? not-empty? has-some? has-none?
      contains-key? contains-val? contains-elem?

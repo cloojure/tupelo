@@ -703,6 +703,10 @@
   [root-spec tgt-path]
   (grab :content (find-tree root-spec tgt-path)))
 
+(s/defn leaf->content     ; #todo need test
+  [leaf-hid :- HID]
+  (grab :content (hid->tree leaf-hid)))
+
 (defn- has-matching-leaf
   [path tgt-val]
   (let [tail-hid  (last path)
@@ -711,11 +715,15 @@
       (or (= tgt-val (grab :content tail-elem))
         (= tgt-val :*)))))
 
-(defn find-paths-leaf
+(defn find-paths-leaf     ; #todo need test
   [root-spec tgt-path tgt-content]
   (let [paths      (find-paths root-spec tgt-path)
         leaf-paths (keep-if #(has-matching-leaf % tgt-content) paths) ]
     leaf-paths))
+
+(defn find-leaf-hids     ; #todo need test
+  [root-spec tgt-path tgt-content]
+  (mapv last (find-paths-leaf root-spec tgt-path tgt-content)) )
 
 (defn find-leaf
   [root-spec tgt-path tgt-content]
