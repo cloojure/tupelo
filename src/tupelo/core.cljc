@@ -30,6 +30,8 @@
 
 (pns/import-fn impl/nl )
 (pns/import-fn impl/xfirst )
+(pns/import-fn impl/xsecond )
+(pns/import-fn impl/xthird )
 (pns/import-fn impl/xrest )
 (pns/import-fn impl/vec->list )
 
@@ -61,6 +63,7 @@
   (apply mapv vector args))
 
 (pns/import-macro impl/forv)
+(pns/import-macro impl/map-with)
 
 ; #todo maybe just make tupelo.vec/for  etc   (tv/for ...) -> (vec (for ...))
 ; #todo replace clojure.core/map : not lazy; can add one of :trunc or :lazy modifiers
@@ -663,13 +666,13 @@
      with-spy-indent with-spy-enabled check-spy-enabled
      truthy? falsey? not-nil? not-empty? has-some? has-none?
      contains-key? contains-val? contains-elem?
-     forv conjv glue vals->map with-map-vals macro? char-seq
+     forv map-with conjv glue vals->map with-map-vals macro? char-seq
      append prepend grab dissoc-in fetch-in
      submap? submap-by-keys submap-by-vals map-keys->vals keyvals
      validate only third it-> safe-> keep-if drop-if zip flat-vec
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
      drop-at insert-at replace-at starts-with? int->kw kw->int vec->list
-     xfirst xrest kw->sym kw->str str->sym str->kw sym->kw sym->str
+     xfirst xsecond xthird xrest kw->sym kw->str str->sym str->kw sym->kw sym->str
      split-using split-match partition-using
      wild-match? wild-submatch? wild-match-ctx? wild-item? submatch?
      increasing? increasing-or-equal?

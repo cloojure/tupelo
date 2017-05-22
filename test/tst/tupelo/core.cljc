@@ -461,6 +461,14 @@
        (for  [x (range 5)  y (range 2 9)] (str x y))))
 
 (dotest
+  (let [xs [1 2 3]
+        ys [10 20 30]]
+    (is= [11 22 33] (map-with [x xs y ys]
+                      (+ x y)))
+    (throws? (map-with [x xs y [99]]
+               (+ x y)))))
+
+(dotest
   ; unexpected results
   (is (= (concat {:a 1} {:b 2} {:c 3} )
                [ [:a 1] [:b 2] [:c 3] ] ))

@@ -27,15 +27,26 @@
   "Abbreviated name for `newline` "
   [] (newline))
 
-; #todo -> tests
-(s/defn xfirst :- s/Any
+(s/defn xfirst :- s/Any ; #todo -> tests
   "Returns the first value in a list or vector. Throws if empty."
   [arg :- [s/Any]]
   (when (or (nil? arg) (empty? arg))
     (throw (IllegalArgumentException. (str "first: invalid arg:" arg))))
   (clojure.core/first arg))
 
-; #todo -> xsecond, xthird
+(s/defn xsecond :- s/Any ; #todo -> tests
+  "Returns the second value in a list or vector. Throws if (< len 2)."
+  [arg :- [s/Any]]
+  (when (or (nil? arg) (< (count arg) 2))
+    (throw (IllegalArgumentException. (str "second: invalid arg:" arg))))
+  (clojure.core/second arg))
+
+(s/defn xthird :- s/Any ; #todo -> tests
+  "Returns the third value in a list or vector. Throws if (< len 3)."
+  [arg :- [s/Any]]
+  (when (or (nil? arg) (< (count arg) 3))
+    (throw (IllegalArgumentException. (str "third: invalid arg:" arg))))
+  (clojure.core/nth arg 3))
 
 ; #todo -> tests
 (s/defn xrest :- s/Any
@@ -630,6 +641,25 @@
   [& body]
   `(vec (for ~@body)))
 
+(defmacro map-with
+  "Usage: (map-with [bindings & forms])
+
+  Given bindings and forms like `(map-with [x xs, y ys, ...] (+ x y))`, will iterate over the
+  collections [xs ys ...] assigning successive values of each collection to [x y ...], respectively.
+  The local symbols [x y ...] can then be used in `forms` to generate the output mapping. Not lazy."
+  [bindings & forms]
+  (when-not (even? (count bindings))
+    (throw (IllegalArgumentException. (str "map-with: bindings must be even in number=" bindings))))
+  (let [pairs (partition 2 bindings)
+        syms  (mapv xfirst pairs)
+        colls (mapv xsecond pairs)]
+    `(let [lengths# (mapv count ~colls)
+           len#     (xfirst lengths#)
+           map-fn#  (fn ~syms ~@forms)]
+       (when-not (apply = lengths#)
+         (throw (IllegalArgumentException.
+                  (str "map-with: coll lengths must all be same length; lengths=" lengths#))))
+       (mapv map-fn# ~@colls))))
 
 (defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
