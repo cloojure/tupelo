@@ -641,7 +641,7 @@
   [& body]
   `(vec (for ~@body)))
 
-(defmacro map-with
+(defmacro map-with  ; #todo maybe rename -> map-using  ???
   "Usage: (map-with [bindings & forms])
 
   Given bindings and forms like `(map-with [x xs, y ys, ...] (+ x y))`, will iterate over the
