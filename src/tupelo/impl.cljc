@@ -654,7 +654,6 @@
         syms  (mapv xfirst pairs)
         colls (mapv xsecond pairs)]
     `(let [lengths# (mapv count ~colls)
-           len#     (xfirst lengths#)
            map-fn#  (fn ~syms ~@forms)]
        (when-not (apply = lengths#)
          (throw (IllegalArgumentException.
