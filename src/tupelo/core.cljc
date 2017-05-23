@@ -83,6 +83,7 @@
 
 (pns/import-fn impl/map-keys->vals )
 (pns/import-fn impl/fetch-in)
+(pns/import-fn impl/fetch)
 (pns/import-fn impl/grab)
 (pns/import-fn impl/submap-by-keys )
 (pns/import-fn impl/submap-by-vals )
@@ -667,7 +668,7 @@
      truthy? falsey? not-nil? not-empty? has-some? has-none?
      contains-key? contains-val? contains-elem?
      forv map-with conjv glue vals->map with-map-vals macro? char-seq
-     append prepend grab dissoc-in fetch-in
+     append prepend grab dissoc-in fetch fetch-in
      submap? submap-by-keys submap-by-vals map-keys->vals keyvals
      validate only third it-> safe-> keep-if drop-if zip flat-vec
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=

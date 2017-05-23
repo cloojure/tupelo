@@ -625,7 +625,13 @@
                  "  keys: " keys-vec \newline)))
       result)))
 
-; #todo make inverse named "get-safe" ???
+(s/defn fetch :- s/Any
+  "A fail-fast version of keyword/map lookup.  When invoked as (grab the-map :the-key),
+   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
+   Throws an Exception if :the-key is not present in the-map."
+  [the-map :- tsk/Map
+   the-key :- s/Any]
+  (fetch-in the-map [the-key]))
 
 (s/defn grab :- s/Any
   "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
