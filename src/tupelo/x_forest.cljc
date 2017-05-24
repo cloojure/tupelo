@@ -9,12 +9,8 @@
   the the trees individually and/or collectively."
   (:use tupelo.impl)
   (:require
-    [clojure.core.async     :as ca :refer [go go-loop chan thread]]
     [clojure.set :as set]
-    [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.core :as t]
-    [tupelo.impl :as i]
     [tupelo.misc :as tm]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
@@ -412,8 +408,8 @@
   [hid :- HID]
   (-> (validate-hid hid) hid->tree tree->hiccup))
 
-(s/defn set-attrs :- tsk/KeyMap
-  "Merge the supplied attrs map into the attrs of a Node or Leaf"
+(s/defn attrs-reset :- tsk/KeyMap
+  "Replace the attrs of a Node or Leaf with the supplied attrs map"
   [hid :- HID
    attrs-new :- tsk/KeyMap]
   (validate-attrs attrs-new)
@@ -422,7 +418,7 @@
     (set-elem hid elem-new)
     elem-new))
 
-(s/defn merge-attrs :- tsk/KeyMap
+(s/defn attrs-merge :- tsk/KeyMap
   "Merge the supplied attrs map into the attrs of a Node or Leaf"
   [hid :- HID
    attrs-in :- tsk/KeyMap]
@@ -434,20 +430,7 @@
     (set-elem hid elem-new)
     elem-new))
 
-(s/defn update-attrs :- tsk/KeyMap
-  "Use the supplied function & arguments to update the attrs map for a Node or Leaf as in clojure.core/update"
-  [hid :- HID
-   fn-update-attrs   ; signature: (fn-update attrs-curr x y z & more) -> attrs-new
-   & fn-update-attrs-args ]
-  (let [elem-curr  (hid->elem hid)
-        attrs-curr (grab :attrs elem-curr)
-        attrs-new  (apply fn-update-attrs attrs-curr fn-update-attrs-args)
-        elem-new   (glue elem-curr {:attrs attrs-new})]
-    (validate-attrs attrs-new)
-    (set-elem hid elem-new)
-    elem-new))
-
-(s/defn update-attr :- tsk/KeyMap
+(s/defn attr-update :- tsk/KeyMap
   "Use the supplied function & arguments to update the attr value for a Node or Leaf as in clojure.core/update"
   [hid :- HID
    attr-name :- s/Keyword
@@ -461,16 +444,15 @@
     (set-elem hid elem-new)
     elem-new))
 
-(s/defn remove-attr :- tsk/KeyMap
+(s/defn attr-remove :- tsk/KeyMap
   "Removes the specified attribute for an element"
   [hid :- HID
-   attr :- s/Keyword ]
-  (let [fn-update-attrs (fn fn-update-attrs [attrs-curr]
-                          (let [attrs-new (dissoc attrs-curr attr) ]
-                            attrs-new))]
-    (update-attrs hid fn-update-attrs)))
+   attr :- s/Keyword]
+  (let [attrs-curr (hid->attrs hid)
+        attrs-new  (dissoc attrs-curr attr)]
+    (attrs-reset hid attrs-new)))
 
-(s/defn set-leaf-value :- Leaf
+(s/defn leaf-value-set :- Leaf
   "Resets the value of a Leaf"
   [hid :- HID
    value-new :- s/Any]
@@ -479,7 +461,7 @@
     (set-elem hid leaf-new)
     leaf-new))
 
-(s/defn update-leaf-value :- Leaf
+(s/defn leaf-value-update :- Leaf
   "Given a leaf with a value, updates that value using a function"
   [hid :- HID
    fn-update-value  ; signature: (fn-update-value value-curr x y z & more) -> value-new
@@ -493,7 +475,7 @@
 
 ; #todo avoid self-cycles
 ; #todo avoid descendant-cycles
-(s/defn set-kids :- Node
+(s/defn kids-set :- Node
   "Resets the kids of a Node to the supplied list"
   [hid :- HID
    kids-new :- [HID]]
@@ -504,7 +486,7 @@
 
 ; #todo avoid self-cycles
 ; #todo avoid descendant-cycles
-(s/defn update-kids :- tsk/KeyMap
+(s/defn kids-update :- tsk/KeyMap
   "Updates the kids for a Node using a function, as in clojure.core/update"
   [hid :- HID
    fn-update-kids   ; signature: (fn-update kids-curr x y z & more) -> kids-new
@@ -518,7 +500,7 @@
 
 ; #todo avoid self-cycles
 ; #todo avoid descendant-cycles
-(s/defn add-kids :- tsk/KeyMap
+(s/defn kids-append :- tsk/KeyMap
   "Appends a list of kids a Node"
   [hid :- HID
    kids-new :- [HID]]
@@ -531,11 +513,11 @@
 
 ; #todo (s/defn remove-orphans [roots-to-keep] ...)
 
-(s/defn remove-kids :- tsk/KeyMap
+(s/defn kids-remove :- tsk/KeyMap
   "Removes all a set of children from a Node (including any duplcates)."
   ([hid :- HID
     kids-leaving :- (s/either [HID] #{HID})]
-    (remove-kids hid kids-leaving false))
+    (kids-remove hid kids-leaving false))
   ([hid :- HID
     kids-leaving :- (s/either [HID] #{HID})
     missing-kids-ok :- s/Bool]
@@ -553,7 +535,7 @@
       (set-elem hid node-new)
       node-new)))
 
-(s/defn remove-all-kids :- tsk/KeyMap
+(s/defn kids-remove-all :- tsk/KeyMap
   "Removes all a set of children from a Node (including any duplcates)."
   ([hid :- HID ]
     (let [node-curr           (hid->node hid)
@@ -576,7 +558,7 @@
     (doseq [hid hids-staying]
       (let [elem (hid->elem hid)]
         (when (instance? Node elem)
-          (remove-kids hid hids-leaving true))))) ; true => missing-kids-ok
+          (kids-remove hid hids-leaving true))))) ; true => missing-kids-ok
   hids-leaving)
 
 (s/defn hid-matches?

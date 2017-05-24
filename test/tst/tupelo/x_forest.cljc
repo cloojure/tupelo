@@ -108,7 +108,7 @@
              :kids  :*}
             (hid->node r)))
 
-      (merge-attrs x {:color :green})
+      (attrs-merge x {:color :green})
       (is= (hid->tree x) (into {} (hid->leaf x))
         {:attrs {:tag :char, :color :green}, :value "x"})
 
@@ -117,7 +117,7 @@
       (is= (hid->kids r) [x y z])
       (is= (hid->value z) "z")
 
-      (set-attrs z {:type :tuna, :name :charlie})
+      (attrs-reset z {:type :tuna, :name :charlie})
       (is= (hid->attrs z) {:type :tuna, :name :charlie}))))
 
 (dotest
@@ -130,25 +130,18 @@
         {:attrs {:tag :root, :color :white :cnt 0},
          :kids  [{:attrs {:tag :char, :color :red :cnt 0}, :value "x"}]})
 
-      (update-attrs x #(update % :cnt inc))
-      (update-attrs x #(update % :cnt inc))
-      (update-attrs r #(update % :cnt inc))
-      (is= (hid->tree r)
-        {:attrs {:tag :root, :color :white, :cnt 1},
-         :kids  [{:attrs {:tag :char, :color :red, :cnt 2}, :value "x"}]})
-
-      (update-attr x :cnt inc)
-      (update-attr x :cnt inc)
-      (update-attr r :cnt inc)
+      (attr-update x :cnt inc)
+      (attr-update x :cnt inc)
+      (attr-update r :cnt #(+ 2 %))
       (is= (hid->tree r)
         {:attrs {:tag :root, :color :white, :cnt 2},
-         :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :value "x"}]})
+         :kids  [{:attrs {:tag :char, :color :red, :cnt 2}, :value "x"}]})
 
-      (update-attr r :cnt * 3)
-      (update-attr r :cnt + 7)
+      (attr-update r :cnt * 3)
+      (attr-update r :cnt + 7)
       (is= (hid->tree r)
         {:attrs {:tag :root, :color :white, :cnt 13},
-         :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :value "x"}]}))))
+         :kids  [{:attrs {:tag :char, :color :red, :cnt 2}, :value "x"}]}))))
 
 (dotest
   (let [state    (atom {})
@@ -161,19 +154,19 @@
                      (is= (hid->kids r) [x y z])
                      (is= (hid->value z) "z")
 
-                     (set-attrs z {:type :tuna, :name :charlie})
+                     (attrs-reset z {:type :tuna, :name :charlie})
                      (is= (hid->attrs z) {:type :tuna, :name :charlie})
 
                      (is= (hid->leaf y) (->Leaf {:tag :char, :color :red} "y"))
-                     (is= (remove-attr y :color) (->Leaf {:tag :char} "y"))))
+                     (is= (attr-remove y :color) (->Leaf {:tag :char} "y"))))
 
         forest-2 (with-forest-result forest-1
                    (let [{:keys [x y z r]} @state]
                      (is= (hid->elem y) (->Leaf {:tag :char} "y"))
-                     (is= (set-leaf-value y "YYY") (->Leaf {:tag :char} "YYY"))
-                     (is= (set-leaf-value y 0) (->Leaf {:tag :char} 0))
-                     (update-leaf-value y + 7)
-                     (update-leaf-value y * 6)
+                     (is= (leaf-value-set y "YYY") (->Leaf {:tag :char} "YYY"))
+                     (is= (leaf-value-set y 0) (->Leaf {:tag :char} 0))
+                     (leaf-value-update y + 7)
+                     (leaf-value-update y * 6)
                      (is= (hid->leaf y) (->Leaf {:tag :char} 42))))
 
         ; forest-1 is unaffected by changes that created forest-2
@@ -187,13 +180,13 @@
                          a (add-leaf {:name :michael} "do")
                          b (add-leaf {:name :tito} "re")
                          c (add-leaf {:name :germain} "mi")]
-                     (set-kids r [a b c])
+                     (kids-set r [a b c])
                      (is= (hid->tree r)
                        {:attrs {:tag :root, :color :white},
                         :kids  [{:attrs {:name :michael}, :value "do"}
                                 {:attrs {:name :tito}, :value "re"}
                                 {:attrs {:name :germain}, :value "mi"}]})
-                     (update-kids r
+                     (kids-update r
                        (fn sort-kids [kids]
                          (sort-by #(grab :name (hid->attrs %)) kids)))
                      (is= (hid->tree r)
@@ -202,7 +195,7 @@
                                 {:attrs {:name :michael}, :value "do"}
                                 {:attrs {:name :tito}, :value "re"}]}
                        )
-                     (update-kids r
+                     (kids-update r
                        (fn sort-kids [kids]
                          (sort-by #(hid->value %) kids)))
                      (is= (hid->tree r)
@@ -217,9 +210,9 @@
           z (add-leaf {:tag :char :color :blue} "z")
           r (add-node {:tag :root :color :white} [])]
       (is= (hid->kids r) [])
-      (add-kids r [x]) (is= (hid->kids r) [x])
-      (add-kids r [y]) (is= (hid->kids r) [x y])
-      (add-kids r [z]) (is= (hid->kids r) [x y z])
+      (kids-append r [x]) (is= (hid->kids r) [x])
+      (kids-append r [y]) (is= (hid->kids r) [x y])
+      (kids-append r [z]) (is= (hid->kids r) [x y z])
       (is= (hid->tree r)
         {:attrs {:tag :root, :color :white},
          :kids
@@ -227,10 +220,10 @@
                  {:attrs {:tag :char, :color :green}, :value "y"}
                  {:attrs {:tag :char, :color :blue}, :value "z"}]})
 
-      (remove-kids r #{z x})
+      (kids-remove r #{z x})
       (is= (hid->kids r) [y])
-      (throws? (remove-kids r #{y x}))
-      (remove-kids r #{y})
+      (throws? (kids-remove r #{y x}))
+      (kids-remove r #{y})
       (is= (hid->kids r) [])
       (is= (hid->tree r)
         {:attrs {:tag :root, :color :white},
