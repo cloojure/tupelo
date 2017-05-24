@@ -85,12 +85,12 @@
       (is= #{r} roots)
       (not= #{x} roots)
 
-      (is= x-tree {:attrs {:tag :char, :color :red}, :content ["x"]})
+      (is= x-tree {:attrs {:tag :char, :color :red}, :value "x"})
       (is= r-tree
         {:attrs {:tag :root, :color :white},
-         :kids  [{:attrs {:tag :char, :color :red}, :content ["x"]}
-                 {:attrs {:tag :char, :color :red}, :content ["y"]}
-                 {:attrs {:tag :char, :color :red}, :content ["z"]}]})
+         :kids  [{:attrs {:tag :char, :color :red}, :value "x"}
+                 {:attrs {:tag :char, :color :red}, :value "y"}
+                 {:attrs {:tag :char, :color :red}, :value "z"}]})
       (is (wild-match?
             {:attrs {:tag :root, :color :white},
              :kids  [:* :* :*]}
@@ -110,12 +110,12 @@
 
       (merge-attrs x {:color :green})
       (is= (hid->tree x) (into {} (hid->leaf x))
-        {:attrs {:tag :char, :color :green}, :content ["x"]})
+        {:attrs {:tag :char, :color :green}, :value "x"})
 
       (is= (hid->attrs r) {:tag :root, :color :white})
       (is= (hid->attrs z) {:tag :char, :color :red})
       (is= (hid->kids r) [x y z])
-      (is= (hid->content z) ["z"])
+      (is= (hid->value z) "z")
 
       (set-attrs z {:type :tuna, :name :charlie})
       (is= (hid->attrs z) {:type :tuna, :name :charlie}))))
@@ -128,27 +128,27 @@
           r-tree (hid->tree r)]
       (is= r-tree
         {:attrs {:tag :root, :color :white :cnt 0},
-         :kids  [{:attrs {:tag :char, :color :red :cnt 0}, :content ["x"]}]})
+         :kids  [{:attrs {:tag :char, :color :red :cnt 0}, :value "x"}]})
 
       (update-attrs x #(update % :cnt inc))
       (update-attrs x #(update % :cnt inc))
       (update-attrs r #(update % :cnt inc))
       (is= (hid->tree r)
         {:attrs {:tag :root, :color :white, :cnt 1},
-         :kids  [{:attrs {:tag :char, :color :red, :cnt 2}, :content ["x"]}]})
+         :kids  [{:attrs {:tag :char, :color :red, :cnt 2}, :value "x"}]})
 
       (update-attr x :cnt inc)
       (update-attr x :cnt inc)
       (update-attr r :cnt inc)
       (is= (hid->tree r)
         {:attrs {:tag :root, :color :white, :cnt 2},
-         :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :content ["x"]}]})
+         :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :value "x"}]})
 
       (update-attr r :cnt * 3)
       (update-attr r :cnt + 7)
       (is= (hid->tree r)
         {:attrs {:tag :root, :color :white, :cnt 13},
-         :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :content ["x"]}]}))))
+         :kids  [{:attrs {:tag :char, :color :red, :cnt 4}, :value "x"}]}))))
 
 (dotest
   (let [state    (atom {})
@@ -159,57 +159,57 @@
                          r (add-node {:tag :root :color :white} [x y z])]
                      (reset! state (vals->map x y z r))
                      (is= (hid->kids r) [x y z])
-                     (is= (hid->content z) ["z"])
+                     (is= (hid->value z) "z")
 
                      (set-attrs z {:type :tuna, :name :charlie})
                      (is= (hid->attrs z) {:type :tuna, :name :charlie})
 
-                     (is= (hid->leaf y) (->Leaf {:tag :char, :color :red} ["y"]))
-                     (is= (remove-attr y :color) (->Leaf {:tag :char} ["y"]))))
+                     (is= (hid->leaf y) (->Leaf {:tag :char, :color :red} "y"))
+                     (is= (remove-attr y :color) (->Leaf {:tag :char} "y"))))
 
         forest-2 (with-forest-result forest-1
                    (let [{:keys [x y z r]} @state]
-                     (is= (hid->elem y) (->Leaf {:tag :char} ["y"]))
-                     (is= (set-content y ["YYY"]) (->Leaf {:tag :char} ["YYY"]))
-                     (is= (set-content y [0]) (->Leaf {:tag :char} [0]))
-                     (update-value y + 7)
-                     (update-value y * 6)
-                     (is= (hid->leaf y) (->Leaf {:tag :char} [42]))))
+                     (is= (hid->elem y) (->Leaf {:tag :char} "y"))
+                     (is= (set-leaf-value y "YYY") (->Leaf {:tag :char} "YYY"))
+                     (is= (set-leaf-value y 0) (->Leaf {:tag :char} 0))
+                     (update-leaf-value y + 7)
+                     (update-leaf-value y * 6)
+                     (is= (hid->leaf y) (->Leaf {:tag :char} 42))))
 
         ; forest-1 is unaffected by changes that created forest-2
         forest-3 (with-forest-result forest-1
                    (let [{:keys [x y z r]} @state]
-                     (is= (hid->elem y) (->Leaf {:tag :char} ["y"])))) ; still has forest-1 value
+                     (is= (hid->elem y) (->Leaf {:tag :char} "y")))) ; still has forest-1 value
 
         forest-4 (with-forest-result forest-2
                    (let [{:keys [x y z r]} @state
-                         _ (is= (hid->leaf y) (->Leaf {:tag :char} [42])) ; still has forest-2 value
+                         _ (is= (hid->leaf y) (->Leaf {:tag :char} 42)) ; still has forest-2 value
                          a (add-leaf {:name :michael} "do")
                          b (add-leaf {:name :tito} "re")
                          c (add-leaf {:name :germain} "mi")]
                      (set-kids r [a b c])
                      (is= (hid->tree r)
                        {:attrs {:tag :root, :color :white},
-                        :kids  [{:attrs {:name :michael}, :content ["do"]}
-                                {:attrs {:name :tito}, :content ["re"]}
-                                {:attrs {:name :germain}, :content ["mi"]}]})
+                        :kids  [{:attrs {:name :michael}, :value "do"}
+                                {:attrs {:name :tito}, :value "re"}
+                                {:attrs {:name :germain}, :value "mi"}]})
                      (update-kids r
                        (fn sort-kids [kids]
                          (sort-by #(grab :name (hid->attrs %)) kids)))
                      (is= (hid->tree r)
                        {:attrs {:tag :root, :color :white},
-                        :kids  [{:attrs {:name :germain}, :content ["mi"]}
-                                {:attrs {:name :michael}, :content ["do"]}
-                                {:attrs {:name :tito}, :content ["re"]}]}
+                        :kids  [{:attrs {:name :germain}, :value "mi"}
+                                {:attrs {:name :michael}, :value "do"}
+                                {:attrs {:name :tito}, :value "re"}]}
                        )
                      (update-kids r
                        (fn sort-kids [kids]
-                         (sort-by #(hid->content %) kids)))
+                         (sort-by #(hid->value %) kids)))
                      (is= (hid->tree r)
                        {:attrs {:tag :root, :color :white},
-                        :kids  [{:attrs {:name :michael}, :content ["do"]}
-                                {:attrs {:name :germain}, :content ["mi"]}
-                                {:attrs {:name :tito}, :content ["re"]}]})))])
+                        :kids  [{:attrs {:name :michael}, :value "do"}
+                                {:attrs {:name :germain}, :value "mi"}
+                                {:attrs {:name :tito}, :value "re"}]})))])
 
   (with-forest (new-forest)
     (let [x (add-leaf {:tag :char :color :red} "x")
@@ -223,9 +223,9 @@
       (is= (hid->tree r)
         {:attrs {:tag :root, :color :white},
          :kids
-                [{:attrs {:tag :char, :color :red}, :content ["x"]}
-                 {:attrs {:tag :char, :color :green}, :content ["y"]}
-                 {:attrs {:tag :char, :color :blue}, :content ["z"]}]})
+                [{:attrs {:tag :char, :color :red}, :value "x"}
+                 {:attrs {:tag :char, :color :green}, :value "y"}
+                 {:attrs {:tag :char, :color :blue}, :value "z"}]})
 
       (remove-kids r #{z x})
       (is= (hid->kids r) [y])
@@ -250,15 +250,15 @@
       (is= (hid->kids c) [x y z])
       (is= (hid->tree a) {:attrs {:tag :r1, :color :white},
                           :kids
-                                 [{:attrs {:tag :char, :color :red}, :content ["x"]}
-                                  {:attrs {:tag :char, :color :green}, :content ["y"]}
-                                  {:attrs {:tag :char, :color :blue}, :content ["z"]}]})
+                                 [{:attrs {:tag :char, :color :red},   :value "x"}
+                                  {:attrs {:tag :char, :color :green}, :value "y"}
+                                  {:attrs {:tag :char, :color :blue},  :value "z"}]})
       (remove-elems #{y z})
       (is= (hid->kids a) [x])
       (is= (hid->kids b) [x])
       (is= (hid->kids c) [x])
       (is= (hid->tree c) {:attrs {:tag :r3, :color :black},
-                          :kids  [{:attrs {:tag :char, :color :red}, :content ["x"]}]})
+                          :kids  [{:attrs {:tag :char, :color :red}, :value "x"}]})
       (throws? (remove-elems #{x y}))
 
       (remove-elems #{x})
@@ -344,20 +344,21 @@
                        (add-leaf :c 5)])
                     (add-leaf :c 9)])
           ]
-      (is= (hid->tree b1) {:attrs {:tag :b}, :content [1]})
-      (is= (hid->tree b2) {:attrs {:tag :b}, :content [2]})
-      (is= (hid->tree c4) {:attrs {:tag :c}, :content [4]})
-      (is= (hid->tree c5) {:attrs {:tag :c}, :content [5]})
-      (is= (hid->tree c9) {:attrs {:tag :c}, :content [9]})
+      (is= (hid->tree b1) {:attrs {:tag :b}, :value 1})
+      (is= (hid->tree b2) {:attrs {:tag :b}, :value 2})
+      (is= (hid->tree c4) {:attrs {:tag :c}, :value 4})
+      (is= (hid->tree c5) {:attrs {:tag :c}, :value 5})
+      (is= (hid->tree c9) {:attrs {:tag :c}, :value 9})
       (is= (hid->tree b3) {:attrs {:tag :b},
-                           :kids  [{:attrs {:tag :c}, :content [4]} {:attrs {:tag :c}, :content [5]}]})
+                           :kids  [{:attrs {:tag :c}, :value 4}
+                                   {:attrs {:tag :c}, :value 5}]})
       (is= (hid->tree aa) {:attrs {:tag :a},
-                           :kids  [{:attrs {:tag :b}, :content [1]}
-                                   {:attrs {:tag :b}, :content [2]}
+                           :kids  [{:attrs {:tag :b}, :value 1}
+                                   {:attrs {:tag :b}, :value 2}
                                    {:attrs {:tag :b},
-                                    :kids  [{:attrs {:tag :c}, :content [4]}
-                                            {:attrs {:tag :c}, :content [5]}]}
-                                   {:attrs {:tag :c}, :content [9]}]})
+                                    :kids  [{:attrs {:tag :c}, :value 4}
+                                            {:attrs {:tag :c}, :value 5}]}
+                                   {:attrs {:tag :c}, :value 9}]})
 
       (is (validate-hid root-1))
       (is=
@@ -367,17 +368,18 @@
         (hid->tree root-3)
         {:attrs {:tag :a},
          :kids
-                [{:attrs {:tag :b}, :content [1]}
-                 {:attrs {:tag :b}, :content [2]}
+                [{:attrs {:tag :b}, :value 1}
+                 {:attrs {:tag :b}, :value 2}
                  {:attrs {:tag :b},
-                  :kids [{:attrs {:tag :c}, :content [4]} {:attrs {:tag :c}, :content [5]}]}
-                 {:attrs {:tag :c}, :content [9]}]})
+                  :kids [{:attrs {:tag :c}, :value 4}
+                         {:attrs {:tag :c}, :value 5}]}
+                 {:attrs {:tag :c}, :value 9}]})
     )))
 
 (dotest
   (with-forest (new-forest)
     (let [hiccup-1 [:a
-                    [:b 1 2 3]
+                    [:b 1]
                     [:b 2]
                     [:b
                      [:c 4]
@@ -404,7 +406,7 @@
         {:tag   :a,
          :attrs {},
          :content
-                [{:tag :b, :attrs {}, :content [1 2 3]}
+                [{:tag :b, :attrs {}, :content [1]}
                  {:tag :b, :attrs {}, :content [2]}
                  {:tag   :b,
                   :attrs {},
@@ -415,19 +417,21 @@
       (is= tree-1
         {:attrs {:tag :a},
          :kids
-                [{:attrs {:tag :b}, :content [1 2 3]}
-                 {:attrs {:tag :b}, :content [2]}
+                [{:attrs {:tag :b}, :value 1}
+                 {:attrs {:tag :b}, :value 2}
                  {:attrs {:tag :b},
-                  :kids  [{:attrs {:tag :c}, :content [4]}
-                          {:attrs {:tag :c}, :content [5]}]}
-                 {:attrs {:tag :c}, :content [9]}]})
+                  :kids  [{:attrs {:tag :c}, :value 4}
+                          {:attrs {:tag :c}, :value 5}]}
+                 {:attrs {:tag :c}, :value 9}]})
       (is= tree-2 tree-1)
       (is= tree-3 tree-1)
       (is= bush-1
         [{:tag :a}
-         [{:tag :b} 1 2 3]
+         [{:tag :b} 1]
          [{:tag :b} 2]
-         [{:tag :b} [{:tag :c} 4] [{:tag :c} 5]]
+         [{:tag :b}
+          [{:tag :c} 4]
+          [{:tag :c} 5]]
          [{:tag :c} 9]])
       (is= bush-2 bush-1)
 
@@ -582,40 +586,40 @@
           [{:tag :a} [{:tag :c} 3]]})
       (is= (hid->tree aa)
         {:attrs {:tag :a},
-         :kids  [{:attrs {:tag :b}, :content [2]}
-                 {:attrs {:tag :c}, :content [3]}]})
+         :kids  [{:attrs {:tag :b}, :value 2}
+                 {:attrs {:tag :c}, :value 3}]})
 
-      (throws? (find-paths-leaf aa [:**] [13]))
-      (throws? (find-paths-leaf aa [:a :**] [13]))
+      (throws? (find-paths-leaf aa [:**   ] 13))
+      (throws? (find-paths-leaf aa [:a :**] 13))
 
-      (is= (format-paths (find-paths-leaf aa [:a :b] [2]))
+      (is= (format-paths (find-paths-leaf aa [:a :b] 2))
         #{[{:tag :a} [{:tag :b} 2]]} )
 
-      (is= (format-paths (find-paths-leaf aa [:a :** :b] [2]))
+      (is= (format-paths (find-paths-leaf aa [:a :** :b] 2))
         #{[{:tag :a} [{:tag :b} 2]]})
 
-      (is= (format-paths (find-paths-leaf aa [:a :** :** :b] [2]))
+      (is= (format-paths (find-paths-leaf aa [:a :** :** :b] 2))
         #{[{:tag :a} [{:tag :b} 2]]})
 
-      (is= (format-paths (find-paths-leaf aa [:** :b] [2]))
+      (is= (format-paths (find-paths-leaf aa [:** :b] 2))
         #{[{:tag :a} [{:tag :b} 2]]} )
 
-      (is= (format-paths (find-paths-leaf aa [:a :c] [3]))
+      (is= (format-paths (find-paths-leaf aa [:a :c] 3))
         #{[{:tag :a} [{:tag :c} 3]]})
 
-      (is= (format-paths (find-paths-leaf aa [:* :c] [3]))
+      (is= (format-paths (find-paths-leaf aa [:* :c] 3))
         #{[{:tag :a} [{:tag :c} 3]]} )
 
-      (is= (format-paths (find-paths-leaf aa [:a :*] [3]))
+      (is= (format-paths (find-paths-leaf aa [:a :*] 3))
         #{[{:tag :a} [{:tag :c} 3]]})
 
-      (is= (format-paths (find-paths-leaf aa [:** :*] [3]))
+      (is= (format-paths (find-paths-leaf aa [:** :*] 3))
         #{[{:tag :a} [{:tag :c} 3]]})
 
-      (is= (format-paths (find-paths-leaf aa [:a :** :c] [3]))
+      (is= (format-paths (find-paths-leaf aa [:a :** :c] 3))
         #{[{:tag :a} [{:tag :c} 3]]} )
 
-      (is= (format-paths (find-paths-leaf aa [:a :** :** :c] [3]))
+      (is= (format-paths (find-paths-leaf aa [:a :** :** :c] 3))
         #{[{:tag :a} [{:tag :c} 3]]} )
 
       (is= (format-paths (find-paths-leaf aa [:** :*] :*))
@@ -653,14 +657,14 @@
                (add-leaf {:c :b2 :color :blue} 3)])]
       (is= (set (mapv hid->tree (root-hids)))
         #{{:attrs {:a :a2},
-           :kids  [{:attrs {:b :b1, :color :green}, :content [2]}
-                   {:attrs {:b :b2, :color :green}, :content [3]}]}
+           :kids  [{:attrs {:b :b1, :color :green}, :value 2}
+                   {:attrs {:b :b2, :color :green}, :value 3}]}
           {:attrs {:a :a1},
-           :kids  [{:attrs {:b :b1, :color :red}, :content [2]}
-                   {:attrs {:b :b2, :color :red}, :content [3]}]}
+           :kids  [{:attrs {:b :b1, :color :red}, :value 2}
+                   {:attrs {:b :b2, :color :red}, :value 3}]}
           {:attrs {:a :a3},
-           :kids  [{:attrs {:c :b1, :color :blue}, :content [2]}
-                   {:attrs {:c :b2, :color :blue}, :content [3]}]}})
+           :kids  [{:attrs {:c :b1, :color :blue}, :value 2}
+                   {:attrs {:c :b2, :color :blue}, :value 3}]}})
 
       (is= (format-paths (find-paths (root-hids) [{:a :*}]))
         #{[{:a :a1}
@@ -679,14 +683,14 @@
           [{:a :a2} [{:b :b1, :color :green} 2]]
           [{:a :a2} [{:b :b2, :color :green} 3]]})
 
-      (is= (format-paths (find-paths-leaf (root-hids) [{:a :*} {:b :*}] [3]))
+      (is= (format-paths (find-paths-leaf (root-hids) [{:a :*} {:b :*}] 3))
         #{[{:a :a1} [{:b :b2, :color :red} 3]]
           [{:a :a2} [{:b :b2, :color :green} 3]]})
 
-      (is= (format-paths (find-paths-leaf (root-hids) [{:a :*} {:c :*}] [3]))
+      (is= (format-paths (find-paths-leaf (root-hids) [{:a :*} {:c :*}] 3))
         #{[{:a :a3} [{:c :b2, :color :blue} 3]]})
 
-      (is= (format-paths (find-paths-leaf (root-hids) [:** :*] [3]))
+      (is= (format-paths (find-paths-leaf (root-hids) [:** :*] 3))
         #{[{:a :a1} [{:b :b2, :color :red} 3]]
           [{:a :a2} [{:b :b2, :color :green} 3]]
           [{:a :a3} [{:c :b2, :color :blue} 3]] }))))
@@ -754,27 +758,27 @@
               (into (sorted-set)
                 (find-paths (root-hids) [:** {:color :green}])))))
 
-      (is= (format-paths (find-paths-leaf (root-hids) [:** {:tag :b}] [2]))
+      (is= (format-paths (find-paths-leaf (root-hids) [:** {:tag :b}] 2))
         #{[{:tag :a, :id :a2}
            [{:tag :b, :color :green} 2]]
           [{:tag :a, :id :a1}
            [{:tag :b, :color :red} 2]]})
 
-      (is= (format-paths (find-paths-leaf x [:** {:tag :b}] [2]))
+      (is= (format-paths (find-paths-leaf x [:** {:tag :b}] 2))
         #{[{:tag :a, :id :a1}
            [{:tag :b, :color :red} 2]]} )
 
-      (is= (find-leaf x [:** {:tag :b}] [2])
-        (map->Leaf {:attrs {:tag :b, :color :red}, :content [2]}))
+      (is= (find-leaf x [:** {:tag :b}] 2)
+        (map->Leaf {:attrs {:tag :b, :color :red}, :value 2}))
 
-      (is= (find-leaf (root-hids) [:** {:color :blue}] [2])
-        (map->Leaf {:attrs {:tag :c, :color :blue}, :content [2]}))
+      (is= (find-leaf (root-hids) [:** {:color :blue}] 2)
+        (map->Leaf {:attrs {:tag :c, :color :blue}, :value 2}))
 
 
-      (is= (format-paths (find-paths-leaf #{z y} [{:tag :a} :*] [2]))
+      (is= (format-paths (find-paths-leaf #{z y} [{:tag :a} :*] 2))
         #{[{:tag :a, :id :a2} [{:tag :b, :color :green} 2]]
           [{:tag :a, :id :a3} [{:tag :c, :color :blue} 2]]})
-      (is= (format-paths (find-paths-leaf (root-hids) [{:tag :a} :*] [2]))
+      (is= (format-paths (find-paths-leaf (root-hids) [{:tag :a} :*] 2))
         #{[{:tag :a, :id :a2} [{:tag :b, :color :green} 2]]
           [{:tag :a, :id :a1} [{:tag :b, :color :red} 2]]
           [{:tag :a, :id :a3} [{:tag :c, :color :blue} 2]]})
@@ -797,28 +801,28 @@
     (let [root-hid (add-tree-hiccup
                      [:a
                       [:b 1]
-                      [:b 21 22 23]
+                      [:b 2]
                       [:b
                        [:c 4]
-                       [:c 51 52 53]]
+                       [:c 5]]
                       [:c 9]])
           tree     (hid->tree root-hid)
           bush     (hid->bush root-hid)]
       (is= tree
         {:attrs {:tag :a},
          :kids
-                [{:attrs {:tag :b}, :content [1]}
-                 {:attrs {:tag :b}, :content [21 22 23]}
+                [{:attrs {:tag :b}, :value 1}
+                 {:attrs {:tag :b}, :value 2}
                  {:attrs {:tag :b},
-                  :kids  [{:attrs {:tag :c}, :content [4]}
-                          {:attrs {:tag :c}, :content [51 52 53]}]}
-                 {:attrs {:tag :c}, :content [9]}]})
+                  :kids  [{:attrs {:tag :c}, :value 4}
+                          {:attrs {:tag :c}, :value 5}]}
+                 {:attrs {:tag :c}, :value 9}]})
       (is= bush
         [{:tag :a}
           [{:tag :b} 1]
-          [{:tag :b} 21 22 23]
+          [{:tag :b} 2]
           [{:tag :b}
             [{:tag :c} 4]
-            [{:tag :c} 51 52 53]]
+            [{:tag :c} 5]]
           [{:tag :c} 9]]  ))))
 
