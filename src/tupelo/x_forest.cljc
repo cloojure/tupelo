@@ -613,19 +613,17 @@
 
 ;---------------------------------------------------------------------------------------------------
 
-(defn format-path [soln]
-  (if-not (sequential? soln)
-    soln
-    (let [elem   (xfirst soln)
-          others (xrest soln)]
-      (if (empty? others)
-        (hid->bush elem)
-        [(hid->attrs elem) (format-path others)]))))
+
+(s/defn format-path
+  [hids :- [HID]]
+  (let [[hid-curr & hid-rest] hids]
+    (if (empty? hid-rest)
+      (hid->bush hid-curr)
+      [ (hid->attrs hid-curr) (format-path hid-rest) ] )))
 
 (s/defn format-paths [solns :- #{ [HID] }]
-  (set
-    (forv [soln solns]
-      (format-path soln))))
+  (set (forv [soln solns]
+         (format-path soln))))
 
 
 (s/defn ^:private ^:no-doc find-paths-impl
