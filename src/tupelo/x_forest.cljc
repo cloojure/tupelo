@@ -430,6 +430,12 @@
     (set-elem hid elem-new)
     elem-new))
 
+(s/defn attr-get :- tsk/KeyMap ; #todo test
+  "Use the supplied function & arguments to update the attr value for a Node or Leaf as in clojure.core/update"
+  [hid :- HID
+   attr-name :- s/Keyword ]
+  (fetch-in (hid->elem hid) [:attrs attr-name] ))
+
 (s/defn attr-update :- tsk/KeyMap
   "Use the supplied function & arguments to update the attr value for a Node or Leaf as in clojure.core/update"
   [hid :- HID
@@ -452,7 +458,7 @@
         attrs-new  (dissoc attrs-curr attr)]
     (attrs-reset hid attrs-new)))
 
-(s/defn leaf-value-set :- Leaf
+(s/defn value-set :- Leaf
   "Resets the value of a Leaf"
   [hid :- HID
    value-new :- s/Any]
@@ -461,7 +467,7 @@
     (set-elem hid leaf-new)
     leaf-new))
 
-(s/defn leaf-value-update :- Leaf
+(s/defn value-update :- Leaf
   "Given a leaf with a value, updates that value using a function"
   [hid :- HID
    fn-update-value  ; signature: (fn-update-value value-curr x y z & more) -> value-new
@@ -677,7 +683,7 @@
   [root-spec tgt-path]
   (hid->tree (find-hid root-spec tgt-path)))
 
-(defn find-leaf-value     ; #todo need test
+(defn find-value     ; #todo need test
   [root-spec tgt-path]
   (grab :value (find-tree root-spec tgt-path)))
 

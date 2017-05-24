@@ -163,10 +163,10 @@
         forest-2 (with-forest-result forest-1
                    (let [{:keys [x y z r]} @state]
                      (is= (hid->elem y) (->Leaf {:tag :char} "y"))
-                     (is= (leaf-value-set y "YYY") (->Leaf {:tag :char} "YYY"))
-                     (is= (leaf-value-set y 0) (->Leaf {:tag :char} 0))
-                     (leaf-value-update y + 7)
-                     (leaf-value-update y * 6)
+                     (is= (value-set y "YYY") (->Leaf {:tag :char} "YYY"))
+                     (is= (value-set y 0) (->Leaf {:tag :char} 0))
+                     (value-update y + 7)
+                     (value-update y * 6)
                      (is= (hid->leaf y) (->Leaf {:tag :char} 42))))
 
         ; forest-1 is unaffected by changes that created forest-2
