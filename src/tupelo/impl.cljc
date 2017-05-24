@@ -945,3 +945,10 @@
   (every? truthy?
       (for [value values]
         (set-match-impl {} pattern value))))
+
+; #todo maybe ns-assoc, ns-dissoc, ns-get for intern/ns-unmap
+
+; #todo maybe add explicit arg checking
+; #todo   map->entries, entries->map
+; #todo   str->chars, chars->str
+; #todo   set->vec, vec->set
