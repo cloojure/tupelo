@@ -6,9 +6,8 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.types
   (:refer-clojure :exclude [float? integer?])
-  (:use tupelo.types tupelo.test clojure.test)
-  (:require [schema.core :as s]
-            [tupelo.core :as t] ))
+  (:use tupelo.types tupelo.test )
+  (:require [tupelo.core :as t] ))
 (t/refer-tupelo)
 
 ; As of Clojure 1.9.0-alpha5, boolean? is native to clojure

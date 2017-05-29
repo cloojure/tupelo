@@ -6,19 +6,13 @@
 ;   software.
 (ns tst.tupelo.enlive
   "Experimental new code"
-  (:use clojure.test tupelo.test tupelo.enlive )
+  (:use tupelo.test tupelo.enlive )
   (:require
-    [clojure.string :as str]
-    [clj-uuid :as uuid]
-    [schema.core :as s]
     [tupelo.core :as t]
-    [tupelo.misc :as tm]
-    [tupelo.x-forest :as tf]
-  )
+    [tupelo.x-forest :as tf] )
   (:import
     [java.nio ByteBuffer]
-    [java.util UUID ]
-  ))
+    [java.util UUID ] ))
 (t/refer-tupelo)
 
 (dotest

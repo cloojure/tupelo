@@ -5,7 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.x-forest
-  (:use tupelo.x-forest tupelo.test clojure.test)
+  (:use tupelo.x-forest tupelo.test )
   (:require
     [schema.core :as s]
     [tupelo.core :as t]

@@ -7,7 +7,7 @@
 (ns tst.tupelo._bootstrap
   "This namespace is used to perform one-time tasks during testing, such as printing the
   Clojure version."
-  (:use clojure.test tupelo.test )
+  (:use tupelo.test )
   (:require [schema.core :as s]
             [tupelo.core :as t] ))
 (t/refer-tupelo)

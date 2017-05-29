@@ -5,7 +5,7 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.async
-  (:use clojure.test tupelo.test)
+  (:use tupelo.test)
   (:require [tupelo.core            :as t]
             [tupelo.async           :as ta]
             [clojure.core.async     :as ca :refer [go go-loop chan thread]]

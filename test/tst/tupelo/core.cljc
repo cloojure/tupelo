@@ -5,14 +5,8 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.core
-  (:use clojure.test tupelo.test )
+  (:use tupelo.test )
   (:require
-;   [clojure.spec :as sp]
-;   [clojure.spec.gen :as sp.gen]
-;   [clojure.spec.test :as sp.test]
-;   [clojure.test.check.clojure-test :as check]
-;   [clojure.test.check.generators :as gen]
-;   [clojure.test.check.properties :as prop]
     [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t]

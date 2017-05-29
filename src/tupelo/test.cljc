@@ -7,26 +7,27 @@
 (ns tupelo.test
   "Testing functions."
   (:require [clojure.test.check :as tc]
-            [tupelo.impl :as i]
-  ))
+            [potemkin.namespaces :as pns]
+            [tupelo.impl :as i] ))
 
 ;-----------------------------------------------------------------------------
 ; testing macros
 
-; #todo add tests
-(defmacro isnt      ; #todo document in readme
+(pns/import-macro clojure.test/is )
+(pns/import-macro clojure.test/deftest )
+(pns/import-macro clojure.test/testing )
+
+(defmacro isnt      ; #todo readme/test
   "Use (isnt ...) instead of (is (not ...)) for clojure.test"
   [& body]
   `(clojure.test/is (not ~@body)))
 
-; #todo add tests
-(defmacro is=  ; #todo document in readme
+(defmacro is=  ; #todo readme/test
   "Use (is= ...) instead of (is (= ...)) for clojure.test"
   [& body]
   `(clojure.test/is (= ~@body)))
 
-; #todo add tests
-(defmacro isnt=  ; #todo document in readme
+(defmacro isnt=  ; #todo readme/test
   "Use (isnt= ...) instead of (is (not= ...)) for clojure.test"
   [& body]
   `(clojure.test/is (not (= ~@body))))
