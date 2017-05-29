@@ -1506,6 +1506,16 @@
 
 (defrecord SampleRec [a b])
 (dotest
+  (let [sr1 (->SampleRec 1 2)]
+    (is (map? sr1))
+    (is (map= sr1 {:a 1 :b 2}))
+    (is (map= 1 1))
+    (is (map= "abc" "abc"))
+    (is (map= [1 2 3] [1 2 3]))
+    (is (map= #{1 2 sr1} #{1 2 {:a 1 :b 2}}))
+    (is (map= [1 2 3 #{1 2 sr1}] [1 2 3 #{1 2 {:a 1 :b 2}}])) ) )
+
+(dotest
   (isnt (wild-match? #{1 2} #{1 2 3 4}))
   (isnt (wild-match-ctx? {} #{1 2} #{1 2 3 4}))
   (is (wild-match-ctx? {:subset-ok true} #{1 2} #{1 2 3 4}))
@@ -1556,30 +1566,6 @@
   (is (i/set-match? #{1 2 3 :* 5} #{1 2 3 4 5}))
   (is (i/set-match? #{1 2 3 4 :*} #{1 2 3 4 5}))
 
-  (is= (range 10)
-    (unnest [0 1 2 3 4 5 6 7 8 9])
-    (unnest [0 [1 2 3 4 5 6 7 8 9]])
-    (unnest [0 [1 [2 3 4 5 6 7 8 9]]])
-    (unnest [0 [1 [2 [3 4 5 6 7 8 9]]]])
-    (unnest [0 [1 [2 [3 [4 5 6 7 8 9]]]]])
-    (unnest [0 [1 [2 [3 [4 [5 6 7 8 9]]]]]])
-    (unnest [0 [1 [2 [3 [4 [5 [6 7 8 9]]]]]]])
-    (unnest [0 [1 [2 [3 [4 [5 [6 [7 8 9]]]]]]]])
-    (unnest [0 [1 [2 [3 [4 [5 [6 [7 [8 9]]]]]]]]])
-    (unnest [0 [1 [2 [3 [4 [5 [6 [7 [8 [9]]]]]]]]]]))
-
-  (is= (set (range 10))
-    (set (unnest #{0 1 2 3 4 5 6 7 8 9}))
-    (set (unnest #{0 1 #{2 3 4 5 6 7 8} 9}))
-    (set (unnest #{0 1 #{2 3 #{4 5 6} 7 8} 9})) )
-
-  (is= (set [:a :1 :b 2 :c 3])
-    (set (unnest [:a :1 {:b 2 :c 3}]))
-    (set (unnest [:a :1 {[:b] 2 #{3} :c}]))
-    (set (unnest [:a :1 {:b 2 :c 3}]))
-    (set (unnest [:a :1 {:b {:c [2 3]}}])))
-
-
   (is   (wild-item? :*))
   (isnt (wild-item? :a))
 
@@ -1625,9 +1611,37 @@
   (is (i/set-match? #{#{:* 2 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
   (is (i/set-match? #{#{1 :* 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
   (is (i/set-match? #{#{1 2 :*} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
-
-
 )
+
+(dotest
+  (is= (range 10)   ; vector/list
+    (unnest  0 1 2 3 4 5 6 7 8 9 )
+    (unnest  0 1 2 [3 [4] 5 6] 7 [8 9])
+    (unnest [0 1 2 3 4 5 6 7 8 9])
+    (unnest [0 [1 2 3 4 5 6 7 8 9]])
+    (unnest [0 [1 [2 3 4 5 6 7 8 9]]])
+    (unnest [0 [1 [2 [3 4 5 6 7 8 9]]]])
+    (unnest [0 [1 [2 [3 [4 5 6 7 8 9]]]]])
+    (unnest [0 [1 [2 [3 [4 [5 6 7 8 9]]]]]])
+    (unnest [0 [1 [2 [3 [4 [5 [6 7 8 9]]]]]]])
+    (unnest [0 [1 [2 [3 [4 [5 [6 [7 8 9]]]]]]]])
+    (unnest [0 [1 [2 [3 [4 [5 [6 [7 [8 9]]]]]]]]])
+    (unnest [0 [1 [2 [3 [4 [5 [6 [7 [8 [9]]]]]]]]]])
+    (unnest [[[[[[[[[[0] 1] 2] 3] 4] 5] 6] 7] 8] 9])
+    (unnest [0 1 [2 [3 [4] 5] 6] 7 8 9]))
+
+  (is= (set [:a :1 :b 2 :c 3]) ; map
+    (set (unnest [:a :1 {:b 2 :c 3}]))
+    (set (unnest [:a :1 {[:b] 2 #{3} :c}]))
+    (set (unnest [:a :1 {:b 2 :c 3}]))
+    (set (unnest [:a :1 {:b {:c [2 3]}}])))
+  (is= #{ 1 2 3 4 5 6 } (set (unnest {1 {2 {3 {4 {5 6}}}}})))
+
+  (is= (set (range 10)) ; set
+    (set (unnest #{0 1 2 3 4 5 6 7 8 9}))
+    (set (unnest #{0 1 #{2 3 4 5 6 7 8} 9}))
+    (set (unnest #{0 1 #{2 3 #{4 5 6} 7 8} 9})) )
+  (is= #{ 1 2 3 4 5 6 } (set (unnest #{1 #{2 #{3 #{4 #{5 #{6}}}}}}))))
 
 (dotest
   (is   (starts-with? (range 0 3) (range 0 0)))

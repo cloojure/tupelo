@@ -14,6 +14,7 @@
     [clojure.string :as str]
     [clojure.set :as set]
     [clojure.test]
+    [clojure.walk :as walk]
     [cheshire.core :as cc]
     [schema.core :as s]
     [tupelo.schema :as tsk]
@@ -792,6 +793,17 @@
   (-> s resolve meta :macro boolean))
     ; from Alex Miller StackOverflow answer 2017-5-6
 
+(s/defn map=
+  "Recursively converts all records into maps, then tests for equality using clojure.core/="
+  [& vals]
+  (let [mapify   (fn [arg]
+                   (if (map? arg)
+                     (into {} arg)
+                     arg))
+        mapified (mapv #(walk/postwalk mapify %) vals)
+        result   (apply = mapified)]
+    result))
+
 (s/defn ^:private ^:no-doc wild-match-impl
   [ctx :- tsk/KeyMap ; #todo more precise schema needed { :submap-ok s/Bool ... }
    pattern :- s/Any
@@ -885,23 +897,31 @@
 
 ; #todo re-impl w/o wildcard stuff
 (defn submatch? ; #todo readme & test
-  "Simple wrapper for wild-match-ctx? where all types of sub-matching are enabled."
-  ([pattern & values]
+  "Returns true if the first arg is (recursively) a subset/submap/subvec of the 2nd arg"
+  ([smaller larger]
    (let [ctx {:submap-ok   true
               :subset-ok   true
               :subvec-ok   true
               :wildcard-ok false}]
-     (apply wild-match-ctx? ctx pattern values))))
+     (wild-match-ctx? ctx smaller larger))))
+
 
 (s/defn unnest :- [s/Any] ; #todo readme
-  "Given a collection, performs a depth-first recursive walk returning scalar args (int, string, keyword, etc)
-   in a single 1-D vector."
-  [coll]
-  (apply glue
-    (for [item coll]
-      (if (coll? item)
-        (unnest item)
-        [item]))))
+  "Given any set of arguments, performs a depth-first recursive walk returning scalar args
+  (int, string, keyword, etc) in a single 1-D vector."
+  [& values]
+  (let [unnest-coll (fn fn-unnest-coll [coll]
+                      (apply glue
+                        (for [item coll]
+                          (if (coll? item)
+                            (fn-unnest-coll item)
+                            [item]))))
+        result      (apply glue
+                      (for [item values]
+                        (if (coll? item)
+                          (unnest-coll item)
+                          [item])))]
+    result))
 
 (s/defn wild-item? :- s/Bool
   "Returns true if any element in a nested collection is the wildcard :*"
