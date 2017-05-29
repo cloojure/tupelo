@@ -299,8 +299,7 @@
                        [:c 5]]
                       [:c 9]])]
       (is (hid-matches? root-hid :a))
-      (is (hid-matches? root-hid {:tag :a}))
-  )))
+      (is (hid-matches? root-hid {:tag :a})) )))
 
 (dotest
   (with-forest (new-forest)

@@ -793,11 +793,11 @@
   (-> s resolve meta :macro boolean))
     ; from Alex Miller StackOverflow answer 2017-5-6
 
-(s/defn eq
-  "Compares all content for equality using clojure.core/=, but treating records as plain Clojure maps:
+(s/defn val= :- s/Bool
+  "Compares values for equality using clojure.core/=, treating records as plain map values:
 
       (defrecord SampleRec [a b])
-      (assert (eq (->SampleRec 1 2) {:a 1 :b 2}))  ; fails for clojure.core/=
+      (assert (val= (->SampleRec 1 2) {:a 1 :b 2}))   ; fails for clojure.core/=
   "
   [& vals]
   (let [mapify   (fn [arg]

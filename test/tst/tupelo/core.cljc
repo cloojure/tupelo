@@ -1502,12 +1502,12 @@
 (dotest
   (let [sr1 (->SampleRec 1 2)]
     (is (map? sr1))
-    (is (eq sr1 {:a 1 :b 2}))
-    (is (eq 1 1))
-    (is (eq "abc" "abc"))
-    (is (eq [1 2 3] [1 2 3]))
-    (is (eq #{1 2 sr1} #{1 2 {:a 1 :b 2}}))
-    (is (eq [1 2 3 #{1 2 sr1}] [1 2 3 #{1 2 {:a 1 :b 2}}])) ) )
+    (is (val= sr1 {:a 1 :b 2}))
+    (is (val= 1 1))
+    (is (val= "abc" "abc"))
+    (is (val= [1 2 3] [1 2 3]))
+    (is (val= #{1 2 sr1} #{1 2 {:a 1 :b 2}}))
+    (is (val= [1 2 3 #{1 2 sr1}] [1 2 3 #{1 2 {:a 1 :b 2}}])) ) )
 
 (dotest
   (isnt (wild-match? #{1 2} #{1 2 3 4}))

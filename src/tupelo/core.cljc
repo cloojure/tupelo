@@ -581,7 +581,7 @@
 (pns/import-fn impl/submatch? )
 (pns/import-fn impl/wild-submatch? )
 (pns/import-fn impl/wild-item? )
-(pns/import-fn impl/eq )
+(pns/import-fn impl/val= )
 (pns/import-macro impl/matches? )
 
 ; #todo: add (throwed? ...) for testing exceptions
@@ -676,7 +676,7 @@
      drop-at insert-at replace-at starts-with? int->kw kw->int vec->list
      xfirst xsecond xthird xrest kw->sym kw->str str->sym str->kw sym->kw sym->str
      split-using split-match partition-using
-     wild-match? wild-submatch? wild-match-ctx? wild-item? submatch? eq
+     wild-match? wild-submatch? wild-match-ctx? wild-item? submatch? val=
      increasing? increasing-or-equal?
      fibonacci-seq fibo-thru fibo-nth unnest
      with-exception-default lazy-cons lazy-gen yield yield-all
