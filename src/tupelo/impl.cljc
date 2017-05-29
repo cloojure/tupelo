@@ -907,8 +907,8 @@
 
 
 (s/defn unnest :- [s/Any] ; #todo readme
-  "Given any set of arguments, performs a depth-first recursive walk returning scalar args
-  (int, string, keyword, etc) in a single 1-D vector."
+  "Given any set of arguments including vectors, maps, sets, & scalars, performs a depth-first
+  recursive walk returning scalar args (int, string, keyword, etc) in a single 1-D vector."
   [& values]
   (let [unnest-coll (fn fn-unnest-coll [coll]
                       (apply glue
