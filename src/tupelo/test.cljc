@@ -10,8 +10,7 @@
             [potemkin.namespaces :as pns]
             [tupelo.impl :as i] ))
 
-;-----------------------------------------------------------------------------
-; testing macros
+(pns/import-fn clojure.test/use-fixtures )
 
 (pns/import-macro clojure.test/is )
 (pns/import-macro clojure.test/deftest )

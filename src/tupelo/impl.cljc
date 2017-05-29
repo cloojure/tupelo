@@ -793,8 +793,12 @@
   (-> s resolve meta :macro boolean))
     ; from Alex Miller StackOverflow answer 2017-5-6
 
-(s/defn map=
-  "Recursively converts all records into maps, then tests for equality using clojure.core/="
+(s/defn eq
+  "Compares all content for equality using clojure.core/=, but treating records as plain Clojure maps:
+
+      (defrecord SampleRec [a b])
+      (assert (eq (->SampleRec 1 2) {:a 1 :b 2}))  ; fails for clojure.core/=
+  "
   [& vals]
   (let [mapify   (fn [arg]
                    (if (map? arg)
