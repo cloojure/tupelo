@@ -551,6 +551,7 @@
   [coll]
   (not (empty? coll)))
 
+; #todo:  make (map-ctx {:trunc false :eager true} <fn> <coll1> <coll2> ...) <- default ctx
 ; #todo:  mapz, forz, filterz, ...?
 (defn keep-if
   "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
