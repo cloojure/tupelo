@@ -179,6 +179,11 @@
   [hid :- HID]
   (grab :attrs (hid->elem hid)))
 
+(s/defn hid->attr :- s/Any
+  [hid :- HID
+   attr :- s/Keyword]
+  (fetch-in (hid->elem hid) [:attrs attr]))
+
 (s/defn hid->kids :- [HID]
   [hid :- HID]
   (grab :kids (hid->node hid)))
