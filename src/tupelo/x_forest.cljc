@@ -179,7 +179,7 @@
   [hid :- HID]
   (grab :attrs (hid->elem hid)))
 
-(s/defn hid->attr :- s/Any
+(s/defn hid->attr :- s/Any ; #todo need test
   [hid :- HID
    attr :- s/Keyword]
   (fetch-in (hid->elem hid) [:attrs attr]))
