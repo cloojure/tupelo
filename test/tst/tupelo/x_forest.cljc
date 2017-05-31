@@ -467,44 +467,44 @@
       (is (empty? (find-paths root-hid [:a :b :z])))
 
       (is= (format-paths (find-paths root-hid [:a]))
-        #{[{:tag :a}
-           [{:tag :b} 1]
-           [{:tag :b} 2]
-           [{:tag :b}
-            [{:tag :c} 4]
-            [{:tag :c} 5]]
-           [{:tag :c} 9]]})
+        [[{:tag :a}
+          [{:tag :b} 1]
+          [{:tag :b} 2]
+          [{:tag :b}
+           [{:tag :c} 4]
+           [{:tag :c} 5]]
+          [{:tag :c} 9]]])
 
 
       (is= (format-paths (find-paths root-hid [:a :b]))
-        #{[{:tag :a} [{:tag :b} 1]]
-          [{:tag :a} [{:tag :b} 2]]
-          [{:tag :a} [{:tag :b}
-                      [{:tag :c} 4]
-                      [{:tag :c} 5]]]} )
+        [[{:tag :a} [{:tag :b} 1]]
+         [{:tag :a} [{:tag :b} 2]]
+         [{:tag :a} [{:tag :b}
+                     [{:tag :c} 4]
+                     [{:tag :c} 5]]]])
 
       (is (wild-match? [[:* :*]
                         [:* :*]
                         [:* :*]]
-            (vec (into (sorted-set) (find-paths root-hid [:a :b])))))
+            (find-paths root-hid [:a :b])))
       ; Actual results: (find-paths aa [:a :b]) =>
-      ;   #{ [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :b40b6f37e6a746f815b092a8590cefe5cf37121a]
+      ;    [ [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :b40b6f37e6a746f815b092a8590cefe5cf37121a]
       ;      [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :76859beedd81468b4ee3cc5f17a5fdcf7a34a787]
-      ;      [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :5c0cb1ba6657ba0ac40cc5099f2be091b5637a3b] }
+      ;      [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :5c0cb1ba6657ba0ac40cc5099f2be091b5637a3b] ]
 
       (is= (format-paths (find-paths root-hid [:a :c]))
-        #{[{:tag :a}
-           [{:tag :c} 9]]} )
+        [[{:tag :a}
+          [{:tag :c} 9]]])
 
       (is= (format-paths (find-paths root-hid [:a :b :c]))
-        #{[{:tag :a}
-           [{:tag :b}
-            [{:tag :c} 4]]]
-          [{:tag :a}
-           [{:tag :b}
-            [{:tag :c} 5]]]})
+        [[{:tag :a}
+          [{:tag :b}
+           [{:tag :c} 4]]]
+         [{:tag :a}
+          [{:tag :b}
+           [{:tag :c} 5]]]])
 
-      (is= (format-paths (find-paths root-hid [:* :b]))
+      (is= (set (format-paths (find-paths root-hid [:* :b])))
         #{[{:tag :a}
            [{:tag :b}
             [{:tag :c} 4]
@@ -515,20 +515,20 @@
            [{:tag :b} 1]]})
 
       (is= (format-paths (find-paths root-hid [:a :*]))
-        #{[{:tag :a}
-           [{:tag :b} 1]]
-          [{:tag :a}
-           [{:tag :b} 2]]
-          [{:tag :a}
-           [{:tag :b}
-            [{:tag :c} 4]
-            [{:tag :c} 5]]]
-          [{:tag :a}
-           [{:tag :c} 9]] } )
+        [[{:tag :a}
+          [{:tag :b} 1]]
+         [{:tag :a}
+          [{:tag :b} 2]]
+         [{:tag :a}
+          [{:tag :b}
+           [{:tag :c} 4]
+           [{:tag :c} 5]]]
+         [{:tag :a}
+          [{:tag :c} 9]]])
 
       (is= (format-paths (find-paths root-hid [:a :* :c]))
-        #{[{:tag :a} [{:tag :b} [{:tag :c} 4]]]
-          [{:tag :a} [{:tag :b} [{:tag :c} 5]]]})
+        [[{:tag :a} [{:tag :b} [{:tag :c} 4]]]
+         [{:tag :a} [{:tag :b} [{:tag :c} 5]]]])
     )))
 
 (dotest
@@ -540,7 +540,7 @@
                   [(add-leaf {:c :c4} 4)
                    (add-leaf {:c :c5} 5)])
                 (add-leaf {:c :c9} 9)])]
-      (is= (format-paths (find-paths aa [:a :** :*]))
+      (is= (set (format-paths (find-paths aa [:a :** :*])))
         #{[{:tag :a} [{:b :b1} 1]]
           [{:tag :a} [{:b :b2} 2]]
           [{:tag :a} [{:c :c9} 9]]
@@ -548,15 +548,14 @@
                       [{:c :c4} 4]
                       [{:c :c5} 5]]]
           [{:tag :a} [{:b :b3} [{:c :c4} 4]]]
-          [{:tag :a} [{:b :b3} [{:c :c5} 5]]]
-          })
+          [{:tag :a} [{:b :b3} [{:c :c5} 5]]]})
 
-      (is= (format-paths (find-paths aa [:** {:c :*}]))
+      (is= (set (format-paths (find-paths aa [:** {:c :*}])))
         #{[{:tag :a} [{:b :b3} [{:c :c5} 5]]]
           [{:tag :a} [{:b :b3} [{:c :c4} 4]]]
           [{:tag :a} [{:c :c9} 9]]})
 
-      (is= (format-paths (find-paths aa [:a :** {:c :*}]))
+      (is= (set (format-paths (find-paths aa [:a :** {:c :*}])))
         #{[{:tag :a} [{:b :b3} [{:c :c5} 5]]]
           [{:tag :a} [{:b :b3} [{:c :c4} 4]]]
           [{:tag :a} [{:c :c9} 9]]})))
@@ -571,11 +570,11 @@
         (format-paths (find-paths aa [:a :** :c]))
         (format-paths (find-paths aa [:a :** :** :c]))
         (format-paths (find-paths aa [:** :c]))
-        #{[{:tag :a} [{:tag :c} 3]]})
+        [[{:tag :a} [{:tag :c} 3]]])
       (is= (format-paths (find-paths aa [:** :*]))
-        #{[{:tag :a} [{:tag :b} 2] [{:tag :c} 3]]
-          [{:tag :a} [{:tag :b} 2]]
-          [{:tag :a} [{:tag :c} 3]]})
+        [[{:tag :a} [{:tag :b} 2] [{:tag :c} 3]]
+         [{:tag :a} [{:tag :b} 2]]
+         [{:tag :a} [{:tag :c} 3]]])
       (is= (hid->tree aa)
         {:attrs {:tag :a},
          :kids  [{:attrs {:tag :b}, :value 2}
@@ -585,38 +584,38 @@
       (throws? (find-paths-leaf aa [:a :**] 13))
 
       (is= (format-paths (find-paths-leaf aa [:a :b] 2))
-        #{[{:tag :a} [{:tag :b} 2]]} )
+        [[{:tag :a} [{:tag :b} 2]]])
 
       (is= (format-paths (find-paths-leaf aa [:a :** :b] 2))
-        #{[{:tag :a} [{:tag :b} 2]]})
+        [ [{:tag :a} [{:tag :b} 2]] ])
 
       (is= (format-paths (find-paths-leaf aa [:a :** :** :b] 2))
-        #{[{:tag :a} [{:tag :b} 2]]})
+        [[{:tag :a} [{:tag :b} 2]]])
 
       (is= (format-paths (find-paths-leaf aa [:** :b] 2))
-        #{[{:tag :a} [{:tag :b} 2]]} )
+        [[{:tag :a} [{:tag :b} 2]]])
 
       (is= (format-paths (find-paths-leaf aa [:a :c] 3))
-        #{[{:tag :a} [{:tag :c} 3]]})
+        [[{:tag :a} [{:tag :c} 3]]])
 
       (is= (format-paths (find-paths-leaf aa [:* :c] 3))
-        #{[{:tag :a} [{:tag :c} 3]]} )
+        [[{:tag :a} [{:tag :c} 3]]])
 
       (is= (format-paths (find-paths-leaf aa [:a :*] 3))
-        #{[{:tag :a} [{:tag :c} 3]]})
+        [[{:tag :a} [{:tag :c} 3]]])
 
       (is= (format-paths (find-paths-leaf aa [:** :*] 3))
-        #{[{:tag :a} [{:tag :c} 3]]})
+        [[{:tag :a} [{:tag :c} 3]]])
 
       (is= (format-paths (find-paths-leaf aa [:a :** :c] 3))
-        #{[{:tag :a} [{:tag :c} 3]]} )
+        [[{:tag :a} [{:tag :c} 3]]])
 
       (is= (format-paths (find-paths-leaf aa [:a :** :** :c] 3))
-        #{[{:tag :a} [{:tag :c} 3]]} )
+        [[{:tag :a} [{:tag :c} 3]]])
 
       (is= (format-paths (find-paths-leaf aa [:** :*] :*))
-        #{[{:tag :a} [{:tag :b} 2]]
-          [{:tag :a} [{:tag :c} 3]]} )
+        [[{:tag :a} [{:tag :b} 2]]
+         [{:tag :a} [{:tag :c} 3]]])
 
       (throws? (find-paths aa [:**]))
       (throws? (find-paths aa [:a :**]))))
@@ -658,7 +657,7 @@
            :kids  [{:attrs {:c :b1, :color :blue}, :value 2}
                    {:attrs {:c :b2, :color :blue}, :value 3}]}})
 
-      (is= (format-paths (find-paths (root-hids) [{:a :*}]))
+      (is= (set (format-paths (find-paths (root-hids) [{:a :*}])))
         #{[{:a :a1}
            [{:b :b1, :color :red} 2]
            [{:b :b2, :color :red} 3]]
@@ -667,25 +666,25 @@
            [{:b :b2, :color :green} 3]]
           [{:a :a3}
            [{:c :b1, :color :blue} 2]
-           [{:c :b2, :color :blue} 3]] })
+           [{:c :b2, :color :blue} 3]]})
 
-      (is= (format-paths (find-paths (root-hids) [{:a :*} {:b :*}]))
+      (is= (set (format-paths (find-paths (root-hids) [{:a :*} {:b :*}])))
         #{[{:a :a1} [{:b :b1, :color :red} 2]]
           [{:a :a1} [{:b :b2, :color :red} 3]]
           [{:a :a2} [{:b :b1, :color :green} 2]]
           [{:a :a2} [{:b :b2, :color :green} 3]]})
 
-      (is= (format-paths (find-paths-leaf (root-hids) [{:a :*} {:b :*}] 3))
+      (is= (set (format-paths (find-paths-leaf (root-hids) [{:a :*} {:b :*}] 3)))
         #{[{:a :a1} [{:b :b2, :color :red} 3]]
           [{:a :a2} [{:b :b2, :color :green} 3]]})
 
       (is= (format-paths (find-paths-leaf (root-hids) [{:a :*} {:c :*}] 3))
-        #{[{:a :a3} [{:c :b2, :color :blue} 3]]})
+        [[{:a :a3} [{:c :b2, :color :blue} 3]]])
 
-      (is= (format-paths (find-paths-leaf (root-hids) [:** :*] 3))
+      (is= (set (format-paths (find-paths-leaf (root-hids) [:** :*] 3)))
         #{[{:a :a1} [{:b :b2, :color :red} 3]]
           [{:a :a2} [{:b :b2, :color :green} 3]]
-          [{:a :a3} [{:c :b2, :color :blue} 3]] }))))
+          [{:a :a3} [{:c :b2, :color :blue} 3]]}))))
 
 ; #todo need to test find-paths using attrs
 (dotest
@@ -694,17 +693,17 @@
                [(add-leaf {:color :green} 2)
                 (add-leaf {:color :blue} 3)])]
       (is= (format-paths (find-paths aa [{:color :red}]))
-        #{[{:color :red}
-           [{:color :green} 2]
-           [{:color :blue} 3]]})
+        [[{:color :red}
+          [{:color :green} 2]
+          [{:color :blue} 3]]])
 
       (is= (format-paths (find-paths aa [{:color :red} {:color :green}]))
-        #{[{:color :red}
-           [{:color :green} 2]]})
+        [[{:color :red}
+          [{:color :green} 2]]])
 
       (is= (format-paths (find-paths aa [:** {:color :green}]))
-        #{[{:color :red}
-           [{:color :green} 2]]}))))
+        [[{:color :red}
+          [{:color :green} 2]]]))))
 
 (dotest
   (with-forest (new-forest)
@@ -718,27 +717,28 @@
               [(add-leaf {:tag :c :color :blue} 2)
                (add-leaf {:tag :c :color :blue} 3)]) ]
 
-      (is= (format-paths (find-paths (root-hids) [{:tag :a}]))
-        #{[{:tag :a, :id :a2}
+      (is= (set (format-paths (find-paths (root-hids) [{:tag :a}])))
+        #{[{:tag :a, :id :a1}
+           [{:tag :b, :color :red} 2]
+           [{:tag :b, :color :red} 3]]
+          [{:tag :a, :id :a2}
            [{:tag :b, :color :green} 2]
            [{:tag :b, :color :green} 3]]
           [{:tag :a, :id :a3}
            [{:tag :c, :color :blue} 2]
-           [{:tag :c, :color :blue} 3]]
-          [{:tag :a, :id :a1}
-           [{:tag :b, :color :red} 2]
-           [{:tag :b, :color :red} 3]]})
+           [{:tag :c, :color :blue} 3]]}
+        )
 
       (is= (format-paths (find-paths (root-hids) [{:id :a2}]))
-        #{[{:tag :a, :id :a2}
-           [{:tag :b, :color :green} 2]
-           [{:tag :b, :color :green} 3]]})
+        [[{:tag :a, :id :a2}
+          [{:tag :b, :color :green} 2]
+          [{:tag :b, :color :green} 3]]])
 
       (is= (format-paths (find-paths (root-hids) [:** {:color :green}]))
-        #{[{:tag :a, :id :a2}
-           [{:tag :b, :color :green} 2]]
-          [{:tag :a, :id :a2}
-           [{:tag :b, :color :green} 3]] })
+        [[{:tag :a, :id :a2}
+          [{:tag :b, :color :green} 2]]
+         [{:tag :a, :id :a2}
+          [{:tag :b, :color :green} 3]]])
 
       ; Actual return value looks like this:
       ; (find-paths (root-hids) [:** {:color :green}]) =>
@@ -750,15 +750,15 @@
               (into (sorted-set)
                 (find-paths (root-hids) [:** {:color :green}])))))
 
-      (is= (format-paths (find-paths-leaf (root-hids) [:** {:tag :b}] 2))
+      (is= (set (format-paths (find-paths-leaf (root-hids) [:** {:tag :b}] 2)))
         #{[{:tag :a, :id :a2}
            [{:tag :b, :color :green} 2]]
           [{:tag :a, :id :a1}
            [{:tag :b, :color :red} 2]]})
 
       (is= (format-paths (find-paths-leaf x [:** {:tag :b}] 2))
-        #{[{:tag :a, :id :a1}
-           [{:tag :b, :color :red} 2]]} )
+        [[{:tag :a, :id :a1}
+          [{:tag :b, :color :red} 2]]])
 
       (is= (find-leaf x [:** {:tag :b}] 2)
         (map->Leaf {:attrs {:tag :b, :color :red}, :value 2}))
@@ -767,14 +767,14 @@
         (map->Leaf {:attrs {:tag :c, :color :blue}, :value 2}))
 
 
-      (is= (format-paths (find-paths-leaf #{z y} [{:tag :a} :*] 2))
+      (is= (set (format-paths (find-paths-leaf #{z y} [{:tag :a} :*] 2)))
         #{[{:tag :a, :id :a2} [{:tag :b, :color :green} 2]]
           [{:tag :a, :id :a3} [{:tag :c, :color :blue} 2]]})
-      (is= (format-paths (find-paths-leaf (root-hids) [{:tag :a} :*] 2))
+      (is= (set (format-paths (find-paths-leaf (root-hids) [{:tag :a} :*] 2)))
         #{[{:tag :a, :id :a2} [{:tag :b, :color :green} 2]]
           [{:tag :a, :id :a1} [{:tag :b, :color :red} 2]]
           [{:tag :a, :id :a3} [{:tag :c, :color :blue} 2]]})
-      (is= (format-paths (find-paths-leaf (root-hids) [{:tag :a} {:tag :c}] :*))
+      (is= (set (format-paths (find-paths-leaf (root-hids) [{:tag :a} {:tag :c}] :*)))
         #{[{:tag :a, :id :a3} [{:tag :c, :color :blue} 3]]
           [{:tag :a, :id :a3} [{:tag :c, :color :blue} 2]]})
 
@@ -784,9 +784,7 @@
       ;     [:bfdb71187fc7fc1182e1776d9d50f6f6e1f72646 :0288e8f77e17e289f02d62229304960f1ddac39b]})
       (is (wild-match? [[:* :*]
                         [:* :*]]
-            (vec
-              (into (sorted-set)
-                (find-paths-leaf (root-hids) [{:tag :a} {:tag :c}] :*))))))))
+            (find-paths-leaf (root-hids) [{:tag :a} {:tag :c}] :*))))))
 
 (dotest
   (with-forest (new-forest)

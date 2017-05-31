@@ -609,9 +609,9 @@
       (hid->bush hid-curr)
       [ (hid->attrs hid-curr) (format-path hid-rest) ] )))
 
-(s/defn format-paths [solns :- #{ [HID] }]
-  (set (forv [soln solns]
-         (format-path soln))))
+(s/defn format-paths [solns :- [[HID]]]
+  (forv [soln solns]
+    (format-path soln)))
 
 
 (s/defn ^:private ^:no-doc find-paths-impl
@@ -630,7 +630,7 @@
           (if (empty? tgt-path-rest)
             (let [soln parents-new]
               ;(println :210 "empty soln:" (mapv #(hid->attrs %) soln))
-              (swap! result-atom glue #{soln}))
+              (swap! result-atom append soln))
             (do
               ;(println :220 "NOT (empty? tgt-path-rest) parents-new=" (mapv #(hid->attrs %) parents-new))
               (when (node-hid? hid)
@@ -662,7 +662,7 @@
   (when (= :** (last tgt-path))
     (throw (IllegalArgumentException. "find-paths: recursive-wildcard `:**` cannot terminate tgt-path")))
 
-  (let [result-atom (atom #{})
+  (let [result-atom (atom [])
         roots (cond
                 (hid? root-spec) [root-spec] ; scalar arg -> wrap in a vector
                 (set? root-spec) root-spec ; set of root hids -> use it as-is
