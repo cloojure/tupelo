@@ -766,7 +766,7 @@
   performs safe `let` destructuring using `grab` like:
 
      (def the-map {:a 1 :b 2 :c 3} }
-     (with-map-fields the-map [a b c]  ...)
+     (with-map-vals the-map [a b c]  ...)
 
         =>  (let [a (grab :a the-map)
                   b (grab :b the-map)
