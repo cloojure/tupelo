@@ -63,8 +63,8 @@
   (apply mapv vector args))
 
 (pns/import-macro impl/forv)
-(pns/import-macro impl/let-map*)
-(pns/import-macro impl/let-map)
+(pns/import-macro impl/map-let*)
+(pns/import-macro impl/map-let)
 
 ; #todo maybe just make tupelo.vec/for  etc   (tv/for ...) -> (vec (for ...))
 ; #todo replace clojure.core/map : not lazy; can add one of :trunc or :lazy modifiers
@@ -669,7 +669,7 @@
      with-spy-indent with-spy-enabled check-spy-enabled
      truthy? falsey? not-nil? not-empty? has-some? has-none?
      contains-key? contains-val? contains-elem?
-     forv let-map* let-map
+     forv map-let* map-let
      conjv glue vals->map with-map-vals macro? char-seq
      append prepend grab dissoc-in fetch fetch-in
      submap? submap-by-keys submap-by-vals map-keys->vals keyvals

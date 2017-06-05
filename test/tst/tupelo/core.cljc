@@ -458,20 +458,20 @@
   (let [xs [1 2 3]
         ys [10 20 30]]
     (is= [11 22 33]
-      (let-map [x xs y ys] (+ x y))
-      (let-map* {:lazy false :strict false} [x xs y ys] (+ x y))
-      (let-map* {:lazy false :strict true}  [x xs y ys] (+ x y))
-      (let-map* {:lazy true :strict false}  [x xs y ys] (+ x y))
-      (let-map* {:lazy true :strict true}   [x xs y ys] (+ x y)))
+      (map-let [x xs y ys] (+ x y))
+      (map-let* {:lazy false :strict false} [x xs y ys] (+ x y))
+      (map-let* {:lazy false :strict true}  [x xs y ys] (+ x y))
+      (map-let* {:lazy true :strict false}  [x xs y ys] (+ x y))
+      (map-let* {:lazy true :strict true}   [x xs y ys] (+ x y)))
     (is (instance? clojure.lang.PersistentVector
-          (let-map* {:lazy false :strict true} [x xs y ys] (+ x y))))
+          (map-let* {:lazy false :strict true} [x xs y ys] (+ x y))))
     (is (instance? clojure.lang.LazySeq
-          (let-map* {:lazy true :strict true} [x xs y ys] (+ x y)))))
+          (map-let* {:lazy true :strict true} [x xs y ys] (+ x y)))))
   (let [xs [1 2 3]
         ys [10 20 30 40]]
-    (throws?        (let-map                  [x xs y ys] (+ x y)))
-    (throws?        (let-map* {:strict true}  [x xs y ys] (+ x y)))
-    (is= [11 22 33] (let-map* {:strict false} [x xs y ys] (+ x y)))))
+    (throws?        (map-let                  [x xs y ys] (+ x y)))
+    (throws?        (map-let* {:strict true}  [x xs y ys] (+ x y)))
+    (is= [11 22 33] (map-let* {:strict false} [x xs y ys] (+ x y)))))
 
 (dotest
   ; unexpected results
