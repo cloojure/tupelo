@@ -698,7 +698,11 @@
 
 
 (defmacro map-let*
-  "Usage: (map-let* ctx bindings & forms)"
+  "Usage:  (map-let* ctx bindings & forms)
+
+  where ctx is a map with default values:
+    {:strict true
+     :lazy   false}"
   [context bindings & forms]
   (when (empty? bindings)
     (throw (IllegalArgumentException. (str "map-let*: bindings cannot be empty=" bindings))))
@@ -734,8 +738,11 @@
   [bindings & forms]
   `(map-let* {} ~bindings ~@forms))
 
+; #todo how use Schema with "rest" args?
 (defn zip*
   [context & colls]
+  (assert (map? context))
+  (assert #(every? sequential? colls))
   (let [lazy          (get context :lazy false)
         strict        (get context :strict true)
         lengths       (mapv count colls)

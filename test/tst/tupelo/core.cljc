@@ -428,24 +428,6 @@
   (throws? (contains-val?  [:a 1 :b 2] 1))
   (throws? (contains-val? #{:a 1 :b 2} 1)))
 
-(dotest
-  (testing "zip"
-    (is= (vector [])               [[]] )
-    (is= (mapv identity [] [])      []  )
-    (is= (zip [:a :b :c] [1 2 3])   [[:a 1] [:b 2] [:c 3]] )
-    (is= (zip [:a] [1])             [[:a 1]] )
-    (is= (zip [] [])                []  )
-    (is= (zip [:A :B :C] [:a :b :c] [1 2 3])
-      [[:A :a 1] [:B :b 2] [:C :c 3]] )
-    (throws? (zip [:a :b :c] [1 2 3 4]))
-    (is= (zip* {:strict false} [:a :b :c] [1 2 3 4]) [[:a 1] [:b 2] [:c 3]] )
-
-    (is (instance? clojure.lang.PersistentVector
-          (zip* {:lazy false} [:a :b :c] [1 2 3])))
-    (is (instance? clojure.lang.LazySeq
-          (zip* {:lazy true } [:a :b :c] [1 2 3])))
-  ))
-
 ;(sp/def ::vector (sp/coll-of clj/any :kind vector?))
 ;(dotest
 ;  (is   (sp/valid? ::vector [1 2 3]))
@@ -480,6 +462,31 @@
     (throws?        (map-let                  [x xs y ys] (+ x y)))
     (throws?        (map-let* {:strict true}  [x xs y ys] (+ x y)))
     (is= [11 22 33] (map-let* {:strict false} [x xs y ys] (+ x y)))))
+
+(dotest
+  (is= (vector [])               [[]] )
+  (is= (mapv identity [] [])      []  )
+  (is= (zip [:a :b :c] [1 2 3])   [[:a 1] [:b 2] [:c 3]] )
+  (is= (zip [:a] [1])             [[:a 1]] )
+  (is= (zip [] [])                []  )
+  (is= (zip [:A :B :C] [:a :b :c] [1 2 3])
+    [[:A :a 1] [:B :b 2] [:C :c 3]] )
+  (throws? (zip [:a :b :c] [1 2 3 4]))
+  (is= (zip* {:strict false} [:a :b :c] [1 2 3 4]) [[:a 1] [:b 2] [:c 3]] )
+
+  (is (instance? clojure.lang.PersistentVector
+        (zip* {:lazy false} [:a :b :c] [1 2 3])))
+  (is (instance? clojure.lang.LazySeq
+        (zip* {:lazy true } [:a :b :c] [1 2 3])))
+  (let [ks     [:a :b :c]
+        is     [1 2 3]
+        result (atom [])]
+       (doseq [[k i] (zip ks is)]
+         (swap! result append {k i}))
+    (is= [{:a 1} {:b 2} {:c 3}] @result)
+   ;(is true)  ; #todo document that this throws!
+  ))
+
 
 (dotest
   ; unexpected results
