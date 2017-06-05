@@ -478,15 +478,12 @@
         (zip* {:lazy false} [:a :b :c] [1 2 3])))
   (is (instance? clojure.lang.LazySeq
         (zip* {:lazy true } [:a :b :c] [1 2 3])))
-  (let [ks     [:a :b :c]
-        is     [1 2 3]
+  (let [keys   [:a :b :c]
+        vals   [1 2 3]
         result (atom [])]
-       (doseq [[k i] (zip ks is)]
+       (doseq [[k i] (zip keys vals)]
          (swap! result append {k i}))
-    (is= [{:a 1} {:b 2} {:c 3}] @result)
-   ;(is true)  ; #todo document that this throws!
-  ))
-
+    (is= [{:a 1} {:b 2} {:c 3}] @result)))
 
 (dotest
   ; unexpected results
@@ -1310,9 +1307,9 @@
   (is (= [\a \b]            (t/char-seq 97 98)))
   (is (= [\a \b \c]         (t/char-seq 97 99)))
 
-  (is (thrown? Exception    (t/char-seq 987654321 987654321 )))
-  (is (thrown? Exception    (t/char-seq \c \a)))
-  (is (thrown? Exception    (t/char-seq 99 98)))
+  (throws? Exception (t/char-seq 987654321 987654321))
+  (throws? Exception (t/char-seq \c \a))
+  (throws? Exception (t/char-seq 99 98))
   )
 
 (dotest

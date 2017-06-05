@@ -12,8 +12,8 @@
 
 (pns/import-fn clojure.test/use-fixtures )
 
-(pns/import-macro clojure.test/is )
 (pns/import-macro clojure.test/deftest )
+(pns/import-macro clojure.test/is )
 (pns/import-macro clojure.test/testing )
 
 (defmacro isnt      ; #todo readme/test
