@@ -649,24 +649,44 @@
   [& body]
   `(vec (for ~@body)))
 
-(defmacro map-with  ; #todo maybe rename -> map-using  ???
-  "Usage: (map-with [bindings & forms])
-
-  Given bindings and forms like `(map-with [x xs, y ys, ...] (+ x y))`, will iterate over the
-  collections [xs ys ...] assigning successive values of each collection to [x y ...], respectively.
-  The local symbols [x y ...] can then be used in `forms` to generate the output mapping. Not lazy."
-  [bindings & forms]
+(defmacro let-map*
+  "Usage: (let-map* ctx bindings & forms)"
+  [context bindings & forms]
+  (when (empty? bindings)
+    (throw (IllegalArgumentException. (str "let-map*: bindings cannot be empty=" bindings))))
   (when-not (even? (count bindings))
-    (throw (IllegalArgumentException. (str "map-with: bindings must be even in number=" bindings))))
-  (let [pairs (partition 2 bindings)
-        syms  (mapv xfirst pairs)
-        colls (mapv xsecond pairs)]
-    `(let [lengths# (mapv count ~colls)
-           map-fn#  (fn ~syms ~@forms)]
-       (when-not (apply = lengths#)
-         (throw (IllegalArgumentException.
-                  (str "map-with: coll lengths must all be same length; lengths=" lengths#))))
-       (mapv map-fn# ~@colls))))
+    (throw (IllegalArgumentException. (str "let-map*: (count bindings) must be even=" bindings))))
+  (when-not (pos? (count forms))
+    (throw (IllegalArgumentException. (str "let-map*: forms cannot be empty=" forms))))
+  (let [binding-pairs (partition 2 bindings)
+        syms          (mapv xfirst binding-pairs)
+        colls         (mapv xsecond binding-pairs) ]
+       `(do
+          (when-not (map? ~context)
+            (throw (IllegalArgumentException. (str "let-map*: context must be a map=" ~context))))
+          (let [lazy#         (get ~context :lazy false)
+                strict#       (get ~context :strict true)
+                lengths#      (mapv count ~colls)
+                lenghs-equal# (apply = lengths#)
+                map-fn#       (fn ~syms ~@forms)
+                output-fn#    (if lazy# identity vec)]
+               (when (and strict#
+                       (not lenghs-equal#))
+                 (throw (IllegalArgumentException.
+                          (str "let-map*: colls must all be same length; lengths=" lengths#))))
+            (output-fn# (map map-fn# ~@colls))))))
+
+(defmacro let-map
+  "Usage:
+    (let-map bindings & forms)
+
+  Given bindings and forms like `(let-map [x xs, y ys, ...] (+ x y))`, will iterate over the
+  collections [xs ys ...] assigning successive values of each collection to [x y ...], respectively.
+  The local symbols [x y ...] can then be used in `forms` to generate the output mapping."
+  [bindings & forms]
+  `(let-map* {} ~bindings ~@forms))
+
+
 
 (defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
