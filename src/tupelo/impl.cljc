@@ -649,6 +649,54 @@
   [& body]
   `(vec (for ~@body)))
 
+(defmacro lazy-cons
+  "The simple way to create a lazy sequence:
+      (defn lazy-next-int [n]
+        (t/lazy-cons n (lazy-next-int (inc n))))
+      (def all-ints (lazy-next-int 0)) "
+  [curr-val next-form]
+  `(lazy-seq (cons ~curr-val ~next-form)))
+
+; #todo document use via binding
+(def ^:dynamic *lazy-gen-buffer-size*
+  "Specifies the output channel default buffer size for `lazy-gen` forms"
+  32)
+
+; #todo add to README
+; #todo fix SO posting:  defgen -> lazy-gen
+; #todo make null case return [] instead of nil
+; #todo make eager version?  gen-vec, gen-seq, ...
+(defmacro lazy-gen [& forms]
+  "Creates a 'generator function' that returns a lazy seq of results
+  via `yield` (a la Python)."
+  `(let [~'lazy-gen-output-buffer    (ca/chan *lazy-gen-buffer-size*)
+         lazy-reader-fn#             (fn lazy-reader-fn# []
+                                       (let [curr-item# (ca/<!! ~'lazy-gen-output-buffer)] ; #todo ta/take-now!
+                                            (when (not-nil? curr-item#)
+                                              (lazy-cons curr-item# (lazy-reader-fn#))))) ]
+        (ca/go
+          ~@forms
+          (ca/close! ~'lazy-gen-output-buffer))
+     (lazy-reader-fn#)))
+
+(defmacro yield ; #todo put-now/put-later & dynamic
+  "Within a 'generator function' created by `lazy-gen`, populates the
+  result lazy seq with the supplied value (a la Python). Returns the value."
+  [value]
+  `(do
+     (ca/>! ~'lazy-gen-output-buffer ~value)
+     ~value))
+
+(defmacro yield-all
+  "Within a 'generator function' created by `lazy-gen`, populates the
+  result lazy seq with each item from the supplied collection. Returns the collection."
+  [values]
+  `(do
+     (doseq [value# ~values]
+       (yield value#))
+     (vec ~values)))
+
+
 (defmacro map-let*
   "Usage: (map-let* ctx bindings & forms)"
   [context bindings & forms]
@@ -664,14 +712,14 @@
        `(do
           (when-not (map? ~context)
             (throw (IllegalArgumentException. (str "map-let*: context must be a map=" ~context))))
-          (let [lazy#         (get ~context :lazy false)
-                strict#       (get ~context :strict true)
-                lengths#      (mapv count ~colls)
-                lenghs-equal# (apply = lengths#)
-                map-fn#       (fn ~syms ~@forms)
-                output-fn#    (if lazy# identity vec)]
+          (let [lazy#          (get ~context :lazy false)
+                strict#        (get ~context :strict true)
+                lengths#       (mapv count ~colls)
+                lengths-equal# (apply = lengths#)
+                map-fn#        (fn ~syms ~@forms)
+                output-fn#     (if lazy# identity vec)]
                (when (and strict#
-                       (not lenghs-equal#))
+                       (not lengths-equal#))
                  (throw (IllegalArgumentException.
                           (str "map-let*: colls must all be same length; lengths=" lengths#))))
             (output-fn# (map map-fn# ~@colls))))))
@@ -685,6 +733,31 @@
   The local symbols [x y ...] can then be used in `forms` to generate the output mapping."
   [bindings & forms]
   `(map-let* {} ~bindings ~@forms))
+
+(defn zip*
+  [context & colls]
+  (let [lazy          (get context :lazy false)
+        strict        (get context :strict true)
+        lengths       (mapv count colls)
+        lengths-equal (apply = lengths)
+        output-fn     (if lazy identity vec)]
+       (when (and strict
+               (not lengths-equal))
+         (throw (IllegalArgumentException.
+                  (str "zip*: colls must all be same length; lengths=" lengths))))
+    (output-fn (apply map vector colls))))
+
+; #todo add schema; result = ts/List[ ts/Pair ]
+; #todo add :trunc & assert;  add :lazy
+(defn zip [& args]
+  "Zips together vectors like zipmap (like Python zip):
+
+     (zip [:a :b :c] [1 2 3]) ->  [ [:a 1] [:b 2] [:c 3] ]
+
+   Use (zip ... :trunc) if you want to truncate all inputs to the lenght of the shortest.
+   Use (zip ... :lazy)  if you want it to be lazy.  "
+  (assert #(every? sequential? args))
+  (apply zip* {} args))
 
 (defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value

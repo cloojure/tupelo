@@ -430,13 +430,21 @@
 
 (dotest
   (testing "zip"
+    (is= (vector [])               [[]] )
+    (is= (mapv identity [] [])      []  )
     (is= (zip [:a :b :c] [1 2 3])   [[:a 1] [:b 2] [:c 3]] )
     (is= (zip [:a] [1])             [[:a 1]] )
     (is= (zip [] [])                []  )
-    (is= (vector [])               [[]] )
-    (is= (mapv identity [] [])      []  )
-  )
-)
+    (is= (zip [:A :B :C] [:a :b :c] [1 2 3])
+      [[:A :a 1] [:B :b 2] [:C :c 3]] )
+    (throws? (zip [:a :b :c] [1 2 3 4]))
+    (is= (zip* {:strict false} [:a :b :c] [1 2 3 4]) [[:a 1] [:b 2] [:c 3]] )
+
+    (is (instance? clojure.lang.PersistentVector
+          (zip* {:lazy false} [:a :b :c] [1 2 3])))
+    (is (instance? clojure.lang.LazySeq
+          (zip* {:lazy true } [:a :b :c] [1 2 3])))
+  ))
 
 ;(sp/def ::vector (sp/coll-of clj/any :kind vector?))
 ;(dotest

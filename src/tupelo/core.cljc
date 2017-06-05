@@ -41,6 +41,8 @@
 (pns/import-fn impl/str->sym )
 (pns/import-fn impl/sym->kw )
 (pns/import-fn impl/sym->str )
+(pns/import-fn impl/zip* )
+(pns/import-fn impl/zip )
 
 
 (defn print-versions []
@@ -50,17 +52,6 @@
     (println "-------------------------------------")
     (println version-str)
     (println "-------------------------------------")))
-
-; #todo add schema; result = ts/List[ ts/Pair ]
-; #todo add :trunc & assert;  add :lazy
-(defn zip [& args]
-  "Zips together vectors like zipmap (like Python zip):
-   
-     (zip [:a :b :c] [1 2 3]) ->  [ [:a 1] [:b 2] [:c 3] ]     
-
-   Use (zip ... :trunc) if you want to truncate all inputs to the lenght of the shortest.
-   Use (zip ... :lazy)  if you want it to be lazy.  "
-  (apply mapv vector args))
 
 (pns/import-macro impl/forv)
 (pns/import-macro impl/map-let*)
@@ -383,6 +374,10 @@
 (pns/import-macro impl/it-> )
 (pns/import-macro impl/with-exception-default )
 
+(pns/import-macro impl/lazy-cons )
+(pns/import-macro impl/lazy-gen )
+(pns/import-macro impl/yield )
+(pns/import-macro impl/yield-all )
 
 ; (defn round [dblVal :incr   (/ 1 3)]            ; #todo add
 ;   (let [factor (Math/pow 10 *digits*)]
@@ -456,53 +451,6 @@
 (pns/import-fn impl/keep-if)
 (pns/import-fn impl/drop-if)
 (pns/import-fn impl/unnest )
-
-(defmacro lazy-cons
-  "The simple way to create a lazy sequence:
-      (defn lazy-next-int [n]
-        (t/lazy-cons n (lazy-next-int (inc n))))
-      (def all-ints (lazy-next-int 0)) "
-  [curr-val next-form]
-  `(lazy-seq (cons ~curr-val ~next-form)))
-
-; #todo document use via binding
-(def ^:dynamic *lazy-gen-buffer-size*
-  "Specifies the output channel default buffer size for `lazy-gen` forms"
-  32)
-
-; #todo add to README
-; #todo fix SO posting:  defgen -> lazy-gen
-; #todo make null case return [] instead of nil
-; #todo make eager version?  gen-vec, gen-seq, ...
-(defmacro lazy-gen [& forms]
-  "Creates a 'generator function' that returns a lazy seq of results
-  via `yield` (a la Python)."
-  `(let [~'lazy-gen-output-buffer    (ca/chan *lazy-gen-buffer-size*)
-         lazy-reader-fn#             (fn lazy-reader-fn# []
-                                       (let [curr-item# (ca/<!! ~'lazy-gen-output-buffer)] ; #todo ta/take-now!
-                                         (when (not-nil? curr-item#)
-                                           (lazy-cons curr-item# (lazy-reader-fn#))))) ]
-     (ca/go
-       ~@forms
-       (ca/close! ~'lazy-gen-output-buffer))
-     (lazy-reader-fn#)))
-
-(defmacro yield ; #todo put-now/put-later & dynamic
-  "Within a 'generator function' created by `lazy-gen`, populates the
-  result lazy seq with the supplied value (a la Python). Returns the value."
-  [value]
-  `(do
-     (ca/>! ~'lazy-gen-output-buffer ~value)
-     ~value))
-
-(defmacro yield-all
-  "Within a 'generator function' created by `lazy-gen`, populates the
-  result lazy seq with each item from the supplied collection. Returns the collection."
-  [values]
-  `(do
-     (doseq [value# ~values]
-       (yield value#))
-     (vec ~values)))
 
 (defn fibonacci-seq
   "A lazy seq of Fibonacci numbers (memoized)."
@@ -673,7 +621,7 @@
      conjv glue vals->map with-map-vals macro? char-seq
      append prepend grab dissoc-in fetch fetch-in
      submap? submap-by-keys submap-by-vals map-keys->vals keyvals
-     validate only third it-> safe-> keep-if drop-if zip flat-vec
+     validate only third it-> safe-> keep-if drop-if zip zip* flat-vec
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
      drop-at insert-at replace-at starts-with? int->kw kw->int vec->list
      xfirst xsecond xthird xrest kw->sym kw->str str->sym str->kw sym->kw sym->str
