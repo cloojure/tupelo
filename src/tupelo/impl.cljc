@@ -686,8 +686,6 @@
   [bindings & forms]
   `(let-map* {} ~bindings ~@forms))
 
-
-
 (defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
    matches the pattern value.  Underscores serve as wildcard values. Usage:
