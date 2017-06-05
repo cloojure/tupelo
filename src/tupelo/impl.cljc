@@ -740,6 +740,11 @@
 
 ; #todo how use Schema with "rest" args?
 (defn zip*
+  "Usage:  (zip* context & colls)
+
+  where context is a map with default values:
+    {:strict true
+     :lazy   false}"
   [context & colls]
   (assert (map? context))
   (assert #(every? sequential? colls))
@@ -756,13 +761,14 @@
 
 ; #todo add schema; result = ts/List[ ts/Pair ]
 ; #todo add :trunc & assert;  add :lazy
-(defn zip [& args]
+(defn zip
   "Zips together vectors like zipmap (like Python zip):
 
      (zip [:a :b :c] [1 2 3]) ->  [ [:a 1] [:b 2] [:c 3] ]
 
    Use (zip ... :trunc) if you want to truncate all inputs to the lenght of the shortest.
    Use (zip ... :lazy)  if you want it to be lazy.  "
+  [& args]
   (assert #(every? sequential? args))
   (apply zip* {} args))
 
