@@ -52,6 +52,19 @@
     [:int 50]
     [:int 60]]] )
 
+(def z2-hiccup
+  [:item
+   [:item 1]
+   [:item 2]
+   [:item :a]
+   [:item :b]
+   [[:item 3]
+    [:item 4]
+    [:item :c]
+    [:item :d]
+    [:item 5]]
+   [:item :e]] )
+
 ;-----------------------------------------------------------------------------
 ; t0-hiccup
 (dotest
@@ -85,8 +98,10 @@
              [{:tag :item} 50]
              [{:tag :item} 60]]]) )
       ; find all keyword leaves in order
-      (let [leaf-hids    (find-leaf-hids root-hid [:** :*] :*)
-            kw-leaf-hids (keep-if #(keyword? (hid->value %)) leaf-hids) ; could keep only first one here
+      (let [leaf-hids-1  (set (find-leaf-hids root-hid [:** :*] :*))
+            leaf-hids-2  (all-leaf-hids)
+            >>           (is= leaf-hids-1 leaf-hids-2)
+            kw-leaf-hids (keep-if #(keyword? (hid->value %)) leaf-hids-2) ; could keep only first one here
             leaves       (mapv hid->leaf kw-leaf-hids)]
            ; must use `val=` since (not= {:attrs {:tag :item}, :value :a}
            ;                  (map->Leaf {:attrs {:tag :item}, :value :a} ))
@@ -181,4 +196,18 @@
          [{:tag :item} 3]
          [{:tag :item}]])))) ; they're gone!
 
+
+; delete any numbers (< 10 n)
+
+;(dotest
+;  (with-forest (new-forest)
+;    (let [root-hid        (add-tree-hiccup z2-hiccup)
+;          is-kid-leaf-kw? (fn [hid]
+;                            (and (leaf-hid? hid)
+;                              (keyword? (hid->value hid))))
+;          ]
+;
+;      (spyx-pretty (hid->bush root-hid))
+;    )))
+;
 

@@ -121,17 +121,17 @@
 
 (def HID s/Keyword) ; #todo find way to validate
 
-(s/defn tree-node? :- s/Bool
+(s/defn tree-node? :- s/Bool ; #todo -> node-elem?
   [elem :- tsk/KeyMap]
   (or (instance? Node elem)
     (= #{:attrs :kids} (set (keys elem)))))
 
-(s/defn tree-leaf? :- s/Bool
+(s/defn tree-leaf? :- s/Bool ; #todo -> leaf-elem?
   [elem :- tsk/KeyMap]
   (or (instance? Leaf elem)
     (= #{:attrs :value} (set (keys elem)))))
 
-(s/defn tree-elem? :- s/Bool
+(s/defn tree-elem? :- s/Bool ; #todo -> forest-elem?
   [elem :- tsk/KeyMap]
   (or (tree-node? elem) (tree-leaf? elem)))
 
@@ -202,19 +202,33 @@
   [hid :- HID]
   (instance? Leaf (hid->elem hid)))
 
+(s/defn all-hids :- #{HID} ; #todo test
+  "Returns a set of all HIDs in the forest"
+  []
+  (set (keys *forest*)))
+
+(s/defn all-node-hids :- #{HID} ; #todo test
+  "Returns a set of all node HIDs in the forest"
+  []
+  (set (keep-if node-hid? (all-hids))))
+
+(s/defn all-leaf-hids :- #{HID} ; #todo test
+  "Returns a set of all leaf HIDs in the forest"
+  []
+  (set (keep-if leaf-hid? (all-hids))))
+
 (s/defn root-hids :- #{HID}
   "Return a vector of all root HID's"
   []
-  (let [all-hids  (set (keys *forest*))
-        kid-hids  (reduce
+  (let [kid-hids  (reduce
                     (fn [cum-kids hid]
                       (let [elem (hid->elem hid)]
                         (if (tree-node? elem)
                           (into cum-kids (grab :kids elem))
                           cum-kids)))
                     #{}
-                    all-hids)
-        root-hids (set/difference all-hids kid-hids)]
+                    (all-hids))
+        root-hids (set/difference (all-hids) kid-hids)]
     root-hids))
 
 ; #todo need to recurse with set of parent hid's to avoid cycles
