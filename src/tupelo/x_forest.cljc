@@ -365,31 +365,32 @@
   "Convert an Enlive-format data structure to a tree. "
   [enlive-tree]
   (assert (enlive-node? enlive-tree))
- ;(nl)  (println "-------------------------------------------------------")
- ;(spyx-pretty enlive-tree)
-  (with-map-vals enlive-tree [attrs content]
-    (assert (not (contains-key? attrs :tag)))
-   ;(spyx attrs) (spyx-pretty content)
+  ;(spy "\n\n-------------------------------------------------------\n")
+  ;(spyx-pretty enlive-tree)
+  (let [attrs   (or (:attrs enlive-tree) {})
+        content (or (:content enlive-tree) [])]
+       (assert (not (contains-key? attrs :tag)))
+    ;(spyx attrs) (spyx-pretty content)
     (let
       [attrs (glue attrs (submap-by-keys enlive-tree #{:tag}))
        result
-       (cond
-         (every? enlive-node? content)
-         (let [kids (glue [] (for [child content] (enlive->tree child)))]
-              (vals->map attrs kids))
+             (cond
+               (every? enlive-node? content)
+               (let [kids (glue [] (for [child content] (enlive->tree child)))]
+                    (vals->map attrs kids))
 
-         (and
-           (= 1 (count content))
-           (not (enlive-node? (only content))))
-         {:attrs attrs :value (only content)}
+               (and
+                 (= 1 (count content))
+                 (not (enlive-node? (only content))))
+               {:attrs attrs :value (only content)}
 
-         :else
-         (let [kids (glue []
-                      (for [child content]
-                        (if (enlive-node? child)
-                          (enlive->tree child)
-                          {:attrs {:tag :tupelo.forest/raw} :value child})))]
-              (vals->map attrs kids))) ]
+               :else
+               (let [kids (glue []
+                            (for [child content]
+                              (if (enlive-node? child)
+                                (enlive->tree child)
+                                {:attrs {:tag :tupelo.forest/raw} :value child})))]
+                    (vals->map attrs kids)))]
       result)))
 
 (s/defn enlive->bush :- tsk/Vec ; #todo add test

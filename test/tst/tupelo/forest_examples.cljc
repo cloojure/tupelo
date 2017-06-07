@@ -10,15 +10,17 @@
     [clojure.data.xml :as dx]
     [clojure.java.io :as io]
     [clojure.set :as cs]
+    [net.cgrand.enlive-html :as en-html]
     [schema.core :as s]
     [tupelo.core :as t]
-    [clojure.set :as set]))
+  ))
 (t/refer-tupelo)
 
 ; Examples from:
 ;   http://josf.info/blog/2014/03/21/getting-acquainted-with-clojure-zippers/
 ;   http://josf.info/blog/2014/03/28/clojure-zippers-structure-editing-with-your-mind/
 ;   http://josf.info/blog/2014/04/14/seqs-of-clojure-zippers/
+;   http://josf.info/blog/2014/10/02/practical-zippers-extracting-text-with-enlive/
 
 (def t0
   [1 [:a :b] 2 3 [40 50 60]] )
@@ -347,3 +349,43 @@
                      {:href "#clojure.zip/xml-zip", :depth 13, :num-hids 1}
                      {:href "#clojure.zip/zipper", :depth 13, :num-hids 1}])
                (set result-data))))))
+
+;-----------------------------------------------------------------------------
+
+(dotest
+  (with-forest (new-forest)
+    (let [enlive-tree (->> "<p>sample <em>text</em> with words.</p>"
+                        clojure.string/lower-case
+                        java.io.StringReader.
+                        en-html/html-resource
+                        first)
+          root-hid    (add-tree-enlive enlive-tree)
+          leaf-hids   (find-leaf-hids root-hid [:** :*] :*)
+          leaf-values (mapv hid->value leaf-hids)
+          result      (apply glue leaf-values)]
+         (is= enlive-tree
+           '{:tag     :html
+             :attrs   nil,
+             :content ({:tag     :body,
+                        :attrs   nil,
+                        :content ({:tag     :p
+                                   :attrs   nil,
+                                   :content ("sample "
+                                              {:tag :em, :attrs nil, :content ("text")}
+                                              " with words.")})})})
+      (is= (hid->tree root-hid)
+        {:attrs {:tag :html},
+         :kids  [{:attrs {:tag :body},
+                  :kids  [{:attrs {:tag :p},
+                           :kids  [{:attrs {:tag :tupelo.forest/raw}, :value "sample "}
+                                   {:attrs {:tag :em}, :value "text"}
+                                   {:attrs {:tag :tupelo.forest/raw}, :value " with words."}]}]}]})
+      (is= (hid->hiccup root-hid)
+        [:html
+         [:body
+          [:p
+           [:tupelo.forest/raw "sample "]
+           [:em "text"]
+           [:tupelo.forest/raw " with words."]]]])
+
+      (is= result "sample text with words."))))

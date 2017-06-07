@@ -18,7 +18,8 @@
     [potemkin                         "0.4.3"]
     [prismatic/schema                 "1.1.3"]
   ]
-  :profiles { :dev      {:dependencies [[org.clojure/test.check "0.9.0"]] }
+  :profiles { :dev      {:dependencies [ [org.clojure/test.check "0.9.0"]
+                                         [enlive "1.1.6"] ] }
               :uberjar  {:aot :all}}
   :global-vars { *warn-on-reflection* false }
 
