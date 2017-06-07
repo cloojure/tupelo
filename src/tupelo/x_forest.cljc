@@ -524,11 +524,11 @@
 
 ; #todo (s/defn remove-orphans [roots-to-keep] ...)
 
-(s/defn kids-remove :- tsk/KeyMap
+(s/defn remove-kid :- tsk/KeyMap
   "Removes all a set of children from a Node (including any duplcates)."
   ([hid :- HID
     kids-leaving :- (s/either [HID] #{HID})]
-    (kids-remove hid kids-leaving false))
+    (remove-kid hid kids-leaving false))
   ([hid :- HID
     kids-leaving :- (s/either [HID] #{HID})
     missing-kids-ok :- s/Bool]
@@ -546,7 +546,7 @@
       (set-elem hid node-new)
       node-new)))
 
-(s/defn kids-remove-all :- tsk/KeyMap
+(s/defn remove-all-kids :- tsk/KeyMap
   "Removes all a set of children from a Node (including any duplcates)."
   ([hid :- HID ]
     (let [node-curr           (hid->node hid)
@@ -554,7 +554,7 @@
       (set-elem hid node-new)
       node-new)))
 
-(s/defn remove-elems :- #{HID}
+(s/defn ^:no-doc remove-hids-impl :- #{HID}
   "Removes a set of elements and all references to them from the database. May create orphaned elements."
   [hids-leaving :- #{HID}]
   (doseq [hid hids-leaving]
@@ -569,8 +569,13 @@
     (doseq [hid hids-staying]
       (let [elem (hid->elem hid)]
         (when (instance? Node elem)
-          (kids-remove hid hids-leaving true))))) ; true => missing-kids-ok
+          (remove-kid hid hids-leaving true))))) ; true => missing-kids-ok
   hids-leaving)
+
+(s/defn remove-hid :- #{HID}
+  "Removes one or more elements and all references to them from the database. May create orphaned elements."
+  [& hids-leaving :- [HID]]
+  (remove-hids-impl (set hids-leaving)))
 
 (s/defn hid-matches?
   [hid :- HID

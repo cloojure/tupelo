@@ -220,10 +220,10 @@
                  {:attrs {:tag :char, :color :green}, :value "y"}
                  {:attrs {:tag :char, :color :blue}, :value "z"}]})
 
-      (kids-remove r #{z x})
+      (remove-kid r #{z x})
       (is= (hid->kids r) [y])
-      (throws? (kids-remove r #{y x}))
-      (kids-remove r #{y})
+      (throws? (remove-kid r #{y x}))
+      (remove-kid r #{y})
       (is= (hid->kids r) [])
       (is= (hid->tree r)
         {:attrs {:tag :root, :color :white},
@@ -246,15 +246,15 @@
                                  [{:attrs {:tag :char, :color :red},   :value "x"}
                                   {:attrs {:tag :char, :color :green}, :value "y"}
                                   {:attrs {:tag :char, :color :blue},  :value "z"}]})
-      (remove-elems #{y z})
+      (remove-hid y z)
       (is= (hid->kids a) [x])
       (is= (hid->kids b) [x])
       (is= (hid->kids c) [x])
       (is= (hid->tree c) {:attrs {:tag :r3, :color :black},
                           :kids  [{:attrs {:tag :char, :color :red}, :value "x"}]})
-      (throws? (remove-elems #{x y}))
+      (throws? (remove-hid x y))
 
-      (remove-elems #{x})
+      (remove-hid x)
       (is= (hid->kids a) [])
       (is= (hid->kids b) [])
       (is= (hid->kids c) [])
