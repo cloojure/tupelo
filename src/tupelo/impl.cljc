@@ -759,7 +759,7 @@
                   (str "zip*: colls must all be same length; lengths=" lengths))))
     (output-fn (apply map vector colls))))
 
-; #todo add schema; result = ts/List[ ts/Pair ]
+; #todo add schema; result = tsk/List[ tsk/Pair ]
 ; #todo add :trunc & assert;  add :lazy
 (defn zip
   "Zips together vectors like zipmap (like Python zip):
@@ -771,6 +771,57 @@
   [& args]
   (assert #(every? sequential? args))
   (apply zip* {} args))
+
+; #todo rename -> drop-idx
+; #todo force to vector result
+(s/defn drop-at :- tsk/List
+  "Removes an element from a collection at the specified index."
+  [coll :- tsk/List
+   index :- s/Int]
+  (when (neg? index)
+    (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
+  (when (<= (count coll) index)
+    (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
+                                        " (count coll)=" (count coll) " index=" index))))
+  (glue (take index coll)
+    (drop (inc index) coll)))
+
+; #todo rename -> insert-idx
+; #todo force to vector result
+(s/defn insert-at :- tsk/List
+  "Inserts an element into a collection at the specified index."
+  [coll :- tsk/List
+   index :- s/Int
+   elem :- s/Any]
+  (when (neg? index)
+    (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
+  (when (< (count coll) index)
+    (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
+                                        " (count coll)=" (count coll) " index=" index))))
+  (glue (take index coll) [elem]
+    (drop index coll)))
+
+; #todo rename -> replace-idx
+; #todo force to vector result
+; #todo if was vector, could just use (assoc the-vec idx new-val)
+(s/defn replace-at :- tsk/List
+  "Replaces an element in a collection at the specified index."
+  [coll :- tsk/List
+   index :- s/Int
+   elem :- s/Any]
+  (when (neg? index)
+    (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
+  (when (<= (count coll) index)
+    (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
+                                        " (count coll)=" (count coll) " index=" index))))
+  (glue (take index coll)
+    [elem]
+    (drop (inc index) coll)))
+
+; #todo use (idx    coll int-or-kw) as `get` replacement?
+; #todo use (idx-in coll [kw's]) as `fetch-in` replacement?
+
+
 
 (defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value

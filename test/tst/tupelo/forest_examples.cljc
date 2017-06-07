@@ -11,6 +11,11 @@
   ))
 (t/refer-tupelo)
 
+; Examples from:
+;   http://josf.info/blog/2014/03/21/getting-acquainted-with-clojure-zippers/
+;
+;
+
 (def t0
   [1 [:a :b] 2 3 [40 50 60]] )
 
@@ -51,28 +56,129 @@
 ; t0-hiccup
 (dotest
   (with-forest (new-forest)
-    (let [root-hid (add-tree-hiccup t0-hiccup)
-          tree     (hid->tree root-hid)
-          bush     (hid->bush root-hid)]
-         (is= tree
-           {:attrs {:tag :item},
-            :kids
-                   [{:attrs {:tag :item}, :value 1}
-                    {:attrs {:tag :item},
-                     :kids
-                            [{:attrs {:tag :item}, :value :a} {:attrs {:tag :item}, :value :b}]}
-                    {:attrs {:tag :item}, :value 2}
-                    {:attrs {:tag :item}, :value 3}
-                    {:attrs {:tag :item},
-                     :kids
-                            [{:attrs {:tag :item}, :value 40}
-                             {:attrs {:tag :item}, :value 50}
-                             {:attrs {:tag :item}, :value 60}]}]})
-      (is= bush
+    (let [root-hid (add-tree-hiccup t0-hiccup)]
+       (let [tree (hid->tree root-hid)
+             bush (hid->bush root-hid)]
+            (is= tree
+              {:attrs {:tag :item},
+               :kids
+                      [{:attrs {:tag :item}, :value 1}
+                       {:attrs {:tag :item},
+                        :kids  [{:attrs {:tag :item}, :value :a}
+                                {:attrs {:tag :item}, :value :b}]}
+                       {:attrs {:tag :item}, :value 2}
+                       {:attrs {:tag :item}, :value 3}
+                       {:attrs {:tag :item},
+                        :kids  [{:attrs {:tag :item}, :value 40}
+                                {:attrs {:tag :item}, :value 50}
+                                {:attrs {:tag :item}, :value 60}]}]})
+         (is= bush
+           [{:tag :item}
+            [{:tag :item} 1]
+            [{:tag :item}
+             [{:tag :item} :a]
+             [{:tag :item} :b]]
+            [{:tag :item} 2]
+            [{:tag :item} 3]
+            [{:tag :item}
+             [{:tag :item} 40]
+             [{:tag :item} 50]
+             [{:tag :item} 60]]]) )
+      ; find all keyword leaves in order
+      (let [leaf-hids    (find-leaf-hids root-hid [:** :*] :*)
+            kw-leaf-hids (keep-if #(keyword? (hid->value %)) leaf-hids) ; could keep only first one here
+            leaves       (mapv hid->leaf kw-leaf-hids)]
+           ; must use `val=` since (not= {:attrs {:tag :item}, :value :a}
+           ;                  (map->Leaf {:attrs {:tag :item}, :value :a} ))
+           (is (val= leaves
+                 [{:attrs {:tag :item}, :value :a}
+                  {:attrs {:tag :item}, :value :b}]))))))
+
+; update the first child of the root using `inc`
+(dotest
+  (with-forest (new-forest)
+    (let [root-hid    (add-tree-hiccup t0-hiccup)
+          child-1-hid (first (hid->kids root-hid))
+          >>          (value-update child-1-hid inc)
+          result      (hid->leaf child-1-hid)]
+         (is= result #tupelo.x_forest.Leaf{:attrs {:tag :item}, :value 2})
+      (is= (hid->bush root-hid)
         [{:tag :item}
-         [{:tag :item} 1]
-         [{:tag :item} [{:tag :item} :a] [{:tag :item} :b]]
+         [{:tag :item} 2]
+         [{:tag :item}
+          [{:tag :item} :a]
+          [{:tag :item} :b]]
          [{:tag :item} 2]
          [{:tag :item} 3]
-         [{:tag :item} [{:tag :item} 40] [{:tag :item} 50] [{:tag :item} 60]]])
-      )))
+         [{:tag :item}
+          [{:tag :item} 40]
+          [{:tag :item} 50]
+          [{:tag :item} 60]]]))))
+
+; update the 2nd child of the root by appending :c
+(dotest
+  (with-forest (new-forest)
+    (let [root-hid  (add-tree-hiccup t0-hiccup)
+          kid-2-hid (xsecond (hid->kids root-hid))
+          >>        (kids-append kid-2-hid [(add-leaf :item :c)])]
+      (is= (hid->bush root-hid)
+        [{:tag :item}
+         [{:tag :item} 1]
+         [{:tag :item}
+          [{:tag :item} :a]
+          [{:tag :item} :b]
+          [{:tag :item} :c]]
+         [{:tag :item} 2]
+         [{:tag :item} 3]
+         [{:tag :item}
+          [{:tag :item} 40]
+          [{:tag :item} 50]
+          [{:tag :item} 60]]]))))
+
+; update the 2nd child of the root by pre-pending :aa
+(dotest
+  (with-forest (new-forest)
+    (let [root-hid  (add-tree-hiccup t0-hiccup)
+          kid-2-hid (xsecond (hid->kids root-hid))
+          >>        (kids-prepend kid-2-hid [(add-leaf :item :aa)])]
+         (is= (hid->bush root-hid)
+           [{:tag :item}
+            [{:tag :item} 1]
+            [{:tag :item}
+             [{:tag :item} :aa]
+             [{:tag :item} :a]
+             [{:tag :item} :b] ]
+            [{:tag :item} 2]
+            [{:tag :item} 3]
+            [{:tag :item}
+             [{:tag :item} 40]
+             [{:tag :item} 50]
+             [{:tag :item} 60]]]))))
+
+(defn leaf-gt-10?
+  [path]
+  (let [hid     (last path)
+        keeper? (and (leaf-hid? hid)
+                  (let [leaf-val (hid->value hid)]
+                       (and (integer? leaf-val) (< 10 leaf-val))))]
+     keeper?))
+
+; delete any numbers (< 10 n)
+(dotest
+  (with-forest (new-forest)
+    (let [root-hid  (add-tree-hiccup t0-hiccup)
+          big-paths   (find-paths-with root-hid [:** :*] leaf-gt-10?)
+          big-hids   (mapv last big-paths)
+          big-leaves (mapv hid->leaf big-hids) ]
+      (apply remove-hid big-hids)
+      (is= (hid->bush root-hid)
+        [{:tag :item}
+         [{:tag :item} 1]
+         [{:tag :item}
+          [{:tag :item} :a]
+          [{:tag :item} :b]]
+         [{:tag :item} 2]
+         [{:tag :item} 3]
+         [{:tag :item}]])))) ; they're gone!
+
+

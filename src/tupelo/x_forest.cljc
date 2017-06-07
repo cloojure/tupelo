@@ -175,6 +175,10 @@
   [hid :- HID]
   (validate tree-leaf? (hid->elem hid)))
 
+(s/defn hid->value :- s/Any
+  [hid :- HID]
+  (grab :value (hid->leaf hid)))
+
 (s/defn hid->attrs :- tsk/KeyMap
   [hid :- HID]
   (grab :attrs (hid->elem hid)))
@@ -187,10 +191,6 @@
 (s/defn hid->kids :- [HID]
   [hid :- HID]
   (grab :kids (hid->node hid)))
-
-(s/defn hid->value :- s/Any
-  [hid :- HID]
-  (grab :value (hid->leaf hid)))
 
 (s/defn node-hid?
   "Returns true iff an HID is a Node"
@@ -519,6 +519,19 @@
         kids-curr (grab :kids elem-curr)
         kids-new  (glue kids-curr kids-new)
         elem-new  (glue elem-curr {:kids kids-new})]
+       (set-elem hid elem-new)
+    elem-new))
+
+; #todo avoid self-cycles
+; #todo avoid descendant-cycles
+(s/defn kids-prepend :- tsk/KeyMap
+  "Appends a list of kids a Node"
+  [hid :- HID
+   kids-new :- [HID]]
+  (let [elem-curr (hid->elem hid)
+        kids-curr (grab :kids elem-curr)
+        kids-new  (glue kids-new kids-curr)
+        elem-new  (glue elem-curr {:kids kids-new})]
     (set-elem hid elem-new)
     elem-new))
 
@@ -610,8 +623,6 @@
 ; #todo find-roots function (& root for sole root or throw)
 
 ;---------------------------------------------------------------------------------------------------
-
-
 (s/defn format-path
   [hids :- [HID]]
   (let [[hid-curr & hid-rest] hids]
@@ -681,6 +692,14 @@
       (find-paths-impl result-atom [] root tgt-path))
     @result-atom))
 
+(s/defn find-paths-with
+  [root-spec :- HID
+   tgt-path :- [s/Any]
+   pred :- s/Any]   ; #todo how func spec?
+  (let [paths (find-paths root-spec tgt-path)
+        keepers (keep-if pred paths)]
+     keepers ))
+
 (defn find-hids     ; #todo need test
   [root-spec tgt-path]
   (mapv last (find-paths root-spec tgt-path)))
@@ -695,11 +714,7 @@
 
 (defn find-value     ; #todo need test
   [root-spec tgt-path]
-  (grab :value (find-tree root-spec tgt-path)))
-
-(s/defn leaf->value     ; #todo need test
-  [leaf-hid :- HID]
-  (grab :value (hid->tree leaf-hid)))
+  (hid->value (find-tree root-spec tgt-path)))
 
 (defn- has-matching-leaf
   [path tgt-val]

@@ -260,55 +260,9 @@
 (pns/import-macro impl/vals->map)
 (pns/import-macro impl/with-map-vals)
 
-; #todo rename -> drop-idx
-; #todo force to vector result
-(s/defn drop-at :- ts/List
-  "Removes an element from a collection at the specified index."
-  [coll :- ts/List
-   index :- s/Int]
-  (when (neg? index)
-    (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
-  (when (<= (count coll) index)
-    (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
-                                        " (count coll)=" (count coll) " index=" index))))
-  (glue (take index coll)
-    (drop (inc index) coll)))
-
-; #todo rename -> insert-idx
-; #todo force to vector result
-(s/defn insert-at :- ts/List
-  "Inserts an element into a collection at the specified index."
-  [coll :- ts/List
-   index :- s/Int
-   elem :- s/Any]
-  (when (neg? index)
-    (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
-  (when (< (count coll) index)
-    (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
-                                        " (count coll)=" (count coll) " index=" index))))
-  (glue (take index coll) [elem]
-    (drop index coll)))
-
-; #todo rename -> replace-idx
-; #todo force to vector result
-; #todo if was vector, could just use (assoc the-vec idx new-val)
-(s/defn replace-at :- ts/List
-  "Replaces an element in a collection at the specified index."
-  [coll :- ts/List
-   index :- s/Int
-   elem :- s/Any]
-  (when (neg? index)
-    (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
-  (when (<= (count coll) index)
-    (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
-                                        " (count coll)=" (count coll) " index=" index))))
-  (glue (take index coll) 
-        [elem]
-        (drop (inc index) coll)))
-
-; #todo use (idx    coll int-or-kw) as `get` replacement?
-; #todo use (idx-in coll [kw's]) as `fetch-in` replacement?
-
+(pns/import-fn impl/drop-at )
+(pns/import-fn impl/insert-at )
+(pns/import-fn impl/replace-at )
 
 (s/defn dissoc-in :- s/Any
   "A sane version of dissoc-in that will not delete intermediate keys.

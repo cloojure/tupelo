@@ -227,7 +227,9 @@
       (is= (hid->kids r) [])
       (is= (hid->tree r)
         {:attrs {:tag :root, :color :white},
-         :kids  []})))
+         :kids  []})
+      (kids-append  r [z]) (is= (hid->kids r) [z])
+      (kids-prepend r [x y]) (is= (hid->kids r) [x y z])))
 
   (with-forest (new-forest)
     (let [x (add-leaf {:tag :char :color :red} "x")
