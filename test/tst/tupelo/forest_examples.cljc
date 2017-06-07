@@ -7,6 +7,7 @@
 (ns tst.tupelo.forest-examples
   (:use tupelo.x-forest tupelo.test )
   (:require
+    [schema.core :as s]
     [tupelo.core :as t]
   ))
 (t/refer-tupelo)
@@ -58,12 +59,24 @@
    [:item 2]
    [:item :a]
    [:item :b]
-   [[:item 3]
+   [:item
+    [:item 3]
     [:item 4]
     [:item :c]
     [:item :d]
     [:item 5]]
    [:item :e]] )
+
+(def z3-hiccup
+  [:item
+   [:item 1]
+   [:item 2]
+   [:item :a]
+   [:item :b]
+   [:item :c]
+   [:item :d]
+   [:item :e]
+   [:item 3]])
 
 ;-----------------------------------------------------------------------------
 ; t0-hiccup
@@ -98,10 +111,10 @@
              [{:tag :item} 50]
              [{:tag :item} 60]]]) )
       ; find all keyword leaves in order
-      (let [leaf-hids-1  (set (find-leaf-hids root-hid [:** :*] :*))
+      (let [leaf-hids-1  (find-leaf-hids root-hid [:** :*] :*)
             leaf-hids-2  (all-leaf-hids)
-            >>           (is= leaf-hids-1 leaf-hids-2)
-            kw-leaf-hids (keep-if #(keyword? (hid->value %)) leaf-hids-2) ; could keep only first one here
+            >>           (is= (set leaf-hids-1) leaf-hids-2)
+            kw-leaf-hids (keep-if #(keyword? (hid->value %)) leaf-hids-1) ; could keep only first one here
             leaves       (mapv hid->leaf kw-leaf-hids)]
            ; must use `val=` since (not= {:attrs {:tag :item}, :value :a}
            ;                  (map->Leaf {:attrs {:tag :item}, :value :a} ))
@@ -199,15 +212,80 @@
 
 ; delete any numbers (< 10 n)
 
-;(dotest
-;  (with-forest (new-forest)
-;    (let [root-hid        (add-tree-hiccup z2-hiccup)
-;          is-kid-leaf-kw? (fn [hid]
-;                            (and (leaf-hid? hid)
-;                              (keyword? (hid->value hid))))
-;          ]
-;
-;      (spyx-pretty (hid->bush root-hid))
-;    )))
-;
+(defn leaf-kw-hid? [hid]
+  (and (leaf-hid? hid)
+    (keyword? (hid->value hid))))
+
+(s/defn kw-partition? :- s/Bool
+  [partition :- [HID]]
+  (leaf-kw-hid? (xfirst partition)))
+
+(s/defn wrap-adjacent-kw-kids [hid]
+  (let [kid-hids            (hid->kids hid)
+        kid-elems           (mapv hid->elem kid-hids)
+        kid-partitions      (partition-by leaf-kw-hid? kid-hids)
+        kid-partitions-flgs (mapv kw-partition? kid-partitions)
+        kid-partitions-new  (map-let [partition kid-partitions
+                                      kw-part-flag kid-partitions-flgs]
+                              (if kw-part-flag
+                                [(add-node :item partition)]
+                                partition))
+        kids-new            (apply glue kid-partitions-new)
+        ]
+       (kids-set hid kids-new)))
+
+(dotest
+  (with-forest (new-forest)
+    (let [root-hid        (add-tree-hiccup z2-hiccup) ]
+         (is= (hid->hiccup root-hid)
+           [:item
+            [:item 1]
+            [:item 2]
+            [:item :a]
+            [:item :b]
+            [:item
+             [:item 3]
+             [:item 4]
+             [:item :c]
+             [:item :d]
+             [:item 5]]
+            [:item :e]])
+      (mapv wrap-adjacent-kw-kids (all-node-hids))
+      (is= (hid->hiccup root-hid)
+        [:item
+         [:item 1]
+         [:item 2]
+         [:item
+          [:item :a]
+          [:item :b]]
+         [:item
+          [:item 3]
+          [:item 4]
+          [:item
+           [:item :c]
+           [:item :d]]
+          [:item 5]]
+         [:item
+          [:item :e]]]))))
+(dotest
+  (with-forest (new-forest)
+    (let [root-hid (add-tree-hiccup z3-hiccup)]
+         (is= (hid->hiccup root-hid)
+           [:item
+            [:item 1]
+            [:item 2]
+            [:item :a]
+            [:item :b]
+            [:item :c]
+            [:item :d]
+            [:item :e]
+            [:item 3]])
+      (mapv wrap-adjacent-kw-kids (all-node-hids))
+      (is= (hid->hiccup root-hid)
+        [:item
+         [:item 1]
+         [:item 2]
+         [:item [:item :a] [:item :b] [:item :c] [:item :d] [:item :e]]
+         [:item 3]]))))
+
 
