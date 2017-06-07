@@ -379,7 +379,7 @@
                      [:c 4]
                      [:c 5]]
                     [:c 9]]
-          enlive-1 (hiccup->enlive hiccup-1)
+          enlive-1  (hiccup->enlive hiccup-1)
           tree-1    (hiccup->tree hiccup-1)
           tree-2    (enlive->tree enlive-1)
           bush-1    (hiccup->bush hiccup-1)
@@ -447,9 +447,64 @@
       (is= tree-1 (-> tree-1 tree->hiccup hiccup->tree))
       (is= tree-1 (-> tree-1 tree->enlive enlive->tree))
       (is= bush-1 (-> bush-1 bush->tree tree->bush))
-      (is= bush-1 (-> bush-1 bush->enlive enlive->bush))
+      (is= bush-1 (-> bush-1 bush->enlive enlive->bush)))))
 
-    )))
+(dotest
+  (with-forest (new-forest)
+    (let [enlive-tree {:tag   :a,
+                       :attrs {},
+                       :content
+                              [{:tag :b, :attrs {}, :content [1]}
+                               {:tag :b, :attrs {}, :content [2]}
+                               {:tag   :b,
+                                :attrs {},
+                                :content
+                                       ["First-String"
+                                        {:tag :c, :attrs {}, :content [4]}
+                                        "Second-String"
+                                        {:tag :c, :attrs {}, :content [5]}
+                                        "Third-String"]}
+                               {:tag :c, :attrs {}, :content [9]}]}
+          root-hid (add-tree-enlive enlive-tree) ]
+         (is= (hid->bush root-hid)
+           [{:tag :a}
+            [{:tag :b} 1]
+            [{:tag :b} 2]
+            [{:tag :b}
+             [{:tag :tupelo.forest/raw} "First-String"]
+             [{:tag :c} 4]
+             [{:tag :tupelo.forest/raw} "Second-String"]
+             [{:tag :c} 5]
+             [{:tag :tupelo.forest/raw} "Third-String"]]
+            [{:tag :c} 9]]) ) ) )
+(dotest
+  (nl)
+  (nl)
+  (println ":dbg =======================================================")
+  (nl)
+  (with-forest (new-forest)
+    (let [hiccup-tree [:a
+                       [:b 1]
+                       [:b 2]
+                       [:b
+                        "First-String"
+                        [:c 4]
+                        "Second-String"
+                        [:c 5]
+                        "Third-String"]
+                       [:c 9]]
+          root-hid    (add-tree-hiccup hiccup-tree)]
+         (is= (hid->bush root-hid)
+           [{:tag :a}
+            [{:tag :b} 1]
+            [{:tag :b} 2]
+            [{:tag :b}
+             [{:tag :tupelo.forest/raw} "First-String"]
+             [{:tag :c} 4]
+             [{:tag :tupelo.forest/raw} "Second-String"]
+             [{:tag :c} 5]
+             [{:tag :tupelo.forest/raw} "Third-String"]]
+            [{:tag :c} 9]]))))
 
 (dotest
   (with-forest (new-forest)

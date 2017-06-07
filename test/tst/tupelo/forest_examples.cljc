@@ -7,6 +7,7 @@
 (ns tst.tupelo.forest-examples
   (:use tupelo.x-forest tupelo.test )
   (:require
+    [clojure.data.xml :as dx]
     [schema.core :as s]
     [tupelo.core :as t]
   ))
@@ -14,8 +15,8 @@
 
 ; Examples from:
 ;   http://josf.info/blog/2014/03/21/getting-acquainted-with-clojure-zippers/
-;
-;
+;   http://josf.info/blog/2014/03/28/clojure-zippers-structure-editing-with-your-mind/
+;   http://josf.info/blog/2014/04/14/seqs-of-clojure-zippers/
 
 (def t0
   [1 [:a :b] 2 3 [40 50 60]] )
@@ -288,4 +289,16 @@
          [:item [:item :a] [:item :b] [:item :c] [:item :d] [:item :e]]
          [:item 3]]))))
 
+;-----------------------------------------------------------------------------
+(defn zappy
+  "grab a webpage we can trust, and parse it into a zipper"
+  []
+  (-> "http://clojure.github.io/clojure/clojure.zip-api.html"
+      clojure.java.io/input-stream
+      dx/parse ))
 
+;(dotest
+;  (let [root-hid (add-tree-enlive (spyx-pretty (zappy)))]
+;       ;    (spyx-pretty (hid->bush root-hid))
+;
+;  ))

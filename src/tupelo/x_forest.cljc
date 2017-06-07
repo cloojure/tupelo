@@ -365,13 +365,32 @@
   "Convert an Enlive-format data structure to a tree. "
   [enlive-tree]
   (assert (enlive-node? enlive-tree))
+ ;(nl)  (println "-------------------------------------------------------")
+ ;(spyx-pretty enlive-tree)
   (with-map-vals enlive-tree [attrs content]
     (assert (not (contains-key? attrs :tag)))
-    (let [attrs (glue attrs (submap-by-keys enlive-tree #{:tag}))]
-      (if (every? enlive-node? content)
-        (let [kids (glue [] (for [child content] (enlive->tree child)))]
-          (vals->map attrs kids))
-        {:attrs attrs :value (only content)}))))
+   ;(spyx attrs) (spyx-pretty content)
+    (let
+      [attrs (glue attrs (submap-by-keys enlive-tree #{:tag}))
+       result
+       (cond
+         (every? enlive-node? content)
+         (let [kids (glue [] (for [child content] (enlive->tree child)))]
+              (vals->map attrs kids))
+
+         (and
+           (= 1 (count content))
+           (not (enlive-node? (only content))))
+         {:attrs attrs :value (only content)}
+
+         :else
+         (let [kids (glue []
+                      (for [child content]
+                        (if (enlive-node? child)
+                          (enlive->tree child)
+                          {:attrs {:tag :tupelo.forest/raw} :value child})))]
+              (vals->map attrs kids))) ]
+      result)))
 
 (s/defn enlive->bush :- tsk/Vec ; #todo add test
   "Converts an Enlive-format data structure to a Bush. "
