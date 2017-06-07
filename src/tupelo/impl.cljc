@@ -514,7 +514,7 @@
       (every? set? colls)               (reduce into    colls) ; first item determines type of result
       (every? string-or-char? colls)    (apply str colls)
       :else (throw (IllegalArgumentException.
-                     (str "colls must be all same type; found types=" (mapv type colls)))))))
+                     (str "glue: colls must be all same type; found types=" (mapv type colls)))))))
 ; #todo look at using (ex-info ...)
 
 (s/defn append :- tsk/List

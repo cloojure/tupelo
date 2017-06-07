@@ -478,10 +478,6 @@
              [{:tag :tupelo.forest/raw} "Third-String"]]
             [{:tag :c} 9]]) ) ) )
 (dotest
-  (nl)
-  (nl)
-  (println ":dbg =======================================================")
-  (nl)
   (with-forest (new-forest)
     (let [hiccup-tree [:a
                        [:b 1]

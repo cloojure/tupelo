@@ -8,9 +8,10 @@
   (:use tupelo.x-forest tupelo.test )
   (:require
     [clojure.data.xml :as dx]
+    [clojure.set :as cs]
     [schema.core :as s]
     [tupelo.core :as t]
-  ))
+    [clojure.set :as set]))
 (t/refer-tupelo)
 
 ; Examples from:
@@ -297,8 +298,52 @@
       clojure.java.io/input-stream
       dx/parse ))
 
-;(dotest
-;  (let [root-hid (add-tree-enlive (spyx-pretty (zappy)))]
-;       ;    (spyx-pretty (hid->bush root-hid))
-;
-;  ))
+
+(dotest
+  (spit "clojure-sample.html"
+    (slurp "http://clojure.github.io/clojure/clojure.zip-api.html"))
+  (with-forest (new-forest)
+    (let [root-hid          (add-tree-enlive (zappy))
+          a-node-paths      (find-paths root-hid [:** :a])
+          extract-href-info (fn fn-extract-href-info [path]
+                              (let [hid         (last path)
+                                    href        (hid->attr hid :href)
+                                    depth       (count path)
+                                    curr-tree   (hid->tree hid)
+                                    result-atom (atom nil)
+                                    num-hids    (with-forest (new-forest)
+                                                  (let [tmp-root (add-tree curr-tree)]
+                                                       (reset! result-atom (count (all-hids)))))]
+                                   (vals->map href depth num-hids)))
+          result-data       (mapv extract-href-info a-node-paths)]
+    ; (spyx-pretty result-data)
+      (is (cs/subset?
+            (set [{:href "index.html", :depth 5, :num-hids 2}
+                  {:href "index.html", :depth 6, :num-hids 1}
+                  {:href "index.html", :depth 9, :num-hids 1}
+                  {:href "api-index.html", :depth 9, :num-hids 1}
+                  {:href "clojure.core-api.html", :depth 10, :num-hids 1}
+                  {:href "clojure.data-api.html", :depth 10, :num-hids 1}
+                  {:href "clojure.edn-api.html", :depth 10, :num-hids 1}
+                  {:href "clojure.inspector-api.html", :depth 10, :num-hids 1}
+                  {:href "clojure.instant-api.html", :depth 10, :num-hids 1}
+                  {:href "clojure.java.browse-api.html", :depth 10, :num-hids 1}
+                  {:href "clojure.java.io-api.html", :depth 10, :num-hids 1}
+                  {:href "clojure.java.javadoc-api.html", :depth 10, :num-hids 1}
+                  {:href "http://clojure.org", :depth 7, :num-hids 1}
+                  {:href "#toc0", :depth 12, :num-hids 1}
+                  {:href "#", :depth 12, :num-hids 1}
+                  {:href "#var-section", :depth 12, :num-hids 1}
+                  {:href "#clojure.zip/append-child", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/branch?", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/children", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/down", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/edit", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/end?", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/root", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/seq-zip", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/up", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/vector-zip", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/xml-zip", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/zipper", :depth 13, :num-hids 1}])
+            (set result-data))))))
