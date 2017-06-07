@@ -748,7 +748,7 @@
 
 (defn find-value     ; #todo need test
   [root-spec tgt-path]
-  (hid->value (find-tree root-spec tgt-path)))
+  (hid->value (find-hid root-spec tgt-path)))
 
 (defn- has-matching-leaf
   [path tgt-val]
