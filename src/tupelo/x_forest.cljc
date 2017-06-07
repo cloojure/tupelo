@@ -524,11 +524,11 @@
 
 ; #todo (s/defn remove-orphans [roots-to-keep] ...)
 
-(s/defn remove-kid :- tsk/KeyMap
+(s/defn remove-kids :- tsk/KeyMap
   "Removes all a set of children from a Node (including any duplcates)."
   ([hid :- HID
     kids-leaving :- (s/either [HID] #{HID})]
-    (remove-kid hid kids-leaving false))
+    (remove-kids hid kids-leaving false))
   ([hid :- HID
     kids-leaving :- (s/either [HID] #{HID})
     missing-kids-ok :- s/Bool]
@@ -569,7 +569,7 @@
     (doseq [hid hids-staying]
       (let [elem (hid->elem hid)]
         (when (instance? Node elem)
-          (remove-kid hid hids-leaving true))))) ; true => missing-kids-ok
+          (remove-kids hid hids-leaving true))))) ; true => missing-kids-ok
   hids-leaving)
 
 (s/defn remove-hid :- #{HID}

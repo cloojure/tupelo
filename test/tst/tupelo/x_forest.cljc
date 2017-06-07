@@ -220,10 +220,10 @@
                  {:attrs {:tag :char, :color :green}, :value "y"}
                  {:attrs {:tag :char, :color :blue}, :value "z"}]})
 
-      (remove-kid r #{z x})
+      (remove-kids r #{z x})
       (is= (hid->kids r) [y])
-      (throws? (remove-kid r #{y x}))
-      (remove-kid r #{y})
+      (throws? (remove-kids r #{y x}))
+      (remove-kids r #{y})
       (is= (hid->kids r) [])
       (is= (hid->tree r)
         {:attrs {:tag :root, :color :white},
