@@ -729,10 +729,19 @@
 (s/defn find-paths-with
   [root-spec :- HID
    tgt-path :- [s/Any]
-   pred :- s/Any]   ; #todo how func spec?
-  (let [paths (find-paths root-spec tgt-path)
-        keepers (keep-if pred paths)]
-     keepers ))
+   path-pred :- s/Any] ; #todo how func spec?
+  (let [paths-found (find-paths root-spec tgt-path)
+        keepers     (keep-if path-pred paths-found)]
+       keepers))
+
+(s/defn find-hids-with
+  [root-spec :- HID
+   tgt-path :- [s/Any]
+   hid-pred :- s/Any] ; #todo how func spec?
+  (let [paths-found (find-paths root-spec tgt-path)
+        hids-found  (mapv last paths-found)
+        hids-keep   (keep-if hid-pred hids-found)]
+       hids-keep))
 
 (defn find-hids     ; #todo need test
   [root-spec tgt-path]

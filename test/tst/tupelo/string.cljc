@@ -248,6 +248,12 @@
   (isnt (ts/alphanumeric? "ab*de"))
   (isnt (ts/alphanumeric? \=))
 
+  (is (ts/whitespace?   " "))
+  (is (ts/whitespace?   " \n"))
+  (is (ts/whitespace?   " \r"))
+  (is (ts/whitespace? (str \tab "   "  "\n")))
+  (isnt (ts/whitespace? (str \tab " xyz "  "\n")))
+
   (is (ts/whitespace-horiz?                ts/chars-whitespace-horiz))
   (is (ts/whitespace-eol?                  ts/chars-whitespace-eol))
   (is (ts/whitespace?                      ts/chars-whitespace))

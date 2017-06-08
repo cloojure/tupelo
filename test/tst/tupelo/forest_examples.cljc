@@ -13,7 +13,7 @@
     [net.cgrand.enlive-html :as en-html]
     [schema.core :as s]
     [tupelo.core :as t]
-  ))
+    [tupelo.string :as ts]))
 (t/refer-tupelo)
 
 ; Examples from:
@@ -318,7 +318,7 @@
                                                      (count (all-hids))))]
                                    (vals->map href depth num-hids)))
           result-data       (mapv extract-href-info a-node-paths)]
-         ; (spyx-pretty result-data)
+       ; (spyx-pretty (hid->bush root-hid))
          (is (cs/subset?
                (set [{:href "index.html", :depth 5, :num-hids 2}
                      {:href "index.html", :depth 6, :num-hids 1}
@@ -351,7 +351,6 @@
                (set result-data))))))
 
 ;-----------------------------------------------------------------------------
-
 (dotest
   (with-forest (new-forest)
     (let [enlive-tree (->> "<p>sample <em>text</em> with words.</p>"
@@ -389,3 +388,116 @@
            [:tupelo.forest/raw " with words."]]]])
 
       (is= result "sample text with words."))))
+
+;-----------------------------------------------------------------------------
+; Discard any xml nodes of Type="A" or Type="B" (plus blank string nodes)
+(dotest
+  (with-forest (new-forest)
+    (let [xml-str         "<ROOT>
+                            <Items>
+                              <Item><Type>A</Type><Note>AA1</Note></Item>
+                              <Item><Type>B</Type><Note>BB1</Note></Item>
+                              <Item><Type>C</Type><Note>CC1</Note></Item>
+                              <Item><Type>A</Type><Note>AA2</Note></Item>
+                            </Items>
+                          </ROOT>"
+          enlive-tree     (->> xml-str
+                            java.io.StringReader.
+                            en-html/html-resource
+                            first)
+          root-hid        (add-tree-enlive enlive-tree)
+          tree-1          (hid->tree root-hid)
+
+          blank-leaf-hid? (fn [hid] (and (leaf-hid? hid) ; ensure it is a leaf node
+                                      (let [value (hid->value hid)]
+                                        (and (string? value)
+                                          (or (zero? (count value)) ; empty string
+                                            (ts/whitespace? value)))))) ; all whitespace string
+
+          type-bc-hid?    (fn [hid] (pos? (count (glue
+                                      (find-leaf-hids hid [:** :Type] "B")
+                                      (find-leaf-hids hid [:** :Type] "C")))))
+
+          blank-leaf-hids (keep-if blank-leaf-hid? (all-hids))
+          >>              (apply remove-hid blank-leaf-hids)
+          tree-2          (hid->tree root-hid)
+
+          type-bc-hids    (find-hids-with root-hid [:** :Item] type-bc-hid?)
+          >>              (apply remove-hid type-bc-hids)
+          tree-3          (hid->tree root-hid)
+          tree-3-hiccup   (hid->hiccup root-hid) ]
+       (is= tree-1
+         {:attrs {:tag :ROOT},
+          :kids
+                 [{:attrs {:tag :tupelo.forest/raw},
+                   :value "\n                            "}
+                  {:attrs {:tag :Items},
+                   :kids
+                          [{:attrs {:tag :tupelo.forest/raw},
+                            :value "\n                              "}
+                           {:attrs {:tag :Item},
+                            :kids
+                                   [{:attrs {:tag :Type}, :value "A"}
+                                    {:attrs {:tag :Note}, :value "AA1"}]}
+                           {:attrs {:tag :tupelo.forest/raw},
+                            :value "\n                              "}
+                           {:attrs {:tag :Item},
+                            :kids
+                                   [{:attrs {:tag :Type}, :value "B"}
+                                    {:attrs {:tag :Note}, :value "BB1"}]}
+                           {:attrs {:tag :tupelo.forest/raw},
+                            :value "\n                              "}
+                           {:attrs {:tag :Item},
+                            :kids
+                                   [{:attrs {:tag :Type}, :value "C"}
+                                    {:attrs {:tag :Note}, :value "CC1"}]}
+                           {:attrs {:tag :tupelo.forest/raw},
+                            :value "\n                              "}
+                           {:attrs {:tag :Item},
+                            :kids
+                                   [{:attrs {:tag :Type}, :value "A"}
+                                    {:attrs {:tag :Note}, :value "AA2"}]}
+                           {:attrs {:tag :tupelo.forest/raw},
+                            :value "\n                            "}]}
+                  {:attrs {:tag :tupelo.forest/raw},
+                   :value "\n                          "}]})
+
+      (is= tree-2
+        {:attrs {:tag :ROOT},
+         :kids
+                [{:attrs {:tag :Items},
+                  :kids
+                         [{:attrs {:tag :Item},
+                           :kids
+                                  [{:attrs {:tag :Type}, :value "A"}
+                                   {:attrs {:tag :Note}, :value "AA1"}]}
+                          {:attrs {:tag :Item},
+                           :kids
+                                  [{:attrs {:tag :Type}, :value "B"}
+                                   {:attrs {:tag :Note}, :value "BB1"}]}
+                          {:attrs {:tag :Item},
+                           :kids
+                                  [{:attrs {:tag :Type}, :value "C"}
+                                   {:attrs {:tag :Note}, :value "CC1"}]}
+                          {:attrs {:tag :Item},
+                           :kids
+                                  [{:attrs {:tag :Type}, :value "A"}
+                                   {:attrs {:tag :Note}, :value "AA2"}]}]}]})
+      (is= tree-3
+        {:attrs {:tag :ROOT},
+         :kids
+                [{:attrs {:tag :Items},
+                  :kids
+                         [{:attrs {:tag :Item},
+                           :kids
+                                  [{:attrs {:tag :Type}, :value "A"}
+                                   {:attrs {:tag :Note}, :value "AA1"}]}
+                          {:attrs {:tag :Item},
+                           :kids
+                                  [{:attrs {:tag :Type}, :value "A"}
+                                   {:attrs {:tag :Note}, :value "AA2"}]}]}]})
+      (is= tree-3-hiccup
+        [:ROOT
+         [:Items
+          [:Item [:Type "A"] [:Note "AA1"]]
+          [:Item [:Type "A"] [:Note "AA2"]]]]))))
