@@ -414,9 +414,8 @@
                                              (or (zero? (count value)) ; empty string
                                                (ts/whitespace? value)))))) ; all whitespace string
 
-          type-bc-hid?    (fn [hid] (pos? (count (glue
-                                                   (find-leaf-hids hid [:** :Type] "B")
-                                                   (find-leaf-hids hid [:** :Type] "C")))))
+          type-bc-hid?    (fn [hid] (or (has-child-leaf? hid [:** :Type] "B")
+                                        (has-child-leaf? hid [:** :Type] "C")))
 
           blank-leaf-hids (keep-if blank-leaf-hid? (all-hids))
           >>              (apply remove-hid blank-leaf-hids)
@@ -542,12 +541,12 @@
           product-hids         (find-hids root-hid [:** :product])
           product-trees-hiccup (mapv hid->hiccup product-hids)
 
-          img2-paths           (find-leaf-paths root-hid [:data :products :product :images :image] "img2.jpg")
-          img2-prod-paths      (mapv #(drop-last 2 %) img2-paths)
-          img2-prod-hids       (mapv last img2-prod-paths)
+          has-img2-leaf?       (fn [hid] (has-child-leaf? hid [:product :images :image] "img2.jpg"))
+
+          img2-prod-hids       (find-hids-with root-hid [:data :products :product] has-img2-leaf?)
           img2-trees-hiccup    (mapv hid->hiccup img2-prod-hids)
 
-          red-sect-paths       (find-leaf-paths root-hid [:data :products :product :section] "Red Section")
+          red-sect-paths       (find-leaf-paths root-hid [:** :section] "Red Section")
           red-prod-paths       (mapv #(drop-last 1 %) red-sect-paths)
           red-prod-hids        (mapv last red-prod-paths)
           red-trees-hiccup     (mapv hid->hiccup red-prod-hids)]

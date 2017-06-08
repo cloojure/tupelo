@@ -799,12 +799,12 @@
         hids-keep   (keep-if hid-pred hids-found)]
        hids-keep))
 
-(s/defn has-child-path?
+(s/defn has-child-path? ; #todo need test
   [root-spec :- HidRootSpec
    tgt-path :- [s/Any] ]
   (pos? (count (find-paths root-spec tgt-path))))
 
-(s/defn has-child-path-with?
+(s/defn has-child-path-with? ; #todo need test
   [root-spec :- HidRootSpec
    tgt-path :- [s/Any]
    path-pred :- s/Any] ; #todo how func spec?
@@ -812,5 +812,6 @@
 
 (s/defn has-child-leaf?
   [root-spec :- HidRootSpec
-   tgt-path :- [s/Any] ]
-  (pos? (count (find-leaf-paths root-spec tgt-path))))
+   tgt-path :- [s/Any]
+   tgt-value :- s/Any]
+  (pos? (count (find-leaf-hids root-spec tgt-path tgt-value))))
