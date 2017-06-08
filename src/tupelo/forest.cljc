@@ -664,10 +664,10 @@
       (hid->bush hid-curr)
       [ (hid->attrs hid-curr) (format-path hid-rest) ] )))
 
-(s/defn format-paths [solns :- [[HID]]]
+(s/defn format-paths
+  [solns :- [[HID]]]
   (forv [soln solns]
     (format-path soln)))
-
 
 (s/defn ^:private ^:no-doc find-paths-impl
   [result-atom
@@ -707,11 +707,14 @@
                 ;           "  tgt-path:" tgt-path))
                 (find-paths-impl result-atom parents-new kid tgt-path)))))))))
 
+(def HidRootSpec (s/either HID [HID] #{HID}))
+
 ; #todo need a find-paths-pred that takes a predicate fn to choose
 ; #todo maybe a fn like postwalk to apply transformation fn to each node recursively
-(defn find-paths    ; #todo need update-tree & update-leaf fn's
+(s/defn find-paths :- [[HID]]    ; #todo need update-tree & update-leaf fn's
   "Searches an Enlive-format tree for the specified tgt-path"
-  [root-spec tgt-path]
+  [root-spec :- HidRootSpec
+   tgt-path :- [s/Any] ]
   (when (empty? tgt-path)
     (throw (IllegalStateException. "find-paths: tgt-path is empty")))
   (when (= :** (last tgt-path))
@@ -719,66 +722,95 @@
 
   (let [result-atom (atom [])
         roots (cond
-                (hid? root-spec) [root-spec] ; scalar arg -> wrap in a vector
-                (set? root-spec) root-spec ; set of root hids -> use it as-is
+                (hid? root-spec)     [root-spec] ; scalar arg -> wrap in a vector
+                (vector? root-spec)  (set root-spec) ; vec of root hids -> convert to set
+                (set? root-spec)     root-spec ; set of root hids -> use it as-is
                 :else (throw (IllegalArgumentException. (str "find-paths: invalid root-spec=" root-spec)))) ]
     (doseq [root roots]
       (find-paths-impl result-atom [] root tgt-path))
     @result-atom))
 
+(s/defn find-hids :- [HID] ; #todo need test
+  [root-spec :- HidRootSpec
+   tgt-path :- [s/Any]]
+  (mapv last (find-paths root-spec tgt-path)))
+
+(s/defn find-hid :- HID     ; #todo need test
+  [root-spec :- HidRootSpec
+   tgt-path :- [s/Any]]
+  (only (find-hids root-spec tgt-path)))
+
+(s/defn find-leaf-paths  :- [[HID]]    ; #todo need test
+  [root-spec :- HidRootSpec
+   tgt-path :- [s/Any]
+   tgt-value :- s/Any]
+  (let [paths          (find-paths root-spec tgt-path)
+        matching-leaf? (fn fn-matching-leaf?
+                         [path tgt-val]
+                         (let [tail-hid (last path)]
+                            (and (leaf-hid? tail-hid)
+                              (or (= tgt-val :*)
+                                (= tgt-val (hid->value tail-hid))))))
+        leaf-paths     (keep-if #(matching-leaf? % tgt-value) paths) ]
+       leaf-paths))
+
+(s/defn find-leaf-hids :- [HID]     ; #todo need test
+  [root-spec :- HidRootSpec
+   tgt-path :- [s/Any]
+   tgt-value :- s/Any]
+  (mapv last (find-leaf-paths root-spec tgt-path tgt-value)) )
+
+(s/defn find-leaf-hid
+  [root-spec :- HidRootSpec
+   tgt-path :- [s/Any]
+   tgt-value :- s/Any]
+  (only (find-leaf-hids root-spec tgt-path tgt-value)))
+
+(s/defn find-leaf
+  [root-spec :- HidRootSpec
+   tgt-path :- [s/Any]
+   tgt-value :- s/Any]
+  (hid->leaf (find-leaf-hid root-spec tgt-path tgt-value)))
+
+(s/defn find-tree     ; #todo need test (maybe delete?)
+  [root-spec :- HidRootSpec
+   tgt-path :- [s/Any] ]
+  (hid->tree (find-hid root-spec tgt-path)))
+
+(s/defn find-leaf-value     ; #todo need test (maybe delete?)
+  [root-spec :- HidRootSpec
+   tgt-path :- [s/Any] ]
+  (hid->value (find-hid root-spec tgt-path)))
+
 (s/defn find-paths-with
-  [root-spec :- HID
+  [root-spec :- HidRootSpec
    tgt-path :- [s/Any]
    path-pred :- s/Any] ; #todo how func spec?
   (let [paths-found (find-paths root-spec tgt-path)
         keepers     (keep-if path-pred paths-found)]
-    keepers))
+       keepers))
 
 (s/defn find-hids-with
-  [root-spec :- HID
+  [root-spec :- HidRootSpec
    tgt-path :- [s/Any]
    hid-pred :- s/Any] ; #todo how func spec?
   (let [paths-found (find-paths root-spec tgt-path)
         hids-found  (mapv last paths-found)
         hids-keep   (keep-if hid-pred hids-found)]
-    hids-keep))
+       hids-keep))
 
-(defn find-hids     ; #todo need test
-  [root-spec tgt-path]
-  (mapv last (find-paths root-spec tgt-path)))
+(s/defn has-child-path?
+  [root-spec :- HidRootSpec
+   tgt-path :- [s/Any] ]
+  (pos? (count (find-paths root-spec tgt-path))))
 
-(defn find-hid     ; #todo need test
-  [root-spec tgt-path]
-  (only (find-hids root-spec tgt-path)))
+(s/defn has-child-path-with?
+  [root-spec :- HidRootSpec
+   tgt-path :- [s/Any]
+   path-pred :- s/Any] ; #todo how func spec?
+  (pos? (count (find-paths-with root-spec tgt-path path-pred))))
 
-(defn find-tree     ; #todo need test (maybe delete?)
-  [root-spec tgt-path]
-  (hid->tree (find-hid root-spec tgt-path)))
-
-(defn find-value     ; #todo need test (maybe delete?)
-  [root-spec tgt-path]
-  (hid->value (find-hid root-spec tgt-path)))
-
-(defn- has-matching-leaf
-  [path tgt-val]
-  (let [tail-hid  (last path)
-        tail-elem (hid->elem tail-hid)]
-    (and (leaf-hid? tail-hid)
-      (or (= tgt-val (grab :value tail-elem))
-        (= tgt-val :*)))))
-
-(defn find-paths-leaf     ; #todo need test
-  [root-spec tgt-path tgt-value]
-  (let [paths      (find-paths root-spec tgt-path)
-        leaf-paths (keep-if #(has-matching-leaf % tgt-value) paths) ]
-    leaf-paths))
-
-(defn find-leaf-hids     ; #todo need test
-  [root-spec tgt-path tgt-value]
-  (mapv last (find-paths-leaf root-spec tgt-path tgt-value)) )
-
-(defn find-leaf
-  [root-spec tgt-path tgt-value]
-  (hid->leaf (last (only (find-paths-leaf root-spec tgt-path tgt-value))))
-)
-
+(s/defn has-child-leaf?
+  [root-spec :- HidRootSpec
+   tgt-path :- [s/Any] ]
+  (pos? (count (find-leaf-paths root-spec tgt-path))))

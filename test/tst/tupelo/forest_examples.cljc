@@ -542,12 +542,12 @@
           product-hids         (find-hids root-hid [:** :product])
           product-trees-hiccup (mapv hid->hiccup product-hids)
 
-          img2-paths           (find-paths-leaf root-hid [:data :products :product :images :image] "img2.jpg")
+          img2-paths           (find-leaf-paths root-hid [:data :products :product :images :image] "img2.jpg")
           img2-prod-paths      (mapv #(drop-last 2 %) img2-paths)
           img2-prod-hids       (mapv last img2-prod-paths)
           img2-trees-hiccup    (mapv hid->hiccup img2-prod-hids)
 
-          red-sect-paths       (find-paths-leaf root-hid [:data :products :product :section] "Red Section")
+          red-sect-paths       (find-leaf-paths root-hid [:data :products :product :section] "Red Section")
           red-prod-paths       (mapv #(drop-last 1 %) red-sect-paths)
           red-prod-hids        (mapv last red-prod-paths)
           red-trees-hiccup     (mapv hid->hiccup red-prod-hids)]
