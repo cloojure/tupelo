@@ -4,7 +4,7 @@
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
-(ns tupelo.x-forest
+(ns tupelo.forest
   "Allows the use of multiple tree structures. Provides tools to create, manipulate, and query
   the the trees individually and/or collectively."
   (:use tupelo.impl)
@@ -751,11 +751,11 @@
   [root-spec tgt-path]
   (only (find-hids root-spec tgt-path)))
 
-(defn find-tree     ; #todo need test
+(defn find-tree     ; #todo need test (maybe delete?)
   [root-spec tgt-path]
   (hid->tree (find-hid root-spec tgt-path)))
 
-(defn find-value     ; #todo need test
+(defn find-value     ; #todo need test (maybe delete?)
   [root-spec tgt-path]
   (hid->value (find-hid root-spec tgt-path)))
 

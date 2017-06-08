@@ -5,7 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.forest-examples
-  (:use tupelo.x-forest tupelo.test )
+  (:use tupelo.forest tupelo.test )
   (:require
     [clojure.data.xml :as dx]
     [clojure.java.io :as io]
@@ -134,7 +134,7 @@
           child-1-hid (first (hid->kids root-hid))
           >>          (value-update child-1-hid inc)
           result      (hid->leaf child-1-hid)]
-         (is= result #tupelo.x_forest.Leaf{:attrs {:tag :item}, :value 2})
+         (is= result #tupelo.forest.Leaf{:attrs {:tag :item}, :value 2})
       (is= (hid->bush root-hid)
         [{:tag :item}
          [{:tag :item} 2]

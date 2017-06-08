@@ -10,7 +10,7 @@
     [clojure.core.async     :as ca :refer [go go-loop chan thread]]
     [schema.core :as s]
     [tupelo.core :as t]
-    [tupelo.x-forest :as tf]
+    [tupelo.forest :as tf]
   ))
 (t/refer-tupelo)
 
