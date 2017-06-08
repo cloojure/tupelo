@@ -522,7 +522,6 @@
                   </data> " )
 (dotest
   (with-forest (new-forest)
-    ; (let-spy-pretty
     (let [enlive-tree          (->> xml-str-prod
                                  java.io.StringReader.
                                  en-html/html-resource
@@ -541,7 +540,6 @@
           tree-2               (hid->hiccup root-hid)
 
           product-hids         (find-hids root-hid [:** :product])
-          product-trees        (mapv hid->tree product-hids)
           product-trees-hiccup (mapv hid->hiccup product-hids)
 
           img2-paths           (find-paths-leaf root-hid [:data :products :product :images :image] "img2.jpg")
@@ -553,8 +551,8 @@
           red-prod-paths       (mapv #(drop-last 1 %) red-sect-paths)
           red-prod-hids        (mapv last red-prod-paths)
           red-trees-hiccup     (mapv hid->hiccup red-prod-hids)]
-     (spyx-pretty tree-1)
-     (spyx-pretty tree-2)
+     ;(spyx-pretty tree-1)
+     ;(spyx-pretty tree-2)
      (is= product-trees-hiccup
        [[:product
          [:section "Red Section"]
@@ -570,23 +568,23 @@
          [:section "Green Section"]
          [:images
           [:image "img.jpg"]
-          [:image "img2.jpg"]]]] )
+          [:image "img2.jpg"]]]])
 
-    (is= img2-trees-hiccup
-      [[:product
-        [:section "Red Section"]
-        [:images
-         [:image "img.jpg"]
-         [:image "img2.jpg"]]]
-       [:product
-        [:section "Green Section"]
-        [:images
-         [:image "img.jpg"]
-         [:image "img2.jpg"]]]])
+      (is= img2-trees-hiccup
+        [[:product
+          [:section "Red Section"]
+          [:images
+           [:image "img.jpg"]
+           [:image "img2.jpg"]]]
+         [:product
+          [:section "Green Section"]
+          [:images
+           [:image "img.jpg"]
+           [:image "img2.jpg"]]]])
 
-    (is= red-trees-hiccup
-      [[:product
-        [:section "Red Section"]
-        [:images
-         [:image "img.jpg"]
-         [:image "img2.jpg"]]]]))))
+      (is= red-trees-hiccup
+        [[:product
+          [:section "Red Section"]
+          [:images
+           [:image "img.jpg"]
+           [:image "img2.jpg"]]]]))))
