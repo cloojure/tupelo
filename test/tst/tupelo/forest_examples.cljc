@@ -523,7 +523,7 @@
   (with-forest (new-forest)
     (let [enlive-tree          (->> xml-str-prod
                                  java.io.StringReader.
-                                 en-html/html-resource
+                                 en-html/xml-resource
                                  first)
           root-hid             (add-tree-enlive enlive-tree)
           tree-1               (hid->hiccup root-hid)
@@ -552,22 +552,22 @@
           red-trees-hiccup     (mapv hid->hiccup red-prod-hids)]
      ;(spyx-pretty tree-1)
      ;(spyx-pretty tree-2)
-     (is= product-trees-hiccup
-       [[:product
-         [:section "Red Section"]
-         [:images
-          [:image "img.jpg"]
-          [:image "img2.jpg"]]]
-        [:product
-         [:section "Blue Section"]
-         [:images
-          [:image "img.jpg"]
-          [:image "img3.jpg"]]]
-        [:product
-         [:section "Green Section"]
-         [:images
-          [:image "img.jpg"]
-          [:image "img2.jpg"]]]])
+      (is= product-trees-hiccup
+        [[:product
+          [:section "Red Section"]
+          [:images
+           [:image "img.jpg"]
+           [:image "img2.jpg"]]]
+         [:product
+          [:section "Blue Section"]
+          [:images
+           [:image "img.jpg"]
+           [:image "img3.jpg"]]]
+         [:product
+          [:section "Green Section"]
+          [:images
+           [:image "img.jpg"]
+           [:image "img2.jpg"]]]])
 
       (is= img2-trees-hiccup
         [[:product
@@ -587,3 +587,32 @@
           [:images
            [:image "img.jpg"]
            [:image "img2.jpg"]]]]))))
+
+; shorter version w/o extra features
+(dotest
+  (with-forest (new-forest)
+    (let [xml-str         "<ROOT>
+                            <Items>
+                              <Item><Type>A</Type><Note>AA1</Note></Item>
+                              <Item><Type>B</Type><Note>BB1</Note></Item>
+                              <Item><Type>C</Type><Note>CC1</Note></Item>
+                              <Item><Type>A</Type><Note>AA2</Note></Item>
+                            </Items>
+                          </ROOT>"
+          enlive-tree     (->> xml-str
+                            java.io.StringReader.
+                            en-html/xml-resource
+                            first)
+          root-hid        (add-tree-enlive enlive-tree)
+          blank-leaf-hid? (fn [hid] (ts/whitespace? (hid->value hid)))
+          has-bc-leaf?    (fn [hid] (or (has-child-leaf? hid [:** :Type] "B")
+                                        (has-child-leaf? hid [:** :Type] "C")))
+          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids))
+          >>              (apply remove-hid blank-leaf-hids)
+          bc-item-hids    (find-hids-with root-hid [:** :Item] has-bc-leaf?)]
+      (apply remove-hid bc-item-hids)
+      (is= (hid->hiccup root-hid)
+        [:ROOT
+         [:Items
+          [:Item [:Type "A"] [:Note "AA1"]]
+          [:Item [:Type "A"] [:Note "AA2"]]]]))))
