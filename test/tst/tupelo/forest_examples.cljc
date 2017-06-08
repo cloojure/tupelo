@@ -408,24 +408,24 @@
           root-hid        (add-tree-enlive enlive-tree)
           tree-1          (hid->tree root-hid)
 
-    blank-leaf-hid? (fn [hid] (and (leaf-hid? hid) ; ensure it is a leaf node
-                                (let [value (hid->value hid)]
-                                  (and (string? value)
-                                    (or (zero? (count value)) ; empty string
-                                      (ts/whitespace? value)))))) ; all whitespace string
+          blank-leaf-hid? (fn [hid] (and (leaf-hid? hid) ; ensure it is a leaf node
+                                      (let [value (hid->value hid)]
+                                           (and (string? value)
+                                             (or (zero? (count value)) ; empty string
+                                               (ts/whitespace? value)))))) ; all whitespace string
 
-    type-bc-hid?    (fn [hid] (pos? (count (glue
-                                (find-leaf-hids hid [:** :Type] "B")
-                                (find-leaf-hids hid [:** :Type] "C")))))
+          type-bc-hid?    (fn [hid] (pos? (count (glue
+                                                   (find-leaf-hids hid [:** :Type] "B")
+                                                   (find-leaf-hids hid [:** :Type] "C")))))
 
-    blank-leaf-hids (keep-if blank-leaf-hid? (all-hids))
-    >>              (apply remove-hid blank-leaf-hids)
-    tree-2          (hid->tree root-hid)
+          blank-leaf-hids (keep-if blank-leaf-hid? (all-hids))
+          >>              (apply remove-hid blank-leaf-hids)
+          tree-2          (hid->tree root-hid)
 
-    type-bc-hids    (find-hids-with root-hid [:** :Item] type-bc-hid?)
-    >>              (apply remove-hid type-bc-hids)
-    tree-3          (hid->tree root-hid)
-    tree-3-hiccup   (hid->hiccup root-hid) ]
+          type-bc-hids    (find-hids-with root-hid [:** :Item] type-bc-hid?)
+          >>              (apply remove-hid type-bc-hids)
+          tree-3          (hid->tree root-hid)
+          tree-3-hiccup   (hid->hiccup root-hid)]
      (is= tree-1
        {:attrs {:tag :ROOT},
         :kids  [{:attrs {:tag :tupelo.forest/raw},
