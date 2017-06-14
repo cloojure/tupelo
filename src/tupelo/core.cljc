@@ -255,7 +255,7 @@
 (pns/import-fn impl/glue)
 (pns/import-fn impl/append)
 (pns/import-fn impl/prepend)
-(pns/import-fn impl/->vec)
+(pns/import-fn impl/->vector)
 (pns/import-fn impl/unwrap)
 
 (pns/import-fn impl/macro?)
@@ -584,7 +584,7 @@
      xfirst xsecond xthird xrest kw->sym kw->str str->sym str->kw sym->kw sym->str
      split-using split-match partition-using
      wild-match? wild-submatch? wild-match-ctx? wild-item? submatch? val=
-     increasing? increasing-or-equal? ->vec unwrap
+     increasing? increasing-or-equal? ->vector unwrap
      fibonacci-seq fibo-thru fibo-nth unnest
      with-exception-default lazy-cons lazy-gen yield yield-all
     ] ))

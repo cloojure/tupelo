@@ -578,13 +578,13 @@
   (assert (sequential? data))
   (->Unwrapped data))
 
-(s/defn ->vec :- [s/Any]
+(s/defn ->vector :- [s/Any]
   [& args :- [s/Any]]
   (let [result (reduce (fn [accum it]
                          (glue accum
                            (cond
-                             (sequential? it) (apply ->vec it)
-                             (instance? Unwrapped it) (apply ->vec (fetch it :data))
+                             (sequential? it) (apply ->vector it)
+                             (instance? Unwrapped it) (apply ->vector (fetch it :data))
                              :else [it])))
                  [] args)]
        result))
