@@ -246,17 +246,12 @@
 (pns/import-fn impl/not-empty?)
 (pns/import-fn impl/keyvals )
 
-
-(defn flat-vec
-  "Accepts any number of nested args and returns the flattened result as a vector."
-  [& args]
-  (vec (flatten args)))
-
 (pns/import-fn impl/glue)
 (pns/import-fn impl/append)
 (pns/import-fn impl/prepend)
 (pns/import-fn impl/->vector)
 (pns/import-fn impl/unwrap)
+(pns/import-fn impl/flat-vec)
 
 (pns/import-fn impl/macro?)
 

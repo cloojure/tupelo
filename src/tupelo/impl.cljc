@@ -589,6 +589,28 @@
                  [] args)]
        result))
 
+(s/defn unnest :- [s/Any] ; #todo readme
+  "Given any set of arguments including vectors, maps, sets, & scalars, performs a depth-first
+  recursive walk returning scalar args (int, string, keyword, etc) in a single 1-D vector."
+  [& values]
+  (let [unnest-coll (fn fn-unnest-coll [coll]
+                      (apply glue
+                        (for [item coll]
+                          (if (coll? item)
+                            (fn-unnest-coll item)
+                            [item]))))
+        result      (apply glue
+                      (for [item values]
+                        (if (coll? item)
+                          (unnest-coll item)
+                          [item])))]
+       result))
+
+(defn flat-vec ; #todo remove this?
+  "Accepts any number of nested args and returns the flattened result as a vector."
+  [& args]
+  (vec (flatten args)))
+
 (s/defn not-nil? :- s/Bool
   "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
    or the poorly-named clojure.core/some? "
@@ -1083,24 +1105,6 @@
               :subvec-ok   true
               :wildcard-ok false}]
      (wild-match-ctx? ctx smaller larger))))
-
-
-(s/defn unnest :- [s/Any] ; #todo readme
-  "Given any set of arguments including vectors, maps, sets, & scalars, performs a depth-first
-  recursive walk returning scalar args (int, string, keyword, etc) in a single 1-D vector."
-  [& values]
-  (let [unnest-coll (fn fn-unnest-coll [coll]
-                      (apply glue
-                        (for [item coll]
-                          (if (coll? item)
-                            (fn-unnest-coll item)
-                            [item]))))
-        result      (apply glue
-                      (for [item values]
-                        (if (coll? item)
-                          (unnest-coll item)
-                          [item])))]
-    result))
 
 (s/defn wild-item? :- s/Bool
   "Returns true if any element in a nested collection is the wildcard :*"
