@@ -734,9 +734,12 @@
 
   Given bindings and forms like `(map-let [x xs, y ys, ...] (+ x y))`, will iterate over the
   collections [xs ys ...] assigning successive values of each collection to [x y ...], respectively.
-  The local symbols [x y ...] can then be used in `forms` to generate the output mapping."
+  The local symbols [x y ...] can then be used in `forms` to generate the output mapping.
+  Will throw if collections are not all of the same length. Not lazy."
   [bindings & forms]
-  `(map-let* {} ~bindings ~@forms))
+  `(map-let* {:strict true
+              :lazy   false}
+     ~bindings ~@forms))
 
 ; #todo how use Schema with "rest" args?
 (defn zip*

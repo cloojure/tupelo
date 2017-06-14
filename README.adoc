@@ -743,7 +743,8 @@ results in a nice simple vector.
 
 Clojure training materials seem to vary somewhat in the recommended form for the generation of a lazy sequence. This
 is further complicated by the legacy function `lazy-cat` which can easily cause an out-of-memory error
-(see S. Sierra post).  A simpler form is possible using `tupelo.core/lazy-cons` macro.  An example
+(link:https://stuartsierra.com/2015/04/26/clojure-donts-concat[please see this post]).
+A simpler form is possible using `tupelo.core/lazy-cons` macro.  An example
 of this form in use is:
 
 [source,clojure]
