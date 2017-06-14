@@ -625,6 +625,20 @@
   (throws?            (prepend  #{99}  #{:a 1} )))
 
 (dotest
+  (is= [1 2 3 4 5 6 7 8 9] (->vec 1 2 3 4 5 6 7 8 9))
+  (is= [1 2 3 4 5 6 7 8 9] (->vec 1 (unwrap [2 3 4 5 6 7 8]) 9))
+  (is= [1 2 3 4 5 6 7 8 9] (->vec 1 (unwrap [2 (unwrap [3 4 5 6 7]) 8]) 9))
+  (is= [1 2 3 4 5 6 7 8 9] (->vec 1 (unwrap [2 (unwrap [3 (unwrap [4 5 6]) 7]) 8]) 9))
+  (is= [1 2 3 4 5 6 7 8 9] (->vec 1 (unwrap [2 (unwrap [3 (unwrap [4 (unwrap [5]) 6]) 7]) 8]) 9))
+  (is= [1 2 3 4 5 6 7 8 9] (->vec 1 2 3 (unwrap [4 5 6]) 7 8 9))
+  (is= [1 2 3 4 5 6 7 8 9] (->vec 1 (unwrap [2 3 (unwrap [4 5 6]) 7 8]) 9))
+
+  (is= [1 2 3 4 5 6 7 8 9] (glue   [1] [2] [3] [4 5 6] [7] [8] [9]))
+  (is= [1 2 3 4 5 6 7 8 9] (concat [1] [2] [3] [4 5 6] [7] [8] [9]))
+  (is= [1 2 3 4 5 6 7 8 9] (glue   [1   2   3] [4 5 6] [7   8   9]))
+  (is= [1 2 3 4 5 6 7 8 9] (concat [1   2   3] [4 5 6] [7   8   9])))
+
+(dotest
   (isnt (increasing? [1 2] [1]))
   (isnt (increasing? [1 2] [1 1]))
   (isnt (increasing? [1 2] [1 2]))

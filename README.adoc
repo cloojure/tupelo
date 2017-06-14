@@ -431,11 +431,11 @@ order if you aren't aware of the default behavior:
 
 [source,clojure]
 ----
-  (-> nil
-    (conj 1)
-    (conj 2)
-    (conj 3))
-  ;=> (3 2 1)
+(-> nil
+  (conj 1)
+  (conj 2)
+  (conj 3))
+;=> (3 2 1)
 ----
 
 These failures are irritating and unproductive, and the error messages don't make it obvious what
@@ -444,14 +444,52 @@ beginning or end of a sequence, respectively:
 
 [source,clojure]
 ----
-  (append [1 2] 3  )   ;=> [1 2 3  ]
-  (append [1 2] 3 4)   ;=> [1 2 3 4]
+(append [1 2] 3  )   ;=> [1 2 3  ]
+(append [1 2] 3 4)   ;=> [1 2 3 4]
 
-  (prepend   3 [2 1])  ;=> [  3 2 1]
-  (prepend 4 3 [2 1])  ;=> [4 3 2 1]
+(prepend   3 [2 1])  ;=> [  3 2 1]
+(prepend 4 3 [2 1])  ;=> [4 3 2 1]
 ----
 
 Both `prepend` and `append` always return a vector result.
+
+=== Combining Scalars and Vectors 
+
+Suppose we have a mixture of scalars & vectors (or lists) that we want to combine into a single
+vector. We want a function `???` to give us the following result:
+
+[source,clojure]
+----
+(???  1 2 3 [4 5 6] 7 8 9)  =>  [1 2 3 4 5 6 7 8 9]
+----
+
+Clojure doesn't have a function for this.  Instead we need to wrap all of the scalars into vectors
+and then use `glue` or `concat`:
+
+[source,clojure]
+----
+; can wrap individually or in groups
+(glue [1   2   3] [4 5 6] [7   8   9])  =>  [1 2 3 4 5 6 7 8 9]   ; could also use concat
+(glue [1] [2] [3] [4 5 6] [7] [8] [9])  =>  [1 2 3 4 5 6 7 8 9]   ; could also use concat
+----
+
+It may be inconvenient to always wrap the scalar values into vectors just to combine them with an
+occasional vector value. Instead, it might be more convenient to ***unwrap*** the vector values,
+then combine the result with other scalars. We can do that with the `->vec` and `unwrap` functions:
+
+[source,clojure]
+----
+(->vec 1 2 3 4 5 6 7 8 9)             =>  [1 2 3 4 5 6 7 8 9]
+(->vec 1 (unwrap [2 3 4 5 6 7 8]) 9)  =>  [1 2 3 4 5 6 7 8 9]
+----
+
+It will also work recursively for nested `unwrap` calls:
+
+[source,clojure]
+----
+(->vec 1 (unwrap [2 3 (unwrap [4 5 6]) 7 8]) 9)  =>  [1 2 3 4 5 6 7 8 9]
+----
+
 
 === Removing Values from a Sequence
 

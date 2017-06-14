@@ -110,6 +110,40 @@
      ~@body
      (catch Exception e# ~default-val)))
 
+; #todo rename to "get-in-safe" ???
+; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)
+; #todo make throw if any index invalid
+; #todo need parallel safe (assoc-in m [ks] v) (assoc-in m [ks] v :missing-ok)
+(s/defn fetch-in :- s/Any
+  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
+   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
+   Throws an Exception if the path keys-vec is not present in the-map."
+  [the-map   :- tsk/Map
+   keys-vec  :- tsk/Vec ]
+  (let [result (get-in the-map keys-vec ::not-found)]
+       (if (= result ::not-found)
+         (throw (IllegalArgumentException.
+                  (str "Key seq not present in map:" \newline
+                    "  map : " the-map \newline
+                    "  keys: " keys-vec \newline)))
+         result)))
+
+(s/defn fetch :- s/Any
+  "A fail-fast version of keyword/map lookup.  When invoked as (grab the-map :the-key),
+   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
+   Throws an Exception if :the-key is not present in the-map."
+  [the-map :- tsk/Map
+   the-key :- s/Any]
+  (fetch-in the-map [the-key]))
+
+(s/defn grab :- s/Any
+  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
+   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
+   Throws an Exception if :the-key is not present in the-map."
+  [the-key :- s/Any
+   the-map :- tsk/Map]
+  (fetch-in the-map [the-key]))
+
 ;-----------------------------------------------------------------------------
 ; spy stuff
 
@@ -538,6 +572,23 @@
       (throw (IllegalArgumentException. (str "Nothing to prepend! elems=" elems))))
     (vec (concat elems listy))))
 
+(defrecord Unwrapped [data])
+(s/defn unwrap :- Unwrapped
+  [data :- [s/Any]]
+  (assert (sequential? data))
+  (->Unwrapped data))
+
+(s/defn ->vec :- [s/Any]
+  [& args :- [s/Any]]
+  (let [result (reduce (fn [accum it]
+                         (glue accum
+                           (cond
+                             (sequential? it) (apply ->vec it)
+                             (instance? Unwrapped it) (apply ->vec (fetch it :data))
+                             :else [it])))
+                 [] args)]
+       result))
+
 (s/defn not-nil? :- s/Bool
   "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
    or the poorly-named clojure.core/some? "
@@ -608,41 +659,6 @@
                            (keep-if not-nil? seq-of-scalars)))
         ]
     result))
-
-; #todo rename to "get-in-safe" ???
-; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)
-; #todo make throw if any index invalid
-; #todo need parallel safe (assoc-in m [ks] v) (assoc-in m [ks] v :missing-ok)
-(s/defn fetch-in :- s/Any
-  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
-   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
-   Throws an Exception if the path keys-vec is not present in the-map."
-  [the-map   :- tsk/Map
-   keys-vec  :- tsk/Vec ]
-  (let [result (get-in the-map keys-vec ::not-found)]
-    (if (= result ::not-found)
-      (throw (IllegalArgumentException.
-               (str "Key seq not present in map:" \newline
-                 "  map : " the-map \newline
-                 "  keys: " keys-vec \newline)))
-      result)))
-
-(s/defn fetch :- s/Any
-  "A fail-fast version of keyword/map lookup.  When invoked as (grab the-map :the-key),
-   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
-   Throws an Exception if :the-key is not present in the-map."
-  [the-map :- tsk/Map
-   the-key :- s/Any]
-  (fetch-in the-map [the-key]))
-
-(s/defn grab :- s/Any
-  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
-   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
-   Throws an Exception if :the-key is not present in the-map."
-  [the-key :- s/Any
-   the-map :- tsk/Map]
-  (fetch-in the-map [the-key]))
-
 
 (defmacro forv    ; #todo: (for-vec ...)  or  (vfor ...)
   "Like clojure.core/for but returns results in a vector.   Not lazy."
