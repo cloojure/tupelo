@@ -475,7 +475,7 @@ and then use `glue` or `concat`:
 
 It may be inconvenient to always wrap the scalar values into vectors just to combine them with an
 occasional vector value. Instead, it might be more convenient to ***unwrap*** the vector values,
-then combine the result with other scalars. We can do that with the `->vector` and `unwrap` functions:
+then combine the result with other scalars. We can do that with the `\->vector` and `unwrap` functions:
 
 [source,clojure]
 ----
