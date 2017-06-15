@@ -574,18 +574,35 @@
 
 (defrecord Unwrapped [data])
 (s/defn unwrap :- Unwrapped
+  "Works with the `->vector` function to unwrap vectors/lists to insert
+  their elements as with the unquote-spicing operator (~@). Examples:
+
+      (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
+      (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9]
+  "
   [data :- [s/Any]]
   (assert (sequential? data))
   (->Unwrapped data))
 
 (s/defn ->vector :- [s/Any]
+  "Wraps all args in a vector, as with `clojure.core/vector`. Will (recursively) recognize
+  any embedded calls to (unwrap <vec-or-list>) and insert their elements as with the
+  unquote-spicing operator (~@). Examples:
+
+      (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
+      (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9]
+  "
   [& args :- [s/Any]]
+  ;(nl)
+  ;(println "->vector args = " args)
   (let [result (reduce (fn [accum it]
-                         (glue accum
-                           (cond
-                             (sequential? it) (apply ->vector it)
-                             (instance? Unwrapped it) (apply ->vector (fetch it :data))
-                             :else [it])))
+                         (let [it-use (cond
+                                           (sequential? it) [ (apply ->vector it) ]
+                                           (instance? Unwrapped it) (apply ->vector (fetch it :data))
+                                           :else [it])
+                               accum-out (glue accum it-use ) ]
+                           ;(println it "->" it-use "  =>  " accum-out)
+                           accum-out ))
                  [] args)]
        result))
 
