@@ -800,30 +800,6 @@
     (is= { 0 :even 2 :even } (submap-by-vals
                                { 0 :even 1 :odd 2 :even 3 :odd }
                                #{ :even :prime } :missing-ok )))
-
-  (let [map1  {:a 1 :b 2 :c 3 :d 4 :e 5}]
-    (is= [1 2 3 4 5] (map-keys->vals map1 [:a :b :c :d :e]))
-    (is= [  2 3 4 5] (map-keys->vals map1 [   :b :c :d :e]))
-    (is= [    3 4 5] (map-keys->vals map1 [      :c :d :e]))
-    (is= [      4 5] (map-keys->vals map1 [         :d :e]))
-    (is= [        5] (map-keys->vals map1 [            :e]))
-
-    (is= [1 2 3 4 5] (map-keys->vals map1 [:a :b :c :d :e]))
-    (is= [1 2 3 4  ] (map-keys->vals map1 [:a :b :c :d   ]))
-    (is= [1 2 3    ] (map-keys->vals map1 [:a :b :c      ]))
-    (is= [1 2      ] (map-keys->vals map1 [:a :b         ]))
-    (is= [1        ] (map-keys->vals map1 [:a            ]))
-
-    (is= [  2 3 4 5] (map-keys->vals map1 [   :b :c :d :e]))
-    (is= [1   3 4 5] (map-keys->vals map1 [:a    :c :d :e]))
-    (is= [1 2   4 5] (map-keys->vals map1 [:a :b    :d :e]))
-    (is= [1 2 3   5] (map-keys->vals map1 [:a :b :c    :e]))
-    (is= [1 2 3 4  ] (map-keys->vals map1 [:a :b :c :d   ]))
-
-    (is= [3 1 4 2 5] (map-keys->vals map1 [:c :a :d :b :e]))
-    (is= []          (map-keys->vals map1 [] ))
-
-    (throws? (map-keys->vals map1 [:z])))
 )
 
 (dotest

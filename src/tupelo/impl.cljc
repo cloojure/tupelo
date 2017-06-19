@@ -957,15 +957,6 @@
         outer-set (set outer-map)]
     (set/subset? inner-set outer-set)))
 
-; #todo -> README
-; #todo variant: allow single or vec of default values
-(s/defn map-keys->vals :- tsk/List
-  "Returns a vector of values for each key, in the order specified. Throws for missing keys."
-  [map   :- tsk/KeyMap
-   keys  :- [s/Keyword]]
-  (forv [key keys]
-    (grab key map)))
-
 (defmacro vals->map ; #todo -> README
   "Called with a list of symbols like `(vals->map a b c)` returns a map
    like {:a a :b b :c c}.
