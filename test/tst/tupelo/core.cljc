@@ -2015,7 +2015,8 @@
       (is= [a b c d e] [1 2 3 4 5]))
 
     (with-map-vals the-map [a b c d e]
-      (is= [a b c d e] [1 2 3 4 5]))
+      (is= [a b c d e] [1 2 3 4 5])
+      (is= 15 (+ a b c d e)))
 
     (throws?
       (with-map-vals the-map [x y z]
