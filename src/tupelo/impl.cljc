@@ -970,11 +970,12 @@
   "Called with a list of symbols like `(vals->map a b c)` returns a map
    like {:a a :b b :c c}.
 
-     (def a 1)
-     (def b 2)
-     (def c 3)
-     (vals->map a b c)  ;=>  {:a 1 :b 2 :c 3} }
-   "
+       (def a 1)
+       (def b 2)
+       (def c 3)
+       (vals->map a b c)  ;=>  {:a 1 :b 2 :c 3} }
+
+   See `with-map-vals` for simple destructuring of such maps. "
   [& symbols]
   (let [map-vec (forv [symbol symbols]
                   {(keyword symbol) symbol})]
@@ -988,7 +989,8 @@
        (with-map-vals some-map [a b c]
           (+ a b c)))  ;=>  6
 
-  `with-map-vals` is safe for typos since `grab` will throw is the requrested map key is not present."
+  `with-map-vals` is safe for typos since `grab` will throw is the requrested map key is not present.
+  See `vals->map` for simple creation of labelled data maps."
   [ the-map syms-vec & forms]
   `(do
      ; (assert (map? ~the-map))
