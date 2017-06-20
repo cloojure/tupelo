@@ -43,6 +43,7 @@
 (pns/import-fn impl/sym->str )
 (pns/import-fn impl/zip* )
 (pns/import-fn impl/zip )
+(pns/import-fn impl/indexed )
 
 
 (defn print-versions []
@@ -575,7 +576,7 @@
      conjv glue vals->map with-map-vals macro? char-seq
      append prepend grab dissoc-in fetch fetch-in
      submap? submap-by-keys submap-by-vals keyvals
-     validate only third it-> safe-> keep-if drop-if zip zip* flat-vec
+     validate only third it-> safe-> keep-if drop-if zip zip* indexed flat-vec
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
      drop-at insert-at replace-at starts-with? int->kw kw->int vec->list
      xfirst xsecond xthird xrest kw->sym kw->str str->sym str->kw sym->kw sym->str

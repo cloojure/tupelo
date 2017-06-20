@@ -32,6 +32,20 @@
   (and (map? arg)
     (= #{:tag :attrs :content} (set (keys arg)))))
 
+(defn data->tree
+  "Convert raw data (nested vectors) into hiccup with generic `:data` tag and {:idx <index>} attribute."
+  ([data]
+   {:attrs {:tag :root}
+    :kids  (forv [[idx val] (indexed data)]
+             (data->tree idx val))})
+  ([idx data]
+   (if (sequential? data)
+     {:attrs {:tag :data :idx idx}
+      :kids  (forv [[idx val] (indexed data)]
+               (data->tree idx val))}
+     {:attrs {:tag :data :idx idx}
+      :value data})))
+
 (defn hiccup->enlive
   "Converts a tree of data from Hiccup -> Enlive format"
   [tree-node]

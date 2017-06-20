@@ -869,3 +869,118 @@
             [{:tag :c} 5]]
           [{:tag :c} 9]]  ))))
 
+(dotest
+  (with-forest (new-forest)
+    (let [data-1 [1 2 3]
+          data-2 [[1 2 3]
+                  [10]
+                  []]
+          data-3 [[[1 2 3]
+                   [4 5 6]
+                   [7 8 9]]
+                  [[10 11]
+                   [12 13]]
+                  [[20]
+                   [21]]
+                  [[30]]
+                  [[]]]
+
+          data-4 [[[1 2 3]
+                   [4 5 6]
+                   [7 8 9]]
+                  [[10 11]
+                   [12  2]]
+                  [[20]
+                   [21]]
+                  [[30]]
+                  [[2]]]
+
+          tree-1 (data->tree data-1)
+          tree-2 (data->tree data-2)
+          tree-3 (data->tree data-3)
+          tree-4 (data->tree data-4)
+
+          root-hid-1 (add-tree tree-1)
+          root-hid-2 (add-tree tree-2)
+          root-hid-3 (add-tree tree-3)
+          root-hid-4 (add-tree tree-4)
+
+          bush-1     (hid->bush root-hid-1)
+          bush-2     (hid->bush root-hid-2)
+          bush-3     (hid->bush root-hid-3)
+          bush-4     (hid->bush root-hid-4)
+
+    ]
+      (is= bush-1
+        [{:tag :root}
+         [{:tag :data, :idx 0} 1]
+         [{:tag :data, :idx 1} 2]
+         [{:tag :data, :idx 2} 3]] )
+      (is= bush-2
+        [{:tag :root}
+         [{:tag :data, :idx 0}
+          [{:tag :data, :idx 0} 1]
+          [{:tag :data, :idx 1} 2]
+          [{:tag :data, :idx 2} 3]]
+         [{:tag :data, :idx 1}
+          [{:tag :data, :idx 0} 10]]
+         [{:tag :data, :idx 2}]] )
+      (is= bush-3
+        [{:tag :root}
+         [{:tag :data, :idx 0}
+          [{:tag :data, :idx 0}
+           [{:tag :data, :idx 0} 1]
+           [{:tag :data, :idx 1} 2]
+           [{:tag :data, :idx 2} 3]]
+          [{:tag :data, :idx 1}
+           [{:tag :data, :idx 0} 4]
+           [{:tag :data, :idx 1} 5]
+           [{:tag :data, :idx 2} 6]]
+          [{:tag :data, :idx 2}
+           [{:tag :data, :idx 0} 7]
+           [{:tag :data, :idx 1} 8]
+           [{:tag :data, :idx 2} 9]]]
+         [{:tag :data, :idx 1}
+          [{:tag :data, :idx 0}
+           [{:tag :data, :idx 0} 10]
+           [{:tag :data, :idx 1} 11]]
+          [{:tag :data, :idx 1}
+           [{:tag :data, :idx 0} 12]
+           [{:tag :data, :idx 1} 13]]]
+         [{:tag :data, :idx 2}
+          [{:tag :data, :idx 0} [{:tag :data, :idx 0} 20]]
+          [{:tag :data, :idx 1} [{:tag :data, :idx 0} 21]]]
+         [{:tag :data, :idx 3}
+          [{:tag :data, :idx 0} [{:tag :data, :idx 0} 30]]]
+         [{:tag :data, :idx 4} [{:tag :data, :idx 0}]]] )
+
+
+      (is= (format-paths (find-leaf-paths root-hid-1 [:** :*] 2))
+       [[{:tag :root}
+         [{:tag :data, :idx 1} 2]]])
+
+     (is= (format-paths (find-leaf-paths root-hid-2 [:** :*] 2))
+       [[{:tag :root}
+         [{:tag :data, :idx 0}
+          [{:tag :data, :idx 1} 2]]]] )
+
+     (is= (format-paths (find-leaf-paths root-hid-3 [:** :*] 2))
+       [[{:tag :root}
+         [{:tag :data, :idx 0}
+          [{:tag :data, :idx 0}
+           [{:tag :data, :idx 1} 2]]]]])
+
+     (is= (format-paths (find-leaf-paths root-hid-4 [:** :*] 2))
+       [[{:tag :root}
+         [{:tag :data, :idx 0}
+          [{:tag :data, :idx 0}
+           [{:tag :data, :idx 1} 2]]]]
+        [{:tag :root}
+         [{:tag :data, :idx 1}
+          [{:tag :data, :idx 1}
+           [{:tag :data, :idx 1} 2]]]]
+        [{:tag :root}
+         [{:tag :data, :idx 4}
+          [{:tag :data, :idx 0}
+           [{:tag :data, :idx 0} 2]]]]])
+   )))

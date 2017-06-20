@@ -796,6 +796,15 @@
               :lazy   false}
      ~bindings ~@forms))
 
+(defn indexed
+  "Given one or more collections, returns a sequence of indexed tuples from the collections:
+      (indexed xs ys zs) -> [ [0 x0 y0 z0]
+                              [1 x1 y1 z1]
+                              [2 x2 y2 z2]
+                              ... ] "
+  [& colls]
+  (apply map vector (range) colls))
+
 ; #todo how use Schema with "rest" args?
 (defn zip*
   "Usage:  (zip* context & colls)

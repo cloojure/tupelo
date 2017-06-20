@@ -486,6 +486,19 @@
     (is= [{:a 1} {:b 2} {:c 3}] @result)))
 
 (dotest
+  (is= (indexed [:a :b :c]) '([0 :a] [1 :b] [2 :c]))
+  (is= (indexed [:a :b :c]  (map #(+ 10 %) (range)))
+          [ [0 :a 10]
+            [1 :b 11]
+            [2 :c 12] ] )
+  (is= (take 5 (indexed (map #(+ 10 %) (range))))
+    [ [0 10]
+      [1 11]
+      [2 12]
+      [3 13]
+      [4 14] ] ))
+
+(dotest
   ; unexpected results
   (is (= (concat {:a 1} {:b 2} {:c 3} )
                [ [:a 1] [:b 2] [:c 3] ] ))
