@@ -6,21 +6,24 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.dev
   "Code under development"
-  (:require 
+  (:require
+    [schema.core :as s]
     [tupelo.core :as t] ))
 (t/refer-tupelo)
 
-(defn index-impl
+(defn find-idxs-impl
   [idxs data tgt]
   (apply glue
     (for [[idx val] (indexed data)]
       (let [idxs-curr (append idxs idx)]
-           (if (sequential? val)
-             (index-impl idxs-curr val tgt)
+           (if (sequential? val) ; #todo does not work for vector tgt
+             (find-idxs-impl idxs-curr val tgt)
              (if (= val tgt)
                [{:idxs idxs-curr :val val}]
                [nil]))))))
 
-(defn index [data tgt]
-  (keep-if not-nil? (index-impl [] data tgt)))
+(s/defn find-idxs
+  [data  :- [s/Any]
+   tgt :- s/Any]
+  (keep-if not-nil? (find-idxs-impl [] data tgt)))
 
