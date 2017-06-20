@@ -916,7 +916,7 @@
          [{:tag :data, :idx 0} 1]
          [{:tag :data, :idx 1} 2]
          [{:tag :data, :idx 2} 3]] )
-      (is= bush-2
+      (is= bush-2 ; #todo document
         [{:tag :root}
          [{:tag :data, :idx 0}
           [{:tag :data, :idx 0} 1]
@@ -970,7 +970,7 @@
           [{:tag :data, :idx 0}
            [{:tag :data, :idx 1} 2]]]]])
 
-     (is= (format-paths (find-leaf-paths root-hid-4 [:** :*] 2))
+     (is= (format-paths (find-leaf-paths root-hid-4 [:** :*] 2))  ; #todo document
        [[{:tag :root}
          [{:tag :data, :idx 0}
           [{:tag :data, :idx 0}

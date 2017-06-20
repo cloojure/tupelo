@@ -32,7 +32,7 @@
   (and (map? arg)
     (= #{:tag :attrs :content} (set (keys arg)))))
 
-(defn data->tree
+(defn data->tree    ; #todo document
   "Convert raw data (nested vectors) into hiccup with generic `:data` tag and {:idx <index>} attribute."
   ([data]
    {:attrs {:tag :root}
