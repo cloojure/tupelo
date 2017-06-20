@@ -616,3 +616,47 @@
          [:Items
           [:Item [:Type "A"] [:Note "AA1"]]
           [:Item [:Type "A"] [:Note "AA2"]]]]))))
+
+;-----------------------------------------------------------------------------
+
+(dotest
+  (with-forest (new-forest)
+    (let [xml-str         "<html>
+                             <body>
+                               <div class='one'>
+                                 <div class='two'></div>
+                               </div>
+                             </body>
+                           </html>"
+
+          enlive-tree     (->> xml-str
+                            java.io.StringReader.
+                            en-html/xml-resource
+                            only)
+          root-hid        (add-tree-enlive enlive-tree)
+
+          ; Removing whitespace nodes is optional; just done to keep things neat
+          blank-leaf-hid? (fn [hid] (ts/whitespace? (hid->value hid))) ; whitespace pred fn
+          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
+          >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
+
+          ; Can search for inner `div` 2 ways
+          result-1        (find-paths root-hid [:html :body :div :div]) ; explicit path from root
+          result-2        (find-paths root-hid [:** {:class "two"}]) ; wildcard path that ends in :class "two"
+    ]
+       (is= result-1 result-2) ; both searches return the same path
+       (is= (hid->bush root-hid)
+         [{:tag :html}
+          [{:tag :body}
+           [{:class "one", :tag :div}
+            [{:class "two", :tag :div}]]]])
+      (is=
+        (format-paths result-1)
+        (format-paths result-2)
+        [[{:tag :html}
+          [{:tag :body}
+           [{:class "one", :tag :div}
+            [{:class "two", :tag :div}]]]]])
+
+       (is (val= (hid->elem (last (only result-1)))
+             {:attrs {:class "two", :tag :div}, :kids []})))))
