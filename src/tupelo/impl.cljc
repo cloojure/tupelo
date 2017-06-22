@@ -751,7 +751,8 @@
        (yield value#))
      (vec ~values)))
 
-
+; #todo fix so doesn't hang if give infinite lazy seq
+; #todo rename :strict -> :trunc
 (defmacro map-let*
   "Usage:  (map-let* ctx bindings & forms)
 
@@ -796,28 +797,19 @@
               :lazy   false}
      ~bindings ~@forms))
 
-(defn indexed
-  "Given one or more collections, returns a sequence of indexed tuples from the collections:
-      (indexed xs ys zs) -> [ [0 x0 y0 z0]
-                              [1 x1 y1 z1]
-                              [2 x2 y2 z2]
-                              ... ] "
-  [& colls]
-  (apply map vector (range) colls))
-
-; #todo how use Schema with "rest" args?
+; #todo rename :strict -> :trunc
 (defn zip*
   "Usage:  (zip* context & colls)
 
   where context is a map with default values:
     {:strict true
      :lazy   false}"
-  [context & colls]
+  [context & colls] ; #todo how use Schema with "rest" args?
   (assert (map? context))
   (assert #(every? sequential? colls))
   (let [lazy          (get context :lazy false)
         strict        (get context :strict true)
-        lengths       (mapv count colls)
+        lengths       (mapv count colls) ; #todo fix so doesn't hang if give infinite lazy seq
         lengths-equal (apply = lengths)
         output-fn     (if lazy identity vec)]
        (when (and strict
@@ -833,11 +825,35 @@
 
      (zip [:a :b :c] [1 2 3]) ->  [ [:a 1] [:b 2] [:c 3] ]
 
-   Use (zip ... :trunc) if you want to truncate all inputs to the lenght of the shortest.
-   Use (zip ... :lazy)  if you want it to be lazy.  "
+   ***** WARNING - will hang for infinite length inputs *****
+   "
+  ; #todo Use (zip ... :trunc) if you want to truncate all inputs to the length of the shortest.
+  ; #todo Use (zip ... :lazy)  if you want it to be lazy.
   [& args]
   (assert #(every? sequential? args))
-  (apply zip* {} args))
+  (apply zip* {:lazy false :strict true} args))
+
+(defn zip-lazy
+  "Usage:  (zip-lazy coll1 coll2 ...)
+      (zip-lazy xs ys zs) -> [ [x0 y0 z0]
+                               [x1 y1 z1]
+                               [x2 y2 z2]
+                               ... ]
+
+  Returns a lazy result. Will truncate to the length of the shortest collection.
+  A convenience wrapper for `(map vector coll1 coll2 ...)`.  "
+  [& colls]  ; #todo how use Schema with "rest" args?
+  (assert #(every? sequential? colls))
+  (apply map vector colls))
+
+(defn indexed
+  "Given one or more collections, returns a sequence of indexed tuples from the collections:
+      (indexed xs ys zs) -> [ [0 x0 y0 z0]
+                              [1 x1 y1 z1]
+                              [2 x2 y2 z2]
+                              ... ] "
+  [& colls]
+  (apply zip-lazy (range) colls))
 
 ; #todo rename -> drop-idx
 ; #todo force to vector result

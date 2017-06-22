@@ -129,6 +129,14 @@
 ; #todo RootedForest - has self-contained roots: #{HID}
 ; #todo validate-tree: kids ordered or not, exact or extras ok
 
+; #todo MAYBE???
+; #todo merge Node/Leaf -> genric Node: {:attrs <some map> :value <something> :kids []}
+; #todo              or -> plain map:   {:kids []  :value <something> :attr1 val1 :attr2 val2}
+;                                        ^req      ^optional
+
+; #todo add { :parents #{:23 :14 :ab9} } to Node
+; #todo add loop detection, recurse on parents not= <new child>
+
 (defrecord Node [attrs kids] )    ; { :attrs { :k1 v1 :k2 v2 ... }  :kids  [hid...] }
 (defrecord Leaf [attrs value])    ; { :attrs { :k1 v1 :k2 v2 ... }  :value s/Any    }
 (def Element (s/either Node Leaf))
@@ -313,7 +321,7 @@
 
 (s/defn add-leaf :- HID
   [attrs-arg :- (s/either tsk/KeyMap s/Keyword)
-   value]         ; #todo   :- s/Any
+   value :- s/Any ]
   (let [attrs (if (map? attrs-arg)
                 attrs-arg
                 {:tag (validate keyword? attrs-arg)} )
@@ -592,9 +600,9 @@
     (remove-kids hid kids-leaving false))
   ([hid :- HID
     kids-leaving :- (s/either [HID] #{HID})
-    missing-kids-ok :- s/Bool]
+    missing-kids-ok? :- s/Bool]
     (let [kids-leaving        (set kids-leaving)
-          report-missing-kids (not missing-kids-ok)
+          report-missing-kids (not missing-kids-ok?)
           node-curr           (hid->node hid)
           kids-curr           (grab :kids node-curr)
           missing-kids        (set/difference kids-leaving (into #{} kids-curr))
@@ -670,6 +678,9 @@
 ; #todo find-elem, find-node, find-leaf
 ; #todo find-roots function (& root for sole root or throw)
 
+; #todo (find-leaf root [ :a :b  :c ] ) ->
+; #todo (find-leaf root [ :a :b  {:tag :c :value <val> :kids []} ] )
+
 ;---------------------------------------------------------------------------------------------------
 (s/defn format-path
   [hids :- [HID]]
@@ -691,8 +702,8 @@
   (validate-hid hid)
   (when (not-empty? tgt-path)
     (let [tgt (xfirst tgt-path)
-              tgt-path-rest (xrest tgt-path)
-              attrs (hid->attrs hid)]
+          tgt-path-rest (xrest tgt-path)
+          attrs (hid->attrs hid) ]
       (let [parents-new (append parents hid)]
         (when (or (= tgt :*) (hid-matches? hid tgt))
           ;(println :200 (str "match attrs=" attrs ))

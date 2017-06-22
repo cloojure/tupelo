@@ -466,6 +466,16 @@
 (dotest
   (is= (vector [])               [[]] )
   (is= (mapv identity [] [])      []  )
+
+  (is= [[:a 0] [:b 1] [:c 2]]
+    (zip-lazy [:a :b :c] [0 1 2])
+    (zip-lazy [:a :b :c] (range)))
+  (is= (zip-lazy [:a :b :c] [1 2 3])   [[:a 1] [:b 2] [:c 3]] )
+  (is= (zip-lazy [:a] [1])             [[:a 1]] )
+  (is= (zip-lazy [] [])                []  )
+  (is= (zip-lazy [:A :B :C] [:a :b :c] [1 2 3])
+    [[:A :a 1] [:B :b 2] [:C :c 3]] )
+
   (is= (zip [:a :b :c] [1 2 3])   [[:a 1] [:b 2] [:c 3]] )
   (is= (zip [:a] [1])             [[:a 1]] )
   (is= (zip [] [])                []  )
@@ -486,7 +496,9 @@
     (is= [{:a 1} {:b 2} {:c 3}] @result)))
 
 (dotest
-  (is= (indexed [:a :b :c]) '([0 :a] [1 :b] [2 :c]))
+  (is= (indexed [:a :b :c]) [[0 :a] [1 :b] [2 :c]])
+  (is= [[0 0] [1 2] [2 4] [3 6] [4 8]]
+    (take 5 (indexed (map #(* 2 %) (range))))) ; can work with infinite lazy lists
   (is= (indexed [:a :b :c]  (map #(+ 10 %) (range)))
           [ [0 :a 10]
             [1 :b 11]
