@@ -475,6 +475,8 @@
   (is= (zip-lazy [] [])                []  )
   (is= (zip-lazy [:A :B :C] [:a :b :c] [1 2 3])
     [[:A :a 1] [:B :b 2] [:C :c 3]] )
+  (is (instance? clojure.lang.LazySeq
+        (zip-lazy [:a :b :c] (range))))
 
   (is= (zip [:a :b :c] [1 2 3])   [[:a 1] [:b 2] [:c 3]] )
   (is= (zip [:a] [1])             [[:a 1]] )
@@ -485,9 +487,7 @@
   (is= (zip* {:strict false} [:a :b :c] [1 2 3 4]) [[:a 1] [:b 2] [:c 3]] )
 
   (is (instance? clojure.lang.PersistentVector
-        (zip* {:lazy false} [:a :b :c] [1 2 3])))
-  (is (instance? clojure.lang.LazySeq
-        (zip* {:lazy true } [:a :b :c] [1 2 3])))
+        (zip*  {:trunc false} [:a :b :c] [1 2 3])))
   (let [keys   [:a :b :c]
         vals   [1 2 3]
         result (atom [])]

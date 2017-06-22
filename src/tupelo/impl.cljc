@@ -800,38 +800,41 @@
 ; #todo rename :strict -> :trunc
 (defn zip*
   "Usage:  (zip* context & colls)
-
-  where context is a map with default values:
-    {:strict true
-     :lazy   false}"
+  where context is a map with default values:  {:strict true}
+  Not lazy. "
   [context & colls] ; #todo how use Schema with "rest" args?
   (assert (map? context))
   (assert #(every? sequential? colls))
-  (let [lazy          (get context :lazy false)
-        strict        (get context :strict true)
-        lengths       (mapv count colls) ; #todo fix so doesn't hang if give infinite lazy seq
-        lengths-equal (apply = lengths)
-        output-fn     (if lazy identity vec)]
+  (let [strict        (get context :strict true)
+        lengths       (mapv count colls)
+        lengths-equal (apply = lengths) ]
        (when (and strict
                (not lengths-equal))
          (throw (IllegalArgumentException.
                   (str "zip*: colls must all be same length; lengths=" lengths))))
-    (output-fn (apply map vector colls))))
+    (vec (apply map vector colls))))
+        ; #todo fix so doesn't hang if give infinite lazy seq. Technique:
+        ;  (def x [1 2 3])
+        ;  (seq (drop 2 x))          =>  (3)
+        ;  (seq (drop 3 x))          =>  nil
+        ;  (nil? (seq (drop 3 x)))   =>  true
+        ;  (nil? (drop 3 (range)))   =>  false
+
 
 ; #todo add schema; result = tsk/List[ tsk/Pair ]
-; #todo add :trunc & assert;  add :lazy
+; #todo add :trunc & assert;
 (defn zip
-  "Zips together vectors like zipmap (like Python zip):
+  "Zips together vectors producing a vector of tuples (like Python zip). Not lazy.
+  Example:
 
      (zip [:a :b :c] [1 2 3]) ->  [ [:a 1] [:b 2] [:c 3] ]
 
-   ***** WARNING - will hang for infinite length inputs *****
-   "
-  ; #todo Use (zip ... :trunc) if you want to truncate all inputs to the length of the shortest.
-  ; #todo Use (zip ... :lazy)  if you want it to be lazy.
+   ***** WARNING - will hang for infinite length inputs ***** "
+  ; #todo fix so doesn't hang if give infinite lazy seq. Technique:
+  ; #todo Use (zip ... {:trunc true}) if you want to truncate all inputs to the length of the shortest.
   [& args]
   (assert #(every? sequential? args))
-  (apply zip* {:lazy false :strict true} args))
+  (apply zip* {:strict true} args))
 
 (defn zip-lazy
   "Usage:  (zip-lazy coll1 coll2 ...)
