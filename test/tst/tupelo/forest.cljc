@@ -358,19 +358,25 @@
         {:tag   :root,
          :color :white,
          :cnt   3,
-         :tupelo.forest/kids
-                [{:tupelo.forest/kids  [],
-                  :tag                 :char,
-                  :color               :red,
-                  :cnt                 2,
-                  :tupelo.forest/value "x"}]})
+         ::tf/kids
+                [{::tf/kids  [],
+                  :tag       :char,
+                  :color     :red,
+                  :cnt       2,
+                  ::tf/value "x"}]})
 
-      ;(attr-update r :cnt * 3)
-      ;(attr-update r :cnt + 7)
-      ;(is= (hid->tree r)
-      ;  {:attrs {:tag :root, :color :white, :cnt 13},
-      ;   :kids  [{:attrs {:tag :char, :color :red, :cnt 2}, :value "x"}]})
-    )))
+      (attr-update r :cnt * 3)
+      (attr-update r :cnt + 7)
+      (is= (hid->tree r)
+        {:tag   :root,
+         :color :white,
+         :cnt   16,
+         ::tf/kids
+                [{::tf/kids  [],
+                  :tag       :char,
+                  :color     :red,
+                  :cnt       2,
+                  ::tf/value "x"}]}))))
 
 (comment ;comment *****************************************************************************
 (dotest
