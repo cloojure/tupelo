@@ -341,13 +341,15 @@
 (s/defn hid->tree :- tsk/KeyMap
   [hid :- HID]
   (let [node        (hid->node hid)
-        base-result (into {} node)]
+        base-result (it-> node
+                      (into {} it)
+                      (dissoc it :khids))]
     (if (forest-leaf? node)
       ; leaf: nothing else to do
-      base-result   ; #todo can clean up more?
+      (glue {::kids []} base-result) ; #todo can clean up more?
       ; Node: need to recursively resolve children
-      (let [kids            (mapv hid->tree (grab :khids node))
-            resolved-result (assoc base-result :khids kids)]
+      (let [kid-trees       (mapv hid->tree (grab :khids node))
+            resolved-result (assoc base-result ::kids kid-trees)]
         resolved-result))))
 
 ; #todo naming choices:

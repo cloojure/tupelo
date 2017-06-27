@@ -253,7 +253,8 @@
 
 (dotest
   (with-forest (new-forest)
-    (let [x      (add-leaf {:tag :char :color :red} "x")
+    (let [
+          x      (add-leaf {:tag :char :color :red} "x")
           y      (add-leaf {:tag :char :color :red} "y")
           z      (add-leaf {:tag :char :color :red} "z")
           r      (add-node {:tag :root :color :white} [x y z])
@@ -270,26 +271,37 @@
       (is (and (hid? x) (hid? y) (hid? z) (hid? r)))
 
       (is (and (leaf-hid? x) (leaf-hid? y) (leaf-hid? z)))
-      (is (and (forest-leaf? x-tree) (forest-leaf? y-tree) (forest-leaf? z-tree)))
+      (is (and (tree-leaf? x-tree) (tree-leaf? y-tree) (tree-leaf? z-tree)))
       (is (and (forest-leaf? x-elem) (forest-leaf? y-elem) (forest-leaf? z-elem)))
 
       (is (node-hid? r))
-      (is (forest-node? r-tree))
+      (is (tree-node? r-tree))
       (is (forest-node? r-elem))
 
       (is= #{r} roots)
       (isnt= #{x} roots)
 
-      (is= x-tree {:khids [], :tag :char, :color :red, :tupelo.forest/value "x"} )
+      (is= x-tree {::tf/kids  [],
+                   :tag       :char,
+                   :color     :red,
+                   ::tf/value "x"})
       (is= r-tree
-        {:khids
-                [{:khids [], :tag :char, :color :red, :tupelo.forest/value "x"}
-                 {:khids [], :tag :char, :color :red, :tupelo.forest/value "y"}
-                 {:khids [], :tag :char, :color :red, :tupelo.forest/value "z"}],
-         :tag   :root,
-         :color :white})
+        {:tag      :root,
+         :color    :white,
+         ::tf/kids [{::tf/kids  [],
+                     :tag       :char,
+                     :color     :red,
+                     ::tf/value "x"}
+                    {::tf/kids  [],
+                     :tag       :char,
+                     :color     :red,
+                     ::tf/value "y"}
+                    {::tf/kids  [],
+                     :tag       :char,
+                     :color     :red,
+                     ::tf/value "z"}]})
       (is (wild-match?
-            {:tag :root, :color :white,
+            {:tag   :root, :color :white,
              :khids [:* :* :*]}
             (hid->node r)))
       (is (wild-match?
@@ -309,10 +321,8 @@
             (hid->node r)))
 
       (attrs-merge x {:color :green})
-      (is (val=
-            (hid->tree x)
-            (into {} (hid->leaf x))
-            { :khids [] :tag :char, :color :green, ::tf/value "x"}))
+      (is (val= (into {} (hid->leaf x))
+            { :khids [] :tag :char, :color :green, ::tf/value "x"} ))
 
       (is= (hid->attrs r) {:tag :root, :color :white})
       (is= (hid->attrs z) {:tag :char, :color :red ::tf/value "z"})
@@ -323,7 +333,6 @@
       (is= (hid->attrs z) {:type :tuna, :name :charlie})
     )))
 
-(comment ;comment *****************************************************************************
 
 (dotest
   (with-forest (new-forest)
@@ -331,23 +340,39 @@
           r (add-node {:tag :root :color :white :cnt 0} [x])
           x-tree (hid->tree x)
           r-tree (hid->tree r)]
-      (is= r-tree
-        {:attrs {:tag :root, :color :white :cnt 0},
-         :kids  [{:attrs {:tag :char, :color :red :cnt 0}, :value "x"}]})
+       (is= r-tree
+         {:tag   :root,
+          :color :white,
+          :cnt   0,
+          ::tf/kids
+                 [{::tf/kids  [],
+                   :tag       :char,
+                   :color     :red,
+                   :cnt       0,
+                   ::tf/value "x"}]})
 
       (attr-update x :cnt inc)
       (attr-update x :cnt inc)
-      (attr-update r :cnt #(+ 2 %))
+      (attr-update r :cnt #(+ 3 %))
       (is= (hid->tree r)
-        {:attrs {:tag :root, :color :white, :cnt 2},
-         :kids  [{:attrs {:tag :char, :color :red, :cnt 2}, :value "x"}]})
+        {:tag   :root,
+         :color :white,
+         :cnt   3,
+         :tupelo.forest/kids
+                [{:tupelo.forest/kids  [],
+                  :tag                 :char,
+                  :color               :red,
+                  :cnt                 2,
+                  :tupelo.forest/value "x"}]})
 
-      (attr-update r :cnt * 3)
-      (attr-update r :cnt + 7)
-      (is= (hid->tree r)
-        {:attrs {:tag :root, :color :white, :cnt 13},
-         :kids  [{:attrs {:tag :char, :color :red, :cnt 2}, :value "x"}]}))))
+      ;(attr-update r :cnt * 3)
+      ;(attr-update r :cnt + 7)
+      ;(is= (hid->tree r)
+      ;  {:attrs {:tag :root, :color :white, :cnt 13},
+      ;   :kids  [{:attrs {:tag :char, :color :red, :cnt 2}, :value "x"}]})
+    )))
 
+(comment ;comment *****************************************************************************
 (dotest
   (let [state    (atom {})
         forest-1 (with-forest-result (new-forest)
