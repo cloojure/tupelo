@@ -14,7 +14,8 @@
 (t/refer-tupelo)
 
 (dotest
-  (let [tree-2 [:a
+  (let [
+        tree-2 [:a
                 [:b 2]
                 [:c 3]]
         tree-3 [:a {:k1 "v1"}
@@ -23,7 +24,11 @@
         tree-4 [:a {:k1 "v1"}
                 [:b 2]
                 [:c {:k3 "v3" :k4 4}
-                 [:d 4]]] ]
+                 [:d 4]]]
+        tree-5 [:a {:k1 "v1"}
+                [:b 2]
+                [:c 3 4 5]]
+  ]
      (is= (hiccup->enlive tree-2)
        {:tag   :a,
         :attrs {},
@@ -46,6 +51,12 @@
                {:tag :c, :attrs {:k3 "v3" :k4 4}, :content [
                {:tag :d :attrs {} :content [4]}]}]})
 
+    (is= (hiccup->enlive tree-5)
+      {:tag   :a,
+       :attrs {:k1 "v1"},
+       :content
+              [{:tag :b, :attrs {}, :content [2]}
+               {:tag :c, :attrs {}, :content [3 4 5]}]} )
 
     ; #todo add generative testing
     (is= tree-2 (-> tree-2 hiccup->enlive enlive->hiccup))
@@ -61,7 +72,38 @@
     (is= tree-4 (-> tree-4 hiccup->enlive enlive->hiccup))
     (is=
       (-> tree-4 hiccup->enlive)
-      (-> tree-4 hiccup->enlive enlive->hiccup hiccup->enlive))))
+      (-> tree-4 hiccup->enlive enlive->hiccup hiccup->enlive))
+    ;-----------------------------------------------------------------------------
+    (is= tree-2 (-> tree-2 hiccup->tree tree->hiccup))
+    (is=
+      (-> tree-2 hiccup->tree)
+      (-> tree-2 hiccup->tree tree->hiccup hiccup->tree))
+
+    (is= tree-3 (-> tree-3 hiccup->tree tree->hiccup))
+    (is=
+      (-> tree-3 hiccup->tree)
+      (-> tree-3 hiccup->tree tree->hiccup hiccup->tree))
+
+    (is= tree-4 (-> tree-4 hiccup->tree tree->hiccup))
+    (is=
+      (-> tree-4 hiccup->tree)
+      (-> tree-4 hiccup->tree tree->hiccup hiccup->tree))
+    ;-----------------------------------------------------------------------------
+    (is= tree-2 (-> tree-2 hiccup->bush bush->hiccup))
+    (is=
+      (-> tree-2 hiccup->bush)
+      (-> tree-2 hiccup->bush bush->hiccup hiccup->bush))
+
+    (is= tree-3 (-> tree-3 hiccup->bush bush->hiccup))
+    (is=
+      (-> tree-3 hiccup->bush)
+      (-> tree-3 hiccup->bush bush->hiccup hiccup->bush))
+
+    (is= tree-4 (-> tree-4 hiccup->bush bush->hiccup))
+    (is=
+      (-> tree-4 hiccup->bush)
+      (-> tree-4 hiccup->bush bush->hiccup hiccup->bush))
+    ))
 
 
 (dotest
@@ -138,7 +180,26 @@
     (is= tree-5 (-> tree-5 enlive->tree tree->enlive))
     (is=
       (-> tree-5 enlive->tree)
-      (-> tree-5 enlive->tree tree->enlive enlive->tree))))
+      (-> tree-5 enlive->tree tree->enlive enlive->tree))
+
+
+    (is= tree-2 (-> tree-2 enlive->bush bush->enlive))
+    (is=
+      (-> tree-2 enlive->bush)
+      (-> tree-2 enlive->bush bush->enlive enlive->bush))
+    (is= tree-3 (-> tree-3 enlive->bush bush->enlive))
+    (is=
+      (-> tree-3 enlive->bush)
+      (-> tree-3 enlive->bush bush->enlive enlive->bush))
+    (is= tree-4 (-> tree-4 enlive->bush bush->enlive))
+    (is=
+      (-> tree-4 enlive->bush)
+      (-> tree-4 enlive->bush bush->enlive enlive->bush))
+    (is= tree-5 (-> tree-5 enlive->bush bush->enlive))
+    (is=
+      (-> tree-5 enlive->bush)
+      (-> tree-5 enlive->bush bush->enlive enlive->bush))
+))
 
 
 (dotest
@@ -188,11 +249,7 @@
     (is= tree-4 (-> tree-4 hiccup->tree tree->hiccup))
     (is=
       (-> tree-4 hiccup->tree)
-      (-> tree-4 hiccup->tree tree->hiccup hiccup->tree))
-
-))
-
-(comment ;comment *****************************************************************************
+      (-> tree-4 hiccup->tree tree->hiccup hiccup->tree))))
 
 (dotest
   (with-forest (new-forest)
@@ -204,59 +261,62 @@
           y-tree (hid->tree y)
           z-tree (hid->tree z)
           r-tree (hid->tree r)
-          x-elem (hid->elem x)
-          y-elem (hid->elem y)
-          z-elem (hid->elem z)
-          r-elem (hid->elem r)
+          x-elem (hid->node x)
+          y-elem (hid->node y)
+          z-elem (hid->node z)
+          r-elem (hid->node r)
 
           roots (root-hids)]
       (is (and (hid? x) (hid? y) (hid? z) (hid? r)))
 
-      (is (and (leaf-hid? x) (leaf-hid? y) (leaf-hid? z)))
-      (is (and (forest-leaf? x-tree) (forest-leaf? y-tree) (forest-leaf? z-tree)))
-      (is (and (forest-leaf? x-elem) (forest-leaf? y-elem) (forest-leaf? z-elem)))
+      ;(is (and (leaf-hid? x) (leaf-hid? y) (leaf-hid? z)))
+      ;(is (and (forest-leaf? x-tree) (forest-leaf? y-tree) (forest-leaf? z-tree)))
+      ;(is (and (forest-leaf? x-elem) (forest-leaf? y-elem) (forest-leaf? z-elem)))
+      ;
+      ;(is (node-hid? r))
+      ;(is (forest-node? r-tree))
+      ;(is (forest-node? r-elem))
+      ;
+      ;(is= #{r} roots)
+      ;(not= #{x} roots)
+      ;
+      ;(is= x-tree {:attrs {:tag :char, :color :red}, :value "x"})
+      ;(is= r-tree
+      ;  {:attrs {:tag :root, :color :white},
+      ;   :kids  [{:attrs {:tag :char, :color :red}, :value "x"}
+      ;           {:attrs {:tag :char, :color :red}, :value "y"}
+      ;           {:attrs {:tag :char, :color :red}, :value "z"}]})
+      ;(is (wild-match?
+      ;      {:attrs {:tag :root, :color :white},
+      ;       :kids  [:* :* :*]}
+      ;      (hid->node r)))
+      ;(is (wild-match?
+      ;      {:attrs {:tag :root :color :*},
+      ;       :kids  [:* :* :*]}
+      ;      (hid->node r)))
+      ;(isnt (wild-match?
+      ;        {:attrs {:tag :root :color :*},
+      ;         :kids  [:* :*]}
+      ;        (hid->node r)))
+      ;(is (wild-match?
+      ;      {:attrs {:tag :root :color :*},
+      ;       :kids  :*}
+      ;      (hid->node r)))
+      ;
+      ;(attrs-merge x {:color :green})
+      ;(is= (hid->tree x) (into {} (hid->leaf x))
+      ;  {:attrs {:tag :char, :color :green}, :value "x"})
+      ;
+      ;(is= (hid->attrs r) {:tag :root, :color :white})
+      ;(is= (hid->attrs z) {:tag :char, :color :red})
+      ;(is= (hid->kids r) [x y z])
+      ;(is= (hid->value z) "z")
+      ;
+      ;(attrs-reset z {:type :tuna, :name :charlie})
+      ;(is= (hid->attrs z) {:type :tuna, :name :charlie})
+    )))
 
-      (is (node-hid? r))
-      (is (forest-node? r-tree))
-      (is (forest-node? r-elem))
-
-      (is= #{r} roots)
-      (not= #{x} roots)
-
-      (is= x-tree {:attrs {:tag :char, :color :red}, :value "x"})
-      (is= r-tree
-        {:attrs {:tag :root, :color :white},
-         :kids  [{:attrs {:tag :char, :color :red}, :value "x"}
-                 {:attrs {:tag :char, :color :red}, :value "y"}
-                 {:attrs {:tag :char, :color :red}, :value "z"}]})
-      (is (wild-match?
-            {:attrs {:tag :root, :color :white},
-             :kids  [:* :* :*]}
-            (hid->node r)))
-      (is (wild-match?
-            {:attrs {:tag :root :color :*},
-             :kids  [:* :* :*]}
-            (hid->node r)))
-      (isnt (wild-match?
-              {:attrs {:tag :root :color :*},
-               :kids  [:* :*]}
-              (hid->node r)))
-      (is (wild-match?
-            {:attrs {:tag :root :color :*},
-             :kids  :*}
-            (hid->node r)))
-
-      (attrs-merge x {:color :green})
-      (is= (hid->tree x) (into {} (hid->leaf x))
-        {:attrs {:tag :char, :color :green}, :value "x"})
-
-      (is= (hid->attrs r) {:tag :root, :color :white})
-      (is= (hid->attrs z) {:tag :char, :color :red})
-      (is= (hid->kids r) [x y z])
-      (is= (hid->value z) "z")
-
-      (attrs-reset z {:type :tuna, :name :charlie})
-      (is= (hid->attrs z) {:type :tuna, :name :charlie}))))
+(comment ;comment *****************************************************************************
 
 (dotest
   (with-forest (new-forest)
@@ -300,7 +360,7 @@
 
         forest-2 (with-forest-result forest-1
                    (let [{:keys [x y z r]} @state]
-                     (is= (hid->elem y) (->Leaf {:tag :char} "y"))
+                     (is= (hid->node y) (->Leaf {:tag :char} "y"))
                      (is= (value-set y "YYY") (->Leaf {:tag :char} "YYY"))
                      (is= (value-set y 0) (->Leaf {:tag :char} 0))
                      (value-update y + 7)
@@ -310,7 +370,7 @@
         ; forest-1 is unaffected by changes that created forest-2
         forest-3 (with-forest-result forest-1
                    (let [{:keys [x y z r]} @state]
-                     (is= (hid->elem y) (->Leaf {:tag :char} "y")))) ; still has forest-1 value
+                     (is= (hid->node y) (->Leaf {:tag :char} "y")))) ; still has forest-1 value
 
         forest-4 (with-forest-result forest-2
                    (let [{:keys [x y z r]} @state

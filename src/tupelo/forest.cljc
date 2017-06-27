@@ -74,13 +74,13 @@
 
 ; #todo MAYBE???
 ; #todo merge Node/Node -> genric Node: {:attrs <some map> ::value <something> ::kids []}
-; #todo              or -> plain map:   {::khids []  ::value <something> :attr1 val1 :attr2 val2}
+; #todo              or -> plain map:   {:khids []  ::value <something> :attr1 val1 :attr2 val2}
 ;                                        ^req      ^optional
 
 ; #todo add { :parents #{:23 :14 :ab9} } to Node
 ; #todo add loop detection, recurse on parents not= <new child>
 
-; { ::khids  [hid...]  :k1 v1 :k2 v2 ...  ::value s/Any  }
+; { :khids  [hid...]  :k1 v1 :k2 v2 ...  ::value s/Any  }
 ;    ^ req             ^opt k-v's          ^opt/leaf
 (defrecord Node [khids] ) ; #todo add ::tag? (only req for hiccup/enlive data?)
 ; #todo rename :khids -> :kid-hids ?
@@ -92,13 +92,13 @@
   "Returns true if the arg is a legal forest node"
   [arg :- tsk/KeyMap]
   (or (instance? Node arg)
-    (contains-key? arg ::khids)))
+    (contains-key? arg :khids)))
 
 (s/defn forest-leaf? :- s/Bool
   "Returns true if the arg is a leaf node (no khids). "
   [arg :- tsk/KeyMap]
   (and (forest-node? arg)
-    (empty? (grab ::khids arg))))
+    (empty? (grab :khids arg))))
 
 (s/defn tree-node? :- s/Bool
   "Returns true if the arg is a legal tree node"
@@ -299,7 +299,7 @@
 
 (s/defn hid->kids :- [HID]
   [hid :- HID]
-  (grab ::kids (hid->node hid)))
+  (grab :khids (hid->node hid)))
 
 (s/defn node-hid?  ; #todo remove OBE?
   "Returns true iff an HID is a Node"
@@ -331,7 +331,7 @@
   []
   (let [kid-hids  (reduce
                     (fn [cum-kids hid]
-                      (into cum-kids (grab ::kids (hid->node hid))))
+                      (into cum-kids (grab :khids (hid->node hid))))
                     #{}
                     (all-hids))
         root-hids (set/difference (all-hids) kid-hids)]
@@ -346,34 +346,29 @@
       ; leaf: nothing else to do
       base-result   ; #todo can clean up more?
       ; Node: need to recursively resolve children
-      (let [kids            (mapv hid->tree (grab ::kids node))
-            resolved-result (assoc base-result ::kids kids)]
+      (let [kids            (mapv hid->tree (grab :khids node))
+            resolved-result (assoc base-result :khids kids)]
         resolved-result))))
 
 ; #todo naming choices:
-; #todo  reset! vs  set
-; #todo  swap!  vs  update
-; #todo  remove  vs  delete  vs drop
+; #todo   reset! vs  set
+; #todo   swap!  vs  update
+; #todo   remove vs  delete  vs drop
 
-; #todo *** unify these 2 fns ***
-(s/defn ^:private set-node
-  "Unconditionally sets the value of an Node in the forest"
-  [hid :- HID
-   node :- Node]
-  (set! *forest* (glue *forest* {hid node} ))
-  node)
-
-; #todo *** unify these 2 fns ***
 ; #todo avoid self-cycles
 ; #todo avoid descendant-cycles
 (s/defn set-node
   "Unconditionally sets the value of a Node in the forest"
-  [hid :- HID
-   attrs :- tsk/KeyMap
-   kids :- [HID] ]
-  (let [node (glue (->Node kids) attrs)]
-    (set-node hid node)
-    node))
+  ([hid :- HID
+    node :- Node]
+    (set! *forest* (glue *forest* {hid node}))
+    node)
+  ([hid :- HID
+    attrs :- tsk/KeyMap
+    kids :- [HID]]
+    (let [node (glue (->Node kids) attrs)]
+      (set-node hid node)
+      node)))
 
 ; #todo remove
 ;(s/defn set-leaf
@@ -444,10 +439,10 @@
 
 (s/defn tree->bush :- tsk/Vec
   [tree-node :- tsk/Map]
-  (assert (forest-node? tree-node))
+  (assert (tree-node? tree-node))
   (let [bush-kids (mapv tree->bush (grab ::kids tree-node))
-        bush-node (prepend (dissoc ::kids tree-node) bush-kids) ]
-       bush-node))
+        bush-node (prepend (dissoc tree-node ::kids) bush-kids)]
+     bush-node))
 
 (s/defn enlive->bush :- tsk/Vec ; #todo add test
   "Converts an Enlive-format data structure to a Bush. "
