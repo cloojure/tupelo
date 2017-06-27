@@ -454,7 +454,7 @@
                                 {::tf/kids [], :name :tito, ::tf/value "re"} ]} ) ))
   ])
 
-  #_(with-forest (new-forest)
+  (with-forest (new-forest)
     (let [x (add-leaf {:tag :char :color :red} "x")
           y (add-leaf {:tag :char :color :green} "y")
           z (add-leaf {:tag :char :color :blue} "z")
@@ -464,11 +464,11 @@
       (kids-append r [y]) (is= (hid->kids r) [x y])
       (kids-append r [z]) (is= (hid->kids r) [x y z])
       (is= (hid->tree r)
-        {:attrs {:tag :root, :color :white},
-         :kids
-                [{:attrs {:tag :char, :color :red}, :value "x"}
-                 {:attrs {:tag :char, :color :green}, :value "y"}
-                 {:attrs {:tag :char, :color :blue}, :value "z"}]})
+        {:tag :root, :color :white,
+         ::tf/kids
+              [{::tf/kids [], :tag :char, :color :red, ::tf/value "x"}
+               {::tf/kids [], :tag :char, :color :green, ::tf/value "y"}
+               {::tf/kids [], :tag :char, :color :blue, ::tf/value "z"}]})
 
       (remove-kids r #{z x})
       (is= (hid->kids r) [y])
@@ -476,9 +476,8 @@
       (remove-kids r #{y})
       (is= (hid->kids r) [])
       (is= (hid->tree r)
-        {:attrs {:tag :root, :color :white},
-         :kids  []})
-      (kids-append  r [z]) (is= (hid->kids r) [z])
+        {:tupelo.forest/kids [], :tag :root, :color :white} )
+      (kids-append  r [z  ]) (is= (hid->kids r) [z])
       (kids-prepend r [x y]) (is= (hid->kids r) [x y z])))
 
   #_(with-forest (new-forest)

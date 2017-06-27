@@ -619,9 +619,9 @@
   [hid :- HID
    kids-new :- [HID]]
   (let [node-curr (hid->node hid)
-        kids-curr (grab ::kids node-curr)
+        kids-curr (grab :khids node-curr)
         kids-new  (glue kids-curr kids-new)
-        node-new  (glue node-curr {::kids kids-new})]
+        node-new  (glue node-curr {:khids kids-new})]
        (set-node hid node-new)
     node-new))
 
@@ -632,9 +632,9 @@
   [hid :- HID
    kids-in :- [HID]]
   (let [node-curr (hid->node hid)
-        kids-curr (grab ::kids node-curr)
+        kids-curr (grab :khids node-curr)
         kids-new  (glue kids-in kids-curr)
-        node-new  (glue node-curr {::kids kids-new})]
+        node-new  (glue node-curr {:khids kids-new})]
     (set-node hid node-new)
     node-new))
 
@@ -651,14 +651,14 @@
     (let [kids-leaving        (set kids-leaving)
           report-missing-kids (not missing-kids-ok?)
           node-curr           (hid->node hid)
-          kids-curr           (grab ::kids node-curr)
+          kids-curr           (grab :khids node-curr)
           missing-kids        (set/difference kids-leaving (into #{} kids-curr))
           _                   (when (and (not-empty? missing-kids) report-missing-kids)
                                 (throw (IllegalArgumentException.
                                          (str "remove-kids: missing-kids found=" missing-kids))))
           kid-is-leaving?     (fn fn-kid-is-leaving? [kid] (contains-key? kids-leaving kid))
           kids-new            (drop-if kid-is-leaving? kids-curr)
-          node-new            (glue node-curr {::kids kids-new})]
+          node-new            (glue node-curr {:khids kids-new})]
       (set-node hid node-new)
       node-new)))
 
