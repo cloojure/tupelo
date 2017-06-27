@@ -594,7 +594,7 @@
   [hid :- HID
    kids-new :- [HID]]
   (let [node-curr  (hid->node hid)
-        node-new   (glue node-curr {::kids kids-new})]
+        node-new   (glue node-curr {:khids kids-new})]
     (set-node hid node-new)
     node-new))
 
@@ -606,9 +606,9 @@
    fn-update-kids   ; signature: (fn-update kids-curr x y z & more) -> kids-new
    & fn-update-kids-args]
   (let [node-curr (hid->node hid)
-        kids-curr (grab ::kids node-curr)
+        kids-curr (grab :khids node-curr)
         kids-new  (apply fn-update-kids kids-curr fn-update-kids-args)
-        node-new  (glue node-curr {::kids kids-new})]
+        node-new  (glue node-curr {:khids kids-new})]
     (set-node hid node-new)
     node-new))
 

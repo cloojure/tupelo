@@ -378,7 +378,6 @@
                   :cnt       2,
                   ::tf/value "x"}]}))))
 
-(comment ;comment *****************************************************************************
 (dotest
   (let [state    (atom {})
         forest-1 (with-forest-result (new-forest)
@@ -393,54 +392,69 @@
                      (attrs-reset z {:type :tuna, :name :charlie})
                      (is= (hid->attrs z) {:type :tuna, :name :charlie})
 
-                     (is= (hid->leaf y) (->Leaf {:tag :char, :color :red} "y"))
-                     (is= (attr-remove y :color) (->Leaf {:tag :char} "y"))))
+                     (is (val= (hid->leaf y)
+                           {:khids [], :tag :char, :color :red, ::tf/value "y"}))
+                     (is (val= (attr-remove y :color)
+                           {:khids [], :tag :char, ::tf/value "y"}))))
 
         forest-2 (with-forest-result forest-1
                    (let [{:keys [x y z r]} @state]
-                     (is= (hid->node y) (->Leaf {:tag :char} "y"))
-                     (is= (value-set y "YYY") (->Leaf {:tag :char} "YYY"))
-                     (is= (value-set y 0) (->Leaf {:tag :char} 0))
+                        (is (val= (hid->node y) {:khids [], :tag :char, ::tf/value "y"}))
+                     (is (val= (value-set y "YYY")
+                           {:khids [], :tag :char, ::tf/value "YYY"}))
+
+                     (is (val= (value-set y 0)
+                           {:khids [], :tag :char, ::tf/value 0}))
                      (value-update y + 7)
                      (value-update y * 6)
-                     (is= (hid->leaf y) (->Leaf {:tag :char} 42))))
+                     (is (val= (hid->leaf y)
+                           {:khids [], :tag :char, ::tf/value 42}))))
 
         ; forest-1 is unaffected by changes that created forest-2
         forest-3 (with-forest-result forest-1
                    (let [{:keys [x y z r]} @state]
-                     (is= (hid->node y) (->Leaf {:tag :char} "y")))) ; still has forest-1 value
+                     (is (val= (hid->node y)
+                           {:khids [], :tag :char, ::tf/value "y"})))) ; still has forest-1 value
 
         forest-4 (with-forest-result forest-2
                    (let [{:keys [x y z r]} @state
-                         _ (is= (hid->leaf y) (->Leaf {:tag :char} 42)) ; still has forest-2 value
-                         a (add-leaf {:name :michael} "do")
-                         b (add-leaf {:name :tito} "re")
-                         c (add-leaf {:name :germain} "mi")]
-                     (kids-set r [a b c])
+                         >> (is (val= (hid->leaf y)
+                                  {:khids [], :tag :char, ::tf/value 42})) ; still has forest-2 value
+                         a  (add-leaf {:name :michael} "do")
+                         b  (add-leaf {:name :tito} "re")
+                         c  (add-leaf {:name :germain} "mi")]
+                        (kids-set r [a b c])
                      (is= (hid->tree r)
-                       {:attrs {:tag :root, :color :white},
-                        :kids  [{:attrs {:name :michael}, :value "do"}
-                                {:attrs {:name :tito}, :value "re"}
-                                {:attrs {:name :germain}, :value "mi"}]})
+                       {:tag   :root,
+                        :color :white,
+                        ::tf/kids
+                               [{::tf/kids [], :name :michael, ::tf/value "do"}
+                                {::tf/kids [], :name :tito, ::tf/value "re"}
+                                {::tf/kids [], :name :germain, ::tf/value "mi"}]}
+                       )
                      (kids-update r
                        (fn sort-kids [kids]
                          (sort-by #(grab :name (hid->attrs %)) kids)))
                      (is= (hid->tree r)
-                       {:attrs {:tag :root, :color :white},
-                        :kids  [{:attrs {:name :germain}, :value "mi"}
-                                {:attrs {:name :michael}, :value "do"}
-                                {:attrs {:name :tito}, :value "re"}]}
-                       )
+                       {:tag   :root,
+                        :color :white,
+                        ::tf/kids
+                               [{::tf/kids [], :name :germain, ::tf/value "mi"}
+                                {::tf/kids [], :name :michael, ::tf/value "do"}
+                                {::tf/kids [], :name :tito, ::tf/value "re"} ]} )
                      (kids-update r
                        (fn sort-kids [kids]
                          (sort-by #(hid->value %) kids)))
                      (is= (hid->tree r)
-                       {:attrs {:tag :root, :color :white},
-                        :kids  [{:attrs {:name :michael}, :value "do"}
-                                {:attrs {:name :germain}, :value "mi"}
-                                {:attrs {:name :tito}, :value "re"}]})))])
+                       {:tag   :root,
+                        :color :white,
+                        ::tf/kids
+                               [{::tf/kids [], :name :michael, ::tf/value "do"}
+                                {::tf/kids [], :name :germain, ::tf/value "mi"}
+                                {::tf/kids [], :name :tito, ::tf/value "re"} ]} ) ))
+  ])
 
-  (with-forest (new-forest)
+  #_(with-forest (new-forest)
     (let [x (add-leaf {:tag :char :color :red} "x")
           y (add-leaf {:tag :char :color :green} "y")
           z (add-leaf {:tag :char :color :blue} "z")
@@ -467,7 +481,7 @@
       (kids-append  r [z]) (is= (hid->kids r) [z])
       (kids-prepend r [x y]) (is= (hid->kids r) [x y z])))
 
-  (with-forest (new-forest)
+  #_(with-forest (new-forest)
     (let [x (add-leaf {:tag :char :color :red} "x")
           y (add-leaf {:tag :char :color :green} "y")
           z (add-leaf {:tag :char :color :blue} "z")
@@ -498,6 +512,7 @@
       (is= (hid->kids c) [])
       (is= (hid->tree c) {:attrs {:tag :r3, :color :black}, :kids []}))))
 
+(comment ;comment *****************************************************************************
 (dotest
   (with-forest (new-forest)
     (let [x (add-leaf {:a 1 :b 2} "x")]
