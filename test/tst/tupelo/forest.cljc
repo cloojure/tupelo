@@ -175,20 +175,21 @@
 
 
     ; #todo add generative testing
-    (do
-      ;(is=
-      ;  (-> tree-2 hiccup->tree tree->hiccup)
-      ;  ;(-> tree-2 hiccup->tree tree->hiccup hiccup->tree)
-      ;  [:a
-      ;   [:b {::tf/value 2} 2]
-      ;   [:c {::tf/value 3} 3]] )
-      ;(is=
-      ;  (-> tree-3 hiccup->tree)
-      ;  (-> tree-3 hiccup->tree tree->hiccup hiccup->tree))
-      ;(is=
-      ;  (-> tree-4 hiccup->tree)
-      ;  (-> tree-4 hiccup->tree tree->hiccup hiccup->tree))
-      )
+    (is= tree-2 (-> tree-2 hiccup->tree tree->hiccup))
+    (is=
+      (-> tree-2 hiccup->tree)
+      (-> tree-2 hiccup->tree tree->hiccup hiccup->tree))
+
+    (is= tree-3 (-> tree-3 hiccup->tree tree->hiccup))
+    (is=
+      (-> tree-3 hiccup->tree)
+      (-> tree-3 hiccup->tree tree->hiccup hiccup->tree))
+
+    (is= tree-4 (-> tree-4 hiccup->tree tree->hiccup))
+    (is=
+      (-> tree-4 hiccup->tree)
+      (-> tree-4 hiccup->tree tree->hiccup hiccup->tree))
+
 ))
 
 (comment ;comment *****************************************************************************
