@@ -289,7 +289,7 @@
 
 (s/defn hid->attrs :- tsk/KeyMap ; #todo remove OBE
   [hid :- HID]
-  (hid->node hid))
+  (dissoc (hid->node hid) :khids))
 
 (s/defn hid->attr :- s/Any ; #todo remove OBE
   "Given an HID, returns a single attr"
@@ -509,19 +509,22 @@
   (-> (validate-hid hid) hid->tree tree->hiccup))
 
 ; #todo make sure all permutations are available
-;(defn hid->enlive [hid]
-;  (tf/hiccup->enlive (tf/hid->hiccup hid)))
+(defn hid->enlive [hid]
+  (-> hid hid->tree tree->enlive))
 
 ; #todo replace with set-node ?
-;(s/defn attrs-reset :- tsk/KeyMap
-;  "Replace the attrs of a Node with the supplied attrs map"
-;  [hid :- HID
-;   attrs-new :- tsk/KeyMap]
-;  (validate-attrs attrs-new)
-;  (let [node-curr  (hid->node hid)
-;        node-new   (glue node-curr attrs-new)]
-;    (set-node hid node-new)
-;    node-new))
+(s/defn attrs-reset :- tsk/KeyMap
+  "Replace the attrs of a Node with the supplied attrs map"
+  [hid :- HID
+   attrs-new :- tsk/KeyMap]
+  (validate-attrs attrs-new)
+  (let [node-curr  (hid->node hid)
+        node-new   (it-> node-curr
+                     (grab :khids it)
+                     (->Node it)
+                     (glue it attrs-new))]
+    (set-node hid node-new)
+    node-new))
 
 (s/defn attrs-merge :- tsk/KeyMap
   "Merge the supplied attrs map into the attrs of a Node "

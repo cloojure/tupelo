@@ -269,51 +269,58 @@
           roots (root-hids)]
       (is (and (hid? x) (hid? y) (hid? z) (hid? r)))
 
-      ;(is (and (leaf-hid? x) (leaf-hid? y) (leaf-hid? z)))
-      ;(is (and (forest-leaf? x-tree) (forest-leaf? y-tree) (forest-leaf? z-tree)))
-      ;(is (and (forest-leaf? x-elem) (forest-leaf? y-elem) (forest-leaf? z-elem)))
-      ;
-      ;(is (node-hid? r))
-      ;(is (forest-node? r-tree))
-      ;(is (forest-node? r-elem))
-      ;
-      ;(is= #{r} roots)
-      ;(not= #{x} roots)
-      ;
-      ;(is= x-tree {:attrs {:tag :char, :color :red}, :value "x"})
-      ;(is= r-tree
-      ;  {:attrs {:tag :root, :color :white},
-      ;   :kids  [{:attrs {:tag :char, :color :red}, :value "x"}
-      ;           {:attrs {:tag :char, :color :red}, :value "y"}
-      ;           {:attrs {:tag :char, :color :red}, :value "z"}]})
-      ;(is (wild-match?
-      ;      {:attrs {:tag :root, :color :white},
-      ;       :kids  [:* :* :*]}
-      ;      (hid->node r)))
-      ;(is (wild-match?
-      ;      {:attrs {:tag :root :color :*},
-      ;       :kids  [:* :* :*]}
-      ;      (hid->node r)))
-      ;(isnt (wild-match?
-      ;        {:attrs {:tag :root :color :*},
-      ;         :kids  [:* :*]}
-      ;        (hid->node r)))
-      ;(is (wild-match?
-      ;      {:attrs {:tag :root :color :*},
-      ;       :kids  :*}
-      ;      (hid->node r)))
-      ;
-      ;(attrs-merge x {:color :green})
-      ;(is= (hid->tree x) (into {} (hid->leaf x))
-      ;  {:attrs {:tag :char, :color :green}, :value "x"})
-      ;
-      ;(is= (hid->attrs r) {:tag :root, :color :white})
-      ;(is= (hid->attrs z) {:tag :char, :color :red})
-      ;(is= (hid->kids r) [x y z])
-      ;(is= (hid->value z) "z")
-      ;
-      ;(attrs-reset z {:type :tuna, :name :charlie})
-      ;(is= (hid->attrs z) {:type :tuna, :name :charlie})
+      (is (and (leaf-hid? x) (leaf-hid? y) (leaf-hid? z)))
+      (is (and (forest-leaf? x-tree) (forest-leaf? y-tree) (forest-leaf? z-tree)))
+      (is (and (forest-leaf? x-elem) (forest-leaf? y-elem) (forest-leaf? z-elem)))
+
+      (is (node-hid? r))
+      (is (forest-node? r-tree))
+      (is (forest-node? r-elem))
+
+      (is= #{r} roots)
+      (isnt= #{x} roots)
+
+      (is= x-tree {:khids [], :tag :char, :color :red, :tupelo.forest/value "x"} )
+      (is= r-tree
+        {:khids
+                [{:khids [], :tag :char, :color :red, :tupelo.forest/value "x"}
+                 {:khids [], :tag :char, :color :red, :tupelo.forest/value "y"}
+                 {:khids [], :tag :char, :color :red, :tupelo.forest/value "z"}],
+         :tag   :root,
+         :color :white})
+      (is (wild-match?
+            {:tag :root, :color :white,
+             :khids [:* :* :*]}
+            (hid->node r)))
+      (is (wild-match?
+            {:tag :root
+             :color :*
+             :khids  [:* :* :*]}
+            (hid->node r)))
+      (isnt (wild-match?
+              {:tag :root
+               :color :*
+               :khids  [:* :*]}
+              (hid->node r)))
+      (is (wild-match?
+            {:tag :root
+             :color :*
+             :khids  :*}
+            (hid->node r)))
+
+      (attrs-merge x {:color :green})
+      (is (val=
+            (hid->tree x)
+            (into {} (hid->leaf x))
+            { :khids [] :tag :char, :color :green, ::tf/value "x"}))
+
+      (is= (hid->attrs r) {:tag :root, :color :white})
+      (is= (hid->attrs z) {:tag :char, :color :red ::tf/value "z"})
+      (is= (hid->kids r) [x y z])
+      (is= (hid->value z) "z")
+
+      (attrs-reset z {:type :tuna, :name :charlie})
+      (is= (hid->attrs z) {:type :tuna, :name :charlie})
     )))
 
 (comment ;comment *****************************************************************************
