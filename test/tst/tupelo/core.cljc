@@ -279,7 +279,12 @@
         (is (every? truthy? [true :a 'my-symbol 1 "hello" \x] ))
         (is (every? falsey? [false nil] ))
         (is (has-none? falsey? truthies))
-        (is (has-none? truthy? falsies))))
+        (is (has-none? truthy? falsies))
+
+        (isnt (every? truthy? [true false]))
+        (is (every? truthy? [true "FALSE"]))
+        (is (every? truthy? [true ]))
+        (is (every? truthy? []))))
 
     (testing "improved usage"
       (let [count-if (comp count keep-if) ]

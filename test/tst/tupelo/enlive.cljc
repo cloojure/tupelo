@@ -15,6 +15,8 @@
     [java.util UUID ] ))
 (t/refer-tupelo)
 
+(comment            ; #todo fix
+
 (dotest
   (let [map-subtree->hiccup (fn fn-map-subtree->hiccup [soln-set]
                               (into #{}
@@ -213,3 +215,4 @@
   )
 
 
+)

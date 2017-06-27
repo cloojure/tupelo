@@ -12,11 +12,12 @@
     [tupelo.core :as t]
     [tupelo.forest :as tf]
   ))
+
+(comment
+
 (t/refer-tupelo)
 
-;#todo write fn enlive-remove-attrs
-
-;---------------------------------------------------------------------------------------------------
+  ;#todo write fn enlive-remove-attrs
 (defn- ^:no-doc find-tree-impl
   [result-atom parents tree tgt-path]
   ;(newline)
@@ -124,3 +125,5 @@
     :content
     only))
 
+
+)

@@ -83,6 +83,8 @@
    [:item :e]
    [:item 3]])
 
+(comment ;comment *****************************************************************************
+
 ;-----------------------------------------------------------------------------
 ; t0-hiccup
 (dotest
@@ -122,10 +124,11 @@
             kw-leaf-hids (keep-if #(keyword? (hid->value %)) leaf-hids-1) ; could keep only first one here
             leaves       (mapv hid->leaf kw-leaf-hids)]
            ; must use `val=` since (not= {:attrs {:tag :item}, :value :a}
-           ;                  (map->Leaf {:attrs {:tag :item}, :value :a} ))
+           ;                  (map->Node {:attrs {:tag :item}, :value :a} ))
            (is (val= leaves
                  [{:attrs {:tag :item}, :value :a}
                   {:attrs {:tag :item}, :value :b}]))))))
+
 
 ; update the first child of the root using `inc`
 (dotest
@@ -134,7 +137,7 @@
           child-1-hid (first (hid->kids root-hid))
           >>          (value-update child-1-hid inc)
           result      (hid->leaf child-1-hid)]
-         (is= result #tupelo.forest.Leaf{:attrs {:tag :item}, :value 2})
+         (is= result #tupelo.forest.Node{:attrs {:tag :item}, :value 2})
       (is= (hid->bush root-hid)
         [{:tag :item}
          [{:tag :item} 2]
@@ -660,3 +663,5 @@
 
        (is (val= (hid->elem (last (only result-1)))
              {:attrs {:class "two", :tag :div}, :kids []})))))
+
+) ;comment *****************************************************************************

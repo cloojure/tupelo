@@ -9,6 +9,7 @@
   (:require
     [schema.core :as s]
     [tupelo.core :as t]
+    [tupelo.forest :as tf]
   ))
 (t/refer-tupelo)
 
@@ -23,12 +24,12 @@
                 [:b 2]
                 [:c {:k3 "v3" :k4 4}
                  [:d 4]]] ]
-    (is= (hiccup->enlive tree-2)
-      {:tag   :a,
-       :attrs {},
-       :content
-              [{:tag :b, :attrs {}, :content [2]}
-               {:tag :c, :attrs {}, :content [3]}]})
+     (is= (hiccup->enlive tree-2)
+       {:tag   :a,
+        :attrs {},
+        :content
+               [{:tag :b, :attrs {}, :content [2]}
+                {:tag :c, :attrs {}, :content [3]}]})
 
     (is= (hiccup->enlive tree-3)
       {:tag   :a,
@@ -43,18 +44,154 @@
        :content
               [{:tag :b, :attrs {}, :content [2]}
                {:tag :c, :attrs {:k3 "v3" :k4 4}, :content [
-                                                            {:tag :d :attrs {} :content [4]}]}]})
+               {:tag :d :attrs {} :content [4]}]}]})
+
+
     ; #todo add generative testing
+    (is= tree-2 (-> tree-2 hiccup->enlive enlive->hiccup))
     (is=
       (-> tree-2 hiccup->enlive)
       (-> tree-2 hiccup->enlive enlive->hiccup hiccup->enlive))
+
+    (is= tree-3 (-> tree-3 hiccup->enlive enlive->hiccup))
     (is=
       (-> tree-3 hiccup->enlive)
       (-> tree-3 hiccup->enlive enlive->hiccup hiccup->enlive))
+
+    (is= tree-4 (-> tree-4 hiccup->enlive enlive->hiccup))
     (is=
       (-> tree-4 hiccup->enlive)
-      (-> tree-4 hiccup->enlive enlive->hiccup hiccup->enlive))
-    ))
+      (-> tree-4 hiccup->enlive enlive->hiccup hiccup->enlive))))
+
+
+(dotest
+  (let [tree-2 {:tag   :a,
+                :attrs {},
+                :content
+                       [{:tag :b, :attrs {}, :content [2]}
+                        {:tag :c, :attrs {}, :content [3]}]}
+
+        tree-3 {:tag   :a,
+                :attrs {:k1 "v1"},
+                :content
+                       [{:tag :b, :attrs {}, :content [2]}
+                        {:tag :c, :attrs {}, :content [3]}]}
+        tree-4 {:tag   :a,
+                :attrs {:k1 "v1"},
+                :content
+                       [{:tag :b, :attrs {}, :content [2]}
+                        {:tag :c, :attrs {:k3 "v3" :k4 4},
+                         :content [ {:tag :d :attrs {} :content [4]}]}]}
+        tree-5 {:tag   :a,
+                :attrs {:k1 "v1"},
+                :content
+                       [{:tag :b, :attrs {}, :content [2]}
+                        {:tag :c, :attrs {}, :content [3 4 5]}]}
+  ]
+     (is= (enlive->tree tree-2)
+       {:tag :a,
+        ::tf/kids
+             [{:tag :b, ::tf/value 2, ::tf/kids []}
+              {:tag :c, ::tf/value 3, ::tf/kids []}]})
+    (is= (enlive->tree tree-3)
+      {:k1  "v1",
+       :tag :a,
+       ::tf/kids
+            [{:tag :b, ::tf/value 2, ::tf/kids []}
+             {:tag :c, ::tf/value 3, ::tf/kids []}]})
+    (is= (enlive->tree tree-4)
+      {:k1  "v1",
+       :tag :a,
+       ::tf/kids
+            [{:tag :b, ::tf/value 2, ::tf/kids []}
+             {:k3  "v3",
+              :k4  4,
+              :tag :c,
+              ::tf/kids
+                   [{:tag :d, ::tf/value 4, ::tf/kids []}]}]})
+    (is= (enlive->tree tree-5)
+      {:k1  "v1",
+       :tag :a,
+       ::tf/kids
+            [{:tag :b, ::tf/value 2, ::tf/kids []}
+             {:tag :c,
+              ::tf/kids
+                   [{:tag ::tf/raw, ::tf/value 3 ::tf/kids []}
+                    {:tag ::tf/raw, ::tf/value 4 ::tf/kids []}
+                    {:tag ::tf/raw, ::tf/value 5 ::tf/kids []}]}]})
+
+    ; #todo add generative testing
+    (is= tree-2 (-> tree-2 enlive->tree tree->enlive))
+    (is=
+      (-> tree-2 enlive->tree)
+      (-> tree-2 enlive->tree tree->enlive enlive->tree))
+
+    (is= tree-3 (-> tree-3 enlive->tree tree->enlive))
+    (is=
+      (-> tree-3 enlive->tree)
+      (-> tree-3 enlive->tree tree->enlive enlive->tree))
+
+    (is= tree-4 (-> tree-4 enlive->tree tree->enlive))
+    (is=
+      (-> tree-4 enlive->tree)
+      (-> tree-4 enlive->tree tree->enlive enlive->tree))
+    (is= tree-5 (-> tree-5 enlive->tree tree->enlive))
+    (is=
+      (-> tree-5 enlive->tree)
+      (-> tree-5 enlive->tree tree->enlive enlive->tree))))
+
+
+(dotest
+  (let [tree-2 [:a
+                [:b 2]
+                [:c 3]]
+        tree-3 [:a {:k1 "v1"}
+                [:b 2]
+                [:c 3]]
+        tree-4 [:a {:k1 "v1"}
+                [:b 2]
+                [:c {:k3 "v3" :k4 4}
+                 [:d 4]]] ]
+    (is= (hiccup->tree tree-2)
+      {:tag :a,
+       ::tf/kids
+            [{:tag :b, ::tf/value 2 ::tf/kids []}
+             {:tag :c, ::tf/value 3 ::tf/kids []}]} )
+
+    (is= (hiccup->tree tree-3)
+      {:k1  "v1",
+       :tag :a,
+       ::tf/kids
+            [{:tag :b, ::tf/value 2 ::tf/kids []}
+             {:tag :c, ::tf/value 3 ::tf/kids []}]})
+
+    (is= (hiccup->tree tree-4)
+      {:k1  "v1",
+       :tag :a,
+       ::tf/kids
+            [{:tag :b, ::tf/value 2 ::tf/kids []}
+             {:k3 "v3", :k4 4, :tag  :c,
+              ::tf/kids [{:tag :d, ::tf/value 4  ::tf/kids []}]}]} )
+
+
+    ; #todo add generative testing
+    (do
+      ;(is=
+      ;  (-> tree-2 hiccup->tree tree->hiccup)
+      ;  ;(-> tree-2 hiccup->tree tree->hiccup hiccup->tree)
+      ;  [:a
+      ;   [:b {::tf/value 2} 2]
+      ;   [:c {::tf/value 3} 3]] )
+      ;(is=
+      ;  (-> tree-3 hiccup->tree)
+      ;  (-> tree-3 hiccup->tree tree->hiccup hiccup->tree))
+      ;(is=
+      ;  (-> tree-4 hiccup->tree)
+      ;  (-> tree-4 hiccup->tree tree->hiccup hiccup->tree))
+      )
+))
+
+(comment ;comment *****************************************************************************
 
 (dotest
   (with-forest (new-forest)
@@ -75,12 +212,12 @@
       (is (and (hid? x) (hid? y) (hid? z) (hid? r)))
 
       (is (and (leaf-hid? x) (leaf-hid? y) (leaf-hid? z)))
-      (is (and (tree-leaf? x-tree) (tree-leaf? y-tree) (tree-leaf? z-tree)))
-      (is (and (tree-leaf? x-elem) (tree-leaf? y-elem) (tree-leaf? z-elem)))
+      (is (and (forest-leaf? x-tree) (forest-leaf? y-tree) (forest-leaf? z-tree)))
+      (is (and (forest-leaf? x-elem) (forest-leaf? y-elem) (forest-leaf? z-elem)))
 
       (is (node-hid? r))
-      (is (tree-node? r-tree))
-      (is (tree-node? r-elem))
+      (is (forest-node? r-tree))
+      (is (forest-node? r-elem))
 
       (is= #{r} roots)
       (not= #{x} roots)
@@ -984,3 +1121,5 @@
           [{:tag :data, :idx 0}
            [{:tag :data, :idx 0} 2]]]]])
    )))
+
+) ;comment *****************************************************************************
