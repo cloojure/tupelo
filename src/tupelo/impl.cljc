@@ -32,22 +32,29 @@
   "Returns the first value in a list or vector. Throws if empty."
   [arg :- [s/Any]]
   (when (or (nil? arg) (empty? arg))
-    (throw (IllegalArgumentException. (str "first: invalid arg:" arg))))
+    (throw (IllegalArgumentException. (str "xfirst: invalid arg:" arg))))
   (clojure.core/first arg))
 
 (s/defn xsecond :- s/Any ; #todo -> tests
   "Returns the second value in a list or vector. Throws if (< len 2)."
   [arg :- [s/Any]]
   (when (or (nil? arg) (< (count arg) 2))
-    (throw (IllegalArgumentException. (str "second: invalid arg:" arg))))
+    (throw (IllegalArgumentException. (str "xsecond: invalid arg:" arg))))
   (clojure.core/second arg))
 
 (s/defn xthird :- s/Any ; #todo -> tests
   "Returns the third value in a list or vector. Throws if (< len 3)."
   [arg :- [s/Any]]
   (when (or (nil? arg) (< (count arg) 3))
-    (throw (IllegalArgumentException. (str "third: invalid arg:" arg))))
+    (throw (IllegalArgumentException. (str "xthird: invalid arg:" arg))))
   (clojure.core/nth arg 3))
+
+(s/defn xlast :- s/Any ; #todo -> tests
+  "Returns the last value in a list or vector. Throws if empty."
+  [arg :- [s/Any]]
+  (when (or (nil? arg) (empty? arg))
+    (throw (IllegalArgumentException. (str "xlast: invalid arg:" arg))))
+  (clojure.core/last arg))
 
 ; #todo -> tests
 (s/defn xrest :- s/Any

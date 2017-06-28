@@ -1164,12 +1164,9 @@
          [{::tf/tag :data, ::tf/idx 4}
           [{::tf/tag :data, ::tf/idx 0}]]] )
 
-
       (is= (format-paths (find-leaf-paths root-hid-1 [:** {::tf/value 2}]))
         [[{:tupelo.forest/tag :root}
-          [{:tupelo.forest/tag   :data,
-            :tupelo.forest/idx   1,
-            :tupelo.forest/value 2}]]])
+          [{:tupelo.forest/tag :data, :tupelo.forest/idx 1, :tupelo.forest/value 2}]]])
       (is= (format-paths (find-leaf-paths root-hid-2 [:** {::tf/value 2}]))
         [[{::tf/tag :root}
           [{::tf/tag :data, ::tf/idx 0}

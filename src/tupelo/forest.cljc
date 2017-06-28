@@ -813,19 +813,16 @@
   (only (find-hids root-spec tgt-path)))
 
 (s/defn leaf-path? :- s/Bool
-  "Returns true if a path ends in a leaf"
+  "Returns true if an HID path ends in a leaf"
   [path :- [HID]]
-  (let [tail-hid (last path)]
-    (leaf-hid? tail-hid)))
+  (leaf-hid? (xlast path)))
 
 (s/defn find-leaf-paths  :- [[HID]]    ; #todo need test
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec ]
-  (check-spy-enabled :dbg-1
-    (let-spy-pretty [
-          paths      (find-paths root-spec tgt-path)
-          leaf-paths (keep-if leaf-path? paths)]
-         leaf-paths)))
+  (let [paths      (find-paths root-spec tgt-path)
+        leaf-paths (keep-if leaf-path? paths)]
+    leaf-paths))
 
 (s/defn find-leaf-hids :- [HID]     ; #todo need test
   [root-spec :- HidRootSpec
