@@ -1170,32 +1170,27 @@
           [{:tupelo.forest/tag   :data,
             :tupelo.forest/idx   1,
             :tupelo.forest/value 2}]]])
-
-      ;(is= (format-paths (find-leaf-paths root-hid-2 [:** :*] 2))
-     ;  [[{:tag :root}
-     ;    [{:tag :data, :idx 0}
-     ;     [{:tag :data, :idx 1} 2]]]] )
-     ;
-     ;(is= (format-paths (find-leaf-paths root-hid-3 [:** :*] 2))
-     ;  [[{:tag :root}
-     ;    [{:tag :data, :idx 0}
-     ;     [{:tag :data, :idx 0}
-     ;      [{:tag :data, :idx 1} 2]]]]])
-     ;
-     ;(is= (format-paths (find-leaf-paths root-hid-4 [:** :*] 2))  ; #todo document
-     ;  [[{:tag :root}
-     ;    [{:tag :data, :idx 0}
-     ;     [{:tag :data, :idx 0}
-     ;      [{:tag :data, :idx 1} 2]]]]
-     ;   [{:tag :root}
-     ;    [{:tag :data, :idx 1}
-     ;     [{:tag :data, :idx 1}
-     ;      [{:tag :data, :idx 1} 2]]]]
-     ;   [{:tag :root}
-     ;    [{:tag :data, :idx 4}
-     ;     [{:tag :data, :idx 0}
-     ;      [{:tag :data, :idx 0} 2]]]]])
+      (is= (format-paths (find-leaf-paths root-hid-2 [:** {::tf/value 2}]))
+        [[{::tf/tag :root}
+          [{::tf/tag :data, ::tf/idx 0}
+           [{::tf/tag :data, ::tf/idx 1, ::tf/value 2}]]]] )
+      (is= (format-paths (find-leaf-paths root-hid-3 [:** {::tf/value 2}]))
+        [[{::tf/tag :root}
+          [{::tf/tag :data, ::tf/idx 0}
+           [{::tf/tag :data, ::tf/idx 0}
+            [{::tf/tag   :data, ::tf/idx   1, ::tf/value 2}]]]]] )
+     (is= (format-paths (find-leaf-paths root-hid-4 [:** {::tf/value 2}])) ; #todo document
+       [[{::tf/tag :root}
+         [{::tf/tag :data, ::tf/idx 0}
+          [{::tf/tag :data, ::tf/idx 0}
+           [{::tf/tag :data, ::tf/idx 1, ::tf/value 2}]]]]
+        [{::tf/tag :root}
+         [{::tf/tag :data, ::tf/idx 1}
+          [{::tf/tag :data, ::tf/idx 1}
+           [{::tf/tag :data, ::tf/idx 1, ::tf/value 2}]]]]
+        [{::tf/tag :root}
+         [{::tf/tag :data, ::tf/idx 4}
+          [{::tf/tag :data, ::tf/idx 0}
+           [{::tf/tag :data, ::tf/idx 0, ::tf/value 2}]]]]] )
    )))
 
-(comment ;comment *****************************************************************************
-) ;comment *****************************************************************************
