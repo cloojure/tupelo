@@ -67,7 +67,7 @@
 
 ; #todo maybe "testgrp"
 (defmacro dotest [& body] ; #todo README & tests
-  (let [test-name-sym (symbol (str "test-line-" (:line (meta &form))))]
+  (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
     `(clojure.test/deftest ~test-name-sym ~@body)))
 
 (defmacro check [& body] ; #todo README & tests

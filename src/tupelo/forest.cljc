@@ -729,7 +729,8 @@
   (let [[hid-curr & hid-rest] hids]
     (if (empty? hid-rest)
       (hid->bush hid-curr)
-      [ (hid->node hid-curr) (format-path hid-rest) ] )))
+      [(dissoc (hid->node hid-curr) :khids)
+       (format-path hid-rest) ] )))
 
 (s/defn format-paths
   [solns :- [[HID]]]
