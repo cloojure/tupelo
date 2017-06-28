@@ -362,6 +362,7 @@
   "Unconditionally sets the value of a Node in the forest"
   ([hid :- HID
     node :- Node]
+    (assert (not (contains-key? node ::kids)))
     (set! *forest* (glue *forest* {hid node}))
     node)
   ([hid :- HID
@@ -413,13 +414,14 @@
 
 (s/defn add-tree :- HID
   "Adds a tree to the forest."
-  [node]
-  (when-not (tree-node? node)
-    (throw (IllegalArgumentException. (str "add-tree: invalid element=" node))))
-  (let [kid-hids (glue [] ; glue to an empty vec in case no kids
-                   (for [child (grab ::kids node)] ; #todo forv & no glue ???
+  [tree-node]
+  (when-not (tree-node? tree-node)
+    (throw (IllegalArgumentException. (str "add-tree: invalid element=" tree-node))))
+  (let [tree-node-attrs (dissoc tree-node ::kids)
+        kid-hids (glue [] ; glue to an empty vec in case no kids
+                   (for [child (grab ::kids tree-node)] ; #todo forv & no glue ???
                      (add-tree child)))]
-       (add-node node kid-hids)))
+       (add-node tree-node-attrs kid-hids)))
 
 (s/defn bush-node? :- s/Bool ; #todo add test
   [arg]
@@ -728,10 +730,11 @@
   (let [[hid-curr & hids-rest] hids]
     (if (empty? hids-rest)
       (hid->bush hid-curr)
-      (let [curr-part (dissoc (hid->node hid-curr) :khids)
+      (let [node-part (hid->node hid-curr)
+            curr-part (dissoc node-part :khids)
             kids-part (format-path hids-rest)
-            result  [curr-part kids-part] ]
-        result ))))
+            result    [curr-part kids-part]]
+           result))))
 
 (s/defn format-paths
   [solns :- [[HID]]]
@@ -818,27 +821,26 @@
 (s/defn find-leaf-paths  :- [[HID]]    ; #todo need test
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec ]
-  (let [paths          (find-paths root-spec tgt-path)
-        leaf-paths     (keep-if leaf-path? paths) ]
-     leaf-paths))
+  (check-spy-enabled :dbg-1
+    (let-spy-pretty [
+          paths      (find-paths root-spec tgt-path)
+          leaf-paths (keep-if leaf-path? paths)]
+         leaf-paths)))
 
 (s/defn find-leaf-hids :- [HID]     ; #todo need test
   [root-spec :- HidRootSpec
-   tgt-path :- [s/Any]
-   tgt-value :- s/Any]
-  (mapv last (find-leaf-paths root-spec tgt-path tgt-value)) )
+   tgt-path :- [s/Any] ]
+  (mapv last (find-leaf-paths root-spec tgt-path )) )
 
 (s/defn find-leaf-hid
   [root-spec :- HidRootSpec
-   tgt-path :- [s/Any]
-   tgt-value :- s/Any]
-  (only (find-leaf-hids root-spec tgt-path tgt-value)))
+   tgt-path :- [s/Any] ]
+  (only (find-leaf-hids root-spec tgt-path )))
 
 (s/defn find-leaf
   [root-spec :- HidRootSpec
-   tgt-path :- [s/Any]
-   tgt-value :- s/Any]
-  (hid->leaf (find-leaf-hid root-spec tgt-path tgt-value)))
+   tgt-path :- [s/Any] ]
+  (hid->leaf (find-leaf-hid root-spec tgt-path )))
 
 (s/defn find-tree     ; #todo need test (maybe delete?)
   [root-spec :- HidRootSpec

@@ -287,7 +287,7 @@
                           (pprint/pprint spy-val#))
                         spy-val#))
         final-code `(do
-                      (newline)
+                      (when *spy-enabled* (newline))
                       ~@r1 ~r2)]
     final-code))
 

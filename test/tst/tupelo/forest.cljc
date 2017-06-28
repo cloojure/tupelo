@@ -861,7 +861,6 @@
                 (add-leaf {:c :c3} 3)])))
 )
 
-(comment ;comment *****************************************************************************
 (dotest
   (with-forest (new-forest)
     (let [x (add-node {:a :a1}
@@ -901,12 +900,12 @@
           [{:a :a1} [{:b :b2, :color :red, ::tf/value 3}]]
           [{:a :a2} [{:b :b1, :color :green, ::tf/value 2}]]
           [{:a :a2} [{:b :b2, :color :green, ::tf/value 3}]] } )
-      (is= (set (format-paths (find-leaf-paths (root-hids) [{:a :*} {:b :*}] 3)))
+      (is= (set (format-paths (find-leaf-paths (root-hids) [{:a :*} {:b :* ::tf/value 3}] )))
         #{[{:a :a1} [{:b :b2, :color :red, ::tf/value 3}]]
           [{:a :a2} [{:b :b2, :color :green, ::tf/value 3}]]} )
-      (is= (format-paths (find-leaf-paths (root-hids) [{:a :*} {:c :*}] 3))
+      (is= (format-paths (find-leaf-paths (root-hids) [{:a :*} {:c :* ::tf/value 3}]))
         [[{:a :a3} [{:c :b2, :color :blue, ::tf/value 3}]]] )
-      (is= (set (format-paths (find-leaf-paths (root-hids) [:** :*] 3)))
+      (is= (set (format-paths (find-leaf-paths (root-hids) [:** {::tf/value 3}])))
         #{[{:a :a1} [{:b :b2, :color :red, ::tf/value 3}]]
           [{:a :a2} [{:b :b2, :color :green, ::tf/value 3}]]
           [{:a :a3} [{:c :b2, :color :blue, ::tf/value 3}]]} )
@@ -918,12 +917,11 @@
     (let [aa (add-node {:color :red}
                [(add-leaf {:color :green} 2)
                 (add-leaf {:color :blue} 3)])]
-      (spyx-pretty :101 (hid->tree aa))
-      (is= (spyx-pretty (format-paths (find-paths aa [{:color :red}])))
+      (is= (format-paths (find-paths aa [{:color :red}]))
         [[{:color :red}
           [{:color :green, ::tf/value 2}]
           [{:color :blue, ::tf/value 3}]]] )
-      (is= (spyx-pretty (format-paths (find-paths aa [{:color :red} {:color :green}])))
+      (is= (format-paths (find-paths aa [{:color :red} {:color :green}]))
         [[{:color :red}
           [{:color :green, ::tf/value 2}]]] )
       (is= (format-paths (find-paths aa [:** {:color :green}]))
@@ -974,30 +972,30 @@
               (into (sorted-set)
                 (find-paths (root-hids) [:** {:color :green}])))))
 
-      (is= (set (format-paths (find-leaf-paths (root-hids) [:** {:tag :b}] 2)))
+      (is= (set (format-paths (find-leaf-paths (root-hids) [:** {:tag :b ::tf/value 2}])))
         #{[{:tag :a, :id :a1}
            [{:tag :b, :color :red, ::tf/value 2}]]
           [{:tag :a, :id :a2}
            [{:tag :b, :color :green, ::tf/value 2}]]} )
 
-      (is= (format-paths (find-leaf-paths x [:** {:tag :b}] 2))
+      (is= (format-paths (find-leaf-paths x [:** {:tag :b ::tf/value 2}]))
         [[{:tag :a, :id :a1}
           [{:tag :b, :color :red, ::tf/value 2}]] ] )
 
-      (is (val= (find-leaf x [:** {:tag :b}] 2)
+      (is (val= (find-leaf x [:** {:tag :b ::tf/value 2}])
             {:khids [], :tag :b, :color :red, ::tf/value 2}))
 
-      (is (val= (find-leaf (root-hids) [:** {:color :blue}] 2)
+      (is (val= (find-leaf (root-hids) [:** {:color :blue ::tf/value 2}])
             {:khids [], :tag :c, :color :blue, ::tf/value 2}))
 
-      (is= (set (format-paths (find-leaf-paths #{z y} [{:tag :a} :*] 2)))
+      (is= (set (format-paths (find-leaf-paths #{z y} [{:tag :a} {::tf/value 2}])))
         #{[{:tag :a, :id :a2} [{:tag :b, :color :green, ::tf/value 2}]]
           [{:tag :a, :id :a3} [{:tag :c, :color :blue, ::tf/value 2}]]} )
-      (is= (set (format-paths (find-leaf-paths (root-hids) [{:tag :a} :*] 2)))
+      (is= (set (format-paths (find-leaf-paths (root-hids) [{:tag :a} {::tf/value 2}])))
         #{[{:tag :a, :id :a1} [{:tag :b, :color :red, ::tf/value 2}]]
           [{:tag :a, :id :a2} [{:tag :b, :color :green, ::tf/value 2}]]
           [{:tag :a, :id :a3} [{:tag :c, :color :blue, ::tf/value 2}]]} )
-      (is= (set (format-paths (find-leaf-paths (root-hids) [{:tag :a} {:tag :c}] :*)))
+      (is= (set (format-paths (find-leaf-paths (root-hids) [{:tag :a} {:tag :c}] )))
         #{[{:tag :a, :id :a3} [{:tag :c, :color :blue, ::tf/value 3}]]
           [{:tag :a, :id :a3} [{:tag :c, :color :blue, ::tf/value 2}]]} )
 
@@ -1007,9 +1005,8 @@
       ;     [:bfdb71187fc7fc1182e1776d9d50f6f6e1f72646 :0288e8f77e17e289f02d62229304960f1ddac39b]})
       (is (wild-match? [[:* :*]
                         [:* :*]]
-            (find-leaf-paths (root-hids) [{:tag :a} {:tag :c}] :*)))
+            (find-leaf-paths (root-hids) [{:tag :a} {:tag :c}] )))
   )))
-
 
 (dotest
   (with-forest (new-forest)
@@ -1051,14 +1048,33 @@
           bush-2     (hid->bush root-hid-2)
           bush-3     (hid->bush root-hid-3)
           bush-4     (hid->bush root-hid-4)
-
     ]
+     ; -------------------------------------------------------
+       (is= tree-1
+         {::tf/tag  :root,
+          ::tf/kids [{::tf/tag :data, ::tf/idx 0, ::tf/value 1, ::tf/kids []}
+                     {::tf/tag :data, ::tf/idx 1, ::tf/value 2, ::tf/kids []}
+                     {::tf/tag :data, ::tf/idx 2, ::tf/value 3, ::tf/kids []}]})
       (is= bush-1
         [{::tf/tag :root}
          [{::tf/tag :data, ::tf/idx 0, ::tf/value 1}]
          [{::tf/tag :data, ::tf/idx 1, ::tf/value 2}]
          [{::tf/tag :data, ::tf/idx 2, ::tf/value 3}]] )
-      (is= bush-2 ; #todo document
+      ; -------------------------------------------------------
+      (is= tree-2
+        {::tf/tag  :root,
+         ::tf/kids [{::tf/tag  :data,
+                     ::tf/idx  0,
+                     ::tf/kids [{::tf/tag :data, ::tf/idx 0, ::tf/value 1, ::tf/kids []}
+                                {::tf/tag :data, ::tf/idx 1, ::tf/value 2, ::tf/kids []}
+                                {::tf/tag :data, ::tf/idx 2, ::tf/value 3, ::tf/kids []}]}
+                    {::tf/tag  :data,
+                     ::tf/idx  1,
+                     ::tf/kids [{::tf/tag :data, ::tf/idx 0, ::tf/value 10, ::tf/kids []}]}
+                    {::tf/tag  :data,
+                     ::tf/idx  2,
+                     ::tf/kids []}]} )
+      (is= bush-2   ; #todo document
         [{::tf/tag :root}
          [{::tf/tag :data, ::tf/idx 0}
           [{::tf/tag :data, ::tf/idx 0, ::tf/value 1}]
@@ -1066,7 +1082,55 @@
           [{::tf/tag :data, ::tf/idx 2, ::tf/value 3}]]
          [{::tf/tag :data, ::tf/idx 1}
           [{::tf/tag :data, ::tf/idx 0, ::tf/value 10}]]
-         [{::tf/tag :data, ::tf/idx 2}]] )
+         [{::tf/tag :data, ::tf/idx 2}]])
+      ; -------------------------------------------------------
+      (is= tree-3
+        {::tf/tag  :root,
+         ::tf/kids [{::tf/tag  :data,
+                     ::tf/idx  0,
+                     ::tf/kids [{::tf/tag  :data,
+                                 ::tf/idx  0,
+                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, ::tf/value 1, ::tf/kids []}
+                                            {::tf/tag :data, ::tf/idx 1, ::tf/value 2, ::tf/kids []}
+                                            {::tf/tag :data, ::tf/idx 2, ::tf/value 3, ::tf/kids []}]}
+                                {::tf/tag  :data,
+                                 ::tf/idx  1,
+                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, ::tf/value 4, ::tf/kids []}
+                                            {::tf/tag :data, ::tf/idx 1, ::tf/value 5, ::tf/kids []}
+                                            {::tf/tag :data, ::tf/idx 2, ::tf/value 6, ::tf/kids []}]}
+                                {::tf/tag  :data,
+                                 ::tf/idx  2,
+                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, ::tf/value 7, ::tf/kids []}
+                                            {::tf/tag :data, ::tf/idx 1, ::tf/value 8, ::tf/kids []}
+                                            {::tf/tag :data, ::tf/idx 2, ::tf/value 9, ::tf/kids []}]}]}
+                    {::tf/tag  :data,
+                     ::tf/idx  1,
+                     ::tf/kids [{::tf/tag  :data,
+                                 ::tf/idx  0,
+                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, ::tf/value 10, ::tf/kids []}
+                                            {::tf/tag :data, ::tf/idx 1, ::tf/value 11, ::tf/kids []}]}
+                                {::tf/tag  :data,
+                                 ::tf/idx  1,
+                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, ::tf/value 12, ::tf/kids []}
+                                            {::tf/tag :data, ::tf/idx 1, ::tf/value 13, ::tf/kids []}]}]}
+                    {::tf/tag  :data,
+                     ::tf/idx  2,
+                     ::tf/kids [{::tf/tag  :data,
+                                 ::tf/idx  0,
+                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, ::tf/value 20, ::tf/kids []}]}
+                                {::tf/tag  :data,
+                                 ::tf/idx  1,
+                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, ::tf/value 21, ::tf/kids []}]}]}
+                    {::tf/tag  :data,
+                     ::tf/idx  3,
+                     ::tf/kids [{::tf/tag  :data,
+                                 ::tf/idx  0,
+                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, ::tf/value 30, ::tf/kids []}]}]}
+                    {::tf/tag  :data,
+                     ::tf/idx  4,
+                     ::tf/kids [{::tf/tag  :data,
+                                 ::tf/idx  0,
+                                 ::tf/kids []}]}]} )
       (is= bush-3
         [{::tf/tag :root}
          [{::tf/tag :data, ::tf/idx 0}
@@ -1101,19 +1165,13 @@
           [{::tf/tag :data, ::tf/idx 0}]]] )
 
 
-     (is= (spyx-pretty (format-paths (spyx (find-leaf-paths root-hid-1 [:** {::tf/value 2}]))))
-       [[{::tf/tag :root,
-          ::tf/kids [{::tf/tag   :data, ::tf/idx   0, ::tf/value 1, ::tf/kids  []}
-                    {::tf/tag   :data, ::tf/idx   1, ::tf/value 2, ::tf/kids  []}
-                    {::tf/tag   :data, ::tf/idx   2, ::tf/value 3, ::tf/kids  []}]}
-         [{::tf/tag   :data,
-           ::tf/idx   1,
-           ::tf/value 2}]]]
+      (is= (format-paths (find-leaf-paths root-hid-1 [:** {::tf/value 2}]))
+        [[{:tupelo.forest/tag :root}
+          [{:tupelo.forest/tag   :data,
+            :tupelo.forest/idx   1,
+            :tupelo.forest/value 2}]]])
 
-       [[{:tag :root}
-        [{:tag :data, :idx 1} 2]]])
-
-     ;(is= (format-paths (find-leaf-paths root-hid-2 [:** :*] 2))
+      ;(is= (format-paths (find-leaf-paths root-hid-2 [:** :*] 2))
      ;  [[{:tag :root}
      ;    [{:tag :data, :idx 0}
      ;     [{:tag :data, :idx 1} 2]]]] )
@@ -1139,4 +1197,5 @@
      ;      [{:tag :data, :idx 0} 2]]]]])
    )))
 
+(comment ;comment *****************************************************************************
 ) ;comment *****************************************************************************
