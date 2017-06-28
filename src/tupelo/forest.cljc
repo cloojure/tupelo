@@ -111,7 +111,6 @@
   (and (tree-node? arg)
     (empty? (grab ::kids arg))))
 
-
 (s/defn hid? :- s/Bool
   "Returns true if the arg is a legal HexID"
   [arg]
@@ -132,7 +131,7 @@
      (if (sequential? data)
        {::kids (forv [[idx val] (indexed data)]
                  (data->tree idx val))}
-       {::value data}))))
+       {::value data ::kids []}))))
 
 (defn enlive-node?
   "Returns true for valid Enlive nodes, else false"
@@ -726,11 +725,13 @@
 ;---------------------------------------------------------------------------------------------------
 (s/defn format-path
   [hids :- [HID]]
-  (let [[hid-curr & hid-rest] hids]
-    (if (empty? hid-rest)
+  (let [[hid-curr & hids-rest] hids]
+    (if (empty? hids-rest)
       (hid->bush hid-curr)
-      [(dissoc (hid->node hid-curr) :khids)
-       (format-path hid-rest) ] )))
+      (let [curr-part (dissoc (hid->node hid-curr) :khids)
+            kids-part (format-path hids-rest)
+            result  [curr-part kids-part] ]
+        result ))))
 
 (s/defn format-paths
   [solns :- [[HID]]]
@@ -808,19 +809,18 @@
    tgt-path :- tsk/Vec]
   (only (find-hids root-spec tgt-path)))
 
+(s/defn leaf-path? :- s/Bool
+  "Returns true if a path ends in a leaf"
+  [path :- [HID]]
+  (let [tail-hid (last path)]
+    (leaf-hid? tail-hid)))
+
 (s/defn find-leaf-paths  :- [[HID]]    ; #todo need test
   [root-spec :- HidRootSpec
-   tgt-path :- tsk/Vec
-   tgt-value :- s/Any]
+   tgt-path :- tsk/Vec ]
   (let [paths          (find-paths root-spec tgt-path)
-        matching-leaf? (fn fn-matching-leaf?
-                         [path tgt-val]
-                         (let [tail-hid (last path)]
-                            (and (leaf-hid? tail-hid)
-                              (or (= tgt-val :*)
-                                (= tgt-val (hid->value tail-hid))))))
-        leaf-paths     (keep-if #(matching-leaf? % tgt-value) paths) ]
-       leaf-paths))
+        leaf-paths     (keep-if leaf-path? paths) ]
+     leaf-paths))
 
 (s/defn find-leaf-hids :- [HID]     ; #todo need test
   [root-spec :- HidRootSpec
