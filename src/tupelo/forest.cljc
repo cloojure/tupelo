@@ -415,7 +415,7 @@
 (s/defn add-tree :- HID
   "Adds a tree to the forest."
   [node]
-  (when-not (forest-node? node)
+  (when-not (tree-node? node)
     (throw (IllegalArgumentException. (str "add-tree: invalid element=" node))))
   (let [kid-hids (glue [] ; glue to an empty vec in case no kids
                    (for [child (grab ::kids node)] ; #todo forv & no glue ???

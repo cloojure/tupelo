@@ -515,7 +515,6 @@
       (is= (hid->tree c)
         {::tf/kids [], :tag :r3, :color :black}))))
 
-(comment ;comment *****************************************************************************
 (dotest
   (with-forest (new-forest)
     (let [x (add-leaf {:a 1 :b 2} "x")]
@@ -591,22 +590,25 @@
                       [(add-leaf :c 4)
                        (add-leaf :c 5)])
                     (add-leaf :c 9)])
-          ]
-      (is= (hid->tree b1) {:attrs {:tag :b}, :value 1})
-      (is= (hid->tree b2) {:attrs {:tag :b}, :value 2})
-      (is= (hid->tree c4) {:attrs {:tag :c}, :value 4})
-      (is= (hid->tree c5) {:attrs {:tag :c}, :value 5})
-      (is= (hid->tree c9) {:attrs {:tag :c}, :value 9})
-      (is= (hid->tree b3) {:attrs {:tag :b},
-                           :kids  [{:attrs {:tag :c}, :value 4}
-                                   {:attrs {:tag :c}, :value 5}]})
-      (is= (hid->tree aa) {:attrs {:tag :a},
-                           :kids  [{:attrs {:tag :b}, :value 1}
-                                   {:attrs {:tag :b}, :value 2}
-                                   {:attrs {:tag :b},
-                                    :kids  [{:attrs {:tag :c}, :value 4}
-                                            {:attrs {:tag :c}, :value 5}]}
-                                   {:attrs {:tag :c}, :value 9}]})
+    ]
+      (is= (hid->tree b1) {::tf/kids [], :tag :b, ::tf/value 1} )
+      (is= (hid->tree b2) {::tf/kids [], :tag :b, ::tf/value 2} )
+      (is= (hid->tree c4) {::tf/kids [], :tag :c, ::tf/value 4} )
+      (is= (hid->tree c5) {::tf/kids [], :tag :c, ::tf/value 5} )
+      (is= (hid->tree c9) {::tf/kids [], :tag :c, ::tf/value 9})
+      (is= (hid->tree b3) {:tag :b,
+                           ::tf/kids
+                                [{::tf/kids [], :tag :c, ::tf/value 4}
+                                 {::tf/kids [], :tag :c, ::tf/value 5}]} )
+      (is= (hid->tree aa) {:tag :a,
+                           ::tf/kids
+                                [{::tf/kids [], :tag :b, ::tf/value 1}
+                                 {::tf/kids [], :tag :b, ::tf/value 2}
+                                 {:tag :b,
+                                  ::tf/kids
+                                       [{::tf/kids [], :tag :c, ::tf/value 4}
+                                        {::tf/kids [], :tag :c, ::tf/value 5}]}
+                                 {::tf/kids [], :tag :c, ::tf/value 9}]} )
 
       (is (validate-hid root-1))
       (is=
@@ -614,16 +616,18 @@
         (hid->tree root-1)
         (hid->tree root-2)
         (hid->tree root-3)
-        {:attrs {:tag :a},
-         :kids
-                [{:attrs {:tag :b}, :value 1}
-                 {:attrs {:tag :b}, :value 2}
-                 {:attrs {:tag :b},
-                  :kids [{:attrs {:tag :c}, :value 4}
-                         {:attrs {:tag :c}, :value 5}]}
-                 {:attrs {:tag :c}, :value 9}]})
+        {:tag :a,
+         ::tf/kids
+              [{::tf/kids [], :tag :b, ::tf/value 1}
+               {::tf/kids [], :tag :b, ::tf/value 2}
+               {:tag :b,
+                ::tf/kids
+                     [{::tf/kids [], :tag :c, ::tf/value 4}
+                      {::tf/kids [], :tag :c, ::tf/value 5}]}
+               {::tf/kids [], :tag :c, ::tf/value 9}]} )
     )))
 
+(comment ;comment *****************************************************************************
 (dotest
   (with-forest (new-forest)
     (let [hiccup-1 [:a
