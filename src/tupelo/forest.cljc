@@ -812,6 +812,11 @@
    tgt-path :- tsk/Vec]
   (only (find-hids root-spec tgt-path)))
 
+(s/defn find-tree     ; #todo need test (maybe delete?)
+  [root-spec :- HidRootSpec
+   tgt-path :- [s/Any] ]
+  (hid->tree (find-hid root-spec tgt-path)))
+
 (s/defn leaf-path? :- s/Bool
   "Returns true if an HID path ends in a leaf"
   [path :- [HID]]
@@ -838,11 +843,6 @@
   [root-spec :- HidRootSpec
    tgt-path :- [s/Any] ]
   (hid->leaf (find-leaf-hid root-spec tgt-path )))
-
-(s/defn find-tree     ; #todo need test (maybe delete?)
-  [root-spec :- HidRootSpec
-   tgt-path :- [s/Any] ]
-  (hid->tree (find-hid root-spec tgt-path)))
 
 (s/defn find-leaf-value     ; #todo need test (maybe delete?)
   [root-spec :- HidRootSpec
