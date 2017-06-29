@@ -207,15 +207,16 @@
         enlive-base  (glue (submap-by-keys tree-node #{:tag}) {:attrs enlive-attrs})]
        (cond
          (raw-kids-node? tree-node) (let [enlive-leaf (glue enlive-base {:content (consolidate-raw-kids tree-node)})]
-                                         enlive-leaf)
+                                       enlive-leaf)
 
-         (tree-leaf? tree-node) (do ; (println "tree-leaf")
-                                  (let [enlive-leaf (glue enlive-base {:content [(grab ::value tree-node)]})]
-                                       enlive-leaf))
-         :else (do  ; (println "not tree-leaf")
-                 (let [enlive-kids (mapv tree->enlive (grab ::kids tree-node))
-                       enlive-node (glue enlive-base {:content enlive-kids})]
-                      enlive-node)))))
+         (tree-leaf? tree-node) (let [enlive-leaf (glue enlive-base
+                                                    {:content (if (contains-key? tree-node ::value)
+                                                                [(grab ::value tree-node)]
+                                                                [] )})]
+                                   enlive-leaf)
+         :else (let [enlive-kids (mapv tree->enlive (grab ::kids tree-node))
+                     enlive-node (glue enlive-base {:content enlive-kids})]
+                    enlive-node))))
 
 (s/defn enlive->tree :- tsk/KeyMap ; #todo add test
   "Convert an Enlive-format data structure to a tree. "

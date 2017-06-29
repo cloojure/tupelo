@@ -283,10 +283,9 @@
 (defn- spyx-pretty-proc
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
-                     (when *spy-enabled*
                        (if (keyword? expr)
-                         `(println (str ~expr))
-                         `(println (str '~expr " => " ~expr)))))
+                         `(when *spy-enabled* (println (str ~expr)))
+                         `(when *spy-enabled* (println (str '~expr " => " ~expr)))))
         r2         (let [expr (last exprs)]
                      `(let [spy-val# ~expr]
                         (when *spy-enabled*
