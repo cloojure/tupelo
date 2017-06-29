@@ -855,7 +855,7 @@
    path-pred :- s/Any] ; #todo how func spec?
   (let [paths-found (find-paths root-spec tgt-path)
         keepers     (keep-if path-pred paths-found)]
-       keepers))
+     keepers))
 
 (s/defn find-hids-with
   [root-spec :- HidRootSpec
@@ -864,7 +864,7 @@
   (let [paths-found (find-paths root-spec tgt-path)
         hids-found  (mapv last paths-found)
         hids-keep   (keep-if hid-pred hids-found)]
-       hids-keep))
+    hids-keep))
 
 (s/defn has-child-path? ; #todo need test
   [root-spec :- HidRootSpec

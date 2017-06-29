@@ -13,6 +13,7 @@
     [net.cgrand.enlive-html :as en-html]
     [schema.core :as s]
     [tupelo.core :as t]
+    [tupelo.forest :as tf]
     [tupelo.string :as ts]))
 (t/refer-tupelo)
 
@@ -22,7 +23,7 @@
 ;   http://josf.info/blog/2014/04/14/seqs-of-clojure-zippers/
 ;   http://josf.info/blog/2014/10/02/practical-zippers-extracting-text-with-enlive/
 
-(def t0
+(def t0-data
   [1 [:a :b] 2 3 [40 50 60]] )
 
 (def t0-hiccup
@@ -83,52 +84,88 @@
    [:item :e]
    [:item 3]])
 
-(comment ;comment *****************************************************************************
 
+
+;-----------------------------------------------------------------------------
+; t0-data
+(dotest
+  (with-forest (new-forest)
+    (let [root-hid (add-tree (data->tree t0-data))]
+      (is= (hid->bush root-hid)
+        [{::tf/tag :root}
+         [{::tf/tag :data, ::tf/idx 0, ::tf/value 1}]
+         [{::tf/tag :data, ::tf/idx 1}
+          [{::tf/tag :data, ::tf/idx 0, ::tf/value :a}]
+          [{::tf/tag :data, ::tf/idx 1, ::tf/value :b}]]
+         [{::tf/tag :data, ::tf/idx 2, ::tf/value 2}]
+         [{::tf/tag :data, ::tf/idx 3, ::tf/value 3}]
+         [{::tf/tag :data, ::tf/idx 4}
+          [{::tf/tag :data, ::tf/idx 0, ::tf/value 40}]
+          [{::tf/tag :data, ::tf/idx 1, ::tf/value 50}]
+          [{::tf/tag :data, ::tf/idx 2, ::tf/value 60}]]])
+      (is= (hid->tree root-hid)
+        {::tf/tag  :root,
+         ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, ::tf/value 1}
+                    {::tf/tag  :data,
+                     ::tf/idx  1,
+                     ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, ::tf/value :a}
+                                {::tf/kids [], ::tf/tag :data, ::tf/idx 1, ::tf/value :b}]}
+                    {::tf/kids [], ::tf/tag :data, ::tf/idx 2, ::tf/value 2}
+                    {::tf/kids [], ::tf/tag :data, ::tf/idx 3, ::tf/value 3}
+                    {::tf/tag  :data,
+                     ::tf/idx  4,
+                     ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, ::tf/value 40}
+                                {::tf/kids [], ::tf/tag :data, ::tf/idx 1, ::tf/value 50}
+                                {::tf/kids [], ::tf/tag :data, ::tf/idx 2, ::tf/value 60}]}]} )
+    )))
 ;-----------------------------------------------------------------------------
 ; t0-hiccup
 (dotest
   (with-forest (new-forest)
-    (let [root-hid (add-tree-hiccup t0-hiccup)]
-       (let [tree (hid->tree root-hid)
-             bush (hid->bush root-hid)]
-            (is= tree
-              {:attrs {:tag :item},
-               :kids
-                      [{:attrs {:tag :item}, :value 1}
-                       {:attrs {:tag :item},
-                        :kids  [{:attrs {:tag :item}, :value :a}
-                                {:attrs {:tag :item}, :value :b}]}
-                       {:attrs {:tag :item}, :value 2}
-                       {:attrs {:tag :item}, :value 3}
-                       {:attrs {:tag :item},
-                        :kids  [{:attrs {:tag :item}, :value 40}
-                                {:attrs {:tag :item}, :value 50}
-                                {:attrs {:tag :item}, :value 60}]}]})
-         (is= bush
-           [{:tag :item}
-            [{:tag :item} 1]
-            [{:tag :item}
-             [{:tag :item} :a]
-             [{:tag :item} :b]]
-            [{:tag :item} 2]
-            [{:tag :item} 3]
-            [{:tag :item}
-             [{:tag :item} 40]
-             [{:tag :item} 50]
-             [{:tag :item} 60]]]) )
+    (let [root-hid (add-tree-hiccup t0-hiccup)
+          tree (hid->tree root-hid)
+          bush (hid->bush root-hid)]
+       (is= tree
+         {:tag :item,
+          ::tf/kids
+               [{::tf/kids [], :tag :item, ::tf/value 1}
+                {:tag :item,
+                 ::tf/kids
+                      [{::tf/kids [], :tag :item, ::tf/value :a}
+                       {::tf/kids [], :tag :item, ::tf/value :b}]}
+                {::tf/kids [], :tag :item, ::tf/value 2}
+                {::tf/kids [], :tag :item, ::tf/value 3}
+                {:tag :item,
+                 ::tf/kids
+                      [{::tf/kids [], :tag :item, ::tf/value 40}
+                       {::tf/kids [], :tag :item, ::tf/value 50}
+                       {::tf/kids [], :tag :item, ::tf/value 60}]}]})
+      (is= bush
+        [{:tag :item}
+         [{:tag :item, ::tf/value 1}]
+         [{:tag :item}
+          [{:tag :item, ::tf/value :a}]
+          [{:tag :item, ::tf/value :b}]]
+         [{:tag :item, ::tf/value 2}]
+         [{:tag :item, ::tf/value 3}]
+         [{:tag :item}
+          [{:tag :item, ::tf/value 40}]
+          [{:tag :item, ::tf/value 50}]
+          [{:tag :item, ::tf/value 60}]]])
       ; find all keyword leaves in order
-      (let [leaf-hids-1  (find-leaf-hids root-hid [:** :*] :*)
+      (let [leaf-hids-1  (find-leaf-hids root-hid [:** :*])
             leaf-hids-2  (all-leaf-hids)
-            >>           (is= (set leaf-hids-1) leaf-hids-2)
             kw-leaf-hids (keep-if #(keyword? (hid->value %)) leaf-hids-1) ; could keep only first one here
             leaves       (mapv hid->leaf kw-leaf-hids)]
-           ; must use `val=` since (not= {:attrs {:tag :item}, :value :a}
-           ;                  (map->Node {:attrs {:tag :item}, :value :a} ))
-           (is (val= leaves
-                 [{:attrs {:tag :item}, :value :a}
-                  {:attrs {:tag :item}, :value :b}]))))))
+           (is= (set leaf-hids-1) leaf-hids-2)
+        ; must use `val=` since (not= {:attrs {:tag :item}, :value :a}
+        ;                  (map->Node {:attrs {:tag :item}, :value :a} ))
+        (is (val= leaves
+              [{:khids [], :tag :item, ::tf/value :a}
+               {:khids [], :tag :item, ::tf/value :b}])))
+      )))
 
+(comment ;comment *****************************************************************************
 
 ; update the first child of the root using `inc`
 (dotest
