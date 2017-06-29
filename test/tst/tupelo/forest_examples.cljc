@@ -233,8 +233,6 @@
          [:item 3]
          [:item]])))) ; they're gone!
 
-(comment ;comment *****************************************************************************
-
 ; delete any numbers (< 10 n)
 
 (defn leaf-kw-hid? [hid]
@@ -247,7 +245,7 @@
 
 (s/defn wrap-adjacent-kw-kids [hid]
   (let [kid-hids            (hid->kids hid)
-        kid-elems           (mapv hid->elem kid-hids)
+        kid-elems           (mapv hid->node kid-hids)
         kid-partitions      (partition-by leaf-kw-hid? kid-hids)
         kid-partitions-flgs (mapv kw-partition? kid-partitions)
         kid-partitions-new  (map-let [partition kid-partitions
@@ -261,20 +259,15 @@
 
 (dotest
   (with-forest (new-forest)
-    (let [root-hid        (add-tree-hiccup z2-hiccup) ]
-         (is= (hid->hiccup root-hid)
-           [:item
-            [:item 1]
-            [:item 2]
-            [:item :a]
-            [:item :b]
-            [:item
-             [:item 3]
-             [:item 4]
-             [:item :c]
-             [:item :d]
-             [:item 5]]
-            [:item :e]])
+    (let [root-hid  (add-tree-hiccup z2-hiccup) ]
+       (is= (hid->hiccup root-hid)
+         [:item
+          [:item 1]
+          [:item 2]
+          [:item :a]
+          [:item :b]
+          [:item [:item 3] [:item 4] [:item :c] [:item :d] [:item 5]]
+          [:item :e]] )
       (mapv wrap-adjacent-kw-kids (all-node-hids))
       (is= (hid->hiccup root-hid)
         [:item
@@ -292,6 +285,7 @@
           [:item 5]]
          [:item
           [:item :e]]]))))
+
 (dotest
   (with-forest (new-forest)
     (let [root-hid (add-tree-hiccup z3-hiccup)]
@@ -338,7 +332,6 @@
                                                      (count (all-hids))))]
                                    (vals->map href depth num-hids)))
           result-data       (mapv extract-href-info a-node-paths)]
-       ; (spyx-pretty (hid->bush root-hid))
          (is (cs/subset?
                (set [{:href "index.html", :depth 5, :num-hids 2}
                      {:href "index.html", :depth 6, :num-hids 1}
@@ -379,7 +372,7 @@
                         en-html/html-resource
                         first)
           root-hid    (add-tree-enlive enlive-tree)
-          leaf-hids   (find-leaf-hids root-hid [:** :*] :*)
+          leaf-hids   (find-leaf-hids root-hid [:** :*])
           leaf-values (mapv hid->value leaf-hids)
           result      (apply glue leaf-values)]
          (is= enlive-tree
@@ -393,12 +386,12 @@
                                               {:tag :em, :attrs nil, :content ("text")}
                                               " with words.")})})})
       (is= (hid->tree root-hid)
-        {:attrs {:tag :html},
-         :kids  [{:attrs {:tag :body},
-                  :kids  [{:attrs {:tag :p},
-                           :kids  [{:attrs {:tag :tupelo.forest/raw}, :value "sample "}
-                                   {:attrs {:tag :em}, :value "text"}
-                                   {:attrs {:tag :tupelo.forest/raw}, :value " with words."}]}]}]})
+        {:tag      :html,
+         ::tf/kids [{:tag      :body,
+                     ::tf/kids [{:tag      :p,
+                                 ::tf/kids [{:tag ::tf/raw, ::tf/value "sample " ::tf/kids []}
+                                            {:tag :em, ::tf/value "text" ::tf/kids []}
+                                            {:tag ::tf/raw, ::tf/value " with words." ::tf/kids []}]}]}]})
       (is= (hid->hiccup root-hid)
         [:html
          [:body
@@ -434,8 +427,8 @@
                                              (or (zero? (count value)) ; empty string
                                                (ts/whitespace? value)))))) ; all whitespace string
 
-          type-bc-hid?    (fn [hid] (or (has-child-leaf? hid [:** :Type] "B")
-                                        (has-child-leaf? hid [:** :Type] "C")))
+          type-bc-hid?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type ::tf/value "B"}])
+                                        (has-child-leaf? hid [:** {:tag :Type ::tf/value "C"}])))
 
           blank-leaf-hids (keep-if blank-leaf-hid? (all-hids))
           >>              (apply remove-hid blank-leaf-hids)
@@ -446,66 +439,65 @@
           tree-3          (hid->tree root-hid)
           tree-3-hiccup   (hid->hiccup root-hid)]
      (is= tree-1
-       {:attrs {:tag :ROOT},
-        :kids  [{:attrs {:tag :tupelo.forest/raw},
-                 :value "\n                            "}
-                {:attrs {:tag :Items},
-                 :kids  [{:attrs {:tag :tupelo.forest/raw},
-                          :value "\n                              "}
-                         {:attrs {:tag :Item},
-                          :kids  [{:attrs {:tag :Type}, :value "A"}
-                                  {:attrs {:tag :Note}, :value "AA1"}]}
-                         {:attrs {:tag :tupelo.forest/raw},
-                          :value "\n                              "}
-                         {:attrs {:tag :Item},
-                          :kids  [{:attrs {:tag :Type}, :value "B"}
-                                  {:attrs {:tag :Note}, :value "BB1"}]}
-                         {:attrs {:tag :tupelo.forest/raw},
-                          :value "\n                              "}
-                         {:attrs {:tag :Item},
-                          :kids  [{:attrs {:tag :Type}, :value "C"}
-                                  {:attrs {:tag :Note}, :value "CC1"}]}
-                         {:attrs {:tag :tupelo.forest/raw},
-                          :value "\n                              "}
-                         {:attrs {:tag :Item},
-                          :kids  [{:attrs {:tag :Type}, :value "A"}
-                                  {:attrs {:tag :Note}, :value "AA2"}]}
-                         {:attrs {:tag :tupelo.forest/raw},
-                          :value "\n                            "}]}
-                {:attrs {:tag :tupelo.forest/raw},
-                 :value "\n                          "}]})
+       {:tag :ROOT,
+        ::tf/kids
+             [{::tf/kids [], :tag ::tf/raw, ::tf/value "\n                            "}
+              {:tag :Items,
+               ::tf/kids
+                    [{::tf/kids [], :tag ::tf/raw, ::tf/value "\n                              "}
+                     {:tag :Item,
+                      ::tf/kids
+                           [{::tf/kids [], :tag :Type, ::tf/value "A"}
+                            {::tf/kids [], :tag :Note, ::tf/value "AA1"}]}
+                     {::tf/kids [], :tag ::tf/raw, ::tf/value "\n                              "}
+                     {:tag :Item,
+                      ::tf/kids
+                           [{::tf/kids [], :tag :Type, ::tf/value "B"}
+                            {::tf/kids [], :tag :Note, ::tf/value "BB1"}]}
+                     {::tf/kids [], :tag ::tf/raw, ::tf/value "\n                              "}
+                     {:tag :Item,
+                      ::tf/kids
+                           [{::tf/kids [], :tag :Type, ::tf/value "C"}
+                            {::tf/kids [], :tag :Note, ::tf/value "CC1"}]}
+                     {::tf/kids [], :tag ::tf/raw, ::tf/value "\n                              "}
+                     {:tag :Item,
+                      ::tf/kids
+                           [{::tf/kids [], :tag :Type, ::tf/value "A"}
+                            {::tf/kids [], :tag :Note, ::tf/value "AA2"}]}
+                     {::tf/kids [], :tag ::tf/raw, ::tf/value "\n                            "}]}
+              {::tf/kids [], :tag ::tf/raw, ::tf/value "\n                          "}]} )
 
-    (is= tree-2
-      {:attrs {:tag :ROOT},
-       :kids
-              [{:attrs {:tag :Items},
-                :kids
-                       [{:attrs {:tag :Item},
-                         :kids
-                                [{:attrs {:tag :Type}, :value "A"}
-                                 {:attrs {:tag :Note}, :value "AA1"}]}
-                        {:attrs {:tag :Item},
-                         :kids
-                                [{:attrs {:tag :Type}, :value "B"}
-                                 {:attrs {:tag :Note}, :value "BB1"}]}
-                        {:attrs {:tag :Item},
-                         :kids
-                                [{:attrs {:tag :Type}, :value "C"}
-                                 {:attrs {:tag :Note}, :value "CC1"}]}
-                        {:attrs {:tag :Item},
-                         :kids
-                                [{:attrs {:tag :Type}, :value "A"}
-                                 {:attrs {:tag :Note}, :value "AA2"}]}]}]})
+      (is= tree-2
+        {:tag      :ROOT,
+         ::tf/kids [{:tag :Items,
+                     ::tf/kids
+                          [{:tag :Item,
+                            ::tf/kids
+                                 [{::tf/kids [], :tag :Type, ::tf/value "A"}
+                                  {::tf/kids [], :tag :Note, ::tf/value "AA1"}]}
+                           {:tag :Item,
+                            ::tf/kids
+                                 [{::tf/kids [], :tag :Type, ::tf/value "B"}
+                                  {::tf/kids [], :tag :Note, ::tf/value "BB1"}]}
+                           {:tag :Item,
+                            ::tf/kids
+                                 [{::tf/kids [], :tag :Type, ::tf/value "C"}
+                                  {::tf/kids [], :tag :Note, ::tf/value "CC1"}]}
+                           {:tag :Item,
+                            ::tf/kids
+                                 [{::tf/kids [], :tag :Type, ::tf/value "A"}
+                                  {::tf/kids [], :tag :Note, ::tf/value "AA2"}]}]}]})
     (is= tree-3
-      {:attrs {:tag :ROOT},
-       :kids
-              [{:attrs {:tag :Items},
-                :kids  [{:attrs {:tag :Item},
-                         :kids  [{:attrs {:tag :Type}, :value "A"}
-                                 {:attrs {:tag :Note}, :value "AA1"}]}
-                        {:attrs {:tag :Item},
-                         :kids  [{:attrs {:tag :Type}, :value "A"}
-                                 {:attrs {:tag :Note}, :value "AA2"}]}]}]})
+      {:tag      :ROOT,
+       ::tf/kids [{:tag      :Items,
+                   ::tf/kids [{:tag :Item,
+                               ::tf/kids
+                                    [{::tf/kids [], :tag :Type, ::tf/value "A"}
+                                     {::tf/kids [], :tag :Note, ::tf/value "AA1"}]}
+                              {:tag :Item,
+                               ::tf/kids
+                                    [{::tf/kids [], :tag :Type, ::tf/value "A"}
+                                     {::tf/kids [], :tag :Note, ::tf/value "AA2"}]}]}]} )
     (is= tree-3-hiccup
       [:ROOT
        [:Items
@@ -561,17 +553,15 @@
           product-hids         (find-hids root-hid [:** :product])
           product-trees-hiccup (mapv hid->hiccup product-hids)
 
-          has-img2-leaf?       (fn [hid] (has-child-leaf? hid [:product :images :image] "img2.jpg"))
+          has-img2-leaf?       (fn [hid] (has-child-leaf? hid [:product :images {:tag :image ::tf/value "img2.jpg"}]))
 
           img2-prod-hids       (find-hids-with root-hid [:data :products :product] has-img2-leaf?)
           img2-trees-hiccup    (mapv hid->hiccup img2-prod-hids)
 
-          red-sect-paths       (find-leaf-paths root-hid [:** :section] "Red Section")
+          red-sect-paths       (find-leaf-paths root-hid [:** {:tag :section ::tf/value "Red Section"}])
           red-prod-paths       (mapv #(drop-last 1 %) red-sect-paths)
           red-prod-hids        (mapv last red-prod-paths)
           red-trees-hiccup     (mapv hid->hiccup red-prod-hids)]
-     ;(spyx-pretty tree-1)
-     ;(spyx-pretty tree-2)
       (is= product-trees-hiccup
         [[:product
           [:section "Red Section"]
@@ -625,8 +615,8 @@
                             first)
           root-hid        (add-tree-enlive enlive-tree)
           blank-leaf-hid? (fn [hid] (ts/whitespace? (hid->value hid)))
-          has-bc-leaf?    (fn [hid] (or (has-child-leaf? hid [:** :Type] "B")
-                                        (has-child-leaf? hid [:** :Type] "C")))
+          has-bc-leaf?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type ::tf/value "B"}])
+                                        (has-child-leaf? hid [:** {:tag :Type ::tf/value "C"}])))
           blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids))
           >>              (apply remove-hid blank-leaf-hids)
           bc-item-hids    (find-hids-with root-hid [:** :Item] has-bc-leaf?)]
@@ -637,8 +627,8 @@
           [:Item [:Type "A"] [:Note "AA1"]]
           [:Item [:Type "A"] [:Note "AA2"]]]]))))
 
-;-----------------------------------------------------------------------------
 
+;-----------------------------------------------------------------------------
 (dotest
   (with-forest (new-forest)
     (let [xml-str         "<html>
@@ -656,7 +646,11 @@
           root-hid        (add-tree-enlive enlive-tree)
 
           ; Removing whitespace nodes is optional; just done to keep things neat
-          blank-leaf-hid? (fn [hid] (ts/whitespace? (hid->value hid))) ; whitespace pred fn
+          blank-leaf-hid? (fn fn-blank-leaf-hid?  ; whitespace pred fn
+                            [hid]
+                            (let [node (hid->node hid)]
+                               (and (contains-key? node ::tf/value)
+                                 (ts/whitespace? (grab ::tf/value node)))))
           blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
           >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
 
@@ -669,16 +663,16 @@
          [{:tag :html}
           [{:tag :body}
            [{:class "one", :tag :div}
-            [{:class "two", :tag :div}]]]])
+            [{:class "two", :tag :div}]]]] )
       (is=
         (format-paths result-1)
         (format-paths result-2)
         [[{:tag :html}
           [{:tag :body}
            [{:class "one", :tag :div}
-            [{:class "two", :tag :div}]]]]])
+            [{:class "two", :tag :div}]]]]] )
 
-       (is (val= (hid->elem (last (only result-1)))
-             {:attrs {:class "two", :tag :div}, :kids []})))))
+       (is (= (hid->node (last (only result-1)))
+             #tupelo.forest.Node{:khids [], :class "two", :tag :div}))
+   )))
 
-) ;comment *****************************************************************************

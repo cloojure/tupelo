@@ -9,7 +9,7 @@
   the the trees individually and/or collectively."
   (:use tupelo.impl)
   (:require
-    [clojure.set :as set]
+    [clojure.set :as clj.set]
     [schema.core :as s]
     [tupelo.misc :as tm]
     [tupelo.schema :as tsk]
@@ -133,8 +133,15 @@
                  (data->tree idx val))}
        {::value data ::kids []}))))
 
-(defn enlive-node?
-  "Returns true for valid Enlive nodes, else false"
+(defn enlive-node-lax?
+  "Returns true for nominal Enlive nodes, else false"
+  [arg]
+  (and
+    (map? arg)
+    (clj.set/superset? (set (keys arg)) #{:tag :attrs :content} )))
+
+(defn enlive-node-strict?
+  "Returns true for strictly valid Enlive nodes, else false"
   [arg]
   (and
     (map? arg)
@@ -169,7 +176,7 @@
   (if-not (map? node)
     node ; leaf - just return it
     (do
-      (assert (enlive-node? node))
+      (assert (enlive-node-lax? node))
       (with-map-vals node [tag attrs content] ; destructure values
         (let [tag-attrs  (if (empty? attrs)
                            [tag]
@@ -221,33 +228,29 @@
 (s/defn enlive->tree :- tsk/KeyMap ; #todo add test
   "Convert an Enlive-format data structure to a tree. "
   [enlive-tree  :- tsk/KeyMap]
-  (assert (enlive-node? enlive-tree))
+  (assert (enlive-node-lax? enlive-tree))
   (let [attrs   (or (:attrs enlive-tree) {})
         content (or (:content enlive-tree) [])]
        (assert (not (contains-key? attrs :tag)))
-    (let
-      [attrs  (glue attrs (submap-by-keys enlive-tree #{:tag}))
-       result (cond
-                (every? enlive-node? content)
-                (let [kid-hids (glue [] (for [child content]
-                                          (enlive->tree child)))]
-                     (glue attrs {::kids kid-hids}))
+    (let [attrs  (glue attrs (submap-by-keys enlive-tree #{:tag}))
+          result (cond
+                   (every? enlive-node-lax? content)
+                   (let [kid-hids (glue [] (for [child content]
+                                             (enlive->tree child)))]
+                        (glue attrs {::kids kid-hids}))
 
-                (and
-                  (= 1 (count content))
-                  (not (enlive-node? (only content))))
-                (glue attrs {::value (only content) ::kids []})
+                   (and
+                     (= 1 (count content))
+                     (not (enlive-node-lax? (only content))))
+                   (glue attrs {::value (only content) ::kids []})
 
-                :else (let [kid-hids (glue []
-                                       (for [child content]
-                                         (if (enlive-node? child)
-                                           (enlive->tree child)
-                                           {:tag ::raw ::value child ::kids []})))]
-                           (glue attrs {::kids kid-hids}))) ]
-      result)))
-
-
-
+                   :else (let [kid-hids (glue []
+                                          (for [child content]
+                                            (if (enlive-node-lax? child)
+                                              (enlive->tree child)
+                                              {:tag ::raw ::value child ::kids []})))]
+                              (glue attrs {::kids kid-hids})))]
+         result)))
 
 (s/defn new-hid :- HID
   "Returns a new HexID"
@@ -334,7 +337,7 @@
                       (into cum-kids (grab :khids (hid->node hid))))
                     #{}
                     (all-hids))
-        root-hids (set/difference (all-hids) kid-hids)]
+        root-hids (clj.set/difference (all-hids) kid-hids)]
     root-hids))
 
 ; #todo need to recurse with set of parent hid's to avoid cycles
@@ -654,7 +657,7 @@
           report-missing-kids (not missing-kids-ok?)
           node-curr           (hid->node hid)
           kids-curr           (grab :khids node-curr)
-          missing-kids        (set/difference kids-leaving (into #{} kids-curr))
+          missing-kids        (clj.set/difference kids-leaving (into #{} kids-curr))
           _                   (when (and (not-empty? missing-kids) report-missing-kids)
                                 (throw (IllegalArgumentException.
                                          (str "remove-kids: missing-kids found=" missing-kids))))
@@ -703,7 +706,7 @@
     (let [pattern-keys         (keys pattern)
           pattern-keys-set     (set pattern-keys)
           node-keys-set        (set (keys node))
-          pattern-keys-missing (set/difference pattern-keys-set node-keys-set)]
+          pattern-keys-missing (clj.set/difference pattern-keys-set node-keys-set)]
       (if (not-empty? pattern-keys-missing)
         false
         (let [attrs-tst    (submap-by-keys node pattern-keys-set)
@@ -880,6 +883,5 @@
 
 (s/defn has-child-leaf?
   [root-spec :- HidRootSpec
-   tgt-path :- [s/Any]
-   tgt-value :- s/Any]
-  (pos? (count (find-leaf-hids root-spec tgt-path tgt-value))))
+   tgt-path :- [s/Any] ]
+  (pos? (count (find-leaf-hids root-spec tgt-path))))

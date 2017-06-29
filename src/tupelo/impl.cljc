@@ -252,8 +252,8 @@
   (let [r1         (for [expr (butlast exprs)]
                      (when *spy-enabled*
                        (if (keyword? expr)
-                         `(println (str (spy-indent-spaces) ~expr))
-                         `(println (str (spy-indent-spaces) '~expr " => " ~expr)))))
+                         `(when *spy-enabled* (println (str (spy-indent-spaces) ~expr)))
+                         `(when *spy-enabled* (println (str (spy-indent-spaces) '~expr " => " ~expr))))))
         r2         (let [expr (last exprs)]
                      `(let [spy-val# ~expr]
                         (when *spy-enabled*
