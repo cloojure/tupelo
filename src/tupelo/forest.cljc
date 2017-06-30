@@ -671,7 +671,7 @@
   "Removes all children from a Node."
   ([hid :- HID ]
     (let [node-curr   (hid->node hid)
-          node-new    (glue node-curr {::kids []})]
+          node-new    (glue node-curr {:khids []})]
       (set-node hid node-new)
       node-new)))
 
