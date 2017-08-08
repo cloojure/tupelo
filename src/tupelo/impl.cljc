@@ -910,8 +910,18 @@
     [elem]
     (drop (inc index) coll)))
 
+
 ; #todo use (idx    coll int-or-kw) as `get` replacement?
 ; #todo use (idx-in coll [kw's]) as `fetch-in` replacement?
+(defn idx
+  "Indexes into a vector, allowing negative index values"
+  [coll-in idx-in]
+  (let [data-vec (vec coll-in)
+        N (count data-vec)
+        >> (assert (pos? N))
+        idx (mod idx-in N)
+        result (clojure.core/get data-vec idx)]
+    result ))
 
 
 

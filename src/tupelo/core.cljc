@@ -265,6 +265,7 @@
 (pns/import-fn impl/drop-at )
 (pns/import-fn impl/insert-at )
 (pns/import-fn impl/replace-at )
+(pns/import-fn impl/idx )
 
 (s/defn dissoc-in :- s/Any
   "A sane version of dissoc-in that will not delete intermediate keys.
@@ -579,7 +580,8 @@
      submap? submap-by-keys submap-by-vals keyvals
      validate only third it-> safe-> keep-if drop-if zip zip* zip-lazy indexed flat-vec
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
-     drop-at insert-at replace-at starts-with? int->kw kw->int vec->list
+     drop-at insert-at replace-at idx
+     starts-with? int->kw kw->int vec->list
      xfirst xsecond xthird xrest kw->sym kw->str str->sym str->kw sym->kw sym->str
      split-using split-match partition-using
      wild-match? wild-submatch? wild-match-ctx? wild-item? submatch? val=

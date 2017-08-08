@@ -676,3 +676,94 @@
              #tupelo.forest.Node{:khids [], :class "two", :tag :div}))
    )))
 
+;-----------------------------------------------------------------------------
+
+(dotest
+  (with-forest (new-forest)
+    (let [html-str        "<div class=“group”>
+                              <h2>title1</h2>
+                              <div class=“subgroup”>
+                                <p>unused</p>
+                                <h3>subheading1</h3>
+                                <a href=“path1” />
+                              </div>
+                              <div class=“subgroup”>
+                                <p>unused</p>
+                                <h3>subheading2</h3>
+                                <a href=“path2” />
+                              </div>
+                            </div>
+                            <div class=“group”>
+                              <h2>title2</h2>
+                              <div class=“subgroup”>
+                                <p>unused</p>
+                                <h3>subheading3</h3>
+                                <a href=“path3” />
+                              </div>
+                            </div>"
+
+          enlive-tree     (->> html-str
+                            java.io.StringReader.
+                            en-html/html-resource
+                            first)
+          root-hid        (add-tree-enlive enlive-tree)
+          tree-1          (hid->hiccup root-hid)
+
+          ; Removing whitespace nodes is optional; just done to keep things neat
+          blank-leaf-hid? (fn fn-blank-leaf-hid? ; whitespace pred fn
+                            [hid]
+                            (let [node (hid->node hid)]
+                              (and (contains-key? node ::tf/value)
+                                (ts/whitespace? (grab ::tf/value node)))))
+          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
+          >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
+          tree-2          (hid->hiccup root-hid)
+          >>              (is= tree-2 [:html
+                                       [:body
+                                        [:div {:class "“group”"}
+                                         [:h2 "title1"]
+                                         [:div {:class "“subgroup”"}
+                                          [:p "unused"]
+                                          [:h3 "subheading1"]
+                                          [:a {:href "“path1”"}]]
+                                         [:div {:class "“subgroup”"}
+                                          [:p "unused"]
+                                          [:h3 "subheading2"]
+                                          [:a {:href "“path2”"}]]]
+                                        [:div {:class "“group”"}
+                                         [:h2 "title2"]
+                                         [:div {:class "“subgroup”"}
+                                          [:p "unused"]
+                                          [:h3 "subheading3"]
+                                          [:a {:href "“path3”"}]]]]])
+
+          ; find consectutive nested [:div :h2] pairs at any depth in the tree
+          div-h2-paths    (find-paths root-hid [:** :div :h2])
+          >>              (is= (format-paths div-h2-paths)
+                            [[{:tag :html}
+                              [{:tag :body}
+                               [{:class "“group”", :tag :div}
+                                [{:tag :h2, :tupelo.forest/value "title1"}]]]]
+                             [{:tag :html}
+                              [{:tag :body}
+                               [{:class "“group”", :tag :div}
+                                [{:tag :h2, :tupelo.forest/value "title2"}]]]]])
+
+          ; find the hid for each top-level :div (i.e. "group"); the next-to-last (-2) hid in each vector
+          div-hids        (mapv #(idx % -2) div-h2-paths)
+          ; for each of div-hids, find and collect nested :h3 values
+          dif-h3-paths    (vec
+                            (lazy-gen
+                              (doseq [div-hid div-hids]
+                                (let [h2-value  (find-leaf-value div-hid [:div :h2])
+                                      h3-paths  (find-paths div-hid [:** :h3])
+                                      h3-values (it-> h3-paths (mapv last it) (mapv hid->value it))]
+                                  (doseq [h3-value h3-values]
+                                    (yield [h2-value h3-value]))))))
+          ]
+      (is= dif-h3-paths
+        [["title1" "subheading1"]
+         ["title1" "subheading2"]
+         ["title2" "subheading3"]])
+
+      )))
