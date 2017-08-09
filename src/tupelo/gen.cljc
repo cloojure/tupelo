@@ -18,7 +18,7 @@
     [schema.core :as s]
     [tupelo.impl :as i]
     [tupelo.schema :as tsk]
-    [tupelo.string :as ts]
+    [tupelo.char :as char]
   ))
 
 ; #todo: for test.check v2:
@@ -61,11 +61,11 @@
   (gen/not-empty (gen/vector gen-arg)))
 
 ; returns exactly 1 char
-(def char-whitespace-horiz      (rand-nth ts/chars-whitespace-horiz))
-(def char-whitespace-eol        (rand-nth ts/chars-whitespace-eol))
-(def char-whitespace            (rand-nth ts/chars-whitespace))
-(def char-alpha                 (rand-nth ts/chars-alpha))
-(def char-alphanumeric          (rand-nth ts/chars-alphanumeric))
+(def char-whitespace-horiz      (rand-nth char/whitespace-horiz))
+(def char-whitespace-eol        (rand-nth char/whitespace-eol))
+(def char-whitespace            (rand-nth char/whitespace))
+(def char-alpha                 (rand-nth char/alpha))
+(def char-alphanumeric          (rand-nth char/alphanumeric))
 ; #todo char-visible, char-visible-no-dquote, char-visible-no-squote,
 
 ; returns a string (len = 0 or more)
@@ -96,7 +96,7 @@
 
 (def char-eol
   "A single EOL char"
-  (rand-nth ts/chars-whitespace-eol))
+  (rand-nth char/whitespace-eol))
 (def chars-eol+
   "One or more EOL chars."
   (vector+ char-eol))

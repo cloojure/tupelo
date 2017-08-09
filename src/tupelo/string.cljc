@@ -9,72 +9,23 @@
   (:refer-clojure :exclude [drop take] )
   (:require
     [clojure.core :as cc]
-    [clojure.set :as set]
     [clojure.string :as str]
-    [potemkin.namespaces :as pns]
     [schema.core :as s]
+    [tupelo.char :as char]
     [tupelo.impl :as i]
     [tupelo.schema :as tsk]))
 
-(pns/import-fn i/char-seq)
-
-; #todo: docstrings
-(s/def chars-whitespace-horiz   :- tsk/Set
-  (set [\space \tab]))
-
-(s/def chars-whitespace-eol     :- tsk/Set
-  (set [\return \newline]))
-
-(s/def chars-whitespace         :- tsk/Set
-  (i/glue chars-whitespace-horiz chars-whitespace-eol))
-
-(s/def chars-lowercase          :- tsk/Set
-  (into (sorted-set) (char-seq \a \z)))
-
-(s/def chars-uppercase          :- tsk/Set
-  (into (sorted-set) (char-seq \A \Z)))
-
-(s/def chars-digit              :- tsk/Set
-  (into (sorted-set) (char-seq \0 \9)))
-
-(s/def chars-hex :- tsk/Set
-  (into (sorted-set) (flatten [ (char-seq \a \f) (char-seq \A \F) (char-seq \0 \9) ] )))
-
-(s/def chars-alpha              :- tsk/Set
-  (i/glue chars-lowercase chars-uppercase ))
-
-(s/def chars-alphanumeric       :- tsk/Set
-  (i/glue chars-alpha chars-digit ))
-
-(s/def chars-visible  :- tsk/Set
-  "Set of all visible (printing) ASCII chars from exclamation point (33) to tilde (126).
-  Excludes all whitespace & control chars."
-  (into (sorted-set) (mapv char (i/thru 33 126))))
-
-(s/def chars-visible-no-dquote :- tsk/Set
-  "All visible (printing) ASCII chars except double-quote."
-  (set/difference chars-visible #{\"}))
-
-(s/def chars-visible-no-squote :- tsk/Set
-  "All visible (printing) ASCII chars except double-quote."
-  (set/difference chars-visible #{\'}))
-
-
-(s/def chars-text   :- tsk/Set
-  "Set of chars used in 'normal' text. Includes all visible chars plus whitespace & EOL chars."
-  (i/glue chars-visible chars-whitespace))
-
-(defn alphanumeric?       [& args] (every? #(contains? chars-alphanumeric %) (i/strcat args)))
-(defn whitespace-horiz?   [& args] (every? #(contains? chars-whitespace-horiz %) (i/strcat args)))
-(defn whitespace-eol?     [& args] (every? #(contains? chars-whitespace-eol %) (i/strcat args)))
-(defn whitespace?         [& args] (every? #(contains? chars-whitespace %) (i/strcat args)))
-(defn lowercase?          [& args] (every? #(contains? chars-lowercase %) (i/strcat args)))
-(defn uppercase?          [& args] (every? #(contains? chars-uppercase %) (i/strcat args)))
-(defn digit?              [& args] (every? #(contains? chars-digit %) (i/strcat args)))
-(defn hex?                [& args] (every? #(contains? chars-hex %) (i/strcat args)))
-(defn alpha?              [& args] (every? #(contains? chars-alpha %) (i/strcat args)))
-(defn visible?            [& args] (every? #(contains? chars-visible %) (i/strcat args)))
-(defn text?               [& args] (every? #(contains? chars-text %) (i/strcat args)))
+(defn alphanumeric?       [& args] (every? char/alphanumeric?        (i/strcat args)))
+(defn whitespace-horiz?   [& args] (every? char/whitespace-horiz?    (i/strcat args)))
+(defn whitespace-eol?     [& args] (every? char/whitespace-eol?      (i/strcat args)))
+(defn whitespace?         [& args] (every? char/whitespace?          (i/strcat args)))
+(defn lowercase?          [& args] (every? char/lowercase?           (i/strcat args)))
+(defn uppercase?          [& args] (every? char/uppercase?           (i/strcat args)))
+(defn digit?              [& args] (every? char/digit?               (i/strcat args)))
+(defn hex?                [& args] (every? char/hex?                 (i/strcat args)))
+(defn alpha?              [& args] (every? char/alpha?               (i/strcat args)))
+(defn visible?            [& args] (every? char/visible?             (i/strcat args)))
+(defn text?               [& args] (every? char/text?                (i/strcat args)))
 
 ; #todo make general version vec -> vec; str-specific version str -> str
 ; #todo need (substring {:start I :stop J                 } ) ; half-open (or :stop)

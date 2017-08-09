@@ -13,6 +13,7 @@
     [clojure.test.check.properties :as prop]
     [clojure.test.check.clojure-test :as tst]
     [tupelo.core :as t]
+    [tupelo.char :as char]
     [tupelo.string :as ts]
   ))
 (t/refer-tupelo)
@@ -254,25 +255,25 @@
   (is (ts/whitespace? (str \tab "   "  "\n")))
   (isnt (ts/whitespace? (str \tab " xyz "  "\n")))
 
-  (is (ts/whitespace-horiz?                ts/chars-whitespace-horiz))
-  (is (ts/whitespace-eol?                  ts/chars-whitespace-eol))
-  (is (ts/whitespace?                      ts/chars-whitespace))
-  (is (ts/lowercase?                       ts/chars-lowercase))
-  (is (ts/uppercase?                       ts/chars-uppercase))
-  (is (ts/digit?                           ts/chars-digit))
-  (is (ts/alpha?                           ts/chars-alpha))
-  (is (ts/visible?                         ts/chars-visible))
-  (is (ts/text?                            ts/chars-text))
+  (is (ts/whitespace-horiz?                char/whitespace-horiz))
+  (is (ts/whitespace-eol?                  char/whitespace-eol))
+  (is (ts/whitespace?                      char/whitespace))
+  (is (ts/lowercase?                       char/lowercase))
+  (is (ts/uppercase?                       char/uppercase))
+  (is (ts/digit?                           char/digit))
+  (is (ts/alpha?                           char/alpha))
+  (is (ts/visible?                         char/visible))
+  (is (ts/text?                            char/text))
 
-  (is (apply ts/whitespace-horiz?          (vec ts/chars-whitespace-horiz)))
-  (is (apply ts/whitespace-eol?            (vec ts/chars-whitespace-eol)))
-  (is (apply ts/whitespace?                (vec ts/chars-whitespace)))
-  (is (apply ts/lowercase?                 (vec ts/chars-lowercase)))
-  (is (apply ts/uppercase?                 (vec ts/chars-uppercase)))
-  (is (apply ts/digit?                     (vec ts/chars-digit)))
-  (is (apply ts/alpha?                     (vec ts/chars-alpha)))
-  (is (apply ts/visible?                   (vec ts/chars-visible)))
-  (is (apply ts/text?                      (vec ts/chars-text)))
+  (is (apply ts/whitespace-horiz?          (vec char/whitespace-horiz)))
+  (is (apply ts/whitespace-eol?            (vec char/whitespace-eol)))
+  (is (apply ts/whitespace?                (vec char/whitespace)))
+  (is (apply ts/lowercase?                 (vec char/lowercase)))
+  (is (apply ts/uppercase?                 (vec char/uppercase)))
+  (is (apply ts/digit?                     (vec char/digit)))
+  (is (apply ts/alpha?                     (vec char/alpha)))
+  (is (apply ts/visible?                   (vec char/visible)))
+  (is (apply ts/text?                      (vec char/text)))
 
 )
 

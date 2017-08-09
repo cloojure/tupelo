@@ -15,7 +15,7 @@
     [clj-uuid :as uuid]
     [schema.core :as s]
     [tupelo.core :as t]
-    [tupelo.schema :as tsk]
+    [tupelo.char :as char]
     [tupelo.string :as ts]
     [tupelo.types :as tt]
   )
@@ -33,5 +33,5 @@
 (defn ^{:deprecated "0.9.15"} str->kw [& args] (apply ts/str->kw-normalized args))
 (defn ^{:deprecated "0.9.15"} char-seq [& args] (apply t/char-seq args))
 (defn ^{:deprecated "0.9.15"} seq->str [& args] (apply t/seq->str args))
-(def  ^{:deprecated "0.9.15"} printable-chars  ts/chars-text )
+(def  ^{:deprecated "0.9.15"} printable-chars  char/text )
 

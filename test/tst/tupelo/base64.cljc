@@ -16,7 +16,7 @@
     [tupelo.core                            :as t]
     [tupelo.misc                            :as misc]
     [tupelo.types                           :as types]
-    [tupelo.string                          :as ts]
+    [tupelo.char                            :as char]
     [schema.core                            :as s]
   ))
 (t/refer-tupelo)
@@ -49,7 +49,7 @@
   (testing "base64 - string"
     (if (t/is-java-1-8-plus?)
       (doseq [num-chars [1 2 3 7 20]]
-        (let [orig    (str/join (misc/take-dist num-chars (vec ts/chars-text)))
+        (let [orig    (str/join (misc/take-dist num-chars (vec char/text)))
               b64-str (b64/encode-str orig)
               result  (b64/decode-str b64-str)]
           (is (every? b64/base64-chars (seq b64-str)))
@@ -76,9 +76,9 @@
 
 (defn -main []
   (newline)
-  (println "printable-chars" (pr-str ts/chars-text))
+  (println "printable-chars" (pr-str char/text))
   (newline)
-  (doseq [curr-char ts/chars-text]
+  (doseq [curr-char char/text]
     (newline)
     (doseq [prefix ["" "a" "ab" "abc"] ]
       (let [orig-str    (str prefix curr-char)

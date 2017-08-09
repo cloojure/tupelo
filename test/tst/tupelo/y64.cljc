@@ -12,6 +12,7 @@
             [clojure.test.check.properties          :as prop]
             [schema.core                            :as s]
             [tupelo.core                            :as t]
+            [tupelo.char                            :as char]
             [tupelo.misc                            :as misc]
             [tupelo.types                           :as types]
             [tupelo.string                          :as ts]
@@ -40,7 +41,7 @@
   (testing "y64 - string"
     (if (t/is-java-1-8-plus?)
       (doseq [num-chars [1 2 3 7 20]]
-        (let [orig    (str/join (misc/take-dist num-chars ts/chars-text))
+        (let [orig    (str/join (misc/take-dist num-chars char/text))
               y64-str (y64/encode-str orig)
               result  (y64/decode-str y64-str)]
           (is (every? y64/code-chars (seq y64-str)))
@@ -68,9 +69,9 @@
 
 (defn -main []
   (newline)
-  (println "printable-chars" (pr-str ts/chars-text))
+  (println "printable-chars" (pr-str char/text))
   (newline)
-  (doseq [curr-char ts/chars-text]
+  (doseq [curr-char char/text]
     (newline)
     (doseq [prefix ["" "a" "ab" "abc"] ]
       (let [orig-str    (str prefix curr-char)
