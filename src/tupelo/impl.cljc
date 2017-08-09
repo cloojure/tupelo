@@ -7,7 +7,7 @@
 (ns ^:no-doc tupelo.impl
   "Tupelo - Making Clojure even sweeter"
   (:refer-clojure :exclude [first rest])
-  (:require 
+  (:require
     [clojure.core.async :as ca]
     [clojure.core.match :as ccm]
     [clojure.pprint :as pprint]
@@ -19,7 +19,7 @@
     [schema.core :as s]
     [tupelo.schema :as tsk]
     [tupelo.types :as types]
-  )
+    [tupelo.schema :as ts])
 )
 
 ; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
@@ -556,6 +556,16 @@
       :else (throw (IllegalArgumentException.
                      (str "glue: colls must be all same type; found types=" (mapv type colls)))))))
 ; #todo look at using (ex-info ...)
+
+(s/defn join-2d->1d :- ts/List ; #todo think about better name
+  "Convert a vector of vectors (2-dimensional) into a single vector (1-dimensional).
+  Equivalent to `(apply glue ...)`"
+  [listy :- ts/List]
+  (when-not (sequential? listy)
+    (throw (IllegalArgumentException. (str "Sequential collection required, found=" listy))))
+  (when-not (every? sequential? listy)
+    (throw (IllegalArgumentException. (str "Nested sequential collections required, found=" listy))))
+  (reduce into [] listy))
 
 (s/defn append :- tsk/List
   "Given a sequential object (vector or list), add one or more elements to the end."

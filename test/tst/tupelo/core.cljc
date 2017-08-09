@@ -599,6 +599,17 @@
 )
 
 (dotest
+  (let [data [[0 1 2]
+              []
+              [3]
+              [4 5]
+              [6 7 8 9]]]
+    (is= (thru 9)
+      (reduce into [] data)
+      (join-2d->1d data)))
+)
+
+(dotest
   (throws?            (append  1 2        ))
   (throws?            (append [1 2]       ))
   (throws?            (append nil   3     ))

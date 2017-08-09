@@ -680,6 +680,7 @@
 
 (dotest
   (with-forest (new-forest)
+    ; #todo re-work to fix "special" double-quotes
     (let [html-str        "<div class=“group”>
                               <h2>title1</h2>
                               <div class=“subgroup”>
@@ -752,14 +753,13 @@
           ; find the hid for each top-level :div (i.e. "group"); the next-to-last (-2) hid in each vector
           div-hids        (mapv #(idx % -2) div-h2-paths)
           ; for each of div-hids, find and collect nested :h3 values
-          dif-h3-paths    (vec
-                            (lazy-gen
-                              (doseq [div-hid div-hids]
-                                (let [h2-value  (find-leaf-value div-hid [:div :h2])
-                                      h3-paths  (find-paths div-hid [:** :h3])
-                                      h3-values (it-> h3-paths (mapv last it) (mapv hid->value it))]
-                                  (doseq [h3-value h3-values]
-                                    (yield [h2-value h3-value]))))))
+          dif-h3-paths    (join-2d->1d
+                            (forv [div-hid div-hids]
+                              (let [h2-value  (find-leaf-value div-hid [:div :h2])
+                                    h3-paths  (find-paths div-hid [:** :h3])
+                                    h3-values (it-> h3-paths (mapv last it) (mapv hid->value it))]
+                                (forv [h3-value h3-values]
+                                  [h2-value h3-value]))))
           ]
       (is= dif-h3-paths
         [["title1" "subheading1"]

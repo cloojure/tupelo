@@ -254,6 +254,7 @@
 (pns/import-fn impl/keyvals )
 
 (pns/import-fn impl/glue)
+(pns/import-fn impl/join-2d->1d)
 (pns/import-fn impl/append)
 (pns/import-fn impl/prepend)
 (pns/import-fn impl/->vector)
@@ -575,7 +576,8 @@
      truthy? falsey? not-nil? not-empty? has-some? has-none?
      contains-key? contains-val? contains-elem?
      forv map-let* map-let
-     conjv glue vals->map with-map-vals macro? char-seq
+     conjv glue join-2d->1d
+     vals->map with-map-vals macro? char-seq
      append prepend grab dissoc-in fetch fetch-in
      submap? submap-by-keys submap-by-vals keyvals
      validate only third it-> safe-> keep-if drop-if zip zip* zip-lazy indexed flat-vec

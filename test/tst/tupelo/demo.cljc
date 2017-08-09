@@ -16,22 +16,33 @@
 ; #todo add generative testing?
 ; #todo add clojure.spec testing?
 
-(deftest t-take
+(dotest
   (is= [        ] (take 0 "abc"))
   (is= [\a      ] (take 1 "abc"))
   (is= [\a \b   ] (take 2 "abc"))
   (is= [\a \b \c] (take 3 "abc"))
   (is= [\a \b \c] (take 4 "abc")))
 
-(deftest t-drop
+(dotest
   (is= [\a \b \c] (drop 0 "abc"))
   (is= [   \b \c] (drop 1 "abc"))
   (is= [      \c] (drop 2 "abc"))
   (is= [        ] (drop 3 "abc"))
   (is= [        ] (drop 4 "abc")))
 
-(deftest t-string
+(dotest
   (is= [\a \b \c] (vec "abc"))
   (is= "abc" (str/join [\a \b \c] ))
+  (is= "abc" (str/join ["ab" "c"] ))
 )
 
+(dotest
+  (is   (sequential?  []     ))
+  (is   (sequential?  [1 2 3]))
+  (is   (sequential? '(1 2 3)))
+  (isnt (sequential?  "abc"  ))
+  (isnt (sequential?  {:a 1}  ))
+  (isnt (sequential? #{:a 1}  )) )
+
+(dotest
+  (is (every? odd? [1 3 5])))
