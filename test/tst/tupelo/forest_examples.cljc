@@ -158,11 +158,11 @@
             kw-leaf-hids (keep-if #(keyword? (hid->value %)) leaf-hids-1) ; could keep only first one here
             leaves       (mapv hid->leaf kw-leaf-hids)]
         (is= (set leaf-hids-1) leaf-hids-2)
-        ; must use `val=` since (not= {:attrs {:tag :item}, :value :a}
-        ;                  (map->Node {:attrs {:tag :item}, :value :a} ))
-        (is (val= leaves ; #todo no longer needed since killed tf/Node record definition
-              [{::tf/khids [], :tag :item, ::tf/value :a}
-               {::tf/khids [], :tag :item, ::tf/value :b}])))
+        ; must use `val=` since (not= {:attrs {:tag :item}, ::value :a}
+        ;                  (map->Node {:attrs {:tag :item}, ::value :a} ))
+        (is= leaves
+          [{::tf/khids [], :tag :item, ::tf/value :a}
+           {::tf/khids [], :tag :item, ::tf/value :b}]))
       )))
 
 
