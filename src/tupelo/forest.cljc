@@ -79,6 +79,7 @@
 
 ; #todo add { :parents #{:23 :14 :ab9} } to Node
 ; #todo add loop detection, recurse on parents not= <new child>
+; #todo if loops are ok, need to add :max-depth to search queries to avoid infinite loop
 
 ; { :khids  [hid...]  :k1 v1 :k2 v2 ...  ::value s/Any  }
 ;    ^ req             ^opt k-v's          ^opt/leaf
