@@ -76,6 +76,7 @@
 ; #todo merge Node/Node -> genric Node: {:attrs <some map> ::value <something> ::kids []}
 ; #todo              or -> plain map:   {:khids []  ::value <something> :attr1 val1 :attr2 val2}
 ;                                        ^req      ^optional
+; #todo maybe :value is just a regular (user-defined) attribute. not a special key
 
 ; #todo add { :parents #{:23 :14 :ab9} } to Node
 ; #todo add loop detection, recurse on parents not= <new child>

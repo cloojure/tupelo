@@ -31,7 +31,12 @@
   (is= [        ] (drop 4 "abc")))
 
 (dotest
+  (is= [\a \b \c] (seq "abc"))
   (is= [\a \b \c] (vec "abc"))
+
+  (is= "abc" (str \a \b \c ))
+  (is= "abc" (str "ab" "c" ))
+
   (is= "abc" (str/join [\a \b \c] ))
   (is= "abc" (str/join ["ab" "c"] ))
 )
