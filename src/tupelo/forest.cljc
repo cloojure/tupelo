@@ -74,7 +74,7 @@
 
 ; #todo MAYBE???
 ; #todo merge Node/Node -> genric Node: {:attrs <some map> ::value <something> ::kids []}
-; #todo              or -> plain map:   {:khids []  ::value <something> :attr1 val1 :attr2 val2}
+; #todo              or -> plain map:   {:tupelo.forest/khids []  ::value <something> :attr1 val1 :attr2 val2}
 ;                                        ^req      ^optional
 ; #todo maybe :value is just a regular (user-defined) attribute. not a special key
 
@@ -82,25 +82,39 @@
 ; #todo add loop detection, recurse on parents not= <new child>
 ; #todo if loops are ok, need to add :max-depth to search queries to avoid infinite loop
 
-; { :khids  [hid...]  :k1 v1 :k2 v2 ...  ::value s/Any  }
-;    ^ req             ^opt k-v's          ^opt/leaf
-(defrecord Node [khids] ) ; #todo add ::tag? (only req for hiccup/enlive data?)
-; #todo rename :khids -> :kid-hids ?
-; keep in mind that a Node is a "fragment" of a tree, and only contains "pointers" (HIDs) to the :khids
-
 (def HID s/Keyword) ; #todo find way to validate
+
+(s/defn hid? :- s/Bool
+  "Returns true if the arg is a legal HexID"
+  [arg]
+  (and (keyword? arg)
+    (let [name-str (kw->str arg)]
+      (and (ts/hex? name-str)
+        (= 40 (count name-str))))))
+
+; #todo add ::tag? (only req for hiccup/enlive data?)
+; { :tupelo.forest/khids  [hid...]  :k1 v1 :k2 v2 ...  ::value s/Any  }
+;    ^ req             ^opt k-v's          ^opt/leaf
+; #todo rename :tupelo.forest/khids -> :kid-hids ?
+; keep in mind that a Node is a "fragment" of a tree, and only contains "pointers" (HIDs) to the :tupelo.forest/khids
+(def Node { (s/required-key ::khids) [HID]  s/Keyword s/Any } )
+
+(s/defn ->Node :- Node
+  "Constructs a Node from a vector of HIDs"
+  [hids :- [HID]]
+  (assert (every? hid? hids))
+  { ::khids hids } )
 
 (s/defn forest-node? :- s/Bool
   "Returns true if the arg is a legal forest node"
   [arg :- tsk/KeyMap]
-  (or (instance? Node arg)
-    (contains-key? arg :khids)))
+  (contains-key? arg ::khids))
 
 (s/defn forest-leaf? :- s/Bool
-  "Returns true if the arg is a leaf node (no khids). "
+  "Returns true if the arg is a leaf node (empty :tupelo.forest/khids). "
   [arg :- tsk/KeyMap]
   (and (forest-node? arg)
-    (empty? (grab :khids arg)))) ; #TODO:   :khids  ->  ::khids
+    (empty? (grab ::khids arg))))
 
 (s/defn tree-node? :- s/Bool
   "Returns true if the arg is a legal tree node"
@@ -112,14 +126,6 @@
   [arg :- tsk/KeyMap]
   (and (tree-node? arg)
     (empty? (grab ::kids arg))))
-
-(s/defn hid? :- s/Bool
-  "Returns true if the arg is a legal HexID"
-  [arg]
-  (and (keyword? arg)
-    (let [name-str (kw->str arg)]
-         (and (ts/hex? name-str)
-           (= 40 (count name-str))))))
 
 (defn data->tree    ; #todo document
   "Convert raw data (nested vectors) into tree with generic `:data` tag and {::idx <index>} attribute."
@@ -294,7 +300,7 @@
 
 (s/defn hid->attrs :- tsk/KeyMap ; #todo remove OBE
   [hid :- HID]
-  (dissoc (hid->node hid) :khids))
+  (dissoc (hid->node hid) ::khids))
 
 (s/defn hid->attr :- s/Any ; #todo remove OBE
   "Given an HID, returns a single attr"
@@ -304,7 +310,7 @@
 
 (s/defn hid->kids :- [HID]
   [hid :- HID]
-  (grab :khids (hid->node hid)))
+  (grab ::khids (hid->node hid)))
 
 (s/defn node-hid?  ; #todo remove OBE?
   "Returns true iff an HID is a Node"
@@ -336,7 +342,7 @@
   []
   (let [kid-hids  (reduce
                     (fn [cum-kids hid]
-                      (into cum-kids (grab :khids (hid->node hid))))
+                      (into cum-kids (grab ::khids (hid->node hid))))
                     #{}
                     (all-hids))
         root-hids (clj.set/difference (all-hids) kid-hids)]
@@ -350,12 +356,12 @@
   (let [node        (hid->node hid)
         base-result (it-> node
                       (into {} it)
-                      (dissoc it :khids))]
+                      (dissoc it ::khids))]
     (if (forest-leaf? node)
       ; leaf: nothing else to do
       (glue {::kids []} base-result) ; #todo can clean up more?
       ; Node: need to recursively resolve children
-      (let [kid-trees       (mapv hid->tree (grab :khids node))
+      (let [kid-trees       (mapv hid->tree (grab ::khids node))
             resolved-result (assoc base-result ::kids kid-trees)]
         resolved-result))))
 
@@ -531,7 +537,7 @@
   (validate-attrs attrs-new)
   (let [node-curr  (hid->node hid)
         node-new   (it-> node-curr
-                     (grab :khids it)
+                     (grab ::khids it)
                      (->Node it)
                      (glue it attrs-new))]
     (set-node hid node-new)
@@ -603,7 +609,7 @@
   [hid :- HID
    kids-new :- [HID]]
   (let [node-curr  (hid->node hid)
-        node-new   (glue node-curr {:khids kids-new})]
+        node-new   (glue node-curr {::khids kids-new})]
     (set-node hid node-new)
     node-new))
 
@@ -615,9 +621,9 @@
    fn-update-kids   ; signature: (fn-update kids-curr x y z & more) -> kids-new
    & fn-update-kids-args]
   (let [node-curr (hid->node hid)
-        kids-curr (grab :khids node-curr)
+        kids-curr (grab ::khids node-curr)
         kids-new  (apply fn-update-kids kids-curr fn-update-kids-args)
-        node-new  (glue node-curr {:khids kids-new})]
+        node-new  (glue node-curr {::khids kids-new})]
     (set-node hid node-new)
     node-new))
 
@@ -628,9 +634,9 @@
   [hid :- HID
    kids-new :- [HID]]
   (let [node-curr (hid->node hid)
-        kids-curr (grab :khids node-curr)
+        kids-curr (grab ::khids node-curr)
         kids-new  (glue kids-curr kids-new)
-        node-new  (glue node-curr {:khids kids-new})]
+        node-new  (glue node-curr {::khids kids-new})]
        (set-node hid node-new)
     node-new))
 
@@ -641,9 +647,9 @@
   [hid :- HID
    kids-in :- [HID]]
   (let [node-curr (hid->node hid)
-        kids-curr (grab :khids node-curr)
+        kids-curr (grab ::khids node-curr)
         kids-new  (glue kids-in kids-curr)
-        node-new  (glue node-curr {:khids kids-new})]
+        node-new  (glue node-curr {::khids kids-new})]
     (set-node hid node-new)
     node-new))
 
@@ -660,14 +666,14 @@
     (let [kids-leaving        (set kids-leaving)
           report-missing-kids (not missing-kids-ok?)
           node-curr           (hid->node hid)
-          kids-curr           (grab :khids node-curr)
+          kids-curr           (grab ::khids node-curr)
           missing-kids        (clj.set/difference kids-leaving (into #{} kids-curr))
           _                   (when (and (not-empty? missing-kids) report-missing-kids)
                                 (throw (IllegalArgumentException.
                                          (str "remove-kids: missing-kids found=" missing-kids))))
           kid-is-leaving?     (fn fn-kid-is-leaving? [kid] (contains-key? kids-leaving kid))
           kids-new            (drop-if kid-is-leaving? kids-curr)
-          node-new            (glue node-curr {:khids kids-new})]
+          node-new            (glue node-curr {::khids kids-new})]
       (set-node hid node-new)
       node-new)))
 
@@ -675,7 +681,7 @@
   "Removes all children from a Node."
   ([hid :- HID ]
     (let [node-curr   (hid->node hid)
-          node-new    (glue node-curr {:khids []})]
+          node-new    (glue node-curr {::khids []})]
       (set-node hid node-new)
       node-new)))
 
@@ -739,7 +745,7 @@
     (if (empty? hids-rest)
       (hid->bush hid-curr)
       (let [node-part (hid->node hid-curr)
-            curr-part (dissoc node-part :khids)
+            curr-part (dissoc node-part ::khids)
             kids-part (format-path hids-rest)
             result    [curr-part kids-part]]
            result))))

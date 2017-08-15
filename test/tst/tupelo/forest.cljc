@@ -301,28 +301,28 @@
                      :color     :red,
                      ::tf/value "z"}]})
       (is (wild-match?
-            {:tag   :root, :color :white,
-             :khids [:* :* :*]}
+            {:tag       :root, :color :white,
+             ::tf/khids [:* :* :*]}
             (hid->node r)))
       (is (wild-match?
-            {:tag :root
-             :color :*
-             :khids  [:* :* :*]}
+            {:tag       :root
+             :color     :*
+             ::tf/khids [:* :* :*]}
             (hid->node r)))
       (isnt (wild-match?
-              {:tag :root
-               :color :*
-               :khids  [:* :*]}
+              {:tag       :root
+               :color     :*
+               ::tf/khids [:* :*]}
               (hid->node r)))
       (is (wild-match?
-            {:tag :root
-             :color :*
-             :khids  :*}
+            {:tag       :root
+             :color     :*
+             ::tf/khids :*}
             (hid->node r)))
 
       (attrs-merge x {:color :green})
       (is (val= (into {} (hid->leaf x))
-            { :khids [] :tag :char, :color :green, ::tf/value "x"} ))
+            { ::tf/khids [] :tag :char, :color :green, ::tf/value "x"} ))
 
       (is= (hid->attrs r) {:tag :root, :color :white})
       (is= (hid->attrs z) {:tag :char, :color :red ::tf/value "z"})
@@ -393,33 +393,33 @@
                      (is= (hid->attrs z) {:type :tuna, :name :charlie})
 
                      (is (val= (hid->leaf y)
-                           {:khids [], :tag :char, :color :red, ::tf/value "y"}))
+                           {::tf/khids [], :tag :char, :color :red, ::tf/value "y"}))
                      (is (val= (attr-remove y :color)
-                           {:khids [], :tag :char, ::tf/value "y"}))))
+                           {::tf/khids [], :tag :char, ::tf/value "y"}))))
 
         forest-2 (with-forest-result forest-1
                    (let [{:keys [x y z r]} @state]
-                        (is (val= (hid->node y) {:khids [], :tag :char, ::tf/value "y"}))
+                     (is (val= (hid->node y) {::tf/khids [], :tag :char, ::tf/value "y"}))
                      (is (val= (value-set y "YYY")
-                           {:khids [], :tag :char, ::tf/value "YYY"}))
+                           {::tf/khids [], :tag :char, ::tf/value "YYY"}))
 
                      (is (val= (value-set y 0)
-                           {:khids [], :tag :char, ::tf/value 0}))
+                           {::tf/khids [], :tag :char, ::tf/value 0}))
                      (value-update y + 7)
                      (value-update y * 6)
                      (is (val= (hid->leaf y)
-                           {:khids [], :tag :char, ::tf/value 42}))))
+                           {::tf/khids [], :tag :char, ::tf/value 42}))))
 
         ; forest-1 is unaffected by changes that created forest-2
         forest-3 (with-forest-result forest-1
                    (let [{:keys [x y z r]} @state]
                      (is (val= (hid->node y)
-                           {:khids [], :tag :char, ::tf/value "y"})))) ; still has forest-1 value
+                           {::tf/khids [], :tag :char, ::tf/value "y"})))) ; still has forest-1 value
 
         forest-4 (with-forest-result forest-2
                    (let [{:keys [x y z r]} @state
                          >> (is (val= (hid->leaf y)
-                                  {:khids [], :tag :char, ::tf/value 42})) ; still has forest-2 value
+                                  {::tf/khids [], :tag :char, ::tf/value 42})) ; still has forest-2 value
                          a  (add-leaf {:name :michael} "do")
                          b  (add-leaf {:name :tito} "re")
                          c  (add-leaf {:name :germain} "mi")]
@@ -983,10 +983,10 @@
           [{:tag :b, :color :red, ::tf/value 2}]] ] )
 
       (is (val= (find-leaf x [:** {:tag :b ::tf/value 2}])
-            {:khids [], :tag :b, :color :red, ::tf/value 2}))
+            {::tf/khids [], :tag :b, :color :red, ::tf/value 2}))
 
       (is (val= (find-leaf (root-hids) [:** {:color :blue ::tf/value 2}])
-            {:khids [], :tag :c, :color :blue, ::tf/value 2}))
+            {::tf/khids [], :tag :c, :color :blue, ::tf/value 2}))
 
       (is= (set (format-paths (find-leaf-paths #{z y} [{:tag :a} {::tf/value 2}])))
         #{[{:tag :a, :id :a2} [{:tag :b, :color :green, ::tf/value 2}]]

@@ -157,12 +157,12 @@
             leaf-hids-2  (all-leaf-hids)
             kw-leaf-hids (keep-if #(keyword? (hid->value %)) leaf-hids-1) ; could keep only first one here
             leaves       (mapv hid->leaf kw-leaf-hids)]
-           (is= (set leaf-hids-1) leaf-hids-2)
+        (is= (set leaf-hids-1) leaf-hids-2)
         ; must use `val=` since (not= {:attrs {:tag :item}, :value :a}
         ;                  (map->Node {:attrs {:tag :item}, :value :a} ))
-        (is (val= leaves
-              [{:khids [], :tag :item, ::tf/value :a}
-               {:khids [], :tag :item, ::tf/value :b}])))
+        (is (val= leaves ; #todo no longer needed since killed tf/Node record definition
+              [{::tf/khids [], :tag :item, ::tf/value :a}
+               {::tf/khids [], :tag :item, ::tf/value :b}])))
       )))
 
 
@@ -173,7 +173,7 @@
           child-1-hid (first (hid->kids root-hid))
           >>          (value-update child-1-hid inc)
           result      (hid->leaf child-1-hid)]
-         (is= result #tupelo.forest.Node{:khids [], :tag :item, :tupelo.forest/value 2} )
+         (is= result {::tf/khids [], :tag :item, :tupelo.forest/value 2} )
       (is= (hid->hiccup root-hid)
         [:item
          [:item 2]
@@ -673,7 +673,7 @@
             [{:class "two", :tag :div}]]]]] )
 
        (is (= (hid->node (last (only result-1)))
-             #tupelo.forest.Node{:khids [], :class "two", :tag :div}))
+             {::tf/khids [], :class "two", :tag :div}))
    )))
 
 ;-----------------------------------------------------------------------------
