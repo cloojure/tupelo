@@ -100,7 +100,7 @@
   "Returns true if the arg is a leaf node (no khids). "
   [arg :- tsk/KeyMap]
   (and (forest-node? arg)
-    (empty? (grab :khids arg))))
+    (empty? (grab :khids arg)))) ; #TODO:   :khids  ->  ::khids
 
 (s/defn tree-node? :- s/Bool
   "Returns true if the arg is a legal tree node"
@@ -341,6 +341,8 @@
                     (all-hids))
         root-hids (clj.set/difference (all-hids) kid-hids)]
     root-hids))
+
+; #todo need hid->descendent-hids => depth-first list of all descendent hids
 
 ; #todo need to recurse with set of parent hid's to avoid cycles
 (s/defn hid->tree :- tsk/KeyMap
