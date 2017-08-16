@@ -155,7 +155,7 @@
       ; find all keyword leaves in order
       (let [leaf-hids-1  (find-leaf-hids root-hid [:** :*])
             leaf-hids-2  (all-leaf-hids)
-            kw-leaf-hids (keep-if #(keyword? (hid->value %)) leaf-hids-1) ; could keep only first one here
+            kw-leaf-hids (keep-if #(keyword? (grab :value (hid->node %))) leaf-hids-1) ; could keep only first one here
             leaves       (mapv hid->leaf kw-leaf-hids)]
         (is= (set leaf-hids-1) leaf-hids-2)
         ; must use `val=` since (not= {:attrs {:tag :item}, ::value :a}
@@ -214,7 +214,7 @@
   [path]
   (let [hid     (last path)
         keeper? (and (leaf-hid? hid)
-                  (let [leaf-val (hid->value hid)]
+                  (let [leaf-val (grab :value (hid->node hid))]
                        (and (integer? leaf-val) (< 10 leaf-val))))]
      keeper?))
 
@@ -237,7 +237,7 @@
 
 (defn leaf-kw-hid? [hid]
   (and (leaf-hid? hid)
-    (keyword? (hid->value hid))))
+    (keyword? (grab :value (hid->node hid)))))
 
 (s/defn kw-partition? :- s/Bool
   [partition :- [HID]]
@@ -373,7 +373,7 @@
                         first)
           root-hid    (add-tree-enlive enlive-tree)
           leaf-hids   (find-leaf-hids root-hid [:** :*])
-          leaf-values (mapv hid->value leaf-hids)
+          leaf-values (mapv #(grab :value (hid->node %)) leaf-hids)
           result      (apply glue leaf-values)]
          (is= enlive-tree
            '{:tag     :html
@@ -422,7 +422,7 @@
           tree-1          (hid->tree root-hid)
 
           blank-leaf-hid? (fn [hid] (and (leaf-hid? hid) ; ensure it is a leaf node
-                                      (let [value (hid->value hid)]
+                                      (let [value (grab :value (hid->node hid))]
                                            (and (string? value)
                                              (or (zero? (count value)) ; empty string
                                                (ts/whitespace? value)))))) ; all whitespace string
@@ -541,7 +541,7 @@
           tree-1               (hid->hiccup root-hid)
 
           blank-leaf-hid?      (fn [hid] (and (leaf-hid? hid) ; ensure it is a leaf node
-                                           (let [value (hid->value hid)]
+                                           (let [value (grab :value (hid->node hid))]
                                                 (and (string? value)
                                                   (or (zero? (count value)) ; empty string
                                                     (ts/whitespace? value)))))) ; all whitespace string
@@ -614,7 +614,7 @@
                             en-html/xml-resource
                             first)
           root-hid        (add-tree-enlive enlive-tree)
-          blank-leaf-hid? (fn [hid] (ts/whitespace? (hid->value hid)))
+          blank-leaf-hid? (fn [hid] (ts/whitespace? (grab :value (hid->node hid))))
           has-bc-leaf?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type :value "B"}])
                                         (has-child-leaf? hid [:** {:tag :Type :value "C"}])))
           blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids))
@@ -708,7 +708,7 @@
                             en-html/html-resource
                             first)
           root-hid        (add-tree-enlive enlive-tree)
-          tree-1          (hid->hiccup root-hid)
+          tree-1          (hid->hiccup root-hid) ; orig tree with lots of whitespace leaves
 
           ; Removing whitespace nodes is optional; just done to keep things neat
           blank-leaf-hid? (fn fn-blank-leaf-hid? ; whitespace pred fn
@@ -755,9 +755,12 @@
           ; for each of div-hids, find and collect nested :h3 values
           dif-h3-paths    (join-2d->1d
                             (forv [div-hid div-hids]
-                              (let [h2-value  (find-leaf-value div-hid [:div :h2])
+                              (let [h2-value (grab :value (hid->node (find-hid div-hid [:div :h2])))
                                     h3-paths  (find-paths div-hid [:** :h3])
-                                    h3-values (it-> h3-paths (mapv last it) (mapv hid->value it))]
+                                    h3-values (it-> h3-paths
+                                                (mapv last it)
+                                                (mapv hid->node it)
+                                                (mapv #(grab :value %) it))]
                                 (forv [h3-value h3-values]
                                   [h2-value h3-value]))))
           ]

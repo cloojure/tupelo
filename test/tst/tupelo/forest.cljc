@@ -327,7 +327,7 @@
       (is= (hid->attrs r) {:tag :root, :color :white})
       (is= (hid->attrs z) {:tag :char, :color :red :value "z"})
       (is= (hid->kids r) [x y z])
-      (is= (hid->value z) "z")
+      (is= (grab :value (hid->node z)) "z")
 
       (attrs-reset z {:type :tuna, :name :charlie})
       (is= (hid->attrs z) {:type :tuna, :name :charlie})
@@ -387,7 +387,7 @@
                          r (add-node {:tag :root :color :white} [x y z])]
                      (reset! state (vals->map x y z r))
                      (is= (hid->kids r) [x y z])
-                     (is= (hid->value z) "z")
+                     (is= (grab :value (hid->node z)) "z")
 
                      (attrs-reset z {:type :tuna, :name :charlie})
                      (is= (hid->attrs z) {:type :tuna, :name :charlie})
@@ -444,7 +444,7 @@
                                 {::tf/kids [], :name :tito, :value "re"} ]} )
                      (kids-update r
                        (fn sort-kids [kids]
-                         (sort-by #(hid->value %) kids)))
+                         (sort-by #(grab :value (hid->node %)) kids)))
                      (is= (hid->tree r)
                        {:tag   :root,
                         :color :white,

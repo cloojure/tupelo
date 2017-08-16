@@ -108,7 +108,8 @@
 (s/defn forest-node? :- s/Bool
   "Returns true if the arg is a legal forest node"
   [arg :- tsk/KeyMap]
-  (contains-key? arg ::khids))
+  (and   (contains-key? arg ::khids)
+    (not (contains-key? arg ::kids))))
 
 (s/defn forest-leaf? :- s/Bool
   "Returns true if the arg is a leaf node (empty :tupelo.forest/khids). "
@@ -119,13 +120,15 @@
 (s/defn tree-node? :- s/Bool
   "Returns true if the arg is a legal tree node"
   [arg :- tsk/KeyMap]
-  (contains-key? arg ::kids))
+  (and   (contains-key? arg ::kids)
+    (not (contains-key? arg ::khids))))
 
 (s/defn tree-leaf? :- s/Bool
   "Returns true if the arg is a leaf node (no kids). "
   [arg :- tsk/KeyMap]
   (and (tree-node? arg)
     (empty? (grab ::kids arg))))
+
 
 (defn data->tree    ; #todo document
   "Convert raw data (nested vectors) into tree with generic `:data` tag and {::idx <index>} attribute."
@@ -154,8 +157,8 @@
   (and
     (map? arg)
     (= #{:tag :attrs :content} (set (keys arg)))
-    (it-> :attrs   (grab it arg) (map? it))
-    (it-> :content (grab it arg) (sequential? it))))
+    (map? (grab :attrs arg))
+    (sequential? (grab :content arg))))
 
 (s/defn hiccup->enlive :- s/Any
   "Converts a data from Hiccup -> Enlive format"
@@ -220,18 +223,19 @@
   (assert (tree-node? tree-node))
   (let [enlive-attrs (dissoc tree-node ::kids :tag :value)
         enlive-base  (glue (submap-by-keys tree-node #{:tag}) {:attrs enlive-attrs})]
-       (cond
-         (raw-kids-node? tree-node) (let [enlive-leaf (glue enlive-base {:content (consolidate-raw-kids tree-node)})]
-                                       enlive-leaf)
-
-         (tree-leaf? tree-node) (let [enlive-leaf (glue enlive-base
-                                                    {:content (if (contains-key? tree-node :value)
-                                                                [(grab :value tree-node)]
-                                                                [] )})]
+    (cond
+      (raw-kids-node? tree-node) (let [enlive-leaf (glue enlive-base {:content (consolidate-raw-kids tree-node)})]
                                    enlive-leaf)
-         :else (let [enlive-kids (mapv tree->enlive (grab ::kids tree-node))
-                     enlive-node (glue enlive-base {:content enlive-kids})]
-                    enlive-node))))
+
+      (tree-leaf? tree-node) (let [enlive-leaf (glue enlive-base
+                                                 {:content (if (contains-key? tree-node :value)
+                                                             [(grab :value tree-node)]
+                                                             [])})]
+                               enlive-leaf)
+
+      :else (let [enlive-kids (mapv tree->enlive (grab ::kids tree-node))
+                  enlive-node (glue enlive-base {:content enlive-kids})]
+              enlive-node))))
 
 (s/defn enlive->tree :- tsk/KeyMap ; #todo add test
   "Convert an Enlive-format data structure to a tree. "
@@ -265,11 +269,6 @@
   []
   (keyword (tm/sha-uuid)))
 
-(s/defn hid->id4  :- s/Keyword
-  "Clips an HID to its first 4 hex digits"
-  [hid :- HID]
-  (keyword (clip-str 4 (kw->str hid))))
-
 (s/defn hid->wid  :- s/Keyword
   "Uses an HID to look up a human-friendly Word-ID (WID) from an English dictionary.
   Useful for debugging purposes."
@@ -293,10 +292,11 @@
   [hid :- HID]
   (validate forest-leaf? (hid->node hid)))
 
-(s/defn hid->value :- s/Any
-  "Returns the value of a leaf node given an HID"
-  [hid :- HID]
-  (grab :value (hid->leaf hid)))
+; #todo remove
+;(s/defn hid->value :- s/Any
+;  "Returns the value of a leaf node given an HID"
+;  [hid :- HID]
+;  (grab :value (hid->leaf hid)))
 
 (s/defn hid->attrs :- tsk/KeyMap ; #todo remove OBE
   [hid :- HID]
@@ -385,16 +385,6 @@
     (let [node (glue (->Node kids) attrs)]
       (set-node hid node)
       node)))
-
-; #todo remove
-;(s/defn set-leaf
-;  "Unconditionally sets the value of a Leaf in the forest"
-;  [hid :- HID
-;   attrs :- tsk/KeyMap
-;   value :- s/Any]
-;  (let [leaf (->Node attrs value)]
-;    (set-node hid leaf)
-;    leaf))
 
 (s/defn validate-attrs
   [attrs :- tsk/KeyMap]
@@ -836,6 +826,7 @@
   [path :- [HID]]
   (leaf-hid? (xlast path)))
 
+; #todo remove
 (s/defn find-leaf-paths  :- [[HID]]    ; #todo need test
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec ]
@@ -843,25 +834,28 @@
         leaf-paths (keep-if leaf-path? paths)]
     leaf-paths))
 
+; #todo remove
 (s/defn find-leaf-hids :- [HID]     ; #todo need test
   [root-spec :- HidRootSpec
    tgt-path :- [s/Any] ]
   (mapv last (find-leaf-paths root-spec tgt-path )) )
 
+; #todo remove
 (s/defn find-leaf-hid
   [root-spec :- HidRootSpec
    tgt-path :- [s/Any] ]
   (only (find-leaf-hids root-spec tgt-path )))
 
+; #todo remove
 (s/defn find-leaf
   [root-spec :- HidRootSpec
    tgt-path :- [s/Any] ]
   (hid->leaf (find-leaf-hid root-spec tgt-path )))
 
-(s/defn find-leaf-value     ; #todo need test (maybe delete?)
-  [root-spec :- HidRootSpec
-   tgt-path :- [s/Any] ]
-  (hid->value (find-hid root-spec tgt-path)))
+;(s/defn find-leaf-value     ; #todo delete
+;  [root-spec :- HidRootSpec
+;   tgt-path :- [s/Any] ]
+;  (hid->value (find-hid root-spec tgt-path)))
 
 (s/defn find-paths-with
   [root-spec :- HidRootSpec
