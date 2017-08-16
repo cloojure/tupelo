@@ -73,8 +73,8 @@
 ; #todo validate-tree: kids ordered or not, exact or extras ok
 
 ; #todo MAYBE???
-; #todo merge Node/Node -> genric Node: {:attrs <some map> ::value <something> ::kids []}
-; #todo              or -> plain map:   {:tupelo.forest/khids []  ::value <something> :attr1 val1 :attr2 val2}
+; #todo merge Node/Node -> genric Node: {:attrs <some map> :value <something> ::kids []}
+; #todo              or -> plain map:   {:tupelo.forest/khids []  :value <something> :attr1 val1 :attr2 val2}
 ;                                        ^req      ^optional
 ; #todo maybe :value is just a regular (user-defined) attribute. not a special key
 
@@ -93,7 +93,7 @@
         (= 40 (count name-str))))))
 
 ; #todo add ::tag? (only req for hiccup/enlive data?)
-; { :tupelo.forest/khids  [hid...]  :k1 v1 :k2 v2 ...  ::value s/Any  }
+; { :tupelo.forest/khids  [hid...]  :k1 v1 :k2 v2 ...  :value s/Any  }
 ;    ^ req             ^opt k-v's          ^opt/leaf
 ; #todo rename :tupelo.forest/khids -> :kid-hids ?
 ; keep in mind that a Node is a "fragment" of a tree, and only contains "pointers" (HIDs) to the :tupelo.forest/khids
@@ -139,7 +139,7 @@
      (if (sequential? data)
        {::kids (forv [[idx val] (indexed data)]
                  (data->tree idx val))}
-       {::value data ::kids []}))))
+       {:value data ::kids []}))))
 
 (defn enlive-node-lax?
   "Returns true for nominal Enlive nodes, else false"
@@ -213,20 +213,20 @@
 (s/defn consolidate-raw-kids :- tsk/Vec
   "Consolidates ::raw kids for a node into a single Enlive :content vector"
   [node :- tsk/KeyMap]
-  (mapv #(grab ::value %) (grab ::kids node)))
+  (mapv #(grab :value %) (grab ::kids node)))
 
 (s/defn tree->enlive :- (s/either tsk/KeyMap tsk/Vec)
   [tree-node :- tsk/KeyMap]
   (assert (tree-node? tree-node))
-  (let [enlive-attrs (dissoc tree-node ::kids :tag ::value)
+  (let [enlive-attrs (dissoc tree-node ::kids :tag :value)
         enlive-base  (glue (submap-by-keys tree-node #{:tag}) {:attrs enlive-attrs})]
        (cond
          (raw-kids-node? tree-node) (let [enlive-leaf (glue enlive-base {:content (consolidate-raw-kids tree-node)})]
                                        enlive-leaf)
 
          (tree-leaf? tree-node) (let [enlive-leaf (glue enlive-base
-                                                    {:content (if (contains-key? tree-node ::value)
-                                                                [(grab ::value tree-node)]
+                                                    {:content (if (contains-key? tree-node :value)
+                                                                [(grab :value tree-node)]
                                                                 [] )})]
                                    enlive-leaf)
          :else (let [enlive-kids (mapv tree->enlive (grab ::kids tree-node))
@@ -250,13 +250,13 @@
                    (and
                      (= 1 (count content))
                      (not (enlive-node-lax? (only content))))
-                   (glue attrs {::value (only content) ::kids []})
+                   (glue attrs {:value (only content) ::kids []})
 
                    :else (let [kid-hids (glue []
                                           (for [child content]
                                             (if (enlive-node-lax? child)
                                               (enlive->tree child)
-                                              {:tag ::raw ::value child ::kids []})))]
+                                              {:tag ::raw :value child ::kids []})))]
                               (glue attrs {::kids kid-hids})))]
          result)))
 
@@ -296,7 +296,7 @@
 (s/defn hid->value :- s/Any
   "Returns the value of a leaf node given an HID"
   [hid :- HID]
-  (grab ::value (hid->leaf hid)))
+  (grab :value (hid->leaf hid)))
 
 (s/defn hid->attrs :- tsk/KeyMap ; #todo remove OBE
   [hid :- HID]
@@ -423,7 +423,7 @@
   (let [attrs (if (map? attrs-arg)
                 attrs-arg
                 {:tag (validate keyword? attrs-arg)} )
-        attrs (glue attrs {::value value}) ]
+        attrs (glue attrs {:value value}) ]
     (add-node attrs [])))
 
 (s/defn add-tree :- HID
@@ -452,7 +452,7 @@
     (if (every? bush-node? others)
       (let [kids (glue [] (for [it others] (bush->tree it)))]
         (assoc attrs ::kids kids))
-      (glue attrs {::value (only others)}))))
+      (glue attrs {:value (only others)}))))
 
 (s/defn tree->bush :- tsk/Vec
   [tree-node :- tsk/Map]
@@ -586,7 +586,7 @@
   [hid :- HID
    value-new :- s/Any]
   (let [leaf-curr  (hid->leaf hid)
-        leaf-new   (glue leaf-curr {::value value-new}) ]
+        leaf-new   (glue leaf-curr {:value value-new}) ]
     (set-node hid leaf-new)
     leaf-new))
 
@@ -596,9 +596,9 @@
    fn-update-value  ; signature: (fn-update-value value-curr x y z & more) -> value-new
    & fn-update-value-args]
   (let [leaf-curr  (hid->leaf hid)
-        value-curr (grab ::value leaf-curr)
+        value-curr (grab :value leaf-curr)
         value-new  (apply fn-update-value value-curr fn-update-value-args)
-        leaf-new   (glue leaf-curr {::value value-new})]
+        leaf-new   (glue leaf-curr {:value value-new})]
     (set-node hid leaf-new)
     leaf-new))
 
@@ -736,7 +736,7 @@
 ; #todo find-roots function (& root for sole root or throw)
 
 ; #todo (find-leaf root [ :a :b  :c ] ) ->
-; #todo (find-leaf root [ :a :b  {:tag :c ::value <val> ::kids []} ] )
+; #todo (find-leaf root [ :a :b  {:tag :c :value <val> ::kids []} ] )
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn format-path

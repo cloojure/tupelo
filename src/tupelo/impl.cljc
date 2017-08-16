@@ -1036,14 +1036,15 @@
 
   `with-map-vals` is safe for typos since `grab` will throw is the requrested map key is not present.
   See `vals->map` for simple creation of labelled data maps."
-  [ the-map syms-vec & forms]
+  [ the-map items-vec & forms]
   `(do
      ; (assert (map? ~the-map))
-     ; (assert (sequential? ~syms-vec))
+     ; (assert (sequential? ~items-vec))
      (let  ; generate the binding vector dynamically
        ~(apply glue
-          (for [sym syms-vec
-                :let [kw (keyword sym)]]
+          (for [item items-vec
+                :let [sym (symbol (name item))
+                      kw  (keyword item)]]
             [sym (list 'grab kw the-map)]))
        ~@forms)))
 
