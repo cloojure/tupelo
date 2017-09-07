@@ -23,71 +23,13 @@
 ;   http://josf.info/blog/2014/04/14/seqs-of-clojure-zippers/
 ;   http://josf.info/blog/2014/10/02/practical-zippers-extracting-text-with-enlive/
 
+;-----------------------------------------------------------------------------
+; t0-data
 (def t0-data
   [1 [:a :b] 2 3 [40 50 60]] )
 
-(def t0-hiccup
-  [:item
-   [:item 1]
-   [:item
-    [:item :a]
-    [:item :b]]
-   [:item 2]
-   [:item 3]
-   [:item
-    [:item 40]
-    [:item 50]
-    [:item 60]]] )
-
-(def t1-hiccup
-  [:vec 1
-   [:vec :a :b]
-   2
-   3
-   [:vec 40 50 60]] )
-
-(def t2-hiccup
-  [:vec
-   [:int 1]
-   [:vec
-    [:kw :a]
-    [:kw :b]]
-   [:int 2]
-   [:int 3]
-   [:vec
-    [:int 40]
-    [:int 50]
-    [:int 60]]] )
-
-(def z2-hiccup
-  [:item
-   [:item 1]
-   [:item 2]
-   [:item :a]
-   [:item :b]
-   [:item
-    [:item 3]
-    [:item 4]
-    [:item :c]
-    [:item :d]
-    [:item 5]]
-   [:item :e]] )
-
-(def z3-hiccup
-  [:item
-   [:item 1]
-   [:item 2]
-   [:item :a]
-   [:item :b]
-   [:item :c]
-   [:item :d]
-   [:item :e]
-   [:item 3]])
 
 
-
-;-----------------------------------------------------------------------------
-; t0-data
 (dotest
   (with-forest (new-forest)
     (let [root-hid (add-tree (data->tree t0-data))]
@@ -118,8 +60,21 @@
                                 {::tf/kids [], ::tf/tag :data, ::tf/idx 1, :value 50}
                                 {::tf/kids [], ::tf/tag :data, ::tf/idx 2, :value 60}]}]} )
     )))
+
 ;-----------------------------------------------------------------------------
-; t0-hiccup
+(def t0-hiccup
+  [:item
+   [:item 1]
+   [:item
+    [:item :a]
+    [:item :b]]
+   [:item 2]
+   [:item 3]
+   [:item
+    [:item 40]
+    [:item 50]
+    [:item 60]]] )
+
 (dotest
   (with-forest (new-forest)
     (let [root-hid (add-tree-hiccup t0-hiccup)
@@ -233,7 +188,21 @@
          [:item 3]
          [:item]])))) ; they're gone!
 
-; delete any numbers (< 10 n)
+
+;-----------------------------------------------------------------------------
+(def z2-hiccup
+  [:item
+   [:item 1]
+   [:item 2]
+   [:item :a]
+   [:item :b]
+   [:item
+    [:item 3]
+    [:item 4]
+    [:item :c]
+    [:item :d]
+    [:item 5]]
+   [:item :e]] )
 
 (defn leaf-kw-hid? [hid]
   (and (leaf-hid? hid)
@@ -285,6 +254,18 @@
           [:item 5]]
          [:item
           [:item :e]]]))))
+
+;-----------------------------------------------------------------------------
+(def z3-hiccup
+  [:item
+   [:item 1]
+   [:item 2]
+   [:item :a]
+   [:item :b]
+   [:item :c]
+   [:item :d]
+   [:item :e]
+   [:item 3]])
 
 (dotest
   (with-forest (new-forest)
@@ -767,6 +748,4 @@
       (is= dif-h3-paths
         [["title1" "subheading1"]
          ["title1" "subheading2"]
-         ["title2" "subheading3"]])
-
-      )))
+         ["title2" "subheading3"]]) )))
