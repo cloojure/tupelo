@@ -841,7 +841,7 @@
   (mapv last (find-leaf-paths root-spec tgt-path )) )
 
 ; #todo remove
-(s/defn find-leaf-hid
+(s/defn find-leaf-hid ; #todo remove single version -> (only (xyz ...))
   [root-spec :- HidRootSpec
    tgt-path :- [s/Any] ]
   (only (find-leaf-hids root-spec tgt-path )))

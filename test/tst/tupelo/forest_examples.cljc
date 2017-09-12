@@ -28,8 +28,6 @@
 (def t0-data
   [1 [:a :b] 2 3 [40 50 60]] )
 
-
-
 (dotest
   (with-forest (new-forest)
     (let [root-hid (add-tree (data->tree t0-data))]
@@ -58,8 +56,7 @@
                      ::tf/idx  4,
                      ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, :value 40}
                                 {::tf/kids [], ::tf/tag :data, ::tf/idx 1, :value 50}
-                                {::tf/kids [], ::tf/tag :data, ::tf/idx 2, :value 60}]}]} )
-    )))
+                                {::tf/kids [], ::tf/tag :data, ::tf/idx 2, :value 60}]}]} ) )))
 
 ;-----------------------------------------------------------------------------
 (def t0-hiccup

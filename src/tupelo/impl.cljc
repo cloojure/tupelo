@@ -6,7 +6,6 @@
 ;   software.
 (ns ^:no-doc tupelo.impl
   "Tupelo - Making Clojure even sweeter"
-  (:refer-clojure :exclude [first rest])
   (:require
     [clojure.core.async :as ca]
     [clojure.core.match :as ccm]
@@ -15,12 +14,13 @@
     [clojure.set :as set]
     [clojure.test]
     [clojure.walk :as walk]
-    [cheshire.core :as cc]
     [schema.core :as s]
     [tupelo.schema :as tsk]
     [tupelo.types :as types]
     [tupelo.schema :as ts])
 )
+(ns-unmap *ns* 'first)
+(ns-unmap *ns* 'rest)
 
 ; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
 
@@ -403,7 +403,7 @@
         num-items (count coll-seq)]
     (when-not (= 1 num-items)
       (throw (IllegalArgumentException. (str "only: num-items must=1; num-items=" num-items))))
-    (clojure.core/first coll-seq)))
+    (clojure.core/first coll-seq))) ; #todo -> xfirst
 
 ;-----------------------------------------------------------------------------
 (defmacro it->
@@ -1051,8 +1051,7 @@
 (defn macro?
   "Returns true if a quoted symbol resolves to a macro. Usage:
 
-    (println (macro? 'and))  ;=> true
-  "
+    (println (macro? 'and))  ;=> true "
   [s]
   (-> s resolve meta :macro boolean))
     ; from Alex Miller StackOverflow answer 2017-5-6
@@ -1061,8 +1060,7 @@
   "Compares values for equality using clojure.core/=, treating records as plain map values:
 
       (defrecord SampleRec [a b])
-      (assert (val= (->SampleRec 1 2) {:a 1 :b 2}))   ; fails for clojure.core/=
-  "
+      (assert (val= (->SampleRec 1 2) {:a 1 :b 2}))   ; fails for clojure.core/= "
   [& vals]
   (let [mapify   (fn [arg]
                    (if (map? arg)
