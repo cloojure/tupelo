@@ -5,7 +5,7 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.types
-  (:refer-clojure :exclude [float? integer?])
+  (:refer-clojure :exclude [float? integer? double?])
   (:use tupelo.types tupelo.test )
   (:require [tupelo.core :as t] ))
 (t/refer-tupelo)

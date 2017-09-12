@@ -118,6 +118,6 @@
   (is (s/valid? :animal/dog {:animal/kind "dog"
                              :animal/says "woof"
                              :dog/tail?   true
-                             :dog/breed   "retriever"}))
+                             :dog/breed   "retriever"})))
 
-  )
+

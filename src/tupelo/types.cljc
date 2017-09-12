@@ -6,7 +6,7 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.types
   "Type conversion and detection."
-  (:refer-clojure :exclude [integer? float?])
+  (:refer-clojure :exclude [integer? float? double?])
   (:require [clojure.string   :as str]
             [schema.core      :as s] )
   (:gen-class))

@@ -47,14 +47,6 @@
 (pns/import-fn impl/indexed )
 
 
-(defn print-versions []
-  (let [version-str   (format "   Clojure %s    Java %s"
-                        (clojure-version) (System/getProperty "java.version")) ]
-    (nl)
-    (println "-------------------------------------")
-    (println version-str)
-    (println "-------------------------------------")))
-
 (pns/import-fn impl/spy)
 (pns/import-macro impl/spyx)
 (pns/import-macro impl/spyx-pretty)
@@ -458,6 +450,17 @@
 (pns/import-fn impl/char-seq)
 (pns/import-fn impl/pretty-str)
 (pns/import-fn impl/pretty)
+
+(defn print-versions []
+  (let [version-str (format "Clojure %s    Java %s"
+                      (clojure-version) (System/getProperty "java.version"))
+        num-hyphen  (+ 6 (count version-str))
+        hyphens     (strcat (repeat num-hyphen \-))
+        version-str (strcat "   " version-str)]
+    (nl)
+    (println hyphens)
+    (println version-str)
+    (println hyphens) ))
 
 ; #todo add test & README
 ; #todo rename json->edn  ???
