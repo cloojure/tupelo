@@ -8,11 +8,35 @@
   (:use tupelo.test )
   (:require
     [tupelo.core :as t]
-    [tupelo.impl :as i]
-    [clojure.spec.alpha :as s]))
+    [clojure.spec.alpha :as s]
+    [clojure.spec.gen.alpha :as gen]
+    [clojure.set :as set]))
 (t/refer-tupelo)
 
+; #todo Should have clojure.core/any?
+; #todo    =>  spec/anything
+; #todo    =>  spec/pass-all (vs. spec/pass-none)
+; #todo    =>  spec/dont-care
+; #todo    =>  (constantly true)
+; #todo    =>  #(fn [& _] true)
+; #todo    =>  clojure.core/->true (vs. clojure.core/->false)
+; #todo    =>  clojure.core/true-fn (vs. clojure.core/false-fn)
 
+; #todo    =>  (s/def ::s/anything (constantly true))
+; #todo    =>  (s/def ::s/nothing (constantly false))
+
+;   (s/fdef clojure.core/declare
+;       :args (s/cat :names (s/* simple-symbol?))
+;       :ret any?)   ; #todo conflicts with clojure.core/not-any?
+(dotest
+  (s/def ::s/anything (constantly true))
+  (s/def ::s/nothing (constantly false))
+  (is (s/valid? ::s/anything 5 ))
+  (is (s/valid? ::s/anything "joe" ))
+  (is (s/valid? ::s/anything { :blah 42 :blue 66 :hut! 'hut! }))
+  (isnt (s/valid? ::s/nothing 5 )))
+
+;-----------------------------------------------------------------------------
 (dotest
   (is= (s/conform even? 4) 4)
   (is= (s/conform even? 5) :clojure.spec.alpha/invalid)
@@ -221,6 +245,40 @@
       :nums-kw #{:nums}
       :nums (s/* number?)))
   (is= (s/conform ::unnested [:names "a" "b" :nums 1 2 3])
-    {:names-kw :names, :names ["a" "b"], :nums-kw :nums, :nums [1 2 3]})
+    {:names-kw :names, :names ["a" "b"], :nums-kw :nums, :nums [1 2 3]}) )
 
-  )
+(dotest
+  (def suit? #{:club :diamond :heart :spade}) ; remember sets are predicates
+  (def rank? (into #{:jack :queen :king :ace} (thru 2 10))) ; remember sets are predicates
+  (def deck (forv [suit suit? rank rank?]
+              [rank suit]))
+  (is (set/subset? #{[2 :club] [5 :diamond] [:queen :heart]}
+        (into #{} deck)))
+
+  (s/def ::card (s/tuple rank? suit?))
+  (s/def ::hand (s/* ::card))
+
+  (s/def ::name string?)
+  (s/def ::score int?)
+  (s/def ::player (s/keys :req [::name ::score ::hand]))
+
+  (s/def ::players (s/* ::player))
+  (s/def ::deck (s/* ::card))
+  (s/def ::game (s/keys :req [::players ::deck]))
+
+  (def kenny {::name  "Kenny Rogers"
+              ::score 100
+              ::hand  []})
+  (is (s/valid? ::player kenny))
+  (is (s/valid? ::player {::name  "Kenny Rogers"
+                          ::score 100
+                          ::hand  [[2 :heart]]}))
+  (isnt (s/valid? ::player {::name  "Kenny Rogers"
+                            ::score 100
+                            ::hand  [[2 :hurts]]}))
+
+  ; Create a generator for ::player, generate a single sample value, and verify it is valid
+  (is (s/valid? ::player (gen/generate (s/gen ::player)))))
+
+
+
