@@ -120,4 +120,107 @@
                              :dog/tail?   true
                              :dog/breed   "retriever"})))
 
+(dotest
+  (s/def :event/type keyword?)
+  (s/def :event/timestamp int?)
+  (s/def :search/url string?)
+  (s/def :error/message string?)
+  (s/def :error/code int?)
 
+  (defmulti event-type :event/type)
+  (defmethod event-type :event/search [_]
+    (s/keys :req [:event/type :event/timestamp :search/url]))
+  (defmethod event-type :event/error [_]
+    (s/keys :req [:event/type :event/timestamp :error/message :error/code]))
+
+  (s/def :event/event (s/multi-spec event-type :event/type))
+
+  (is (s/valid? :event/event {:event/type      :event/search
+                              :event/timestamp 1463970123000
+                              :search/url      "https://clojure.org"}))
+  (is (s/valid? :event/event {:event/type      :event/error
+                              :event/timestamp 1463970123000
+                              :error/message   "Invalid host"
+                              :error/code      500}))
+
+  (is= (s/explain-data :event/event {:event/type :event/restart})
+    #:clojure.spec.alpha{:problems [{:path   [:event/restart],
+                                     :pred   'tst.tupelo.x.spec/event-type,
+                                     :val    #:event{:type :event/restart},
+                                     :reason "no method",
+                                     :via    [:event/event],
+                                     :in     []}],
+                         :spec     :event/event,
+                         :value    #:event{:type :event/restart}})
+
+  (is= (s/conform (s/coll-of keyword?) [:a :b :c]) [:a :b :c])
+  (is= (s/conform (s/coll-of number?) [1 2 3]) [1 2 3])
+
+  (s/def ::vnum3 (s/coll-of number? :kind vector? :count 3 :distinct true :into #{}))
+  (is= (s/conform ::vnum3 [1 2 3]) #{1 2 3})
+  (is= (s/conform ::vnum3 #{1 2 3})  :clojure.spec.alpha/invalid )
+  (is= (s/conform ::vnum3 [1 1 1])  :clojure.spec.alpha/invalid )
+  (is= (s/conform ::vnum3 [1 2 :a])  :clojure.spec.alpha/invalid )
+
+  (s/def ::point (s/tuple double? double? double? ))
+  (is= (s/conform ::point [1.5 2.0 3.1]) [1.5 2.0 3.1] )
+
+  (s/def ::scores (s/map-of string? int?))
+  (is= (s/conform ::scores{"Sally" 1000 "joe" 500})  {"Sally" 1000 "joe" 500}))
+
+(dotest
+  (s/def ::ingredient (s/cat :quantity number?  :unit keyword? ))
+  (is= (s/conform ::ingredient [2 :teaspoon]) {:quantity 2, :unit :teaspoon} )
+
+  (s/def ::seq-of-keywords (s/* keyword?))
+  (is= (s/conform ::seq-of-keywords [:a :b :c])  [:a :b :c])
+
+  (s/def ::odds-then-maybe-even (s/cat :odds (s/+ odd?)
+                                        :even (s/? even?)))
+  (is (s/valid? ::odds-then-maybe-even [1 3 5 66]))
+  (is (s/valid? ::odds-then-maybe-even [1 3 5]))
+  (isnt (s/valid? ::odds-then-maybe-even [1 3 66 5]))
+  (isnt (s/valid? ::odds-then-maybe-even [2]))
+
+  ; opts are alternating pairs of keyword & boolean
+  (s/def ::opts (s/* (s/cat :opt keyword? :val boolean?)))
+  (is= (s/conform ::opts [:silent false :verbose true])
+    [{:opt :silent, :val false} {:opt :verbose, :val true}] )
+
+  (s/def ::config (s/* (s/cat :prop string?
+                         :val (s/alt :s string? :b boolean?))))
+  (is= (s/conform ::config ["-server" "foo" "-verbose" true "-user" "joe"])
+    [{:prop "-server", :val [:s "foo"]}
+     {:prop "-verbose", :val [:b true]}
+     {:prop "-user", :val [:s "joe"]}])
+
+  (is= (s/describe ::seq-of-keywords)
+    '(* keyword?))
+  (is= (s/describe ::odds-then-maybe-even)
+    '(cat :odds (+ odd?) :even (? even?)))
+  (is= (s/describe ::opts)
+    '(* (cat :opt keyword? :val boolean?)))
+
+  (s/def ::even-strings (s/& (s/* string?) #(even? (count %))))
+  (is (s/valid? ::even-strings ["a" "b"]))
+  (is (s/valid? ::even-strings ["a" "b" "c" "d"]))
+  (isnt (s/valid? ::even-strings ["a"]))
+  (isnt (s/valid? ::even-strings ["a" "b" "c"]))
+
+  (s/def ::nested
+  (s/cat :names-kw #{:names}
+         :names (s/spec (s/* string?))
+         :nums-kw #{:nums}
+         :nums (s/spec (s/* number?))))
+  (is= (s/conform ::nested [:names ["a" "b"] :nums [1 2 3]])
+    {:names-kw :names, :names ["a" "b"], :nums-kw :nums, :nums [1 2 3]} )
+
+  (s/def ::unnested
+    (s/cat :names-kw #{:names}
+      :names (s/* string?)
+      :nums-kw #{:nums}
+      :nums (s/* number?)))
+  (is= (s/conform ::unnested [:names "a" "b" :nums 1 2 3])
+    {:names-kw :names, :names ["a" "b"], :nums-kw :nums, :nums [1 2 3]})
+
+  )
