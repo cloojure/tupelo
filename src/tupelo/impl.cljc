@@ -507,8 +507,8 @@
        (throw (IllegalArgumentException. (str
                                            "thru: non-integer number of steps \n   args:"
                                            (pr-str [start end step])))))
-     (it-> (inc nsteps-int)
-       (range-vec it)
+     (it->
+       (range (inc nsteps-int))
        (clojure.core/map #(* step %) it)
        (clojure.core/map #(+ start %) it)
        (vec it))))
