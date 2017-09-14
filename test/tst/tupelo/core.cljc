@@ -946,8 +946,7 @@
 
   (is (every? t/truthy? (forv [lb (range 0 4)
                                ub (range lb 4) ]
-                          (= (t/range-vec lb ub) (range lb ub)))))
-)
+                          (= (t/range-vec lb ub) (range lb ub))))) )
 
 (dotest
   (testing "positive step"

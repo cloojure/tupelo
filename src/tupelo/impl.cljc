@@ -494,10 +494,8 @@
 
 (defn thru          ; #todo make lazy: thruz or (thru 1 3 :lazy)
   "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. Not lazy. "
-  ([end]
-   (range-vec (inc end)))
-  ([start end]
-   (range-vec start (inc end)))
+  ([end]        (vec (range       (inc end))))
+  ([start end]  (vec (range start (inc end))))
   ([start end step]
    (let [delta          (- (double end) (double start))
          nsteps-dbl     (/ (double delta) (double step))
