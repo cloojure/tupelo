@@ -494,10 +494,10 @@
 
 (defn thru          ; #todo make lazy: thruz or (thru 1 3 :lazy)
   "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. Not lazy. "
-  ([end]        (vec (range       (inc end))))
-  ([start end]  (vec (range start (inc end))))
+  ([end]       (thru 0 end))
+  ([start end] (thru start end 1))
   ([start end step]
-   (let [delta          (- (double end) (double start))
+   (let [delta          (- (double end)   (double start))
          nsteps-dbl     (/ (double delta) (double step))
          nsteps-int     (Math/round nsteps-dbl)
          rounding-error (Math/abs (- nsteps-dbl nsteps-int)) ]
@@ -505,12 +505,10 @@
        (throw (IllegalArgumentException. (str
                                            "thru: non-integer number of steps \n   args:"
                                            (pr-str [start end step])))))
-     (it->
-       (range (inc nsteps-int))
-       (clojure.core/map #(* step %) it)
-       (clojure.core/map #(+ start %) it)
-       (vec it))))
-  )
+     (vec (clojure.core/map #(-> %
+                               (* step)
+                               (+ start))
+            (range (inc nsteps-int)))))))
 
 ; #todo need test, readme
 (defn char-seq
