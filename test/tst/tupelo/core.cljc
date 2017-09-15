@@ -1137,6 +1137,12 @@
     (is= [-10 -5      ] (thru -10  -5  5))
     (is= [ 10  5  0 -5] (thru  10  -5 -5))
     (is= [-10 -5  0  5] (thru -10   5  5)))
+  (testing "floats"
+    (let [all-rel= (fn [xs ys]
+                     (every? truthy? (mapv #(rel= %1 %2 :digits 7) xs ys)))]
+      (is (all-rel= [1.1 1.3 1.5 1.7] (thru 1.1 1.7 0.2)))
+      (is (all-rel= [1.1 1.2 1.3 1.4] (thru 1.1 1.4 0.1)))))
+  (throws? IllegalArgumentException (thru 1.1 2.1 0.3))
 )
 
 (dotest
