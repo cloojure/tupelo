@@ -396,6 +396,19 @@
           ]
       or-result)))
 
+(defn all-rel=
+  "Applies"
+  [x-vals y-vals & opts]
+  (let [num-x (count x-vals)
+        num-y (count y-vals)]
+    (when-not (= num-x num-y)
+      (throw (IllegalArgumentException.
+               (str ": x-vals & y-vals must be same length" \newline
+                 "  #x: " num-x "  #y: " num-y)))))
+  (every? truthy?
+    (clojure.core/map #(apply rel= %1 %2 opts)
+      x-vals y-vals)))
+
 (pns/import-fn impl/range-vec)
 (pns/import-fn impl/thru)
 (pns/import-fn impl/keep-if)
@@ -584,7 +597,7 @@
      append prepend grab dissoc-in fetch fetch-in
      submap? submap-by-keys submap-by-vals keyvals
      validate only third it-> safe-> keep-if drop-if zip zip* zip-lazy indexed flat-vec
-     strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel=
+     strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel= all-rel=
      drop-at insert-at replace-at idx
      starts-with? int->kw kw->int vec->list
      xfirst xsecond xthird xrest kw->sym kw->str str->sym str->kw sym->kw sym->str
