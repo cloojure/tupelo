@@ -916,9 +916,10 @@
     [elem]
     (drop (inc index) coll)))
 
-
 ; #todo use (idx    coll int-or-kw) as `get` replacement?
 ; #todo use (idx-in coll [kw's]) as `fetch-in` replacement?
+; #todo allow (idx coll [low high]) like python xx( low:high )
+; #todo multiple dimensions
 (defn idx
   "Indexes into a vector, allowing negative index values"
   [coll-in idx-in]
@@ -928,8 +929,6 @@
         idx (mod idx-in N)
         result (clojure.core/get data-vec idx)]
     result ))
-
-
 
 (defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value

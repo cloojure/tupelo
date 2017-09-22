@@ -1,5 +1,5 @@
 (ns tst.tupelo.array
-  (:use clojure.test)
+  (:use tupelo.test)
   (:require
     [schema.test :as st]
     [tupelo.array :as tar]
@@ -11,7 +11,7 @@
 (t/refer-tupelo)
 (use-fixtures :once st/validate-schemas)
 
-(deftest t-arrays
+(dotest
   (let [a34  (tar/create 3 4 :a)
         a34f (flatten a34)]
     (is (= 3 (count a34) (tar/num-rows a34)))
@@ -65,10 +65,10 @@
     (dotimes [ii 3]
       (dotimes [jj 4]
         (swap! a34 tar/set-elem ii jj (+ (* ii 10) jj))))
-    (is (= (ts/collapse-whitespace (tar/toString @a34))
-           (ts/collapse-whitespace " 0       1       2       3
-                                    10      11      12      13
-                                    20      21      22      23" )))
+    (is (ts/equals-ignore-spacing (tar/toString @a34)
+          " 0       1       2       3
+           10      11      12      13
+           20      21      22      23"))
 
     (is (= (tar/get-row target 0) [00 01 02 03]))
     (is (= (tar/get-row target 1) [10 11 12 13]))
@@ -92,17 +92,14 @@
     (is (= target-rot-left-3 (-> target (tar/rot-right))))
     (is (= target-rot-left-2 (-> target (tar/rot-right) (tar/rot-right))))
     (is (= target-rot-left-1 (-> target (tar/rot-right) (tar/rot-right) (tar/rot-right))))
-    (is (= target            (-> target (tar/rot-right) (tar/rot-right) (tar/rot-right) (tar/rot-right))))
+    (is (= target            (-> target (tar/rot-right) (tar/rot-right) (tar/rot-right) (tar/rot-right))))))
 
-    )
-  )
-
-(deftest t-get-rows
+(dotest
   (let [demo  [[00 01 02 03]
                [10 11 12 13]
                [20 21 22 23]]
         ]
-    (is (thrown? AssertionError (tar/get-rows demo 0 0)))
+    (is (thrown? IllegalArgumentException (tar/get-rows demo 0 0)))
     (is (= (tar/get-rows demo 0 1)  [[00 01 02 03]] ))
     (is (= (tar/get-rows demo 0 2)  [[00 01 02 03]
                                      [10 11 12 13]] ))
@@ -112,14 +109,14 @@
     (is (= (tar/get-rows demo 1 3)  [[10 11 12 13]
                                      [20 21 22 23]] ))
     (is (= (tar/get-rows demo 2 3)  [[20 21 22 23]] ))
-    (is (thrown? AssertionError (tar/get-rows demo 3 3)))))
+    (is (thrown? IllegalArgumentException (tar/get-rows demo 3 3)))))
 
-(deftest t-get-cols
+(dotest
   (let [demo  [[00 01 02 03]
                [10 11 12 13]
                [20 21 22 23]]
        ]
-  (is (thrown? AssertionError (tar/get-cols demo 0 0)))
+  (is (thrown? IllegalArgumentException (tar/get-cols demo 0 0)))
   (is (= (tar/get-cols demo 0 1)   [[00 10 20]] ))
   (is (= (tar/get-cols demo 0 2)   [[00 10 20]
                                     [01 11 21]] ))
@@ -136,9 +133,9 @@
   (is (= (tar/get-cols demo 2 4)   [[02 12 22]
                                     [03 13 23]] ))
   (is (= (tar/get-cols demo 3 4)   [[03 13 23]] ))
-  (is (thrown? AssertionError (tar/get-cols demo 4 4)))))
+  (is (thrown? IllegalArgumentException (tar/get-cols demo 4 4)))))
 
-(deftest t-symmetric
+(dotest
   (is (tar/symmetric? [[1 2]
                        [2 1]]))
   (is (tar/symmetric? [[1 2 3]
