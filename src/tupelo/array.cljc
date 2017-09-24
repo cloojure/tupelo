@@ -79,20 +79,33 @@
    ii   :- s/Int ]
   (check-row-idx arr ii)
   (forv [jj (range (num-cols arr)) ]
-    (elem-get arr ii jj))
-  )
+    (elem-get arr ii jj)) )
 
+(s/defn row-set :- Array
+  "Sets an Array row"
+  [orig :- Array
+   ii :- s/Int
+   new-row :- Vector]
+  (check-row-idx orig ii)
+  (assert (= (num-cols orig) (count new-row)))
+  (let [nrows  (num-rows orig)
+        result (glue
+                 (forv [ii (range ii)] (row-get orig ii))
+                 [new-row]
+                 (forv [ii (range (inc ii) nrows)] (row-get orig ii))) ]
+    result))
+
+;#todo make both rows/cols -> submatrix result
 (s/defn rows :- Array
-  "Gets an Array row"
+  "Returns array rows in half intervale [low..high)"
   [arr  :- Array
-   i-min   :- s/Int
-   i-max   :- s/Int ]
-  (check-row-idx arr i-min)
-  (check-row-idx arr (dec i-max))
-  (assert (< i-min i-max))
-  (forv [ii (range i-min i-max) ]
-    (row-get arr ii))
-  )
+   low   :- s/Int
+   high   :- s/Int ]
+  (check-row-idx arr low)
+  (check-row-idx arr (dec high))
+  (assert (< low high))
+  (forv [ii (range low high) ]
+    (row-get arr ii)) )
 
 (s/defn col-get :- Vector
   "Gets an Array col"
@@ -102,15 +115,30 @@
   (forv [ii (range (num-rows arr)) ]
     (elem-get arr ii jj)))
 
+(s/defn col-set :- Array
+  "Sets an Array col"
+  [orig :- Array
+   jj :- s/Int
+   new-col :- Vector]
+  (check-col-idx orig jj)
+  (let [nrows  (num-rows orig)
+        >>     (assert (= nrows (count new-col)))
+        result (forv [ii (range nrows)]
+                 (let [curr-row (row-get orig ii)
+                       new-val  (nth new-col ii)
+                       new-row  (replace-at curr-row jj new-val)]
+                   new-row))]
+    result))
+
 (s/defn cols :- Array
-  "Gets an Array col"
+  "Returns array cols in half intervale [low..high)"
   [arr  :- Array
-   j-min   :- s/Int
-   j-max   :- s/Int ]
-  (check-col-idx arr j-min)
-  (check-col-idx arr (dec j-max))
-  (assert (< j-min j-max))
-  (forv [jj (range j-min j-max) ]
+   low  :- s/Int
+   high :- s/Int ]
+  (check-col-idx arr low)
+  (check-col-idx arr (dec high))
+  (assert (< low high))
+  (forv [jj (range low high) ]
     (col-get arr jj)))
 
 (s/defn transpose :- Array
@@ -187,6 +215,8 @@
       (glue (row-get orig ii) (forv [col cols]
                                 (nth col ii))))))
 
+; #todo row-set, col-set
+
 (s/defn glue-vert :- Array
   [& arrays :- [Array] ]
   (assert (pos? (count arrays)))
@@ -201,8 +231,6 @@
     (assert (apply = nrow-vals)))
   (forv [ii (range (num-rows (xfirst arrays)))]
     (apply glue (mapv #(row-get % ii) arrays))))
-
-; #todo set-row, set-col
 
 (s/defn toString :- s/Str
   [arr :- Array]

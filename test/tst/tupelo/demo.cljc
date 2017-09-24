@@ -51,3 +51,10 @@
 
 (dotest
   (is (every? odd? [1 3 5])))
+
+(dotest
+  (is= [] (range 0 -1))
+  (is= [] (range 0 0))
+  (is= [0] (range 0 1))
+  (is= [0 1] (range 0 2))
+  )

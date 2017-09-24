@@ -244,8 +244,7 @@
         [[00 01]]
         [[10 11]
          [20 21]
-         [30 31]])) ))
-
+         [30 31]]))))
 (dotest
   (let [a21 [[00]
              [10]]
@@ -281,3 +280,19 @@
                 [11]]
                [[02 03]
                 [12 13]]))))
+(dotest
+  (let [demo
+        [[1 2 3]
+         [4 5 6]]]
+    (is (thrown? Throwable (tar/row-set demo 2 [[1 2 3]])))
+    (is (thrown? Throwable (tar/row-set demo 1 [[1 2 3 4]])))
+    (is= (tar/row-set demo 1 [7 8 9]) [[1 2 3]
+                                       [7 8 9]])
+
+    (is (thrown? Throwable (tar/col-set demo 3 [[1 2]])))
+    (is (thrown? Throwable (tar/col-set demo 1 [[1 2 3 4]])))
+    (is= (tar/col-set demo 1 [7 8]) [[1 7 3]
+                                     [4 8 6]])
+
+    )
+  )
