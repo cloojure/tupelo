@@ -194,6 +194,14 @@
     (assert (apply = ncol-vals)))
   (apply glue arrays))
 
+(s/defn glue-horiz :- Array
+  [& arrays :- [Array] ]
+  (assert (pos? (count arrays)))
+  (let [nrow-vals (mapv num-rows arrays)]
+    (assert (apply = nrow-vals)))
+  (forv [ii (range (num-rows (xfirst arrays)))]
+    (apply glue (mapv #(row-get % ii) arrays))))
+
 ; #todo set-row, set-col
 
 (s/defn toString :- s/Str
