@@ -1,6 +1,7 @@
 (ns tupelo.array
   (:require [schema.core :as s]
-            [tupelo.core :as t] ))
+            [tupelo.core :as t]
+            [clojure.set :as set]))
 (t/refer-tupelo)
 
 (def Vector
@@ -55,7 +56,7 @@
   (check-row-idx arr ii)
   (check-col-idx arr jj))
 
-(s/defn get-elem :- s/Any
+(s/defn elem-get :- s/Any
   "Gets an Array element"
   [arr  :- Array
    ii   :- s/Int
@@ -63,7 +64,7 @@
   (check-array-indexes arr ii jj)
   (get-in arr [ii jj]))
 
-(s/defn set-elem :- Array
+(s/defn elem-set :- Array
   "Puts a value into an Array element, returning the updated Array."
   [arr     :- Array
    ii      :- s/Int
@@ -72,15 +73,16 @@
   (check-array-indexes arr ii jj)
   (assoc-in arr [ii jj] newVal))
 
-(s/defn get-row :- Vector
+(s/defn row-get :- Vector
   "Gets an Array row"
   [arr  :- Array
    ii   :- s/Int ]
   (check-row-idx arr ii)
   (forv [jj (range (num-cols arr)) ]
-    (get-elem arr ii jj)))
+    (elem-get arr ii jj))
+  )
 
-(s/defn get-rows :- Array
+(s/defn rows :- Array
   "Gets an Array row"
   [arr  :- Array
    i-min   :- s/Int
@@ -89,17 +91,18 @@
   (check-row-idx arr (dec i-max))
   (assert (< i-min i-max))
   (forv [ii (range i-min i-max) ]
-    (get-row arr ii)))
+    (row-get arr ii))
+  )
 
-(s/defn get-col :- Vector
+(s/defn col-get :- Vector
   "Gets an Array col"
   [arr  :- Array
    jj   :- s/Int ]
   (check-col-idx arr jj)
   (forv [ii (range (num-rows arr)) ]
-    (get-elem arr ii jj)))
+    (elem-get arr ii jj)))
 
-(s/defn get-cols :- Array
+(s/defn cols :- Array
   "Gets an Array col"
   [arr  :- Array
    j-min   :- s/Int
@@ -108,32 +111,32 @@
   (check-col-idx arr (dec j-max))
   (assert (< j-min j-max))
   (forv [jj (range j-min j-max) ]
-    (get-col arr jj)))
+    (col-get arr jj)))
 
 (s/defn transpose :- Array
   [orig :- Array]
   (forv [jj (range (num-cols orig)) ]
-    (get-col orig jj)))
+    (col-get orig jj)))
 
 (s/defn flip-ud :- Array
   [orig :- Array]
   (forv [ii (reverse (range (num-rows orig))) ]
-    (get-row orig ii)))
+    (row-get orig ii)))
 
 (s/defn flip-lr :- Array
   [orig :- Array]
   (forv [ii (range (num-rows orig))]
-    (vec (reverse (get-row orig ii)))))
+    (vec (reverse (row-get orig ii)))))
 
 (s/defn rot-left :- Array
   [orig :- Array]
   (forv [jj (reverse (range (num-cols orig)))]
-    (get-col orig jj)))
+    (col-get orig jj)))
 
 (s/defn rot-right :- Array
   [orig :- Array]
   (forv [jj (range (num-cols orig))]
-    (vec (reverse (get-col orig jj))))) ; reverse yields a seq, not a vec! doh!
+    (vec (reverse (col-get orig jj))))) ; reverse yields a seq, not a vec! doh!
 
 (s/defn symmetric? :- s/Bool
   [arr :- Array]
@@ -143,16 +146,61 @@
       (every? truthy?
         (for [ii (range nrows)
               jj (range ncols)] (=
-                                  (get-elem arr ii jj)
-                                  (get-elem arr jj ii)))))))
+                                  (elem-get arr ii jj)
+                                  (elem-get arr jj ii)))))))
 
-; #todo add-row, add-col, set-row, set-col, drop-row, drop-col
+(s/defn row-drop :- Array
+  "Drop one or more rows from an array"
+  [orig :- Array
+   & idxs-drop :- [s/Int]]
+  (let [idxs-all  (set (range (num-rows orig)))
+        idxs-drop (set idxs-drop)
+        idxs-keep (sort (set/difference idxs-all idxs-drop))]
+    (forv [ii idxs-keep]
+      (row-get orig ii))))
+
+(s/defn col-drop :- Array
+  "Drop one or more colss from an array"
+  [orig :- Array
+   & idxs-drop :- [s/Int]]
+  (let [idxs-all  (set (range (num-cols orig)))
+        idxs-drop (set idxs-drop)
+        idxs-keep (sort (set/difference idxs-all idxs-drop))]
+    (forv [ii (range (num-rows orig))]
+      (forv [jj idxs-keep]
+        (elem-get orig ii jj)))))
+
+(s/defn row-add :- Array
+  [orig :- Array
+   & rows :- [Vector] ]
+  (let [row-lens (mapv count rows)]
+    (assert (apply = (num-cols orig) row-lens)))
+  (into orig rows))
+
+(s/defn col-add :- Array
+  [orig :- Array
+   & cols :- [Vector]]
+  (let [nrows    (num-rows orig)
+        col-lens (mapv count cols)]
+    (assert (apply = nrows col-lens))
+    (forv [ii (range nrows)]
+      (glue (row-get orig ii) (forv [col cols]
+                                (nth col ii))))))
+
+(s/defn glue-vert :- Array
+  [& arrays :- [Array] ]
+  (assert (pos? (count arrays)))
+  (let [ncol-vals (mapv num-cols arrays)]
+    (assert (apply = ncol-vals)))
+  (apply glue arrays))
+
+; #todo set-row, set-col
 
 (s/defn toString :- s/Str
   [arr :- Array]
   (with-out-str
     (dotimes [ii (num-rows arr)]
       (dotimes [jj (num-cols arr)]
-        (print (format "%8s" (get-elem arr ii jj))))
+        (print (format "%8s" (elem-get arr ii jj))))
       (newline))))
 
