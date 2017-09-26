@@ -7,12 +7,13 @@
 (ns tupelo.misc
   "Miscellaneous functions."
   (:require 
+    [clj-uuid :as uuid]
     [clojure.core.async :refer [go go-loop chan buffer close! thread alts! alts!! timeout]]
     [clojure.data.xml :as xml]
     [clojure.java.shell :as shell]
+    [clojure.math.combinatorics :as combo]
     [clojure.string :as str]
     [clojure.walk :refer [postwalk]]
-    [clj-uuid :as uuid]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.schema :as tsk]
@@ -238,6 +239,17 @@
   []
   (uuid->str (uuid/v1)))
 
+(defn combinations-duplicate [coll n]
+  "Returns all combinations of elements from the input collection, presevering duplicates."
+  (let [values     (vec coll)
+        idxs       (range (count values))
+        idx-combos (combo/combinations idxs n)
+        combos     (forv [idx-combo idx-combos]
+                     (mapv #(nth values %) idx-combo))]
+    combos))
+
+(defn parse-string [line]
+  (mapv read-string (str/split line #" ")))
 
 ;-----------------------------------------------------------------------------
 ; #todo -> tupelo.vector
