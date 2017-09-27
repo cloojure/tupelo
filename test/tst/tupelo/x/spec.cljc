@@ -9,6 +9,7 @@
   (:require
     [tupelo.core :as t]
     [clojure.spec.alpha :as s]
+    [clojure.spec.test.alpha :as stest]
     [clojure.spec.gen.alpha :as gen]
     [clojure.set :as set]))
 (t/refer-tupelo)
@@ -29,12 +30,15 @@
 ;       :args (s/cat :names (s/* simple-symbol?))
 ;       :ret any?)   ; #todo conflicts with clojure.core/not-any?
 (dotest
-  (s/def ::s/anything (constantly true))
-  (s/def ::s/nothing (constantly false))
-  (is (s/valid? ::s/anything 5 ))
-  (is (s/valid? ::s/anything "joe" ))
-  (is (s/valid? ::s/anything { :blah 42 :blue 66 :hut! 'hut! }))
-  (isnt (s/valid? ::s/nothing 5 )))
+  ;(s/def ::s/anything (constantly true))
+  ;(s/def ::s/nothing (constantly false))
+  (s/def ::s/pass-all (constantly true))
+  (s/def ::s/pass-none (constantly false))
+
+  (is (s/valid? ::s/pass-all 5 ))
+  (is (s/valid? ::s/pass-all "joe" ))
+  (is (s/valid? ::s/pass-all { :blah 42 :blue 66 :hut! 'hut! }))
+  (isnt (s/valid? ::s/pass-none 5 )))
 
 ;-----------------------------------------------------------------------------
 (dotest
@@ -281,4 +285,23 @@
   (is (s/valid? ::player (gen/generate (s/gen ::player)))))
 
 
+(defn ranged-rand
+  "Returns random int in range start <= rand < end"
+  [start end]
+  (+ start (long (rand (- end start)))))
 
+(s/fdef ranged-rand
+  :args (s/and
+          (s/cat :start int? :end int?)
+          #(< (:start %) (:end %) 1e9)) ; need add 1e9 limit to avoid integer overflow
+  :ret int?
+  :fn (s/and #(>= (:ret %) (-> % :args :start))
+             #(< (:ret %) (-> % :args :end))))
+
+(dotest
+  (when true
+    (stest/instrument `ranged-rand)
+    (is (thrown? Exception (ranged-rand 8 5)))
+    (spyx (stest/check `ranged-rand))
+
+    ) )
