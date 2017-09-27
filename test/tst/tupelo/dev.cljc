@@ -11,6 +11,7 @@
   ))
 (t/refer-tupelo)
 
+(set! *warn-on-reflection* true)
 
 (dotest
   (let [data-1 [1 2 3]
@@ -46,4 +47,15 @@
                                 {:idxs [4 0 0], :val 2}])
   ))
 
+(dotest
+  (is= (combinations-duplicate [1 1 2] 2)
+    [[1 1] [1 2] [1 2]])
+  (is= (combinations-duplicate [1 1 1 2 2] 3)
+    [[1 1 1] [1 1 2] [1 1 2] [1 1 2] [1 1 2]
+     [1 2 2] [1 1 2] [1 1 2] [1 2 2] [1 2 2]]))
+
+(dotest
+  (is= [2 3 :x] (parse-string "2 3 :x" ))
+  (is= [2 3 :x] (with-in-str "2 3 :x"
+                  (parse-string (read-line)))))
 

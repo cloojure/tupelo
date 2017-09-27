@@ -7,6 +7,8 @@
 (ns tupelo.dev
   "Code under development"
   (:require
+    [clojure.math.combinatorics :as combo]
+    [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t] ))
 (t/refer-tupelo)
@@ -26,4 +28,16 @@
   [data  :- [s/Any]
    tgt :- s/Any]
   (keep-if not-nil? (find-idxs-impl [] data tgt)))
+
+(defn combinations-duplicate [coll n]
+  "Returns all combinations of elements from the input collection, presevering duplicates."
+  (let [values     (vec coll)
+        idxs       (range (count values))
+        idx-combos (combo/combinations idxs n)
+        combos     (forv [idx-combo idx-combos]
+                     (mapv #(nth values %) idx-combo))]
+    combos))
+
+(defn parse-string [line]
+  (mapv read-string (str/split line #" ")))
 

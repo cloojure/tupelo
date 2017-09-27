@@ -6,9 +6,9 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.misc
   (:use tupelo.misc tupelo.test )
-  (:require [clojure.string   :as str]
-            [tupelo.core      :as t ]
-            [tupelo.string    :as ts ]
+  (:require
+    [tupelo.core      :as t ]
+    [tupelo.string    :as ts ]
   ))
 (t/refer-tupelo)
 
@@ -134,15 +134,4 @@
     (is= (uuid->str uuid-val) "e604d9bbcfb53cee6c3f305992c4a1531972b7a1" )
     (is= (str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d")))
 
-(dotest
-  (is= (combinations-duplicate [1 1 2] 2)
-    [[1 1] [1 2] [1 2]])
-  (is= (combinations-duplicate [1 1 1 2 2] 3)
-    [[1 1 1] [1 1 2] [1 1 2] [1 1 2] [1 1 2]
-     [1 2 2] [1 1 2] [1 1 2] [1 2 2] [1 2 2]]))
-
-(dotest
-  (is= [2 3 :x] (parse-string "2 3 :x" ))
-  (is= [2 3 :x] (with-in-str "2 3 :x"
-                  (parse-string (read-line)))))
 

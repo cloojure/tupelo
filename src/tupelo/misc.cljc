@@ -239,18 +239,6 @@
   []
   (uuid->str (uuid/v1)))
 
-(defn combinations-duplicate [coll n]
-  "Returns all combinations of elements from the input collection, presevering duplicates."
-  (let [values     (vec coll)
-        idxs       (range (count values))
-        idx-combos (combo/combinations idxs n)
-        combos     (forv [idx-combo idx-combos]
-                     (mapv #(nth values %) idx-combo))]
-    combos))
-
-(defn parse-string [line]
-  (mapv read-string (str/split line #" ")))
-
 ;-----------------------------------------------------------------------------
 ; #todo -> tupelo.vector
 ; #todo README & more tests
