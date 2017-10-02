@@ -7,7 +7,7 @@
 (ns tupelo.forest
   "Allows the use of multiple tree structures. Provides tools to create, manipulate, and query
   the the trees individually and/or collectively."
-  (:use tupelo.impl)
+  (:use tupelo.impl tupelo.dev)
   (:require
     [clojure.set :as clj.set]
     [schema.core :as s]

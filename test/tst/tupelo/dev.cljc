@@ -10,7 +10,6 @@
     [tupelo.core :as t]
   ))
 (t/refer-tupelo)
-
 (set! *warn-on-reflection* true)
 
 (dotest

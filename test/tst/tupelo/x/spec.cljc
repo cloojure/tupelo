@@ -302,6 +302,6 @@
   (when true
     (stest/instrument `ranged-rand)
     (is (thrown? Exception (ranged-rand 8 5)))
-    (spyx (stest/check `ranged-rand))
+    ; (spyx (stest/check `ranged-rand))  #todo
 
     ) )

@@ -7,19 +7,13 @@
 (ns tupelo.core
   "Tupelo - Making Clojure even sweeter"
   (:require 
-    [clojure.core.async :as ca]
-    [clojure.core.match :as ccm]
-    [clojure.pprint :as pprint]
-    [clojure.string :as str]
-    [clojure.set :as set]
-    [clojure.test]
     [cheshire.core :as cc]
+    [clojure.test]
     [potemkin.namespaces :as pns]
     [schema.core :as s]
     [tupelo.impl :as impl]
-    [tupelo.string :as tstr]
-    [tupelo.types :as types]
     [tupelo.schema :as ts]
+    [tupelo.string :as tstr]
   )
   (:refer-clojure :exclude [map seqable?] )
   (:import [java.io BufferedReader StringReader]))
@@ -583,7 +577,7 @@
 (defn refer-tupelo  ; #todo document in readme
   "Refer a number of commonly used tupelo.core functions into the current namespace so they can
    be used without namespace qualification."
-  []
+  [& args]
   (refer 'tupelo.core :only
    '[spy spyx spyx-pretty spyxx
      spy-let spy-let-pretty   ; #todo -> deprecated
@@ -606,7 +600,14 @@
      increasing? increasing-or-equal? ->vector unwrap
      fibonacci-seq fibo-thru fibo-nth unnest
      with-exception-default lazy-cons lazy-gen yield yield-all
-    ] ))
+    ] )
+  (let [flags (set args)]
+    (when (contains? flags :dev)
+      (refer 'tupelo.core :only
+        '[vals->map with-map-vals]))
+    (when (contains? flags :strict)
+      ; #todo unlink/relink troublesome clojure.core stuff
+      )))
 
 ; #todo verify spy-let works after (t/refer-tupelo)
 

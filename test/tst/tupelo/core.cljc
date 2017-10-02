@@ -14,7 +14,7 @@
     [tupelo.misc :as tm]
     [tupelo.string :as ts]
   ))
-(t/refer-tupelo)
+(t/refer-tupelo :dev)
 
 ; (s/instrument-all)
 ; (s/instrument #'tupelo.core/truthy?)  ; instrument just one var
@@ -2022,7 +2022,6 @@
         [[1 2] [3] [6 7 8] [9] [12 13] [15 16 17] [18] [18] [18] [3 4 5]]))
     (throws? (partition-using even? 5))))
 
-
 (dotest
   (let [some-fn (fn []
                   (let [a 1
@@ -2032,7 +2031,7 @@
                         e 5]
                     (vals->map a b c d e)))
 
-       the-map (some-fn) ]
+        the-map (some-fn) ]
     (is= the-map {:a 1 :b 2 :c 3 :d 4 :e 5})
 
     (let [{:keys [a b c d e]} the-map]
@@ -2045,6 +2044,8 @@
     (throws?
       (with-map-vals the-map [x y z]
         (println "shouldn't ever get here")))))
+
+
 (dotest
   (is   (macro? 'and))
   (is   (macro? '->))
