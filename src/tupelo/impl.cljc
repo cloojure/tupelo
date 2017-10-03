@@ -999,7 +999,7 @@
       (throw (IllegalArgumentException.
                (format "submap-by-vals: missing values= %s  map-arg= %s  " missing-vals (pretty-str map-arg)))))))
 
-; #todo need test & README
+; #todo need README
 (s/defn submap? :- Boolean
   "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
    another map.  Similar to clojure.set/subset?"
@@ -1008,6 +1008,18 @@
   (let [inner-set (set inner-map)
         outer-set (set outer-map)]
     (set/subset? inner-set outer-set)))
+
+(def MapKeySpec (s/either [s/Any] #{s/Any}))
+(s/defn validate-map-keys :- s/Any
+  [tst-map :- ts/Map
+   valid-keys :- MapKeySpec]
+  (let [valid-keys (set valid-keys)
+        map-keys   (keys tst-map)]
+    (when-not (every? truthy?
+                (forv [curr-key map-keys]
+                  (contains-key? valid-keys curr-key)))
+      (throw (IllegalArgumentException. (format "validate-map-keys: invalid key found tst-map=%s, valid-keys=%s" tst-map valid-keys))))
+    tst-map))
 
 ; #todo: rename labeled-map
 (defmacro data-map ; #todo -> README

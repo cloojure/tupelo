@@ -46,6 +46,13 @@
   (is= [5]  (vec        [5]))
   (is= [5]  (apply list [5])))
 
+; Clojure is consistent & symmetric for if/if-not, when/when-not, every?/not-every?
+; Clojure is inconsistent & broken for
+;  not-empty
+;  empty?
+;  any?
+;  some vs some?
+
 ; Clojure has `empty?` but no `not-empty?`.  However, it does have `empty` and `not-empty`.  Confusing!
 ; empty / not-empty vs empty? (not-empty? missing)
 ; not-empty? is missing for no good reason

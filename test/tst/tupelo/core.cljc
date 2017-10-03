@@ -2060,6 +2060,23 @@
   (is= :abc (sym->kw 'abc))
   (is= "abc" (sym->str 'abc)))
 
+(dotest
+  (is (submap? {:a 1} {:a 1 :b 2}))
+  (is (submap? {:b 2} {:a 1 :b 2})) )
+
+(dotest
+  (let [map-ab  {:a 1 :b 2}
+        map-abc {:a 1 :b 2 :c 3}]
+    (is= map-ab (validate-map-keys map-ab [:a :b]))
+    (is= map-ab (validate-map-keys map-ab [:a :b :x]))
+    (is= map-ab (validate-map-keys map-ab #{:a :b}))
+    (is= map-ab (validate-map-keys map-ab #{:a :b :x}))
+    (is= map-abc (validate-map-keys map-abc [:a :b :c :x]))
+    (is (thrown? IllegalArgumentException (validate-map-keys map-ab [:a])))
+    (is (thrown? IllegalArgumentException (validate-map-keys map-ab [:b])))
+    (is (thrown? IllegalArgumentException (validate-map-keys map-ab [:a :x])))
+    (is (thrown? IllegalArgumentException (validate-map-keys map-abc [:a :b])))
+    (is (thrown? IllegalArgumentException (validate-map-keys map-abc [:a :c :x])))))
 
 
 ; #todo move to tst.tupelo.core.deprecated
