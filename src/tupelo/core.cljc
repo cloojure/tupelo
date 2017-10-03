@@ -78,8 +78,9 @@
 (pns/import-fn impl/submap-by-keys )
 (pns/import-fn impl/submap-by-vals )
 
-(pns/import-macro impl/data-map)
-(pns/import-macro impl/with-data-map)
+; #todo delete
+;(pns/import-macro impl/data-map)
+;(pns/import-macro impl/with-data-map)
 
 (s/defn increasing? :- s/Bool
   "Returns true iff the vectors are in (strictly) lexicographically increasing order
@@ -170,15 +171,15 @@
 ; Clojure version stuff
 
 (defn is-clojure-1-7-plus? []
-  (with-data-map *clojure-version* [major minor]
+  (impl/with-data-map *clojure-version* [major minor]
     (increasing-or-equal? [1 7] [major minor])))
 
 (defn is-clojure-1-8-plus? []
-  (with-data-map *clojure-version* [major minor]
+  (impl/with-data-map *clojure-version* [major minor]
     (increasing-or-equal? [1 8] [major minor])))
 
 (defn is-clojure-1-9-plus? []
-  (with-data-map *clojure-version* [major minor]
+  (impl/with-data-map *clojure-version* [major minor]
     (increasing-or-equal? [1 9] [major minor])))
 
 (defn is-pre-clojure-1-8? [] (not (is-clojure-1-8-plus?)))
@@ -603,7 +604,7 @@
     ] )
   (let [flags (set args)]
     (when (contains? flags :dev)
-      (refer 'tupelo.core :only
+      (refer 'tupelo.impl :only
         '[data-map with-data-map]))
     (when (contains? flags :strict)
       ; #todo unlink/relink troublesome clojure.core stuff

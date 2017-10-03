@@ -768,7 +768,6 @@
                                   </item>
                               </group>
                           </top>"
-
           enlive-tree     (->> xml-str
                             java.io.StringReader.
                             en-html/xml-resource
@@ -789,7 +788,7 @@
           result-2        (find-paths root-hid [:** :group :item :number]) ; wildcard path that ends in :number
           ]
       ; Here we see only the double-nested items 1, 2, 3
-      (is= (spyx-pretty (format-paths result-1))
+      (is= (format-paths result-1)
         [[{:tag :top}
           [{:tag :group}
            [{:tag :group}
@@ -798,7 +797,7 @@
             [{:tag :item} [{:tag :number, :value "3"}]]]]]] )
 
       ; Here we see both the double-nested items & the single-nested item 0
-      (is= (spyx-pretty (format-paths result-2))
+      (is= (format-paths result-2)
         [[{:tag :top}
           [{:tag :group} [{:tag :item} [{:tag :number, :value "0"}]]]]
          [{:tag :top}
