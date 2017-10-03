@@ -78,8 +78,8 @@
 (pns/import-fn impl/submap-by-keys )
 (pns/import-fn impl/submap-by-vals )
 
-(pns/import-macro impl/vals->map)
-(pns/import-macro impl/with-map-vals)
+(pns/import-macro impl/data-map)
+(pns/import-macro impl/with-data-map)
 
 (s/defn increasing? :- s/Bool
   "Returns true iff the vectors are in (strictly) lexicographically increasing order
@@ -170,15 +170,15 @@
 ; Clojure version stuff
 
 (defn is-clojure-1-7-plus? []
-  (with-map-vals *clojure-version* [major minor]
+  (with-data-map *clojure-version* [major minor]
     (increasing-or-equal? [1 7] [major minor])))
 
 (defn is-clojure-1-8-plus? []
-  (with-map-vals *clojure-version* [major minor]
+  (with-data-map *clojure-version* [major minor]
     (increasing-or-equal? [1 8] [major minor])))
 
 (defn is-clojure-1-9-plus? []
-  (with-map-vals *clojure-version* [major minor]
+  (with-data-map *clojure-version* [major minor]
     (increasing-or-equal? [1 9] [major minor])))
 
 (defn is-pre-clojure-1-8? [] (not (is-clojure-1-8-plus?)))
@@ -587,7 +587,7 @@
      contains-key? contains-val? contains-elem?
      forv map-let* map-let
      conjv glue join-2d->1d
-     vals->map with-map-vals macro? char-seq
+     macro? char-seq
      append prepend grab dissoc-in fetch fetch-in
      submap? submap-by-keys submap-by-vals keyvals
      validate only third it-> safe-> keep-if drop-if zip zip* zip-lazy indexed flat-vec
@@ -604,7 +604,7 @@
   (let [flags (set args)]
     (when (contains? flags :dev)
       (refer 'tupelo.core :only
-        '[vals->map with-map-vals]))
+        '[data-map with-data-map]))
     (when (contains? flags :strict)
       ; #todo unlink/relink troublesome clojure.core stuff
       )))

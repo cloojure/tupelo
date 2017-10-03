@@ -3,7 +3,7 @@
   (:require [tupelo.core :as t]
             [tupelo.schema :as ts]
             [schema.core :as s] ))
-(t/refer-tupelo)
+(t/refer-tupelo :dev)
 (set! *warn-on-reflection* false)
 
 ; #todo add more tests (& test.check for Eid, etc)

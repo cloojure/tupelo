@@ -15,7 +15,7 @@
     [tupelo.core :as t]
     [tupelo.forest :as tf]
     [tupelo.string :as ts]))
-(t/refer-tupelo)
+(t/refer-tupelo :dev)
 
 ; Examples from:
 ;   http://josf.info/blog/2014/03/21/getting-acquainted-with-clojure-zippers/
@@ -308,7 +308,7 @@
                                     num-hids  (with-forest (new-forest)
                                                 (let [tmp-root (add-tree curr-tree)]
                                                      (count (all-hids))))]
-                                   (vals->map href depth num-hids)))
+                                   (data-map href depth num-hids)))
           result-data       (mapv extract-href-info a-node-paths)]
          (is (cs/subset?
                (set [{:href "index.html", :depth 5, :num-hids 2}
@@ -746,3 +746,69 @@
         [["title1" "subheading1"]
          ["title1" "subheading2"]
          ["title2" "subheading3"]]) )))
+
+;-----------------------------------------------------------------------------
+(dotest
+  (with-forest (new-forest)
+    (let [xml-str         "<top>
+                              <group>
+                                  <group>
+                                      <item>
+                                          <number>1</number>
+                                      </item>
+                                      <item>
+                                          <number>2</number>
+                                      </item>
+                                      <item>
+                                          <number>3</number>
+                                      </item>
+                                  </group>
+                                  <item>
+                                      <number>0</number>
+                                  </item>
+                              </group>
+                          </top>"
+
+          enlive-tree     (->> xml-str
+                            java.io.StringReader.
+                            en-html/xml-resource
+                            only)
+          root-hid        (add-tree-enlive enlive-tree)
+
+          ; Removing whitespace nodes is optional; just done to keep things neat
+          blank-leaf-hid? (fn fn-blank-leaf-hid?  ; whitespace pred fn
+                            [hid]
+                            (let [node (hid->node hid)]
+                              (and (contains-key? node :value)
+                                (ts/whitespace? (grab :value node)))))
+          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
+          >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
+
+          ; Can search for inner `div` 2 ways
+          result-1        (find-paths root-hid [:top :group :group]) ; explicit path from root
+          result-2        (find-paths root-hid [:** :group :item :number]) ; wildcard path that ends in :number
+          ]
+      ; Here we see only the double-nested items 1, 2, 3
+      (is= (spyx-pretty (format-paths result-1))
+        [[{:tag :top}
+          [{:tag :group}
+           [{:tag :group}
+            [{:tag :item} [{:tag :number, :value "1"}]]
+            [{:tag :item} [{:tag :number, :value "2"}]]
+            [{:tag :item} [{:tag :number, :value "3"}]]]]]] )
+
+      ; Here we see both the double-nested items & the single-nested item 0
+      (is= (spyx-pretty (format-paths result-2))
+        [[{:tag :top}
+          [{:tag :group} [{:tag :item} [{:tag :number, :value "0"}]]]]
+         [{:tag :top}
+          [{:tag :group}
+           [{:tag :group} [{:tag :item} [{:tag :number, :value "1"}]]]]]
+         [{:tag :top}
+          [{:tag :group}
+           [{:tag :group} [{:tag :item} [{:tag :number, :value "2"}]]]]]
+         [{:tag :top}
+          [{:tag :group}
+           [{:tag :group} [{:tag :item} [{:tag :number, :value "3"}]]]]]])
+
+      )))

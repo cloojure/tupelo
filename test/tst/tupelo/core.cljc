@@ -2029,7 +2029,7 @@
                         c 3
                         d 4
                         e 5]
-                    (vals->map a b c d e)))
+                    (data-map a b c d e)))
 
         the-map (some-fn) ]
     (is= the-map {:a 1 :b 2 :c 3 :d 4 :e 5})
@@ -2037,12 +2037,12 @@
     (let [{:keys [a b c d e]} the-map]
       (is= [a b c d e] [1 2 3 4 5]))
 
-    (with-map-vals the-map [a b c d e]
+    (with-data-map the-map [a b c d e]
       (is= [a b c d e] [1 2 3 4 5])
       (is= 15 (+ a b c d e)))
 
     (throws?
-      (with-map-vals the-map [x y z]
+      (with-data-map the-map [x y z]
         (println "shouldn't ever get here")))))
 
 
