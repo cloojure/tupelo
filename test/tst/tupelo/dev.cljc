@@ -17,6 +17,9 @@
         data-2 [[1 2 3]
                 [10 11]
                 []]
+        data-2b '((1 2 3)
+                  (10 11)
+                  ())
         data-3 [[[1 2 3]
                  [4 5 6]
                  [7 8 9]]
@@ -37,7 +40,11 @@
                 [[2]]]
         ]
     (is= (find-idxs data-1  2) [{:idxs [1], :val 2}])
+
     (is= (find-idxs data-2 10) [{:idxs [1 0], :val 10}] )
+
+    (is= (find-idxs data-2b 10) [{:idxs [1 0], :val 10}] )
+
     (is= (find-idxs data-3 13) [{:idxs [1 1 1], :val 13}])
     (is= (find-idxs data-3 21) [{:idxs [2 1 0], :val 21}])
     (is= (find-idxs data-3 99) [])

@@ -38,8 +38,9 @@
   ; "lein test"         will not  run tests marked with the ":slow" metadata
   ; "lein test :slow"   will only run tests marked with the ":slow" metadata
   ; "lein test :all"    will run all  tests (built-in)
-  :test-selectors { :default    (complement :slow)
-                    :slow       :slow }
+  :test-selectors {:default (complement :slow)
+                   :slow    :slow}
+      ; #todo broken for tupelo.test/dospec - why?
 
   :jvm-opts ^:replace ["-Xms1g" "-Xmx4g" ] ; "-server"
 )

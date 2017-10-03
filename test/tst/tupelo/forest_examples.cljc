@@ -785,7 +785,7 @@
 
           ; Can search for inner `div` 2 ways
           result-1        (find-paths root-hid [:top :group :group]) ; explicit path from root
-          result-2        (find-paths root-hid [:** :group :item :number]) ; wildcard path that ends in :number
+          result-2        (find-paths root-hid [:** :item :number]) ; wildcard path that ends in [:item :number]
           ]
       ; Here we see only the double-nested items 1, 2, 3
       (is= (format-paths result-1)
@@ -797,17 +797,18 @@
             [{:tag :item} [{:tag :number, :value "3"}]]]]]] )
 
       ; Here we see both the double-nested items & the single-nested item 0
-      (is= (format-paths result-2)
-        [[{:tag :top}
-          [{:tag :group} [{:tag :item} [{:tag :number, :value "0"}]]]]
-         [{:tag :top}
-          [{:tag :group}
-           [{:tag :group} [{:tag :item} [{:tag :number, :value "1"}]]]]]
-         [{:tag :top}
-          [{:tag :group}
-           [{:tag :group} [{:tag :item} [{:tag :number, :value "2"}]]]]]
-         [{:tag :top}
-          [{:tag :group}
-           [{:tag :group} [{:tag :item} [{:tag :number, :value "3"}]]]]]])
+      (is= (set (format-paths result-2)) ; need `set` since order is non-deterministic
+        (set
+          [[{:tag :top}
+            [{:tag :group} [{:tag :item} [{:tag :number, :value "0"}]]]]
+           [{:tag :top}
+            [{:tag :group}
+             [{:tag :group} [{:tag :item} [{:tag :number, :value "1"}]]]]]
+           [{:tag :top}
+            [{:tag :group}
+             [{:tag :group} [{:tag :item} [{:tag :number, :value "2"}]]]]]
+           [{:tag :top}
+            [{:tag :group}
+             [{:tag :group} [{:tag :item} [{:tag :number, :value "3"}]]]]]]))
 
       )))

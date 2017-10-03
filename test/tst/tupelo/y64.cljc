@@ -5,19 +5,17 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.y64
+  (:use tupelo.test)
   (:require [clojure.string                         :as str]
-          ; [clojure.test.check                     :as tc]
+            [clojure.test.check                     :as tc]
             [clojure.test.check.clojure-test        :as tst]
             [clojure.test.check.generators          :as gen]
             [clojure.test.check.properties          :as prop]
-            [schema.core                            :as s]
             [tupelo.core                            :as t]
             [tupelo.char                            :as char]
             [tupelo.misc                            :as misc]
             [tupelo.types                           :as types]
-            [tupelo.string                          :as ts]
             [tupelo.y64                             :as y64] )
-  (:use clojure.test)
   (:gen-class))
 (t/refer-tupelo)
 
@@ -49,7 +47,7 @@
 
 ; Transform a seq of bytes to a y64 string and back
 (if (t/is-java-1-8-plus?)
-  (tst/defspec ^:slow round-trip-bytes 9999
+  (dospec 999  ; round-trip-bytes
     (prop/for-all [orig gen/bytes]
       (let [y64-str (y64/encode-bytes->str orig)
             result  (y64/decode-str->bytes y64-str)]
@@ -59,7 +57,7 @@
 
 ; Transform a string to a y64 string and back
 (if (t/is-java-1-8-plus?)
-  (tst/defspec ^:slow round-trip-string 9999
+  (dospec 999 ; round-trip-string
     (prop/for-all [orig gen/string]
       (let [y64-str (y64/encode-str orig)
             result  (y64/decode-str y64-str)]

@@ -5,7 +5,7 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.base64
-  (:use clojure.test)
+  (:use tupelo.test)
   (:require
     [clojure.string                         :as str]
     [clojure.test.check                     :as check]
@@ -56,7 +56,7 @@
           (is (= orig result)))))))
 
 (if (t/is-java-1-8-plus?)
-  (tst/defspec ^:slow round-trip-bytes 9999
+  (dospec 999 ; round-trip-bytes
     (prop/for-all [orig gen/bytes]
       (let [string-b64 (b64/encode-bytes->str orig)
             result     (b64/decode-str->bytes string-b64)]
@@ -66,7 +66,7 @@
 
 ; Transform a string to a base64 string and back
 (if (t/is-java-1-8-plus?)
-  (tst/defspec ^:slow round-trip-string 9999
+  (dospec 999 ; round-trip-string
     (prop/for-all [orig gen/string]
       (let [string-b64 (b64/encode-str orig)
             result     (b64/decode-str string-b64)]

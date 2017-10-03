@@ -16,7 +16,7 @@
 (defn find-idxs-impl
   [idxs data tgt]
   (apply glue
-    (for [[idx val] (indexed data)]
+    (forv [[idx val] (indexed data)]
       (let [idxs-curr (append idxs idx)]
            (if (sequential? val) ; #todo does not work for vector tgt
              (find-idxs-impl idxs-curr val tgt)
@@ -25,6 +25,7 @@
                [nil]))))))
 
 (s/defn find-idxs
+  "Given a vector of nested vectors (or lists) nested"
   [data  :- [s/Any]
    tgt :- s/Any]
   (keep-if not-nil? (find-idxs-impl [] data tgt)))

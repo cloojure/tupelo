@@ -60,18 +60,20 @@
   "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
 
      (throws? (/ 1 0))                      ; catches any Throwable
-     (throws? ArithmeticException (/ 1 0))  ; catches specified Throwable (or subclass)
-  "
+     (throws? ArithmeticException (/ 1 0))  ; catches specified Throwable (or subclass) "
   [& forms]
   (apply throws?-impl forms))
 
 ; #todo maybe "testgrp"
 (defmacro dotest [& body] ; #todo README & tests
   (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
-    `(clojure.test/deftest ~test-name-sym ~@body)))
+  `(clojure.test/deftest ~test-name-sym ~@body)))
+
+(defmacro dospec [& body] ; #todo README & tests
+  (let [test-name-sym (symbol (str "dospec-line-" (:line (meta &form))))]
+  `(clojure.test.check.clojure-test/defspec ^:slow ~test-name-sym ~@body)))
 
 (defmacro check [& body] ; #todo README & tests
   `(clojure.test/is (i/grab :result (tc/quick-check ~@body))))
-
 
 ; #todo: gen/elements -> clojure.check/rand-nth
