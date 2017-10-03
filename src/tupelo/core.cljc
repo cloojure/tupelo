@@ -78,10 +78,6 @@
 (pns/import-fn impl/submap-by-keys )
 (pns/import-fn impl/submap-by-vals )
 
-; #todo delete
-;(pns/import-macro impl/data-map)
-;(pns/import-macro impl/with-data-map)
-
 (s/defn increasing? :- s/Bool
   "Returns true iff the vectors are in (strictly) lexicographically increasing order
     [1 2]  [1]        -> false
