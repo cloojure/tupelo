@@ -167,5 +167,11 @@
 (defn starts-with? [search-str tgt-str]
   (zero? (index-of search-str tgt-str)))
 
+(def phonetic-alphabet
+  {:a "alpha" :b "bravo" :c "charlie" :d "delta" :e "echo" :f "foxtrot" :g "golf" :h "hotel"
+   :i "india" :j "juliett" :k "kilo" :l "lima" :m "mike" :n "november" :o "oscar" :p "papa"
+   :q "quebec" :r "romeo " :s "sierra" :t "tango" :u "uniform" :v "victor" :w "whiskey"
+   :x "x-ray" :y "yankee" :z "zulu" } )
+
 ; #todo add undent (verify only leading whitespace removed)
 ; #todo add undent-lines

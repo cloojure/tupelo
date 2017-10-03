@@ -9,15 +9,18 @@
   (:require
     [clojure.string                         :as str]
     [clojure.test.check                     :as check]
+    [clojure.test.check.clojure-test        :as tst]
     [clojure.test.check.generators          :as gen]
     [clojure.test.check.properties          :as prop]
-    [clojure.test.check.clojure-test        :as tst]
+    [schema.core                            :as s]
     [tupelo.base64                          :as b64]
+    [tupelo.base64url                       :as b64url]
+    [tupelo.char                            :as char]
     [tupelo.core                            :as t]
     [tupelo.misc                            :as misc]
+    [tupelo.string                          :as tstr]
     [tupelo.types                           :as types]
-    [tupelo.char                            :as char]
-    [schema.core                            :as s]
+    [tupelo.y64                             :as y64]
   ))
 (t/refer-tupelo)
 
@@ -86,4 +89,33 @@
             dec-str     (b64/decode-str enc-str) ]
         (print (format "\"%s\" \"%s\" \"%s\"          " orig-str enc-str dec-str)))))
   (newline))
+
+(dotest
+  (is= "jack+base64@ladderlife.com or 6a61636b2b686578406c61646465726c6966652e636f6d206f72206d64353a6330373761363662383137643733623536636130623665373265303239396132"
+
+    (b64/decode-str
+      "amFjaytiYXNlNjRAbGFkZGVybGlmZS5jb20gb3IgNmE2MTYzNmIyYjY4NjU3ODQwNmM2MTY0NjQ2NTcyNmM2OTY2NjUyZTYzNmY2ZDIwNmY3MjIwNmQ2NDM1M2E2MzMwMzczNzYxMzYzNjYyMzgzMTM3NjQzNzMzNjIzNTM2NjM2MTMwNjIzNjY1MzczMjY1MzAzMjM5Mzk2MTMy"
+      )
+
+    (b64url/decode-str
+      "amFjaytiYXNlNjRAbGFkZGVybGlmZS5jb20gb3IgNmE2MTYzNmIyYjY4NjU3ODQwNmM2MTY0NjQ2NTcyNmM2OTY2NjUyZTYzNmY2ZDIwNmY3MjIwNmQ2NDM1M2E2MzMwMzczNzYxMzYzNjYyMzgzMTM3NjQzNzMzNjIzNTM2NjM2MTMwNjIzNjY1MzczMjY1MzAzMjM5Mzk2MTMy"
+      )
+
+    (b64url/decode-str
+      "amFjaytiYXNlNjRAbGFkZGVybGlmZS5jb20gb3IgNmE2MTYzNmIyYjY4NjU3ODQwNmM2MTY0NjQ2NTcyNmM2OTY2NjUyZTYzNmY2ZDIwNmY3MjIwNmQ2NDM1M2E2MzMwMzczNzYxMzYzNjYyMzgzMTM3NjQzNzMzNjIzNTM2NjM2MTMwNjIzNjY1MzczMjY1MzAzMjM5Mzk2MTMy"
+      ))
+
+  ; padding = vs -
+  (is=  (b64/encode-str "begin||end") "YmVnaW58fGVuZA==")
+  (is=  (y64/encode-str "begin||end") "YmVnaW58fGVuZA--")
+
+  ; / vs _
+  (let [ss "Yr?~H1FfGZ}n4!}A([=Wi'k"]
+    (is= (spyx (b64/encode-str (str "begin|" ss "|end"))) "YmVnaW58WXI/fkgxRmZHWn1uNCF9QShbPVdpJ2t8ZW5k" )
+    (is= (spyx (y64/encode-str (str "begin|" ss "|end"))) "YmVnaW58WXI_fkgxRmZHWn1uNCF9QShbPVdpJ2t8ZW5k" ))
+
+  ; + vs -
+  (let [ss "ql>Q0cQ~\\O6"]
+    (is= (spyx (b64/encode-str    (str "begin|" ss "|end"))) "YmVnaW58cWw+UTBjUX5cTzZ8ZW5k")
+    (is= (spyx (b64url/encode-str (str "begin|" ss "|end"))) "YmVnaW58cWw-UTBjUX5cTzZ8ZW5k")))
 

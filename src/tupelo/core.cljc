@@ -27,6 +27,7 @@
 (pns/import-fn impl/xsecond )
 (pns/import-fn impl/xthird )
 (pns/import-fn impl/xrest )
+(pns/import-fn impl/xlast )
 (pns/import-fn impl/vec->list )
 
 (pns/import-fn impl/kw->sym )
@@ -591,7 +592,7 @@
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel= all-rel=
      drop-at insert-at replace-at idx
      starts-with? int->kw kw->int vec->list
-     xfirst xsecond xthird xrest kw->sym kw->str str->sym str->kw sym->kw sym->str
+     xfirst xsecond xthird xlast xrest kw->sym kw->str str->sym str->kw sym->kw sym->str
      split-using split-match partition-using
      wild-match? wild-submatch? wild-match-ctx? wild-item? submatch? val=
      increasing? increasing-or-equal? ->vector unwrap

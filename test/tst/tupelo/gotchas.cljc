@@ -14,17 +14,42 @@
     [tupelo.core :as t] ))
 ; #todo add example for duplicates in clojure.core.combo
 
-(dospec 9
-  (prop/for-all [val (gen/vector gen/any)]
-    (is (= (not (empty? val)) (t/not-empty? val)))
-    (isnt= (empty? val) (empty val))))
+; rest/next too loose
 (dotest
-  (isnt
-    (t/grab :result
-      (tc/quick-check 33
-        (prop/for-all [val (gen/vector gen/int)]
-          (= (any? val) (not-any? odd? val)))))))
+  (is= nil (seq  nil))
+  (is= []  (rest nil))
+  (is= nil (next nil))
 
+  (is= nil (seq  [])) ; should be []
+  (is= []  (rest [])) ; should throw
+  (is= nil (next [])) ; should throw
+
+  (is= [5] (seq  [5]))
+  (is= []  (rest [5]))
+  (is= nil (next [5])) ; should be []
+
+  ; consistent behavior: drop first item or throw if not first
+  (is (thrown? Exception (t/xrest nil)))
+  (is (thrown? Exception (t/xrest [])))
+  (is= []                (t/xrest [5]))
+  (is= [5]               (t/xrest [4 5]))
+  )
+
+; vec & (apply list ...) too loose
+(dotest
+  (is= []  (vec        nil)) ; should throw
+  (is= []  (apply list nil)) ; should throw
+
+  (is= []  (vec        []))
+  (is= []  (apply list []))
+
+  (is= [5]  (vec        [5]))
+  (is= [5]  (apply list [5])))
+
+; Clojure has `empty?` but no `not-empty?`.  However, it does have `empty` and `not-empty`.  Confusing!
+; empty / not-empty vs empty? (not-empty? missing)
+; not-empty? is missing for no good reason
+; empty/not-empty are not mirror images of each other; (not (empty coll)) != (not-empty coll)
 (dotest
   (is= (empty [1 2 3]) [])
   (is= (not-empty  [1 2 3])  [1 2 3]
@@ -34,10 +59,13 @@
   (is= (empty? [1 2 3]) false)
   ;(not-empty?  [1 2 3])  => Unable to resolve symbol: not-empty?
   (is= (t/not-empty? [1 2 3]) true) ; explicit test for non-empty collection
-)
+
+  ; empty? / count too loose:
+  (is= true (empty? nil))
+  (is= 0  ) (count nil))
 
 (dotest
-  ; always returns true
+  ; `any?` always returns true
   (is= true (any? false))
   (is= true (any? nil))
   (is= true (any? 5))
@@ -47,10 +75,21 @@
   (is= false (not-any? odd? [1 2 3]))
   (is= true  (not-any? odd? [2 4 6]))
 
-  ; explicit & consistent way of testing
+  ; explicit & consistent way of testing predicate
   (is (t/has-some? odd? [1 2 3]))
   (is (t/has-none? odd? [2 4 6])))
 
 
+
+; samples for dospec & check-not
+;-----------------------------------------------------------------------------
+(dospec 9
+  (prop/for-all [val (gen/vector gen/any)]
+    (is (= (not (empty? val)) (t/not-empty? val)))
+    (isnt= (empty? val) (empty val))))
+(dotest
+  (check-isnt 33
+    (prop/for-all [val (gen/vector gen/int)]
+      (= (any? val) (not-any? odd? val)))))
 
 
