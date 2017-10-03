@@ -111,11 +111,11 @@
 
   ; / vs _
   (let [ss "Yr?~H1FfGZ}n4!}A([=Wi'k"]
-    (is= (spyx (b64/encode-str (str "begin|" ss "|end"))) "YmVnaW58WXI/fkgxRmZHWn1uNCF9QShbPVdpJ2t8ZW5k" )
-    (is= (spyx (y64/encode-str (str "begin|" ss "|end"))) "YmVnaW58WXI_fkgxRmZHWn1uNCF9QShbPVdpJ2t8ZW5k" ))
+    (is= (b64/encode-str (str "begin|" ss "|end")) "YmVnaW58WXI/fkgxRmZHWn1uNCF9QShbPVdpJ2t8ZW5k" )
+    (is= (y64/encode-str (str "begin|" ss "|end")) "YmVnaW58WXI_fkgxRmZHWn1uNCF9QShbPVdpJ2t8ZW5k" ))
 
   ; + vs -
   (let [ss "ql>Q0cQ~\\O6"]
-    (is= (spyx (b64/encode-str    (str "begin|" ss "|end"))) "YmVnaW58cWw+UTBjUX5cTzZ8ZW5k")
-    (is= (spyx (b64url/encode-str (str "begin|" ss "|end"))) "YmVnaW58cWw-UTBjUX5cTzZ8ZW5k")))
+    (is= (b64/encode-str    (str "begin|" ss "|end")) "YmVnaW58cWw+UTBjUX5cTzZ8ZW5k")
+    (is= (b64url/encode-str (str "begin|" ss "|end")) "YmVnaW58cWw-UTBjUX5cTzZ8ZW5k")))
 

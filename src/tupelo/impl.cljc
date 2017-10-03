@@ -17,10 +17,13 @@
     [schema.core :as s]
     [tupelo.schema :as tsk]
     [tupelo.types :as types]
-    [tupelo.schema :as ts])
-)
-(ns-unmap *ns* 'first)
+    [tupelo.schema :as ts]) )
+
+(ns-unmap *ns* 'first) ; #todo -> (set-tupelo-strict! true/false)
+(ns-unmap *ns* 'second)
 (ns-unmap *ns* 'rest)
+(ns-unmap *ns* 'next)
+(ns-unmap *ns* 'last)
 
 ; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
 
@@ -254,7 +257,7 @@
                        (if (keyword? expr)
                          `(when *spy-enabled* (println (str (spy-indent-spaces) ~expr)))
                          `(when *spy-enabled* (println (str (spy-indent-spaces) '~expr " => " ~expr))))))
-        r2         (let [expr (last exprs)]
+        r2         (let [expr (xlast exprs)]
                      `(let [spy-val# ~expr]
                         (when *spy-enabled*
                           (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val#))))
@@ -286,7 +289,7 @@
                        (if (keyword? expr)
                          `(when *spy-enabled* (println (str ~expr)))
                          `(when *spy-enabled* (println (str '~expr " => " ~expr)))))
-        r2         (let [expr (last exprs)]
+        r2         (let [expr (xlast exprs)]
                      `(let [spy-val# ~expr]
                         (when *spy-enabled*
                           (println (str '~expr " => "))
@@ -577,7 +580,7 @@
   "Given a sequential object (vector or list), add one or more elements to the beginning"
   [& args]
   (let [elems (butlast args)
-        listy (last args)]
+        listy (xlast args)]
     (when-not (sequential? listy)
       (throw (IllegalArgumentException. (str "Sequential collection required, found=" listy))))
     (when (empty? elems)
