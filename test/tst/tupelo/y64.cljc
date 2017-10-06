@@ -1,4 +1,4 @@
-;   Copyright (c) Alan Thompson. All rights reserved. 
+;   Copyright (c) Alan Thompson. All rights reserved.
 ;   The use and distribution terms for this software are covered by the Eclipse Public
 ;   License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
@@ -6,58 +6,53 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.y64
   (:use tupelo.test)
-  (:require [clojure.string                         :as str]
-            [clojure.test.check                     :as tc]
-            [clojure.test.check.clojure-test        :as tst]
-            [clojure.test.check.generators          :as gen]
-            [clojure.test.check.properties          :as prop]
-            [tupelo.core                            :as t]
-            [tupelo.char                            :as char]
-            [tupelo.misc                            :as misc]
-            [tupelo.types                           :as types]
-            [tupelo.y64                             :as y64] )
-  (:gen-class))
+  (:require [clojure.string :as str]
+            [clojure.test.check :as tc]
+            [clojure.test.check.clojure-test :as tst]
+            [clojure.test.check.generators :as gen]
+            [clojure.test.check.properties :as prop]
+            [tupelo.core :as t]
+            [tupelo.char :as char]
+            [tupelo.misc :as misc]
+            [tupelo.types :as types]
+            [tupelo.y64 :as y64]))
 (t/refer-tupelo)
 
-(deftest t1
-  (if (t/is-java-1-8-plus?)
+(when (t/is-java-1-8-plus?)
+  (dotest
     (let [orig      (byte-array [(byte \A)])
           y64-bytes (y64/encode-bytes orig)
           result    (y64/decode-bytes y64-bytes)]
       (is (every? y64/code-chars (map char y64-bytes)))
-      (is (= (seq orig) (seq result))))))
+      (is (= (seq orig) (seq result)))))
 
-(deftest y64-basic
-  (testing "y64 - bytes "
-    (if (t/is-java-1-8-plus?)
-      (doseq [step [50 20 7]]
-        (let [orig      (byte-array (mapv #(.byteValue %) (range 0 400 step)))
-              y64-bytes (y64/encode-bytes orig)
-              result    (y64/decode-bytes y64-bytes)]
-          (is (every? y64/code-chars (map char y64-bytes)))
-          (is (= (seq orig) (seq result)))))))
-  (testing "y64 - string"
-    (if (t/is-java-1-8-plus?)
-      (doseq [num-chars [1 2 3 7 20]]
-        (let [orig    (str/join (misc/take-dist num-chars char/text))
-              y64-str (y64/encode-str orig)
-              result  (y64/decode-str y64-str)]
-          (is (every? y64/code-chars (seq y64-str)))
-          (is (= orig result)))))))
+  (dotest
+    ;byte
+    (doseq [step [50 20 7]]
+      (let [orig      (byte-array (mapv #(.byteValue %) (range 0 400 step)))
+            y64-bytes (y64/encode-bytes orig)
+            result    (y64/decode-bytes y64-bytes)]
+        (is (every? y64/code-chars (map char y64-bytes)))
+        (is (= (seq orig) (seq result)))))
+    ; string
+    (doseq [num-chars [1 2 3 7 20]]
+      (let [orig    (str/join (misc/take-dist num-chars char/text))
+            y64-str (y64/encode-str orig)
+            result  (y64/decode-str y64-str)]
+        (is (every? y64/code-chars (seq y64-str)))
+        (is (= orig result)))))
 
-; Transform a seq of bytes to a y64 string and back
-(if (t/is-java-1-8-plus?)
-  (dospec 999  ; round-trip-bytes
+  ; Transform a seq of bytes to a y64 string and back
+  (dospec 999       ; round-trip-bytes
     (prop/for-all [orig gen/bytes]
       (let [y64-str (y64/encode-bytes->str orig)
             result  (y64/decode-str->bytes y64-str)]
         (assert (every? y64/code-chars (seq y64-str)))
         (assert (types/byte-array? result))
-        (= (seq orig) (seq result))))))
+        (= (seq orig) (seq result)))))
 
-; Transform a string to a y64 string and back
-(if (t/is-java-1-8-plus?)
-  (dospec 999 ; round-trip-string
+  ; Transform a string to a y64 string and back
+  (dospec 999       ; round-trip-string
     (prop/for-all [orig gen/string]
       (let [y64-str (y64/encode-str orig)
             result  (y64/decode-str y64-str)]
@@ -71,10 +66,10 @@
   (newline)
   (doseq [curr-char char/text]
     (newline)
-    (doseq [prefix ["" "a" "ab" "abc"] ]
-      (let [orig-str    (str prefix curr-char)
-            enc-str     (y64/encode-str orig-str)
-            dec-str     (y64/decode-str enc-str) ]
+    (doseq [prefix ["" "a" "ab" "abc"]]
+      (let [orig-str (str prefix curr-char)
+            enc-str  (y64/encode-str orig-str)
+            dec-str  (y64/decode-str enc-str)]
         (print (format "\"%s\" \"%s\" \"%s\"          " orig-str enc-str dec-str)))))
   (newline))
 

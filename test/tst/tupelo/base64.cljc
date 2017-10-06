@@ -7,88 +7,62 @@
 (ns tst.tupelo.base64
   (:use tupelo.test)
   (:require
-    [clojure.string                         :as str]
-    [clojure.test.check                     :as check]
-    [clojure.test.check.clojure-test        :as tst]
-    [clojure.test.check.generators          :as gen]
-    [clojure.test.check.properties          :as prop]
-    [schema.core                            :as s]
-    [tupelo.base64                          :as b64]
-    [tupelo.base64url                       :as b64url]
-    [tupelo.char                            :as char]
-    [tupelo.core                            :as t]
-    [tupelo.misc                            :as misc]
-    [tupelo.string                          :as tstr]
-    [tupelo.types                           :as types]
-    [tupelo.y64                             :as y64]
+    [clojure.string                    :as str]
+    [clojure.test.check                :as check]
+    [clojure.test.check.clojure-test   :as tst]
+    [clojure.test.check.generators     :as gen]
+    [clojure.test.check.properties     :as prop]
+    [tupelo.base64                     :as b64]
+    [tupelo.base64url                  :as b64url]
+    [tupelo.char                       :as char]
+    [tupelo.core                       :as t]
+    [tupelo.misc                       :as misc]
+    [tupelo.types                      :as types]
+    [tupelo.y64                        :as y64]
   ))
 (t/refer-tupelo)
 
-(def SetOfStr
-  #{ s/Str } )
-
-(deftest t1 []
-  (println "t1 - enter")
-  (s/validate SetOfStr #{ "a" "b" "c"} )
-  (println "t1 - exit"))
-
-(deftest t1
-  (if (t/is-java-1-8-plus?)
+(dotest
+  (when (t/is-java-1-8-plus?)
     (let [orig    (byte-array [(byte \A)])
           b64-str (b64/encode-bytes->str orig)
           result  (b64/decode-str->bytes b64-str)]
       (is (every? b64/base64-chars (seq b64-str)))
       (is (= (seq orig) (seq result))))))
 
-(deftest b64-basic
-  (testing "base64 - bytes "
-    (if (t/is-java-1-8-plus?)
-      (doseq [step [50 20 7]]
-        (let [orig    (byte-array (mapv #(.byteValue %) (range 0 400 step)))
-              b64-str (b64/encode-bytes->str orig)
-              result  (b64/decode-str->bytes b64-str)]
-          (is (every? b64/base64-chars (seq b64-str)))
-          (is (= (seq orig) (seq result)))))))
-  (testing "base64 - string"
-    (if (t/is-java-1-8-plus?)
-      (doseq [num-chars [1 2 3 7 20]]
-        (let [orig    (str/join (misc/take-dist num-chars (vec char/text)))
-              b64-str (b64/encode-str orig)
-              result  (b64/decode-str b64-str)]
-          (is (every? b64/base64-chars (seq b64-str)))
-          (is (= orig result)))))))
+(dotest
+  (when (t/is-java-1-8-plus?)
+    ; bytes
+    (doseq [step [50 20 7]]
+      (let [orig    (byte-array (mapv #(.byteValue %) (range 0 400 step)))
+            b64-str (b64/encode-bytes->str orig)
+            result  (b64/decode-str->bytes b64-str)]
+        (is (every? b64/base64-chars (seq b64-str)))
+        (is (= (seq orig) (seq result)))))
+    ; string
+    (doseq [num-chars [1 2 3 7 20]]
+      (let [orig    (str/join (misc/take-dist num-chars (vec char/text)))
+            b64-str (b64/encode-str orig)
+            result  (b64/decode-str b64-str)]
+        (is (every? b64/base64-chars (seq b64-str)))
+        (is (= orig result))))))
 
-(if (t/is-java-1-8-plus?)
+(when (t/is-java-1-8-plus?)
   (dospec 999 ; round-trip-bytes
     (prop/for-all [orig gen/bytes]
       (let [string-b64 (b64/encode-bytes->str orig)
             result     (b64/decode-str->bytes string-b64)]
         (assert (every? b64/base64-chars (seq string-b64)))
         (assert (types/byte-array? result))
-        (= (seq orig) (seq result))))))
-
-; Transform a string to a base64 string and back
-(if (t/is-java-1-8-plus?)
+        (= (seq orig) (seq result)))))
+  ; Transform a string to a base64 string and back
   (dospec 999 ; round-trip-string
     (prop/for-all [orig gen/string]
       (let [string-b64 (b64/encode-str orig)
             result     (b64/decode-str string-b64)]
         (assert (every? b64/base64-chars (seq string-b64)))
         (assert (string? result))
-        (= orig result)))))
-
-(defn -main []
-  (newline)
-  (println "printable-chars" (pr-str char/text))
-  (newline)
-  (doseq [curr-char char/text]
-    (newline)
-    (doseq [prefix ["" "a" "ab" "abc"] ]
-      (let [orig-str    (str prefix curr-char)
-            enc-str     (b64/encode-str orig-str)
-            dec-str     (b64/decode-str enc-str) ]
-        (print (format "\"%s\" \"%s\" \"%s\"          " orig-str enc-str dec-str)))))
-  (newline))
+        (= orig result)))) )
 
 (dotest
   (is= "jack+base64@ladderlife.com or 6a61636b2b686578406c61646465726c6966652e636f6d206f72206d64353a6330373761363662383137643733623536636130623665373265303239396132"
@@ -118,4 +92,17 @@
   (let [ss "ql>Q0cQ~\\O6"]
     (is= (b64/encode-str    (str "begin|" ss "|end")) "YmVnaW58cWw+UTBjUX5cTzZ8ZW5k")
     (is= (b64url/encode-str (str "begin|" ss "|end")) "YmVnaW58cWw-UTBjUX5cTzZ8ZW5k")))
+
+(defn -main []
+  (newline)
+  (println "printable-chars" (pr-str char/text))
+  (newline)
+  (doseq [curr-char char/text]
+    (newline)
+    (doseq [prefix ["" "a" "ab" "abc"] ]
+      (let [orig-str    (str prefix curr-char)
+            enc-str     (b64/encode-str orig-str)
+            dec-str     (b64/decode-str enc-str) ]
+        (print (format "\"%s\" \"%s\" \"%s\"          " orig-str enc-str dec-str)))))
+  (newline))
 

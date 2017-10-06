@@ -15,50 +15,45 @@
             [tupelo.core :as t]
             [tupelo.misc                            :as misc]
             [tupelo.char                            :as char]
-            [tupelo.string                          :as ts]
             [tupelo.types                           :as types]
-            [schema.core                            :as s] )
-  (:gen-class))
+  ))
 (t/refer-tupelo)
 
-(deftest t1
-  (if (t/is-java-1-8-plus?)
+(when (t/is-java-1-8-plus?)
+  (dotest
     (let [orig     (byte-array [(byte \A)])
           code-str (b64url/encode-bytes->str orig)
           result   (b64url/decode-str->bytes code-str)]
       (is (every? b64url/code-chars (seq code-str)))
-      (is (= (seq orig) (seq result))))))
+      (is (= (seq orig) (seq result)))))
 
-(deftest b64-basic
-  (testing "base64 - bytes "
-    (if (t/is-java-1-8-plus?)
-      (doseq [step [50 20 7]]
-        (let [orig     (byte-array (mapv #(.byteValue %) (range 0 400 step)))
-              code-str (b64url/encode-bytes->str orig)
-              result   (b64url/decode-str->bytes code-str)]
-          (is (every? b64url/code-chars (seq code-str)))
-          (is (= (seq orig) (seq result)))))))
-  (testing "base64 - string"
+  (dotest
+    ;base64 - bytes "
+    (doseq [step [50 20 7]]
+      (let [orig     (byte-array (mapv #(.byteValue %) (range 0 400 step)))
+            code-str (b64url/encode-bytes->str orig)
+            result   (b64url/decode-str->bytes code-str)]
+        (is (every? b64url/code-chars (seq code-str)))
+        (is (= (seq orig) (seq result)))))
+
+    ;base64 - string"
     (if (t/is-java-1-8-plus?)
       (doseq [num-chars [1 2 3 7 20]]
         (let [orig     (str/join (misc/take-dist num-chars char/text))
               code-str (b64url/encode-str orig)
               result   (b64url/decode-str code-str)]
           (is (every? b64url/code-chars (seq code-str)))
-          (is (= orig result)))))))
+          (is (= orig result))))))
 
-(if (t/is-java-1-8-plus?)
-  (dospec 999 ; round-trip-bytes
+  (dospec 999       ; round-trip-bytes
     (prop/for-all [orig gen/bytes]
       (let [string-b64 (b64url/encode-bytes->str orig)
             result     (b64url/decode-str->bytes string-b64)]
         (assert (every? b64url/code-chars (seq string-b64)))
         (assert (types/byte-array? result))
-        (= (seq orig) (seq result))))))
-
-; Transform a string to a base64 string and back
-(if (t/is-java-1-8-plus?)
-  (dospec 999  ; round-trip-string
+        (= (seq orig) (seq result)))))
+  ; Transform a string to a base64 string and back
+  (dospec 999       ; round-trip-string
     (prop/for-all [orig gen/string]
       (let [string-b64 (b64url/encode-str orig)
             result     (b64url/decode-str string-b64)]
