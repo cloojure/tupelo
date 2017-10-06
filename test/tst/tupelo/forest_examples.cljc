@@ -775,7 +775,7 @@
           root-hid        (add-tree-enlive enlive-tree)
 
           ; Removing whitespace nodes is optional; just done to keep things neat
-          blank-leaf-hid? (fn fn-blank-leaf-hid?  ; whitespace pred fn
+          blank-leaf-hid? (fn fn-blank-leaf-hid? ; whitespace pred fn
                             [hid]
                             (let [node (hid->node hid)]
                               (and (contains-key? node :value)
@@ -787,16 +787,41 @@
           result-1        (find-paths root-hid [:top :group :group]) ; explicit path from root
           result-2        (find-paths root-hid [:** :item :number]) ; wildcard path that ends in [:item :number]
           ]
+      (is= 17 (count blank-leaf-hids))
+      (is= (hid->bush root-hid)
+        [{:tag :top}
+         [{:tag :group}
+          [{:tag :group}
+           [{:tag :item} [{:tag :number, :value "1"}]]
+           [{:tag :item} [{:tag :number, :value "2"}]]
+           [{:tag :item} [{:tag :number, :value "3"}]]]
+          [{:tag :item} [{:tag :number, :value "0"}]]]])
+
       ; Here we see only the double-nested items 1, 2, 3
+      ; sample result-1 =>
+      ;   [[:af35e171233589ed68703cc14b27f3bd5bce7a76 :3452b109d27f00b5a62bb7d4cca0deb9204e37f2
+      ;     :332321b28a12e07548ac15aa92cb6f891c71a187]]
       (is= (format-paths result-1)
         [[{:tag :top}
           [{:tag :group}
            [{:tag :group}
             [{:tag :item} [{:tag :number, :value "1"}]]
             [{:tag :item} [{:tag :number, :value "2"}]]
-            [{:tag :item} [{:tag :number, :value "3"}]]]]]] )
+            [{:tag :item} [{:tag :number, :value "3"}]]]]]])
 
       ; Here we see both the double-nested items & the single-nested item 0
+      ; sample result-2 =>
+      ;   [[:af35e171233589ed68703cc14b27f3bd5bce7a76   :3452b109d27f00b5a62bb7d4cca0deb9204e37f2
+      ;     :332321b28a12e07548ac15aa92cb6f891c71a187   :a37b45f31cf4a31553fddbc9491c3344671a4f3d
+      ;     :ece2b0ee3a9dfa0ec3d4c96a5fcab255f5ad6518]
+      ;    [:af35e171233589ed68703cc14b27f3bd5bce7a76   :3452b109d27f00b5a62bb7d4cca0deb9204e37f2
+      ;     :332321b28a12e07548ac15aa92cb6f891c71a187   :6d4d0c67048289250a69726295136879100c78d6
+      ;     :78e278d5015e38e3db4e967dbef824d6bcecc058]
+      ;    [:af35e171233589ed68703cc14b27f3bd5bce7a76   :3452b109d27f00b5a62bb7d4cca0deb9204e37f2
+      ;     :332321b28a12e07548ac15aa92cb6f891c71a187   :ee5801b2373cf68f036b1368c287db964cbfb7ec
+      ;     :b853a8ac12f1f70b54b49f68ecb6100d2718f1ba]
+      ;    [:af35e171233589ed68703cc14b27f3bd5bce7a76   :3452b109d27f00b5a62bb7d4cca0deb9204e37f2
+      ;     :ee514dc4be92cb02728335d7b628807a65915f7c   :240b7125bfb2d33a1a2ada5cd57c18d9ff88b207]]
       (is= (set (format-paths result-2)) ; need `set` since order is non-deterministic
         (set
           [[{:tag :top}
