@@ -10,12 +10,16 @@
     [clojure.core.async :as ca]
     [clojure.core.match :as ccm]
     [clojure.pprint :as pprint]
-    [clojure.string :as str]
     [clojure.set :as set]
+    [clojure.spec.alpha :as sp]
+    [clojure.spec.gen.alpha :as gen]
+    [clojure.spec.test.alpha :as stest]
+    [clojure.string :as str]
     [clojure.test]
     [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.schema :as tsk]
+    [tupelo.spec :as tsp]
     [tupelo.types :as types]
     [tupelo.schema :as ts]) )
 
@@ -370,15 +374,15 @@
 
 ;-----------------------------------------------------------------------------
 
+; #todo how to test the :ret part?
+(sp/fdef truthy?
+  :args (sp/cat :arg1 ::tsp/anything)
+  :ret  boolean?)
+
 (defn truthy?
   "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
   [arg]
   (if arg true false))
-
-; #todo how to test the :ret part?
-; (sp/fdef truthy?
-;   :args (sp/cat :arg any?)
-;   :ret  boolean?)
 
 (s/defn falsey? :- s/Bool
   "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent

@@ -8,39 +8,13 @@
   (:use tupelo.test )
   (:require
     [tupelo.core :as t]
+    [tupelo.spec :as tsp]
     [clojure.spec.alpha :as s]
     [clojure.spec.test.alpha :as stest]
     [clojure.spec.gen.alpha :as gen]
     [clojure.set :as set]))
 (t/refer-tupelo)
 
-; #todo Should have clojure.core/any?
-; #todo    =>  spec/anything
-; #todo    =>  spec/pass-all (vs. spec/pass-none)
-; #todo    =>  spec/dont-care
-; #todo    =>  (constantly true)
-; #todo    =>  #(fn [& _] true)
-; #todo    =>  clojure.core/->true (vs. clojure.core/->false)
-; #todo    =>  clojure.core/true-fn (vs. clojure.core/false-fn)
-
-; #todo    =>  (s/def ::s/anything (constantly true))
-; #todo    =>  (s/def ::s/nothing (constantly false))
-
-;   (s/fdef clojure.core/declare
-;       :args (s/cat :names (s/* simple-symbol?))
-;       :ret any?)   ; #todo conflicts with clojure.core/not-any?
-(dotest
-  ;(s/def ::s/anything (constantly true))
-  ;(s/def ::s/nothing (constantly false))
-  (s/def ::s/pass-all (constantly true))
-  (s/def ::s/pass-none (constantly false))
-
-  (is (s/valid? ::s/pass-all 5 ))
-  (is (s/valid? ::s/pass-all "joe" ))
-  (is (s/valid? ::s/pass-all { :blah 42 :blue 66 :hut! 'hut! }))
-  (isnt (s/valid? ::s/pass-none 5 )))
-
-;-----------------------------------------------------------------------------
 (dotest
   (is= (s/conform even? 4) 4)
   (is= (s/conform even? 5) :clojure.spec.alpha/invalid)

@@ -16,6 +16,8 @@
 ; #todo add to Schema docs
 (s/set-fn-validation! true) ; enforce fn schemas
 
+; (set! *warn-on-reflection* true)  ; #todo enable?
+
 (dotest
   (t/print-versions)
  ;(spyx (s/fn-validation?))
