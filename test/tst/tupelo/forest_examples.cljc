@@ -19,56 +19,56 @@
 
 (dotest
   (with-forest (new-forest)
-               (let [root-hid (add-tree-hiccup [:a
-                                                [:b 1]
-                                                [:b 2]
-                                                [:b
-                                                 [:c 4]
-                                                 [:c 5]]
-                                                [:c 9]])]
-                 (is= (format-paths (find-paths root-hid [:a]))
-                      [[{:tag :a}
-                        [{:tag :b, :value 1}]
-                        [{:tag :b, :value 2}]
-                        [{:tag :b}
-                         [{:tag :c, :value 4}]
-                         [{:tag :c, :value 5}]]
-                        [{:tag :c, :value 9}]]])
-                 (is= (format-paths (find-paths root-hid [:a :b]))
-                      [[{:tag :a} [{:tag :b, :value 1}]]
-                       [{:tag :a} [{:tag :b, :value 2}]]
-                       [{:tag :a} [{:tag :b}
-                                   [{:tag :c, :value 4}]
-                                   [{:tag :c, :value 5}]]]])
-                 ; Actual results: (find-paths aa [:a :b]) =>
-                 ;    [ [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :b40b6f37e6a746f815b092a8590cefe5cf37121a]
-                 ;      [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :76859beedd81468b4ee3cc5f17a5fdcf7a34a787]
-                 ;      [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :5c0cb1ba6657ba0ac40cc5099f2be091b5637a3b] ]
-                 (is= (format-paths (find-paths root-hid [:a :c]))
-                      [[{:tag :a} [{:tag :c, :value 9}]]])
-                 (is= (format-paths (find-paths root-hid [:a :b :c]))
-                      [[{:tag :a}
-                        [{:tag :b}
-                         [{:tag :c, :value 4}]]]
-                       [{:tag :a}
-                        [{:tag :b}
-                         [{:tag :c, :value 5}]]]])
-                 (is= (set (format-paths (find-paths root-hid [:* :b])))
-                      #{[{:tag :a}
-                         [{:tag :b :value 2}]]
-                        [{:tag :a}
-                         [{:tag :b :value 1}]]
-                        [{:tag :a}
-                         [{:tag :b}
-                          [{:tag :c :value 4}]
-                          [{:tag :c :value 5}]]]})
-                 (is= (format-paths (find-paths root-hid [:a :* :c]))
-                      [[{:tag :a} [{:tag :b} [{:tag :c :value 4}]]]
-                       [{:tag :a} [{:tag :b} [{:tag :c :value 5}]]]])
-                 (is= (format-paths (find-paths root-hid [:** :c]))
-                      [[{:tag :a} [{:tag :b} [{:tag :c, :value 4}]]]
-                       [{:tag :a} [{:tag :b} [{:tag :c, :value 5}]]]
-                       [{:tag :a} [{:tag :c, :value 9}]]])))
+     (let [root-hid (add-tree-hiccup [:a
+                                        [:b 1]
+                                        [:b 2]
+                                        [:b
+                                         [:c 4]
+                                         [:c 5]]
+                                        [:c 9]])]
+         (is= (format-paths (find-paths root-hid [:a]))
+              [[{:tag :a}
+                [{:tag :b, :value 1}]
+                [{:tag :b, :value 2}]
+                [{:tag :b}
+                 [{:tag :c, :value 4}]
+                 [{:tag :c, :value 5}]]
+                [{:tag :c, :value 9}]]])
+         (is= (format-paths (find-paths root-hid [:a :b]))
+              [[{:tag :a} [{:tag :b, :value 1}]]
+               [{:tag :a} [{:tag :b, :value 2}]]
+               [{:tag :a} [{:tag :b}
+                           [{:tag :c, :value 4}]
+                           [{:tag :c, :value 5}]]]])
+         ; Actual results: (find-paths aa [:a :b]) =>
+         ;    [ [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :b40b6f37e6a746f815b092a8590cefe5cf37121a]
+         ;      [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :76859beedd81468b4ee3cc5f17a5fdcf7a34a787]
+         ;      [:c3b0dccd4d344ac765183f49940f4d685de7a3f5 :5c0cb1ba6657ba0ac40cc5099f2be091b5637a3b] ]
+         (is= (format-paths (find-paths root-hid [:a :c]))
+              [[{:tag :a} [{:tag :c, :value 9}]]])
+         (is= (format-paths (find-paths root-hid [:a :b :c]))
+              [[{:tag :a}
+                [{:tag :b}
+                 [{:tag :c, :value 4}]]]
+               [{:tag :a}
+                [{:tag :b}
+                 [{:tag :c, :value 5}]]]])
+         (is= (set (format-paths (find-paths root-hid [:* :b])))
+              #{[{:tag :a}
+                 [{:tag :b :value 2}]]
+                [{:tag :a}
+                 [{:tag :b :value 1}]]
+                [{:tag :a}
+                 [{:tag :b}
+                  [{:tag :c :value 4}]
+                  [{:tag :c :value 5}]]]})
+         (is= (format-paths (find-paths root-hid [:a :* :c]))
+              [[{:tag :a} [{:tag :b} [{:tag :c :value 4}]]]
+               [{:tag :a} [{:tag :b} [{:tag :c :value 5}]]]])
+         (is= (format-paths (find-paths root-hid [:** :c]))
+              [[{:tag :a} [{:tag :b} [{:tag :c, :value 4}]]]
+               [{:tag :a} [{:tag :b} [{:tag :c, :value 5}]]]
+               [{:tag :a} [{:tag :c, :value 9}]]])))
 
   (with-forest (new-forest)
                (let [root-hid (add-tree-hiccup [:a
