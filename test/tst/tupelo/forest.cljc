@@ -1008,7 +1008,8 @@
             (find-leaf-paths (root-hids) [{:tag :a} {:tag :c}] )))
   )))
 
-(dotest
+
+#_(dotest
   (with-forest (new-forest)
     (let [data-1 [1 2 3]
           data-2 [[1 2 3]
@@ -1191,3 +1192,23 @@
            [{::tf/tag :data, ::tf/idx 0, :value 2}]]]]] )
    )))
 
+(dotest
+  (with-forest (new-forest)
+               (let [data-1 [1 2 3]
+                     tree-1 (data-seq->tree data-1)
+                     ;root-hid-1 (add-tree tree-1)
+                     ;bush-1     (hid->bush root-hid-1)
+               ]
+                 ; -------------------------------------------------------
+                 (is= (spyx-pretty tree-1)
+                      #_{::tf/tag  :root,
+                       ::tf/kids [{::tf/tag :data, ::tf/idx 0, :value 1, ::tf/kids []}
+                                  {::tf/tag :data, ::tf/idx 1, :value 2, ::tf/kids []}
+                                  {::tf/tag :data, ::tf/idx 2, :value 3, ::tf/kids []}]}
+                      )
+                 #_(is= bush-1
+                      [{::tf/tag :root}
+                       [{::tf/tag :data, ::tf/idx 0, :value 1}]
+                       [{::tf/tag :data, ::tf/idx 1, :value 2}]
+                       [{::tf/tag :data, ::tf/idx 2, :value 3}]] )
+                 )))

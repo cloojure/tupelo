@@ -102,35 +102,35 @@
 (def t0-data
   [1 [:a :b] 2 3 [40 50 60]] )
 
-(dotest
-  (with-forest (new-forest)
-    (let [root-hid (add-tree (data->tree t0-data))]
-      (is= (hid->bush root-hid)
-        [{::tf/tag :root}
-         [{::tf/tag :data, ::tf/idx 0, :value 1}]
-         [{::tf/tag :data, ::tf/idx 1}
-          [{::tf/tag :data, ::tf/idx 0, :value :a}]
-          [{::tf/tag :data, ::tf/idx 1, :value :b}]]
-         [{::tf/tag :data, ::tf/idx 2, :value 2}]
-         [{::tf/tag :data, ::tf/idx 3, :value 3}]
-         [{::tf/tag :data, ::tf/idx 4}
-          [{::tf/tag :data, ::tf/idx 0, :value 40}]
-          [{::tf/tag :data, ::tf/idx 1, :value 50}]
-          [{::tf/tag :data, ::tf/idx 2, :value 60}]]])
-      (is= (hid->tree root-hid)
-        {::tf/tag  :root,
-         ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, :value 1}
-                    {::tf/tag  :data,
-                     ::tf/idx  1,
-                     ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, :value :a}
-                                {::tf/kids [], ::tf/tag :data, ::tf/idx 1, :value :b}]}
-                    {::tf/kids [], ::tf/tag :data, ::tf/idx 2, :value 2}
-                    {::tf/kids [], ::tf/tag :data, ::tf/idx 3, :value 3}
-                    {::tf/tag  :data,
-                     ::tf/idx  4,
-                     ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, :value 40}
-                                {::tf/kids [], ::tf/tag :data, ::tf/idx 1, :value 50}
-                                {::tf/kids [], ::tf/tag :data, ::tf/idx 2, :value 60}]}]} ) )))
+;(dotest
+;  (with-forest (new-forest)
+;    (let [root-hid (add-tree (data->tree t0-data))]
+;      (is= (hid->bush root-hid)
+;        [{::tf/tag :root}
+;         [{::tf/tag :data, ::tf/idx 0, :value 1}]
+;         [{::tf/tag :data, ::tf/idx 1}
+;          [{::tf/tag :data, ::tf/idx 0, :value :a}]
+;          [{::tf/tag :data, ::tf/idx 1, :value :b}]]
+;         [{::tf/tag :data, ::tf/idx 2, :value 2}]
+;         [{::tf/tag :data, ::tf/idx 3, :value 3}]
+;         [{::tf/tag :data, ::tf/idx 4}
+;          [{::tf/tag :data, ::tf/idx 0, :value 40}]
+;          [{::tf/tag :data, ::tf/idx 1, :value 50}]
+;          [{::tf/tag :data, ::tf/idx 2, :value 60}]]])
+;      (is= (hid->tree root-hid)
+;        {::tf/tag  :root,
+;         ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, :value 1}
+;                    {::tf/tag  :data,
+;                     ::tf/idx  1,
+;                     ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, :value :a}
+;                                {::tf/kids [], ::tf/tag :data, ::tf/idx 1, :value :b}]}
+;                    {::tf/kids [], ::tf/tag :data, ::tf/idx 2, :value 2}
+;                    {::tf/kids [], ::tf/tag :data, ::tf/idx 3, :value 3}
+;                    {::tf/tag  :data,
+;                     ::tf/idx  4,
+;                     ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, :value 40}
+;                                {::tf/kids [], ::tf/tag :data, ::tf/idx 1, :value 50}
+;                                {::tf/kids [], ::tf/tag :data, ::tf/idx 2, :value 60}]}]} ) )))
 
 ;-----------------------------------------------------------------------------
 (def t0-hiccup
