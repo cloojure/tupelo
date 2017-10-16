@@ -100,3 +100,6 @@
       (= (any? val) (not-any? odd? val)))))
 
 
+(dotest
+  (is= 'quote (first ''hello))  ; 2 single quotes
+)

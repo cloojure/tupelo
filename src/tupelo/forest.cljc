@@ -158,7 +158,7 @@
   {::tag  :root
    ::kids (forv [[idx val] (indexed data)]
                 (data-seq->tree idx val))}
-  )
+  ))
 
 (defn enlive-node-lax?
   "Returns true for nominal Enlive nodes, else false"
