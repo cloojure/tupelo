@@ -312,7 +312,7 @@
 (defn my-index-of   [source tgt] (str/index-of source tgt))
 (defn my-index-of-2 [source tgt] (str/index-of source tgt))
 (defn my-index-of-3 [source tgt] (str/index-of source tgt))
-;(defn my-index-of-4 [source tgt] (str/index-of source tgt))
+(defn my-index-of-4 [source tgt] (str/index-of source tgt))
 
 (s/fdef my-index-of :args (s/cat
                             :source string?
@@ -332,21 +332,21 @@
 (s/fdef my-index-of-3 :args (s/spec ::my-index-of-args
                               :gen gen-my-index-of-args ))
 
-;(defn gen-string-and-substring-let []
-;  (tcgen/let [prefix  tcgen/string-alphanumeric
-;              tgt     tcgen/string-alphanumeric
-;              suffix  tcgen/string-alphanumeric
-;              search-str (str prefix tgt suffix)]
-;    [search-str tgt]))
-;(defn gen-my-index-of-let []
-;  (gen/one-of [ (gen-string-and-substring-let)
-;                (s/gen ::my-index-of-args) ]))
-;(s/fdef my-index-of-4 :args (s/spec ::my-index-of-args
-;                              :gen gen-my-index-of-let ))
+(defn gen-string-and-substring-let []
+  (tcgen/let [prefix  tcgen/string-alphanumeric
+              tgt     tcgen/string-alphanumeric
+              suffix  tcgen/string-alphanumeric
+              search-str (str prefix tgt suffix)]
+    [search-str tgt]))
+(defn gen-my-index-of-let []
+  (gen/one-of [ (gen-string-and-substring-let)
+                (s/gen ::my-index-of-args) ]))
+(s/fdef my-index-of-4 :args (s/spec ::my-index-of-args
+                              :gen gen-my-index-of-let ))
 (dotest
   (nl) (spyx (s/exercise-fn `my-index-of))
   (nl) (spyx (s/exercise-fn `my-index-of-2))
   (nl) (spyx (s/exercise-fn `my-index-of-3))
- ;(nl) (spyx (s/exercise-fn `my-index-of-4))
+  (nl) (spyx (s/exercise-fn `my-index-of-4))
   )
 
