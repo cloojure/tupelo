@@ -10,7 +10,7 @@
     [clojure.spec.alpha :as sp]
     [clojure.spec.test.alpha :as stest]
     [clojure.spec.gen.alpha :as gen]
-  ))
+    ))
 
 ; #todo clojure.core/any?  conflicts with  clojure.core/not-any?
 
@@ -29,6 +29,7 @@
 ; #todo       :args  (s/cat :names (s/* simple-symbol?))
 ; #todo       :ret   any?)
 
-(sp/def ::anything  (constantly  true))   ; ::pass-all
-(sp/def ::nothing   (constantly false))   ; ::pass-none
+(sp/def ::anything (sp/spec (constantly true)  :gen gen/any-printable))
+(sp/def ::nothing  (sp/spec (constantly false)))
+
 

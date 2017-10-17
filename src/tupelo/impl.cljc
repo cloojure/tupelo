@@ -376,18 +376,21 @@
 
 ; #todo how to test the :ret part?
 (sp/fdef truthy?
-  :args (sp/cat :arg1 ::tsp/anything)
+  :args (sp/cat :arg ::tsp/anything)
   :ret  boolean?)
-
 (defn truthy?
   "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
   [arg]
   (if arg true false))
 
-(s/defn falsey? :- s/Bool
+(sp/fdef falsey?
+  :args (sp/cat :arg ::tsp/anything)
+  :ret  boolean?
+  :fn #(= (:ret %) (not (truthy? (-> % :args :arg)))))
+(defn falsey?
   "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
    to (not (truthy? arg))."
-  [arg :- s/Any]
+  [arg]
   (if arg false true))
 
 (defn validate

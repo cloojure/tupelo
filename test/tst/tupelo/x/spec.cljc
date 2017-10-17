@@ -7,12 +7,15 @@
 (ns tst.tupelo.x.spec
   (:use tupelo.test )
   (:require
-    [tupelo.core :as t]
-    [tupelo.spec :as tsp]
+    [clojure.set :as set]
     [clojure.spec.alpha :as s]
-    [clojure.spec.test.alpha :as stest]
     [clojure.spec.gen.alpha :as gen]
-    [clojure.set :as set]))
+    [clojure.spec.test.alpha :as stest]
+    [tupelo.core :as t]
+    [tupelo.impl :as i]
+    [tupelo.spec :as tsp]
+    [clojure.string :as str]
+    [clojure.test.check.generators :as tcgen]))
 (t/refer-tupelo)
 
 (dotest
@@ -109,14 +112,13 @@
     #:tst.tupelo.x.spec{:id :s1, :host "example.com", :port 5555} ) )
 
 (dotest
-  (s/def :animal/kind  string?)
+  (s/def :animal/kind string?)
   (s/def :animal/says string?  )
   (s/def :animal/common (s/keys :req [:animal/kind :animal/says])  ) ; common keys for any animal
   (s/def :dog/tail? boolean? )
   (s/def :dog/breed string? )
   (s/def :animal/dog (s/merge :animal/common
-                       (s/keys :req [:dog/tail? :dog/breed]))) ; merge in addl keys to create dog spec
-
+                       (s/keys :req [:dog/tail? :dog/breed]))) ; merge in additional keys to create dog spec
   (is (s/valid? :animal/dog {:animal/kind "dog"
                              :animal/says "woof"
                              :dog/tail?   true
@@ -279,3 +281,72 @@
     ; (spyx (stest/check `ranged-rand))  #todo
 
     ) )
+
+;-----------------------------------------------------------------------------
+; examples from: Clojure spec Screencast - Customizing Generators: https://youtu.be/WoFkhE92fqc
+
+(s/def ::foo-id (s/and string? #(str/starts-with? % "FOO-")))
+(defn foo-id-gen []
+  (->> (s/gen (s/int-in 1 100))
+    (gen/fmap #(str "FOO-" %))))
+(dotest (spy :foo-id (mapv first (s/exercise ::foo-id 10
+                                   {::foo-id foo-id-gen})))) ; a generator override
+
+; Lookup
+(s/def ::lookup (s/map-of keyword? string? :min-count 1))
+(s/def ::lookup-finding-k (s/and (s/cat
+                                   :lookup ::lookup
+                                   :k keyword?)
+                            (fn [{:keys [lookup k]}] (contains? lookup k))))
+(defn lookup-finding-k-gen []
+  (gen/bind (s/gen ::lookup)
+    #(gen/tuple
+       (gen/return %)
+       (gen/elements (keys %)))))
+(dotest
+  (nl)
+  (spyx (mapv first (s/exercise ::lookup)))
+  (throws? (mapv first (s/exercise ::lookup-finding-k)))
+  (spyx (s/exercise ::lookup-finding-k 10 {::lookup-finding-k lookup-finding-k-gen})))
+
+(defn my-index-of   [source tgt] (str/index-of source tgt))
+(defn my-index-of-2 [source tgt] (str/index-of source tgt))
+(defn my-index-of-3 [source tgt] (str/index-of source tgt))
+;(defn my-index-of-4 [source tgt] (str/index-of source tgt))
+
+(s/fdef my-index-of :args (s/cat
+                            :source string?
+                            :tgt string? ))
+; constructively generate a string and substring
+(def string-and-substring-model (s/cat :prefix string? :match string? :suffix string?  ))
+(defn gen-string-and-substring [] (gen/fmap
+                                    (fn [[prefix match suffix]] [(str prefix match suffix) match])
+                                    (s/gen string-and-substring-model)))
+(s/def ::my-index-of-args (s/cat :source string? :tgt string?))
+(s/fdef my-index-of-2 :args (s/spec ::my-index-of-args
+                            :gen gen-string-and-substring ))
+
+(defn gen-my-index-of-args []
+  (gen/one-of [ (gen-string-and-substring)
+               (s/gen ::my-index-of-args) ]))
+(s/fdef my-index-of-3 :args (s/spec ::my-index-of-args
+                              :gen gen-my-index-of-args ))
+
+;(defn gen-string-and-substring-let []
+;  (tcgen/let [prefix  tcgen/string-alphanumeric
+;              tgt     tcgen/string-alphanumeric
+;              suffix  tcgen/string-alphanumeric
+;              search-str (str prefix tgt suffix)]
+;    [search-str tgt]))
+;(defn gen-my-index-of-let []
+;  (gen/one-of [ (gen-string-and-substring-let)
+;                (s/gen ::my-index-of-args) ]))
+;(s/fdef my-index-of-4 :args (s/spec ::my-index-of-args
+;                              :gen gen-my-index-of-let ))
+(dotest
+  (nl) (spyx (s/exercise-fn `my-index-of))
+  (nl) (spyx (s/exercise-fn `my-index-of-2))
+  (nl) (spyx (s/exercise-fn `my-index-of-3))
+ ;(nl) (spyx (s/exercise-fn `my-index-of-4))
+  )
+
