@@ -335,12 +335,12 @@
 (defn gen-string-and-substring-let []
   (tcgen/let [prefix  tcgen/string-alphanumeric
               tgt     tcgen/string-alphanumeric
-              suffix  tcgen/string-alphanumeric
-              search-str (str prefix tgt suffix)]
-    [search-str tgt]))
+              suffix  tcgen/string-alphanumeric ]
+    [ (str prefix tgt suffix)  tgt ]))
 (defn gen-my-index-of-let []
   (gen/one-of [ (gen-string-and-substring-let)
-                (s/gen ::my-index-of-args) ]))
+               ;(s/gen ::my-index-of-args)
+              ]))
 (s/fdef my-index-of-4 :args (s/spec ::my-index-of-args
                               :gen gen-my-index-of-let ))
 (dotest
