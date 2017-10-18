@@ -1197,8 +1197,7 @@
          [#:tupelo.forest{:tag :tupelo.forest/entry, :key :a}
           [#:tupelo.forest{:value 1, :index nil}]]
          [#:tupelo.forest{:tag :tupelo.forest/entry, :key :b}
-          [#:tupelo.forest{:value 2, :index nil}]]])
-      )))
+          [#:tupelo.forest{:value 2, :index nil}]]]) )))
 
 (dotest
   (with-forest (new-forest)
@@ -1228,3 +1227,29 @@
            [#:tupelo.forest{:value 4, :index 2}]]]])
 
     )))
+
+(dotest
+  (with-forest (new-forest)
+    (let [data-3     {:a 1 :b {:c 3}}
+          tree-3     (data->tree data-3)
+          root-hid-3 (add-tree tree-3)
+          bush-3     (hid->bush root-hid-3)
+          ]
+      (is= tree-3
+        #:tupelo.forest{:tag  :tupelo.forest/entity, :index nil,
+                        :kids [#:tupelo.forest{:tag  :tupelo.forest/entry, :key :a,
+                                               :kids [#:tupelo.forest{:value 1, :index nil, :kids []}]}
+                               #:tupelo.forest{:tag  :tupelo.forest/entry, :key :b,
+                                               :kids [#:tupelo.forest{:tag  :tupelo.forest/entity, :index nil,
+                                                                      :kids [#:tupelo.forest{:tag  :tupelo.forest/entry,
+                                                                                             :key  :c,
+                                                                                             :kids [#:tupelo.forest{:value 3, :index nil, :kids []}]}]}]}]})
+      (is= bush-3
+        [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
+         [#:tupelo.forest{:tag :tupelo.forest/entry, :key :a}
+          [#:tupelo.forest{:value 1, :index nil}]]
+         [#:tupelo.forest{:tag :tupelo.forest/entry, :key :b}
+          [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
+           [#:tupelo.forest{:tag :tupelo.forest/entry, :key :c}
+            [#:tupelo.forest{:value 3, :index nil}]]]]]))))
+
