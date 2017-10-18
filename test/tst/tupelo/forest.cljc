@@ -1241,8 +1241,7 @@
                                                :kids [#:tupelo.forest{:value 1, :index nil, :kids []}]}
                                #:tupelo.forest{:tag  :tupelo.forest/entry, :key :b,
                                                :kids [#:tupelo.forest{:tag  :tupelo.forest/entity, :index nil,
-                                                                      :kids [#:tupelo.forest{:tag  :tupelo.forest/entry,
-                                                                                             :key  :c,
+                                                                      :kids [#:tupelo.forest{:tag  :tupelo.forest/entry, :key  :c,
                                                                                              :kids [#:tupelo.forest{:value 3, :index nil, :kids []}]}]}]}]})
       (is= bush-3
         [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
