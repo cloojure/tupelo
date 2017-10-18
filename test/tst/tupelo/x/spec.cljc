@@ -333,10 +333,13 @@
                               :gen gen-my-index-of-args ))
 
 (defn gen-string-and-substring-let []
+  ; RHS must be tcgen/* generator fns
   (tcgen/let [prefix  tcgen/string-alphanumeric
               tgt     tcgen/string-alphanumeric
               suffix  tcgen/string-alphanumeric ]
-    [ (str prefix tgt suffix)  tgt ]))
+    (let [search-str (str prefix tgt suffix)
+          result [search-str tgt]]
+      result)))
 (defn gen-my-index-of-let []
   (gen/one-of [ (gen-string-and-substring-let)
                ;(s/gen ::my-index-of-args)
@@ -347,6 +350,13 @@
   (nl) (spyx (s/exercise-fn `my-index-of))
   (nl) (spyx (s/exercise-fn `my-index-of-2))
   (nl) (spyx (s/exercise-fn `my-index-of-3))
-  (nl) (spyx (s/exercise-fn `my-index-of-4))
+  (nl) (spyx (s/exercise-fn `my-index-of-4)))
+
+(dotest (nl)
+  (spyx (tcgen/sample (tcgen/fmap set (tcgen/vector tcgen/nat))))
+  (spyx (tcgen/sample (tcgen/fmap
+                        (fn [v]
+                          [(rand-nth v) v])
+                        (tcgen/not-empty (tcgen/vector tcgen/nat)))))
   )
 

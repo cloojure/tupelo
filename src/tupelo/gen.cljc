@@ -19,9 +19,19 @@
 
 ; #todo: for test.check v2:
 ;     fmap        -> map
-;     elements    -> rand-nth
 
 ; #todo need tests & doc
+
+; #todo
+; maybe
+;   [tupelo.test.check            :as ttc]
+;   [tupelo.test.check.properties :as tprop]
+;   [tupelo.test.check.generators :as tgen]
+
+;   (gen/sample gen/int 20) -> (tgen/sample {:quantity 20} gen/int )
+;                                             ^^^ ctx is always optional 1st arg
+;   gen/sample-seq            -> tgen/->lazy-seq
+;   tc/quick-check            -> (ttc/quick-check {:num-tests 100} ...)
 
 (defn txt-join
   "Wraps the supplied generator using clojure.string/join."
