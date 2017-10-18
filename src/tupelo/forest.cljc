@@ -140,11 +140,12 @@
                           ::index idx
                           ::kids  (forv [[idx val] (indexed data)]
                                     (data->tree idx val))}
-      (map? data) (glue
-                    {::tag   ::entity
-                     ::index idx}
-                    (forv [[k v] data]
-                      {k (data->tree v)}))
+      (map? data) {::tag   ::entity
+                   ::index idx
+                   ::kids  (forv [[child-key child-val] data]
+                             {::tag ::entry
+                              ::key child-key
+                              ::kids [(data->tree child-val)]})}
       :else {::value data ::index idx ::kids []})))
 
 (defn enlive-node-lax?
