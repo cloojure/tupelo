@@ -129,36 +129,23 @@
   (and (tree-node? arg)
     (empty? (grab ::kids arg))))
 
-(declare data-seq->tree)
-(defn data-map->tree
-  [data-map]
-  (glue
-    (forv [[k v] data-map]
-          (if (sequential? v)
-            {::tag  k
-             ::kids (data-seq->tree v)}
-            {k v})))
-  )
 
-(s/defn data-seq->tree    ; #todo document
-  "Convert raw data (nested vectors) into tree with generic `:data` tag and {::idx <index>} attribute."
-  [data :- [s/Any]]
-  (forv [[idx val] (indexed data)]
-        (glue {::tag :data
-               ::idx idx}
-              (if (sequential? val)
-                (data-seq->tree val))
-                {:value val ::kids []})))
-
-(defn data->tree
-  [data]
-  (if (sequential? data)
-    {::tag  :data
-     ::kids (data-seq->tree v)}
-  {::tag  :root
-   ::kids (forv [[idx val] (indexed data)]
-                (data-seq->tree idx val))}
-  ))
+(s/defn data->tree
+  ([data :- s/Any]
+    (data->tree nil data))
+  ([idx :- (s/either s/Int (s/eq nil))
+    data :- s/Any]
+    (cond
+      (sequential? data) {::tag   ::list
+                          ::index idx
+                          ::kids  (forv [[idx val] (indexed data)]
+                                    (data->tree idx val))}
+      (map? data) (glue
+                    {::tag   ::entity
+                     ::index idx}
+                    (forv [[k v] data]
+                      {k (data->tree v)}))
+      :else {::value data ::index idx ::kids []})))
 
 (defn enlive-node-lax?
   "Returns true for nominal Enlive nodes, else false"
