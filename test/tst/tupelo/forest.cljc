@@ -1153,6 +1153,73 @@
          [#:tupelo.forest{:tag :tupelo.forest/list, :index 4}
           [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}]]])
 
+      (is= tree-4
+        #:tupelo.forest{:tag  :tupelo.forest/list, :index nil,
+                        :kids [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                               :kids [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                                                      :kids [#:tupelo.forest{:value 1, :index 0, :kids []}
+                                                                             #:tupelo.forest{:value 2, :index 1, :kids []}
+                                                                             #:tupelo.forest{:value 3, :index 2, :kids []}]}
+                                                      #:tupelo.forest{:tag  :tupelo.forest/list, :index 1,
+                                                                      :kids [#:tupelo.forest{:value 4, :index 0, :kids []}
+                                                                             #:tupelo.forest{:value 5, :index 1, :kids []}
+                                                                             #:tupelo.forest{:value 6, :index 2, :kids []}]}
+                                                      #:tupelo.forest{:tag  :tupelo.forest/list, :index 2,
+                                                                      :kids [#:tupelo.forest{:value 7, :index 0, :kids []}
+                                                                             #:tupelo.forest{:value 8, :index 1, :kids []}
+                                                                             #:tupelo.forest{:value 9, :index 2, :kids []}]}]}
+                               #:tupelo.forest{:tag  :tupelo.forest/list, :index 1,
+                                               :kids [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                                                      :kids [#:tupelo.forest{:value 10, :index 0, :kids []}
+                                                                             #:tupelo.forest{:value 11, :index 1, :kids []}]}
+                                                      #:tupelo.forest{:tag  :tupelo.forest/list, :index 1,
+                                                                      :kids [#:tupelo.forest{:value 12, :index 0, :kids []}
+                                                                             #:tupelo.forest{:value 2, :index 1, :kids []}]}]}
+                               #:tupelo.forest{:tag  :tupelo.forest/list, :index 2,
+                                               :kids [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                                                      :kids [#:tupelo.forest{:value 20, :index 0, :kids []}]}
+                                                      #:tupelo.forest{:tag  :tupelo.forest/list, :index 1,
+                                                                      :kids [#:tupelo.forest{:value 21, :index 0, :kids []}]}]}
+                               #:tupelo.forest{:tag  :tupelo.forest/list, :index 3,
+                                               :kids [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                                                      :kids [#:tupelo.forest{:value 30, :index 0, :kids []}]}]}
+                               #:tupelo.forest{:tag  :tupelo.forest/list, :index 4,
+                                               :kids [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                                                      :kids [#:tupelo.forest{:value 2, :index 0, :kids []}]}]}]} )
+      (is= bush-4
+        [#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:value 1, :index 0}]
+           [#:tupelo.forest{:value 2, :index 1}]
+           [#:tupelo.forest{:value 3, :index 2}]]
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 1}
+           [#:tupelo.forest{:value 4, :index 0}]
+           [#:tupelo.forest{:value 5, :index 1}]
+           [#:tupelo.forest{:value 6, :index 2}]]
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 2}
+           [#:tupelo.forest{:value 7, :index 0}]
+           [#:tupelo.forest{:value 8, :index 1}]
+           [#:tupelo.forest{:value 9, :index 2}]]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 1}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:value 10, :index 0}]
+           [#:tupelo.forest{:value 11, :index 1}]]
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 1}
+           [#:tupelo.forest{:value 12, :index 0}]
+           [#:tupelo.forest{:value 2, :index 1}]]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 2}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:value 20, :index 0}]]
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 1}
+           [#:tupelo.forest{:value 21, :index 0}]]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 3}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:value 30, :index 0}]]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 4}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:value 2, :index 0}]]]])
+
       ;------------------------------------------------------------------------------
       (is= (format-paths (find-leaf-paths root-hid-1 [:** {::tf/value 2}]))
         [[#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
