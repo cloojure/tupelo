@@ -129,7 +129,6 @@
   (and (tree-node? arg)
     (empty? (grab ::kids arg))))
 
-
 (s/defn data->tree
   ([data :- s/Any]
     (data->tree nil data))
@@ -147,6 +146,53 @@
                               ::key child-key
                               ::kids [(data->tree child-val)]})}
       :else {::value data ::index idx ::kids []})))
+
+(defn ^:no-doc validate-list-kids-idx
+  "verify that a ::list node in a tree has a valid index for all kid nodes"
+  [node]
+  (assert (= ::list (grab ::tag node)))
+  (let [kids        (grab ::kids node)
+        kids-sorted (vec (sort-by #(grab ::index %) kids))
+        idx-vals    (mapv #(grab ::index %) kids-sorted)
+        idx-tgts    (range (count idx-vals))]
+    (assert (= idx-vals idx-tgts))
+    kids-sorted))
+
+(s/defn ^:no-doc data-list-node?
+  [node :- tsk/KeyMap]
+  (and (contains-key? node ::tag)
+    (= ::list (grab ::tag node))))
+
+(s/defn ^:no-doc data-entity-node?
+  [node :- tsk/KeyMap]
+  (and (contains-key? node ::tag)
+    (= ::entity (grab ::tag node))))
+
+(s/defn ^:no-doc data-leaf-node?
+  [node :- tsk/KeyMap]
+  (and (= #{::value ::index ::kids} (set (keys node)))
+    (= [] (grab ::kids node))))
+
+(defn tree->data
+  [node]
+  ; #todo assert valid tree?
+  (cond
+    (data-leaf-node? node) (let [leaf-value (grab ::value node)]
+                             leaf-value)
+
+    (data-list-node? node) (let [kids-sorted (validate-list-kids-idx node)
+                                 kids-data   (forv [kid kids-sorted]
+                                               (tree->data kid))]
+                             kids-data)
+
+    (data-entity-node? node) (let [entries  (grab ::kids node)
+                                   map-data (apply glue
+                                              (forv [entry entries]
+                                                {(grab ::key entry) (tree->data (only (grab ::kids entry)))}))]
+                               map-data)
+
+    :else (throw (IllegalArgumentException. (str "tree->data: unrecognized node=" node)))))
+
 
 (defn enlive-node-lax?
   "Returns true for nominal Enlive nodes, else false"
