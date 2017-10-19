@@ -81,19 +81,14 @@
   (s/def ::person (s/keys :req [::first-name ::last-name ::email]
                           :opt [::phone] ))
 
-  (is (s/valid? ::person {::first-name "Elon"
-                          ::last-name  "Musk"
-                          ::email      "elon@example.com"} ))
+  (is (s/valid? ::person {::first-name "Elon" ::last-name  "Musk" ::email      "elon@example.com"} ))
   (isnt (s/valid? ::person {::first-name "Elon" } ))
-  (isnt (s/valid? ::person {::first-name "Elon"
-                            ::last-name  "Musk"
-                            ::email      "n/a"} ))
+  (isnt (s/valid? ::person {::first-name "Elon" ::last-name  "Musk" ::email      "n/a"} ))
 
+  ; NOTE: we specify *qualified* keywords here, but they will match *unqualified* keywords later
   (s/def :unq/person (s/keys :req-un [::first-name ::last-name ::email]
-                             :opt-un [::phone] ))
-  (is= (s/conform :unq/person {:first-name "Elon"
-                               :last-name  "Musk"
-                               :email      "elon@example.com"})
+                             :opt-un [::phone]))
+  (is= (s/conform :unq/person {:first-name "Elon" :last-name "Musk" :email "elon@example.com"})
     {:first-name "Elon", :last-name "Musk", :email "elon@example.com"})
 
   (defrecord Person [first-name last-name email phone])
@@ -279,3 +274,5 @@
     ; (spyx (stest/check `ranged-rand))  #todo
 
     ) )
+
+;-----------------------------------------------------------------------------
