@@ -193,7 +193,6 @@
 
     :else (throw (IllegalArgumentException. (str "tree->data: unrecognized node=" node)))))
 
-
 (defn enlive-node-lax?
   "Returns true for nominal Enlive nodes, else false"
   [arg]
