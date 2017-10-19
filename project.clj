@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.57"
+(defproject tupelo "0.9.58"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
@@ -9,14 +9,14 @@
     [clojure-csv/clojure-csv          "2.0.2"]
     [danlentz/clj-uuid                "0.1.7"]
     [enlive "1.1.6"]
-    [org.clojure/clojure              "1.9.0-beta1"]
+    [org.clojure/clojure              "1.9.0-beta2"]
     [org.clojure/core.async           "0.3.443"]
     [org.clojure/core.match           "0.3.0-alpha4"]
     [org.clojure/data.xml             "0.0.8"]
     [org.clojure/math.combinatorics   "0.1.4"]
     [org.clojure/tools.analyzer       "0.6.9"]
     [potemkin                         "0.4.4"]
-    [prismatic/schema                 "1.1.6"]
+    [prismatic/schema                 "1.1.7"]
    ;[org.clojure/clojure              "1.8.0"]
   ]
   :profiles { :dev      {:dependencies [ [org.clojure/test.check "0.9.0"]

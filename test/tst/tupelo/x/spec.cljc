@@ -79,7 +79,7 @@
   (s/def ::last-name string?)
   (s/def ::email ::email-type)
   (s/def ::person (s/keys :req [::first-name ::last-name ::email]
-                          :opt [::phone] ))
+                          :opt [::phone] )) ; #todo s/keys -> tsp/map-with-keys tsp/entity-map
 
   (is (s/valid? ::person {::first-name "Elon" ::last-name  "Musk" ::email      "elon@example.com"} ))
   (isnt (s/valid? ::person {::first-name "Elon" } ))
@@ -87,7 +87,7 @@
 
   ; NOTE: we specify *qualified* keywords here, but they will match *unqualified* keywords later
   (s/def :unq/person (s/keys :req-un [::first-name ::last-name ::email]
-                             :opt-un [::phone]))
+                             :opt-un [::phone])) ; #todo s/keys -> tsp/map-with-keys tsp/entity-map
   (is= (s/conform :unq/person {:first-name "Elon" :last-name "Musk" :email "elon@example.com"})
     {:first-name "Elon", :last-name "Musk", :email "elon@example.com"})
 
@@ -162,7 +162,7 @@
   (s/def ::point (s/tuple double? double? double? ))
   (is= (s/conform ::point [1.5 2.0 3.1]) [1.5 2.0 3.1] )
 
-  (s/def ::scores (s/map-of string? int?))
+  (s/def ::scores (s/map-of string? int?)) ; every entry is string -> int
   (is= (s/conform ::scores{"Sally" 1000 "joe" 500})  {"Sally" 1000 "joe" 500}))
 
 (dotest
@@ -234,10 +234,11 @@
   (s/def ::name string?)
   (s/def ::score int?)
   (s/def ::player (s/keys :req [::name ::score ::hand]))
+  ; #todo s/keys -> tsp/map-with-keys  tsp/entity-map (really more like an object declaration)
 
   (s/def ::players (s/* ::player))
   (s/def ::deck (s/* ::card))
-  (s/def ::game (s/keys :req [::players ::deck]))
+  (s/def ::game (s/keys :req [::players ::deck])) ; #todo s/keys -> tsp/map-with-keys tsp/entity-map
 
   (def kenny {::name  "Kenny Rogers"
               ::score 100

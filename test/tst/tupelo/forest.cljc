@@ -1295,6 +1295,5 @@
         return-3 (tree->data tree-3)]
     (is= return-3 data-3))
 
-  (spyx ::dummy)
 )
 
