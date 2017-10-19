@@ -1270,16 +1270,18 @@
             [#:tupelo.forest{:value 3, :index nil}]]]]]))))
 
 (dotest
-  (let [tree-1 #:tupelo.forest{:tag   :tupelo.forest/list,
-                               :index nil,
-                               :kids  [#:tupelo.forest{:value 2, :index 0, :kids []}
-                                       #:tupelo.forest{:value 3, :index 1, :kids []}
-                                       #:tupelo.forest{:value 4, :index 2, :kids []}]}
-        data-1 (tree->data tree-1)]
+  (let [tree-1   #:tupelo.forest{:tag   :tupelo.forest/list,
+                                 :index nil,
+                                 :kids  [#:tupelo.forest{:value 2, :index 0, :kids []}
+                                         #:tupelo.forest{:value 3, :index 1, :kids []}
+                                         #:tupelo.forest{:value 4, :index 2, :kids []}]}
+        data-1   (tree->data tree-1)
+        return-1 (data->tree data-1)]
+    (is= tree-1 return-1)
     (is= (validate-list-kids-idx tree-1)
       [#:tupelo.forest{:value 2, :index 0, :kids []}
        #:tupelo.forest{:value 3, :index 1, :kids []}
-       #:tupelo.forest{:value 4, :index 2, :kids []}]) ))
+       #:tupelo.forest{:value 4, :index 2, :kids []}])))
 
 (dotest
   (let [data-1   {:a 1 :b 2}
