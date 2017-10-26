@@ -1025,6 +1025,8 @@
       (throw (IllegalArgumentException. (format "validate-map-keys: invalid key found tst-map=%s, valid-keys=%s" tst-map valid-keys))))
     tst-map))
 
+; #todo: perhaps add map-keys & map-vals
+
 ; #todo: rename labeled-map
 (defmacro data-map ; #todo -> README
   "Called with a list of symbols like `(data-map a b c)` returns a map
