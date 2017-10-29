@@ -1089,6 +1089,9 @@
         result   (apply = mapified)]
     result))
 
+; #todo allow pred fn to replace entire node in search path:
+; #todo    (fn [node] (and (contains? #{:horse :dog} (grab :animal/species node))
+; #todo                 (<= 1 (grab :age node) 3 )))   ; an "adolescent" animal
 (s/defn ^:private ^:no-doc wild-match-impl
   [ctx :- tsk/KeyMap ; #todo more precise schema needed { :submap-ok s/Bool ... }
    pattern :- s/Any

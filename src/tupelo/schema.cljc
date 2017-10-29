@@ -50,6 +50,11 @@
 (def Vec4 [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") (s/one s/Any "x4") ] )
 (def Vec5 [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") (s/one s/Any "x4") (s/one s/Any "x5") ] )
 
+(def Single   [ (s/one s/Any "x1") ] )  ; length-1 vector
+(def Pair     [ (s/one s/Any "x1") (s/one s/Any "x2") ] ) ; length-2 vector
+(def Triple   [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") ] )  ; length-3 vector
+(def Quad     [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") (s/one s/Any "x4") ] )  ; length-4 vector
+
 ;-----------------------------------------------------------------------------
 ; Datomic-related stuff
 

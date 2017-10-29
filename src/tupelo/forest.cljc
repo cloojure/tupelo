@@ -777,6 +777,15 @@
 ; #todo (find-leaf root [ :a :b  :c ] ) ->
 ; #todo (find-leaf root [ :a :b  {:tag :c :value <val> ::kids []} ] )
 
+; #todo allow pred fn to replace match value in search path:
+; #todo    { :tag :person  :age #(<= 21 %) }
+
+; #todo allow pred fn to replace entire node in search path:
+; #todo    (fn [node] (and (contains? #{:horse :dog} (grab :animal/species node))
+; #todo                 (<= 1 (grab :age node) 3 )))   ; an "adolescent" animal
+
+
+
 ;---------------------------------------------------------------------------------------------------
 (s/defn format-path
   [hids :- [HID]]
