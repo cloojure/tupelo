@@ -54,21 +54,19 @@
     map-out))
 
 (dotest
-  (let [tx-val-fn           (fn [val] (tx-val val even? inc))
-        sol-map-selector-fn (fn [solo-map]
-                              (let [[k v] (map->pair solo-map)]
-                                (->true k v)))
-        sol-map-tx-fn       (fn [solo-map]
-                              (assert (map? solo-map))
-                              (spyx solo-map)
-                              (let [[k v] (map->pair solo-map)]
-                                (spyx {k (spyx (tx-val-fn (spyx v)))})))
-        map-data            {:a 1 :b 2}
-        map-result          (tx-map map-data sol-map-selector-fn sol-map-tx-fn)]
-    (spyx map-data)
-    (spyx map-result)
-
-    ))
+  (let [tx-val-fn            (fn [val] (tx-val val even? inc))
+        solo-map-selector-fn ->true
+        solo-map-selector-fn (fn [solo-map]
+                               (let [[k v] (map->pair solo-map)]
+                                 (->true k v)))
+        solo-map-tx-fn       (fn [solo-map]
+                               (assert (map? solo-map))
+                               (let [[k v] (map->pair solo-map)]
+                                 {k (tx-val-fn v)}))
+        map-data             {:a 1 :b 2}
+        map-result           (tx-map map-data solo-map-selector-fn solo-map-tx-fn)]
+    ; (spyx map-data)
+    (is=  {:a 1, :b 3} ) map-result ))
 
 (def Indexed-Element [ (s/one s/Int "index") (s/one s/Any "element") ] )
 
@@ -76,12 +74,28 @@
   [vec-in :- tsk/Vec
    selector-fn      ; fn (or idx shortcut or :*)
    tx-fn            ; fn (tsk/Single -> tsk/Single)
-  ]
+   ]
   (let [vec-out (apply glue []
                   (forv [indexed-elem (indexed vec-in)]
-                    (validate tsk/Single
+                    (s/validate tsk/Single
                       (tx-val indexed-elem selector-fn tx-fn))))]
     vec-out))
+(dotest
+  (let [tx-val-fn        (fn [val] [(tx-val val even? inc)])
+        pair-selector-fn ->true
+        pair-selector-fn (fn [pair]
+                           (let [[idx val] pair]
+                             (->true idx val)))
+        pair-tx-fn       (fn [pair]
+                           (assert (vector? pair))
+                           (let [[idx val] pair
+                                 result (tx-val-fn val)]
+                             result))
+
+        vec-data         [0 1 2 3 4]
+        vec-result       (tx-vec vec-data pair-selector-fn pair-tx-fn)]
+    ; (spyx vec-data)
+    (is= [1 1 3 3 5] vec-result)))
 
 (dotest
   (let [hand-data   [{:a 2 :b 3} {:a 1} {:a 4}]
@@ -91,7 +105,7 @@
                           {:a (if (even? it)
                                 (inc it)
                                 it)})))]
-    (spyx hand-data)
-    (spyx hand-result)))
+    ; (spyx hand-data)
+    (is=  [{:a 3, :b 3} {:a 1} {:a 5}] hand-result)))
 
 
