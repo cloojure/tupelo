@@ -87,7 +87,7 @@
                            (let [[idx val] pair]
                              (->true idx val)))
         pair-tx-fn       (fn [pair]
-                           (assert (vector? pair))
+                           (s/validate tsk/Pair pair)
                            (let [[idx val] pair
                                  result (tx-val-fn val)]
                              result))
