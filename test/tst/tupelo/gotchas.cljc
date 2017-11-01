@@ -16,9 +16,9 @@
 
 ; rest/next too loose
 (dotest
-  (is= nil (seq  nil))
-  (is= []  (rest nil))
-  (is= nil (next nil))
+  (is= nil (seq  nil)) ; should be undefined
+  (is= []  (rest nil)) ; should throw
+  (is= nil (next nil)) ; should throw
 
   (is= nil (seq  [])) ; should be []
   (is= []  (rest [])) ; should throw
@@ -29,11 +29,27 @@
   (is= nil (next [5])) ; should be []
 
   ; consistent behavior: drop first item or throw if not first
-  (is (thrown? Exception (t/xrest nil)))
-  (is (thrown? Exception (t/xrest [])))
-  (is= []                (t/xrest [5]))
-  (is= [5]               (t/xrest [4 5]))
-  )
+  (throws? (t/xrest nil))
+  (throws? (t/xrest []))
+  (is= []  (t/xrest [5]))
+  (is= [5] (t/xrest [4 5]))
+
+  ; Unexpected, non-intuitive behavior
+  (is= nil (first nil)) ; should throw
+  (is= nil (first [])) ; should throw
+  (is= 5   (first [5]))
+  (is= nil (second nil)) ; should throw
+  (is= nil (second [])) ; should throw
+  (is= nil (second [5])) ; should throw
+
+  ; Predictable bahavior
+  (throws? (t/xfirst nil))
+  (throws? (t/xfirst []))
+  (is= 5   (t/xfirst [5]))
+  (throws? (t/xsecond nil))
+  (throws? (t/xsecond []))
+  (throws? (t/xsecond [5]))
+)
 
 ; vec & (apply list ...) too loose
 (dotest
