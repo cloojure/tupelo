@@ -273,9 +273,8 @@
     (stest/instrument `ranged-rand)
     (is (thrown? Exception (ranged-rand 8 5)))
     ; (spyx (stest/check `ranged-rand))  #todo
+    ; (spyx (s/exercise-fn `ranged-rand))
 
-    )
-  (spyx (s/exercise-fn `ranged-rand))
   )
+)
 
-;-----------------------------------------------------------------------------

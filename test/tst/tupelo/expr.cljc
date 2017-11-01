@@ -9,9 +9,3 @@
   (:require [tupelo.core :as t] ))
 (t/refer-tupelo)
 
-(defmacro  make-fn-with-name [name]
-  `(defn ~name [] 42))
-
-(dotest
-  (make-fn-with-name fred)
-  (is= 42 (fred)))
