@@ -16,17 +16,18 @@
 ; #todo -> tupelo.core
 (def ->true  (constantly true))
 (def ->false (constantly false))
+;(def ->1     (constantly 1))
+;(def ->0     (constantly 0))
+;(def ->nil   (constantly nil))
 
 ; #todo -> tupelo.core macro forv-indexed
 
-(s/defn pair->map
+(s/defn pair->map :- tsk/Map
   [pair :- tsk/Pair]
   (apply hash-map pair))
-(s/defn map->pair
+(s/defn map->pair :- tsk/Pair
   [map-arg :- tsk/Map]
-  (let [pairs (vec map-arg)
-        pair  (only pairs)]
-    pair))
+  (only (vec map-arg)))
 
 ; #todo maybe specialize to tx-map-entry & tx-indexed-elem
 (s/defn tx-val :- s/Any

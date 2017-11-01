@@ -9,7 +9,7 @@
 
 (def Set
   "Either a Clojure hash-set or a java.util.HashSet"
-  (s/either #{s/Any} 
+  (s/either #{s/Any}
             java.util.HashSet ))
 
 (def List
