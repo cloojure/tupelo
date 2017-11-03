@@ -16,39 +16,64 @@
 
 ; rest/next too loose
 (dotest
-  (is= nil (seq  nil)) ; should be undefined
-  (is= []  (rest nil)) ; should throw
-  (is= nil (next nil)) ; should throw
-
-  (is= nil (seq  [])) ; should be []
-  (is= []  (rest [])) ; should throw
-  (is= nil (next [])) ; should throw
-
-  (is= [5] (seq  [5]))
-  (is= []  (rest [5]))
-  (is= nil (next [5])) ; should be []
-
-  ; consistent behavior: drop first item or throw if not first
-  (throws? (t/xrest nil))
-  (throws? (t/xrest []))
-  (is= []  (t/xrest [5]))
-  (is= [5] (t/xrest [4 5]))
+  ; Expected, intuitive behavior
+  (throws? (seq  5))
+  (= [5]   (vector 5))
+  (throws? (vec  5))
+  (= [5]   (list 5))
+  (throws? (apply list 5))
+  (throws? (first 5))
+  (throws? (second 5))
+  (throws? (rest 5))
+  (throws? (next 5))
 
   ; Unexpected, non-intuitive behavior
-  (is= nil (first nil)) ; should throw
-  (is= nil (first [])) ; should throw
-  (is= 5   (first [5]))
-  (is= nil (second nil)) ; should throw
-  (is= nil (second [])) ; should throw
-  (is= nil (second [5])) ; should throw
+  (is= nil   (seq  nil)) ; should throw
+  (is= [nil] (vector  nil))
+  (is= []    (vec  nil)) ; should throw
+  (is= [nil] (list  nil))
+  (is= []    (apply list nil))
+  (is= nil   (first nil)) ; should throw
+  (is= nil   (second nil)) ; should throw
+  (is= []    (rest nil)) ; should throw
+  (is= nil   (next nil)) ; should throw
+
+  ; Unexpected, non-intuitive behavior
+  (is= nil   (seq  [])) ; should be []
+  (is= []    (vec  []))
+  (is= [[]]  (list  []))
+  (is= []    (apply list []))
+  (is= nil   (first [])) ; should throw
+  (is= nil   (second [])) ; should throw
+  (is= []    (rest [])) ; should throw
+  (is= nil   (next [])) ; should throw
+
+  (is= [5]   (seq  [5]))
+  (is= [5]   (vec  [5]))
+  (is= [5 6] (vec  [5 6]))
+  (is= [[5]] (list  [5]))
+  (is= [5]   (apply list [5]))
+  (is= [5 6] (apply list [5 6]))
+  (is= [6 5] (into (list) [5 6])) ; accidentally reversed
+  (is= 5     (first [5]))
+  (is= nil   (second [5])) ; should throw
+  (is= []    (rest [5]))
+  (is= nil   (next [5])) ; should be []
 
   ; Predictable bahavior
   (throws? (t/xfirst nil))
-  (throws? (t/xfirst []))
-  (is= 5   (t/xfirst [5]))
   (throws? (t/xsecond nil))
+  (throws? (t/xrest nil)) ; drop first item or throw if not more
+
+  (throws? (t/xfirst []))
   (throws? (t/xsecond []))
+  (throws? (t/xrest [])) ; drop first item or throw if not more
+
+  (is= 5   (t/xfirst [5]))
   (throws? (t/xsecond [5]))
+  (is= []  (t/xrest [5])) ; drop first item or throw if not more
+  (is= [5] (t/xrest [4 5]))
+
 )
 
 ; vec & (apply list ...) too loose
@@ -61,6 +86,23 @@
 
   (is= [5]  (vec        [5]))
   (is= [5]  (apply list [5])))
+
+(dotest
+  (is= [1 2 3] (conj [1] 2 3))
+  (is= [1 2 3] (conj [1 2] 3))
+
+  (is= [3 2 1] (conj (list) 1 2 3))
+  (is= [3 2 1] (conj (list 1) 2 3))
+  (is= [3 1 2] (conj (list 1 2) 3))
+
+  (is= [1 2 3] (into (vector) [1 2 3]))
+  (is= [1 2 3] (into (vector 1) [2 3]))
+  (is= [1 2 3] (into (vector 1 2) [3]))
+
+  (is= [3 2 1] (into (list) [1 2 3]))
+  (is= [3 2 1] (into (list 1) [2 3]))
+  (is= [3 1 2] (into (list 1 2) [3]))
+)
 
 ; Clojure is consistent & symmetric for if/if-not, when/when-not, every?/not-every?
 ; Clojure is inconsistent & broken for
