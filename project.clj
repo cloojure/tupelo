@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.59"
+(defproject tupelo "0.9.60"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
@@ -14,6 +14,7 @@
     [org.clojure/core.match           "0.3.0-alpha4"]
     [org.clojure/data.xml             "0.2.0-alpha3"]
     [org.clojure/math.combinatorics   "0.1.4"]
+    [org.clojure/spec.alpha           "0.1.143"]
     [org.clojure/test.check           "0.9.0"]
     [org.clojure/tools.analyzer       "0.6.9"]
     [potemkin                         "0.4.4"]
