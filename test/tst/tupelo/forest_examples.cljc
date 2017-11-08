@@ -7,7 +7,7 @@
 (ns tst.tupelo.forest-examples
   (:use tupelo.forest tupelo.test )
   (:require
-    [clojure.data.xml :as dx]
+    [clojure.data.xml :as cdx]
     [clojure.java.io :as io]
     [clojure.set :as cs]
     [net.cgrand.enlive-html :as en-html]
@@ -363,11 +363,32 @@
 (defn zappy
   "grab a webpage we can trust, and parse it into a zipper"
   []
-  (dx/parse
-    (io/input-stream
-      (io/resource "clojure.zip-api.html"))))
+  (let [; >> (println "io/resource - BEFORE")
+        v1 (io/resource "clojure.zip-api.html")
+        ; >> (println "io/resource - AFTER")
+        ; >> (println "io/input-stream - BEFORE")
+        v2 (io/input-stream v1)
+        ; >> (println "io/input-stream - AFTER")
+        >> (do
+             (nl)
+             (println (class v2))
+             (println "*****************************************************************************")
+             (println v2)
+             (println "*****************************************************************************")
+             (nl))
+
+        >> (println "clojure.data.xml/parse - BEFORE")
+        v3 (clojure.data.xml/parse v2)
+        >> (println "clojure.data.xml/parse - AFTER")]
+    v3))
 
 (dotest
+  (println "zappy - BEFORE")
+  (zappy)
+  (println "zappy - AFTER"))
+
+; #todo #bug clojure.lang.Reflector
+#_(dotest
   (when false ; manually enable to grab a new copy of the webpage
     (spit "clojure-sample.html"
       (slurp "http://clojure.github.io/clojure/clojure.zip-api.html")))
@@ -416,7 +437,7 @@
                (set result-data))))))
 
 ;-----------------------------------------------------------------------------
-(dotest
+#_(dotest
   (with-forest (new-forest)
     (let [enlive-tree (->> "<p>sample <em>text</em> with words.</p>"
                         clojure.string/lower-case
@@ -456,7 +477,7 @@
 
 ;-----------------------------------------------------------------------------
 ; Discard any xml nodes of Type="A" or Type="B" (plus blank string nodes)
-(dotest
+#_(dotest
   (with-forest (new-forest)
     (let [xml-str         "<ROOT>
                             <Items>
@@ -583,7 +604,7 @@
                       </product>
                     </products>
                   </data> " )
-(dotest
+#_(dotest
   (with-forest (new-forest)
     (let [enlive-tree          (->> xml-str-prod
                                  java.io.StringReader.
@@ -651,7 +672,7 @@
            [:image "img2.jpg"]]]]))))
 
 ; shorter version w/o extra features
-(dotest
+#_(dotest
   (with-forest (new-forest)
     (let [xml-str         "<ROOT>
                             <Items>
@@ -681,7 +702,7 @@
 
 
 ;-----------------------------------------------------------------------------
-(dotest
+#_(dotest
   (with-forest (new-forest)
     (let [xml-str         "<html>
                              <body>
@@ -730,7 +751,7 @@
 
 ;-----------------------------------------------------------------------------
 
-(dotest
+#_(dotest
   (with-forest (new-forest)
     ; #todo re-work to fix "special" double-quotes
     (let [html-str        "<div class=“group”>
@@ -822,7 +843,7 @@
          ["title2" "subheading3"]]) )))
 
 ;-----------------------------------------------------------------------------
-(dotest
+#_(dotest
   (with-forest (new-forest)
     (let [xml-str         "<top>
                               <group>
