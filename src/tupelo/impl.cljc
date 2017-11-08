@@ -54,6 +54,13 @@
   [arg :- [s/Any]]
   (when (or (nil? arg) (< (count arg) 3))
     (throw (IllegalArgumentException. (str "xthird: invalid arg:" arg))))
+  (clojure.core/nth arg 2))
+
+(s/defn xfourth :- s/Any ; #todo -> tests
+  "Returns the fourth value in a list or vector. Throws if (< len 4)."
+  [arg :- [s/Any]]
+  (when (or (nil? arg) (< (count arg) 4))
+    (throw (IllegalArgumentException. (str "xfourth: invalid arg:" arg))))
   (clojure.core/nth arg 3))
 
 (s/defn xlast :- s/Any ; #todo -> tests

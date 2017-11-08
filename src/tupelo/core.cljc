@@ -26,6 +26,7 @@
 (pns/import-fn impl/xfirst )
 (pns/import-fn impl/xsecond )
 (pns/import-fn impl/xthird )
+(pns/import-fn impl/xfourth )
 (pns/import-fn impl/xrest )
 (pns/import-fn impl/xlast )
 (pns/import-fn impl/vec->list )
@@ -275,14 +276,6 @@
 ; entries.
 
 (pns/import-fn impl/only )
-
-; #todo (first [] ) should throw instead of -> nil, etc.
-; #todo (second [1] ) should throw instead of -> nil, etc.
-; #todo should throw if not 3 items in seq
-(s/defn third :- s/Any
-  "Returns the third item in a collection, or nil if fewer than three items are present. "
-  [seqable-arg :- ts/List]
-  (first (next (next seqable-arg))))
 
 ; #awt #todo: Test failure of (safe-> 3 (* 2) (+ 1))
 ; #awt #todo: add tests
@@ -590,11 +583,11 @@
      macro? char-seq
      append prepend grab dissoc-in fetch fetch-in
      submap? submap-by-keys submap-by-vals keyvals validate-map-keys
-     validate only third it-> safe-> keep-if drop-if zip zip* zip-lazy indexed flat-vec
+     validate only it-> safe-> keep-if drop-if zip zip* zip-lazy indexed flat-vec
      strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel= all-rel=
      drop-at insert-at replace-at idx
      starts-with? int->kw kw->int vec->list
-     xfirst xsecond xthird xlast xrest kw->sym kw->str str->sym str->kw sym->kw sym->str
+     xfirst xsecond xthird xfourth xlast xrest kw->sym kw->str str->sym str->kw sym->kw sym->str
      split-using split-match partition-using
      wild-match? wild-submatch? wild-match-ctx? wild-item? submatch? val=
      increasing? increasing-or-equal? ->vector unwrap

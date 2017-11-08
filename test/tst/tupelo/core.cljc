@@ -856,11 +856,32 @@
   (throws? IllegalArgumentException (only [:x :y])))
 
 (dotest
-  (is= nil (third [       ]))
-  (is= nil (third [1      ]))
-  (is= nil (third [1 2    ]))
-  (is= 3   (third [1 2 3  ]))
-  (is= 3   (third [1 2 3 4])))
+
+  (throws? (xfirst [       ]))
+  (is= 1   (xfirst [1      ]))
+  (is= 1   (xfirst [1 2    ]))
+
+  (throws? (xsecond [       ]))
+  (throws? (xsecond [1      ]))
+  (is= 2   (xsecond [1 2    ]))
+  (is= 2   (xsecond [1 2 3  ]))
+  (is= 2   (xsecond [1 2 3 4]))
+
+  (throws? (xthird [       ]))
+  (throws? (xthird [1      ]))
+  (throws? (xthird [1 2    ]))
+  (is= 3   (xthird [1 2 3  ]))
+  (is= 3   (xthird [1 2 3 4]))
+
+  (throws? (xfourth [         ]))
+  (throws? (xfourth [1        ]))
+  (throws? (xfourth [1 2      ]))
+  (throws? (xfourth [1 2 3    ]))
+  (is= 4   (xfourth [1 2 3 4  ]))
+  (is= 4   (xfourth [1 2 3 4 5]))
+
+  )
+
 
 (dotest
   (is= 3        (t/validate pos? 3))
