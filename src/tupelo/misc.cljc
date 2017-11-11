@@ -133,34 +133,37 @@
 (defn dots-config!  ; #todo need docstring
   [ctx]  ; #todo check pos integers
   (swap! dots-ctx conj ctx))
+(defn- dot-counter-watch-fn
+  [key dot-counter-ref old-count new-count]
+  (let [decimation        (grab :decimation @dots-ctx)
+        counts-per-row    (* decimation (grab :dots-per-row @dots-ctx)) ]
+    (when (not= old-count new-count)
+      (locking dot-counter
+        (when (zero? (rem old-count counts-per-row))
+          (print (format "%10d " old-count))
+          (flush))
+        (when (zero? (rem old-count decimation))
+          (print \.)
+          (flush))
+        (when (zero? (rem new-count counts-per-row))
+          (newline))))))
+(add-watch dot-counter :dot-counter dot-counter-watch-fn)
 
-(defn dot 
- "Prints a single dot (flushed) to the console, keeping a running count of dots printed.  Wraps to a
-  newline when 100 dots have been printed. Displays the running dot count at the beginning of each line.
-  Usage:
+(defn dot
+  "Prints a single dot (flushed) to the console, keeping a running count of dots printed.  Wraps to a
+   newline when 100 dots have been printed. Displays the running dot count at the beginning of each line.
+   Usage:
 
-    (ns xxx.core 
-      (:require [tupelo.misc :as tm]))
-    (tm/dots-config! {:decimation 10} )
-    (tm/with-dots
-      (doseq [ii (range 2345)]
-        (tm/dot)
-        (Thread/sleep 5)))
-  "
-  [] 
-  (let [
-        decimation        (grab :decimation @dots-ctx)
-        counts-per-row    (* decimation (grab :dots-per-row @dots-ctx))
-        old-count         @dot-counter
-        new-count         (swap! dot-counter inc) ]
-    (when (zero? (rem old-count counts-per-row))
-      (print (format "%10d " old-count)))
-    (when (zero? (rem old-count decimation))
-      (print \.))
-    (flush)
-    (when (zero? (rem new-count counts-per-row))
-      (newline))
-    (flush)))
+     (ns xxx.core
+       (:require [tupelo.misc :as tm]))
+     (tm/dots-config! {:decimation 10} )
+     (tm/with-dots
+       (doseq [ii (range 2345)]
+         (tm/dot)
+         (Thread/sleep 5)))
+   "
+  []
+  (swap! dot-counter inc))
 
 (defmacro with-dots
   "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
