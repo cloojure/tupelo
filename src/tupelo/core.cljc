@@ -460,12 +460,6 @@
     (println version-str)
     (println hyphens) ))
 
-; #todo add test & README
-; #todo rename json->edn  ???
-(defn json->clj [arg]                                       ; #todo experimental
-  "Shortcut to cheshire.core/parse-string"
-  (cc/parse-string arg true))                               ; true => keywordize-keys
-
 (defn int->kw [arg]
   (keyword (str arg)))
 
@@ -473,7 +467,12 @@
   (Integer/parseInt (kw->str arg)))
 
 ; #todo add test & README
-(defn clj->json [arg]                                       ; #todo experimental
+(defn json->edn [arg] ; #todo rename json->edn
+  "Shortcut to cheshire.core/parse-string"
+  (cc/parse-string arg true))                               ; true => keywordize-keys
+
+; #todo add test & README
+(defn edn->json [arg] ; #todo rename edn->json
   "Shortcut to cheshire.core/generate-string"
   (cc/generate-string arg))
 
@@ -584,7 +583,7 @@
      append prepend grab dissoc-in fetch fetch-in
      submap? submap-by-keys submap-by-vals keyvals validate-map-keys
      validate only it-> safe-> keep-if drop-if zip zip* zip-lazy indexed flat-vec
-     strcat nl pretty pretty-str json->clj clj->json clip-str range-vec thru rel= all-rel=
+     strcat nl pretty pretty-str json->edn edn->json clip-str range-vec thru rel= all-rel=
      drop-at insert-at replace-at idx
      starts-with? int->kw kw->int vec->list
      xfirst xsecond xthird xfourth xlast xrest kw->sym kw->str str->sym str->kw sym->kw sym->str

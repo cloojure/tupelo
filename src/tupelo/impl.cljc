@@ -974,17 +974,17 @@
       (submap-by-keys {:a 1 :b 2} #{:a :z} :missing-ok )  =>  {:a 1}
   "
   [map-arg :- tsk/Map
-   keep-keys :- tsk/Set
+   keep-keys :- (s/either tsk/Set tsk/List)
    & opts]
-  (assert (set? keep-keys))
-  (if (= opts [:missing-ok])
-    (apply glue {}
-      (for [key keep-keys]
-        (with-exception-default {}
-          {key (grab key map-arg)})))
-    (apply glue {}
-      (for [key keep-keys]
-        {key (grab key map-arg)}))))
+  (let [keep-keys (set keep-keys)]
+    (if (= opts [:missing-ok])
+      (apply glue {}
+        (for [key keep-keys]
+          (with-exception-default {}
+            {key (grab key map-arg)})))
+      (apply glue {}
+        (for [key keep-keys]
+          {key (grab key map-arg)})))))
 
 ; #todo -> README
 (s/defn submap-by-vals :- tsk/Map
@@ -995,10 +995,10 @@
       (submap-by-vals {:a 1 :b 2 :A 1} #{1 9} :missing-ok )  =>  {:a 1 :A 1}
   "
   [map-arg :- tsk/Map
-   keep-vals :- tsk/Set
+   keep-vals :- (s/either tsk/Set tsk/List)
    & opts]
-  (assert (set? keep-vals))
-  (let [found-map    (into {}
+  (let [keep-vals    (set keep-vals)
+        found-map    (into {}
                        (for [entry map-arg
                              :let [entry-val (val entry)]
                              :when (contains? keep-vals entry-val)]

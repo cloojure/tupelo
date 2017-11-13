@@ -133,7 +133,7 @@
 (defn dots-config!  ; #todo need docstring
   [ctx]  ; #todo check pos integers
   (swap! dots-ctx conj ctx))
-(defn- dot-counter-watch-fn
+(defn dot-counter-watch-fn
   [key dot-counter-ref old-count new-count]
   (let [decimation        (grab :decimation @dots-ctx)
         counts-per-row    (* decimation (grab :dots-per-row @dots-ctx)) ]
@@ -147,7 +147,6 @@
           (flush))
         (when (zero? (rem new-count counts-per-row))
           (newline))))))
-(add-watch dot-counter :dot-counter dot-counter-watch-fn)
 
 (defn dot
   "Prints a single dot (flushed) to the console, keeping a running count of dots printed.  Wraps to a
@@ -169,7 +168,9 @@
   "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
   [& body]
   `(do
+     (remove-watch dot-counter :dot-counter)
      (reset! dot-counter 0)
+     (add-watch dot-counter :dot-counter dot-counter-watch-fn)
      (let [result#  (do ~@body) ]
       (newline)
       (println (format "%10d total" @dot-counter))
