@@ -37,13 +37,13 @@
         (is (= (seq orig) (seq result)))))
 
     ;base64 - string"
-    (if (t/is-java-1-8-plus?)
-      (doseq [num-chars [1 2 3 7 20]]
-        (let [orig     (str/join (misc/take-dist num-chars char/text))
-              code-str (b64url/encode-str orig)
-              result   (b64url/decode-str code-str)]
-          (is (every? b64url/code-chars (seq code-str)))
-          (is (= orig result))))))
+    (doseq [num-chars [1 2 3 7 20]]
+      (let [orig     (str/join (misc/take-dist num-chars char/text))
+            code-str (b64url/encode-str orig)
+            result   (b64url/decode-str code-str)]
+        (is (every? b64url/code-chars (seq code-str)))
+        (is= orig result)))
+    (is= "KzEyMy1oZWxsbw==" (b64url/encode-str "+123-hello")))
 
   (dospec 999       ; round-trip-bytes
     (prop/for-all [orig gen/bytes]
@@ -59,7 +59,9 @@
             result     (b64url/decode-str string-b64)]
         (assert (every? b64url/code-chars (seq string-b64)))
         (assert (string? result))
-        (= orig result)))))
+        (= orig result))))
+
+)
 
 (defn -main []
   (newline)

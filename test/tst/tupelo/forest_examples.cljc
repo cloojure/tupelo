@@ -7,7 +7,7 @@
 (ns tst.tupelo.forest-examples
   (:use tupelo.forest tupelo.test )
   (:require
-    [clojure.data.xml :as dx]
+    [clojure.data.xml :as cdx]
     [clojure.java.io :as io]
     [clojure.set :as cs]
     [net.cgrand.enlive-html :as en-html]
@@ -102,35 +102,35 @@
 (def t0-data
   [1 [:a :b] 2 3 [40 50 60]] )
 
-(dotest
-  (with-forest (new-forest)
-    (let [root-hid (add-tree (data->tree t0-data))]
-      (is= (hid->bush root-hid)
-        [{::tf/tag :root}
-         [{::tf/tag :data, ::tf/idx 0, :value 1}]
-         [{::tf/tag :data, ::tf/idx 1}
-          [{::tf/tag :data, ::tf/idx 0, :value :a}]
-          [{::tf/tag :data, ::tf/idx 1, :value :b}]]
-         [{::tf/tag :data, ::tf/idx 2, :value 2}]
-         [{::tf/tag :data, ::tf/idx 3, :value 3}]
-         [{::tf/tag :data, ::tf/idx 4}
-          [{::tf/tag :data, ::tf/idx 0, :value 40}]
-          [{::tf/tag :data, ::tf/idx 1, :value 50}]
-          [{::tf/tag :data, ::tf/idx 2, :value 60}]]])
-      (is= (hid->tree root-hid)
-        {::tf/tag  :root,
-         ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, :value 1}
-                    {::tf/tag  :data,
-                     ::tf/idx  1,
-                     ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, :value :a}
-                                {::tf/kids [], ::tf/tag :data, ::tf/idx 1, :value :b}]}
-                    {::tf/kids [], ::tf/tag :data, ::tf/idx 2, :value 2}
-                    {::tf/kids [], ::tf/tag :data, ::tf/idx 3, :value 3}
-                    {::tf/tag  :data,
-                     ::tf/idx  4,
-                     ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, :value 40}
-                                {::tf/kids [], ::tf/tag :data, ::tf/idx 1, :value 50}
-                                {::tf/kids [], ::tf/tag :data, ::tf/idx 2, :value 60}]}]} ) )))
+;(dotest
+;  (with-forest (new-forest)
+;    (let [root-hid (add-tree (data->tree t0-data))]
+;      (is= (hid->bush root-hid)
+;        [{::tf/tag :root}
+;         [{::tf/tag :data, ::tf/idx 0, :value 1}]
+;         [{::tf/tag :data, ::tf/idx 1}
+;          [{::tf/tag :data, ::tf/idx 0, :value :a}]
+;          [{::tf/tag :data, ::tf/idx 1, :value :b}]]
+;         [{::tf/tag :data, ::tf/idx 2, :value 2}]
+;         [{::tf/tag :data, ::tf/idx 3, :value 3}]
+;         [{::tf/tag :data, ::tf/idx 4}
+;          [{::tf/tag :data, ::tf/idx 0, :value 40}]
+;          [{::tf/tag :data, ::tf/idx 1, :value 50}]
+;          [{::tf/tag :data, ::tf/idx 2, :value 60}]]])
+;      (is= (hid->tree root-hid)
+;        {::tf/tag  :root,
+;         ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, :value 1}
+;                    {::tf/tag  :data,
+;                     ::tf/idx  1,
+;                     ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, :value :a}
+;                                {::tf/kids [], ::tf/tag :data, ::tf/idx 1, :value :b}]}
+;                    {::tf/kids [], ::tf/tag :data, ::tf/idx 2, :value 2}
+;                    {::tf/kids [], ::tf/tag :data, ::tf/idx 3, :value 3}
+;                    {::tf/tag  :data,
+;                     ::tf/idx  4,
+;                     ::tf/kids [{::tf/kids [], ::tf/tag :data, ::tf/idx 0, :value 40}
+;                                {::tf/kids [], ::tf/tag :data, ::tf/idx 1, :value 50}
+;                                {::tf/kids [], ::tf/tag :data, ::tf/idx 2, :value 60}]}]} ) )))
 
 ;-----------------------------------------------------------------------------
 (def t0-hiccup
@@ -363,10 +363,31 @@
 (defn zappy
   "grab a webpage we can trust, and parse it into a zipper"
   []
-  (dx/parse
-    (io/input-stream
-      (io/resource "clojure.zip-api.html"))))
+  (let [; >> (println "io/resource - BEFORE")
+        v1 (io/resource "clojure.zip-api.html")
+        ; >> (println "io/resource - AFTER")
+        ; >> (println "io/input-stream - BEFORE")
+        v2 (io/input-stream v1)
+        ; >> (println "io/input-stream - AFTER")
+        >> (do
+             (nl)
+             (println (class v2))
+             (println "*****************************************************************************")
+             (println v2)
+             (println "*****************************************************************************")
+             (nl))
 
+        >> (println "clojure.data.xml/parse - BEFORE")
+        v3 (clojure.data.xml/parse v2)
+        >> (println "clojure.data.xml/parse - AFTER")]
+    v3))
+
+(dotest
+  (println "zappy - BEFORE")
+  (zappy)
+  (println "zappy - AFTER"))
+
+; #todo #bug clojure.lang.Reflector
 (dotest
   (when false ; manually enable to grab a new copy of the webpage
     (spit "clojure-sample.html"
@@ -911,3 +932,91 @@
              [{:tag :group} [{:tag :item} [{:tag :number, :value "3"}]]]]]]))
 
       )))
+
+(dotest
+  (with-forest (new-forest)
+    (let [root-hid   (add-tree-enlive
+                       {:tag     :eSearchResult,
+                        :attrs   {},
+                        :content [
+                            {:tag :Count, :attrs {}, :content ["16"]}
+                            {:tag :RetMax, :attrs {}, :content ["16"]}
+                            {:tag :RetStart, :attrs {}, :content ["0"]}
+                            {:tag     :IdList,
+                             :attrs   {},
+                             :content [
+                                 {:tag :Id, :attrs {}, :content ["28911150"]}
+                                 {:tag :Id, :attrs {}, :content ["28899394"]}
+                                 {:tag :Id, :attrs {}, :content ["28597238"]}
+                                 {:tag :Id, :attrs {}, :content ["28263281"]}
+                                 {:tag :Id, :attrs {}, :content ["28125459"]}
+                                 {:tag :Id, :attrs {}, :content ["26911135"]}
+                                 {:tag :Id, :attrs {}, :content ["26699345"]}
+                                 {:tag :Id, :attrs {}, :content ["26297102"]}
+                                 {:tag :Id, :attrs {}, :content ["26004019"]}
+                                 {:tag :Id, :attrs {}, :content ["25995331"]}
+                                 {:tag :Id, :attrs {}, :content ["25429093"]}
+                                 {:tag :Id, :attrs {}, :content ["25355095"]}
+                                 {:tag :Id, :attrs {}, :content ["25224593"]}
+                                 {:tag :Id, :attrs {}, :content ["24816246"]}
+                                 {:tag :Id, :attrs {}, :content ["24779721"]}
+                                 {:tag :Id, :attrs {}, :content ["24740865"]} ]}]})
+          id-content-paths (find-paths root-hid [:eSearchResult :IdList :Id])
+          id-strings       (forv [path id-content-paths]
+                             (grab :value (hid->leaf (last path))))]
+      (is= (hid->bush root-hid)
+        [{:tag :eSearchResult}
+         [{:tag :Count, :value "16"}]
+         [{:tag :RetMax, :value "16"}]
+         [{:tag :RetStart, :value "0"}]
+         [{:tag :IdList}
+          [{:tag :Id, :value "28911150"}]
+          [{:tag :Id, :value "28899394"}]
+          [{:tag :Id, :value "28597238"}]
+          [{:tag :Id, :value "28263281"}]
+          [{:tag :Id, :value "28125459"}]
+          [{:tag :Id, :value "26911135"}]
+          [{:tag :Id, :value "26699345"}]
+          [{:tag :Id, :value "26297102"}]
+          [{:tag :Id, :value "26004019"}]
+          [{:tag :Id, :value "25995331"}]
+          [{:tag :Id, :value "25429093"}]
+          [{:tag :Id, :value "25355095"}]
+          [{:tag :Id, :value "25224593"}]
+          [{:tag :Id, :value "24816246"}]
+          [{:tag :Id, :value "24779721"}]
+          [{:tag :Id, :value "24740865"}]]])
+      (is= (format-paths id-content-paths)
+        [[{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "28911150"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "28899394"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "28597238"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "28263281"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "28125459"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "26911135"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "26699345"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "26297102"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "26004019"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "25995331"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "25429093"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "25355095"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "25224593"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "24816246"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "24779721"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "24740865"}]]]])
+      (is= id-strings
+        ["28911150"
+         "28899394"
+         "28597238"
+         "28263281"
+         "28125459"
+         "26911135"
+         "26699345"
+         "26297102"
+         "26004019"
+         "25995331"
+         "25429093"
+         "25355095"
+         "25224593"
+         "24816246"
+         "24779721"
+         "24740865"]) )))

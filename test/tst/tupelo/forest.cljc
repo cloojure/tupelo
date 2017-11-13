@@ -1008,36 +1008,42 @@
             (find-leaf-paths (root-hids) [{:tag :a} {:tag :c}] )))
   )))
 
+
 (dotest
   (with-forest (new-forest)
-    (let [data-1 [1 2 3]
-          data-2 [[1 2 3]
-                  [10]
-                  []]
-          data-3 [[[1 2 3]
-                   [4 5 6]
-                   [7 8 9]]
-                  [[10 11]
-                   [12 13]]
-                  [[20]
-                   [21]]
-                  [[30]]
-                  [[]]]
+    (let [data-1     [1 2 3]
+          data-2     [[1 2 3]
+                      [10]
+                      []]
+          data-3     [[[1 2 3]
+                       [4 5 6]
+                       [7 8 9]]
+                      [[10 11]
+                       [12 13]]
+                      [[20]
+                       [21]]
+                      [[30]]
+                      [[]]]
 
-          data-4 [[[1 2 3]
-                   [4 5 6]
-                   [7 8 9]]
-                  [[10 11]
-                   [12  2]]
-                  [[20]
-                   [21]]
-                  [[30]]
-                  [[2]]]
+          data-4     [[[1 2 3]
+                       [4 5 6]
+                       [7 8 9]]
+                      [[10 11]
+                       [12 2]]
+                      [[20]
+                       [21]]
+                      [[30]]
+                      [[2]]]
 
-          tree-1 (data->tree data-1)
-          tree-2 (data->tree data-2)
-          tree-3 (data->tree data-3)
-          tree-4 (data->tree data-4)
+          tree-1     (data->tree data-1)
+          tree-2     (data->tree data-2)
+          tree-3     (data->tree data-3)
+          tree-4     (data->tree data-4)
+
+          return-1     (tree->data tree-1)
+          return-2     (tree->data tree-2)
+          return-3     (tree->data tree-3)
+          return-4     (tree->data tree-4)
 
           root-hid-1 (add-tree tree-1)
           root-hid-2 (add-tree tree-2)
@@ -1049,145 +1055,314 @@
           bush-3     (hid->bush root-hid-3)
           bush-4     (hid->bush root-hid-4)
     ]
-     ; -------------------------------------------------------
-       (is= tree-1
-         {::tf/tag  :root,
-          ::tf/kids [{::tf/tag :data, ::tf/idx 0, :value 1, ::tf/kids []}
-                     {::tf/tag :data, ::tf/idx 1, :value 2, ::tf/kids []}
-                     {::tf/tag :data, ::tf/idx 2, :value 3, ::tf/kids []}]})
+      ;-------------------------------------------------------
+      ; Note 2 different map formats re namespaced keys
+      (is= tree-1
+        #:tupelo.forest{:tag   :tupelo.forest/list,
+                        :index nil,
+                        :kids  [{::tf/value 1, ::tf/index 0, ::tf/kids []}
+                                {::tf/value 2, ::tf/index 1, ::tf/kids []}
+                                {::tf/value 3, ::tf/index 2, ::tf/kids []}]})
       (is= bush-1
-        [{::tf/tag :root}
-         [{::tf/tag :data, ::tf/idx 0, :value 1}]
-         [{::tf/tag :data, ::tf/idx 1, :value 2}]
-         [{::tf/tag :data, ::tf/idx 2, :value 3}]] )
-      ; -------------------------------------------------------
+        [#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
+         [#:tupelo.forest{:value 1, :index 0}]
+         [#:tupelo.forest{:value 2, :index 1}]
+         [#:tupelo.forest{:value 3, :index 2}]])
+      ;-------------------------------------------------------
       (is= tree-2
-        {::tf/tag  :root,
-         ::tf/kids [{::tf/tag  :data,
-                     ::tf/idx  0,
-                     ::tf/kids [{::tf/tag :data, ::tf/idx 0, :value 1, ::tf/kids []}
-                                {::tf/tag :data, ::tf/idx 1, :value 2, ::tf/kids []}
-                                {::tf/tag :data, ::tf/idx 2, :value 3, ::tf/kids []}]}
-                    {::tf/tag  :data,
-                     ::tf/idx  1,
-                     ::tf/kids [{::tf/tag :data, ::tf/idx 0, :value 10, ::tf/kids []}]}
-                    {::tf/tag  :data,
-                     ::tf/idx  2,
-                     ::tf/kids []}]} )
+        #:tupelo.forest{:tag :tupelo.forest/list, :index nil, :kids
+                             [#:tupelo.forest{:tag :tupelo.forest/list, :index 0, :kids
+                                                   [#:tupelo.forest{:value 1, :index 0, :kids []}
+                                                    #:tupelo.forest{:value 2, :index 1, :kids []}
+                                                    #:tupelo.forest{:value 3, :index 2, :kids []}]}
+                              #:tupelo.forest{:tag :tupelo.forest/list, :index 1, :kids
+                                                   [#:tupelo.forest{:value 10, :index 0, :kids []}]}
+                              #:tupelo.forest{:tag :tupelo.forest/list, :index 2, :kids []}]})
       (is= bush-2   ; #todo document
-        [{::tf/tag :root}
-         [{::tf/tag :data, ::tf/idx 0}
-          [{::tf/tag :data, ::tf/idx 0, :value 1}]
-          [{::tf/tag :data, ::tf/idx 1, :value 2}]
-          [{::tf/tag :data, ::tf/idx 2, :value 3}]]
-         [{::tf/tag :data, ::tf/idx 1}
-          [{::tf/tag :data, ::tf/idx 0, :value 10}]]
-         [{::tf/tag :data, ::tf/idx 2}]])
+        [#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+          [#:tupelo.forest{:value 1, :index 0}]
+          [#:tupelo.forest{:value 2, :index 1}]
+          [#:tupelo.forest{:value 3, :index 2}]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 1}
+          [#:tupelo.forest{:value 10, :index 0}]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 2}]])
       ; -------------------------------------------------------
       (is= tree-3
-        {::tf/tag  :root,
-         ::tf/kids [{::tf/tag  :data,
-                     ::tf/idx  0,
-                     ::tf/kids [{::tf/tag  :data,
-                                 ::tf/idx  0,
-                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, :value 1, ::tf/kids []}
-                                            {::tf/tag :data, ::tf/idx 1, :value 2, ::tf/kids []}
-                                            {::tf/tag :data, ::tf/idx 2, :value 3, ::tf/kids []}]}
-                                {::tf/tag  :data,
-                                 ::tf/idx  1,
-                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, :value 4, ::tf/kids []}
-                                            {::tf/tag :data, ::tf/idx 1, :value 5, ::tf/kids []}
-                                            {::tf/tag :data, ::tf/idx 2, :value 6, ::tf/kids []}]}
-                                {::tf/tag  :data,
-                                 ::tf/idx  2,
-                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, :value 7, ::tf/kids []}
-                                            {::tf/tag :data, ::tf/idx 1, :value 8, ::tf/kids []}
-                                            {::tf/tag :data, ::tf/idx 2, :value 9, ::tf/kids []}]}]}
-                    {::tf/tag  :data,
-                     ::tf/idx  1,
-                     ::tf/kids [{::tf/tag  :data,
-                                 ::tf/idx  0,
-                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, :value 10, ::tf/kids []}
-                                            {::tf/tag :data, ::tf/idx 1, :value 11, ::tf/kids []}]}
-                                {::tf/tag  :data,
-                                 ::tf/idx  1,
-                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, :value 12, ::tf/kids []}
-                                            {::tf/tag :data, ::tf/idx 1, :value 13, ::tf/kids []}]}]}
-                    {::tf/tag  :data,
-                     ::tf/idx  2,
-                     ::tf/kids [{::tf/tag  :data,
-                                 ::tf/idx  0,
-                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, :value 20, ::tf/kids []}]}
-                                {::tf/tag  :data,
-                                 ::tf/idx  1,
-                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, :value 21, ::tf/kids []}]}]}
-                    {::tf/tag  :data,
-                     ::tf/idx  3,
-                     ::tf/kids [{::tf/tag  :data,
-                                 ::tf/idx  0,
-                                 ::tf/kids [{::tf/tag :data, ::tf/idx 0, :value 30, ::tf/kids []}]}]}
-                    {::tf/tag  :data,
-                     ::tf/idx  4,
-                     ::tf/kids [{::tf/tag  :data,
-                                 ::tf/idx  0,
-                                 ::tf/kids []}]}]} )
+        #:tupelo.forest{:tag :tupelo.forest/list, :index nil, :kids
+                             [#:tupelo.forest{:tag :tupelo.forest/list, :index 0, :kids
+                                                   [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                                                    :kids [#:tupelo.forest{:value 1, :index 0, :kids []}
+                                                                           #:tupelo.forest{:value 2, :index 1, :kids []}
+                                                                           #:tupelo.forest{:value 3, :index 2, :kids []}]}
+                                                    #:tupelo.forest{:tag  :tupelo.forest/list, :index 1,
+                                                                    :kids [#:tupelo.forest{:value 4, :index 0, :kids []}
+                                                                           #:tupelo.forest{:value 5, :index 1, :kids []}
+                                                                           #:tupelo.forest{:value 6, :index 2, :kids []}]}
+                                                    #:tupelo.forest{:tag  :tupelo.forest/list, :index 2,
+                                                                    :kids [#:tupelo.forest{:value 7, :index 0, :kids []}
+                                                                           #:tupelo.forest{:value 8, :index 1, :kids []}
+                                                                           #:tupelo.forest{:value 9, :index 2, :kids []}]}]}
+                              #:tupelo.forest{:tag :tupelo.forest/list, :index 1, :kids
+                                                   [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                                                    :kids [#:tupelo.forest{:value 10, :index 0, :kids []}
+                                                                           #:tupelo.forest{:value 11, :index 1, :kids []}]}
+                                                    #:tupelo.forest{:tag  :tupelo.forest/list, :index 1,
+                                                                    :kids [#:tupelo.forest{:value 12, :index 0, :kids []}
+                                                                           #:tupelo.forest{:value 13, :index 1, :kids []}]}]}
+                              #:tupelo.forest{:tag :tupelo.forest/list, :index 2, :kids
+                                                   [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                                                    :kids [#:tupelo.forest{:value 20, :index 0, :kids []}]}
+                                                    #:tupelo.forest{:tag  :tupelo.forest/list, :index 1,
+                                                                    :kids [#:tupelo.forest{:value 21, :index 0, :kids []}]}]}
+                              #:tupelo.forest{:tag :tupelo.forest/list, :index 3, :kids
+                                                   [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                                                    :kids [#:tupelo.forest{:value 30, :index 0, :kids []}]}]}
+                              #:tupelo.forest{:tag :tupelo.forest/list, :index 4, :kids
+                                                   [#:tupelo.forest{:tag :tupelo.forest/list, :index 0, :kids []}]}]})
       (is= bush-3
-        [{::tf/tag :root}
-         [{::tf/tag :data, ::tf/idx 0}
-          [{::tf/tag :data, ::tf/idx 0}
-           [{::tf/tag :data, ::tf/idx 0, :value 1}]
-           [{::tf/tag :data, ::tf/idx 1, :value 2}]
-           [{::tf/tag :data, ::tf/idx 2, :value 3}]]
-          [{::tf/tag :data, ::tf/idx 1}
-           [{::tf/tag :data, ::tf/idx 0, :value 4}]
-           [{::tf/tag :data, ::tf/idx 1, :value 5}]
-           [{::tf/tag :data, ::tf/idx 2, :value 6}]]
-          [{::tf/tag :data, ::tf/idx 2}
-           [{::tf/tag :data, ::tf/idx 0, :value 7}]
-           [{::tf/tag :data, ::tf/idx 1, :value 8}]
-           [{::tf/tag :data, ::tf/idx 2, :value 9}]]]
-         [{::tf/tag :data, ::tf/idx 1}
-          [{::tf/tag :data, ::tf/idx 0}
-           [{::tf/tag :data, ::tf/idx 0, :value 10}]
-           [{::tf/tag :data, ::tf/idx 1, :value 11}]]
-          [{::tf/tag :data, ::tf/idx 1}
-           [{::tf/tag :data, ::tf/idx 0, :value 12}]
-           [{::tf/tag :data, ::tf/idx 1, :value 13}]]]
-         [{::tf/tag :data, ::tf/idx 2}
-          [{::tf/tag :data, ::tf/idx 0}
-           [{::tf/tag :data, ::tf/idx 0, :value 20}]]
-          [{::tf/tag :data, ::tf/idx 1}
-           [{::tf/tag :data, ::tf/idx 0, :value 21}]]]
-         [{::tf/tag :data, ::tf/idx 3}
-          [{::tf/tag :data, ::tf/idx 0}
-           [{::tf/tag :data, ::tf/idx 0, :value 30}]]]
-         [{::tf/tag :data, ::tf/idx 4}
-          [{::tf/tag :data, ::tf/idx 0}]]] )
+        [#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:value 1, :index 0}]
+           [#:tupelo.forest{:value 2, :index 1}]
+           [#:tupelo.forest{:value 3, :index 2}]]
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 1}
+           [#:tupelo.forest{:value 4, :index 0}]
+           [#:tupelo.forest{:value 5, :index 1}]
+           [#:tupelo.forest{:value 6, :index 2}]]
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 2}
+           [#:tupelo.forest{:value 7, :index 0}]
+           [#:tupelo.forest{:value 8, :index 1}]
+           [#:tupelo.forest{:value 9, :index 2}]]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 1}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:value 10, :index 0}]
+           [#:tupelo.forest{:value 11, :index 1}]]
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 1}
+           [#:tupelo.forest{:value 12, :index 0}]
+           [#:tupelo.forest{:value 13, :index 1}]]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 2}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:value 20, :index 0}]]
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 1}
+           [#:tupelo.forest{:value 21, :index 0}]]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 3}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:value 30, :index 0}]]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 4}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}]]])
 
-      (is= (format-paths (find-leaf-paths root-hid-1 [:** {:value 2}]))
-        [[{:tupelo.forest/tag :root}
-          [{:tupelo.forest/tag :data, :tupelo.forest/idx 1, :value 2}]]])
-      (is= (format-paths (find-leaf-paths root-hid-2 [:** {:value 2}]))
-        [[{::tf/tag :root}
-          [{::tf/tag :data, ::tf/idx 0}
-           [{::tf/tag :data, ::tf/idx 1, :value 2}]]]] )
-      (is= (format-paths (find-leaf-paths root-hid-3 [:** {:value 2}]))
-        [[{::tf/tag :root}
-          [{::tf/tag :data, ::tf/idx 0}
-           [{::tf/tag :data, ::tf/idx 0}
-            [{::tf/tag   :data, ::tf/idx   1, :value 2}]]]]] )
-     (is= (format-paths (find-leaf-paths root-hid-4 [:** {:value 2}])) ; #todo document
-       [[{::tf/tag :root}
-         [{::tf/tag :data, ::tf/idx 0}
-          [{::tf/tag :data, ::tf/idx 0}
-           [{::tf/tag :data, ::tf/idx 1, :value 2}]]]]
-        [{::tf/tag :root}
-         [{::tf/tag :data, ::tf/idx 1}
-          [{::tf/tag :data, ::tf/idx 1}
-           [{::tf/tag :data, ::tf/idx 1, :value 2}]]]]
-        [{::tf/tag :root}
-         [{::tf/tag :data, ::tf/idx 4}
-          [{::tf/tag :data, ::tf/idx 0}
-           [{::tf/tag :data, ::tf/idx 0, :value 2}]]]]] )
-   )))
+      (is= tree-4
+        #:tupelo.forest{:tag  :tupelo.forest/list, :index nil,
+                        :kids [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                               :kids [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                                                      :kids [#:tupelo.forest{:value 1, :index 0, :kids []}
+                                                                             #:tupelo.forest{:value 2, :index 1, :kids []}
+                                                                             #:tupelo.forest{:value 3, :index 2, :kids []}]}
+                                                      #:tupelo.forest{:tag  :tupelo.forest/list, :index 1,
+                                                                      :kids [#:tupelo.forest{:value 4, :index 0, :kids []}
+                                                                             #:tupelo.forest{:value 5, :index 1, :kids []}
+                                                                             #:tupelo.forest{:value 6, :index 2, :kids []}]}
+                                                      #:tupelo.forest{:tag  :tupelo.forest/list, :index 2,
+                                                                      :kids [#:tupelo.forest{:value 7, :index 0, :kids []}
+                                                                             #:tupelo.forest{:value 8, :index 1, :kids []}
+                                                                             #:tupelo.forest{:value 9, :index 2, :kids []}]}]}
+                               #:tupelo.forest{:tag  :tupelo.forest/list, :index 1,
+                                               :kids [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                                                      :kids [#:tupelo.forest{:value 10, :index 0, :kids []}
+                                                                             #:tupelo.forest{:value 11, :index 1, :kids []}]}
+                                                      #:tupelo.forest{:tag  :tupelo.forest/list, :index 1,
+                                                                      :kids [#:tupelo.forest{:value 12, :index 0, :kids []}
+                                                                             #:tupelo.forest{:value 2, :index 1, :kids []}]}]}
+                               #:tupelo.forest{:tag  :tupelo.forest/list, :index 2,
+                                               :kids [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                                                      :kids [#:tupelo.forest{:value 20, :index 0, :kids []}]}
+                                                      #:tupelo.forest{:tag  :tupelo.forest/list, :index 1,
+                                                                      :kids [#:tupelo.forest{:value 21, :index 0, :kids []}]}]}
+                               #:tupelo.forest{:tag  :tupelo.forest/list, :index 3,
+                                               :kids [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                                                      :kids [#:tupelo.forest{:value 30, :index 0, :kids []}]}]}
+                               #:tupelo.forest{:tag  :tupelo.forest/list, :index 4,
+                                               :kids [#:tupelo.forest{:tag  :tupelo.forest/list, :index 0,
+                                                                      :kids [#:tupelo.forest{:value 2, :index 0, :kids []}]}]}]} )
+      (is= bush-4
+        [#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:value 1, :index 0}]
+           [#:tupelo.forest{:value 2, :index 1}]
+           [#:tupelo.forest{:value 3, :index 2}]]
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 1}
+           [#:tupelo.forest{:value 4, :index 0}]
+           [#:tupelo.forest{:value 5, :index 1}]
+           [#:tupelo.forest{:value 6, :index 2}]]
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 2}
+           [#:tupelo.forest{:value 7, :index 0}]
+           [#:tupelo.forest{:value 8, :index 1}]
+           [#:tupelo.forest{:value 9, :index 2}]]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 1}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:value 10, :index 0}]
+           [#:tupelo.forest{:value 11, :index 1}]]
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 1}
+           [#:tupelo.forest{:value 12, :index 0}]
+           [#:tupelo.forest{:value 2, :index 1}]]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 2}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:value 20, :index 0}]]
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 1}
+           [#:tupelo.forest{:value 21, :index 0}]]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 3}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:value 30, :index 0}]]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index 4}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:value 2, :index 0}]]]])
+
+      ;------------------------------------------------------------------------------
+      (is= (format-paths (find-leaf-paths root-hid-1 [:** {::tf/value 2}]))
+        [[#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
+          [#:tupelo.forest{:value 2, :index 1}]]])
+
+      (is= (format-paths (find-leaf-paths root-hid-2 [:** {::tf/value 2}]))
+        [[#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:value 2, :index 1}]]]])
+
+      (is= (format-paths (find-leaf-paths root-hid-3 [:** {::tf/value 2}]))
+        [[#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+            [#:tupelo.forest{:value 2, :index 1}]]]]])
+
+      (is= (format-paths (find-leaf-paths root-hid-4 [:** {::tf/value 2}])) ; #todo document
+        [[#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+           [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+            [#:tupelo.forest{:value 2, :index 1}]]]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 1}
+           [#:tupelo.forest{:tag :tupelo.forest/list, :index 1}
+            [#:tupelo.forest{:value 2, :index 1}]]]]
+         [#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index 4}
+           [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
+            [#:tupelo.forest{:value 2, :index 0}]]]]])
+
+      ;-------------------------------------------------------
+      ; basic inverse ok
+      (is= data-1 return-1)
+      (is= data-2 return-2)
+      (is= data-3 return-3)
+      (is= data-4 return-4)
+
+    )))
+
+(dotest
+  (with-forest (new-forest)
+    (let [data-1     {:a 1 :b 2}
+          tree-1     (data->tree data-1)
+          root-hid-1 (add-tree tree-1)
+          bush-1     (hid->bush root-hid-1)
+          return-1     (tree->data tree-1)
+         ]
+      (is= tree-1
+        #:tupelo.forest{:tag  :tupelo.forest/entity, :index nil,
+                        :kids [#:tupelo.forest{:tag  :tupelo.forest/entry, :key :a,
+                                               :kids [#:tupelo.forest{:value 1, :index nil, :kids []}]}
+                               #:tupelo.forest{:tag  :tupelo.forest/entry, :key :b,
+                                               :kids [#:tupelo.forest{:value 2, :index nil, :kids []}]}]} )
+      (is= bush-1
+        [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
+         [#:tupelo.forest{:tag :tupelo.forest/entry, :key :a}
+          [#:tupelo.forest{:value 1, :index nil}]]
+         [#:tupelo.forest{:tag :tupelo.forest/entry, :key :b}
+          [#:tupelo.forest{:value 2, :index nil}]]])
+      (is= data-1 return-1) )))
+
+(dotest
+  (with-forest (new-forest)
+    (let [data-2     {:a 1 :b [2 3 4]}
+          tree-2     (data->tree data-2)
+          root-hid-2 (add-tree tree-2)
+          bush-2     (hid->bush root-hid-2)
+          return-2     (tree->data tree-2) ]
+      (is= data-2 return-2)
+      (is= tree-2
+        #:tupelo.forest{:tag  :tupelo.forest/entity, :index nil,
+                        :kids [#:tupelo.forest{:tag  :tupelo.forest/entry, :key :a,
+                                               :kids [#:tupelo.forest{:value 1, :index nil, :kids []}]}
+                               #:tupelo.forest{:tag  :tupelo.forest/entry, :key :b,
+                                               :kids [#:tupelo.forest{:tag   :tupelo.forest/list,
+                                                                      :index nil,
+                                                                      :kids  [#:tupelo.forest{:value 2, :index 0, :kids []}
+                                                                              #:tupelo.forest{:value 3, :index 1, :kids []}
+                                                                              #:tupelo.forest{:value 4, :index 2, :kids []}]}]}]} )
+      (is= bush-2
+        [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
+         [#:tupelo.forest{:tag :tupelo.forest/entry, :key :a}
+          [#:tupelo.forest{:value 1, :index nil}]]
+         [#:tupelo.forest{:tag :tupelo.forest/entry, :key :b}
+          [#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
+           [#:tupelo.forest{:value 2, :index 0}]
+           [#:tupelo.forest{:value 3, :index 1}]
+           [#:tupelo.forest{:value 4, :index 2}]]]])
+
+    )))
+
+(dotest
+  (with-forest (new-forest)
+    (let [data-3     {:a 1 :b {:c 3}}
+          tree-3     (data->tree data-3)
+          root-hid-3 (add-tree tree-3)
+          bush-3     (hid->bush root-hid-3)
+          return-3   (tree->data tree-3)]
+      (is= data-3 return-3)
+      (is= tree-3
+        #:tupelo.forest{:tag  :tupelo.forest/entity, :index nil,
+                        :kids [#:tupelo.forest{:tag  :tupelo.forest/entry, :key :a,
+                                               :kids [#:tupelo.forest{:value 1, :index nil, :kids []}]}
+                               #:tupelo.forest{:tag  :tupelo.forest/entry, :key :b,
+                                               :kids [#:tupelo.forest{:tag  :tupelo.forest/entity, :index nil,
+                                                                      :kids [#:tupelo.forest{:tag  :tupelo.forest/entry, :key  :c,
+                                                                                             :kids [#:tupelo.forest{:value 3, :index nil, :kids []}]}]}]}]})
+      (is= bush-3
+        [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
+         [#:tupelo.forest{:tag :tupelo.forest/entry, :key :a}
+          [#:tupelo.forest{:value 1, :index nil}]]
+         [#:tupelo.forest{:tag :tupelo.forest/entry, :key :b}
+          [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
+           [#:tupelo.forest{:tag :tupelo.forest/entry, :key :c}
+            [#:tupelo.forest{:value 3, :index nil}]]]]]))))
+
+(dotest
+  (let [tree-1   #:tupelo.forest{:tag   :tupelo.forest/list,
+                                 :index nil,
+                                 :kids  [#:tupelo.forest{:value 2, :index 0, :kids []}
+                                         #:tupelo.forest{:value 3, :index 1, :kids []}
+                                         #:tupelo.forest{:value 4, :index 2, :kids []}]}
+        data-1   (tree->data tree-1)
+        return-1 (data->tree data-1)]
+    (is= tree-1 return-1)
+    (is= (validate-list-kids-idx tree-1)
+      [#:tupelo.forest{:value 2, :index 0, :kids []}
+       #:tupelo.forest{:value 3, :index 1, :kids []}
+       #:tupelo.forest{:value 4, :index 2, :kids []}])))
+
+(dotest
+  (let [data-1   {:a 1 :b 2}
+        tree-1   (data->tree data-1)
+        return-1 (tree->data tree-1)]
+    (is= return-1 data-1))
+  (let [data-2   {:a 1 :b [2 3 4]}
+        tree-2   (data->tree data-2)
+        return-2 (tree->data tree-2)]
+    (is= return-2 data-2))
+  (let [data-3   {:a 1 :b {:c 3}}
+        tree-3   (data->tree data-3)
+        return-3 (tree->data tree-3)]
+    (is= return-3 data-3))
+
+)
 

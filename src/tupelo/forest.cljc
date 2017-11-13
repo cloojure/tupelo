@@ -129,20 +129,69 @@
   (and (tree-node? arg)
     (empty? (grab ::kids arg))))
 
+(s/defn data->tree
+  ([data :- s/Any]
+    (data->tree nil data))
+  ([idx :- (s/either s/Int (s/eq nil))
+    data :- s/Any]
+    (cond
+      (sequential? data) {::tag   ::list
+                          ::index idx
+                          ::kids  (forv [[idx val] (indexed data)]
+                                    (data->tree idx val))}
+      (map? data) {::tag   ::entity
+                   ::index idx
+                   ::kids  (forv [[child-key child-val] data]
+                             {::tag ::entry
+                              ::key child-key
+                              ::kids [(data->tree child-val)]})}
+      :else {::value data ::index idx ::kids []})))
 
-(defn data->tree    ; #todo document
-  "Convert raw data (nested vectors) into tree with generic `:data` tag and {::idx <index>} attribute."
-  ([data]
-   {::tag :root
-    ::kids  (forv [[idx val] (indexed data)]
-             (data->tree idx val))})
-  ([idx data]
-   (glue {::tag :data
-          ::idx idx}
-     (if (sequential? data)
-       {::kids (forv [[idx val] (indexed data)]
-                 (data->tree idx val))}
-       {:value data ::kids []}))))
+(defn ^:no-doc validate-list-kids-idx
+  "verify that a ::list node in a tree has a valid index for all kid nodes"
+  [node]
+  (assert (= ::list (grab ::tag node)))
+  (let [kids        (grab ::kids node)
+        kids-sorted (vec (sort-by #(grab ::index %) kids))
+        idx-vals    (mapv #(grab ::index %) kids-sorted)
+        idx-tgts    (range (count idx-vals))]
+    (assert (= idx-vals idx-tgts))
+    kids-sorted))
+
+(s/defn ^:no-doc data-list-node?
+  [node :- tsk/KeyMap]
+  (and (contains-key? node ::tag)
+    (= ::list (grab ::tag node))))
+
+(s/defn ^:no-doc data-entity-node?
+  [node :- tsk/KeyMap]
+  (and (contains-key? node ::tag)
+    (= ::entity (grab ::tag node))))
+
+(s/defn ^:no-doc data-leaf-node?
+  [node :- tsk/KeyMap]
+  (and (= #{::value ::index ::kids} (set (keys node)))
+    (= [] (grab ::kids node))))
+
+(defn tree->data
+  [node]
+  ; #todo assert valid tree?
+  (cond
+    (data-leaf-node? node) (let [leaf-value (grab ::value node)]
+                             leaf-value)
+
+    (data-list-node? node) (let [kids-sorted (validate-list-kids-idx node)
+                                 kids-data   (forv [kid kids-sorted]
+                                               (tree->data kid))]
+                             kids-data)
+
+    (data-entity-node? node) (let [entries  (grab ::kids node)
+                                   map-data (apply glue
+                                              (forv [entry entries]
+                                                {(grab ::key entry) (tree->data (only (grab ::kids entry)))}))]
+                               map-data)
+
+    :else (throw (IllegalArgumentException. (str "tree->data: unrecognized node=" node)))))
 
 (defn enlive-node-lax?
   "Returns true for nominal Enlive nodes, else false"
@@ -727,6 +776,15 @@
 
 ; #todo (find-leaf root [ :a :b  :c ] ) ->
 ; #todo (find-leaf root [ :a :b  {:tag :c :value <val> ::kids []} ] )
+
+; #todo allow pred fn to replace match value in search path:
+; #todo    { :tag :person  :age #(<= 21 %) }
+
+; #todo allow pred fn to replace entire node in search path:
+; #todo    (fn [node] (and (contains? #{:horse :dog} (grab :animal/species node))
+; #todo                 (<= 1 (grab :age node) 3 )))   ; an "adolescent" animal
+
+
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn format-path

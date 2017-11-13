@@ -82,21 +82,16 @@
   (s/def ::last-name string?)
   (s/def ::email ::email-type)
   (s/def ::person (s/keys :req [::first-name ::last-name ::email]
-                          :opt [::phone] ))
+                          :opt [::phone] )) ; #todo s/keys -> tsp/map-with-keys tsp/entity-map
 
-  (is (s/valid? ::person {::first-name "Elon"
-                          ::last-name  "Musk"
-                          ::email      "elon@example.com"} ))
+  (is (s/valid? ::person {::first-name "Elon" ::last-name  "Musk" ::email      "elon@example.com"} ))
   (isnt (s/valid? ::person {::first-name "Elon" } ))
-  (isnt (s/valid? ::person {::first-name "Elon"
-                            ::last-name  "Musk"
-                            ::email      "n/a"} ))
+  (isnt (s/valid? ::person {::first-name "Elon" ::last-name  "Musk" ::email      "n/a"} ))
 
+  ; NOTE: we specify *qualified* keywords here, but they will match *unqualified* keywords later
   (s/def :unq/person (s/keys :req-un [::first-name ::last-name ::email]
-                             :opt-un [::phone] ))
-  (is= (s/conform :unq/person {:first-name "Elon"
-                               :last-name  "Musk"
-                               :email      "elon@example.com"})
+                             :opt-un [::phone])) ; #todo s/keys -> tsp/map-with-keys tsp/entity-map
+  (is= (s/conform :unq/person {:first-name "Elon" :last-name "Musk" :email "elon@example.com"})
     {:first-name "Elon", :last-name "Musk", :email "elon@example.com"})
 
   (defrecord Person [first-name last-name email phone])
@@ -169,7 +164,7 @@
   (s/def ::point (s/tuple double? double? double? ))
   (is= (s/conform ::point [1.5 2.0 3.1]) [1.5 2.0 3.1] )
 
-  (s/def ::scores (s/map-of string? int?))
+  (s/def ::scores (s/map-of string? int?)) ; every entry is string -> int
   (is= (s/conform ::scores{"Sally" 1000 "joe" 500})  {"Sally" 1000 "joe" 500}))
 
 (dotest
@@ -241,10 +236,11 @@
   (s/def ::name string?)
   (s/def ::score int?)
   (s/def ::player (s/keys :req [::name ::score ::hand]))
+  ; #todo s/keys -> tsp/map-with-keys  tsp/entity-map (really more like an object declaration)
 
   (s/def ::players (s/* ::player))
   (s/def ::deck (s/* ::card))
-  (s/def ::game (s/keys :req [::players ::deck]))
+  (s/def ::game (s/keys :req [::players ::deck])) ; #todo s/keys -> tsp/map-with-keys tsp/entity-map
 
   (def kenny {::name  "Kenny Rogers"
               ::score 100
@@ -279,8 +275,10 @@
     (stest/instrument `ranged-rand)
     (is (thrown? Exception (ranged-rand 8 5)))
     ; (spyx (stest/check `ranged-rand))  #todo
+    ; (spyx (s/exercise-fn `ranged-rand))
 
-    ) )
+  )
+)
 
 ;-----------------------------------------------------------------------------
 ; examples from: Clojure spec Screencast - Customizing Generators: https://youtu.be/WoFkhE92fqc
@@ -358,5 +356,5 @@
                         (fn [v]
                           [(rand-nth v) v])
                         (tcgen/not-empty (tcgen/vector tcgen/nat)))))
-  )
+)
 

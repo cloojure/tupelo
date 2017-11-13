@@ -54,6 +54,13 @@
   [arg :- [s/Any]]
   (when (or (nil? arg) (< (count arg) 3))
     (throw (IllegalArgumentException. (str "xthird: invalid arg:" arg))))
+  (clojure.core/nth arg 2))
+
+(s/defn xfourth :- s/Any ; #todo -> tests
+  "Returns the fourth value in a list or vector. Throws if (< len 4)."
+  [arg :- [s/Any]]
+  (when (or (nil? arg) (< (count arg) 4))
+    (throw (IllegalArgumentException. (str "xfourth: invalid arg:" arg))))
   (clojure.core/nth arg 3))
 
 (s/defn xlast :- s/Any ; #todo -> tests
@@ -970,17 +977,17 @@
       (submap-by-keys {:a 1 :b 2} #{:a :z} :missing-ok )  =>  {:a 1}
   "
   [map-arg :- tsk/Map
-   keep-keys :- tsk/Set
+   keep-keys :- (s/either tsk/Set tsk/List)
    & opts]
-  (assert (set? keep-keys))
-  (if (= opts [:missing-ok])
-    (apply glue {}
-      (for [key keep-keys]
-        (with-exception-default {}
-          {key (grab key map-arg)})))
-    (apply glue {}
-      (for [key keep-keys]
-        {key (grab key map-arg)}))))
+  (let [keep-keys (set keep-keys)]
+    (if (= opts [:missing-ok])
+      (apply glue {}
+        (for [key keep-keys]
+          (with-exception-default {}
+            {key (grab key map-arg)})))
+      (apply glue {}
+        (for [key keep-keys]
+          {key (grab key map-arg)})))))
 
 ; #todo -> README
 (s/defn submap-by-vals :- tsk/Map
@@ -991,10 +998,10 @@
       (submap-by-vals {:a 1 :b 2 :A 1} #{1 9} :missing-ok )  =>  {:a 1 :A 1}
   "
   [map-arg :- tsk/Map
-   keep-vals :- tsk/Set
+   keep-vals :- (s/either tsk/Set tsk/List)
    & opts]
-  (assert (set? keep-vals))
-  (let [found-map    (into {}
+  (let [keep-vals    (set keep-vals)
+        found-map    (into {}
                        (for [entry map-arg
                              :let [entry-val (val entry)]
                              :when (contains? keep-vals entry-val)]
@@ -1027,6 +1034,8 @@
                   (contains-key? valid-keys curr-key)))
       (throw (IllegalArgumentException. (format "validate-map-keys: invalid key found tst-map=%s, valid-keys=%s" tst-map valid-keys))))
     tst-map))
+
+; #todo: perhaps add map-keys & map-vals
 
 ; #todo: rename labeled-map
 (defmacro data-map ; #todo -> README
@@ -1090,6 +1099,9 @@
         result   (apply = mapified)]
     result))
 
+; #todo allow pred fn to replace entire node in search path:
+; #todo    (fn [node] (and (contains? #{:horse :dog} (grab :animal/species node))
+; #todo                 (<= 1 (grab :age node) 3 )))   ; an "adolescent" animal
 (s/defn ^:private ^:no-doc wild-match-impl
   [ctx :- tsk/KeyMap ; #todo more precise schema needed { :submap-ok s/Bool ... }
    pattern :- s/Any
