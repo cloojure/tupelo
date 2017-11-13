@@ -23,10 +23,11 @@
   (is   (s/valid? ::tsp/anything #{ {:blah 42} [:blue 66] :hut! 'hut! "hut!"} ))
   (isnt (s/valid? ::tsp/nothing 5 ))
 
-  (spyx (s/exercise ::tsp/anything))
- ;(spyx (s/exercise ::tsp/anything {::tsp/anything gen/int}))  ;#todo not quite right yet
-  (nl) (time (spyx (stest/check `i/truthy? {:clojure.spec.test.check/opts {:num-tests 99}})))
-  (nl) (time (spyx (stest/check `i/falsey? {:clojure.spec.test.check/opts {:num-tests 99}})))
+  (when false
+    (spyx (s/exercise ::tsp/anything))
+    ;(spyx (s/exercise ::tsp/anything {::tsp/anything gen/int}))  ;#todo not quite right yet
+    (nl) (time (spyx (stest/check `i/truthy? {:clojure.spec.test.check/opts {:num-tests 99}})))
+    (nl) (time (spyx (stest/check `i/falsey? {:clojure.spec.test.check/opts {:num-tests 99}}))))
 
-  )
+)
 

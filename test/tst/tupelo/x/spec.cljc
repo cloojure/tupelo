@@ -283,12 +283,16 @@
 ;-----------------------------------------------------------------------------
 ; examples from: Clojure spec Screencast - Customizing Generators: https://youtu.be/WoFkhE92fqc
 
+(when false
 (s/def ::foo-id (s/and string? #(str/starts-with? % "FOO-")))
 (defn foo-id-gen []
   (->> (s/gen (s/int-in 1 100))
     (gen/fmap #(str "FOO-" %))))
-(dotest (spy :foo-id (mapv first (s/exercise ::foo-id 10
-                                   {::foo-id foo-id-gen})))) ; a generator override
+
+
+  (dotest
+    (spy :foo-id (mapv first (s/exercise ::foo-id 10
+                               {::foo-id foo-id-gen})))) ; a generator override
 
 ; Lookup
 (s/def ::lookup (s/map-of keyword? string? :min-count 1))
@@ -301,6 +305,7 @@
     #(gen/tuple
        (gen/return %)
        (gen/elements (keys %)))))
+
 (dotest
   (nl)
   (spyx (mapv first (s/exercise ::lookup)))
@@ -344,6 +349,7 @@
               ]))
 (s/fdef my-index-of-4 :args (s/spec ::my-index-of-args
                               :gen gen-my-index-of-let ))
+
 (dotest
   (nl) (spyx (s/exercise-fn `my-index-of))
   (nl) (spyx (s/exercise-fn `my-index-of-2))
@@ -356,5 +362,6 @@
                         (fn [v]
                           [(rand-nth v) v])
                         (tcgen/not-empty (tcgen/vector tcgen/nat)))))
-)
+  )
 
+)
