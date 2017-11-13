@@ -4,7 +4,7 @@
 readonly ghPagesDir=~/gh-pages                  # must be absolute pathname
 readonly projName="tupelo"
 
-srcDir=$(pwd)/target/base+system+user+dev/doc   # absolute pathname of source
+srcDir=$(pwd)/target/default/doc   # absolute pathname of source
 destDir=${ghPagesDir}/${projName}               # absolute pathname of destination
 
 # Copy files
