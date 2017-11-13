@@ -388,7 +388,7 @@
   (println "zappy - AFTER"))
 
 ; #todo #bug clojure.lang.Reflector
-#_(dotest
+(dotest
   (when false ; manually enable to grab a new copy of the webpage
     (spit "clojure-sample.html"
       (slurp "http://clojure.github.io/clojure/clojure.zip-api.html")))
@@ -437,7 +437,7 @@
                (set result-data))))))
 
 ;-----------------------------------------------------------------------------
-#_(dotest
+(dotest
   (with-forest (new-forest)
     (let [enlive-tree (->> "<p>sample <em>text</em> with words.</p>"
                         clojure.string/lower-case
@@ -477,7 +477,7 @@
 
 ;-----------------------------------------------------------------------------
 ; Discard any xml nodes of Type="A" or Type="B" (plus blank string nodes)
-#_(dotest
+(dotest
   (with-forest (new-forest)
     (let [xml-str         "<ROOT>
                             <Items>
@@ -604,7 +604,7 @@
                       </product>
                     </products>
                   </data> " )
-#_(dotest
+(dotest
   (with-forest (new-forest)
     (let [enlive-tree          (->> xml-str-prod
                                  java.io.StringReader.
@@ -672,7 +672,7 @@
            [:image "img2.jpg"]]]]))))
 
 ; shorter version w/o extra features
-#_(dotest
+(dotest
   (with-forest (new-forest)
     (let [xml-str         "<ROOT>
                             <Items>
@@ -702,7 +702,7 @@
 
 
 ;-----------------------------------------------------------------------------
-#_(dotest
+(dotest
   (with-forest (new-forest)
     (let [xml-str         "<html>
                              <body>
@@ -751,7 +751,7 @@
 
 ;-----------------------------------------------------------------------------
 
-#_(dotest
+(dotest
   (with-forest (new-forest)
     ; #todo re-work to fix "special" double-quotes
     (let [html-str        "<div class=“group”>
@@ -843,7 +843,7 @@
          ["title2" "subheading3"]]) )))
 
 ;-----------------------------------------------------------------------------
-#_(dotest
+(dotest
   (with-forest (new-forest)
     (let [xml-str         "<top>
                               <group>
@@ -931,4 +931,93 @@
             [{:tag :group}
              [{:tag :group} [{:tag :item} [{:tag :number, :value "3"}]]]]]]))
 
+      )))
+
+(dotest
+  (with-forest (new-forest)
+    (let [root-hid   (add-tree-enlive
+                       {:tag     :eSearchResult,
+                        :attrs   {},
+                        :content [
+                            {:tag :Count, :attrs {}, :content ["16"]}
+                            {:tag :RetMax, :attrs {}, :content ["16"]}
+                            {:tag :RetStart, :attrs {}, :content ["0"]}
+                            {:tag     :IdList,
+                             :attrs   {},
+                             :content [
+                                 {:tag :Id, :attrs {}, :content ["28911150"]}
+                                 {:tag :Id, :attrs {}, :content ["28899394"]}
+                                 {:tag :Id, :attrs {}, :content ["28597238"]}
+                                 {:tag :Id, :attrs {}, :content ["28263281"]}
+                                 {:tag :Id, :attrs {}, :content ["28125459"]}
+                                 {:tag :Id, :attrs {}, :content ["26911135"]}
+                                 {:tag :Id, :attrs {}, :content ["26699345"]}
+                                 {:tag :Id, :attrs {}, :content ["26297102"]}
+                                 {:tag :Id, :attrs {}, :content ["26004019"]}
+                                 {:tag :Id, :attrs {}, :content ["25995331"]}
+                                 {:tag :Id, :attrs {}, :content ["25429093"]}
+                                 {:tag :Id, :attrs {}, :content ["25355095"]}
+                                 {:tag :Id, :attrs {}, :content ["25224593"]}
+                                 {:tag :Id, :attrs {}, :content ["24816246"]}
+                                 {:tag :Id, :attrs {}, :content ["24779721"]}
+                                 {:tag :Id, :attrs {}, :content ["24740865"]} ]}]})
+          id-content-paths (find-paths root-hid [:eSearchResult :IdList :Id])
+          id-strings       (forv [path id-content-paths]
+                             (grab :value (hid->leaf (last path))))]
+      (is= (hid->bush root-hid)
+        [{:tag :eSearchResult}
+         [{:tag :Count, :value "16"}]
+         [{:tag :RetMax, :value "16"}]
+         [{:tag :RetStart, :value "0"}]
+         [{:tag :IdList}
+          [{:tag :Id, :value "28911150"}]
+          [{:tag :Id, :value "28899394"}]
+          [{:tag :Id, :value "28597238"}]
+          [{:tag :Id, :value "28263281"}]
+          [{:tag :Id, :value "28125459"}]
+          [{:tag :Id, :value "26911135"}]
+          [{:tag :Id, :value "26699345"}]
+          [{:tag :Id, :value "26297102"}]
+          [{:tag :Id, :value "26004019"}]
+          [{:tag :Id, :value "25995331"}]
+          [{:tag :Id, :value "25429093"}]
+          [{:tag :Id, :value "25355095"}]
+          [{:tag :Id, :value "25224593"}]
+          [{:tag :Id, :value "24816246"}]
+          [{:tag :Id, :value "24779721"}]
+          [{:tag :Id, :value "24740865"}]]])
+      (is= (format-paths id-content-paths)
+        [[{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "28911150"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "28899394"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "28597238"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "28263281"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "28125459"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "26911135"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "26699345"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "26297102"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "26004019"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "25995331"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "25429093"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "25355095"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "25224593"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "24816246"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "24779721"}]]]
+         [{:tag :eSearchResult} [{:tag :IdList} [{:tag :Id, :value "24740865"}]]]])
+      (is= id-strings
+        ["28911150"
+         "28899394"
+         "28597238"
+         "28263281"
+         "28125459"
+         "26911135"
+         "26699345"
+         "26297102"
+         "26004019"
+         "25995331"
+         "25429093"
+         "25355095"
+         "25224593"
+         "24816246"
+         "24779721"
+         "24740865"])
       )))
