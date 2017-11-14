@@ -728,6 +728,9 @@
         ]
     result))
 
+; #todo max-key -> t/max-by
+
+; #todo wrap body in implicit do
 (defmacro forv    ; #todo: (for-vec ...)  or  (vfor ...)
   "Like clojure.core/for but returns results in a vector.   Not lazy."
   [& body]
