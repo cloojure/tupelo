@@ -193,6 +193,7 @@
                       (cond
                         (sequential? item) (vec item)
                         (map? item) (into {} item)
+                        (instance? java.io.InputStream item) (slurp item) ; #todo need test
                         :else item))
         result    (postwalk unlazy-item coll)
   ]

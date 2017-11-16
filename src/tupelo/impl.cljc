@@ -708,8 +708,8 @@
                          (for [it (keep-if not-nil? (flatten [args])) ]
                            ; Note that "sequential?" returns false for sets, strings, and the various
                            ; array types.
-                           (if (or
-                                 (sequential? it)
+                           (cond
+                             (or (sequential? it)
                                  (set? it)
                                  (string? it)
                                  (types/byte-array? it)
@@ -717,9 +717,9 @@
                                  (types/int-array? it)
                                  (types/long-array? it)
                                  (types/object-array? it)
-                                 (types/short-array? it))
-                             (seq it)
-                             it)))
+                                 (types/short-array? it))        (seq it)
+                             (instance? java.io.InputStream it) (seq (slurp it))
+                             :else it )))
         ; Coerce any integer values into character equivalents (e.g. 65 -> \A), then combine
         ; into a single string.
         result         (apply str
