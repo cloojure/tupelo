@@ -70,6 +70,13 @@
     (throw (IllegalArgumentException. (str "xlast: invalid arg:" arg))))
   (clojure.core/last arg))
 
+(s/defn xbutlast :- s/Any ; #todo -> tests
+  "Returns all but the last value in a list or vector. Throws if empty."
+  [arg :- [s/Any]]
+  (when (or (nil? arg) (empty? arg))
+    (throw (IllegalArgumentException. (str "xbutlast: invalid arg:" arg))))
+  (clojure.core/butlast arg))
+
 ; #todo -> tests
 (s/defn xrest :- s/Any
   "Returns a vector containing all but the first value in a list or vector. Throws if (zero? (count arg))."
@@ -77,6 +84,13 @@
   (when (or (nil? arg) (zero? (count arg)))
     (throw (IllegalArgumentException. (str "first: invalid arg:" arg))))
   (vec (clojure.core/rest arg)))
+
+; #todo Need safe versions of:
+; #todo    + - * /  (others?)  (& :strict :safe reassignments)
+; #todo    and, or    (& :strict :safe reassignments)
+; #todo    = not=   (others?)  (& :strict :safe reassignments)
+; #todo    (drop-last N coll)  (take-last N coll)
+; #todo    others???
 
 (s/defn kw->sym :- s/Symbol
   [arg :- s/Keyword]
@@ -505,11 +519,11 @@
 ;                  (thru start stop step) uses integer steps and
 ;                  (rel= curr stop :tol step) as ending criteria
 ;       (thru :cc 1 5)   -> [1 2 3 4 5]
-;       (thru :oc 1 5)   -> [  2 3 4 5]
-;       (thru :co 1 5)   -> [1 2 3 4  ]  ; like (range ...)
-;       (thru :oo 1 5)   -> [  2 3 4  ]
-
-(defn thru          ; #todo make lazy: thruz or (thru 1 3 :lazy)
+;       (thru :oc 1 5)   -> [  2 3 4 5]  ; (xrest (thru ...))
+;       (thru :co 1 5)   -> [1 2 3 4  ]  ; like (range ...)  -> (butlast (thru ...))
+;       (thru :oo 1 5)   -> [  2 3 4  ]  ; obscure;  (xrest (range ...))
+;  #todo range version => (butlast (thru ...))
+(defn thru          ; #todo make lazy: (thruz ...) -> (thru* {:lazy true} ...)
   "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. Not lazy. "
   ([end]       (thru 0 end))
   ([start end] (thru start end 1))
@@ -528,6 +542,7 @@
             (range (inc nsteps-int)))))))
 
 ; #todo need test, readme
+; #todo merge into `thru` using a protocol for int, double, char, string, keyword, symbol, other?
 (defn char-seq
   "Given two characters (or numerical equivalents), returns a seq of characters
   (inclusive) from the first to the second.  Characters must be in ascending order."
