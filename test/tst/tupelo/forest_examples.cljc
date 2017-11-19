@@ -403,7 +403,7 @@
                                     num-hids  (with-forest (new-forest)
                                                 (let [tmp-root (add-tree curr-tree)]
                                                      (count (all-hids))))]
-                                   (data-map href depth num-hids)))
+                                   (vals->context href depth num-hids)))
           result-data       (mapv extract-href-info a-node-paths)]
          (is (cs/subset?
                (set [{:href "index.html", :depth 5, :num-hids 2}
