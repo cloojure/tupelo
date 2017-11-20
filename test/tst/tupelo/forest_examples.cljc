@@ -687,9 +687,9 @@
                             en-html/xml-resource
                             first)
           root-hid        (add-tree-enlive enlive-tree)
-          blank-leaf-hid? (fn [hid] (ts/whitespace? (grab :value (hid->node hid))))
-          has-bc-leaf?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type :value "B"}])
-                                        (has-child-leaf? hid [:** {:tag :Type :value "C"}])))
+          blank-leaf-hid? (fn [hid] (ts/whitespace? (grab ::tf/value (hid->node hid))))
+          has-bc-leaf?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type ::tf/value "B"}])
+                                        (has-child-leaf? hid [:** {:tag :Type ::tf/value "C"}])))
           blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids))
           >>              (apply remove-hid blank-leaf-hids)
           bc-item-hids    (find-hids-with root-hid [:** :Item] has-bc-leaf?)]
@@ -1020,3 +1020,27 @@
          "24816246"
          "24779721"
          "24740865"]) )))
+
+;---------------------------------------------------------------------------------------------------
+(dotest
+  (with-forest (new-forest)
+    (let [data     {:qs [{:nums [3 1 2]}
+                         {:nums [7 4]}]}
+          tree     (tf/data->tree data)
+          root-hid (tf/add-tree tree)
+          value-paths (tf/find-paths root-hid [:** {::tf/value :*}])
+          value-hids (mapv xlast value-paths)
+          >> (nl)
+          >> (pretty [:values-1 (mapv tf/hid->node value-hids)])
+          >> (doseq [hid value-hids]
+               (tf/value-update hid inc))
+          >> (nl)
+          >> (pretty [:values-2 (mapv tf/hid->node value-hids)])
+
+          ;result     (tree->data tree)
+         ]
+      (spyx-pretty (hid->bush root-hid))
+     )))
+
+
+
