@@ -90,6 +90,7 @@
 ; #todo    and, or    (& :strict :safe reassignments)
 ; #todo    = not=   (others?)  (& :strict :safe reassignments)
 ; #todo    (drop-last N coll)  (take-last N coll)
+; #todo    subvec
 ; #todo    others???
 
 (s/defn kw->sym :- s/Symbol
@@ -1054,6 +1055,16 @@
     tst-map))
 
 ; #todo: perhaps add map-keys & map-vals
+(s/defn map-keys :- tsk/Map
+  [map-in :- tsk/Map
+   tx-fn  ; #todo function
+   & tx-args
+  ]
+  (let [tuple-seq-orig (vec map-in)
+        tuple-seq-out  (for [[tuple-key tuple-val] tuple-seq-orig]
+                         [ (apply tx-fn tuple-key tx-args) tuple-val])
+        map-out        (into {} tuple-seq-out) ]
+    map-out))
 
 ; #todo: rename labeled-map
 (defmacro vals->context ; #todo -> README
