@@ -2099,6 +2099,13 @@
     (is (thrown? IllegalArgumentException (validate-map-keys map-abc [:a :b])))
     (is (thrown? IllegalArgumentException (validate-map-keys map-abc [:a :c :x])))))
 
+(dotest
+  (let [map-123  {1 :a 2 :b 3 :c}
+        tx-fn    {1 101  2 202  3 303}]
+    (spyx (t/map-keys map-123 inc))
+    (spyx (t/map-keys map-123 tx-fn))
+  ))
+
 
 ; #todo move to tst.tupelo.core.deprecated
 ;---------------------------------------------------------------------------------------------------
