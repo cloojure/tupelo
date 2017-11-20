@@ -487,6 +487,7 @@
 (pns/import-fn impl/submap? )
 (pns/import-fn impl/validate-map-keys )
 (pns/import-fn impl/map-keys )
+(pns/import-fn impl/map-vals )
 
 (pns/import-fn impl/submatch? )
 (pns/import-fn impl/wild-submatch? )
@@ -582,7 +583,7 @@
      conjv glue join-2d->1d
      macro? char-seq
      append prepend grab dissoc-in fetch fetch-in
-     submap? submap-by-keys submap-by-vals keyvals validate-map-keys map-keys
+     submap? submap-by-keys submap-by-vals keyvals validate-map-keys map-keys map-vals
      validate only it-> safe-> keep-if drop-if zip zip* zip-lazy indexed flat-vec
      strcat nl pretty pretty-str json->edn edn->json clip-str range-vec thru rel= all-rel=
      drop-at insert-at replace-at idx

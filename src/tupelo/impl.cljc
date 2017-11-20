@@ -1054,15 +1054,25 @@
       (throw (IllegalArgumentException. (format "validate-map-keys: invalid key found tst-map=%s, valid-keys=%s" tst-map valid-keys))))
     tst-map))
 
-; #todo: perhaps add map-keys & map-vals
-(s/defn map-keys :- tsk/Map
+(s/defn map-keys :- tsk/Map ; #todo README
+  [map-in :- tsk/Map
+   tx-fn  ; #todo function
+   & tx-args
+   ]
+  (let [tuple-seq-orig (vec map-in)
+        tuple-seq-out  (for [[tuple-key tuple-val] tuple-seq-orig]
+                         [ (apply tx-fn tuple-key tx-args) tuple-val])
+        map-out        (into {} tuple-seq-out) ]
+    map-out))
+
+(s/defn map-vals :- tsk/Map ; #todo README
   [map-in :- tsk/Map
    tx-fn  ; #todo function
    & tx-args
   ]
   (let [tuple-seq-orig (vec map-in)
         tuple-seq-out  (for [[tuple-key tuple-val] tuple-seq-orig]
-                         [ (apply tx-fn tuple-key tx-args) tuple-val])
+                         [tuple-key (apply tx-fn tuple-val tx-args) ])
         map-out        (into {} tuple-seq-out) ]
     map-out))
 
