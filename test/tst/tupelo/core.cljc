@@ -1869,8 +1869,7 @@
       (seq (range-gen 0))
       nil))
 
-  (let [
-        concat-gen        (fn [& collections]
+  (let [concat-gen        (fn [& collections]
                             (lazy-gen
                               (doseq [curr-coll collections]
                                 (doseq [item curr-coll]
@@ -2002,7 +2001,7 @@
   ; (concat-gen [1 2 3] [4 5 6] [7 8 9]) => (1 2 3 4 5 6 7 8 9)
   ; (empty-gen-fn) => nil
 
-  (let [seq-of-seqs [(range 0 5)
+  (let [seq-of-seqs [(range  0  5)
                      (range 10 15)
                      (range 20 25)]
         flat-seq    (lazy-gen
