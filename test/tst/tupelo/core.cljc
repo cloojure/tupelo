@@ -108,23 +108,23 @@
 
 (dotest
   (binding [*clojure-version* {:major 1 :minor 7}]
-    (is   (t/is-clojure-1-7-plus?))
-    (isnt (t/is-clojure-1-8-plus?))
-    (isnt (t/is-clojure-1-9-plus?))
-    (is   (t/is-pre-clojure-1-8?))
-    (is   (t/is-pre-clojure-1-9?)))
+    (is   (i/is-clojure-1-7-plus?))
+    (isnt (i/is-clojure-1-8-plus?))
+    (isnt (i/is-clojure-1-9-plus?))
+    (is   (i/is-pre-clojure-1-8?))
+    (is   (i/is-pre-clojure-1-9?)))
   (binding [*clojure-version* {:major 1 :minor 8}]
-    (is   (t/is-clojure-1-7-plus?))
-    (is   (t/is-clojure-1-8-plus?))
-    (isnt (t/is-clojure-1-9-plus?))
-    (isnt (t/is-pre-clojure-1-8?))
-    (is   (t/is-pre-clojure-1-9?)))
+    (is   (i/is-clojure-1-7-plus?))
+    (is   (i/is-clojure-1-8-plus?))
+    (isnt (i/is-clojure-1-9-plus?))
+    (isnt (i/is-pre-clojure-1-8?))
+    (is   (i/is-pre-clojure-1-9?)))
   (binding [*clojure-version* {:major 1 :minor 9}]
-    (is   (t/is-clojure-1-7-plus?))
-    (is   (t/is-clojure-1-8-plus?))
-    (is   (t/is-clojure-1-9-plus?))
-    (isnt (t/is-pre-clojure-1-8?))
-    (isnt (t/is-pre-clojure-1-9?)))
+    (is   (i/is-clojure-1-7-plus?))
+    (is   (i/is-clojure-1-8-plus?))
+    (is   (i/is-clojure-1-9-plus?))
+    (isnt (i/is-pre-clojure-1-8?))
+    (isnt (i/is-pre-clojure-1-9?)))
 )
 
 ;-----------------------------------------------------------------------------
@@ -895,13 +895,20 @@
 )
 
 (dotest
-  (testing "basic usage"
-    (let [m1 {:a 1 :b 2 :c 3}
-          m2 {:a 1 :b 2 :c [3 4]} ]
-      (is= m1 (apply hash-map (keyvals m1)))
-      (is= m2 (apply hash-map (keyvals m2)))
-    )))
+  (let [m1 {:a 1 :b 2 :c 3}
+        m2 {:a 1 :b 2 :c [3 4]}]
+    (is= m1 (apply hash-map (keyvals m1)))
+    (is= m2 (apply hash-map (keyvals m2)))))
 ; AWTAWT TODO: add test.check
+
+(dotest
+  (let [m1 {:a 1 :b 2 :c 3} ]
+    (is= [ :a 1 :b 2      ] (keyvals-seq m1 [:a :b]))
+    (is= [ :b 2 :a 1      ] (keyvals-seq m1 [:b :a]))
+    (is= [ :a 1 :b 2 :c 3 ] (keyvals-seq m1 [:a :b :c]))
+    (is= [ :c 3 :a 1 :b 2 ] (keyvals-seq m1 [:c :a :b]))
+    (is= [ :c 3 :b 2 :a 1 ] (keyvals-seq m1 [:c :b :a]))
+    (is= [ :a 1 :b 2 :a 1 ] (keyvals-seq m1 [:a :b :a])) ))
 
 (dotest
   (is= 7 (safe-> 3 (* 2) (+ 1)))
@@ -2117,7 +2124,7 @@
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
 (dotest
   ; ^{:deprecated "1.9.0-alpha5" }
-  (t/when-not-clojure-1-9-plus
+  (i/when-not-clojure-1-9-plus
     (is   (t/seqable?   "abc"))
     (is   (t/seqable?   {1 2 3 4} ))
     (is   (t/seqable?  #{1 2 3} ))

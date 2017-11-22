@@ -8,26 +8,29 @@
   (:use tupelo.test )
   (:require
     [clojure.set :as set]
-    [clojure.spec.alpha :as s]
-    [clojure.spec.gen.alpha :as gen]
-    [clojure.spec.test.alpha :as stest]
     [tupelo.core :as t]
     [tupelo.impl :as i]
-    [tupelo.spec :as tsp] ))
+    [tupelo.spec :as tsp]
+  ))
 
 (t/refer-tupelo)
 
-(dotest
-  (is   (s/valid? ::tsp/anything 5 ))
-  (is   (s/valid? ::tsp/anything "joe" ))
-  (is   (s/valid? ::tsp/anything #{ {:blah 42} [:blue 66] :hut! 'hut! "hut!"} ))
-  (isnt (s/valid? ::tsp/nothing 5 ))
+(i/when-clojure-1-9-plus
+  (require
+    '[clojure.spec.alpha :as s]
+    '[clojure.spec.gen.alpha :as gen]
+    '[clojure.spec.test.alpha :as stest] )
+  (dotest
+    (is (s/valid? ::i/anything 5))
+    (is (s/valid? ::i/anything "joe"))
+    (is (s/valid? ::i/anything #{{:blah 42} [:blue 66] :hut! 'hut! "hut!"}))
+    (isnt (s/valid? ::i/nothing 5))
 
-  (when false
-    (spyx (s/exercise ::tsp/anything))
-    ;(spyx (s/exercise ::tsp/anything {::tsp/anything gen/int}))  ;#todo not quite right yet
-    (nl) (time (spyx (stest/check `i/truthy? {:clojure.spec.test.check/opts {:num-tests 99}})))
-    (nl) (time (spyx (stest/check `i/falsey? {:clojure.spec.test.check/opts {:num-tests 99}}))))
+    (when false
+      (spyx (s/exercise ::i/anything))
+     ;(spyx (s/exercise ::i/anything {::i/anything gen/int}))  ;#todo not quite right yet
+      (nl) (time (spyx (stest/check `i/truthy? {:clojure.spec.test.check/opts {:num-tests 99}})))
+      (nl) (time (spyx (stest/check `i/falsey? {:clojure.spec.test.check/opts {:num-tests 99}}))))
 
-)
+    ))
 

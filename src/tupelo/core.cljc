@@ -11,7 +11,7 @@
     [clojure.test]
     [potemkin.namespaces :as pns]
     [schema.core :as s]
-    [tupelo.impl :as impl]
+    [tupelo.impl :as i]
     [tupelo.schema :as ts]
     [tupelo.string :as tstr]
   )
@@ -22,41 +22,44 @@
 ; (when (= person :frid)  ; (kw :frid) -> throws
 ;    (println "Hi Barney!"))
 
-(pns/import-fn impl/nl )
-(pns/import-fn impl/xfirst )
-(pns/import-fn impl/xsecond )
-(pns/import-fn impl/xthird )
-(pns/import-fn impl/xfourth )
-(pns/import-fn impl/xrest )
-(pns/import-fn impl/xlast )
-(pns/import-fn impl/vec->list )
+(pns/import-macro i/when-clojure-1-8-plus)
+(pns/import-macro i/when-clojure-1-9-plus)
 
-(pns/import-fn impl/kw->sym )
-(pns/import-fn impl/kw->str )
-(pns/import-fn impl/str->kw )
-(pns/import-fn impl/str->sym )
-(pns/import-fn impl/sym->kw )
-(pns/import-fn impl/sym->str )
-(pns/import-fn impl/zip* )
-(pns/import-fn impl/zip )
-(pns/import-fn impl/zip-lazy )
-(pns/import-fn impl/indexed )
+(pns/import-fn i/nl )
+(pns/import-fn i/xfirst )
+(pns/import-fn i/xsecond )
+(pns/import-fn i/xthird )
+(pns/import-fn i/xfourth )
+(pns/import-fn i/xrest )
+(pns/import-fn i/xlast )
+(pns/import-fn i/vec->list )
+
+(pns/import-fn i/kw->sym )
+(pns/import-fn i/kw->str )
+(pns/import-fn i/str->kw )
+(pns/import-fn i/str->sym )
+(pns/import-fn i/sym->kw )
+(pns/import-fn i/sym->str )
+(pns/import-fn i/zip* )
+(pns/import-fn i/zip )
+(pns/import-fn i/zip-lazy )
+(pns/import-fn i/indexed )
 
 
-(pns/import-fn impl/spy)
-(pns/import-macro impl/spyx)
-(pns/import-macro impl/spyx-pretty)
-(pns/import-macro impl/spyxx )
+(pns/import-fn i/spy)
+(pns/import-macro i/spyx)
+(pns/import-macro i/spyx-pretty)
+(pns/import-macro i/spyxx )
 
-(pns/import-macro impl/let-spy )
-(pns/import-macro impl/let-spy-pretty )
+(pns/import-macro i/let-spy )
+(pns/import-macro i/let-spy-pretty )
 
-(pns/import-macro impl/spy-let )    ; #todo -> deprecated
-(pns/import-macro impl/spy-let-pretty )   ; #todo -> deprecated
+(pns/import-macro i/spy-let )    ; #todo -> deprecated
+(pns/import-macro i/spy-let-pretty )   ; #todo -> deprecated
 
-(pns/import-macro impl/forv)
-(pns/import-macro impl/map-let*)
-(pns/import-macro impl/map-let)
+(pns/import-macro i/forv)
+(pns/import-macro i/map-let*)
+(pns/import-macro i/map-let)
 
 ; #todo maybe just make tupelo.vec/for  etc   (tv/for ...) -> (vec (for ...))
 ; #todo replace clojure.core/map : not lazy; can add one of :trunc or :lazy modifiers
@@ -74,56 +77,14 @@
 ; #todo (for ... :lazy)       vfor
 ; #todo (concat ... :lazy)    vconcat
 
-(pns/import-fn impl/fetch-in)
-(pns/import-fn impl/fetch)
-(pns/import-fn impl/grab)
-(pns/import-fn impl/submap-by-keys )
-(pns/import-fn impl/submap-by-vals )
+(pns/import-fn i/fetch-in)
+(pns/import-fn i/fetch)
+(pns/import-fn i/grab)
+(pns/import-fn i/submap-by-keys )
+(pns/import-fn i/submap-by-vals )
 
-(s/defn increasing? :- s/Bool
-  "Returns true iff the vectors are in (strictly) lexicographically increasing order
-    [1 2]  [1]        -> false
-    [1 2]  [1 1]      -> false
-    [1 2]  [1 2]      -> false
-    [1 2]  [1 2 nil]  -> true
-    [1 2]  [1 2 3]    -> true
-    [1 2]  [1 3]      -> true
-    [1 2]  [2 1]      -> true
-    [1 2]  [2]        -> true
-  "
-  [a :- ts/List
-   b :- ts/List]
-  (let [len-a        (count a)
-        len-b        (count b)
-        cmpr         (fn [x y] (cond
-                                 (= x y) :eq
-                                 (< x y) :incr
-                                 (> x y) :decr
-                                 :else (throw (IllegalStateException. "should never get here"))))
-        cmpr-res     (mapv cmpr a b)
-        first-change (first (drop-while #{:eq} cmpr-res)) ; nil if all :eq
-        ]
-    (cond
-      (= a b)                       false
-      (= first-change :decr)        false
-      (= first-change :incr)        true
-      (nil? first-change)           (< len-a len-b))))
-
-(s/defn increasing-or-equal? :- s/Bool
-  "Returns true iff the vectors are in (strictly) lexicographically increasing order
-    [1 2]  [1]        -> false
-    [1 2]  [1 1]      -> false
-    [1 2]  [1 2]      -> true
-    [1 2]  [1 2 nil]  -> true
-    [1 2]  [1 2 3]    -> true
-    [1 2]  [1 3]      -> true
-    [1 2]  [2 1]      -> true
-    [1 2]  [2]        -> true
-  "
-  [a :- ts/List
-   b :- ts/List]
-  (or (= a b)
-    (increasing? a b)))
+(pns/import-fn i/increasing? )
+(pns/import-fn i/increasing-or-equal? )
 
 ;-----------------------------------------------------------------------------
 ; Java version stuff
@@ -165,55 +126,15 @@
 
 ; #todo need min-java-1-8  ???
 
-;-----------------------------------------------------------------------------
-; Clojure version stuff
+(pns/import-def i/spy-indent-level)
+(pns/import-fn i/spy-indent-spaces)
+(pns/import-fn i/spy-indent-reset)
+(pns/import-fn i/spy-indent-inc)
+(pns/import-fn i/spy-indent-dec)
 
-(defn is-clojure-1-7-plus? []
-  (impl/with-context *clojure-version* [major minor]
-    (increasing-or-equal? [1 7] [major minor])))
-
-(defn is-clojure-1-8-plus? []
-  (impl/with-context *clojure-version* [major minor]
-    (increasing-or-equal? [1 8] [major minor])))
-
-(defn is-clojure-1-9-plus? []
-  (impl/with-context *clojure-version* [major minor]
-    (increasing-or-equal? [1 9] [major minor])))
-
-(defn is-pre-clojure-1-8? [] (not (is-clojure-1-8-plus?)))
-(defn is-pre-clojure-1-9? [] (not (is-clojure-1-9-plus?)))
-
-
-; #todo add is-clojure-1-8-max?
-; #todo need clojure-1-8-plus-or-throw  ??
-
-(defmacro when-clojure-1-8-plus
-  "Wraps code that should only be included for Clojure 1.8 or higher.  Otherwise, code is supressed."
-  [& forms]
-  (if (is-clojure-1-8-plus?)
-    `(do ~@forms)))
-
-(defmacro when-clojure-1-9-plus
-  "Wraps code that should only be included for Clojure 1.9 or higher.  Otherwise, code is supressed."
-  [& forms]
-  (if (is-clojure-1-9-plus?)
-    `(do ~@forms)))
-
-(defmacro when-not-clojure-1-9-plus
-  "Wraps code that should only be included for Clojure versions prior to 1.9.  Otherwise, code is supressed."
-  [& forms]
-  (if (is-pre-clojure-1-9?)
-    `(do ~@forms)))
-
-(pns/import-def impl/spy-indent-level)
-(pns/import-fn impl/spy-indent-spaces)
-(pns/import-fn impl/spy-indent-reset)
-(pns/import-fn impl/spy-indent-inc)
-(pns/import-fn impl/spy-indent-dec)
-
-(pns/import-macro impl/with-spy-indent )
-(pns/import-macro impl/with-spy-enabled )
-(pns/import-macro impl/check-spy-enabled )
+(pns/import-macro i/with-spy-indent )
+(pns/import-macro i/with-spy-enabled )
+(pns/import-macro i/check-spy-enabled )
 
 ; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
 
@@ -224,34 +145,35 @@
     [arg :- s/Any]
     (if arg true false))
 
-(pns/import-fn impl/truthy? )
-(pns/import-fn impl/falsey? )
-(pns/import-fn impl/validate )
+(pns/import-fn i/truthy? )
+(pns/import-fn i/falsey? )
+(pns/import-fn i/validate )
 
-(pns/import-fn impl/has-some? )
-(pns/import-fn impl/has-none? )
-(pns/import-fn impl/contains-elem? )
-(pns/import-fn impl/contains-key? )
-(pns/import-fn impl/contains-val? )
+(pns/import-fn i/has-some? )
+(pns/import-fn i/has-none? )
+(pns/import-fn i/contains-elem? )
+(pns/import-fn i/contains-key? )
+(pns/import-fn i/contains-val? )
 
-(pns/import-fn impl/not-nil?)
-(pns/import-fn impl/not-empty?)
-(pns/import-fn impl/keyvals )
+(pns/import-fn i/not-nil?)
+(pns/import-fn i/not-empty?)
+(pns/import-fn i/keyvals )
+(pns/import-fn i/keyvals-seq )
 
-(pns/import-fn impl/glue)
-(pns/import-fn impl/join-2d->1d)
-(pns/import-fn impl/append)
-(pns/import-fn impl/prepend)
-(pns/import-fn impl/->vector)
-(pns/import-fn impl/unwrap)
-(pns/import-fn impl/flat-vec)
+(pns/import-fn i/glue)
+(pns/import-fn i/join-2d->1d)
+(pns/import-fn i/append)
+(pns/import-fn i/prepend)
+(pns/import-fn i/->vector)
+(pns/import-fn i/unwrap)
+(pns/import-fn i/flat-vec)
 
-(pns/import-fn impl/macro?)
+(pns/import-fn i/macro?)
 
-(pns/import-fn impl/drop-at )
-(pns/import-fn impl/insert-at )
-(pns/import-fn impl/replace-at )
-(pns/import-fn impl/idx )
+(pns/import-fn i/drop-at )
+(pns/import-fn i/insert-at )
+(pns/import-fn i/replace-at )
+(pns/import-fn i/idx )
 
 (s/defn dissoc-in :- s/Any
   "A sane version of dissoc-in that will not delete intermediate keys.
@@ -275,7 +197,7 @@
 ; singles). Basically like compiler-like guarentees against misspellings, duplicate entries, missing
 ; entries.
 
-(pns/import-fn impl/only )
+(pns/import-fn i/only )
 
 ; #awt #todo: Test failure of (safe-> 3 (* 2) (+ 1))
 ; #awt #todo: add tests
@@ -306,13 +228,13 @@
 ; #todo make an it?-> (fff ppp it? qqq) to halt thread if encounter nil result (then returns nil)
 ; #todo make an it!-> (fff ppp it! qqq) to throw if encounter nil (replace safe->) (maybe val->)
 
-(pns/import-macro impl/it-> )
-(pns/import-macro impl/with-exception-default )
+(pns/import-macro i/it-> )
+(pns/import-macro i/with-exception-default )
 
-(pns/import-macro impl/lazy-cons )
-(pns/import-macro impl/lazy-gen )
-(pns/import-macro impl/yield )
-(pns/import-macro impl/yield-all )
+(pns/import-macro i/lazy-cons )
+(pns/import-macro i/lazy-gen )
+(pns/import-macro i/yield )
+(pns/import-macro i/yield-all )
 
 ; (defn round [dblVal :incr   (/ 1 3)]            ; #todo add
 ;   (let [factor (Math/pow 10 *digits*)]
@@ -394,11 +316,11 @@
     (clojure.core/map #(apply rel= %1 %2 opts)
       x-vals y-vals)))
 
-(pns/import-fn impl/range-vec)
-(pns/import-fn impl/thru)
-(pns/import-fn impl/keep-if)
-(pns/import-fn impl/drop-if)
-(pns/import-fn impl/unnest )
+(pns/import-fn i/range-vec)
+(pns/import-fn i/thru)
+(pns/import-fn i/keep-if)
+(pns/import-fn i/drop-if)
+(pns/import-fn i/unnest )
 
 (defn fibonacci-seq
   "A lazy seq of Fibonacci numbers (memoized)."
@@ -444,10 +366,10 @@
       (print \space)
       (pr it))))
 
-(pns/import-fn impl/strcat)
-(pns/import-fn impl/char-seq)
-(pns/import-fn impl/pretty-str)
-(pns/import-fn impl/pretty)
+(pns/import-fn i/strcat)
+(pns/import-fn i/char-seq)
+(pns/import-fn i/pretty-str)
+(pns/import-fn i/pretty)
 
 (defn print-versions []
   (let [version-str (format "Clojure %s    Java %s"
@@ -481,19 +403,19 @@
 ; #todo need rand-id/randid/rid/rid-str (rand id) -> 64 bit hex string="1234-4567-89ab-cdef"
 ; i[12] = Random.nextInt(); bytes += i[12].toHexString()
 
-(pns/import-fn impl/clip-str )
-(pns/import-fn impl/wild-match-ctx? )
-(pns/import-fn impl/wild-match? )
-(pns/import-fn impl/submap? )
-(pns/import-fn impl/validate-map-keys )
-(pns/import-fn impl/map-keys )
-(pns/import-fn impl/map-vals )
+(pns/import-fn i/clip-str )
+(pns/import-fn i/wild-match-ctx? )
+(pns/import-fn i/wild-match? )
+(pns/import-fn i/submap? )
+(pns/import-fn i/validate-map-keys )
+(pns/import-fn i/map-keys )
+(pns/import-fn i/map-vals )
 
-(pns/import-fn impl/submatch? )
-(pns/import-fn impl/wild-submatch? )
-(pns/import-fn impl/wild-item? )
-(pns/import-fn impl/val= )
-(pns/import-macro impl/matches? )
+(pns/import-fn i/submatch? )
+(pns/import-fn i/wild-submatch? )
+(pns/import-fn i/wild-item? )
+(pns/import-fn i/val= )
+(pns/import-macro i/matches? )
 
 ; #todo: add (throwed? ...) for testing exceptions
 
@@ -580,10 +502,11 @@
      truthy? falsey? not-nil? not-empty? has-some? has-none?
      contains-key? contains-val? contains-elem?
      forv map-let* map-let
+     when-clojure-1-8-plus when-clojure-1-9-plus
      conjv glue join-2d->1d
      macro? char-seq
      append prepend grab dissoc-in fetch fetch-in
-     submap? submap-by-keys submap-by-vals keyvals validate-map-keys map-keys map-vals
+     submap? submap-by-keys submap-by-vals keyvals keyvals-seq validate-map-keys map-keys map-vals
      validate only it-> safe-> keep-if drop-if zip zip* zip-lazy indexed flat-vec
      strcat nl pretty pretty-str json->edn edn->json clip-str range-vec thru rel= all-rel=
      drop-at insert-at replace-at idx
@@ -609,7 +532,7 @@
 ; DEPRECATED functions
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
-(when-not-clojure-1-9-plus
+(i/when-not-clojure-1-9-plus
   (defn ^{:deprecated "1.9.0-alpha5"} seqable?  ; from clojure.contrib.core/seqable
     "Returns true if (seq x) will succeed, false otherwise."
     [x]

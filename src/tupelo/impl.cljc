@@ -11,17 +11,106 @@
     [clojure.core.match :as ccm]
     [clojure.pprint :as pprint]
     [clojure.set :as set]
-    [clojure.spec.alpha :as sp]
-    [clojure.spec.gen.alpha :as gen]
-    [clojure.spec.test.alpha :as stest]
     [clojure.string :as str]
     [clojure.test]
     [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.schema :as tsk]
-    [tupelo.spec :as tsp]
+   ;[tupelo.spec :as tsp]
     [tupelo.types :as types]
     [tupelo.schema :as ts]) )
+
+;-----------------------------------------------------------------------------
+; Clojure version stuff
+
+(s/defn increasing? :- s/Bool
+  "Returns true iff the vectors are in (strictly) lexicographically increasing order
+    [1 2]  [1]        -> false
+    [1 2]  [1 1]      -> false
+    [1 2]  [1 2]      -> false
+    [1 2]  [1 2 nil]  -> true
+    [1 2]  [1 2 3]    -> true
+    [1 2]  [1 3]      -> true
+    [1 2]  [2 1]      -> true
+    [1 2]  [2]        -> true
+  "
+  [a :- ts/List
+   b :- ts/List]
+  (let [len-a        (count a)
+        len-b        (count b)
+        cmpr         (fn [x y] (cond
+                                 (= x y) :eq
+                                 (< x y) :incr
+                                 (> x y) :decr
+                                 :else (throw (IllegalStateException. "should never get here"))))
+        cmpr-res     (mapv cmpr a b)
+        first-change (first (drop-while #{:eq} cmpr-res)) ; nil if all :eq
+        ]
+    (cond
+      (= a b)                       false
+      (= first-change :decr)        false
+      (= first-change :incr)        true
+      (nil? first-change)           (< len-a len-b))))
+
+(s/defn increasing-or-equal? :- s/Bool
+  "Returns true iff the vectors are in (strictly) lexicographically increasing order
+    [1 2]  [1]        -> false
+    [1 2]  [1 1]      -> false
+    [1 2]  [1 2]      -> true
+    [1 2]  [1 2 nil]  -> true
+    [1 2]  [1 2 3]    -> true
+    [1 2]  [1 3]      -> true
+    [1 2]  [2 1]      -> true
+    [1 2]  [2]        -> true
+  "
+  [a :- ts/List
+   b :- ts/List]
+  (or (= a b)
+    (increasing? a b)))
+
+(defn is-clojure-1-7-plus? []
+  (let [{:keys [major minor]} *clojure-version*]
+    (increasing-or-equal? [1 7] [major minor])))
+
+(defn is-clojure-1-8-plus? []
+  (let [{:keys [major minor]} *clojure-version*]
+    (increasing-or-equal? [1 8] [major minor])))
+
+(defn is-clojure-1-9-plus? []
+  (let [{:keys [major minor]} *clojure-version*]
+    (increasing-or-equal? [1 9] [major minor])))
+
+(defn is-pre-clojure-1-8? [] (not (is-clojure-1-8-plus?)))
+(defn is-pre-clojure-1-9? [] (not (is-clojure-1-9-plus?)))
+
+; #todo add is-clojure-1-8-max?
+; #todo need clojure-1-8-plus-or-throw  ??
+
+(defmacro when-clojure-1-8-plus
+  "Wraps code that should only be included for Clojure 1.8 or higher.  Otherwise, code is supressed."
+  [& forms]
+  (if (is-clojure-1-8-plus?)
+    `(do ~@forms)))
+
+(defmacro when-clojure-1-9-plus
+  "Wraps code that should only be included for Clojure 1.9 or higher.  Otherwise, code is supressed."
+  [& forms]
+  (if (is-clojure-1-9-plus?)
+    `(do ~@forms)))
+
+(defmacro when-not-clojure-1-9-plus
+  "Wraps code that should only be included for Clojure versions prior to 1.9.  Otherwise, code is supressed."
+  [& forms]
+  (if (is-pre-clojure-1-9?)
+    `(do ~@forms)))
+
+;----------------------------------------------------------------------------
+(when-clojure-1-9-plus
+  (require
+    '[clojure.spec.alpha :as sp]
+    '[clojure.spec.gen.alpha :as gen]
+    '[clojure.spec.test.alpha :as stest] ))
+
 
 (ns-unmap *ns* 'first) ; #todo -> (set-tupelo-strict! true/false)
 (ns-unmap *ns* 'second)
@@ -84,6 +173,18 @@
   (when (or (nil? arg) (zero? (count arg)))
     (throw (IllegalArgumentException. (str "first: invalid arg:" arg))))
   (vec (clojure.core/rest arg)))
+
+(defn only
+  "(only coll-in)
+  Ensures that a sequence is of length=1, and returns the only value present.
+  Throws an exception if the length of the sequence is not one.
+  Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
+  [coll]
+  (let [coll-seq  (seq coll)
+        num-items (count coll-seq)]
+    (when-not (= 1 num-items)
+      (throw (IllegalArgumentException. (str "only: num-items must=1; num-items=" num-items))))
+    (clojure.core/first coll-seq))) ; #todo -> xfirst
 
 ; #todo Need safe versions of:
 ; #todo    + - * /  (others?)  (& :strict :safe reassignments)
@@ -149,7 +250,8 @@
 ; #todo rename to "get-in-safe" ???
 ; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)
 ; #todo make throw if any index invalid
-; #todo need parallel safe (assoc-in m [ks] v) (assoc-in m [ks] v :missing-ok)
+; #todo need safe (assoc-in m [ks] v) (assoc-in m [ks] v :missing-ok)
+; #todo need safe (update-in m [ks] f & args)
 (s/defn fetch-in :- s/Any
   "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
    returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
@@ -395,20 +497,28 @@
   (let-spy-pretty-impl exprs))
 
 ;-----------------------------------------------------------------------------
+; clojure.spec stuff
 
-; #todo how to test the :ret part?
-(sp/fdef truthy?
-  :args (sp/cat :arg ::tsp/anything)
-  :ret  boolean?)
+(when-clojure-1-9-plus
+  (sp/def ::anything (sp/spec (constantly true) :gen gen/any-printable))
+  (sp/def ::nothing  (sp/spec (constantly false)))
+
+  ; #todo how to test the :ret part?
+  (sp/fdef truthy?
+    :args (sp/cat :arg ::anything)
+    :ret boolean?)
+
+  (sp/fdef falsey?
+    :args (sp/cat :arg ::anything)
+    :ret boolean?
+    :fn #(= (:ret %) (not (truthy? (-> % :args :arg))))))
+
+;-----------------------------------------------------------------------------
 (defn truthy?
   "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
   [arg]
   (if arg true false))
 
-(sp/fdef falsey?
-  :args (sp/cat :arg ::tsp/anything)
-  :ret  boolean?
-  :fn #(= (:ret %) (not (truthy? (-> % :args :arg)))))
 (defn falsey?
   "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
    to (not (truthy? arg))."
@@ -425,17 +535,32 @@
       (throw (IllegalStateException. (format "validate: tst-val=%s, tst-result=%s" tst-val tst-result))))
     tst-val))
 
-(defn only
-  "(only coll-in)
-  Ensures that a sequence is of length=1, and returns the only value present.
-  Throws an exception if the length of the sequence is not one.
-  Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
-  [coll]
-  (let [coll-seq  (seq coll)
-        num-items (count coll-seq)]
-    (when-not (= 1 num-items)
-      (throw (IllegalArgumentException. (str "only: num-items must=1; num-items=" num-items))))
-    (clojure.core/first coll-seq))) ; #todo -> xfirst
+(defn glue
+  "Glues together like collections:
+
+     (glue [1 2] [3 4] [5 6])                -> [1 2 3 4 5 6]
+     (glue {:a 1} {:b 2} {:c 3})             -> {:a 1 :c 3 :b 2}
+     (glue #{1 2} #{3 4} #{6 5})             -> #{1 2 6 5 3 4}
+     (glue \"I\" \" like \" \\a \" nap!\" )  -> \"I like a nap!\"
+
+   If you want to convert to a sorted set or map, just put an empty one first:
+
+     (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
+     (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
+
+   If there are duplicate keys when using glue for maps or sets, then \"the last one wins\":
+
+     (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
+  [& colls]
+  (let [string-or-char? #(or (string? %) (char? %))]
+    (cond
+      (every? sequential? colls)        (reduce into [] colls) ; coerce to vector result
+      (every? map? colls)               (reduce into    colls) ; first item determines type of result
+      (every? set? colls)               (reduce into    colls) ; first item determines type of result
+      (every? string-or-char? colls)    (apply str colls)
+      :else (throw (IllegalArgumentException.
+                     (str "glue: colls must be all same type; found types=" (mapv type colls)))))))
+; #todo look at using (ex-info ...)
 
 ;-----------------------------------------------------------------------------
 (defmacro it->
@@ -498,11 +623,75 @@
   (has-some? truthy?
     (mapv #(= elem %) (vals map))))
 
+; #todo -> README
+(s/defn submap-by-keys :- tsk/Map
+  "Returns a new map containing entries with the specified keys. Throws for missing keys,
+  unless `:missing-ok` is specified. Usage:
+
+      (submap-by-keys {:a 1 :b 2} #{:a   }             )  =>  {:a 1}
+      (submap-by-keys {:a 1 :b 2} #{:a :z} :missing-ok )  =>  {:a 1}
+  "
+  [map-arg :- tsk/Map
+   keep-keys :- (s/either tsk/Set tsk/List)
+   & opts]
+  (let [keep-keys (set keep-keys)]
+    (if (= opts [:missing-ok])
+      (apply glue {}
+        (for [key keep-keys]
+          (with-exception-default {}
+            {key (grab key map-arg)})))
+      (apply glue {}
+        (for [key keep-keys]
+          {key (grab key map-arg)})))))
+
+; #todo -> README
+(s/defn submap-by-vals :- tsk/Map
+  "Returns a new map containing entries with the specified vals. Throws for missing vals,
+  unless `:missing-ok` is specified. Usage:
+
+      (submap-by-vals {:a 1 :b 2 :A 1} #{1  }             )  =>  {:a 1 :A 1}
+      (submap-by-vals {:a 1 :b 2 :A 1} #{1 9} :missing-ok )  =>  {:a 1 :A 1}
+  "
+  [map-arg :- tsk/Map
+   keep-vals :- (s/either tsk/Set tsk/List)
+   & opts]
+  (let [keep-vals    (set keep-vals)
+        found-map    (into {}
+                       (for [entry map-arg
+                             :let [entry-val (val entry)]
+                             :when (contains? keep-vals entry-val)]
+                         entry))
+        found-vals   (into #{} (vals found-map))
+        missing-vals (set/difference keep-vals found-vals)]
+    (if (or (empty? missing-vals) (= opts [:missing-ok]))
+      found-map
+      (throw (IllegalArgumentException.
+               (format "submap-by-vals: missing values= %s  map-arg= %s  " missing-vals (pretty-str map-arg)))))))
+
+; #todo need README
+(s/defn submap? :- Boolean
+  "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
+   another map.  Similar to clojure.set/subset?"
+  [inner-map :- {s/Any s/Any}                           ; #todo
+   outer-map :- {s/Any s/Any}]                          ; #todo
+  (let [inner-set (set inner-map)
+        outer-set (set outer-map)]
+    (set/subset? inner-set outer-set)))
+
+
 (s/defn keyvals :- [s/Any]
   "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
    (apply hash-map (keyvals m)). (keyvals {:a 1 :b 2} => [:a 1 :b 2] "
   [m :- tsk/Map ]
   (reduce into [] (seq m)))
+
+(s/defn keyvals-seq :- [s/Any]
+  "Like `keyvals`, but only outputs selected keys in the order specified."
+  [m :- tsk/Map
+   keys-seq :- [s/Any]]
+  (apply glue
+    (for [key keys-seq]
+      (only (seq (submap-by-keys m [key]))))))
 
 (defn range-vec     ; #todo README;  maybe xrange?  maybe kill this?
   "An eager version clojure.core/range that always returns its result in a vector."
@@ -558,33 +747,6 @@
                (str "char-seq: start-char must come before stop-char."
                  "  start-val=" start-val "  stop-val=" stop-val))))
     (mapv char (thru start-val stop-val))))
-
-(defn glue
-  "Glues together like collections:
-
-     (glue [1 2] [3 4] [5 6])                -> [1 2 3 4 5 6]
-     (glue {:a 1} {:b 2} {:c 3})             -> {:a 1 :c 3 :b 2}
-     (glue #{1 2} #{3 4} #{6 5})             -> #{1 2 6 5 3 4}
-     (glue \"I\" \" like \" \\a \" nap!\" )  -> \"I like a nap!\"
-
-   If you want to convert to a sorted set or map, just put an empty one first:
-
-     (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
-     (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
-
-   If there are duplicate keys when using glue for maps or sets, then \"the last one wins\":
-
-     (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
-  [& colls]
-  (let [string-or-char? #(or (string? %) (char? %))]
-    (cond
-      (every? sequential? colls)        (reduce into [] colls) ; coerce to vector result
-      (every? map? colls)               (reduce into    colls) ; first item determines type of result
-      (every? set? colls)               (reduce into    colls) ; first item determines type of result
-      (every? string-or-char? colls)    (apply str colls)
-      :else (throw (IllegalArgumentException.
-                     (str "glue: colls must be all same type; found types=" (mapv type colls)))))))
-; #todo look at using (ex-info ...)
 
 (s/defn join-2d->1d :- ts/List ; #todo think about better name
   "Convert a vector of vectors (2-dimensional) into a single vector (1-dimensional).
@@ -987,61 +1149,6 @@
                ~pattern true
                :else false))))
 
-; #todo -> README
-(s/defn submap-by-keys :- tsk/Map
-  "Returns a new map containing entries with the specified keys. Throws for missing keys,
-  unless `:missing-ok` is specified. Usage:
-
-      (submap-by-keys {:a 1 :b 2} #{:a   }             )  =>  {:a 1}
-      (submap-by-keys {:a 1 :b 2} #{:a :z} :missing-ok )  =>  {:a 1}
-  "
-  [map-arg :- tsk/Map
-   keep-keys :- (s/either tsk/Set tsk/List)
-   & opts]
-  (let [keep-keys (set keep-keys)]
-    (if (= opts [:missing-ok])
-      (apply glue {}
-        (for [key keep-keys]
-          (with-exception-default {}
-            {key (grab key map-arg)})))
-      (apply glue {}
-        (for [key keep-keys]
-          {key (grab key map-arg)})))))
-
-; #todo -> README
-(s/defn submap-by-vals :- tsk/Map
-  "Returns a new map containing entries with the specified vals. Throws for missing vals,
-  unless `:missing-ok` is specified. Usage:
-
-      (submap-by-vals {:a 1 :b 2 :A 1} #{1  }             )  =>  {:a 1 :A 1}
-      (submap-by-vals {:a 1 :b 2 :A 1} #{1 9} :missing-ok )  =>  {:a 1 :A 1}
-  "
-  [map-arg :- tsk/Map
-   keep-vals :- (s/either tsk/Set tsk/List)
-   & opts]
-  (let [keep-vals    (set keep-vals)
-        found-map    (into {}
-                       (for [entry map-arg
-                             :let [entry-val (val entry)]
-                             :when (contains? keep-vals entry-val)]
-                         entry))
-        found-vals   (into #{} (vals found-map))
-        missing-vals (set/difference keep-vals found-vals)]
-    (if (or (empty? missing-vals) (= opts [:missing-ok]))
-      found-map
-      (throw (IllegalArgumentException.
-               (format "submap-by-vals: missing values= %s  map-arg= %s  " missing-vals (pretty-str map-arg)))))))
-
-; #todo need README
-(s/defn submap? :- Boolean
-  "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
-   another map.  Similar to clojure.set/subset?"
-  [inner-map :- {s/Any s/Any}                           ; #todo
-   outer-map :- {s/Any s/Any}]                          ; #todo
-  (let [inner-set (set inner-map)
-        outer-set (set outer-map)]
-    (set/subset? inner-set outer-set)))
-
 (def MapKeySpec (s/either [s/Any] #{s/Any}))
 (s/defn validate-map-keys :- s/Any
   [tst-map :- ts/Map
@@ -1056,7 +1163,7 @@
 
 (s/defn map-keys :- tsk/Map ; #todo README
   [map-in :- tsk/Map
-   tx-fn  ; #todo function
+   tx-fn  :- tsk/Fn
    & tx-args
    ]
   (let [tuple-seq-orig (vec map-in)
@@ -1067,7 +1174,7 @@
 
 (s/defn map-vals :- tsk/Map ; #todo README
   [map-in :- tsk/Map
-   tx-fn  ; #todo function
+   tx-fn  :- tsk/Fn
    & tx-args
   ]
   (let [tuple-seq-orig (vec map-in)
@@ -1088,9 +1195,9 @@
 
    See `with-context` for simple destructuring of such maps."
   [& symbols]
-  (let [map-vec (forv [symbol symbols]
-                  {(keyword symbol) symbol})]
-    `(glue ~@map-vec) ) )
+  (let [maps-list (for [symbol symbols]
+                    {(keyword symbol) symbol})]
+    `(glue ~@maps-list)) )
 
 ; #todo: rename with-labeled-map
 (defmacro with-context ; #todo -> README

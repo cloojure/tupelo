@@ -11,7 +11,9 @@
     [clojure.test.check.generators :as gen]
     [clojure.test.check.properties :as prop]
     [clojure.test.check.clojure-test :as tst]
-    [tupelo.core :as t] ))
+    [tupelo.impl :as i]
+    [tupelo.core :as t]
+  ))
 ; #todo add example for duplicates in clojure.core.combo
 
 ; rest/next too loose
@@ -129,22 +131,22 @@
   (is= true (empty? nil))
   (is= 0  ) (count nil))
 
-(dotest
-  ; `any?` always returns true
-  (is= true (any? false))
-  (is= true (any? nil))
-  (is= true (any? 5))
-  (is= true (any? "hello"))
+(i/when-clojure-1-9-plus
+  (dotest
+    ; `any?` always returns true
+    (is= true (any? false))
+    (is= true (any? nil))
+    (is= true (any? 5))
+    (is= true (any? "hello"))
 
-  ; tests a predicate fn on each element
-  (is= false (not-any? odd? [1 2 3]))
-  (is= true  (not-any? odd? [2 4 6]))
+    ; tests a predicate fn on each element
+    (is= false (not-any? odd? [1 2 3]))
+    (is= true (not-any? odd? [2 4 6]))
 
-  ; explicit & consistent way of testing predicate
-  (is (t/has-some? odd? [1 2 3]))
-  (is (t/has-none? odd? [2 4 6])))
-
-
+    ; explicit & consistent way of testing predicate
+    (is (t/has-some? odd? [1 2 3]))
+    (is (t/has-none? odd? [2 4 6]))
+  ))
 
 ; samples for dospec & check-not
 ;-----------------------------------------------------------------------------
@@ -152,11 +154,11 @@
   (prop/for-all [val (gen/vector gen/any)]
     (is (= (not (empty? val)) (t/not-empty? val)))
     (isnt= (empty? val) (empty val))))
-(dotest
-  (check-isnt 33
-    (prop/for-all [val (gen/vector gen/int)]
-      (= (any? val) (not-any? odd? val)))))
-
+(i/when-clojure-1-9-plus
+  (dotest
+    (check-isnt 33
+      (prop/for-all [val (gen/vector gen/int)]
+        (= (any? val) (not-any? odd? val))))))
 
 (dotest
   (is= 'quote (first ''hello))  ; 2 single quotes

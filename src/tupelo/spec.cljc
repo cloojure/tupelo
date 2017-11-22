@@ -7,12 +7,12 @@
 (ns tupelo.spec
   "Miscellaneous functions."
   (:require
-    [clojure.spec.alpha :as sp]
-    [clojure.spec.test.alpha :as stest]
-    [clojure.spec.gen.alpha :as gen]
-    ))
-
-; #todo clojure.core/any?  conflicts with  clojure.core/not-any?
+    [clojure.string :as str]
+   ;[clojure.spec.alpha :as sp]
+   ;[clojure.spec.test.alpha :as stest]
+   ;[clojure.spec.gen.alpha :as gen]
+   ;[tupelo.impl :as i]
+  ))
 
 ; #todo  possible replacements:
 ; #todo    =>  spec/anything
@@ -29,7 +29,5 @@
 ; #todo       :args  (s/cat :names (s/* simple-symbol?))
 ; #todo       :ret   any?)
 
-(sp/def ::anything (sp/spec (constantly true)  :gen gen/any-printable))
-(sp/def ::nothing  (sp/spec (constantly false)))
 
 

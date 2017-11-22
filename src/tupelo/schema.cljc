@@ -55,6 +55,8 @@
 (def Triple   [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") ] )  ; length-3 vector
 (def Quad     [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") (s/one s/Any "x4") ] )  ; length-4 vector
 
+(def Fn (s/make-fn-schema s/Any s/Any))
+
 ;-----------------------------------------------------------------------------
 ; Datomic-related stuff
 
