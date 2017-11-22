@@ -1020,3 +1020,52 @@
          "24816246"
          "24779721"
          "24740865"]) )))
+
+;---------------------------------------------------------------------------
+(dotest
+  (with-forest (new-forest)
+    (let [root-hid (add-tree
+                     (data->tree
+                       {:bucket-aggregation
+                        {:buckets
+                         [{:key "outer_bucket"
+                           :bucket-aggregation
+                                {:buckets
+                                 [{:key "inner_bucket_1"
+                                   :bucket-aggregation
+                                        {:buckets
+                                         [{:key 1510657200000, :sum {:value 25}}
+                                          {:key 1510660800000, :sum {:value 50}}]}}
+                                  {:key "inner_bucket_2"
+                                   :bucket-aggregation
+                                        {:buckets
+                                         [{:key 1510657200000, :sum {:value 30}}
+                                          {:key 1510660800000, :sum {:value 35}}]}}
+                                  {:key "inner_bucket_3"
+                                   :bucket-aggregation
+                                        {:buckets
+                                         [{:key 1510657200000, :sum {:value 40}}
+                                          {:key 1510660800000, :sum {:value 45}}]}}]}}]}}
+                         )
+                       )
+          value-paths (find-paths root-hid [:** {::tf/key :value} {::tf/value :*}])
+          tail-hids (mapv last value-paths)
+          value-nodes (mapv #(grab ::tf/value (hid->node %)) tail-hids)
+    ]
+     ;(spyx-pretty (hid->bush root-hid))
+     ;(spyx-pretty (format-paths value-paths))
+
+      (is= value-nodes [25 50 30 35 40 45])
+      ; #todo  Want output like so (better than DataScript):
+      ; #todo  RE:  https://stackoverflow.com/questions/47438985/clojure-parsing-elasticsearch-query-response-and-extracting-values
+      (def desired-result
+        [{:key ["outer_bucket" "inner_bucket_1" 1510657200000], :value 25}
+         {:key ["outer_bucket" "inner_bucket_1" 1510660800000], :value 50}
+         {:key ["outer_bucket" "inner_bucket_2" 1510657200000], :value 30}
+         {:key ["outer_bucket" "inner_bucket_2" 1510660800000], :value 35}
+         {:key ["outer_bucket" "inner_bucket_3" 1510657200000], :value 40}
+         {:key ["outer_bucket" "inner_bucket_3" 1510660800000], :value 45}]
+        )
+      )
+  )
+)
