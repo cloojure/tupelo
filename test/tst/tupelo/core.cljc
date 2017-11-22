@@ -1846,7 +1846,7 @@
       (is= (lazy-countdown -1) nil )))
 
 ;-----------------------------------------------------------------------------
-; defgen/yield tests
+; lazy-gen/yield tests
 
   (let [empty-gen-fn (fn [] (lazy-gen)) ]
     (is (nil? (empty-gen-fn))))
@@ -2002,58 +2002,69 @@
   ; (concat-gen [1 2 3] [4 5 6] [7 8 9]) => (1 2 3 4 5 6 7 8 9)
   ; (empty-gen-fn) => nil
 
+  (let [seq-of-seqs [(range 0 5)
+                     (range 10 15)
+                     (range 20 25)]
+        flat-seq    (lazy-gen
+                      (doseq [curr-seq seq-of-seqs]
+                        (yield-all curr-seq)))]
+    (is= flat-seq [0 1 2 3 4 10 11 12 13 14 20 21 22 23 24]))
+
+)
+
+;---------------------------------------------------------------------------------------------------
+(dotest
   (is= [1 2 3 4 5] (flat-vec [[[1] 2] [3 [4 [5]]]]))
 
-  (testing "split-match"
-    (is= [ [] [\a   \b   \c   \d   \e   \f]      ] (split-match "abcdef" "a"   ))
-    (is= [ [] [\a   \b   \c   \d   \e   \f]      ] (split-match "abcdef" "ab"  ))
-    (is= [    [\a] [\b   \c   \d   \e   \f]      ] (split-match "abcdef" "bc"  ))
-    (is= [    [\a   \b] [\c   \d   \e   \f]      ] (split-match "abcdef" "cde" ))
-    (is= [    [\a   \b   \c] [\d   \e   \f]      ] (split-match "abcdef" "de"  ))
-    (is= [    [\a   \b   \c   \d] [\e   \f]      ] (split-match "abcdef" "ef"  ))
-    (is= [    [\a   \b   \c   \d   \e] [\f]      ] (split-match "abcdef" "f"   ))
-    (is= [    [\a   \b   \c   \d   \e   \f]  []  ] (split-match "abcdef" "fg"  ))
-    (is= [    [\a   \b   \c   \d   \e   \f]  []  ] (split-match "abcdef" "gh"  ))
+  (is= [ [] [\a   \b   \c   \d   \e   \f]      ] (split-match "abcdef" "a"   ))
+  (is= [ [] [\a   \b   \c   \d   \e   \f]      ] (split-match "abcdef" "ab"  ))
+  (is= [    [\a] [\b   \c   \d   \e   \f]      ] (split-match "abcdef" "bc"  ))
+  (is= [    [\a   \b] [\c   \d   \e   \f]      ] (split-match "abcdef" "cde" ))
+  (is= [    [\a   \b   \c] [\d   \e   \f]      ] (split-match "abcdef" "de"  ))
+  (is= [    [\a   \b   \c   \d] [\e   \f]      ] (split-match "abcdef" "ef"  ))
+  (is= [    [\a   \b   \c   \d   \e] [\f]      ] (split-match "abcdef" "f"   ))
+  (is= [    [\a   \b   \c   \d   \e   \f]  []  ] (split-match "abcdef" "fg"  ))
+  (is= [    [\a   \b   \c   \d   \e   \f]  []  ] (split-match "abcdef" "gh"  ))
 
-    (is= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [-1]    ))
-    (is= [ [] [0   1   2   3   4   5]      ]       (split-match (range 6) [0]     ))
-    (is= [ [] [0   1   2   3   4   5]      ]       (split-match (range 6) [0 1]   ))
-    (is= [    [0   1] [2   3   4   5]      ]       (split-match (range 6) [2 3]   ))
-    (is= [    [0   1   2] [3   4   5]      ]       (split-match (range 6) [3 4 5] ))
-    (is= [    [0   1   2   3] [4   5]      ]       (split-match (range 6) [4 5]   ))
-    (is= [    [0   1   2   3   4] [5]      ]       (split-match (range 6) [5]     ))
-    (is= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [5 6]   ))
-    (is= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [6 7]   )))
+  (is= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [-1]    ))
+  (is= [ [] [0   1   2   3   4   5]      ]       (split-match (range 6) [0]     ))
+  (is= [ [] [0   1   2   3   4   5]      ]       (split-match (range 6) [0 1]   ))
+  (is= [    [0   1] [2   3   4   5]      ]       (split-match (range 6) [2 3]   ))
+  (is= [    [0   1   2] [3   4   5]      ]       (split-match (range 6) [3 4 5] ))
+  (is= [    [0   1   2   3] [4   5]      ]       (split-match (range 6) [4 5]   ))
+  (is= [    [0   1   2   3   4] [5]      ]       (split-match (range 6) [5]     ))
+  (is= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [5 6]   ))
+  (is= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [6 7]   )))
 
-  (testing "index-using"
-    (is= nil (t/index-using #(= [666]       %) (range 5)))
-    (is= 0   (t/index-using #(= [0 1 2 3 4] %) (range 5)))
-    (is= 1   (t/index-using #(= [  1 2 3 4] %) (range 5)))
-    (is= 2   (t/index-using #(= [    2 3 4] %) (range 5)))
-    (is= 3   (t/index-using #(= [      3 4] %) (range 5)))
-    (is= 4   (t/index-using #(= [        4] %) (range 5)))
-    (is= nil (t/index-using #(= [         ] %) (range 5))))
+(dotest
+  (is= nil (t/index-using #(= [666]       %) (range 5)))
+  (is= 0   (t/index-using #(= [0 1 2 3 4] %) (range 5)))
+  (is= 1   (t/index-using #(= [  1 2 3 4] %) (range 5)))
+  (is= 2   (t/index-using #(= [    2 3 4] %) (range 5)))
+  (is= 3   (t/index-using #(= [      3 4] %) (range 5)))
+  (is= 4   (t/index-using #(= [        4] %) (range 5)))
+  (is= nil (t/index-using #(= [         ] %) (range 5))))
 
-  (testing "split-using"
-    (is= [ [] [0   1   2   3   4]    ] (split-using #(= 0 (first %)) (range 5)))
-    (is= [    [0] [1   2   3   4]    ] (split-using #(= 1 (first %)) (range 5)))
-    (is= [    [0   1] [2   3   4]    ] (split-using #(= 2 (first %)) (range 5)))
-    (is= [    [0   1   2] [3   4]    ] (split-using #(= 3 (first %)) (range 5)))
-    (is= [    [0   1   2   3] [4]    ] (split-using #(= 4 (first %)) (range 5)))
-    (is= [    [0   1   2   3   4] [] ] (split-using #(= 5 (first %)) (range 5)))
-    (is= [    [0   1   2   3   4] [] ] (split-using #(= 9 (first %)) (range 5)))
+(dotest
+  (is= [ [] [0   1   2   3   4]    ] (split-using #(= 0 (first %)) (range 5)))
+  (is= [    [0] [1   2   3   4]    ] (split-using #(= 1 (first %)) (range 5)))
+  (is= [    [0   1] [2   3   4]    ] (split-using #(= 2 (first %)) (range 5)))
+  (is= [    [0   1   2] [3   4]    ] (split-using #(= 3 (first %)) (range 5)))
+  (is= [    [0   1   2   3] [4]    ] (split-using #(= 4 (first %)) (range 5)))
+  (is= [    [0   1   2   3   4] [] ] (split-using #(= 5 (first %)) (range 5)))
+  (is= [    [0   1   2   3   4] [] ] (split-using #(= 9 (first %)) (range 5)))
 
-    (is= [[\a \b \c] [\d \e \f]] (split-using #(starts-with? % "de") "abcdef")))
+  (is= [[\a \b \c] [\d \e \f]] (split-using #(starts-with? % "de") "abcdef")))
 
-  (testing "partition-using"
-    (let [start-segment? (fn [vals] (zero? (rem (first vals) 3))) ]
-      (is= (partition-using start-segment? [1 2 3 6 7 8])
-        [[1 2] [3] [6 7 8]])
-      (is= (partition-using start-segment? [3 6 7 9])
-        [[3] [6 7] [9]])
-      (is= (partition-using start-segment? [1 2 3 6 7 8 9 12 13 15 16 17 18 18 18 3 4 5])
-        [[1 2] [3] [6 7 8] [9] [12 13] [15 16 17] [18] [18] [18] [3 4 5]]))
-    (throws? (partition-using even? 5))))
+(dotest
+  (let [start-segment? (fn [vals] (zero? (rem (first vals) 3))) ]
+    (is= (partition-using start-segment? [1 2 3 6 7 8])
+      [[1 2] [3] [6 7 8]])
+    (is= (partition-using start-segment? [3 6 7 9])
+      [[3] [6 7] [9]])
+    (is= (partition-using start-segment? [1 2 3 6 7 8 9 12 13 15 16 17 18 18 18 3 4 5])
+      [[1 2] [3] [6 7 8] [9] [12 13] [15 16 17] [18] [18] [18] [3 4 5]]))
+  (throws? (partition-using even? 5)))
 
 (dotest
   (let [ctx     (let [a 1
