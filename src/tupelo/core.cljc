@@ -159,6 +159,7 @@
 (pns/import-fn i/not-empty?)
 (pns/import-fn i/keyvals )
 (pns/import-fn i/keyvals-seq )
+(pns/import-fn i/keyvals-seq* )
 
 (pns/import-fn i/glue)
 (pns/import-fn i/join-2d->1d)
@@ -506,7 +507,7 @@
      conjv glue join-2d->1d
      macro? char-seq
      append prepend grab dissoc-in fetch fetch-in
-     submap? submap-by-keys submap-by-vals keyvals keyvals-seq validate-map-keys map-keys map-vals
+     submap? submap-by-keys submap-by-vals keyvals keyvals-seq keyvals-seq* validate-map-keys map-keys map-vals
      validate only it-> safe-> keep-if drop-if zip zip* zip-lazy indexed flat-vec
      strcat nl pretty pretty-str json->edn edn->json clip-str range-vec thru rel= all-rel=
      drop-at insert-at replace-at idx

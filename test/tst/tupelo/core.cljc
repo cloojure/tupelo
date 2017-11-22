@@ -908,7 +908,12 @@
     (is= [ :a 1 :b 2 :c 3 ] (keyvals-seq m1 [:a :b :c]))
     (is= [ :c 3 :a 1 :b 2 ] (keyvals-seq m1 [:c :a :b]))
     (is= [ :c 3 :b 2 :a 1 ] (keyvals-seq m1 [:c :b :a]))
-    (is= [ :a 1 :b 2 :a 1 ] (keyvals-seq m1 [:a :b :a])) ))
+    (is= [ :a 1 :b 2 :a 1 ] (keyvals-seq m1 [:a :b :a]))
+
+    (throws? (keyvals-seq m1 [:a :b :z]))
+    (is= [ :a 1 :b 2      ] (keyvals-seq* {:missing-ok true} m1 [:a :b :z]))
+    (is= [      :b 2 :c 3 ] (keyvals-seq* {:missing-ok true} m1 [:z :b :c]))
+    ))
 
 (dotest
   (is= 7 (safe-> 3 (* 2) (+ 1)))
