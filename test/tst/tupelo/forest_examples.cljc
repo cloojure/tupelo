@@ -1023,9 +1023,9 @@
           value-paths (find-paths root-hid [:** {::tf/key :value} {::tf/value :*}])
           tail-hids (mapv last value-paths)
           value-nodes (mapv #(grab ::tf/value (hid->node %)) tail-hids)
-    ]
-     ;(spyx-pretty (hid->bush root-hid))
-     ;(spyx-pretty (format-paths value-paths))
+          ]
+      ;(spyx-pretty (hid->bush root-hid))
+      ;(spyx-pretty (format-paths value-paths))
 
       (is= value-nodes [25 50 30 35 40 45])
       ; #todo  Want output like so (better than DataScript):
@@ -1037,7 +1037,7 @@
          {:key ["outer_bucket" "inner_bucket_2" 1510660800000], :value 35}
          {:key ["outer_bucket" "inner_bucket_3" 1510657200000], :value 40}
          {:key ["outer_bucket" "inner_bucket_3" 1510660800000], :value 45}]
-        ) ) ) )
+        ))))
 
 ;-----------------------------------------------------------------------------
 (dotest
@@ -1052,12 +1052,11 @@
                             enlive-html/xml-resource
                             only)
           root-hid        (add-tree-enlive enlive-tree)
-          bush-blanks     (spyx-pretty (hid->bush root-hid))
+          bush-blanks     (hid->bush root-hid)
           blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids))
           >>              (apply remove-hid blank-leaf-hids)
-          bush-no-blanks  (spyx-pretty (hid->bush root-hid))
+          bush-no-blanks  (hid->bush root-hid)
           leaf-hids       (find-leaf-hids root-hid [:** :*])]
-      (spyx-pretty (hid->bush root-hid))
       (is= bush-blanks [{:tag :root}
                         [{:tag :tupelo.forest/raw, :value "\n                              "}]
                         [{:tag :a, :value "1"}]
