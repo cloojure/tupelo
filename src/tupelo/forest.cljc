@@ -371,6 +371,13 @@
   [hid :- HID]
   (forest-leaf? (hid->node hid)))
 
+(s/defn leaf-value-hid? :- s/Bool ; #todo need test
+  "Returns true iff an HID is a leaf and has the :value attribute"
+  [hid :- HID]
+  (let [node (hid->node hid)]
+    (and (forest-leaf? node)
+      (contains-key? node :value))))
+
 (s/defn all-hids :- #{HID} ; #todo test
   "Returns a set of all HIDs in the forest"
   []
@@ -910,10 +917,12 @@
    tgt-path :- [s/Any] ]
   (hid->leaf (find-leaf-hid root-spec tgt-path )))
 
-;(s/defn find-leaf-value     ; #todo delete
-;  [root-spec :- HidRootSpec
-;   tgt-path :- [s/Any] ]
-;  (hid->value (find-hid root-spec tgt-path)))
+(s/defn blank-leaf-hid? :- s/Bool
+  [hid :- HID]
+  (and (leaf-value-hid?  hid) ; ensure it is a leaf node and has :value
+    (let [value (grab :value (hid->node hid))]
+      (and (string? value)
+        (ts/whitespace? value))))) ; all whitespace string
 
 (s/defn find-paths-with
   [root-spec :- HidRootSpec

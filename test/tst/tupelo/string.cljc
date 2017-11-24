@@ -249,6 +249,7 @@
   (isnt (ts/alphanumeric? "ab*de"))
   (isnt (ts/alphanumeric? \=))
 
+  (is (ts/whitespace?   "")) ; empty string counts as "whitespace"
   (is (ts/whitespace?   " "))
   (is (ts/whitespace?   " \n"))
   (is (ts/whitespace?   " \r"))

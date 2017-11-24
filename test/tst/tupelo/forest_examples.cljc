@@ -10,7 +10,7 @@
     [clojure.data.xml :as cdx]
     [clojure.java.io :as io]
     [clojure.set :as cs]
-    [net.cgrand.enlive-html :as en-html]
+    [net.cgrand.enlive-html :as enlive-html]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.forest :as tf]
@@ -442,7 +442,7 @@
     (let [enlive-tree (->> "<p>sample <em>text</em> with words.</p>"
                         clojure.string/lower-case
                         java.io.StringReader.
-                        en-html/html-resource
+                        enlive-html/html-resource
                         first)
           root-hid    (add-tree-enlive enlive-tree)
           leaf-hids   (find-leaf-hids root-hid [:** :*])
@@ -489,16 +489,10 @@
                           </ROOT>"
           enlive-tree     (->> xml-str
                             java.io.StringReader.
-                            en-html/html-resource
+                            enlive-html/html-resource
                             first)
           root-hid        (add-tree-enlive enlive-tree)
           tree-1          (hid->tree root-hid)
-
-          blank-leaf-hid? (fn [hid] (and (leaf-hid? hid) ; ensure it is a leaf node
-                                      (let [value (grab :value (hid->node hid))]
-                                           (and (string? value)
-                                             (or (zero? (count value)) ; empty string
-                                               (ts/whitespace? value)))))) ; all whitespace string
 
           type-bc-hid?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type :value "B"}])
                                         (has-child-leaf? hid [:** {:tag :Type :value "C"}])))
@@ -578,6 +572,35 @@
         [:Item [:Type "A"] [:Note "AA2"]]]]))))
 
 ;-----------------------------------------------------------------------------
+; shorter version w/o extra features
+(dotest
+  (with-forest (new-forest)
+    (let [xml-str         "<ROOT>
+                            <Items>
+                              <Item><Type>A</Type><Note>AA1</Note></Item>
+                              <Item><Type>B</Type><Note>BB1</Note></Item>
+                              <Item><Type>C</Type><Note>CC1</Note></Item>
+                              <Item><Type>A</Type><Note>AA2</Note></Item>
+                            </Items>
+                          </ROOT>"
+          enlive-tree     (->> xml-str
+                            java.io.StringReader.
+                            enlive-html/xml-resource
+                            only)
+          root-hid        (add-tree-enlive enlive-tree)
+          has-bc-leaf?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type :value "B"}])
+                                      (has-child-leaf? hid [:** {:tag :Type :value "C"}])))
+          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids))
+          >>              (apply remove-hid blank-leaf-hids)
+          bc-item-hids    (find-hids-with root-hid [:** :Item] has-bc-leaf?)]
+      (apply remove-hid bc-item-hids)
+      (is= (hid->hiccup root-hid)
+        [:ROOT
+         [:Items
+          [:Item [:Type "A"] [:Note "AA1"]]
+          [:Item [:Type "A"] [:Note "AA2"]]]]))))
+
+;-----------------------------------------------------------------------------
 ; xml searching example
 (def xml-str-prod "<data>
                     <products>
@@ -608,16 +631,10 @@
   (with-forest (new-forest)
     (let [enlive-tree          (->> xml-str-prod
                                  java.io.StringReader.
-                                 en-html/xml-resource
+                                 enlive-html/xml-resource
                                  first)
           root-hid             (add-tree-enlive enlive-tree)
           tree-1               (hid->hiccup root-hid)
-
-          blank-leaf-hid?      (fn [hid] (and (leaf-hid? hid) ; ensure it is a leaf node
-                                           (let [value (grab :value (hid->node hid))]
-                                                (and (string? value)
-                                                  (or (zero? (count value)) ; empty string
-                                                    (ts/whitespace? value)))))) ; all whitespace string
 
           blank-leaf-hids      (keep-if blank-leaf-hid? (all-hids))
           >>                   (apply remove-hid blank-leaf-hids)
@@ -671,36 +688,6 @@
            [:image "img.jpg"]
            [:image "img2.jpg"]]]]))))
 
-; shorter version w/o extra features
-(dotest
-  (with-forest (new-forest)
-    (let [xml-str         "<ROOT>
-                            <Items>
-                              <Item><Type>A</Type><Note>AA1</Note></Item>
-                              <Item><Type>B</Type><Note>BB1</Note></Item>
-                              <Item><Type>C</Type><Note>CC1</Note></Item>
-                              <Item><Type>A</Type><Note>AA2</Note></Item>
-                            </Items>
-                          </ROOT>"
-          enlive-tree     (->> xml-str
-                            java.io.StringReader.
-                            en-html/xml-resource
-                            first)
-          root-hid        (add-tree-enlive enlive-tree)
-          blank-leaf-hid? (fn [hid] (ts/whitespace? (grab :value (hid->node hid))))
-          has-bc-leaf?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type :value "B"}])
-                                        (has-child-leaf? hid [:** {:tag :Type :value "C"}])))
-          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids))
-          >>              (apply remove-hid blank-leaf-hids)
-          bc-item-hids    (find-hids-with root-hid [:** :Item] has-bc-leaf?)]
-      (apply remove-hid bc-item-hids)
-      (is= (hid->hiccup root-hid)
-        [:ROOT
-         [:Items
-          [:Item [:Type "A"] [:Note "AA1"]]
-          [:Item [:Type "A"] [:Note "AA2"]]]]))))
-
-
 ;-----------------------------------------------------------------------------
 (dotest
   (with-forest (new-forest)
@@ -714,16 +701,11 @@
 
           enlive-tree     (->> xml-str
                             java.io.StringReader.
-                            en-html/xml-resource
+                            enlive-html/xml-resource
                             only)
           root-hid        (add-tree-enlive enlive-tree)
 
           ; Removing whitespace nodes is optional; just done to keep things neat
-          blank-leaf-hid? (fn fn-blank-leaf-hid?  ; whitespace pred fn
-                            [hid]
-                            (let [node (hid->node hid)]
-                               (and (contains-key? node :value)
-                                 (ts/whitespace? (grab :value node)))))
           blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
           >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
 
@@ -778,17 +760,12 @@
 
           enlive-tree     (->> html-str
                             java.io.StringReader.
-                            en-html/html-resource
+                            enlive-html/html-resource
                             first)
           root-hid        (add-tree-enlive enlive-tree)
           tree-1          (hid->hiccup root-hid) ; orig tree with lots of whitespace leaves
 
           ; Removing whitespace nodes is optional; just done to keep things neat
-          blank-leaf-hid? (fn fn-blank-leaf-hid? ; whitespace pred fn
-                            [hid]
-                            (let [node (hid->node hid)]
-                              (and (contains-key? node :value)
-                                (ts/whitespace? (grab :value node)))))
           blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
           >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
           tree-2          (hid->hiccup root-hid)
@@ -865,16 +842,11 @@
                           </top>"
           enlive-tree     (->> xml-str
                             java.io.StringReader.
-                            en-html/xml-resource
+                            enlive-html/xml-resource
                             only)
           root-hid        (add-tree-enlive enlive-tree)
 
           ; Removing whitespace nodes is optional; just done to keep things neat
-          blank-leaf-hid? (fn fn-blank-leaf-hid? ; whitespace pred fn
-                            [hid]
-                            (let [node (hid->node hid)]
-                              (and (contains-key? node :value)
-                                (ts/whitespace? (grab :value node)))))
           blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
           >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
 
@@ -1065,7 +1037,36 @@
          {:key ["outer_bucket" "inner_bucket_2" 1510660800000], :value 35}
          {:key ["outer_bucket" "inner_bucket_3" 1510657200000], :value 40}
          {:key ["outer_bucket" "inner_bucket_3" 1510660800000], :value 45}]
-        )
-      )
-  )
-)
+        ) ) ) )
+
+;-----------------------------------------------------------------------------
+(dotest
+  (with-forest (new-forest)
+    (let [xml-str         "<?xml version=\"1.0\"?>
+                            <root>
+                              <a>1</a>
+                              <b>2</b>
+                           </root>"
+          enlive-tree     (->> xml-str
+                            java.io.StringReader.
+                            enlive-html/xml-resource
+                            only)
+          root-hid        (add-tree-enlive enlive-tree)
+          bush-blanks     (spyx-pretty (hid->bush root-hid))
+          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids))
+          >>              (apply remove-hid blank-leaf-hids)
+          bush-no-blanks  (spyx-pretty (hid->bush root-hid))
+          leaf-hids       (find-leaf-hids root-hid [:** :*])]
+      (spyx-pretty (hid->bush root-hid))
+      (is= bush-blanks [{:tag :root}
+                        [{:tag :tupelo.forest/raw, :value "\n                              "}]
+                        [{:tag :a, :value "1"}]
+                        [{:tag :tupelo.forest/raw, :value "\n                              "}]
+                        [{:tag :b, :value "2"}]
+                        [{:tag :tupelo.forest/raw, :value "\n                           "}]])
+      (is= bush-no-blanks [{:tag :root}
+                           [{:tag :a, :value "1"}]
+                           [{:tag :b, :value "2"}]])
+      (is= (mapv hid->node leaf-hids)
+        [{:tupelo.forest/khids [], :tag :a, :value "1"}
+         {:tupelo.forest/khids [], :tag :b, :value "2"}]))))
