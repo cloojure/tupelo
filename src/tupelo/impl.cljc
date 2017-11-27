@@ -19,8 +19,7 @@
    ;[tupelo.spec :as tsp]
     [tupelo.types :as types]
     [tupelo.schema :as ts]
-    [tupelo.string :as tstr]
-  ) )
+  ))
 
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
@@ -241,6 +240,16 @@
    (pprint/pprint arg writer)
    arg))
 
+(s/defn indent-lines-with :- s/Str  ; #todo add readme ;  need test
+  "Splits out each line of txt using clojure.string/split-lines, then
+  indents each line by prepending it with the supplied string. Joins lines together into
+  a single string result, with each line terminated by a single \newline."
+  [indent-str :- s/Str
+   txt  :- s/Str]
+  (str/join
+    (for [line (str/split-lines txt) ]
+      (str indent-str line \newline))))
+
 (defmacro with-exception-default
   "Evaluates body & returns its result.  In the event of an exception, default-val is returned
    instead of the exception."
@@ -423,9 +432,8 @@
                      `(let [spy-val# ~expr]
                         (when *spy-enabled*
                           (println (str (spy-indent-spaces) '~expr " => "))
-                          (tstr/indent-lines-with (spy-indent-spaces)
-                            (with-out-str
-                              (pprint/pprint spy-val#))))
+                          (println (indent-lines-with (spy-indent-spaces)
+                                     (pretty-str spy-val#))))
                         spy-val#))
         final-code `(do
                       (when *spy-enabled* (newline))

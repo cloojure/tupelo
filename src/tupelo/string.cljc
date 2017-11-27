@@ -12,20 +12,20 @@
     [clojure.string :as str]
     [schema.core :as s]
     [tupelo.char :as char]
-    [tupelo.impl :as i]
+    [tupelo.impl :as impl]
     [tupelo.schema :as tsk]))
 
-(defn alphanumeric?       [& args] (every? char/alphanumeric?        (i/strcat args)))
-(defn whitespace-horiz?   [& args] (every? char/whitespace-horiz?    (i/strcat args)))
-(defn whitespace-eol?     [& args] (every? char/whitespace-eol?      (i/strcat args)))
-(defn whitespace?         [& args] (every? char/whitespace?          (i/strcat args)))
-(defn lowercase?          [& args] (every? char/lowercase?           (i/strcat args)))
-(defn uppercase?          [& args] (every? char/uppercase?           (i/strcat args)))
-(defn digit?              [& args] (every? char/digit?               (i/strcat args)))
-(defn hex?                [& args] (every? char/hex?                 (i/strcat args)))
-(defn alpha?              [& args] (every? char/alpha?               (i/strcat args)))
-(defn visible?            [& args] (every? char/visible?             (i/strcat args)))
-(defn text?               [& args] (every? char/text?                (i/strcat args)))
+(defn alphanumeric?       [& args] (every? char/alphanumeric?        (impl/strcat args)))
+(defn whitespace-horiz?   [& args] (every? char/whitespace-horiz?    (impl/strcat args)))
+(defn whitespace-eol?     [& args] (every? char/whitespace-eol?      (impl/strcat args)))
+(defn whitespace?         [& args] (every? char/whitespace?          (impl/strcat args)))
+(defn lowercase?          [& args] (every? char/lowercase?           (impl/strcat args)))
+(defn uppercase?          [& args] (every? char/uppercase?           (impl/strcat args)))
+(defn digit?              [& args] (every? char/digit?               (impl/strcat args)))
+(defn hex?                [& args] (every? char/hex?                 (impl/strcat args)))
+(defn alpha?              [& args] (every? char/alpha?               (impl/strcat args)))
+(defn visible?            [& args] (every? char/visible?             (impl/strcat args)))
+(defn text?               [& args] (every? char/text?                (impl/strcat args)))
 
 ; #todo make general version vec -> vec; str-specific version str -> str
 ; #todo need (substring {:start I :stop J                 } ) ; half-open (or :stop)
@@ -154,9 +154,7 @@
   a single string result, with each line terminated by a single \newline."
   [indent-str :- s/Str
    txt  :- s/Str]
-  (str/join
-    (for [line (str/split-lines txt) ]
-      (str indent-str line \newline))))
+  (impl/indent-lines-with indent-str txt))
 
 (s/defn increasing :- s/Bool
   "Returns true if a pair of strings are in increasing lexicographic order."
