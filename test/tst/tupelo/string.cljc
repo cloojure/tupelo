@@ -186,21 +186,21 @@
 
 (deftest t-indent
   ; clojure accepts either CR/LF or LF (CR=/return & LF=\newline) as line-separator
-  (is (= "abc\n"    (ts/indent-lines 0      "abc"                    )))
-  (is (= "abc\n"    (ts/indent-lines 0 (str "abc"         \newline  ))))
-  (is (= "abc\n"    (ts/indent-lines 0 (str "abc" \return \newline  ))))
+  (is (= "abc"    (ts/indent-lines 0      "abc"                    )))
+  (is (= "abc"    (ts/indent-lines 0 (str "abc"         \newline  ))))
+  (is (= "abc"    (ts/indent-lines 0 (str "abc" \return \newline  ))))
 
   ; counterexample: clojure doesn't accept \formfeed or solo \return as line-separator
-  (isnt (= "abc\n"    (ts/indent-lines 0 (str "abc" \formfeed ))))
-  (isnt (= "abc\n"    (ts/indent-lines 0 (str "abc" \return   ))))
+  (isnt (= "abc"    (ts/indent-lines 0 (str "abc" \formfeed ))))
+  (isnt (= "abc"    (ts/indent-lines 0 (str "abc" \return   ))))
 
-  (is (= "  abc\n  def\n"    (ts/indent-lines 2 (str "abc" \newline "def" ))))
-  (is (= "  abc\n  def\n"    (ts/indent-lines 2 (str "abc" \newline "def" \newline ))))
+  (is (= "  abc\n  def"    (ts/indent-lines 2 (str "abc" \newline "def" ))))
+  (is (= "  abc\n  def"    (ts/indent-lines 2 (str "abc" \newline "def" \newline ))))
 
-  (is (= "abc\ndef\n"         (ts/indent-lines 0 (str "abc" \newline "def" ))))
-  (is (= " abc\n def\n"       (ts/indent-lines 1 (str "abc" \newline "def" ))))
-  (is (= "  abc\n  def\n"     (ts/indent-lines 2 (str "abc" \newline "def" ))))
-  (is (= "   abc\n   def\n"   (ts/indent-lines 3 (str "abc" \newline "def" ))))
+  (is (= "abc\ndef"         (ts/indent-lines 0 (str "abc" \newline "def" ))))
+  (is (= " abc\n def"       (ts/indent-lines 1 (str "abc" \newline "def" ))))
+  (is (= "  abc\n  def"     (ts/indent-lines 2 (str "abc" \newline "def" ))))
+  (is (= "   abc\n   def"   (ts/indent-lines 3 (str "abc" \newline "def" ))))
 )
 
 (deftest t-index-of

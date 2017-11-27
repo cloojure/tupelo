@@ -145,8 +145,9 @@
   [n    :- s/Int
    txt  :- s/Str]
   (str/join
-    (for [line (str/split-lines txt) ]
-      (str (indent n line) \newline))))
+    (interpose \newline
+      (for [line (str/split-lines txt)]
+        (str (indent n line))))))
 
 (s/defn indent-lines-with :- s/Str  ; #todo add readme ;  need test
   "Splits out each line of txt using clojure.string/split-lines, then

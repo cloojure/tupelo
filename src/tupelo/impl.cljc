@@ -247,8 +247,9 @@
   [indent-str :- s/Str
    txt  :- s/Str]
   (str/join
-    (for [line (str/split-lines txt) ]
-      (str indent-str line \newline))))
+    (interpose \newline
+      (for [line (str/split-lines txt)]
+        (str indent-str line)))))
 
 (defmacro with-exception-default
   "Evaluates body & returns its result.  In the event of an exception, default-val is returned
