@@ -1,5 +1,5 @@
-(ns tst.tupelo.data
-  (:use tupelo.data
+(ns tst.tupelo.x.data
+  (:use tupelo.x.data
         tupelo.test)
   (:require
     [schema.core :as s]
@@ -53,9 +53,7 @@
 (extend-type clojure.lang.IPersistentMap
   Finder (find-it [data ctx pattern]
            (println "----- map -----")
-           (spyx-pretty ctx)
-           (spyx-pretty data)
-           (spyx-pretty pattern)
+           (spyx-pretty [ctx data pattern])
            (with-spy-indent
              (doseq [[k v] data]
                (spy [:key k])
@@ -66,10 +64,8 @@
 (extend-type java.lang.Object
   Finder (find-it [data ctx pattern]
            (println "----- obj -----")
-           (spyx-pretty ctx)
-           (spyx-pretty data)
-           (spyx-pretty pattern)
-           ))
+           (spyx-pretty [ctx data pattern])
+         ))
 
 (dotest
   (let [ctx       {:path []  :vals {}}

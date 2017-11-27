@@ -244,6 +244,26 @@
   []
   (uuid->str (uuid/v1)))
 
+(s/defn new-hid :- tsk/HID
+  "Returns a new HexID"
+  []
+  (keyword (sha-uuid)))
+
+(s/defn hid? :- s/Bool
+  "Returns true if the arg is a legal HexID"
+  [arg]
+  (and (keyword? arg)
+    (let [name-str (kw->str arg)]
+      (and (ts/hex? name-str)
+        (= 40 (count name-str))))))
+
+(s/defn hid->wid  :- s/Keyword
+  "Uses an HID to look up a human-friendly Word-ID (WID) from an English dictionary.
+  Useful for debugging purposes."
+  [hid :- tsk/HID]
+  nil)              ; #todo
+
+
 ;-----------------------------------------------------------------------------
 ; #todo -> tupelo.vector
 ; #todo README & more tests

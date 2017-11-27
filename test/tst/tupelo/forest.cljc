@@ -9,6 +9,7 @@
   (:require
     [schema.core :as s]
     [tupelo.core :as t]
+    [tupelo.misc :as tm]
     [tupelo.forest :as tf]
   ))
 (t/refer-tupelo :dev)
@@ -268,7 +269,7 @@
           r-elem (hid->node r)
 
           roots (root-hids)]
-      (is (and (hid? x) (hid? y) (hid? z) (hid? r)))
+      (is (and (tm/hid? x) (tm/hid? y) (tm/hid? z) (tm/hid? r)))
 
       (is (and (leaf-hid? x) (leaf-hid? y) (leaf-hid? z)))
       (is (and (tree-leaf? x-tree) (tree-leaf? y-tree) (tree-leaf? z-tree)))

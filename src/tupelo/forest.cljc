@@ -12,7 +12,7 @@
     [clojure.set :as clj.set]
     [schema.core :as s]
     [tupelo.misc :as tm]
-    [tupelo.schema :as tsk]
+    [tupelo.schema :as tsk :refer [HID]]
     [tupelo.string :as ts]
   ))
 
@@ -82,16 +82,6 @@
 ; #todo add loop detection, recurse on parents not= <new child>
 ; #todo if loops are ok, need to add :max-depth to search queries to avoid infinite loop
 
-(def HID s/Keyword) ; #todo find way to validate
-
-(s/defn hid? :- s/Bool
-  "Returns true if the arg is a legal HexID"
-  [arg]
-  (and (keyword? arg)
-    (let [name-str (kw->str arg)]
-      (and (ts/hex? name-str)
-        (= 40 (count name-str))))))
-
 ; #todo add ::tag? (only req for hiccup/enlive data?)
 ; { :tupelo.forest/khids  [hid...]  :k1 v1 :k2 v2 ...  :value s/Any  }
 ;    ^ req             ^opt k-v's          ^opt/leaf
@@ -102,7 +92,7 @@
 (s/defn ->Node :- Node
   "Constructs a Node from a vector of HIDs"
   [hids :- [HID]]
-  (assert (every? hid? hids))
+  (assert (every? tm/hid? hids))
   { ::khids hids } )
 
 (s/defn forest-node? :- s/Bool
@@ -313,17 +303,6 @@
                               (glue attrs {::kids kid-hids})))]
          result)))
 
-(s/defn new-hid :- HID
-  "Returns a new HexID"
-  []
-  (keyword (tm/sha-uuid)))
-
-(s/defn hid->wid  :- s/Keyword
-  "Uses an HID to look up a human-friendly Word-ID (WID) from an English dictionary.
-  Useful for debugging purposes."
-  [hid :- HID]
-  nil)              ; #todo
-
 (s/defn validate-hid
   "Returns HID arg iff it exists in the forest, else throws."
   [hid :- HID]
@@ -340,12 +319,6 @@
   "Returns the leaf node corresponding to an HID"
   [hid :- HID]
   (validate forest-leaf? (hid->node hid)))
-
-; #todo remove
-;(s/defn hid->value :- s/Any
-;  "Returns the value of a leaf node given an HID"
-;  [hid :- HID]
-;  (grab :value (hid->leaf hid)))
 
 (s/defn hid->attrs :- tsk/KeyMap ; #todo remove OBE
   [hid :- HID]
@@ -458,7 +431,7 @@
   (let [attrs (if (map? attrs-arg)
                 attrs-arg
                 {:tag (validate keyword? attrs-arg)} )
-        hid (new-hid)]
+        hid (tm/new-hid)]
     (validate-attrs attrs)
     (set-node hid attrs kid-hids)
     hid))
@@ -863,7 +836,7 @@
 
   (let [result-atom (atom [])
         roots (cond
-                (hid? root-spec)     #{root-spec} ; scalar arg -> wrap in a set
+                (tm/hid? root-spec)     #{root-spec} ; scalar arg -> wrap in a set
                 (vector? root-spec)  (set root-spec) ; vec of root hids -> convert to set
                 (set? root-spec)     root-spec ; set of root hids -> use it as-is
                 :else (throw (IllegalArgumentException. (str "find-paths: invalid root-spec=" root-spec)))) ]

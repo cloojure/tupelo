@@ -13,8 +13,10 @@
     [net.cgrand.enlive-html :as enlive-html]
     [schema.core :as s]
     [tupelo.core :as t]
+    [tupelo.misc :as tm]
+    [tupelo.schema :as tsk]
     [tupelo.forest :as tf]
-    [tupelo.string :as ts]))
+    ))
 (t/refer-tupelo :dev)
 
 (dotest
@@ -280,7 +282,7 @@
     (keyword? (grab :value (hid->node hid)))))
 
 (s/defn kw-partition? :- s/Bool
-  [partition :- [HID]]
+  [partition :- [tsk/HID]]
   (leaf-kw-hid? (xfirst partition)))
 
 (s/defn wrap-adjacent-kw-kids [hid]
