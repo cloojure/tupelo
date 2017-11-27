@@ -6,10 +6,9 @@
     [tupelo.core :as t]))
 (t/refer-tupelo :dev)
 
-(spyx (supers (type []))) ; => clojure.lang.IPersistentVector
-(spyx (supers (type {}))) ; => clojure.lang.IPersistentMap
-(spyx (supers (type #{}))) ; => clojure.lang.IPersistentSet
-
+;(spyx (supers (type []))) ; => clojure.lang.IPersistentVector
+;(spyx (supers (type {}))) ; => clojure.lang.IPersistentMap
+;(spyx (supers (type #{}))) ; => clojure.lang.IPersistentSet
 
 (defprotocol Walker
   (walk [this]))
@@ -44,8 +43,38 @@
              (spyx it))))
 
 (dotest
-  (let [d1 {:a 1 :b {:x 11} :c [31 32] :d #{41 42}}
-        ]
-    (walk d1)
+  (let [d1 {:a 1 :b {:x 11} :c [31 32] :d #{41 42}} ]
+    (walk d1)))
 
-    ))
+;-----------------------------------------------------------------------------
+(defprotocol Finder
+  (find-it [data ctx pattern]))
+
+(extend-type clojure.lang.IPersistentMap
+  Finder (find-it [data ctx pattern]
+           (println "----- map -----")
+           (spyx-pretty ctx)
+           (spyx-pretty data)
+           (spyx-pretty pattern)
+           (with-spy-indent
+             (doseq [[k v] data]
+               (spy [:key k])
+               (find-it v
+                 (update-in ctx [:path] append k)
+                 v)))))
+
+(extend-type java.lang.Object
+  Finder (find-it [data ctx pattern]
+           (println "----- obj -----")
+           (spyx-pretty ctx)
+           (spyx-pretty data)
+           (spyx-pretty pattern)
+           ))
+
+(dotest
+  (let [ctx       {:path []  :vals {}}
+        data-1    {:a 1 :b {:x 11}}
+        pattern-1 '{:a ?v :b {:x 11}}
+        ]
+    (find-it data-1 ctx pattern-1)))
+
