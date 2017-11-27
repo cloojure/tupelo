@@ -18,7 +18,9 @@
     [tupelo.schema :as tsk]
    ;[tupelo.spec :as tsp]
     [tupelo.types :as types]
-    [tupelo.schema :as ts]) )
+    [tupelo.schema :as ts]
+    [tupelo.string :as tstr]
+  ) )
 
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
@@ -415,13 +417,15 @@
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
                        (if (keyword? expr)
-                         `(when *spy-enabled* (println (str ~expr)))
-                         `(when *spy-enabled* (println (str '~expr " => " ~expr)))))
+                         `(when *spy-enabled* (println (spy-indent-spaces) (str ~expr)))
+                         `(when *spy-enabled* (println (spy-indent-spaces) (str '~expr " => " ~expr)))))
         r2         (let [expr (xlast exprs)]
                      `(let [spy-val# ~expr]
                         (when *spy-enabled*
-                          (println (str '~expr " => "))
-                          (pprint/pprint spy-val#))
+                          (println (str (spy-indent-spaces) '~expr " => "))
+                          (tstr/indent-lines-with (spy-indent-spaces)
+                            (with-out-str
+                              (pprint/pprint spy-val#))))
                         spy-val#))
         final-code `(do
                       (when *spy-enabled* (newline))

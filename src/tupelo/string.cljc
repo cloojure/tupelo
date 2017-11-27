@@ -148,6 +148,16 @@
     (for [line (str/split-lines txt) ]
       (str (indent n line) \newline))))
 
+(s/defn indent-lines-with :- s/Str  ; #todo add readme ;  need test
+  "Splits out each line of txt using clojure.string/split-lines, then
+  indents each line by prepending it with the supplied string. Joins lines together into
+  a single string result, with each line terminated by a single \newline."
+  [indent-str :- s/Str
+   txt  :- s/Str]
+  (str/join
+    (for [line (str/split-lines txt) ]
+      (str indent-str line \newline))))
+
 (s/defn increasing :- s/Bool
   "Returns true if a pair of strings are in increasing lexicographic order."
   [a :- s/Str
