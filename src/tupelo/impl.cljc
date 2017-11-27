@@ -437,8 +437,8 @@
                                      (pretty-str spy-val#))))
                         spy-val#))
         final-code `(do
-                      (when *spy-enabled* (newline))
-                      ~@r1 ~r2)]
+                      ~@r1
+                      ~r2)]
     final-code))
 
 ; #todo On all spy* make print file & line number
