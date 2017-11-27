@@ -4,7 +4,9 @@
   (:require
     [schema.core :as s]
     [tupelo.core :as t]
-    [tupelo.impl :as i]))
+    [tupelo.impl :as i]
+    [tupelo.misc :as tm]
+    [tupelo.schema :as tsk]))
 (t/refer-tupelo :dev)
 
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
@@ -27,32 +29,59 @@
   []
   {})
 
+; #todo avoid self-cycles
+; #todo avoid descendant-cycles
+
+(s/defn add-entity
+  [hid :- tm/HID
+   entity           ; :- tsk/Map
+   ]
+  (spyx [:adding hid entity])
+  (set! *destruct* (glue *destruct* {hid entity})))
+
 ;-----------------------------------------------------------------------------
-(defrecord MapEntity [hid])
-(defrecord VecEntity [hid])
-(defprotocol Finder
-  (find-it [data ctx pattern]))
+(defrecord MapRef [hid])
+(defrecord VecRef [hid])
+
+(defrecord MapEntry   [k v])
+(defrecord VecElement [i v])
+(defrecord MapEntity [entry-hids])
+(defrecord VecEntity [element-hids])
+(defrecord Value [value])
+
+(defprotocol Loader
+  (load-it [data]))
 
 (extend-type clojure.lang.IPersistentMap
-  Finder (find-it [data ctx pattern]
-           (spyx-pretty [:map ctx data pattern])
+  Loader (load-it [data]
+           (spyx-pretty [:map data])
            (with-spy-indent
-             (doseq [[dk dv] data]
-               (spy [:key dk])
-               (find-it dv
-                 (update-in ctx [:path] append dk)
-                 dv)))))
+             (let [entry-hids (forv [[k v] data]
+                             (let [v2        (load-it v)
+                                   map-entry (->MapEntry k v2)
+                                   hid       (tm/new-hid)]
+                               (add-entity hid (spyx map-entry))
+                               hid))
+                   map-entity (->MapEntity entry-hids)
+                   hid (tm/new-hid) ]
+               (add-entity hid map-entity)
+               hid))))
 
 (extend-type java.lang.Object
-  Finder (find-it [data ctx pattern]
-           (spyx-pretty [:obj ctx data pattern])
-         ))
+  Loader (load-it [data]
+           (spyx-pretty [:obj  data ])
+           (let [retval (->Value data)]
+             retval)))
 
 (dotest
-  (spy \newline "-----------------------------------------------------------------------------")
-  (let [ctx       {:path []  :vals {}}
-        data-1    {:a 1 :b {:x 11} :c [31 32]}
-        pattern-1 '{:a ?v :b {:x 11}}
-        ]
-    (find-it data-1 ctx pattern-1)))
+  (with-destruct (new-destruct)
+    (spy \newline "-----------------------------------------------------------------------------")
+    (let [ctx       {:path [] :vals {}}
+          data-1    {:a 1 :b {:x 11} :c [31 32]}
+          pattern-1 '{:a ?v :b {:x 11}}
+          ]
+      (load-it data-1))
+    (nl)
+    (spyx-pretty *destruct*)
+  ))
 

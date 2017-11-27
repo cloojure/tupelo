@@ -57,9 +57,6 @@
 
 (def Fn (s/make-fn-schema s/Any s/Any))
 
-(def HID s/Keyword) ; #todo find way to validate
-
-
 ;-----------------------------------------------------------------------------
 ; Datomic-related stuff
 

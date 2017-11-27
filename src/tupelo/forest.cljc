@@ -11,8 +11,8 @@
   (:require
     [clojure.set :as clj.set]
     [schema.core :as s]
-    [tupelo.misc :as tm]
-    [tupelo.schema :as tsk :refer [HID]]
+    [tupelo.misc :as tm :refer [HID]]
+    [tupelo.schema :as tsk]
     [tupelo.string :as ts]
   ))
 

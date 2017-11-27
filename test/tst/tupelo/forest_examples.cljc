@@ -282,7 +282,7 @@
     (keyword? (grab :value (hid->node hid)))))
 
 (s/defn kw-partition? :- s/Bool
-  [partition :- [tsk/HID]]
+  [partition :- [tm/HID]]
   (leaf-kw-hid? (xfirst partition)))
 
 (s/defn wrap-adjacent-kw-kids [hid]

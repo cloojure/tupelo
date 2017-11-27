@@ -244,7 +244,8 @@
   []
   (uuid->str (uuid/v1)))
 
-(s/defn new-hid :- tsk/HID
+(def HID s/Keyword) ; #todo find way to validate
+(s/defn new-hid :- HID
   "Returns a new HexID"
   []
   (keyword (sha-uuid)))
@@ -260,7 +261,7 @@
 (s/defn hid->wid  :- s/Keyword
   "Uses an HID to look up a human-friendly Word-ID (WID) from an English dictionary.
   Useful for debugging purposes."
-  [hid :- tsk/HID]
+  [hid :- HID]
   nil)              ; #todo
 
 
