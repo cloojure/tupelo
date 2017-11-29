@@ -420,7 +420,7 @@
   `(let [spy-val#    ~expr
          class-name# (-> spy-val# class .getName)]
      (when *spy-enabled*
-       (println (str (spy-indent-spaces) '~expr " => " class-name# "->" (pr-str spy-val#))))
+       (println (str (spy-indent-spaces) '~expr " => <#" class-name# " " (pr-str spy-val#) ">")))
      spy-val#))
 
 (defn- spyx-pretty-proc

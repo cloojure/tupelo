@@ -238,14 +238,15 @@
     )))
 
 (dotest
-  (let [val1  (into (sorted-map) {:a 1 :b 2})
-        val2  (+ 2 3) ]
-    (is= "val1 => clojure.lang.PersistentTreeMap->{:a 1, :b 2}"
-        (ts/collapse-whitespace (with-out-str (spyxx val1 )))  )
+  (let [val1 (into (sorted-map) {:a 1 :b 2})]
+    (is= "(+ 2 3) => <#java.lang.Long 5>"
+      (ts/collapse-whitespace (with-out-str (spyxx (+ 2 3)))))
 
-    (is= "val2 => java.lang.Long->5"
-        (ts/collapse-whitespace (with-out-str (spyxx val2 ))) )
-  ))
+    (is= "(mapv inc (range 3)) => <#clojure.lang.PersistentVector [1 2 3]>"
+      (ts/collapse-whitespace (with-out-str (spyxx (mapv inc (range 3))))))
+
+    (is= "val1 => <#clojure.lang.PersistentTreeMap {:a 1, :b 2}>"
+      (ts/collapse-whitespace (with-out-str (spyxx val1))))))
 
 (dotest
   (let [fn2   (fn []  (with-spy-indent
