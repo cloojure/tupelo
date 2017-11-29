@@ -5,7 +5,7 @@
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.impl :as i]
-    [tupelo.misc :as tm]
+    [tupelo.misc :as tm :refer [HID]]
     [tupelo.schema :as tsk]))
 (t/refer-tupelo :dev)
 
@@ -33,11 +33,17 @@
 ; #todo avoid descendant-cycles
 
 (s/defn add-entity
-  [hid :- tm/HID
+  [hid :- HID
    entity           ; :- tsk/Map
    ]
   (spyx [:adding hid entity])
   (set! *destruct* (glue *destruct* {hid entity})))
+
+(s/defn new-hid :- HID ; #todo ***** temp for testing only! *****
+  []
+  (->> (tm/sha-uuid)
+    (clip-str 8)
+    (keyword)))
 
 ;-----------------------------------------------------------------------------
 (defrecord MapRef [hid])
@@ -59,11 +65,11 @@
              (let [entry-hids (forv [[k v] data]
                              (let [v2        (load-it v)
                                    map-entry (->MapEntry k v2)
-                                   hid       (tm/new-hid)]
+                                   hid       (new-hid)]
                                (add-entity hid (spyx map-entry))
                                hid))
                    map-entity (->MapEntity entry-hids)
-                   hid (tm/new-hid) ]
+                   hid (new-hid) ]
                (add-entity hid map-entity)
                hid))))
 
