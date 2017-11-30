@@ -32,6 +32,12 @@
 ; #todo avoid self-cycles
 ; #todo avoid descendant-cycles
 
+(s/defn new-hid :- HID ; #todo ***** temp for testing only! *****
+  []
+  (->> (tm/sha-uuid)
+    (clip-str 8)
+    (keyword)))
+
 (s/defn add-entity
   [hid :- HID
    entity           ; :- tsk/Map
@@ -39,18 +45,12 @@
   (spyx [:adding hid entity])
   (set! *destruct* (glue *destruct* {hid entity})))
 
-(s/defn new-hid :- HID ; #todo ***** temp for testing only! *****
-  []
-  (->> (tm/sha-uuid)
-    (clip-str 8)
-    (keyword)))
-
 ;-----------------------------------------------------------------------------
 (defrecord MapRef [hid])
 (defrecord VecRef [hid])
 
-(defrecord MapEntry   [k v])
-(defrecord VecElement [i v])
+(defrecord MapEntry   [key val])
+(defrecord VecElement [idx val])
 (defrecord MapEntity [entry-hids])
 (defrecord VecEntity [element-hids])
 (defrecord Value [value])
@@ -63,19 +63,20 @@
            (spyx-pretty [:map data])
            (with-spy-indent
              (let [entry-hids (forv [[k v] data]
-                             (let [v2        (load-it v)
-                                   map-entry (->MapEntry k v2)
-                                   hid       (new-hid)]
-                               (add-entity hid (spyx map-entry))
-                               hid))
+                                (let [>>        (spyx [k v])
+                                      v2        (load-it v)
+                                      map-entry (->MapEntry k v2)
+                                      hid       (new-hid)]
+                                  (add-entity hid map-entry)
+                                  hid))
                    map-entity (->MapEntity entry-hids)
-                   hid (new-hid) ]
+                   hid        (new-hid)]
                (add-entity hid map-entity)
                hid))))
 
 (extend-type java.lang.Object
   Loader (load-it [data]
-           (spyx-pretty [:obj  data ])
+           (spyx-pretty [:obj data])
            (let [retval (->Value data)]
              retval)))
 
@@ -88,6 +89,6 @@
           ]
       (load-it data-1))
     (nl)
-    (spyx-pretty *destruct*)
-  ))
+    (spyx-pretty (glue (sorted-map) *destruct*))
+    ))
 
