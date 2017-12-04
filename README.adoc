@@ -518,7 +518,7 @@ Suppose you want to insert an element into a sequence. Tupelo has you covered he
 
 [source,clojure]
 ----
-s/defn insert-at :- ts/List
+(s/defn insert-at :- ts/List
   "Inserts an element into a collection at the specified index."
   [coll     :- ts/List
    index    :- s/Int

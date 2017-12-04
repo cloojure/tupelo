@@ -137,9 +137,7 @@
   (match [query hid ctx]))
 (extend-type clojure.lang.IPersistentMap
   Match (match [query hid ctx]
-          (assert (map? query))
-          (assert (keyword? hid))
-          (assert (map? ctx))
+          (assert (map? query)) (assert (keyword? hid)) (assert (map? ctx))
           (spyx [query hid ctx])
           (with-spy-indent
             (let-spy [
@@ -151,7 +149,7 @@
                 (let [ctx (if (spyx (query-variable? query-val))
                             (glue ctx {query-val (destruct->edn (grab query-key data-map))})
                             ctx)]
-                  (spyx [:inner query-rem hid ctx])
+                  (spyx :inner [query-rem hid ctx])
                   (if-not (spyx (empty? query-rem))
                     (match query-rem hid ctx)
                     ctx)))))))
