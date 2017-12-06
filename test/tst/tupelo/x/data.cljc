@@ -141,8 +141,8 @@
           (with-spy-indent
             (spyx [query hid ctx ])
             (let-spy [edn-val (fracture->edn hid)
-                      ctx-new (glue ctx {query edn-val})]
-              (spy :found ctx-new)))))
+                      result-ctx (glue ctx {query edn-val})]
+              (spy :found result-ctx)))))
 
 (extend-type clojure.lang.IPersistentMap
   Match (match [query hid ctx]
