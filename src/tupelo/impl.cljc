@@ -219,6 +219,10 @@
   [arg :- s/Str]
   (keyword arg))
 
+(s/defn str->chars :- s/Keyword
+  [arg :- s/Str]
+  (vec arg))
+
 (s/defn vec->list :- [s/Any]
   [arg :- [s/Any]]
   (apply list arg))

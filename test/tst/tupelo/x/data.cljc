@@ -2,6 +2,7 @@
   (:use tupelo.x.data
         tupelo.test)
   (:require
+    [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.impl :as i]
@@ -131,7 +132,7 @@
   "Returns true for symbols like '?name' "
   [arg]
   (and (symbol? arg)
-    (= \? (xfirst (seq (name arg))))))
+    (str/starts-with? (name arg) "?")))
 
 (defprotocol Match
   (match [query hid ctx]))
