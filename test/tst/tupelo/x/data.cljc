@@ -153,8 +153,9 @@
           (with-spy-indent
             (spyx [query hid ctx])
             (let-spy [shard (grab :content (get-entity hid))
-                      sub-results (forv [sub-query (seq query)]
-                                    (let-spy [[query-key query-val] sub-query]
+                      sub-results (forv [[query-key query-val] (vec query)]
+                                    (do
+                                      (spyx [[query-key query-val]])
                                       (if (not (spyx (contains? shard query-key)))
                                         FAILURE
                                         (let [shard-hid (grab query-key shard)]
@@ -178,10 +179,11 @@
   (i/spy-indent-reset)
   (with-fracture (new-fracture)
     (let [ctx      {:path [] :vals {}}
-          data-1   {:a 1 :b {:x 11}}
-          ;data-1    {:a 1 :b {:x 11} :c [31 32]}
+         ;data-1   {:a 1 :b {:x 11}}
+          data-1    {:a 1 :b {:x 11} :c [31 32]}
           query-1  '{:a ?v :b {:x 11}}
-          query-1  '{:a ?a :b {:x ?x}}
+          query-1  '{:a ?v :b {:x 11} :c ?c}
+         ;query-1  '{:a ?a :b {:x ?x}}
           root-hid (edn->fracture data-1) ]
       (nl) (print-fracture *fracture*)
       (nl) (spyx (fracture->edn root-hid))
