@@ -12,28 +12,28 @@
 (t/refer-tupelo :dev)
 
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
-(def ^:dynamic *destruct* nil)
+(def ^:dynamic *fracture* nil)
 
-(defn validate-destruct []
-  (when-not (map? *destruct*)
-    (throw (IllegalArgumentException. (str "validate-destruct: failed destruct=" *destruct*)))))
+(defn validate-fracture []
+  (when-not (map? *fracture*)
+    (throw (IllegalArgumentException. (str "validate-fracture: failed fracture=" *fracture*)))))
 
-(defmacro with-destruct ; #todo swap names?
-  [destruct-arg & forms]
-  `(binding [*destruct* ~destruct-arg]
-     (validate-destruct)
+(defmacro with-fracture ; #todo swap names?
+  [fracture-arg & forms]
+  `(binding [*fracture* ~fracture-arg]
+     (validate-fracture)
      ~@forms))
 
 ; HID & :hid are shorthand for Hash ID, the SHA-1 hash of a v1/UUID expressed as a hexadecimal keyword
 ; format { :hid Node }
-(defn new-destruct
-  "Returns a new, empty destruct."
+(defn new-fracture
+  "Returns a new, empty fracture."
   []
   {})
 
-(defn print-destruct [destruct]
+(defn print-fracture [fracture]
   (println "-----------------------------------------------------------------------------")
-  (doseq [[hid val] (glue (sorted-map) destruct)]
+  (doseq [[hid val] (glue (sorted-map) fracture)]
     (println "  " hid (tstr/indent 4 (pr-str val))))
   (println "-----------------------------------------------------------------------------"))
 
@@ -52,12 +52,12 @@
   [entity :- tsk/Map]
   ;(spyx [:adding hid entity]) (flush)
   (let [hid (new-hid)]
-    (set! *destruct* (glue *destruct* {hid entity}))
+    (set! *fracture* (glue *fracture* {hid entity}))
     hid))
 
 (s/defn get-entity :- tsk/Map
   [hid :- HID]
-  (grab hid *destruct*))
+  (grab hid *fracture*))
 
 ;-----------------------------------------------------------------------------
 ;(defrecord MapRef [hid]) ; todo needed?
@@ -71,13 +71,13 @@
 
 ;-----------------------------------------------------------------------------
 (defprotocol Edn->Fracture ; shatter, shard, sharder, destruct, destructure
-  (edn->destruct [data]))
+  (edn->fracture [data]))
 
 (extend-type clojure.lang.IPersistentMap
-  Edn->Fracture (edn->destruct [data]
+  Edn->Fracture (edn->fracture [data]
                   (with-spy-indent
                     (let [map-entries (forv [[k v] data]
-                                        (let [value-hid   (edn->destruct v)
+                                        (let [value-hid   (edn->fracture v)
                                               map-entry   {k value-hid}]
                                           map-entry))
                           map-entity (->MapEntity (apply glue map-entries))
@@ -85,43 +85,43 @@
                       hid))))
 
 (extend-type clojure.lang.IPersistentVector ; #todo add for Set
-  Edn->Fracture (edn->destruct [data]
+  Edn->Fracture (edn->fracture [data]
                   (with-spy-indent
                     (let [vec-entry-maps (forv [[idx v] (indexed data)]
-                                           (let [value-hid (edn->destruct v)]
+                                           (let [value-hid (edn->fracture v)]
                                              {idx value-hid}))
                           vec-entity     (->VecEntity (apply glue (sorted-map) vec-entry-maps))
                           hid            (add-entity vec-entity)]
                       hid))))
 
 (extend-type java.lang.Object
-  Edn->Fracture (edn->destruct [data]
+  Edn->Fracture (edn->fracture [data]
                   (let [value (->Value data)
                         hid   (add-entity value)]
                     hid)))
 
 ;-----------------------------------------------------------------------------
 (defprotocol Fracture->Edn
-  (destruct->edn [hid]))
+  (fracture->edn [hid]))
 
 (extend-type clojure.lang.Keyword
-  Fracture->Edn (destruct->edn [hid]
-                  (destruct->edn (get-entity hid))))
+  Fracture->Edn (fracture->edn [hid]
+                  (fracture->edn (get-entity hid))))
 (extend-type Value
-  Fracture->Edn (destruct->edn [value]
+  Fracture->Edn (fracture->edn [value]
                   (grab :content value)))
 (extend-type MapEntity
-  Fracture->Edn (destruct->edn [map-entity]
+  Fracture->Edn (fracture->edn [map-entity]
                   (with-spy-indent
                     (let [entry-maps (forv [[key val-hid] (grab :content map-entity)]
-                                       {key (destruct->edn val-hid)})
+                                       {key (fracture->edn val-hid)})
                           map-result (apply glue entry-maps)]
                       map-result))))
 (extend-type VecEntity
-  Fracture->Edn (destruct->edn [vec-entity]
+  Fracture->Edn (fracture->edn [vec-entity]
                   (with-spy-indent
                     (let [vec-elems (forv [[idx val-hid] (grab :content (glue (sorted-map) vec-entity))]
-                                      [idx (destruct->edn val-hid)])]
+                                      [idx (fracture->edn val-hid)])]
                       vec-elems))))
 
 ;-----------------------------------------------------------------------------
@@ -145,7 +145,7 @@
               (if (not (spyx (contains? data-map query-key)))
                 ctx
                 (let [ctx (if (spyx (query-variable? query-val))
-                            (glue ctx {query-val (destruct->edn (grab query-key data-map))})
+                            (glue ctx {query-val (fracture->edn (grab query-key data-map))})
                             ctx)
                       query-rem (dissoc query query-key)]
                   (spyx :inner [query-rem hid ctx])
@@ -154,15 +154,15 @@
                     ctx)))))))
 
 (dotest
-  (with-destruct (new-destruct)
+  (with-fracture (new-fracture)
     (let [ctx       {:path [] :vals {}}
           data-1    {:a 1 :b {:x 11} }
          ;data-1    {:a 1 :b {:x 11} :c [31 32]}
           query-1 '{:a ?v :b {:x 11}}
-          root-hid (edn->destruct data-1)
+          root-hid (edn->fracture data-1)
           ]
-      (nl) (print-destruct *destruct*)
-      (nl) (spyx (destruct->edn root-hid))
+      (nl) (print-fracture *fracture*)
+      (nl) (spyx (fracture->edn root-hid))
       (nl) (spyx (match query-1 root-hid {}))
 
   )))
