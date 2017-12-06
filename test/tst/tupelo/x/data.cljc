@@ -65,16 +65,16 @@
 ;(defrecord MapEntry     [key val-hid])
 ;(defrecord VecElement   [idx val-hid])
 
-(defrecord MapEntity    [map-entity])
-(defrecord VecEntity    [vec-entity-sorted])
-(defrecord Value        [value])
+(defrecord MapEntity    [content])
+(defrecord VecEntity    [content])
+(defrecord Value        [content])
 
 ;-----------------------------------------------------------------------------
-(defprotocol Edn->Destruct
+(defprotocol Edn->Fracture ; shatter, shard, sharder, destruct, destructure
   (edn->destruct [data]))
 
 (extend-type clojure.lang.IPersistentMap
-  Edn->Destruct (edn->destruct [data]
+  Edn->Fracture (edn->destruct [data]
                   (with-spy-indent
                     (let [map-entries (forv [[k v] data]
                                         (let [value-hid   (edn->destruct v)
@@ -85,46 +85,43 @@
                       hid))))
 
 (extend-type clojure.lang.IPersistentVector ; #todo add for Set
-  Edn->Destruct (edn->destruct [data]
+  Edn->Fracture (edn->destruct [data]
                   (with-spy-indent
-                    (let [vec-entries (forv [[idx v] (indexed data)]
-                                        (let [value-hid  (edn->destruct v)
-                                              vec-entry  {idx value-hid} ]
-                                          vec-entry))
-                          vec-entity-sorted (->VecEntity (apply glue (sorted-map) vec-entries))
-                          hid        (add-entity vec-entity-sorted)]
+                    (let [vec-entry-maps (forv [[idx v] (indexed data)]
+                                           (let [value-hid (edn->destruct v)]
+                                             {idx value-hid}))
+                          vec-entity     (->VecEntity (apply glue (sorted-map) vec-entry-maps))
+                          hid            (add-entity vec-entity)]
                       hid))))
 
 (extend-type java.lang.Object
-  Edn->Destruct (edn->destruct [data]
+  Edn->Fracture (edn->destruct [data]
                   (let [value (->Value data)
                         hid   (add-entity value)]
                     hid)))
 
 ;-----------------------------------------------------------------------------
-(defprotocol Destruct->Edn
+(defprotocol Fracture->Edn
   (destruct->edn [hid]))
 
 (extend-type clojure.lang.Keyword
-  Destruct->Edn (destruct->edn [hid]
+  Fracture->Edn (destruct->edn [hid]
                   (destruct->edn (get-entity hid))))
 (extend-type Value
-  Destruct->Edn (destruct->edn [value]
-                  (grab :value value)))
+  Fracture->Edn (destruct->edn [value]
+                  (grab :content value)))
 (extend-type MapEntity
-  Destruct->Edn (destruct->edn [map-entity]
+  Fracture->Edn (destruct->edn [map-entity]
                   (with-spy-indent
-                    (let [map-entry-tuples (forv [[key val-hid] (grab :map-entity map-entity)]
-                                             (let [map-entry-tuple [key (destruct->edn val-hid)]]
-                                               map-entry-tuple))
-                          map-result       (into {} map-entry-tuples)]
+                    (let [entry-maps (forv [[key val-hid] (grab :content map-entity)]
+                                       {key (destruct->edn val-hid)})
+                          map-result (apply glue entry-maps)]
                       map-result))))
 (extend-type VecEntity
-  Destruct->Edn (destruct->edn [vec-entity-sorted]
+  Fracture->Edn (destruct->edn [vec-entity]
                   (with-spy-indent
-                    (let [vec-elems (forv [[idx val-hid] (grab :vec-entity-sorted vec-entity-sorted)]
-                                      (let [vec-elem (destruct->edn val-hid)]
-                                        vec-elem))]
+                    (let [vec-elems (forv [[idx val-hid] (grab :content (glue (sorted-map) vec-entity))]
+                                      [idx (destruct->edn val-hid)])]
                       vec-elems))))
 
 ;-----------------------------------------------------------------------------
@@ -143,13 +140,14 @@
           (with-spy-indent
             (let-spy [
                       [query-key query-val] (xfirst (seq query))
-                      data-map (grab :map-entity (get-entity hid))
-                      query-rem (dissoc query query-key)]
+                      data-map (grab :content (get-entity hid))
+                      ]
               (if (not (spyx (contains? data-map query-key)))
                 ctx
                 (let [ctx (if (spyx (query-variable? query-val))
                             (glue ctx {query-val (destruct->edn (grab query-key data-map))})
-                            ctx)]
+                            ctx)
+                      query-rem (dissoc query query-key)]
                   (spyx :inner [query-rem hid ctx])
                   (if-not (spyx (empty? query-rem))
                     (match query-rem hid ctx)
