@@ -125,6 +125,9 @@
                       vec-elems))))
 
 ;-----------------------------------------------------------------------------
+(def FAILURE :failure)
+(defn failure? [arg] (= arg FAILURE))
+
 (s/defn query-variable?
   "Returns true for symbols like '?name' "
   [arg]
@@ -153,12 +156,12 @@
                       sub-results (forv [sub-query (seq query)]
                                     (let-spy [[query-key query-val] sub-query]
                                       (if (not (spyx (contains? shard query-key)))
-                                        :failure
+                                        FAILURE
                                         (let [shard-hid (grab query-key shard)]
                                           (spyx :inner [query-val shard-hid ctx])
                                           (match query-val shard-hid ctx)))))
-                      result-ctx (if (has-some? #(= % :failure) sub-results)
-                               :failure
+                      result-ctx (if (has-some? failure? sub-results)
+                               FAILURE
                                (apply glue sub-results))]
               result-ctx))))
 
@@ -170,7 +173,7 @@
             (let-spy [edn-val (fracture->edn hid)]
               (if (= query edn-val)
                 (spy :object ctx)
-                :failure)))))
+                FAILURE)))))
 (dotest
   (i/spy-indent-reset)
   (with-fracture (new-fracture)
@@ -178,6 +181,7 @@
           data-1   {:a 1 :b {:x 11}}
           ;data-1    {:a 1 :b {:x 11} :c [31 32]}
           query-1  '{:a ?v :b {:x 11}}
+          query-1  '{:a ?a :b {:x ?x}}
           root-hid (edn->fracture data-1) ]
       (nl) (print-fracture *fracture*)
       (nl) (spyx (fracture->edn root-hid))
