@@ -132,45 +132,57 @@
     (str/starts-with? (name arg) "?")))
 
 (defprotocol Match
-  (match [query hid ctx result]))
+  (match [query hid ctx]))
 
 (extend-type clojure.lang.Symbol
-  Match (match [query hid ctx result]
+  Match (match [query hid ctx ]
           (assert (query-variable? query)) ; found match
           (assert (keyword? hid)) (assert (map? ctx))
           (with-spy-indent
-            (spyx [query hid ctx @result])
+            (spyx [query hid ctx ])
             (let-spy [edn-val (fracture->edn hid)
                       ctx-new (glue ctx {query edn-val})]
-              (swap! result append ctx-new)
-              (spy :result @result)
-              :success))))
+              (spy :found ctx-new)))))
 
 (extend-type clojure.lang.IPersistentMap
-  Match (match [query hid ctx result]
+  Match (match [query hid ctx]
           (assert (map? query)) (assert (keyword? hid)) (assert (map? ctx))
           (with-spy-indent
-            (spyx [query hid ctx @result])
+            (spyx [query hid ctx])
             (let-spy [shard (grab :content (get-entity hid))
-                     [query-key query-val] (xfirst (seq query)) ]
-                (if (not (spyx (contains? shard query-key)))
-                  :failure
-                  (let [shard-hid (grab query-key shard) ]
-                    (spyx :inner [query-val shard-hid ctx])
-                    (match query-val shard-hid ctx result)))))))
+                      sub-results (forv [sub-query (seq query)]
+                                    (let-spy [[query-key query-val] sub-query]
+                                      (if (not (spyx (contains? shard query-key)))
+                                        :failure
+                                        (let [shard-hid (grab query-key shard)]
+                                          (spyx :inner [query-val shard-hid ctx])
+                                          (match query-val shard-hid ctx)))))
+                      result-ctx (if (has-some? #(= % :failure) sub-results)
+                               :failure
+                               (apply glue sub-results))]
+              result-ctx))))
 
+(extend-type java.lang.Object
+  Match (match [query hid ctx] ; found match
+          (assert (keyword? hid)) (assert (map? ctx))
+          (with-spy-indent
+            (spyx [query hid ctx])
+            (let-spy [edn-val (fracture->edn hid)]
+              (if (= query edn-val)
+                (spy :object ctx)
+                :failure)))))
 (dotest
+  (i/spy-indent-reset)
   (with-fracture (new-fracture)
     (let [ctx      {:path [] :vals {}}
           data-1   {:a 1 :b {:x 11}}
           ;data-1    {:a 1 :b {:x 11} :c [31 32]}
           query-1  '{:a ?v :b {:x 11}}
-          root-hid (edn->fracture data-1)
-          result   (atom [])]
+          root-hid (edn->fracture data-1) ]
       (nl) (print-fracture *fracture*)
       (nl) (spyx (fracture->edn root-hid))
-      (nl) (match query-1 root-hid {} result)
-      (println "result => " @result)
+      (nl) (spy :result (match query-1 root-hid {}))
+
 
   )))
 
