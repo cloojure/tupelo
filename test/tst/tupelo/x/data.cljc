@@ -120,8 +120,8 @@
 (extend-type VecEntity
   Fracture->Edn (fracture->edn [vec-entity]
                   (with-spy-indent
-                    (let [vec-elems (forv [[idx val-hid] (grab :content (glue (sorted-map) vec-entity))]
-                                      [idx (fracture->edn val-hid)])]
+                    (let [vec-elems (forv [[idx val-hid] (glue (sorted-map) (grab :content vec-entity))]
+                                      (fracture->edn val-hid))]
                       vec-elems))))
 
 ;-----------------------------------------------------------------------------
@@ -132,38 +132,45 @@
     (str/starts-with? (name arg) "?")))
 
 (defprotocol Match
-  (match [query hid ctx]))
-(extend-type clojure.lang.IPersistentMap
-  Match (match [query hid ctx]
-          (assert (map? query)) (assert (keyword? hid)) (assert (map? ctx))
-          (spyx [query hid ctx])
+  (match [query hid ctx result]))
+
+(extend-type clojure.lang.Symbol
+  Match (match [query hid ctx result]
+          (assert (query-variable? query)) ; found match
+          (assert (keyword? hid)) (assert (map? ctx))
           (with-spy-indent
-            (let-spy [
-                      [query-key query-val] (xfirst (seq query))
-                      data-map (grab :content (get-entity hid))
-                      ]
-              (if (not (spyx (contains? data-map query-key)))
-                ctx
-                (let [ctx (if (spyx (query-variable? query-val))
-                            (glue ctx {query-val (fracture->edn (grab query-key data-map))})
-                            ctx)
-                      query-rem (dissoc query query-key)]
-                  (spyx :inner [query-rem hid ctx])
-                  (if-not (spyx (empty? query-rem))
-                    (match query-rem hid ctx)
-                    ctx)))))))
+            (spyx [query hid ctx @result])
+            (let-spy [edn-val (fracture->edn hid)
+                      ctx-new (glue ctx {query edn-val})]
+              (swap! result append ctx-new)
+              (spy :result @result)
+              :success))))
+
+(extend-type clojure.lang.IPersistentMap
+  Match (match [query hid ctx result]
+          (assert (map? query)) (assert (keyword? hid)) (assert (map? ctx))
+          (with-spy-indent
+            (spyx [query hid ctx @result])
+            (let-spy [shard (grab :content (get-entity hid))
+                     [query-key query-val] (xfirst (seq query)) ]
+                (if (not (spyx (contains? shard query-key)))
+                  :failure
+                  (let [shard-hid (grab query-key shard) ]
+                    (spyx :inner [query-val shard-hid ctx])
+                    (match query-val shard-hid ctx result)))))))
 
 (dotest
   (with-fracture (new-fracture)
-    (let [ctx       {:path [] :vals {}}
-          data-1    {:a 1 :b {:x 11} }
-         ;data-1    {:a 1 :b {:x 11} :c [31 32]}
-          query-1 '{:a ?v :b {:x 11}}
+    (let [ctx      {:path [] :vals {}}
+          data-1   {:a 1 :b {:x 11}}
+          ;data-1    {:a 1 :b {:x 11} :c [31 32]}
+          query-1  '{:a ?v :b {:x 11}}
           root-hid (edn->fracture data-1)
-          ]
+          result   (atom [])]
       (nl) (print-fracture *fracture*)
       (nl) (spyx (fracture->edn root-hid))
-      (nl) (spyx (match query-1 root-hid {}))
+      (nl) (match query-1 root-hid {} result)
+      (println "result => " @result)
 
   )))
 
