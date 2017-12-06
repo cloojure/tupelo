@@ -45,9 +45,11 @@
   (is   (sequential?  []     ))
   (is   (sequential?  [1 2 3]))
   (is   (sequential? '(1 2 3)))
+  (isnt (sequential?  42     ))
+  (isnt (sequential?  :x     ))
   (isnt (sequential?  "abc"  ))
-  (isnt (sequential?  {:a 1}  ))
-  (isnt (sequential? #{:a 1}  )) )
+  (isnt (sequential?  {:a 1} ))
+  (isnt (sequential? #{:a 1} )) )
 
 (dotest
   (is (every? odd? [1 3 5])))

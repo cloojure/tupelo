@@ -7,6 +7,7 @@
     [cheshire                         "5.8.0"]
     [clj-time                         "0.14.2"]
     [clojure-csv/clojure-csv          "2.0.2"]
+    [org.clojure/math.combinatorics   "0.1.4"]
     [danlentz/clj-uuid                "0.1.7"]
     [enlive                           "1.1.6"]
    ;[org.clojure/clojure              "1.9.0-RC2"]

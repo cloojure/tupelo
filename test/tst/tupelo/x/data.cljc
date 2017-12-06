@@ -2,6 +2,7 @@
   (:use tupelo.x.data
         tupelo.test)
   (:require
+    [clojure.math.combinatorics :as combo]
     [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t]
@@ -10,6 +11,19 @@
     [tupelo.string :as tstr]
     [tupelo.schema :as tsk]))
 (t/refer-tupelo :dev)
+
+(defn combo-all [& args]
+  (let [wrapped-args (forv [arg args]
+                       (if (sequential? arg)
+                         arg
+                         [arg] ))]
+    (tm/unlazy (apply combo/cartesian-product wrapped-args))))
+
+(dotest
+  (is= [[:a 1 :b] [:a 2 :b] [:a 3 :b]]
+    (tm/unlazy (combo/cartesian-product [:a] [1 2 3] [:b]))
+    (combo-all :a [1 2 3] :b)))
+
 
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
 (def ^:dynamic *fracture* nil)
@@ -153,18 +167,31 @@
           (with-spy-indent
             (spyx [query hid ctx])
             (let-spy [shard (grab :content (get-entity hid))
+                      >> (assert (map? shard))
                       sub-results (forv [[query-key query-val] (vec query)]
                                     (do
-                                      (spyx [[query-key query-val]])
-                                      (if (not (spyx (contains? shard query-key)))
-                                        FAILURE
+                                      (spyx [query-key query-val])
+                                      (cond
+                                        (spyx (query-variable? query-key))
+                                        (let-spy [sub-results (forv [[shard-key shard-hid] (vec shard)]
+                                                                (let [ctx-inner (glue ctx {query-key shard-key})]
+                                                                  (spyx :inner2 [query-key query-val shard-key shard-hid ctx-inner])
+                                                                  (match query-val shard-hid ctx-inner)))]
+                                          sub-results)
+
+                                        (spyx (contains? shard query-key))
                                         (let [shard-hid (grab query-key shard)]
                                           (spyx :inner [query-val shard-hid ctx])
-                                          (match query-val shard-hid ctx)))))
-                      result-ctx (if (has-some? failure? sub-results)
-                               FAILURE
-                               (apply glue sub-results))]
-              result-ctx))))
+                                          (match query-val shard-hid ctx))
+
+                                        :else FAILURE)))
+                      sub-result-combos (apply combo-all sub-results)
+                      sub-result-combos-ok (drop-if #(has-some? failure? %) sub-result-combos)
+                      result-ctx-list (if (empty? sub-result-combos-ok)
+                                        FAILURE
+                                        (forv [sub-result sub-result-combos-ok]
+                                          (apply glue sub-result)))]
+              result-ctx-list))))
 
 (extend-type java.lang.Object
   Match (match [query hid ctx] ; found match
@@ -175,6 +202,7 @@
               (if (= query edn-val)
                 (spy :object ctx)
                 FAILURE)))))
+
 (dotest
   (i/spy-indent-reset)
   (with-fracture (new-fracture)
@@ -182,8 +210,9 @@
          ;data-1   {:a 1 :b {:x 11}}
           data-1    {:a 1 :b {:x 11} :c [31 32]}
           query-1  '{:a ?v :b {:x 11}}
+          query-1  '{?k 1 :b {:x 11}}
           query-1  '{:a ?v :b {:x 11} :c ?c}
-         ;query-1  '{:a ?a :b {:x ?x}}
+          query-1  '{:a ?a :b {:x ?x}}
           root-hid (edn->fracture data-1) ]
       (nl) (print-fracture *fracture*)
       (nl) (spyx (fracture->edn root-hid))
