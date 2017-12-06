@@ -343,22 +343,6 @@
   [N]
   (first (drop N (fibonacci-seq))))
 
-; #todo remove? (in impl)
-;(defn char-seq
-;  "Given two characters (or numerical equivalents), returns a seq of characters
-;  (inclusive) from the first to the second.  Characters must be in ascending order."
-;  [start-char stop-char]
-;  {:pre [ (char start-char) (char stop-char) ] }
-;  ; These "dummy" casts are to ensure that any input integer values are within the valid
-;  ; range for Unicode characters
-;  (let [start-val   (int start-char)
-;        stop-val    (int stop-char)]
-;    (when-not (<= start-val stop-val)
-;      (throw (IllegalArgumentException.
-;               (str "char-seq: start-char must come before stop-char."
-;                 "  start-val=" start-val "  stop-val=" stop-val))))
-;    (mapv char (thru start-val stop-val))))
-
 (defn seq->str
   "Convert a seq into a string (using pr) with a space preceding each value"
   [seq-in]
@@ -368,7 +352,7 @@
       (pr it))))
 
 (pns/import-fn i/strcat)
-(pns/import-fn i/char-seq)
+(pns/import-fn i/chars-thru)
 (pns/import-fn i/pretty-str)
 (pns/import-fn i/pretty)
 
@@ -505,7 +489,7 @@
      forv map-let* map-let
      when-clojure-1-8-plus when-clojure-1-9-plus
      conjv glue join-2d->1d
-     macro? char-seq
+     macro? chars-thru
      append prepend grab dissoc-in fetch fetch-in
      submap? submap-by-keys submap-by-vals keyvals keyvals-seq keyvals-seq* validate-map-keys map-keys map-vals
      validate only it-> safe-> keep-if drop-if zip zip* zip-lazy indexed flat-vec

@@ -24,7 +24,7 @@
     (let [orig     (byte-array [(byte \A)])
           code-str (b64url/encode-bytes->str orig)
           result   (b64url/decode-str->bytes code-str)]
-      (is (every? b64url/code-chars (seq code-str)))
+      (is (every? b64url/encoding-char-set (seq code-str)))
       (is (= (seq orig) (seq result)))))
 
   (dotest
@@ -33,7 +33,7 @@
       (let [orig     (byte-array (mapv #(.byteValue %) (range 0 400 step)))
             code-str (b64url/encode-bytes->str orig)
             result   (b64url/decode-str->bytes code-str)]
-        (is (every? b64url/code-chars (seq code-str)))
+        (is (every? b64url/encoding-char-set (seq code-str)))
         (is (= (seq orig) (seq result)))))
 
     ;base64 - string"
@@ -41,7 +41,7 @@
       (let [orig     (str/join (misc/take-dist num-chars char/text))
             code-str (b64url/encode-str orig)
             result   (b64url/decode-str code-str)]
-        (is (every? b64url/code-chars (seq code-str)))
+        (is (every? b64url/encoding-char-set (seq code-str)))
         (is= orig result)))
     (is= "KzEyMy1oZWxsbw==" (b64url/encode-str "+123-hello")))
 
@@ -49,7 +49,7 @@
     (prop/for-all [orig gen/bytes]
       (let [string-b64 (b64url/encode-bytes->str orig)
             result     (b64url/decode-str->bytes string-b64)]
-        (assert (every? b64url/code-chars (seq string-b64)))
+        (assert (every? b64url/encoding-char-set (seq string-b64)))
         (assert (types/byte-array? result))
         (= (seq orig) (seq result)))))
   ; Transform a string to a base64 string and back
@@ -57,7 +57,7 @@
     (prop/for-all [orig gen/string]
       (let [string-b64 (b64url/encode-str orig)
             result     (b64url/decode-str string-b64)]
-        (assert (every? b64url/code-chars (seq string-b64)))
+        (assert (every? b64url/encoding-char-set (seq string-b64)))
         (assert (string? result))
         (= orig result))))
 

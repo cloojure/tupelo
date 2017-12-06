@@ -5,7 +5,7 @@
 (t/refer-tupelo)
 
 (def Vector
-  "A 2-D array of values (a vector of vectors)."
+  "A 1-D array of values (a vector of vectors)."
   [s/Any] )
 
 (def Array

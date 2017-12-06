@@ -8,18 +8,18 @@
   "Convert to/from traditional base64url encoding."
   (:require [clojure.string :as str]
             [tupelo.core    :as t]
-            [tupelo.misc    :as misc]
+            [tupelo.impl    :as i]
             [tupelo.types   :as types]
             [schema.core    :as s])
   (:gen-class))
 (t/refer-tupelo)
 
 ; #todo -> code-chars (& other ns's)
-(def code-chars
+(def encoding-char-set
   "A set of chars used for traditional base64url encoding (incl. padding char)"
-  (into #{} (flatten [ (char-seq  \a \z)
-                       (char-seq  \A \Z)
-                       (char-seq  \0 \9)
+  (into #{} (flatten [ (i/chars-thru  \a \z)
+                       (i/chars-thru  \A \Z)
+                       (i/chars-thru  \0 \9)
                        [\- \_ \=] ] )))
 
 (defn base64url-encoder []

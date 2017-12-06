@@ -18,18 +18,19 @@
   "
   (:require [clojure.string     :as str]
             [tupelo.base64      :as b64]
-            [tupelo.core :as t]
+            [tupelo.core        :as t]
+            [tupelo.impl        :as i]
             [tupelo.misc        :as misc]
             [tupelo.types       :as types]
             [schema.core        :as s] )
   (:gen-class))
 (t/refer-tupelo)
 
-(def code-chars
+(def encoding-char-set
   "A set of chars used for the Y64 encoding (incl. padding char)"
-  (into #{} (flatten [ (char-seq  \a \z)
-                       (char-seq  \A \Z)
-                       (char-seq  \0 \9)
+  (into #{} (flatten [ (i/chars-thru  \a \z)
+                       (i/chars-thru  \A \Z)
+                       (i/chars-thru  \0 \9)
                        [\. \_ \-] ] )))
 
 (def ^:private b64-code-62  (byte \+ ))

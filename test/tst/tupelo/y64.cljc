@@ -23,7 +23,7 @@
     (let [orig      (byte-array [(byte \A)])
           y64-bytes (y64/encode-bytes orig)
           result    (y64/decode-bytes y64-bytes)]
-      (is (every? y64/code-chars (map char y64-bytes)))
+      (is (every? y64/encoding-char-set (map char y64-bytes)))
       (is (= (seq orig) (seq result)))))
 
   (dotest
@@ -32,14 +32,14 @@
       (let [orig      (byte-array (mapv #(.byteValue %) (range 0 400 step)))
             y64-bytes (y64/encode-bytes orig)
             result    (y64/decode-bytes y64-bytes)]
-        (is (every? y64/code-chars (map char y64-bytes)))
+        (is (every? y64/encoding-char-set (map char y64-bytes)))
         (is (= (seq orig) (seq result)))))
     ; string
     (doseq [num-chars [1 2 3 7 20]]
       (let [orig    (str/join (misc/take-dist num-chars char/text))
             y64-str (y64/encode-str orig)
             result  (y64/decode-str y64-str)]
-        (is (every? y64/code-chars (seq y64-str)))
+        (is (every? y64/encoding-char-set (seq y64-str)))
         (is (= orig result)))))
 
   ; Transform a seq of bytes to a y64 string and back
@@ -47,7 +47,7 @@
     (prop/for-all [orig gen/bytes]
       (let [y64-str (y64/encode-bytes->str orig)
             result  (y64/decode-str->bytes y64-str)]
-        (assert (every? y64/code-chars (seq y64-str)))
+        (assert (every? y64/encoding-char-set (seq y64-str)))
         (assert (types/byte-array? result))
         (= (seq orig) (seq result)))))
 
@@ -56,7 +56,7 @@
     (prop/for-all [orig gen/string]
       (let [y64-str (y64/encode-str orig)
             result  (y64/decode-str y64-str)]
-        (assert (every? y64/code-chars (seq y64-str)))
+        (assert (every? y64/encoding-char-set (seq y64-str)))
         (assert (string? result))
         (= orig result)))))
 

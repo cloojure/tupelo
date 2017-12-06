@@ -799,7 +799,7 @@
 
 ; #todo need test, readme
 ; #todo merge into `thru` using a protocol for int, double, char, string, keyword, symbol, other?
-(defn char-seq
+(defn chars-thru
   "Given two characters (or numerical equivalents), returns a seq of characters
   (inclusive) from the first to the second.  Characters must be in ascending order."
   [start-char stop-char]

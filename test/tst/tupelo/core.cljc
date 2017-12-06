@@ -1311,12 +1311,12 @@
                         [ nil 32 "complicated" (Math/pow 2 5) '( "str" nil "ing") ]]] )
          "I have a complicated string" ))
 
-  (let [chars-set   (into #{} (t/char-seq \a \z))
+  (let [chars-set   (into #{} (t/chars-thru \a \z))
         str-val     (strcat chars-set) ]
     (is= 26 (count chars-set))
     (is= 26 (count str-val))
     (is= 26 (count (re-seq #"[a-z]" str-val)))
-    (is= "abc" (str/join (t/char-seq \a \c)))
+    (is= "abc" (str/join (t/chars-thru \a \c)))
     ))
 
 (dotest
@@ -1373,18 +1373,17 @@
 )
 
 (dotest
-  (is (= [\a ]              (t/char-seq \a \a)))
-  (is (= [\a \b]            (t/char-seq \a \b)))
-  (is (= [\a \b \c]         (t/char-seq \a \c)))
+  (is (= [\a ]              (t/chars-thru \a \a)))
+  (is (= [\a \b]            (t/chars-thru \a \b)))
+  (is (= [\a \b \c]         (t/chars-thru \a \c)))
 
-  (is (= [\a ]              (t/char-seq 97 97)))
-  (is (= [\a \b]            (t/char-seq 97 98)))
-  (is (= [\a \b \c]         (t/char-seq 97 99)))
+  (is (= [\a ]              (t/chars-thru 97 97)))
+  (is (= [\a \b]            (t/chars-thru 97 98)))
+  (is (= [\a \b \c]         (t/chars-thru 97 99)))
 
-  (throws? Exception (t/char-seq 987654321 987654321))
-  (throws? Exception (t/char-seq \c \a))
-  (throws? Exception (t/char-seq 99 98))
-  )
+  (throws? Exception (t/chars-thru 987654321 987654321))
+  (throws? Exception (t/chars-thru \c \a))
+  (throws? Exception (t/chars-thru 99 98)))
 
 (dotest
   (is= [] (drop-at (range 1) 0))

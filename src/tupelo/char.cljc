@@ -14,8 +14,6 @@
     [tupelo.impl :as i]
     [tupelo.schema :as tsk]))
 
-(pns/import-fn i/char-seq)
-
 ; #todo: docstrings
 (s/def whitespace-horiz   :- tsk/Set
   (set [\space \tab]))
@@ -27,16 +25,16 @@
   (i/glue whitespace-horiz whitespace-eol))
 
 (s/def lowercase          :- tsk/Set
-  (into (sorted-set) (char-seq \a \z)))
+  (into (sorted-set) (i/chars-thru \a \z)))
 
 (s/def uppercase          :- tsk/Set
-  (into (sorted-set) (char-seq \A \Z)))
+  (into (sorted-set) (i/chars-thru \A \Z)))
 
 (s/def digit              :- tsk/Set
-  (into (sorted-set) (char-seq \0 \9)))
+  (into (sorted-set) (i/chars-thru \0 \9)))
 
 (s/def hex :- tsk/Set
-  (into (sorted-set) (flatten [ (char-seq \a \f) (char-seq \A \F) (char-seq \0 \9) ] )))
+  (into (sorted-set) (flatten [ (i/chars-thru \a \f) (i/chars-thru \A \F) (i/chars-thru \0 \9) ] )))
 
 (s/def alpha              :- tsk/Set
   (i/glue lowercase uppercase ))
