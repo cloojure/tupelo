@@ -299,6 +299,34 @@
   (fetch-in the-map [the-key]))
 
 ;-----------------------------------------------------------------------------
+(defn truthy?
+  "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
+  [arg]
+  (if arg true false))
+
+(defn falsey?
+  "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
+   to (not (truthy? arg))."
+  [arg]
+  (if arg false true))
+
+;-----------------------------------------------------------------------------
+; clojure.spec stuff
+(when-clojure-1-9-plus
+  (sp/def ::anything (sp/spec (constantly true) :gen gen/any-printable))
+  (sp/def ::nothing  (sp/spec (constantly false)))
+
+  ; #todo how to test the :ret part?
+  (sp/fdef truthy?
+    :args (sp/cat :arg ::anything)
+    :ret boolean?)
+
+  (sp/fdef falsey?
+    :args (sp/cat :arg ::anything)
+    :ret boolean?
+    :fn #(= (:ret %) (not (truthy? (-> % :args :arg))))))
+
+;-----------------------------------------------------------------------------
 ; spy stuff
 
 (def ^:dynamic *spy-enabled* true)
@@ -512,34 +540,6 @@
    last expression."
   [& exprs]
   (let-spy-pretty-impl exprs))
-
-;-----------------------------------------------------------------------------
-(defn truthy?
-  "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
-  [arg]
-  (if arg true false))
-
-(defn falsey?
-  "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
-   to (not (truthy? arg))."
-  [arg]
-  (if arg false true))
-
-;-----------------------------------------------------------------------------
-; clojure.spec stuff
-(when-clojure-1-9-plus
-  (sp/def ::anything (sp/spec (constantly true) :gen gen/any-printable))
-  (sp/def ::nothing  (sp/spec (constantly false)))
-
-  ; #todo how to test the :ret part?
-  (sp/fdef truthy?
-    :args (sp/cat :arg ::anything)
-    :ret boolean?)
-
-  (sp/fdef falsey?
-    :args (sp/cat :arg ::anything)
-    :ret boolean?
-    :fn #(= (:ret %) (not (truthy? (-> % :args :arg))))))
 
 (defn validate
   "(validate tst-fn tst-val)

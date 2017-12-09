@@ -5,7 +5,7 @@
     [clojure.math.combinatorics :as combo]
     [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.core :as t]
+    [tupelo.core :as t :refer :all]
     [tupelo.impl :as i]
     [tupelo.misc :as tm :refer [HID]]
     [tupelo.string :as tstr]
@@ -163,6 +163,7 @@
 
 (extend-type clojure.lang.IPersistentMap
   Match (match [query hid ctx]
+          ; #todo how use Plumatic Schema for protocols?
           (assert (map? query)) (assert (keyword? hid)) (assert (map? ctx))
           (with-spy-indent
             (spyx [query hid ctx])
