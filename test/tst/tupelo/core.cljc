@@ -499,7 +499,15 @@
         result (atom [])]
        (doseq [[k i] (zip keys vals)]
          (swap! result append {k i}))
-    (is= [{:a 1} {:b 2} {:c 3}] @result)))
+    (is= [{:a 1} {:b 2} {:c 3}] @result))
+
+  ; verify that zip throws if unequal lengths, even if some colls are infinite lazy seqs
+  (throws? (zip            [:a :b :c] [1 2 3 4]))
+  (throws? (zip [:A :B :C] [:a :b :c] [1 2 3 4]))
+  (throws? (zip [:a :b :c] (range)))
+  (is= (zip* {:strict false} [:a :b :c] (range))   [[:a 0] [:b 1] [:c 2]] )
+  (is= (zip* {:strict false} [:a :b :c] [1 2 3 4]) [[:a 1] [:b 2] [:c 3]] )
+  (is= (zip* {:strict false} [:A :B :C] [:a :b :c] [1 2 3 4]) [[:A :a 1] [:B :b 2] [:C :c 3]] ))
 
 (dotest
   (is= (indexed [:a :b :c]) [[0 :a] [1 :b] [2 :c]])

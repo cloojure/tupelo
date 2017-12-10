@@ -112,68 +112,78 @@
     '[clojure.spec.gen.alpha :as gen]
     '[clojure.spec.test.alpha :as stest] ))
 
-
 (ns-unmap *ns* 'first) ; #todo -> (set-tupelo-strict! true/false)
 (ns-unmap *ns* 'second)
 (ns-unmap *ns* 'rest)
 (ns-unmap *ns* 'next)
 (ns-unmap *ns* 'last)
 
+;-----------------------------------------------------------------------------
+(declare clip-str)
+
+;-----------------------------------------------------------------------------
 ; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
 
 (defn nl
   "Abbreviated name for `newline` "
   [] (newline))
 
-(s/defn xfirst :- s/Any ; #todo -> tests
+(s/defn not-nil? :- s/Bool
+  "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
+   or the poorly-named clojure.core/some? "
+  [arg :- s/Any]
+  (not (nil? arg)))
+
+(s/defn not-empty? :- s/Bool
+  "For any collection coll, returns true if coll contains any items; otherwise returns false.
+   Equivalent to (not (empty? coll))."
+  ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
+  [coll]
+  (not (empty? coll)))
+
+; WARNING:  cannot use Plumatic schema for functions that may receive an infinite lazy sequence
+; as input.  See:  https://groups.google.com/forum/#!topic/clojure/oM1PH4sXzoA
+(defn xfirst      ; #todo -> tests
   "Returns the first value in a list or vector. Throws if empty."
-  [arg :- [s/Any]]
-  (when (or (nil? arg) (empty? arg))
-    (throw (IllegalArgumentException. (str "xfirst: invalid arg:" arg))))
-  (clojure.core/first arg))
+  [arg]
+  (when (or (nil? arg) (empty? arg)) (throw (IllegalArgumentException. (str "xfirst: invalid arg: " arg))))
+  (nth arg 0))
 
-(s/defn xsecond :- s/Any ; #todo -> tests
+(defn xsecond  ; #todo -> tests
   "Returns the second value in a list or vector. Throws if (< len 2)."
-  [arg :- [s/Any]]
-  (when (or (nil? arg) (< (count arg) 2))
-    (throw (IllegalArgumentException. (str "xsecond: invalid arg:" arg))))
-  (clojure.core/second arg))
+  [arg]
+  (when (or (nil? arg) (empty? arg)) (throw (IllegalArgumentException. (str "xsecond: invalid arg: " arg))))
+  (nth arg 1))
 
-(s/defn xthird :- s/Any ; #todo -> tests
+(defn xthird  ; #todo -> tests
   "Returns the third value in a list or vector. Throws if (< len 3)."
-  [arg :- [s/Any]]
-  (when (or (nil? arg) (< (count arg) 3))
-    (throw (IllegalArgumentException. (str "xthird: invalid arg:" arg))))
-  (clojure.core/nth arg 2))
+  [arg ]
+  (when (or (nil? arg) (empty? arg)) (throw (IllegalArgumentException. (str "xthird: invalid arg: " arg))))
+  (nth arg 2))
 
-(s/defn xfourth :- s/Any ; #todo -> tests
+(defn xfourth  ; #todo -> tests
   "Returns the fourth value in a list or vector. Throws if (< len 4)."
-  [arg :- [s/Any]]
-  (when (or (nil? arg) (< (count arg) 4))
-    (throw (IllegalArgumentException. (str "xfourth: invalid arg:" arg))))
-  (clojure.core/nth arg 3))
+  [arg]
+  (when (or (nil? arg) (empty? arg)) (throw (IllegalArgumentException. (str "xfourth: invalid arg: " arg))))
+  (nth arg 3))
 
 (s/defn xlast :- s/Any ; #todo -> tests
   "Returns the last value in a list or vector. Throws if empty."
   [arg :- [s/Any]]
-  (when (or (nil? arg) (empty? arg))
-    (throw (IllegalArgumentException. (str "xlast: invalid arg:" arg))))
+  (when (or (nil? arg) (empty? arg)) (throw (IllegalArgumentException. (str "xlast: invalid arg: " arg))))
   (clojure.core/last arg))
 
 (s/defn xbutlast :- s/Any ; #todo -> tests
   "Returns all but the last value in a list or vector. Throws if empty."
   [arg :- [s/Any]]
-  (when (or (nil? arg) (empty? arg))
-    (throw (IllegalArgumentException. (str "xbutlast: invalid arg:" arg))))
+  (when (or (nil? arg) (empty? arg)) (throw (IllegalArgumentException. (str "xbutlast: invalid arg: " arg))))
   (clojure.core/butlast arg))
 
-; #todo -> tests
-(s/defn xrest :- s/Any
-  "Returns a vector containing all but the first value in a list or vector. Throws if (zero? (count arg))."
-  [arg :- [s/Any]]
-  (when (or (nil? arg) (zero? (count arg)))
-    (throw (IllegalArgumentException. (str "first: invalid arg:" arg))))
-  (vec (clojure.core/rest arg)))
+(defn xrest ; #todo -> tests
+  "Returns a sequence of all but the first value in a list or vector. Throws if empty."
+  [arg]
+  (when (or (nil? arg) (empty? arg)) (throw (IllegalArgumentException. (str "xrest: invalid arg: " arg))))
+  (clojure.core/rest arg))
 
 (defn only
   "(only coll-in)
@@ -182,9 +192,9 @@
   Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
   [coll]
   (let [coll-seq  (seq coll)
-        num-items (count coll-seq)]
-    (when-not (= 1 num-items)
-      (throw (IllegalArgumentException. (str "only: num-items must=1; num-items=" num-items))))
+        rest-items (xrest coll-seq) ]
+    (when (not-empty? rest-items)
+      (throw (IllegalArgumentException. (str "only: num-items must=1; coll=" (clip-str 99 coll)))))
     (clojure.core/first coll-seq))) ; #todo -> xfirst
 
 ; #todo Need safe versions of:
@@ -905,19 +915,6 @@
   [& args]
   (vec (flatten args)))
 
-(s/defn not-nil? :- s/Bool
-  "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
-   or the poorly-named clojure.core/some? "
-  [arg :- s/Any]
-  (not (nil? arg)))
-
-(s/defn not-empty? :- s/Bool
-  "For any collection coll, returns true if coll contains any items; otherwise returns false.
-   Equivalent to (not (empty? coll))."
-  ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
-  [coll]
-  (not (empty? coll)))
-
 ; #todo:  make (map-ctx {:trunc false :eager true} <fn> <coll1> <coll2> ...) <- default ctx
 ; #todo:  mapz, forz, filterz, ...?
 (defn keep-if
@@ -1078,7 +1075,7 @@
      ~bindings ~@forms))
 
 ; #todo rename :strict -> :trunc
-(defn zip*
+(defn zip-1*
   "Usage:  (zip* context & colls)
   where context is a map with default values:  {:strict true}
   Not lazy. "
@@ -1088,18 +1085,44 @@
   (let [strict        (get context :strict true)
         lengths       (mapv count colls)
         lengths-equal (apply = lengths) ]
-       (when (and strict
-               (not lengths-equal))
-         (throw (IllegalArgumentException.
-                  (str "zip*: colls must all be same length; lengths=" lengths))))
+    (when (and strict
+            (not lengths-equal))
+      (throw (IllegalArgumentException.
+               (str "zip*: colls must all be same length; lengths=" lengths))))
     (vec (apply map vector colls))))
-        ; #todo fix so doesn't hang if give infinite lazy seq. Technique:
-        ;  (def x [1 2 3])
-        ;  (seq (drop 2 x))          =>  (3)
-        ;  (seq (drop 3 x))          =>  nil
-        ;  (nil? (seq (drop 3 x)))   =>  true
-        ;  (nil? (drop 3 (range)))   =>  false
+; #todo fix so doesn't hang if give infinite lazy seq. Technique:
+;  (def x [1 2 3])
+;  (seq (drop 2 x))          =>  (3)
+;  (seq (drop 3 x))          =>  nil
+;  (nil? (seq (drop 3 x)))   =>  true
+;  (nil? (drop 3 (range)))   =>  false
 
+; #todo rename :strict -> :trunc
+(defn zip*
+  "Usage:  (zip* context & colls)
+  where context is a map with default values:  {:strict true}
+  Not lazy. "
+  [context & colls] ; #todo how use Schema with "rest" args?
+  (assert (map? context))
+  (assert #(every? sequential? colls))
+  (let [num-colls  (count colls)
+        strict-flg (get context :strict true)]
+    (loop [result []
+           colls  colls]
+      (let [empty-flgs  (mapv empty? colls)
+            num-empties (count (keep-if truthy? empty-flgs)) ]
+        (if (zero? num-empties)
+          (do
+            (let [new-row (mapv xfirst colls)
+                  new-results (append result new-row) ]
+              (recur
+                new-results
+                (mapv xrest colls))))
+          (do
+            (when (and strict-flg
+                    (not= num-empties num-colls))
+              (throw (RuntimeException. (str "zip*: collections are not all same length; empty-flgs=" empty-flgs))))
+            result))))))
 
 ; #todo add schema; result = tsk/List[ tsk/Pair ]
 ; #todo add :trunc & assert;
