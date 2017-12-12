@@ -25,6 +25,30 @@
     (forv [ii (range nrows)]
       (vec (repeat ncols init-val)))))
 
+(s/defn row-data->array :- Array
+  "([nrows ncols rows-vec])
+  Return a new Array of size=[nrows ncols] initialized from rows-vec."
+  [nrows :- s/Int
+   ncols :- s/Int
+   rows-vec :- Vector]
+  (assert (and (pos? nrows) (pos? ncols)))
+  (assert (= (* nrows ncols) (count rows-vec)))
+  (mapv vec
+    (partition ncols rows-vec)))
+
+(s/defn col-data->array :- Array
+  "([nrows ncols cols-vec])
+  Return a new Array of size=[nrows ncols] initialized from cols-vec."
+  [nrows :- s/Int
+   ncols :- s/Int
+   cols-vec :- Vector]
+  (assert (and (pos? nrows) (pos? ncols)))
+  (assert (= (* nrows ncols) (count cols-vec)))
+  (let [cols-vec (vec cols-vec)]
+    (forv [ii (range nrows)]
+      (forv [jj (range ncols) ]
+        (nth cols-vec (+ ii (* jj nrows)))))))
+
 (s/defn num-rows :- s/Int
   "Returns the number of rows of an Array."
   [arr :- Array]
@@ -96,8 +120,8 @@
     result))
 
 ;#todo make both rows/cols -> submatrix result
-(s/defn rows :- Array
-  "Returns array rows in half intervale [low..high)"
+(s/defn rows-get :- Array
+  "Returns array rows in half interval [low..high)"
   [arr  :- Array
    low   :- s/Int
    high   :- s/Int ]
@@ -106,6 +130,11 @@
   (assert (< low high))
   (forv [ii (range low high) ]
     (row-get arr ii)) )
+
+(s/defn array->row-data
+  "Returns the concatenation of all array rows."
+  [arr :- Array]
+  (apply glue arr))
 
 (s/defn col-get :- Vector
   "Gets an Array col"
@@ -130,7 +159,7 @@
                    new-row))]
     result))
 
-(s/defn cols :- Array
+(s/defn cols-get :- Array
   "Returns array cols in half intervale [low..high)"
   [arr  :- Array
    low  :- s/Int
@@ -140,6 +169,13 @@
   (assert (< low high))
   (forv [jj (range low high) ]
     (col-get arr jj)))
+
+(s/defn array->col-data :- Vector
+  "Returns the concatenation of all array cols."
+  [arr :- Array]
+  (forv [jj (range (num-cols arr))
+         ii (range (num-rows arr)) ]
+    (elem-get arr ii jj)))
 
 (s/defn transpose :- Array
   [orig :- Array]
@@ -214,8 +250,6 @@
     (forv [ii (range nrows)]
       (glue (row-get orig ii) (forv [col cols]
                                 (nth col ii))))))
-
-; #todo row-set, col-set
 
 (s/defn glue-vert :- Array
   [& arrays :- [Array] ]
