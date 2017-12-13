@@ -143,7 +143,9 @@
 
 ;#todo make both rows/cols -> submatrix result
 (s/defn rows-get :- Array
-  "Returns array rows in half interval [low..high)"
+  "[arr]          Returns all array rows
+   [arr row-idxs] Returns array rows specified by row-idxs
+   [arr low high] Returns array rows in half-open interval [low..high) "
   ([arr] (rows-get arr 0 (num-rows arr)))
   ([arr row-idxs]
     (forv [ii row-idxs]
@@ -155,8 +157,8 @@
     (check-row-idx arr (dec high))
     (assert (< low high))
     (forv [ii (range low high)]
-      (row-get arr ii)))
-)
+      (row-get arr ii))))
+; #todo need parallel rows-set
 
 (s/defn array->row-data
   "Returns the concatenation of all array rows."
@@ -187,7 +189,9 @@
     result))
 
 (s/defn cols-get :- Array
-  "Returns array cols in half intervale [low..high)"
+  "[arr]          Returns all array cols
+   [arr col-idxs] Returns array cols specified by col-idxs
+   [arr low high] Returns array cols in half-open interval [low..high) "
   ([arr] (cols-get arr 0 (num-cols arr)))
   ([arr col-idxs]
     (forv [jj col-idxs]
@@ -199,8 +203,9 @@
     (check-col-idx arr (dec high))
     (assert (< low high))
     (forv [jj (range low high)]
-      (col-get arr jj)))
-  )
+      (col-get arr jj))) )
+; #todo need parallel cols-set
+
 (s/defn array->col-data :- Vector
   "Returns the concatenation of all array cols."
   [arr :- Array]

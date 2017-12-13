@@ -185,6 +185,12 @@
   (when (or (nil? arg) (empty? arg)) (throw (IllegalArgumentException. (str "xrest: invalid arg: " arg))))
   (clojure.core/rest arg))
 
+(defn xreverse ; #todo -> tests & doc
+  "Returns a vector containing a sequence in reversed order. Throws if nil."
+  [arg]
+  (when (nil? arg) (throw (IllegalArgumentException. (str "xreverse: invalid arg: " arg))))
+  (vec (clojure.core/reverse arg)))
+
 (defn only
   "(only coll-in)
   Ensures that a sequence is of length=1, and returns the only value present.
