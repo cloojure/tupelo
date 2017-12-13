@@ -120,41 +120,66 @@
                [10 11 12 13]
                [20 21 22 23]]
       ]
-    (is (thrown? IllegalArgumentException (tar/rows-get demo 0 0)))
-    (is= (tar/rows-get demo 0 1) [[00 01 02 03]])
-    (is= (tar/rows-get demo 0 2) [[00 01 02 03]
+    (throws? IllegalArgumentException (rows-get demo 0 0))
+    (is= (rows-get demo 0 1) [[00 01 02 03]])
+    (is= (rows-get demo 0 2) [[00 01 02 03]
+                              [10 11 12 13]])
+    (is= (rows-get demo 0 3) [[00 01 02 03]
+                              [10 11 12 13]
+                              [20 21 22 23]])
+    (is= (rows-get demo 1 3) [[10 11 12 13]
+                              [20 21 22 23]])
+    (is= (rows-get demo 2 3) [[20 21 22 23]])
+    (throws? IllegalArgumentException (rows-get demo 3 3))
+
+    (is= demo (rows-get demo))
+    (is= (rows-get demo [2 0 1]) [[20 21 22 23]
+                                  [00 01 02 03]
                                   [10 11 12 13]])
-    (is= (tar/rows-get demo 0 3) [[00 01 02 03]
-                                  [10 11 12 13]
-                                  [20 21 22 23]])
-    (is= (tar/rows-get demo 1 3) [[10 11 12 13]
-                                  [20 21 22 23]])
-    (is= (tar/rows-get demo 2 3) [[20 21 22 23]])
-    (is (thrown? IllegalArgumentException (tar/rows-get demo 3 3)))))
+    (is= demo (rows->array [[00 01 02 03]
+                            [10 11 12 13]
+                            [20 21 22 23]]))
+    (throws? (rows->array [[00 01 02 03]
+                           [10 11 12   ]
+                           [20 21 22 23]]))))
 
 (dotest
-  (let [demo  [[00 01 02 03]
-               [10 11 12 13]
-               [20 21 22 23]]
-       ]
-    (is (thrown? IllegalArgumentException (tar/cols-get demo 0 0)))
-    (is= (tar/cols-get demo 0 1) [[00 10 20]])
-    (is= (tar/cols-get demo 0 2) [[00 10 20]
-                                  [01 11 21]])
-    (is= (tar/cols-get demo 0 3) [[00 10 20]
-                                  [01 11 21]
-                                  [02 12 22]])
-    (is= (tar/cols-get demo 0 4) [[00 10 20]
-                                  [01 11 21]
-                                  [02 12 22]
-                                  [03 13 23]])
-    (is= (tar/cols-get demo 1 4) [[01 11 21]
-                                  [02 12 22]
-                                  [03 13 23]])
-    (is= (tar/cols-get demo 2 4) [[02 12 22]
-                                  [03 13 23]])
-    (is= (tar/cols-get demo 3 4) [[03 13 23]])
-    (is (thrown? IllegalArgumentException (tar/cols-get demo 4 4)))))
+  (let [demo [[00 01 02 03]
+              [10 11 12 13]
+              [20 21 22 23]]
+        ]
+    (is (thrown? IllegalArgumentException (cols-get demo 0 0)))
+    (is= (cols-get demo 0 1) [[00 10 20]])
+    (is= (cols-get demo 0 2) [[00 10 20]
+                              [01 11 21]])
+    (is= (cols-get demo 0 3) [[00 10 20]
+                              [01 11 21]
+                              [02 12 22]])
+    (is= (cols-get demo 0 4) [[00 10 20]
+                              [01 11 21]
+                              [02 12 22]
+                              [03 13 23]])
+    (is= (cols-get demo 1 4) [[01 11 21]
+                              [02 12 22]
+                              [03 13 23]])
+    (is= (cols-get demo 2 4) [[02 12 22]
+                              [03 13 23]])
+    (is= (cols-get demo 3 4) [[03 13 23]])
+    (is (thrown? IllegalArgumentException (cols-get demo 4 4)))
+
+    (is= (cols-get demo) (cols-get demo 0 4))
+    (is= (cols-get demo [2 0 3 1]) [[02 12 22]
+                                    [00 10 20]
+                                    [03 13 23]
+                                    [01 11 21]])
+    (is= demo (cols->array [[00 10 20]
+                            [01 11 21]
+                            [02 12 22]
+                            [03 13 23]]))
+    (throws? (cols->array [[00 10 20]
+                           [01 11 21]
+                           [02 12]
+                           [03 13 23]]))))
 
 (dotest
   (is (tar/symmetric? [[1 2]

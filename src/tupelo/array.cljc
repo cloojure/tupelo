@@ -49,6 +49,28 @@
       (forv [jj (range ncols) ]
         (nth cols-vec (+ ii (* jj nrows)))))))
 
+(s/defn rows->array :- Array
+  "[row-vecs]
+  Return a new Array initialized from row-vecs. Rows must all have same length."
+  [row-vecs :- Array]
+  (let [nrows (count row-vecs)
+        ncols (count (first row-vecs))]
+    (assert (apply = ncols (mapv count row-vecs)))
+    (dotimes [ii nrows]
+      (assert sequential? (nth row-vecs ii)))
+    (mapv vec row-vecs)))
+
+(s/defn cols->array :- Array
+  "[col-vecs]
+  Return a new Array initialized from col-vecs. Cols must all have same length."
+  [col-vecs :- Array]
+  (let [ncols (count col-vecs)
+        nrows (count (first col-vecs))]
+    (assert (apply = nrows (mapv count col-vecs)))
+    (dotimes [jj ncols]
+      (assert sequential? (nth col-vecs jj)))
+    (col-data->array nrows ncols (apply glue col-vecs))))
+
 (s/defn num-rows :- s/Int
   "Returns the number of rows of an Array."
   [arr :- Array]
@@ -122,14 +144,19 @@
 ;#todo make both rows/cols -> submatrix result
 (s/defn rows-get :- Array
   "Returns array rows in half interval [low..high)"
-  [arr  :- Array
-   low   :- s/Int
-   high   :- s/Int ]
-  (check-row-idx arr low)
-  (check-row-idx arr (dec high))
-  (assert (< low high))
-  (forv [ii (range low high) ]
-    (row-get arr ii)) )
+  ([arr] (rows-get arr 0 (num-rows arr)))
+  ([arr row-idxs]
+    (forv [ii row-idxs]
+      (row-get arr ii)))
+  ([arr :- Array
+    low :- s/Int
+    high :- s/Int]
+    (check-row-idx arr low)
+    (check-row-idx arr (dec high))
+    (assert (< low high))
+    (forv [ii (range low high)]
+      (row-get arr ii)))
+)
 
 (s/defn array->row-data
   "Returns the concatenation of all array rows."
@@ -161,15 +188,19 @@
 
 (s/defn cols-get :- Array
   "Returns array cols in half intervale [low..high)"
-  [arr  :- Array
-   low  :- s/Int
-   high :- s/Int ]
-  (check-col-idx arr low)
-  (check-col-idx arr (dec high))
-  (assert (< low high))
-  (forv [jj (range low high) ]
-    (col-get arr jj)))
-
+  ([arr] (cols-get arr 0 (num-cols arr)))
+  ([arr col-idxs]
+    (forv [jj col-idxs]
+      (col-get arr jj)))
+  ([arr :- Array
+    low :- s/Int
+    high :- s/Int]
+    (check-col-idx arr low)
+    (check-col-idx arr (dec high))
+    (assert (< low high))
+    (forv [jj (range low high)]
+      (col-get arr jj)))
+  )
 (s/defn array->col-data :- Vector
   "Returns the concatenation of all array cols."
   [arr :- Array]
