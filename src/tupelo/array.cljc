@@ -244,7 +244,7 @@
         ncols (num-cols arr)]
     (and (= nrows ncols)
       (every? truthy?
-        (for [ii (range nrows)
+        (for [ii (range  0 nrows)
               jj (range ii ncols)] (= (elem-get arr ii jj)
                                       (elem-get arr jj ii)))))))
 

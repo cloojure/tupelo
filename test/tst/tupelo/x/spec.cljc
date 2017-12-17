@@ -234,7 +234,9 @@
 
   (dotest
     (s/def ::ingredient (s/cat :quantity number? :unit keyword?))
-    (is= (s/conform ::ingredient [2 :teaspoon]) {:quantity 2, :unit :teaspoon})
+    (is (s/valid? ::ingredient [2 :teaspoon]))
+    (is= (s/conform ::ingredient [2 :teaspoon])
+      {:quantity 2, :unit :teaspoon})
 
     (s/def ::seq-of-keywords (s/* keyword?))
     (is= (s/conform ::seq-of-keywords [:a :b :c]) [:a :b :c])
@@ -332,7 +334,7 @@
             (s/cat :start int? :end int?)
             #(< (:start %) (:end %) 1e9)) ; need add 1e9 limit to avoid integer overflow
     :ret int?
-    :fn (s/and #(>= (:ret %) (-> % :args :start))
+    :fn (s/and #(<= (-> % :args :start) (:ret %))
           #(< (:ret %) (-> % :args :end))))
 
   (dotest
