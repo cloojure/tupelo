@@ -13,6 +13,7 @@
     [tupelo.spec :as tsp]
     [clojure.string :as str]
     [clojure.test.check.generators :as tcgen]
+    [clojure.spec.alpha :as s]
     [clojure.spec.alpha :as s]))
 (t/refer-tupelo)
 
@@ -29,6 +30,12 @@
 
     (is= (s/valid? even? 4) true) ; NOTE: normally just use (is   (s/valid? ...))
     (is= (s/valid? even? 5) false) ; NOTE: normally just use (isnt (s/valid? ...))
+
+    ; (s/check-asserts?) => normally false
+    (s/check-asserts true)
+    (is (s/check-asserts?))
+    (is= 4 (s/assert even? 4))
+    (throws? (s/assert even? 5))
 
     (is (s/valid? nil? nil))
     (is (s/valid? string? "abc"))
@@ -151,7 +158,7 @@
     ; NOTE:  we cannot avoid mis-spellings of keys like ::phony (instead of ::phone)
     ; or arbitrary additions like ::snailmail
     (is (s/valid? ::person {::first-name "Elon" ::last-name "Musk" ::email "elon@example.com"
-                            ::phony "714-555-1234" ::snailmail "3rd door on left" }))
+                            ::phony      "714-555-1234" ::snailmail "3rd door on left" }))
 
     ; NOTE: we specify *qualified* keywords here, but they will match *unqualified* keywords later
     (s/def :unq/person (s/keys :req-un [::first-name ::last-name ::email]
@@ -331,11 +338,12 @@
 
   (s/fdef ranged-rand
     :args (s/and
-            (s/cat :start int? :end int?)
+            (s/cat :start int?
+                   :end   int?)
             #(< (:start %) (:end %) 1e9)) ; need add 1e9 limit to avoid integer overflow
     :ret int?
     :fn (s/and #(<= (-> % :args :start) (:ret %))
-          #(< (:ret %) (-> % :args :end))))
+               #(< (:ret %) (-> % :args :end))))
 
   (dotest
     (when true
