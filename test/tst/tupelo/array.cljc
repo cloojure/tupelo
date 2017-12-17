@@ -184,9 +184,18 @@
 (dotest
   (is (tar/symmetric? [[1 2]
                        [2 1]]))
+  (isnt (tar/symmetric? [[1 3]
+                         [2 1]]))
   (is (tar/symmetric? [[1 2 3]
                        [2 4 5]
-                       [3 5 6]])))
+                       [3 5 6]]))
+  (isnt (tar/symmetric? [[1 9 3]
+                         [2 4 5]
+                         [3 5 6]]))
+  (isnt (tar/symmetric? [[1 2 9]
+                         [2 4 5]
+                         [3 5 6]]))
+  )
 
 (dotest
   (let [demo [[00 01 02 03]

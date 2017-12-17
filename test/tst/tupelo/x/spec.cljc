@@ -148,6 +148,11 @@
     (isnt (s/valid? ::person {::first-name "Elon"}))
     (isnt (s/valid? ::person {::first-name "Elon" ::last-name "Musk" ::email "n/a"}))
 
+    ; NOTE:  we cannot avoid mis-spellings of keys like ::phony (instead of ::phone)
+    ; or arbitrary additions like ::snailmail
+    (is (s/valid? ::person {::first-name "Elon" ::last-name "Musk" ::email "elon@example.com"
+                            ::phony "714-555-1234" ::snailmail "3rd door on left" }))
+
     ; NOTE: we specify *qualified* keywords here, but they will match *unqualified* keywords later
     (s/def :unq/person (s/keys :req-un [::first-name ::last-name ::email]
                          :opt-un [::phone])) ; #todo s/keys -> tsp/map-with-keys tsp/entity-map

@@ -245,9 +245,8 @@
     (and (= nrows ncols)
       (every? truthy?
         (for [ii (range nrows)
-              jj (range ncols)] (=
-                                  (elem-get arr ii jj)
-                                  (elem-get arr jj ii)))))))
+              jj (range ii ncols)] (= (elem-get arr ii jj)
+                                      (elem-get arr jj ii)))))))
 
 (s/defn row-drop :- Array
   "Drop one or more rows from an array"
