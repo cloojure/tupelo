@@ -12,7 +12,8 @@
     [tupelo.impl :as i]
     [tupelo.spec :as tsp]
     [clojure.string :as str]
-    [clojure.test.check.generators :as tcgen]))
+    [clojure.test.check.generators :as tcgen]
+    [clojure.spec.alpha :as s]))
 (t/refer-tupelo)
 
 (when-clojure-1-9-plus
@@ -39,6 +40,59 @@
     (is (s/valid? #{:club :diamond :heart :spade} :club))
     (isnt (s/valid? #{:club :diamond :heart :spade} 42))
     (is (s/valid? #{42 43 44} 42))
+
+    (let [ki-spec (s/map-of keyword? int?)]
+      (is (s/valid? ki-spec {:a 1 :b 2}))
+      (isnt (s/valid? ki-spec {:a 1 :b "hello"}))
+
+      (is= (s/conform ki-spec {:a 1 :b 2}) {:a 1 :b 2})
+      (is= (s/conform ki-spec {:a 1 :b "hello"}) :clojure.spec.alpha/invalid))
+
+    (let [int-coll-spec (s/coll-of int?)]
+      (is (s/valid? int-coll-spec [1 2 3 4]))
+      (is (s/valid? int-coll-spec #{1 2 3 4}))
+      (isnt (s/valid? int-coll-spec #{1 :b 3})))
+
+    (let [v4 [1 2 3 4]
+          f3 [1 3 3]
+          f4 [1 2 3 :d]]
+      (is (s/valid? (s/coll-of int?) v4))
+      (isnt (s/valid? (s/coll-of int?) f4))
+      (is (s/valid? (s/coll-of int? :kind vector?) v4))
+      (isnt (s/valid? (s/coll-of int? :kind list?) v4))
+
+      (is (s/valid? (s/coll-of int? :min-count 2) v4))
+      (isnt (s/valid? (s/coll-of int? :min-count 5) v4))
+      (is (s/valid? (s/coll-of int? :min-count 2 :max-count 5) v4))
+      (isnt (s/valid? (s/coll-of int? :min-count 2 :max-count 3) v4))
+
+      (is (s/valid? (s/coll-of int? :distinct true) v4)) ; #todo usage unclear, need example
+      (is (s/valid? (s/coll-of int? :distinct int?) v4)) ; #todo usage unclear, need example
+      (is (s/valid? (s/coll-of int? :distinct false) v4)) ; #todo usage unclear, need example
+
+      (is (s/valid? (s/coll-of int? :distinct false) f3))
+      (isnt (s/valid? (s/coll-of int? :distinct true) f3)))
+
+    ; s/every is the "sampling" version of s/coll-of
+    (let [v4 [1 2 3 4]
+          f3 [1 3 3]
+          f4 [1 2 3 :d]]
+      (is (s/valid? (s/every int?) v4))
+      (isnt (s/valid? (s/every int?) f4))
+      (is (s/valid? (s/every int? :kind vector?) v4))
+      (isnt (s/valid? (s/every int? :kind list?) v4))
+
+      (is (s/valid? (s/every int? :min-count 2) v4))
+      (isnt (s/valid? (s/every int? :min-count 5) v4))
+      (is (s/valid? (s/every int? :min-count 2 :max-count 5) v4))
+      (isnt (s/valid? (s/every int? :min-count 2 :max-count 3) v4))
+
+      (is (s/valid? (s/every int? :distinct true) v4)) ; #todo usage unclear, need example
+      (is (s/valid? (s/every int? :distinct int?) v4)) ; #todo usage unclear, need example
+      (is (s/valid? (s/every int? :distinct false) v4)) ; #todo usage unclear, need example
+
+      (is (s/valid? (s/every int? :distinct false) f3))
+      (isnt (s/valid? (s/every int? :distinct true) f3)))
     )
 
   (dotest
