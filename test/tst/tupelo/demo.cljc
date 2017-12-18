@@ -17,6 +17,15 @@
 ; #todo add clojure.spec testing?
 
 (dotest
+  (is= []         (take 1 nil))
+  (is= []         (take 1 []))
+  (is= []         (take 2 []))
+
+  (is= []         (take 0 [1 2]))
+  (is= [1]        (take 1 [1 2]))
+  (is= [1 2]      (take 2 [1 2]))
+  (is= [1 2]      (take 3 [1 2]))
+
   (is= [        ] (take 0 "abc"))
   (is= [\a      ] (take 1 "abc"))
   (is= [\a \b   ] (take 2 "abc"))
@@ -24,6 +33,15 @@
   (is= [\a \b \c] (take 4 "abc")))
 
 (dotest
+  (is= []         (drop 1 nil))
+  (is= []         (drop 1 []))
+  (is= []         (drop 2 []))
+
+  (is= [1 2]      (drop 0 [1 2]))
+  (is= [  2]      (drop 1 [1 2]))
+  (is= []         (drop 2 [1 2]))
+  (is= []         (drop 3 [1 2]))
+
   (is= [\a \b \c] (drop 0 "abc"))
   (is= [   \b \c] (drop 1 "abc"))
   (is= [      \c] (drop 2 "abc"))
@@ -34,11 +52,13 @@
   (is= [\a \b \c] (seq "abc"))
   (is= [\a \b \c] (vec "abc"))
 
-  (is= "abc" (str \a \b \c ))
-  (is= "abc" (str "ab" "c" ))
+  (is= "abc" (str \a \b \c))
+  (is= "abc" (str "ab" "c"))
+  (is= "abc" (str "ab" \c ))
 
   (is= "abc" (str/join [\a \b \c] ))
   (is= "abc" (str/join ["ab" "c"] ))
+  (is= "abc" (str/join ["ab" \c ] ))
 )
 
 (dotest

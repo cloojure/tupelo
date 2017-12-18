@@ -25,11 +25,11 @@
     '[clojure.spec.test.alpha :as stest])
 
   (dotest
-    (is= (s/conform even? 4) 4)
-    (is= (s/conform even? 5) :clojure.spec.alpha/invalid)
-
     (is= (s/valid? even? 4) true) ; NOTE: normally just use (is   (s/valid? ...))
     (is= (s/valid? even? 5) false) ; NOTE: normally just use (isnt (s/valid? ...))
+
+    (is= (s/conform even? 4) 4)
+    (is= (s/conform even? 5) :clojure.spec.alpha/invalid)
 
     ; (s/check-asserts?) => normally false
     (s/check-asserts true)
