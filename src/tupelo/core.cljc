@@ -22,18 +22,48 @@
 ; (when (= person :frid)  ; (kw :frid) -> throws
 ;    (println "Hi Barney!"))
 
-(pns/import-macro i/when-clojure-1-8-plus)
-(pns/import-macro i/when-clojure-1-9-plus)
+(defmacro when-clojure-1-8-plus [& forms]
+  `(i/when-clojure-1-8-plus ~@forms))
 
-(pns/import-fn i/nl )
-(pns/import-fn i/xfirst )
-(pns/import-fn i/xsecond )
-(pns/import-fn i/xthird )
-(pns/import-fn i/xfourth )
-(pns/import-fn i/xrest )
-(pns/import-fn i/xreverse )
-(pns/import-fn i/xlast )
-(pns/import-fn i/vec->list )
+(defmacro when-clojure-1-9-plus [& forms]
+  `(i/when-clojure-1-9-plus ~@forms))
+
+(defn nl [] (i/nl))
+
+(defn only
+  "Ensures that a sequence is of length=1, and returns the only value present.
+  Throws an exception if the length of the sequence is not one.
+  Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
+  [coll] (i/only coll))
+
+; WARNING:  cannot use Plumatic schema for functions that may receive an infinite lazy sequence
+; as input.  See:  https://groups.google.com/forum/#!topic/clojure/oM1PH4sXzoA
+(defn xfirst
+  "Returns the first value in a list or vector. Throws if empty."
+  [coll] (i/xfirst coll))
+(defn xsecond
+  "Returns the second value in a list or vector. Throws if (< len 2)."
+  [coll] (i/xsecond coll))
+(defn xthird
+  "Returns the third value in a list or vector. Throws if (< len 3)."
+  [coll] (i/xthird coll))
+(defn xfourth
+  "Returns the fourth value in a list or vector. Throws if (< len 4)."
+  [coll] (i/xfourth coll))
+(defn xlast
+  "Returns the last value in a list or vector. Throws if empty."
+  [coll] (i/xlast coll))
+(defn xbutlast
+  "Returns a vector of all but the last value in a list or vector. Throws if empty."
+  [coll] (i/xbutlast coll))
+(defn xrest
+  "Returns the last value in a list or vector. Throws if empty."
+  [coll] (i/xrest coll))
+(defn xreverse
+  "Returns all but the last value in a list or vector. Throws if empty."
+  [coll] (i/xreverse coll))
+
+(pns/import-fn i/vec->list ) ; #todo delete this?
 
 (pns/import-fn i/kw->sym )
 (pns/import-fn i/kw->str )
@@ -59,9 +89,9 @@
 (pns/import-macro i/spy-let )    ; #todo -> deprecated
 (pns/import-macro i/spy-let-pretty )   ; #todo -> deprecated
 
-(defmacro forv [& body]
+(defmacro forv [& forms]
   "Like clojure.core/for but returns results in a vector.   Not lazy."
-  `(i/forv ~@body))
+  `(i/forv ~@forms))
 
 (pns/import-macro i/map-let*)
 (pns/import-macro i/map-let)
@@ -203,8 +233,6 @@
 ; singles). Basically like compiler-like guarentees against misspellings, duplicate entries, missing
 ; entries.
 
-(pns/import-fn i/only )
-
 ; #awt #todo: Test failure of (safe-> 3 (* 2) (+ 1))
 ; #awt #todo: add tests
 ; #awt #todo: finish safe->>
@@ -322,14 +350,22 @@
     (clojure.core/map #(apply rel= %1 %2 opts)
       x-vals y-vals)))
 
-(pns/import-fn i/range-vec)
+(defn range-vec     ; #todo README;  maybe xrange?  maybe kill this?
+  "An eager version clojure.core/range that always returns its result in a vector."
+  [& args] (apply i/range-vec args))
 
-(defn thru [& args]
+(defn thru
   "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. Not lazy. "
-  (apply i/thru args))
+  [& args] (apply i/thru args))
 
-(pns/import-fn i/keep-if)
-(pns/import-fn i/drop-if)
+(defn keep-if
+  "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
+  [pred coll] (i/keep-if pred coll))
+
+(defn drop-if
+  "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
+  [pred coll] (i/drop-if pred coll))
+
 (pns/import-fn i/unnest )
 
 (defn fibonacci-seq
@@ -505,7 +541,7 @@
      strcat nl pretty pretty-str json->edn edn->json clip-str range-vec thru rel= all-rel=
      drop-at insert-at replace-at idx
      starts-with? int->kw kw->int vec->list
-     xfirst xsecond xthird xfourth xlast xrest xreverse
+     xfirst xsecond xthird xfourth xlast xbutlast xrest xreverse
      kw->sym kw->str str->sym str->kw str->chars sym->kw sym->str
      split-using split-match partition-using
      wild-match? wild-submatch? wild-match-ctx? wild-item? submatch? val=

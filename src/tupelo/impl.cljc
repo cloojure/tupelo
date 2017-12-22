@@ -141,67 +141,57 @@
   [coll]
   (not (empty? coll)))
 
-; WARNING:  cannot use Plumatic schema for functions that may receive an infinite lazy sequence
-; as input.  See:  https://groups.google.com/forum/#!topic/clojure/oM1PH4sXzoA
+(defn only
+  [coll]
+  (let [coll-seq  (seq coll)
+        rest-items (clojure.core/rest coll-seq) ]
+    (when (nil? coll) (throw (IllegalArgumentException. (str "only: coll must not be nil: " coll))))
+    (when (nil? coll-seq) (throw (IllegalArgumentException. (str "only: coll must not be empty: " coll))))
+    (when-not (empty? rest-items)
+      (throw (IllegalArgumentException. (str "only: num-items must=1; coll="
+                                          (clip-str 99 (clojure.core/take 99 coll))))))
+    (clojure.core/first coll-seq)))
+
 (defn xfirst      ; #todo -> tests
-  "Returns the first value in a list or vector. Throws if empty."
-  [arg]
-  (when (or (nil? arg) (empty? arg)) (throw (IllegalArgumentException. (str "xfirst: invalid arg: " arg))))
-  (nth arg 0))
+  [coll]
+  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xfirst: invalid coll: " coll))))
+  (nth coll 0))
 
 (defn xsecond  ; #todo -> tests
-  "Returns the second value in a list or vector. Throws if (< len 2)."
-  [arg]
-  (when (or (nil? arg) (empty? arg)) (throw (IllegalArgumentException. (str "xsecond: invalid arg: " arg))))
-  (nth arg 1))
+  [coll]
+  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xsecond: invalid coll: " coll))))
+  (nth coll 1))
 
 (defn xthird  ; #todo -> tests
-  "Returns the third value in a list or vector. Throws if (< len 3)."
-  [arg ]
-  (when (or (nil? arg) (empty? arg)) (throw (IllegalArgumentException. (str "xthird: invalid arg: " arg))))
-  (nth arg 2))
+  [coll ]
+  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xthird: invalid coll: " coll))))
+  (nth coll 2))
 
 (defn xfourth  ; #todo -> tests
-  "Returns the fourth value in a list or vector. Throws if (< len 4)."
-  [arg]
-  (when (or (nil? arg) (empty? arg)) (throw (IllegalArgumentException. (str "xfourth: invalid arg: " arg))))
-  (nth arg 3))
+  [coll]
+  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xfourth: invalid coll: " coll))))
+  (nth coll 3))
 
 (s/defn xlast :- s/Any ; #todo -> tests
-  "Returns the last value in a list or vector. Throws if empty."
-  [arg :- [s/Any]]
-  (when (or (nil? arg) (empty? arg)) (throw (IllegalArgumentException. (str "xlast: invalid arg: " arg))))
-  (clojure.core/last arg))
+  [coll :- [s/Any]]
+  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xlast: invalid coll: " coll))))
+  (clojure.core/last coll))
 
 (s/defn xbutlast :- s/Any ; #todo -> tests
-  "Returns all but the last value in a list or vector. Throws if empty."
-  [arg :- [s/Any]]
-  (when (or (nil? arg) (empty? arg)) (throw (IllegalArgumentException. (str "xbutlast: invalid arg: " arg))))
-  (clojure.core/butlast arg))
+  [coll :- [s/Any]]
+  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xbutlast: invalid coll: " coll))))
+  (vec (clojure.core/butlast coll)))
 
 (defn xrest ; #todo -> tests
-  "Returns a sequence of all but the first value in a list or vector. Throws if empty."
-  [arg]
-  (when (or (nil? arg) (empty? arg)) (throw (IllegalArgumentException. (str "xrest: invalid arg: " arg))))
-  (clojure.core/rest arg))
+  [coll]
+  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xrest: invalid coll: " coll))))
+  (clojure.core/rest coll))
 
 (defn xreverse ; #todo -> tests & doc
   "Returns a vector containing a sequence in reversed order. Throws if nil."
-  [arg]
-  (when (nil? arg) (throw (IllegalArgumentException. (str "xreverse: invalid arg: " arg))))
-  (vec (clojure.core/reverse arg)))
-
-(defn only
-  "(only coll-in)
-  Ensures that a sequence is of length=1, and returns the only value present.
-  Throws an exception if the length of the sequence is not one.
-  Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
   [coll]
-  (let [coll-seq  (seq coll)
-        rest-items (xrest coll-seq) ]
-    (when (not-empty? rest-items)
-      (throw (IllegalArgumentException. (str "only: num-items must=1; coll=" (clip-str 99 coll)))))
-    (clojure.core/first coll-seq))) ; #todo -> xfirst
+  (when (nil? coll) (throw (IllegalArgumentException. (str "xreverse: invalid coll: " coll))))
+  (vec (clojure.core/reverse coll)))
 
 ; #todo Need safe versions of:
 ; #todo    + - * /  (others?)  (& :strict :safe reassignments)
@@ -274,9 +264,9 @@
 (defmacro with-exception-default
   "Evaluates body & returns its result.  In the event of an exception, default-val is returned
    instead of the exception."
-  [default-val & body]
+  [default-val & forms]
   `(try
-     ~@body
+     ~@forms
      (catch Exception e# ~default-val)))
 
 ; #todo rename to "get-in-safe" ???
@@ -498,10 +488,10 @@
 
 (defmacro with-spy-indent
   "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
-  [& body]
+  [& forms]
   `(do
      (spy-indent-inc)
-     (let [result# (do ~@body)]
+     (let [result# (do ~@forms)]
        (spy-indent-dec)
        result#)))
 
@@ -779,9 +769,7 @@
    keys-seq :- [s/Any]]
   (keyvals-seq* {:missing-ok false} m keys-seq))
 
-(defn range-vec     ; #todo README;  maybe xrange?  maybe kill this?
-  "An eager version clojure.core/range that always returns its result in a vector."
-  [& args]
+(defn range-vec [& args]
   (vec (apply range args)))
 
 ; #todo need docs & tests
@@ -977,8 +965,8 @@
 ; #todo max-key -> t/max-by
 
 (defmacro forv ; #todo wrap body in implicit do
-  [& body]
-  `(vec (for ~@body)))
+  [& forms]
+  `(vec (for ~@forms)))
 
 (defmacro lazy-cons
   "The simple way to create a lazy sequence:
