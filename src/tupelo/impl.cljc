@@ -794,13 +794,8 @@
 ;             (thru 0.1 0.3 0.1)     -> [0.1  0.2  0.3]
 ;                  (thru start stop step) uses integer steps and
 ;                  (rel= curr stop :tol step) as ending criteria
-;       (thru :cc 1 5)   -> [1 2 3 4 5]
-;       (thru :oc 1 5)   -> [  2 3 4 5]  ; (xrest (thru ...))
-;       (thru :co 1 5)   -> [1 2 3 4  ]  ; like (range ...)  -> (butlast (thru ...))
-;       (thru :oo 1 5)   -> [  2 3 4  ]  ; obscure;  (xrest (range ...))
 ;  #todo range version => (butlast (thru ...))
 (defn thru          ; #todo make lazy: (thruz ...) -> (thru* {:lazy true} ...)
-  "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. Not lazy. "
   ([end]       (thru 0 end))
   ([start end] (thru start end 1))
   ([start end step]
@@ -981,9 +976,7 @@
 
 ; #todo max-key -> t/max-by
 
-; #todo wrap body in implicit do
-(defmacro forv    ; #todo: (for-vec ...)  or  (vfor ...)
-  "Like clojure.core/for but returns results in a vector.   Not lazy."
+(defmacro forv ; #todo wrap body in implicit do
   [& body]
   `(vec (for ~@body)))
 

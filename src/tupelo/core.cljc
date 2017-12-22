@@ -59,7 +59,10 @@
 (pns/import-macro i/spy-let )    ; #todo -> deprecated
 (pns/import-macro i/spy-let-pretty )   ; #todo -> deprecated
 
-(pns/import-macro i/forv)
+(defmacro forv [& body]
+  "Like clojure.core/for but returns results in a vector.   Not lazy."
+  `(i/forv ~@body))
+
 (pns/import-macro i/map-let*)
 (pns/import-macro i/map-let)
 
@@ -320,7 +323,11 @@
       x-vals y-vals)))
 
 (pns/import-fn i/range-vec)
-(pns/import-fn i/thru)
+
+(defn thru [& args]
+  "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. Not lazy. "
+  (apply i/thru args))
+
 (pns/import-fn i/keep-if)
 (pns/import-fn i/drop-if)
 (pns/import-fn i/unnest )
