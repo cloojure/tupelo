@@ -63,15 +63,30 @@
   "Returns all but the last value in a list or vector. Throws if empty."
   [coll] (i/xreverse coll))
 
-(pns/import-fn i/vec->list ) ; #todo delete this?
+(defn kw->sym
+  "Converts a keyword to a symbol"
+  [arg] (i/kw->sym arg))
+(defn kw->str
+  "Converts a keyword to a string"
+  [arg] (i/kw->str arg))
 
-(pns/import-fn i/kw->sym )
-(pns/import-fn i/kw->str )
-(pns/import-fn i/str->kw )
-(pns/import-fn i/str->chars )
-(pns/import-fn i/str->sym )
-(pns/import-fn i/sym->kw )
-(pns/import-fn i/sym->str )
+(defn str->kw
+  "Converts a string to a keyword"
+  [arg] (i/str->kw arg))
+(defn str->sym
+  "Converts a string to a symbol"
+  [arg] (i/str->sym arg))
+(defn str->chars
+  "Converts a string to a vector of chars"
+  [arg] (i/str->chars arg))
+
+(defn sym->kw
+  "Converts a symbol to a keyword"
+  [arg] (i/sym->kw arg))
+(defn sym->str
+  "Converts a symbol to a string"
+  [arg] (i/sym->str arg))
+
 (pns/import-fn i/zip* )
 (pns/import-fn i/zip )
 (pns/import-fn i/zip-lazy )
@@ -540,7 +555,7 @@
      validate only it-> safe-> keep-if drop-if zip zip* zip-lazy indexed flat-vec
      strcat nl pretty pretty-str json->edn edn->json clip-str range-vec thru rel= all-rel=
      drop-at insert-at replace-at idx
-     starts-with? int->kw kw->int vec->list
+     starts-with? int->kw kw->int
      xfirst xsecond xthird xfourth xlast xbutlast xrest xreverse
      kw->sym kw->str str->sym str->kw str->chars sym->kw sym->str
      split-using split-match partition-using

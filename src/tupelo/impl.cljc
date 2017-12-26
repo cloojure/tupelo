@@ -229,10 +229,6 @@
   [arg :- s/Str]
   (vec arg))
 
-(s/defn vec->list :- [s/Any]
-  [arg :- [s/Any]]
-  (apply list arg))
-
 ; #todo add test & README
 (defn pretty-str
   "Returns a string that is the result of clojure.pprint/pprint"

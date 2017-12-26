@@ -860,7 +860,6 @@
 
 (dotest
   (let [inf-rng-1 (map inc (range))]
-    (println :only)
     (is= 42 (only [42]))
     (is= :x (only [:x]))
     (is= "hello" (only ["hello"]))
@@ -868,13 +867,11 @@
     (throws? IllegalArgumentException (only [:x :y]))
     (throws? IllegalArgumentException (only inf-rng-1))
 
-    (println :xfirst)
     (throws? (xfirst []))
     (is= 1 (xfirst [1]))
     (is= 1 (xfirst [1 2]))
     (is= 1 (xfirst inf-rng-1))
 
-    (println :xsecond)
     (throws? (xsecond []))
     (throws? (xsecond [1]))
     (is= 2 (xsecond [1 2]))
@@ -882,7 +879,6 @@
     (is= 2 (xsecond [1 2 3 4]))
     (is= 2 (xsecond inf-rng-1))
 
-    (println :xthird)
     (throws? (xthird []))
     (throws? (xthird [1]))
     (throws? (xthird [1 2]))
@@ -890,7 +886,6 @@
     (is= 3 (xthird [1 2 3 4]))
     (is= 3 (xthird inf-rng-1))
 
-    (println :xfourth)
     (throws? (xfourth []))
     (throws? (xfourth [1]))
     (throws? (xfourth [1 2]))
@@ -899,12 +894,10 @@
     (is= 4 (xfourth [1 2 3 4 5]))
     (is= 4 (xfourth inf-rng-1))
 
-    (println :xlast)
     (throws? (xlast nil))
     (throws? (xlast []))
     (is= 5 (xlast [1 2 3 4 5]))
 
-    (println :xbutlast)
     (is= [1 2 3 4] (xbutlast [1 2 3 4 5]))
     (is= [] (xbutlast [1]))
     (throws? (xbutlast []))
