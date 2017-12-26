@@ -367,42 +367,6 @@
   (swap! spy-indent-level dec))
 
 (defn spy
-  "A form of (println ...) to ease debugging display of either intermediate values in threading
-   forms or function return values. There are three variants.  Usage:
-
-    (spy :msg <msg-string>)
-        This variant is intended for use in either thread-first (->) or thread-last (->>)
-        forms.  The keyword :msg is used to identify the message string and works equally
-        well for both the -> and ->> operators. Spy prints both <msg-string>  and the
-        threading value to stdout, then returns the value for further propogation in the
-        threading form. For example, both of the following:
-            (->   2
-                  (+ 3)
-                  (spy :msg \"sum\" )
-                  (* 4))
-            (->>  2
-                  (+ 3)
-                  (spy :msg \"sum\" )
-                  (* 4))
-        will print 'sum => 5' to stdout.
-
-    (spy <msg-string> <value>)
-        This variant is intended for simpler use cases such as function return values.
-        Function return value expressions often invoke other functions and cannot be
-        easily displayed since (println ...) swallows the return value and returns nil
-        itself.  Spy will output both <msg-string> and the value, then return the value
-        for use by further processing.  For example, the following:
-            (println (* 2
-                       (spy \"sum\" (+ 3 4))))
-      will print:
-            sum => 7
-            14
-      to stdout.
-
-    (spy <value>)
-        This variant is intended for use in very simple situations and is the same as the
-        2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
-        prints 'spy => 5' to stdout.  "
   ([arg1 arg2 arg3]
    (cond
      (= :msg arg1) (do
@@ -441,15 +405,10 @@
 
 ; #todo allow spyx to have labels like (spyx :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
 (defmacro spyx
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expressions, printing both the expression and its value to stdout. Returns the value of the
-   last expression."
   [& exprs]
   (spyx-proc exprs))
 
 (defmacro spyxx
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expression, printing both the expression, its type, and its value to stdout, then returns the value."
   [expr]
   `(let [spy-val#    ~expr
          class-name# (-> spy-val# class .getName)]
@@ -478,7 +437,6 @@
 ; #todo On all spy* make print file & line number
 ; #todo allow spyx-pretty to have labels like (spyx-pretty :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
 (defmacro spyx-pretty
-  "Like `spyx` but with pretty printing (clojure.pprint/pprint)"
   [& exprs]
   (spyx-pretty-proc exprs))
 
@@ -505,15 +463,7 @@
         final-code  `(let ~r1 ~@forms ) ]
     final-code ))
 
-; #todo spy-let should also print the return value
-(defmacro spy-let   ; #todo -> deprecated
-  [& exprs]
-  (let-spy-impl exprs))
-
 (defmacro let-spy
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expressions, printing both the expression and its value to stdout. Returns the value of the
-   last expression."
   [& exprs]
   (let-spy-impl exprs))
 
@@ -537,9 +487,6 @@
   (let-spy-pretty-impl exprs))
 
 (defmacro let-spy-pretty
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expressions, printing both the expression and its value to stdout. Returns the value of the
-   last expression."
   [& exprs]
   (let-spy-pretty-impl exprs))
 
@@ -1082,9 +1029,6 @@
 
 ; #todo rename :strict -> :trunc
 (defn zip*
-  "Usage:  (zip* context & colls)
-  where context is a map with default values:  {:strict true}
-  Not lazy. "
   [context & colls] ; #todo how use Schema with "rest" args?
   (assert (map? context))
   (assert #(every? sequential? colls))
@@ -1110,12 +1054,7 @@
 ; #todo add schema; result = tsk/List[ tsk/Pair ]
 ; #todo add :trunc & assert;
 (defn zip
-  "Zips together vectors producing a vector of tuples (like Python zip). Not lazy.
-  Example:
-
-     (zip [:a :b :c] [1 2 3]) ->  [ [:a 1] [:b 2] [:c 3] ]
-
-   ***** WARNING - will hang for infinite length inputs ***** "
+  ; #todo ***** WARNING - will hang for infinite length inputs *****
   ; #todo fix so doesn't hang if give infinite lazy seq. Technique:
   ; #todo Use (zip ... {:trunc true}) if you want to truncate all inputs to the length of the shortest.
   [& args]
@@ -1123,24 +1062,11 @@
   (apply zip* {:strict true} args))
 
 (defn zip-lazy
-  "Usage:  (zip-lazy coll1 coll2 ...)
-      (zip-lazy xs ys zs) -> [ [x0 y0 z0]
-                               [x1 y1 z1]
-                               [x2 y2 z2]
-                               ... ]
-
-  Returns a lazy result. Will truncate to the length of the shortest collection.
-  A convenience wrapper for `(map vector coll1 coll2 ...)`.  "
   [& colls]  ; #todo how use Schema with "rest" args?
   (assert #(every? sequential? colls))
   (apply map vector colls))
 
 (defn indexed
-  "Given one or more collections, returns a sequence of indexed tuples from the collections:
-      (indexed xs ys zs) -> [ [0 x0 y0 z0]
-                              [1 x1 y1 z1]
-                              [2 x2 y2 z2]
-                              ... ] "
   [& colls]
   (apply zip-lazy (range) colls))
 

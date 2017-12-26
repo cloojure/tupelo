@@ -167,7 +167,7 @@
     (ts/collapse-whitespace
       (with-out-str
         (is= 13
-          (t/spy-let [a (inc 0)
+          (t/let-spy [a (inc 0)
                       b (+ 2 3)]
             (spyx (-> (inc a) (* 2) inc))
             (-> b (* 2) (+ 3)))))))
@@ -177,11 +177,9 @@
     (ts/collapse-whitespace
       (with-out-str
         (is= 17
-          (t/spy-let [a (inc 0)
+          (t/let-spy [a (inc 0)
                       b (+ 2 3)]
-            (-> b (* (inc a)) (+ 7)))))))
-
-)
+            (-> b (* (inc a)) (+ 7))))))))
 
 
 (dotest
