@@ -191,12 +191,27 @@
    last expression."
   [& forms] `(i/let-spy-pretty ~@forms))
 
-(defmacro forv [& forms]
+(defmacro forv
   "Like clojure.core/for but returns results in a vector.   Not lazy."
-  `(i/forv ~@forms))
+  [& forms] `(i/forv ~@forms))
 
-(pns/import-macro i/map-let*)
-(pns/import-macro i/map-let)
+(defmacro map-let*
+  "Usage:  (map-let* ctx bindings & forms)
+
+  where ctx is a map with default values:
+    {:strict true
+     :lazy   false}"
+  [context bindings & forms] `(i/map-let* ~context ~bindings ~@forms) )
+
+(defmacro map-let
+  "Usage:
+    (map-let bindings & forms)
+
+  Given bindings and forms like `(map-let [x xs, y ys, ...] (+ x y))`, will iterate over the
+  collections [xs ys ...] assigning successive values of each collection to [x y ...], respectively.
+  The local symbols [x y ...] can then be used in `forms` to generate the output mapping.
+  Will throw if collections are not all of the same length. Not lazy."
+  [bindings & forms] `(i/map-let ~bindings ~@forms))
 
 ; #todo maybe just make tupelo.vec/for  etc   (tv/for ...) -> (vec (for ...))
 ; #todo replace clojure.core/map : not lazy; can add one of :trunc or :lazy modifiers

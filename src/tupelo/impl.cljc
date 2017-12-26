@@ -950,11 +950,6 @@
 ; #todo fix so doesn't hang if give infinite lazy seq
 ; #todo rename :strict -> :trunc
 (defmacro map-let*
-  "Usage:  (map-let* ctx bindings & forms)
-
-  where ctx is a map with default values:
-    {:strict true
-     :lazy   false}"
   [context bindings & forms]
   (when (empty? bindings)
     (throw (IllegalArgumentException. (str "map-let*: bindings cannot be empty=" bindings))))
@@ -981,13 +976,6 @@
             (output-fn# (map map-fn# ~@colls))))))
 
 (defmacro map-let
-  "Usage:
-    (map-let bindings & forms)
-
-  Given bindings and forms like `(map-let [x xs, y ys, ...] (+ x y))`, will iterate over the
-  collections [xs ys ...] assigning successive values of each collection to [x y ...], respectively.
-  The local symbols [x y ...] can then be used in `forms` to generate the output mapping.
-  Will throw if collections are not all of the same length. Not lazy."
   [bindings & forms]
   `(map-let* {:strict true
               :lazy   false}
