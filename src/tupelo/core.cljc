@@ -213,25 +213,40 @@
   Will throw if collections are not all of the same length. Not lazy."
   [bindings & forms] `(i/map-let ~bindings ~@forms))
 
-; #todo maybe just make tupelo.vec/for  etc   (tv/for ...) -> (vec (for ...))
+; #todo replace clojure.core/map => tupelo.lazy/map if (t/refer-tupelo :strict)
 ; #todo replace clojure.core/map : not lazy; can add one of :trunc or :lazy modifiers
 ; (map + (range 5))
 ; (map + 0 (range 5))
 ; (map + (range 5) :lazy)
 ; (map vector [:a :b :c] (range 9) :trunc)  ; error w/o :trunc
-(defn mapper [& args]   ; alts:  mapr  onto  morph  vmap
-  "An eager version of clojure.core/map
-   Use (zip ... :trunc) if you want to truncate all inputs to the lenght of the shortest.
-   Use (zip ... :lazy)  if you want it to be lazy.  "
-  (apply clojure.core/map args))
+;(defn mapper [& args]   ; alts:  mapr  onto  morph  vmap
+;  "An eager version of clojure.core/map
+;   Use (zip ... :trunc) if you want to truncate all inputs to the lenght of the shortest.
+;   Use (zip ... :lazy)  if you want it to be lazy.  "
+;  (apply clojure.core/map args))
 ; #todo (map-indexed ... :lazy)   vmap-indexed
 ; #todo (mapcat ... :lazy)    vmapcat
 ; #todo (for ... :lazy)       vfor
 ; #todo (concat ... :lazy)    vconcat
 
-(pns/import-fn i/fetch-in)
-(pns/import-fn i/fetch)
-(pns/import-fn i/grab)
+(defn fetch-in
+  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
+   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
+   Throws an Exception if the path keys-vec is not present in the-map."
+  [the-map keys-vec] (i/fetch-in the-map keys-vec))
+
+(defn fetch
+  "A fail-fast version of keyword/map lookup.  When invoked as (fetch the-map :the-key),
+   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
+   Throws an Exception if :the-key is not present in the-map."
+  [the-map the-key] (i/fetch the-map the-key))
+
+(defn grab
+  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
+   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
+   Throws an Exception if :the-key is not present in the-map."
+  [the-key the-map] (i/grab the-key the-map))
+
 (pns/import-fn i/submap-by-keys )
 (pns/import-fn i/submap-by-vals )
 
