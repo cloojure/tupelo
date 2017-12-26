@@ -25,16 +25,6 @@
 ; Clojure version stuff
 
 (s/defn increasing? :- s/Bool
-  "Returns true iff the vectors are in (strictly) lexicographically increasing order
-    [1 2]  [1]        -> false
-    [1 2]  [1 1]      -> false
-    [1 2]  [1 2]      -> false
-    [1 2]  [1 2 nil]  -> true
-    [1 2]  [1 2 3]    -> true
-    [1 2]  [1 3]      -> true
-    [1 2]  [2 1]      -> true
-    [1 2]  [2]        -> true
-  "
   [a :- ts/List
    b :- ts/List]
   (let [len-a        (count a)
@@ -54,16 +44,6 @@
       (nil? first-change)           (< len-a len-b))))
 
 (s/defn increasing-or-equal? :- s/Bool
-  "Returns true iff the vectors are in (strictly) lexicographically increasing order
-    [1 2]  [1]        -> false
-    [1 2]  [1 1]      -> false
-    [1 2]  [1 2]      -> true
-    [1 2]  [1 2 nil]  -> true
-    [1 2]  [1 2 3]    -> true
-    [1 2]  [1 3]      -> true
-    [1 2]  [2 1]      -> true
-    [1 2]  [2]        -> true
-  "
   [a :- ts/List
    b :- ts/List]
   (or (= a b)
@@ -609,12 +589,6 @@
 
 ; #todo -> README
 (s/defn submap-by-keys :- tsk/Map
-  "Returns a new map containing entries with the specified keys. Throws for missing keys,
-  unless `:missing-ok` is specified. Usage:
-
-      (submap-by-keys {:a 1 :b 2} #{:a   }             )  =>  {:a 1}
-      (submap-by-keys {:a 1 :b 2} #{:a :z} :missing-ok )  =>  {:a 1}
-  "
   [map-arg :- tsk/Map
    keep-keys :- (s/either tsk/Set tsk/List)
    & opts]
@@ -630,12 +604,6 @@
 
 ; #todo -> README
 (s/defn submap-by-vals :- tsk/Map
-  "Returns a new map containing entries with the specified vals. Throws for missing vals,
-  unless `:missing-ok` is specified. Usage:
-
-      (submap-by-vals {:a 1 :b 2 :A 1} #{1  }             )  =>  {:a 1 :A 1}
-      (submap-by-vals {:a 1 :b 2 :A 1} #{1 9} :missing-ok )  =>  {:a 1 :A 1}
-  "
   [map-arg :- tsk/Map
    keep-vals :- (s/either tsk/Set tsk/List)
    & opts]

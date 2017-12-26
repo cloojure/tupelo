@@ -247,11 +247,46 @@
    Throws an Exception if :the-key is not present in the-map."
   [the-key the-map] (i/grab the-key the-map))
 
-(pns/import-fn i/submap-by-keys )
-(pns/import-fn i/submap-by-vals )
+(defn submap-by-keys
+  "Returns a new map containing entries with the specified keys. Throws for missing keys,
+  unless `:missing-ok` is specified. Usage:
 
-(pns/import-fn i/increasing? )
-(pns/import-fn i/increasing-or-equal? )
+      (submap-by-keys {:a 1 :b 2} #{:a   }             )  =>  {:a 1}
+      (submap-by-keys {:a 1 :b 2} #{:a :z} :missing-ok )  =>  {:a 1}
+  "
+  [map-arg keep-keys & opts] (apply i/submap-by-keys map-arg keep-keys opts))
+
+(defn submap-by-vals
+  "Returns a new map containing entries with the specified vals. Throws for missing vals,
+  unless `:missing-ok` is specified. Usage:
+
+      (submap-by-vals {:a 1 :b 2 :A 1} #{1  }             )  =>  {:a 1 :A 1}
+      (submap-by-vals {:a 1 :b 2 :A 1} #{1 9} :missing-ok )  =>  {:a 1 :A 1} "
+  [map-arg keep-vals & opts] (apply i/submap-by-vals map-arg keep-vals opts))
+
+(defn increasing?
+  "Returns true iff the vectors are in (strictly) lexicographically increasing order
+    [1 2]  [1]        -> false
+    [1 2]  [1 1]      -> false
+    [1 2]  [1 2]      -> false
+    [1 2]  [1 2 nil]  -> true
+    [1 2]  [1 2 3]    -> true
+    [1 2]  [1 3]      -> true
+    [1 2]  [2 1]      -> true
+    [1 2]  [2]        -> true "
+  [a b] (i/increasing? a b))
+
+(defn increasing-or-equal?
+  "Returns true iff the vectors are in (strictly) lexicographically increasing-or-equal order
+    [1 2]  [1]        -> false
+    [1 2]  [1 1]      -> false
+    [1 2]  [1 2]      -> true
+    [1 2]  [1 2 nil]  -> true
+    [1 2]  [1 2 3]    -> true
+    [1 2]  [1 3]      -> true
+    [1 2]  [2 1]      -> true
+    [1 2]  [2]        -> true "
+  [a b] (i/increasing-or-equal? a b))
 
 ;-----------------------------------------------------------------------------
 ; Java version stuff
