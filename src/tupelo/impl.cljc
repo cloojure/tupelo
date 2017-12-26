@@ -449,23 +449,19 @@
        (spy-indent-dec)
        result#)))
 
-(defn- let-spy-impl
-  [exprs]
-  (let [decls (xfirst exprs)
-        _     (when (not (even? (count decls)))
-                (throw (IllegalArgumentException. (str "spy-let-proc: uneven number of decls:" decls))))
-        forms (xrest exprs)
-        fmt-pair (fn [[dest src]]
-                   [ dest src
-                     '_ (list 'spyx dest)] ) ; #todo gensym instead of underscore?
-        pairs (vec (partition 2 decls))
-        r1    (vec (mapcat fmt-pair pairs ))
-        final-code  `(let ~r1 ~@forms ) ]
-    final-code ))
-
 (defmacro let-spy
   [& exprs]
-  (let-spy-impl exprs))
+  (let [decls      (xfirst exprs)
+        _          (when (not (even? (count decls)))
+                     (throw (IllegalArgumentException. (str "spy-let-proc: uneven number of decls:" decls))))
+        forms      (xrest exprs)
+        fmt-pair   (fn [[dest src]]
+                     [dest src
+                      '_ (list 'spyx dest)]) ; #todo gensym instead of underscore?
+        pairs      (vec (partition 2 decls))
+        r1         (vec (mapcat fmt-pair pairs))
+        final-code `(let ~r1 ~@forms)]
+    final-code))
 
 ;-----------------------------------------------------------------------------
 (defn- let-spy-pretty-impl
