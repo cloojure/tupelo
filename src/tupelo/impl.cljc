@@ -464,8 +464,9 @@
     final-code))
 
 ;-----------------------------------------------------------------------------
-(defn- let-spy-pretty-impl
-  [exprs]
+
+(defmacro let-spy-pretty   ; #todo -> deprecated
+  [& exprs]
   (let [decls (xfirst exprs)
         _     (when (not (even? (count decls)))
                 (throw (IllegalArgumentException. (str "spy-let-pretty-impl: uneven number of decls:" decls))))
@@ -477,14 +478,6 @@
         r1    (vec (mapcat  fmt-pair pairs ))
         final-code  `(let ~r1 ~@forms ) ]
     final-code ))
-
-(defmacro spy-let-pretty   ; #todo -> deprecated
-  [& exprs]
-  (let-spy-pretty-impl exprs))
-
-(defmacro let-spy-pretty
-  [& exprs]
-  (let-spy-pretty-impl exprs))
 
 (defn validate
   "(validate tst-fn tst-val)
