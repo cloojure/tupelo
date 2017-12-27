@@ -424,13 +424,20 @@
   (apply i/glue colls))
 
 (pns/import-fn i/join-2d->1d)
-(pns/import-fn i/append)
-(pns/import-fn i/prepend)
+
 (pns/import-fn i/->vector)
 (pns/import-fn i/unwrap)
+
 (pns/import-fn i/flat-vec)
 
 (pns/import-fn i/macro?)
+
+(defn append
+  "Given a sequential object (vector or list), add one or more elements to the end."
+  [listy & elems] (apply i/append listy elems))
+(defn prepend
+  "Given a sequential object (vector or list), add one or more elements to the beginning"
+  [& args] (apply i/prepend args))
 
 (pns/import-fn i/drop-at )
 (pns/import-fn i/insert-at )

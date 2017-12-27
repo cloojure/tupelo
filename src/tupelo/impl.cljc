@@ -683,7 +683,6 @@
   (reduce into [] listy))
 
 (s/defn append :- tsk/List
-  "Given a sequential object (vector or list), add one or more elements to the end."
   [listy :- tsk/List
    & elems :- [s/Any]]
   (when-not (sequential? listy)
@@ -693,7 +692,6 @@
   (vec (concat listy elems)))
 
 (s/defn prepend :- tsk/List
-  "Given a sequential object (vector or list), add one or more elements to the beginning"
   [& args]
   (let [elems (butlast args)
         listy (xlast args)]
