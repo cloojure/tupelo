@@ -347,15 +347,42 @@
     [arg :- s/Any]
     (if arg true false))
 
-(pns/import-fn i/truthy? )
-(pns/import-fn i/falsey? )
-(pns/import-fn i/validate )
+(defn truthy?
+  "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
+  [arg] (i/truthy? arg))
+(defn falsey?
+  "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
+   to (not (truthy? arg))."
+  [arg] (i/falsey? arg))
 
-(pns/import-fn i/has-some? )
-(pns/import-fn i/has-none? )
-(pns/import-fn i/contains-elem? )
-(pns/import-fn i/contains-key? )
-(pns/import-fn i/contains-val? )
+(defn validate
+  "(validate tst-fn tst-val)
+  Used to validate intermediate results. Returns tst-val if the result of
+  (tst-fn tst-val) is truthy.  Otherwise, throws IllegalStateException."
+  [tst-fn tst-val] (i/validate tst-fn tst-val))
+
+(defn has-some?
+  "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
+   coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
+  [pred coll]
+  (i/has-some? pred coll))
+(defn has-none?
+  "For any predicate pred & collection coll, returns false if (pred x) is logical true for at least one x in
+   coll; otherwise returns true.  Equivalent to clojure.core/not-any?, but inverse of has-some?."
+  [pred coll]
+  (i/has-none? pred coll))
+
+(defn contains-elem?
+  "For any collection coll & element tgt, returns true if coll contains at least one
+  instance of tgt; otherwise returns false. Note that, for maps, each element is a
+  vector (i.e MapEntry) of the form [key value]."
+  [coll elem] (i/contains-elem? coll elem))
+(defn contains-key?
+  "For any map or set, returns true if elem is a map key or set element, respectively"
+  [map-or-set elem ] (i/contains-key? map-or-set elem))
+(defn contains-val?
+  "For any map, returns true if elem is present in the map for at least one key."
+  [map elem] (i/contains-val? map elem))
 
 (pns/import-fn i/not-nil?)
 (pns/import-fn i/not-empty?)

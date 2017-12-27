@@ -273,13 +273,10 @@
 
 ;-----------------------------------------------------------------------------
 (defn truthy?
-  "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
   [arg]
   (if arg true false))
 
 (defn falsey?
-  "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
-   to (not (truthy? arg))."
   [arg]
   (if arg false true))
 
@@ -451,9 +448,6 @@
     final-code ))
 
 (defn validate
-  "(validate tst-fn tst-val)
-  Used to validate intermediate results. Returns tst-val if the result of
-  (tst-fn tst-val) is truthy.  Otherwise, throws IllegalStateException."
   [tst-fn tst-val]
   (let [tst-result (tst-fn tst-val)]
     (when-not (truthy? tst-result)
@@ -550,8 +544,6 @@
 
 ; #todo -> README
 (s/defn has-some? :- s/Bool ; #todo rename to has-any?   Add warning re new clj/any?
-  "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
-   coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
   [pred :-  s/Any
    coll :- [s/Any] ]
   (truthy? (some pred coll)))
@@ -559,29 +551,22 @@
 
 ; #todo -> README
 (s/defn has-none? :- s/Bool
-  "For any predicate pred & collection coll, returns false if (pred x) is logical true for at least one x in
-   coll; otherwise returns true.  Equivalent to clojure.core/not-any?, but inverse of has-some?."
   [pred :-  s/Any
    coll :- [s/Any] ]
   (falsey? (some pred coll))) ; #todo -> (not (has-some? pred coll))
 
 (s/defn contains-elem? :- s/Bool
-  "For any collection coll & element tgt, returns true if coll contains at least one
-  instance of tgt; otherwise returns false. Note that, for maps, each element is a
-  vector (i.e MapEntry) of the form [key value]."
   [coll :- s/Any
    elem :- s/Any ]
   (has-some? truthy?
     (mapv #(= elem %) (seq coll))))
 
 (s/defn contains-key? :- s/Bool
-  "For any map or set, returns true if elem is a map key or set element, respectively"
   [map-or-set :- (s/pred #(or (map? %) (set? %)))
    elem :- s/Any ]
   (contains? map-or-set elem))
 
 (s/defn contains-val? :- s/Bool
-  "For any map, returns true if elem is present in the map for at least one key."
   [map :- tsk/Map
    elem :- s/Any ]
   (has-some? truthy?
