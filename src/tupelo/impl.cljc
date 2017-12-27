@@ -109,14 +109,10 @@
   [] (newline))
 
 (s/defn not-nil? :- s/Bool
-  "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
-   or the poorly-named clojure.core/some? "
   [arg :- s/Any]
   (not (nil? arg)))
 
 (s/defn not-empty? :- s/Bool
-  "For any collection coll, returns true if coll contains any items; otherwise returns false.
-   Equivalent to (not (empty? coll))."
   ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
   [coll]
   (not (empty? coll)))
@@ -455,21 +451,6 @@
     tst-val))
 
 (defn glue
-  "Glues together like collections:
-
-     (glue [1 2] [3 4] [5 6])                -> [1 2 3 4 5 6]
-     (glue {:a 1} {:b 2} {:c 3})             -> {:a 1 :c 3 :b 2}
-     (glue #{1 2} #{3 4} #{6 5})             -> #{1 2 6 5 3 4}
-     (glue \"I\" \" like \" \\a \" nap!\" )  -> \"I like a nap!\"
-
-   If you want to convert to a sorted set or map, just put an empty one first:
-
-     (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
-     (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
-
-   If there are duplicate keys when using glue for maps or sets, then \"the last one wins\":
-
-     (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
   [& colls]
   (let [string-or-char? #(or (string? %) (char? %))]
     (cond
@@ -617,8 +598,6 @@
 
 
 (s/defn keyvals :- [s/Any]
-  "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
-   (apply hash-map (keyvals m)). (keyvals {:a 1 :b 2} => [:a 1 :b 2] "
   [m :- tsk/Map ]
   (reduce into [] (seq m)))
 
