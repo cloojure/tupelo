@@ -12,7 +12,7 @@
     [enlive                           "1.1.6"]
    ;[org.clojure/clojure              "1.8.0"]
     [org.clojure/clojure              "1.9.0"]
-    [org.clojure/core.async           "0.3.443"]
+    [org.clojure/core.async           "0.3.465"]
     [org.clojure/core.match           "0.3.0-alpha4"]
     [org.clojure/data.xml             "0.2.0-alpha5"]
     [org.clojure/math.combinatorics   "0.1.4"]
