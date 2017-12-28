@@ -125,6 +125,18 @@
   [& colls]
   (apply i/indexed colls))
 
+(defmacro with-spy-indent
+  "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
+  [& forms] `(i/with-spy-indent ~@forms))
+
+(defmacro with-spy-enabled ; #todo README & test
+  [tag & forms] `(i/with-spy-enabled ~tag ~@forms))
+
+(defmacro check-spy-enabled ; #todo README & test
+  [tag & forms] `(i/check-spy-enabled tag forms))
+
+; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
+
 (defn spy
   "A form of (println ...) to ease debugging display of either intermediate values in threading
    forms or function return values. There are three variants.  Usage:
@@ -327,18 +339,6 @@
       `(do ~else-form)))
 
 ; #todo need min-java-1-8  ???
-
-(defmacro with-spy-indent
-  "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
-  [& forms] `(i/with-spy-indent ~@forms))
-
-(defmacro with-spy-enabled ; #todo README & test
-  [tag & forms] `(i/with-spy-enabled ~tag ~@forms))
-
-(defmacro check-spy-enabled ; #todo README & test
-  [tag & forms] `(i/check-spy-enabled tag forms))
-
-; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
 
 
 ; original

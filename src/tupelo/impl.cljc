@@ -331,27 +331,18 @@
   (swap! spy-indent-level dec))
 
 (defn spy
-  ([arg1 arg2 arg3]
-   (cond
-     (= :msg arg1) (do
-                     (when *spy-enabled*
-                       (println (str (spy-indent-spaces) arg2 " => " (pr-str arg3))))
-                     arg3)
-
-     (= :msg arg2) (do
-                     (when *spy-enabled*
-                       (println (str (spy-indent-spaces) arg3 " => " (pr-str arg1))))
-                     arg1)
-
-     :else (throw (IllegalArgumentException. (str "spy: either first or 2nd arg must be :msg \n   args:"
-                                               (pr-str [arg1 arg2 arg3]))))))
-  ; #todo change 2-arg arity to assume keyword arg is message. If both are kw's, assume 1st is msg.
-  ([msg value]  ; 2-arg arity assumes value is last arg
-   (spy :msg msg value))
+  ([arg1 arg2]
+   (let [[tag value] (cond
+                       (keyword? arg1) [arg1 arg2]
+                       (keyword? arg2) [arg2 arg1]
+                       :else (throw (IllegalArgumentException. (str "spy: either first or 2nd arg must be a keyword tag \n   args:"
+                                                                 (pr-str [arg1 arg2])))))]
+     (when *spy-enabled*
+       (println (str (spy-indent-spaces) tag " => " (pr-str value))))
+     value ))
   ([value] ; 1-arg arity uses a generic "spy" message
-   (spy :msg "spy" value)))
+   (spy :spy value)))
 
-; #todo stop (spyx :hello) result:   :hello => :hello
 (defn- spyx-proc
   [exprs]
   (let [r1         (for [expr (butlast exprs)]

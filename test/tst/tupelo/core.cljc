@@ -191,28 +191,29 @@
                               (let [result (apply + args) ]
                                 (swap! side-effect-cum-sum + result)
                                 result)) ]
-      (is= "hi => 5"
-          (ts/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "hi"))) )
-      (is= "hi => 5"
-          (ts/collapse-whitespace (with-out-str (spy :msg "hi"  (side-effect-add! 2 3)))) )
+      (is= ":hi => 5"
+          (ts/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :hi))) )
+      (is= ":hi => 5"
+          (ts/collapse-whitespace (with-out-str (spy :hi  (side-effect-add! 2 3)))) )
+
       (is= "(side-effect-add! 2 3) => 5"
           (ts/collapse-whitespace (with-out-str (spyx (side-effect-add! 2 3)))) )
       (is= 15 @side-effect-cum-sum))
 
-    (is= "first => 5 second => 25"
+    (is= ":first => 5 :second => 25"
         (ts/collapse-whitespace
           (with-out-str (-> 2
                             (+ 3)
-                            (spy :msg "first" )
+                            (spy :first )
                             (* 5)
-                            (spy :msg "second") ))))
-    (is= "first => 5 second => 25"
+                            (spy :second) ))))
+    (is= ":first => 5 :second => 25"
         (ts/collapse-whitespace
           (with-out-str (->> 2
                              (+ 3)
-                             (spy :msg "first" )
+                             (spy :first )
                              (* 5)
-                             (spy :msg "second") ))))
+                             (spy :second) ))))
 
     (let [side-effect-cum-sum (atom 0)  ; side-effect running total
 
@@ -222,19 +223,19 @@
                                 (swap! side-effect-cum-sum + result)
                                 result))
     ]
-      (is= "value => 5"
-          (ts/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :msg "value"))))
-      (is= "value => 5"
-          (ts/collapse-whitespace (with-out-str (spy :msg "value"  (side-effect-add! 2 3)))))
+      (is= ":value => 5"
+          (ts/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :value))))
+      (is= ":value => 5"
+          (ts/collapse-whitespace (with-out-str (spy :value  (side-effect-add! 2 3)))))
       (is= 10 @side-effect-cum-sum)
 
-      (is= "value => 5" (ts/collapse-whitespace (with-out-str (spy "value" (+ 2 3) ))))
-      (is=   "spy => 5" (ts/collapse-whitespace (with-out-str (spy         (+ 2 3) ))))
+      (is= ":value => 5" (ts/collapse-whitespace (with-out-str (spy :value (+ 2 3) ))))
+      (is=   ":spy => 5" (ts/collapse-whitespace (with-out-str (spy        (+ 2 3) ))))
 
       (is= "(str \"abc\" \"def\") => \"abcdef\""
           (ts/collapse-whitespace (with-out-str (spyx (str "abc" "def") ))))
 
-      (throws? IllegalArgumentException  (spy "some-msg" 42 :msg))
+      (throws? IllegalArgumentException  (spy :some-tag "some-str" 42))
     )))
 
 (dotest
@@ -250,14 +251,14 @@
 
 (dotest
   (let [fn2   (fn []  (with-spy-indent
-                        (spy :msg "msg2" (+ 2 3))))
+                        (spy :msg2 (+ 2 3))))
         fn1   (fn []  (with-spy-indent
-                        (spy :msg "msg1" (+ 2 3))
+                        (spy :msg1 (+ 2 3))
                         (fn2)))
-        fn0   (fn [] (spy :msg "msg0" (+ 2 3))) ]
-    (is= "msg2 => 5"            (ts/collapse-whitespace (with-out-str (fn2))))
-    (is= "msg1 => 5 msg2 => 5"  (ts/collapse-whitespace (with-out-str (fn1))))
-    (is= "msg0 => 5"            (ts/collapse-whitespace (with-out-str (fn0))))
+        fn0   (fn [] (spy :msg0 (+ 2 3))) ]
+    (is= ":msg2 => 5"            (ts/collapse-whitespace (with-out-str (fn2))))
+    (is= ":msg1 => 5 :msg2 => 5" (ts/collapse-whitespace (with-out-str (fn1))))
+    (is= ":msg0 => 5"            (ts/collapse-whitespace (with-out-str (fn0))))
     ))
 
 ; (dotest
