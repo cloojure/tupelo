@@ -328,15 +328,15 @@
 
 ; #todo need min-java-1-8  ???
 
-(pns/import-def i/spy-indent-level)
-(pns/import-fn i/spy-indent-spaces)
-(pns/import-fn i/spy-indent-reset)
-(pns/import-fn i/spy-indent-inc)
-(pns/import-fn i/spy-indent-dec)
+(defmacro with-spy-indent
+  "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
+  [& forms] `(i/with-spy-indent ~@forms))
 
-(pns/import-macro i/with-spy-indent )
-(pns/import-macro i/with-spy-enabled )
-(pns/import-macro i/check-spy-enabled )
+(defmacro with-spy-enabled ; #todo README & test
+  [tag & forms] `(i/with-spy-enabled ~tag ~@forms))
+
+(defmacro check-spy-enabled ; #todo README & test
+  [tag & forms] `(i/check-spy-enabled tag forms))
 
 ; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
 

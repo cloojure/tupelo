@@ -298,13 +298,13 @@
 (def ^:dynamic *spy-enabled* true)
 (def ^:dynamic *spy-enabled-map* {})
 
-(defmacro with-spy-enabled ; #todo README & test
+(defmacro with-spy-enabled
   [tag ; :- s/Keyword #todo schema for macros?
    & forms ]
   `(binding [*spy-enabled-map* (assoc *spy-enabled-map* ~tag true)]
      ~@forms))
 
-(defmacro check-spy-enabled ; #todo README & test
+(defmacro check-spy-enabled
   [tag ; :- s/Keyword #todo schema for macros?
    & forms]
   `(binding [*spy-enabled* (get *spy-enabled-map* ~tag false)]
@@ -405,7 +405,6 @@
   (spyx-pretty-proc exprs))
 
 (defmacro with-spy-indent
-  "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
   [& forms]
   `(do
      (spy-indent-inc)
