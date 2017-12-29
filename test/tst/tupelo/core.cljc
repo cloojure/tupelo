@@ -195,6 +195,16 @@
           (ts/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :hi))) )
       (is= ":hi => 5"
           (ts/collapse-whitespace (with-out-str (spy :hi  (side-effect-add! 2 3)))) )
+      (is= ":after-inc => 2"
+        (ts/collapse-whitespace (with-out-str (-> 1
+                                                (inc)
+                                                (spy :after-inc) ; add a custom keyword message
+                                                (* 2)))))
+      (is= ":after-inc => 2"
+        (ts/collapse-whitespace (with-out-str (->> 1
+                                                (inc)
+                                                (spy :after-inc) ; add a custom keyword message
+                                                (* 2)))))
 
       (is= "(side-effect-add! 2 3) => 5"
           (ts/collapse-whitespace (with-out-str (spyx (side-effect-add! 2 3)))) )
@@ -240,14 +250,14 @@
 
 (dotest
   (let [val1 (into (sorted-map) {:a 1 :b 2})]
+   (is= "val1 => <#clojure.lang.PersistentTreeMap {:a 1, :b 2}>"
+      (ts/collapse-whitespace (with-out-str (spyxx val1))))
+
     (is= "(+ 2 3) => <#java.lang.Long 5>"
       (ts/collapse-whitespace (with-out-str (spyxx (+ 2 3)))))
 
     (is= "(mapv inc (range 3)) => <#clojure.lang.PersistentVector [1 2 3]>"
-      (ts/collapse-whitespace (with-out-str (spyxx (mapv inc (range 3))))))
-
-    (is= "val1 => <#clojure.lang.PersistentTreeMap {:a 1, :b 2}>"
-      (ts/collapse-whitespace (with-out-str (spyxx val1))))))
+      (ts/collapse-whitespace (with-out-str (spyxx (mapv inc (range 3)))))) ))
 
 (dotest
   (let [fn2   (fn []  (with-spy-indent
