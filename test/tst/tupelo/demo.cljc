@@ -16,6 +16,30 @@
 ; #todo add generative testing?
 ; #todo add clojure.spec testing?
 
+; (x ...)     =>  "function call on x" (parens = "function call")
+; ... x ...   =>  "substitute the value of x (local or global Var)"
+; Note that '5 is just shorthand for (quote 5), where `quote` is a "special form"
+; (i.e compiler built-in function, not a normal function). Using the (quote ...)
+; form "turns off" the normal behavior of evaluating (substituting) symbols & function calls.
+(dotest
+  (is= 5 '5 (quote 5))
+  (is= [1 2 3] '[1 2 3] (quote [1 2 3]))
+  (is= [1 2 3] '(1 2 3) (quote (1 2 3)))
+
+  ; Nested quotes are weird. Don't do it unless you have a weird problem to solve.
+  ; And even then, expect a lot of trial & error before it comes out right.
+  (isnt= [1 2 3] '(1 2 '3))
+  (is=
+    '(1 2 '3)
+    '(1 2 (quote 3))
+    (quote (1 2 (quote 3)))
+    [1 2 '(quote 3)]
+    [1 2 ['quote 3]]
+    [1 2 [(quote quote) 3]]
+    [1 2 [(symbol "quote") 3]]
+    [1 2 '(quote 3)]
+    [1 2 ''3] ))
+
 (dotest
   (is= []         (take 1 nil))
   (is= []         (take 1 []))
