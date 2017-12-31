@@ -805,7 +805,7 @@
           ; find the hid for each top-level :div (i.e. "group"); the next-to-last (-2) hid in each vector
           div-hids        (mapv #(idx % -2) div-h2-paths)
           ; for each of div-hids, find and collect nested :h3 values
-          dif-h3-paths    (join-2d->1d
+          dif-h3-paths    (glue-rows
                             (forv [div-hid div-hids]
                               (let [h2-value (grab :value (hid->node (find-hid div-hid [:div :h2])))
                                     h3-paths  (find-paths div-hid [:** :h3])

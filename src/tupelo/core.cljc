@@ -63,6 +63,10 @@
   "Returns all but the last value in a list or vector. Throws if empty."
   [coll] (i/xreverse coll))
 
+(defn xvec
+  "Converts a collection into a vector. Throws if given nil."
+  [coll] (i/xvec coll))
+
 (defn kw->sym
   "Converts a keyword to a symbol"
   [arg] (i/kw->sym arg))
@@ -423,14 +427,38 @@
   [& colls]
   (apply i/glue colls))
 
-(pns/import-fn i/join-2d->1d)
+(defn glue-rows
+  "Convert a vector of vectors (2-dimensional) into a single vector (1-dimensional).
+  Equivalent to `(apply glue ...)`"
+  [coll-2d] (i/glue-rows coll-2d))
 
-(pns/import-fn i/->vector)
-(pns/import-fn i/unwrap)
+(defn unwrap
+  "Works with the `->vector` function to unwrap vectors/lists to insert
+  their elements as with the unquote-spicing operator (~@). Examples:
 
-(pns/import-fn i/flat-vec)
+      (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
+      (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9] "
+  [data] (i/unwrap data))
 
-(pns/import-fn i/macro?)
+(defn ->vector
+  "Wraps all args in a vector, as with `clojure.core/vector`. Will (recursively) recognize
+  any embedded calls to (unwrap <vec-or-list>) and insert their elements as with the
+  unquote-spicing operator (~@). Examples:
+
+      (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
+      (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9] "
+  [& args] (apply i/->vector args))
+
+(defn unnest
+  "Given any set of arguments including vectors, maps, sets, & scalars, performs a depth-first
+  recursive walk returning scalar args (int, string, keyword, etc) in a single 1-D vector."
+  [& values] (apply i/unnest values))
+
+(defn macro?
+  "Returns true if a quoted symbol resolves to a macro. Usage:
+
+    (println (macro? 'and))  ;=> true "
+  [s] (i/macro? s))
 
 (defn append
   "Given a sequential object (vector or list), add one or more elements to the end."
@@ -439,10 +467,19 @@
   "Given a sequential object (vector or list), add one or more elements to the beginning"
   [& args] (apply i/prepend args))
 
-(pns/import-fn i/drop-at )
-(pns/import-fn i/insert-at )
-(pns/import-fn i/replace-at )
-(pns/import-fn i/idx )
+(defn drop-at
+  "Removes an element from a collection at the specified index."
+  [coll index] (i/drop-at coll index))
+(defn insert-at
+  "Inserts an element into a collection at the specified index."
+  [coll index elem] (i/insert-at coll index elem))
+(defn replace-at
+  "Replaces an element in a collection at the specified index."
+  [coll index elem] (i/replace-at coll index elem))
+
+(defn idx
+  "Indexes into a vector, allowing negative index values"
+  [coll index-val] (i/idx coll index-val) )
 
 (s/defn dissoc-in :- s/Any
   "A sane version of dissoc-in that will not delete intermediate keys.
@@ -598,8 +635,6 @@
 (defn drop-if
   "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
   [pred coll] (i/drop-if pred coll))
-
-(pns/import-fn i/unnest )
 
 (defn fibonacci-seq
   "A lazy seq of Fibonacci numbers (memoized)."
@@ -765,11 +800,11 @@
      contains-key? contains-val? contains-elem?
      forv map-let* map-let
      when-clojure-1-8-plus when-clojure-1-9-plus
-     conjv glue join-2d->1d
+     conjv glue glue-rows
      macro? chars-thru
      append prepend grab dissoc-in fetch fetch-in
      submap? submap-by-keys submap-by-vals keyvals keyvals-seq keyvals-seq* validate-map-keys map-keys map-vals
-     validate only it-> safe-> keep-if drop-if zip zip* zip-lazy indexed flat-vec
+     validate only it-> safe-> keep-if drop-if zip zip* zip-lazy indexed
      strcat nl pretty pretty-str json->edn edn->json clip-str range-vec thru rel= all-rel=
      drop-at insert-at replace-at idx
      starts-with? int->kw kw->int
@@ -777,7 +812,7 @@
      kw->sym kw->str str->sym str->kw str->chars sym->kw sym->str
      split-using split-match partition-using
      wild-match? wild-submatch? wild-match-ctx? wild-item? submatch? val=
-     increasing? increasing-or-equal? ->vector unwrap
+     increasing? increasing-or-equal? ->vector unwrap xvec
      fibonacci-seq fibo-thru fibo-nth unnest
      with-exception-default lazy-cons lazy-gen yield yield-all
     ] )

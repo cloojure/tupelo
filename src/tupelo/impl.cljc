@@ -169,6 +169,11 @@
   (when (nil? coll) (throw (IllegalArgumentException. (str "xreverse: invalid coll: " coll))))
   (vec (clojure.core/reverse coll)))
 
+(s/defn xvec :- [s/Any]
+  [coll :- [s/Any]]
+  (when (nil? coll) (throw (IllegalArgumentException. (str "xvec: invalid coll: " coll))))
+  (clojure.core/vec coll))
+
 ; #todo Need safe versions of:
 ; #todo    + - * /  (others?)  (& :strict :safe reassignments)
 ; #todo    and, or    (& :strict :safe reassignments)
@@ -662,15 +667,13 @@
                  "  start-val=" start-val "  stop-val=" stop-val))))
     (mapv char (thru start-val stop-val))))
 
-(s/defn join-2d->1d :- ts/List ; #todo think about better name
-  "Convert a vector of vectors (2-dimensional) into a single vector (1-dimensional).
-  Equivalent to `(apply glue ...)`"
-  [listy :- ts/List]
-  (when-not (sequential? listy)
-    (throw (IllegalArgumentException. (str "Sequential collection required, found=" listy))))
-  (when-not (every? sequential? listy)
-    (throw (IllegalArgumentException. (str "Nested sequential collections required, found=" listy))))
-  (reduce into [] listy))
+(s/defn glue-rows :- ts/List ; #todo necessary?
+  [coll-2d :- ts/List]
+  (when-not (sequential? coll-2d)
+    (throw (IllegalArgumentException. (str "Sequential collection required, found=" coll-2d))))
+  (when-not (every? sequential? coll-2d)
+    (throw (IllegalArgumentException. (str "Nested sequential collections required, found=" coll-2d))))
+  (reduce into [] coll-2d))
 
 (s/defn append :- tsk/List
   [listy :- tsk/List
@@ -693,41 +696,23 @@
 
 (defrecord Unwrapped [data])
 (s/defn unwrap :- Unwrapped
-  "Works with the `->vector` function to unwrap vectors/lists to insert
-  their elements as with the unquote-spicing operator (~@). Examples:
-
-      (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
-      (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9]
-  "
   [data :- [s/Any]]
   (assert (sequential? data))
   (->Unwrapped data))
 
 (s/defn ->vector :- [s/Any]
-  "Wraps all args in a vector, as with `clojure.core/vector`. Will (recursively) recognize
-  any embedded calls to (unwrap <vec-or-list>) and insert their elements as with the
-  unquote-spicing operator (~@). Examples:
-
-      (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
-      (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9]
-  "
   [& args :- [s/Any]]
-  ;(nl)
-  ;(println "->vector args = " args)
-  (let [result (reduce (fn [accum it]
+  (let [result (reduce (fn [accum item]
                          (let [it-use (cond
-                                           (sequential? it) [ (apply ->vector it) ]
-                                           (instance? Unwrapped it) (apply ->vector (fetch it :data))
-                                           :else [it])
+                                           (sequential? item) [ (apply ->vector item) ]
+                                           (instance? Unwrapped item) (apply ->vector (fetch item :data))
+                                           :else [item])
                                accum-out (glue accum it-use ) ]
-                           ;(println it "->" it-use "  =>  " accum-out)
                            accum-out ))
                  [] args)]
        result))
 
 (s/defn unnest :- [s/Any] ; #todo readme
-  "Given any set of arguments including vectors, maps, sets, & scalars, performs a depth-first
-  recursive walk returning scalar args (int, string, keyword, etc) in a single 1-D vector."
   [& values]
   (let [unnest-coll (fn fn-unnest-coll [coll]
                       (apply glue
@@ -741,11 +726,6 @@
                           (unnest-coll item)
                           [item])))]
        result))
-
-(defn flat-vec ; #todo remove this?
-  "Accepts any number of nested args and returns the flattened result as a vector."
-  [& args]
-  (vec (flatten args)))
 
 ; #todo:  make (map-ctx {:trunc false :eager true} <fn> <coll1> <coll2> ...) <- default ctx
 ; #todo:  mapz, forz, filterz, ...?
@@ -961,7 +941,6 @@
 ; #todo rename -> drop-idx
 ; #todo force to vector result
 (s/defn drop-at :- tsk/List
-  "Removes an element from a collection at the specified index."
   [coll :- tsk/List
    index :- s/Int]
   (when (neg? index)
@@ -975,7 +954,6 @@
 ; #todo rename -> insert-idx
 ; #todo force to vector result
 (s/defn insert-at :- tsk/List
-  "Inserts an element into a collection at the specified index."
   [coll :- tsk/List
    index :- s/Int
    elem :- s/Any]
@@ -991,7 +969,6 @@
 ; #todo force to vector result
 ; #todo if was vector, could just use (assoc the-vec idx new-val)
 (s/defn replace-at :- tsk/List
-  "Replaces an element in a collection at the specified index."
   [coll :- tsk/List
    index :- s/Int
    elem :- s/Any]
@@ -1009,14 +986,18 @@
 ; #todo allow (idx coll [low high]) like python xx( low:high )
 ; #todo multiple dimensions
 (defn idx
-  "Indexes into a vector, allowing negative index values"
-  [coll-in idx-in]
-  (let [data-vec (vec coll-in)
-        N (count data-vec)
-        >> (assert (pos? N))
-        idx (mod idx-in N)
-        result (clojure.core/get data-vec idx)]
-    result ))
+  [coll index-val]
+  (when (nil? coll)
+    (throw (IllegalArgumentException. (str "idx: coll cannot be nil: " coll))))
+  (let [data-vec (vec coll)
+        N        (count data-vec)
+        >>       (assert (pos? N))
+        ii       (mod index-val N)
+        >>       (when (<= (count coll) ii)
+                   (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
+                                                       " (count coll)=" (count coll) " index=" ii))))
+        result   (clojure.core/get data-vec ii)]
+    result))
 
 (defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
@@ -1074,9 +1055,6 @@
     map-out))
 
 (defn macro?
-  "Returns true if a quoted symbol resolves to a macro. Usage:
-
-    (println (macro? 'and))  ;=> true "
   [s]
   (-> s resolve meta :macro boolean))
     ; from Alex Miller StackOverflow answer 2017-5-6

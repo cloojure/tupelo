@@ -626,8 +626,7 @@
               [6 7 8 9]]]
     (is= (thru 9)
       (reduce into [] data)
-      (join-2d->1d data)))
-)
+      (glue-rows data))))
 
 (dotest
   (throws?            (append  1 2        ))
@@ -911,6 +910,11 @@
     (is= [] (xbutlast [1]))
     (throws? (xbutlast []))
     (throws? (xbutlast nil))
+
+    (throws? (xvec nil))
+    (is= [] (xvec []))
+    (is= [1] (xvec '(1)))
+    (is= [1 2] (xvec [1 2]))
   ))
 
 
@@ -1752,7 +1756,9 @@
     (unnest [0 [1 [2 [3 [4 [5 [6 [7 [8 9]]]]]]]]])
     (unnest [0 [1 [2 [3 [4 [5 [6 [7 [8 [9]]]]]]]]]])
     (unnest [[[[[[[[[[0] 1] 2] 3] 4] 5] 6] 7] 8] 9])
-    (unnest [0 1 [2 [3 [4] 5] 6] 7 8 9]))
+    (unnest [0 1 [2 [3 [4] 5] 6] 7 8 9]) )
+
+  (is= [1 2 3 4 5] (unnest [[[1] 2] [3 [4 [5]]]]))
 
   (is= (set [:a :1 :b 2 :c 3]) ; map
     (set (unnest [:a :1 {:b 2 :c 3}]))
@@ -2006,7 +2012,7 @@
         iter-glue-result (nth iter-glue N) ; #todo hangs w. 2 'yield-all' if (50 < x < 60)
 
         cat-flat-fn      (fn [coll] (lazy-gen
-                                      (yield-all (flat-vec [coll [1 [2 [3]]]]))))
+                                      (yield-all (unnest [coll [1 [2 [3]]]]))))
         iter-flat        (iterate cat-flat-fn [1 2 3]) ; #todo some sort of bug here!
         iter-flat-result (nth iter-flat N) ; #todo hangs w. 2 'yield-all' if (50 < x < 60)
         ]
@@ -2043,8 +2049,6 @@
 
 ;---------------------------------------------------------------------------------------------------
 (dotest
-  (is= [1 2 3 4 5] (flat-vec [[[1] 2] [3 [4 [5]]]]))
-
   (is= [ [] [\a   \b   \c   \d   \e   \f]      ] (split-match "abcdef" "a"   ))
   (is= [ [] [\a   \b   \c   \d   \e   \f]      ] (split-match "abcdef" "ab"  ))
   (is= [    [\a] [\b   \c   \d   \e   \f]      ] (split-match "abcdef" "bc"  ))
