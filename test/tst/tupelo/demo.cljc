@@ -40,6 +40,12 @@
     [1 2 '(quote 3)]
     [1 2 ''3] ))
 
+(dotest             ; empty lists/vectors
+  (is= ()           ; should be error! parens => function call (here with missing function)
+    []              ; preferred
+    `() `[]         ; redundant quoting
+    (list)))        ; build an empty list
+
 (dotest
   (is= []         (take 1 nil))
   (is= []         (take 1 []))
