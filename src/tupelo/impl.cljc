@@ -501,7 +501,6 @@
      ~'it))
 
 (defn clip-str      ; #todo -> tupelo.string?
-  "Converts all args to single string and clips any characters beyond nchars."
   [nchars & args]
   (it-> (apply str args)
     (take nchars it)
@@ -572,8 +571,6 @@
 
 ; #todo need README
 (s/defn submap? :- Boolean
-  "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
-   another map.  Similar to clojure.set/subset?"
   [inner-map :- {s/Any s/Any}                           ; #todo
    outer-map :- {s/Any s/Any}]                          ; #todo
   (let [inner-set (set inner-map)
@@ -1012,8 +1009,7 @@
 (s/defn map-keys :- tsk/Map ; #todo README
   [map-in :- tsk/Map
    tx-fn  :- tsk/Fn
-   & tx-args
-   ]
+   & tx-args ]
   (let [tuple-seq-orig (vec map-in)
         tuple-seq-out  (for [[tuple-key tuple-val] tuple-seq-orig]
                          [ (apply tx-fn tuple-key tx-args) tuple-val])
@@ -1023,8 +1019,7 @@
 (s/defn map-vals :- tsk/Map ; #todo README
   [map-in :- tsk/Map
    tx-fn  :- tsk/Fn
-   & tx-args
-  ]
+   & tx-args ]
   (let [tuple-seq-orig (vec map-in)
         tuple-seq-out  (for [[tuple-key tuple-val] tuple-seq-orig]
                          [tuple-key (apply tx-fn tuple-val tx-args) ])
@@ -1096,31 +1091,7 @@
                      :default false)) ]
       result)))
 
-(defn wild-match-ctx? ; #todo readme
-  "Returns true if a pattern is matched by one or more values.  The special keyword :* (colon-star)
-   in the pattern serves as a wildcard value.  Note that a wildcald can match either a primitive or a
-   composite value: Usage:
-
-     (wild-match-ctx? ctx pattern & values)
-
-   samples:
-
-     (wild-match-ctx? ctx {:a :* :b 2}
-                          {:a 1  :b 2})         ;=> true
-
-     (wild-match-ctx? ctx [1 :* 3]
-                          [1 2  3]
-                          [1 9  3] ))           ;=> true
-
-     (wild-match-ctx? ctx {:a :*       :b 2}
-                          {:a [1 2 3]  :b 2})   ;=> true
-
-   wild-match? accepts a context map as an optional first argument which defaults to:
-
-     (let [ctx {:submap-ok false
-                :subset-ok false
-                :subvec-ok false}]
-       (wild-match-ctx? ctx pattern values))) "
+(defn wild-match-ctx? ; #todo readme; and -> wild-match?*
   [ctx-in pattern & values]
   (let [ctx (glue {:submap-ok   false
                    :subset-ok   false
@@ -1131,28 +1102,25 @@
         (wild-match-impl ctx pattern value)))))
 
 (defn wild-match? ; #todo readme
-  "Simple wrapper for wild-match-ctx? using the default context"
-  ([pattern & values]
-   (apply wild-match-ctx? {} pattern values)))
+  [pattern & values]
+  (apply wild-match-ctx? {} pattern values))
 
 (defn wild-submatch? ; #todo readme & test
-  "Simple wrapper for wild-match-ctx? where all types of sub-matching are enabled."
-  ([pattern & values]
-   (let [ctx {:submap-ok   true
-              :subset-ok   true
-              :subvec-ok   true
-              :wildcard-ok true}]
-     (apply wild-match-ctx? ctx pattern values))))
+  [pattern & values]
+  (let [ctx {:submap-ok   true
+             :subset-ok   true
+             :subvec-ok   true
+             :wildcard-ok true}]
+    (apply wild-match-ctx? ctx pattern values)))
 
 ; #todo re-impl w/o wildcard stuff
 (defn submatch? ; #todo readme & test
-  "Returns true if the first arg is (recursively) a subset/submap/subvec of the 2nd arg"
-  ([smaller larger]
-   (let [ctx {:submap-ok   true
-              :subset-ok   true
-              :subvec-ok   true
-              :wildcard-ok false}]
-     (wild-match-ctx? ctx smaller larger))))
+  [smaller larger]
+  (let [ctx {:submap-ok   true
+             :subset-ok   true
+             :subvec-ok   true
+             :wildcard-ok false}]
+    (wild-match-ctx? ctx smaller larger)))
 
 (s/defn wild-item? :- s/Bool
   "Returns true if any element in a nested collection is the wildcard :*"

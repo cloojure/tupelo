@@ -750,16 +750,68 @@
 ; #todo need rand-id/randid/rid/rid-str (rand id) -> 64 bit hex string="1234-4567-89ab-cdef"
 ; i[12] = Random.nextInt(); bytes += i[12].toHexString()
 
-(pns/import-fn i/clip-str )
-(pns/import-fn i/wild-match-ctx? )
-(pns/import-fn i/wild-match? )
-(pns/import-fn i/submap? )
-(pns/import-fn i/validate-map-keys )
-(pns/import-fn i/map-keys )
-(pns/import-fn i/map-vals )
+(defn clip-str
+  "Converts all args to single string and clips any characters beyond nchars."
+  [nchars & args] (apply i/clip-str nchars args))
 
-(pns/import-fn i/submatch? )
-(pns/import-fn i/wild-submatch? )
+(defn wild-match-ctx?
+  "Returns true if a pattern is matched by one or more values.  The special keyword :* (colon-star)
+   in the pattern serves as a wildcard value.  Note that a wildcald can match either a primitive or a
+   composite value: Usage:
+
+     (wild-match-ctx? ctx pattern & values)
+
+   samples:
+
+     (wild-match-ctx? ctx {:a :* :b 2}
+                          {:a 1  :b 2})         ;=> true
+
+     (wild-match-ctx? ctx [1 :* 3]
+                          [1 2  3]
+                          [1 9  3] ))           ;=> true
+
+     (wild-match-ctx? ctx {:a :*       :b 2}
+                          {:a [1 2 3]  :b 2})   ;=> true
+
+   wild-match? accepts a context map as an optional first argument which defaults to:
+
+     (let [ctx {:submap-ok false
+                :subset-ok false
+                :subvec-ok false}]
+       (wild-match-ctx? ctx pattern values))) "
+  [ctx-in pattern & values]
+  (apply i/wild-match-ctx? ctx-in pattern values))
+
+(defn wild-match?
+  "Simple wrapper for wild-match-ctx? using the default context"
+  [pattern & values]
+  (apply i/wild-match? pattern values))
+
+(defn submap?
+  "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
+   another map.  Similar to clojure.set/subset?"
+  [inner-map outer-map] (i/submap? inner-map outer-map))
+
+(defn validate-map-keys ; #todo docstring, README
+  [tst-map valid-keys ] (i/validate-map-keys tst-map valid-keys))
+
+(defn map-keys ; #todo docstring, README
+  [map-in tx-fn & tx-args ]
+  (apply i/map-keys map-in tx-fn tx-args))
+
+(defn map-vals ; #todo docstring, README
+  [map-in tx-fn & tx-args]
+  (apply i/map-vals map-in tx-fn tx-args))
+
+(defn submatch?
+  "Returns true if the first arg is (recursively) a subset/submap/subvec of the 2nd arg"
+  [smaller larger] (i/submatch? smaller larger))
+
+(defn wild-submatch?
+  "Simple wrapper for wild-match-ctx? where all types of sub-matching are enabled."
+  [pattern & values]
+  (apply i/wild-submatch? pattern values))
+
 (pns/import-fn i/wild-item? )
 (pns/import-fn i/val= )
 (pns/import-macro i/matches? )
