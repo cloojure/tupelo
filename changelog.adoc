@@ -3,6 +3,10 @@
 
 == Change Log
 
+.2018-1-1  Version 0.9.70:  
+- minor redefinition of `spy` for 2 args; requires at least 1 arg to be a keyword, which is treated
+  as a "label" for the output line.
+
 .2017-4-26  Version 0.9.38:  *Breaking Change*
 - renamed `select-values` -> `map-keys->vals` (ref. puppetlabs.kitchensink.core/select-values)
 
