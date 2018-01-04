@@ -974,20 +974,6 @@
     result))
 
 (defmacro matches?
-  "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
-   matches the pattern value.  Underscores serve as wildcard values. Usage:
-
-     (matches? pattern & values)
-
-   sample:
-
-     (matches?  [1 _ 3] [1 2 3] )         ;=> true
-     (matches?  {:a _ :b _       :c 3}
-                {:a 1 :b [1 2 3] :c 3}
-                {:a 2 :b 99      :c 3}
-                {:a 3 :b nil     :c 3} )  ;=> true
-
-   Note that a wildcald can match either a primitive or a composite value."
   [pattern & values]
   `(and ~@(forv [value values]
             `(ccm/match ~value
@@ -1032,10 +1018,6 @@
     ; from Alex Miller StackOverflow answer 2017-5-6
 
 (s/defn val= :- s/Bool
-  "Compares values for equality using clojure.core/=, treating records as plain map values:
-
-      (defrecord SampleRec [a b])
-      (assert (val= (->SampleRec 1 2) {:a 1 :b 2}))   ; fails for clojure.core/= "
   [& vals]
   (let [mapify   (fn [arg]
                    (if (map? arg)
@@ -1123,7 +1105,6 @@
     (wild-match-ctx? ctx smaller larger)))
 
 (s/defn wild-item? :- s/Bool
-  "Returns true if any element in a nested collection is the wildcard :*"
   [item :- s/Any]
   (has-some? #(= :* %) (unnest [item])))
 

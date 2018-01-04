@@ -7,14 +7,14 @@
 (ns tupelo.test
   "Testing functions."
   (:require [clojure.test.check :as tc]
-            [potemkin.namespaces :as pns]
+            [clojure.test :as ct]
             [tupelo.impl :as i] ))
 
-(pns/import-fn clojure.test/use-fixtures )
+(defn use-fixtures [& args] (apply ct/use-fixtures args))
+(defmacro deftest [& forms] `(ct/deftest ~@forms))
+(defmacro is [& forms] `(ct/is ~@forms))
+(defmacro testing [& forms] `(ct/testing ~@forms))
 
-(pns/import-macro clojure.test/deftest )
-(pns/import-macro clojure.test/is )
-(pns/import-macro clojure.test/testing )
 
 (defmacro isnt      ; #todo readme/test
   "Use (isnt ...) instead of (is (not ...)) for clojure.test"

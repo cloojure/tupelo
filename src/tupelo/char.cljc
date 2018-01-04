@@ -9,7 +9,6 @@
   (:refer-clojure :exclude [drop take] )
   (:require
     [clojure.set :as set]
-    [potemkin.namespaces :as pns]
     [schema.core :as s]
     [tupelo.impl :as i]
     [tupelo.schema :as tsk]))

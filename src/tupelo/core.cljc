@@ -9,7 +9,6 @@
   (:require 
     [cheshire.core :as cc]
     [clojure.test]
-    [potemkin.namespaces :as pns]
     [schema.core :as s]
     [tupelo.impl :as i]
     [tupelo.schema :as ts]
@@ -812,9 +811,35 @@
   [pattern & values]
   (apply i/wild-submatch? pattern values))
 
-(pns/import-fn i/wild-item? )
-(pns/import-fn i/val= )
-(pns/import-macro i/matches? )
+(defn wild-item?
+  "Returns true if any element in a nested collection is the wildcard :*"
+  [item] (i/wild-item? item))
+
+(defn val=
+  "Compares values for equality using clojure.core/=, treating records as plain map values:
+
+      (defrecord SampleRec [a b])
+      (assert (val= (->SampleRec 1 2) {:a 1 :b 2}))   ; fails for clojure.core/= "
+  [& vals]
+  (apply i/val= vals))
+
+(defmacro matches?
+  "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
+   matches the pattern value.  Underscores serve as wildcard values. Usage:
+
+     (matches? pattern & values)
+
+   sample:
+
+     (matches?  [1 _ 3] [1 2 3] )         ;=> true
+     (matches?  {:a _ :b _       :c 3}
+                {:a 1 :b [1 2 3] :c 3}
+                {:a 2 :b 99      :c 3}
+                {:a 3 :b nil     :c 3} )  ;=> true
+
+   Note that a wildcald can match either a primitive or a composite value."
+  [pattern & values]
+  `(i/matches? ~pattern ~@values))
 
 ; #todo: add (throwed? ...) for testing exceptions
 

@@ -20,7 +20,6 @@
     [org.clojure/spec.alpha           "0.1.143"]
     [org.clojure/test.check           "0.9.0"]
     [org.clojure/tools.analyzer       "0.6.9"]
-    [potemkin                         "0.4.4"]
     [prismatic/schema                 "1.1.7"]
   ]
   :profiles { :dev      {:dependencies [  ] }
