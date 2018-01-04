@@ -212,14 +212,12 @@
 
 ; #todo add test & README
 (defn pretty-str
-  "Returns a string that is the result of clojure.pprint/pprint"
   [arg]
   (with-out-str (pprint/pprint arg)))
 
 ; #todo rename to pp or pprint ?
 ; #todo add test & README
 (defn pretty                                                ; #todo experimental
-  "Shortcut to clojure.pprint/pprint. Returns it argument."
   ([arg]
    (pprint/pprint arg)
    arg)
@@ -644,8 +642,6 @@
 ; #todo need test, readme
 ; #todo merge into `thru` using a protocol for int, double, char, string, keyword, symbol, other?
 (defn chars-thru
-  "Given two characters (or numerical equivalents), returns a seq of characters
-  (inclusive) from the first to the second.  Characters must be in ascending order."
   [start-char stop-char]
   {:pre [ (char start-char) (char stop-char) ] }
   ; These "dummy" casts are to ensure that any input integer values are within the valid
@@ -746,7 +742,6 @@
   (keep-if (complement pred) coll))
 
 (defn strcat
-  "Recursively concatenate all arguments into a single string result."
   [& args]
   (let [
         ; We need to use flatten twice since the inner one doesn't change a string into a

@@ -701,10 +701,22 @@
       (print \space)
       (pr it))))
 
-(pns/import-fn i/strcat)
-(pns/import-fn i/chars-thru)
-(pns/import-fn i/pretty-str)
-(pns/import-fn i/pretty)
+(defn strcat
+  "Recursively concatenate all arguments into a single string result."
+  [& args] (apply i/strcat args))
+
+(defn chars-thru
+  "Given two characters (or numerical equivalents), returns a seq of characters
+  (inclusive) from the first to the second.  Characters must be in ascending order."
+  [start-char stop-char] (i/chars-thru start-char stop-char))
+
+(defn pretty-str
+  "Returns a string that is the result of clojure.pprint/pprint"
+  [arg] (i/pretty-str arg))
+
+(defn pretty
+  "Shortcut to clojure.pprint/pprint. Returns it (1st) argument."
+  [& args] (apply i/pretty args))
 
 (defn print-versions []
   (let [version-str (format "Clojure %s    Java %s"
