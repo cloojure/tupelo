@@ -18,6 +18,9 @@
   (:refer-clojure :exclude [map seqable?] )
   (:import [java.io BufferedReader StringReader]))
 
+;(defmacro xxx [& forms]
+;  `(i/xxx ~@forms))
+
 ; #todo need (defkw :fred) and (kw :fred) to catch errors like
 ; (when (= person :frid)  ; (kw :frid) -> throws
 ;    (println "Hi Barney!"))
@@ -532,13 +535,52 @@
 ; #todo make an it?-> (fff ppp it? qqq) to halt thread if encounter nil result (then returns nil)
 ; #todo make an it!-> (fff ppp it! qqq) to throw if encounter nil (replace safe->) (maybe val->)
 
-(pns/import-macro i/it-> )
-(pns/import-macro i/with-exception-default )
 
-(pns/import-macro i/lazy-cons )
 (pns/import-macro i/lazy-gen )
 (pns/import-macro i/yield )
 (pns/import-macro i/yield-all )
+;-----------------------------------------------------------------------------
+(defmacro it->
+  "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
+      (it-> 1
+            (inc it)
+            (+ it 3)
+            (/ 10 it))
+      ;=> 2 "
+  [expr & forms]
+  `(i/it-> ~expr ~@forms))
+
+(defmacro with-exception-default
+  "Evaluates body & returns its result.  In the event of an exception, default-val is returned
+   instead of the exception."
+  [default-val & forms]
+  `(i/with-exception-default ~default-val ~@forms))
+
+(defmacro lazy-cons
+  "The simple way to create a lazy sequence:
+      (defn lazy-next-int [n]
+        (t/lazy-cons n (lazy-next-int (inc n))))
+      (def all-ints (lazy-next-int 0)) "
+  [curr-val recursive-call-form]
+  `(i/lazy-cons ~curr-val ~recursive-call-form))
+
+;(defmacro lazy-gen
+;  "Creates a 'generator function' that returns a lazy seq of results
+;  via `yield` (a la Python)."
+;  [& forms]
+;  `(i/lazy-gen ~@forms))
+;
+;(defmacro yield
+;  "Within a 'generator function' created by `lazy-gen`, populates the
+;  result lazy seq with the supplied value (a la Python). Returns the value."
+;  [value]
+;  `(i/yield ~value))
+;
+;(defmacro yield-all
+;  "Within a 'generator function' created by `lazy-gen`, populates the
+;  result lazy seq with each item from the supplied collection. Returns the collection."
+;  [values]
+;  `(i/yield-all ~@values))
 
 ; (defn round [dblVal :incr   (/ 1 3)]            ; #todo add
 ;   (let [factor (Math/pow 10 *digits*)]

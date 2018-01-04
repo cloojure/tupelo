@@ -239,8 +239,6 @@
         (str indent-str line)))))
 
 (defmacro with-exception-default
-  "Evaluates body & returns its result.  In the event of an exception, default-val is returned
-   instead of the exception."
   [default-val & forms]
   `(try
      ~@forms
@@ -498,13 +496,6 @@
 
 ;-----------------------------------------------------------------------------
 (defmacro it->
-  "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
-      (it-> 1
-            (inc it)
-            (+ it 3)
-            (/ 10 it))
-      ;=> 2
-   "
   [expr & forms]
   `(let [~'it ~expr
          ~@(interleave (repeat 'it) forms)
@@ -792,12 +783,8 @@
   `(vec (for ~@forms)))
 
 (defmacro lazy-cons
-  "The simple way to create a lazy sequence:
-      (defn lazy-next-int [n]
-        (t/lazy-cons n (lazy-next-int (inc n))))
-      (def all-ints (lazy-next-int 0)) "
-  [curr-val next-form]
-  `(lazy-seq (cons ~curr-val ~next-form)))
+  [curr-val recursive-call-form]
+  `(lazy-seq (cons ~curr-val ~recursive-call-form)))
 
 ; #todo document use via binding
 (def ^:dynamic *lazy-gen-buffer-size*
@@ -808,10 +795,9 @@
 ; #todo fix SO posting:  defgen -> lazy-gen
 ; #todo make null case return [] instead of nil
 ; #todo make eager version?  gen-vec, gen-seq, ...
-(defmacro lazy-gen [& forms]
-  "Creates a 'generator function' that returns a lazy seq of results
-  via `yield` (a la Python)."
-  `(let [~'lazy-gen-output-buffer    (ca/chan *lazy-gen-buffer-size*)
+(defmacro lazy-gen
+  [& forms]
+  `(let [~'lazy-gen-output-buffer    (ca/chan tupelo.impl/*lazy-gen-buffer-size*)
          lazy-reader-fn#             (fn lazy-reader-fn# []
                                        (let [curr-item# (ca/<!! ~'lazy-gen-output-buffer)] ; #todo ta/take-now!
                                             (when (not-nil? curr-item#)
@@ -822,16 +808,12 @@
      (lazy-reader-fn#)))
 
 (defmacro yield ; #todo put-now/put-later & dynamic
-  "Within a 'generator function' created by `lazy-gen`, populates the
-  result lazy seq with the supplied value (a la Python). Returns the value."
   [value]
   `(do
      (ca/>! ~'lazy-gen-output-buffer ~value)
      ~value))
 
 (defmacro yield-all
-  "Within a 'generator function' created by `lazy-gen`, populates the
-  result lazy seq with each item from the supplied collection. Returns the collection."
   [values]
   `(do
      (doseq [value# ~values]
