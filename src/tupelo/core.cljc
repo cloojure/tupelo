@@ -535,11 +535,6 @@
 ; #todo make an it?-> (fff ppp it? qqq) to halt thread if encounter nil result (then returns nil)
 ; #todo make an it!-> (fff ppp it! qqq) to throw if encounter nil (replace safe->) (maybe val->)
 
-
-(pns/import-macro i/lazy-gen )
-(pns/import-macro i/yield )
-(pns/import-macro i/yield-all )
-;-----------------------------------------------------------------------------
 (defmacro it->
   "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
       (it-> 1
@@ -564,23 +559,23 @@
   [curr-val recursive-call-form]
   `(i/lazy-cons ~curr-val ~recursive-call-form))
 
-;(defmacro lazy-gen
-;  "Creates a 'generator function' that returns a lazy seq of results
-;  via `yield` (a la Python)."
-;  [& forms]
-;  `(i/lazy-gen ~@forms))
-;
-;(defmacro yield
-;  "Within a 'generator function' created by `lazy-gen`, populates the
-;  result lazy seq with the supplied value (a la Python). Returns the value."
-;  [value]
-;  `(i/yield ~value))
-;
-;(defmacro yield-all
-;  "Within a 'generator function' created by `lazy-gen`, populates the
-;  result lazy seq with each item from the supplied collection. Returns the collection."
-;  [values]
-;  `(i/yield-all ~@values))
+(defmacro lazy-gen
+  "Creates a 'generator function' that returns a lazy seq of results
+  via `yield` (a la Python)."
+  [& forms]
+  `(i/lazy-gen ~@forms))
+
+(defmacro yield
+  "Within a 'generator function' created by `lazy-gen`, populates the
+  result lazy seq with the supplied value (a la Python). Returns the value."
+  [value]
+  `(i/yield ~value))
+
+(defmacro yield-all
+  "Within a 'generator function' created by `lazy-gen`, populates the
+  result lazy seq with each item from the supplied collection. Returns the collection."
+  [values]
+  `(i/yield-all ~values))
 
 ; (defn round [dblVal :incr   (/ 1 3)]            ; #todo add
 ;   (let [factor (Math/pow 10 *digits*)]
