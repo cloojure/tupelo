@@ -5,18 +5,16 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.core
-  (:use tupelo.test )
+  (:use tupelo.core tupelo.dev tupelo.test )
   (:require
     [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.core :as t :refer ; #todo finish migration to (:use tupelo.core)
-     [thru forv
-    ]]
+    [tupelo.core :as t] ; #todo finish migration to (:use tupelo.core)
     [tupelo.impl :as i]
     [tupelo.misc :as tm]
     [tupelo.string :as ts]
   ))
-(t/refer-tupelo :dev)
+; (t/refer-tupelo :dev)
 
 ; (s/instrument-all)
 ; (s/instrument #'tupelo.core/truthy?)  ; instrument just one var
