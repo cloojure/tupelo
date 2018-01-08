@@ -1036,6 +1036,3 @@
     & values :- [s/Any]]
     (apply conj (vec base-coll) value values)))
 
-(defn -main [& args]
-  (println "main - enter")
-  (spyx (s/fn-validation?)))

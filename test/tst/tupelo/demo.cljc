@@ -10,11 +10,18 @@
     [clojure.string :as str]
     [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.core :as t] ))
+    [tupelo.core :as t] )
+  (:import java.time.Instant))
 (t/refer-tupelo)
 
 ; #todo add generative testing?
 ; #todo add clojure.spec testing?
+
+
+(dotest
+  (is (.isAfter (Instant/now) ; create clojure.java.time ns
+        (Instant/parse "2017-12-31T13:14:15z")))
+  (is (= 5 (+ 2 3))))
 
 ; (x ...)     =>  "function call on x" (parens = "function call")
 ; ... x ...   =>  "substitute the value of x (local or global Var)"
