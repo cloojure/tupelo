@@ -7,5 +7,17 @@
 (ns tupelo.time.instant
   (:require
     [tupelo.impl :as i] )
-  (:import java.time.Instant))
+  (:import [java.time Instant LocalDate]
+           [java.time.temporal TemporalAdjuster TemporalAdjusters])
+  )
 
+(defprotocol ILocalDate
+  (with [localDate temporalAdjuster])
+  (minusDays [localDate daysToSubtract])
+  )
+
+(extend-type LocalDate
+  ILocalDate
+  (with      [localDate temporalAdjuster] (.with localDate temporalAdjuster))
+  (minusDays [localDate daysToSubtract]   (.minusDays localDate daysToSubtract))
+  )

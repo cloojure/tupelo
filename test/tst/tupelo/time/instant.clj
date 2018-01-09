@@ -8,32 +8,57 @@
   (:use tupelo.time.instant tupelo.core tupelo.test )
   (:require
     [tupelo.impl :as i] )
-  (:import [java.time Instant LocalDate]
-           [java.time.temporal TemporalAdjuster TemporalAdjusters])
+  (:import [java.time Instant LocalDate Month DayOfWeek YearMonth]
+           [java.time.temporal TemporalAdjuster TemporalAdjusters]
+           [java.util Locale]
+           [java.time.format TextStyle])
 )
 
-(defprotocol ILocalDate
-  (with [localDate temporalAdjuster])
-  (minusDays [localDate daysToSubtract])
-  )
-
-(extend-type LocalDate
-  ILocalDate
-  (with      [localDate temporalAdjuster] (.with localDate temporalAdjuster))
-  (minusDays [localDate daysToSubtract]   (.minusDays localDate daysToSubtract))
-  )
-
 (dotest
-  (is (.isAfter (Instant/now) ; create clojure.java.time ns
-        (Instant/parse "2017-12-31T13:14:15z")))
-  (let-spy [today (LocalDate/now)
-             payday (-> today
-                      (.with (TemporalAdjusters/lastDayOfMonth))
-                      (.minusDays 2))
-            payday2 (-> today
-                      (with (TemporalAdjusters/lastDayOfMonth))
-                      (minusDays 2))
+  (let [new-years-almost (Instant/parse "2017-12-31T13:14:15.678z")
+        today            (LocalDate/now)
 
-        ])
+        payday-1         (-> (LocalDate/of 2018 Month/JANUARY 1)
+                           (.with (TemporalAdjusters/lastDayOfMonth))
+                           (.minusDays 2))
+
+        payday-2         (-> (LocalDate/of 2018 Month/JANUARY 9)
+                           (with (TemporalAdjusters/lastDayOfMonth))
+                           (minusDays 2))]
+
+    (is (-> (Instant/now) (.isAfter new-years-almost)))
+    (is= payday-1 payday-2 (LocalDate/of 2018 Month/JANUARY 29)))
+
+  (let [dateOfBirth   (LocalDate/of 2012 Month/MAY 14)
+        firstBirthday (-> dateOfBirth
+                        (.plusYears 1))]
+    (is= firstBirthday (LocalDate/of 2013 Month/MAY 14)) )
+
+  (let [monday DayOfWeek/MONDAY
+        locale (Locale/getDefault)]
+    (is= DayOfWeek/THURSDAY (.plus monday 3))
+    (is= (.getDisplayName monday TextStyle/FULL locale) "Monday")
+    (is= (.getDisplayName monday TextStyle/NARROW locale) "M")
+    (is= (.getDisplayName monday TextStyle/SHORT locale) "Mon") )
+
+  (let [feb-max-len (.maxLength Month/FEBRUARY)
+        august Month/AUGUST
+        locale (Locale/getDefault)]
+    (is= 29 feb-max-len)
+    (is= (.getDisplayName august TextStyle/FULL locale) "August")
+    (is= (.getDisplayName august TextStyle/NARROW locale) "A")
+    (is= (.getDisplayName august TextStyle/SHORT locale) "Aug") )
+
+  (let [date    (LocalDate/of 2000 Month/NOVEMBER 20) ; a Monday
+        nextWed (-> date (.with (TemporalAdjusters/next DayOfWeek/WEDNESDAY)))]
+    (is= nextWed (LocalDate/of 2000 Month/NOVEMBER 22))
+    (is= DayOfWeek/MONDAY (-> (LocalDate/of 2012, Month/JULY, 9) (.getDayOfWeek))) )
+
+  (let [feb-2010 (YearMonth/of 2010 Month/FEBRUARY)
+        feb-2012 (YearMonth/of 2012 Month/FEBRUARY) ]
+    (is= 28 (.lengthOfMonth feb-2010))
+    (is= 29 (.lengthOfMonth feb-2012))
+    (is= "2010-02"  (str feb-2010))
+    (is= "2012-02"  (str feb-2012)))
 
   )
