@@ -215,9 +215,11 @@
           query-1  '{:a ?v :b {:x 11} :c ?c}
           query-1  '{:a ?a :b {:x ?x}}
           root-hid (edn->fracture data-1) ]
-      (nl) (print-fracture *fracture*)
-      (nl) (spyx (fracture->edn root-hid))
-      (nl) (spy :result (match query-1 root-hid {}))
+
+      ; #todo continue here! (2018)
+      ;(nl) (print-fracture *fracture*)
+      ;(nl) (spyx (fracture->edn root-hid))
+      ;(nl) (spy :result (match query-1 root-hid {}))
 
 
   )))
