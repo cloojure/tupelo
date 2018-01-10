@@ -8,7 +8,7 @@
   (:use tupelo.time.instant tupelo.core tupelo.test )
   (:require
     [tupelo.impl :as i] )
-  (:import [java.time Instant LocalDate Month DayOfWeek YearMonth]
+  (:import [java.time Instant LocalDate Month DayOfWeek YearMonth MonthDay Year LocalTime]
            [java.time.temporal TemporalAdjuster TemporalAdjusters]
            [java.util Locale]
            [java.time.format TextStyle])
@@ -60,5 +60,16 @@
     (is= 29 (.lengthOfMonth feb-2012))
     (is= "2010-02"  (str feb-2010))
     (is= "2012-02"  (str feb-2012)))
+
+  (let [month-day (MonthDay/of Month/FEBRUARY 29)
+        valid-leap-year (.isValidYear month-day 2010)]
+    (isnt valid-leap-year)
+    (is (-> 2012 (Year/of) (.isLeap))))
+
+  (let [mid-lunch (LocalTime/of 12 13 14)]
+    (is= 12 (.getHour mid-lunch))
+    (is= 13 (.getMinute mid-lunch))
+    (is= 14 (.getSecond mid-lunch))
+    )
 
   )
