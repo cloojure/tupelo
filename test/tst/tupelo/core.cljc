@@ -924,16 +924,20 @@
   (is (neg? (lexical-compare [:a] [:a 1])))
   (is (neg? (lexical-compare [1] [1 :a])))
   (is (neg? (lexical-compare [1 :a] [2])))
-  (is (throws? (lexical-compare [:a] [1 :a])))
+
+  (is (throws? (lexical-compare [:a] [1])))
+  (is (throws? (lexical-compare [1 :a] [1 2] )))
+  (is (neg?    (lexical-compare [1 :a] [2 2])))
 
   (is= (vec (sorted-set-by lexical-compare [1 :a] [1] [2]))
     [[1] [1 :a] [2]])
-  (is= (vec (sorted-set-by lexical-compare [2] [3] [3 :y] [1] [1 :a] [1 :b] [1 :b 3]))
+  (is= (vec (sorted-set-by lexical-compare [2 0] [2] [3] [3 :y] [1] [1 :a] [1 :b] [1 :b 3]))
     [[1]
      [1 :a]
      [1 :b]
      [1 :b 3]
      [2]
+     [2 0]
      [3]
      [3 :y]]))
 
