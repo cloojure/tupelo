@@ -26,7 +26,7 @@
               :uberjar  {:aot :all}}
   :global-vars { *warn-on-reflection* false }
 
-  :plugins  [ [lein-codox "0.9.4"] ]
+  :plugins  [ [lein-codox "0.10.3"] ]
   :codox {:src-dir-uri "http://github.com/cloojure/tupelo/blob/master/"
           :src-linenum-anchor-prefix "L"}
   :deploy-repositories {  "snapshots" :clojars

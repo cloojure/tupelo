@@ -916,8 +916,29 @@
   ))
 
 (dotest             ; -1 implies "in order"
+  (is (neg? (lexical-compare [] [2])))
+  (is (neg? (lexical-compare [] [\b])))
+  (is (neg? (lexical-compare [] ["b"])))
   (is (neg? (lexical-compare [] [:b])))
+  (is (neg? (lexical-compare [] ['b])))
+
+  (is (neg? (lexical-compare [nil] [2])))
+  (is (neg? (lexical-compare [nil] [\b])))
+  (is (neg? (lexical-compare [nil] ["b"])))
   (is (neg? (lexical-compare [nil] [:b])))
+  (is (neg? (lexical-compare [nil] ['b])))
+
+  (throws? (lexical-compare [1] [\b]))
+  (throws? (lexical-compare [1] ["b"]))
+  (throws? (lexical-compare [1] [:b]))
+  (throws? (lexical-compare [1] ['b]))
+  (throws? (lexical-compare [\b] ["b"]))
+  (throws? (lexical-compare [\b] [:b]))
+  (throws? (lexical-compare [\b] ['b]))
+  (throws? (lexical-compare ["b"] [:b]))
+  (throws? (lexical-compare ["b"] ['b]))
+  (throws? (lexical-compare [:b] ['b]))
+
   (is (neg? (lexical-compare [:a] [:b])))
   (is (neg? (lexical-compare [:a] [:a 1])))
   (is (neg? (lexical-compare [1 :a] [2])))
@@ -925,9 +946,8 @@
   (is (neg? (lexical-compare [1] [1 :a])))
   (is (neg? (lexical-compare [1 :a] [2])))
 
-  (is (throws? (lexical-compare [:a] [1])))
-  (is (throws? (lexical-compare [1 :a] [1 2] )))
-  (is (neg?    (lexical-compare [1 :a] [2 2])))
+  (is (neg? (lexical-compare [1 :a] [2 2])))
+  (throws?  (lexical-compare [1 :a] [1 2]))
 
   (is= (vec (sorted-set-by lexical-compare [1 :a] [1] [2]))
     [[1] [1 :a] [2]])
