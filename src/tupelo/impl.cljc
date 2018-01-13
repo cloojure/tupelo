@@ -174,6 +174,19 @@
   (when (nil? coll) (throw (IllegalArgumentException. (str "xvec: invalid coll: " coll))))
   (clojure.core/vec coll))
 
+(s/defn lexical-compare :- s/Int
+  [a :- tsk/List
+   b :- tsk/List]
+  (cond
+    (= a b) 0
+    (empty? a) -1
+    (empty? b) 1
+    :else (let [a0 (xfirst a)
+                b0 (xfirst b)]
+            (if (= a0 b0)
+              (lexical-compare (xrest a) (xrest b))
+              (compare a0 b0)))))
+
 ; #todo Need safe versions of:
 ; #todo    + - * /  (others?)  (& :strict :safe reassignments)
 ; #todo    and, or    (& :strict :safe reassignments)

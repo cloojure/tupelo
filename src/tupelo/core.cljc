@@ -69,6 +69,17 @@
   "Converts a collection into a vector. Throws if given nil."
   [coll] (i/xvec coll))
 
+(defn lexical-compare
+  "Performs a lexical comparison of 2 sequences, sorting as follows:
+      [1]
+      [1 :a]
+      [1 :b]
+      [1 :b 3]
+      [2]
+      [3]
+      [3 :y] "
+  [a b] (i/lexical-compare a b))
+
 (defn kw->sym
   "Converts a keyword to a symbol"
   [arg] (i/kw->sym arg))

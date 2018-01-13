@@ -915,17 +915,38 @@
     (is= [1 2] (xvec [1 2]))
   ))
 
+(dotest             ; -1 implies "in order"
+  (is (neg? (lexical-compare [] [:b])))
+  (is (neg? (lexical-compare [nil] [:b])))
+  (is (neg? (lexical-compare [:a] [:b])))
+  (is (neg? (lexical-compare [:a] [:a 1])))
+  (is (neg? (lexical-compare [1 :a] [2])))
+  (is (neg? (lexical-compare [:a] [:a 1])))
+  (is (neg? (lexical-compare [1] [1 :a])))
+  (is (neg? (lexical-compare [1 :a] [2])))
+  (is (throws? (lexical-compare [:a] [1 :a])))
+
+  (is= (vec (sorted-set-by lexical-compare [1 :a] [1] [2]))
+    [[1] [1 :a] [2]])
+  (is= (vec (sorted-set-by lexical-compare [2] [3] [3 :y] [1] [1 :a] [1 :b] [1 :b 3]))
+    [[1]
+     [1 :a]
+     [1 :b]
+     [1 :b 3]
+     [2]
+     [3]
+     [3 :y]]))
 
 (dotest
-  (is= 3        (t/validate pos? 3))
-  (is= 3.14     (t/validate number? 3.14 ))
-  (is= 3.14     (t/validate #(< 3 % 4) 3.14 ))
-  (is= [0 1 2]  (t/validate vector? (vec (range 3))))
-  (is= nil      (t/validate nil? (next [])))
-  (is= [0 1 2]  (t/validate #(= 3 (count %)) [0 1 2]))
+  (is= 3 (t/validate pos? 3))
+  (is= 3.14 (t/validate number? 3.14))
+  (is= 3.14 (t/validate #(< 3 % 4) 3.14))
+  (is= [0 1 2] (t/validate vector? (vec (range 3))))
+  (is= nil (t/validate nil? (next [])))
+  (is= [0 1 2] (t/validate #(= 3 (count %)) [0 1 2]))
   (throws? Exception (t/validate number? "hello"))
   (throws? Exception (t/validate truthy? nil))
-)
+  )
 
 (dotest
   (let [m1 {:a 1 :b 2 :c 3}
