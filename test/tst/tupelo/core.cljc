@@ -916,18 +916,21 @@
   ))
 
 (dotest             ; -1 implies "in order"
+  ; empty list is smaller than any non-empty list
   (is (neg? (lexical-compare [] [2])))
   (is (neg? (lexical-compare [] [\b])))
   (is (neg? (lexical-compare [] ["b"])))
   (is (neg? (lexical-compare [] [:b])))
   (is (neg? (lexical-compare [] ['b])))
 
+  ; nil is smaller than any non-nil item
   (is (neg? (lexical-compare [nil] [2])))
   (is (neg? (lexical-compare [nil] [\b])))
   (is (neg? (lexical-compare [nil] ["b"])))
   (is (neg? (lexical-compare [nil] [:b])))
   (is (neg? (lexical-compare [nil] ['b])))
 
+  ; Cannot compare items from different classes:  number, char, string, keyword, symbol
   (throws? (lexical-compare [1] [\b]))
   (throws? (lexical-compare [1] ["b"]))
   (throws? (lexical-compare [1] [:b]))
@@ -939,6 +942,7 @@
   (throws? (lexical-compare ["b"] ['b]))
   (throws? (lexical-compare [:b] ['b]))
 
+  ; different positions in list can be of different class
   (is (neg? (lexical-compare [:a] [:b])))
   (is (neg? (lexical-compare [:a] [:a 1])))
   (is (neg? (lexical-compare [1 :a] [2])))
@@ -946,8 +950,9 @@
   (is (neg? (lexical-compare [1] [1 :a])))
   (is (neg? (lexical-compare [1 :a] [2])))
 
-  (is (neg? (lexical-compare [1 :a] [2 2])))
-  (throws?  (lexical-compare [1 :a] [1 2]))
+  ; same position in list can be of different class if sorted by previous positions
+  (is (neg? (lexical-compare [1 :z] [2 9]))) ; OK since prefix lists [1] & [2] define order
+  (throws?  (lexical-compare [1 :z] [1 2])) ; not OK since have same prefix list: [1]
 
   (is= (vec (sorted-set-by lexical-compare [1 :a] [1] [2]))
     [[1] [1 :a] [2]])
