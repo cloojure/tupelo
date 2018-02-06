@@ -8,9 +8,9 @@
   "This namespace is used to perform one-time tasks during testing, such as printing the
   Clojure version."
   (:use tupelo.test )
-  (:require [schema.core :as s]
-            [tupelo.core :as t] ))
-(t/refer-tupelo)
+  (:require 
+    [schema.core :as s]
+    [tupelo.core :as t] ))
 
 ; Prismatic Schema type definitions
 ; #todo add to Schema docs
