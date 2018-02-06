@@ -385,7 +385,7 @@
        (println (str (spy-indent-spaces) '~expr " => <#" class-name# " " (pr-str spy-val#) ">")))
      spy-val#))
 
-(defn- spyx-pretty-proc
+(defn ^:no-doc spyx-pretty-proc
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
                        (if (keyword? expr)
@@ -1147,3 +1147,4 @@
 ; #todo   map->entries, entries->map
 ; #todo   str->chars, chars->str
 ; #todo   set->vec, vec->set
+; #todo   line-seq et al not lazy (+ tupelo.lazy orig)

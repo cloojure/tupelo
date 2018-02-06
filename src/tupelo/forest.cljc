@@ -51,6 +51,10 @@
      ~@forms
      *forest*))
 
+; #todo: copy technique -> (with-state [x y]
+; #todo:                      (set x 1)
+; #todo:                      (set y (inc (get x)) ...)  ; can do imperative-style loops, etc
+
 ; HID & :hid are shorthand for Hash ID, the SHA-1 hash of a v1/UUID expressed as a hexadecimal keyword
 ; format { :hid Node }
 (defn new-forest
