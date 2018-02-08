@@ -206,7 +206,7 @@
 
 (defmacro spyx-pretty
   "Like `spyx` but with pretty printing (clojure.pprint/pprint)"
-  [& forms] `(i/spyx-pretty-proc ~@forms))
+  [& forms] `(i/spyx-pretty ~@forms))
 
 (defmacro let-spy
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied

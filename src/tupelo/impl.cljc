@@ -385,7 +385,7 @@
        (println (str (spy-indent-spaces) '~expr " => <#" class-name# " " (pr-str spy-val#) ">")))
      spy-val#))
 
-(defn ^:no-doc spyx-pretty-proc
+(defn- ^:no-doc spyx-pretty-proc
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
                        (if (keyword? expr)
@@ -466,14 +466,12 @@
                      (str "glue: colls must be all same type; found types=" (mapv type colls)))))))
 ; #todo look at using (ex-info ...)
 
-; #todo: rename labeled-map
 (defmacro vals->context ; #todo -> README
   [& symbols]
   (let [maps-list (for [symbol symbols]
                     {(keyword symbol) symbol})]
     `(glue ~@maps-list)) )
 
-; #todo: rename with-labeled-map
 (defmacro with-context ; #todo -> README
   [ the-map items-vec & forms]
   `(do
