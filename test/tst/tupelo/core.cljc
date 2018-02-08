@@ -243,7 +243,7 @@
       (is= "(str \"abc\" \"def\") => \"abcdef\""
           (ts/collapse-whitespace (with-out-str (spyx (str "abc" "def") ))))
 
-      (throws? IllegalArgumentException  (spy :some-tag "some-str" 42))
+      (throws? IllegalArgumentException (spy :some-tag "some-str" 42))
     )))
 
 (dotest
@@ -268,9 +268,6 @@
     (is= ":msg1 => 5 :msg2 => 5" (ts/collapse-whitespace (with-out-str (fn1))))
     (is= ":msg0 => 5"            (ts/collapse-whitespace (with-out-str (fn0))))
     ))
-
-; (dotest
-; )
 
 (dotest
   (is (truthy? 5))
@@ -1003,7 +1000,7 @@
   (let [mm  {:a {:b 2}}]
     (is= (safe-> mm :a)     {:b 2} )
     (is= (safe-> mm :a :b)      2)
-    (throws? IllegalArgumentException   (safe-> mm :x))
+    (throws? java.lang.IllegalArgumentException   (safe-> mm :x))
     (throws? IllegalArgumentException   (safe-> mm :a :x))
     (throws? IllegalArgumentException   (safe-> mm :a :b :x))))
 

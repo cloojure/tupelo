@@ -5,7 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.gotchas
-  (:use tupelo.test)
+  (:use tupelo.core tupelo.test)
   (:require
     [clojure.test.check :as tc]
     [clojure.test.check.generators :as gen]
@@ -111,7 +111,7 @@
 ;  not-empty
 ;  empty?
 ;  any?
-;  some vs some?
+;  some vs some? (truthy vs not-nil?)
 
 ; Clojure has `empty?` but no `not-empty?`.  However, it does have `empty` and `not-empty`.  Confusing!
 ; empty / not-empty vs empty? (not-empty? missing)
@@ -147,6 +147,15 @@
     (is (t/has-some? odd? [1 2 3]))
     (is (t/has-none? odd? [2 4 6]))
   ))
+
+(dotest
+  (is= nil  (some #{false} [false true]))
+  (is= true (some #(= false %) [false true]))
+  (is= true (some #{false true} [false true]))
+  (is= true (some #{false true} [false true]))
+  (is= true (some? false ))
+  (is= true (some? true ))
+)
 
 ; samples for dospec & check-not
 ;-----------------------------------------------------------------------------
