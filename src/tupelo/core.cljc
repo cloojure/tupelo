@@ -956,7 +956,7 @@
   (let [flags (set args)]
     (when (contains? flags :dev)
       (refer 'tupelo.impl :only
-        '[vals->context with-context]))
+        '[vals->map with-map-vals]))
     (when (contains? flags :strict)
       ; #todo unlink/relink troublesome clojure.core stuff
       )))

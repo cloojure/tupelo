@@ -386,7 +386,7 @@
                          y (add-leaf {:tag :char :color :red} "y")
                          z (add-leaf {:tag :char :color :red} "z")
                          r (add-node {:tag :root :color :white} [x y z])]
-                     (reset! state (vals->context x y z r))
+                     (reset! state (vals->map x y z r))
                      (is= (hid->kids r) [x y z])
                      (is= (grab :value (hid->node z)) "z")
 
