@@ -232,7 +232,7 @@
     node ; leaf - just return it
     (do
       (assert (enlive-node-lax? node))
-      (with-context node [tag attrs content] ; destructure values
+      (with-map-vals node [tag attrs content] ; destructure values
         (let [tag-attrs  (if (empty? attrs)
                            [tag]
                            [tag attrs])
