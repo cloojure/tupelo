@@ -12,9 +12,8 @@
   ))
 (t/refer-tupelo)
 
-(set! *warn-on-reflection* true)
 
-(deftest t-sample
+(dotest
   (let [data [1 2 3]]
     (is (= (drop 0 data) [1 2 3]))
     (is (= (drop 1 data) [  2 3]))
@@ -22,10 +21,10 @@
     (is (= (drop 3 data) [     ])))
 )
 
-(deftest t-get-os
+(dotest
   (is (#{:windows :linux :mac} (get-os))))
 
-(deftest shell-cmd-t
+(dotest
   (when (= :linux (get-os))
     (let [result (shell-cmd "ls -ldF *")]
          (when false ; set true -> debug print
@@ -42,7 +41,7 @@
 
     (throws? RuntimeException (shell-cmd "LLLls -ldF *"))))
 
-(deftest t-dots
+(dotest
   (dots-config! {:dots-per-row 10 :decimation 1})
   (is= (ts/collapse-whitespace (with-out-str
                                  (with-dots
@@ -64,7 +63,7 @@
         90 ...
         99 total")))
 
-(deftest t-factorial
+(dotest
   (is=         (factorial 0)          1)
   (is=         (factorial 1)          1)
   (is=         (factorial 2)          2)
@@ -81,7 +80,7 @@
   (throws? Exception (factorial -1))
   (throws? Exception (factorial -1)))
 
-(deftest t-find-pattern
+(dotest
 ;              0 1 2  3    4    5    6    7   8 9]
   (let [data [ 0 1 2 0xAA 0xFA 0xFF 0xDA 0xDD 8 9] ]
     (is= 5 (first (find-pattern [0xFF 0xDA] data))))

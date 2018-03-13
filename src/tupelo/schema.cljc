@@ -16,7 +16,7 @@
   "An ordered sequence of items of indeterminate length."
   [s/Any] )
 
-(def StrVec
+(def CharVec
   "An ordered sequence of characters of indeterminate length."
   [Character] )
 
@@ -35,7 +35,6 @@
 
         ----- query -----                         ----- tuples -----
       (d/q '{:find [?e ?name ?age] ...)     ->    [?e ?name ?age] 
-   
    "
   #{Tuple} )
 
@@ -43,17 +42,11 @@
 (def TupleMap     [Map] )         ; a single  result  returned by Datomic pull api  ; #todo needs (s/one ...) ??? or MapList?
 (def TupleMaps    [TupleMap] )    ; a list of results returned by Datomic pull api
 
-(def Vec  [ s/Any ] )  ; arbitrary length vector (or any sequence)
-(def Vec1 [ (s/one s/Any "x1") ] )  ; length-1 vector
-(def Vec2 [ (s/one s/Any "x1") (s/one s/Any "x2") ] ) ; length-2 vector
-(def Vec3 [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") ] )  ; length-3 vector
-(def Vec4 [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") (s/one s/Any "x4") ] )
-(def Vec5 [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") (s/one s/Any "x4") (s/one s/Any "x5") ] )
-
 (def Single   [ (s/one s/Any "x1") ] )  ; length-1 vector
 (def Pair     [ (s/one s/Any "x1") (s/one s/Any "x2") ] ) ; length-2 vector
 (def Triple   [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") ] )  ; length-3 vector
 (def Quad     [ (s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") (s/one s/Any "x4") ] )  ; length-4 vector
+(def Vec      [ s/Any ] )  ; arbitrary length vector (or any sequence)
 
 (def Fn (s/make-fn-schema s/Any s/Any))
 
@@ -70,16 +63,15 @@
   "If an entity has an attribute with either :db.unique/value or :db.unique/identity, that entity
    can be uniquely specified using a lookup-ref (LookupRef). A lookup-ref is an attribute-value pair
    expressed as a tuple:  [ <attribute> <value> ]"
-  [ (s/one s/Keyword  "attr")
-   (s/one s/Any      "val" ) ] )
+  [(s/one s/Keyword "attr")
+   (s/one s/Any "val")])
 
 (def EntitySpec
   "An EntitySpec is used to uniquely specify an entity in the DB. It consists of
    either an EID or a LookupRef."
-  (s/either Eid
-    LookupRef))
+  (s/either Eid LookupRef))
 
 (def DatomMap
   "The Clojure map representation of a Datom."
-  { :e Eid  :a Eid  :v s/Any  :tx Eid  :added s/Bool } )
+  {:e Eid :a Eid :v s/Any :tx Eid :added s/Bool})
 
