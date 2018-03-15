@@ -210,7 +210,7 @@
 
 (defmacro spyx-pretty
   "Like `spyx` but with pretty printing (clojure.pprint/pprint)"
-  [& forms] `(i/spyx-pretty-proc ~@forms))
+  [& forms] `(i/spyx-pretty ~@forms))
 
 (defmacro let-spy
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
@@ -960,7 +960,7 @@
   (let [flags (set args)]
     (when (contains? flags :dev)
       (refer 'tupelo.impl :only
-        '[vals->context with-context]))
+        '[vals->map with-map-vals]))
     (when (contains? flags :strict)
       ; #todo unlink/relink troublesome clojure.core stuff
       )))

@@ -2150,21 +2150,21 @@
                       c 3
                       d 4
                       e 5]
-                  (vals->context a b c d e)) ]
+                  (vals->map a b c d e)) ]
     (is= ctx {:a 1 :b 2 :c 3 :d 4 :e 5})
 
     (let [{:keys [a b c d e]} ctx]
       (is= [a b c d e] [1 2 3 4 5]))
 
-    (with-context ctx [a b c d e]
+    (with-map-vals ctx [a b c d e]
       (is= [a b c d e] [1 2 3 4 5])
       (is= 15 (+ a b c d e)))
-    (with-context ctx [b a d c e] ; order doesn't matter
+    (with-map-vals ctx [b a d c e] ; order doesn't matter
       (is= [a b c d e] [1 2 3 4 5])
       (is= 15 (+ a b c d e)))
 
     (throws?
-      (with-context ctx [x y z]
+      (with-map-vals ctx [x y z]
         (println "shouldn't ever get here")))))
 
 

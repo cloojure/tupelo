@@ -12,8 +12,6 @@
   ))
 (t/refer-tupelo)
 
-(set! *warn-on-reflection* true)
-
 (dotest
   (let [data-1 [1 2 3]
         data-2 [[1 2 3]

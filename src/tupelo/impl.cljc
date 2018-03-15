@@ -385,7 +385,7 @@
        (println (str (spy-indent-spaces) '~expr " => <#" class-name# " " (pr-str spy-val#) ">")))
      spy-val#))
 
-(defn ^:no-doc spyx-pretty-proc
+(defn- ^:no-doc spyx-pretty-proc
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
                        (if (keyword? expr)
@@ -466,15 +466,13 @@
                      (str "glue: colls must be all same type; found types=" (mapv type colls)))))))
 ; #todo look at using (ex-info ...)
 
-; #todo: rename labeled-map
-(defmacro vals->context ; #todo -> README
+(defmacro vals->map ; #todo -> README
   [& symbols]
   (let [maps-list (for [symbol symbols]
                     {(keyword symbol) symbol})]
     `(glue ~@maps-list)) )
 
-; #todo: rename with-labeled-map
-(defmacro with-context ; #todo -> README
+(defmacro with-map-vals ; #todo -> README
   [ the-map items-vec & forms]
   `(do
      ; (assert (map? ~the-map))
@@ -581,7 +579,7 @@
   [ctx :- tsk/KeyMap
    m :- tsk/Map
    keys-seq :- [s/Any]]
-  (with-context ctx [missing-ok]
+  (with-map-vals ctx [missing-ok]
     (apply glue
       (for [key keys-seq]
         (let [val (get m key ::missing)]
@@ -1029,7 +1027,7 @@
   [ctx :- tsk/KeyMap ; #todo more precise schema needed { :submap-ok s/Bool ... }
    pattern :- s/Any
    value :- s/Any ]
-  (with-context ctx [submap-ok subset-ok subvec-ok wildcard-ok]
+  (with-map-vals ctx [submap-ok subset-ok subvec-ok wildcard-ok]
     (let [result (truthy?
                    (cond
                      (= pattern value)   true
