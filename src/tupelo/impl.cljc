@@ -907,6 +907,7 @@
 
 ; #todo rename -> drop-idx
 ; #todo force to vector result
+; #todo allow range to drop
 (s/defn drop-at :- tsk/List
   [coll :- tsk/List
    index :- s/Int]
@@ -920,6 +921,7 @@
 
 ; #todo rename -> insert-idx
 ; #todo force to vector result
+; #todo allow vector to insert
 (s/defn insert-at :- tsk/List
   [coll :- tsk/List
    index :- s/Int
@@ -932,9 +934,9 @@
   (glue (take index coll) [elem]
     (drop index coll)))
 
-; #todo rename -> replace-idx
+; #todo rename -> elem-set
 ; #todo force to vector result
-; #todo if was vector, could just use (assoc the-vec idx new-val)
+; #todo allow idx range to replace with vector (maybe not equal # of elems)
 (s/defn replace-at :- tsk/List
   [coll :- tsk/List
    index :- s/Int
@@ -953,8 +955,9 @@
 ; #todo use (idx-in coll [kw's]) as `fetch-in` replacement?
 ; #todo allow (idx coll [low high]) like python xx( low:high )
 ; #todo multiple dimensions
-(defn idx
-  [coll index-val]
+(s/defn idx
+  [coll       :- tsk/List
+   index-val  :- s/Int]
   (when (nil? coll)
     (throw (IllegalArgumentException. (str "idx: coll cannot be nil: " coll))))
   (let [data-vec (vec coll)
