@@ -371,23 +371,24 @@
         ; >> (println "io/input-stream - BEFORE")
         v2 (io/input-stream v1)
         ; >> (println "io/input-stream - AFTER")
-        >> (do
-             (nl)
-             (println (class v2))
-             (println "*****************************************************************************")
-             (println v2)
-             (println "*****************************************************************************")
-             (nl))
+        ;>> (do
+        ;     (nl)
+        ;     (println (class v2))
+        ;     (println "*****************************************************************************")
+        ;     (println v2)
+        ;     (println "*****************************************************************************")
+        ;     (nl))
 
-        >> (println "clojure.data.xml/parse - BEFORE")
+       ;>> (println "clojure.data.xml/parse - BEFORE")
         v3 (clojure.data.xml/parse v2)
-        >> (println "clojure.data.xml/parse - AFTER")]
+       ;>> (println "clojure.data.xml/parse - AFTER")
+      ]
     v3))
 
-(dotest
-  (println "zappy - BEFORE")
-  (zappy)
-  (println "zappy - AFTER"))
+;(dotest
+;  (println "zappy - BEFORE")
+;  (zappy)
+;  (println "zappy - AFTER"))
 
 ; #todo #bug clojure.lang.Reflector
 (dotest

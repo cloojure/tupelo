@@ -106,3 +106,22 @@
         (print (format "\"%s\" \"%s\" \"%s\"          " orig-str enc-str dec-str)))))
   (newline))
 
+; #todo write auto-detector for iso-8859-1, if get neg bytes out?
+; If the "plaintext" for a B64 string is iso-8859-1/iso-latin-1, it won't decode right with the default UTF-8 assumption
+;(dotest
+;  (let [iso-latin-1-charset (java.nio.charset.Charset/forName "ISO-8859-1" ) ; aka ISO-LATIN-1
+;        b64-str       "JVBERi0xLjENCiXi48/TDQoxIDAgb2JqDQo8PCAN"
+;        bytes-default (vec (.getBytes b64-str))
+;        bytes-8859    (vec (.getBytes b64-str iso-latin-1-charset))
+;
+;        src-byte-array  (b64/decode-bytes (byte-array bytes-default))
+;        src-bytes     (vec src-byte-array)
+;        src-str-8859  (String. src-byte-array iso-latin-1-charset)
+;        ]
+;  (spyxx iso-latin-1-charset)
+;  (spyx bytes-default)
+;  (spyx bytes-8859)
+;  (spyx (= bytes-default bytes-8859))
+;  (spyx src-bytes)
+;  (spyx src-str-8859)
+;  ))

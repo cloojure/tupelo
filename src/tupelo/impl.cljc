@@ -944,7 +944,8 @@
   (when (<= (count coll) index)
     (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
                                         " (count coll)=" (count coll) " index=" index))))
-  (glue (take index coll)
+  (glue
+    (take index coll)
     [elem]
     (drop (inc index) coll)))
 
