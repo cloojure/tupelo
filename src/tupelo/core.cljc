@@ -17,6 +17,10 @@
   (:refer-clojure :exclude [map seqable?] )
   (:import [java.io BufferedReader StringReader]))
 
+; #todo unify terminolgy (atom/ref/agent)
+;   -> reset!/ref-set => set
+;   -> swap!/alter => update
+
 ;(defmacro xxx [& forms]
 ;  `(i/xxx ~@forms))
 
