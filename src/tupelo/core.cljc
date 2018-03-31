@@ -34,13 +34,48 @@
 (defmacro when-clojure-1-9-plus [& forms]
   `(i/when-clojure-1-9-plus ~@forms))
 
-(defn nl [] (i/nl))
+(defn nl
+  "Abbreviated name for `newline` "
+  [] (i/nl))
+
+(defn has-length?
+  "Returns true if the collection has the indicated length. Does not hang for infinite sequences."
+  [coll n] (i/has-length? coll n))
 
 (defn only
   "Ensures that a sequence is of length=1, and returns the only value present.
   Throws an exception if the length of the sequence is not one.
   Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
   [coll] (i/only coll))
+
+(defn onlies
+  "Given a sequence of length-1 sequences, returns a sequence of the unwrapped values.
+  i.e.  (onlies [[1] [2] [3]]) => [1 2 3]. Equivalent to `(mapv only coll)`.  "
+  [coll] (i/onlies coll))
+
+(defn only2
+  "Given a collection like `[[5]]`, returns `5`.  Equivalent to `(only (only coll))`."
+  [coll] (i/only2 coll))
+
+(defn only?
+  "Returns true if the collection contains a single item."
+  [coll] (i/only? coll))
+
+(defn single?
+  "Returns true if the collection contains a single item. Equivalent to `(only? coll)`"
+  [coll] (i/single? coll))
+
+(defn pair?
+  "Returns true if the collection contains exactly 2 items."
+  [coll] (i/pair? coll))
+
+(defn triple?
+  "Returns true if the collection contains exactly 3 items."
+  [coll] (i/triple? coll))
+
+(defn quad?
+  "Returns true if the collection contains exactly 4 items."
+  [coll] (i/quad? coll))
 
 ; WARNING:  cannot use Plumatic schema for functions that may receive an infinite lazy sequence
 ; as input.  See:  https://groups.google.com/forum/#!topic/clojure/oM1PH4sXzoA

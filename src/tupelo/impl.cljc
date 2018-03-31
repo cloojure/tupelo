@@ -105,8 +105,43 @@
 ; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
 
 (defn nl
-  "Abbreviated name for `newline` "
   [] (newline))
+
+(defn has-length?
+  [coll n]
+  (when (nil? coll) (throw (IllegalArgumentException. (str "has-length?: coll must not be nil: " coll))))
+  (let [take-items (clojure.core/take n coll)
+        rest-items (clojure.core/drop n coll)]
+    (and (= n (count take-items))
+      (empty? rest-items))))
+
+(defn only
+  [coll]
+  (when-not (has-length? coll 1)
+    (throw (IllegalArgumentException. (str "only: num-items must=1; coll="
+                                        (clip-str 99 (clojure.core/take 99 coll))))))
+  (clojure.core/first coll))
+
+(defn onlies
+  [coll] (mapv only coll))
+
+(defn only2
+  [coll] (only (only coll)))
+
+(defn only?
+  [coll] (has-length? coll 1))
+
+(defn single?
+  [coll] (only? coll))
+
+(defn pair?
+  [coll] (has-length? coll 2))
+
+(defn triple?
+  [coll] (has-length? coll 3))
+
+(defn quad?
+  [coll] (has-length? coll 4))
 
 (s/defn not-nil? :- s/Bool
   [arg :- s/Any]
@@ -116,17 +151,6 @@
   ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
   [coll]
   (not (empty? coll)))
-
-(defn only
-  [coll]
-  (let [coll-seq  (seq coll)
-        rest-items (clojure.core/rest coll-seq) ]
-    (when (nil? coll) (throw (IllegalArgumentException. (str "only: coll must not be nil: " coll))))
-    (when (nil? coll-seq) (throw (IllegalArgumentException. (str "only: coll must not be empty: " coll))))
-    (when-not (empty? rest-items)
-      (throw (IllegalArgumentException. (str "only: num-items must=1; coll="
-                                          (clip-str 99 (clojure.core/take 99 coll))))))
-    (clojure.core/first coll-seq)))
 
 (defn xfirst      ; #todo -> tests
   [coll]

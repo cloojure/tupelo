@@ -53,7 +53,10 @@
     `() `[]         ; redundant quoting
     (list)))        ; build an empty list
 
+
 (dotest
+  (is= nil        (seq []))
+
   (is= []         (take 1 nil))
   (is= []         (take 1 []))
   (is= []         (take 2 []))

@@ -870,6 +870,54 @@
     (throws? IllegalArgumentException (only [:x :y]))
     (throws? IllegalArgumentException (only inf-rng-1))
 
+    (is= [1 2 3] (onlies [[1] [2] [3]]))
+    (throws? (onlies [[1] [2] [3 4]]))
+    (throws? (onlies [[1] [] [3]]))
+
+    (is= 5 (only2 [[5]]))
+    (throws? (only2 [[1 2]]))
+    (throws? (only2 [[1] [2]]))
+
+    (is (only? [42]))
+    (is (only? [:x]))
+    (is (only? ["hello"]))
+    (isnt (only? []))
+    (isnt (only? [:x :y]))
+    (isnt (only? inf-rng-1))
+
+    (is (single? [42]))
+    (is (single? [:x]))
+    (is (single? ["hello"]))
+    (isnt (single? []))
+    (isnt (single? [:x :y]))
+    (isnt (single? inf-rng-1))
+
+    (is (pair? [42 43]))
+    (is (pair? [:x :y]))
+    (is (pair? ["hello" "there"]))
+    (isnt (pair? []))
+    (isnt (pair? [:y]))
+    (isnt (pair? inf-rng-1))
+
+    (is (triple? [42 43 44]))
+    (is (triple? [:x :y :z]))
+    (is (triple? ["hello" "there" "you"]))
+    (isnt (triple? []))
+    (isnt (triple? [:y]))
+    (isnt (triple? [:x :y]))
+    (isnt (triple? inf-rng-1))
+
+    (is (quad? [42 43 44 45]))
+    (is (quad? [:x :y :z :99]))
+    (is (quad? ["hello" "there" "again" "you"]))
+    (isnt (quad? []))
+    (isnt (quad? [:x]))
+    (isnt (quad? [:x :y]))
+    (isnt (quad? [:x :y :z]))
+    (isnt (quad? inf-rng-1))))
+
+(dotest
+  (let [inf-rng-1 (map inc (range))]
     (throws? (xfirst []))
     (is= 1 (xfirst [1]))
     (is= 1 (xfirst [1 2]))
