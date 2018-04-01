@@ -381,7 +381,7 @@
   ([value] ; 1-arg arity uses a generic "spy" message
    (spy :spy value)))
 
-(defn- spyx-proc
+(defn spyx-proc
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
                      (when *spy-enabled*
@@ -409,7 +409,7 @@
        (println (str (spy-indent-spaces) '~expr " => <#" class-name# " " (pr-str spy-val#) ">")))
      spy-val#))
 
-(defn- ^:no-doc spyx-pretty-proc
+(defn ^:no-doc spyx-pretty-proc
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
                        (if (keyword? expr)
