@@ -38,6 +38,10 @@
   "Abbreviated name for `newline` "
   [] (i/nl))
 
+(defn unlazy
+  "Converts a lazy collection to a concrete (eager) collection of the same type."
+  [coll] (i/unlazy coll))
+
 (defn has-length?
   "Returns true if the collection has the indicated length. Does not hang for infinite sequences."
   [coll n] (i/has-length? coll n))
@@ -49,8 +53,9 @@
   [coll] (i/only coll))
 
 (defn onlies
-  "Given a sequence of length-1 sequences, returns a sequence of the unwrapped values.
-  i.e.  (onlies [[1] [2] [3]]) => [1 2 3]. Equivalent to `(mapv only coll)`.  "
+  "Given an outer collection of length-1 collections, returns a sequence of the unwrapped values.
+    (onlies  [ [1] [2] [3] ])  =>  [1 2 3]
+    (onlies #{ [1] [2] [3] })  => #{1 2 3} "
   [coll] (i/onlies coll))
 
 (defn only2

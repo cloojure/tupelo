@@ -104,6 +104,19 @@
 ;-----------------------------------------------------------------------------
 ; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
 
+; #todo need tests & docs. Use for datomic Entity?
+(defn unlazy
+  [coll]
+  (let [unlazy-item (fn [item]
+                      (cond
+                        (sequential? item) (vec item)
+                        (map? item) (into {} item)
+                        (set? item) (into #{} item)
+                        (instance? java.io.InputStream item) (slurp item) ; #todo need test
+                        :else item))
+        result    (walk/postwalk unlazy-item coll) ]
+    result ))
+
 (defn nl
   [] (newline))
 
@@ -123,7 +136,7 @@
   (clojure.core/first coll))
 
 (defn onlies
-  [coll] (mapv only coll))
+  [coll] (into (unlazy (empty coll)) (mapv only coll)))
 
 (defn only2
   [coll] (only (only coll)))

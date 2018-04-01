@@ -35,7 +35,7 @@
                           "releases"  :clojars 
                           :sign-releases false }
   :update :daily  ; :always  
-  :main ^:skip-aot tupelo.core
+; :main ^:skip-aot tupelo.core
   :target-path      "target/%s"
   :clean-targets  [ "target" ]
 

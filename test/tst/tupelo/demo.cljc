@@ -120,3 +120,9 @@
   (is= [0] (range 0 1))
   (is= [0 1] (range 0 2))
   )
+
+(dotest
+  (is= #{} (empty #{1 2 3}))
+  (is= [] (empty [1 2 3]))
+  (is= {} (empty {:a 1 :b 2}))
+  )
