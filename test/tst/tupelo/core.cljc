@@ -1059,7 +1059,12 @@
            (/ 10 it)))
   (let [mm  {:a {:b 2}}]
     (is= (it-> mm (:a it)          )  {:b 2} )
-    (is= (it-> mm (it :a)  (:b it) )      2  )))
+    (is= (it-> mm (it :a)  (:b it) )      2  ))
+  (is= 48
+    (it-> 42
+      (let [x 5]
+        (+ x it))
+      (inc it))))
 
 (dotest
   (testing "basic usage"

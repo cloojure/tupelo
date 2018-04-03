@@ -850,10 +850,18 @@
   [tst-map valid-keys ] (i/validate-map-keys tst-map valid-keys))
 
 (defn map-keys ; #todo docstring, README
+  "Transforms each value in a map using the supplied `tx-fn`:
+
+    (t/map-keys {1 :a 2 :b 3 :c} inc)                  =>  {  2 :a   3 :b 4   :c}
+    (t/map-keys {1 :a 2 :b 3 :c} {1 101 2 202 3 303})  =>  {101 :a 202 :b 303 :c}"
   [map-in tx-fn & tx-args ]
   (apply i/map-keys map-in tx-fn tx-args))
 
 (defn map-vals ; #todo docstring, README
+  "Transforms each value in a map using the supplied `tx-fn`:
+
+      (t/map-vals {:a 1 :b 2 :c 3} inc)                  =>  {:a 2,   :b 3,   :c 4}
+      (t/map-vals {:a 1 :b 2 :c 3} {1 101 2 202 3 303})  =>  {:a 101, :b 202, :c 303} "
   [map-in tx-fn & tx-args]
   (apply i/map-vals map-in tx-fn tx-args))
 
