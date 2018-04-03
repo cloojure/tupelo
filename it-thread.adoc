@@ -1,9 +1,14 @@
-# Usage examples for `tupelo.core/it->`
+# Usage examples for `tupelo.core/it->` 
 
+####    Name:          "it-thread" (explicit threading macro)
 ####    Homepage:      https://github.com/cloojure/tupelo
 ####    Lein coords:   [tupelo "0.9.75"]
 
-Explicit threading macro:  (it-> ...)
+Usage:
+clojure
+----
+  (it-> ...)
+----
 
 ## Why?
 
