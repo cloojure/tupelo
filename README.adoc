@@ -275,6 +275,8 @@ placeholder value:
 8           ; return value
 ----
 
+More examples link:it-thread.adoc[can be found here].
+
 === Map Value Lookup
 
 Maps are convenient, especially when keywords are used as functions to look up a value in
