@@ -66,7 +66,7 @@ The current expression is threaded through the body of the `try` form.  The
 _same_ value is threaded through each `catch` clause and any `finally` clause.
 
 ```clojure
-(ti-> 42 
+(it-> 42 
       (try
         (inc it)
         (catch Exception e
@@ -80,14 +80,14 @@ _same_ value is threaded through each `catch` clause and any `finally` clause.
 
 (it-> 42 
       (try
-        (inc it)
+        (inc it)   ; warning: this result is lost
         (finally 
-          (+ 10 it)))) ;=> 53
+          (+ 10 it)))) ;=> 52
 
 ; with anonymous functions
 (it-> 7
       ((fn [x y] (* x y)) it 3))  ;=> 21
 (it-> 42
-      #(-> % inc inc)) ;=> 44
+      #(-> it inc inc)) ;=> 44
 ```
 
