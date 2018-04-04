@@ -62,12 +62,8 @@
   "Given a collection like `[[5]]`, returns `5`.  Equivalent to `(only (only coll))`."
   [coll] (i/only2 coll))
 
-(defn only?
-  "Returns true if the collection contains a single item."
-  [coll] (i/only? coll))
-
 (defn single?
-  "Returns true if the collection contains a single item. Equivalent to `(only? coll)`"
+  "Returns true if the collection contains a single item.`"
   [coll] (i/single? coll))
 
 (defn pair?

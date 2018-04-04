@@ -878,13 +878,6 @@
     (throws? (only2 [[1 2]]))
     (throws? (only2 [[1] [2]]))
 
-    (is (only? [42]))
-    (is (only? [:x]))
-    (is (only? ["hello"]))
-    (isnt (only? []))
-    (isnt (only? [:x :y]))
-    (isnt (only? inf-rng-1))
-
     (is (single? [42]))
     (is (single? [:x]))
     (is (single? ["hello"]))

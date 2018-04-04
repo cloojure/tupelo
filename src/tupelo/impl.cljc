@@ -141,11 +141,8 @@
 (defn only2
   [coll] (only (only coll)))
 
-(defn only?
-  [coll] (has-length? coll 1))
-
 (defn single?
-  [coll] (only? coll))
+  [coll] (has-length? coll 1))
 
 (defn pair?
   [coll] (has-length? coll 2))
