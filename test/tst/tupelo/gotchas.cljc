@@ -155,8 +155,21 @@
   (is= true (some #{false true} [false true]))
   (is= true (some #{false true} [false true]))
   (is= true (some? false ))
-  (is= true (some? true ))
-)
+  (is= true (some? true )))
+
+; "generic" indexing is a problem; always be explicit with first, nth, get, etc
+(dotest
+  (let [vv [1 2 3]
+        ll (list 1 2 3)
+        cc (cons 1 [2 3])]
+    (is= 1 (vv 0))  ; works fine
+    (throws? ClassCastException (ll 0)) ; clojure.lang.PersistentList cannot be cast to clojure.lang.IFn
+    (throws? ClassCastException (cc 0)) ; clojure.lang.Cons cannot be cast to clojure.lang.IFn
+
+    ; best solution
+    (is= 1 (first vv))
+    (is= 1 (first ll))
+    (is= 1 (first cc))))
 
 ; samples for dospec & check-not
 ;-----------------------------------------------------------------------------
