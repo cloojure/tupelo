@@ -10,10 +10,12 @@
     [clojure.data.xml :as cdx]
     [clojure.java.io :as io]
     [clojure.set :as cs]
+    [clojure.string :as str]
     [net.cgrand.enlive-html :as enlive-html]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.misc :as tm]
+    [tupelo.string :as ts]
     [tupelo.schema :as tsk]
     [tupelo.forest :as tf]
     ))
@@ -500,7 +502,7 @@
           type-bc-hid?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type :value "B"}])
                                         (has-child-leaf? hid [:** {:tag :Type :value "C"}])))
 
-          blank-leaf-hids (keep-if blank-leaf-hid? (all-hids))
+          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-hids))
           >>              (apply remove-hid blank-leaf-hids)
           tree-2          (hid->tree root-hid)
 
@@ -593,7 +595,7 @@
           root-hid        (add-tree-enlive enlive-tree)
           has-bc-leaf?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type :value "B"}])
                                       (has-child-leaf? hid [:** {:tag :Type :value "C"}])))
-          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids))
+          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids))
           >>              (apply remove-hid blank-leaf-hids)
           bc-item-hids    (find-hids-with root-hid [:** :Item] has-bc-leaf?)]
       (apply remove-hid bc-item-hids)
@@ -639,7 +641,7 @@
           root-hid             (add-tree-enlive enlive-tree)
           tree-1               (hid->hiccup root-hid)
 
-          blank-leaf-hids      (keep-if blank-leaf-hid? (all-hids))
+          blank-leaf-hids      (keep-if whitespace-leaf-hid? (all-hids))
           >>                   (apply remove-hid blank-leaf-hids)
           tree-2               (hid->hiccup root-hid)
 
@@ -709,7 +711,7 @@
           root-hid        (add-tree-enlive enlive-tree)
 
           ; Removing whitespace nodes is optional; just done to keep things neat
-          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
+          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
           >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
 
           ; Can search for inner `div` 2 ways
@@ -769,7 +771,7 @@
           tree-1          (hid->hiccup root-hid) ; orig tree with lots of whitespace leaves
 
           ; Removing whitespace nodes is optional; just done to keep things neat
-          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
+          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
           >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
           tree-2          (hid->hiccup root-hid)
           >>              (is= tree-2 [:html
@@ -850,7 +852,7 @@
           root-hid        (add-tree-enlive enlive-tree)
 
           ; Removing whitespace nodes is optional; just done to keep things neat
-          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
+          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
           >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
 
           ; Can search for inner `div` 2 ways
@@ -1056,7 +1058,7 @@
                             only)
           root-hid        (add-tree-enlive enlive-tree)
           bush-blanks     (hid->bush root-hid)
-          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids))
+          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids))
           >>              (apply remove-hid blank-leaf-hids)
           bush-no-blanks  (hid->bush root-hid)
           leaf-hids       (find-leaf-hids root-hid [:** :*])]
@@ -1072,3 +1074,46 @@
       (is= (mapv hid->node leaf-hids)
         [{:tupelo.forest/khids [], :tag :a, :value "1"}
          {:tupelo.forest/khids [], :tag :b, :value "2"}]))))
+;-----------------------------------------------------------------------------
+(dotest
+  (with-forest (new-forest)
+    (let [xml-str        (ts/quotes->double
+                           "<document>
+                              <sentence id='1'>
+                                <word id='1.1'>foo</word>
+                                <word id='1.2'>bar</word>
+                              </sentence>
+                              <sentence id='2'>
+                                <word id='2.1'>beyond</word>
+                                <word id='2.2'>all</word>
+                                <word id='2.3'>recognition</word>
+                              </sentence>
+                            </document>")
+
+          enlive-tree    (->> xml-str
+                           java.io.StringReader.
+                           enlive-html/xml-resource
+                           only)
+          root-hid       (add-tree-enlive enlive-tree)
+          >>             (remove-whitespace-leaves)
+          bush-no-blanks (hid->bush root-hid)
+          sentence-hids  (find-hids root-hid [:document :sentence])
+          sentences      (forv [sentence-hid sentence-hids]
+                           (let [word-hids     (hid->kids sentence-hid)
+                                 words         (mapv #(grab :value (hid->leaf %)) word-hids)
+                                 sentence-text (str/join \space words)]
+                             sentence-text))
+          ]
+      (is= bush-no-blanks
+        [{:tag :document}
+         [{:id "1", :tag :sentence}
+          [{:id "1.1", :tag :word, :value "foo"}]
+          [{:id "1.2", :tag :word, :value "bar"}]]
+         [{:id "2", :tag :sentence}
+          [{:id "2.1", :tag :word, :value "beyond"}]
+          [{:id "2.2", :tag :word, :value "all"}]
+          [{:id "2.3", :tag :word, :value "recognition"}]]])
+      (is= sentences
+        ["foo bar"
+         "beyond all recognition"]))))
+

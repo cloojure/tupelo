@@ -336,6 +336,7 @@
   (grab attr (hid->node hid)))
 
 (s/defn hid->kids :- [HID]
+  "Returns the HIDs for a nodes children."
   [hid :- HID]
   (grab ::khids (hid->node hid)))
 
@@ -826,7 +827,7 @@
                 ;           "  tgt-path:" tgt-path))
                 (find-paths-impl result-atom parents-new kid tgt-path)))))))))
 
-(def HidRootSpec (s/either HID [HID] #{HID}))
+(def HidRootSpec (s/either HID [HID] #{HID})) ; #todo why is this here?
 
 ; #todo need a find-paths-pred that takes a predicate fn to choose
 ; #todo maybe a fn like postwalk to apply transformation fn to each node recursively
@@ -895,12 +896,19 @@
    tgt-path :- [s/Any] ]
   (hid->leaf (find-leaf-hid root-spec tgt-path )))
 
-(s/defn blank-leaf-hid? :- s/Bool
+(s/defn whitespace-leaf-hid? :- s/Bool
   [hid :- HID]
   (and (leaf-value-hid?  hid) ; ensure it is a leaf node and has :value
     (let [value (grab :value (hid->node hid))]
       (and (string? value)
         (ts/whitespace? value))))) ; all whitespace string
+
+(defn remove-whitespace-leaves
+  "Removes leaves from all trees in the forest that are whitespace-only strings
+  (including zero-length strings)."
+  []
+  (let [blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids))]
+    (apply remove-hid blank-leaf-hids)))
 
 (s/defn find-paths-with
   [root-spec :- HidRootSpec
