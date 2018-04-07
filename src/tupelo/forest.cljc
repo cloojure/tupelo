@@ -10,6 +10,7 @@
   (:use tupelo.impl )
   (:require
     [clojure.set :as clj.set]
+    [net.cgrand.enlive-html :as enlive-html]
     [schema.core :as s]
     [tupelo.misc :as tm :refer [HID]]
     [tupelo.schema :as tsk]
@@ -541,6 +542,15 @@
   [:a ...] -> {:a nil ...}..."
   [arg]
   (add-tree (hiccup->tree arg)))
+
+(s/defn add-tree-xml :- HID
+  "Adds a tree to the forest from an XML string."
+  [xml-str :- s/Str]
+  (->> xml-str
+    java.io.StringReader.
+    enlive-html/xml-resource
+    only
+    add-tree-enlive))
 
 (s/defn hid->bush :- tsk/Vec
   [hid :- HID]

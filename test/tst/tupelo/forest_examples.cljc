@@ -1090,11 +1090,7 @@
                               </sentence>
                             </document>")
 
-          enlive-tree    (->> xml-str
-                           java.io.StringReader.
-                           enlive-html/xml-resource
-                           only)
-          root-hid       (add-tree-enlive enlive-tree)
+          root-hid       (add-tree-xml xml-str)
           >>             (remove-whitespace-leaves)
           bush-no-blanks (hid->bush root-hid)
           sentence-hids  (find-hids root-hid [:document :sentence])
