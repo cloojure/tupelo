@@ -50,6 +50,10 @@
 
 (def Fn (s/make-fn-schema s/Any s/Any))
 
+(def EnliveNode
+  "An Enlive tree node"
+  {:tag s/Any :attrs KeyMap :content [s/Any]})
+
 ;-----------------------------------------------------------------------------
 ; Datomic-related stuff
 

@@ -1111,5 +1111,8 @@
           [{:id "2.3", :tag :word, :value "recognition"}]]])
       (is= sentences
         ["foo bar"
-         "beyond all recognition"]))))
+         "beyond all recognition"])))
+
+
+  )
 

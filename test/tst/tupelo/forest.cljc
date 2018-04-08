@@ -1366,7 +1366,24 @@
   (let [data-3   {:a 1 :b {:c 3}}
         tree-3   (data->tree data-3)
         return-3 (tree->data tree-3)]
-    (is= return-3 data-3))
+    (is= return-3 data-3)) )
 
-)
+(dotest
+  (throws? (nest-enlive-nodes []))
+  (is= (nest-enlive-nodes [{:tag :a, :attrs {:a 1}, :content [1 1]}])
+    {:tag :a, :attrs {:a 1}, :content [1 1]})
+  (is= (nest-enlive-nodes [{:tag :a :attrs {:a 1} :content []}
+                           {:tag :b :attrs {:b 2} :content [2 2 2]}])
+    {:tag     :a
+     :attrs   {:a 1}
+     :content [{:tag :b :attrs {:b 2} :content [2 2 2]}]})
+  (is= (nest-enlive-nodes [{:tag :a :attrs {:a 1} :content [1 1 1]}
+                           {:tag :b :attrs {:b 2} :content [2 2]}
+                           {:tag :c :attrs {:c 3} :content [3 3 3]}])
+    {:tag   :a,
+     :attrs {:a 1},
+     :content
+            [{:tag     :b,
+              :attrs   {:b 2},
+              :content [{:tag :c, :attrs {:c 3}, :content [3 3 3]}]}]}))
 

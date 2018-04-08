@@ -9,7 +9,9 @@
   the the trees individually and/or collectively."
   (:use tupelo.impl )
   (:require
+    [clojure.core.async :as ca]
     [clojure.set :as clj.set]
+    [clojure.data.xml]
     [net.cgrand.enlive-html :as enlive-html]
     [schema.core :as s]
     [tupelo.misc :as tm :refer [HID]]
@@ -551,6 +553,52 @@
     enlive-html/xml-resource
     only
     add-tree-enlive))
+
+(def ^:dynamic *xml-subtree-buffer-size*
+  "Specifies the xml-subtree default buffer size"
+  32)
+
+(s/defn ^:no-doc nest-enlive-nodes :- tsk/EnliveNode
+  "Reconstructs an Enlive tree from a sequence of nodes."
+  [nodes :- [tsk/EnliveNode]]
+  (let [num-nodes (count nodes)]
+    (cond
+      (zero? num-nodes) (throw (IllegalArgumentException. "num-nodes must be positive"))
+      (= 1 num-nodes)   (only nodes)
+      :else (let [nodes-1           (xbutlast nodes)
+                  nodes-2           (xbutlast nodes-1)
+                  node-last         (xlast nodes)
+                  node-last-1       (xlast nodes-1)
+                  nodes-merged-last (append nodes-2 (assoc node-last-1 :content [node-last]))]
+              (nest-enlive-nodes nodes-merged-last)))))
+
+(defn ^:no-doc proc-subtree-xml
+  [output-chan xml-nodes parent-nodes path-target handler]
+  (let [curr-tag (xfirst path-target)]
+    (doseq [xml-node xml-nodes]
+      (when (= curr-tag (grab :tag xml-node))
+        (let [next-parent-nodes (append parent-nodes xml-node)
+              next-path-target  (xrest path-target)]
+          (if (not-empty? next-path-target)
+            (proc-subtree-xml output-chan (grab :content xml-node) next-parent-nodes next-path-target handler)
+            (with-forest (new-forest)
+              (let [root-hid (add-tree-enlive
+                               (nest-enlive-nodes (append parent-nodes xml-node)))]
+                (ca/>! output-chan (handler root-hid))))))))))
+
+(defn proc-tree-xml
+  "Lazily read & process subtrees from a Reader or InputStream"
+  [xml-src subtree-path handler]
+  (let [output-chan        (ca/chan *xml-subtree-buffer-size*)
+        lazy-reader-fn#    (fn lazy-reader-fn# []
+                             (let [curr-item# (ca/<!! output-chan)] ; #todo ta/take-now!
+                               (when (not-nil? curr-item#)
+                                 (lazy-cons curr-item# (lazy-reader-fn#)))))
+        enlive-tree-root (clojure.data.xml/parse xml-src) ]
+    (ca/go
+      (proc-subtree-xml output-chan [enlive-tree-root] [] subtree-path handler)
+      (ca/close! output-chan))
+    (lazy-reader-fn#)))
 
 (s/defn hid->bush :- tsk/Vec
   [hid :- HID]
