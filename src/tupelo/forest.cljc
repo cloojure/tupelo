@@ -580,7 +580,7 @@
     ;(spyx curr-tag)
     (doseq [curr-node enlive-nodes-lazy]
       (when (map? curr-node) ; discard any embedded string content (esp. blanks)
-        ;(spyx-pretty curr-node)
+       ;(spyx-pretty curr-node)
         (when (= curr-tag (grab :tag curr-node))
           (let [next-path-target (xrest path-target)]
             (if (not-empty? next-path-target)
@@ -589,19 +589,18 @@
                 (proc-subtree-xml output-chan (grab :content curr-node) next-parent-nodes next-path-target handler))
               (with-forest (new-forest)
                 (let [input32  (append parent-nodes (unlazy curr-node))
-                    ; >> (spyx input32)
+                     ;>> (spyx input32)
                       root-hid (add-tree-enlive (nest-enlive-nodes input32))]
                   (ca/>!! output-chan (handler root-hid)))))))))))
 
-(defn proc-tree-xml-lazy
+(defn proc-tree-enlive-lazy
   "Lazily read & process subtrees from a Reader or InputStream"
-  [xml-src subtree-path handler]
+  [enlive-tree-lazy subtree-path handler]
   (let [output-chan        (ca/chan *xml-subtree-buffer-size*)
         lazy-reader-fn     (fn lazy-reader-fn  []
                              (let [curr-item (ca/<!! output-chan)] ; #todo ta/take-now!
                                (when (not-nil? curr-item)
-                                 (lazy-cons curr-item (lazy-reader-fn)))))
-        enlive-tree-lazy (clojure.data.xml/parse xml-src) ]
+                                 (lazy-cons curr-item (lazy-reader-fn))))) ]
    ;(spyx-pretty enlive-tree-lazy)
     (ca/go
       (proc-subtree-xml output-chan [enlive-tree-lazy] [] subtree-path handler)

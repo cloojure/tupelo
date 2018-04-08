@@ -1111,35 +1111,36 @@
         (is= sentences
           ["foo bar"
            "beyond all recognition"])))
-    (let [handler         (fn [root-hid]
-                            (remove-whitespace-leaves)
-                            (tf/hid->bush root-hid))
-          result-word     (proc-tree-xml-lazy (StringReader. xml-str) [:document :sentence :word] handler)
-          result-sentence (proc-tree-xml-lazy (StringReader. xml-str) [:document :sentence] handler)
-          result-document (proc-tree-xml-lazy (StringReader. xml-str) [:document] handler) ]
+    (let [handler          (fn [root-hid]
+                             (remove-whitespace-leaves)
+                             (tf/hid->bush root-hid))
+          enlive-tree-lazy (clojure.data.xml/parse (StringReader. xml-str))
+          result-word      (proc-tree-enlive-lazy enlive-tree-lazy [:document :sentence :word] handler)
+          result-sentence  (proc-tree-enlive-lazy enlive-tree-lazy [:document :sentence] handler)
+          result-document  (proc-tree-enlive-lazy enlive-tree-lazy [:document] handler)]
       (is= result-word
         [[{:tag :document}
           [{:id "1", :tag :sentence} [{:id "1.1", :tag :word, :value "foo"}]]]
-          [{:tag :document}
-           [{:id "1", :tag :sentence} [{:id "1.2", :tag :word, :value "bar"}]]]
-          [{:tag :document}
-           [{:id "2", :tag :sentence}
-            [{:id "2.1", :tag :word, :value "beyond"}]]]
-          [{:tag :document}
-           [{:id "2", :tag :sentence} [{:id "2.2", :tag :word, :value "all"}]]]
-          [{:tag :document}
-           [{:id "2", :tag :sentence}
-            [{:id "2.3", :tag :word, :value "recognition"}]]]])
+         [{:tag :document}
+          [{:id "1", :tag :sentence} [{:id "1.2", :tag :word, :value "bar"}]]]
+         [{:tag :document}
+          [{:id "2", :tag :sentence}
+           [{:id "2.1", :tag :word, :value "beyond"}]]]
+         [{:tag :document}
+          [{:id "2", :tag :sentence} [{:id "2.2", :tag :word, :value "all"}]]]
+         [{:tag :document}
+          [{:id "2", :tag :sentence}
+           [{:id "2.3", :tag :word, :value "recognition"}]]]])
       (is= result-sentence
         [[{:tag :document}
           [{:id "1", :tag :sentence}
            [{:id "1.1", :tag :word, :value "foo"}]
            [{:id "1.2", :tag :word, :value "bar"}]]]
-          [{:tag :document}
-           [{:id "2", :tag :sentence}
-            [{:id "2.1", :tag :word, :value "beyond"}]
-            [{:id "2.2", :tag :word, :value "all"}]
-            [{:id "2.3", :tag :word, :value "recognition"}]]]])
+         [{:tag :document}
+          [{:id "2", :tag :sentence}
+           [{:id "2.1", :tag :word, :value "beyond"}]
+           [{:id "2.2", :tag :word, :value "all"}]
+           [{:id "2.3", :tag :word, :value "recognition"}]]]])
       (is= result-document
         [[{:tag :document}
           [{:id "1", :tag :sentence}
@@ -1149,16 +1150,16 @@
            [{:id "2.1", :tag :word, :value "beyond"}]
            [{:id "2.2", :tag :word, :value "all"}]
            [{:id "2.3", :tag :word, :value "recognition"}]]]]))
-    (let [doc-sentence-handler (fn [root-hid]
+    (let [enlive-tree-lazy     (clojure.data.xml/parse (StringReader. xml-str))
+          doc-sentence-handler (fn [root-hid]
                                  (remove-whitespace-leaves)
-                                 (let [sentence-hids (find-hids root-hid [:document :sentence])
-                                       sentences     (forv [sentence-hid sentence-hids]
-                                                       (let [word-hids     (hid->kids sentence-hid)
-                                                             words         (mapv #(grab :value (hid->leaf %)) word-hids)
-                                                             sentence-text (str/join \space words)]
-                                                         sentence-text))]
-                               sentences))
-          result-sentences (proc-tree-xml-lazy (StringReader. xml-str) [:document :sentence] doc-sentence-handler)]
-      (is= result-sentences '(["foo bar"] ["beyond all recognition"])))
+                                 (let [sentence-hid  (only (find-hids root-hid [:document :sentence]))
+                                       word-hids     (hid->kids sentence-hid)
+                                       words         (mapv #(grab :value (hid->leaf %)) word-hids)
+                                       sentence-text (str/join \space words)]
+                                   sentence-text))
+          result-sentences     (proc-tree-enlive-lazy enlive-tree-lazy
+                                 [:document :sentence] doc-sentence-handler)]
+      (is= result-sentences ["foo bar" "beyond all recognition"]))
 
-  ))
+    ))
