@@ -1120,14 +1120,17 @@
           result-document  (proc-tree-enlive-lazy enlive-tree-lazy [:document] handler)]
       (is= result-word
         [[{:tag :document}
-          [{:id "1", :tag :sentence} [{:id "1.1", :tag :word, :value "foo"}]]]
+          [{:id "1", :tag :sentence}
+           [{:id "1.1", :tag :word, :value "foo"}]]]
          [{:tag :document}
-          [{:id "1", :tag :sentence} [{:id "1.2", :tag :word, :value "bar"}]]]
+          [{:id "1", :tag :sentence}
+           [{:id "1.2", :tag :word, :value "bar"}]]]
          [{:tag :document}
           [{:id "2", :tag :sentence}
            [{:id "2.1", :tag :word, :value "beyond"}]]]
          [{:tag :document}
-          [{:id "2", :tag :sentence} [{:id "2.2", :tag :word, :value "all"}]]]
+          [{:id "2", :tag :sentence}
+           [{:id "2.2", :tag :word, :value "all"}]]]
          [{:tag :document}
           [{:id "2", :tag :sentence}
            [{:id "2.3", :tag :word, :value "recognition"}]]]])
