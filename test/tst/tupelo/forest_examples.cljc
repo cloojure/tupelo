@@ -18,7 +18,8 @@
     [tupelo.string :as ts]
     [tupelo.schema :as tsk]
     [tupelo.forest :as tf]
-    ))
+    )
+  (:import [java.io StringReader]))
 (t/refer-tupelo :dev)
 
 (dotest
@@ -1076,43 +1077,88 @@
          {:tupelo.forest/khids [], :tag :b, :value "2"}]))))
 ;-----------------------------------------------------------------------------
 (dotest
-  (with-forest (new-forest)
-    (let [xml-str        (ts/quotes->double
-                           "<document>
-                              <sentence id='1'>
-                                <word id='1.1'>foo</word>
-                                <word id='1.2'>bar</word>
-                              </sentence>
-                              <sentence id='2'>
-                                <word id='2.1'>beyond</word>
-                                <word id='2.2'>all</word>
-                                <word id='2.3'>recognition</word>
-                              </sentence>
-                            </document>")
+  (let [xml-str (ts/quotes->double
+                  "<document>
+                     <sentence id='1'>
+                       <word id='1.1'>foo</word>
+                       <word id='1.2'>bar</word>
+                     </sentence>
+                     <sentence id='2'>
+                       <word id='2.1'>beyond</word>
+                       <word id='2.2'>all</word>
+                       <word id='2.3'>recognition</word>
+                     </sentence>
+                   </document>")]
+    (with-forest (new-forest)
+      (let [root-hid       (add-tree-xml xml-str)
+            >>             (remove-whitespace-leaves)
+            bush-no-blanks (hid->bush root-hid)
+            sentence-hids  (find-hids root-hid [:document :sentence])
+            sentences      (forv [sentence-hid sentence-hids]
+                             (let [word-hids     (hid->kids sentence-hid)
+                                   words         (mapv #(grab :value (hid->leaf %)) word-hids)
+                                   sentence-text (str/join \space words)]
+                               sentence-text))]
+        (is= bush-no-blanks
+          [{:tag :document}
+           [{:id "1", :tag :sentence}
+            [{:id "1.1", :tag :word, :value "foo"}]
+            [{:id "1.2", :tag :word, :value "bar"}]]
+           [{:id "2", :tag :sentence}
+            [{:id "2.1", :tag :word, :value "beyond"}]
+            [{:id "2.2", :tag :word, :value "all"}]
+            [{:id "2.3", :tag :word, :value "recognition"}]]])
+        (is= sentences
+          ["foo bar"
+           "beyond all recognition"])))
+    (let [handler         (fn [root-hid]
+                            (remove-whitespace-leaves)
+                            (tf/hid->bush root-hid))
+          result-word     (proc-tree-xml-lazy (StringReader. xml-str) [:document :sentence :word] handler)
+          result-sentence (proc-tree-xml-lazy (StringReader. xml-str) [:document :sentence] handler)
+          result-document (proc-tree-xml-lazy (StringReader. xml-str) [:document] handler) ]
+      (is= result-word
+        [[{:tag :document}
+          [{:id "1", :tag :sentence} [{:id "1.1", :tag :word, :value "foo"}]]]
+          [{:tag :document}
+           [{:id "1", :tag :sentence} [{:id "1.2", :tag :word, :value "bar"}]]]
+          [{:tag :document}
+           [{:id "2", :tag :sentence}
+            [{:id "2.1", :tag :word, :value "beyond"}]]]
+          [{:tag :document}
+           [{:id "2", :tag :sentence} [{:id "2.2", :tag :word, :value "all"}]]]
+          [{:tag :document}
+           [{:id "2", :tag :sentence}
+            [{:id "2.3", :tag :word, :value "recognition"}]]]])
+      (is= result-sentence
+        [[{:tag :document}
+          [{:id "1", :tag :sentence}
+           [{:id "1.1", :tag :word, :value "foo"}]
+           [{:id "1.2", :tag :word, :value "bar"}]]]
+          [{:tag :document}
+           [{:id "2", :tag :sentence}
+            [{:id "2.1", :tag :word, :value "beyond"}]
+            [{:id "2.2", :tag :word, :value "all"}]
+            [{:id "2.3", :tag :word, :value "recognition"}]]]])
+      (is= result-document
+        [[{:tag :document}
+          [{:id "1", :tag :sentence}
+           [{:id "1.1", :tag :word, :value "foo"}]
+           [{:id "1.2", :tag :word, :value "bar"}]]
+          [{:id "2", :tag :sentence}
+           [{:id "2.1", :tag :word, :value "beyond"}]
+           [{:id "2.2", :tag :word, :value "all"}]
+           [{:id "2.3", :tag :word, :value "recognition"}]]]]))
+    (let [doc-sentence-handler (fn [root-hid]
+                                 (remove-whitespace-leaves)
+                                 (let [sentence-hids (find-hids root-hid [:document :sentence])
+                                       sentences     (forv [sentence-hid sentence-hids]
+                                                       (let [word-hids     (hid->kids sentence-hid)
+                                                             words         (mapv #(grab :value (hid->leaf %)) word-hids)
+                                                             sentence-text (str/join \space words)]
+                                                         sentence-text))]
+                               sentences))
+          result-sentences (proc-tree-xml-lazy (StringReader. xml-str) [:document :sentence] doc-sentence-handler)]
+      (is= result-sentences '(["foo bar"] ["beyond all recognition"])))
 
-          root-hid       (add-tree-xml xml-str)
-          >>             (remove-whitespace-leaves)
-          bush-no-blanks (hid->bush root-hid)
-          sentence-hids  (find-hids root-hid [:document :sentence])
-          sentences      (forv [sentence-hid sentence-hids]
-                           (let [word-hids     (hid->kids sentence-hid)
-                                 words         (mapv #(grab :value (hid->leaf %)) word-hids)
-                                 sentence-text (str/join \space words)]
-                             sentence-text))
-          ]
-      (is= bush-no-blanks
-        [{:tag :document}
-         [{:id "1", :tag :sentence}
-          [{:id "1.1", :tag :word, :value "foo"}]
-          [{:id "1.2", :tag :word, :value "bar"}]]
-         [{:id "2", :tag :sentence}
-          [{:id "2.1", :tag :word, :value "beyond"}]
-          [{:id "2.2", :tag :word, :value "all"}]
-          [{:id "2.3", :tag :word, :value "recognition"}]]])
-      (is= sentences
-        ["foo bar"
-         "beyond all recognition"])))
-
-
-  )
-
+  ))
