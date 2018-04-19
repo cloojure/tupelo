@@ -54,7 +54,10 @@
     `() `[]         ; redundant quoting
     (list)))        ; build an empty list
 
+
 (dotest
+  (is= nil        (seq []))
+
   (is= []         (take 1 nil))
   (is= []         (take 1 []))
   (is= []         (take 2 []))
@@ -116,6 +119,11 @@
   (is= [] (range 0 -1))
   (is= [] (range 0 0))
   (is= [0] (range 0 1))
-  (is= [0 1] (range 0 2)) )
+  (is= [0 1] (range 0 2)))
+
+(dotest
+  (is= #{} (empty #{1 2 3}))
+  (is= [] (empty [1 2 3]))
+  (is= {} (empty {:a 1 :b 2})) )
 
 ))

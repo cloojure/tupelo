@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.72"
+(defproject tupelo "0.9.76"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
@@ -38,7 +38,7 @@
                           "releases"  :clojars 
                           :sign-releases false }
   :update :daily  ; :always  
-  :main ^:skip-aot tupelo.core
+; :main ^:skip-aot tupelo.core
   :target-path      "target/%s"
   :clean-targets  [ "target" ]
 

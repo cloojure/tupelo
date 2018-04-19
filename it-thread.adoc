@@ -1,0 +1,93 @@
+# Usage examples for `tupelo.core/it->` 
+
+####    Name:          "it-thread" (literate threading macro)
+####    Homepage:      https://github.com/cloojure/tupelo
+####    Lein coords:   [tupelo "0.9.75"]
+
+Usage:
+clojure
+----
+  (it-> ...)
+----
+
+## Why?
+
+Because every time you've wanted to:
+
+```clojure
+(ns xyz
+  (:use tupelo.core))
+(it-> 3
+  (let [x 9]
+    (- x it))
+  (inc it)
+  (- it 6))
+;=> 1
+
+(it-> 42 
+      (if true  
+        (inc it)
+        :blah)) ;=> 43
+(it-> 42
+      (if false  
+        (inc it)
+        :blah)) ;=> :blah
+
+; works same for `if-not`, `when`, `when-not`, etc.
+
+(it-> 42
+  (case 1
+    1 (inc it)
+    2 (dec it))) ;=> 43
+
+(it-> 42
+  (case 2
+    1 (inc it)
+    2 (dec it))) ;=> 41
+
+(it-> 42
+  (cond
+    (= 1 2)
+    (inc it))) ;=> 42
+
+(it-> 42
+  (cond
+    (= 1 1)
+    (dec it))) ;=> 41
+
+(it-> 42 
+  (let [x 1] 
+    (+ it x))) ;=> 43
+```
+
+#### try
+
+The current expression is threaded through the body of the `try` form.  The
+_same_ value is threaded through each `catch` clause and any `finally` clause.
+
+```clojure
+(it-> 42 
+      (try
+        (inc it)
+        (catch Exception e
+          (dec it))) ;=> 43
+
+(it-> 42
+      (try
+        (+ it :foo)
+        (catch Exception e
+          (dec it)))) ;=> 41
+
+(it-> 42 
+      (try
+        (inc it)   ; warning: this result is lost
+        (finally 
+          (+ 10 it)))) ;=> 52
+
+; with anonymous functions
+(it-> 7
+      ((fn [x y] (* x y)) it 3))  ;=> 21
+(it-> 42
+      #(-> it inc inc)) ;=> 44
+```
+

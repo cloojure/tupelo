@@ -109,9 +109,54 @@
 ;-----------------------------------------------------------------------------
 ; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
 
+; #todo need tests & docs. Use for datomic Entity?
+(defn unlazy
+  [coll]
+  (let [unlazy-item (fn [item]
+                      (cond
+                        (sequential? item) (vec item)
+                        (map? item) (into {} item)
+                        (set? item) (into #{} item)
+                        (instance? java.io.InputStream item) (slurp item) ; #todo need test
+                        :else item))
+        result    (walk/postwalk unlazy-item coll) ]
+    result ))
+
 (defn nl
-  "Abbreviated name for `newline` "
   [] (newline))
+
+(defn has-length?
+  [coll n]
+  (when (nil? coll) (throw (IllegalArgumentException. (str "has-length?: coll must not be nil: " coll))))
+  (let [take-items (clojure.core/take n coll)
+        rest-items (clojure.core/drop n coll)]
+    (and (= n (count take-items))
+      (empty? rest-items))))
+
+(defn only
+  [coll]
+  (when-not (has-length? coll 1)
+    (throw (IllegalArgumentException. (str "only: num-items must=1; coll="
+                                        (clip-str 99 (clojure.core/take 99 coll))))))
+  (clojure.core/first coll))
+
+(defn onlies
+  [coll] (into (unlazy (empty coll)) (mapv only coll)))
+
+(defn only2
+  [coll] (only (only coll)))
+
+(defn single?
+  [coll] (has-length? coll 1))
+
+(defn pair?
+  [coll] (has-length? coll 2))
+
+(defn triple?
+  [coll] (has-length? coll 3))
+
+(defn quad?
+  [coll] (has-length? coll 4))
 
 (s/defn not-nil? :- s/Bool
   [arg :- s/Any]
@@ -121,17 +166,6 @@
   ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
   [coll]
   (not (empty? coll)))
-
-(defn only
-  [coll]
-  (let [coll-seq  (seq coll)
-        rest-items (clojure.core/rest coll-seq) ]
-    (when (nil? coll) (throw (IllegalArgumentException. (str "only: coll must not be nil: " coll))))
-    (when (nil? coll-seq) (throw (IllegalArgumentException. (str "only: coll must not be empty: " coll))))
-    (when-not (empty? rest-items)
-      (throw (IllegalArgumentException. (str "only: num-items must=1; coll="
-                                          (clip-str 99 (clojure.core/take 99 coll))))))
-    (clojure.core/first coll-seq)))
 
 (defn xfirst      ; #todo -> tests
   [coll]
@@ -362,7 +396,7 @@
   ([value] ; 1-arg arity uses a generic "spy" message
    (spy :spy value)))
 
-(defn- spyx-proc
+(defn spyx-proc
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
                      (when *spy-enabled*
@@ -390,7 +424,7 @@
        (println (str (spy-indent-spaces) '~expr " => <#" class-name# " " (pr-str spy-val#) ">")))
      spy-val#))
 
-(defn- ^:no-doc spyx-pretty-proc
+(defn ^:no-doc spyx-pretty-proc
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
                        (if (keyword? expr)
@@ -912,6 +946,7 @@
 
 ; #todo rename -> drop-idx
 ; #todo force to vector result
+; #todo allow range to drop
 (s/defn drop-at :- tsk/List
   [coll :- tsk/List
    index :- s/Int]
@@ -925,6 +960,7 @@
 
 ; #todo rename -> insert-idx
 ; #todo force to vector result
+; #todo allow vector to insert
 (s/defn insert-at :- tsk/List
   [coll :- tsk/List
    index :- s/Int
@@ -937,9 +973,9 @@
   (glue (take index coll) [elem]
     (drop index coll)))
 
-; #todo rename -> replace-idx
+; #todo rename -> elem-set
 ; #todo force to vector result
-; #todo if was vector, could just use (assoc the-vec idx new-val)
+; #todo allow idx range to replace with vector (maybe not equal # of elems)
 (s/defn replace-at :- tsk/List
   [coll :- tsk/List
    index :- s/Int
@@ -949,7 +985,8 @@
   (when (<= (count coll) index)
     (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
                                         " (count coll)=" (count coll) " index=" index))))
-  (glue (take index coll)
+  (glue
+    (take index coll)
     [elem]
     (drop (inc index) coll)))
 
@@ -957,8 +994,9 @@
 ; #todo use (idx-in coll [kw's]) as `fetch-in` replacement?
 ; #todo allow (idx coll [low high]) like python xx( low:high )
 ; #todo multiple dimensions
-(defn idx
-  [coll index-val]
+(s/defn idx
+  [coll       :- tsk/List
+   index-val  :- s/Int]
   (when (nil? coll)
     (throw (IllegalArgumentException. (str "idx: coll cannot be nil: " coll))))
   (let [data-vec (vec coll)

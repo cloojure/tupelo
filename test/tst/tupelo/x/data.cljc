@@ -1,6 +1,5 @@
 (ns tst.tupelo.x.data
-  (:use tupelo.x.data
-        tupelo.test)
+  (:use tupelo.x.data tupelo.test )
   (:require
     [clojure.math.combinatorics :as combo]
     [clojure.string :as str]
@@ -17,11 +16,11 @@
                        (if (sequential? arg)
                          arg
                          [arg] ))]
-    (tm/unlazy (apply combo/cartesian-product wrapped-args))))
+    (i/unlazy (apply combo/cartesian-product wrapped-args))))
 
 (dotest
   (is= [[:a 1 :b] [:a 2 :b] [:a 3 :b]]
-    (tm/unlazy (combo/cartesian-product [:a] [1 2 3] [:b]))
+    (i/unlazy (combo/cartesian-product [:a] [1 2 3] [:b]))
     (combo-all :a [1 2 3] :b)))
 
 

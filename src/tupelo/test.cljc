@@ -68,12 +68,13 @@
   [& forms]
   (apply throws?-impl forms))
 
-; #todo maybe def-anon-test
+; #todo maybe def-anon-test, or anon-test
 (defmacro dotest [& body] ; #todo README & tests
   (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
   `(ct/deftest ~test-name-sym ~@body)))
 
-; #todo maybe def-anon-spec
+; #todo maybe def-anon-spec or anon-spec; maybe (gen-spec 999 ...) or (gen-test 999 ...)
+; #todo maybe integrate with `dotest` like:   (dotest 999 ...)  ; 999 1st item implies generative test
 (defmacro dospec [& body] ; #todo README & tests
   (let [test-name-sym (symbol (str "dospec-line-" (:line (meta &form))))]
   `(clojure.test.check.clojure-test/defspec ^:slow ~test-name-sym ~@body)))
