@@ -22,7 +22,10 @@
     [org.clojure/tools.analyzer       "0.6.9"]
     [prismatic/schema                 "1.1.7"]
   ]
-  :profiles { :dev      {:dependencies [] 
+
+  :cljsbuild {:builds []}
+
+  :profiles { :dev      {:dependencies []
                          :plugins [] }
               :uberjar  {:aot :all}}
 

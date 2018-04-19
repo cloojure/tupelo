@@ -6,6 +6,7 @@
 ;   software.
 (ns ^:no-doc tupelo.impl
   "Tupelo - Making Clojure even sweeter"
+  #?@(:clj [
   (:require
     [clojure.core.async :as ca]
     [clojure.core.match :as ccm]
@@ -19,7 +20,11 @@
    ;[tupelo.spec :as tsp]
     [tupelo.types :as types]
     [tupelo.schema :as ts]
-  ))
+  )
+            ])
+  )
+
+#?(:clj (do
 
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
@@ -1146,3 +1151,5 @@
 ; #todo   str->chars, chars->str
 ; #todo   set->vec, vec->set
 ; #todo   line-seq et al not lazy (+ tupelo.lazy orig)
+
+))

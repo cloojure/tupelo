@@ -1,9 +1,12 @@
 (ns tupelo.schema
   "Prismatic Schema type definitions"
+  #?@(:clj [
   (:require [schema.core :as s] )
   (:import [java.util HashSet] )
-  (:gen-class))
+  (:gen-class)
+            ]) )
 
+#?(:clj (do
 (def Map      {s/Any      s/Any} )
 (def KeyMap   {s/Keyword  s/Any} )
 
@@ -75,3 +78,4 @@
   "The Clojure map representation of a Datom."
   {:e Eid :a Eid :v s/Any :tx Eid :added s/Bool})
 
+))

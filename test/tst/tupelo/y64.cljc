@@ -5,7 +5,8 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.y64
-  (:use tupelo.test)
+  #?@(:clj [
+  (:use tupelo.core tupelo.test )
   (:require [clojure.string :as str]
             [clojure.test.check :as tc]
             [clojure.test.check.clojure-test :as tst]
@@ -15,9 +16,11 @@
             [tupelo.char :as char]
             [tupelo.misc :as misc]
             [tupelo.types :as types]
-            [tupelo.y64 :as y64]))
-(t/refer-tupelo)
+            [tupelo.y64 :as y64])
+            ])
+      )
 
+#?(:clj (do
 (when (t/is-java-1-8-plus?)
   (dotest
     (let [orig      (byte-array [(byte \A)])
@@ -73,3 +76,4 @@
         (print (format "\"%s\" \"%s\" \"%s\"          " orig-str enc-str dec-str)))))
   (newline))
 
+))

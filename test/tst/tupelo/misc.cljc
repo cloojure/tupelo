@@ -7,9 +7,13 @@
 (ns tst.tupelo.misc
   (:use tupelo.misc tupelo.test )
   (:require
+    #?@(:clj [
     [tupelo.core      :as t ]
     [tupelo.string    :as ts ]
+              ])
   ))
+
+#?(:clj (do
 (t/refer-tupelo)
 
 
@@ -137,4 +141,4 @@
     (is= (uuid->str uuid-val) "e604d9bbcfb53cee6c3f305992c4a1531972b7a1" )
     (is= (str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d")))
 
-
+))

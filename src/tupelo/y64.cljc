@@ -16,6 +16,7 @@
     http://en.wikipedia.org/wiki/Base64  
     http://www.yuiblog.com/blog/2010/07/06/in-the-yui-3-gallery-base64-and-y64-encoding/
   "
+  #?@(:clj [
   (:require [clojure.string     :as str]
             [tupelo.base64      :as b64]
             [tupelo.core        :as t]
@@ -23,9 +24,10 @@
             [tupelo.misc        :as misc]
             [tupelo.types       :as types]
             [schema.core        :as s] )
-  (:gen-class))
-(t/refer-tupelo)
+  (:gen-class)
+            ]) )
 
+#?(:clj (do
 (def encoding-char-set
   "A set of chars used for the Y64 encoding (incl. padding char)"
   (into #{} (flatten [ (i/chars-thru  \a \z)
@@ -100,3 +102,4 @@
   [code-str :- s/Str]
   (-> code-str decode-str->bytes types/bytes->str))
 
+))

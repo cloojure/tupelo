@@ -6,15 +6,18 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.csv
   "Utils for reading CSV (comma-separated-value) formatted files."
+  #?@(:clj [
   (:require
     [clojure.string :as str]
     [clojure-csv.core :as csv]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.string :as ts])
-  (:import  [java.io Reader StringReader] ))
-(t/refer-tupelo)
+  (:import  [java.io Reader StringReader] )
+            ])
+      )
 
+#?(:clj (do
 (defn- get-labels-and-data-lines
   [opts parsed-lines]
   (if (:labels opts)  ; if user supplied col label keywords
@@ -91,3 +94,5 @@
   (let [opts (or opts {} ) ] 
     (row-maps->col-vecs 
       (apply parse-csv->row-maps csv-input (t/keyvals opts)))))
+
+))

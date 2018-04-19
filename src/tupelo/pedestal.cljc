@@ -6,13 +6,16 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.pedestal
   "Utils for Pedestal"
+  #?@(:clj [
+  (:use tupelo.core)
   (:require
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.impl :as i]
-    ))
-(t/refer-tupelo)
+    )
+            ]) )
 
+#?(:clj (do
 (defn context->table-route
   [ctx]
   (prepend
@@ -21,3 +24,4 @@
     (grab :interceptors ctx)
     (i/keyvals-seq* {:missing-ok true} ctx [:route-name :constraints])))
 
+))

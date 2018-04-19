@@ -5,19 +5,20 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.demo
+  #?@(:clj [
   (:use tupelo.test)
   (:require
     [clojure.string :as str]
     [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t] )
-  (:import java.time.Instant))
-(t/refer-tupelo)
+  (:import java.time.Instant)
+            ]) )
 
 ; #todo add generative testing?
 ; #todo add clojure.spec testing?
 
-
+#?(:clj (do
 (dotest
   (is (.isAfter (Instant/now) ; create clojure.java.time ns
         (Instant/parse "2017-12-31T13:14:15z")))
@@ -115,5 +116,6 @@
   (is= [] (range 0 -1))
   (is= [] (range 0 0))
   (is= [0] (range 0 1))
-  (is= [0 1] (range 0 2))
-  )
+  (is= [0 1] (range 0 2)) )
+
+))

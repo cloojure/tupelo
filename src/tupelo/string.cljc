@@ -6,6 +6,7 @@
 ;   software.
 (ns tupelo.string
   "Tupelo - Making Clojure even sweeter"
+  #?@(:clj [
   (:refer-clojure :exclude [drop take] )
   (:require
     [clojure.core :as cc]
@@ -13,8 +14,10 @@
     [schema.core :as s]
     [tupelo.char :as char]
     [tupelo.impl :as impl]
-    [tupelo.schema :as tsk]))
+    [tupelo.schema :as tsk])
+            ]) )
 
+#?(:clj (do
 (defn alphanumeric?       [& args] (every? char/alphanumeric?        (impl/strcat args)))
 (defn whitespace-horiz?   [& args] (every? char/whitespace-horiz?    (impl/strcat args)))
 (defn whitespace-eol?     [& args] (every? char/whitespace-eol?      (impl/strcat args)))
@@ -184,3 +187,4 @@
 
 ; #todo add undent (verify only leading whitespace removed)
 ; #todo add undent-lines
+))

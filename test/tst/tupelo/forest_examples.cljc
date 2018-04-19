@@ -5,6 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.forest-examples
+  #?@(:clj [
   (:use tupelo.forest tupelo.test )
   (:require
     [clojure.data.xml :as cdx]
@@ -16,9 +17,11 @@
     [tupelo.misc :as tm]
     [tupelo.schema :as tsk]
     [tupelo.forest :as tf]
-    ))
+    )
+            ]) )
 (t/refer-tupelo :dev)
 
+#?(:clj (do
 (dotest
   (with-forest (new-forest)
      (let [root-hid (add-tree-hiccup [:a
@@ -1071,3 +1074,4 @@
       (is= (mapv hid->node leaf-hids)
         [{:tupelo.forest/khids [], :tag :a, :value "1"}
          {:tupelo.forest/khids [], :tag :b, :value "2"}]))))
+))

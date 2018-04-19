@@ -6,16 +6,19 @@
 ;   software.
 (ns tupelo.core
   "Tupelo - Making Clojure even sweeter"
-  (:require 
+  #?(:clj
+  (:require
     [cheshire.core :as cc]
     [clojure.test]
     [schema.core :as s]
     [tupelo.impl :as i]
     [tupelo.schema :as ts]
     [tupelo.string :as tstr]
-  )
-  (:refer-clojure :exclude [map seqable?] )
-  (:import [java.io BufferedReader StringReader]))
+     ))
+  #?@(:clj [
+       (:refer-clojure :exclude [map seqable?])
+       (:import [java.io BufferedReader StringReader])
+       ]))
 
 ; #todo unify terminolgy (atom/ref/agent)
 ;   -> reset!/ref-set => set
@@ -27,6 +30,8 @@
 ; #todo need (defkw :fred) and (kw :fred) to catch errors like
 ; (when (= person :frid)  ; (kw :frid) -> throws
 ;    (println "Hi Barney!"))
+
+#?(:clj (do
 
 (defmacro when-clojure-1-8-plus [& forms]
   `(i/when-clojure-1-8-plus ~@forms))
@@ -1051,3 +1056,4 @@
     & values :- [s/Any]]
     (apply conj (vec base-coll) value values)))
 
+))
