@@ -25,8 +25,14 @@
 
 (defmacro is=  ; #todo readme/test
   "Use (is= ...) instead of (is (= ...)) for clojure.test"
-  [& body]
-  `(ct/is (= ~@body)))
+  [& forms]
+  `(ct/is (= ~@forms)))
+
+(defn sets= [& colls]
+  (let [set-colls (for [coll colls]
+                    `(set ~coll))]
+    `(apply is= ~@set-colls)))
+
 
 (defmacro isnt=  ; #todo readme/test
   "Use (isnt= ...) instead of (is (not= ...)) for clojure.test"

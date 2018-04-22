@@ -315,6 +315,8 @@
    the-key :- s/Any]
   (fetch-in the-map [the-key]))
 
+; #todo:  (grab [:name :phone :zip] the-map)  [<name> <phone> <zip>]
+; #todo:  (forv [key keys] (grab key the-map))
 (s/defn grab :- s/Any
   [the-key :- s/Any
    the-map :- tsk/Map]
