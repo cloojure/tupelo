@@ -175,6 +175,15 @@
     (is= 1 (first ll))
     (is= 1 (first cc))))
 
+; binding operates in parallel, not sequentially
+(def ^:dynamic xx nil)
+(def ^:dynamic yy nil)
+(dotest
+  (binding [xx 99
+            yy xx]
+    (is= 99 xx)
+    (is= nil yy)))
+
 ; samples for dospec & check-not
 ;-----------------------------------------------------------------------------
 (dospec 9
