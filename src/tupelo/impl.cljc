@@ -520,6 +520,7 @@
        ~@forms)))
 
 ;-----------------------------------------------------------------------------
+; #todo  Need it?-> like some-> that short-circuits on nil
 (defmacro it->
   [expr & forms]
   `(let [~'it ~expr
