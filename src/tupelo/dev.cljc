@@ -4,20 +4,21 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
+#?(:clj (do
+
 (ns tupelo.dev
   "Code under development"
   (:require
     [clojure.math.combinatorics :as combo]
     [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.core :as t] ))
-(t/refer-tupelo)
+    [tupelo.impl :as i] ))
 
 (defn find-idxs-impl
   [idxs data tgt]
-  (apply glue
-    (forv [[idx val] (indexed data)]
-      (let [idxs-curr (append idxs idx)]
+  (apply i/glue
+    (i/forv [[idx val] (i/indexed data)]
+      (let [idxs-curr (i/append idxs idx)]
            (if (sequential? val) ; #todo does not work for vector tgt
              (find-idxs-impl idxs-curr val tgt)
              (if (= val tgt)
@@ -28,14 +29,14 @@
   "Given a vector of nested vectors (or lists) nested"
   [data  :- [s/Any]
    tgt :- s/Any]
-  (keep-if not-nil? (find-idxs-impl [] data tgt)))
+  (i/keep-if i/not-nil? (find-idxs-impl [] data tgt)))
 
 (defn combinations-duplicate [coll n]
   "Returns all combinations of elements from the input collection, presevering duplicates."
   (let [values     (vec coll)
         idxs       (range (count values))
         idx-combos (combo/combinations idxs n)
-        combos     (forv [idx-combo idx-combos]
+        combos     (i/forv [idx-combo idx-combos]
                      (mapv #(nth values %) idx-combo))]
     combos))
 
@@ -67,3 +68,5 @@
   See `vals->map` for simple creation of labelled data maps."
   [the-map items-vec & forms]
   `(i/with-map-vals ~the-map ~items-vec ~@forms))
+
+))

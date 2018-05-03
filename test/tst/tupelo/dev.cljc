@@ -5,13 +5,15 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.dev
+  #?@(:clj [
   (:use tupelo.dev tupelo.test)
   (:require
     [criterium.core :as crit]
-    [tupelo.core :as t]
-  ))
-(t/refer-tupelo)
+    [tupelo.impl :as i]
+  )
+            ]) )
 
+#?(:clj (do
 (dotest
   (let [data-1 [1 2 3]
         data-2 [[1 2 3]
@@ -82,5 +84,6 @@
 ;; benchmarked (Java 1.8, Clojure 1.7)
 (when false
   (dotest
-    (nl) (println :v1) (crit/quick-bench (vrange  1000000))
-    (nl) (println :v2) (crit/quick-bench (vrange2 1000000)) ))
+    (i/nl) (println :v1) (crit/quick-bench (vrange  1000000))
+    (i/nl) (println :v2) (crit/quick-bench (vrange2 1000000)) ))
+))

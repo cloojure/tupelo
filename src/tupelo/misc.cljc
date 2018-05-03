@@ -6,7 +6,9 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.misc
   "Miscellaneous functions."
-  (:require 
+  #?@(:clj [
+  (:use tupelo.core)
+  (:require
     [clj-uuid :as uuid]
     [clojure.core.async :refer [go go-loop chan buffer close! thread alts! alts!! timeout]]
     [clojure.data.xml :as xml]
@@ -24,9 +26,11 @@
     [java.nio ByteBuffer]
     [java.security MessageDigest]
     [java.util UUID ]
-  ))
-(t/refer-tupelo)
+  )
+            ])
+  )
 
+#?(:clj (do
 ;  #todo Make clojure versions of all pcapng stuff
 ;
 ; def split_float( fval ):
@@ -275,4 +279,4 @@
       (uncaughtException [_ thread ex]
         (println ex "Uncaught exception on" (.getName thread)))))) ; or (log/error ...)
 
-
+))

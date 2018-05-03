@@ -6,7 +6,8 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.deprecated.misc
   "Miscellaneous functions."
-  (:require 
+  #?@(:clj [
+  (:require
     [clojure.walk :refer [postwalk]]
     [tupelo.core :as t]
     [tupelo.impl :as i]
@@ -15,8 +16,10 @@
   (:import
     [java.nio ByteBuffer]
     [java.security MessageDigest]
-    [java.util UUID ] ))
+    [java.util UUID ] )
+            ]) )
 
+#?(:clj (do
 (defn ^{:deprecated "0.9.15"} collapse-whitespace [& args] (apply ts/collapse-whitespace args))
 (defn ^{:deprecated "0.9.15"} equals-ignore-spacing [& args] (apply ts/equals-ignore-spacing args))
 (defn ^{:deprecated "0.9.15"} double-quotes->single-quotes [& args] (apply ts/double-quotes->single-quotes args))
@@ -27,3 +30,4 @@
 (defn ^{:deprecated "0.9.15"} seq->str [& args] (apply t/seq->str args))
 (def  ^{:deprecated "0.9.15"} printable-chars  char/text )
 
+))

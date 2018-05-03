@@ -5,12 +5,12 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.pedestal
-  (:use tupelo.pedestal
-        tupelo.test)
-  (:require 
-    [schema.core            :as s] )
-  )
+  (:use tupelo.pedestal tupelo.test)
+  (:require
+    [schema.core :as s]
+  ))
 
+#?(:clj (do
 (dotest
   (is= (context->table-route '{:path         "/todo/:list-id/:item"
                                :verb         :delete
@@ -37,3 +37,4 @@
     '["/todo/:list-id/:item" :delete [echo] :route-name :list-item-delete :constraints url-rules])
 
 )
+     ))

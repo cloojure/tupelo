@@ -6,6 +6,7 @@
 ;   software.
 (ns ^:no-doc tupelo.impl
   "Tupelo - Making Clojure even sweeter"
+  #?@(:clj [
   (:require
     [clojure.core.async :as ca]
     [clojure.core.match :as ccm]
@@ -19,7 +20,11 @@
    ;[tupelo.spec :as tsp]
     [tupelo.types :as types]
     [tupelo.schema :as ts]
-  ))
+  )
+            ])
+  )
+
+#?(:clj (do
 
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
@@ -310,6 +315,8 @@
    the-key :- s/Any]
   (fetch-in the-map [the-key]))
 
+; #todo:  (grab [:name :phone :zip] the-map)  [<name> <phone> <zip>]
+; #todo:  (forv [key keys] (grab key the-map))
 (s/defn grab :- s/Any
   [the-key :- s/Any
    the-map :- tsk/Map]
@@ -1185,3 +1192,5 @@
 ; #todo   str->chars, chars->str
 ; #todo   set->vec, vec->set
 ; #todo   line-seq et al not lazy (+ tupelo.lazy orig)
+
+))

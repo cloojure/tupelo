@@ -7,14 +7,18 @@
 (ns tst.tupelo.gotchas
   (:use tupelo.core tupelo.test)
   (:require
+    #?@(:clj [
     [clojure.test.check :as tc]
     [clojure.test.check.generators :as gen]
     [clojure.test.check.properties :as prop]
     [clojure.test.check.clojure-test :as tst]
     [tupelo.impl :as i]
     [tupelo.core :as t]
+             ])
   ))
 ; #todo add example for duplicates in clojure.core.combo
+
+#?(:clj (do
 
 ; rest/next too loose
 (dotest
@@ -186,3 +190,5 @@
 (dotest
   (is= 'quote (first ''hello))  ; 2 single quotes
 )
+
+))

@@ -6,13 +6,15 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.spec
   "Miscellaneous functions."
+  #?@(:clj [
   (:require
     [clojure.string :as str]
    ;[clojure.spec.alpha :as sp]
    ;[clojure.spec.test.alpha :as stest]
    ;[clojure.spec.gen.alpha :as gen]
    ;[tupelo.impl :as i]
-  ))
+  )
+  ]) )
 
 ; #todo  possible replacements:
 ; #todo    =>  spec/anything

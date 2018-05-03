@@ -5,6 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.forest-examples
+  #?@(:clj [
   (:use tupelo.forest tupelo.test )
   (:require
     [clojure.data.xml :as cdx]
@@ -18,11 +19,13 @@
     [tupelo.misc :as tm]
     [tupelo.string :as ts]
     [tupelo.schema :as tsk]
-    [tupelo.forest :as tf]
-    )
-  (:import [java.io StringReader]))
+    [tupelo.forest :as tf] )
+  (:import [java.io StringReader])
+    ]) )
+
 (t/refer-tupelo :dev)
 
+#?(:clj (do
 (dotest
   (with-forest (new-forest)
      (let [root-hid (add-tree-hiccup [:a
@@ -1165,6 +1168,7 @@
           result-sentences     (proc-tree-enlive-lazy enlive-tree-lazy
                                  [:document :sentence] doc-sentence-handler)]
       (is= result-sentences ["foo bar" "beyond all recognition"])) ))
+
 ;---------------------------------------------------------------------------------------------------
 (defn xkcd
   "Load a sample webpage from disk"
@@ -1201,3 +1205,5 @@
                                   ; :value "\nPermanent link to this comic: https://xkcd.com/1988/"}
      ;(spyx result) ; => "https://xkcd.com/1988/"
     )))
+
+))

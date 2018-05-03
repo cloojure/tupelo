@@ -5,6 +5,7 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.base64
+  #?@(:clj [
   (:use tupelo.test)
   (:require
     [clojure.string                    :as str]
@@ -19,9 +20,10 @@
     [tupelo.misc                       :as misc]
     [tupelo.types                      :as types]
     [tupelo.y64                        :as y64]
-  ))
-(t/refer-tupelo)
+  )
+            ]) )
 
+#?(:clj (do
 (dotest
   (when (t/is-java-1-8-plus?)
     (let [orig    (byte-array [(byte \A)])
@@ -125,3 +127,4 @@
 ;  (spyx src-bytes)
 ;  (spyx src-str-8859)
 ;  ))
+))

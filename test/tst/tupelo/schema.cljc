@@ -1,8 +1,9 @@
 (ns tst.tupelo.schema
   (:use tupelo.schema tupelo.core tupelo.test )
-  (:require [tupelo.core :as t]
-            [schema.core :as s] ))
+  (:require
+    [schema.core :as s] ))
 
+#?(:clj (do
 ; #todo add more tests (& test.check for Eid, etc)
 (dotest
   (is= [1]            (s/validate Single  [1] ))
@@ -36,3 +37,4 @@
   (throws? (s/validate Set  nil ))
   (throws? (s/validate Set  [1 2 3] ))
   (throws? (s/validate Set  {:a 1 :b 2} )))
+))

@@ -7,5 +7,4 @@
 (ns tst.tupelo.expr
   (:use tupelo.test)
   (:require [tupelo.core :as t] ))
-(t/refer-tupelo)
 

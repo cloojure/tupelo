@@ -6,7 +6,10 @@
 ;   software.
 (ns tupelo.x.spec
   "Tupelo - Making Clojure even sweeter"
-  (:require 
+  #?@(:clj [
+  (:require
     [tupelo.impl :as impl]
-  ))
+  )
+            ])
+      )
 

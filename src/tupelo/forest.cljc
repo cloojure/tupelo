@@ -7,6 +7,7 @@
 (ns tupelo.forest
   "Allows the use of multiple tree structures. Provides tools to create, manipulate, and query
   the the trees individually and/or collectively."
+  #?@(:clj [
   (:use tupelo.impl )
   (:require
     [clojure.core.async :as ca]
@@ -17,7 +18,8 @@
     [tupelo.misc :as tm :refer [HID]]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
-  ))
+  )
+            ]) )
 
 ; Benefits compared to nested maps like Enlive:
 ;   generalizes attrs/values; no special role for `tag` like enlive
@@ -35,6 +37,7 @@
 ; forest  data-forest  ForestDb forest-db
 ; Sherwood  weald  wald  boreal
 
+#?(:clj (do
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
 (def ^:dynamic *forest* nil)
 
@@ -1007,3 +1010,5 @@
   [root-spec :- HidRootSpec
    tgt-path :- [s/Any] ]
   (pos? (count (find-leaf-hids root-spec tgt-path))))
+
+))

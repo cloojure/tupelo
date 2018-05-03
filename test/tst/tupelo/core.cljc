@@ -5,6 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.core
+  #?@(:clj [
   (:use tupelo.core tupelo.dev tupelo.test )
   (:require
     [clojure.string :as str]
@@ -13,7 +14,8 @@
     [tupelo.impl :as i]
     [tupelo.misc :as tm]
     [tupelo.string :as ts]
-  ))
+  )
+            ]) )
 ; (t/refer-tupelo :dev)
 
 ; (s/instrument-all)
@@ -22,6 +24,7 @@
 ;-----------------------------------------------------------------------------
 ; Java version stuff
 
+#?(:clj (do
 (defn fn-any [] 42)
 (defn fn7 [] (t/if-java-1-7-plus
                7
@@ -2300,3 +2303,4 @@
     (is= r1 (map str/trim (t/str->lines s1)))
     (is= r1 (map str/trim (str/split-lines s1)))))
 
+))

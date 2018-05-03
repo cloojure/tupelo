@@ -5,11 +5,17 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.parse
+
+  #?@(:clj [
   (:use clojure.test)
   (:require [tupelo.parse :as tpar]
             [tupelo.core :as t]
             [schema.core  :as s] )
-  (:import   [java.lang.Math] ))
+  (:import   [java.lang.Math] )
+            ])
+      )
+
+#?(:clj (do
 (t/refer-tupelo)
 
 (deftest parse-byte
@@ -112,3 +118,4 @@
     (is (t/rel= Math/PI                     (tpar/parse-double "3.141592654" :default 0)     :digits 9))
   ))
 
+))
