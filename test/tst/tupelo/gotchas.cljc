@@ -12,6 +12,7 @@
     [clojure.test.check.generators :as gen]
     [clojure.test.check.properties :as prop]
     [clojure.test.check.clojure-test :as tst]
+    [clojure.set :as set]
     [tupelo.impl :as i]
     [tupelo.core :as t]
              ])
@@ -189,6 +190,14 @@
 
 (dotest
   (is= 'quote (first ''hello))  ; 2 single quotes
+)
+
+;-----------------------------------------------------------------------------
+; clojure.set has no type-checking
+(dotest
+  (is= [:z :y :x  1  2  3] (set/union '(1 2 3) '(:x :y :z)))
+  (is= [ 1  2  3 :x :y :z] (set/union  [1 2 3]  [:x :y :z]))
+  (is= #{1  2  3 :x :y :z} (set/union #{1 2 3} #{:x :y :z}))
 )
 
 ))
