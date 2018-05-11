@@ -1148,8 +1148,7 @@
            [{:id "2.1", :tag :word, :value "beyond"}]
            [{:id "2.2", :tag :word, :value "all"}]
            [{:id "2.3", :tag :word, :value "recognition"}]]]])
-      (is=
-        (spyx-pretty result-document)
+      (is= result-document
         [[{:tag :document}
           [{:id "1", :tag :sentence}
            [{:id "1.1", :tag :word, :value "foo"}]
