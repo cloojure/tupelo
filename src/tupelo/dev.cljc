@@ -23,13 +23,20 @@
              (find-idxs-impl idxs-curr val tgt)
              (if (= val tgt)
                [{:idxs idxs-curr :val val}]
-               [nil]))))))
+               []))))))
 
 (s/defn find-idxs
-  "Given a vector of nested vectors (or lists) nested"
+  "Given an N-dim data structure (nested vectors/lists) & a target value, returns
+  a list of maps detailing where index values where the target value is found.
+
+    (is= (find-idxs  [[ 1  2 3]
+                      [10 11  ]
+                      [ 9  2 8]]  2)
+      [{:idxs [0 1], :val 2}
+       {:idxs [2 1], :val 2}]) "
   [data  :- [s/Any]
    tgt :- s/Any]
-  (i/keep-if i/not-nil? (find-idxs-impl [] data tgt)))
+  (find-idxs-impl [] data tgt))
 
 (defn combinations-duplicate [coll n]
   "Returns all combinations of elements from the input collection, presevering duplicates."
