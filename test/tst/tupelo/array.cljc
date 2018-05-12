@@ -1,17 +1,19 @@
 (ns tst.tupelo.array
+  #?@(:clj [
   (:use tupelo.array
         tupelo.test)
   (:require
     [schema.test :as st]
     [tupelo.array :as tar]
     [tupelo.misc :as tm]
-    [tupelo.core :as t]
+    [tupelo.impl :as i]
     [tupelo.string :as ts]
-    [clojure.string :as str]))
+    [clojure.string :as str])
+            ]) )
 
-(t/refer-tupelo)
 (use-fixtures :once st/validate-schemas)
 
+#?(:clj (do
 (dotest
   (let [a34  (tar/create 3 4 :a)
         a34f (flatten a34)]
@@ -19,7 +21,7 @@
     (is= 4 (count (a34 0)) (tar/num-cols a34))
     (is= 12 (count a34f))
     (is (every? #(= :a %) a34f))
-    (is (every? #(= :a %) (forv [ii (range (tar/num-rows a34))
+    (is (every? #(= :a %) (i/forv [ii (range (tar/num-rows a34))
                                  jj (range (tar/num-cols a34))]
                             (tar/elem-get a34 ii jj)))))
 
@@ -29,7 +31,7 @@
     (is= 4 (count (a34 0)) (tar/num-cols a34))
     (is= 12 (count a34f))
     (is (every? nil? a34f))
-    (is (every? nil? (forv [ii (range (tar/num-rows a34))
+    (is (every? nil? (i/forv [ii (range (tar/num-rows a34))
                             jj (range (tar/num-cols a34))]
                        (tar/elem-get a34 ii jj)))))
 
@@ -351,3 +353,4 @@
 
     )
   )
+))

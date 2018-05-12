@@ -7,14 +7,19 @@
 (ns tupelo.forest
   "Allows the use of multiple tree structures. Provides tools to create, manipulate, and query
   the the trees individually and/or collectively."
+  #?@(:clj [
   (:use tupelo.impl )
   (:require
+    [clojure.core.async :as ca]
     [clojure.set :as clj.set]
+    [clojure.data.xml]
+    [net.cgrand.enlive-html :as enlive-html]
     [schema.core :as s]
     [tupelo.misc :as tm :refer [HID]]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
-  ))
+  )
+            ]) )
 
 ; Benefits compared to nested maps like Enlive:
 ;   generalizes attrs/values; no special role for `tag` like enlive
@@ -32,6 +37,7 @@
 ; forest  data-forest  ForestDb forest-db
 ; Sherwood  weald  wald  boreal
 
+#?(:clj (do
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
 (def ^:dynamic *forest* nil)
 
@@ -336,6 +342,7 @@
   (grab attr (hid->node hid)))
 
 (s/defn hid->kids :- [HID]
+  "Returns the HIDs for a nodes children."
   [hid :- HID]
   (grab ::khids (hid->node hid)))
 
@@ -540,6 +547,68 @@
   [:a ...] -> {:a nil ...}..."
   [arg]
   (add-tree (hiccup->tree arg)))
+
+(s/defn add-tree-xml :- HID
+  "Adds a tree to the forest from an XML string."
+  [xml-str :- s/Str]
+  (->> xml-str
+    java.io.StringReader.
+    enlive-html/xml-resource
+    only
+    add-tree-enlive))
+
+(def ^:dynamic *xml-subtree-buffer-size* 32)
+
+(s/defn ^:no-doc nest-enlive-nodes :- tsk/EnliveNode
+  "Reconstructs an Enlive tree from a sequence of nodes."
+  [nodes :- [tsk/EnliveNode]]
+  (let [num-nodes (count nodes)]
+    (cond
+      (zero? num-nodes) (throw (IllegalArgumentException. "num-nodes must be positive"))
+      (= 1 num-nodes)   (only nodes)
+      :else (let [nodes-1           (xbutlast nodes)
+                  nodes-2           (xbutlast nodes-1)
+                  node-last         (xlast nodes)
+                  node-last-1       (xlast nodes-1)
+                  nodes-merged-last (append nodes-2 (assoc node-last-1 :content [node-last]))]
+              (nest-enlive-nodes nodes-merged-last)))))
+
+(defn ^:no-doc proc-subtree-xml
+  [output-chan enlive-nodes-lazy parent-nodes path-target handler]
+  (let [curr-tag (xfirst path-target)]
+    ;(println "-----------------------------------------------------------------------------")
+    ;(spyx-pretty enlive-nodes-lazy)
+    ;(spyx parent-nodes)
+    ;(spyx path-target)
+    ;(spyx curr-tag)
+    (doseq [curr-node enlive-nodes-lazy]
+      (when (map? curr-node) ; discard any embedded string content (esp. blanks)
+       ;(spyx-pretty curr-node)
+        (when (= curr-tag (grab :tag curr-node))
+          (let [next-path-target (xrest path-target)]
+            (if (not-empty? next-path-target)
+              (let [next-parent-nodes (append parent-nodes (-> (submap-by-keys curr-node [:tag :attrs])
+                                                             (assoc :content [])))]
+                (proc-subtree-xml output-chan (grab :content curr-node) next-parent-nodes next-path-target handler))
+              (with-forest (new-forest)
+                (let [input32  (append parent-nodes (unlazy curr-node))
+                     ;>> (spyx input32)
+                      root-hid (add-tree-enlive (nest-enlive-nodes input32))]
+                  (ca/>!! output-chan (handler root-hid)))))))))))
+
+(defn proc-tree-enlive-lazy
+  "Lazily read & process subtrees from a Reader or InputStream"
+  [enlive-tree-lazy subtree-path handler]
+  (let [output-chan        (ca/chan *xml-subtree-buffer-size*)
+        lazy-reader-fn     (fn lazy-reader-fn  []
+                             (let [curr-item (ca/<!! output-chan)] ; #todo ta/take-now!
+                               (when (not-nil? curr-item)
+                                 (lazy-cons curr-item (lazy-reader-fn))))) ]
+   ;(spyx-pretty enlive-tree-lazy)
+    (ca/go
+      (proc-subtree-xml output-chan [enlive-tree-lazy] [] subtree-path handler)
+      (ca/close! output-chan))
+    (lazy-reader-fn)))
 
 (s/defn hid->bush :- tsk/Vec
   [hid :- HID]
@@ -826,7 +895,7 @@
                 ;           "  tgt-path:" tgt-path))
                 (find-paths-impl result-atom parents-new kid tgt-path)))))))))
 
-(def HidRootSpec (s/either HID [HID] #{HID}))
+(def HidRootSpec (s/either HID [HID] #{HID})) ; #todo why is this here?
 
 ; #todo need a find-paths-pred that takes a predicate fn to choose
 ; #todo maybe a fn like postwalk to apply transformation fn to each node recursively
@@ -895,12 +964,19 @@
    tgt-path :- [s/Any] ]
   (hid->leaf (find-leaf-hid root-spec tgt-path )))
 
-(s/defn blank-leaf-hid? :- s/Bool
+(s/defn whitespace-leaf-hid? :- s/Bool
   [hid :- HID]
   (and (leaf-value-hid?  hid) ; ensure it is a leaf node and has :value
     (let [value (grab :value (hid->node hid))]
       (and (string? value)
         (ts/whitespace? value))))) ; all whitespace string
+
+(defn remove-whitespace-leaves
+  "Removes leaves from all trees in the forest that are whitespace-only strings
+  (including zero-length strings)."
+  []
+  (let [blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids))]
+    (apply remove-hid blank-leaf-hids)))
 
 (s/defn find-paths-with
   [root-spec :- HidRootSpec
@@ -934,3 +1010,5 @@
   [root-spec :- HidRootSpec
    tgt-path :- [s/Any] ]
   (pos? (count (find-leaf-hids root-spec tgt-path))))
+
+))

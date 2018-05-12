@@ -4,7 +4,16 @@
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
-(ns tst.tupelo.expr
-  (:use tupelo.test)
-  (:require [tupelo.core :as t] ))
+(ns tupelo.set
+  "Tupelo - Making Clojure even sweeter"
+#?@(:clj [
+          (:require [clojure.set :as raw] ) ]))
 
+#?(:clj
+   (do
+     (defn union [& args]
+       (assert (every? set? args))
+       (apply raw/union args) )
+
+     ; #todo copy clojure.set stuff
+))

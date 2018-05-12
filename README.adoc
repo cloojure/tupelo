@@ -275,6 +275,8 @@ placeholder value:
 8           ; return value
 ----
 
+More examples link:it-thread.adoc[can be found here].
+
 === Map Value Lookup
 
 Maps are convenient, especially when keywords are used as functions to look up a value in
@@ -1278,5 +1280,6 @@ image:resources/cursive-logo-300.png[Cursive]
   add more test.check
   add spy-let, spy-defn, spy-validate, etc
   blog posts
+
 
 

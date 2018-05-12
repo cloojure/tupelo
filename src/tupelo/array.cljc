@@ -1,9 +1,13 @@
 (ns tupelo.array
+  #?@(:clj [
+  (:use tupelo.core)
   (:require [schema.core :as s]
             [tupelo.core :as t]
-            [clojure.set :as set]))
-(t/refer-tupelo)
+            [clojure.set :as set])
+            ])
+  )
 
+#?(:clj (do
 (def Vector
   "A 1-D array of values (a vector of vectors)."
   [s/Any] )
@@ -309,3 +313,4 @@
         (print (format "%8s" (elem-get arr ii jj))))
       (newline))))
 
+))

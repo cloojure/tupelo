@@ -5,13 +5,15 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.dev
+  #?@(:clj [
   (:use tupelo.dev tupelo.test)
   (:require
     [criterium.core :as crit]
-    [tupelo.core :as t]
-  ))
-(t/refer-tupelo)
+    [tupelo.impl :as i]
+  )
+            ]) )
 
+#?(:clj (do
 (dotest
   (let [data-1 [1 2 3]
         data-2 [[1 2 3]
@@ -20,6 +22,9 @@
         data-2b '((1 2 3)
                   (10 11)
                   ())
+        data-2c [[1 2 3]
+                 [10 11]
+                 [9 2 8]]
         data-3 [[[1 2 3]
                  [4 5 6]
                  [7 8 9]]
@@ -44,6 +49,10 @@
     (is= (find-idxs data-2 10) [{:idxs [1 0], :val 10}] )
 
     (is= (find-idxs data-2b 10) [{:idxs [1 0], :val 10}] )
+
+    (is= (find-idxs data-2c 2)
+      [{:idxs [0 1], :val 2}
+       {:idxs [2 1], :val 2}])
 
     (is= (find-idxs data-3 13) [{:idxs [1 1 1], :val 13}])
     (is= (find-idxs data-3 21) [{:idxs [2 1 0], :val 21}])
@@ -82,5 +91,6 @@
 ;; benchmarked (Java 1.8, Clojure 1.7)
 (when false
   (dotest
-    (nl) (println :v1) (crit/quick-bench (vrange  1000000))
-    (nl) (println :v2) (crit/quick-bench (vrange2 1000000)) ))
+    (i/nl) (println :v1) (crit/quick-bench (vrange  1000000))
+    (i/nl) (println :v2) (crit/quick-bench (vrange2 1000000)) ))
+))

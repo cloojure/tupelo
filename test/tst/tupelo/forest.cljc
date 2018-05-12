@@ -5,15 +5,18 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.forest
+  #?@(:clj [
   (:use tupelo.forest tupelo.test )
   (:require
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.misc :as tm]
     [tupelo.forest :as tf]
-  ))
+  )
+]) )
 (t/refer-tupelo :dev)
 
+#?(:clj (do
 (dotest
   (let [
         tree-2 [:a
@@ -1366,7 +1369,25 @@
   (let [data-3   {:a 1 :b {:c 3}}
         tree-3   (data->tree data-3)
         return-3 (tree->data tree-3)]
-    (is= return-3 data-3))
+    (is= return-3 data-3)) )
 
-)
+(dotest
+  (throws? (nest-enlive-nodes []))
+  (is= (nest-enlive-nodes [{:tag :a, :attrs {:a 1}, :content [1 1]}])
+    {:tag :a, :attrs {:a 1}, :content [1 1]})
+  (is= (nest-enlive-nodes [{:tag :a :attrs {:a 1} :content []}
+                           {:tag :b :attrs {:b 2} :content [2 2 2]}])
+    {:tag     :a
+     :attrs   {:a 1}
+     :content [{:tag :b :attrs {:b 2} :content [2 2 2]}]})
+  (is= (nest-enlive-nodes [{:tag :a :attrs {:a 1} :content [1 1 1]}
+                           {:tag :b :attrs {:b 2} :content [2 2]}
+                           {:tag :c :attrs {:c 3} :content [3 3 3]}])
+    {:tag   :a,
+     :attrs {:a 1},
+     :content
+            [{:tag     :b,
+              :attrs   {:b 2},
+              :content [{:tag :c, :attrs {:c 3}, :content [3 3 3]}]}]}))
 
+))

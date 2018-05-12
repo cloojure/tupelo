@@ -6,16 +6,19 @@
 ;   software.
 (ns tupelo.core
   "Tupelo - Making Clojure even sweeter"
-  (:require 
+  #?(:clj
+  (:require
     [cheshire.core :as cc]
     [clojure.test]
     [schema.core :as s]
     [tupelo.impl :as i]
     [tupelo.schema :as ts]
     [tupelo.string :as tstr]
-  )
-  (:refer-clojure :exclude [map seqable?] )
-  (:import [java.io BufferedReader StringReader]))
+     ))
+  #?@(:clj [
+       (:refer-clojure :exclude [map seqable?])
+       (:import [java.io BufferedReader StringReader])
+       ]))
 
 ; #todo unify terminolgy (atom/ref/agent)
 ;   -> reset!/ref-set => set
@@ -28,19 +31,57 @@
 ; (when (= person :frid)  ; (kw :frid) -> throws
 ;    (println "Hi Barney!"))
 
+#?(:clj (do
+
 (defmacro when-clojure-1-8-plus [& forms]
   `(i/when-clojure-1-8-plus ~@forms))
 
 (defmacro when-clojure-1-9-plus [& forms]
   `(i/when-clojure-1-9-plus ~@forms))
 
-(defn nl [] (i/nl))
+(defn nl
+  "Abbreviated name for `newline` "
+  [] (i/nl))
+
+(defn unlazy
+  "Converts a lazy collection to a concrete (eager) collection of the same type."
+  [coll] (i/unlazy coll))
+
+(defn has-length?
+  "Returns true if the collection has the indicated length. Does not hang for infinite sequences."
+  [coll n] (i/has-length? coll n))
 
 (defn only
   "Ensures that a sequence is of length=1, and returns the only value present.
   Throws an exception if the length of the sequence is not one.
   Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
   [coll] (i/only coll))
+
+(defn onlies
+  "Given an outer collection of length-1 collections, returns a sequence of the unwrapped values.
+    (onlies  [ [1] [2] [3] ])  =>  [1 2 3]
+    (onlies #{ [1] [2] [3] })  => #{1 2 3} "
+  [coll] (i/onlies coll))
+
+(defn only2
+  "Given a collection like `[[5]]`, returns `5`.  Equivalent to `(only (only coll))`."
+  [coll] (i/only2 coll))
+
+(defn single?
+  "Returns true if the collection contains a single item.`"
+  [coll] (i/single? coll))
+
+(defn pair?
+  "Returns true if the collection contains exactly 2 items."
+  [coll] (i/pair? coll))
+
+(defn triple?
+  "Returns true if the collection contains exactly 3 items."
+  [coll] (i/triple? coll))
+
+(defn quad?
+  "Returns true if the collection contains exactly 4 items."
+  [coll] (i/quad? coll))
 
 ; WARNING:  cannot use Plumatic schema for functions that may receive an infinite lazy sequence
 ; as input.  See:  https://groups.google.com/forum/#!topic/clojure/oM1PH4sXzoA
@@ -810,10 +851,18 @@
   [tst-map valid-keys ] (i/validate-map-keys tst-map valid-keys))
 
 (defn map-keys ; #todo docstring, README
+  "Transforms each value in a map using the supplied `tx-fn`:
+
+    (t/map-keys {1 :a 2 :b 3 :c} inc)                  =>  {  2 :a   3 :b 4   :c}
+    (t/map-keys {1 :a 2 :b 3 :c} {1 101 2 202 3 303})  =>  {101 :a 202 :b 303 :c}"
   [map-in tx-fn & tx-args ]
   (apply i/map-keys map-in tx-fn tx-args))
 
 (defn map-vals ; #todo docstring, README
+  "Transforms each value in a map using the supplied `tx-fn`:
+
+      (t/map-vals {:a 1 :b 2 :c 3} inc)                  =>  {:a 2,   :b 3,   :c 4}
+      (t/map-vals {:a 1 :b 2 :c 3} {1 101 2 202 3 303})  =>  {:a 101, :b 202, :c 303} "
   [map-in tx-fn & tx-args]
   (apply i/map-vals map-in tx-fn tx-args))
 
@@ -1051,3 +1100,4 @@
     & values :- [s/Any]]
     (apply conj (vec base-coll) value values)))
 
+))

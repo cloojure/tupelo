@@ -6,30 +6,40 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.test
   "Testing functions."
-  (:require [clojure.test.check :as tc]
-            [clojure.test :as ct]
-            [tupelo.impl :as i] ))
+  #?@(:clj [
+  (:require
+    [clojure.test.check :as ctc]
+    [clojure.test :as ct]
+    [tupelo.impl :as i])
+            ]) )
 
 (defn use-fixtures [& args] (apply ct/use-fixtures args))
 (defmacro deftest [& forms] `(ct/deftest ~@forms))
 (defmacro is [& forms] `(ct/is ~@forms))
 (defmacro testing [& forms] `(ct/testing ~@forms))
 
-
 (defmacro isnt      ; #todo readme/test
   "Use (isnt ...) instead of (is (not ...)) for clojure.test"
   [& body]
-  `(clojure.test/is (not ~@body)))
+  `(ct/is (not ~@body)))
 
 (defmacro is=  ; #todo readme/test
   "Use (is= ...) instead of (is (= ...)) for clojure.test"
-  [& body]
-  `(clojure.test/is (= ~@body)))
+  [& forms]
+  `(ct/is (= ~@forms)))
+
+(defn sets= [& colls]
+  (let [set-colls (for [coll colls]
+                    `(set ~coll))]
+    `(apply is= ~@set-colls)))
+
 
 (defmacro isnt=  ; #todo readme/test
   "Use (isnt= ...) instead of (is (not= ...)) for clojure.test"
   [& body]
-  `(clojure.test/is (not (= ~@body))))
+  `(ct/is (not (= ~@body))))
+
+#?(:clj (do
 
 (defn throws?-impl
   [& forms]
@@ -37,7 +47,7 @@
     ; symbol 1st arg => expected Throwable provided
     (do
       ; (println "symbol found")
-      `(clojure.test/is
+      `(ct/is
          (try
            ~@(rest forms)
            false        ; fail if no exception thrown
@@ -48,7 +58,7 @@
       )
     (do ; expected Throwable not provided
       ; (println "symbol not found")
-      `(clojure.test/is
+      `(ct/is
          (try
            ~@forms
            false        ; fail if no exception thrown
@@ -64,20 +74,23 @@
   [& forms]
   (apply throws?-impl forms))
 
-; #todo maybe def-anon-test
+; #todo maybe def-anon-test, or anon-test
 (defmacro dotest [& body] ; #todo README & tests
   (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
-  `(clojure.test/deftest ~test-name-sym ~@body)))
+  `(ct/deftest ~test-name-sym ~@body)))
 
-; #todo maybe def-anon-spec
+; #todo maybe def-anon-spec or anon-spec; maybe (gen-spec 999 ...) or (gen-test 999 ...)
+; #todo maybe integrate with `dotest` like:   (dotest 999 ...)  ; 999 1st item implies generative test
 (defmacro dospec [& body] ; #todo README & tests
   (let [test-name-sym (symbol (str "dospec-line-" (:line (meta &form))))]
   `(clojure.test.check.clojure-test/defspec ^:slow ~test-name-sym ~@body)))
 
 (defmacro check-is [& body] ; #todo README & tests
-  `(clojure.test/is (i/grab :result (tc/quick-check ~@body))))
+  `(ct/is (i/grab :result (ctc/quick-check ~@body))))
 
 (defmacro check-isnt [& body] ; #todo README & tests
-  `(clojure.test/is (not (i/grab :result (tc/quick-check ~@body)))))
+  `(ct/is (not (i/grab :result (ctc/quick-check ~@body)))))
 
 ; #todo: gen/elements -> clojure.check/rand-nth
+
+))

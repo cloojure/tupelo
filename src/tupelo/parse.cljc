@@ -10,13 +10,16 @@
   functions, these native-Clojure functions can be used as higher-order functions in maps,
   function arguments, etc.  Each function also provides an optional default-value which
   will be returned if there is an exception during parsing."
+  #?@(:clj [
+  (:use tupelo.core)
   (:require [schema.core  :as s]
-            [tupelo.core :as t] ))
-(t/refer-tupelo)
+            [tupelo.core :as t] )
+            ]) )
 
 ; #todo:  write doc page
 ; #todo:  convert args from [str-val & opts] -> [str-val & {:as opts} ]
 
+#?(:clj (do
 (defn parse-byte
  "( [str-val]
     [str-val :default default-val] )
@@ -117,3 +120,4 @@
 
 ; #awt TODO:  finish other parse* functions
 
+))

@@ -6,14 +6,18 @@
 ;   software.
 (ns tupelo.async
   "tupelo - Making Clojure even sweeter"
+  #?@(:clj [
+  (:use tupelo.core)
   (:require [clojure.core.async :as async]
             [tupelo.core :as t]
             [schema.core :as s] )
   (:refer-clojure :exclude [vec] )
-  (:gen-class))
-(t/refer-tupelo)
+  (:gen-class)
+            ])
+      )
 
-; #todo finish this? 
+#?(:clj (do
+; #todo finish this?
 ; (defn refer-tupelo-async [] nil)
 ; #todo or just copy all core.async as alias?
 ;   (:require [clojure.core.async 
@@ -61,3 +65,5 @@
   "Extract all values from a channel into a vector."
   [ch]
   (take-now! (async/into [] ch)))
+
+))

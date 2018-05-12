@@ -6,6 +6,7 @@
 ;   software.
 (ns tupelo.gen
   "Tupelo - Clojure With A Spoonful of Honey"
+  #?@(:clj [
   (:refer-clojure :exclude [rand-nth constantly] )
   (:require
     [clojure.string :as str]
@@ -15,7 +16,8 @@
     [clojure.test.check.properties :as prop]
     [tupelo.impl :as i]
     [tupelo.char :as char]
-  ))
+  )
+            ]))
 
 ; #todo: for test.check v2:
 ;     fmap        -> map
@@ -33,6 +35,7 @@
 ;   gen/sample-seq            -> tgen/->lazy-seq
 ;   tc/quick-check            -> (ttc/quick-check {:num-tests 100} ...)
 
+#?(:clj (do
 (defn txt-join
   "Wraps the supplied generator using clojure.string/join."
   [xgen]
@@ -107,3 +110,4 @@
   "One or more EOL chars."
   (vector+ char-eol))
 
+))

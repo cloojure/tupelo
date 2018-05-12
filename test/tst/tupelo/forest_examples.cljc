@@ -5,20 +5,27 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.forest-examples
+  #?@(:clj [
   (:use tupelo.forest tupelo.test )
   (:require
     [clojure.data.xml :as cdx]
     [clojure.java.io :as io]
     [clojure.set :as cs]
+    [clojure.string :as str]
     [net.cgrand.enlive-html :as enlive-html]
+    [net.cgrand.jsoup :as enlive-jsoup]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.misc :as tm]
+    [tupelo.string :as ts]
     [tupelo.schema :as tsk]
-    [tupelo.forest :as tf]
-    ))
+    [tupelo.forest :as tf] )
+  (:import [java.io StringReader])
+    ]) )
+
 (t/refer-tupelo :dev)
 
+#?(:clj (do
 (dotest
   (with-forest (new-forest)
      (let [root-hid (add-tree-hiccup [:a
@@ -371,23 +378,24 @@
         ; >> (println "io/input-stream - BEFORE")
         v2 (io/input-stream v1)
         ; >> (println "io/input-stream - AFTER")
-        >> (do
-             (nl)
-             (println (class v2))
-             (println "*****************************************************************************")
-             (println v2)
-             (println "*****************************************************************************")
-             (nl))
+        ;>> (do
+        ;     (nl)
+        ;     (println (class v2))
+        ;     (println "*****************************************************************************")
+        ;     (println v2)
+        ;     (println "*****************************************************************************")
+        ;     (nl))
 
-        >> (println "clojure.data.xml/parse - BEFORE")
+       ;>> (println "clojure.data.xml/parse - BEFORE")
         v3 (clojure.data.xml/parse v2)
-        >> (println "clojure.data.xml/parse - AFTER")]
+       ;>> (println "clojure.data.xml/parse - AFTER")
+      ]
     v3))
 
-(dotest
-  (println "zappy - BEFORE")
-  (zappy)
-  (println "zappy - AFTER"))
+;(dotest
+;  (println "zappy - BEFORE")
+;  (zappy)
+;  (println "zappy - AFTER"))
 
 ; #todo #bug clojure.lang.Reflector
 (dotest
@@ -499,7 +507,7 @@
           type-bc-hid?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type :value "B"}])
                                         (has-child-leaf? hid [:** {:tag :Type :value "C"}])))
 
-          blank-leaf-hids (keep-if blank-leaf-hid? (all-hids))
+          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-hids))
           >>              (apply remove-hid blank-leaf-hids)
           tree-2          (hid->tree root-hid)
 
@@ -592,7 +600,7 @@
           root-hid        (add-tree-enlive enlive-tree)
           has-bc-leaf?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type :value "B"}])
                                       (has-child-leaf? hid [:** {:tag :Type :value "C"}])))
-          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids))
+          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids))
           >>              (apply remove-hid blank-leaf-hids)
           bc-item-hids    (find-hids-with root-hid [:** :Item] has-bc-leaf?)]
       (apply remove-hid bc-item-hids)
@@ -638,7 +646,7 @@
           root-hid             (add-tree-enlive enlive-tree)
           tree-1               (hid->hiccup root-hid)
 
-          blank-leaf-hids      (keep-if blank-leaf-hid? (all-hids))
+          blank-leaf-hids      (keep-if whitespace-leaf-hid? (all-hids))
           >>                   (apply remove-hid blank-leaf-hids)
           tree-2               (hid->hiccup root-hid)
 
@@ -708,7 +716,7 @@
           root-hid        (add-tree-enlive enlive-tree)
 
           ; Removing whitespace nodes is optional; just done to keep things neat
-          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
+          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
           >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
 
           ; Can search for inner `div` 2 ways
@@ -768,7 +776,7 @@
           tree-1          (hid->hiccup root-hid) ; orig tree with lots of whitespace leaves
 
           ; Removing whitespace nodes is optional; just done to keep things neat
-          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
+          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
           >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
           tree-2          (hid->hiccup root-hid)
           >>              (is= tree-2 [:html
@@ -849,7 +857,7 @@
           root-hid        (add-tree-enlive enlive-tree)
 
           ; Removing whitespace nodes is optional; just done to keep things neat
-          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
+          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
           >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
 
           ; Can search for inner `div` 2 ways
@@ -1055,7 +1063,7 @@
                             only)
           root-hid        (add-tree-enlive enlive-tree)
           bush-blanks     (hid->bush root-hid)
-          blank-leaf-hids (keep-if blank-leaf-hid? (all-leaf-hids))
+          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids))
           >>              (apply remove-hid blank-leaf-hids)
           bush-no-blanks  (hid->bush root-hid)
           leaf-hids       (find-leaf-hids root-hid [:** :*])]
@@ -1071,3 +1079,131 @@
       (is= (mapv hid->node leaf-hids)
         [{:tupelo.forest/khids [], :tag :a, :value "1"}
          {:tupelo.forest/khids [], :tag :b, :value "2"}]))))
+;-----------------------------------------------------------------------------
+(dotest
+  (let [xml-str (ts/quotes->double
+                  "<document>
+                     <sentence id='1'>
+                       <word id='1.1'>foo</word>
+                       <word id='1.2'>bar</word>
+                     </sentence>
+                     <sentence id='2'>
+                       <word id='2.1'>beyond</word>
+                       <word id='2.2'>all</word>
+                       <word id='2.3'>recognition</word>
+                     </sentence>
+                   </document>")]
+    (with-forest (new-forest)
+      (let [root-hid       (add-tree-xml xml-str)
+            >>             (remove-whitespace-leaves)
+            bush-no-blanks (hid->bush root-hid)
+            sentence-hids  (find-hids root-hid [:document :sentence])
+            sentences      (forv [sentence-hid sentence-hids]
+                             (let [word-hids     (hid->kids sentence-hid)
+                                   words         (mapv #(grab :value (hid->leaf %)) word-hids)
+                                   sentence-text (str/join \space words)]
+                               sentence-text))]
+        (is= bush-no-blanks
+          [{:tag :document}
+           [{:id "1", :tag :sentence}
+            [{:id "1.1", :tag :word, :value "foo"}]
+            [{:id "1.2", :tag :word, :value "bar"}]]
+           [{:id "2", :tag :sentence}
+            [{:id "2.1", :tag :word, :value "beyond"}]
+            [{:id "2.2", :tag :word, :value "all"}]
+            [{:id "2.3", :tag :word, :value "recognition"}]]])
+        (is= sentences
+          ["foo bar"
+           "beyond all recognition"])))
+    (let [handler          (fn [root-hid]
+                             (remove-whitespace-leaves)
+                             (tf/hid->bush root-hid))
+          enlive-tree-lazy (clojure.data.xml/parse (StringReader. xml-str))
+          result-word      (proc-tree-enlive-lazy enlive-tree-lazy [:document :sentence :word] handler)
+          result-sentence  (proc-tree-enlive-lazy enlive-tree-lazy [:document :sentence] handler)
+          result-document  (proc-tree-enlive-lazy enlive-tree-lazy [:document] handler)]
+      (is= result-word
+        [[{:tag :document}
+          [{:id "1", :tag :sentence}
+           [{:id "1.1", :tag :word, :value "foo"}]]]
+         [{:tag :document}
+          [{:id "1", :tag :sentence}
+           [{:id "1.2", :tag :word, :value "bar"}]]]
+         [{:tag :document}
+          [{:id "2", :tag :sentence}
+           [{:id "2.1", :tag :word, :value "beyond"}]]]
+         [{:tag :document}
+          [{:id "2", :tag :sentence}
+           [{:id "2.2", :tag :word, :value "all"}]]]
+         [{:tag :document}
+          [{:id "2", :tag :sentence}
+           [{:id "2.3", :tag :word, :value "recognition"}]]]])
+      (is= result-sentence
+        [[{:tag :document}
+          [{:id "1", :tag :sentence}
+           [{:id "1.1", :tag :word, :value "foo"}]
+           [{:id "1.2", :tag :word, :value "bar"}]]]
+         [{:tag :document}
+          [{:id "2", :tag :sentence}
+           [{:id "2.1", :tag :word, :value "beyond"}]
+           [{:id "2.2", :tag :word, :value "all"}]
+           [{:id "2.3", :tag :word, :value "recognition"}]]]])
+      (is= result-document
+        [[{:tag :document}
+          [{:id "1", :tag :sentence}
+           [{:id "1.1", :tag :word, :value "foo"}]
+           [{:id "1.2", :tag :word, :value "bar"}]]
+          [{:id "2", :tag :sentence}
+           [{:id "2.1", :tag :word, :value "beyond"}]
+           [{:id "2.2", :tag :word, :value "all"}]
+           [{:id "2.3", :tag :word, :value "recognition"}]]]]))
+    (let [enlive-tree-lazy     (clojure.data.xml/parse (StringReader. xml-str))
+          doc-sentence-handler (fn [root-hid]
+                                 (remove-whitespace-leaves)
+                                 (let [sentence-hid  (only (find-hids root-hid [:document :sentence]))
+                                       word-hids     (hid->kids sentence-hid)
+                                       words         (mapv #(grab :value (hid->leaf %)) word-hids)
+                                       sentence-text (str/join \space words)]
+                                   sentence-text))
+          result-sentences     (proc-tree-enlive-lazy enlive-tree-lazy
+                                 [:document :sentence] doc-sentence-handler)]
+      (is= result-sentences ["foo bar" "beyond all recognition"])) ))
+
+;---------------------------------------------------------------------------------------------------
+(defn xkcd
+  "Load a sample webpage from disk"
+  []
+  (-> "xkcd-sample.html"
+    (io/resource)
+    (io/input-stream)
+    ;(clojure.data.xml/parse)
+    (enlive-jsoup/parser)
+  ))
+(dotest
+  (when false ; manually enable to grab a new copy of the webpage
+    (spit "xkcd-sample.html"
+      (slurp "https://xkcd.com")))
+  (with-forest (new-forest)
+    (let [doc         (it-> (xkcd)
+                        (drop-if #(= :dtd (:type %)) it)
+                        (only it))
+          root-hid    (add-tree-enlive doc)
+          >>          (remove-whitespace-leaves)
+          ;>>          (spyx-pretty (hid->bush root-hid))
+          hid-keep-fn (fn [hid]
+                        (let [node       (hid->node hid)
+                              value      (when (contains? node :value) (grab :value node))
+                              perm-link? (when (string? value)
+                                           (re-find #"Permanent link to this comic" value))]
+                          perm-link?))
+          found-hids  (find-hids-with root-hid [:** :*] hid-keep-fn)
+          link-node   (hid->node (only found-hids)) ; assume there is only 1 link node
+          value-str   (grab :value link-node) ; "\nPermanent link to this comic: https://xkcd.com/1988/"
+          result      (re-find #"http.*$" value-str)]
+     ;(spyx-pretty link-node)  ;=> {:tupelo.forest/khids [],
+                                  ; :tag :tupelo.forest/raw,
+                                  ; :value "\nPermanent link to this comic: https://xkcd.com/1988/"}
+     ;(spyx result) ; => "https://xkcd.com/1988/"
+    )))
+
+))

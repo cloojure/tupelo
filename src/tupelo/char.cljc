@@ -6,13 +6,17 @@
 ;   software.
 (ns tupelo.char
   "Tupelo - Making Clojure even sweeter"
+  #?@(:clj [
   (:refer-clojure :exclude [drop take] )
   (:require
     [clojure.set :as set]
     [schema.core :as s]
     [tupelo.impl :as i]
-    [tupelo.schema :as tsk]))
+    [tupelo.schema :as tsk])
+            ])
+      )
 
+#?(:clj (do
 ; #todo: docstrings
 (s/def whitespace-horiz   :- tsk/Set
   (set [\space \tab]))
@@ -70,3 +74,4 @@
 (defn visible?            [ch] (contains? visible ch))
 (defn text?               [ch] (contains? text ch))
 
+))

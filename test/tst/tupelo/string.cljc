@@ -5,8 +5,9 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.string
-  (:use tupelo.test )
+  (:use tupelo.core tupelo.test )
   (:require
+    #?@(:clj [
     [clojure.core :as cc]
     [clojure.string :as str]
     [clojure.test.check.generators :as gen]
@@ -15,12 +16,13 @@
     [tupelo.core :as t]
     [tupelo.char :as char]
     [tupelo.string :as ts]
+              ])
   ))
-(t/refer-tupelo)
 
 ; #todo add generative testing?
 ; #todo add clojure.spec testing?
 
+#?(:clj (do
 (deftest misc
   ; clojure.core/str works correctly for various string combinations
   (is (= ""     (str "" )))
@@ -278,3 +280,4 @@
 
 )
 
+))

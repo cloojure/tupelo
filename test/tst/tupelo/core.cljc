@@ -5,6 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.core
+  #?@(:clj [
   (:use tupelo.core tupelo.dev tupelo.test )
   (:require
     [clojure.string :as str]
@@ -13,7 +14,8 @@
     [tupelo.impl :as i]
     [tupelo.misc :as tm]
     [tupelo.string :as ts]
-  ))
+  )
+            ]) )
 ; (t/refer-tupelo :dev)
 
 ; (s/instrument-all)
@@ -22,6 +24,7 @@
 ;-----------------------------------------------------------------------------
 ; Java version stuff
 
+#?(:clj (do
 (defn fn-any [] 42)
 (defn fn7 [] (t/if-java-1-7-plus
                7
@@ -870,6 +873,47 @@
     (throws? IllegalArgumentException (only [:x :y]))
     (throws? IllegalArgumentException (only inf-rng-1))
 
+    (is= [1 2 3] (onlies [[1] [2] [3]]))
+    (throws? (onlies [[1] [2] [3 4]]))
+    (throws? (onlies [[1] [] [3]]))
+
+    (is= 5 (only2 [[5]]))
+    (throws? (only2 [[1 2]]))
+    (throws? (only2 [[1] [2]]))
+
+    (is (single? [42]))
+    (is (single? [:x]))
+    (is (single? ["hello"]))
+    (isnt (single? []))
+    (isnt (single? [:x :y]))
+    (isnt (single? inf-rng-1))
+
+    (is (pair? [42 43]))
+    (is (pair? [:x :y]))
+    (is (pair? ["hello" "there"]))
+    (isnt (pair? []))
+    (isnt (pair? [:y]))
+    (isnt (pair? inf-rng-1))
+
+    (is (triple? [42 43 44]))
+    (is (triple? [:x :y :z]))
+    (is (triple? ["hello" "there" "you"]))
+    (isnt (triple? []))
+    (isnt (triple? [:y]))
+    (isnt (triple? [:x :y]))
+    (isnt (triple? inf-rng-1))
+
+    (is (quad? [42 43 44 45]))
+    (is (quad? [:x :y :z :99]))
+    (is (quad? ["hello" "there" "again" "you"]))
+    (isnt (quad? []))
+    (isnt (quad? [:x]))
+    (isnt (quad? [:x :y]))
+    (isnt (quad? [:x :y :z]))
+    (isnt (quad? inf-rng-1))))
+
+(dotest
+  (let [inf-rng-1 (map inc (range))]
     (throws? (xfirst []))
     (is= 1 (xfirst [1]))
     (is= 1 (xfirst [1 2]))
@@ -1011,7 +1055,11 @@
            (/ 10 it)))
   (let [mm  {:a {:b 2}}]
     (is= (it-> mm (:a it)          )  {:b 2} )
-    (is= (it-> mm (it :a)  (:b it) )      2  )))
+    (is= (it-> mm (it :a)  (:b it) )      2  ))
+  (is= 48 (it-> 42
+            (let [x 5]
+              (+ x it))
+            (inc it))))
 
 (dotest
   (testing "basic usage"
@@ -2210,6 +2258,21 @@
     (is= (t/map-vals map-123 inc) {:a 2, :b 3, :c 4})
     (is= (t/map-vals map-123 tx-fn) {:a 101, :b 202, :c 303})))
 
+(dotest
+  (testing "unlazy"
+    (is= (range 5) (unlazy (range 5)))
+    (let [c1 {:a 1 :b (range 3) :c {:x (range 4) (range 5) "end"}}]
+      (is= c1 (unlazy c1)))
+    (let [l2  '({:a ("zero" 0)} {:a ("one" 1)} {:a ("two" 2)})
+          e2  (unlazy l2)]
+      (is= l2 e2)
+      (is= "one" (get-in e2 [1 :a 0] l2))
+      ; (throws? (spyx (get-in l2 [1 :a 0] l2)))    ; #todo: SHOULD throw
+      )
+    (is= [1 2 3] (unlazy (map inc (range 3))))
+    (is= #{1 2 3} (unlazy #{3 2 1}))))
+
+
 
 ; #todo move to tst.tupelo.core.deprecated
 ;---------------------------------------------------------------------------------------------------
@@ -2240,3 +2303,4 @@
     (is= r1 (map str/trim (t/str->lines s1)))
     (is= r1 (map str/trim (str/split-lines s1)))))
 
+))

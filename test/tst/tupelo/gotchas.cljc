@@ -7,14 +7,19 @@
 (ns tst.tupelo.gotchas
   (:use tupelo.core tupelo.test)
   (:require
+    #?@(:clj [
     [clojure.test.check :as tc]
     [clojure.test.check.generators :as gen]
     [clojure.test.check.properties :as prop]
     [clojure.test.check.clojure-test :as tst]
+    [clojure.set :as set]
     [tupelo.impl :as i]
     [tupelo.core :as t]
+             ])
   ))
 ; #todo add example for duplicates in clojure.core.combo
+
+#?(:clj (do
 
 ; rest/next too loose
 (dotest
@@ -155,8 +160,21 @@
   (is= true (some #{false true} [false true]))
   (is= true (some #{false true} [false true]))
   (is= true (some? false ))
-  (is= true (some? true ))
-)
+  (is= true (some? true )))
+
+; "generic" indexing is a problem; always be explicit with first, nth, get, etc
+(dotest
+  (let [vv [1 2 3]
+        ll (list 1 2 3)
+        cc (cons 1 [2 3])]
+    (is= 1 (vv 0))  ; works fine
+    (throws? ClassCastException (ll 0)) ; clojure.lang.PersistentList cannot be cast to clojure.lang.IFn
+    (throws? ClassCastException (cc 0)) ; clojure.lang.Cons cannot be cast to clojure.lang.IFn
+
+    ; best solution
+    (is= 1 (first vv))
+    (is= 1 (first ll))
+    (is= 1 (first cc))))
 
 ; samples for dospec & check-not
 ;-----------------------------------------------------------------------------
@@ -173,3 +191,13 @@
 (dotest
   (is= 'quote (first ''hello))  ; 2 single quotes
 )
+
+;-----------------------------------------------------------------------------
+; clojure.set has no type-checking
+(dotest
+  (is= [:z :y :x  1  2  3] (set/union '(1 2 3) '(:x :y :z)))
+  (is= [ 1  2  3 :x :y :z] (set/union  [1 2 3]  [:x :y :z]))
+  (is= #{1  2  3 :x :y :z} (set/union #{1 2 3} #{:x :y :z}))
+)
+
+))
