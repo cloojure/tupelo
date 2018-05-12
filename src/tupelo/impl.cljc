@@ -21,6 +21,8 @@
     [tupelo.schema :as ts]
   ))
 
+; #todo wrap = < <= et al to throw ArityException if only 1 arg
+; #todo or if not number?
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
 
@@ -133,6 +135,7 @@
   (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xfirst: invalid coll: " coll))))
   (nth coll 0))
 
+; #todo (it-> coll (take 2 it), (validate (= 2 (count it))), (last it))
 (defn xsecond  ; #todo -> tests
   [coll]
   (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xsecond: invalid coll: " coll))))
