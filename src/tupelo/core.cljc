@@ -851,7 +851,7 @@
   [tst-map valid-keys ] (i/validate-map-keys tst-map valid-keys))
 
 (defn map-keys ; #todo docstring, README
-  "Transforms each value in a map using the supplied `tx-fn`:
+  "Transforms each key in a map using the supplied `tx-fn`:
 
     (t/map-keys {1 :a 2 :b 3 :c} inc)                  =>  {  2 :a   3 :b 4   :c}
     (t/map-keys {1 :a 2 :b 3 :c} {1 101 2 202 3 303})  =>  {101 :a 202 :b 303 :c}"

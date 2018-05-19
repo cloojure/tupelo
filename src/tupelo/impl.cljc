@@ -28,6 +28,9 @@
 
 ; #todo wrap = < <= et al to throw ArityException if only 1 arg
 ; #todo or if not number?
+; #todo wrap contains? get etc to enforce "normal" input types: map/set vs vec/list
+; #todo contains-key? for map/set, contains-val? for map/set/vec/list (disable contains? for strict) (use .contains for -val)
+
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
 
@@ -318,8 +321,9 @@
    the-key :- s/Any]
   (fetch-in the-map [the-key]))
 
-; #todo:  (grab [:name :phone :zip] the-map)  [<name> <phone> <zip>]
-; #todo:  (forv [key keys] (grab key the-map))
+; #todo:  (grab [:person :address :zip] the-map)  => fetch-in
+; #todo:  (grab-all :name :phone [:address :zip] the-map)
+; #todo:      => (mapv #(grab % the-map) keys)
 (s/defn grab :- s/Any
   [the-key :- s/Any
    the-map :- tsk/Map]

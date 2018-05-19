@@ -162,6 +162,10 @@
   (is= true (some? false ))
   (is= true (some? true )))
 
+(dotest
+  (is= false (spyx (contains? [1 2 3 4] 4)))
+  (is= false (spyx (contains? [:a :b :c :d] :a))))
+
 ; "generic" indexing is a problem; always be explicit with first, nth, get, etc
 (dotest
   (let [vv [1 2 3]
@@ -175,6 +179,11 @@
     (is= 1 (first vv))
     (is= 1 (first ll))
     (is= 1 (first cc))))
+
+; every? not-every? some not-any? + has-some? has-none?
+(dotest             ; should throw if empty arg
+  (is (every? even? []))
+  (is (every? odd? [])))
 
 ; samples for dospec & check-not
 ;-----------------------------------------------------------------------------
