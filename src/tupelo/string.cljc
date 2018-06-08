@@ -49,6 +49,12 @@
     str/trim
     (str/replace #"\s+" " ")))
 
+; #todo need test
+(defn not-blank?
+  "Returns true if the string is not blank."
+  [it]
+  (not (str/blank? it)))
+
 (s/defn equals-ignore-spacing :- s/Bool  ; #todo readme & blog
   "Compares arguments for equality using tupelo.misc/collapse-whitespace.
    Equivalent to separating tokens by whitespace and comparing the resulting sequences."

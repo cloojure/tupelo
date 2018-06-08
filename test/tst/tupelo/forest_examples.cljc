@@ -13,6 +13,7 @@
     [clojure.set :as cs]
     [clojure.string :as str]
     [net.cgrand.enlive-html :as enlive-html]
+    [net.cgrand.jsoup :as enlive-jsoup]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.misc :as tm]
@@ -1166,8 +1167,43 @@
                                    sentence-text))
           result-sentences     (proc-tree-enlive-lazy enlive-tree-lazy
                                  [:document :sentence] doc-sentence-handler)]
-      (is= result-sentences ["foo bar" "beyond all recognition"]))
+      (is= result-sentences ["foo bar" "beyond all recognition"])) ))
 
-    ))
+;---------------------------------------------------------------------------------------------------
+(defn xkcd
+  "Load a sample webpage from disk"
+  []
+  (-> "xkcd-sample.html"
+    (io/resource)
+    (io/input-stream)
+    ;(clojure.data.xml/parse)
+    (enlive-jsoup/parser)
+  ))
+(dotest
+  (when false ; manually enable to grab a new copy of the webpage
+    (spit "xkcd-sample.html"
+      (slurp "https://xkcd.com")))
+  (with-forest (new-forest)
+    (let [doc         (it-> (xkcd)
+                        (drop-if #(= :dtd (:type %)) it)
+                        (only it))
+          root-hid    (add-tree-enlive doc)
+          >>          (remove-whitespace-leaves)
+          ;>>          (spyx-pretty (hid->bush root-hid))
+          hid-keep-fn (fn [hid]
+                        (let [node       (hid->node hid)
+                              value      (when (contains? node :value) (grab :value node))
+                              perm-link? (when (string? value)
+                                           (re-find #"Permanent link to this comic" value))]
+                          perm-link?))
+          found-hids  (find-hids-with root-hid [:** :*] hid-keep-fn)
+          link-node   (hid->node (only found-hids)) ; assume there is only 1 link node
+          value-str   (grab :value link-node) ; "\nPermanent link to this comic: https://xkcd.com/1988/"
+          result      (re-find #"http.*$" value-str)]
+     ;(spyx-pretty link-node)  ;=> {:tupelo.forest/khids [],
+                                  ; :tag :tupelo.forest/raw,
+                                  ; :value "\nPermanent link to this comic: https://xkcd.com/1988/"}
+     ;(spyx result) ; => "https://xkcd.com/1988/"
+    )))
 
 ))

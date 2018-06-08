@@ -12,6 +12,7 @@
     [clojure.test.check.generators :as gen]
     [clojure.test.check.properties :as prop]
     [clojure.test.check.clojure-test :as tst]
+    [clojure.set :as set]
     [tupelo.impl :as i]
     [tupelo.core :as t]
              ])
@@ -161,6 +162,10 @@
   (is= true (some? false ))
   (is= true (some? true )))
 
+(dotest
+  (is= false (spyx (contains? [1 2 3 4] 4)))
+  (is= false (spyx (contains? [:a :b :c :d] :a))))
+
 ; "generic" indexing is a problem; always be explicit with first, nth, get, etc
 (dotest
   (let [vv [1 2 3]
@@ -175,6 +180,7 @@
     (is= 1 (first ll))
     (is= 1 (first cc))))
 
+
 ; binding operates in parallel, not sequentially
 (def ^:dynamic xx nil)
 (def ^:dynamic yy nil)
@@ -183,6 +189,12 @@
             yy xx]
     (is= 99 xx)
     (is= nil yy)))
+
+; every? not-every? some not-any? + has-some? has-none?
+(dotest             ; should throw if empty arg
+  (is (every? even? []))
+  (is (every? odd? [])))
+
 
 ; samples for dospec & check-not
 ;-----------------------------------------------------------------------------
@@ -198,6 +210,14 @@
 
 (dotest
   (is= 'quote (first ''hello))  ; 2 single quotes
+)
+
+;-----------------------------------------------------------------------------
+; clojure.set has no type-checking
+(dotest
+  (is= [:z :y :x  1  2  3] (set/union '(1 2 3) '(:x :y :z)))
+  (is= [ 1  2  3 :x :y :z] (set/union  [1 2 3]  [:x :y :z]))
+  (is= #{1  2  3 :x :y :z} (set/union #{1 2 3} #{:x :y :z}))
 )
 
 ))
