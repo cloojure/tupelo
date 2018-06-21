@@ -1100,6 +1100,13 @@
   (is (not (rel= 1 1.001 :tol 0.0001 )))
 )
 
+(dotest 
+  (is (set= [1 2 3] [3 2 1] ))
+  (isnt (set= [1 2 3] [3 2 9] ))
+  (throws? (set= [1 2 3]))
+)
+
+
 (dotest
   (is (every? t/truthy? (t/forv [ul (range 0 4)] (vector? (t/range-vec ul)))))
 

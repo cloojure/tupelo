@@ -93,6 +93,8 @@
 ; #todo add loop detection, recurse on parents not= <new child>
 ; #todo if loops are ok, need to add :max-depth to search queries to avoid infinite loop
 
+; #todo allow multiple tags as a set {:tag :abc} -> {:tags #{ :abc :def :xyz }}
+
 ; #todo add ::tag? (only req for hiccup/enlive data?)
 ; { :tupelo.forest/khids  [hid...]  :k1 v1 :k2 v2 ...  :value s/Any  }
 ;    ^ req             ^opt k-v's          ^opt/leaf
