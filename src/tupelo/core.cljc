@@ -712,6 +712,13 @@
     (clojure.core/map #(apply rel= %1 %2 opts)
       x-vals y-vals)))
 
+; #todo add schema & tests
+(defn set=
+  "Returns true if two collections are equal when converted into sets."
+  [& colls]
+  (assert (< 1 (count colls))) ; #todo add msg
+  (apply = (mapv set colls)))
+
 (defn range-vec     ; #todo README;  maybe xrange?  maybe kill this?
   "An eager version clojure.core/range that always returns its result in a vector."
   [& args] (apply i/range-vec args))
