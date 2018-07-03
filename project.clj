@@ -102,7 +102,8 @@
 
   ; :main ^:skip-aot tupelo.core
   :uberjar      {:aot :all}
-  :jvm-opts ["-Xms500m" "-Xmx2g"]
+  :jvm-opts ["-Xms500m" "-Xmx2g"
+             "--illegal-access=permit"  ] ; permit, warn, debug, deny
 
   :profiles {:dev {:dependencies [[binaryage/devtools "0.9.10"]
                                   [figwheel-sidecar "0.5.15"]
