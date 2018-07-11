@@ -221,3 +221,14 @@
 )
 
 ))
+
+#?(:clj
+   (do
+
+     ; assumes nil=0, etc (from JS)
+     (dotest
+       (is= {:a 1} (update {} :a inc))
+       (is= 1 (inc nil))
+       (is= 1 (+ 1 nil)))
+
+     ))
