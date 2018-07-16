@@ -26,22 +26,6 @@
    (do
 
 (dotest
- (let [day-3-fn (fn []
-                  (let [n (Integer/parseInt (read-line))]
-                    (if (odd? n)
-                      (println "Weird")
-                      (cond
-                        (<= 2 n 5) (println "Not Weird")
-                        (<= 6 n 20) (println "Weird")
-                        (< 20 n) (println "Not Weird")
-                        :else (assert false (str "N out of bounds=" n))))))]
-   (let [str-fn (ts/with-io-strs day-3-fn)
-         tst-fn #(str/trim (str-fn %))]
-     (is= (tst-fn "3") "Weird")
-     (is= (tst-fn "4") "Not Weird"))
-   ))
-
-(dotest
   ; clojure.core/str works correctly for various string combinations
   (is (= ""     (str "" )))
   (is (= "a"    (str "" "a")))

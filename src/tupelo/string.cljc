@@ -127,16 +127,6 @@
     (str->kw)))
 
 ;-----------------------------------------------------------------------------
-(defn with-io-strs  ; #todo tests
-  "Wrap a function that reads from stdin & writes to stdout, returning a function that consumes
-  and returns a String."
-  [tgt-fn]
-  (fn [input-str]
-    (with-out-str
-      (with-in-str input-str
-        (tgt-fn)))))
-
-;-----------------------------------------------------------------------------
 
 (s/defn drop :- s/Str  ; #todo add readme
   "Drops the first N chars of a string, returning a string result."
