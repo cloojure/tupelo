@@ -222,7 +222,7 @@
 
 ))
 
-#?(:clj
+#?(:cljs
    (do
 
      ; assumes nil=0, etc (from JS)
@@ -231,4 +231,4 @@
        (is= 1 (inc nil))
        (is= 1 (+ 1 nil)))
 
-     ))
+   ))

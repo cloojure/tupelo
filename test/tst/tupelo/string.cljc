@@ -22,8 +22,26 @@
 ; #todo add generative testing?
 ; #todo add clojure.spec testing?
 
-#?(:clj (do
-(deftest misc
+#?(:clj
+   (do
+
+(dotest
+ (let [day-3-fn (fn []
+                  (let [n (Integer/parseInt (read-line))]
+                    (if (odd? n)
+                      (println "Weird")
+                      (cond
+                        (<= 2 n 5) (println "Not Weird")
+                        (<= 6 n 20) (println "Weird")
+                        (< 20 n) (println "Not Weird")
+                        :else (assert false (str "N out of bounds=" n))))))]
+   (let [str-fn (ts/with-io-strs day-3-fn)
+         tst-fn #(str/trim (str-fn %))]
+     (is= (tst-fn "3") "Weird")
+     (is= (tst-fn "4") "Not Weird"))
+   ))
+
+(dotest
   ; clojure.core/str works correctly for various string combinations
   (is (= ""     (str "" )))
   (is (= "a"    (str "" "a")))
@@ -73,12 +91,12 @@
 )
 
 
-(deftest collapse-whitespace-t
+(dotest
   (is (= "abc def g hij kl"
         (ts/collapse-whitespace "  abc    def			g
                                      hij kl	 " ))))
 
-(deftest t-equals-ignore-spacing
+(dotest
   (is (ts/equals-ignore-spacing "a" ))
   (is (ts/equals-ignore-spacing "a" "  a "))
   (is (ts/equals-ignore-spacing "a" "  a  " "   a" "a   "))
@@ -128,12 +146,12 @@
   (is= (ts/kw-kabob->snake :some-multiple-word-kw) :some_multiple_word_kw)
 )
 
-(deftest seq->str-t
+(dotest
   (is (= " 1 2 3"           (t/seq->str (byte-array [1 2 3]))))
   (is (= " :a :b 3 4"       (t/seq->str [:a :b 3 4])))
   (is (= " \\a \\b \\c"     (t/seq->str "abc"))))
 
-(deftest t-increasing
+(dotest
   (isnt (ts/increasing "abc" "a"))
   (isnt (ts/increasing "abc" "ab"))
   (isnt (ts/increasing "abc" "abc"))
@@ -151,21 +169,21 @@
   (is   (ts/increasing-or-equal "abc" "b"))
 )
 
-(deftest t-tupstr-take
+(dotest
   (is (= ""    (ts/take 0 "abc")))
   (is (= "a"   (ts/take 1 "abc")))
   (is (= "ab"  (ts/take 2 "abc")))
   (is (= "abc" (ts/take 3 "abc")))
   (is (= "abc" (ts/take 4 "abc"))))
 
-(deftest t-tupstr-drop
+(dotest
   (is (= "abc" (ts/drop 0 "abc")))
   (is (= "bc"  (ts/drop 1 "abc")))
   (is (= "c"   (ts/drop 2 "abc")))
   (is (= ""    (ts/drop 3 "abc")))
   (is (= ""    (ts/drop 4 "abc"))))
 
-(deftest t-indent
+(dotest
   (is (= "abc"    (ts/indent 0 "abc")))
   (is (= " abc"   (ts/indent 1 "abc")))
   (is (= "  abc"  (ts/indent 2 "abc")))
@@ -186,7 +204,7 @@
   (is (= "  "  (ts/indent 2 "")))
   (is (= "   " (ts/indent 3 ""))))
 
-(deftest t-indent
+(dotest
   ; clojure accepts either CR/LF or LF (CR=/return & LF=\newline) as line-separator
   (is (= "abc"    (ts/indent-lines 0      "abc"                    )))
   (is (= "abc"    (ts/indent-lines 0 (str "abc"         \newline  ))))
@@ -205,7 +223,7 @@
   (is (= "   abc\n   def"   (ts/indent-lines 3 (str "abc" \newline "def" ))))
 )
 
-(deftest t-index-of
+(dotest
   (is= 0 (ts/index-of "abc" "a"))
   (is= 0 (ts/index-of "abc" "ab"))
   (is= 0 (ts/index-of "abc" "abc"))
@@ -215,7 +233,7 @@
   (is= -1 (ts/index-of "abc" "d"))
 )
 
-(deftest t-starts-with?
+(dotest
   ; clojure.string
   (t/when-clojure-1-8-plus
     (is      (str/starts-with? "abcde" "a"))
