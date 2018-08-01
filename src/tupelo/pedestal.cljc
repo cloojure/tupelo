@@ -16,7 +16,7 @@
 #?(:clj
    (do
 
-     (defn context->table-route
+     (defn table-route*
        [ctx]
        (prepend
          (grab :path ctx)

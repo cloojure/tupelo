@@ -231,6 +231,7 @@
     (is (not (str/starts-with? "ab" "abc")))
   )
 
+  ;-----------------------------------------------------------------------------
   ; tupelo.string
   (is (ts/starts-with? "abcde" "a"))
   (is (ts/starts-with? "abcde" "ab"))
@@ -242,15 +243,27 @@
   (is (not (ts/starts-with? "a" "ab")))
   (is (not (ts/starts-with? "ab" "abc")))
 
-  (is (ts/contains? "abcde" #"abc"))
-  (is (ts/contains? "abcde" #"abc.*"))
-  (is (ts/contains? "abcde" #".bc.*"))
-  (isnt (ts/contains? "abcde" #".bc9.*"))
+  (is (ts/contains-match? "abcde" #"abc"))
+  (is (ts/contains-match? "abcde" #"abc.*"))
+  (is (ts/contains-match? "abcde" #".bc.*"))
+  (is (ts/contains-match? "abcde" #"^ab"))
+  (is (ts/contains-match? "abcde" #"bc"))
+  (isnt (ts/contains-match? "abcde" #"^bc"))
+  (isnt (ts/contains-match? "abcde" #".bc9.*"))
 
-  (is (ts/contains? "abcde" #"^ab"))
-  (is (ts/contains? "abcde" #"bc"))
-  (isnt (ts/contains? "abcde" #"^bc"))
+  ; regex special chars don't work in tgt-str
+  (is (ts/contains-str? "abcde" "abc"))
+  (is (ts/contains-str? "abcde" "bc"))
+  (isnt (ts/contains-str? "abcde" "abc.*"))
+  (isnt (ts/contains-str? "abcde" ".bc.*"))
+  (isnt (ts/contains-str? "abcde" "^ab"))
+  (isnt (ts/contains-str? "abcde" "^bc"))
 
+  ; regex special chars OK in both search-str & tgt-str
+  (is (ts/contains-str? "abc.*de" "abc.*"))
+  (is (ts/contains-str? "a.bc.*de" ".bc.*"))
+  (is (ts/contains-str? "^abcde" "^ab"))
+  (is (ts/contains-str? "a^bcde" "^bc"))
 
 )
 

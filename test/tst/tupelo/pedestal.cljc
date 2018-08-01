@@ -11,30 +11,32 @@
   ))
 
 #?(:clj (do
+
 (dotest
-  (is= (context->table-route '{:path         "/todo/:list-id/:item"
-                               :verb         :delete
-                               :interceptors echo })
-    '["/todo/:list-id/:item" :delete echo] )
+  (is= (table-route* '{:path         "/todo/:list-id/:item"
+                       :verb         :delete
+                       :interceptors echo})
+    '["/todo/:list-id/:item" :delete echo])
 
-  (is= (context->table-route '{:path         "/todo/:list-id/:item"
-                               :verb         :delete
-                               :interceptors echo
-                               :route-name   :list-item-delete })
-    '["/todo/:list-id/:item" :delete echo :route-name :list-item-delete ])
+  (is= (table-route* '{:path         "/todo/:list-id/:item"
+                       :verb         :delete
+                       :interceptors echo
+                       :route-name   :list-item-delete})
+    '["/todo/:list-id/:item" :delete echo :route-name :list-item-delete])
 
-  (is= (context->table-route '{:path         "/todo/:list-id/:item"
-                               :verb         :delete
-                               :interceptors echo
-                               :constraints  url-rules})
+  (is= (table-route* '{:path         "/todo/:list-id/:item"
+                       :verb         :delete
+                       :interceptors echo
+                       :constraints  url-rules})
     '["/todo/:list-id/:item" :delete echo :constraints url-rules])
 
-  (is= (context->table-route '{:path         "/todo/:list-id/:item"
-                               :verb         :delete
-                               :interceptors [echo]
-                               :route-name   :list-item-delete
-                               :constraints  url-rules})
+  (is= (table-route* '{:path         "/todo/:list-id/:item"
+                       :verb         :delete
+                       :interceptors [echo]
+                       :route-name   :list-item-delete
+                       :constraints  url-rules})
     '["/todo/:list-id/:item" :delete [echo] :route-name :list-item-delete :constraints url-rules])
 
-)
-     ))
+  )
+
+          ))

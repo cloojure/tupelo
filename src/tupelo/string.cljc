@@ -147,16 +147,14 @@
   (let [indent-str (str/join (repeat n \space))]
     (str indent-str txt)))
 
-(s/defn indent-lines :- s/Str  ; #todo add readme
+(s/defn indent-lines :- s/Str ; #todo add readme
   "Splits out each line of txt using clojure.string/split-lines, then
   indents each line by prepending N spaces. Joins lines together into
   a single string result, with each line terminated by a single \newline."
-  [n    :- s/Int
-   txt  :- s/Str]
-  (str/join
-    (interpose \newline
-      (for [line (str/split-lines txt)]
-        (str (indent n line))))))
+  [n :- s/Int
+   txt :- s/Str]
+  (let [indent-str (str/join (repeat n \space))]
+    (impl/indent-lines-with indent-str txt)))
 
 (s/defn indent-lines-with :- s/Str  ; #todo delete?  else rename (prefix-lines txt prefix-str) ; add (suffix-lines txt suffix-str)
   "Splits out each line of txt using clojure.string/split-lines, then
@@ -165,6 +163,9 @@
   [indent-str :- s/Str
    txt  :- s/Str]
   (impl/indent-lines-with indent-str txt))
+
+; #todo add undent (verify only leading whitespace removed)
+; #todo add undent-lines
 
 (s/defn increasing :- s/Bool
   "Returns true if a pair of strings are in increasing lexicographic order."
@@ -179,17 +180,30 @@
   (or (= a b)
       (increasing a b)))
 
-(defn index-of [search-str tgt-str]
+(s/defn index-of :- s/Int
+  "Returns the offset of the tgt-str within the search-str."
+  [search-str :- s/Str
+   tgt-str :- s/Str ]
   (.indexOf search-str tgt-str))
 
-(defn starts-with? [search-str tgt-str]
+(s/defn starts-with? :- s/Bool
+  "Returns the offset of the tgt-str within the search-str."
+  [search-str :- s/Str
+   tgt-str :- s/Str ]
   (zero? (index-of search-str tgt-str)))
 
-(s/defn contains?  :- s/Bool
+(s/defn contains-match?  :- s/Bool
+  "Returns true if the regex matches any portion of the intput string."
   [search-str :- s/Str
    re :- s/Any]
   {:pre [(instance? java.util.regex.Pattern re)]}
   (impl/truthy? (re-find re search-str)))
+
+(s/defn contains-str?  :- s/Bool
+  "Returns true if the intput string contains the target string."
+  [search-str :- s/Str
+   tgt-str :- s/Str]
+  (<= 0 (index-of search-str tgt-str)))
 
 (def phonetic-alphabet
   {:a "alpha" :b "bravo" :c "charlie" :d "delta" :e "echo" :f "foxtrot" :g "golf" :h "hotel"
@@ -197,6 +211,5 @@
    :q "quebec" :r "romeo " :s "sierra" :t "tango" :u "uniform" :v "victor" :w "whiskey"
    :x "x-ray" :y "yankee" :z "zulu" } )
 
-; #todo add undent (verify only leading whitespace removed)
-; #todo add undent-lines
 ))
+
