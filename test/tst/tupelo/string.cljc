@@ -232,17 +232,29 @@
   )
 
   ; tupelo.string
-  (do
-    (is      (ts/starts-with? "abcde" "a"))
-    (is      (ts/starts-with? "abcde" "ab"))
-    (is      (ts/starts-with? "abcde" "abc"))
+  (is (ts/starts-with? "abcde" "a"))
+  (is (ts/starts-with? "abcde" "ab"))
+  (is (ts/starts-with? "abcde" "abc"))
 
-    (is (not (ts/starts-with? "abcde" "b")))
-    (is (not (ts/starts-with? "abcde" "bc")))
+  (is (not (ts/starts-with? "abcde" "b")))
+  (is (not (ts/starts-with? "abcde" "bc")))
 
-    (is (not (ts/starts-with? "a" "ab")))
-    (is (not (ts/starts-with? "ab" "abc"))))
+  (is (not (ts/starts-with? "a" "ab")))
+  (is (not (ts/starts-with? "ab" "abc")))
 
+  (is (ts/contains? "abcde" #"abc"))
+  (is (ts/contains? "abcde" #"abc.*"))
+  (is (ts/contains? "abcde" #".bc.*"))
+  (isnt (ts/contains? "abcde" #".bc9.*"))
+
+  (is (ts/contains? "abcde" #"^ab"))
+  (is (ts/contains? "abcde" #"bc"))
+  (isnt (ts/contains? "abcde" #"^bc"))
+
+
+)
+
+(dotest
   ;-----------------------------------------------------------------------------
   ; break out
   (is   (ts/alphanumeric? \a))

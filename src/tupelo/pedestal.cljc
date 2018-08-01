@@ -7,21 +7,21 @@
 (ns tupelo.pedestal
   "Utils for Pedestal"
   #?@(:clj [
-  (:use tupelo.core)
-  (:require
-    [schema.core :as s]
-    [tupelo.core :as t]
-    [tupelo.impl :as i]
-    )
-            ]) )
+       (:use tupelo.core)
+       (:require
+         [schema.core :as s]
+         [tupelo.core :as t]
+         [tupelo.impl :as i])]))
 
-#?(:clj (do
-(defn context->table-route
-  [ctx]
-  (prepend
-    (grab :path ctx)
-    (grab :verb ctx)
-    (grab :interceptors ctx)
-    (i/keyvals-seq* {:missing-ok true} ctx [:route-name :constraints])))
+#?(:clj
+   (do
 
-))
+     (defn context->table-route
+       [ctx]
+       (prepend
+         (grab :path ctx)
+         (grab :verb ctx)
+         (grab :interceptors ctx)
+         (i/keyvals-seq* {:missing-ok true} ctx [:route-name :constraints])))
+
+     ))

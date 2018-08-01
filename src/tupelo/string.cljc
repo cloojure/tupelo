@@ -7,7 +7,7 @@
 (ns tupelo.string
   "Tupelo - Making Clojure even sweeter"
   #?@(:clj [
-  (:refer-clojure :exclude [drop take] )
+  (:refer-clojure :exclude [drop take contains?] )
   (:require
     [clojure.core :as cc]
     [clojure.string :as str]
@@ -158,7 +158,7 @@
       (for [line (str/split-lines txt)]
         (str (indent n line))))))
 
-(s/defn indent-lines-with :- s/Str  ; #todo add readme ;  need test
+(s/defn indent-lines-with :- s/Str  ; #todo delete?  else rename (prefix-lines txt prefix-str) ; add (suffix-lines txt suffix-str)
   "Splits out each line of txt using clojure.string/split-lines, then
   indents each line by prepending it with the supplied string. Joins lines together into
   a single string result, with each line terminated by a single \newline."
@@ -184,6 +184,12 @@
 
 (defn starts-with? [search-str tgt-str]
   (zero? (index-of search-str tgt-str)))
+
+(s/defn contains?  :- s/Bool
+  [search-str :- s/Str
+   re :- s/Any]
+  {:pre [(instance? java.util.regex.Pattern re)]}
+  (impl/truthy? (re-find re search-str)))
 
 (def phonetic-alphabet
   {:a "alpha" :b "bravo" :c "charlie" :d "delta" :e "echo" :f "foxtrot" :g "golf" :h "hotel"

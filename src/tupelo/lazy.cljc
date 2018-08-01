@@ -21,7 +21,7 @@
        "Lazily concatenates a sequence-of-sequences into a flat sequence."
        [sequences]
        (lazy-seq
-         (when-let [curr-seq (seq sequences)]
-           (concat (first curr-seq) (join (rest curr-seq))))))
+         (when-let [seq-of-seqs (seq sequences)]
+           (concat (first seq-of-seqs) (join (rest seq-of-seqs))))))
 
 ))
