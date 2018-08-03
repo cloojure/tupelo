@@ -17,7 +17,14 @@
     [tupelo.schema :as tsk])
             ]) )
 
+(def phonetic-alphabet
+  {:a "alpha" :b "bravo" :c "charlie" :d "delta" :e "echo" :f "foxtrot" :g "golf" :h "hotel"
+   :i "india" :j "juliett" :k "kilo" :l "lima" :m "mike" :n "november" :o "oscar" :p "papa"
+   :q "quebec" :r "romeo " :s "sierra" :t "tango" :u "uniform" :v "victor" :w "whiskey"
+   :x "x-ray" :y "yankee" :z "zulu" } )
+
 #?(:clj (do
+
 (defn alphanumeric?       [& args] (every? char/alphanumeric?        (impl/strcat args)))
 (defn whitespace-horiz?   [& args] (every? char/whitespace-horiz?    (impl/strcat args)))
 (defn whitespace-eol?     [& args] (every? char/whitespace-eol?      (impl/strcat args)))
@@ -205,11 +212,21 @@
    tgt-str :- s/Str]
   (<= 0 (index-of search-str tgt-str)))
 
-(def phonetic-alphabet
-  {:a "alpha" :b "bravo" :c "charlie" :d "delta" :e "echo" :f "foxtrot" :g "golf" :h "hotel"
-   :i "india" :j "juliett" :k "kilo" :l "lima" :m "mike" :n "november" :o "oscar" :p "papa"
-   :q "quebec" :r "romeo " :s "sierra" :t "tango" :u "uniform" :v "victor" :w "whiskey"
-   :x "x-ray" :y "yankee" :z "zulu" } )
+(s/defn grep
+  "Given a multi-line text string, returns a string containing lines matching a regex pattern."
+  [pattern :- s/Regex
+   text :- s/Str]
+  (let [lines  (str/split-lines text)
+        result (impl/keep-if #(contains-match? % pattern) lines)]
+    (str/join result)))
+
+(s/defn fgrep
+  "Given a multi-line text string, returns a string containing lines matching the target string."
+  [tgt :- s/Str
+   text :- s/Str]
+  (let [lines  (str/split-lines text)
+        result (impl/keep-if #(contains-str? % tgt) lines)]
+    (str/join result)))
 
 ))
 

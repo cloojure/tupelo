@@ -265,6 +265,18 @@
   (is (ts/contains-str? "^abcde" "^ab"))
   (is (ts/contains-str? "a^bcde" "^bc"))
 
+  (let [search-str  "Hello there, you.
+                        How are you
+                           doing today?" ]
+    (is (ts/equals-ignore-spacing (ts/grep #"hello" search-str) ""))
+    (is (ts/equals-ignore-spacing (ts/grep #"Hello" search-str) "Hello there, you."))
+    (is (ts/equals-ignore-spacing (ts/grep #"(?i)hello" search-str) "Hello there, you."))
+    (is (ts/equals-ignore-spacing (ts/grep #"you" search-str)
+          "Hello there, you.
+           How are you"))
+    (is (ts/equals-ignore-spacing (ts/grep #"today." search-str) "doing today?"))
+    (is (ts/equals-ignore-spacing (ts/fgrep "today." search-str) "")))
+
 )
 
 (dotest
