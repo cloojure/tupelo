@@ -341,6 +341,9 @@
   (is (every?      not-empty? ["one" [1] '(1) {:1 1} #{1}     ] ))
   (is (has-none?   not-empty? [ ""   [ ] '( ) {}     #{ }  nil] ))
 
+  (is (has-none?   empty? ["one" [1] '(1) {:1 1} #{1}     ] ))
+  (is (every?      empty? [ ""   [ ] '( ) {}     #{ }  nil] ))
+
   (is= (map not-empty? ["1" [1] '(1) {:1 1} #{1} ] )
          [true true true true true]  )
   (is= (map not-empty? ["" [] '() {} #{} nil] )
