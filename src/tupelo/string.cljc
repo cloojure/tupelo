@@ -62,7 +62,7 @@
   [it]
   (not (str/blank? it)))
 
-(s/defn equals-ignore-spacing :- s/Bool  ; #todo readme & blog
+(s/defn equals-ignore-spacing? :- s/Bool  ; #todo readme & blog
   "Compares arguments for equality using tupelo.misc/collapse-whitespace.
    Equivalent to separating tokens by whitespace and comparing the resulting sequences."
   [& args :- [s/Str]]
@@ -174,18 +174,18 @@
 ; #todo add undent (verify only leading whitespace removed)
 ; #todo add undent-lines
 
-(s/defn increasing :- s/Bool
+(s/defn increasing? :- s/Bool
   "Returns true if a pair of strings are in increasing lexicographic order."
   [a :- s/Str
    b :- s/Str ]
   (neg? (compare a b)))
 
-(s/defn increasing-or-equal :- s/Bool
+(s/defn increasing-or-equal? :- s/Bool
   "Returns true if a pair of strings are in increasing lexicographic order, or equal."
   [a :- s/Str
    b :- s/Str ]
   (or (= a b)
-      (increasing a b)))
+      (increasing? a b)))
 
 (s/defn index-of :- s/Int
   "Returns the offset of the tgt-str within the search-str."

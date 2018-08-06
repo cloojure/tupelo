@@ -378,7 +378,7 @@
   "Returns true if Java version is at least as great as supplied string.
   Sort is by lexicographic (alphabetic) order."
   [version-str :- s/Str]
-  (tstr/increasing-or-equal version-str (java-version)))
+  (tstr/increasing-or-equal? version-str (java-version)))
 
 (defn is-java-1-7? [] (java-version-matches? "1.7"))
 (defn is-java-1-8? [] (java-version-matches? "1.8"))

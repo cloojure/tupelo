@@ -70,7 +70,7 @@
     (dotimes [ii 3]
       (dotimes [jj 4]
         (swap! a34 tar/elem-set ii jj (+ (* ii 10) jj))))
-    (is (ts/equals-ignore-spacing (tar/toString @a34)
+    (is (ts/equals-ignore-spacing? (tar/toString @a34)
           " 0    1    2    3
            10   11   12   13
            20   21   22   23"))

@@ -81,11 +81,11 @@
                                      hij kl	 " ))))
 
 (dotest
-  (is (ts/equals-ignore-spacing "a" ))
-  (is (ts/equals-ignore-spacing "a" "  a "))
-  (is (ts/equals-ignore-spacing "a" "  a  " "   a" "a   "))
+  (is (ts/equals-ignore-spacing? "a" ))
+  (is (ts/equals-ignore-spacing? "a" "  a "))
+  (is (ts/equals-ignore-spacing? "a" "  a  " "   a" "a   "))
 
-  (is (ts/equals-ignore-spacing "
+  (is (ts/equals-ignore-spacing? "
         Whenever you find yourself on the side of the majority, it is time to pause and reflect.
         Don't go around saying the world owes you a living. The world owes you nothing. It was here first.
         I have never let my schooling interfere with my education.
@@ -136,21 +136,21 @@
   (is (= " \\a \\b \\c"     (t/seq->str "abc"))))
 
 (dotest
-  (isnt (ts/increasing "abc" "a"))
-  (isnt (ts/increasing "abc" "ab"))
-  (isnt (ts/increasing "abc" "abc"))
-  (is   (ts/increasing "abc" "abd"))
-  (is   (ts/increasing "abc" "abcd"))
-  (is   (ts/increasing "abc" "ad"))
-  (is   (ts/increasing "abc" "b"))
+  (isnt (ts/increasing? "abc" "a"))
+  (isnt (ts/increasing? "abc" "ab"))
+  (isnt (ts/increasing? "abc" "abc"))
+  (is   (ts/increasing? "abc" "abd"))
+  (is   (ts/increasing? "abc" "abcd"))
+  (is   (ts/increasing? "abc" "ad"))
+  (is   (ts/increasing? "abc" "b"))
 
-  (isnt (ts/increasing-or-equal "abc" "a"))
-  (isnt (ts/increasing-or-equal "abc" "ab"))
-  (is   (ts/increasing-or-equal "abc" "abc"))
-  (is   (ts/increasing-or-equal "abc" "abd"))
-  (is   (ts/increasing-or-equal "abc" "abcd"))
-  (is   (ts/increasing-or-equal "abc" "ad"))
-  (is   (ts/increasing-or-equal "abc" "b"))
+  (isnt (ts/increasing-or-equal? "abc" "a"))
+  (isnt (ts/increasing-or-equal? "abc" "ab"))
+  (is   (ts/increasing-or-equal? "abc" "abc"))
+  (is   (ts/increasing-or-equal? "abc" "abd"))
+  (is   (ts/increasing-or-equal? "abc" "abcd"))
+  (is   (ts/increasing-or-equal? "abc" "ad"))
+  (is   (ts/increasing-or-equal? "abc" "b"))
 )
 
 (dotest
@@ -268,14 +268,14 @@
   (let [search-str  "Hello there, you.
                         How are you
                            doing today?" ]
-    (is (ts/equals-ignore-spacing (ts/grep #"hello" search-str) ""))
-    (is (ts/equals-ignore-spacing (ts/grep #"Hello" search-str) "Hello there, you."))
-    (is (ts/equals-ignore-spacing (ts/grep #"(?i)hello" search-str) "Hello there, you."))
-    (is (ts/equals-ignore-spacing (ts/grep #"you" search-str)
+    (is (ts/equals-ignore-spacing? (ts/grep #"hello" search-str) ""))
+    (is (ts/equals-ignore-spacing? (ts/grep #"Hello" search-str) "Hello there, you."))
+    (is (ts/equals-ignore-spacing? (ts/grep #"(?i)hello" search-str) "Hello there, you."))
+    (is (ts/equals-ignore-spacing? (ts/grep #"you" search-str)
           "Hello there, you.
            How are you"))
-    (is (ts/equals-ignore-spacing (ts/grep #"today." search-str) "doing today?"))
-    (is (ts/equals-ignore-spacing (ts/fgrep "today." search-str) "")))
+    (is (ts/equals-ignore-spacing? (ts/grep #"today." search-str) "doing today?"))
+    (is (ts/equals-ignore-spacing? (ts/fgrep "today." search-str) "")))
 
 )
 
