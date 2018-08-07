@@ -11,17 +11,23 @@
        (:require
          [schema.core :as s]
          [tupelo.core :as t]
+         [tupelo.schema :as ts]
          [tupelo.impl :as i])]))
 
 #?(:clj
    (do
+     (def TableRouteInfo
+       {(s/required-key :verb)         s/Keyword
+        (s/required-key :path)         s/Str
+        (s/optional-key :interceptors) s/Any
+        (s/optional-key :route-name)   s/Keyword
+        (s/optional-key :constraints)  s/Any})
 
-     (defn table-route*
-       [ctx]
+     (s/defn table-route :- ts/Tuple
+       "Creates a Pedestal table-route entry from a context map."
+       [ctx :- TableRouteInfo]
        (prepend
          (grab :path ctx)
          (grab :verb ctx)
          (grab :interceptors ctx)
-         (i/keyvals-seq* {:missing-ok true} ctx [:route-name :constraints])))
-
-     ))
+         (i/keyvals-seq* {:missing-ok true} ctx [:route-name :constraints])))))
