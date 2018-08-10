@@ -606,6 +606,12 @@
   [default-val & forms]
   `(i/with-exception-default ~default-val ~@forms))
 
+(defn with-nil-default
+  "Returns `nominal-val` if not nil; else returns `default-val`"
+  [default-val nominal-val]
+  (i/with-nil-default default-val nominal-val))
+
+
 (defmacro lazy-cons
   "The simple way to create a lazy sequence:
       (defn lazy-next-int [n]

@@ -300,6 +300,12 @@
      ~@forms
      (catch Exception e# ~default-val)))
 
+(defn with-nil-default
+  [default-val nominal-val]
+  (if (nil? nominal-val)
+    default-val
+    nominal-val))
+
 ; #todo rename to "get-in-safe" ???
 ; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)
 ; #todo make throw if any index invalid

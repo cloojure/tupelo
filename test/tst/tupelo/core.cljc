@@ -1065,13 +1065,17 @@
             (inc it))))
 
 (dotest
-  (testing "basic usage"
-    (throws?    Exception                       (/ 1 0))
-    (is= nil      (with-exception-default nil     (/ 1 0)))
-    (is= :dummy   (with-exception-default :dummy  (/ 1 0)))
-    (is= 123      (with-exception-default 0       (Long/parseLong "123")))
-    (is= 0        (with-exception-default 0       (Long/parseLong "12xy3")))
-    ))
+  (throws? Exception (/ 1 0))
+  (is= nil (with-exception-default nil (/ 1 0)))
+  (is= :dummy (with-exception-default :dummy (/ 1 0)))
+  (is= 123 (with-exception-default 0 (Long/parseLong "123")))
+  (is= 0 (with-exception-default 0 (Long/parseLong "12xy3"))))
+
+(dotest
+  (is= 0 (with-nil-default 0 nil))
+  (is= [0 1 "" [] :some-default true false]
+    (mapv #(with-nil-default :some-default %) [0 1 "" [] nil true false]))
+  )
 
 (dotest
   (is (rel= 1 1 :digits 4 ))
