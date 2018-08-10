@@ -300,11 +300,15 @@
      ~@forms
      (catch Exception e# ~default-val)))
 
+(defn validate-with-default
+  [is-valid? default-val sample-val]
+  (if (is-valid? sample-val)
+    sample-val
+    default-val ))
+
 (defn with-nil-default
-  [default-val nominal-val]
-  (if (nil? nominal-val)
-    default-val
-    nominal-val))
+  [default-val sample-val]
+  (validate-with-default nil? default-val sample-val))
 
 ; #todo rename to "get-in-safe" ???
 ; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)

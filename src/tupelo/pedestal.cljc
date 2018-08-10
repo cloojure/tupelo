@@ -14,8 +14,26 @@
          [tupelo.schema :as ts]
          [tupelo.impl :as i])]))
 
+
+(def strict-transport-security                        "Strict-Transport-Security")
+(def x-frame-options                                  "X-Frame-Options")
+(def x-content-type-options                           "X-Content-Type-Options")
+(def x-xss-protection                                 "X-XSS-Protection")
+(def x-download-options                               "X-Download-Options")
+(def x-permitted-cross-domain-policies                "X-Permitted-Cross-Domain-Policies")
+(def content-security-policy                          "Content-Security-Policy")
+(def content-type                                     "Content-Type")
+
+(def accept                                           "Accept")
+
+(def text-html                "text/html")
+(def text-plain               "text/plain")
+(def application-edn          "application/edn")
+(def application-json         "application/json")
+
 #?(:clj
    (do
+
      (def TableRouteInfo
        {(s/required-key :verb)         s/Keyword
         (s/required-key :path)         s/Str
