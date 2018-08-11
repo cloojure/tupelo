@@ -6,23 +6,22 @@
 ;   software.
 (ns ^:no-doc tupelo.impl
   "Tupelo - Making Clojure even sweeter"
-  #?@(:clj [
-  (:require
-    [clojure.core.async :as ca]
-    [clojure.core.match :as ccm]
-    [clojure.pprint :as pprint]
-    [clojure.set :as set]
-    [clojure.string :as str]
-    [clojure.test]
-    [clojure.walk :as walk]
-    [schema.core :as s]
-    [tupelo.schema :as tsk]
-   ;[tupelo.spec :as tsp]
-    [tupelo.types :as types]
-    [tupelo.schema :as ts]
-  )
-            ])
-  )
+  #?@(:clj
+      [
+       (:require
+         [clojure.core.async :as ca]
+         [clojure.core.match :as ccm]
+         [clojure.pprint :as pprint]
+         [clojure.set :as set]
+         [clojure.string :as str]
+         [clojure.test]
+         [clojure.walk :as walk]
+         [schema.core :as s]
+         [tupelo.schema :as tsk]
+         ;[tupelo.spec :as tsp]
+         [tupelo.types :as types]
+         [tupelo.schema :as ts] )
+       ]))
 
 #?(:clj (do
 
@@ -374,7 +373,9 @@
 ;-----------------------------------------------------------------------------
 ; spy stuff
 
-(def ^:dynamic *spy-enabled* true)
+; (def ^:dynamic *spy-enabled* false)
+(def ^:dynamic *spy-enabled* true) ; #TODO fix before commit!!!
+
 (def ^:dynamic *spy-enabled-map* {})
 
 (defmacro with-spy-enabled

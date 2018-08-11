@@ -167,8 +167,9 @@
       {:first-name "Elon", :last-name "Musk", :email "elon@example.com"})
 
     (defrecord Person [first-name last-name email phone])
-    (is (val= (s/conform :unq/person (->Person "Elon" "Musk" "elon@example.com" nil)))
-      {:first-name "Elon", :last-name "Musk", :email "elon@example.com", :phone nil}))
+    (is (val=
+          (s/conform :unq/person (->Person "Elon" "Musk" "elon@example.com" nil))
+          {:first-name "Elon", :last-name "Musk", :email "elon@example.com", :phone nil})))
 
   (dotest
     (s/def ::port number?)
@@ -348,10 +349,9 @@
   (dotest
     (when true
       (stest/instrument `ranged-rand)
-      (is (thrown? Exception (ranged-rand 8 5)))
+      (throws? Exception (ranged-rand 8 5))
       ; (spyx (stest/check `ranged-rand))  #todo
       ; (spyx (s/exercise-fn `ranged-rand))
-
       )
     )
 

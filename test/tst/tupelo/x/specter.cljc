@@ -67,7 +67,7 @@
         map-data             {:a 1 :b 2}
         map-result           (tx-map map-data solo-map-selector-fn solo-map-tx-fn)]
     ; (spyx map-data)
-    (is=  {:a 1, :b 3} ) map-result ))
+    (is= {:a 1, :b 3} map-result)))
 
 (def Indexed-Element [ (s/one s/Int "index") (s/one s/Any "element") ] )
 

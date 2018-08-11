@@ -7,37 +7,92 @@
 (ns tupelo.test
   "Testing functions."
   #?@(:clj [
-  (:require
-    [clojure.test.check :as ctc]
-    [clojure.test :as ct]
-    [tupelo.impl :as i])
-            ]) )
+       (:require
+         [clojure.test.check :as ctc]
+         [clojure.test :as ct]
+         [schema.core :as s]
+         [tupelo.impl :as i]
+         [tupelo.string :as ts])
+       ]))
 
 (defn use-fixtures [& args] (apply ct/use-fixtures args))
 (defmacro deftest [& forms] `(ct/deftest ~@forms))
-(defmacro is [& forms] `(ct/is ~@forms))
 (defmacro testing [& forms] `(ct/testing ~@forms))
 
+;(defmacro is
+;  "Equivalent to clojure.test/is."
+;  [arg]
+;  `(ct/is ~arg))
+
+(defmacro is
+  "Equivalent to clojure.test/is."
+  [& forms]
+  (if (not= (count forms) 1)
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (IllegalArgumentException.
+                (str "tupelo.test/is requires exactly 1 form " ~line-str))))
+    `(ct/is ~@forms)))
+
+;(defmacro isnt      ; #todo readme/test
+;  "Use (isnt ...) instead of (is (not ...)) for clojure.test"
+;  [arg]
+;  `(ct/is (not ~arg)))
 (defmacro isnt      ; #todo readme/test
   "Use (isnt ...) instead of (is (not ...)) for clojure.test"
-  [& body]
-  `(ct/is (not ~@body)))
+  [& forms]
+  (if (not= (count forms) 1)
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (IllegalArgumentException.
+                (str "tupelo.test/isnt requires exactly 1 form " ~line-str))))
+    `(ct/is (not ~@forms))))
+
 
 (defmacro is=  ; #todo readme/test
   "Use (is= ...) instead of (is (= ...)) for clojure.test"
   [& forms]
-  `(ct/is (= ~@forms)))
+  (if (<= (count forms) 1 )
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+     `(throw (IllegalArgumentException.
+               (str "tupelo.test/is= requires at least 2 forms " ~line-str))))
+     `(is (= ~@forms))))
 
-(defn sets= [& colls]
-  (let [set-colls (for [coll colls]
-                    `(set ~coll))]
-    `(apply is= ~@set-colls)))
-
-
-(defmacro isnt=  ; #todo readme/test
+(defmacro isnt=         ; #todo readme/test
   "Use (isnt= ...) instead of (is (not= ...)) for clojure.test"
-  [& body]
-  `(ct/is (not (= ~@body))))
+  [& forms]
+  (if (<= (count forms) 1 )
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (IllegalArgumentException.
+                (str "tupelo.test/isnt= requires at least 2 forms " ~line-str))))
+    `(isnt (= ~@forms))))
+
+;(defmacro sets=
+;  "Converts each input collection to a set, then tests for equality."
+;  [& forms]
+;  `(is= ~@(mapv #(list 'set %) forms)))
+
+(defmacro set=  ; #todo readme/test
+  "Converts each input collection to a set, then tests for equality."
+  [& forms]
+  (if (<= (count forms) 1 )
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (IllegalArgumentException.
+                (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
+    `(is= ~@(mapv #(list 'set %) forms))))
+
+; #todo need test
+;(defmacro nonblank=
+;  "Returns true if each input string is equal treating all whitespace as equivalent."
+;  [& strings ]
+;  (is (apply ts/equals-ignore-spacing? strings)))
+
+(defmacro nonblank=  ; #todo readme/test
+  "Returns true if each input string is equal treating all whitespace as equivalent."
+  [& forms]
+  (if (<= (count forms) 1 )
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (IllegalArgumentException.
+                (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
+    `(is (ts/equals-ignore-spacing? ~@forms) )))
 
 #?(:clj (do
 

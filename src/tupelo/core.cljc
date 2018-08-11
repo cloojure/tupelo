@@ -192,10 +192,12 @@
   [& forms] `(i/with-spy-indent ~@forms))
 
 (defmacro with-spy-enabled ; #todo README & test
-  [tag & forms] `(i/with-spy-enabled ~tag ~@forms))
+  [tag & forms]
+  `(i/with-spy-enabled ~tag ~@forms))
 
 (defmacro check-spy-enabled ; #todo README & test
-  [tag & forms] `(i/check-spy-enabled tag forms))
+  [tag & forms]
+  `(i/check-spy-enabled ~tag ~@forms))
 
 ; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
 
@@ -723,12 +725,12 @@
     (clojure.core/map #(apply rel= %1 %2 opts)
       x-vals y-vals)))
 
-; #todo add schema & tests
-(defn set=
-  "Returns true if two collections are equal when converted into sets."
-  [& colls]
-  (assert (< 1 (count colls))) ; #todo add msg
-  (apply = (mapv set colls)))
+;; #todo delete old definition
+;(defn set=
+;  "Returns true if two collections are equal when converted into sets."
+;  [& colls]
+;  (assert (< 1 (count colls))) ; #todo add msg
+;  (apply = (mapv set colls)))
 
 (defn range-vec     ; #todo README;  maybe xrange?  maybe kill this?
   "An eager version clojure.core/range that always returns its result in a vector."

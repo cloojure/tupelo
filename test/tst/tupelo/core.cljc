@@ -1108,12 +1108,6 @@
   (is (not (rel= 1 1.001 :tol 0.0001 )))
 )
 
-(dotest 
-  (is (set= [1 2 3] [3 2 1] ))
-  (isnt (set= [1 2 3] [3 2 9] ))
-  (throws? (set= [1 2 3]))
-)
-
 
 (dotest
   (is (every? t/truthy? (t/forv [ul (range 0 4)] (vector? (t/range-vec ul)))))
@@ -1433,25 +1427,25 @@
             (=  odd-1  odd-2  odd-rem)))))
 
 (dotest
-  (is (= "a" (strcat \a  )) (strcat [\a]  ))
-  (is (= "a" (strcat "a" )) (strcat ["a"] ))
-  (is (= "a" (strcat 97  )) (strcat [97]  ))
+  (is= "a" (strcat \a  ) (strcat [\a]  ))
+  (is= "a" (strcat "a" ) (strcat ["a"] ))
+  (is= "a" (strcat 97  ) (strcat [97]  ))
 
-  (is (= "ab" (strcat \a   \b   )) (strcat [\a]  \b   ))
-  (is (= "ab" (strcat \a  [\b]  )) (strcat [\a   \b]  ))
-  (is (= "ab" (strcat "a"  "b"  )) (strcat ["a"] "b"  ))
-  (is (= "ab" (strcat "a" ["b"] )) (strcat ["a"  "b"] ))
-  (is (= "ab" (strcat 97   98   )) (strcat [97]  98   ))
-  (is (= "ab" (strcat 97  [98]  )) (strcat [97   98]  ))
-  (is (= "ab" (strcat ""  "ab"  )) (strcat ["" \a "b"]))
+  (is= "ab" (strcat \a   \b   ) (strcat [\a]  \b   ))
+  (is= "ab" (strcat \a  [\b]  ) (strcat [\a   \b]  ))
+  (is= "ab" (strcat "a"  "b"  ) (strcat ["a"] "b"  ))
+  (is= "ab" (strcat "a" ["b"] ) (strcat ["a"  "b"] ))
+  (is= "ab" (strcat 97   98   ) (strcat [97]  98   ))
+  (is= "ab" (strcat 97  [98]  ) (strcat [97   98]  ))
+  (is= "ab" (strcat ""  "ab"  ) (strcat ["" \a "b"]))
 
-  (is (= "abcd" (strcat              97  98   "cd" )))
-  (is (= "abcd" (strcat             [97  98]  "cd" )))
-  (is (= "abcd" (strcat (byte-array [97  98]) "cd" )))
+  (is= "abcd" (strcat              97  98   "cd" ))
+  (is= "abcd" (strcat             [97  98]  "cd" ))
+  (is= "abcd" (strcat (byte-array [97  98]) "cd" ))
 
-  (is (= (strcat "I " [ \h \a nil \v [\e \space nil (byte-array [97])
+  (is= (strcat "I " [ \h \a nil \v [\e \space nil (byte-array [97])
                         [ nil 32 "complicated" (Math/pow 2 5) '( "str" nil "ing") ]]] )
-         "I have a complicated string" ))
+         "I have a complicated string" )
 
   (let [chars-set   (into #{} (t/chars-thru \a \z))
         str-val     (strcat chars-set) ]
@@ -2257,11 +2251,11 @@
     (is= map-ab (validate-map-keys map-ab #{:a :b}))
     (is= map-ab (validate-map-keys map-ab #{:a :b :x}))
     (is= map-abc (validate-map-keys map-abc [:a :b :c :x]))
-    (is (thrown? IllegalArgumentException (validate-map-keys map-ab [:a])))
-    (is (thrown? IllegalArgumentException (validate-map-keys map-ab [:b])))
-    (is (thrown? IllegalArgumentException (validate-map-keys map-ab [:a :x])))
-    (is (thrown? IllegalArgumentException (validate-map-keys map-abc [:a :b])))
-    (is (thrown? IllegalArgumentException (validate-map-keys map-abc [:a :c :x])))))
+    (throws? IllegalArgumentException (validate-map-keys map-ab [:a]))
+    (throws? IllegalArgumentException (validate-map-keys map-ab [:b]))
+    (throws? IllegalArgumentException (validate-map-keys map-ab [:a :x]))
+    (throws? IllegalArgumentException (validate-map-keys map-abc [:a :b]))
+    (throws? IllegalArgumentException (validate-map-keys map-abc [:a :c :x]))))
 
 (dotest
   (let [map-123 {1 :a 2 :b 3 :c}

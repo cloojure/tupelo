@@ -150,7 +150,7 @@
               [10 11 12 13]
               [20 21 22 23]]
         ]
-    (is (thrown? IllegalArgumentException (cols-get demo 0 0)))
+    (throws? IllegalArgumentException (cols-get demo 0 0))
     (is= (cols-get demo 0 1) [[00 10 20]])
     (is= (cols-get demo 0 2) [[00 10 20]
                               [01 11 21]])
@@ -167,7 +167,7 @@
     (is= (cols-get demo 2 4) [[02 12 22]
                               [03 13 23]])
     (is= (cols-get demo 3 4) [[03 13 23]])
-    (is (thrown? IllegalArgumentException (cols-get demo 4 4)))
+    (throws? IllegalArgumentException (cols-get demo 4 4))
 
     (is= (cols-get demo) (cols-get demo 0 4))
     (is= (cols-get demo [2 0 3 1]) [[02 12 22]
@@ -218,7 +218,7 @@
     (is= (tar/col-drop demo 0 2 3) [[01]
                                     [11]
                                     [21]])
-    (is (thrown? Exception (tar/row-drop demo :x)))))
+    (throws? Exception (tar/row-drop demo :x))))
 
 (dotest
   (let [a13 [[00 01 02]]
@@ -230,9 +230,9 @@
         a34 [[00 01 02 03]
              [10 11 12 13]
              [20 21 22 23]]]
-    (is (thrown? Error (tar/row-add a13 [1 2])))
-    (is (thrown? Error (tar/row-add a13 [1 2] [1 2 3])))
-    (is (thrown? Error (tar/row-add a13 [1 2 3 4])))
+    (throws? Error (tar/row-add a13 [1 2]))
+    (throws? Error (tar/row-add a13 [1 2] [1 2 3]))
+    (throws? Error (tar/row-add a13 [1 2 3 4]))
     (is= a23 (tar/row-add a13 [10 11 12]))
     (is= a33 (tar/row-add a13 [10 11 12] [20 21 22]))))
 
@@ -243,8 +243,8 @@
              [10 11 12]]
         a24 [[00 01 02 03]
              [10 11 12 13]]]
-    (is (thrown? Error (tar/col-add a23 [1 2 3])))
-    (is (thrown? Error (tar/col-add a23 [1 2] [1 2 3])))
+    (throws? Error (tar/col-add a23 [1 2 3]))
+    (throws? Error (tar/col-add a23 [1 2] [1 2 3]))
     (is= a23 (tar/col-add a22 [2 12]))
     (is= a24 (tar/col-add a22 [2 12] [3 13]))))
 
@@ -259,7 +259,7 @@
              [10 11]
              [20 21]
              [30 31]]]
-    (is (thrown? Error (tar/glue-vert a22 [[1 2 3]])))
+    (throws? Error (tar/glue-vert a22 [[1 2 3]]))
     (is= a22 (tar/glue-vert
                [[00 01]]
                [[10 11]]))
@@ -311,7 +311,7 @@
              [10 11 12]]
         a24 [[00 01 02 03]
              [10 11 12 13]]]
-    (is (thrown? Error (tar/glue-horiz a22 [[1 2 3]])))
+    (throws? Error (tar/glue-horiz a22 [[1 2 3]]))
     (is= a22 (tar/glue-horiz a21
                [[01]
                 [11]]))
@@ -341,13 +341,13 @@
   (let [demo
         [[1 2 3]
          [4 5 6]]]
-    (is (thrown? Throwable (tar/row-set demo 2 [[1 2 3]])))
-    (is (thrown? Throwable (tar/row-set demo 1 [[1 2 3 4]])))
+    (throws? (tar/row-set demo 2 [[1 2 3]]))
+    (throws? (tar/row-set demo 1 [[1 2 3 4]]))
     (is= (tar/row-set demo 1 [7 8 9]) [[1 2 3]
                                        [7 8 9]])
 
-    (is (thrown? Throwable (tar/col-set demo 3 [[1 2]])))
-    (is (thrown? Throwable (tar/col-set demo 1 [[1 2 3 4]])))
+    (throws? (tar/col-set demo 3 [[1 2]]))
+    (throws? (tar/col-set demo 1 [[1 2 3 4]]))
     (is= (tar/col-set demo 1 [7 8]) [[1 7 3]
                                      [4 8 6]])
 

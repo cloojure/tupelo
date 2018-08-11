@@ -134,8 +134,8 @@
 
   ; empty? / count too loose:
   (is= true (empty? nil))
-  (is= 0  ) (count nil)
-)
+  (is= 0    (count nil))
+  )
 
 (i/when-clojure-1-9-plus
   (dotest
