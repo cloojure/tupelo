@@ -112,6 +112,15 @@
 (declare clip-str)
 
 ;-----------------------------------------------------------------------------
+(defn truthy?
+  [arg]
+  (if arg true false))
+
+(defn falsey?
+  [arg]
+  (if arg false true))
+
+;-----------------------------------------------------------------------------
 ; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
 
 ; #todo need tests & docs. Use for datomic Entity?
@@ -300,15 +309,22 @@
      ~@forms
      (catch Exception e# ~default-val)))
 
-(defn validate-with-default
-  [is-valid? default-val sample-val]
+(defn validate
+  [is-valid? sample-val]
+  (let [tst-result (is-valid? sample-val)]
+    (when-not (truthy? tst-result)
+      (throw (IllegalStateException. (format "validate: sample-val=%s, tst-result=%s" sample-val tst-result))))
+    sample-val))
+
+(defn validate-or-default
+  [is-valid? sample-val default-val]
   (if (is-valid? sample-val)
     sample-val
-    default-val ))
+    default-val))
 
-(defn with-nil-default
-  [default-val sample-val]
-  (validate-with-default nil? default-val sample-val))
+(defn not-nil-or-default
+  [sample-val default-val]
+  (validate-or-default not-nil? sample-val default-val))
 
 ; #todo rename to "get-in-safe" ???
 ; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)
@@ -338,15 +354,6 @@
   [the-key :- s/Any
    the-map :- tsk/Map]
   (fetch-in the-map [the-key]))
-
-;-----------------------------------------------------------------------------
-(defn truthy?
-  [arg]
-  (if arg true false))
-
-(defn falsey?
-  [arg]
-  (if arg false true))
 
 ;-----------------------------------------------------------------------------
 ; clojure.spec stuff
@@ -504,13 +511,6 @@
         r1    (vec (mapcat  fmt-pair pairs ))
         final-code  `(let ~r1 ~@forms ) ]
     final-code ))
-
-(defn validate
-  [tst-fn tst-val]
-  (let [tst-result (tst-fn tst-val)]
-    (when-not (truthy? tst-result)
-      (throw (IllegalStateException. (format "validate: tst-val=%s, tst-result=%s" tst-val tst-result))))
-    tst-val))
 
 (defn glue
   [& colls]

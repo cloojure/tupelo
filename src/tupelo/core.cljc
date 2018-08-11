@@ -606,15 +606,15 @@
   [default-val & forms]
   `(i/with-exception-default ~default-val ~@forms))
 
-(defn validate-with-default
+(defn validate-or-default
   "Returns `sample-val` if `(is-valid? sample-val)` is truthy; else returns `default-val`"
-  [is-valid? default-val sample-val]
-  (i/validate-with-default is-valid? default-val sample-val))
+  [is-valid? sample-val default-val]
+  (i/validate-or-default is-valid? sample-val default-val))
 
-(defn with-nil-default
+(defn not-nil-or-default
   "Returns `sample-val` if not nil; else returns `default-val`"
-  [default-val sample-val]
-  (i/with-nil-default default-val sample-val))
+  [sample-val default-val ]
+  (i/not-nil-or-default sample-val default-val))
 
 
 (defmacro lazy-cons
