@@ -1074,7 +1074,7 @@
 (dotest
   (is= (validate-or-default not-nil? nil 0) 0)
   (is= (validate-or-default not-empty? "" "How you doin?") "How you doin?")
-  (is= (mapv #(not-nil-or-default % :some-default)
+  (is= (mapv #(with-nil-default :some-default %)
     [0 1 "" [] nil           true false])
     [0 1 "" [] :some-default true false]))
 

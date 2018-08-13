@@ -613,11 +613,10 @@
   [is-valid? sample-val default-val]
   (i/validate-or-default is-valid? sample-val default-val))
 
-(defn not-nil-or-default
+(defn with-nil-default
   "Returns `sample-val` if not nil; else returns `default-val`"
-  [sample-val default-val ]
-  (i/not-nil-or-default sample-val default-val))
-
+  [default-val sample-val]
+  (i/with-nil-default default-val sample-val))
 
 (defmacro lazy-cons
   "The simple way to create a lazy sequence:

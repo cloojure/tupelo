@@ -321,8 +321,8 @@
     sample-val
     default-val))
 
-(defn not-nil-or-default
-  [sample-val default-val]
+(defn with-nil-default
+  [default-val sample-val]
   (validate-or-default not-nil? sample-val default-val))
 
 ; #todo rename to "get-in-safe" ???
