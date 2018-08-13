@@ -618,6 +618,19 @@
   [default-val sample-val]
   (i/with-nil-default default-val sample-val))
 
+; #todo move -> impl
+;(defmacro when-let*
+;  "Threads forms as with `when-let`, but allow more than 1 pair of binding forms."
+;  [bindings & body]
+;  (i/when-let* ~bindings ~@body))
+
+(defmacro when-let*
+  [bindings & body]
+  (if (seq bindings)
+    `(when-let [~(clojure.core/first bindings) ~(clojure.core/second bindings)]
+       (when-let* ~(clojure.core/drop 2 bindings) ~@body))
+    `(do ~@body)))
+
 (defmacro lazy-cons
   "The simple way to create a lazy sequence:
       (defn lazy-next-int [n]

@@ -9,6 +9,7 @@
   #?@(:clj
       [
        (:require
+         [clojure.core :as cc]
          [clojure.core.async :as ca]
          [clojure.core.match :as ccm]
          [clojure.pprint :as pprint]
@@ -325,6 +326,8 @@
   [default-val sample-val]
   (validate-or-default not-nil? sample-val default-val))
 
+; #todo move when-let* here
+
 ; #todo rename to "get-in-safe" ???
 ; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)
 ; #todo make throw if any index invalid
@@ -353,6 +356,26 @@
   [the-key :- s/Any
    the-map :- tsk/Map]
   (fetch-in the-map [the-key]))
+
+(comment
+  (is= (merge-deep  ; #todo need a merge-deep where
+         {:a {:b 2}}
+         {:a {:c 3}})
+    {:a {:b 2
+         :c 3}}))
+(comment
+  ; #todo name => destruct  ???
+  (let [data {:a {:b 2
+              :c 3
+              :d {:e 5}}} ])
+    ; has same result as
+  (extract data {:a {:b 2
+                     :c xx
+                     :d {:e yy}}}
+    ...)
+  (let [xx 3
+        yy 5]
+    ...))
 
 ;-----------------------------------------------------------------------------
 ; clojure.spec stuff

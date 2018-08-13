@@ -1079,6 +1079,19 @@
     [0 1 "" [] :some-default true false]))
 
 (dotest
+  (is= 3 (when-let* [a 1
+                     b 2
+                     c (+ a b)]
+           c))
+  (is= nil (when-let* [a 1
+                       b nil
+                       c 3]
+             a))
+)
+
+
+
+(dotest
   (is (rel= 1 1 :digits 4 ))
   (is (rel= 1 1 :tol    0.01 ))
 
