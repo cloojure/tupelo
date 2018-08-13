@@ -1047,7 +1047,7 @@
   (let [mm  {:a {:b 2}}]
     (is= (safe-> mm :a)     {:b 2} )
     (is= (safe-> mm :a :b)      2)
-    (throws? java.lang.IllegalArgumentException   (safe-> mm :x))
+    (throws? IllegalArgumentException   (safe-> mm :x))
     (throws? IllegalArgumentException   (safe-> mm :a :x))
     (throws? IllegalArgumentException   (safe-> mm :a :b :x))))
 
@@ -1086,8 +1086,7 @@
   (is= nil (when-let* [a 1
                        b nil
                        c 3]
-             a))
-)
+             a)))
 
 
 

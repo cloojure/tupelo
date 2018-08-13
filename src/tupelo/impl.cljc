@@ -228,6 +228,10 @@
   (when (nil? coll) (throw (IllegalArgumentException. (str "xvec: invalid coll: " coll))))
   (clojure.core/vec coll))
 
+; #todo add (->sorted-map <map>)        => (into (sorted-map) <map>)
+; #todo add (->sorted-set <set>)        => (into (sorted-set) <set>)
+; #todo add (->sorted-vec <sequential>) => (vec (sort <vec>))
+
 (s/defn lexical-compare :- s/Int
   [a :- tsk/List
    b :- tsk/List]

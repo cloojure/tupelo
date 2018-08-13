@@ -25,6 +25,7 @@
 (def content-type                                     "Content-Type")
 
 (def accept                                           "Accept")
+(def location                                         "Location")
 
 (def text-html                "text/html")
 (def text-plain               "text/plain")
@@ -48,4 +49,16 @@
          (grab :path ctx)
          (grab :verb ctx)
          (grab :interceptors ctx)
-         (i/keyvals-seq* {:missing-ok true} ctx [:route-name :constraints])))))
+         (i/keyvals-seq* {:missing-ok true} ctx [:route-name :constraints])))
+
+     (defn edn-parsible-request
+       "Pulls out 'safe' keys from the request map that can be parsed using `edn/read-string`."
+       [request]
+       (into (sorted-map)
+         (submap-by-keys request
+           [:protocol :async-supported? :remote-addr :headers
+            :server-port :content-length :content-type :path-info
+            :character-encoding :uri :server-name :query-string
+            :path-params :scheme :request-method :context-path])))
+
+     ))
