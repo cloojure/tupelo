@@ -578,14 +578,13 @@
          ]
      ~'it))
 
-(defmacro let?
-  "Home-brew version of `tupelo.core/let-some` "
+(defmacro let-some
   [bindings & forms]
   (if (seq bindings)
     `(let [result# ~(cc/second bindings)]
        (if (not (nil? result#))
          (let [~(cc/first bindings) result#]
-           (let? ~(drop 2 bindings) ~@forms))))
+           (let-some ~(cc/drop 2 bindings) ~@forms))))
     `(do ~@forms)))
 
 (defn clip-str      ; #todo -> tupelo.string?
