@@ -621,8 +621,8 @@
 ; #todo move -> impl
 ;(defmacro let-some
 ;  "Threads forms as with `when-some`, but allow more than 1 pair of binding forms."
-;  [bindings & body]
-;  (i/let-some ~bindings ~@body))
+;  [& forms]
+;  (i/let-some ~@forms))
 
 (defmacro let-some
   [bindings & body]

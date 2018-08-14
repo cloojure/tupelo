@@ -13,8 +13,8 @@
 #?(:clj
    (do
      (dotest
-       (is= (header :content-type) "Content-Type")
-       (is= (header :text-html) "text/html"))
+       (is= content-type "Content-Type")
+       (is= text-html "text/html"))
 
      (dotest
        (is= (table-route '{:path         "/todo/:list-id/:item"

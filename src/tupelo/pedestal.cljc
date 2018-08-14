@@ -16,52 +16,24 @@
          [tupelo.schema :as tsch]
          [tupelo.string :as ts] )]))
 
-(def header-strs
-  #{"Strict-Transport-Security"
-    "X-Frame-Options"
-    "X-Content-Type-Options"
-    "X-XSS-Protection"
-    "X-Download-Options"
-    "X-Permitted-Cross-Domain-Policies"
-    "Content-Security-Policy"
-    "Content-Type"
-    "Accept"
-    "Location"
-    "text/html"
-    "text/plain"
-    "application/edn"
-    "application/json" })
+(def accept                                       "Accept")
+(def application-edn                              "application/edn")
+(def application-json                             "application/json")
+(def application-xml                              "application/xml")
+(def content-security-policy                      "Content-Security-Policy")
+(def content-type                                 "Content-Type")
+(def location                                     "Location")
+(def strict-transport-security                    "Strict-Transport-Security")
+(def text-html                                    "text/html")
+(def text-plain                                   "text/plain")
+(def x-content-type-options                       "X-Content-Type-Options")
+(def x-download-options                           "X-Download-Options")
+(def x-frame-options                              "X-Frame-Options")
+(def x-permitted-cross-domain-policies            "X-Permitted-Cross-Domain-Policies")
+(def x-xss-protection                             "X-XSS-Protection")
 
 #?(:clj
    (do
-
-     (def header-kw->str
-       (into (sorted-map)
-         (for [header-str header-strs]
-           {(ts/str->kw-normalized (str/lower-case header-str)) header-str})))
-     (comment
-       ; example header-kw->str =>
-       {:accept                    "Accept",
-        :application-edn           "application/edn",
-        :application-json          "application/json",
-        :content-security-policy   "Content-Security-Policy",
-        :content-type              "Content-Type",
-        :location                  "Location",
-        :strict-transport-security "Strict-Transport-Security",
-        :text-html                 "text/html",
-        :text-plain                "text/plain",
-        :x-content-type-options    "X-Content-Type-Options",
-        :x-download-options        "X-Download-Options",
-        :x-frame-options           "X-Frame-Options",
-        :x-permitted-cross-domain-policies
-                                   "X-Permitted-Cross-Domain-Policies",
-        :x-xss-protection          "X-XSS-Protection"})
-
-     (s/defn header :- s/Str
-       "Returns an HTTP Header string given its normalized keyword representation
-        (e.g. :text-html => 'text/html',  :content-type => 'Content-Type') "
-       [hdr-kw :- s/Keyword]
-       (grab hdr-kw header-kw->str))
 
      (def TableRouteInfo
        {(s/required-key :verb)         s/Keyword
