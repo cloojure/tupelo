@@ -619,16 +619,16 @@
   (i/with-nil-default default-val sample-val))
 
 ; #todo move -> impl
-;(defmacro when-let*
-;  "Threads forms as with `when-let`, but allow more than 1 pair of binding forms."
+;(defmacro let-some
+;  "Threads forms as with `when-some`, but allow more than 1 pair of binding forms."
 ;  [bindings & body]
-;  (i/when-let* ~bindings ~@body))
+;  (i/let-some ~bindings ~@body))
 
-(defmacro when-let*
+(defmacro let-some
   [bindings & body]
   (if (seq bindings)
-    `(when-let [~(clojure.core/first bindings) ~(clojure.core/second bindings)]
-       (when-let* ~(clojure.core/drop 2 bindings) ~@body))
+    `(when-some [~(clojure.core/first bindings) ~(clojure.core/second bindings)]
+       (let-some ~(clojure.core/drop 2 bindings) ~@body))
     `(do ~@body)))
 
 (defmacro lazy-cons

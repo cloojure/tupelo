@@ -330,7 +330,7 @@
   [default-val sample-val]
   (validate-or-default not-nil? sample-val default-val))
 
-; #todo move when-let* here
+; #todo move let-some here
 
 ; #todo rename to "get-in-safe" ???
 ; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)

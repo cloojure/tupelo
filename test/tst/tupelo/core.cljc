@@ -1079,14 +1079,14 @@
     [0 1 "" [] :some-default true false]))
 
 (dotest
-  (is= 3 (when-let* [a 1
-                     b 2
-                     c (+ a b)]
+  (is= 3 (let-some [a 1
+                    b 2
+                    c (+ a b)]
            c))
-  (is= nil (when-let* [a 1
-                       b nil
-                       c 3]
-             a)))
+  (is= nil (let-some [a 1
+                      b nil
+                      c 3]
+             [a b c])))
 
 
 
