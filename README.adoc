@@ -829,11 +829,11 @@ that make it inconvenient to return a result as the last expression in a functio
 [source,clojure]
 ----
 (defn concat-gen    ; concat a list of collections
-[& collections]
- (lazy-gen
-   (doseq [curr-coll collections]
-     (doseq [item curr-coll]
-       (yield item)))))
+  [& collections]
+  (lazy-gen
+    (doseq [curr-coll collections]
+      (doseq [item curr-coll]
+        (yield item)))))
 
 (defn concat-gen-pair
   [& collections]
