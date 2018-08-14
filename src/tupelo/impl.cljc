@@ -330,8 +330,6 @@
   [default-val sample-val]
   (validate-or-default not-nil? sample-val default-val))
 
-; #todo move let-some here
-
 ; #todo rename to "get-in-safe" ???
 ; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)
 ; #todo make throw if any index invalid
@@ -579,6 +577,16 @@
          ~@(interleave (repeat 'it) forms)
          ]
      ~'it))
+
+(defmacro let?
+  "Home-brew version of `tupelo.core/let-some` "
+  [bindings & forms]
+  (if (seq bindings)
+    `(let [result# ~(cc/second bindings)]
+       (if (not (nil? result#))
+         (let [~(cc/first bindings) result#]
+           (let? ~(drop 2 bindings) ~@forms))))
+    `(do ~@forms)))
 
 (defn clip-str      ; #todo -> tupelo.string?
   [nchars & args]

@@ -618,18 +618,24 @@
   [default-val sample-val]
   (i/with-nil-default default-val sample-val))
 
-; #todo move -> impl
 ;(defmacro let-some
 ;  "Threads forms as with `when-some`, but allow more than 1 pair of binding forms."
 ;  [& forms]
 ;  (i/let-some ~@forms))
 
+; #todo move -> impl
 (defmacro let-some
   [bindings & body]
   (if (seq bindings)
     `(when-some [~(clojure.core/first bindings) ~(clojure.core/second bindings)]
        (let-some ~(clojure.core/drop 2 bindings) ~@body))
     `(do ~@body)))
+
+; #todo this crashes for some strange reason!   Clojure bug???
+; "Threads forms as with `when-some`, but allow more than 1 pair of binding forms."
+;(defmacro let?
+;  [bindings & forms]
+;  (i/letimpl ~bindings ~@forms) )
 
 (defmacro lazy-cons
   "The simple way to create a lazy sequence:

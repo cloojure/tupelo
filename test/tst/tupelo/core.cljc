@@ -1088,6 +1088,49 @@
                       c 3]
              [a b c])))
 
+(dotest
+  (is= 5 (let-some [a (+ 2 3)]
+           a))
+  (is= 7 (let-some [a (+ 2 3)
+                    b (inc a)
+                    c (inc b)]
+           c))
+  (is= nil (let-some [a (+ 2 3)
+                      b nil
+                      c (inc b)]
+             c))
+  (is= nil (let-some [a (+ 2 3)
+                      b (when (< 5 0) a)
+                      c (inc b)]
+             c))
+  (is= [0 [1 2 3 4]] (let-some [tgt 5
+                                [x & others] (range tgt)]
+                       [x others]))
+  (is= nil (let-some [tgt nil
+                      [x & others] (range tgt)]
+             [x others])))
+(dotest
+  (is= 5 (i/let? [a (+ 2 3)]
+           a))
+  (is= 7 (i/let? [a (+ 2 3)
+                  b (inc a)
+                  c (inc b)]
+           c))
+  (is= nil (i/let? [a (+ 2 3)
+                    b nil
+                    c (inc b)]
+             c))
+  (is= nil (i/let? [a (+ 2 3)
+                    b (when (< 5 0) a)
+                    c (inc b)]
+             c))
+  (is= [0 [1 2 3 4]] (i/let? [tgt 5
+                              [x & others] (range tgt)]
+                       [x others]))
+  (is= nil (i/let? [tgt nil
+                    [x & others] (range tgt)]
+             [x others])))
+
 
 
 (dotest
