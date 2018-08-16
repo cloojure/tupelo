@@ -669,28 +669,20 @@
   [m :- tsk/Map ]
   (reduce into [] (seq m)))
 
-(s/defn keyvals-seq* :- [s/Any]
-  [ctx :- tsk/KeyMap
-   m :- tsk/Map
-   keys-seq :- [s/Any]]
-  (with-map-vals ctx [missing-ok]
+(s/defn keyvals-seq :- [s/Any]
+  [ctx :- tsk/KeyMap]
+  (with-map-vals ctx [missing-ok the-map the-keys]
     (apply glue
-      (for [key keys-seq]
-        (let [val (get m key ::missing)]
+      (for [key the-keys]
+        (let [val (get the-map key ::missing)]
           (if-not (= val ::missing)
             [key val]
             (if missing-ok
               []
               (throw (IllegalArgumentException.
                        (str "Key not present in map:" \newline
-                         "  map: " m \newline
-                         "  key: " key \newline))))))))))
-
-(s/defn keyvals-seq :- [s/Any]
-  "Like `keyvals`, but only outputs selected keys in the order specified."
-  [m :- tsk/Map
-   keys-seq :- [s/Any]]
-  (keyvals-seq* {:missing-ok false} m keys-seq))
+                            "  map: " the-map \newline
+                            "  key: " key \newline))))))))))
 
 (defn range-vec [& args]
   (vec (apply range args)))

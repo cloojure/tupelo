@@ -1038,9 +1038,10 @@
     (is= [ :a 1 :b 2 :a 1 ] (keyvals-seq m1 [:a :b :a]))
 
     (throws? (keyvals-seq m1 [:a :b :z]))
-    (is= [ :a 1 :b 2      ] (keyvals-seq* {:missing-ok true} m1 [:a :b :z]))
-    (is= [      :b 2 :c 3 ] (keyvals-seq* {:missing-ok true} m1 [:z :b :c]))
-    ))
+    (is= [:a 1 :b 2] (keyvals-seq {:missing-ok true
+                                   :the-map    m1 :the-keys [:a :b :z]}))
+    (is= [:b 2 :c 3] (keyvals-seq {:missing-ok true
+                                   :the-map    m1 :the-keys [:z :b :c]})) ))
 
 (dotest
   (is= 7 (safe-> 3 (* 2) (+ 1)))

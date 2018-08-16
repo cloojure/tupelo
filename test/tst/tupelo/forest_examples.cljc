@@ -6,7 +6,7 @@
 ;   software.
 (ns tst.tupelo.forest-examples
   #?@(:clj [
-  (:use tupelo.forest tupelo.test )
+  (:use tupelo.core tupelo.forest tupelo.test )
   (:require
     [clojure.data.xml :as cdx]
     [clojure.java.io :as io]

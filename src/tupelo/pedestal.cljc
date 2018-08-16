@@ -44,21 +44,23 @@
 
      (s/defn table-route :- tsch/Tuple
        "Creates a Pedestal table-route entry from a context map."
-       [ctx :- TableRouteInfo]
+       [route-map :- TableRouteInfo]
        (prepend
-         (grab :path ctx)
-         (grab :verb ctx)
-         (grab :interceptors ctx)
-         (i/keyvals-seq* {:missing-ok true} ctx [:route-name :constraints])))
+         (grab :path route-map)
+         (grab :verb route-map)
+         (grab :interceptors route-map)
+         (i/keyvals-seq {:missing-ok true
+                         :the-map route-map :the-keys [:route-name :constraints]})))
 
      (defn edn-parsible-request
        "Pulls out 'safe' keys from the request map that can be parsed using `edn/read-string`."
        [request]
        (into (sorted-map)
-         (submap-by-keys request
-           [:protocol :async-supported? :remote-addr :headers
+         (submap-by-keys (unlazy request)
+           [:protocol :async-supported? :body :remote-addr :headers
             :server-port :content-length :content-type :path-info
-            :character-encoding :uri :server-name :query-string
-            :path-params :scheme :request-method :context-path])))
+            :character-encoding :uri :server-name :query-string :query-params
+            :path-params :scheme :request-method :context-path]
+           :missing-ok)))
 
      ))

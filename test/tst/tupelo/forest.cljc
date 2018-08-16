@@ -6,7 +6,7 @@
 ;   software.
 (ns tst.tupelo.forest
   #?@(:clj [
-  (:use tupelo.forest tupelo.test )
+  (:use tupelo.core tupelo.forest tupelo.test )
   (:require
     [schema.core :as s]
     [tupelo.core :as t]
@@ -14,7 +14,6 @@
     [tupelo.forest :as tf]
   )
 ]) )
-(t/refer-tupelo :dev)
 
 #?(:clj (do
 (dotest
