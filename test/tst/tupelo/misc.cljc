@@ -129,4 +129,8 @@
     (is= (uuid->str uuid-val) "e604d9bbcfb53cee6c3f305992c4a1531972b7a1" )
     (is= (str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d")))
 
+(dotest
+  (is= (edn-parsible (spyxx {:a 1 :x (fn [x] (+ x 1))}))
+    {:a 1 :x :tupelo.misc/non-parsible-object}))
+
 ))

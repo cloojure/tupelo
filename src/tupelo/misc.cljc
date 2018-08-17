@@ -8,27 +8,27 @@
   "Miscellaneous functions."
   #?@(:clj [
   (:use tupelo.core)
-  (:require
-    [clj-uuid :as uuid]
-    [clojure.core.async :refer [go go-loop chan buffer close! thread alts! alts!! timeout]]
-    [clojure.data.xml :as xml]
-    [clojure.java.shell :as shell]
-    [clojure.math.combinatorics :as combo]
-    [clojure.string :as str]
-    [clojure.walk :refer [postwalk]]
-    [schema.core :as s]
-    [tupelo.core :as t]
-    [tupelo.schema :as tsk]
-    [tupelo.string :as ts]
-    [tupelo.types :as tt]
-  )
+            (:require
+              [clj-uuid :as uuid]
+              [clojure.core.async :refer [go go-loop chan buffer close! thread alts! alts!! timeout]]
+              [clojure.data.xml :as xml]
+              [clojure.java.shell :as shell]
+              [clojure.math.combinatorics :as combo]
+              [clojure.string :as str]
+              [clojure.tools.reader.edn :as edn]
+              [clojure.walk :as walk]
+              [schema.core :as s]
+              [tupelo.core :as t]
+              [tupelo.schema :as tsk]
+              [tupelo.string :as ts]
+              [tupelo.types :as tt]
+              [clojure.walk :as walk])
   (:import
     [java.nio ByteBuffer]
     [java.security MessageDigest]
-    [java.util UUID ]
-  )
-            ])
-  )
+    [java.util UUID ] )
+
+  ]) )
 
 #?(:clj (do
 ;  #todo Make clojure versions of all pcapng stuff
@@ -280,3 +280,20 @@
         (println ex "Uncaught exception on" (.getName thread)))))) ; or (log/error ...)
 
 ))
+
+;---------------------------------------------------------------------------
+(defn edn-parsible
+  "Traverses a data structure to ensure it can be serialized with `pr-str` and read via
+  clojure.tools.reader.edn/read-string. All non-parsible content is replaced
+  with `::non-parsible-object`. "
+  [data]
+  (let [edn-parse-roundtrip (fn [item]
+                              (with-exception-default ::non-parsible-object
+                                (let [item-str (pr-str item)
+                                      item-edn (edn/read-string item-str)]
+                                  (when-not (= item item-edn)
+                                    (throw (IllegalArgumentException. "Non-parsible Content")))
+                                  item)))
+        data-unlazy         (unlazy data) ; coerce to map/vector/string wherever possible
+        data-parsible       (walk/postwalk edn-parse-roundtrip data-unlazy)]
+    data-parsible))

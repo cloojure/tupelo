@@ -13,6 +13,7 @@
     [clojure.test.check.properties :as prop]
     [clojure.test.check.clojure-test :as tst]
     [clojure.set :as set]
+    [clojure.walk :as walk]
     [tupelo.impl :as i]
     [tupelo.core :as t]
              ])

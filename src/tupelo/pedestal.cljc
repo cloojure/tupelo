@@ -52,43 +52,4 @@
          (keyvals-seq {:missing-ok true
                        :the-map    route-map :the-keys [:route-name :constraints]})))
 
-     (defn edn-parsible-request
-       "Pulls out 'safe' keys from the request map that can be parsed using `edn/read-string`."
-       [request]
-       (into (sorted-map)
-         (submap-by-keys (unlazy request)
-           [:protocol :async-supported? :body :remote-addr :headers
-            :server-port :content-length :content-type :path-info
-            :character-encoding :uri :server-name :query-string :query-params
-            :path-params :scheme :request-method :context-path]
-           :missing-ok)))
-
-     (defn edn-parsible-interceptor
-       "Pulls out 'safe' keys from the interceptor map that can be parsed using `edn/read-string`."
-       [interceptor]
-       (submap-by-keys interceptor [:name]))
-
-     (defn edn-parsible-route
-       "Pulls out 'safe' keys from the request map that can be parsed using `edn/read-string`."
-       [route]
-       (let [result (it-> (sorted-map)
-                      (into it
-                        (submap-by-keys (unlazy route)
-                          [:path :method :path-constraints :path-parts :route-name :path-params]
-                          :missing-ok))
-                      (glue it {:interceptors (mapv edn-parsible-interceptor (grab :interceptors route))}))]
-         result))
-
-     (defn edn-parsible-context
-       "Pulls out 'safe' keys from the context map that can be parsed using `edn/read-string`."
-       [context]
-       (nl) (println "-----------------------------------------------------------------------------")
-       (spyx-pretty :edn-parsible-context context)
-       (let [req    {:request (edn-parsible-request (grab :request context))}
-             route  {:route (edn-parsible-route (grab :route context))}
-             stack  {:io.pedestal.interceptor.chain/stack
-                     (mapv edn-parsible-interceptor (grab :io.pedestal.interceptor.chain/stack context))}
-             result (glue (sorted-map) req route stack)]
-         result))
-
      ))

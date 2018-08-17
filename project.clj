@@ -17,6 +17,7 @@
    [org.clojure/math.combinatorics "0.1.4"]
    [org.clojure/spec.alpha "0.2.168"]
    [org.clojure/test.check "0.9.0"]
+   [org.clojure/tools.reader "1.3.0"]
    [org.clojure/tools.analyzer "0.6.9"]
    [prismatic/schema "1.1.9"]
    ]
