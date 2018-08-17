@@ -130,7 +130,8 @@
     (is= (str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d")))
 
 (dotest
-  (is= (edn-parsible (spyxx {:a 1 :x (fn [x] (+ x 1))}))
-    {:a 1 :x :tupelo.misc/non-parsible-object}))
+  (let [some-fn (fn [x] (+ x 1))]
+    (is= (edn-parsible {:a 1 :x some-fn}) ; function object is not edn-parsible
+      {:a 1 :x :tupelo.misc/non-parsible-object})))
 
 ))

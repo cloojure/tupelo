@@ -292,7 +292,7 @@
                                 (let [item-str (pr-str item)
                                       item-edn (edn/read-string item-str)]
                                   (when-not (= item item-edn)
-                                    (throw (IllegalArgumentException. "Non-parsible Content")))
+                                    (throw (IllegalArgumentException. (str ::non-parsible-object))))
                                   item)))
         data-unlazy         (unlazy data) ; coerce to map/vector/string wherever possible
         data-parsible       (walk/postwalk edn-parse-roundtrip data-unlazy)]
