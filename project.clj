@@ -99,7 +99,8 @@
   ; "lein test :slow"   will only run tests marked with the ":slow" metadata
   ; "lein test :all"    will run all  tests (built-in)
   :test-selectors {:default (complement :slow)
-                   :slow    :slow}
+                   :slow    :slow
+                   :fast    :fast}
       ; #todo broken for tupelo.test/dospec - why?
 
   ; :main ^:skip-aot tupelo.core

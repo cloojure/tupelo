@@ -4,7 +4,8 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns tst.tupelo.misc
+(ns ^:fast
+  tst.tupelo.misc
   (:use tupelo.misc tupelo.test )
   (:require
     #?@(:clj [
@@ -130,6 +131,8 @@
     (is= (str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d")))
 
 (dotest
+  (is= (edn-parsible {:a 1 :b "two" :c [1 2 3]}) ; function object is not edn-parsible
+    {:a 1 :b "two" :c [1 2 3]})
   (let [some-fn (fn [x] (+ x 1))]
     (is= (edn-parsible {:a 1 :x some-fn}) ; function object is not edn-parsible
       {:a 1 :x :tupelo.misc/non-parsible-object})))
