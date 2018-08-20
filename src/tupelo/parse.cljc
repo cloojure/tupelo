@@ -10,16 +10,36 @@
   functions, these native-Clojure functions can be used as higher-order functions in maps,
   function arguments, etc.  Each function also provides an optional default-value which
   will be returned if there is an exception during parsing."
-  #?@(:clj [
-  (:use tupelo.core)
-  (:require [schema.core  :as s]
-            [tupelo.core :as t] )
-            ]) )
+  #?@(:clj
+      [(:use tupelo.core)
+       (:require
+         [clojure.tools.reader.edn :as edn]
+         [clojure.walk :as walk]
+         [schema.core :as s]
+         [tupelo.core :as t])]) )
 
 ; #todo:  write doc page
 ; #todo:  convert args from [str-val & opts] -> [str-val & {:as opts} ]
 
 #?(:clj (do
+
+(defn edn-parsible
+  "Traverses a data structure to ensure it can be serialized with `pr-str` and read via
+  clojure.tools.reader.edn/read-string. All non-parsible content is replaced
+  with `::non-parsible-object`. "
+  [data]
+  (let [edn-parse-roundtrip (fn [item]
+                              (with-exception-default ::edn-non-parsible
+                                (let [item-str (pr-str item)
+                                      item-edn (edn/read-string item-str)]
+                                  (when-not (= item item-edn)
+                                    (throw (IllegalArgumentException. (str ::edn-non-parsible))))
+                                  item)))
+        data-unlazy         (unlazy data) ; coerce to map/vector/string wherever possible
+        data-parsible       (walk/postwalk edn-parse-roundtrip data-unlazy)]
+    data-parsible))
+
+;---------------------------------------------------------------------------
 (defn parse-byte
  "( [str-val]
     [str-val :default default-val] )

@@ -130,11 +130,4 @@
     (is= (uuid->str uuid-val) "e604d9bbcfb53cee6c3f305992c4a1531972b7a1" )
     (is= (str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d")))
 
-(dotest
-  (is= (edn-parsible {:a 1 :b "two" :c [1 2 3]}) ; function object is not edn-parsible
-    {:a 1 :b "two" :c [1 2 3]})
-  (let [some-fn (fn [x] (+ x 1))]
-    (is= (edn-parsible {:a 1 :x some-fn}) ; function object is not edn-parsible
-      {:a 1 :x :tupelo.misc/non-parsible-object})))
-
 ))
