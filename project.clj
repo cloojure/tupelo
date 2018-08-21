@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.80"
+(defproject tupelo "0.9.81"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
@@ -106,7 +106,8 @@
   ; :main ^:skip-aot tupelo.core
   :uberjar      {:aot :all}
   :jvm-opts ["-Xms500m" "-Xmx2g"
-             "--illegal-access=permit"  ] ; permit, warn, debug, deny
+           ; "--illegal-access=permit"  ; may need for Java10+
+            ] ; permit, warn, debug, deny
 
   :profiles {:dev {:dependencies [[binaryage/devtools "0.9.10"]
                                   [figwheel-sidecar "0.5.16"]

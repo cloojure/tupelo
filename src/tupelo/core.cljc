@@ -18,9 +18,7 @@
   #?@(:clj [
        (:refer-clojure :exclude [map seqable?])
             (:import [java.io BufferedReader StringReader ByteArrayOutputStream PrintStream]
-                     [com.sun.org.apache.xalan.internal.xsltc.compiler If]
-                     [com.sun.tools.javac.util Convert])
-       ]))
+                     ) ]))
 
 ; #todo unify terminolgy (atom/ref/agent)
 ;   -> reset!/ref-set => set
