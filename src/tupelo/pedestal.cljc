@@ -10,6 +10,7 @@
       [(:use tupelo.core)
        (:require
          [clojure.string :as str]
+         [clojure.set :as set]
          [schema.core :as s]
          [tupelo.core :as t]
          [tupelo.impl :as i]
@@ -32,6 +33,31 @@
 (def x-permitted-cross-domain-policies            "X-Permitted-Cross-Domain-Policies")
 (def x-xss-protection                             "X-XSS-Protection")
 
+
+(def context-keys-base #{:bindings
+                         :io.pedestal.interceptor.chain/execution-id
+                         :io.pedestal.interceptor.chain/queue
+                         :io.pedestal.interceptor.chain/stack
+                         :io.pedestal.interceptor.chain/terminators
+                         :request
+                         :servlet
+                         :servlet-config
+                         :servlet-request
+                         :servlet-response})
+
+(def request-keys-base #{:async-supported?
+                         :body
+                         :headers
+                         :path-info
+                         :protocol
+                         :query-string
+                         :remote-addr
+                         :request-method
+                         :scheme
+                         :server-name
+                         :server-port
+                         :uri})
+
 #?(:clj
    (do
 
@@ -52,4 +78,15 @@
          (keyvals-seq {:missing-ok true
                        :the-map    route-map :the-keys [:route-name :constraints]})))
 
-     ))
+     (s/defn pedestal-context-map? :- s/Bool
+       [map-in]
+       (let [keys-found (keys map-in)]
+         (set/subset? context-keys-base keys-found)))
+
+     (s/defn pedestal-request-map? :- s/Bool
+       [map-in]
+       (let [keys-found (keys map-in)]
+         (set/subset? request-keys-base keys-found)))
+
+
+   ))

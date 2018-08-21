@@ -14,9 +14,7 @@
     [tupelo.impl :as i]
     [tupelo.misc :as tm]
     [tupelo.string :as ts]
-  )
-            ]) )
-; (t/refer-tupelo :dev)
+  ) ]) )
 
 ; (s/instrument-all)
 ; (s/instrument #'tupelo.core/truthy?)  ; instrument just one var
