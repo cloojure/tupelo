@@ -15,7 +15,8 @@
          [tupelo.core :as t]
          [tupelo.impl :as i]
          [tupelo.schema :as tsch]
-         [tupelo.string :as ts] )]))
+         [tupelo.string :as ts]
+         [tupelo.schema :as tsk])]))
 
 (def accept                                       "Accept")
 (def application-edn                              "application/edn")
@@ -88,5 +89,43 @@
        (let [keys-found (keys map-in)]
          (set/subset? request-keys-base keys-found)))
 
+     (s/defn pedestal-interceptor? :- s/Bool
+       [map-in :- tsk/KeyMap]
+       (let [enter-fn   (get map-in :enter)
+             leave-fn   (get map-in :leave)
+             error-fn   (get map-in :error)
+             keys-found (keys map-in)]
+         (and
+           (or (not-nil? enter-fn) (not-nil? leave-fn) (not-nil? error-fn))
+           (set/subset? keys-found #{:name :enter :leave :error}))))
 
-   ))
+     (defn definterceptor-impl
+       [name ctx]
+       (assert symbol? name)
+       (assert map? ctx)
+       (let [keys-found (set (keys ctx))
+             >>         (when-not (set/subset? keys-found #{:enter :leave})
+                          (throw (IllegalArgumentException. (str "invalid keys-found:  " keys-found))))
+             enter-fn   (get ctx :enter)
+             leave-fn   (get ctx :leave)
+             >>         (when-not (or enter-fn leave-fn)
+                          (throw (IllegalArgumentException. "Must have 1 or more of enter-fn leave-fn")))
+             intc-map   (glue {:name (keyword name)}
+                          (if (not-nil? enter-fn)
+                            {:enter (grab :enter ctx)}
+                            {})
+                          (if (not-nil? leave-fn)
+                            {:leave (grab :leave ctx)}
+                            {}))]
+         `(def ~name
+            ~intc-map)))
+
+     (defmacro definterceptor
+       "Creates a Pedestal interceptor given a name and a map like
+       (definterceptor my-intc
+         {:enter  <enter-fn>
+          :leave  <leave-fn>} ) "
+       [name ctx]
+       (definterceptor-impl name ctx))
+
+     ))
