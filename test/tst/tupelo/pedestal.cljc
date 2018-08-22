@@ -20,36 +20,36 @@
      (dotest
        (let [dummy-handler    identity
              dummy-contraints (constantly true)]
-         (is= (table-route {:path         "/todo/:list-id/:item"
-                            :verb         :delete
-                            :interceptors dummy-handler})
-           ["/todo/:list-id/:item" :delete dummy-handler])
+         (is= ["/todo/:list-id/:item" :delete dummy-handler]
+           (table-route {:path         "/todo/:list-id/:item"
+                         :verb         :delete
+                         :interceptors dummy-handler}))
 
-         (is= (table-route {:path         "/todo/:list-id/:item"
-                            :verb         :delete
-                            :interceptors dummy-handler
-                            :route-name   :list-item-delete})
-           ["/todo/:list-id/:item" :delete dummy-handler :route-name :list-item-delete])
+         (is= ["/todo/:list-id/:item" :delete dummy-handler :route-name :list-item-delete]
+           (table-route {:path         "/todo/:list-id/:item"
+                         :verb         :delete
+                         :interceptors dummy-handler
+                         :route-name   :list-item-delete}))
 
-         (is= (table-route {:path         "/todo/:list-id/:item"
-                            :verb         :delete
-                            :interceptors dummy-handler
-                            :constraints  dummy-contraints})
-           ["/todo/:list-id/:item" :delete dummy-handler :constraints dummy-contraints])
+         (is= ["/todo/:list-id/:item" :delete dummy-handler :constraints dummy-contraints]
+           (table-route {:path         "/todo/:list-id/:item"
+                         :verb         :delete
+                         :interceptors dummy-handler
+                         :constraints  dummy-contraints}))
 
-         (is= (table-route {:path         "/todo/:list-id/:item"
-                            :verb         :delete
-                            :interceptors [dummy-handler]
-                            :route-name   :list-item-delete
-                            :constraints  dummy-contraints})
-           ["/todo/:list-id/:item" :delete [dummy-handler] :route-name :list-item-delete :constraints dummy-contraints])))
+         (is= ["/todo/:list-id/:item" :delete [dummy-handler]
+               :route-name :list-item-delete :constraints dummy-contraints]
+           (table-route {:path         "/todo/:list-id/:item"
+                         :verb         :delete
+                         :interceptors [dummy-handler]
+                         :route-name   :list-item-delete
+                         :constraints  dummy-contraints}))))
 
      (dotest
        (is (pedestal-interceptor? {:name :aaa :enter identity}))
        (is (pedestal-interceptor? {:name :aaa :leave identity}))
        (is (pedestal-interceptor? {:name :aaa :error identity}))
-       (isnt (pedestal-interceptor? {:name :aaa :zzz identity}))
-       )
+       (isnt (pedestal-interceptor? {:name :aaa :zzz identity})))
 
      (dotest
        ; these all work
@@ -64,9 +64,7 @@
        (is= '[def bbb {:name :bbb, :leave truthy}]
          (seq (definterceptor-impl 'bbb '{:leave truthy})))
 
-       (throws? (definterceptor-impl 'z1 '{ :enter falsey?  :zzz "zzz"}))
-       (throws? (definterceptor-impl 'z2 '{:zzz "zzz"}))
-
-       )
+       (throws? (definterceptor-impl 'z1 '{:enter falsey? :zzz "zzz"}))
+       (throws? (definterceptor-impl 'z2 '{:zzz "zzz"})) )
 
      ))

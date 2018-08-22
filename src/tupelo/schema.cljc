@@ -82,4 +82,6 @@
   "The Clojure map representation of a Datom."
   {:e Eid :a Eid :v s/Any :tx Eid :added s/Bool})
 
+
+
 ))
