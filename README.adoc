@@ -890,6 +890,16 @@ arbitrary validation, throwing an exception if a non-truthy result is returned:
 (is (= 3.14 (validate #(< 3 % 4)  3.14 )))
 ----
 
+A closely related function is `verify`.  It is like validate but accepts an expression instead of a
+predicate/value pair. Upon success, the expression value is returned; otherwise an exception is thrown:
+
+
+[source,clojure]
+----
+(throws? (verify (= 1 2)))
+(is= 333 (verify (* 3 111))))
+----
+
 === Convenient Wild-Card Matches
 
 Sometimes in testing, we want to verify that a key-value pair is present in a map, but we

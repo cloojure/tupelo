@@ -422,10 +422,13 @@
 (defn validate
   "(validate tst-fn tst-val)
   Used to validate intermediate results. Returns tst-val if the result of
-  (tst-fn tst-val) is truthy.  Otherwise, throws IllegalStateException."
+  (tst-fn tst-val) is truthy.  Otherwise, throws IllegalArgumentException."
   [tst-fn tst-val] (i/validate tst-fn tst-val))
 
 (defmacro verify
+  "(verify <some-expr>)
+  Used to verify intermediate results. Returns value of <some-expr> if the result
+  is truthy.  Otherwise, throws IllegalArgumentException."
   [form]
   `(i/verify ~form))
 
