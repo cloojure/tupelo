@@ -320,6 +320,13 @@
       (throw (IllegalArgumentException. (format "validate: sample-val=%s, tst-result=%s" sample-val tst-result))))
     sample-val))
 
+(defmacro verify
+  [form]
+  `(let [value# ~form]
+     (if (truthy? value#)
+       value#
+       (throw (IllegalArgumentException. (str "verification failed for: " '~form))))))
+
 (defn validate-or-default
   [is-valid? sample-val default-val]
   (if (is-valid? sample-val)

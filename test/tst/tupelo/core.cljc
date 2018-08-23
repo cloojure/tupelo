@@ -1016,8 +1016,11 @@
   (is= nil (t/validate nil? (next [])))
   (is= [0 1 2] (t/validate #(= 3 (count %)) [0 1 2]))
   (throws? Exception (t/validate number? "hello"))
-  (throws? Exception (t/validate truthy? nil))
-  )
+  (throws? Exception (t/validate truthy? nil)) )
+
+(dotest
+  (throws? (verify (= 1 2)))
+  (is= 333 (verify (* 3 111))))
 
 (dotest
   (let [m1 {:a 1 :b 2 :c 3}

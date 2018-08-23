@@ -425,6 +425,10 @@
   (tst-fn tst-val) is truthy.  Otherwise, throws IllegalStateException."
   [tst-fn tst-val] (i/validate tst-fn tst-val))
 
+(defmacro verify
+  [form]
+  `(i/verify ~form))
+
 (defn has-some?
   "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
    coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
