@@ -317,7 +317,7 @@
   [is-valid? sample-val]
   (let [tst-result (is-valid? sample-val)]
     (when-not (truthy? tst-result)
-      (throw (IllegalStateException. (format "validate: sample-val=%s, tst-result=%s" sample-val tst-result))))
+      (throw (IllegalArgumentException. (format "validate: sample-val=%s, tst-result=%s" sample-val tst-result))))
     sample-val))
 
 (defn validate-or-default
@@ -586,6 +586,17 @@
          (let [~(cc/first bindings) result#]
            (let-some ~(cc/drop 2 bindings) ~@forms))))
     `(do ~@forms)))
+
+
+(defmacro it-cond->
+  [expr & forms]
+  (let [num-forms (count forms)]
+    (when-not (even? num-forms)
+      (throw (IllegalArgumentException. (str "num-forms must be even; value=" num-forms)))))
+  (let [cond-action-pairs (partition 2 forms)
+        cond-action-forms (for [[cond-form action-form] cond-action-pairs]
+                            `(or (when ~cond-form) ~action-form)) ]
+    `(it-> ~expr ~@cond-action-forms)))
 
 (defn clip-str      ; #todo -> tupelo.string?
   [nchars & args]

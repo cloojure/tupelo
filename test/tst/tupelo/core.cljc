@@ -1064,6 +1064,14 @@
             (inc it))))
 
 (dotest
+  (let [params {:a 1 :b 1 :c nil :d nil}]
+    (is= (it-cond-> params
+           (:a it)        (update it :b inc)
+           (= (:b it) 2)  (assoc it :c "here")
+           (:c it)        (assoc it :d "again"))
+      {:a 1, :b 2, :c "here", :d "again"})))
+
+(dotest
   (throws? Exception (/ 1 0))
   (is= nil (with-exception-default nil (/ 1 0)))
   (is= :dummy (with-exception-default :dummy (/ 1 0)))
