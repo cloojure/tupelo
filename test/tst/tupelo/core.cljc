@@ -1045,15 +1045,6 @@
                                    :the-map    m1 :the-keys [:z :b :c]})) ))
 
 (dotest
-  (is= 7 (safe-> 3 (* 2) (+ 1)))
-  (let [mm  {:a {:b 2}}]
-    (is= (safe-> mm :a)     {:b 2} )
-    (is= (safe-> mm :a :b)      2)
-    (throws? IllegalArgumentException   (safe-> mm :x))
-    (throws? IllegalArgumentException   (safe-> mm :a :x))
-    (throws? IllegalArgumentException   (safe-> mm :a :b :x))))
-
-(dotest
   (is= 2 (it-> 1
            (inc it)
            (+ 3 it)

@@ -91,7 +91,7 @@
   Example: 'ls -ldF *'  "
   [cmd-str]
   (let [result (shell/sh *os-shell* "-c" cmd-str)]
-    (if (= 0 (t/safe-> :exit result))
+    (if (= 0 (grab :exit result))
       result
       (throw (RuntimeException. 
                (str "shell-cmd: clojure.java.shell/sh failed. \n" 

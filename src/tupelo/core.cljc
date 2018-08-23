@@ -605,34 +605,9 @@
 ; singles). Basically like compiler-like guarentees against misspellings, duplicate entries, missing
 ; entries.
 
-; #awt #todo: Test failure of (safe-> 3 (* 2) (+ 1))
-; #awt #todo: add tests
-; #awt #todo: finish safe->>
-(defmacro safe->
-  "When expr is not nil, threads it into the first form (via ->), and when that result is not nil,
-   through the next etc.  If result is nil, throw IllegalArgumentException"
-  [expr & forms]
-  (let [g     (gensym)
-        pstep (fn [step] `(if (nil? ~g)
-                            (throw (IllegalArgumentException. (str "Nil value passed to form '" ~step \')))
-                            ; #awt #todo: remove unneeded test above ^^^
-                            #_(do (println "g=" ~g) (spyxx (-> ~g ~step)))
-                            ;; (def mm {:a {:b 2}})
-                            ;; user=> (safe-> mm (:aa) (:b))
-                            ;; g= {:a {:b 2}}
-                            ;; NullPointerException   user/eval1850 (form-init5653535826905962071.clj:1)
-                            ;; user=> (safe-> mm :aa :b)   ; works
-                            (let [result# (-> ~g ~step)]
-                              (if (nil? result#)
-                                (throw (IllegalArgumentException. (str "Nil value returned from form '" ~step \')))
-                                result#))))
-        ]
-    `(let [~g ~expr
-           ~@(interleave (repeat g) (clojure.core/map pstep forms))]
-       ~g)))
-
-; #todo make an it?-> (fff ppp it? qqq) to halt thread if encounter nil result (then returns nil)
-; #todo make an it!-> (fff ppp it! qqq) to throw if encounter nil (replace safe->) (maybe val->)
+;(defmacro ^:private safe-> ; #todo: remove this
+;  [expr & forms]
+;  (throw (RuntimeException. "Obsolete: replace with:  (validate not-nil? (-> <expr> <forms> ))" )))
 
 (defmacro it->
   "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
@@ -1107,7 +1082,7 @@
      macro? chars-thru
      append prepend grab dissoc-in fetch fetch-in
      submap? submap-by-keys submap-by-vals keyvals keyvals-seq validate-map-keys map-keys map-vals
-     validate only it-> safe-> keep-if drop-if zip zip* zip-lazy indexed
+     validate only it-> keep-if drop-if zip zip* zip-lazy indexed
      strcat nl pretty pretty-str json->edn edn->json clip-str range-vec thru rel= all-rel=
      drop-at insert-at replace-at idx
      starts-with? int->kw kw->int

@@ -320,13 +320,6 @@
       (throw (IllegalArgumentException. (format "validate: sample-val=%s, tst-result=%s" sample-val tst-result))))
     sample-val))
 
-(defmacro verify
-  [form]
-  `(let [value# ~form]
-     (if (truthy? value#)
-       value#
-       (throw (IllegalArgumentException. (str "verification failed for: " '~form))))))
-
 (defn validate-or-default
   [is-valid? sample-val default-val]
   (if (is-valid? sample-val)
@@ -336,6 +329,13 @@
 (defn with-nil-default
   [default-val sample-val]
   (validate-or-default not-nil? sample-val default-val))
+
+(defmacro verify
+  [form]
+  `(let [value# ~form]
+     (if (truthy? value#)
+       value#
+       (throw (IllegalArgumentException. (str "verification failed for: " '~form))))))
 
 ; #todo rename to "get-in-safe" ???
 ; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)
