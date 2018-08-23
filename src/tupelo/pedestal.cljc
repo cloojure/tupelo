@@ -109,17 +109,17 @@
      (keyvals-seq {:missing-ok true
                    :the-map    route-map :the-keys [:route-name :constraints]})))
 
- (s/defn pedestal-context-map? :- s/Bool
-   [map-in]
+ (s/defn context? :- s/Bool
+   [map-in :- tsk/KeyMap]
    (let [keys-found (keys map-in)]
      (set/subset? context-keys-base keys-found)))
 
- (s/defn pedestal-request-map? :- s/Bool
-   [map-in]
+ (s/defn request? :- s/Bool
+   [map-in :- tsk/KeyMap]
    (let [keys-found (keys map-in)]
      (set/subset? request-keys-base keys-found)))
 
- (s/defn pedestal-interceptor? :- s/Bool
+ (s/defn interceptor? :- s/Bool
    [map-in :- tsk/KeyMap]
    (let [enter-fn   (get map-in :enter)
          leave-fn   (get map-in :leave)

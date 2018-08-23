@@ -13,48 +13,56 @@
 
 #?(:clj
    (do
-     (dotest
-       (is= content-type "Content-Type")
-       (is= text-html "text/html"))
 
-     (dotest
-       (let [dummy-handler    identity
-             dummy-contraints (constantly true)]
-         (is (wild-match?
-               ["/todo/:list-id/:item" :delete :* :route-name :todo-list-item-create]
-               (table-route {:verb         :delete :path "/todo/:list-id/:item" :route-name :todo-list-item-create
-                             :interceptors dummy-handler})))
+ (dotest
+   (is= content-type "Content-Type")
+   (is= text-html "text/html"))
 
-         (is (wild-match? ["/todo/:list-id/:item" :delete :* :route-name :todo-list-item-create :constraints :*]
-               (table-route {:verb         :delete :path "/todo/:list-id/:item" :route-name :todo-list-item-create
-                             :interceptors dummy-handler
-                             :constraints  dummy-contraints})))
+ (dotest
+   (let [dummy-handler    identity
+         dummy-contraints (constantly true)]
+     (is (wild-match?
+           ["/todo/:list-id/:item" :delete :* :route-name :todo-list-item-create]
+           (table-route {:verb         :delete :path "/todo/:list-id/:item" :route-name :todo-list-item-create
+                         :interceptors dummy-handler})))
 
-         (is (wild-match? ["/todo/:list-id/:item" :delete :* :route-name :todo-list-item-create :constraints :*]
-               (table-route {:verb         :delete :path "/todo/:list-id/:item" :route-name :todo-list-item-create
-                             :interceptors [dummy-handler]
-                             :constraints  dummy-contraints})))))
+     (is (wild-match? ["/todo/:list-id/:item" :delete :* :route-name :todo-list-item-create :constraints :*]
+           (table-route {:verb         :delete :path "/todo/:list-id/:item" :route-name :todo-list-item-create
+                         :interceptors dummy-handler
+                         :constraints  dummy-contraints})))
 
-     (dotest
-       (is (pedestal-interceptor? {:name :aaa :enter identity}))
-       (is (pedestal-interceptor? {:name :aaa :leave identity}))
-       (is (pedestal-interceptor? {:name :aaa :error identity}))
-       (isnt (pedestal-interceptor? {:name :aaa :zzz identity})))
+     (is (wild-match? ["/todo/:list-id/:item" :delete :* :route-name :todo-list-item-create :constraints :*]
+           (table-route {:verb         :delete :path "/todo/:list-id/:item" :route-name :todo-list-item-create
+                         :interceptors [dummy-handler]
+                         :constraints  dummy-contraints})))))
 
-     (dotest
-       ; these all work
-       (is= (definterceptor-impl 'alpha '{:enter (fn alpha-enter-fn [ctx] ctx)
-                                          :leave (fn alpha-leave-fn [ctx] ctx)})
-         '(def alpha {:name  :alpha
-                      :enter (fn alpha-enter-fn [ctx] ctx)
-                      :leave (fn alpha-leave-fn [ctx] ctx)}))
+ (dotest
+   (is (interceptor? {:name :aaa :enter identity}))
+   (is (interceptor? {:name :aaa :leave identity}))
+   (is (interceptor? {:name :aaa :error identity}))
+   (isnt (interceptor? {:name :aaa :zzz identity})))
 
-       (is= '[def aaa {:name :aaa, :enter identity}]
-         (seq (definterceptor-impl 'aaa '{:enter identity})))
-       (is= '[def bbb {:name :bbb, :leave truthy}]
-         (seq (definterceptor-impl 'bbb '{:leave truthy})))
+ (dotest
+   ; these all work
+   (is= (definterceptor-impl 'alpha '{:enter (fn alpha-enter-fn [ctx] ctx)
+                                      :leave (fn alpha-leave-fn [ctx] ctx)})
+     '(def alpha {:name  :alpha
+                  :enter (fn alpha-enter-fn [ctx] ctx)
+                  :leave (fn alpha-leave-fn [ctx] ctx)}))
 
-       (throws? (definterceptor-impl 'z1 '{:enter falsey? :zzz "zzz"}))
-       (throws? (definterceptor-impl 'z2 '{:zzz "zzz"})) )
+   (is= '[def aaa {:name :aaa, :enter identity}]
+     (seq (definterceptor-impl 'aaa '{:enter identity})))
+   (is= '[def bbb {:name :bbb, :leave truthy}]
+     (seq (definterceptor-impl 'bbb '{:leave truthy})))
 
-     ))
+   (throws? (definterceptor-impl 'z1 '{:enter falsey? :zzz "zzz"}))
+   (throws? (definterceptor-impl 'z2 '{:zzz "zzz"}))
+
+   ; normal usage
+   (definterceptor sample-intc
+     {:enter (fn alpha-enter-fn [ctx] ctx)
+      :leave (fn alpha-leave-fn [ctx] ctx)})
+
+ )
+
+ ))
