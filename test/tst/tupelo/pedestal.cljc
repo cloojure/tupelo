@@ -7,6 +7,7 @@
 (ns tst.tupelo.pedestal
   (:use tupelo.core tupelo.pedestal tupelo.test)
   (:require
+    [schema.core :as s]
     [tst.tupelo.pedestal-data :as tst-data]
   ))
 
@@ -64,6 +65,15 @@
 
  (dotest
    (is (context? tst-data/sample-context))
-   (is (request? tst-data/sample-request)) )
+   (is (request? tst-data/sample-request))
+
+   (is (s/validate Context tst-data/sample-context))
+   (is (s/validate Request tst-data/sample-request))
+
+   (isnt (request? tst-data/sample-context))
+   (isnt (context? tst-data/sample-request))
+
+   (throws? (s/validate Request tst-data/sample-context))
+   (throws? (s/validate Context tst-data/sample-request)) )
 
  ))
