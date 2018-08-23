@@ -7,8 +7,7 @@
 (ns tst.tupelo.pedestal
   (:use tupelo.core tupelo.pedestal tupelo.test)
   (:require
-    [clojure.data :as data]
-    [schema.core :as s]
+    [tst.tupelo.pedestal-data :as tst-data]
   ))
 
 #?(:clj
@@ -37,12 +36,6 @@
                          :constraints  dummy-contraints})))))
 
  (dotest
-   (is (interceptor? {:name :aaa :enter identity}))
-   (is (interceptor? {:name :aaa :leave identity}))
-   (is (interceptor? {:name :aaa :error identity}))
-   (isnt (interceptor? {:name :aaa :zzz identity})))
-
- (dotest
    ; these all work
    (is= (definterceptor-impl 'alpha '{:enter (fn alpha-enter-fn [ctx] ctx)
                                       :leave (fn alpha-leave-fn [ctx] ctx)})
@@ -63,6 +56,14 @@
      {:enter (fn alpha-enter-fn [ctx] ctx)
       :leave (fn alpha-leave-fn [ctx] ctx)})
 
- )
+   ; interceptors are just maps with certain keys
+   (is (interceptor? {:name :aaa :enter identity}))
+   (is (interceptor? {:name :aaa :leave identity}))
+   (is (interceptor? {:name :aaa :error identity}))
+   (isnt (interceptor? {:name :aaa :zzz identity})))
+
+ (dotest
+   (is (context? tst-data/sample-context))
+   (is (request? tst-data/sample-request)) )
 
  ))

@@ -35,35 +35,36 @@
 (def x-permitted-cross-domain-policies            "X-Permitted-Cross-Domain-Policies")
 (def x-xss-protection                             "X-XSS-Protection")
 
-(def context-keys-base #{:bindings
-                         :io.pedestal.interceptor.chain/execution-id
-                         :io.pedestal.interceptor.chain/queue
-                         :io.pedestal.interceptor.chain/stack
-                         :io.pedestal.interceptor.chain/terminators
-                         :request
-                         :servlet
-                         :servlet-config
-                         :servlet-request
-                         :servlet-response})
-
-(def request-keys-base #{:async-supported?
-                         :body
-                         :headers
-                         :path-info
-                         :protocol
-                         :query-string
-                         :remote-addr
-                         :request-method
-                         :scheme
-                         :server-name
-                         :server-port
-                         :uri})
-
 #?(:clj
    (do
 
- ;-----------------------------------------------------------------------------
- ; Plumatic Schema type definitions
+;-----------------------------------------------------------------------------
+; Plumatic Schema type definitions
+
+ (def context-keys-base #{:bindings
+                          :io.pedestal.interceptor.chain/execution-id
+                          ; :io.pedestal.interceptor.chain/queue
+                          :io.pedestal.interceptor.chain/stack
+                          :io.pedestal.interceptor.chain/terminators
+                          :request
+                          :servlet
+                          :servlet-config
+                          :servlet-request
+                          :servlet-response})
+
+ (def request-keys-base #{:async-supported?
+                          :body
+                          :headers
+                          :path-info
+                          :protocol
+                          :query-string
+                          :remote-addr
+                          :request-method
+                          :scheme
+                          :server-name
+                          :server-port
+                          :uri})
+
  (def Request
    {:async-supported? s/Bool
     :body             s/Any
@@ -80,9 +81,9 @@
     s/Keyword         s/Any})
 
  (def Context
+   ; :io.pedestal.interceptor.chain/queue        [s/Any]  ; NOT ALWAYS PRESENT!
    {:bindings                                   tsk/Map
     :io.pedestal.interceptor.chain/execution-id s/Int
-   ;:io.pedestal.interceptor.chain/queue        [s/Any]  ; NOT ALWAYS PRESENT!
     :io.pedestal.interceptor.chain/stack        [tsk/KeyMap]
     :io.pedestal.interceptor.chain/terminators  [s/Any]
     :request                                    Request
@@ -90,7 +91,7 @@
     :servlet-config                             s/Any
     :servlet-request                            s/Any
     :servlet-response                           s/Any
-    s/Keyword         s/Any})
+    s/Keyword                                   s/Any})
 
  (def TableRouteInfo
    {:verb                          s/Keyword
@@ -111,12 +112,12 @@
 
  (s/defn context? :- s/Bool
    [map-in :- tsk/KeyMap]
-   (let [keys-found (keys map-in)]
+   (let [keys-found (set (keys map-in))]
      (set/subset? context-keys-base keys-found)))
 
  (s/defn request? :- s/Bool
    [map-in :- tsk/KeyMap]
-   (let [keys-found (keys map-in)]
+   (let [keys-found (set (keys map-in))]
      (set/subset? request-keys-base keys-found)))
 
  (s/defn interceptor? :- s/Bool
