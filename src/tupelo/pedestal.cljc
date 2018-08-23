@@ -141,7 +141,7 @@
              enter-fn   (get ctx :enter)
              leave-fn   (get ctx :leave)
              error-fn   (get ctx :error)
-             >>         (when-not (or enter-fn leave-fn error-fn)
+             >>         (when-not (or enter-fn leave-fn )
                           (throw (IllegalArgumentException. "Must have 1 or more of [enter-fn leave-fn error-fn]")))
              intc-map   (glue {:name (keyword name)}
                           (if (not-nil? enter-fn)
@@ -157,7 +157,8 @@
        "Creates a Pedestal interceptor given a name and a map like
        (definterceptor my-intc
          {:enter  <enter-fn>
-          :leave  <leave-fn>} ) "
+          :leave  <leave-fn>}
+          :error  <error-fn>} ) "
        [name ctx]
        (definterceptor-impl name ctx))
 
