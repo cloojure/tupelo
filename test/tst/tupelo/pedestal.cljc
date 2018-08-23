@@ -20,30 +20,20 @@
      (dotest
        (let [dummy-handler    identity
              dummy-contraints (constantly true)]
-         (is= ["/todo/:list-id/:item" :delete dummy-handler]
-           (table-route {:path         "/todo/:list-id/:item"
-                         :verb         :delete
-                         :interceptors dummy-handler}))
+         (is (wild-match?
+               ["/todo/:list-id/:item" :delete :* :route-name :todo-list-item-create]
+               (table-route {:verb         :delete :path "/todo/:list-id/:item" :route-name :todo-list-item-create
+                             :interceptors dummy-handler})))
 
-         (is= ["/todo/:list-id/:item" :delete dummy-handler :route-name :list-item-delete]
-           (table-route {:path         "/todo/:list-id/:item"
-                         :verb         :delete
-                         :interceptors dummy-handler
-                         :route-name   :list-item-delete}))
+         (is (wild-match? ["/todo/:list-id/:item" :delete :* :route-name :todo-list-item-create :constraints :*]
+               (table-route {:verb         :delete :path "/todo/:list-id/:item" :route-name :todo-list-item-create
+                             :interceptors dummy-handler
+                             :constraints  dummy-contraints})))
 
-         (is= ["/todo/:list-id/:item" :delete dummy-handler :constraints dummy-contraints]
-           (table-route {:path         "/todo/:list-id/:item"
-                         :verb         :delete
-                         :interceptors dummy-handler
-                         :constraints  dummy-contraints}))
-
-         (is= ["/todo/:list-id/:item" :delete [dummy-handler]
-               :route-name :list-item-delete :constraints dummy-contraints]
-           (table-route {:path         "/todo/:list-id/:item"
-                         :verb         :delete
-                         :interceptors [dummy-handler]
-                         :route-name   :list-item-delete
-                         :constraints  dummy-contraints}))))
+         (is (wild-match? ["/todo/:list-id/:item" :delete :* :route-name :todo-list-item-create :constraints :*]
+               (table-route {:verb         :delete :path "/todo/:list-id/:item" :route-name :todo-list-item-create
+                             :interceptors [dummy-handler]
+                             :constraints  dummy-contraints})))))
 
      (dotest
        (is (pedestal-interceptor? {:name :aaa :enter identity}))

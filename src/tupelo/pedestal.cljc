@@ -62,104 +62,102 @@
 #?(:clj
    (do
 
-     ;-----------------------------------------------------------------------------
-     ; Plumatic Schema type definitions
-     (def Request
-       {:async-supported? s/Bool
-        :body             s/Any
-        :headers          {s/Str s/Str}
-        :path-info        (s/maybe s/Str)
-        :protocol         s/Str
-        :query-string     (s/maybe s/Str)
-        :remote-addr      s/Str
-        :request-method   s/Keyword
-        :scheme           (s/maybe s/Keyword)
-        :server-name      (s/maybe s/Str)
-        :server-port      s/Int
-        :uri              (s/maybe s/Str)
-        s/Keyword         s/Any})
+ ;-----------------------------------------------------------------------------
+ ; Plumatic Schema type definitions
+ (def Request
+   {:async-supported? s/Bool
+    :body             s/Any
+    :headers          {s/Str s/Str}
+    :path-info        (s/maybe s/Str)
+    :protocol         s/Str
+    :query-string     (s/maybe s/Str)
+    :remote-addr      s/Str
+    :request-method   s/Keyword
+    :scheme           (s/maybe s/Keyword)
+    :server-name      (s/maybe s/Str)
+    :server-port      s/Int
+    :uri              (s/maybe s/Str)
+    s/Keyword         s/Any})
 
-     (def Context
-       {:bindings                                   tsk/Map
-        :io.pedestal.interceptor.chain/execution-id s/Int
-       ;:io.pedestal.interceptor.chain/queue        [s/Any]  ; NOT ALWAYS PRESENT!
-        :io.pedestal.interceptor.chain/stack        [tsk/KeyMap]
-        :io.pedestal.interceptor.chain/terminators  [s/Any]
-        :request                                    Request
-        :servlet                                    s/Any
-        :servlet-config                             s/Any
-        :servlet-request                            s/Any
-        :servlet-response                           s/Any
-        s/Keyword         s/Any})
+ (def Context
+   {:bindings                                   tsk/Map
+    :io.pedestal.interceptor.chain/execution-id s/Int
+   ;:io.pedestal.interceptor.chain/queue        [s/Any]  ; NOT ALWAYS PRESENT!
+    :io.pedestal.interceptor.chain/stack        [tsk/KeyMap]
+    :io.pedestal.interceptor.chain/terminators  [s/Any]
+    :request                                    Request
+    :servlet                                    s/Any
+    :servlet-config                             s/Any
+    :servlet-request                            s/Any
+    :servlet-response                           s/Any
+    s/Keyword         s/Any})
 
-     (def TableRouteInfo
-       {(s/required-key :verb)         s/Keyword
-        (s/required-key :path)         s/Str
-        (s/optional-key :interceptors) s/Any
-        (s/optional-key :route-name)   s/Keyword
-        (s/optional-key :constraints)  s/Any})
+ (def TableRouteInfo
+   {:verb                          s/Keyword
+    :path                          s/Str
+    :route-name                    s/Keyword
+    (s/optional-key :interceptors) s/Any
+    (s/optional-key :constraints)  s/Any})
 
-     ;-----------------------------------------------------------------------------
+ (s/defn table-route :- tsk/Tuple
+   "Creates a Pedestal table-route entry from a context map."
+   [route-map :- TableRouteInfo]
+   (prepend
+     (grab :path route-map)
+     (grab :verb route-map)
+     (grab :interceptors route-map)
+     (keyvals-seq {:missing-ok true
+                   :the-map    route-map :the-keys [:route-name :constraints]})))
 
-     (s/defn table-route :- tsk/Tuple
-       "Creates a Pedestal table-route entry from a context map."
-       [route-map :- TableRouteInfo]
-       (prepend
-         (grab :path route-map)
-         (grab :verb route-map)
-         (grab :interceptors route-map)
-         (keyvals-seq {:missing-ok true
-                       :the-map    route-map :the-keys [:route-name :constraints]})))
+ (s/defn pedestal-context-map? :- s/Bool
+   [map-in]
+   (let [keys-found (keys map-in)]
+     (set/subset? context-keys-base keys-found)))
 
-     (s/defn pedestal-context-map? :- s/Bool
-       [map-in]
-       (let [keys-found (keys map-in)]
-         (set/subset? context-keys-base keys-found)))
+ (s/defn pedestal-request-map? :- s/Bool
+   [map-in]
+   (let [keys-found (keys map-in)]
+     (set/subset? request-keys-base keys-found)))
 
-     (s/defn pedestal-request-map? :- s/Bool
-       [map-in]
-       (let [keys-found (keys map-in)]
-         (set/subset? request-keys-base keys-found)))
+ (s/defn pedestal-interceptor? :- s/Bool
+   [map-in :- tsk/KeyMap]
+   (let [enter-fn   (get map-in :enter)
+         leave-fn   (get map-in :leave)
+         error-fn   (get map-in :error)
+         keys-found (keys map-in)]
+     (and
+       (or (not-nil? enter-fn) (not-nil? leave-fn) (not-nil? error-fn))
+       (set/subset? keys-found #{:name :enter :leave :error}))))
 
-     (s/defn pedestal-interceptor? :- s/Bool
-       [map-in :- tsk/KeyMap]
-       (let [enter-fn   (get map-in :enter)
-             leave-fn   (get map-in :leave)
-             error-fn   (get map-in :error)
-             keys-found (keys map-in)]
-         (and
-           (or (not-nil? enter-fn) (not-nil? leave-fn) (not-nil? error-fn))
-           (set/subset? keys-found #{:name :enter :leave :error}))))
+ (defn definterceptor-impl
+   [name ctx]
+   (assert symbol? name)
+   (assert map? ctx)
+   (let [keys-found (set (keys ctx))
+         >>         (when-not (set/subset? keys-found #{:enter :leave :error})
+                      (throw (IllegalArgumentException. (str "invalid keys-found:  " keys-found))))
+         enter-fn   (get ctx :enter)
+         leave-fn   (get ctx :leave)
+         error-fn   (get ctx :error)
+         >>         (when-not (or enter-fn leave-fn )
+                      (throw (IllegalArgumentException. "Must have 1 or more of [enter-fn leave-fn error-fn]")))
+         intc-map   (glue {:name (keyword name)}
+                      (if (not-nil? enter-fn)
+                        {:enter (grab :enter ctx)}
+                        {})
+                      (if (not-nil? leave-fn)
+                        {:leave (grab :leave ctx)}
+                        {} ) )]
+     `(def ~name
+        ~intc-map)))
 
-     (defn definterceptor-impl
-       [name ctx]
-       (assert symbol? name)
-       (assert map? ctx)
-       (let [keys-found (set (keys ctx))
-             >>         (when-not (set/subset? keys-found #{:enter :leave :error})
-                          (throw (IllegalArgumentException. (str "invalid keys-found:  " keys-found))))
-             enter-fn   (get ctx :enter)
-             leave-fn   (get ctx :leave)
-             error-fn   (get ctx :error)
-             >>         (when-not (or enter-fn leave-fn )
-                          (throw (IllegalArgumentException. "Must have 1 or more of [enter-fn leave-fn error-fn]")))
-             intc-map   (glue {:name (keyword name)}
-                          (if (not-nil? enter-fn)
-                            {:enter (grab :enter ctx)}
-                            {})
-                          (if (not-nil? leave-fn)
-                            {:leave (grab :leave ctx)}
-                            {} ) )]
-         `(def ~name
-            ~intc-map)))
+ (defmacro definterceptor
+   "Creates a Pedestal interceptor given a name and a map like
+   (definterceptor my-intc
+     {:enter  <enter-fn>
+      :leave  <leave-fn>}
+      :error  <error-fn>} ) "
+   [name ctx]
+   (definterceptor-impl name ctx))
 
-     (defmacro definterceptor
-       "Creates a Pedestal interceptor given a name and a map like
-       (definterceptor my-intc
-         {:enter  <enter-fn>
-          :leave  <leave-fn>}
-          :error  <error-fn>} ) "
-       [name ctx]
-       (definterceptor-impl name ctx))
-
-     ))
+ ))
