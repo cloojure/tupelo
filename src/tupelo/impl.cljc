@@ -594,7 +594,7 @@
            (let-some ~(cc/drop 2 bindings) ~@forms))))
     `(do ~@forms)))
 
-(defmacro it-cond->
+(defmacro cond-it->
   [expr & forms]
   (let [num-forms (count forms)]
     (when-not (even? num-forms)

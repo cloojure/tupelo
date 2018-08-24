@@ -1059,7 +1059,7 @@
 
 (dotest
   (let [params {:a 1 :b 1 :c nil :d nil}]
-    (is= (it-cond-> params
+    (is= (cond-it-> params
            (:a it)        (update it :b inc)
            (= (:b it) 2)  (assoc it :c "here")
            (:c it)        (assoc it :d "again"))

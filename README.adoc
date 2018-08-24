@@ -277,14 +277,14 @@ placeholder value:
 
 More examples link:it-thread.adoc[can be found here].
 
-The `it\->` macro has a cousin `it-cond\->` that allows you to thread the updated value through both the conditional and the action
+The `it\->` macro has a cousin `cond-it\->` that allows you to thread the updated value through both the conditional and the action
 expressions:
 
 [source,clojure]
 ----
 
 (let [params {:a 1 :b 1 :c nil :d nil}]
-  (it-cond-> params
+  (cond-it-> params
     (:a it)        (update it :b inc)
     (= (:b it) 2)  (assoc it :c "here")
     (:c it)        (assoc it :d "again")))

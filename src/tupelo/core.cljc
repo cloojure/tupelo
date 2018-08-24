@@ -619,18 +619,18 @@
   [expr & forms]
   `(i/it-> ~expr ~@forms))
 
-(defmacro it-cond->
+(defmacro cond-it->
   "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
 
     (let [params {:a 1 :b 1 :c nil :d nil}]
-      (it-cond-> params
+      (cond-it-> params
         (:a it)        (update it :b inc)
         (= (:b it) 2)  (assoc it :c \"here\")
         (:c it)        (assoc it :d \"again\")))
 
     ;=> {:a 1, :b 2, :c \"here\", :d \"again\"}"
   [expr & forms]
-  `(i/it-cond-> ~expr ~@forms))
+  `(i/cond-it-> ~expr ~@forms))
 
 (defmacro with-exception-default
   "Evaluates body & returns its result.  In the event of an exception, default-val is returned
