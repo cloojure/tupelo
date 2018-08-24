@@ -1138,7 +1138,7 @@
          [{:tag :document}
           [{:id "2", :tag :sentence}
            [{:id "2.3", :tag :word, :value "recognition"}]]]])
-      (is= result-sentence
+      (is= result-sentence ; #todo #bug race condition on this test!!!  #rc01
         [[{:tag :document}
           [{:id "1", :tag :sentence}
            [{:id "1.1", :tag :word, :value "foo"}]
@@ -1148,7 +1148,7 @@
            [{:id "2.1", :tag :word, :value "beyond"}]
            [{:id "2.2", :tag :word, :value "all"}]
            [{:id "2.3", :tag :word, :value "recognition"}]]]])
-      (is= result-document
+      (is= result-document ; #todo #bug race condition on this test!!!  #rc02
         [[{:tag :document}
           [{:id "1", :tag :sentence}
            [{:id "1.1", :tag :word, :value "foo"}]
@@ -1168,6 +1168,49 @@
           result-sentences     (proc-tree-enlive-lazy enlive-tree-lazy
                                  [:document :sentence] doc-sentence-handler)]
       (is= result-sentences ["foo bar" "beyond all recognition"])) ))
+
+(comment            ; #rc01
+  (not (clojure.core/=
+         (
+           [{:tag :document}
+            [{:id "1", :tag :sentence}
+             [{:id "1.1", :tag :word, :value "foo"}]
+             [{:id "1.2", :tag :word, :value "bar"}]]]
+           [{:tag :document}
+            [{:id "2", :tag :sentence}
+             [{:id "2.1", :tag :word, :value "beyond"}]
+             [{:id "2.3", :tag :word, :value "recognition"}]
+             [{:id "2.3", :tag :word, :value "recognition"}]]])
+         [[{:tag :document}
+           [{:id "1", :tag :sentence}
+            [{:id "1.1", :tag :word, :value "foo"}]
+            [{:id "1.2", :tag :word, :value "bar"}]]]
+          [{:tag :document}
+           [{:id "2", :tag :sentence}
+            [{:id "2.1", :tag :word, :value "beyond"}]
+            [{:id "2.2", :tag :word, :value "all"}]
+            [{:id "2.3", :tag :word, :value "recognition"}]]]]))
+
+  )
+
+(comment           ; #rc02
+    (not (clojure.core/=
+           [[{:tag :document}
+             [{:id "1", :tag :sentence}
+              [{:id "1.2", :tag :word, :value "bar"}]]
+             [{:id "2", :tag :sentence}
+              [{:id "2.1", :tag :word, :value "beyond"}]
+              [{:id "2.2", :tag :word, :value "all"}]
+              [{:id "2.3", :tag :word, :value "recognition"}]]]]
+           [[{:tag :document}
+             [{:id "1", :tag :sentence}
+              [{:id "1.1", :tag :word, :value "foo"}]
+              [{:id "1.2", :tag :word, :value "bar"}]]
+             [{:id "2", :tag :sentence}
+              [{:id "2.1", :tag :word, :value "beyond"}]
+              [{:id "2.2", :tag :word, :value "all"}]
+              [{:id "2.3", :tag :word, :value "recognition"}]]]]))
+    )
 
 ;---------------------------------------------------------------------------------------------------
 (defn xkcd
