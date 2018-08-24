@@ -863,7 +863,9 @@
 
 (dotest
   (is= :23 (int->kw  23))
-  (is=  23 (kw->int :23)))
+  (is=  23 (kw->int :23))
+  (is= {:a 1 :b 2} (json->edn "{\"a\":1, \"b\":2}"))
+  (is= "{'a':1,'b':2}" (ts/quotes->single (edn->json {:a 1 :b 2}))) )
 
 (dotest
   (let [inf-rng-1 (map inc (range))]

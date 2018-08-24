@@ -879,12 +879,12 @@
   (Integer/parseInt (kw->str arg)))
 
 ; #todo add test & README
-(defn json->edn [arg] ; #todo rename json->edn
+(defn json->edn [arg]
   "Shortcut to cheshire.core/parse-string"
-  (cc/parse-string arg true))                               ; true => keywordize-keys
+  (cc/parse-string arg true))   ; true => keywordize-keys
 
 ; #todo add test & README
-(defn edn->json [arg] ; #todo rename edn->json
+(defn edn->json [arg]
   "Shortcut to cheshire.core/generate-string"
   (cc/generate-string arg))
 
