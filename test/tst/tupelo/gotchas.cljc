@@ -156,8 +156,8 @@
   ))
 
 (dotest
-  (is= nil  (some #{false} [false true]))
-  (is= true (some #(= false %) [false true]))
+  (is= nil  (some #{false}      [false true]))
+  (is= true (some #(= false %)  [false true]))
   (is= true (some #{false true} [false true]))
   (is= true (some #{false true} [false true]))
   (is= true (some? false ))
@@ -166,6 +166,15 @@
 (dotest
   (is= false (spyx (contains? [1 2 3 4] 4)))
   (is= false (spyx (contains? [:a :b :c :d] :a))))
+
+; map oddities
+(dotest
+  (is= {:a 1 :b 2} (conj {:a 1} [:b 2])) ; MapEntry as 2-vec
+  (is= {:a 1 }     (conj {:a 1} nil)) ; this is ok => noop
+  (throws?         (conj {:a 1} [])) ; illegal
+  (is= {:a 1}      (into {:a 1} [])) ; this works
+  (is= {:a 1 :b 2} (conj {:a 1} {:b 2})) ; this works, but shouldn't
+  )
 
 ; "generic" indexing is a problem; always be explicit with first, nth, get, etc
 (dotest
