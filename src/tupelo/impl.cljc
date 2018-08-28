@@ -460,7 +460,7 @@
   (let [r1         (for [expr (butlast exprs)]
                      (when *spy-enabled*
                        (if (keyword? expr)
-                         `(when *spy-enabled* (println (str (spy-indent-spaces) ~expr)))
+                         `(when *spy-enabled* (print (str (spy-indent-spaces) ~expr \space)))
                          `(when *spy-enabled* (println (str (spy-indent-spaces) '~expr " => " ~expr))))))
         r2         (let [expr (xlast exprs)]
                      `(let [spy-val# ~expr]
