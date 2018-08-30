@@ -550,15 +550,19 @@
   [arg]
   (add-tree (hiccup->tree arg)))
 
-(s/defn add-tree-xml :- HID
-  "Adds a tree to the forest from an XML string."
+(s/defn xml-str->enlive :- tsk/KeyMap
   [xml-str :- s/Str]
   (let [result (->> xml-str
                  ts/string->stream
                  enlive-tagsoup/parser
-                 only
-                 add-tree-enlive)]
+                 only )]
     result))
+
+(s/defn add-tree-xml :- HID
+  "Adds a tree to the forest from an XML string."
+  [xml-str :- s/Str]
+  (add-tree-enlive
+    (xml-str->enlive xml-str)))
 
 (def ^:dynamic *xml-subtree-buffer-size* 32)
 

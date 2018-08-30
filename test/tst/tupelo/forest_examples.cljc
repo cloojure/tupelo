@@ -8,17 +8,14 @@
   #?@(:clj [
   (:use tupelo.core tupelo.forest tupelo.test )
   (:require
-    [clojure.data.xml :as cdx]
     [clojure.java.io :as io]
     [clojure.set :as cs]
     [clojure.string :as str]
-    [net.cgrand.enlive-html :as enlive-html]
-    [net.cgrand.jsoup :as enlive-jsoup]
+    [net.cgrand.tagsoup :as enlive-tagsoup]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.misc :as tm]
     [tupelo.string :as ts]
-    [tupelo.schema :as tsk]
     [tupelo.forest :as tf] )
   (:import [java.io StringReader])
     ]) )
@@ -449,11 +446,7 @@
 ;-----------------------------------------------------------------------------
 (dotest
   (with-forest (new-forest)
-    (let [enlive-tree (->> "<p>sample <em>text</em> with words.</p>"
-                        clojure.string/lower-case
-                        java.io.StringReader.
-                        enlive-html/html-resource
-                        first)
+    (let [enlive-tree (xml-str->enlive "<p>sample <em>text</em> with words.</p>" )
           root-hid    (add-tree-enlive enlive-tree)
           leaf-hids   (find-leaf-hids root-hid [:** :*])
           leaf-values (mapv #(grab :value (hid->node %)) leaf-hids)
@@ -497,11 +490,7 @@
                               <Item><Type>A</Type><Note>AA2</Note></Item>
                             </Items>
                           </ROOT>"
-          enlive-tree     (->> xml-str
-                            java.io.StringReader.
-                            enlive-html/html-resource
-                            first)
-          root-hid        (add-tree-enlive enlive-tree)
+          root-hid        (add-tree-xml xml-str )
           tree-1          (hid->tree root-hid)
 
           type-bc-hid?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type :value "B"}])
@@ -593,11 +582,7 @@
                               <Item><Type>A</Type><Note>AA2</Note></Item>
                             </Items>
                           </ROOT>"
-          enlive-tree     (->> xml-str
-                            java.io.StringReader.
-                            enlive-html/xml-resource
-                            only)
-          root-hid        (add-tree-enlive enlive-tree)
+          root-hid        (add-tree-xml xml-str)
           has-bc-leaf?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type :value "B"}])
                                       (has-child-leaf? hid [:** {:tag :Type :value "C"}])))
           blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids))
@@ -639,16 +624,9 @@
                   </data> " )
 (dotest
   (with-forest (new-forest)
-    (let [enlive-tree          (->> xml-str-prod
-                                 java.io.StringReader.
-                                 enlive-html/xml-resource
-                                 first)
-          root-hid             (add-tree-enlive enlive-tree)
-          tree-1               (hid->hiccup root-hid)
-
+    (let [root-hid             (add-tree-xml xml-str-prod)
           blank-leaf-hids      (keep-if whitespace-leaf-hid? (all-hids))
           >>                   (apply remove-hid blank-leaf-hids)
-          tree-2               (hid->hiccup root-hid)
 
           product-hids         (find-hids root-hid [:** :product])
           product-trees-hiccup (mapv hid->hiccup product-hids)
@@ -708,12 +686,7 @@
                                </div>
                              </body>
                            </html>"
-
-          enlive-tree     (->> xml-str
-                            java.io.StringReader.
-                            enlive-html/xml-resource
-                            only)
-          root-hid        (add-tree-enlive enlive-tree)
+          root-hid        (add-tree-xml  xml-str)
 
           ; Removing whitespace nodes is optional; just done to keep things neat
           blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
@@ -767,13 +740,7 @@
                                 <a href=“path3” />
                               </div>
                             </div>"
-
-          enlive-tree     (->> html-str
-                            java.io.StringReader.
-                            enlive-html/html-resource
-                            first)
-          root-hid        (add-tree-enlive enlive-tree)
-          tree-1          (hid->hiccup root-hid) ; orig tree with lots of whitespace leaves
+          root-hid        (add-tree-xml html-str) ; html is a subset of xml
 
           ; Removing whitespace nodes is optional; just done to keep things neat
           blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
@@ -850,11 +817,7 @@
                                   </item>
                               </group>
                           </top>"
-          enlive-tree     (->> xml-str
-                            java.io.StringReader.
-                            enlive-html/xml-resource
-                            only)
-          root-hid        (add-tree-enlive enlive-tree)
+          root-hid        (add-tree-xml xml-str)
 
           ; Removing whitespace nodes is optional; just done to keep things neat
           blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
@@ -1057,11 +1020,7 @@
                               <a>1</a>
                               <b>2</b>
                            </root>"
-          enlive-tree     (->> xml-str
-                            java.io.StringReader.
-                            enlive-html/xml-resource
-                            only)
-          root-hid        (add-tree-enlive enlive-tree)
+          root-hid        (add-tree-xml xml-str)
           bush-blanks     (hid->bush root-hid)
           blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids))
           >>              (apply remove-hid blank-leaf-hids)
@@ -1115,59 +1074,61 @@
         (is= sentences
           ["foo bar"
            "beyond all recognition"])))
-    (let [handler          (fn [root-hid]
-                             (remove-whitespace-leaves)
-                             (tf/hid->bush root-hid))
-          enlive-tree-lazy (clojure.data.xml/parse (StringReader. xml-str))
-          result-word      (proc-tree-enlive-lazy enlive-tree-lazy [:document :sentence :word] handler)
-          result-sentence  (proc-tree-enlive-lazy enlive-tree-lazy [:document :sentence] handler)
-          result-document  (proc-tree-enlive-lazy enlive-tree-lazy [:document] handler)]
-      (is= result-word
-        [[{:tag :document}
-          [{:id "1", :tag :sentence}
-           [{:id "1.1", :tag :word, :value "foo"}]]]
-         [{:tag :document}
-          [{:id "1", :tag :sentence}
-           [{:id "1.2", :tag :word, :value "bar"}]]]
-         [{:tag :document}
-          [{:id "2", :tag :sentence}
-           [{:id "2.1", :tag :word, :value "beyond"}]]]
-         [{:tag :document}
-          [{:id "2", :tag :sentence}
-           [{:id "2.2", :tag :word, :value "all"}]]]
-         [{:tag :document}
-          [{:id "2", :tag :sentence}
-           [{:id "2.3", :tag :word, :value "recognition"}]]]])
-      (is= result-sentence ; #todo #bug race condition on this test!!!  #rc01
-        [[{:tag :document}
-          [{:id "1", :tag :sentence}
-           [{:id "1.1", :tag :word, :value "foo"}]
-           [{:id "1.2", :tag :word, :value "bar"}]]]
-         [{:tag :document}
-          [{:id "2", :tag :sentence}
-           [{:id "2.1", :tag :word, :value "beyond"}]
-           [{:id "2.2", :tag :word, :value "all"}]
-           [{:id "2.3", :tag :word, :value "recognition"}]]]])
-      (is= result-document ; #todo #bug race condition on this test!!!  #rc02
-        [[{:tag :document}
-          [{:id "1", :tag :sentence}
-           [{:id "1.1", :tag :word, :value "foo"}]
-           [{:id "1.2", :tag :word, :value "bar"}]]
-          [{:id "2", :tag :sentence}
-           [{:id "2.1", :tag :word, :value "beyond"}]
-           [{:id "2.2", :tag :word, :value "all"}]
-           [{:id "2.3", :tag :word, :value "recognition"}]]]]))
-    (let [enlive-tree-lazy     (clojure.data.xml/parse (StringReader. xml-str))
-          doc-sentence-handler (fn [root-hid]
-                                 (remove-whitespace-leaves)
-                                 (let [sentence-hid  (only (find-hids root-hid [:document :sentence]))
-                                       word-hids     (hid->kids sentence-hid)
-                                       words         (mapv #(grab :value (hid->leaf %)) word-hids)
-                                       sentence-text (str/join \space words)]
-                                   sentence-text))
-          result-sentences     (proc-tree-enlive-lazy enlive-tree-lazy
-                                 [:document :sentence] doc-sentence-handler)]
-      (is= result-sentences ["foo bar" "beyond all recognition"])) ))
+    (with-forest (new-forest)
+      (let [handler          (fn [root-hid]
+                               (remove-whitespace-leaves)
+                               (tf/hid->bush root-hid))
+            enlive-tree-lazy (clojure.data.xml/parse (StringReader. xml-str))
+            result-word      (proc-tree-enlive-lazy enlive-tree-lazy [:document :sentence :word] handler)
+            result-sentence  (proc-tree-enlive-lazy enlive-tree-lazy [:document :sentence] handler)
+            result-document  (proc-tree-enlive-lazy enlive-tree-lazy [:document] handler)]
+        (is= result-word
+          [[{:tag :document}
+            [{:id "1", :tag :sentence}
+             [{:id "1.1", :tag :word, :value "foo"}]]]
+           [{:tag :document}
+            [{:id "1", :tag :sentence}
+             [{:id "1.2", :tag :word, :value "bar"}]]]
+           [{:tag :document}
+            [{:id "2", :tag :sentence}
+             [{:id "2.1", :tag :word, :value "beyond"}]]]
+           [{:tag :document}
+            [{:id "2", :tag :sentence}
+             [{:id "2.2", :tag :word, :value "all"}]]]
+           [{:tag :document}
+            [{:id "2", :tag :sentence}
+             [{:id "2.3", :tag :word, :value "recognition"}]]]])
+        (is= result-sentence ; #todo #bug race condition on this test!!!  #rc01
+          [[{:tag :document}
+            [{:id "1", :tag :sentence}
+             [{:id "1.1", :tag :word, :value "foo"}]
+             [{:id "1.2", :tag :word, :value "bar"}]]]
+           [{:tag :document}
+            [{:id "2", :tag :sentence}
+             [{:id "2.1", :tag :word, :value "beyond"}]
+             [{:id "2.2", :tag :word, :value "all"}]
+             [{:id "2.3", :tag :word, :value "recognition"}]]]])
+        (is= result-document ; #todo #bug race condition on this test!!!  #rc02
+          [[{:tag :document}
+            [{:id "1", :tag :sentence}
+             [{:id "1.1", :tag :word, :value "foo"}]
+             [{:id "1.2", :tag :word, :value "bar"}]]
+            [{:id "2", :tag :sentence}
+             [{:id "2.1", :tag :word, :value "beyond"}]
+             [{:id "2.2", :tag :word, :value "all"}]
+             [{:id "2.3", :tag :word, :value "recognition"}]]]])))
+    (with-forest (new-forest)
+      (let [enlive-tree-lazy     (clojure.data.xml/parse (StringReader. xml-str))
+            doc-sentence-handler (fn [root-hid]
+                                   (remove-whitespace-leaves)
+                                   (let [sentence-hid  (only (find-hids root-hid [:document :sentence]))
+                                         word-hids     (hid->kids sentence-hid)
+                                         words         (mapv #(grab :value (hid->leaf %)) word-hids)
+                                         sentence-text (str/join \space words)]
+                                     sentence-text))
+            result-sentences     (proc-tree-enlive-lazy enlive-tree-lazy
+                                   [:document :sentence] doc-sentence-handler)]
+        (is= result-sentences ["foo bar" "beyond all recognition"])))))
 
 (comment            ; #rc01
   (not (clojure.core/=
@@ -1219,9 +1180,8 @@
   (-> "xkcd-sample.html"
     (io/resource)
     (io/input-stream)
-    ;(clojure.data.xml/parse)
-    (enlive-jsoup/parser)
-  ))
+    (enlive-tagsoup/parser) ))
+
 (dotest
   (when false ; manually enable to grab a new copy of the webpage
     (spit "xkcd-sample.html"
