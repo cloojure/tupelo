@@ -625,8 +625,7 @@
 (dotest
   (with-forest (new-forest)
     (let [root-hid             (add-tree-xml xml-str-prod)
-          blank-leaf-hids      (keep-if whitespace-leaf-hid? (all-hids))
-          >>                   (apply remove-hid blank-leaf-hids)
+          >>                   (remove-whitespace-leaves)
 
           product-hids         (find-hids root-hid [:** :product])
           product-trees-hiccup (mapv hid->hiccup product-hids)
@@ -679,40 +678,38 @@
 ;-----------------------------------------------------------------------------
 (dotest
   (with-forest (new-forest)
-    (let [xml-str         "<html>
+    (let [xml-str  "<html>
                              <body>
                                <div class='one'>
                                  <div class='two'></div>
                                </div>
                              </body>
                            </html>"
-          root-hid        (add-tree-xml  xml-str)
+          root-hid (add-tree-xml xml-str)
 
           ; Removing whitespace nodes is optional; just done to keep things neat
-          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
-          >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
+          >>       (remove-whitespace-leaves)
 
           ; Can search for inner `div` 2 ways
-          result-1        (find-paths root-hid [:html :body :div :div]) ; explicit path from root
-          result-2        (find-paths root-hid [:** {:class "two"}]) ; wildcard path that ends in :class "two"
-    ]
-       (is= result-1 result-2) ; both searches return the same path
-       (is= (hid->bush root-hid)
-         [{:tag :html}
-          [{:tag :body}
-           [{:class "one", :tag :div}
-            [{:class "two", :tag :div}]]]] )
+          result-1 (find-paths root-hid [:html :body :div :div]) ; explicit path from root
+          result-2 (find-paths root-hid [:** {:class "two"}]) ; wildcard path that ends in :class "two"
+          ]
+      (is= result-1 result-2) ; both searches return the same path
+      (is= (hid->bush root-hid)
+        [{:tag :html}
+         [{:tag :body}
+          [{:class "one", :tag :div}
+           [{:class "two", :tag :div}]]]])
       (is=
         (format-paths result-1)
         (format-paths result-2)
         [[{:tag :html}
           [{:tag :body}
            [{:class "one", :tag :div}
-            [{:class "two", :tag :div}]]]]] )
+            [{:class "two", :tag :div}]]]]])
 
-       (is (= (hid->node (last (only result-1)))
-             {::tf/khids [], :class "two", :tag :div}))
-   )))
+      (is (= (hid->node (last (only result-1)))
+            {::tf/khids [], :class "two", :tag :div})) )))
 
 ;-----------------------------------------------------------------------------
 
@@ -743,8 +740,8 @@
           root-hid        (add-tree-xml html-str) ; html is a subset of xml
 
           ; Removing whitespace nodes is optional; just done to keep things neat
-          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
-          >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
+          >>              (remove-whitespace-leaves)
+
           tree-2          (hid->hiccup root-hid)
           >>              (is= tree-2 [:html
                                        [:body
@@ -818,16 +815,12 @@
                               </group>
                           </top>"
           root-hid        (add-tree-xml xml-str)
-
-          ; Removing whitespace nodes is optional; just done to keep things neat
-          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids)) ; find whitespace nodes
-          >>              (apply remove-hid blank-leaf-hids) ; delete whitespace nodes found
+          >>              (remove-whitespace-leaves)
 
           ; Can search for inner `div` 2 ways
           result-1        (find-paths root-hid [:top :group :group]) ; explicit path from root
           result-2        (find-paths root-hid [:** :item :number]) ; wildcard path that ends in [:item :number]
           ]
-      (is= 17 (count blank-leaf-hids))
       (is= (hid->bush root-hid)
         [{:tag :top}
          [{:tag :group}
@@ -1022,8 +1015,8 @@
                            </root>"
           root-hid        (add-tree-xml xml-str)
           bush-blanks     (hid->bush root-hid)
-          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids))
-          >>              (apply remove-hid blank-leaf-hids)
+          >>              (remove-whitespace-leaves)
+
           bush-no-blanks  (hid->bush root-hid)
           leaf-hids       (find-leaf-hids root-hid [:** :*])]
       (is= bush-blanks [{:tag :root}
@@ -1174,25 +1167,24 @@
     )
 
 ;---------------------------------------------------------------------------------------------------
-(defn xkcd
+(defn get-xkcd-enlive
   "Load a sample webpage from disk"
   []
-  (-> "xkcd-sample.html"
-    (io/resource)
-    (io/input-stream)
-    (enlive-tagsoup/parser) ))
+  (it-> "xkcd-sample.html"
+    (io/resource it)
+    (io/input-stream it)
+    (enlive-tagsoup/parser it)
+    (drop-if #(= :dtd (:type %)) it)
+    (only it)))
 
 (dotest
-  (when false ; manually enable to grab a new copy of the webpage
+  (when false       ; manually enable to grab a new copy of the webpage
     (spit "xkcd-sample.html"
       (slurp "https://xkcd.com")))
   (with-forest (new-forest)
-    (let [doc         (it-> (xkcd)
-                        (drop-if #(= :dtd (:type %)) it)
-                        (only it))
-          root-hid    (add-tree-enlive doc)
+    (let [root-hid    (add-tree-enlive (get-xkcd-enlive))
           >>          (remove-whitespace-leaves)
-          ;>>          (spyx-pretty (hid->bush root-hid))
+          >>          (hid->bush root-hid)
           hid-keep-fn (fn [hid]
                         (let [node       (hid->node hid)
                               value      (when (contains? node :value) (grab :value node))
@@ -1201,12 +1193,9 @@
                           perm-link?))
           found-hids  (find-hids-with root-hid [:** :*] hid-keep-fn)
           link-node   (hid->node (only found-hids)) ; assume there is only 1 link node
-          value-str   (grab :value link-node) ; "\nPermanent link to this comic: https://xkcd.com/1988/"
+          value-str   (grab :value link-node)
           result      (re-find #"http.*$" value-str)]
-     ;(spyx-pretty link-node)  ;=> {:tupelo.forest/khids [],
-                                  ; :tag :tupelo.forest/raw,
-                                  ; :value "\nPermanent link to this comic: https://xkcd.com/1988/"}
-     ;(spyx result) ; => "https://xkcd.com/1988/"
-    )))
+      (is= value-str "\nPermanent link to this comic: https://xkcd.com/1988/")
+      (is= "https://xkcd.com/1988/" result))))
 
 ))
