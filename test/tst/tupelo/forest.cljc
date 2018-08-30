@@ -8,12 +8,9 @@
   #?@(:clj [
   (:use tupelo.core tupelo.forest tupelo.test )
   (:require
-    [schema.core :as s]
-    [tupelo.core :as t]
     [tupelo.misc :as tm]
     [tupelo.forest :as tf]
-  )
-]) )
+  ) ]) )
 
 #?(:clj (do
 (dotest

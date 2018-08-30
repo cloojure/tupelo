@@ -9,10 +9,8 @@
   (:use tupelo.core tupelo.dev tupelo.test )
   (:require
     [clojure.string :as str]
-    [schema.core :as s]
     [tupelo.core :as t] ; #todo finish migration to (:use tupelo.core)
     [tupelo.impl :as i]
-    [tupelo.misc :as tm]
     [tupelo.string :as ts]
   ) ]) )
 
@@ -24,85 +22,82 @@
 
 #?(:clj (do
 (defn fn-any [] 42)
-(defn fn7 [] (t/if-java-1-7-plus
+(defn fn7 [] (if-java-1-7-plus
                7
                (throw (RuntimeException. "Unimplemented prior to Java 1.7: "))))
-(defn fn8 [] (t/if-java-1-8-plus
+(defn fn8 [] (if-java-1-8-plus
                8
                (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 
 (dotest
-  (when (t/is-java-1-7?)
+  (when (is-java-1-7?)
     (throws? (fn8)))
 
-  (when (t/is-java-1-8-plus?)
+  (when (is-java-1-8-plus?)
     (is= 8 (fn8)))
 
   (is= 7 (fn7))
   (is= 42 (fn-any))
 
-  (with-redefs [t/java-version (constantly "1.7")]
-    (is   (t/java-version-min? "1.7"))
-    (isnt (t/java-version-min? "1.7.0"))
-    (isnt (t/java-version-min? "1.7.0-b1234"))
-    (isnt (t/java-version-min? "1.8"))
+  (with-redefs [java-version (constantly "1.7")]
+    (is   (java-version-min? "1.7"))
+    (isnt (java-version-min? "1.7.0"))
+    (isnt (java-version-min? "1.7.0-b1234"))
+    (isnt (java-version-min? "1.8"))
 
-    (is   (t/java-version-matches? "1.7"))
-    (isnt (t/java-version-matches? "1.7.0"))
-    (isnt (t/java-version-matches? "1.7.0-b1234"))
-    (isnt (t/java-version-matches? "1.8"))
+    (is   (java-version-matches? "1.7"))
+    (isnt (java-version-matches? "1.7.0"))
+    (isnt (java-version-matches? "1.7.0-b1234"))
+    (isnt (java-version-matches? "1.8"))
     )
-  (with-redefs [t/java-version (constantly "1.7.0")]
-    (is   (t/java-version-min? "1.7"))
-    (is   (t/java-version-min? "1.7.0"))
-    (isnt (t/java-version-min? "1.7.0-b1234"))
-    (isnt (t/java-version-min? "1.8"))
+  (with-redefs [java-version (constantly "1.7.0")]
+    (is   (java-version-min? "1.7"))
+    (is   (java-version-min? "1.7.0"))
+    (isnt (java-version-min? "1.7.0-b1234"))
+    (isnt (java-version-min? "1.8"))
 
-    (is   (t/java-version-matches? "1.7"))
-    (is   (t/java-version-matches? "1.7.0"))
-    (isnt (t/java-version-matches? "1.7.0-b1234"))
-    (isnt (t/java-version-matches? "1.8"))
+    (is   (java-version-matches? "1.7"))
+    (is   (java-version-matches? "1.7.0"))
+    (isnt (java-version-matches? "1.7.0-b1234"))
+    (isnt (java-version-matches? "1.8"))
     )
-  (with-redefs [t/java-version (constantly "1.7.0-b1234")]
-    (is   (t/java-version-min? "1.7"))
-    (is   (t/java-version-min? "1.7.0"))
-    (is   (t/java-version-min? "1.7.0-b1234"))
-    (isnt (t/java-version-min? "1.8"))
+  (with-redefs [java-version (constantly "1.7.0-b1234")]
+    (is   (java-version-min? "1.7"))
+    (is   (java-version-min? "1.7.0"))
+    (is   (java-version-min? "1.7.0-b1234"))
+    (isnt (java-version-min? "1.8"))
 
-    (is   (t/java-version-matches? "1.7"))
-    (is   (t/java-version-matches? "1.7.0"))
-    (is   (t/java-version-matches? "1.7.0-b1234"))
-    (isnt (t/java-version-matches? "1.8"))
+    (is   (java-version-matches? "1.7"))
+    (is   (java-version-matches? "1.7.0"))
+    (is   (java-version-matches? "1.7.0-b1234"))
+    (isnt (java-version-matches? "1.8"))
     )
 
-  (with-redefs [t/java-version (constantly "1.7") ]
+  (with-redefs [java-version (constantly "1.7") ]
     (when false
       (println "testing java 1.7")
-      (spyx (t/is-java-1-7?))
-      (spyx (t/is-java-1-8?))
-      (spyx (t/is-java-1-7-plus?))
-      (spyx (t/is-java-1-8-plus?)))
+      (spyx (is-java-1-7?))
+      (spyx (is-java-1-8?))
+      (spyx (is-java-1-7-plus?))
+      (spyx (is-java-1-8-plus?)))
 
-    (is   (t/is-java-1-7?))
-    (is   (t/is-java-1-7-plus?))
-    (isnt (t/is-java-1-8?))
-    (isnt (t/is-java-1-8-plus?))
-    )
+    (is   (is-java-1-7?))
+    (is   (is-java-1-7-plus?))
+    (isnt (is-java-1-8?))
+    (isnt (is-java-1-8-plus?)) )
 
-  (with-redefs [t/java-version (constantly "1.8") ]
+  (with-redefs [java-version (constantly "1.8") ]
     (when false
       (println "testing java 1.8")
-      (spyx (t/is-java-1-7?))
-      (spyx (t/is-java-1-8?))
-      (spyx (t/is-java-1-7-plus?))
-      (spyx (t/is-java-1-8-plus?)))
+      (spyx (is-java-1-7?))
+      (spyx (is-java-1-8?))
+      (spyx (is-java-1-7-plus?))
+      (spyx (is-java-1-8-plus?)))
 
-    (isnt (t/is-java-1-7?))
-    (is   (t/is-java-1-7-plus?))
-    (is   (t/is-java-1-8?))
-    (is   (t/is-java-1-8-plus?))
-    )
-  )
+    (isnt (is-java-1-7?))
+    (is   (is-java-1-7-plus?))
+    (is   (is-java-1-8?))
+    (is   (is-java-1-8-plus?)) ) )
 
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
@@ -166,7 +161,7 @@
     (ts/collapse-whitespace
       (with-out-str
         (is= 13
-          (t/let-spy [a (inc 0)
+          (let-spy [a (inc 0)
                       b (+ 2 3)]
             (spyx (-> (inc a) (* 2) inc))
             (-> b (* 2) (+ 3)))))))
@@ -176,7 +171,7 @@
     (ts/collapse-whitespace
       (with-out-str
         (is= 17
-          (t/let-spy [a (inc 0)
+          (let-spy [a (inc 0)
                       b (+ 2 3)]
             (-> b (* (inc a)) (+ 7))))))))
 
@@ -327,9 +322,9 @@
                     (= 1 num-nil) )))))))
 
 (dotest
-  (is= true   (t/has-some? odd? [1 2 3] ) )
-  (is= false  (t/has-some? odd? [2 4 6] ) )
-  (is= false  (t/has-some? odd? []      ) )
+  (is= true   (has-some? odd? [1 2 3] ) )
+  (is= false  (has-some? odd? [2 4 6] ) )
+  (is= false  (has-some? odd? []      ) )
 
   (is= false  (has-none? odd? [1 2 3] ) )
   (is= true   (has-none? odd? [2 4 6] ) )
@@ -795,29 +790,29 @@
                      :b2 { :c1 "c1" }}} )))
 
 (dotest
-  (is= [nil    ] (t/conjv nil   nil ))
-  (is= [      9] (t/conjv nil     9 ))
+  (is= [nil    ] (conjv nil   nil ))
+  (is= [      9] (conjv nil     9 ))
 
-  (is= [1      ] (t/conjv nil 1     ))
-  (is= [1 2    ] (t/conjv nil 1 2   ))
-  (is= [1 2 3  ] (t/conjv nil 1 2 3 ))
+  (is= [1      ] (conjv nil 1     ))
+  (is= [1 2    ] (conjv nil 1 2   ))
+  (is= [1 2 3  ] (conjv nil 1 2 3 ))
 
-  (is= [1      ] (t/conjv  [] 1     ))
-  (is= [1 2    ] (t/conjv  [] 1 2   ))
-  (is= [1 2 3  ] (t/conjv  [] 1 2 3 ))
-  (is= [1      ] (t/conjv '() 1     ))
-  (is= [1 2    ] (t/conjv '() 1 2   ))
-  (is= [1 2 3  ] (t/conjv '() 1 2 3 ))
+  (is= [1      ] (conjv  [] 1     ))
+  (is= [1 2    ] (conjv  [] 1 2   ))
+  (is= [1 2 3  ] (conjv  [] 1 2 3 ))
+  (is= [1      ] (conjv '() 1     ))
+  (is= [1 2    ] (conjv '() 1 2   ))
+  (is= [1 2 3  ] (conjv '() 1 2 3 ))
 
-  (is= [      9] (t/conjv  [     ] 9 ))
-  (is= [1     9] (t/conjv  [1    ] 9 ))
-  (is= [1 2   9] (t/conjv  [1 2  ] 9 ))
-  (is= [1 2 3 9] (t/conjv  [1 2 3] 9 ))
+  (is= [      9] (conjv  [     ] 9 ))
+  (is= [1     9] (conjv  [1    ] 9 ))
+  (is= [1 2   9] (conjv  [1 2  ] 9 ))
+  (is= [1 2 3 9] (conjv  [1 2 3] 9 ))
 
-  (is= [      9] (t/conjv '(     ) 9 ))
-  (is= [1     9] (t/conjv '(1    ) 9 ))
-  (is= [1 2   9] (t/conjv '(1 2  ) 9 ))
-  (is= [1 2 3 9] (t/conjv '(1 2 3) 9 ))
+  (is= [      9] (conjv '(     ) 9 ))
+  (is= [1     9] (conjv '(1    ) 9 ))
+  (is= [1 2   9] (conjv '(1 2  ) 9 ))
+  (is= [1 2 3 9] (conjv '(1 2 3) 9 ))
 )
 
 (dotest
@@ -1011,14 +1006,14 @@
      [3 :y]]))
 
 (dotest
-  (is= 3 (t/validate pos? 3))
-  (is= 3.14 (t/validate number? 3.14))
-  (is= 3.14 (t/validate #(< 3 % 4) 3.14))
-  (is= [0 1 2] (t/validate vector? (vec (range 3))))
-  (is= nil (t/validate nil? (next [])))
-  (is= [0 1 2] (t/validate #(= 3 (count %)) [0 1 2]))
-  (throws? Exception (t/validate number? "hello"))
-  (throws? Exception (t/validate truthy? nil)) )
+  (is= 3 (validate pos? 3))
+  (is= 3.14 (validate number? 3.14))
+  (is= 3.14 (validate #(< 3 % 4) 3.14))
+  (is= [0 1 2] (validate vector? (vec (range 3))))
+  (is= nil (validate nil? (next [])))
+  (is= [0 1 2] (validate #(= 3 (count %)) [0 1 2]))
+  (throws? Exception (validate number? "hello"))
+  (throws? Exception (validate truthy? nil)) )
 
 (dotest
   (throws? (verify (= 1 2)))
@@ -1145,13 +1140,13 @@
 
 
 (dotest
-  (is (every? t/truthy? (t/forv [ul (range 0 4)] (vector? (t/range-vec ul)))))
+  (is (every? truthy? (forv [ul (range 0 4)] (vector? (range-vec ul)))))
 
-  (is (every? t/truthy? (forv [ul (range 0 4)] (= (t/range-vec ul) (range ul)))))
+  (is (every? truthy? (forv [ul (range 0 4)] (= (range-vec ul) (range ul)))))
 
-  (is (every? t/truthy? (forv [lb (range 0 4)
-                               ub (range lb 4) ]
-                          (= (t/range-vec lb ub) (range lb ub))))) )
+  (is (every? truthy? (forv [lb (range 0 4)
+                             ub (range lb 4) ]
+                          (= (range-vec lb ub) (range lb ub))))) )
 
 (dotest
   (testing "positive step"
@@ -1482,12 +1477,12 @@
                         [ nil 32 "complicated" (Math/pow 2 5) '( "str" nil "ing") ]]] )
          "I have a complicated string" )
 
-  (let [chars-set   (into #{} (t/chars-thru \a \z))
+  (let [chars-set   (into #{} (chars-thru \a \z))
         str-val     (strcat chars-set) ]
     (is= 26 (count chars-set))
     (is= 26 (count str-val))
     (is= 26 (count (re-seq #"[a-z]" str-val)))
-    (is= "abc" (str/join (t/chars-thru \a \c)))
+    (is= "abc" (str/join (chars-thru \a \c)))
     ))
 
 (dotest
@@ -1544,17 +1539,17 @@
 )
 
 (dotest
-  (is (= [\a ]              (t/chars-thru \a \a)))
-  (is (= [\a \b]            (t/chars-thru \a \b)))
-  (is (= [\a \b \c]         (t/chars-thru \a \c)))
+  (is (= [\a ]              (chars-thru \a \a)))
+  (is (= [\a \b]            (chars-thru \a \b)))
+  (is (= [\a \b \c]         (chars-thru \a \c)))
 
-  (is (= [\a ]              (t/chars-thru 97 97)))
-  (is (= [\a \b]            (t/chars-thru 97 98)))
-  (is (= [\a \b \c]         (t/chars-thru 97 99)))
+  (is (= [\a ]              (chars-thru 97 97)))
+  (is (= [\a \b]            (chars-thru 97 98)))
+  (is (= [\a \b \c]         (chars-thru 97 99)))
 
-  (throws? Exception (t/chars-thru 987654321 987654321))
-  (throws? Exception (t/chars-thru \c \a))
-  (throws? Exception (t/chars-thru 99 98)))
+  (throws? Exception (chars-thru 987654321 987654321))
+  (throws? Exception (chars-thru \c \a))
+  (throws? Exception (chars-thru 99 98)))
 
 (dotest
   (is= [] (drop-at (range 1) 0))
@@ -1610,43 +1605,43 @@
 ; #todo add different lengths a/b
 ; #todo add missing entries a/b
 (dotest
-  (is      (t/matches?  []    [] ))
-  (is      (t/matches?  [1]   [1] ))
-  (isnt    (t/matches?  [1]   [2] ))
-  ;        (t/matches?  [1]   [1 2] )))  ***** error *****
-  (is      (t/matches?  [_]   [1] ))
-  (is      (t/matches?  [_]   [nil] ))
-  (is      (t/matches?  [_]   [1] [2] [3]))
-  (is      (t/matches?  [1 2] [1 2] ))
-  (is      (t/matches?  [_ 2] [1 2] ))
-  (is      (t/matches?  [1 _] [1 2] ))
-  (is      (t/matches?  [1 _] [1 2] [1 3] [1 nil] ))
-  (is      (t/matches?  [1 _ 3] [1 2 3] [1 nil 3] ))
+  (is      (matches?  []    [] ))
+  (is      (matches?  [1]   [1] ))
+  (isnt    (matches?  [1]   [2] ))
+  ;        (matches?  [1]   [1 2] )))  ***** error *****
+  (is      (matches?  [_]   [1] ))
+  (is      (matches?  [_]   [nil] ))
+  (is      (matches?  [_]   [1] [2] [3]))
+  (is      (matches?  [1 2] [1 2] ))
+  (is      (matches?  [_ 2] [1 2] ))
+  (is      (matches?  [1 _] [1 2] ))
+  (is      (matches?  [1 _] [1 2] [1 3] [1 nil] ))
+  (is      (matches?  [1 _ 3] [1 2 3] [1 nil 3] ))
 
-  (is      (t/matches?  {:a 1} {:a 1} ))
-  (isnt    (t/matches?  {:a 1} {:a 2} ))
-  (isnt    (t/matches?  {:a 1} {:b 1} ))
-  (is      (t/matches?  {:a _} {:a 1} {:a 2} {:a 3} ))
-  ;        (t/matches?  { _ 1} {:a 1} )   ***** error *****
+  (is      (matches?  {:a 1} {:a 1} ))
+  (isnt    (matches?  {:a 1} {:a 2} ))
+  (isnt    (matches?  {:a 1} {:b 1} ))
+  (is      (matches?  {:a _} {:a 1} {:a 2} {:a 3} ))
+  ;        (matches?  { _ 1} {:a 1} )   ***** error *****
 
-  (is      (t/matches?  {:a _ :b _       :c 3} 
-                        {:a 1 :b [1 2 3] :c 3} ))
-  (isnt    (t/matches?  {:a _ :b _       :c 4}
-                        {:a 1 :b [1 2 3] :c 3} ))
-  (isnt    (t/matches?  {:a _ :b _       :c 3}
-                        {:a 1 :b [1 2 3] :c 4} ))
-  (isnt    (t/matches?  {:a 9 :b _       :c 3}
-                        {:a 1 :b [1 2 3] :c 3} ))
+  (is      (matches?  {:a _ :b _       :c 3}
+                      {:a 1 :b [1 2 3] :c 3} ))
+  (isnt    (matches?  {:a _ :b _       :c 4}
+                      {:a 1 :b [1 2 3] :c 3} ))
+  (isnt    (matches?  {:a _ :b _       :c 3}
+                      {:a 1 :b [1 2 3] :c 4} ))
+  (isnt    (matches?  {:a 9 :b _       :c 3}
+                      {:a 1 :b [1 2 3] :c 3} ))
 
-  (is      (t/matches?  {:a _ :b _       :c 3} 
-                        {:a 1 :b [1 2 3] :c 3}
-                        {:a 2 :b 99      :c 3}
-                        {:a 3 :b nil     :c 3} ))
-  (isnt    (t/matches?  {:a _ :b _       :c 3}
-                        {:a 1 :b [1 2 3] :c 9}
-                        {:a 2 :b 99      :c 3}
-                        {:a 3 :b nil     :c 3} ))
-  (isnt    (t/matches?  {:a _ :b _       :c 3}
+  (is      (matches?  {:a _ :b _       :c 3}
+                      {:a 1 :b [1 2 3] :c 3}
+                      {:a 2 :b 99      :c 3}
+                      {:a 3 :b nil     :c 3} ))
+  (isnt    (matches?  {:a _ :b _       :c 3}
+                      {:a 1 :b [1 2 3] :c 9}
+                      {:a 2 :b 99      :c 3}
+                      {:a 3 :b nil     :c 3} ))
+  (isnt    (matches?  {:a _ :b _       :c 3}
                         {:a 1 :b [1 2 3] :c 3}
                         {:a 2 :b 99      :c 3}
                         {:a 3 :b nil     :c 9} ))
@@ -1991,7 +1986,7 @@
 
   (testing "lazy-cons"
     (let [lazy-next-int (fn lazy-next-int [n]
-                          (t/lazy-cons n (lazy-next-int (inc n))))
+                          (lazy-cons n (lazy-next-int (inc n))))
           all-ints      (lazy-next-int 0)
           ]
       (is= (take 0 all-ints) [])
@@ -2003,7 +1998,7 @@
                        (let [lazy-range-step (fn lazy-range-step [curr limit]
                                                ; (spyx [curr limit]) (flush)
                                                (when (< curr limit)
-                                                 (t/lazy-cons curr (lazy-range-step (inc curr) limit))))]
+                                                 (lazy-cons curr (lazy-range-step (inc curr) limit))))]
                          (lazy-range-step 0 limit))) ]
       (is= (lazy-range 0) nil)
       (is= (lazy-range 1) [0])
@@ -2136,7 +2131,7 @@
         build-3        (fn [n]
                          (lazy-gen
                            (doseq [counter (thru n)]
-                             (t/yield-all (next-results counter)))))
+                             (yield-all (next-results counter)))))
         build-result-1 (build-1 3) ; => (1 1 2 1 2 3)
         build-result-2 (build-2 3)
         build-result-3 (build-3 3) ]
@@ -2207,13 +2202,13 @@
   (is= [    [0   1   2   3   4   5]  []  ]       (split-match (range 6) [6 7]   )))
 
 (dotest
-  (is= nil (t/index-using #(= [666]       %) (range 5)))
-  (is= 0   (t/index-using #(= [0 1 2 3 4] %) (range 5)))
-  (is= 1   (t/index-using #(= [  1 2 3 4] %) (range 5)))
-  (is= 2   (t/index-using #(= [    2 3 4] %) (range 5)))
-  (is= 3   (t/index-using #(= [      3 4] %) (range 5)))
-  (is= 4   (t/index-using #(= [        4] %) (range 5)))
-  (is= nil (t/index-using #(= [         ] %) (range 5))))
+  (is= nil (index-using #(= [666]       %) (range 5)))
+  (is= 0   (index-using #(= [0 1 2 3 4] %) (range 5)))
+  (is= 1   (index-using #(= [  1 2 3 4] %) (range 5)))
+  (is= 2   (index-using #(= [    2 3 4] %) (range 5)))
+  (is= 3   (index-using #(= [      3 4] %) (range 5)))
+  (is= 4   (index-using #(= [        4] %) (range 5)))
+  (is= nil (index-using #(= [         ] %) (range 5))))
 
 (dotest
   (is= [ [] [0   1   2   3   4]    ] (split-using #(= 0 (first %)) (range 5)))
@@ -2295,12 +2290,12 @@
 (dotest
   (let [map-123 {1 :a 2 :b 3 :c}
         tx-fn   {1 101 2 202 3 303}]
-    (is= (t/map-keys map-123 inc) {2 :a 3 :b 4 :c})
-    (is= (t/map-keys map-123 tx-fn) {101 :a 202 :b 303 :c}))
+    (is= (map-keys map-123 inc) {2 :a 3 :b 4 :c})
+    (is= (map-keys map-123 tx-fn) {101 :a 202 :b 303 :c}))
   (let [map-123 {:a 1 :b 2 :c 3}
         tx-fn   {1 101 2 202 3 303}]
-    (is= (t/map-vals map-123 inc) {:a 2, :b 3, :c 4})
-    (is= (t/map-vals map-123 tx-fn) {:a 101, :b 202, :c 303})))
+    (is= (map-vals map-123 inc) {:a 2, :b 3, :c 4})
+    (is= (map-vals map-123 tx-fn) {:a 101, :b 202, :c 303})))
 
 (dotest
   (testing "unlazy"
@@ -2326,14 +2321,14 @@
 (dotest
   ; ^{:deprecated "1.9.0-alpha5" }
   (i/when-not-clojure-1-9-plus
-    (is   (t/seqable?   "abc"))
-    (is   (t/seqable?   {1 2 3 4} ))
-    (is   (t/seqable?  #{1 2 3} ))
-    (is   (t/seqable?  '(1 2 3) ))
-    (is   (t/seqable?   [1 2 3] ))
-    (is   (t/seqable?   (byte-array [1 2] )))
-    (isnt (t/seqable?  1 ))
-    (isnt (t/seqable? \a ))))
+    (is   (seqable?   "abc"))
+    (is   (seqable?   {1 2 3 4} ))
+    (is   (seqable?  #{1 2 3} ))
+    (is   (seqable?  '(1 2 3) ))
+    (is   (seqable?   [1 2 3] ))
+    (is   (seqable?   (byte-array [1 2] )))
+    (isnt (seqable?  1 ))
+    (isnt (seqable? \a ))))
 
 (dotest
   ; ^:deprecated ^:no-doc

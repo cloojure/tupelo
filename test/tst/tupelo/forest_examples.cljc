@@ -20,8 +20,6 @@
   (:import [java.io StringReader])
     ]) )
 
-(t/refer-tupelo :dev)
-
 #?(:clj (do
 (dotest
   (with-forest (new-forest)
