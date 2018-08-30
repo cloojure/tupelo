@@ -7,18 +7,16 @@
 (ns tupelo.core
   "Tupelo - Making Clojure even sweeter"
   #?(:clj
-  (:require
-    [cheshire.core :as cc]
-    [clojure.test]
-    [schema.core :as s]
-    [tupelo.impl :as i]
-    [tupelo.schema :as tsk]
-    [tupelo.string :as ts]
-     ))
-  #?@(:clj [
-       (:refer-clojure :exclude [map seqable?])
-            (:import [java.io BufferedReader StringReader ByteArrayOutputStream PrintStream]
-                     ) ]))
+     (:require
+       [cheshire.core :as cc]
+       [clojure.test]
+       [schema.core :as s]
+       [tupelo.impl :as i]
+       [tupelo.schema :as tsk]
+       [tupelo.string :as ts] ))
+  #?@(:clj [(:refer-clojure :exclude [map seqable?])
+            (:import [java.io BufferedReader StringReader ByteArrayOutputStream PrintStream])
+     ]))
 
 ; #todo unify terminolgy (atom/ref/agent)
 ;   -> reset!/ref-set => set
