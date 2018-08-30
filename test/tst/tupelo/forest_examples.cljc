@@ -13,14 +13,13 @@
     [clojure.string :as str]
     [net.cgrand.tagsoup :as enlive-tagsoup]
     [schema.core :as s]
-    [tupelo.core :as t]
+    [tupelo.forest :as tf]
     [tupelo.misc :as tm]
-    [tupelo.string :as ts]
-    [tupelo.forest :as tf] )
-  (:import [java.io StringReader])
-    ]) )
+    [tupelo.string :as ts]  )
+  (:import [java.io StringReader]) ]) )
 
 #?(:clj (do
+
 (dotest
   (with-forest (new-forest)
      (let [root-hid (add-tree-hiccup [:a
