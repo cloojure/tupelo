@@ -12,7 +12,6 @@
   (:require
     [clojure.core.async :as ca]
     [clojure.set :as clj.set]
-    [clojure.data.xml]
     [net.cgrand.tagsoup :as enlive-tagsoup]
     [schema.core :as s]
     [tupelo.misc :as tm :refer [HID]]
@@ -550,19 +549,18 @@
   [arg]
   (add-tree (hiccup->tree arg)))
 
-(s/defn xml-str->enlive :- tsk/KeyMap
+(s/defn xml->enlive :- tsk/KeyMap
   [xml-str :- s/Str]
-  (let [result (->> xml-str
-                 ts/string->stream
-                 enlive-tagsoup/parser
-                 only )]
-    result))
+  (->> xml-str
+    ts/string->stream
+    enlive-tagsoup/parser
+    only))
 
 (s/defn add-tree-xml :- HID
   "Adds a tree to the forest from an XML string."
   [xml-str :- s/Str]
   (add-tree-enlive
-    (xml-str->enlive xml-str)))
+    (xml->enlive xml-str)))
 
 (def ^:dynamic *xml-subtree-buffer-size* 32)
 

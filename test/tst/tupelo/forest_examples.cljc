@@ -446,7 +446,7 @@
 ;-----------------------------------------------------------------------------
 (dotest
   (with-forest (new-forest)
-    (let [enlive-tree (xml-str->enlive "<p>sample <em>text</em> with words.</p>" )
+    (let [enlive-tree (xml->enlive "<p>sample <em>text</em> with words.</p>" )
           root-hid    (add-tree-enlive enlive-tree)
           leaf-hids   (find-leaf-hids root-hid [:** :*])
           leaf-values (mapv #(grab :value (hid->node %)) leaf-hids)
@@ -585,8 +585,7 @@
           root-hid        (add-tree-xml xml-str)
           has-bc-leaf?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type :value "B"}])
                                       (has-child-leaf? hid [:** {:tag :Type :value "C"}])))
-          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids))
-          >>              (apply remove-hid blank-leaf-hids)
+          >>              (remove-whitespace-leaves)
           bc-item-hids    (find-hids-with root-hid [:** :Item] has-bc-leaf?)]
       (apply remove-hid bc-item-hids)
       (is= (hid->hiccup root-hid)
