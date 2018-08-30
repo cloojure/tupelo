@@ -895,38 +895,78 @@
   "Converts all args to single string and clips any characters beyond nchars."
   [nchars & args] (apply i/clip-str nchars args))
 
-(defn wild-match-ctx?
+ ; #todo fix usage docs
+(defmulti wild-match?
   "Returns true if a pattern is matched by one or more values.  The special keyword :* (colon-star)
    in the pattern serves as a wildcard value.  Note that a wildcald can match either a primitive or a
-   composite value: Usage:
+   composite value: Classic usage:
 
-     (wild-match-ctx? ctx pattern & values)
+     (wild-match? pattern & values)
 
-   samples:
+   examples:
 
-     (wild-match-ctx? ctx {:a :* :b 2}
-                          {:a 1  :b 2})         ;=> true
+     (wild-match? {:a :* :b 2}
+                  {:a 1  :b 2})         ;=> true
 
-     (wild-match-ctx? ctx [1 :* 3]
-                          [1 2  3]
-                          [1 9  3] ))           ;=> true
+     (wild-match? [1 :* 3]
+                  [1 2  3]
+                  [1 9  3] ))           ;=> true
 
-     (wild-match-ctx? ctx {:a :*       :b 2}
-                          {:a [1 2 3]  :b 2})   ;=> true
+     (wild-match? {:a :*       :b 2}
+                  {:a [1 2 3]  :b 2})   ;=> true
 
-   wild-match? accepts a context map as an optional first argument which defaults to:
+   wild-match? also accepts a context map; usage:
 
-     (let [ctx {:submap-ok false
-                :subset-ok false
-                :subvec-ok false}]
-       (wild-match-ctx? ctx pattern values))) "
-  [ctx-in pattern & values]
-  (apply i/wild-match-ctx? ctx-in pattern values))
+     (wild-match? ctx)
 
-(defn wild-match?
-  "Simple wrapper for wild-match-ctx? using the default context"
+   example (default values shown):
+
+     (wild-match?  { :submap-ok   false
+                     :subset-ok   false
+                     :subvec-ok   false
+                     :wildcard-ok true
+                     :pattern     <required param>
+                     :values    [ <patttern-spec>+ ]   ; vector of 1 or more required
+                   } )
+"
+  (fn wild-match-disp-fn [& args]
+    (if (and (= 1 (count args))
+          (map? (only args)))
+      :ctx
+      :classic)))
+
+(defmethod wild-match? :ctx
+  [ctx]
+  (i/wild-match? ctx))
+
+(defmethod wild-match? :classic
   [pattern & values]
-  (apply i/wild-match? pattern values))
+  (verify #(pos? (count values)))
+  (i/wild-match?
+    (vals->map pattern values)))
+
+; #todo re-impl w/o wildcard stuff
+(defn submatch? ; #todo readme & test
+  "Returns true if the first arg is (recursively) a subset/submap/subvec of the 2nd arg"
+  [smaller larger]
+  (let [ctx {:submap-ok   true
+             :subset-ok   true
+             :subvec-ok   true
+             :wildcard-ok false
+             :pattern     smaller
+             :values      [larger]}]
+    (wild-match? ctx)))
+
+(defn wild-submatch? ; #todo readme & test
+  "Simple wrapper for wild-match? where all types of sub-matching are enabled."
+  [pattern & values]
+  (let [ctx {:submap-ok   true
+             :subset-ok   true
+             :subvec-ok   true
+             :wildcard-ok true
+             :pattern     pattern
+             :values      values}]
+    (wild-match? ctx)))
 
 (defn submap?
   "Returns true if the map entries (key-value pairs) of one map are a subset of the entries of
@@ -951,15 +991,6 @@
       (t/map-vals {:a 1 :b 2 :c 3} {1 101 2 202 3 303})  =>  {:a 101, :b 202, :c 303} "
   [map-in tx-fn & tx-args]
   (apply i/map-vals map-in tx-fn tx-args))
-
-(defn submatch?
-  "Returns true if the first arg is (recursively) a subset/submap/subvec of the 2nd arg"
-  [smaller larger] (i/submatch? smaller larger))
-
-(defn wild-submatch?
-  "Simple wrapper for wild-match-ctx? where all types of sub-matching are enabled."
-  [pattern & values]
-  (apply i/wild-submatch? pattern values))
 
 (defn wild-item?
   "Returns true if any element in a nested collection is the wildcard :*"
@@ -1087,7 +1118,7 @@
      xfirst xsecond xthird xfourth xlast xbutlast xrest xreverse
      kw->sym kw->str str->sym str->kw str->chars sym->kw sym->str
      split-using split-match partition-using
-     wild-match? wild-submatch? wild-match-ctx? wild-item? submatch? val=
+     wild-item? submatch? val=
      increasing? increasing-or-equal? ->vector unwrap xvec
      fibonacci-seq fibo-thru fibo-nth unnest
      with-exception-default lazy-cons lazy-gen yield yield-all

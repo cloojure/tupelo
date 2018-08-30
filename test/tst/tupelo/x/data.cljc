@@ -9,7 +9,7 @@
     [tupelo.misc :as tm :refer [HID]]
     [tupelo.string :as tstr]
     [tupelo.schema :as tsk]))
-(t/refer-tupelo :dev)
+
 
 (defn combo-all [& args]
   (let [wrapped-args (forv [arg args]

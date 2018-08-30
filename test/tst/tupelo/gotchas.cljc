@@ -219,6 +219,14 @@
 )
 
 ;-----------------------------------------------------------------------------
+; record-map equality fails
+(defrecord SampleRec [a b])
+(dotest
+  (let [sampleRec (->SampleRec 1 2)]
+    (isnt  (= sampleRec {:a 1 :b 2})) ; fails for clojure.core/= "
+    (is (val= sampleRec {:a 1 :b 2})))) ; works for tupelo.core/val=
+
+;-----------------------------------------------------------------------------
 ; clojure.set has no type-checking
 (dotest
   (is= [:z :y :x  1  2  3] (set/union '(1 2 3) '(:x :y :z)))

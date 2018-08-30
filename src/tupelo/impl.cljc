@@ -1173,36 +1173,17 @@
                      :default false)) ]
       result)))
 
-(defn wild-match-ctx? ; #todo readme; and -> wild-match?*
-  [ctx-in pattern & values]
+(defn wild-match? ; #todo readme
+  [ctx-in]
   (let [ctx (glue {:submap-ok   false
                    :subset-ok   false
                    :subvec-ok   false
-                   :wildcard-ok true} ctx-in)]
-    (every? truthy?
-      (for [value values]
-        (wild-match-impl ctx pattern value)))))
-
-(defn wild-match? ; #todo readme
-  [pattern & values]
-  (apply wild-match-ctx? {} pattern values))
-
-(defn wild-submatch? ; #todo readme & test
-  [pattern & values]
-  (let [ctx {:submap-ok   true
-             :subset-ok   true
-             :subvec-ok   true
-             :wildcard-ok true}]
-    (apply wild-match-ctx? ctx pattern values)))
-
-; #todo re-impl w/o wildcard stuff
-(defn submatch? ; #todo readme & test
-  [smaller larger]
-  (let [ctx {:submap-ok   true
-             :subset-ok   true
-             :subvec-ok   true
-             :wildcard-ok false}]
-    (wild-match-ctx? ctx smaller larger)))
+                   :wildcard-ok true }
+              ctx-in)]
+    (with-map-vals ctx [pattern values]
+      (every? truthy?
+        (for [value values]
+          (wild-match-impl ctx pattern value))))))
 
 (s/defn wild-item? :- s/Bool
   [item :- s/Any]

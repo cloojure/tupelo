@@ -1777,20 +1777,32 @@
 
 (dotest
   (isnt (wild-match? #{1 2} #{1 2 3 4}))
-  (isnt (wild-match-ctx? {} #{1 2} #{1 2 3 4}))
-  (is (wild-match-ctx? {:subset-ok true} #{1 2} #{1 2 3 4}))
+  (isnt (wild-match? {:pattern #{1 2}
+                      :values  [#{1 2 3 4}]}))
+  (is (wild-match? {:subset-ok true
+                    :pattern   #{1 2}
+                    :values    [#{1 2 3 4}]}))
 
   (isnt (wild-match? {:a 1} {:a 1 :b 2}))
-  (isnt (wild-match-ctx? {} {:a 1} {:a 1 :b 2}))
-  (is (wild-match-ctx? {:submap-ok true} {:a 1} {:a 1 :b 2}))
+  (isnt (wild-match? {:pattern {:a 1}
+                      :values  [{:a 1 :b 2}]}))
+  (is (wild-match? {:submap-ok true
+                    :pattern   {:a 1}
+                    :values    [{:a 1 :b 2}]}))
 
   (isnt (wild-match? '(1 2) '(1 2 3 4)))
-  (isnt (wild-match-ctx? {} '(1 2) '(1 2 3 4)))
-  (is (wild-match-ctx? {:subvec-ok true} '(1 2) '(1 2 3 4)))
+  (isnt (wild-match? {:pattern '(1 2)
+                      :values  ['(1 2 3 4)]}))
+  (is (wild-match? {:subvec-ok true
+                    :pattern   '(1 2)
+                    :values    ['(1 2 3 4)]}))
 
   (isnt (wild-match? [1 2] [1 2 3 4]))
-  (isnt (wild-match-ctx? {} [1 2] [1 2 3 4]))
-  (is (wild-match-ctx? {:subvec-ok true} [1 2] [1 2 3 4]))
+  (isnt (wild-match? {:pattern [1 2]
+                      :values  [[1 2 3 4]]}))
+  (is (wild-match? {:subvec-ok true
+                    :pattern   [1 2]
+                    :values    [[1 2 3 4]]}))
 
   (isnt (wild-submatch? #{1 :*}    #{1 2 3 4}))
   (is (wild-submatch?   #{1 2}     #{1 2 3 4}))

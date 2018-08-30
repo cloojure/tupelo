@@ -842,7 +842,8 @@
               ; replace any nil values with wildcard :*
               pattern-wild (apply glue (for [[k v] pattern]
                                          {k (if (nil? v) :* v)}))]
-          (wild-match? pattern-wild attrs-tst))))))
+          (wild-match? {:pattern    pattern-wild
+                            :values [attrs-tst]}))))))
 
 ; #todo list-roots
 ; #todo list-non-roots
