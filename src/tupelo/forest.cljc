@@ -37,8 +37,29 @@
 ; Sherwood  weald  wald  boreal
 
 #?(:clj (do
+
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
-(def ^:dynamic *forest* nil)
+(def ^:dynamic ^:no-doc *forest* nil)
+(def ^:dynamic ^:no-doc *new-hid-fn* tm/new-hid)
+
+(def ^:dynamic ^:no-doc *debug-hid-count* nil)
+(defn ^:no-doc new-hid-debug
+  "Returns the next HID in debug mode"
+  []
+  (let [hex-str (format "%04x" (dec (swap! *debug-hid-count* inc)))
+        hid     (keyword hex-str) ]
+    hid) )
+
+(defmacro with-debug-hid ; #todo swap names?
+  [& forms]
+  `(binding [*debug-hid-count* (atom 0)
+             *new-hid-fn*      new-hid-debug]
+     ~@forms))
+
+(s/defn new-hid :- HID
+  "Returns a new HexID"
+  []
+  (*new-hid-fn*))
 
 (defn validate-forest []
   (when-not (map? *forest*)
@@ -444,7 +465,7 @@
   (let [attrs (if (map? attrs-arg)
                 attrs-arg
                 {:tag (validate keyword? attrs-arg)} )
-        hid (tm/new-hid)]
+        hid (new-hid)]
     (validate-attrs attrs)
     (set-node hid attrs kid-hids)
     hid))

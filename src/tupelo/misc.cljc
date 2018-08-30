@@ -244,7 +244,8 @@
   (and (keyword? arg)
     (let [name-str (kw->str arg)]
       (and (ts/hex? name-str)
-        (= 40 (count name-str))))))
+        ; (= 40 (count name-str)) ; #todo make more robust re. with-debug-hid
+      ))))
 
 (s/defn hid->wid  :- s/Keyword
   "Uses an HID to look up a human-friendly Word-ID (WID) from an English dictionary.
