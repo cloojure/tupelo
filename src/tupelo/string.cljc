@@ -7,15 +7,18 @@
 (ns tupelo.string
   "Tupelo - Making Clojure even sweeter"
   #?@(:clj [
-  (:refer-clojure :exclude [drop take contains?] )
-  (:require
-    [clojure.core :as cc]
-    [clojure.string :as str]
-    [schema.core :as s]
-    [tupelo.char :as char]
-    [tupelo.impl :as impl]
-    [tupelo.schema :as tsk])
-            ]) )
+            (:refer-clojure :exclude [drop take contains?])
+            (:require
+              [clojure.core :as cc]
+              [clojure.java.io :as io]
+              [clojure.string :as str]
+              [schema.core :as s]
+              [tupelo.char :as char]
+              [tupelo.impl :as impl]
+              [tupelo.schema :as tsk])
+            ])
+  (:import [java.io InputStream ByteArrayInputStream]
+           [java.nio.charset StandardCharsets]))
 
 (def phonetic-alphabet
   {:a "alpha" :b "bravo" :c "charlie" :d "delta" :e "echo" :f "foxtrot" :g "golf" :h "hotel"
@@ -227,6 +230,11 @@
   (let [lines  (str/split-lines text)
         result (impl/keep-if #(contains-str? % tgt) lines)]
     (str/join result)))
+
+(s/defn string->stream :- InputStream
+  [str-val :- s/Str]
+  (io/input-stream
+      (.getBytes str-val StandardCharsets/UTF_8)))
 
 ))
 

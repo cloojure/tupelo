@@ -13,7 +13,7 @@
     [clojure.core.async :as ca]
     [clojure.set :as clj.set]
     [clojure.data.xml]
-    [net.cgrand.enlive-html :as enlive-html]
+    [net.cgrand.tagsoup :as enlive-tagsoup]
     [schema.core :as s]
     [tupelo.misc :as tm :refer [HID]]
     [tupelo.schema :as tsk]
@@ -553,11 +553,12 @@
 (s/defn add-tree-xml :- HID
   "Adds a tree to the forest from an XML string."
   [xml-str :- s/Str]
-  (->> xml-str
-    java.io.StringReader.
-    enlive-html/xml-resource
-    only
-    add-tree-enlive))
+  (let [result (->> xml-str
+                 ts/string->stream
+                 enlive-tagsoup/parser
+                 only
+                 add-tree-enlive)]
+    result))
 
 (def ^:dynamic *xml-subtree-buffer-size* 32)
 
