@@ -599,40 +599,46 @@
                   nodes-merged-last (append nodes-2 (assoc node-last-1 :content [node-last]))]
               (nest-enlive-nodes nodes-merged-last)))))
 
-(defn ^:no-doc proc-subtree-xml
-  [output-chan enlive-nodes-lazy parent-nodes path-target handler]
-  (let [curr-tag (xfirst path-target)]
-    ;(println "-----------------------------------------------------------------------------")
-    ;(spyx-pretty enlive-nodes-lazy)
-    ;(spyx parent-nodes)
-    ;(spyx path-target)
-    ;(spyx curr-tag)
-    (doseq [curr-node enlive-nodes-lazy]
-      (when (map? curr-node) ; discard any embedded string content (esp. blanks)
-       ;(spyx-pretty curr-node)
-        (when (= curr-tag (grab :tag curr-node))
-          (let [next-path-target (xrest path-target)]
-            (if (not-empty? next-path-target)
-              (let [next-parent-nodes (append parent-nodes (-> (submap-by-keys curr-node [:tag :attrs])
-                                                             (assoc :content [])))]
-                (proc-subtree-xml output-chan (grab :content curr-node) next-parent-nodes next-path-target handler))
-              (with-forest (new-forest)
-                (let [input32  (append parent-nodes (unlazy curr-node))
-                     ;>> (spyx input32)
-                      root-hid (add-tree-enlive (nest-enlive-nodes input32))]
-                  (ca/>!! output-chan (handler root-hid)))))))))))
+(defn ^:no-doc filter-enlive-subtrees-helper
+  [ctx]
+  (with-map-vals ctx [output-chan enlive-nodes-lazy parent-nodes path-target]
+    (let [curr-tag (xfirst path-target)]
+      ;(println "-----------------------------------------------------------------------------")
+      ;(spyx-pretty enlive-nodes-lazy)
+      ;(spyx parent-nodes)
+      ;(spyx path-target)
+      ;(spyx curr-tag)
+      (doseq [curr-node enlive-nodes-lazy]
+        (when (map? curr-node) ; discard any embedded string content (esp. blanks)
+          ;(spyx-pretty curr-node)
+          (when (= curr-tag (grab :tag curr-node))
+            (let [next-path-target (xrest path-target)]
+              (if (not-empty? next-path-target)
+                (let [next-parent-nodes (append parent-nodes (-> (submap-by-keys curr-node [:tag :attrs])
+                                                               (assoc :content [])))]
+                  (filter-enlive-subtrees-helper {:output-chan       output-chan
+                                                  :enlive-nodes-lazy (grab :content curr-node)
+                                                  :parent-nodes      next-parent-nodes
+                                                  :path-target       next-path-target}))
+                (let [input32        (append parent-nodes (unlazy curr-node))
+                      ;>> (spyx input32)
+                      enlive-subtree (nest-enlive-nodes input32)]
+                  (ca/>!! output-chan enlive-subtree))))))))))
 
-(defn proc-tree-enlive-lazy
+(defn filter-enlive-subtrees
   "Lazily read & process subtrees from a Reader or InputStream"
-  [enlive-tree-lazy subtree-path handler]
-  (let [output-chan        (ca/chan *xml-subtree-buffer-size*)
-        lazy-reader-fn     (fn lazy-reader-fn  []
-                             (let [curr-item (ca/<!! output-chan)] ; #todo ta/take-now!
-                               (when (not-nil? curr-item)
-                                 (lazy-cons curr-item (lazy-reader-fn))))) ]
-   ;(spyx-pretty enlive-tree-lazy)
+  [enlive-tree-lazy subtree-path]
+  (let [output-chan    (ca/chan *xml-subtree-buffer-size*)
+        lazy-reader-fn (fn lazy-reader-fn []
+                         (let [curr-item (ca/<!! output-chan)] ; #todo ta/take-now!
+                           (when (not-nil? curr-item)
+                             (lazy-cons curr-item (lazy-reader-fn)))))]
+    ;(spyx-pretty enlive-tree-lazy)
     (ca/go
-      (proc-subtree-xml output-chan [enlive-tree-lazy] [] subtree-path handler)
+      (filter-enlive-subtrees-helper {:output-chan       output-chan
+                                      :enlive-nodes-lazy [enlive-tree-lazy]
+                                      :parent-nodes      []
+                                      :path-target       subtree-path})
       (ca/close! output-chan))
     (lazy-reader-fn)))
 

@@ -13,6 +13,7 @@
     [clojure.test.check.properties :as prop]
     [tupelo.core :as t]
     [tupelo.impl :as i]
+    [tupelo.string :as ts]
              ]) ))
 ; #todo add example for duplicates in clojure.core.combo
 
@@ -160,8 +161,8 @@
   (is= true (some? true )))
 
 (dotest
-  (is= false (spyx (contains? [1 2 3 4] 4)))
-  (is= false (spyx (contains? [:a :b :c :d] :a))))
+  (is= false (contains? [1 2 3 4] 4))
+  (is= false (contains? [:a :b :c :d] :a)))
 
 ; map oddities
 (dotest
@@ -170,6 +171,23 @@
   (throws?         (conj {:a 1} [])) ; illegal
   (is= {:a 1}      (into {:a 1} [])) ; this works
   (is= {:a 1 :b 2} (conj {:a 1} {:b 2})) ; this works, but shouldn't
+  )
+
+(dotest             ; conj inconsistencies
+  (nl)
+  (is= [1 2 nil] (conj [1 2] nil))
+  (is= [nil 1 2] (conj '(1 2) nil))
+  (is= {:a 1} (conj {:a 1} nil))
+  (is= #{1 2 nil} (conj #{1 2} nil))
+  (throws? (conj "ab" nil)) )
+
+(dotest
+  (is= "abc" (str "ab" \c))
+  (is= "ab" (str "ab" nil))
+  (is= "abc" (str "ab" nil \c))
+  (is=  "123" (ts/quotes->single (pr-str 123)))
+  (is= "'abc'" (ts/quotes->single (pr-str "abc")))
+  (is= "nil" (ts/quotes->single (pr-str nil)))
   )
 
 ; "generic" indexing is a problem; always be explicit with first, nth, get, etc
@@ -202,7 +220,7 @@
   (is (every? odd? [])))
 
 
-; samples for dospec & check-not
+; samples for dospec & check-isnt
 ;-----------------------------------------------------------------------------
 (dospec 9
   (prop/for-all [val (gen/vector gen/any)]
@@ -214,9 +232,13 @@
       (prop/for-all [val (gen/vector gen/int)]
         (= (any? val) (not-any? odd? val))))))
 
+;-----------------------------------------------------------------------------
+; quote surprises
 (dotest
-  (is= 'quote (first ''hello))  ; 2 single quotes
-)
+  (is= 'quote (first ''hello)) ; 2 single quotes
+  (isnt=  '{:a 1 :b [1 2]} '{:a 1 :b '[1 2]})
+  (is=    '{:a 1 :b [1 2]} `{:a 1 :b [1 2]})
+  (is=    '{:a 1 :b [1 2]} (quote {:a 1 :b [1 2]})))
 
 ;-----------------------------------------------------------------------------
 ; record-map equality fails

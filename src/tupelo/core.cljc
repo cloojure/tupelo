@@ -463,7 +463,6 @@
    Equivalent to (not (empty? coll))."
   [coll] (i/not-empty? coll))
 
-
 (defmacro vals->map ; #todo -> README
   "Called with a list of symbols like `(vals->map a b c)` returns a map
    like {:a a :b b :c c}.
@@ -929,7 +928,7 @@
                      :values    [ <patttern-spec>+ ]   ; vector of 1 or more required
                    } )
 "
-  (fn wild-match-disp-fn [& args]
+  (fn wild-match-dispatch-fn [& args]
     (if (and (= 1 (count args))
           (map? (only args)))
       :ctx
@@ -945,7 +944,6 @@
   (i/wild-match?
     (vals->map pattern values)))
 
-; #todo re-impl w/o wildcard stuff
 (defn submatch? ; #todo readme & test
   "Returns true if the first arg is (recursively) a subset/submap/subvec of the 2nd arg"
   [smaller larger]
