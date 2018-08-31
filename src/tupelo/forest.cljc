@@ -617,9 +617,11 @@
                       rooted-enlive-subtree (nest-enlive-nodes enlive-subtree)]
                   (ca/>!! output-chan rooted-enlive-subtree))))))))))
 
-(def ^:dynamic *enlive-subtree-buffer-size* 32)
+(def ^:dynamic *enlive-subtree-buffer-size*
+  "Default output buffer size for `filter-enlive-subtrees`."
+  32)
 (defn filter-enlive-subtrees
-  "Lazily read & process subtrees from a Reader or InputStream"
+  "Lazily read an enlive tree, retaining only rooted subtrees as specified by `subtree-path`"
   [enlive-tree-lazy subtree-path]
   (let [output-chan (ca/chan *enlive-subtree-buffer-size*) ]
     (ca/go
