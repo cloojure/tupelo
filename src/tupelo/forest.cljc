@@ -601,27 +601,21 @@
   [ctx]
   (with-map-vals ctx [output-chan enlive-nodes-lazy parent-nodes path-target]
     (let [curr-tag (xfirst path-target)]
-      ;(println "-----------------------------------------------------------------------------")
-      ;(spyx-pretty enlive-nodes-lazy)
-      ;(spyx parent-nodes)
-      ;(spyx path-target)
-      ;(spyx curr-tag)
       (doseq [curr-node enlive-nodes-lazy]
         (when (map? curr-node) ; discard any embedded string content (esp. blanks)
           ;(spyx-pretty curr-node)
           (when (= curr-tag (grab :tag curr-node))
             (let [next-path-target (xrest path-target)]
               (if (not-empty? next-path-target)
-                (let [next-parent-nodes (append parent-nodes (-> (submap-by-keys curr-node [:tag :attrs])
-                                                               (assoc :content [])))]
+                (let [next-parent-nodes (append parent-nodes
+                                          (glue {:content []} (submap-by-keys curr-node [:tag :attrs])))]
                   (filter-enlive-subtrees-helper {:output-chan       output-chan
                                                   :enlive-nodes-lazy (grab :content curr-node)
                                                   :parent-nodes      next-parent-nodes
                                                   :path-target       next-path-target}))
-                (let [input32        (append parent-nodes (unlazy curr-node))
-                      ;>> (spyx input32)
-                      enlive-subtree (nest-enlive-nodes input32)]
-                  (ca/>!! output-chan enlive-subtree))))))))))
+                (let [enlive-subtree        (append parent-nodes (unlazy curr-node))
+                      rooted-enlive-subtree (nest-enlive-nodes enlive-subtree)]
+                  (ca/>!! output-chan rooted-enlive-subtree))))))))))
 
 (def ^:dynamic *enlive-subtree-buffer-size* 32)
 (defn filter-enlive-subtrees
