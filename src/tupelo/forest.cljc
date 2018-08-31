@@ -633,16 +633,13 @@
                          (let [curr-item (ca/<!! output-chan)] ; #todo ta/take-now!
                            (when (not-nil? curr-item)
                              (lazy-cons curr-item (lazy-reader-fn)))))]
-    ;(spyx-pretty enlive-tree-lazy)
     (ca/go
       (filter-enlive-subtrees-helper {:output-chan       output-chan
                                       :enlive-nodes-lazy [enlive-tree-lazy]
                                       :parent-nodes      []
                                       :path-target       subtree-path})
       (ca/close! output-chan))
-    ;(lazy-reader-fn)
-    (chan->lazy-seq output-chan)
-    ))
+    (chan->lazy-seq output-chan)))
 
 (s/defn hid->bush :- tsk/Vec
   [hid :- HID]

@@ -891,15 +891,11 @@
 ; #todo make eager version?  gen-vec, gen-seq, ...
 (defmacro lazy-gen
   [& forms]
-  `(let [~'lazy-gen-output-buffer    (ca/chan tupelo.impl/*lazy-gen-buffer-size*)
-         lazy-reader-fn#             (fn lazy-reader-fn# []
-                                       (let [curr-item# (ca/<!! ~'lazy-gen-output-buffer)] ; #todo ta/take-now!
-                                            (when (not-nil? curr-item#)
-                                              (lazy-cons curr-item# (lazy-reader-fn#))))) ]
+  `(let [~'lazy-gen-output-buffer    (ca/chan tupelo.impl/*lazy-gen-buffer-size*) ]
         (ca/go
           ~@forms
           (ca/close! ~'lazy-gen-output-buffer))
-     (lazy-reader-fn#)))
+        (chan->lazy-seq ~'lazy-gen-output-buffer)))
 
 (defmacro yield ; #todo put-now/put-later & dynamic
   [value]
