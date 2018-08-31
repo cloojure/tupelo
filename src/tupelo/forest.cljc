@@ -583,8 +583,6 @@
   (add-tree-enlive
     (xml->enlive xml-str)))
 
-(def ^:dynamic *xml-subtree-buffer-size* 32)
-
 (s/defn ^:no-doc nest-enlive-nodes :- tsk/EnliveNode
   "Reconstructs an Enlive tree from a sequence of nodes."
   [nodes :- [tsk/EnliveNode]]
@@ -625,14 +623,11 @@
                       enlive-subtree (nest-enlive-nodes input32)]
                   (ca/>!! output-chan enlive-subtree))))))))))
 
+(def ^:dynamic *enlive-subtree-buffer-size* 32)
 (defn filter-enlive-subtrees
   "Lazily read & process subtrees from a Reader or InputStream"
   [enlive-tree-lazy subtree-path]
-  (let [output-chan    (ca/chan *xml-subtree-buffer-size*)
-        lazy-reader-fn (fn lazy-reader-fn []
-                         (let [curr-item (ca/<!! output-chan)] ; #todo ta/take-now!
-                           (when (not-nil? curr-item)
-                             (lazy-cons curr-item (lazy-reader-fn)))))]
+  (let [output-chan (ca/chan *enlive-subtree-buffer-size*) ]
     (ca/go
       (filter-enlive-subtrees-helper {:output-chan       output-chan
                                       :enlive-nodes-lazy [enlive-tree-lazy]

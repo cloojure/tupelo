@@ -891,7 +891,7 @@
 ; #todo make eager version?  gen-vec, gen-seq, ...
 (defmacro lazy-gen
   [& forms]
-  `(let [~'lazy-gen-output-buffer    (ca/chan tupelo.impl/*lazy-gen-buffer-size*) ]
+  `(let [~'lazy-gen-output-buffer (ca/chan tupelo.impl/*lazy-gen-buffer-size*) ]
         (ca/go
           ~@forms
           (ca/close! ~'lazy-gen-output-buffer))
