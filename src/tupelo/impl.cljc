@@ -874,6 +874,12 @@
   [curr-val recursive-call-form]
   `(lazy-seq (cons ~curr-val ~recursive-call-form)))
 
+(defn chan->lazy-seq
+  [chan]
+  (let [curr-item (ca/<!! chan)] ; #todo ta/take-now!
+    (when (not-nil? curr-item)
+      (lazy-cons curr-item (chan->lazy-seq chan)))))
+
 ; #todo document use via binding
 (def ^:dynamic *lazy-gen-buffer-size*
   "Specifies the output channel default buffer size for `lazy-gen` forms"

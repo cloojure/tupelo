@@ -640,7 +640,9 @@
                                       :parent-nodes      []
                                       :path-target       subtree-path})
       (ca/close! output-chan))
-    (lazy-reader-fn)))
+    ;(lazy-reader-fn)
+    (chan->lazy-seq output-chan)
+    ))
 
 (s/defn hid->bush :- tsk/Vec
   [hid :- HID]

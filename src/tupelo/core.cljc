@@ -269,6 +269,11 @@
   "Like clojure.core/for but returns results in a vector.   Not lazy."
   [& forms] `(i/forv ~@forms))
 
+(defn chan->lazy-seq
+  "Accepts a core.async channel and returns the contents as a lazy list."
+  [chan]
+  (i/chan->lazy-seq chan))
+
 (defmacro map-let*
   "Usage:  (map-let* ctx bindings & forms)
 
