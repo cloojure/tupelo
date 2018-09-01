@@ -1173,10 +1173,10 @@
   (let [op             (hid->attr hid :op)
         arity          (grab op op->arity)
         kid-slots-used (count (hid->kids hid))
-        result         (- arity kid-slots-used)]
+        num-empties    (- arity kid-slots-used)]
     (verify (= 2 arity))
-    (verify (not (neg? result)))
-    result))
+    (verify (not (neg? num-empties)))
+    num-empties))
 
 (s/defn node-has-empty-slot? :- s/Bool
   [hid :- HID]
@@ -1189,7 +1189,7 @@
 
 (s/defn add-op-node :- HID
   [op :- s/Keyword]
-  (add-node {:tag :op :op op} )) ; add node w no kids
+  (add-node {:tag :op :op op})) ; add node w no kids
 
 (s/defn add-leaf-node :- tsk/KeyMap
   [parent-hid :- HID
@@ -1200,8 +1200,8 @@
   [tgt-size :- s/Int]
   (let [num-op            (num-hids)
         total-size-so-far (+ num-op (total-empty-kids))
-        result            (< total-size-so-far tgt-size)]
-    result))
+        need-more?        (< total-size-so-far tgt-size)]
+    need-more?))
 
 (s/defn build-rand-ast :- tsk/Vec ; bush result
   [ast-size]
