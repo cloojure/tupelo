@@ -120,6 +120,47 @@
   [arg]
   (if arg false true))
 
+(s/defn not-nil? :- s/Bool
+  [arg :- s/Any]
+  (not (nil? arg)))
+
+(s/defn not-empty? :- s/Bool
+  ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
+  [coll]
+  (not (empty? coll)))
+
+; #todo add not-neg? not-pos? not-zero?
+
+(defmacro with-exception-default
+  [default-val & forms]
+  `(try
+     ~@forms
+     (catch Exception e# ~default-val)))
+
+(defn validate
+  [is-valid? sample-val]
+  (let [tst-result (is-valid? sample-val)]
+    (when-not (truthy? tst-result)
+      (throw (IllegalArgumentException. (format "validate: sample-val=%s, tst-result=%s" sample-val tst-result))))
+    sample-val))
+
+(defn validate-or-default
+  [is-valid? sample-val default-val]
+  (if (is-valid? sample-val)
+    sample-val
+    default-val))
+
+(defn with-nil-default
+  [default-val sample-val]
+  (validate-or-default not-nil? sample-val default-val))
+
+(defmacro verify
+  [form]
+  `(let [value# ~form]
+     (if (truthy? value#)
+       value#
+       (throw (IllegalArgumentException. (str "verification failed for: " '~form))))))
+
 ;-----------------------------------------------------------------------------
 ; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
 
@@ -172,15 +213,6 @@
 (defn quad?
   [coll] (has-length? coll 4))
 
-(s/defn not-nil? :- s/Bool
-  [arg :- s/Any]
-  (not (nil? arg)))
-
-(s/defn not-empty? :- s/Bool
-  ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
-  [coll]
-  (not (empty? coll)))
-
 (defn xfirst      ; #todo -> tests
   [coll]
   (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xfirst: invalid coll: " coll))))
@@ -227,6 +259,11 @@
   [coll :- [s/Any]]
   (when (nil? coll) (throw (IllegalArgumentException. (str "xvec: invalid coll: " coll))))
   (clojure.core/vec coll))
+
+(defn rand-elem
+  [coll]
+  (verify (not-nil? coll))
+  (rand-nth (vec coll)))
 
 ; #todo add (->sorted-map <map>)        => (into (sorted-map) <map>)
 ; #todo add (->sorted-set <set>)        => (into (sorted-set) <set>)
@@ -306,36 +343,6 @@
     (interpose \newline
       (for [line (str/split-lines txt)]
         (str indent-str line)))))
-
-(defmacro with-exception-default
-  [default-val & forms]
-  `(try
-     ~@forms
-     (catch Exception e# ~default-val)))
-
-(defn validate
-  [is-valid? sample-val]
-  (let [tst-result (is-valid? sample-val)]
-    (when-not (truthy? tst-result)
-      (throw (IllegalArgumentException. (format "validate: sample-val=%s, tst-result=%s" sample-val tst-result))))
-    sample-val))
-
-(defn validate-or-default
-  [is-valid? sample-val default-val]
-  (if (is-valid? sample-val)
-    sample-val
-    default-val))
-
-(defn with-nil-default
-  [default-val sample-val]
-  (validate-or-default not-nil? sample-val default-val))
-
-(defmacro verify
-  [form]
-  `(let [value# ~form]
-     (if (truthy? value#)
-       value#
-       (throw (IllegalArgumentException. (str "verification failed for: " '~form))))))
 
 ; #todo rename to "get-in-safe" ???
 ; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)

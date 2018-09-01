@@ -112,6 +112,10 @@
   "Converts a collection into a vector. Throws if given nil."
   [coll] (i/xvec coll))
 
+(defn rand-elem
+  "Returns a random element from a collection"
+  [coll] (i/rand-elem coll))
+
 (defn lexical-compare
   "Performs a lexical comparison of 2 sequences, sorting as follows:
       [1]

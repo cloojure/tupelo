@@ -33,6 +33,8 @@
 
 
 ; #todo  move to tupelo-dev.forest (tupelo.x-datapig ?)
+; #todo  define tf/Bush type (& Hiccup, Enlive)
+
 ; forest  data-forest  ForestDb forest-db
 ; Sherwood  weald  wald  boreal
 
@@ -459,25 +461,27 @@
 ; #todo avoid self-cycles
 ; #todo avoid descendant-cycles
 (s/defn add-node :- HID
-  [attrs-arg :- (s/either tsk/KeyMap s/Keyword); #todo merge args
-   kid-hids :- [HID]]
-  (doseq [kid kid-hids] (validate-hid kid))
-  (let [attrs (if (map? attrs-arg)
-                attrs-arg
-                {:tag (validate keyword? attrs-arg)} )
-        hid (new-hid)]
-    (validate-attrs attrs)
-    (set-node hid attrs kid-hids)
-    hid))
+  ([attrs-arg] (add-node attrs-arg [])) ; #todo need test ; => ctx (tag required)
+  ([attrs-arg :- (s/either tsk/KeyMap s/Keyword) ; #todo merge args
+    kid-hids :- [HID]]
+    (doseq [kid kid-hids] (validate-hid kid))
+    (let [attrs (if (map? attrs-arg)
+                  attrs-arg
+                  {:tag (validate keyword? attrs-arg)})
+          hid   (new-hid)]
+      (validate-attrs attrs)
+      (set-node hid attrs kid-hids)
+      hid)))
 
 (s/defn add-leaf :- HID  ; #todo remove duplication
-  [attrs-arg :- (s/either tsk/KeyMap s/Keyword); #todo merge args
+  ([attrs-arg] (add-leaf attrs-arg nil)) ; #todo test ; => ctx (tag required)
+  ([attrs-arg :- (s/either tsk/KeyMap s/Keyword); #todo merge args
    value :- s/Any ]
   (let [attrs (if (map? attrs-arg)
                 attrs-arg
                 {:tag (validate keyword? attrs-arg)} )
         attrs (glue attrs {:value value}) ]
-    (add-node attrs [])))
+    (add-node attrs []))))
 
 (s/defn add-tree :- HID
   "Adds a tree to the forest."

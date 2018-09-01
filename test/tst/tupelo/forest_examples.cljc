@@ -14,8 +14,9 @@
     [net.cgrand.tagsoup :as enlive-tagsoup]
     [schema.core :as s]
     [tupelo.forest :as tf]
-    [tupelo.misc :as tm]
-    [tupelo.string :as ts]  )
+    [tupelo.misc :as tm :refer [HID]]
+    [tupelo.string :as ts]
+    [tupelo.schema :as tsk] )
   (:import [java.io StringReader]) ]) )
 
 #?(:clj (do
@@ -399,7 +400,6 @@
 ;  (zappy)
 ;  (println "zappy - AFTER"))
 
-; #todo #bug clojure.lang.Reflector
 (dotest
   (when false ; manually enable to grab a new copy of the webpage
     (spit "clojure-sample.html"
@@ -799,8 +799,9 @@
 
 ;-----------------------------------------------------------------------------
 (dotest
-  (with-forest (new-forest)
-    (let [xml-str         "<top>
+  (with-debug-hid
+    (with-forest (new-forest)
+      (let [xml-str  "<top>
                               <group>
                                   <group>
                                       <item>
@@ -818,62 +819,50 @@
                                   </item>
                               </group>
                           </top>"
-          root-hid        (add-tree-xml xml-str)
-          >>              (remove-whitespace-leaves)
+            root-hid (add-tree-xml xml-str)
+            >>       (remove-whitespace-leaves)
 
-          ; Can search for inner `div` 2 ways
-          result-1        (find-paths root-hid [:top :group :group]) ; explicit path from root
-          result-2        (find-paths root-hid [:** :item :number]) ; wildcard path that ends in [:item :number]
-          ]
-      (is= (hid->bush root-hid)
-        [{:tag :top}
-         [{:tag :group}
-          [{:tag :group}
-           [{:tag :item} [{:tag :number, :value "1"}]]
-           [{:tag :item} [{:tag :number, :value "2"}]]
-           [{:tag :item} [{:tag :number, :value "3"}]]]
-          [{:tag :item} [{:tag :number, :value "0"}]]]])
-
-      ; Here we see only the double-nested items 1, 2, 3
-      ; sample result-1 =>
-      ;   [[:af35e171233589ed68703cc14b27f3bd5bce7a76 :3452b109d27f00b5a62bb7d4cca0deb9204e37f2
-      ;     :332321b28a12e07548ac15aa92cb6f891c71a187]]
-      (is= (format-paths result-1)
-        [[{:tag :top}
-          [{:tag :group}
+            ; Can search for inner `div` 2 ways
+            result-1 (find-paths root-hid [:top :group :group])  ; explicit path from root
+            result-2 (find-paths root-hid [:** :item :number]) ] ; wildcard path that ends in [:item :number]
+        (is= (hid->bush root-hid)
+          [{:tag :top}
            [{:tag :group}
-            [{:tag :item} [{:tag :number, :value "1"}]]
-            [{:tag :item} [{:tag :number, :value "2"}]]
-            [{:tag :item} [{:tag :number, :value "3"}]]]]]])
+            [{:tag :group}
+             [{:tag :item} [{:tag :number, :value "1"}]]
+             [{:tag :item} [{:tag :number, :value "2"}]]
+             [{:tag :item} [{:tag :number, :value "3"}]]]
+            [{:tag :item} [{:tag :number, :value "0"}]]]])
 
-      ; Here we see both the double-nested items & the single-nested item 0
-      ; sample result-2 =>
-      ;   [[:af35e171233589ed68703cc14b27f3bd5bce7a76   :3452b109d27f00b5a62bb7d4cca0deb9204e37f2
-      ;     :332321b28a12e07548ac15aa92cb6f891c71a187   :a37b45f31cf4a31553fddbc9491c3344671a4f3d
-      ;     :ece2b0ee3a9dfa0ec3d4c96a5fcab255f5ad6518]
-      ;    [:af35e171233589ed68703cc14b27f3bd5bce7a76   :3452b109d27f00b5a62bb7d4cca0deb9204e37f2
-      ;     :332321b28a12e07548ac15aa92cb6f891c71a187   :6d4d0c67048289250a69726295136879100c78d6
-      ;     :78e278d5015e38e3db4e967dbef824d6bcecc058]
-      ;    [:af35e171233589ed68703cc14b27f3bd5bce7a76   :3452b109d27f00b5a62bb7d4cca0deb9204e37f2
-      ;     :332321b28a12e07548ac15aa92cb6f891c71a187   :ee5801b2373cf68f036b1368c287db964cbfb7ec
-      ;     :b853a8ac12f1f70b54b49f68ecb6100d2718f1ba]
-      ;    [:af35e171233589ed68703cc14b27f3bd5bce7a76   :3452b109d27f00b5a62bb7d4cca0deb9204e37f2
-      ;     :ee514dc4be92cb02728335d7b628807a65915f7c   :240b7125bfb2d33a1a2ada5cd57c18d9ff88b207]]
-      (is= (set (format-paths result-2)) ; need `set` since order is non-deterministic
-        (set
+        ; Here we see only the double-nested items 1, 2, 3
+        ; sample result-1 (with-debug-hid) => [[:001b :0019 :0012]]
+        (is= (format-paths result-1)
           [[{:tag :top}
-            [{:tag :group} [{:tag :item} [{:tag :number, :value "0"}]]]]
-           [{:tag :top}
             [{:tag :group}
-             [{:tag :group} [{:tag :item} [{:tag :number, :value "1"}]]]]]
-           [{:tag :top}
-            [{:tag :group}
-             [{:tag :group} [{:tag :item} [{:tag :number, :value "2"}]]]]]
-           [{:tag :top}
-            [{:tag :group}
-             [{:tag :group} [{:tag :item} [{:tag :number, :value "3"}]]]]]]))
+             [{:tag :group}
+              [{:tag :item} [{:tag :number, :value "1"}]]
+              [{:tag :item} [{:tag :number, :value "2"}]]
+              [{:tag :item} [{:tag :number, :value "3"}]]]]]])
 
-      )))
+        ; Here we see both the double-nested items & the single-nested item 0
+        ; sample result-2 (with-debug-hid) =>
+        ;   [[:001b :0019 :0012 :0006 :0004]
+        ;    [:001b :0019 :0012 :000b :0009]
+        ;    [:001b :0019 :0012 :0010 :000e]
+        ;    [:001b :0019 :0017 :0015]]
+        (is= (set (format-paths result-2)) ; need `set` since order is non-deterministic
+          (set
+            [[{:tag :top}
+              [{:tag :group} [{:tag :item} [{:tag :number, :value "0"}]]]]
+             [{:tag :top}
+              [{:tag :group}
+               [{:tag :group} [{:tag :item} [{:tag :number, :value "1"}]]]]]
+             [{:tag :top}
+              [{:tag :group}
+               [{:tag :group} [{:tag :item} [{:tag :number, :value "2"}]]]]]
+             [{:tag :top}
+              [{:tag :group}
+               [{:tag :group} [{:tag :item} [{:tag :number, :value "3"}]]]]]])) ))))
 
 (dotest
   (with-forest (new-forest)
@@ -992,10 +981,7 @@
                        )
           value-paths (find-paths root-hid [:** {::tf/key :value} {::tf/value :*}])
           tail-hids (mapv last value-paths)
-          value-nodes (mapv #(grab ::tf/value (hid->node %)) tail-hids)
-          ]
-      ;(spyx-pretty (hid->bush root-hid))
-      ;(spyx-pretty (format-paths value-paths))
+          value-nodes (mapv #(grab ::tf/value (hid->node %)) tail-hids) ]
 
       (is= value-nodes [25 50 30 35 40 45])
       ; #todo  Want output like so (better than DataScript):
@@ -1131,49 +1117,6 @@
             [{:id "2.2", :tag :word, :value "all"}]
             [{:id "2.3", :tag :word, :value "recognition"}]]])))))
 
-(comment            ; #rc01
-  (not (clojure.core/=
-         (
-           [{:tag :document}
-            [{:id "1", :tag :sentence}
-             [{:id "1.1", :tag :word, :value "foo"}]
-             [{:id "1.2", :tag :word, :value "bar"}]]]
-           [{:tag :document}
-            [{:id "2", :tag :sentence}
-             [{:id "2.1", :tag :word, :value "beyond"}]
-             [{:id "2.3", :tag :word, :value "recognition"}]
-             [{:id "2.3", :tag :word, :value "recognition"}]]])
-         [[{:tag :document}
-           [{:id "1", :tag :sentence}
-            [{:id "1.1", :tag :word, :value "foo"}]
-            [{:id "1.2", :tag :word, :value "bar"}]]]
-          [{:tag :document}
-           [{:id "2", :tag :sentence}
-            [{:id "2.1", :tag :word, :value "beyond"}]
-            [{:id "2.2", :tag :word, :value "all"}]
-            [{:id "2.3", :tag :word, :value "recognition"}]]]]))
-
-  )
-
-(comment           ; #rc02
-    (not (clojure.core/=
-           [[{:tag :document}
-             [{:id "1", :tag :sentence}
-              [{:id "1.2", :tag :word, :value "bar"}]]
-             [{:id "2", :tag :sentence}
-              [{:id "2.1", :tag :word, :value "beyond"}]
-              [{:id "2.2", :tag :word, :value "all"}]
-              [{:id "2.3", :tag :word, :value "recognition"}]]]]
-           [[{:tag :document}
-             [{:id "1", :tag :sentence}
-              [{:id "1.1", :tag :word, :value "foo"}]
-              [{:id "1.2", :tag :word, :value "bar"}]]
-             [{:id "2", :tag :sentence}
-              [{:id "2.1", :tag :word, :value "beyond"}]
-              [{:id "2.2", :tag :word, :value "all"}]
-              [{:id "2.3", :tag :word, :value "recognition"}]]]]))
-    )
-
 ;---------------------------------------------------------------------------------------------------
 (defn get-xkcd-enlive
   "Load a sample webpage from disk"
@@ -1206,3 +1149,92 @@
       (is= "https://xkcd.com/1988/" result))))
 
 ))
+
+;-----------------------------------------------------------------------------
+; Random AST generation of specified sizeo
+;   https://stackoverflow.com/questions/52125331/why-is-a-successful-update-returning-1-rows-affected
+;   https://cs.gmu.edu/~sean/book/metaheuristics/
+
+(def op->arity {:add 2
+                :sub 2
+                :mul 2
+                :div 2
+                :pow 2})
+(def op-set (set (keys op->arity)))
+(defn choose-rand-op [] (rand-elem op-set))
+
+(def arg-set #{:x :y})
+(defn choose-rand-arg [] (rand-elem arg-set))
+
+(defn num-hids [] (count (all-hids)))
+
+(s/defn hid->empty-kids :- s/Int
+  [hid :- HID]
+  (let [op             (hid->attr hid :op)
+        arity          (grab op op->arity)
+        kid-slots-used (count (hid->kids hid))
+        result         (- arity kid-slots-used)]
+    (verify (= 2 arity))
+    (verify (not (neg? result)))
+    result))
+
+(s/defn node-has-empty-slot? :- s/Bool
+  [hid :- HID]
+  (pos? (hid->empty-kids hid)))
+
+(s/defn total-empty-kids :- s/Int
+  []
+  (reduce +
+    (mapv hid->empty-kids (all-hids))))
+
+(s/defn add-op-node :- HID
+  [op :- s/Keyword]
+  (add-node {:tag :op :op op} )) ; add node w no kids
+
+(s/defn add-leaf-node :- tsk/KeyMap
+  [parent-hid :- HID
+   arg :- s/Keyword]
+  (kids-append parent-hid [(add-leaf {:tag :arg :arg arg})]))
+
+(s/defn need-more-op? :- s/Bool
+  [tgt-size :- s/Int]
+  (let [num-op            (num-hids)
+        total-size-so-far (+ num-op (total-empty-kids))
+        result            (< total-size-so-far tgt-size)]
+    result))
+
+(s/defn build-rand-ast :- tsk/Vec ; bush result
+  [ast-size]
+  (verify (<= 3 ast-size)) ; 1 op & 2 args minimum;  #todo refine this
+  (with-debug-hid
+    (with-forest (new-forest)
+      (let [root-hid (add-op-node (choose-rand-op))] ; root of AST
+        ; Fill in random op nodes into the tree
+        (while (need-more-op? ast-size)
+          (let [node-hid (rand-elem (all-hids))]
+            (when (node-has-empty-slot? node-hid)
+              (kids-append node-hid
+                [(add-op-node (choose-rand-op))]))))
+        ; Fill in random arg nodes in empty leaf slots
+        (doseq [node-hid (all-hids)]
+          (while (node-has-empty-slot? node-hid)
+            (add-leaf-node node-hid (choose-rand-arg))))
+        (hid->bush root-hid)))))
+
+(defn bush->form [it]
+  (let [head (xfirst it)
+        tag  (grab :tag head)]
+    (if (= :op tag)
+      (list (kw->sym (grab :op head))
+        (bush->form (xsecond it))
+        (bush->form (xthird it)))
+      (kw->sym (grab :arg head)))))
+
+(dotest
+  (let [tgt-size 13]
+    (dotimes [i 3]
+      (let [ast (build-rand-ast tgt-size)]
+        (when false ; set true to print demo
+          (nl)
+          (println (pretty-str ast))
+          (println (pretty-str (bush->form ast))))))))
