@@ -5,7 +5,6 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.parse
-
   #?@(:clj
       [ (:use tupelo.core tupelo.test)
        (:require
@@ -13,7 +12,7 @@
          [tupelo.core :as t]
          [schema.core :as s])
        (:import
-         [java.lang.Math])]))
+         [java.lang Math])]))
 
 #?(:clj (do
 
