@@ -9,7 +9,7 @@
   #?(:clj
      (:require
        [cheshire.core :as cc]
-       [clojure.test]
+       [clojure.string :as str]
        [schema.core :as s]
        [tupelo.impl :as i]
        [tupelo.schema :as tsk]
@@ -381,7 +381,7 @@
 (s/defn java-version-matches? :- s/Bool
   "Returns true if Java version exactly matches supplied string."
   [version-str :- s/Str]
-  (ts/starts-with? (java-version) version-str))
+  (str/starts-with? (java-version) version-str))
 
 (s/defn java-version-min? :- s/Bool
   "Returns true if Java version is at least as great as supplied string.
@@ -1185,30 +1185,28 @@
 ;
 ; #todo make it handle either tst.orig.namespace or orig.namespace-test
 ; #todo make it a macro to accept unquoted namespace values
-
 ; #todo delete this
-(defn ^:deprecated ^:no-doc test-all
-  "Convenience fn to reload a namespace & the corresponding test namespace from disk and
-  execute tests in the REPL.  Assumes canonical project test file organization with
-  parallel src/... & test/tst/... directories, where a 'tst.' prefix is added to all src
-  namespaces to generate the cooresponding test namespace.  Example:
-
-    (test-all 'tupelo.core 'tupelo.csv)
-
-  This will reload tupelo.core, tst.tupelo.core, tupelo.csv, tst.tupelo.csv and
-  then execute clojure.test/run-tests on both of the test namespaces."
-  [& ns-list]
-  (let [test-ns-list (for [curr-ns ns-list]
-                       (let [curr-ns-test (symbol (str "tst." curr-ns))]
-                         (println (str "testing " curr-ns " & " curr-ns-test))
-                         (require curr-ns curr-ns-test :reload)
-                         curr-ns-test))
-        ]
-    (println "-----------------------------------------------------------------------------")
-    (apply clojure.test/run-tests test-ns-list)
-    (println "-----------------------------------------------------------------------------")
-    (newline)
-    ))
+;(defn ^:deprecated ^:no-doc test-all
+;  "Convenience fn to reload a namespace & the corresponding test namespace from disk and
+;  execute tests in the REPL.  Assumes canonical project test file organization with
+;  parallel src/... & test/tst/... directories, where a 'tst.' prefix is added to all src
+;  namespaces to generate the cooresponding test namespace.  Example:
+;
+;    (test-all 'tupelo.core 'tupelo.csv)
+;
+;  This will reload tupelo.core, tst.tupelo.core, tupelo.csv, tst.tupelo.csv and
+;  then execute clojure.test/run-tests on both of the test namespaces."
+;  [& ns-list]
+;  (let [test-ns-list (for [curr-ns ns-list]
+;                       (let [curr-ns-test (symbol (str "tst." curr-ns))]
+;                         (println (str "testing " curr-ns " & " curr-ns-test))
+;                         (require curr-ns curr-ns-test :reload)
+;                         curr-ns-test))
+;        ]
+;    (println "-----------------------------------------------------------------------------")
+;    (apply clojure.test/run-tests test-ns-list)
+;    (println "-----------------------------------------------------------------------------")
+;    (newline) ))
 
 (s/defn ^:deprecated conjv :- [s/Any] ; #todo remove
   "***** DEPRECATED:  replaced by tupelo.core/append *****

@@ -21,10 +21,15 @@
            [java.nio.charset StandardCharsets]))
 
 (def phonetic-alphabet
-  {:a "alpha" :b "bravo" :c "charlie" :d "delta" :e "echo" :f "foxtrot" :g "golf" :h "hotel"
-   :i "india" :j "juliett" :k "kilo" :l "lima" :m "mike" :n "november" :o "oscar" :p "papa"
-   :q "quebec" :r "romeo " :s "sierra" :t "tango" :u "uniform" :v "victor" :w "whiskey"
-   :x "x-ray" :y "yankee" :z "zulu" } )
+  "A map from keyword character to string phonetic name:
+   {:a \"alpha\"    :b \"bravo\"    :c \"charlie\"  :d \"delta\"    :e \"echo\"     :f \"foxtrot\"  :g \"golf\"
+    :h \"hotel\"    :i \"india\"    :j \"juliett\"  :k \"kilo\"     :l \"lima\"     :m \"mike\"     :n \"november\"
+    :o \"oscar\"    :p \"papa\"     :q \"quebec\"   :r \"romeo \"   :s \"sierra\"   :t \"tango\"    :u \"uniform\"
+    :v \"victor\"   :w \"whiskey\"  :x \"x-ray\"    :y \"yankee\"   :z \"zulu\" } "
+   {:a "alpha"    :b "bravo"    :c "charlie"  :d "delta"    :e "echo"     :f "foxtrot"  :g "golf"
+    :h "hotel"    :i "india"    :j "juliett"  :k "kilo"     :l "lima"     :m "mike"     :n "november"
+    :o "oscar"    :p "papa"     :q "quebec"   :r "romeo "   :s "sierra"   :t "tango"    :u "uniform"
+    :v "victor"   :w "whiskey"  :x "x-ray"    :y "yankee"   :z "zulu" } )
 
 #?(:clj (do
 
@@ -190,18 +195,6 @@
   (or (= a b)
       (increasing? a b)))
 
-(s/defn index-of :- s/Int
-  "Returns the offset of the tgt-str within the search-str."
-  [search-str :- s/Str
-   tgt-str :- s/Str ]
-  (.indexOf search-str tgt-str))
-
-(s/defn starts-with? :- s/Bool
-  "Returns the offset of the tgt-str within the search-str."
-  [search-str :- s/Str
-   tgt-str :- s/Str ]
-  (zero? (index-of search-str tgt-str)))
-
 (s/defn contains-match?  :- s/Bool
   "Returns true if the regex matches any portion of the intput string."
   [search-str :- s/Str
@@ -213,7 +206,7 @@
   "Returns true if the intput string contains the target string."
   [search-str :- s/Str
    tgt-str :- s/Str]
-  (<= 0 (index-of search-str tgt-str)))
+  (impl/truthy? (str/includes? search-str tgt-str)))
 
 (s/defn grep
   "Given a multi-line text string, returns a string containing lines matching a regex pattern."
