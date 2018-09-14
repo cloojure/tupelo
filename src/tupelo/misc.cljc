@@ -13,7 +13,6 @@
               [clojure.core.async :refer [go go-loop chan buffer close! thread alts! alts!! timeout]]
               [clojure.data.xml :as xml]
               [clojure.java.shell :as shell]
-              [clojure.math.combinatorics :as combo]
               [clojure.string :as str]
               [schema.core :as s]
               [tupelo.core :as t]

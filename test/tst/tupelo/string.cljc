@@ -208,13 +208,13 @@
 )
 
 (dotest
-  (is= 0 (ts/index-of "abc" "a"))
-  (is= 0 (ts/index-of "abc" "ab"))
-  (is= 0 (ts/index-of "abc" "abc"))
-  (is= 1 (ts/index-of "abc" "b"))
-  (is= 1 (ts/index-of "abc" "bc"))
-  (is= 2 (ts/index-of "abc" "c"))
-  (is= -1 (ts/index-of "abc" "d"))
+  (is= 0 (str/index-of "abc" "a"))
+  (is= 0 (str/index-of "abc" "ab"))
+  (is= 0 (str/index-of "abc" "abc"))
+  (is= 1 (str/index-of "abc" "b"))
+  (is= 1 (str/index-of "abc" "bc"))
+  (is= 2 (str/index-of "abc" "c"))
+  (is= nil (str/index-of "abc" "d"))
 )
 
 (dotest
@@ -228,21 +228,10 @@
     (is (not (str/starts-with? "abcde" "bc")))
 
     (is (not (str/starts-with? "a" "ab")))
-    (is (not (str/starts-with? "ab" "abc")))
-  )
+    (is (not (str/starts-with? "ab" "abc"))))
 
   ;-----------------------------------------------------------------------------
   ; tupelo.string
-  (is (ts/starts-with? "abcde" "a"))
-  (is (ts/starts-with? "abcde" "ab"))
-  (is (ts/starts-with? "abcde" "abc"))
-
-  (is (not (ts/starts-with? "abcde" "b")))
-  (is (not (ts/starts-with? "abcde" "bc")))
-
-  (is (not (ts/starts-with? "a" "ab")))
-  (is (not (ts/starts-with? "ab" "abc")))
-
   (is (ts/contains-match? "abcde" #"abc"))
   (is (ts/contains-match? "abcde" #"abc.*"))
   (is (ts/contains-match? "abcde" #".bc.*"))
