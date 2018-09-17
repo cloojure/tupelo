@@ -74,7 +74,7 @@
   ([year month day hour minute second nanos zone-id]  (ZonedDateTime/of year month day hour minute second nanos zone-id)))
 
 ;----------------------------------------------------------------------------------------
-; #todo: Make all use protocol for ZonedDateTime, OffsetDateTime, or Instant
+; #todo: Make all use protocol for all Temporal's (ZonedDateTime, OffsetDateTime, Instant, ...?)
 
 (s/defn same-instant? :- s/Bool
   "Returns true if two ZonedDateTime objects represent the same instant of time, regardless of time zone.
@@ -118,6 +118,62 @@
     ->beginning-of-day
     (.with (TemporalAdjusters/firstDayOfYear))))
 
+(s/defn ->previous-or-same-sunday-midnight
+  "For an instant T, truncate time to midnight and return the first Sunday at or before T."
+  [temporal :- Temporal]
+  (validate temporal? temporal) ; #todo plumatic schema
+  (-> temporal
+    ->beginning-of-day
+    (.with (TemporalAdjusters/previousOrSame DayOfWeek/SUNDAY))))
+
+(s/defn ->previous-or-same-monday-midnight
+  "For an instant T, truncate time to midnight and return the first Monday at or before T."
+  [temporal :- Temporal]
+  (validate temporal? temporal) ; #todo plumatic schema
+  (-> temporal
+    ->beginning-of-day
+    (.with (TemporalAdjusters/previousOrSame DayOfWeek/MONDAY))))
+
+(s/defn ->previous-or-same-tuesday-midnight
+  "For an instant T, truncate time to midnight and return the first Tuesday at or before T."
+  [temporal :- Temporal]
+  (validate temporal? temporal) ; #todo plumatic schema
+  (-> temporal
+    ->beginning-of-day
+    (.with (TemporalAdjusters/previousOrSame DayOfWeek/TUESDAY))))
+
+(s/defn ->previous-or-same-wednesday-midnight
+  "For an instant T, truncate time to midnight and return the first Wednesday at or before T."
+  [temporal :- Temporal]
+  (validate temporal? temporal) ; #todo plumatic schema
+  (-> temporal
+    ->beginning-of-day
+    (.with (TemporalAdjusters/previousOrSame DayOfWeek/WEDNESDAY))))
+
+(s/defn ->previous-or-same-thursday-midnight
+  "For an instant T, truncate time to midnight and return the first thursday at or before T."
+  [temporal :- Temporal]
+  (validate temporal? temporal) ; #todo plumatic schema
+  (-> temporal
+    ->beginning-of-day
+    (.with (TemporalAdjusters/previousOrSame DayOfWeek/THURSDAY))))
+
+(s/defn ->previous-or-same-friday-midnight
+  "For an instant T, truncate time to midnight and return the first Friday at or before T."
+  [temporal :- Temporal]
+  (validate temporal? temporal) ; #todo plumatic schema
+  (-> temporal
+    ->beginning-of-day
+    (.with (TemporalAdjusters/previousOrSame DayOfWeek/FRIDAY))))
+
+(s/defn ->previous-or-same-saturday-midnight
+  "For an instant T, truncate time to midnight and return the first Saturday at or before T."
+  [temporal :- Temporal]
+  (validate temporal? temporal) ; #todo plumatic schema
+  (-> temporal
+    ->beginning-of-day
+    (.with (TemporalAdjusters/previousOrSame DayOfWeek/SATURDAY))))
+
 (comment
 (def fmt-iso-date (grab :year-month-day time-format/formatters))
 (def fmt-iso-date-time (grab :date-time time-format/formatters))
@@ -140,14 +196,6 @@
     (.setCharAt sb 10 \space)
     (str sb)))
 )
-
-(s/defn floor-sunday
-  "Given an instant T, returns the first Sunday (at midnight) less than or equal to T."
-  [temporal :- Temporal]
-  (validate temporal? temporal) ; #todo plumatic schema
-  (-> temporal
-    ->beginning-of-day
-    (.with (TemporalAdjusters/previousOrSame DayOfWeek/SUNDAY))))
 
 (comment
 (defn range
