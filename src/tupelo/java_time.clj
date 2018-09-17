@@ -2,7 +2,7 @@
   (:use tupelo.core)
   (:refer-clojure :exclude [range])
   (:import (java.time.temporal TemporalAdjusters)
-           (java.time DayOfWeek)))
+           (java.time DayOfWeek ZoneId ZonedDateTime)))
 
 (defn instant?
   "Returns true iff arg is an instance of java.time.Instant "
@@ -19,6 +19,23 @@
   Example:  (period (days 3)) => true "
   [it]
   (instance? java.time.Period it))
+
+;ZonedDateTime/of​(int year, int month, int dayOfMonth,
+;                 int hour, int minute, int second, int nanoOfSecond,
+;                 ZoneId zone)
+
+(def zoneid-utc (ZoneId/of "UTC"))
+
+; "Returns a ZonedDateTime"
+(defn zoned-date-time ; #todo add schema & map-version
+  ([year] (zoned-date-time time year 1 1 0 0 0 0 zoneid-utc ))
+  ([year month] (zoned-date-time time year month 1 0 0 0 0 zoneid-utc ))
+  ([year month day] (zoned-date-time time year month day 0 0 0 0 zoneid-utc ))
+  ([year month day hour] (zoned-date-time time year month day hour 0 0 0 zoneid-utc ))
+  ([year month day hour minute] (zoned-date-time time year month day hour minute 0 0 zoneid-utc ))
+  ([year month day hour minute second] (zoned-date-time time year month day hour minute second 0 zoneid-utc ))
+  ([year month day hour minute second nanos] (zoned-date-time time year month day hour minute second nanos zoneid-utc ))
+  ([year month day hour minute second nanos zone-id] (ZonedDateTime/of time year month day hour minute second nanos zone-id)))
 
 (comment
 (def fmt-iso-date (grab :year-month-day time-format/formatters))

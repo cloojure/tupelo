@@ -1,6 +1,6 @@
 (ns tst.tupelo.java-time
   (:use tupelo.java-time tupelo.core tupelo.test)
-  (:import (java.time ZonedDateTime)))
+  (:import (java.time ZonedDateTime ZoneId)))
 
 (dotest
   (is (temporal? (ZonedDateTime/parse "2018-09-08T13:03:04.500Z")))
@@ -14,9 +14,18 @@
 
   )
 
+
 (dotest
+  (spyx (into (sorted-set) (ZoneId/getAvailableZoneIds)))
   (is= (ZonedDateTime/parse "2018-08-26T00:00Z")
     (floor-sunday  (ZonedDateTime/parse "2018-09-01T00:00Z") ))
+  (spyx (zoned-date-time 2018))
+  (spyx (zoned-date-time 2018 2))
+  (spyx (zoned-date-time 2018 2 3))
+  (spyx (zoned-date-time 2018 2 3  4))
+  (spyx (zoned-date-time 2018 2 3  4 5 6))
+  (spyx (zoned-date-time 2018 2 3  4 5 6  777))
+
 ;  (is= (time/date-time 2018 9  2) (floor-sunday (time/date-time 2018 9 2)))
 ;  (is= (time/date-time 2018 9  2) (floor-sunday (time/date-time 2018 9 3)))
 ;  (is= (time/date-time 2018 9  2) (floor-sunday (time/date-time 2018 9 4)))
