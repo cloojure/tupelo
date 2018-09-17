@@ -1,7 +1,8 @@
 (ns tupelo.java-time
   (:use tupelo.core)
   (:refer-clojure :exclude [range])
-  (:import (java.time.temporal TemporalAdjusters)
+  (:require [schema.core :as s])
+  (:import (java.time.temporal TemporalAdjusters Temporal)
            (java.time DayOfWeek ZoneId ZonedDateTime)))
 
 (defn instant?
@@ -24,18 +25,98 @@
 ;                 int hour, int minute, int second, int nanoOfSecond,
 ;                 ZoneId zone)
 
-(def zoneid-utc (ZoneId/of "UTC"))
+; #todo: create a namespace java-time.zone ???
+(def zoneid-utc            (ZoneId/of "UTC"))
+(def zoneid-us-alaska      (ZoneId/of "US/Alaska"))
+(def zoneid-us-aleutian    (ZoneId/of "US/Aleutian"))
+(def zoneid-us-central     (ZoneId/of "US/Central"))
+(def zoneid-us-eastern     (ZoneId/of "US/Eastern"))
+(def zoneid-us-hawaii      (ZoneId/of "US/Hawaii"))
+(def zoneid-us-mountain    (ZoneId/of "US/Mountain"))
+(def zoneid-us-pacific     (ZoneId/of "US/Pacific"))
+
+(def ^:dynamic *zone-id* zoneid-utc)
+
+(defmacro with-zoneid
+  [zone-id & forms]
+  `(binding [*zone-id* ~zone-id]
+     ~@forms))
 
 ; "Returns a ZonedDateTime"
 (defn zoned-date-time ; #todo add schema & map-version
-  ([year] (zoned-date-time time year 1 1 0 0 0 0 zoneid-utc ))
-  ([year month] (zoned-date-time time year month 1 0 0 0 0 zoneid-utc ))
-  ([year month day] (zoned-date-time time year month day 0 0 0 0 zoneid-utc ))
-  ([year month day hour] (zoned-date-time time year month day hour 0 0 0 zoneid-utc ))
-  ([year month day hour minute] (zoned-date-time time year month day hour minute 0 0 zoneid-utc ))
-  ([year month day hour minute second] (zoned-date-time time year month day hour minute second 0 zoneid-utc ))
-  ([year month day hour minute second nanos] (zoned-date-time time year month day hour minute second nanos zoneid-utc ))
-  ([year month day hour minute second nanos zone-id] (ZonedDateTime/of time year month day hour minute second nanos zone-id)))
+  "Returns a java.time.ZonedDateTime with the specified parameters and truncated values (day/month=1, hour/minute/sec=0)
+  for all other date/time components. Assumes time zone is UTC unless the maximum-arity constructor is used. Usage:
+
+  ; Assumes UTC time zone
+  (zoned-date-time year)
+  (zoned-date-time year month)
+  (zoned-date-time year month day)
+  (zoned-date-time year month day hour)
+  (zoned-date-time year month day hour minute)
+  (zoned-date-time year month day hour minute second)
+  (zoned-date-time year month day hour minute second nanos)
+
+  ; Explicit time zone
+  (zoned-date-time year month day hour minute second nanos zone-id)
+
+  ; Explicit time zone alternate shortcut arities.
+  (with-zoneid zoneid-us-eastern
+    (zoned-date-time year month day ...))  ; any arity w/o zone-id
+
+  "
+  ([year]                                             (zoned-date-time year 1     1   0    0      0      0     *zone-id* ))
+  ([year month]                                       (zoned-date-time year month 1   0    0      0      0     *zone-id* ))
+  ([year month day]                                   (zoned-date-time year month day 0    0      0      0     *zone-id* ))
+  ([year month day hour]                              (zoned-date-time year month day hour 0      0      0     *zone-id* ))
+  ([year month day hour minute]                       (zoned-date-time year month day hour minute 0      0     *zone-id* ))
+  ([year month day hour minute second]                (zoned-date-time year month day hour minute second 0     *zone-id* ))
+  ([year month day hour minute second nanos]          (zoned-date-time year month day hour minute second nanos *zone-id* ))
+  ([year month day hour minute second nanos zone-id]  (ZonedDateTime/of year month day hour minute second nanos zone-id)))
+
+;----------------------------------------------------------------------------------------
+; #todo: Make all use protocol for ZonedDateTime, OffsetDateTime, or Instant
+
+(s/defn same-instant? :- s/Bool
+  "Returns true if two ZonedDateTime objects represent the same instant of time, regardless of time zone.
+  A thin wrapper over `ZonedDateTime/isEqual`"
+  [this  :- ZonedDateTime
+   & others :- [ZonedDateTime]]
+  (every? truthy?
+    (mapv #(.isEqual this %) others)))
+
+(defn ->beginning-of-second
+  "Returns a ZonedDateTime truncated to first instant of the second."
+  [zdt]
+  (.truncatedTo zdt java.time.temporal.ChronoUnit/SECONDS))
+
+(defn ->beginning-of-minute
+  "Returns a ZonedDateTime truncated to first instant of the minute."
+  [zdt]
+  (.truncatedTo zdt java.time.temporal.ChronoUnit/MINUTES))
+
+(defn ->beginning-of-hour
+  "Returns a ZonedDateTime truncated to first instant of the hour."
+  [zdt]
+  (.truncatedTo zdt java.time.temporal.ChronoUnit/HOURS))
+
+(defn ->beginning-of-day
+  "Returns a ZonedDateTime truncated to first instant of the day."
+  [zdt]
+  (.truncatedTo zdt java.time.temporal.ChronoUnit/DAYS))
+
+(defn ->beginning-of-month
+  "Returns a ZonedDateTime truncated to first instant of the month."
+  [zdt]
+  (-> zdt
+    ->beginning-of-day
+    (.with (TemporalAdjusters/firstDayOfMonth))))
+
+(defn ->beginning-of-year
+  "Returns a ZonedDateTime truncated to first instant of the year."
+  [zdt]
+  (-> zdt
+    ->beginning-of-day
+    (.with (TemporalAdjusters/firstDayOfYear))))
 
 (comment
 (def fmt-iso-date (grab :year-month-day time-format/formatters))
@@ -60,11 +141,13 @@
     (str sb)))
 )
 
-(defn floor-sunday
+(s/defn floor-sunday
   "Given an instant T, returns the first Sunday (at midnight) less than or equal to T."
-  [temporal]
+  [temporal :- Temporal]
   (validate temporal? temporal) ; #todo plumatic schema
-  (.with temporal (TemporalAdjusters/previousOrSame DayOfWeek/SUNDAY)))
+  (-> temporal
+    ->beginning-of-day
+    (.with (TemporalAdjusters/previousOrSame DayOfWeek/SUNDAY))))
 
 (comment
 (defn range

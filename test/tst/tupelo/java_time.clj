@@ -1,6 +1,8 @@
 (ns tst.tupelo.java-time
   (:use tupelo.java-time tupelo.core tupelo.test)
-  (:import (java.time ZonedDateTime ZoneId)))
+  (:require [clojure.string :as str])
+  (:import (java.time ZonedDateTime ZoneId)
+           [java.time.temporal ChronoUnit TemporalAdjuster TemporalAdjusters]))
 
 (dotest
   (is (temporal? (ZonedDateTime/parse "2018-09-08T13:03:04.500Z")))
@@ -16,27 +18,61 @@
 
 
 (dotest
-  (spyx (into (sorted-set) (ZoneId/getAvailableZoneIds)))
-  (is= (ZonedDateTime/parse "2018-08-26T00:00Z")
-    (floor-sunday  (ZonedDateTime/parse "2018-09-01T00:00Z") ))
-  (spyx (zoned-date-time 2018))
-  (spyx (zoned-date-time 2018 2))
-  (spyx (zoned-date-time 2018 2 3))
-  (spyx (zoned-date-time 2018 2 3  4))
-  (spyx (zoned-date-time 2018 2 3  4 5 6))
-  (spyx (zoned-date-time 2018 2 3  4 5 6  777))
+  (let [zone-ids (vec (sort (ZoneId/getAvailableZoneIds))) ; all ZoneId String values
+        zone-ids-america (vec (keep-if #(str/starts-with? % "America/" ) zone-ids))
+        zone-ids-europe (vec (keep-if #(str/starts-with? % "Europe/" ) zone-ids))
+        zone-ids-us (vec (keep-if #(str/starts-with? % "US/" ) zone-ids)) ]
+    (is (< 590 (count zone-ids)))
+    (is (< 160 (count zone-ids-america)))
+    (is (<  60 (count zone-ids-europe)))
+    (is (<  10 (count zone-ids-us))))
 
-;  (is= (time/date-time 2018 9  2) (floor-sunday (time/date-time 2018 9 2)))
-;  (is= (time/date-time 2018 9  2) (floor-sunday (time/date-time 2018 9 3)))
-;  (is= (time/date-time 2018 9  2) (floor-sunday (time/date-time 2018 9 4)))
-;  (is= (time/date-time 2018 9  2) (floor-sunday (time/date-time 2018 9 5)))
-;  (is= (time/date-time 2018 9  2) (floor-sunday (time/date-time 2018 9 6)))
-;  (is= (time/date-time 2018 9  2) (floor-sunday (time/date-time 2018 9 7)))
-;  (is= (time/date-time 2018 9  2) (floor-sunday (time/date-time 2018 9 8)))
-;  (is= (time/date-time 2018 9  9) (floor-sunday (time/date-time 2018 9 9)))
-;  (is= (time/date-time 2018 9  9) (floor-sunday (time/date-time 2018 9 10)))
-;  (is= (time/date-time 2018 9  9) (floor-sunday (time/date-time 2018 9 10 2 3 4)))
-)
+  (let [ref           (ZonedDateTime/of 2018 2 3 4 5 6 123456789 (ZoneId/of "UTC"))
+        ref-from-str  (ZonedDateTime/parse "2018-02-03T04:05:06.123456789Z") ; zulu = utc
+        inst          (.toInstant ref)
+        inst-from-str (.toInstant ref-from-str)]
+    ; time zone info is presereved in ZonedDateTime, so they are not "equal" objects
+    (isnt (.equals ref ; #object[java.time.ZonedDateTime 0x4b881b83 "2018-02-03T04:05:06.123456789Z[UTC]"]
+            ref-from-str)) ; #object[java.time.ZonedDateTime 0x6ada3244 "2018-02-03T04:05:06.123456789Z"]
+    (isnt= ref ref-from-str)
+    (isnt= 0 (.compareTo ref ref-from-str))
+
+    ; they are identical instants
+    (is= inst inst-from-str)
+    (is (.isEqual ref ref-from-str)) ; converts to Instant, then compares
+    (is (same-instant? ref ref-from-str)) ; more Clojurey way
+
+    (is (same-instant? (zoned-date-time 2018) (->beginning-of-year ref)))
+    (is (same-instant? (zoned-date-time 2018 2) (->beginning-of-month ref)))
+    (is (same-instant? (zoned-date-time 2018 2 3) (->beginning-of-day ref)))
+    (is (same-instant? (zoned-date-time 2018 2 3 4) (->beginning-of-hour ref)))
+    (is (same-instant? (zoned-date-time 2018 2 3 4 5) (->beginning-of-minute ref)))
+    (is (same-instant? (zoned-date-time 2018 2 3 4 5 6) (->beginning-of-second ref)))
+    (is (same-instant? (zoned-date-time 2018 2 3 4 5 6 123456789) ref))
+    (is (same-instant? (zoned-date-time 2018 2 3 4 5 6 123456789 zoneid-utc) ref))
+
+    (is (same-instant? ref (with-zoneid zoneid-utc
+                             (zoned-date-time 2018 2 3 4 5 6 123456789))))
+    (is (same-instant? (zoned-date-time 2018 2 3  12 5 6 123456789)
+          (with-zoneid zoneid-us-eastern (zoned-date-time 2018 2 3  7 5 6 123456789))
+          (with-zoneid zoneid-us-pacific (zoned-date-time 2018 2 3  4 5 6 123456789)))))
+
+  (is (same-instant? (zoned-date-time 2018 8 26) (floor-sunday (zoned-date-time 2018 9 1))))
+  (is (same-instant? (zoned-date-time 2018 9 2)
+        (floor-sunday (zoned-date-time 2018 9 2))
+        (floor-sunday (zoned-date-time 2018 9 3))
+        (floor-sunday (zoned-date-time 2018 9 4))
+        (floor-sunday (zoned-date-time 2018 9 5))
+        (floor-sunday (zoned-date-time 2018 9 6))
+        (floor-sunday (zoned-date-time 2018 9 7))
+        (floor-sunday (zoned-date-time 2018 9 8))))
+  (is (same-instant? (zoned-date-time 2018 9 9)
+        (floor-sunday (zoned-date-time 2018 9 9))
+        (floor-sunday (zoned-date-time 2018 9 10))
+        (floor-sunday (zoned-date-time 2018 9 10 2 3 4))))
+
+  )
+
 
 
 ;(dotest
