@@ -36,6 +36,26 @@
 (def zoneid-us-mountain    (ZoneId/of "US/Mountain"))
 (def zoneid-us-pacific     (ZoneId/of "US/Pacific"))
 
+; #todo merge/cleanup
+(defn ->instant
+  "Coerces a org.joda.time.ReadableInstant to java.time.ZonedDateTime"
+  [arg]
+  (if (instance? org.joda.time.ReadableInstant arg)
+    (-> arg
+      .getMillis
+      Instant/ofEpochMilli)
+    arg))
+
+(defn ->zoned-date-time
+  "Coerces a org.joda.time.ReadableInstant to java.time.ZonedDateTime"
+  [arg]
+  (if (instance? org.joda.time.ReadableInstant arg)
+    (-> arg
+      .getMillis
+      Instant/ofEpochMilli
+      (.atOffset zoneid-utc))
+    arg))
+
 (def ^:dynamic *zone-id* zoneid-utc)
 
 (defmacro with-zoneid
