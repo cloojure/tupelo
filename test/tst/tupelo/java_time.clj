@@ -1,7 +1,9 @@
 (ns tst.tupelo.java-time
   (:refer-clojure :exclude [range])
   (:use tupelo.java-time tupelo.core tupelo.test)
-  (:require [clojure.string :as str])
+  (:require
+    [clj-time.core :as joda]
+    [clojure.string :as str])
   (:import (java.time ZonedDateTime ZoneId Duration)
            [java.time.temporal ChronoUnit TemporalAdjuster TemporalAdjusters]))
 
@@ -128,11 +130,10 @@
        (range
          (zoned-date-time 2018 9 1  1 )
          (zoned-date-time 2018 9 1  5 )
-         (Duration/ofHours 1)))
-  )
+         (Duration/ofHours 1))))
 
 (dotest
-  (let [start-sunday   (spyx (trunc-to-sunday-midnight (zoned-date-time 2018 9 1)))
+  (let [start-sunday   (trunc-to-sunday-midnight (zoned-date-time 2018 9 1))
         stop-inst      (zoned-date-time 2018 9 17)
         start-instants (range start-sunday stop-inst (Duration/ofDays 7))]
     (is= start-instants
@@ -140,4 +141,25 @@
        (zoned-date-time 2018 9 2)
        (zoned-date-time 2018 9 9)
        (zoned-date-time 2018 9 16)])))
+
+(dotest
+  (is= (zoned-date-time 2018 9 1) (->zoned-date-time (joda/date-time 2018 9 1)))
+  (is= (zoned-date-time 2018 9 1) (->zoned-date-time (joda/date-time 2018 9 1 ,, 0 0 0)))
+  (is= (zoned-date-time 2018 9 1 ,, 2 3 4) (->zoned-date-time (joda/date-time 2018 9 1 ,, 2 3 4)))
+
+  (is (same-instant?
+        (zoned-date-time 2018 9 1)
+        (joda/date-time 2018 9 1)
+        (->instant (zoned-date-time 2018 9 1))
+        (->instant (joda/date-time 2018 9 1)) ))
+  (is (same-instant?
+        (zoned-date-time 2018 9 1)
+        (joda/date-time 2018 9 1)
+        (->zoned-date-time (zoned-date-time 2018 9 1))
+        (->zoned-date-time (joda/date-time 2018 9 1)) ))
+  (is (same-instant?
+        (zoned-date-time 2018 9 1)
+        (joda/date-time 2018 9 1)
+        (->instant (->zoned-date-time (zoned-date-time 2018 9 1)))
+        (->instant (->zoned-date-time (joda/date-time 2018 9 1))))) )
 

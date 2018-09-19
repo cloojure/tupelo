@@ -2,29 +2,32 @@
   (:refer-clojure :exclude [range])
   (:use tupelo.core)
   (:require [schema.core :as s])
-  (:import (java.time.temporal TemporalAdjusters Temporal TemporalAmount)
-           (java.time DayOfWeek ZoneId ZonedDateTime Instant)
-           [java.time.format DateTimeFormatter]))
+  (:import
+    [java.time DayOfWeek ZoneId ZonedDateTime Instant Period]
+    [java.time.format DateTimeFormatter]
+    [java.time.temporal TemporalAdjusters Temporal TemporalAmount]
+    [org.joda.time ReadableInstant]
+   ))
 
+(defn zoned-date-time?
+  "Returns true iff arg is an instance of java.time.ZonedDateTime"
+  [it]
+  (instance? ZonedDateTime it)) ; #todo test all
 (defn instant?
   "Returns true iff arg is an instance of java.time.Instant "
   [it]
-  (instance? java.time.Instant it))
+  (instance? Instant it))
 
 (defn temporal?
   "Returns true iff arg is an instance of java.time.temporal.Temporal "
   [it]
-  (instance? java.time.temporal.Temporal it))
+  (instance? Temporal it))
 
 (defn period?
   "Returns true iff arg is an instance of org.joda.time.ReadablePeriod.
   Example:  (period (days 3)) => true "
   [it]
-  (instance? java.time.Period it))
-
-;ZonedDateTime/of​(int year, int month, int dayOfMonth,
-;                 int hour, int minute, int second, int nanoOfSecond,
-;                 ZoneId zone)
+  (instance? Period it))
 
 ; #todo: create a namespace java-time.zone ???
 (def zoneid-utc            (ZoneId/of "UTC"))
@@ -36,25 +39,27 @@
 (def zoneid-us-mountain    (ZoneId/of "US/Mountain"))
 (def zoneid-us-pacific     (ZoneId/of "US/Pacific"))
 
-; #todo merge/cleanup
-(defn ->instant
-  "Coerces a org.joda.time.ReadableInstant to java.time.Instant"
-  [arg]
-  (if (instance? org.joda.time.ReadableInstant arg)
-    (-> arg
-      .getMillis
-      Instant/ofEpochMilli)
-    arg))
+(defprotocol ToInstant
+   (->instant [arg]))
+(extend-protocol ToInstant
+  Instant (->instant [arg]
+            arg)
+  ZonedDateTime (->instant [arg]
+                  (.toInstant arg))
+  org.joda.time.ReadableInstant (->instant [arg]
+                                  (-> arg .getMillis Instant/ofEpochMilli)))
+
 
 (defn ->zoned-date-time
   "Coerces a org.joda.time.ReadableInstant to java.time.ZonedDateTime"
   [arg]
-  (if (instance? org.joda.time.ReadableInstant arg)
-    (-> arg
-      .getMillis
-      Instant/ofEpochMilli
-      (.atZone zoneid-utc))
-    arg))
+  (cond
+    (instance? ZonedDateTime arg) arg
+    (instance? Instant arg) (ZonedDateTime/of arg, zoneid-utc)
+    (instance? org.joda.time.ReadableInstant arg) (it-> arg
+                                                    (->instant it)
+                                                    (.atZone it zoneid-utc))
+    :else (throw (IllegalArgumentException. (str "Invalid type found: " (class arg) " " arg)))))
 
 (def ^:dynamic *zone-id* zoneid-utc)
 
@@ -101,44 +106,54 @@
 ;----------------------------------------------------------------------------------------
 ; #todo: Make all use protocol for all Temporal's (ZonedDateTime, OffsetDateTime, Instant, ...?)
 
-(s/defn same-instant? :- s/Bool
-  "Returns true if two ZonedDateTime objects represent the same instant of time, regardless of time zone.
-  A thin wrapper over `ZonedDateTime/isEqual`"
-  [this  :- ZonedDateTime
-   & others :- [ZonedDateTime]]
-  (every? truthy?
-    (mapv #(.isEqual this %) others)))
+; #todo: make work for Clojure `=` ZDT, Instant, etc
+(defn same-instant? ; #todo coerce to correct type
+  "Returns true iff two ZonedDateTime objects represent the same instant of time, regardless of time zone.
+   A thin wrapper over `ZonedDateTime/isEqual`"
+  [this & others]
+  (cond
+    (every? instant? others) (every? truthy?
+                               (mapv #(.equals this %) others))
 
-(defn trunc-to-second
+    (every? zoned-date-time? others) (every? truthy?
+                                       (mapv #(.isEqual this %) others))
+
+    ; attempt to coerce to Instant
+    :else (let [instants (mapv ->instant (prepend this others))]
+            (apply same-instant? instants))))
+
+(def DateTimeStamp (s/either ZonedDateTime Instant))
+
+(s/defn trunc-to-second
   "Returns a ZonedDateTime truncated to first instant of the second."
-  [zdt]
+  [zdt :- DateTimeStamp]
   (.truncatedTo zdt java.time.temporal.ChronoUnit/SECONDS))
 
-(defn trunc-to-minute
+(s/defn trunc-to-minute
   "Returns a ZonedDateTime truncated to first instant of the minute."
-  [zdt]
+  [zdt :- DateTimeStamp]
   (.truncatedTo zdt java.time.temporal.ChronoUnit/MINUTES))
 
-(defn trunc-to-hour
+(s/defn trunc-to-hour
   "Returns a ZonedDateTime truncated to first instant of the hour."
-  [zdt]
+  [zdt :- DateTimeStamp]
   (.truncatedTo zdt java.time.temporal.ChronoUnit/HOURS))
 
-(defn trunc-to-day
+(s/defn trunc-to-day
   "Returns a ZonedDateTime truncated to first instant of the day."
-  [zdt]
+  [zdt :- DateTimeStamp]
   (.truncatedTo zdt java.time.temporal.ChronoUnit/DAYS))
 
-(defn trunc-to-month
+(s/defn trunc-to-month
   "Returns a ZonedDateTime truncated to first instant of the month."
-  [zdt]
+  [zdt :- ZonedDateTime]
   (-> zdt
     trunc-to-day
     (.with (TemporalAdjusters/firstDayOfMonth))))
 
-(defn trunc-to-year
+(s/defn trunc-to-year
   "Returns a ZonedDateTime truncated to first instant of the year."
-  [zdt]
+  [zdt :- ZonedDateTime]
   (-> zdt
     trunc-to-day
     (.with (TemporalAdjusters/firstDayOfYear))))
