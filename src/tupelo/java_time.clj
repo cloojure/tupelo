@@ -53,7 +53,7 @@
     (-> arg
       .getMillis
       Instant/ofEpochMilli
-      (.atOffset zoneid-utc))
+      (.atZone zoneid-utc))
     arg))
 
 (def ^:dynamic *zone-id* zoneid-utc)
