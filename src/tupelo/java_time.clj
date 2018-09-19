@@ -1,9 +1,10 @@
 (ns tupelo.java-time
-  (:use tupelo.core)
   (:refer-clojure :exclude [range])
+  (:use tupelo.core)
   (:require [schema.core :as s])
-  (:import (java.time.temporal TemporalAdjusters Temporal)
-           (java.time DayOfWeek ZoneId ZonedDateTime)))
+  (:import (java.time.temporal TemporalAdjusters Temporal TemporalAmount)
+           (java.time DayOfWeek ZoneId ZonedDateTime Instant)
+           [java.time.format DateTimeFormatter]))
 
 (defn instant?
   "Returns true iff arg is an instance of java.time.Instant "
@@ -73,6 +74,10 @@
   ([year month day hour minute second nanos]          (zoned-date-time year month day hour minute second nanos *zone-id* ))
   ([year month day hour minute second nanos zone-id]  (ZonedDateTime/of year month day hour minute second nanos zone-id)))
 
+; #todo: need idempotent ->zoned-date-time-utc (using with-zoneid) & ->instant for ZonedDateTime, Instant, OffsetDateTime
+; #todo: need offset-date-time & with-offset
+; #todo: need (instant year month day ...) arities
+
 ;----------------------------------------------------------------------------------------
 ; #todo: Make all use protocol for all Temporal's (ZonedDateTime, OffsetDateTime, Instant, ...?)
 
@@ -84,137 +89,130 @@
   (every? truthy?
     (mapv #(.isEqual this %) others)))
 
-(defn ->beginning-of-second
+(defn trunc-to-second
   "Returns a ZonedDateTime truncated to first instant of the second."
   [zdt]
   (.truncatedTo zdt java.time.temporal.ChronoUnit/SECONDS))
 
-(defn ->beginning-of-minute
+(defn trunc-to-minute
   "Returns a ZonedDateTime truncated to first instant of the minute."
   [zdt]
   (.truncatedTo zdt java.time.temporal.ChronoUnit/MINUTES))
 
-(defn ->beginning-of-hour
+(defn trunc-to-hour
   "Returns a ZonedDateTime truncated to first instant of the hour."
   [zdt]
   (.truncatedTo zdt java.time.temporal.ChronoUnit/HOURS))
 
-(defn ->beginning-of-day
+(defn trunc-to-day
   "Returns a ZonedDateTime truncated to first instant of the day."
   [zdt]
   (.truncatedTo zdt java.time.temporal.ChronoUnit/DAYS))
 
-(defn ->beginning-of-month
+(defn trunc-to-month
   "Returns a ZonedDateTime truncated to first instant of the month."
   [zdt]
   (-> zdt
-    ->beginning-of-day
+    trunc-to-day
     (.with (TemporalAdjusters/firstDayOfMonth))))
 
-(defn ->beginning-of-year
+(defn trunc-to-year
   "Returns a ZonedDateTime truncated to first instant of the year."
   [zdt]
   (-> zdt
-    ->beginning-of-day
+    trunc-to-day
     (.with (TemporalAdjusters/firstDayOfYear))))
 
-(s/defn ->previous-or-same-sunday-midnight
+(s/defn trunc-to-sunday-midnight
   "For an instant T, truncate time to midnight and return the first Sunday at or before T."
   [temporal :- Temporal]
   (validate temporal? temporal) ; #todo plumatic schema
   (-> temporal
-    ->beginning-of-day
+    trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/SUNDAY))))
 
-(s/defn ->previous-or-same-monday-midnight
+(s/defn trunc-to-monday-midnight
   "For an instant T, truncate time to midnight and return the first Monday at or before T."
   [temporal :- Temporal]
   (validate temporal? temporal) ; #todo plumatic schema
   (-> temporal
-    ->beginning-of-day
+    trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/MONDAY))))
 
-(s/defn ->previous-or-same-tuesday-midnight
+(s/defn trunc-to-tuesday-midnight
   "For an instant T, truncate time to midnight and return the first Tuesday at or before T."
   [temporal :- Temporal]
   (validate temporal? temporal) ; #todo plumatic schema
   (-> temporal
-    ->beginning-of-day
+    trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/TUESDAY))))
 
-(s/defn ->previous-or-same-wednesday-midnight
+(s/defn trunc-to-wednesday-midnight
   "For an instant T, truncate time to midnight and return the first Wednesday at or before T."
   [temporal :- Temporal]
   (validate temporal? temporal) ; #todo plumatic schema
   (-> temporal
-    ->beginning-of-day
+    trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/WEDNESDAY))))
 
-(s/defn ->previous-or-same-thursday-midnight
+(s/defn trunc-to-thursday-midnight
   "For an instant T, truncate time to midnight and return the first thursday at or before T."
   [temporal :- Temporal]
   (validate temporal? temporal) ; #todo plumatic schema
   (-> temporal
-    ->beginning-of-day
+    trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/THURSDAY))))
 
-(s/defn ->previous-or-same-friday-midnight
+(s/defn trunc-to-friday-midnight
   "For an instant T, truncate time to midnight and return the first Friday at or before T."
   [temporal :- Temporal]
   (validate temporal? temporal) ; #todo plumatic schema
   (-> temporal
-    ->beginning-of-day
+    trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/FRIDAY))))
 
-(s/defn ->previous-or-same-saturday-midnight
+(s/defn trunc-to-saturday-midnight
   "For an instant T, truncate time to midnight and return the first Saturday at or before T."
   [temporal :- Temporal]
   (validate temporal? temporal) ; #todo plumatic schema
   (-> temporal
-    ->beginning-of-day
+    trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/SATURDAY))))
 
-(comment
-(def fmt-iso-date (grab :year-month-day time-format/formatters))
-(def fmt-iso-date-time (grab :date-time time-format/formatters))
+(defn iso-date-str
+  "Returns a string like `2018-09-05`"
+  [zdt]
+  (.format zdt DateTimeFormatter/ISO_LOCAL_DATE))
 
-(defn ->iso-date-str
-  "Converts a timestamp to a string like `2018-09-05`"
-  [instant]
-  (time-format/unparse fmt-iso-date instant))
+(defn iso-date-time-str
+  "Returns a ISO date-time string like `2018-09-05T23:05:19.123Z`"
+  [zdt]
+  (.format zdt DateTimeFormatter/ISO_INSTANT))
 
-(defn ->iso-date-time-str
-  "Converts a timestamp to a string like `2018-09-05T23:05:19.123Z`"
-  [instant]
-  (time-format/unparse fmt-iso-date-time instant))
-
-(defn ->nice-date-time-str
-  "Converts a timestamp to an ISO date-time string like `2018-09-05 23:05:19.123Z`
-  (with a space instead of `T`) "
-  [instant]
-  (let [sb (StringBuffer. (->iso-date-time-str instant))]
+(defn nice-date-time-str
+  "Returns an ISO date-time string like `2018-09-05 23:05:19.123Z`
+  (with a space instead of `T`)"
+  [zdt]
+  (let [sb (StringBuffer. (.format zdt DateTimeFormatter/ISO_INSTANT))]
     (.setCharAt sb 10 \space)
     (str sb)))
-)
 
-(comment
 (defn range
   "Returns a vector of instants in the half-open interval [start stop) (both instants)
   with increment <step> (a period). Not lazy.  Example:
 
-       (range (time/date-time 2018 9 1)
-              (time/date-time 2018 9 5)
-              (time/days 1)))  => <vector of 4 instants from 2018-9-1 thru 2018-9-4>
+       (range (zoned-date-time 2018 9 1)
+              (zoned-date-time 2018 9 5)
+              (Duration/ofDays 1)))  => <vector of 4 ZonedDateTime's from 2018-9-1 thru 2018-9-4>
   "
   [start-inst stop-inst step-dur]
-  (validate instant? start-inst) ; #todo use Plumatic Schema
-  (validate instant? stop-inst)
-  (validate period? step-dur)
+  (validate temporal? start-inst) ; #todo use Plumatic Schema
+  (validate temporal? stop-inst) ; #todo use Plumatic Schema
+  (verify (instance? TemporalAmount step-dur)) ; #todo -> predicate fn?
   (loop [result    []
          curr-inst start-inst]
-    (if (time/before? curr-inst stop-inst)
+    (if (.isBefore curr-inst stop-inst)
       (recur (conj result curr-inst)
-             (time/plus curr-inst step-dur))
+        (.plus curr-inst step-dur))
       result)))
 
- )

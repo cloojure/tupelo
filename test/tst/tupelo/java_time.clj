@@ -1,7 +1,8 @@
 (ns tst.tupelo.java-time
+  (:refer-clojure :exclude [range])
   (:use tupelo.java-time tupelo.core tupelo.test)
   (:require [clojure.string :as str])
-  (:import (java.time ZonedDateTime ZoneId)
+  (:import (java.time ZonedDateTime ZoneId Duration)
            [java.time.temporal ChronoUnit TemporalAdjuster TemporalAdjusters]))
 
 (dotest
@@ -42,12 +43,12 @@
     (is (.isEqual ref ref-from-str)) ; converts to Instant, then compares
     (is (same-instant? ref ref-from-str)) ; more Clojurey way
 
-    (is (same-instant? (zoned-date-time 2018) (->beginning-of-year ref)))
-    (is (same-instant? (zoned-date-time 2018 2) (->beginning-of-month ref)))
-    (is (same-instant? (zoned-date-time 2018 2 3) (->beginning-of-day ref)))
-    (is (same-instant? (zoned-date-time 2018 2 3 ,, 4) (->beginning-of-hour ref)))
-    (is (same-instant? (zoned-date-time 2018 2 3 ,, 4 5) (->beginning-of-minute ref)))
-    (is (same-instant? (zoned-date-time 2018 2 3 ,, 4 5 6) (->beginning-of-second ref)))
+    (is (same-instant? (zoned-date-time 2018)                 (trunc-to-year ref)))
+    (is (same-instant? (zoned-date-time 2018 2)               (trunc-to-month ref)))
+    (is (same-instant? (zoned-date-time 2018 2 3)             (trunc-to-day ref)))
+    (is (same-instant? (zoned-date-time 2018 2 3 ,, 4)        (trunc-to-hour ref)))
+    (is (same-instant? (zoned-date-time 2018 2 3 ,, 4 5)      (trunc-to-minute ref)))
+    (is (same-instant? (zoned-date-time 2018 2 3 ,, 4 5 6)    (trunc-to-second ref)))
     (is (same-instant? (zoned-date-time 2018 2 3 ,, 4 5 6 ,, 123456789) ref))
     (is (same-instant? (zoned-date-time 2018 2 3 ,, 4 5 6 ,, 123456789 zoneid-utc) ref))
 
@@ -60,65 +61,83 @@
           (with-zoneid zoneid-us-pacific  (zoned-date-time 2018 2 3 ,,  4 5 6 ,, 123456789)))))
 
   (is (same-instant? (zoned-date-time 2018 8 26)
-        (->previous-or-same-sunday-midnight (zoned-date-time 2018 9 1))))
+        (trunc-to-sunday-midnight (zoned-date-time 2018 9 1))))
   (is (same-instant? (zoned-date-time 2018 9 2)
-        (->previous-or-same-sunday-midnight (zoned-date-time 2018 9 2))
-        (->previous-or-same-sunday-midnight (zoned-date-time 2018 9 3))
-        (->previous-or-same-sunday-midnight (zoned-date-time 2018 9 4))
-        (->previous-or-same-sunday-midnight (zoned-date-time 2018 9 5))
-        (->previous-or-same-sunday-midnight (zoned-date-time 2018 9 6))
-        (->previous-or-same-sunday-midnight (zoned-date-time 2018 9 7))
-        (->previous-or-same-sunday-midnight (zoned-date-time 2018 9 8))))
+        (trunc-to-sunday-midnight (zoned-date-time 2018 9 2))
+        (trunc-to-sunday-midnight (zoned-date-time 2018 9 3))
+        (trunc-to-sunday-midnight (zoned-date-time 2018 9 4))
+        (trunc-to-sunday-midnight (zoned-date-time 2018 9 5))
+        (trunc-to-sunday-midnight (zoned-date-time 2018 9 6))
+        (trunc-to-sunday-midnight (zoned-date-time 2018 9 7))
+        (trunc-to-sunday-midnight (zoned-date-time 2018 9 8))))
   (is (same-instant? (zoned-date-time 2018 9 9)
-        (->previous-or-same-sunday-midnight (zoned-date-time 2018 9 9))
-        (->previous-or-same-sunday-midnight (zoned-date-time 2018 9 10))
-        (->previous-or-same-sunday-midnight (zoned-date-time 2018 9 10 2 3 4))))
+        (trunc-to-sunday-midnight (zoned-date-time 2018 9 9))
+        (trunc-to-sunday-midnight (zoned-date-time 2018 9 10))
+        (trunc-to-sunday-midnight (zoned-date-time 2018 9 10 2 3 4))))
+  (let [zdt (zoned-date-time 2018 10 7)]
+    (is (same-instant? (zoned-date-time 2018 10 1) (trunc-to-monday-midnight zdt)))
+    (is (same-instant? (zoned-date-time 2018 10 2) (trunc-to-tuesday-midnight zdt)))
+    (is (same-instant? (zoned-date-time 2018 10 3) (trunc-to-wednesday-midnight zdt)))
+    (is (same-instant? (zoned-date-time 2018 10 4) (trunc-to-thursday-midnight zdt)))
+    (is (same-instant? (zoned-date-time 2018 10 5) (trunc-to-friday-midnight zdt)))
+    (is (same-instant? (zoned-date-time 2018 10 6) (trunc-to-saturday-midnight zdt)))
+    (is (same-instant? (zoned-date-time 2018 10 7) (trunc-to-sunday-midnight zdt))))
+  (let [zdt (zoned-date-time 2018 9 7)]
+    (is (same-instant? (zoned-date-time 2018 9 1) (trunc-to-saturday-midnight zdt)))
+    (is (same-instant? (zoned-date-time 2018 9 2) (trunc-to-sunday-midnight zdt)))
+    (is (same-instant? (zoned-date-time 2018 9 3) (trunc-to-monday-midnight zdt)))
+    (is (same-instant? (zoned-date-time 2018 9 4) (trunc-to-tuesday-midnight zdt)))
+    (is (same-instant? (zoned-date-time 2018 9 5) (trunc-to-wednesday-midnight zdt)))
+    (is (same-instant? (zoned-date-time 2018 9 6) (trunc-to-thursday-midnight zdt)))
+    (is (same-instant? (zoned-date-time 2018 9 7) (trunc-to-friday-midnight zdt))) ) )
 
+(dotest
+  (let [zdt (zoned-date-time 2018 9 8,, 2 3 4)]
+    (is= (iso-date-str zdt)         "2018-09-08")
+    (is= (iso-date-time-str zdt)    "2018-09-08T02:03:04Z")
+    (is= (nice-date-time-str zdt)   "2018-09-08 02:03:04Z"))
+  (let [zdt (zoned-date-time 2018 9 8,, 2 3 4,, 123456789)]
+    (is= (iso-date-str zdt)         "2018-09-08")
+    (is= (iso-date-time-str zdt)    "2018-09-08T02:03:04.123456789Z")
+    (is= (nice-date-time-str zdt)   "2018-09-08 02:03:04.123456789Z")))
+
+
+(dotest
+  (is= [(zoned-date-time 2018 9 1)
+        (zoned-date-time 2018 9 2)
+        (zoned-date-time 2018 9 3)
+        (zoned-date-time 2018 9 4)]
+       (range
+         (zoned-date-time 2018 9 1)
+         (zoned-date-time 2018 9 5)
+         (Duration/ofDays 1)))
+
+  (is= [(zoned-date-time 2018 9 1  2 3 4)
+        (zoned-date-time 2018 9 2  2 3 4)
+        (zoned-date-time 2018 9 3  2 3 4)
+        (zoned-date-time 2018 9 4  2 3 4)]
+       (range
+         (zoned-date-time 2018 9 1  2 3 4)
+         (zoned-date-time 2018 9 5  2 3 4)
+         (Duration/ofDays 1)))
+
+  (is= [(zoned-date-time 2018 9 1  1)
+        (zoned-date-time 2018 9 1  2)
+        (zoned-date-time 2018 9 1  3)
+        (zoned-date-time 2018 9 1  4)]
+       (range
+         (zoned-date-time 2018 9 1  1 )
+         (zoned-date-time 2018 9 1  5 )
+         (Duration/ofHours 1)))
   )
 
+(dotest
+  (let [start-sunday   (spyx (trunc-to-sunday-midnight (zoned-date-time 2018 9 1)))
+        stop-inst      (zoned-date-time 2018 9 17)
+        start-instants (range start-sunday stop-inst (Duration/ofDays 7))]
+    (is= start-instants
+      [(zoned-date-time 2018 8 26)
+       (zoned-date-time 2018 9 2)
+       (zoned-date-time 2018 9 9)
+       (zoned-date-time 2018 9 16)])))
 
-
-;(dotest
-;  (is= [(time/date-time 2018 9 1)
-;        (time/date-time 2018 9 2)
-;        (time/date-time 2018 9 3)
-;        (time/date-time 2018 9 4)]
-;       (range
-;         (time/date-time 2018 9 1)
-;         (time/date-time 2018 9 5)
-;         (time/days 1)))
-;
-;  (is= [(time/date-time 2018 9 1  2 3 4)
-;        (time/date-time 2018 9 2  2 3 4)
-;        (time/date-time 2018 9 3  2 3 4)
-;        (time/date-time 2018 9 4  2 3 4)]
-;       (range
-;         (time/date-time 2018 9 1  2 3 4)
-;         (time/date-time 2018 9 5  2 3 4)
-;         (time/days 1)))
-;
-;  (is= [(time/date-time 2018 9 1  1)
-;        (time/date-time 2018 9 1  2)
-;        (time/date-time 2018 9 1  3)
-;        (time/date-time 2018 9 1  4)]
-;       (range
-;         (time/date-time 2018 9 1  1 )
-;         (time/date-time 2018 9 1  5 )
-;         (time/hours 1)))
-;  )
-
-;(dotest
-;  (let [ (spyx (floor-sunday (ZonedDateTime. 2018 9 1))))
-;        stop-inst      (time/date-time 2018 9 17)
-;        start-instants (range start-sunday stop-inst (time/weeks 1))]
-;    (is= start-instants
-;         [(time/date-time 2018 8 26)
-;          (time/date-time 2018 9 2)
-;          (time/date-time 2018 9 9)
-;          (time/date-time 2018 9 16)])))
-;
-;(dotest
-;  (let [inst (time/date-time 2018 9 8 2 3 4 500)]
-;    (is= (->iso-date-str       inst) "2018-09-08" )
-;    (is= (->iso-date-time-str  inst) "2018-09-08T02:03:04.500Z" )
-;    (is= (->nice-date-time-str inst) "2018-09-08 02:03:04.500Z" ) ))
