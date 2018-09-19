@@ -38,7 +38,7 @@
 
 ; #todo merge/cleanup
 (defn ->instant
-  "Coerces a org.joda.time.ReadableInstant to java.time.ZonedDateTime"
+  "Coerces a org.joda.time.ReadableInstant to java.time.Instant"
   [arg]
   (if (instance? org.joda.time.ReadableInstant arg)
     (-> arg
