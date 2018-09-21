@@ -130,9 +130,20 @@
   (apply throws?-impl forms))
 
 ; #todo maybe def-anon-test, or anon-test
-(defmacro dotest [& body] ; #todo README & tests
-  (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
-  `(ct/deftest ~test-name-sym ~@body)))
+(defmacro dotest ; #todo README & tests
+  [& body]
+  (let [name (symbol (str "dotest-line-" (:line (meta &form))))]
+    `(def ~(vary-meta name assoc
+             :test `(fn [] ~@body) )
+       (fn [] (clojure.test/test-var (var ~name))))))
+
+(defmacro dotest-focus ; #todo README & tests
+  [& body]
+  (let [name (symbol (str "dotest-line-" (:line (meta &form))))]
+    `(def ~(vary-meta name assoc
+             :test `(fn [] ~@body)
+             :test-refresh/focus true )
+       (fn [] (clojure.test/test-var (var ~name))))))
 
 ; #todo ^:slow not working (always executed); need to fix
 ; #todo maybe def-anon-spec or anon-spec; maybe (gen-spec 999 ...) or (gen-test 999 ...)
