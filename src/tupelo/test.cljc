@@ -131,6 +131,17 @@
 
 ; #todo maybe def-anon-test, or anon-test
 (defmacro dotest ; #todo README & tests
+  "Like clojure.test/deftest, but doesn't require a test name. Usage:
+
+      (ns xyz..
+        (:use tupelo.test))
+
+      (dotest
+        (is= 5 (+ 2 3))          ; contraction of (is (= ...))
+        (isnt false)             ; contraction of (is (not ...))
+        (set= [1 2 3] [3 2 1])   ; set equality semantics
+        (throws? (/ 1 0)))
+  "
   [& body]
   (let [name (symbol (str "dotest-line-" (:line (meta &form))))]
     `(def ~(vary-meta name assoc
@@ -138,6 +149,7 @@
        (fn [] (clojure.test/test-var (var ~name))))))
 
 (defmacro dotest-focus ; #todo README & tests
+  "Like `dotest`, but includes metadata  ^:test-refresh/focus  to put lein-test-refresh into 'focus' mode"
   [& body]
   (let [name (symbol (str "dotest-line-" (:line (meta &form))))]
     `(def ~(vary-meta name assoc
