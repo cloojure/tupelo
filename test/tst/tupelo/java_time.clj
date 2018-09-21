@@ -175,3 +175,27 @@
         (->instant (->zoned-date-time (zoned-date-time 2018 9 1)))
         (->instant (->zoned-date-time (joda/date-time 2018 9 1))))) )
 
+
+(dotest
+  (let [lb      (zoned-date-time 2018 9 1)
+        ub      (zoned-date-time 2018 9 2)
+        mid     (zoned-date-time 2018 9 1, 1 2 3)
+
+        itvl    (interval lb ub)
+        itvl-o  (interval lb ub :open)
+        itvl-ho (interval lb ub :half-open)
+        itvl-c  (interval lb ub :closed)]
+    (is= itvl itvl-ho)
+    (is (interval-contains? itvl lb))
+    (is (interval-contains? itvl mid))
+    (isnt (interval-contains? itvl ub))
+
+    (isnt (interval-contains? itvl-o lb))
+    (is (interval-contains? itvl-o mid))
+    (isnt (interval-contains? itvl-o ub))
+
+    (is (interval-contains? itvl-c lb))
+    (is (interval-contains? itvl-c mid))
+    (is (interval-contains? itvl-c ub))
+    )
+  )

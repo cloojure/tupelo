@@ -62,8 +62,7 @@
   org.joda.time.ReadableInstant (->instant [arg]
                                   (-> arg .getMillis Instant/ofEpochMilli)))
 
-
-(defn ->zoned-date-time
+(defn ->zoned-date-time ; #todo -> protocol?
   "Coerces a org.joda.time.ReadableInstant to java.time.ZonedDateTime"
   [arg]
   (cond
@@ -274,4 +273,36 @@
       (recur (conj result curr-inst)
         (.plus curr-inst step-dur))
       result)))
+
+
+(defn interval
+  "Returns a map representing an interval in time. Usage:
+
+    (interval start stop)           ; default type => :half-open
+    (interval start stop type)      ; type one of [:open :half-open :closed]
+  "
+  ([start stop] (interval start stop :half-open))
+  ([start stop type]
+   {:lower-bound   (->instant start)
+    :upper-bound   (->instant stop)
+    :interval-type (validate #{:open :half-open :closed} type)}))
+
+(defn interval?
+  "Returns true iff the arg represents an interval"
+  [it] (= (set (keys it)) #{:lower-bound :upper-bound :interval-type}))
+
+(defn interval-contains?
+  "Returns true iff the interval contains the instant in time"
+  [interval time]
+  (validate interval? interval)
+  (validate fixed-time-point? time)
+  (let [instant              (->instant time)
+        lb                   (grab :lower-bound interval)
+        ub                   (grab :upper-bound interval)
+        within-open-interval (and (.isBefore lb instant) (.isBefore instant ub))
+        interval-type       (grab :interval-type interval) ]
+    (cond
+      (= interval-type :open)           within-open-interval
+      (= interval-type :half-open)  (or within-open-interval (.equals instant lb))
+      (= interval-type :closed)     (or within-open-interval (.equals instant lb) (.equals instant ub)))))
 
