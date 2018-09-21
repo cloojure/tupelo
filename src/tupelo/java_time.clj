@@ -247,8 +247,9 @@
     (.setCharAt sb 10 \space)
     (str sb)))
 
-(defn stringify-datetimestamps
-  "Will recursively walk any data structure, converting any date-time-stamp to a string"
+; #todo make work for relative times (LocalDate, LocalDateTime, etc)
+(defn stringify-times
+  "Will recursively walk any data structure, converting any `fixed-time-point?` object to a string"
   [form]
   (walk/postwalk
     #(if (fixed-time-point? %) (iso-date-time-str %) %)

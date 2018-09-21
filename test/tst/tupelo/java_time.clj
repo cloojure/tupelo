@@ -19,7 +19,7 @@
   (is= {:zdt     "2018-09-01T00:00:00Z",
         :instant "2018-09-01T00:00:00Z",
         :joda-dt "2018-09-01T00:00:00Z"}
-    (stringify-datetimestamps
+    (stringify-times
       {:zdt     (zoned-date-time 2018 9 1)
        :instant (->instant (zoned-date-time 2018 9 1))
        :joda-dt (->instant (zoned-date-time 2018 9 1))}) )

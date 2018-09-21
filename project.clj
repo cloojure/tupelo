@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.92"
+(defproject tupelo "0.9.93"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
