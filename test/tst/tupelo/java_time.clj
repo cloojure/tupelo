@@ -196,6 +196,17 @@
 
     (is (interval-contains? itvl-c lb))
     (is (interval-contains? itvl-c mid))
-    (is (interval-contains? itvl-c ub))
-    )
+    (is (interval-contains? itvl-c ub)) )
+
+  (is= (stringify-times [:something
+                         {:ambassador-id 13590,
+                          :created-at    (with-zoneid zoneid-us-pacific
+                                           (zoned-date-time 2018 1 2, 7))
+                          :team-id       45,}
+                         #{:some :more :stuff}])
+    [:something
+     {:ambassador-id 13590
+      :created-at    "2018-01-02T15:00:00Z"
+      :team-id       45}
+     #{:stuff :some :more}])
   )
