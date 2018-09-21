@@ -12,6 +12,18 @@
   (is (temporal? (ZonedDateTime/parse "2018-09-08T13:03:04Z")))
   (is (temporal? (ZonedDateTime/parse "2018-09-08T00:00Z")))
 
+  (is (fixed-time-point? (zoned-date-time 2018 9 1)))
+  (is (fixed-time-point? (->instant (zoned-date-time 2018 9 1))))
+  (is (fixed-time-point? (spyxx (joda/date-time 2018 9 1))))
+
+  (is= {:zdt     "2018-09-01T00:00:00Z",
+        :instant "2018-09-01T00:00:00Z",
+        :joda-dt "2018-09-01T00:00:00Z"}
+    (stringify-datetimestamps
+      {:zdt     (zoned-date-time 2018 9 1)
+       :instant (->instant (zoned-date-time 2018 9 1))
+       :joda-dt (->instant (zoned-date-time 2018 9 1))}) )
+
   ;(is (period? (time/days 3)))
   ;(is (period? (time/weeks 3)))
   ;(is (period? (time/months 3)))

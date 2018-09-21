@@ -1,22 +1,35 @@
 (ns tupelo.java-time
   (:refer-clojure :exclude [range])
   (:use tupelo.core)
-  (:require [schema.core :as s])
+  (:require
+    [clojure.walk :as walk]
+    [schema.core :as s] )
   (:import
     [java.time DayOfWeek ZoneId ZonedDateTime Instant Period]
     [java.time.format DateTimeFormatter]
     [java.time.temporal TemporalAdjusters Temporal TemporalAmount]
-    [org.joda.time ReadableInstant]
-   ))
+    [org.joda.time ReadableInstant] ))
 
 (defn zoned-date-time?
   "Returns true iff arg is an instance of java.time.ZonedDateTime"
-  [it]
-  (instance? ZonedDateTime it)) ; #todo test all
+  [it] (instance? ZonedDateTime it)) ; #todo test all
 (defn instant?
   "Returns true iff arg is an instance of java.time.Instant "
+  [it] (instance? Instant it))
+(defn joda-instant?
+  "Returns true iff arg is an instance of org.joda.time.ReadableInstant "
+  [it] (instance? org.joda.time.ReadableInstant it))
+
+(defn fixed-time-point?
+  "Returns true iff arg represents a fixed point in time. Examples:
+
+      [java.time       ZonedDateTime  Instant]
+      [org.joda.time        DateTime  Instant  ReadableInstant]
+  "
   [it]
-  (instance? Instant it))
+  (or (zoned-date-time? it)
+    (instant? it)
+    (joda-instant? it)))
 
 (defn temporal?
   "Returns true iff arg is an instance of java.time.temporal.Temporal "
@@ -124,6 +137,8 @@
 
 (def DateTimeStamp (s/either ZonedDateTime Instant))
 
+; #todo need version of < and <= (N-arity) for both ZDT/Instant
+
 (s/defn trunc-to-second
   "Returns a ZonedDateTime truncated to first instant of the second."
   [zdt :- DateTimeStamp]
@@ -221,16 +236,24 @@
 
 (defn iso-date-time-str
   "Returns a ISO date-time string like `2018-09-05T23:05:19.123Z`"
-  [zdt]
-  (.format zdt DateTimeFormatter/ISO_INSTANT))
+  [timestamp]
+  (str (->instant timestamp))) ; uses DateTimeFormatter/ISO_INSTANT
 
 (defn nice-date-time-str
   "Returns an ISO date-time string like `2018-09-05 23:05:19.123Z`
   (with a space instead of `T`)"
-  [zdt]
-  (let [sb (StringBuffer. (.format zdt DateTimeFormatter/ISO_INSTANT))]
+  [timestamp]
+  (let [sb (StringBuffer. (iso-date-time-str timestamp))]
     (.setCharAt sb 10 \space)
     (str sb)))
+
+(defn stringify-datetimestamps
+  "Will recursively walk any data structure, converting any date-time-stamp to a string"
+  [form]
+  (walk/postwalk
+    #(if (fixed-time-point? %) (iso-date-time-str %) %)
+    form))
+
 
 (defn range
   "Returns a vector of instants in the half-open interval [start stop) (both instants)
