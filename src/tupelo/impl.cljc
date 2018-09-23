@@ -109,7 +109,8 @@
 (ns-unmap *ns* 'last)
 
 ;-----------------------------------------------------------------------------
-(declare clip-str)
+(declare clip-str xfirst xlast xrest
+  )
 
 ;-----------------------------------------------------------------------------
 (defn truthy?
@@ -130,6 +131,178 @@
   (not (empty? coll)))
 
 ; #todo add not-neg? not-pos? not-zero?
+
+;-----------------------------------------------------------------------------
+; spy stuff
+
+; (def ^:dynamic *spy-enabled* false)
+(def ^:dynamic *spy-enabled* true) ; #TODO fix before commit!!!
+
+(def ^:dynamic *spy-enabled-map* {})
+
+(defmacro with-spy-enabled
+  [tag ; :- s/Keyword #todo schema for macros?
+   & forms ]
+  `(binding [*spy-enabled-map* (assoc *spy-enabled-map* ~tag true)]
+     ~@forms))
+
+(defmacro check-spy-enabled
+  [tag ; :- s/Keyword #todo schema for macros?
+   & forms]
+  `(binding [*spy-enabled* (get *spy-enabled-map* ~tag false)]
+     ~@forms))
+
+(def ^:no-doc spy-indent-level (atom 0))
+
+(defn ^:no-doc spy-indent-spaces []
+  (str/join (repeat (* 2 @spy-indent-level) \space)))
+
+(defn ^:no-doc spy-indent-reset
+  "Reset the spy indent level to zero."
+  []
+  (reset! spy-indent-level 0))
+
+(defn ^:no-doc spy-indent-inc
+  "Increase the spy indent level by one."
+  []
+  (swap! spy-indent-level inc))
+
+(defn ^:no-doc spy-indent-dec
+  "Decrease the spy indent level by one."
+  []
+  (swap! spy-indent-level dec))
+
+(defn spy
+  ([arg1 arg2]
+   (let [[tag value] (cond
+                       (keyword? arg1) [arg1 arg2]
+                       (keyword? arg2) [arg2 arg1]
+                       :else (throw (IllegalArgumentException. (str "spy: either first or 2nd arg must be a keyword tag \n   args:"
+                                                                 (pr-str [arg1 arg2])))))]
+     (when *spy-enabled*
+       (println (str (spy-indent-spaces) tag " => " (pr-str value))))
+     value ))
+  ([value] ; 1-arg arity uses a generic "spy" message
+   (spy :spy value)))
+
+(defn spyx-proc
+  [exprs]
+  (let [r1         (for [expr (butlast exprs)]
+                     (when *spy-enabled*
+                       (if (keyword? expr)
+                         `(when *spy-enabled* (print (str (spy-indent-spaces) ~expr \space)))
+                         `(when *spy-enabled* (println (str (spy-indent-spaces) '~expr " => " ~expr))))))
+        r2         (let [expr (xlast exprs)]
+                     `(let [spy-val# ~expr]
+                        (when *spy-enabled*
+                          (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val#))))
+                        spy-val#))
+        final-code `(do ~@r1 ~r2) ]
+    final-code))
+
+; #todo allow spyx to have labels like (spyx :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
+(defmacro spyx
+  [& exprs]
+  (spyx-proc exprs))
+
+(defmacro spyxx
+  [expr]
+  `(let [spy-val#    ~expr
+         class-name# (-> spy-val# class .getName)]
+     (when *spy-enabled*
+       (println (str (spy-indent-spaces) '~expr " => <#" class-name# " " (pr-str spy-val#) ">")))
+     spy-val#))
+
+(defn ^:no-doc spyx-pretty-proc
+  [exprs]
+  (let [r1         (for [expr (butlast exprs)]
+                     (if (keyword? expr)
+                       `(when *spy-enabled* (println (spy-indent-spaces) (str ~expr)))
+                       `(when *spy-enabled* (println (spy-indent-spaces) (str '~expr " => " ~expr)))))
+        r2         (let [expr (xlast exprs)]
+                     `(let [spy-val# ~expr]
+                        (when *spy-enabled*
+                          (println (str (spy-indent-spaces) '~expr " => "))
+                          (println (indent-lines-with (spy-indent-spaces)
+                                     (pretty-str spy-val#))))
+                        spy-val#))
+        final-code `(do
+                      ~@r1
+                      ~r2)]
+    final-code))
+
+; #todo On all spy* make print file & line number
+; #todo allow spyx-pretty to have labels like (spyx-pretty :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
+(defmacro spyx-pretty
+  [& exprs]
+  (spyx-pretty-proc exprs))
+
+(defmacro with-spy-indent
+  [& forms]
+  `(do
+     (spy-indent-inc)
+     (let [result# (do ~@forms)]
+       (spy-indent-dec)
+       result#)))
+
+(defmacro let-spy
+  [& exprs]
+  (let [decls      (xfirst exprs)
+        _          (when (not (even? (count decls)))
+                     (throw (IllegalArgumentException. (str "spy-let-proc: uneven number of decls:" decls))))
+        forms      (xrest exprs)
+        fmt-pair   (fn [[dest src]]
+                     [dest src
+                      '_ (list 'spyx dest)]) ; #todo gensym instead of underscore?
+        pairs      (vec (partition 2 decls))
+        r1         (vec (mapcat fmt-pair pairs))
+        final-code `(let ~r1 ~@forms)]
+    final-code))
+
+;-----------------------------------------------------------------------------
+
+(defmacro let-spy-pretty   ; #todo -> deprecated
+  [& exprs]
+  (let [decls (xfirst exprs)
+        _     (when (not (even? (count decls)))
+                (throw (IllegalArgumentException. (str "spy-let-pretty-impl: uneven number of decls:" decls))))
+        forms (xrest exprs)
+        fmt-pair (fn [[dest src]]
+                   [dest src
+                    '_ (list 'spyx-pretty dest)] ) ; #todo gensym instead of underscore?
+        pairs (vec (partition 2 decls))
+        r1    (vec (mapcat  fmt-pair pairs ))
+        final-code  `(let ~r1 ~@forms ) ]
+    final-code ))
+
+;-----------------------------------------------------------------------------
+; #todo  Need it?-> like some-> that short-circuits on nil
+(defmacro it->
+  [expr & forms]
+  `(let [~'it ~expr
+         ~@(interleave (repeat 'it) forms)
+         ]
+     ~'it))
+
+(defmacro let-some
+  [bindings & forms]
+  (if (seq bindings)
+    `(let [result# ~(cc/second bindings)]
+       (if (not (nil? result#))
+         (let [~(cc/first bindings) result#]
+           (let-some ~(cc/drop 2 bindings) ~@forms))))
+    `(do ~@forms)))
+
+(defmacro cond-it->
+  [expr & forms]
+  (let [num-forms (count forms)]
+    (when-not (even? num-forms)
+      (throw (IllegalArgumentException. (str "num-forms must be even; value=" num-forms)))))
+  (let [cond-action-pairs (partition 2 forms)
+        cond-action-forms (for [[cond-form action-form] cond-action-pairs]
+                            `(or (when ~cond-form) ~action-form)) ]
+    `(it-> ~expr ~@cond-action-forms)))
+
 
 (defmacro with-exception-default
   [default-val & forms]
@@ -213,37 +386,45 @@
 (defn quad?
   [coll] (has-length? coll 4))
 
-(defn xfirst      ; #todo -> tests
+(defn xfirst        ; #todo -> tests
   [coll]
-  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xfirst: invalid coll: " coll))))
+  (when (or (nil? coll) (empty? coll))
+    (throw (IllegalArgumentException. (str "xfirst: invalid coll: " coll))))
   (nth coll 0))
 
+; #todo fix up for maps
 ; #todo (it-> coll (take 2 it), (validate (= 2 (count it))), (last it))
 (defn xsecond  ; #todo -> tests
   [coll]
-  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xsecond: invalid coll: " coll))))
+  (when (or (nil? coll) (empty? coll))
+    (throw (IllegalArgumentException. (str "xsecond: invalid coll: " coll))))
   (nth coll 1))
 
+; #todo fix up for maps
 (defn xthird  ; #todo -> tests
   [coll ]
   (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xthird: invalid coll: " coll))))
   (nth coll 2))
 
+; #todo fix up for maps
 (defn xfourth  ; #todo -> tests
   [coll]
   (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xfourth: invalid coll: " coll))))
   (nth coll 3))
 
+; #todo fix up for maps
 (s/defn xlast :- s/Any ; #todo -> tests
   [coll :- [s/Any]]
   (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xlast: invalid coll: " coll))))
   (clojure.core/last coll))
 
+; #todo fix up for maps
 (s/defn xbutlast :- s/Any ; #todo -> tests
   [coll :- [s/Any]]
   (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xbutlast: invalid coll: " coll))))
   (vec (clojure.core/butlast coll)))
 
+; #todo fix up for maps
 (defn xrest ; #todo -> tests
   [coll]
   (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xrest: invalid coll: " coll))))
@@ -260,6 +441,20 @@
   (when (nil? coll) (throw (IllegalArgumentException. (str "xvec: invalid coll: " coll))))
   (clojure.core/vec coll))
 
+; #todo make xdrop ?
+(defn xtake
+  [n coll]
+  (when (or (nil? coll) (empty? coll))
+    (throw (IllegalArgumentException. (str "xtake: invalid coll: " coll))))
+  (let [items (cc/take n coll)
+        actual (count items)]
+    (when (<  actual n)
+      (throw (IllegalArgumentException. (format "xtake: insufficient items, wanted %d found %d " n actual))))
+    (if (map? coll)
+      (into {} items)
+      (vec items))))
+
+; #todo fix up for maps
 (defn rand-elem
   [coll]
   (verify (not-nil? coll))
@@ -409,149 +604,6 @@
     :ret boolean?
     :fn #(= (:ret %) (not (truthy? (-> % :args :arg))))))
 
-;-----------------------------------------------------------------------------
-; spy stuff
-
-; (def ^:dynamic *spy-enabled* false)
-(def ^:dynamic *spy-enabled* true) ; #TODO fix before commit!!!
-
-(def ^:dynamic *spy-enabled-map* {})
-
-(defmacro with-spy-enabled
-  [tag ; :- s/Keyword #todo schema for macros?
-   & forms ]
-  `(binding [*spy-enabled-map* (assoc *spy-enabled-map* ~tag true)]
-     ~@forms))
-
-(defmacro check-spy-enabled
-  [tag ; :- s/Keyword #todo schema for macros?
-   & forms]
-  `(binding [*spy-enabled* (get *spy-enabled-map* ~tag false)]
-     ~@forms))
-
-(def ^:no-doc spy-indent-level (atom 0))
-
-(defn ^:no-doc spy-indent-spaces []
-  (str/join (repeat (* 2 @spy-indent-level) \space)))
-
-(defn ^:no-doc spy-indent-reset
-  "Reset the spy indent level to zero."
-  []
-  (reset! spy-indent-level 0))
-
-(defn ^:no-doc spy-indent-inc
-  "Increase the spy indent level by one."
-  []
-  (swap! spy-indent-level inc))
-
-(defn ^:no-doc spy-indent-dec
-  "Decrease the spy indent level by one."
-  []
-  (swap! spy-indent-level dec))
-
-(defn spy
-  ([arg1 arg2]
-   (let [[tag value] (cond
-                       (keyword? arg1) [arg1 arg2]
-                       (keyword? arg2) [arg2 arg1]
-                       :else (throw (IllegalArgumentException. (str "spy: either first or 2nd arg must be a keyword tag \n   args:"
-                                                                 (pr-str [arg1 arg2])))))]
-     (when *spy-enabled*
-       (println (str (spy-indent-spaces) tag " => " (pr-str value))))
-     value ))
-  ([value] ; 1-arg arity uses a generic "spy" message
-   (spy :spy value)))
-
-(defn spyx-proc
-  [exprs]
-  (let [r1         (for [expr (butlast exprs)]
-                     (when *spy-enabled*
-                       (if (keyword? expr)
-                         `(when *spy-enabled* (print (str (spy-indent-spaces) ~expr \space)))
-                         `(when *spy-enabled* (println (str (spy-indent-spaces) '~expr " => " ~expr))))))
-        r2         (let [expr (xlast exprs)]
-                     `(let [spy-val# ~expr]
-                        (when *spy-enabled*
-                          (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val#))))
-                        spy-val#))
-        final-code `(do ~@r1 ~r2) ]
-    final-code))
-
-; #todo allow spyx to have labels like (spyx :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
-(defmacro spyx
-  [& exprs]
-  (spyx-proc exprs))
-
-(defmacro spyxx
-  [expr]
-  `(let [spy-val#    ~expr
-         class-name# (-> spy-val# class .getName)]
-     (when *spy-enabled*
-       (println (str (spy-indent-spaces) '~expr " => <#" class-name# " " (pr-str spy-val#) ">")))
-     spy-val#))
-
-(defn ^:no-doc spyx-pretty-proc
-  [exprs]
-  (let [r1         (for [expr (butlast exprs)]
-                       (if (keyword? expr)
-                         `(when *spy-enabled* (println (spy-indent-spaces) (str ~expr)))
-                         `(when *spy-enabled* (println (spy-indent-spaces) (str '~expr " => " ~expr)))))
-        r2         (let [expr (xlast exprs)]
-                     `(let [spy-val# ~expr]
-                        (when *spy-enabled*
-                          (println (str (spy-indent-spaces) '~expr " => "))
-                          (println (indent-lines-with (spy-indent-spaces)
-                                     (pretty-str spy-val#))))
-                        spy-val#))
-        final-code `(do
-                      ~@r1
-                      ~r2)]
-    final-code))
-
-; #todo On all spy* make print file & line number
-; #todo allow spyx-pretty to have labels like (spyx-pretty :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
-(defmacro spyx-pretty
-  [& exprs]
-  (spyx-pretty-proc exprs))
-
-(defmacro with-spy-indent
-  [& forms]
-  `(do
-     (spy-indent-inc)
-     (let [result# (do ~@forms)]
-       (spy-indent-dec)
-       result#)))
-
-(defmacro let-spy
-  [& exprs]
-  (let [decls      (xfirst exprs)
-        _          (when (not (even? (count decls)))
-                     (throw (IllegalArgumentException. (str "spy-let-proc: uneven number of decls:" decls))))
-        forms      (xrest exprs)
-        fmt-pair   (fn [[dest src]]
-                     [dest src
-                      '_ (list 'spyx dest)]) ; #todo gensym instead of underscore?
-        pairs      (vec (partition 2 decls))
-        r1         (vec (mapcat fmt-pair pairs))
-        final-code `(let ~r1 ~@forms)]
-    final-code))
-
-;-----------------------------------------------------------------------------
-
-(defmacro let-spy-pretty   ; #todo -> deprecated
-  [& exprs]
-  (let [decls (xfirst exprs)
-        _     (when (not (even? (count decls)))
-                (throw (IllegalArgumentException. (str "spy-let-pretty-impl: uneven number of decls:" decls))))
-        forms (xrest exprs)
-        fmt-pair (fn [[dest src]]
-                   [dest src
-                    '_ (list 'spyx-pretty dest)] ) ; #todo gensym instead of underscore?
-        pairs (vec (partition 2 decls))
-        r1    (vec (mapcat  fmt-pair pairs ))
-        final-code  `(let ~r1 ~@forms ) ]
-    final-code ))
-
 (defn glue
   [& colls]
   (let [string-or-char? #(or (string? %) (char? %))]
@@ -584,33 +636,6 @@
        ~@forms)))
 
 ;-----------------------------------------------------------------------------
-; #todo  Need it?-> like some-> that short-circuits on nil
-(defmacro it->
-  [expr & forms]
-  `(let [~'it ~expr
-         ~@(interleave (repeat 'it) forms)
-         ]
-     ~'it))
-
-(defmacro let-some
-  [bindings & forms]
-  (if (seq bindings)
-    `(let [result# ~(cc/second bindings)]
-       (if (not (nil? result#))
-         (let [~(cc/first bindings) result#]
-           (let-some ~(cc/drop 2 bindings) ~@forms))))
-    `(do ~@forms)))
-
-(defmacro cond-it->
-  [expr & forms]
-  (let [num-forms (count forms)]
-    (when-not (even? num-forms)
-      (throw (IllegalArgumentException. (str "num-forms must be even; value=" num-forms)))))
-  (let [cond-action-pairs (partition 2 forms)
-        cond-action-forms (for [[cond-form action-form] cond-action-pairs]
-                            `(or (when ~cond-form) ~action-form)) ]
-    `(it-> ~expr ~@cond-action-forms)))
-
 (defn clip-str      ; #todo -> tupelo.string?
   [nchars & args]
   (it-> (apply str args)

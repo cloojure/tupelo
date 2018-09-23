@@ -81,6 +81,11 @@
   "Returns true if the collection contains exactly 4 items."
   [coll] (i/quad? coll))
 
+(defn xtake
+  "Returns the first n values from a collection.  Returns map for map colls.
+  Throws if empty."
+  [n coll] (i/xtake n coll))
+
 ; WARNING:  cannot use Plumatic schema for functions that may receive an infinite lazy sequence
 ; as input.  See:  https://groups.google.com/forum/#!topic/clojure/oM1PH4sXzoA
 (defn xfirst

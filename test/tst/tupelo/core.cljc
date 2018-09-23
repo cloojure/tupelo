@@ -162,8 +162,8 @@
       (with-out-str
         (is= 13
           (let-spy [a (inc 0)
-                      b (+ 2 3)]
-            (spyx (-> (inc a) (* 2) inc))
+                    b (+ 2 3)]
+                   (spyx (-> (inc a) (* 2) inc))
             (-> b (* 2) (+ 3)))))))
 
   (is= (ts/collapse-whitespace  " a => 1
@@ -911,11 +911,24 @@
     (isnt (quad? inf-rng-1))))
 
 (dotest
-  (let [inf-rng-1 (map inc (range))]
+  (let [inf-rng-1 (map inc (range))
+        tst-map   (glue (sorted-map) {:a 1 :b 2 :c 3 :d 4 :e 5 :f 6})]
+
+    (throws? (xtake 1 []))
+
+    (is= [1] (xtake 1 [1]))
+    (is= [1] (xtake 1 [1 2]))
+    (is= [1] (xtake 1 inf-rng-1))
+    (is= [1 2] (xtake 2 [1 2]))
+    (is= [1 2] (xtake 2 inf-rng-1))
+    (is= {:a 1} (xtake 1 tst-map))
+    (is= {:a 1 :b 2} (xtake 2 tst-map))
+
     (throws? (xfirst []))
     (is= 1 (xfirst [1]))
     (is= 1 (xfirst [1 2]))
     (is= 1 (xfirst inf-rng-1))
+   ;(is= {:a 1} (xfirst tst-map))
 
     (throws? (xsecond []))
     (throws? (xsecond [1]))
@@ -923,6 +936,7 @@
     (is= 2 (xsecond [1 2 3]))
     (is= 2 (xsecond [1 2 3 4]))
     (is= 2 (xsecond inf-rng-1))
+   ;(is= {:b 2} (xsecond tst-map))
 
     (throws? (xthird []))
     (throws? (xthird [1]))
@@ -930,6 +944,7 @@
     (is= 3 (xthird [1 2 3]))
     (is= 3 (xthird [1 2 3 4]))
     (is= 3 (xthird inf-rng-1))
+   ;(is= {:b 92} (xthird tst-map))
 
     (throws? (xfourth []))
     (throws? (xfourth [1]))
@@ -938,15 +953,25 @@
     (is= 4 (xfourth [1 2 3 4]))
     (is= 4 (xfourth [1 2 3 4 5]))
     (is= 4 (xfourth inf-rng-1))
+   ;(is= {:b 92} (xfourth tst-map))
 
     (throws? (xlast nil))
     (throws? (xlast []))
     (is= 5 (xlast [1 2 3 4 5]))
+   ;(is= {:b 92} (xlast tst-map))
 
     (is= [1 2 3 4] (xbutlast [1 2 3 4 5]))
     (is= [] (xbutlast [1]))
     (throws? (xbutlast []))
     (throws? (xbutlast nil))
+   ;(is= {:b 92} (xbutlast tst-map))
+
+    (throws? (xrest []))
+    (is= [] (xrest [1]))
+    (is= [2] (xrest [1 2]))
+    (is= [2 3] (xrest [1 2 3]))
+    (is= [2 3 4] (xrest [1 2 3 4]))
+    (is= 2 (first (xrest inf-rng-1)))
 
     (throws? (xvec nil))
     (is= [] (xvec []))

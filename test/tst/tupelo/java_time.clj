@@ -14,7 +14,7 @@
 
   (is (fixed-time-point? (zoned-date-time 2018 9 1)))
   (is (fixed-time-point? (->instant (zoned-date-time 2018 9 1))))
-  (is (fixed-time-point? (spyxx (joda/date-time 2018 9 1))))
+  (is (fixed-time-point? (joda/date-time 2018 9 1)))
 
   (is= {:zdt     "2018-09-01T00:00:00Z",
         :instant "2018-09-01T00:00:00Z",
