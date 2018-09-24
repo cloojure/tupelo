@@ -10,7 +10,7 @@
    [danlentz/clj-uuid "0.1.7"]
    [enlive "1.1.6"]
    [org.clojure/clojure "1.9.0"]
-   [org.clojure/clojure "1.10.0-alpha7"]
+   [org.clojure/clojure "1.10.0-alpha8"]
    [org.clojure/core.async "0.4.474"]
    [org.clojure/core.match "0.3.0-alpha4"]
    [org.clojure/data.xml "0.2.0-alpha5"]
