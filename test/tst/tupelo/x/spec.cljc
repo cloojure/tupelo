@@ -8,13 +8,11 @@
   (:use tupelo.test )
   (:require
     [clojure.set :as set]
-    [tupelo.core :as t]
-    [tupelo.impl :as i]
-    [tupelo.spec :as tsp]
     [clojure.string :as str]
     [clojure.test.check.generators :as tcgen]
-    [clojure.spec.alpha :as s]
-    [clojure.spec.alpha :as s]))
+    [tupelo.core :as t]
+    [tupelo.impl :as i]
+    [tupelo.spec :as tsp] ))
 (t/refer-tupelo)
 
 (when-clojure-1-9-plus
@@ -23,6 +21,7 @@
     '[clojure.spec.alpha :as s]
     '[clojure.spec.gen.alpha :as gen]
     '[clojure.spec.test.alpha :as stest])
+
 
   (dotest
     (is= (s/valid? even? 4) true) ; NOTE: normally just use (is   (s/valid? ...))
