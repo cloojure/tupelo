@@ -6,15 +6,12 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.test
   #?@(:clj
-      [
-       (:use tupelo.core tupelo.dev tupelo.test)
+      [(:use tupelo.core tupelo.test)
        (:require
-         [clojure.string :as str]
-         [tupelo.impl :as i]
-         [tupelo.string :as ts] )
+         [clojure.string :as str] )
       ]))
 
-(dotest
+(deftest
   (is true)         ; basic functionality
   (throws? (is))    ; must have exactly 1 arg
   (throws? (is true true)) ; must have exactly 1 arg
@@ -34,7 +31,7 @@
   (isnt= 1 2 1 1)
   )
 
-(dotest
+(deftest
   (throws? (set= [1]))
   (set= [1] [1])
   (set= [1 2] [2 1])
@@ -46,3 +43,5 @@
   (nonblank= "abc" " abc   "  )
   (nonblank= "a   b  c" "a b c"  "  a b   c  ")
   )
+
+

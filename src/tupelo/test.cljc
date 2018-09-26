@@ -8,15 +8,15 @@
   "Testing functions."
   #?@(:clj [
        (:require
-         [clojure.test.check :as ctc]
+         [clojure.core :as cc]
          [clojure.test :as ct]
+         [clojure.test.check :as ctc]
          [schema.core :as s]
          [tupelo.impl :as i]
-         [tupelo.string :as ts])
+         [tupelo.string :as tstr])
        ]))
 
 (defn use-fixtures [& args] (apply ct/use-fixtures args))
-(defmacro deftest [& forms] `(ct/deftest ~@forms))
 (defmacro testing [& forms] `(ct/testing ~@forms))
 
 ;(defmacro is
@@ -92,7 +92,7 @@
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
       `(throw (IllegalArgumentException.
                 (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
-    `(is (ts/equals-ignore-spacing? ~@forms) )))
+    `(is (tstr/equals-ignore-spacing? ~@forms) )))
 
 #?(:clj (do
 
@@ -130,7 +130,7 @@
   (apply throws?-impl forms))
 
 ; #todo maybe def-anon-test, or anon-test
-(defmacro dotest ; #todo README & tests
+(defmacro deftest ; #todo README & tests
   "Like clojure.test/deftest, but doesn't require a test name. Usage:
 
       (ns xyz..
@@ -142,20 +142,41 @@
         (set= [1 2 3] [3 2 1])   ; set equality semantics
         (throws? (/ 1 0)))
   "
-  [& body]
-  (let [name (symbol (str "dotest-line-" (:line (meta &form))))]
-    `(def ~(vary-meta name assoc
-             :test `(fn [] ~@body) )
-       (fn [] (clojure.test/test-var (var ~name))))))
+  [& items]
+  (let [item-1 (clojure.core/first items)
+        suffix (str "-line-" (:line (meta &form)))
+        [label forms] (cond
+                        (symbol? item-1) [(symbol (str (clojure.core/name           item-1) suffix)) (vec (clojure.core/rest items))]
+                        (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
+                        :else [(symbol (str "deftest-block" suffix)) (vec items)]) ]
+    `(def ~(vary-meta label assoc
+             :test `(fn [] ~@forms))
+       (fn [] (clojure.test/test-var (var ~label))))))
+
+(defmacro deftest-focus ; #todo README & tests
+  "Like `deftest`, but invokes lein-test-refresh focus mode; i.e. applies metadata {:test-refresh/focus true}"
+  [& items]
+  (let [item-1 (clojure.core/first items)
+        suffix (str "-line-" (:line (meta &form)))
+        [label forms] (cond
+                        (symbol? item-1) [(symbol (str (clojure.core/name           item-1) suffix)) (vec (clojure.core/rest items))]
+                        (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
+                        :else [(symbol (str "deftest-block" suffix)) (vec items)]) ]
+    `(def ~(vary-meta label assoc
+             :test `(fn [] ~@forms)
+             :test-refresh/focus true )
+       (fn [] (clojure.test/test-var (var ~label))))))
+
+(defmacro ^:deprecated dotest ; #todo README & tests
+  "Alias for tupelo.test/deftest "
+  [& forms]
+   `(tupelo.test/deftest ~@forms))
+
 
 (defmacro dotest-focus ; #todo README & tests
-  "Like `dotest`, but includes metadata  ^:test-refresh/focus  to put lein-test-refresh into 'focus' mode"
-  [& body]
-  (let [name (symbol (str "dotest-line-" (:line (meta &form))))]
-    `(def ~(vary-meta name assoc
-             :test `(fn [] ~@body)
-             :test-refresh/focus true )
-       (fn [] (clojure.test/test-var (var ~name))))))
+  "Alias for tupelo.test/deftest-focus "
+  [& forms]
+  `(tupelo.test/deftest-focus ~@forms))
 
 ; #todo ^:slow not working (always executed); need to fix
 ; #todo maybe def-anon-spec or anon-spec; maybe (gen-spec 999 ...) or (gen-test 999 ...)

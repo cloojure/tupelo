@@ -1,31 +1,37 @@
-(defproject tupelo "0.9.95"
+(defproject tupelo "0.9.96"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies
-  [[cheshire "5.8.1"]
-   [clojure-csv/clojure-csv "2.0.2"]
-   [criterium "0.4.4"]
-   [danlentz/clj-uuid "0.1.7"]
-   [enlive "1.1.6"]
-   [org.clojure/clojure "1.8.0"]
-   [org.clojure/core.async "0.4.474"]
-   [org.clojure/core.match "0.3.0-alpha4"]
-   [org.clojure/data.xml "0.2.0-alpha5"]
-   [org.clojure/math.combinatorics "0.1.4"]
-   [org.clojure/spec.alpha "0.2.176"]
-   [org.clojure/test.check "0.9.0"]
-   [org.clojure/tools.reader "1.3.0"]
-   [org.clojure/tools.analyzer "0.6.9"]
-   [prismatic/schema "1.1.9"]
-   ]
+    [[cheshire "5.8.1"]
+     [clojure-csv/clojure-csv "2.0.2"]
+     [criterium "0.4.4"]
+     [danlentz/clj-uuid "0.1.7"]
+     [enlive "1.1.6"]
+     [org.clojure/clojure "1.8.0"]
+     [org.clojure/core.async "0.4.474"]
+     [org.clojure/core.match "0.3.0-alpha4"]
+     [org.clojure/data.xml "0.2.0-alpha5"]
+     [org.clojure/math.combinatorics "0.1.4"]
+     [org.clojure/spec.alpha "0.2.176"]
+     [org.clojure/test.check "0.9.0"]
+     [org.clojure/tools.reader "1.3.0"]
+     [org.clojure/tools.analyzer "0.6.9"]
+     [prismatic/schema "1.1.9"]]
   :update :daily    ; :always
 
-  :plugins [[lein-codox "0.10.3"]
-            [lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]
-            [lein-figwheel "0.5.15"]
-            [lein-doo "0.1.10"]]
+  :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]
+            [lein-codox "0.10.3"]
+            [lein-doo "0.1.10"]
+            [lein-figwheel "0.5.15"]]
+
+  :profiles {:dev {:dependencies [[binaryage/devtools "0.9.10"]
+                                  [com.cemerick/piggieback "0.2.2"]
+                                  [figwheel-sidecar "0.5.16"]
+                                  [com.jakemccrary/lein-test-refresh "0.23.0"]]
+                   ;; need to add dev source path here to get user.clj loaded
+                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]} }}
 
   ;:hooks [leiningen.cljsbuild]
 
@@ -108,10 +114,4 @@
            ; "--illegal-access=permit"  ; may need for Java10+
             ] ; permit, warn, debug, deny
 
-  :profiles {:dev {:dependencies [[binaryage/devtools "0.9.10"]
-                                  [figwheel-sidecar "0.5.16"]
-                                  [com.cemerick/piggieback "0.2.2"]]
-                   ;; need to add dev source path here to get user.clj loaded
-                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
-                   }}
 )
