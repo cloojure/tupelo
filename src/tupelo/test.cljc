@@ -8,10 +8,8 @@
   "Testing functions."
   #?@(:clj [
        (:require
-         [clojure.core :as cc]
          [clojure.test :as ct]
          [clojure.test.check :as ctc]
-         [schema.core :as s]
          [tupelo.impl :as i]
          [tupelo.string :as tstr])
        ]))
@@ -161,7 +159,7 @@
         [label forms] (cond
                         (symbol? item-1) [(symbol (str (clojure.core/name           item-1) suffix)) (vec (clojure.core/rest items))]
                         (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
-                        :else [(symbol (str "deftest-block" suffix)) (vec items)]) ]
+                        :else [(symbol (str "deftest-focus-block" suffix)) (vec items)]) ]
     `(def ~(vary-meta label assoc
              :test `(fn [] ~@forms)
              :test-refresh/focus true )
@@ -169,14 +167,31 @@
 
 (defmacro ^:deprecated dotest ; #todo README & tests
   "Alias for tupelo.test/deftest "
-  [& forms]
-   `(tupelo.test/deftest ~@forms))
+  [& items]
+  (let [item-1 (clojure.core/first items)
+        suffix (str "-line-" (:line (meta &form)))
+        [label forms] (cond
+                        (symbol? item-1) [(symbol (str (clojure.core/name           item-1) suffix)) (vec (clojure.core/rest items))]
+                        (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
+                        :else [(symbol (str "dotest-block" suffix)) (vec items)]) ]
+    `(def ~(vary-meta label assoc
+             :test `(fn [] ~@forms))
+       (fn [] (clojure.test/test-var (var ~label))))))
 
 
 (defmacro dotest-focus ; #todo README & tests
   "Alias for tupelo.test/deftest-focus "
-  [& forms]
-  `(tupelo.test/deftest-focus ~@forms))
+  [& items]
+  (let [item-1 (clojure.core/first items)
+        suffix (str "-line-" (:line (meta &form)))
+        [label forms] (cond
+                        (symbol? item-1) [(symbol (str (clojure.core/name           item-1) suffix)) (vec (clojure.core/rest items))]
+                        (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
+                        :else [(symbol (str "dotest-focus-block" suffix)) (vec items)]) ]
+    `(def ~(vary-meta label assoc
+             :test `(fn [] ~@forms)
+             :test-refresh/focus true )
+       (fn [] (clojure.test/test-var (var ~label))))))
 
 ; #todo ^:slow not working (always executed); need to fix
 ; #todo maybe def-anon-spec or anon-spec; maybe (gen-spec 999 ...) or (gen-test 999 ...)

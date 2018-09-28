@@ -54,14 +54,17 @@
 ; #todo need (idxs    "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5])   ; like matlab
 
 (s/defn tabs->spaces :- s/Str
-  "Replaces all tabs with corresponding number of spaces (default=8)."
+  "Replaces all tabs with appropriate number of spaces (default tab-size => 8)
+
+     Usage:   (tabs->spaces 'abc<tab>def' => 'ab      cd'
+              (tabs->spaces 4 'ab<tab>cd' => 'ab  cd'
+  "
   ([src-str :- s/Str] (tabs->spaces 8 src-str))
   ([tab-size :- s/Int
     src-str :- s/Str]
     (let [idx->spaces (apply i/glue
                         (i/forv [idx (range tab-size)]
                           {idx (vec (repeat (- tab-size idx) \space))}))]
-      (i/spyx-pretty idx->spaces)
       (loop [result []
              chars  (vec src-str)]
         (if (empty? chars)
@@ -71,23 +74,13 @@
             (if (not= c \tab)
               (recur (i/append result c) remaining)
               (let [curr          (count result)
-                    >> (i/spyx result)
-                    >> (i/spyx c)
-                    >> (i/spyx curr)
                     base          (i/it-> (double curr)
                                     (/ it tab-size)
-                                    (i/spy :01 it)
-                                    (Math/floor it )
-                                    (i/spy :02 it)
+                                    (Math/floor it)
                                     (* it tab-size)
-                                    (int it)
-                                    (i/spy :03 it) )
-                    >> (i/spyx base)
+                                    (int it))
                     interval-idx  (- curr base)
-                    >> (i/spyx interval-idx)
-                    spaces-needed (idx->spaces interval-idx)
-                    >> (i/spyx spaces-needed)
-                  ]
+                    spaces-needed (idx->spaces interval-idx)]
                 (recur (i/glue result spaces-needed) remaining)))))))))
 
 ; #todo -> tupelo.string

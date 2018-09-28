@@ -26,7 +26,7 @@
 #?(:clj
    (do
 
-     (deftest-focus
+     (dotest
        (is= ""          (tabs->spaces ""))
        (is= "x"         (tabs->spaces "x"))
        ;     01234567012345670123456701234567
@@ -39,8 +39,8 @@
        (is= "012345  x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \tab \x])))
        (is= "0123456 x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \tab \x])))
        ;     01234567012345670123456701234567
-       (is= "01234567        x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7   \tab \x])))
-       (is= "012345670       x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0  \tab \x])))
+       (is= "01234567        x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \tab \x])))
+       (is= "012345670       x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \tab \x])))
        (is= "0123456701      x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \tab \x])))
        (is= "01234567012     x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \tab \x])))
        (is= "012345670123    x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \tab \x])))
