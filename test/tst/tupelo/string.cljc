@@ -70,7 +70,17 @@
    (is= "0123456789  x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \tab \x])))
 
    ;     0123012301230123
-   (is= "01  a   b" (tabs->spaces 4 (str/join [\0 \1 \tab \a \tab \b]))) )
+   (is= "01  a   b" (tabs->spaces 4 (str/join [\0 \1 \tab \a \tab \b]))))
+
+ (dotest-focus
+   (let [text-blk (str/join \newline
+                    ["one two three four five six seven eight nine ten"
+                     "one two three four five six seven eight nine ten"
+                     "one two three four five six seven eight nine ten"])]
+     (is (equals-ignore-spacing? (clip-text 30 text-blk)
+           (str/join \newline ["one two three four five six se"
+                               "one two three four five six se"
+                               "one two three four five six se"])))))
 
  (dotest
    (is= (str/join \newline ["    a"

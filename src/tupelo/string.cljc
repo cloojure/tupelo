@@ -91,6 +91,15 @@
         (for [line lines]
           (tab-space-oneline-impl tab-size line))))))
 
+(defn clip-text
+  "Given a multi-line string, returns a string with each line clipped to a max of N chars "
+  [N
+   src-str]
+  (str/join \newline
+    (let [lines (str/split-lines src-str)]
+      (for [line lines]
+        (i/clip-str N line)))))
+
 ; #todo -> tupelo.string
 (defn collapse-whitespace ; #todo readme & blog
   "Replaces all consecutive runs of whitespace characters (including newlines) with a single space.
