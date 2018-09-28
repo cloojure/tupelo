@@ -53,7 +53,7 @@
 ; #todo need (indexes "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5]) -> [ \b \d \f ]
 ; #todo need (idxs    "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5])   ; like matlab
 
-(s/defn tab-space-oneline :- s/Str
+(s/defn ^:no-doc tab-space-oneline-impl :- s/Str
   [tab-size :- s/Int
    src-str :- s/Str]
   (let [idx->spaces (apply i/glue
@@ -86,10 +86,10 @@
   ([src-str :- s/Str] (tabs->spaces 8 src-str))
   ([tab-size :- s/Int
     src-str :- s/Str]
-    (str/join \newline
-      (let [lines (str/split-lines src-str)]
-        (vec (for [line lines]
-               (tab-space-oneline tab-size line)))))))
+    (let [lines (str/split-lines src-str)]
+      (str/join \newline
+        (for [line lines]
+          (tab-space-oneline-impl tab-size line))))))
 
 ; #todo -> tupelo.string
 (defn collapse-whitespace ; #todo readme & blog
