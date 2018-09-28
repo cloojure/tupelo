@@ -9,6 +9,7 @@
     ;[org.clojure/clojure "1.9.0"]
      [org.clojure/clojure "1.10.0-alpha8"]
 
+     [clj-time "0.14.4"]
      [cheshire "5.8.1"]
      [clojure-csv/clojure-csv "2.0.2"]
      [criterium "0.4.4"]
@@ -28,14 +29,17 @@
   :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]
             [lein-codox "0.10.3"]
             [lein-doo "0.1.10"]
-            [lein-figwheel "0.5.15"]]
+            [lein-figwheel "0.5.15"]
+            [figwheel-sidecar "0.5.16"]]
 
-  :profiles {:dev {:dependencies [[binaryage/devtools "0.9.10"]
-                                  [com.cemerick/piggieback "0.2.2"]
-                                  [figwheel-sidecar "0.5.16"]
-                                  [com.jakemccrary/lein-test-refresh "0.23.0"]]
+  :profiles {:dev {:dependencies [[com.jakemccrary/lein-test-refresh "0.23.0"]
+                                 ;[binaryage/devtools "0.9.10"]
+                                 ;[com.cemerick/piggieback "0.2.2"]
+                                 ]
+                                  
                    ;; need to add dev source path here to get user.clj loaded
-                   :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]} }}
+                 ; :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
+                   }}
 
   ;:hooks [leiningen.cljsbuild]
 
