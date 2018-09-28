@@ -53,6 +53,30 @@
 ; #todo need (indexes "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5]) -> [ \b \d \f ]
 ; #todo need (idxs    "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5])   ; like matlab
 
+(s/defn tab-space-oneline :- s/Str
+  [tab-size :- s/Int
+   src-str :- s/Str]
+  (let [idx->spaces (apply i/glue
+                      (i/forv [idx (range tab-size)]
+                        {idx (vec (repeat (- tab-size idx) \space))}))]
+    (loop [result []
+           chars  (vec src-str)]
+      (if (empty? chars)
+        (str/join result)
+        (let [c         (i/xfirst chars)
+              remaining (i/xrest chars)]
+          (if (not= c \tab)
+            (recur (i/append result c) remaining)
+            (let [curr          (count result)
+                  base          (i/it-> (double curr)
+                                  (/ it tab-size)
+                                  (Math/floor it)
+                                  (* it tab-size)
+                                  (int it))
+                  interval-idx  (- curr base)
+                  spaces-needed (idx->spaces interval-idx)]
+              (recur (i/glue result spaces-needed) remaining))))))))
+
 (s/defn tabs->spaces :- s/Str
   "Replaces all tabs with appropriate number of spaces (default tab-size => 8)
 
@@ -62,26 +86,10 @@
   ([src-str :- s/Str] (tabs->spaces 8 src-str))
   ([tab-size :- s/Int
     src-str :- s/Str]
-    (let [idx->spaces (apply i/glue
-                        (i/forv [idx (range tab-size)]
-                          {idx (vec (repeat (- tab-size idx) \space))}))]
-      (loop [result []
-             chars  (vec src-str)]
-        (if (empty? chars)
-          (str/join result)
-          (let [c         (i/xfirst chars)
-                remaining (i/xrest chars)]
-            (if (not= c \tab)
-              (recur (i/append result c) remaining)
-              (let [curr          (count result)
-                    base          (i/it-> (double curr)
-                                    (/ it tab-size)
-                                    (Math/floor it)
-                                    (* it tab-size)
-                                    (int it))
-                    interval-idx  (- curr base)
-                    spaces-needed (idx->spaces interval-idx)]
-                (recur (i/glue result spaces-needed) remaining)))))))))
+    (str/join \newline
+      (let [lines (str/split-lines src-str)]
+        (vec (for [line lines]
+               (tab-space-oneline tab-size line)))))))
 
 ; #todo -> tupelo.string
 (defn collapse-whitespace ; #todo readme & blog

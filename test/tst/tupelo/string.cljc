@@ -70,7 +70,29 @@
    (is= "0123456789  x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \tab \x])))
 
    ;     0123012301230123
-   (is= "01  a   b" (tabs->spaces 4 (str/join [\0 \1 \tab \a \tab \b]))))
+   (is= "01  a   b" (tabs->spaces 4 (str/join [\0 \1 \tab \a \tab \b]))) )
+
+ (dotest
+   (is= (str/join \newline ["    a"
+                            "0   a"])
+     (tabs->spaces 4
+       (str/join [\tab \a \newline
+                  \0 \tab \a])))
+   (is= (str/join \newline ["    ab"
+                            "0   a"])
+     (tabs->spaces 4
+       (str/join [\tab \a \b \newline
+                  \0 \tab \a])))
+   (is= (str/join \newline ["    abc"
+                            "0   a"])
+     (tabs->spaces 4
+       (str/join [\tab \a \b \c \newline
+                  \0 \tab \a])))
+   (is= (str/join \newline ["    abcd"
+                            "0   a"])
+     (tabs->spaces 4
+       (str/join [\tab \a \b \c \d \newline
+                  \0 \tab \a]))))
 
 (deftest
   ; clojure.core/str works correctly for various string combinations
