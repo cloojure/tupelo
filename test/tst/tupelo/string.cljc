@@ -72,7 +72,7 @@
    ;     0123012301230123
    (is= "01  a   b" (tabs->spaces 4 (str/join [\0 \1 \tab \a \tab \b]))))
 
- (dotest-focus
+ (dotest
    (let [text-blk (str/join \newline
                     ["one two three four five six seven eight nine ten"
                      "one two three four five six seven eight nine ten"
