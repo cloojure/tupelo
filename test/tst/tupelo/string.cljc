@@ -26,51 +26,51 @@
 #?(:clj
    (do
 
-     (dotest
-       (is= ""          (tabs->spaces ""))
-       (is= "x"         (tabs->spaces "x"))
-       ;     01234567012345670123456701234567
-       (is= "        x" (tabs->spaces (str/join [\tab \x])))
-       (is= "0       x" (tabs->spaces (str/join [\0 \tab \x])))
-       (is= "01      x" (tabs->spaces (str/join [\0 \1 \tab \x])))
-       (is= "012     x" (tabs->spaces (str/join [\0 \1 \2 \tab \x])))
-       (is= "0123    x" (tabs->spaces (str/join [\0 \1 \2 \3 \tab \x])))
-       (is= "01234   x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \tab \x])))
-       (is= "012345  x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \tab \x])))
-       (is= "0123456 x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \tab \x])))
-       ;     01234567012345670123456701234567
-       (is= "01234567        x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \tab \x])))
-       (is= "012345670       x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \tab \x])))
-       (is= "0123456701      x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \tab \x])))
-       (is= "01234567012     x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \tab \x])))
-       (is= "012345670123    x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \tab \x])))
-       (is= "0123456701234   x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \tab \x])))
-       (is= "01234567012345  x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \5 \tab \x])))
-       (is= "012345670123456 x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \5 \6 \tab \x])))
-       ;     01234567012345670123456701234567
-       (is= "0123456701234567        x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \5 \6 \7 \tab \x])))
-       ;     01234567012345670123456701234567
+ (dotest
+   (is= "" (tabs->spaces ""))
+   (is= "x" (tabs->spaces "x"))
+   ;     01234567012345670123456701234567
+   (is= "        x" (tabs->spaces (str/join [\tab \x])))
+   (is= "0       x" (tabs->spaces (str/join [\0 \tab \x])))
+   (is= "01      x" (tabs->spaces (str/join [\0 \1 \tab \x])))
+   (is= "012     x" (tabs->spaces (str/join [\0 \1 \2 \tab \x])))
+   (is= "0123    x" (tabs->spaces (str/join [\0 \1 \2 \3 \tab \x])))
+   (is= "01234   x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \tab \x])))
+   (is= "012345  x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \tab \x])))
+   (is= "0123456 x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \tab \x])))
+   ;     01234567012345670123456701234567
+   (is= "01234567        x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \tab \x])))
+   (is= "012345670       x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \tab \x])))
+   (is= "0123456701      x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \tab \x])))
+   (is= "01234567012     x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \tab \x])))
+   (is= "012345670123    x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \tab \x])))
+   (is= "0123456701234   x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \tab \x])))
+   (is= "01234567012345  x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \5 \tab \x])))
+   (is= "012345670123456 x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \5 \6 \tab \x])))
+   ;     01234567012345670123456701234567
+   (is= "0123456701234567        x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \5 \6 \7 \tab \x])))
+   ;     01234567012345670123456701234567
 
 
-       (is= ""          (tabs->spaces 4 ""))
-       (is= "x"         (tabs->spaces 4 "x"))
-       ;     0123012301230123
-       (is= "    x" (tabs->spaces 4 (str/join [\tab \x])))
-       (is= "0   x" (tabs->spaces 4 (str/join [\0 \tab \x])))
-       (is= "01  x" (tabs->spaces 4 (str/join [\0 \1 \tab \x])))
-       (is= "012 x" (tabs->spaces 4 (str/join [\0 \1 \2 \tab \x])))
-       ;     0123012301230123
-       (is= "0123    x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \tab \x])))
-       (is= "01234   x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \tab \x])))
-       (is= "012345  x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \tab \x])))
-       (is= "0123456 x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \tab \x])))
-       ;     0123012301230123
-       (is= "01234567    x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \tab \x])))
-       (is= "012345678   x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \8 \tab \x])))
-       (is= "0123456789  x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \tab \x])))
+   (is= "" (tabs->spaces 4 ""))
+   (is= "x" (tabs->spaces 4 "x"))
+   ;     0123012301230123
+   (is= "    x" (tabs->spaces 4 (str/join [\tab \x])))
+   (is= "0   x" (tabs->spaces 4 (str/join [\0 \tab \x])))
+   (is= "01  x" (tabs->spaces 4 (str/join [\0 \1 \tab \x])))
+   (is= "012 x" (tabs->spaces 4 (str/join [\0 \1 \2 \tab \x])))
+   ;     0123012301230123
+   (is= "0123    x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \tab \x])))
+   (is= "01234   x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \tab \x])))
+   (is= "012345  x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \tab \x])))
+   (is= "0123456 x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \tab \x])))
+   ;     0123012301230123
+   (is= "01234567    x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \tab \x])))
+   (is= "012345678   x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \8 \tab \x])))
+   (is= "0123456789  x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \tab \x])))
 
-       ;     0123012301230123
-       (is= "01  a   b" (tabs->spaces 4 (str/join [\0 \1 \tab \a \tab \b]))))
+   ;     0123012301230123
+   (is= "01  a   b" (tabs->spaces 4 (str/join [\0 \1 \tab \a \tab \b]))))
 
 (deftest
   ; clojure.core/str works correctly for various string combinations
