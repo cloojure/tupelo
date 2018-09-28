@@ -56,8 +56,8 @@
 (s/defn tabs->spaces :- s/Str
   "Replaces all tabs with appropriate number of spaces (default tab-size => 8)
 
-     Usage:   (tabs->spaces 'abc<tab>def' => 'ab      cd'
-              (tabs->spaces 4 'ab<tab>cd' => 'ab  cd'
+     Usage:   (tabs->spaces   'abc<tab>def'  => 'ab      cd'
+              (tabs->spaces 4 'ab<tab>cd'    => 'ab  cd'
   "
   ([src-str :- s/Str] (tabs->spaces 8 src-str))
   ([tab-size :- s/Int
