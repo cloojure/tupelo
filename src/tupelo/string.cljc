@@ -53,27 +53,42 @@
 ; #todo need (indexes "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5]) -> [ \b \d \f ]
 ; #todo need (idxs    "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5])   ; like matlab
 
-(s/defn tabs->spaces  :- s/Str
+(s/defn tabs->spaces :- s/Str
   "Replaces all tabs with corresponding number of spaces (default=8)."
   ([src-str :- s/Str] (tabs->spaces 8 src-str))
   ([tab-size :- s/Int
     src-str :- s/Str]
     (let [idx->spaces (apply i/glue
-                        (i/forv [idx (i/thru 0 7)]
-                          {idx (vec (repeat idx \space))})) ]
+                        (i/forv [idx (range tab-size)]
+                          {idx (vec (repeat (- tab-size idx) \space))}))]
+      (i/spyx-pretty idx->spaces)
       (loop [result []
              chars  (vec src-str)]
         (if (empty? chars)
           (str/join result)
           (let [c         (i/xfirst chars)
-                remaining (i/xrest chars)
-                siz       (count result)
-                ]
-            )
-          )
-        ))
-
-    ) )
+                remaining (i/xrest chars)]
+            (if (not= c \tab)
+              (recur (i/append result c) remaining)
+              (let [curr          (count result)
+                    >> (i/spyx result)
+                    >> (i/spyx c)
+                    >> (i/spyx curr)
+                    base          (i/it-> (double curr)
+                                    (/ it tab-size)
+                                    (i/spy :01 it)
+                                    (Math/floor it )
+                                    (i/spy :02 it)
+                                    (* it tab-size)
+                                    (int it)
+                                    (i/spy :03 it) )
+                    >> (i/spyx base)
+                    interval-idx  (- curr base)
+                    >> (i/spyx interval-idx)
+                    spaces-needed (idx->spaces interval-idx)
+                    >> (i/spyx spaces-needed)
+                  ]
+                (recur (i/glue result spaces-needed) remaining)))))))))
 
 ; #todo -> tupelo.string
 (defn collapse-whitespace ; #todo readme & blog

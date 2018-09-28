@@ -26,7 +26,53 @@
 #?(:clj
    (do
 
-(dotest
+     (deftest-focus
+       (is= ""          (tabs->spaces ""))
+       (is= "x"         (tabs->spaces "x"))
+       ;     01234567012345670123456701234567
+       (is= "        x" (tabs->spaces (str/join [\tab \x])))
+       (is= "0       x" (tabs->spaces (str/join [\0 \tab \x])))
+       (is= "01      x" (tabs->spaces (str/join [\0 \1 \tab \x])))
+       (is= "012     x" (tabs->spaces (str/join [\0 \1 \2 \tab \x])))
+       (is= "0123    x" (tabs->spaces (str/join [\0 \1 \2 \3 \tab \x])))
+       (is= "01234   x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \tab \x])))
+       (is= "012345  x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \tab \x])))
+       (is= "0123456 x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \tab \x])))
+       ;     01234567012345670123456701234567
+       (is= "01234567        x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7   \tab \x])))
+       (is= "012345670       x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0  \tab \x])))
+       (is= "0123456701      x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \tab \x])))
+       (is= "01234567012     x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \tab \x])))
+       (is= "012345670123    x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \tab \x])))
+       (is= "0123456701234   x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \tab \x])))
+       (is= "01234567012345  x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \5 \tab \x])))
+       (is= "012345670123456 x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \5 \6 \tab \x])))
+       ;     01234567012345670123456701234567
+       (is= "0123456701234567        x" (tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \5 \6 \7 \tab \x])))
+       ;     01234567012345670123456701234567
+
+
+       (is= ""          (tabs->spaces 4 ""))
+       (is= "x"         (tabs->spaces 4 "x"))
+       ;     0123012301230123
+       (is= "    x" (tabs->spaces 4 (str/join [\tab \x])))
+       (is= "0   x" (tabs->spaces 4 (str/join [\0 \tab \x])))
+       (is= "01  x" (tabs->spaces 4 (str/join [\0 \1 \tab \x])))
+       (is= "012 x" (tabs->spaces 4 (str/join [\0 \1 \2 \tab \x])))
+       ;     0123012301230123
+       (is= "0123    x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \tab \x])))
+       (is= "01234   x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \tab \x])))
+       (is= "012345  x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \tab \x])))
+       (is= "0123456 x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \tab \x])))
+       ;     0123012301230123
+       (is= "01234567    x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \tab \x])))
+       (is= "012345678   x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \8 \tab \x])))
+       (is= "0123456789  x" (tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \tab \x])))
+
+       ;     0123012301230123
+       (is= "01  a   b" (tabs->spaces 4 (str/join [\0 \1 \tab \a \tab \b]))))
+
+(deftest
   ; clojure.core/str works correctly for various string combinations
   (is= ""     (str "" ))
   (is= "a"    (str "" "a"))
@@ -75,11 +121,11 @@
   (is      (= "abcde" (t/strcat ["" \a \b \c "de"] )))
   (is      (= "abcde" (t/strcat ["" \a \b [\c ["d" \e]]] ))) )
 
-(dotest
+(deftest
   (is (= "abc def g hij kl"
         (collapse-whitespace "  abc    def			g
                                      hij kl	 " ))))
-(dotest
+(deftest
   (is (equals-ignore-spacing? "a" ))
   (is (equals-ignore-spacing? "a" "  a "))
   (is (equals-ignore-spacing? "a" "  a  " "   a" "a   "))
@@ -106,7 +152,7 @@
                        anything.
                        Mark Twain      		" )))
 
-(dotest
+(deftest
   (is= (quotes->single (str \")) (str \'))
   (is= (quotes->double (str \')) (str \"))
   (let [s1 "I said, 'Yes, please.'"
@@ -118,7 +164,7 @@
     (is= s1 (-> s1 quotes->double
                    quotes->single))))
 
-(dotest
+(deftest
   (is= :abc-def-gh-qrs (str->kw-normalized "abc def*gh_qrs"))
   (is= "abc" (i/kw->str :abc))
 
@@ -129,12 +175,12 @@
   (is= (kw-kabob->snake :some-multiple-word-kw) :some_multiple_word_kw)
 )
 
-(dotest
+(deftest
   (is (= " 1 2 3"           (t/seq->str (byte-array [1 2 3]))))
   (is (= " :a :b 3 4"       (t/seq->str [:a :b 3 4])))
   (is (= " \\a \\b \\c"     (t/seq->str "abc"))))
 
-(dotest
+(deftest
   (isnt (increasing? "abc" "a"))
   (isnt (increasing? "abc" "ab"))
   (isnt (increasing? "abc" "abc"))
@@ -152,21 +198,21 @@
   (is   (increasing-or-equal? "abc" "b"))
 )
 
-(dotest
+(deftest
   (is (= ""    (take 0 "abc")))
   (is (= "a"   (take 1 "abc")))
   (is (= "ab"  (take 2 "abc")))
   (is (= "abc" (take 3 "abc")))
   (is (= "abc" (take 4 "abc"))))
 
-(dotest
+(deftest
   (is (= "abc" (drop 0 "abc")))
   (is (= "bc"  (drop 1 "abc")))
   (is (= "c"   (drop 2 "abc")))
   (is (= ""    (drop 3 "abc")))
   (is (= ""    (drop 4 "abc"))))
 
-(dotest
+(deftest
   (is (= "abc"    (indent 0 "abc")))
   (is (= " abc"   (indent 1 "abc")))
   (is (= "  abc"  (indent 2 "abc")))
@@ -187,7 +233,7 @@
   (is (= "  "  (indent 2 "")))
   (is (= "   " (indent 3 ""))))
 
-(dotest
+(deftest
   ; clojure accepts either CR/LF or LF (CR=/return & LF=\newline) as line-separator
   (is (= "abc"    (indent-lines 0      "abc"                    )))
   (is (= "abc"    (indent-lines 0 (str "abc"         \newline  ))))
@@ -206,7 +252,7 @@
   (is (= "   abc\n   def"   (indent-lines 3 (str "abc" \newline "def" ))))
 )
 
-(dotest
+(deftest
   (is= 0 (str/index-of "abc" "a"))
   (is= 0 (str/index-of "abc" "ab"))
   (is= 0 (str/index-of "abc" "abc"))
@@ -216,7 +262,7 @@
   (is= nil (str/index-of "abc" "d"))
 )
 
-(dotest
+(deftest
   ; clojure.string
   (t/when-clojure-1-8-plus
     (is (str/starts-with? "abcde" "a"))
@@ -265,13 +311,7 @@
     (is (equals-ignore-spacing? (grep #"today." search-str) "doing today?"))
     (is (equals-ignore-spacing? (fgrep "today." search-str) ""))))
 
-(dotest
-  (is= 1 2)
-  (i/spyx (str/join []))
-  (is= "" "")
-)
-
-(dotest
+(deftest
   (is   (alphanumeric? \a))
   (is   (alphanumeric? [\a]))
   (is   (alphanumeric? "a"))
