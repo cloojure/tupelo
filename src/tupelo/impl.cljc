@@ -490,6 +490,7 @@
   (symbol (name arg)))
 
 (s/defn kw->str :- s/Str
+  "Returns the string version of a keyword, stripped of the leading ':' (colon)."
   [arg :- s/Keyword]
   (name arg))
 
@@ -498,6 +499,7 @@
   (name arg))
 
 (s/defn sym->kw :- s/Keyword
+  "Returns a keyword constructed from a normalized string"
   [arg :- s/Symbol]
   (keyword arg))
 
@@ -505,6 +507,7 @@
   [arg :- s/Str]
   (symbol arg))
 
+; #todo throw if bad string
 (s/defn str->kw :- s/Keyword
   [arg :- s/Str]
   (keyword arg))

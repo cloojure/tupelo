@@ -7,16 +7,15 @@
 (ns tupelo.string
   "Tupelo - Making Clojure even sweeter"
   #?@(:clj [
-            (:refer-clojure :exclude [drop take contains?])
-            (:require
-              [clojure.core :as cc]
-              [clojure.java.io :as io]
-              [clojure.string :as str]
-              [schema.core :as s]
-              [tupelo.char :as char]
-              [tupelo.impl :as impl]
-              [tupelo.schema :as tsk])
-            ])
+      (:refer-clojure :exclude [drop take contains?])
+      (:require
+        [clojure.core :as cc]
+        [clojure.java.io :as io]
+        [clojure.string :as str]
+        [schema.core :as s]
+        [tupelo.char :as char]
+        [tupelo.impl :as impl] )
+  ])
   (:import [java.io InputStream ByteArrayInputStream]
            [java.nio.charset StandardCharsets]))
 
@@ -53,6 +52,28 @@
 ; #todo need (idx "abcdef" 2) -> [ \c ]
 ; #todo need (indexes "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5]) -> [ \b \d \f ]
 ; #todo need (idxs    "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5])   ; like matlab
+
+;(s/defn tabs->spaces  :- s/Str
+;  "Replaces all tabs with corresponding number of spaces (default=8)."
+;  ([src-str :- s/Str] (tabs->spaces 8 src-str))
+;  ([tab-size :- s/Int
+;    src-str :- s/Str]
+;    (let [idx->spaces (apply glue
+;                        (forv [idx (thru 0 7)]
+;                          {idx (vec (repeat idx \space))})) ]
+;      (loop [result []
+;             chars  (vec src-str)]
+;        (if (empty? chars)
+;          (str/join result)
+;          (let [c         (xfirst chars)
+;                remaining (xrest chars)
+;                siz       (count result)
+;                ]
+;            )
+;          )
+;        ))
+;
+;    ) )
 
 ; #todo -> tupelo.string
 (defn collapse-whitespace ; #todo readme & blog
@@ -116,16 +137,6 @@
   [arg]
   (keyword (normalize-str arg)))
 
-; #todo throw if bad string
-(defn str->kw       ; #todo need test, README
-  "Returns a keyword constructed from a normalized string"
-  [arg]
-  (keyword arg))
-
-(defn kw->str       ; #todo need test, README
-  "Returns the string version of a keyword, stripped of the leading ':' (colon)."
-  [arg]
-  (str/join (cc/drop 1 (str arg))))
 
 (defn snake->kabob
   "Converts a string from a_snake_case_value to a-kabob-case-value"
@@ -139,15 +150,15 @@
 
 (defn kw-snake->kabob [kw]
   (-> kw
-    (kw->str)
+    (impl/kw->str)
     (snake->kabob)
-    (str->kw)))
+    (impl/str->kw)))
 
 (defn kw-kabob->snake [kw]
   (->> kw
-    (kw->str)
+    (impl/kw->str)
     (kabob->snake)
-    (str->kw)))
+    (impl/str->kw)))
 
 ;-----------------------------------------------------------------------------
 
@@ -190,13 +201,13 @@
 ; #todo add undent (verify only leading whitespace removed)
 ; #todo add undent-lines
 
-(s/defn increasing? :- s/Bool
+(s/defn increasing? :- s/Bool ; #todo merge with general in tupelo.core
   "Returns true if a pair of strings are in increasing lexicographic order."
   [a :- s/Str
    b :- s/Str ]
   (neg? (compare a b)))
 
-(s/defn increasing-or-equal? :- s/Bool
+(s/defn increasing-or-equal? :- s/Bool ; #todo merge with general in tupelo.core
   "Returns true if a pair of strings are in increasing lexicographic order, or equal."
   [a :- s/Str
    b :- s/Str ]
