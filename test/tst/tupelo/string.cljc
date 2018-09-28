@@ -219,9 +219,9 @@
 (dotest
   ; clojure.string
   (t/when-clojure-1-8-plus
-    (is      (str/starts-with? "abcde" "a"))
-    (is      (str/starts-with? "abcde" "ab"))
-    (is      (str/starts-with? "abcde" "abc"))
+    (is (str/starts-with? "abcde" "a"))
+    (is (str/starts-with? "abcde" "ab"))
+    (is (str/starts-with? "abcde" "abc"))
 
     (is (not (str/starts-with? "abcde" "b")))
     (is (not (str/starts-with? "abcde" "bc")))
@@ -253,9 +253,9 @@
   (is (contains-str? "^abcde" "^ab"))
   (is (contains-str? "a^bcde" "^bc"))
 
-  (let [search-str  "Hello there, you.
+  (let [search-str "Hello there, you.
                         How are you
-                           doing today?" ]
+                           doing today?"]
     (is (equals-ignore-spacing? (grep #"hello" search-str) ""))
     (is (equals-ignore-spacing? (grep #"Hello" search-str) "Hello there, you."))
     (is (equals-ignore-spacing? (grep #"(?i)hello" search-str) "Hello there, you."))
@@ -263,9 +263,11 @@
           "Hello there, you.
            How are you"))
     (is (equals-ignore-spacing? (grep #"today." search-str) "doing today?"))
-    (is (equals-ignore-spacing? (fgrep "today." search-str) ""))) )
+    (is (equals-ignore-spacing? (fgrep "today." search-str) ""))))
 
 (dotest
+  (is= 1 2)
+  (i/spyx (str/join []))
   (is= "" "")
 )
 

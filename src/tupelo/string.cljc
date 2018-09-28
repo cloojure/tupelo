@@ -14,7 +14,7 @@
         [clojure.string :as str]
         [schema.core :as s]
         [tupelo.char :as char]
-        [tupelo.impl :as impl] )
+        [tupelo.impl :as i] )
   ])
   (:import [java.io InputStream ByteArrayInputStream]
            [java.nio.charset StandardCharsets]))
@@ -32,17 +32,17 @@
 
 #?(:clj (do
 
-(defn alphanumeric?       [& args] (every? char/alphanumeric?        (impl/strcat args)))
-(defn whitespace-horiz?   [& args] (every? char/whitespace-horiz?    (impl/strcat args)))
-(defn whitespace-eol?     [& args] (every? char/whitespace-eol?      (impl/strcat args)))
-(defn whitespace?         [& args] (every? char/whitespace?          (impl/strcat args)))
-(defn lowercase?          [& args] (every? char/lowercase?           (impl/strcat args)))
-(defn uppercase?          [& args] (every? char/uppercase?           (impl/strcat args)))
-(defn digit?              [& args] (every? char/digit?               (impl/strcat args)))
-(defn hex?                [& args] (every? char/hex?                 (impl/strcat args)))
-(defn alpha?              [& args] (every? char/alpha?               (impl/strcat args)))
-(defn visible?            [& args] (every? char/visible?             (impl/strcat args)))
-(defn text?               [& args] (every? char/text?                (impl/strcat args)))
+(defn alphanumeric?       [& args] (every? char/alphanumeric?        (i/strcat args)))
+(defn whitespace-horiz?   [& args] (every? char/whitespace-horiz?    (i/strcat args)))
+(defn whitespace-eol?     [& args] (every? char/whitespace-eol?      (i/strcat args)))
+(defn whitespace?         [& args] (every? char/whitespace?          (i/strcat args)))
+(defn lowercase?          [& args] (every? char/lowercase?           (i/strcat args)))
+(defn uppercase?          [& args] (every? char/uppercase?           (i/strcat args)))
+(defn digit?              [& args] (every? char/digit?               (i/strcat args)))
+(defn hex?                [& args] (every? char/hex?                 (i/strcat args)))
+(defn alpha?              [& args] (every? char/alpha?               (i/strcat args)))
+(defn visible?            [& args] (every? char/visible?             (i/strcat args)))
+(defn text?               [& args] (every? char/text?                (i/strcat args)))
 
 ; #todo make general version vec -> vec; str-specific version str -> str
 ; #todo need (substring {:start I :stop J                 } ) ; half-open (or :stop)
@@ -53,27 +53,27 @@
 ; #todo need (indexes "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5]) -> [ \b \d \f ]
 ; #todo need (idxs    "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5])   ; like matlab
 
-;(s/defn tabs->spaces  :- s/Str
-;  "Replaces all tabs with corresponding number of spaces (default=8)."
-;  ([src-str :- s/Str] (tabs->spaces 8 src-str))
-;  ([tab-size :- s/Int
-;    src-str :- s/Str]
-;    (let [idx->spaces (apply glue
-;                        (forv [idx (thru 0 7)]
-;                          {idx (vec (repeat idx \space))})) ]
-;      (loop [result []
-;             chars  (vec src-str)]
-;        (if (empty? chars)
-;          (str/join result)
-;          (let [c         (xfirst chars)
-;                remaining (xrest chars)
-;                siz       (count result)
-;                ]
-;            )
-;          )
-;        ))
-;
-;    ) )
+(s/defn tabs->spaces  :- s/Str
+  "Replaces all tabs with corresponding number of spaces (default=8)."
+  ([src-str :- s/Str] (tabs->spaces 8 src-str))
+  ([tab-size :- s/Int
+    src-str :- s/Str]
+    (let [idx->spaces (apply i/glue
+                        (i/forv [idx (i/thru 0 7)]
+                          {idx (vec (repeat idx \space))})) ]
+      (loop [result []
+             chars  (vec src-str)]
+        (if (empty? chars)
+          (str/join result)
+          (let [c         (i/xfirst chars)
+                remaining (i/xrest chars)
+                siz       (count result)
+                ]
+            )
+          )
+        ))
+
+    ) )
 
 ; #todo -> tupelo.string
 (defn collapse-whitespace ; #todo readme & blog
@@ -150,15 +150,15 @@
 
 (defn kw-snake->kabob [kw]
   (-> kw
-    (impl/kw->str)
+    (i/kw->str)
     (snake->kabob)
-    (impl/str->kw)))
+    (i/str->kw)))
 
 (defn kw-kabob->snake [kw]
   (->> kw
-    (impl/kw->str)
+    (i/kw->str)
     (kabob->snake)
-    (impl/str->kw)))
+    (i/str->kw)))
 
 ;-----------------------------------------------------------------------------
 
@@ -188,7 +188,7 @@
   [n :- s/Int
    txt :- s/Str]
   (let [indent-str (str/join (repeat n \space))]
-    (impl/indent-lines-with indent-str txt)))
+    (i/indent-lines-with indent-str txt)))
 
 (s/defn indent-lines-with :- s/Str  ; #todo delete?  else rename (prefix-lines txt prefix-str) ; add (suffix-lines txt suffix-str)
   "Splits out each line of txt using clojure.string/split-lines, then
@@ -196,7 +196,7 @@
   a single string result, with each line terminated by a single \newline."
   [indent-str :- s/Str
    txt  :- s/Str]
-  (impl/indent-lines-with indent-str txt))
+  (i/indent-lines-with indent-str txt))
 
 ; #todo add undent (verify only leading whitespace removed)
 ; #todo add undent-lines
@@ -219,20 +219,20 @@
   [search-str :- s/Str
    re :- s/Any]
   {:pre [(instance? java.util.regex.Pattern re)]}
-  (impl/truthy? (re-find re search-str)))
+  (i/truthy? (re-find re search-str)))
 
 (s/defn contains-str?  :- s/Bool
   "Returns true if the intput string contains the target string."
   [search-str :- s/Str
    tgt-str :- s/Str]
-  (impl/truthy? (str/includes? search-str tgt-str)))
+  (i/truthy? (str/includes? search-str tgt-str)))
 
 (s/defn grep
   "Given a multi-line text string, returns a string containing lines matching a regex pattern."
   [pattern :- s/Regex
    text :- s/Str]
   (let [lines  (str/split-lines text)
-        result (impl/keep-if #(contains-match? % pattern) lines)]
+        result (i/keep-if #(contains-match? % pattern) lines)]
     (str/join result)))
 
 (s/defn fgrep
@@ -240,7 +240,7 @@
   [tgt :- s/Str
    text :- s/Str]
   (let [lines  (str/split-lines text)
-        result (impl/keep-if #(contains-str? % tgt) lines)]
+        result (i/keep-if #(contains-str? % tgt) lines)]
     (str/join result)))
 
 (s/defn string->stream :- InputStream
