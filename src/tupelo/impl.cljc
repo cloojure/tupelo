@@ -30,6 +30,9 @@
 ; #todo or if not number?
 ; #todo wrap contains? get etc to enforce "normal" input types: map/set vs vec/list
 ; #todo contains-key? for map/set, contains-val? for map/set/vec/list (disable contains? for strict) (use .contains for -val)
+; #todo (fnil inc 0) => (with-default-args [0 "hello" :cc]
+; #todo                   some-fn-of-3-or-more-args)
+; #todo    like (some-fn* (glue {0 0   1 "hello"   2 :cc} {<user args here>} ))
 
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
@@ -516,11 +519,7 @@
   [arg :- s/Str]
   (vec arg))
 
-; #todo add test & README
-(defn pretty-str
-  [arg]
-  (with-out-str (pprint/pprint arg)))
-
+; #todo add postwalk and change to all sorted-map, sorted-set
 ; #todo rename to pp or pprint ?
 ; #todo add test & README
 (defn pretty                                                ; #todo experimental
@@ -530,6 +529,12 @@
   ([arg writer]
    (pprint/pprint arg writer)
    arg))
+
+; #todo add test & README
+; #todo defer to tupelo.impl/pretty
+(defn pretty-str
+  [arg]
+  (with-out-str (pprint/pprint arg)))
 
 (s/defn indent-lines-with :- s/Str  ; #todo add readme ;  need test
   "Splits out each line of txt using clojure.string/split-lines, then

@@ -86,18 +86,25 @@
         result))))
 
 (defn shell-cmd
-  "Run a command represented as a string in an OS shell (default=/bin/bash).
-  Example: 'ls -ldF *'  "
+  "Runs a command string in the default OS shell (/bin/bash); returns result in a Clojure map.
+   Example:
+
+  (shell-cmd \"ls -ldF *\")
+
+    ;=>   {:exit    0     ; unix exit status (0 -> normal)
+           :err    ''     ; text from any errors
+           :out    '...'  ; text output as would printed to console
+          } "
   [cmd-str]
   (let [result (shell/sh *os-shell* "-c" cmd-str)]
     (if (= 0 (grab :exit result))
       result
-      (throw (RuntimeException. 
-               (str "shell-cmd: clojure.java.shell/sh failed. \n" 
+      (throw (RuntimeException.
+               (str "shell-cmd: clojure.java.shell/sh failed. \n"
                     "cmd-str:"     cmd-str        "\n"
                     "exit status:" (:exit result) "\n"
                     "stderr:"      (:err  result) "\n"
-                    "result:"      (:out  result) "\n" 
+                    "result:"      (:out  result) "\n"
               ))))))
 
 (defn get-os []
