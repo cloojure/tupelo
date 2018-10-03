@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.99"
+(defproject tupelo "0.9.100"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
@@ -15,6 +15,7 @@
      [criterium "0.4.4"]
      [danlentz/clj-uuid "0.1.7"]
      [enlive "1.1.6"]
+     [joda-time/joda-time "2.10"]
      [org.clojure/core.async "0.4.474"]
      [org.clojure/core.match "0.3.0-alpha4"]
      [org.clojure/data.xml "0.2.0-alpha5"]

@@ -6,6 +6,7 @@
 ;   software.
 (ns tst.tupelo.string
   (:use tupelo.string tupelo.test )
+  (:refer-clojure :exclude [take drop])
   (:require
     #?@(:clj [
     [clojure.core :as cc]
