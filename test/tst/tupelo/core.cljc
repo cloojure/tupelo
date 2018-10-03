@@ -7,12 +7,12 @@
 (ns tst.tupelo.core
   #?@(:clj [
   (:use tupelo.core tupelo.dev tupelo.test )
-  (:require
-    [clojure.string :as str]
-    [tupelo.core :as t] ; #todo finish migration to (:use tupelo.core)
-    [tupelo.impl :as i]
-    [tupelo.string :as ts]
-  ) ]) )
+            (:require
+              [clojure.string :as str]
+              [tupelo.core :as t] ; #todo finish migration to (:use tupelo.core)
+              [tupelo.impl :as i]
+              [tupelo.string :as ts]
+              [tupelo.string :as tstr]) ]) )
 
 ; (s/instrument-all)
 ; (s/instrument #'tupelo.core/truthy?)  ; instrument just one var
@@ -2335,18 +2335,31 @@
     (is= (map-vals map-123 tx-fn) {:a 101, :b 202, :c 303})))
 
 (dotest
-  (testing "unlazy"
-    (is= (range 5) (unlazy (range 5)))
-    (let [c1 {:a 1 :b (range 3) :c {:x (range 4) (range 5) "end"}}]
-      (is= c1 (unlazy c1)))
-    (let [l2  '({:a ("zero" 0)} {:a ("one" 1)} {:a ("two" 2)})
-          e2  (unlazy l2)]
-      (is= l2 e2)
-      (is= "one" (get-in e2 [1 :a 0] l2))
-      ; (throws? (spyx (get-in l2 [1 :a 0] l2)))    ; #todo: SHOULD throw
-      )
-    (is= [1 2 3] (unlazy (map inc (range 3))))
-    (is= #{1 2 3} (unlazy #{3 2 1}))))
+  (is= (range 5) (unlazy (range 5)))
+  (let [c1 {:a 1 :b (range 3) :c {:x (range 4) (range 5) "end"}}]
+    (is= c1 (unlazy c1)))
+  (let [l2 '({:a ("zero" 0)} {:a ("one" 1)} {:a ("two" 2)})
+        e2 (unlazy l2)]
+    (is= l2 e2)
+    (is= "one" (get-in e2 [1 :a 0] l2))
+    ; (throws? (spyx (get-in l2 [1 :a 0] l2)))    ; #todo: SHOULD throw
+    )
+  (is= [1 2 3] (unlazy (map inc (range 3))))
+  (is= #{1 2 3} (unlazy #{3 2 1})))
+
+(dotest-focus
+  (let [orig  {:b #{3 2 1}
+               :a [1 2 3 { 5 :five 6 :six 4 :four }]
+               :c (list 4 5 6)}
+       result (str/replace
+                (with-out-str (println (prettify orig)))
+                \, \space)
+        expected "{:a  [1 2    3 {4 :four
+                                  5 :five
+                                  6 :six}]
+                   :b #{1 2 3}
+                   :c  [4 5 6]} " ]
+    (nonblank= result expected )))
 
 
 

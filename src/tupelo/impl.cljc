@@ -353,6 +353,18 @@
         result    (walk/postwalk unlazy-item coll) ]
     result ))
 
+(defn prettify
+  [coll]
+  (let [prettify-item (fn prettify-item [item]
+                        (cond
+                          (sequential? item) (vec item)
+                          (map? item) (into (sorted-map) item)
+                          (set? item) (into (sorted-set) item)
+                          (instance? java.io.InputStream item) (prettify-item (slurp item)) ; #todo need test
+                          :else item))
+        result        (walk/postwalk prettify-item coll)]
+    result ))
+
 (defn nl
   [] (newline))
 

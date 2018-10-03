@@ -45,6 +45,11 @@
   "Converts a lazy collection to a concrete (eager) collection of the same type."
   [coll] (i/unlazy coll))
 
+(defn prettify
+  "Recursively walks a data structure and returns a prettified version.
+  Converts all lists to vectors. Converts all maps & sets to sorted collections."
+  [coll] (i/prettify coll))
+
 (defn has-length?
   "Returns true if the collection has the indicated length. Does not hang for infinite sequences."
   [coll n] (i/has-length? coll n))
