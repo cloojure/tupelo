@@ -86,6 +86,7 @@
   for all other date/time components. Assumes time zone is UTC unless the maximum-arity constructor is used. Usage:
 
   ; Assumes UTC time zone
+  (zoned-date-time)          => current time
   (zoned-date-time year)
   (zoned-date-time year month)
   (zoned-date-time year month day)
@@ -102,6 +103,7 @@
     (zoned-date-time year month day ...))  ; any arity w/o zone-id
 
   "
+  ([]                                                 (ZonedDateTime/now *zone-id* ))
   ([year]                                             (zoned-date-time year 1     1   0    0      0      0     *zone-id* ))
   ([year month]                                       (zoned-date-time year month 1   0    0      0      0     *zone-id* ))
   ([year month day]                                   (zoned-date-time year month day 0    0      0      0     *zone-id* ))
