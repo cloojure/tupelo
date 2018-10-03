@@ -228,23 +228,51 @@
     trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/SATURDAY))))
 
-(defn iso-date-str
+(defn date-str-iso
   "Returns a string like `2018-09-05`"
   [zdt]
   (.format zdt DateTimeFormatter/ISO_LOCAL_DATE))
 
-(defn iso-date-time-str
+(defn date-time-str-iso
   "Returns a ISO date-time string like `2018-09-05T23:05:19.123Z`"
   [timestamp]
   (str (->instant timestamp))) ; uses DateTimeFormatter/ISO_INSTANT
 
-(defn nice-date-time-str
+(defn date-str-compact
+  "Returns a compact date-time string like `2018-09-05 23:05:19.123Z` => `20180905` "
+  [timestamp]
+  (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd")]
+    (.format timestamp formatter)))
+
+(defn date-time-str-compact
+  "Returns a compact date-time string like `2018-09-05 23:05:19.123Z` => `20180905-230519` "
+  [timestamp]
+  (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd-HHmmss")]
+    (.format timestamp formatter)))
+
+(defn date-time-str-hyphens
+  "Returns a compact date-time string like `2018-09-05 23:05:19.123Z` => `2018-09-05-23-05-19` "
+  [timestamp]
+  (let [formatter (DateTimeFormatter/ofPattern "yyyy-MM-dd-HH-mm-ss")]
+    (.format timestamp formatter)))
+
+(defn date-time-str-nice
   "Returns an ISO date-time string like `2018-09-05 23:05:19.123Z`
   (with a space instead of `T`)"
   [timestamp]
-  (let [sb (StringBuffer. (iso-date-time-str timestamp))]
+  (let [sb (StringBuffer. (date-time-str-iso timestamp))]
     (.setCharAt sb 10 \space)
     (str sb)))
+
+;-----------------------------------------------------------------------------
+(defn ^:deprecated iso-date-str
+  "DEPRECATED: use `date-str-iso`"
+  [& args] (apply date-str-iso args))
+
+(defn ^:deprecated iso-date-time-str
+  "DEPRECATED: use `date-time-str-iso`"
+  [& args] (apply date-time-str-iso args))
+;-----------------------------------------------------------------------------
 
 ; #todo make work for relative times (LocalDate, LocalDateTime, etc)
 (defn stringify-times

@@ -381,5 +381,4 @@
   (is (apply text?                      (vec char/text))) )
 
 
-
 ))

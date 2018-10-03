@@ -105,16 +105,21 @@
     (is (same-instant? (zoned-date-time 2018 9 6) (trunc-to-thursday-midnight zdt)))
     (is (same-instant? (zoned-date-time 2018 9 7) (trunc-to-friday-midnight zdt))) ) )
 
-(dotest
+(dotest-focus
   (let [zdt (zoned-date-time 2018 9 8,, 2 3 4)]
-    (is= (iso-date-str zdt)         "2018-09-08")
-    (is= (iso-date-time-str zdt)    "2018-09-08T02:03:04Z")
-    (is= (nice-date-time-str zdt)   "2018-09-08 02:03:04Z"))
+    (is= (date-str-iso zdt)            "2018-09-08")
+    (is= (date-time-str-iso zdt)       "2018-09-08T02:03:04Z")
+    (is= (date-time-str-nice zdt)      "2018-09-08 02:03:04Z")
+    (is= (iso-date-str zdt)            "2018-09-08") ; deprecated
+    (is= (iso-date-time-str zdt) "2018-09-08T02:03:04Z")) ; deprecated
   (let [zdt (zoned-date-time 2018 9 8,, 2 3 4,, 123456789)]
-    (is= (iso-date-str zdt)         "2018-09-08")
-    (is= (iso-date-time-str zdt)    "2018-09-08T02:03:04.123456789Z")
-    (is= (nice-date-time-str zdt)   "2018-09-08 02:03:04.123456789Z")))
-
+    (is= (date-str-compact zdt)        "20180908" )
+    (is= (date-time-str-nice zdt)      "2018-09-08 02:03:04.123456789Z")
+    (is= (date-time-str-compact zdt)   "20180908-020304" )
+    (is= (date-time-str-hyphens zdt)   "2018-09-08-02-03-04")
+    (is= (iso-date-str zdt)            "2018-09-08") ; deprecated
+    (is= (iso-date-time-str zdt)       "2018-09-08T02:03:04.123456789Z") ; deprecated
+  ))
 
 (dotest
   (is= [(zoned-date-time 2018 9 1)
