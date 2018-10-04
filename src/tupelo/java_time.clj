@@ -117,6 +117,27 @@
 ; #todo: need offset-date-time & with-offset
 ; #todo: need (instant year month day ...) arities
 
+(defn instant
+  "Wrapper for java.time.Instant/now "
+  [] (java.time.Instant/now))
+
+(defn millis->instant
+  "Wrapper for java.time.Instant/ofEpochMilli "
+  [millis] (java.time.Instant/ofEpochMilli millis))
+
+(defn secs->instant
+  "Wrapper for java.time.Instant/ofEpochSecs "
+  [secs] (java.time.Instant/ofEpochSecond secs))
+
+(defn now->zdt
+  "Returns the current time as a java.lang.ZonedDateTime (UTC)"
+  [] (with-zoneid zoneid-utc (ZonedDateTime/now)))
+
+(defn now->instant
+  "Returns the current time as a java.lang.Instant"
+  [] (Instant/now))
+
+
 ;----------------------------------------------------------------------------------------
 ; #todo: Make all use protocol for all Temporal's (ZonedDateTime, OffsetDateTime, Instant, ...?)
 

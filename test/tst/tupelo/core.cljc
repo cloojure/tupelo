@@ -2347,7 +2347,7 @@
   (is= [1 2 3] (unlazy (map inc (range 3))))
   (is= #{1 2 3} (unlazy #{3 2 1})))
 
-(dotest-focus
+(dotest
   (let [orig  {:b #{3 2 1}
                :a [1 2 3 { 5 :five 6 :six 4 :four }]
                :c (list 4 5 6)}

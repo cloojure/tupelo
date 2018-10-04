@@ -136,6 +136,35 @@
 ; #todo add not-neg? not-pos? not-zero?
 
 ;-----------------------------------------------------------------------------
+; #todo need tests & docs. Use for datomic Entity?
+(defn unlazy
+  [coll]
+  (let [unlazy-item (fn [item]
+                      (cond
+                        (sequential? item) (vec item)
+                        (map? item) (into {} item)
+                        (set? item) (into #{} item)
+                        (instance? java.io.InputStream item) (slurp item) ; #todo need test
+                        :else item))
+        result    (walk/postwalk unlazy-item coll) ]
+    result ))
+
+(defn prettify
+  [coll]
+  (let [prettify-item (fn prettify-item [item]
+                        (cond
+                          (sequential? item) (vec item)
+                          (map? item) (into (sorted-map) item)
+                          (set? item) (into (sorted-set) item)
+                          (instance? java.io.InputStream item) (prettify-item (slurp item)) ; #todo need test
+                          :else item))
+        result        (walk/postwalk prettify-item coll)]
+    result ))
+
+(defn nl
+  [] (newline))
+
+;-----------------------------------------------------------------------------
 ; spy stuff
 
 ; (def ^:dynamic *spy-enabled* false)
@@ -238,7 +267,7 @@
 ; #todo allow spyx-pretty to have labels like (spyx-pretty :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
 (defmacro spyx-pretty
   [& exprs]
-  (spyx-pretty-proc exprs))
+  (spyx-pretty-proc exprs)) ; #todo add in use of `prettify` for each value
 
 (defmacro with-spy-indent
   [& forms]
@@ -339,34 +368,6 @@
 
 ;-----------------------------------------------------------------------------
 ; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
-
-; #todo need tests & docs. Use for datomic Entity?
-(defn unlazy
-  [coll]
-  (let [unlazy-item (fn [item]
-                      (cond
-                        (sequential? item) (vec item)
-                        (map? item) (into {} item)
-                        (set? item) (into #{} item)
-                        (instance? java.io.InputStream item) (slurp item) ; #todo need test
-                        :else item))
-        result    (walk/postwalk unlazy-item coll) ]
-    result ))
-
-(defn prettify
-  [coll]
-  (let [prettify-item (fn prettify-item [item]
-                        (cond
-                          (sequential? item) (vec item)
-                          (map? item) (into (sorted-map) item)
-                          (set? item) (into (sorted-set) item)
-                          (instance? java.io.InputStream item) (prettify-item (slurp item)) ; #todo need test
-                          :else item))
-        result        (walk/postwalk prettify-item coll)]
-    result ))
-
-(defn nl
-  [] (newline))
 
 (defn has-length?
   [coll n]
