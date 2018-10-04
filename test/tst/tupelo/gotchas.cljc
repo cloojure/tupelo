@@ -174,7 +174,6 @@
   )
 
 (dotest             ; conj inconsistencies
-  (nl)
   (is= [1 2 nil] (conj [1 2] nil))
   (is= [nil 1 2] (conj '(1 2) nil))
   (is= {:a 1} (conj {:a 1} nil))

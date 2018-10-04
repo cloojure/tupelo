@@ -6,12 +6,15 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.dev
   #?@(:clj [
-  (:use tupelo.dev tupelo.test)
-  (:require
-    [criterium.core :as crit]
-    [tupelo.impl :as i]
-  )
-            ]) )
+            (:use tupelo.dev
+                  tupelo.core
+                  tupelo.test)
+            (:require
+              [criterium.core :as crit]
+              [tupelo.impl :as i]
+              [clojure.string :as str])
+            ])
+  (:import [java.io ByteArrayOutputStream PrintStream]))
 
 #?(:clj (do
 (dotest
@@ -91,6 +94,18 @@
 ;; benchmarked (Java 1.8, Clojure 1.7)
 (when false
   (dotest
-    (i/nl) (println :v1) (crit/quick-bench (vrange  1000000))
-    (i/nl) (println :v2) (crit/quick-bench (vrange2 1000000)) ))
+    (nl) (println :v1) (crit/quick-bench (vrange  1000000))
+    (nl) (println :v2) (crit/quick-bench (vrange2 1000000)) ))
+
+(dotest
+  (try
+    (throw (ex-info "something bad happened" {:a 1 :b 2}))
+    (catch Exception ex
+      (is= "something bad happened" (ex-msg ex))
+      (is= {:a 1 :b 2} (ex-data ex))
+      (is (str/includes? (ex-stacktrace ex)
+            "clojure.lang.ExceptionInfo: something bad happened {:a 1, :b 2}"))
+      (is (str/includes? (ex-stacktrace ex)
+            "at tst.tupelo.")))))
+
 ))

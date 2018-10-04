@@ -852,6 +852,18 @@
      (.close ps#)
      (.toString baos#)))
 
+(defn ex-msg
+  "Returns the message from an exception => (.getMessage exception)"
+  [exception]
+  (.getMessage exception))
+
+(defn ex-stacktrace
+  "Returns the stacktrace from an exception "
+  [exception]
+  (with-system-err-str
+    (.printStackTrace exception)))
+
+
 (defn seq->str
   "Convert a seq into a string (using pr) with a space preceding each value"
   [seq-in]

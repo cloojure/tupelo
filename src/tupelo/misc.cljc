@@ -19,12 +19,11 @@
               [tupelo.schema :as tsk]
               [tupelo.string :as ts]
               [tupelo.types :as tt] )
-  (:import
-    [java.nio ByteBuffer]
-    [java.security MessageDigest]
-    [java.util UUID ] )
-
-  ]) )
+            (:import
+              [java.nio ByteBuffer]
+              [java.security MessageDigest]
+              [java.util UUID] )
+]) )
 
 #?(:clj (do
 ;  #todo Make clojure versions of all pcapng stuff
@@ -99,17 +98,12 @@
   (let [result (shell/sh *os-shell* "-c" cmd-str)]
     (if (= 0 (grab :exit result))
       result
-      (throw (RuntimeException.
-               (str "shell-cmd: clojure.java.shell/sh failed. \n"
-                    "cmd-str:"     cmd-str        "\n"
-                    "exit status:" (:exit result) "\n"
-                    "stderr:"      (:err  result) "\n"
-                    "result:"      (:out  result) "\n"
-              ))))))
+      (throw (ex-info (str "shell-cmd: clojure.java.shell/sh failed, cmd-str:" cmd-str)
+               result)))))
 
 (defn get-os []
   (let [os-name (System/getProperty "os.name") ]
-    (condp re-find (str/lower-case os-name) ; required to match os.name="Windows 8.1"
+    (condp re-find (str/lower-case os-name) ; required to match os.name=" Windows 8.1"
       #"windows"  :windows
       #"linux"    :linux
       #"mac"      :mac
