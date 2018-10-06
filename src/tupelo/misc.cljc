@@ -22,7 +22,8 @@
             (:import
               [java.nio ByteBuffer]
               [java.security MessageDigest]
-              [java.util UUID] )
+              [java.util UUID]
+              [java.nio.file Paths])
 ]) )
 
 #?(:clj (do
@@ -253,6 +254,13 @@
   [hid :- HID]
   nil)              ; #todo
 
+
+;-----------------------------------------------------------------------------
+; -> tupelo.files ?
+(defn get-path
+  "Wrapper for Java Paths/get to work around the varargs strangeness"
+  [path-str]
+  (Paths/get "." (into-array String [path-str])))
 
 ;-----------------------------------------------------------------------------
 ; #todo -> tupelo.vector

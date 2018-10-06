@@ -251,50 +251,50 @@
     trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/SATURDAY))))
 
-(defn date-str-iso
+(defn string-date-iso
   "Returns a string like `2018-09-05`"
   [zdt]
   (.format zdt DateTimeFormatter/ISO_LOCAL_DATE))
 
-(defn date-time-str-iso
+(defn string-date-time-iso
   "Returns a ISO date-time string like `2018-09-05T23:05:19.123Z`"
   [timestamp]
   (str (->instant timestamp))) ; uses DateTimeFormatter/ISO_INSTANT
 
-(defn date-str-compact
+(defn string-date-compact
   "Returns a compact date-time string like `2018-09-05 23:05:19.123Z` => `20180905` "
   [timestamp]
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd")]
     (.format timestamp formatter)))
 
-(defn date-time-str-compact
+(defn string-date-time-compact
   "Returns a compact date-time string like `2018-09-05 23:05:19.123Z` => `20180905-230519` "
   [timestamp]
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd-HHmmss")]
     (.format timestamp formatter)))
 
-(defn date-time-str-hyphens
+(defn string-date-time-hyphens
   "Returns a compact date-time string like `2018-09-05 23:05:19.123Z` => `2018-09-05-23-05-19` "
   [timestamp]
   (let [formatter (DateTimeFormatter/ofPattern "yyyy-MM-dd-HH-mm-ss")]
     (.format timestamp formatter)))
 
-(defn date-time-str-nice
+(defn string-date-time-nice
   "Returns an ISO date-time string like `2018-09-05 23:05:19.123Z`
   (with a space instead of `T`)"
   [timestamp]
-  (let [sb (StringBuffer. (date-time-str-iso timestamp))]
+  (let [sb (StringBuffer. (string-date-time-iso timestamp))]
     (.setCharAt sb 10 \space)
     (str sb)))
 
 ;-----------------------------------------------------------------------------
 (defn ^:deprecated iso-date-str
   "DEPRECATED: use `date-str-iso`"
-  [& args] (apply date-str-iso args))
+  [& args] (apply string-date-iso args))
 
 (defn ^:deprecated iso-date-time-str
   "DEPRECATED: use `date-time-str-iso`"
-  [& args] (apply date-time-str-iso args))
+  [& args] (apply string-date-time-iso args))
 ;-----------------------------------------------------------------------------
 
 ; #todo make work for relative times (LocalDate, LocalDateTime, etc)

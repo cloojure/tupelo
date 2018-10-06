@@ -107,16 +107,16 @@
 
 (dotest
   (let [zdt (zoned-date-time 2018 9 8,, 2 3 4)]
-    (is= (date-str-iso zdt)            "2018-09-08")
-    (is= (date-time-str-iso zdt)       "2018-09-08T02:03:04Z")
-    (is= (date-time-str-nice zdt)      "2018-09-08 02:03:04Z")
+    (is= (string-date-iso zdt)            "2018-09-08")
+    (is= (string-date-time-iso zdt)       "2018-09-08T02:03:04Z")
+    (is= (string-date-time-nice zdt)      "2018-09-08 02:03:04Z")
     (is= (iso-date-str zdt)            "2018-09-08") ; deprecated
     (is= (iso-date-time-str zdt) "2018-09-08T02:03:04Z")) ; deprecated
   (let [zdt (zoned-date-time 2018 9 8,, 2 3 4,, 123456789)]
-    (is= (date-str-compact zdt)        "20180908" )
-    (is= (date-time-str-nice zdt)      "2018-09-08 02:03:04.123456789Z")
-    (is= (date-time-str-compact zdt)   "20180908-020304" )
-    (is= (date-time-str-hyphens zdt)   "2018-09-08-02-03-04")
+    (is= (string-date-compact zdt)        "20180908" )
+    (is= (string-date-time-nice zdt)      "2018-09-08 02:03:04.123456789Z")
+    (is= (string-date-time-compact zdt)   "20180908-020304" )
+    (is= (string-date-time-hyphens zdt)   "2018-09-08-02-03-04")
     (is= (iso-date-str zdt)            "2018-09-08") ; deprecated
     (is= (iso-date-time-str zdt)       "2018-09-08T02:03:04.123456789Z") ; deprecated
   ))
