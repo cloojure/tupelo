@@ -1241,28 +1241,32 @@
 
 ;-----------------------------------------------------------------------------
 (dotest
-  (let [data-enlive {:tag     :root
-                     :attrs   nil
-                     :content [{:tag     :SoapObject, :attrs nil,
-                                :content [{:tag     :ObjectData, :attrs nil,
-                                           :content [{:tag :FieldName, :attrs nil, :content ["ID"]}
-                                                     {:tag :FieldValue, :attrs nil, :content ["8d8edbb6-cb0f-11e8-a8d5-f2801f1b9fd1"]}]}
-                                          {:tag     :ObjectData, :attrs nil,
-                                           :content [{:tag :FieldName, :attrs nil, :content ["Attribute_1"]}
-                                                     {:tag :FieldValue, :attrs nil, :content ["Value_1a"]}]}
-                                          {:tag     :ObjectData, :attrs nil,
-                                           :content [{:tag :FieldName, :attrs nil, :content ["Attribute_2"]}
-                                                     {:tag :FieldValue, :attrs nil, :content ["Value_2a"]}]}]}
-                               {:tag     :SoapObject, :attrs nil,
-                                :content [{:tag     :ObjectData, :attrs nil,
-                                           :content [{:tag :FieldName, :attrs nil, :content ["ID"]}
-                                                     {:tag :FieldValue, :attrs nil, :content ["90e39036-cb0f-11e8-a8d5-f2801f1b9fd1"]}]}
-                                          {:tag     :ObjectData, :attrs nil,
-                                           :content [{:tag :FieldName, :attrs nil, :content ["Attribute_1"]}
-                                                     {:tag :FieldValue, :attrs nil, :content ["Value_1b"]}]}
-                                          {:tag     :ObjectData, :attrs nil,
-                                           :content [{:tag :FieldName, :attrs nil, :content ["Attribute_2"]}
-                                                     {:tag :FieldValue, :attrs nil, :content ["Value_2b"]}]}]}]}]
+  (let [data-enlive
+        {:tag   :root
+         :attrs nil
+         :content
+            [{:tag     :SoapObject, :attrs nil,
+              :content
+                 [{:tag     :ObjectData, :attrs nil,
+                   :content [{:tag :FieldName, :attrs nil, :content ["ID"]}
+                             {:tag :FieldValue, :attrs nil, :content ["8d8edbb6-cb0f-11e8-a8d5-f2801f1b9fd1"]}]}
+                  {:tag     :ObjectData, :attrs nil,
+                   :content [{:tag :FieldName, :attrs nil, :content ["Attribute_1"]}
+                             {:tag :FieldValue, :attrs nil, :content ["Value_1a"]}]}
+                  {:tag     :ObjectData, :attrs nil,
+                   :content [{:tag :FieldName, :attrs nil, :content ["Attribute_2"]}
+                             {:tag :FieldValue, :attrs nil, :content ["Value_2a"]}]}]}
+             {:tag     :SoapObject, :attrs nil,
+              :content
+                 [{:tag     :ObjectData, :attrs nil,
+                   :content [{:tag :FieldName, :attrs nil, :content ["ID"]}
+                             {:tag :FieldValue, :attrs nil, :content ["90e39036-cb0f-11e8-a8d5-f2801f1b9fd1"]}]}
+                  {:tag     :ObjectData, :attrs nil,
+                   :content [{:tag :FieldName, :attrs nil, :content ["Attribute_1"]}
+                             {:tag :FieldValue, :attrs nil, :content ["Value_1b"]}]}
+                  {:tag     :ObjectData, :attrs nil,
+                   :content [{:tag :FieldName, :attrs nil, :content ["Attribute_2"]}
+                             {:tag :FieldValue, :attrs nil, :content ["Value_2b"]}]}]}]}]
     (with-debug-hid
       (with-forest (new-forest)
         (let [root-hid     (add-tree-enlive data-enlive)
@@ -1299,7 +1303,6 @@
                [{:tag :FieldName, :value "Attribute_2"}]
                [{:tag :FieldValue, :value "Value_2b"}]]]])
           (is= soapobj-hids [:0009 :0013])
-
           (is= results
             [{"ID"          "8d8edbb6-cb0f-11e8-a8d5-f2801f1b9fd1",
               "Attribute_1" "Value_1a",
