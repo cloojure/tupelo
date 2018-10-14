@@ -338,7 +338,9 @@
       (throw (ex-info (str "num-forms must be even; value=" num-forms) forms))))
   (let [cond-action-pairs (partition 2 forms)
         cond-action-forms (for [[cond-form action-form] cond-action-pairs]
-                            `(or (when ~cond-form ~action-form) ~'it)) ]
+                            `(if ~cond-form
+                               ~action-form
+                               ~'it)) ]
     `(it-> ~expr ~@cond-action-forms)))
 
 ; #todo #wip
