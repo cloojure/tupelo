@@ -167,6 +167,9 @@
 ;-----------------------------------------------------------------------------
 ; spy stuff
 
+; #todo defn-spy  saves fn name to locals for spy printout
+; #todo spyxl  adds line # to spy printout
+
 ; (def ^:dynamic *spy-enabled* false)
 (def ^:dynamic *spy-enabled* true) ; #TODO fix before commit!!!
 
@@ -318,22 +321,33 @@
 
 (defmacro let-some
   [bindings & forms]
-  (if (seq bindings)
-    `(let [result# ~(cc/second bindings)]
-       (if (not (nil? result#))
-         (let [~(cc/first bindings) result#]
-           (let-some ~(cc/drop 2 bindings) ~@forms))))
-    `(do ~@forms)))
+  (let [num-bindings (count bindings)]
+    (when-not (even? num-bindings)
+      (throw (ex-info (str "num-bindings must be even; value=" num-bindings) bindings)))
+    (if (pos? num-bindings)
+      `(let [result# ~(cc/second bindings)]
+         (when (not-nil? result#)
+           (let [~(cc/first bindings) result#]
+             (let-some ~(cc/drop 2 bindings) ~@forms))))
+      `(do ~@forms))))
 
 (defmacro cond-it->
   [expr & forms]
   (let [num-forms (count forms)]
     (when-not (even? num-forms)
-      (throw (IllegalArgumentException. (str "num-forms must be even; value=" num-forms)))))
+      (throw (ex-info (str "num-forms must be even; value=" num-forms) forms))))
   (let [cond-action-pairs (partition 2 forms)
         cond-action-forms (for [[cond-form action-form] cond-action-pairs]
-                            `(or (when ~cond-form) ~action-form)) ]
+                            `(or (when ~cond-form ~action-form) ~'it)) ]
     `(it-> ~expr ~@cond-action-forms)))
+
+; #todo #wip
+(defmacro some-it->
+  [expr & forms]
+  (let [binding-pairs (interleave (repeat 'it) forms) ]
+    `(tupelo.core/let-some [~'it ~expr
+                            ~@binding-pairs]
+       ~'it)))
 
 
 (defmacro with-exception-default
@@ -637,6 +651,7 @@
                      (str "glue: colls must be all same type; found types=" (mapv type colls)))))))
 ; #todo look at using (ex-info ...)
 
+; #todo rename to (map-of a b c ...)  ??? (re. potpuri)
 (defmacro vals->map ; #todo -> README
   [& symbols]
   (let [maps-list (for [symbol symbols]
@@ -693,6 +708,8 @@
   (has-some? truthy?
     (mapv #(= elem %) (vals map))))
 
+; #todo maybe submap-without-keys, submap-without-vals ?
+; #todo filter by pred in addition to set/list?
 ; #todo -> README
 (s/defn submap-by-keys :- tsk/Map
   [map-arg :- tsk/Map

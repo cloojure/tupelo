@@ -648,6 +648,11 @@
   [expr & forms]
   `(i/cond-it-> ~expr ~@forms))
 
+(defmacro some-it->
+  "Threads forms as with `it->`, terminates & returns `nil` if any expression is nil."
+  [expr & forms]
+  `(i/some-it-> ~expr ~@forms))
+
 (defmacro with-exception-default
   "Evaluates body & returns its result.  In the event of an exception, default-val is returned
    instead of the exception."

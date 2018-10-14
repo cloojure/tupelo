@@ -1082,10 +1082,25 @@
 (dotest
   (let [params {:a 1 :b 1 :c nil :d nil}]
     (is= (cond-it-> params
+           (:a it)              (update it :b inc)
+           (= (:b it) 2)        (assoc it :c "here")
+           (= "here" (:c it))   (assoc it :d "again"))
+      {:a 1, :b 2, :c "here", :d "again"}))
+
+  (let [params {:a nil :b 1 :c nil :d nil}]
+    (is= (cond-it-> params
+           (:a it)                (update it :b inc)
+           (= (:b it) 1)          (assoc it :c "here")
+           (= "here" (:c it))     (assoc it :d "again"))
+      {:a nil, :b 1, :c "here", :d "again"}))
+
+  (let [params {:a 1 :b 1 :c nil :d nil}]
+    (is= (cond-it-> params
            (:a it)        (update it :b inc)
-           (= (:b it) 2)  (assoc it :c "here")
+           (= (:b it) 2)  (update it :b inc)
            (:c it)        (assoc it :d "again"))
-      {:a 1, :b 2, :c "here", :d "again"})))
+      {:a 1, :b 3, :c nil :d nil})) )
+
 
 (dotest
   (throws? Exception (/ 1 0))
@@ -1101,6 +1116,7 @@
     [0 1 "" [] nil           true false])
     [0 1 "" [] :some-default true false]))
 
+
 (dotest
   (is= 3 (let-some [a 1
                     b 2
@@ -1109,9 +1125,8 @@
   (is= nil (let-some [a 1
                       b nil
                       c 3]
-             [a b c])))
+             [a b c]))
 
-(dotest
   (is= 5 (let-some [a (+ 2 3)]
            a))
   (is= 7 (let-some [a (+ 2 3)
@@ -1131,7 +1146,23 @@
                        [x others]))
   (is= nil (let-some [tgt nil
                       [x & others] (range tgt)]
-             [x others])))
+             [x others])) )
+
+
+(dotest
+  (is= 8 (some-it-> 1
+           (inc it)
+           (* it 3)
+           (+ 2 it)))
+  (is (nil? (some-it-> nil
+              (inc it)
+              (* it 3)
+              (+ 2 it))))
+  (is (nil? (some-it-> 1 (inc it)
+              (when false (* it 3))
+              (+ 2 it))))
+  )
+
 
 (dotest
   (is (rel= 1 1 :digits 4 ))
