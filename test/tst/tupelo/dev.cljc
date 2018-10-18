@@ -31,13 +31,12 @@
 
 (defn dstr-analyze
   [{:keys [result path tmpl] :as arg}]
-  (spyx-pretty arg)
   (cond
     (map? tmpl) (doseq [entry tmpl]
                   (let [[key val] entry]
-                    (i/spyx [key val])
+                   ;(i/spyx [key val])
                     (let [path-new (append path key)]
-                      (if (= :? val)
+                      (if (= '? val)
                         (swap! result append {:path path-new :name (i/kw->sym key)})
                         (dstr-analyze {:result result :path path-new :tmpl val})))))
 
@@ -47,12 +46,9 @@
 
 (defn dstr-fn
   [v1 t1 f1]
-  (spyx :1 v1)
-  (spyx :1 t1)
-  (spyx :1 f1)
   (let [result (atom [])]
     (dstr-analyze {:result result :path [] :tmpl t1})
-    (spyx-pretty @result)
+   ;(spyx-pretty @result)
     (let [extr-code (apply glue
                       (for [{:keys [name path]} @result]
                         [name `(fetch-in ~v1 ~path)]))]
@@ -61,9 +57,6 @@
 
 (defmacro destruct
   [value0 tmpl0 & forms0]
-  (spyx :0 value0)
-  (spyx :0 tmpl0)
-  (spyx :0 forms0)
   (dstr-fn value0 tmpl0 forms0))
 
 (dotest-focus
@@ -71,8 +64,8 @@
   (is= {0 :x 1 :y 2 :z} (sequential->idx-map [:x :y :z]))
   (let [data {:a 1
               :b {:c 3}} ]
-    (destruct data {:a :?
-                    :b {:c :?}}
+    (destruct data {:a ?
+                    :b {:c ?}}
       (is= [1 3] (spyx [a c]))
       )
     ))
