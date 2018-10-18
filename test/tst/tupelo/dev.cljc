@@ -44,7 +44,7 @@
 
     :else (println :oops-44)))
 
-(defn dstr
+(defn dstr-fn
   [value tmpl & forms]
   (spyx forms)
   (let [result (atom [])]
@@ -57,6 +57,10 @@
         ~@forms ]
       )))
 
+(defmacro destr
+  [value tmpl & forms]
+  `(destr-fn ~value ~tmpl ~@forms))
+
 (dotest-focus
   (is= {0 :a 1 :b 2 :c} (sequential->idx-map [:a :b :c]))
   (is= {0 :x 1 :y 2 :z} (sequential->idx-map [:x :y :z]))
@@ -64,7 +68,7 @@
               :b {:c 3}}
         tmpl {:a :?
               :b {:c :?}}]
-    (spyx-pretty (dstr data tmpl
+    (spyx-pretty (dstr-fn data tmpl
                    [:is= [1 3] [:spyx [:a :c]]]
                    [:println [:a :c]]))
     ;(destruct [data [:a :?
