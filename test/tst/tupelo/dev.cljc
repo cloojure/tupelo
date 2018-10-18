@@ -12,7 +12,7 @@
               [tupelo.core :refer :all]
               [tupelo.dev :refer :all]
               [tupelo.impl :as i]
-              [tupelo.test :refer :all] ]))
+              [tupelo.test :refer :all]]))
   #?(:clj
      (:import [java.io ByteArrayOutputStream PrintStream])))
 
@@ -27,48 +27,64 @@
 ;  )
 
 
-(comment )
+(defn ch->sym [ch] (symbol (str ch)))
+(comment)
 
 (defn dstr-analyze
   [{:keys [result path tmpl] :as arg}]
   (cond
     (map? tmpl) (doseq [entry tmpl]
-                  (let [[key val] entry]
-                   ;(i/spyx [key val])
-                    (let [path-new (append path key)]
-                      (if (= '? val)
-                        (swap! result append {:path path-new :name (i/kw->sym key)})
-                        (dstr-analyze {:result result :path path-new :tmpl val})))))
+                  (let [[curr-key curr-val] entry]
+                    ;(spyx [curr-key curr-val])
+                    (let [path-new (append path curr-key)]
+                      ;(spyx path-new)
+                      (if (symbol? curr-val)
+                        (let [var-sym (if (= curr-val (ch->sym \?))
+                                        (i/kw->sym curr-key)
+                                        curr-val)]
+                          (swap! result append {:path path-new :name var-sym}))
+                        (dstr-analyze {:result result :path path-new :tmpl curr-val})))))
 
-    (sequential? tmpl) (dstr-analyze {:result result :path path :tmpl (sequential->idx-map val)})
+    (sequential? tmpl)
+    (dstr-analyze {:result result :path path :tmpl (sequential->idx-map tmpl)})
 
     :else (println :oops-44)))
 
 (defn dstr-fn
-  [v1 t1 f1]
+  [data tmpl forms]
   (let [result (atom [])]
-    (dstr-analyze {:result result :path [] :tmpl t1})
-   ;(spyx-pretty @result)
-    (let [extr-code (apply glue
-                      (for [{:keys [name path]} @result]
-                        [name `(fetch-in ~v1 ~path)]))]
-      `(let [~@extr-code]
-         ~@f1))))
+    (dstr-analyze {:result result :path [] :tmpl tmpl})
+    ;(spyx-pretty @result)
+    (let [extraction-pairs (apply glue
+                             (for [{:keys [name path]} @result]
+                               [name `(let [result# (get-in ~data ~path ::not-found)]
+                                        (when (= result# ::not-found)
+                                          (throw (ex-info "destruct: value not found" {:data ~data :path ~path})))
+                                        result# )]))] ; #todo fetch-in and/or exception
+      (spyx-pretty :dstr-64
+        `(let [~@extraction-pairs]
+           ~@forms)))))
 
 (defmacro destruct
   [value0 tmpl0 & forms0]
   (dstr-fn value0 tmpl0 forms0))
 
-(dotest-focus
+(dotest
   (is= {0 :a 1 :b 2 :c} (sequential->idx-map [:a :b :c]))
   (is= {0 :x 1 :y 2 :z} (sequential->idx-map [:x :y :z]))
+  (is= 'a (ch->sym \a))
+  (is= '? (ch->sym \?)))
+
+(dotest-focus
   (let [data {:a 1
-              :b {:c 3}} ]
+              :b {:c 3}}]
     (destruct data {:a ?
                     :b {:c ?}}
-      (is= [1 3] (spyx [a c]))
-      )
-    ))
+      (is= [1 3] (spyx [a c]))))
+  (let [data [:a :b :c]]
+    (destruct data [v1 v2 v3]
+      (is= [:a :b :c] (spyx [v1 v2 v3]))))
+)
 
 ;-----------------------------------------------------------------------------
 (dotest
