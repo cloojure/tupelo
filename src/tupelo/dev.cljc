@@ -4,50 +4,53 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-#?(:clj (do
 
 (ns tupelo.dev
-  "Code under development"
   (:require
-    [clojure.math.combinatorics :as combo]
     [clojure.string :as str]
+    [clojure.math.combinatorics :as combo]
     [schema.core :as s]
     [tupelo.impl :as i] ))
 
-(defn find-idxs-impl
-  [idxs data tgt]
-  (apply i/glue
-    (i/forv [[idx val] (i/indexed data)]
-      (let [idxs-curr (i/append idxs idx)]
-           (if (sequential? val) ; #todo does not work for vector tgt
-             (find-idxs-impl idxs-curr val tgt)
-             (if (= val tgt)
-               [{:idxs idxs-curr :val val}]
-               []))))))
+#?(:clj (do
 
-(s/defn find-idxs
-  "Given an N-dim data structure (nested vectors/lists) & a target value, returns
-  a list of maps detailing where index values where the target value is found.
+  (defn find-idxs-impl
+    [idxs data pred-fn]
+    (apply i/glue
+      (i/forv [[idx val] (i/indexed data)]
+        (let [idxs-curr (i/append idxs idx)]
+             (if (sequential? val) ; #todo does not work for vector pred-fn
+               (find-idxs-impl idxs-curr val pred-fn)
+               (if (pred-fn val)
+                 [{:idxs idxs-curr :val val}]
+                 []))))))
 
-    (is= (find-idxs  [[ 1  2 3]
-                      [10 11  ]
-                      [ 9  2 8]]  2)
-      [{:idxs [0 1], :val 2}
-       {:idxs [2 1], :val 2}]) "
-  [data  :- [s/Any]
-   tgt :- s/Any]
-  (find-idxs-impl [] data tgt))
+  (s/defn find-idxs
+    "Given an N-dim data structure (nested vectors/lists) & a target value, returns
+    a list of maps detailing where index values where the target value is found.
 
-(defn combinations-duplicate [coll n]
-  "Returns all combinations of elements from the input collection, presevering duplicates."
-  (let [values     (vec coll)
-        idxs       (range (count values))
-        idx-combos (combo/combinations idxs n)
-        combos     (i/forv [idx-combo idx-combos]
-                     (mapv #(nth values %) idx-combo))]
-    combos))
+      (is= (find-idxs  [[ 1  2 3]
+                        [10 11  ]
+                        [ 9  2 8]]  2)
+        [{:idxs [0 1], :val 2}
+         {:idxs [2 1], :val 2}]) "
+    [data  :- [s/Any]
+     tgt :- s/Any]
+    (let [pred-fn (if (fn? tgt)
+                    tgt
+                    #(= % tgt))]
+      (find-idxs-impl [] data pred-fn)))
 
-(defn parse-string [line]
-  (mapv read-string (str/split line #" ")))
+  (defn combinations-duplicate [coll n]
+    "Returns all combinations of elements from the input collection, presevering duplicates."
+    (let [values     (vec coll)
+          idxs       (range (count values))
+          idx-combos (combo/combinations idxs n)
+          combos     (i/forv [idx-combo idx-combos]
+                       (mapv #(nth values %) idx-combo))]
+      combos))
 
-) )
+  (defn parse-string [line]
+    (mapv read-string (str/split line #" ")))
+
+))

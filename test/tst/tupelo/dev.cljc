@@ -5,15 +5,16 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.dev
-  #?@(:clj [
-            (:use tupelo.dev tupelo.core tupelo.test)
-            (:require
-              [criterium.core :as crit]
-              [clojure.string :as str]
+  (:require
+    [clojure.string :as str]
+    #?@(:clj [[criterium.core :as crit]
+              [schema.core :as s]
+              [tupelo.core :refer :all]
+              [tupelo.dev :refer :all]
               [tupelo.impl :as i]
-              [schema.core :as s])
-            ])
-  (:import [java.io ByteArrayOutputStream PrintStream]))
+              [tupelo.test :refer :all] ]))
+  #?(:clj
+     (:import [java.io ByteArrayOutputStream PrintStream])))
 
 (s/defn sequential->idx-map :- {s/Int s/Any}
   [data :- [s/Any]]
@@ -28,7 +29,7 @@
 
 (comment )
 
-(defn dstr-impl
+(defn dstr-analyze
   [{:keys [result path tmpl] :as arg}]
   (spyx-pretty arg)
   (cond
@@ -38,9 +39,9 @@
                     (let [path-new (append path key)]
                       (if (= :? val)
                         (swap! result append {:path path-new :name (i/kw->sym key)})
-                        (dstr-impl {:result result :path path-new :tmpl val})))))
+                        (dstr-analyze {:result result :path path-new :tmpl val})))))
 
-    (sequential? tmpl) (dstr-impl {:result result :path path :tmpl (sequential->idx-map val)})
+    (sequential? tmpl) (dstr-analyze {:result result :path path :tmpl (sequential->idx-map val)})
 
     :else (println :oops-44)))
 
@@ -48,14 +49,15 @@
   [value tmpl & forms]
   (spyx forms)
   (let [result (atom [])]
-    (dstr-impl {:result result :path [] :tmpl tmpl})
+    (dstr-analyze {:result result :path [] :tmpl tmpl})
     (spyx-pretty @result)
-    (spy :res-52
-      `[:let [~@(apply glue
-                  (for [{:keys [name path]} @result]
-                    [name [:fetch-in :value path]]))]
-        ~@forms ]
-      )))
+    (let [extr-code (apply glue
+                      (for [{:keys [name path]} @result]
+                        [name [:fetch-in :value path]]))]
+      (spyx-pretty extr-code)
+      (spy :res-52
+        `(let [~@extr-code]
+           ~@forms)))))
 
 (defmacro destr
   [value tmpl & forms]
