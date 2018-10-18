@@ -220,16 +220,17 @@
   (let [now-instant-1      (instant)
         now-zdt-1          (zoned-date-time)
         now-zdt-2          (now->zdt)
+        >>                 (Thread/sleep 100)
         now-instant-2      (now->instant)
 
-        tst-interval-short  (interval now-instant-1 now-instant-2)
-        tst-interval-1-sec  (interval (.minusSeconds now-instant-1 1) now-instant-2)
+        tst-interval-short (interval now-instant-1 now-instant-2)
+        tst-interval-1-sec (interval (.minusSeconds now-instant-1 1) now-instant-2)
 
         now-millis         (.toEpochMilli now-instant-1)
         now-instant-millis (millis->instant now-millis)
-        now-instant-Secs   (secs->instant (quot now-millis 1000)) ]
+        now-instant-secs   (secs->instant (quot now-millis 1000))]
     (is (interval-contains? tst-interval-short now-zdt-1))
     (is (interval-contains? tst-interval-short now-zdt-2))
     (is (interval-contains? tst-interval-1-sec now-instant-millis))
-    (is (interval-contains? tst-interval-1-sec now-instant-Secs))))
+    (is (interval-contains? tst-interval-1-sec now-instant-secs))))
 

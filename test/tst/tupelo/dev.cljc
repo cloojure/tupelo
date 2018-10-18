@@ -50,6 +50,12 @@
 
     :else (println :oops-44)))
 
+(defn get-in-strict [data path]
+  (let [result (get-in data path ::not-found)]
+    (when (= result ::not-found)
+      (throw (ex-info "destruct(get-in-strict): value not found" {:data data :path path})))
+    result))
+
 (defn dstr-fn
   [data tmpl forms]
   (let [result (atom [])]
@@ -57,13 +63,9 @@
     ;(spyx-pretty @result)
     (let [extraction-pairs (apply glue
                              (for [{:keys [name path]} @result]
-                               [name `(let [result# (get-in ~data ~path ::not-found)]
-                                        (when (= result# ::not-found)
-                                          (throw (ex-info "destruct: value not found" {:data ~data :path ~path})))
-                                        result# )]))] ; #todo fetch-in and/or exception
-      (spyx-pretty :dstr-64
-        `(let [~@extraction-pairs]
-           ~@forms)))))
+                               [name `(get-in-strict ~data ~path) ])) ]
+      `(let [~@extraction-pairs]
+         ~@forms))))
 
 (defmacro destruct
   [value0 tmpl0 & forms0]
@@ -80,11 +82,23 @@
               :b {:c 3}}]
     (destruct data {:a ?
                     :b {:c ?}}
-      (is= [1 3] (spyx [a c]))))
+      (is= [1 3] [a c])))
   (let [data [:a :b :c]]
     (destruct data [v1 v2 v3]
-      (is= [:a :b :c] (spyx [v1 v2 v3]))))
-)
+      (is= [:a :b :c] [v1 v2 v3])))
+
+  ; bad data examples
+  (throws?
+    (let [data {:a 1
+                :b {:z 3}}]
+      (destruct data {:a ?
+                      :b {:c ?}}
+        (is= [1 3] [a c]))))
+  (throws?
+    (let [data [:a :b]]
+      (destruct data [v1 v2 v3]
+        (is= [:a :b :c] [v1 v2 v3]))))
+  )
 
 ;-----------------------------------------------------------------------------
 (dotest
