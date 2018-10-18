@@ -46,37 +46,36 @@
     :else (println :oops-44)))
 
 (defn dstr-fn
-  [value tmpl & forms]
-  (spyx forms)
+  [v1 t1 f1]
+  (spyx :1 v1)
+  (spyx :1 t1)
+  (spyx :1 f1)
   (let [result (atom [])]
-    (dstr-analyze {:result result :path [] :tmpl tmpl})
+    (dstr-analyze {:result result :path [] :tmpl t1})
     (spyx-pretty @result)
     (let [extr-code (apply glue
                       (for [{:keys [name path]} @result]
-                        [name [:fetch-in :value path]]))]
-      (spyx-pretty extr-code)
-      (spy :res-52
-        `(let [~@extr-code]
-           ~@forms)))))
+                        [name `(fetch-in ~v1 ~path)]))]
+      `(let [~@extr-code]
+         ~@f1))))
 
-(defmacro destr
-  [value tmpl & forms]
-  `(destr-fn ~value ~tmpl ~@forms))
+(defmacro destruct
+  [value0 tmpl0 & forms0]
+  (spyx :0 value0)
+  (spyx :0 tmpl0)
+  (spyx :0 forms0)
+  (dstr-fn value0 tmpl0 forms0))
 
 (dotest-focus
   (is= {0 :a 1 :b 2 :c} (sequential->idx-map [:a :b :c]))
   (is= {0 :x 1 :y 2 :z} (sequential->idx-map [:x :y :z]))
   (let [data {:a 1
-              :b {:c 3}}
-        tmpl {:a :?
-              :b {:c :?}}]
-    (spyx-pretty (dstr-fn data tmpl
-                   [:is= [1 3] [:spyx [:a :c]]]
-                   [:println [:a :c]]))
-    ;(destruct [data [:a :?
-    ;                 :b {:c :?}] ]
-    ;  (is= [1 3] (spyx [a c])))
-  ))
+              :b {:c 3}} ]
+    (destruct data {:a :?
+                    :b {:c :?}}
+      (is= [1 3] (spyx [a c]))
+      )
+    ))
 
 ;-----------------------------------------------------------------------------
 (dotest
@@ -112,6 +111,9 @@
     (is= (find-idxs data-1 2) [{:idxs [1], :val 2}])
 
     (is= (find-idxs data-2 10) [{:idxs [1 0], :val 10}])
+    (is= (find-idxs data-2 odd?) [{:idxs [0 0], :val 1}
+                                  {:idxs [0 2], :val 3}
+                                  {:idxs [1 1], :val 11} ])
 
     (is= (find-idxs data-2b 10) [{:idxs [1 0], :val 10}])
 
