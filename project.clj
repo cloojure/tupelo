@@ -7,7 +7,7 @@
     [
     ;[org.clojure/clojure "1.8.0"]
     ;[org.clojure/clojure "1.9.0"]
-     [org.clojure/clojure "1.10.0-RC1"]
+     [org.clojure/clojure "1.10.0-beta3"]
 
      [clj-time "0.14.4"]
      [cheshire "5.8.1"]

@@ -165,7 +165,7 @@
              :test-refresh/focus true )
        (fn [] (clojure.test/test-var (var ~label))))))
 
-(defmacro ^:deprecated dotest ; #todo README & tests
+(defmacro dotest ; #todo README & tests
   "Alias for tupelo.test/deftest "
   [& items]
   (let [item-1 (clojure.core/first items)
