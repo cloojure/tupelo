@@ -45,16 +45,16 @@
     :else (println :oops-44)))
 
 (defn dstr
-  [tmpl]
+  [value tmpl & forms]
+  (spyx forms)
   (let [result (atom [])]
     (dstr-impl {:result result :path [] :tmpl tmpl})
     (spyx-pretty @result)
     (spy :res-52
       `[:let [~@(apply glue
                   (for [{:keys [name path]} @result]
-                    [name [:fetch-in :data path]]))]
-        :other-forms
-        ]
+                    [name [:fetch-in :value path]]))]
+        ~@forms ]
       )))
 
 (dotest-focus
@@ -64,7 +64,9 @@
               :b {:c 3}}
         tmpl {:a :?
               :b {:c :?}}]
-    (spyx-pretty (dstr tmpl))
+    (spyx-pretty (dstr data tmpl
+                   [:is= [1 3] [:spyx [:a :c]]]
+                   [:println [:a :c]]))
     ;(destruct [data [:a :?
     ;                 :b {:c :?}] ]
     ;  (is= [1 3] (spyx [a c])))
