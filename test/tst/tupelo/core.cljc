@@ -2392,6 +2392,66 @@
                    :c  [4 5 6]} " ]
     (nonblank= result expected )))
 
+(dotest
+  (let [data {:a 1
+              :b {:c 3}}]
+    (destruct [data {:a ?
+                     :b {:c ?}}]
+      (is= [1 3] [a c])))
+  (let [data [:a :b :c]]
+    (destruct [data [v1 v2 v3]]
+      (is= [:a :b :c] [v1 v2 v3])))
+
+  ; bad data examples
+  (throws?
+    (let [data {:a 1
+                :b {:z 3}}]
+      (destruct [data {:a ?
+                       :b {:c ?}}]
+        [a c])))
+  (throws?
+    (let [data [:a :b]]
+      (destruct [data [v1 v2 v3]]
+        [v1 v2 v3])))
+
+  ; multi-destruct
+  (let [data-1 {:a 1 :b {:c 3}}
+        data-2 {:x 7 :y {:z 9}}]
+    (destruct [data-1 {:a ? :b {:c ?}}
+               data-2 {:x ? :y {:z ?}}]
+      (is= [1 3 7 9] [a c x z])))
+  (let [data-1 {:a 1 :b {:c 3}}
+        data-2 [:x :y :z :666]]
+    (destruct [data-1 {:a ? :b {:c ?}}
+               data-2 [x y z]]
+      (is= [1 3 :x :y :z] [a c x y z]))
+    (destruct [[data-1 data-2]
+               [item-1 item-2]]
+      (is= [item-1 item-2] [data-1 data-2])))
+  (let [data-1 {:a 1 :b {:c [:x :y :z :666]}}]
+    (destruct [data-1 {:a ? :b {:c [x y z]}}]
+      (is= [1 :x :y :z] [a x y z])))
+  (let [data-1 [{:a 1 :b {:c 3}}
+                {:x 7 :y {:z 9}}]]
+    (destruct [data-1
+               [{:a ? :b {:c ?}}
+                {:x ? :y {:z ?}}]]
+      (is= [1 3 7 9] [a c x z])))
+
+  ; duplicate vars
+  (let [data-1 {:a 1 :b {:c 3}}
+        data-2 {:x 7 :y {:c 9}}]
+    (destruct [data-1 {:a ? :b {:c p}}
+               data-2 {:x ? :y {:c q}}]
+      (is= [1 7 3 9] [a x p q]))
+    (destruct [data-1 {:a ? :b {:c ?}}
+               data-2 {:x ? :y {:c q}}]
+      (is= [1 7 3 9] [a x c q]))
+    ; #todo wip
+    )
+
+  )
+
 
 
 ; #todo move to tst.tupelo.core.deprecated

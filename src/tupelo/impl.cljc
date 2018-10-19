@@ -248,6 +248,24 @@
        (println (str (spy-indent-spaces) '~expr " => <#" class-name# " " (pr-str spy-val#) ">")))
      spy-val#))
 
+(defn ^:no-doc spy-pretty-proc ; #todo => core
+  [exprs]
+  (let [r1         (for [expr (butlast exprs)]
+                     `(when *spy-enabled* (println (spy-indent-spaces) (str ~expr))))
+        r2         (let [expr (xlast exprs)]
+                     `(let [spy-val# ~expr]
+                        (when *spy-enabled*
+                          (println (indent-lines-with (spy-indent-spaces)
+                                     (pretty-str spy-val#))))
+                        spy-val#))
+        final-code `(do
+                      ~@r1
+                      ~r2)]
+    final-code))
+(defmacro spy-pretty ; #todo => core
+  [& exprs]
+  (spy-pretty-proc exprs)) ; #todo add in use of `prettify` for each value
+
 (defn ^:no-doc spyx-pretty-proc
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
@@ -611,19 +629,6 @@
          {:a {:c 3}})
     {:a {:b 2
          :c 3}}))
-(comment
-  ; #todo name => destruct  ???
-  (let [data {:a {:b 2
-              :c 3
-              :d {:e 5}}} ])
-    ; has same result as
-  (extract data {:a {:b 2
-                     :c xx
-                     :d {:e yy}}}
-    ...)
-  (let [xx 3
-        yy 5]
-    ...))
 
 ;-----------------------------------------------------------------------------
 ; clojure.spec stuff
@@ -672,6 +677,33 @@
                       kw  (keyword item)]]
             [sym (list 'grab kw the-map)]))
        ~@forms)))
+
+; #todo:  make (map-ctx {:trunc false :eager true} <fn> <coll1> <coll2> ...) <- default ctx
+; #todo:  mapz, forz, filterz, ...?
+(defn keep-if
+  "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
+  [pred coll]
+  (cond
+    (sequential? coll) (vec (clojure.core/filter pred coll))
+    (map? coll) (reduce-kv (fn [cum-map k v]
+                             (if (pred k v)
+                               (assoc cum-map k v)
+                               cum-map))
+                  {}
+                  coll)
+    (set? coll) (reduce (fn [cum-set elem]
+                          (if (pred elem)
+                            (conj cum-set elem)
+                            cum-set))
+                  #{}
+                  (seq coll))
+    :else (throw (IllegalArgumentException.
+                   (str "keep-if: coll must be sequential, map, or set, class=" (class coll))))))
+
+(defn drop-if
+  "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
+  [pred coll]
+  (keep-if (complement pred) coll))
 
 ;-----------------------------------------------------------------------------
 (defn clip-str      ; #todo -> tupelo.string?
@@ -879,32 +911,158 @@
                           [item])))]
        result))
 
-; #todo:  make (map-ctx {:trunc false :eager true} <fn> <coll1> <coll2> ...) <- default ctx
-; #todo:  mapz, forz, filterz, ...?
-(defn keep-if
-  "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
-  [pred coll]
-  (cond
-    (sequential? coll) (vec (clojure.core/filter pred coll))
-    (map? coll) (reduce-kv (fn [cum-map k v]
-                             (if (pred k v)
-                               (assoc cum-map k v)
-                               cum-map))
-                  {}
-                  coll)
-    (set? coll) (reduce (fn [cum-set elem]
-                          (if (pred elem)
-                            (conj cum-set elem)
-                            cum-set))
-                  #{}
-                  (seq coll))
-    :else (throw (IllegalArgumentException.
-                   (str "keep-if: coll must be sequential, map, or set, class=" (class coll))))))
+; #todo rename :strict -> :trunc
+(defn zip-1*
+  "Usage:  (zip* context & colls)
+  where context is a map with default values:  {:strict true}
+  Not lazy. "
+  [context & colls] ; #todo how use Schema with "rest" args?
+  (assert (map? context))
+  (assert #(every? sequential? colls))
+  (let [strict        (get context :strict true)
+        lengths       (mapv count colls)
+        lengths-equal (apply = lengths) ]
+    (when (and strict
+            (not lengths-equal))
+      (throw (IllegalArgumentException.
+               (str "zip*: colls must all be same length; lengths=" lengths))))
+    (vec (apply map vector colls))))
+; #todo fix so doesn't hang if give infinite lazy seq. Technique:
+;  (def x [1 2 3])
+;  (seq (drop 2 x))          =>  (3)
+;  (seq (drop 3 x))          =>  nil
+;  (nil? (seq (drop 3 x)))   =>  true
+;  (nil? (drop 3 (range)))   =>  false
 
-(defn drop-if
-  "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
-  [pred coll]
-  (keep-if (complement pred) coll))
+; #todo rename :strict -> :trunc
+(defn zip*
+  [context & colls] ; #todo how use Schema with "rest" args?
+  (assert (map? context))
+  (assert #(every? sequential? colls))
+  (let [num-colls  (count colls)
+        strict-flg (get context :strict true)]
+    (loop [result []
+           colls  colls]
+      (let [empty-flgs  (mapv empty? colls)
+            num-empties (count (keep-if truthy? empty-flgs)) ]
+        (if (zero? num-empties)
+          (do
+            (let [new-row (mapv xfirst colls)
+                  new-results (append result new-row) ]
+              (recur
+                new-results
+                (mapv xrest colls))))
+          (do
+            (when (and strict-flg
+                    (not= num-empties num-colls))
+              (throw (RuntimeException. (str "zip*: collections are not all same length; empty-flgs=" empty-flgs))))
+            result))))))
+
+; #todo add schema; result = tsk/List[ tsk/Pair ]
+; #todo add :trunc & assert;
+(defn zip
+  ; #todo ***** WARNING - will hang for infinite length inputs *****
+  ; #todo fix so doesn't hang if give infinite lazy seq. Technique:
+  ; #todo Use (zip ... {:trunc true}) if you want to truncate all inputs to the length of the shortest.
+  [& args]
+  (assert #(every? sequential? args))
+  (apply zip* {:strict true} args))
+
+(defn zip-lazy
+  [& colls]  ; #todo how use Schema with "rest" args?
+  (assert #(every? sequential? colls))
+  (apply map vector colls))
+
+
+(comment
+  ; #todo name => destruct  ???
+  (let [data {:a {:b 2
+                  :c 3
+                  :d {:e 5}}} ])
+  ; has same result as
+  (extract data {:a {:b 2
+                     :c xx
+                     :d {:e yy}}}
+    ...)
+  (let [xx 3
+        yy 5]
+    ...))
+
+(s/defn sequential->idx-map :- {s/Int s/Any} ; #todo move
+  [data :- [s/Any]]
+  (into (sorted-map)
+    (map-indexed (fn [idx val] [idx val])
+      data)))
+
+(defn char->sym [ch] (symbol (str ch))) ; #todo move
+
+(defn get-in-strict [data path] ; #todo move
+  (let [result (get-in data path ::not-found)]
+    (when (= result ::not-found)
+      (throw (ex-info "destruct(get-in-strict): value not found" {:data data :path path})))
+    result))
+
+(defn ^:no-doc tmpl-analyze
+  [ctx]
+  (with-map-vals ctx [parsed path tmpl]
+    ;(spyx path)
+    (cond
+      (map? tmpl)
+      (doseq [entry tmpl]
+        ;(spyx entry)
+        (let [[curr-key curr-val] entry]
+          ;(spyx [curr-key curr-val])
+          (let [path-new (append path curr-key)]
+            ;(spyx path-new)
+            (if (symbol? curr-val)
+              (let [var-sym (if (= curr-val (char->sym \?))
+                              (kw->sym curr-key)
+                              curr-val)]
+                (swap! parsed append {:path path-new :name var-sym}))
+              (tmpl-analyze {:parsed parsed :path path-new :tmpl curr-val})))))
+
+      (sequential? tmpl)
+      (do
+        ;(spy :tmpl-51 tmpl)
+        (tmpl-analyze {:parsed parsed :path path :tmpl (sequential->idx-map tmpl)}))
+
+      :else (println :oops-44))))
+
+(defn ^:no-doc dstr-fn
+  [bindings forms]
+  (when (not (even? (count bindings)))
+    (throw (ex-info "destruct: uneven number of bindings:" bindings)))
+  (when (empty? bindings)
+    (throw (ex-info "destruct: bindings empty:" bindings)))
+  (let [binding-pairs (partition 2 bindings)
+        datas         (mapv cc/first binding-pairs)
+        tmpls         (mapv cc/second binding-pairs)
+        tmpls-parsed  (vec (for [tmpl tmpls]
+                             (let [parsed (atom [])]
+                               (tmpl-analyze {:parsed parsed :path [] :tmpl tmpl})
+                               @parsed)))]
+    ; (spyx tmpls-parsed)
+
+    ; look for duplicate variable names
+    (let [var-names (vec (for [tmpl-parsed   tmpls-parsed
+                               path-name-map tmpl-parsed]
+                           (grab :name path-name-map)))]
+      ;(spyx var-names)
+      (when (not= var-names (distinct var-names))
+        (throw (ex-info "destruct: var-names not unique" var-names))))
+
+    (let [data-parsed-pairs (zip datas tmpls-parsed)]
+      ;(spyx data-parsed-pairs)
+      (let [extraction-pairs (apply glue
+                               (for [[data parsed] data-parsed-pairs
+                                     {:keys [name path]} parsed]
+                                 [name `(get-in-strict ~data ~path)]))]
+        `(let [~@extraction-pairs]
+           ~@forms)))))
+
+(defmacro destruct
+  [bindings & forms]
+  (dstr-fn bindings forms))
 
 (defn strcat
   [& args]
@@ -1015,68 +1173,6 @@
   `(map-let* {:strict true
               :lazy   false}
      ~bindings ~@forms))
-
-; #todo rename :strict -> :trunc
-(defn zip-1*
-  "Usage:  (zip* context & colls)
-  where context is a map with default values:  {:strict true}
-  Not lazy. "
-  [context & colls] ; #todo how use Schema with "rest" args?
-  (assert (map? context))
-  (assert #(every? sequential? colls))
-  (let [strict        (get context :strict true)
-        lengths       (mapv count colls)
-        lengths-equal (apply = lengths) ]
-    (when (and strict
-            (not lengths-equal))
-      (throw (IllegalArgumentException.
-               (str "zip*: colls must all be same length; lengths=" lengths))))
-    (vec (apply map vector colls))))
-; #todo fix so doesn't hang if give infinite lazy seq. Technique:
-;  (def x [1 2 3])
-;  (seq (drop 2 x))          =>  (3)
-;  (seq (drop 3 x))          =>  nil
-;  (nil? (seq (drop 3 x)))   =>  true
-;  (nil? (drop 3 (range)))   =>  false
-
-; #todo rename :strict -> :trunc
-(defn zip*
-  [context & colls] ; #todo how use Schema with "rest" args?
-  (assert (map? context))
-  (assert #(every? sequential? colls))
-  (let [num-colls  (count colls)
-        strict-flg (get context :strict true)]
-    (loop [result []
-           colls  colls]
-      (let [empty-flgs  (mapv empty? colls)
-            num-empties (count (keep-if truthy? empty-flgs)) ]
-        (if (zero? num-empties)
-          (do
-            (let [new-row (mapv xfirst colls)
-                  new-results (append result new-row) ]
-              (recur
-                new-results
-                (mapv xrest colls))))
-          (do
-            (when (and strict-flg
-                    (not= num-empties num-colls))
-              (throw (RuntimeException. (str "zip*: collections are not all same length; empty-flgs=" empty-flgs))))
-            result))))))
-
-; #todo add schema; result = tsk/List[ tsk/Pair ]
-; #todo add :trunc & assert;
-(defn zip
-  ; #todo ***** WARNING - will hang for infinite length inputs *****
-  ; #todo fix so doesn't hang if give infinite lazy seq. Technique:
-  ; #todo Use (zip ... {:trunc true}) if you want to truncate all inputs to the length of the shortest.
-  [& args]
-  (assert #(every? sequential? args))
-  (apply zip* {:strict true} args))
-
-(defn zip-lazy
-  [& colls]  ; #todo how use Schema with "rest" args?
-  (assert #(every? sequential? colls))
-  (apply map vector colls))
 
 (defn indexed
   [& colls]

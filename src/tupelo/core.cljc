@@ -267,6 +267,10 @@
   "Like `spyx` but with pretty printing (clojure.pprint/pprint)"
   [& forms] `(i/spyx-pretty ~@forms))
 
+(defmacro spy-pretty
+  "Like `spyx-pretty` but without printing the original form"
+  [& forms] `(i/spy-pretty ~@forms))
+
 (defmacro let-spy
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
    expressions, printing both the expression and its value to stdout. Returns the value of the
@@ -507,6 +511,10 @@
   See `vals->map` for simple creation of labelled data maps."
   [the-map items-vec & forms]
   `(i/with-map-vals ~the-map ~items-vec ~@forms))
+
+(defmacro destruct
+  [bindings & forms]
+  `(i/destruct ~bindings ~@forms))
 
 (defn keyvals
   "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
