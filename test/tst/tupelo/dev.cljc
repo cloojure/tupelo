@@ -22,33 +22,7 @@
     (map-indexed (fn [idx val] [idx val])
       data)))
 
-;(defmacro destruct
-;  [bindings & forms]
-;  )
-
-
-(defn ch->sym [ch] (symbol (str ch)))
-(comment)
-
-(defn dstr-analyze
-  [{:keys [result path tmpl] :as arg}]
-  (cond
-    (map? tmpl) (doseq [entry tmpl]
-                  (let [[curr-key curr-val] entry]
-                    ;(spyx [curr-key curr-val])
-                    (let [path-new (append path curr-key)]
-                      ;(spyx path-new)
-                      (if (symbol? curr-val)
-                        (let [var-sym (if (= curr-val (ch->sym \?))
-                                        (i/kw->sym curr-key)
-                                        curr-val)]
-                          (swap! result append {:path path-new :name var-sym}))
-                        (dstr-analyze {:result result :path path-new :tmpl curr-val})))))
-
-    (sequential? tmpl)
-    (dstr-analyze {:result result :path path :tmpl (sequential->idx-map tmpl)})
-
-    :else (println :oops-44)))
+(defn char->sym [ch] (symbol (str ch)))
 
 (defn get-in-strict [data path]
   (let [result (get-in data path ::not-found)]
@@ -56,49 +30,112 @@
       (throw (ex-info "destruct(get-in-strict): value not found" {:data data :path path})))
     result))
 
+(defn tmpl-analyze
+  [ctx]
+  (with-map-vals ctx [parsed path tmpl]
+    (spyx path)
+    (cond
+      (map? tmpl)
+      (doseq [entry tmpl]
+        (spyx entry)
+        (let [[curr-key curr-val] entry]
+          (spyx [curr-key curr-val])
+          (let [path-new (append path curr-key)]
+            (spyx path-new)
+            (if (symbol? curr-val)
+              (let [var-sym (if (= curr-val (char->sym \?))
+                              (i/kw->sym curr-key)
+                              curr-val)]
+                (swap! parsed append {:path path-new :name var-sym}))
+              (tmpl-analyze {:parsed parsed :path path-new :tmpl curr-val})))))
+
+      (sequential? tmpl)
+      (do
+        (spy :tmpl-51 tmpl)
+        (tmpl-analyze {:parsed parsed :path path :tmpl (sequential->idx-map tmpl)}))
+
+      :else (println :oops-44))))
+
 (defn dstr-fn
-  [data tmpl forms]
-  (let [result (atom [])]
-    (dstr-analyze {:result result :path [] :tmpl tmpl})
-    ;(spyx-pretty @result)
-    (let [extraction-pairs (apply glue
-                             (for [{:keys [name path]} @result]
-                               [name `(get-in-strict ~data ~path) ])) ]
-      `(let [~@extraction-pairs]
-         ~@forms))))
+  [bindings forms]
+  (spyx bindings)
+  (spyx forms)
+  (when (not (even? (spyx (count bindings))))
+    (throw (ex-info "destruct: uneven number of bindings:" bindings)))
+  (when (empty? bindings)
+    (throw (ex-info "destruct: bindings empty:" bindings)))
+  (let [binding-pairs (partition 2 bindings)
+        datas         (mapv first binding-pairs)
+        tmpls         (mapv second binding-pairs)
+        tmpls-parsed  (vec (for [tmpl tmpls]
+                             (let [parsed (atom [])]
+                               (tmpl-analyze {:parsed parsed :path [] :tmpl tmpl})
+                               (spyx-pretty @parsed))))]
+    (spyx tmpls-parsed)
+    ; look for duplicate variable names
+    (let [var-names (vec (for [tmpl-parsed   tmpls-parsed
+                               path-name-map tmpl-parsed]
+                           (grab :name path-name-map)))]
+     ;(spyx var-names)
+      (when (not= var-names (distinct var-names))
+        (throw (ex-info "destruct: var-names not unique" var-names))))
+
+    (let [data-parsed-pairs (zip datas tmpls-parsed)]
+      (spyx data-parsed-pairs)
+      (vec (for [[data parsed] data-parsed-pairs]
+             (do
+               (spyx data)
+               (spyx parsed)
+               (spyx-pretty :result
+                 (let [extraction-pairs (apply glue
+                                          (for [{:keys [name path]} parsed]
+                                            [name `(get-in-strict ~data ~path)]))]
+                   `(let [~@extraction-pairs]
+                      ~@forms)))))))))
 
 (defmacro destruct
-  [value0 tmpl0 & forms0]
-  (dstr-fn value0 tmpl0 forms0))
+  [bindings & forms0]
+  (dstr-fn bindings forms0))
 
 (dotest
   (is= {0 :a 1 :b 2 :c} (sequential->idx-map [:a :b :c]))
   (is= {0 :x 1 :y 2 :z} (sequential->idx-map [:x :y :z]))
-  (is= 'a (ch->sym \a))
-  (is= '? (ch->sym \?)))
+  (is= 'a (char->sym \a))
+  (is= '? (char->sym \?)))
 
 (dotest-focus
-  (let [data {:a 1
-              :b {:c 3}}]
-    (destruct data {:a ?
-                    :b {:c ?}}
-      (is= [1 3] [a c])))
-  (let [data [:a :b :c]]
-    (destruct data [v1 v2 v3]
-      (is= [:a :b :c] [v1 v2 v3])))
+  (dstr-fn '[
+             {:a 1 :b {:c 3}}
+             {:a ? :b {:c ?}}
 
-  ; bad data examples
-  (throws?
-    (let [data {:a 1
-                :b {:z 3}}]
-      (destruct data {:a ?
-                      :b {:c ?}}
-        (spyx [a c]))))
-  (throws?
-    (let [data [:a :b]]
-      (destruct data [v1 v2 v3]
-        (spyx [v1 v2 v3]))))
-  )
+             {:x 1 :y {:z 3}}
+             {:x ? :y {:z ?}}
+
+             ]
+    '(println [1 3] [a c])))
+
+;(dotest             ; -focus
+;  (let [data {:a 1
+;              :b {:c 3}}]
+;    (destruct [data {:a ?
+;                     :b {:c ?}}]
+;      (is= [1 3] [a c])))
+;  (let [data [:a :b :c]]
+;    (destruct [data [v1 v2 v3]]
+;      (is= [:a :b :c] [v1 v2 v3])))
+;
+;  ; bad data examples
+;  (throws?
+;    (let [data {:a 1
+;                :b {:z 3}}]
+;      (destruct [data {:a ?
+;                       :b {:c ?}}]
+;        (spyx [a c]))))
+;  (throws?
+;    (let [data [:a :b]]
+;      (destruct [data [v1 v2 v3]]
+;        (spyx [v1 v2 v3]))))
+;  )
 
 ;-----------------------------------------------------------------------------
 (dotest
