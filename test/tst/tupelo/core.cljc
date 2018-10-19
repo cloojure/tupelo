@@ -21,6 +21,7 @@
 ; Java version stuff
 
 #?(:clj (do
+
 (defn fn-any [] 42)
 (defn fn7 [] (if-java-1-7-plus
                7
@@ -2397,22 +2398,18 @@
               :b {:c 3}}]
     (destruct [data {:a ?
                      :b {:c ?}}]
-      (is= [1 3] [a c])))
-  (let [data [:a :b :c]]
-    (destruct [data [v1 v2 v3]]
-      (is= [:a :b :c] [v1 v2 v3])))
-
-  ; bad data examples
-  (throws?
-    (let [data {:a 1
-                :b {:z 3}}]
+      (is= [1 3] [a c]))
+    (throws?
       (destruct [data {:a ?
-                       :b {:c ?}}]
-        [a c])))
-  (throws?
-    (let [data [:a :b]]
-      (destruct [data [v1 v2 v3]]
-        [v1 v2 v3])))
+                       :b {:z ?}}] ; bad data example
+        (println [a z]))))
+
+  (let [data [1 2 3]]
+    (destruct [data [a b c]]
+      (is= [1 2 3] [a b c]))
+    (throws?
+      (destruct [data [a b c d]] ; bad data example
+        (println [a b c d]))))
 
   ; multi-destruct
   (let [data-1 {:a 1 :b {:c 3}}
@@ -2447,10 +2444,15 @@
     (destruct [data-1 {:a ? :b {:c ?}}
                data-2 {:x ? :y {:c q}}]
       (is= [1 7 3 9] [a x c q]))
-    ; #todo wip
-    )
 
-  )
+    ; duplicate variables: these generate compile-time errors
+    (comment
+      (destruct [data-1 {:a ? :b {:c ?}}
+                 data-2 {:x ? :y {:c ?}}]
+        (println "destruct/dummy"))
+      (destruct [{:a {:b {:c ?}}
+                  :x {:y {:c ?}}}]
+        (println "destruct/dummy")))))
 
 
 

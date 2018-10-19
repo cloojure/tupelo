@@ -988,7 +988,7 @@
         yy 5]
     ...))
 
-(s/defn sequential->idx-map :- {s/Int s/Any} ; #todo move
+(s/defn sequential->idx-map :- {s/Any s/Any} ; #todo move
   [data :- [s/Any]]
   (into (sorted-map)
     (map-indexed (fn [idx val] [idx val])
@@ -1002,7 +1002,7 @@
       (throw (ex-info "destruct(get-in-strict): value not found" {:data data :path path})))
     result))
 
-(defn ^:no-doc tmpl-analyze
+(defn ^:no-doc destruct-tmpl-analyze
   [ctx]
   (with-map-vals ctx [parsed path tmpl]
     ;(spyx path)
@@ -1019,16 +1019,16 @@
                               (kw->sym curr-key)
                               curr-val)]
                 (swap! parsed append {:path path-new :name var-sym}))
-              (tmpl-analyze {:parsed parsed :path path-new :tmpl curr-val})))))
+              (destruct-tmpl-analyze {:parsed parsed :path path-new :tmpl curr-val})))))
 
       (sequential? tmpl)
       (do
         ;(spy :tmpl-51 tmpl)
-        (tmpl-analyze {:parsed parsed :path path :tmpl (sequential->idx-map tmpl)}))
+        (destruct-tmpl-analyze {:parsed parsed :path path :tmpl (sequential->idx-map tmpl)}))
 
       :else (println :oops-44))))
 
-(defn ^:no-doc dstr-fn
+(defn ^:no-doc destruct-impl
   [bindings forms]
   (when (not (even? (count bindings)))
     (throw (ex-info "destruct: uneven number of bindings:" bindings)))
@@ -1039,7 +1039,7 @@
         tmpls         (mapv cc/second binding-pairs)
         tmpls-parsed  (vec (for [tmpl tmpls]
                              (let [parsed (atom [])]
-                               (tmpl-analyze {:parsed parsed :path [] :tmpl tmpl})
+                               (destruct-tmpl-analyze {:parsed parsed :path [] :tmpl tmpl})
                                @parsed)))]
     ; (spyx tmpls-parsed)
 
@@ -1049,6 +1049,7 @@
                            (grab :name path-name-map)))]
       ;(spyx var-names)
       (when (not= var-names (distinct var-names))
+        (println "destruct: var-names not unique" var-names)
         (throw (ex-info "destruct: var-names not unique" var-names))))
 
     (let [data-parsed-pairs (zip datas tmpls-parsed)]
@@ -1062,7 +1063,7 @@
 
 (defmacro destruct
   [bindings & forms]
-  (dstr-fn bindings forms))
+  (destruct-impl bindings forms))
 
 (defn strcat
   [& args]
@@ -1223,6 +1224,8 @@
     (take index coll)
     [elem]
     (drop (inc index) coll)))
+
+; #todo make replace-in that is like assoc-in but verifies path first !!! (merge with replace-at)
 
 ; #todo use (idx    coll int-or-kw) as `get` replacement?
 ; #todo use (idx-in coll [kw's]) as `fetch-in` replacement?
