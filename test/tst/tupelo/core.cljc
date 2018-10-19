@@ -2428,12 +2428,19 @@
   (let [data-1 {:a 1 :b {:c [:x :y :z :666]}}]
     (destruct [data-1 {:a ? :b {:c [x y z]}}]
       (is= [1 :x :y :z] [a x y z])))
-  (let [data-1 [{:a 1 :b {:c 3}}
-                {:x 7 :y {:z 9}}]]
-    (destruct [data-1
+  (let [data [{:a 1 :b {:c 3}}
+              {:x 7 :y {:z 9}}]]
+    (destruct [data
                [{:a ? :b {:c ?}}
                 {:x ? :y {:z ?}}]]
       (is= [1 3 7 9] [a c x z])))
+  (let [data {:a [{:b 2}
+                  {:c 3}
+                  [7 8 9]]} ]
+    (destruct [data {:a [{:b p}
+                         {:c q}
+                         [r s t]]} ]
+      (is= [2 3 7 8 9] [p q r s t])))
 
   ; duplicate vars
   (let [data-1 {:a 1 :b {:c 3}}
