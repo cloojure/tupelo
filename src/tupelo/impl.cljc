@@ -1032,7 +1032,7 @@
                              (let [parsed (atom [])]
                                (destruct-tmpl-analyze {:parsed parsed :path [] :tmpl tmpl})
                                @parsed)))]
-    (spyx tmpls-parsed)
+    ;(spyx tmpls-parsed)
     ; look for duplicate variable names
     (let [var-names (vec (for [tmpl-parsed   tmpls-parsed
                                path-name-map tmpl-parsed]
@@ -1056,17 +1056,17 @@
                                    `[~data (assoc-in ~data ~path ~name)]))
             ; >>  (spyx construction-pairs)
 
-            restruct-def       (apply list `[fn []
+            restruct-all-def       (apply list `[fn []
                                              (let [~@construction-pairs]
                                                (vals->map ~@datas))])
-            ; >> (spyxx restruct-def)
+            ; >> (spyxx restruct-all-def)
             res-1              `(let [~@extraction-pairs]
                                   ~@forms)
             res-2              (walk/postwalk
                                  (fn [form]
-                                   (if (not= form '(restruct))
+                                   (if (not= form '(restruct-all))
                                      form
-                                     (list 'let ['restruct-fn restruct-def
+                                     (list 'let ['restruct-fn restruct-all-def
                                                  'result (list 'restruct-fn)]
                                        ;'(spyxx result)
                                        'result)))

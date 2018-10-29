@@ -2395,8 +2395,6 @@
 
 
 (dotest
-  ; (spyx (i/restruct-impl))
-
   (let [info {:a 1
               :b {:c 3
                   :d 4}}
@@ -2404,19 +2402,18 @@
                :y {:w 333
                    :z 666}}]
 
-    ; can ignore unwanted keys like :d
     (spy :info-orig info)
     (it-> (destruct [info {:a ?
                            :b {:c ?
                                :d ?}}
-                     mania {:y {:z ?}} ]
+                     mania {:y {:z ?}} ] ; can ignore unwanted keys like :x
             (spyx [a c])
             (let [a (+ 100 a)
                   c (+ 100 c)
                   d  z
                   z 777 ]
               (spyx [a c])
-              (restruct)))
+              (restruct-all)))
       (with-map-vals it [info mania]
         (spy :info info)
         (spy :mania mania)
