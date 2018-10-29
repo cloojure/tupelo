@@ -2417,7 +2417,11 @@
       (with-map-vals it [info mania]
         (spy :info info)
         (spy :mania mania)
-        ))))
+        ))
+    ; (restruct) => restruct the (only) data arg to destruct
+    ; (restruct info) => restruct a single data arg (of many) to destruct
+    ; (restruct-all) => returns all data args to destruct as a label-map {:x x ...}
+    ))
 
 
 
