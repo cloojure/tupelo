@@ -185,6 +185,15 @@
     (kabob->snake)
     (i/str->kw)))
 
+; #todo ch->ascii
+; #todo ascii->ch
+; #todo ch->str
+; #todo str->ch
+
+; #todo tupelo.ascii
+; #todo (def return 13)
+; #todo (def escape 27)
+
 ;-----------------------------------------------------------------------------
 
 (s/defn drop :- s/Str  ; #todo add readme

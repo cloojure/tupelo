@@ -2393,82 +2393,113 @@
                    :c  [4 5 6]} " ]
     (nonblank= result expected )))
 
+
 (dotest
-  (let [data {:a 1
+  ; (spyx (i/restruct-impl))
+
+  (let [info {:a 1
               :b {:c 3
-                  :d 4}}] ; can ignore unwanted keys like :d
-    (destruct [data {:a ?
-                     :b {:c ?}}]
-      (is= [1 3] [a c]))
-    (throws?
-      (destruct [data {:a ?
-                       :b {:z ?}}] ; bad data example (non-existant key)
-        (println [a z]))))
+                  :d 4}}
+        mania {:x 6
+               :y {:w 333
+                   :z 666}}]
 
-  (let [data [1 2 3 4 5]]
-    (destruct [data [a b c]] ; can ignore unwanted indexes 3 or 4 (0-based)
-      (is= [1 2 3] [a b c]))
-    (destruct [data {0 a
-                     2 c}] ; can destructure vectors using map-index technique
-      (is= [1 3] [a c])))
-  (throws?
-    (let [data [1 2 3]]
-      (destruct [data [a b c d]] ; bad data example (non-existant element)
-        (println [a b c d]))))
+    ; can ignore unwanted keys like :d
+    (spy :info-orig info)
+    (it-> (destruct [info {:a ?
+                           :b {:c ?
+                               :d ?}}
+                     mania {:y {:z ?}} ]
+            (spyx [a c])
+            (let [a (+ 100 a)
+                  c (+ 100 c)
+                  d  z
+                  z 777 ]
+              (spyx [a c])
+              (restruct)))
+      (with-map-vals it [info mania]
+        (spy :info info)
+        (spy :mania mania)
+        ))))
 
-  ; multi-destruct
-  (let [data-1 {:a 1 :b {:c 3}}
-        data-2 {:x 7 :y {:z 9}}]
-    (destruct [data-1 {:a ? :b {:c ?}}
-               data-2 {:x ? :y {:z ?}}]
-      (is= [1 3 7 9] [a c x z])))
-  (let [data-1 {:a 1 :b {:c 3}}
-        data-2 [:x :y :z :666]]
-    (destruct [data-1 {:a ? :b {:c ?}}
-               data-2 [x y z]]
-      (is= [1 3 :x :y :z] [a c x y z]))
-    (destruct [[data-1 data-2]
-               [item-1 item-2]]
-      (is= [item-1 item-2] [data-1 data-2])))
-  (let [data-1 {:a 1 :b {:c [:x :y :z :666]}}]
-    (destruct [data-1 {:a ? :b {:c [x y z]}}]
-      (is= [1 :x :y :z] [a x y z]))
-    (destruct [data-1 {:a ? :b ?}]
-      (is= a 1 )
-      (is= b {:c [:x :y :z :666]}) ) )
 
-  (let [data [{:a 1 :b {:c 3}}
-              {:x 7 :y {:z 9}}]]
-    (destruct [data
-               [{:a ? :b {:c ?}}
-                {:x ? :y {:z ?}}]]
-      (is= [1 3 7 9] [a c x z])))
-  (let [data {:a [{:b 2}
-                  {:c 3}
-                  [7 8 9]]} ]
-    (destruct [data {:a [{:b p}
-                         {:c q}
-                         [r s t]]} ]
-      (is= [2 3 7 8 9] [p q r s t])))
 
-  ; duplicate vars
-  (let [data-1 {:a 1 :b {:c 3}}
-        data-2 {:x 7 :y {:c 9}}]
-    (destruct [data-1 {:a ? :b {:c p}}
-               data-2 {:x ? :y {:c q}}]
-      (is= [1 7 3 9] [a x p q]))
-    (destruct [data-1 {:a ? :b {:c ?}}
-               data-2 {:x ? :y {:c q}}]
-      (is= [1 7 3 9] [a x c q]))
-
-    ; duplicate variables: these generate compile-time errors
-    (comment
-      (destruct [data-1 {:a ? :b {:c ?}}
-                 data-2 {:x ? :y {:c ?}}]
-        (println "destruct/dummy"))
-      (destruct [{:a {:b {:c ?}}
-                  :x {:y {:c ?}}}]
-        (println "destruct/dummy")))))
+;(dotest
+;  (let [data {:a 1
+;              :b {:c 3
+;                  :d 4}}] ; can ignore unwanted keys like :d
+;    (destruct [data {:a ?
+;                     :b {:c ?}}]
+;      (is= [1 3] [a c]))
+;    (throws?
+;      (destruct [data {:a ?
+;                       :b {:z ?}}] ; bad data example (non-existant key)
+;        (println [a z]))))
+;
+;  (let [data [1 2 3 4 5]]
+;    (destruct [data [a b c]] ; can ignore unwanted indexes 3 or 4 (0-based)
+;      (is= [1 2 3] [a b c]))
+;    (destruct [data {0 a
+;                     2 c}] ; can destructure vectors using map-index technique
+;      (is= [1 3] [a c])))
+;  (throws?
+;    (let [data [1 2 3]]
+;      (destruct [data [a b c d]] ; bad data example (non-existant element)
+;        (println [a b c d]))))
+;
+;  ; multi-destruct
+;  (let [data-1 {:a 1 :b {:c 3}}
+;        data-2 {:x 7 :y {:z 9}}]
+;    (destruct [data-1 {:a ? :b {:c ?}}
+;               data-2 {:x ? :y {:z ?}}]
+;      (is= [1 3 7 9] [a c x z])))
+;  (let [data-1 {:a 1 :b {:c 3}}
+;        data-2 [:x :y :z :666]]
+;    (destruct [data-1 {:a ? :b {:c ?}}
+;               data-2 [x y z]]
+;      (is= [1 3 :x :y :z] [a c x y z]))
+;    (destruct [[data-1 data-2]
+;               [item-1 item-2]]
+;      (is= [item-1 item-2] [data-1 data-2])))
+;  (let [data-1 {:a 1 :b {:c [:x :y :z :666]}}]
+;    (destruct [data-1 {:a ? :b {:c [x y z]}}]
+;      (is= [1 :x :y :z] [a x y z]))
+;    (destruct [data-1 {:a ? :b ?}]
+;      (is= a 1 )
+;      (is= b {:c [:x :y :z :666]}) ) )
+;
+;  (let [data [{:a 1 :b {:c 3}}
+;              {:x 7 :y {:z 9}}]]
+;    (destruct [data
+;               [{:a ? :b {:c ?}}
+;                {:x ? :y {:z ?}}]]
+;      (is= [1 3 7 9] [a c x z])))
+;  (let [data {:a [{:b 2}
+;                  {:c 3}
+;                  [7 8 9]]} ]
+;    (destruct [data {:a [{:b p}
+;                         {:c q}
+;                         [r s t]]} ]
+;      (is= [2 3 7 8 9] [p q r s t])))
+;
+;  ; duplicate vars
+;  (let [data-1 {:a 1 :b {:c 3}}
+;        data-2 {:x 7 :y {:c 9}}]
+;    (destruct [data-1 {:a ? :b {:c p}}
+;               data-2 {:x ? :y {:c q}}]
+;      (is= [1 7 3 9] [a x p q]))
+;    (destruct [data-1 {:a ? :b {:c ?}}
+;               data-2 {:x ? :y {:c q}}]
+;      (is= [1 7 3 9] [a x c q]))
+;
+;    ; duplicate variables: these generate compile-time errors
+;    (comment
+;      (destruct [data-1 {:a ? :b {:c ?}}
+;                 data-2 {:x ? :y {:c ?}}]
+;        (println "destruct/dummy"))
+;      (destruct [{:a {:b {:c ?}}
+;                  :x {:y {:c ?}}}]
+;        (println "destruct/dummy")))))
 
 
 

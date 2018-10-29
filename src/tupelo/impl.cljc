@@ -262,6 +262,7 @@
                       ~@r1
                       ~r2)]
     final-code))
+ ; #todo only allow 1 arg + optional kw-label
 (defmacro spy-pretty ; #todo => core
   [& exprs]
   (spy-pretty-proc exprs)) ; #todo add in use of `prettify` for each value
@@ -283,7 +284,7 @@
                       ~@r1
                       ~r2)]
     final-code))
-
+; #todo only allow 1 arg + optional kw-label
 ; #todo On all spy* make print file & line number
 ; #todo allow spyx-pretty to have labels like (spyx-pretty :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
 (defmacro spyx-pretty
@@ -349,7 +350,8 @@
              (let-some ~(cc/drop 2 bindings) ~@forms))))
       `(do ~@forms))))
 
-(defmacro cond-it->
+
+(defn cond-it-impl
   [expr & forms]
   (let [num-forms (count forms)]
     (when-not (even? num-forms)
@@ -360,6 +362,10 @@
                                ~action-form
                                ~'it)) ]
     `(it-> ~expr ~@cond-action-forms)))
+
+(defmacro cond-it->
+  [& forms]
+  (apply cond-it-impl forms))
 
 ; #todo #wip
 (defmacro some-it->
@@ -973,21 +979,6 @@
   (assert #(every? sequential? colls))
   (apply map vector colls))
 
-
-(comment
-  ; #todo name => destruct  ???
-  (let [data {:a {:b 2
-                  :c 3
-                  :d {:e 5}}} ])
-  ; has same result as
-  (extract data {:a {:b 2
-                     :c xx
-                     :d {:e yy}}}
-    ...)
-  (let [xx 3
-        yy 5]
-    ...))
-
 (s/defn sequential->idx-map :- {s/Any s/Any} ; #todo move
   [data :- [s/Any]]
   (into (sorted-map)
@@ -1041,8 +1032,7 @@
                              (let [parsed (atom [])]
                                (destruct-tmpl-analyze {:parsed parsed :path [] :tmpl tmpl})
                                @parsed)))]
-    ; (spyx tmpls-parsed)
-
+    (spyx tmpls-parsed)
     ; look for duplicate variable names
     (let [var-names (vec (for [tmpl-parsed   tmpls-parsed
                                path-name-map tmpl-parsed]
@@ -1054,12 +1044,35 @@
 
     (let [data-parsed-pairs (zip datas tmpls-parsed)]
       ;(spyx data-parsed-pairs)
-      (let [extraction-pairs (apply glue
-                               (for [[data parsed] data-parsed-pairs
-                                     {:keys [name path]} parsed]
-                                 [name `(get-in-strict ~data ~path)]))]
-        `(let [~@extraction-pairs]
-           ~@forms)))))
+      (let [extraction-pairs   (apply glue
+                                 (for [[data parsed] data-parsed-pairs
+                                       {:keys [name path]} parsed]
+                                   [name `(get-in-strict ~data ~path)]))
+
+            ; >> (spyx extraction-pairs)
+            construction-pairs (apply glue
+                                 (for [[data parsed] data-parsed-pairs
+                                       {:keys [name path]} parsed]
+                                   `[~data (assoc-in ~data ~path ~name)]))
+            ; >>  (spyx construction-pairs)
+
+            restruct-def       (apply list `[fn []
+                                             (let [~@construction-pairs]
+                                               (vals->map ~@datas))])
+            ; >> (spyxx restruct-def)
+            res-1              `(let [~@extraction-pairs]
+                                  ~@forms)
+            res-2              (walk/postwalk
+                                 (fn [form]
+                                   (if (not= form '(restruct))
+                                     form
+                                     (list 'let ['restruct-fn restruct-def
+                                                 'result (list 'restruct-fn)]
+                                       ;'(spyxx result)
+                                       'result)))
+                                 res-1)]
+        ; (spyx res-2)
+        res-2))))
 
 (defmacro destruct
   [bindings & forms]
