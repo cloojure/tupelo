@@ -526,8 +526,8 @@
        ...
        (destruct [data [a b c]]
         ...
-     then can use local values a=1 b=2 c=3.  Re-structure with modified values by calling
-     `(restruct)`, `(restruct data)`, or `(restruct-all)`. "
+     then can use local values a=1 b=2 c=3.  Can use `(restruct)`, `(restruct data)`, or `(restruct-all)`
+     to re-structure & return original data shape using current values."
   [bindings & forms]
   `(i/destruct ~bindings ~@forms))
 
@@ -537,7 +537,8 @@
   [& args] (throw (ex-info "restruct: illegal usage - should never get here." args)))
 
 (defn restruct-all
-  "within a `(destruct [<data> <shape>] ...) form, causes re-structuring & return of original data shapes using
+  "within a `(destruct [data-1 <shape-1>
+                        data-2 <shape-2] ...) form, causes re-structuring & return of original data shapes using
   current values as with (vals->map data-1 data-2 ...)"
   [& args] (throw (ex-info "restruct-all: illegal usage - should never get here." args)))
 
