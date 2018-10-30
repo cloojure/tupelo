@@ -2393,69 +2393,76 @@
                    :c  [4 5 6]} " ]
     (nonblank= result expected )))
 
-
 (dotest
-  (let [info {:a 1
-              :b {:c 3
-                  :d 4}}
+  (let [info  {:a 1
+               :b {:c 3
+                   :d 4}}
         mania {:x 6
                :y {:w 333
                    :z 666}}]
 
-    (spy :info-orig info)
+    ;(spy :info-orig info)
+    ;(spy :mania-orig mania)
     (it-> (destruct [info {:a ?
                            :b {:c ?
                                :d ?}}
-                     mania {:y {:z ?}} ] ; can ignore unwanted keys like :x
-            (spyx [a c])
+                     mania {:y {:z ?}}] ; can ignore unwanted keys like :x
+            ;(spyx [a c])
             (let [a (+ 100 a)
                   c (+ 100 c)
-                  d  z
-                  z 777 ]
-              (spyx [a c])
+                  d z
+                  z 777]
+              ;(spyx [a c])
               (restruct-all)))
       (with-map-vals it [info mania]
-        (spy :info info)
-        (spy :mania mania)
-        ))
-    ; (restruct) => restruct the (only) data arg to destruct; error if more than one data src
-    ; (restruct info) => restruct a single data arg (e.g. `info`) to destruct
-    ; (restruct-all) => returns all data args to destruct as a label-map {:x x ...}
-    ))
+        (is= info {:a 101, :b {:c 103, :d 666}})
+        (is= mania {:x 6, :y {:w 333, :z 777}})))
 
-
-(dotest-focus
-  (let [info {:a 1
-              :b {:c 3
-                  :d 4}}
-        mania {:x 6
-               :y {:w 333
-                   :z 666}}]
-
-    (spy :info-orig info)
-    (spy :mania-orig mania)
     (it-> (destruct [info {:a ?
                            :b {:c ?
                                :d ?}}
-                     mania {:y {:z ?}} ] ; can ignore unwanted keys like :x
-            (spyx [a c])
+                     mania {:y {:z ?}}] ; can ignore unwanted keys like :x
+            ;(spyx [a c])
             (let [a (+ 100 a)
                   c (+ 100 c)
-                  d  z
-                  z 777 ]
-              (spyx [a c])
-              ; (restruct info)
-              (restruct-all)
+                  d z
+                  z 777]
+              ;(spyx [a c])
+              (restruct info)))
+      (is= it {:a 101, :b {:c 103, :d 666}}))
 
-              ))
+    (it-> (destruct [info {:a ?
+                           :b {:c ?
+                               :d ?}}]
+            ;(spyx [a c])
+            (let [a (+ 100 a)
+                  c (+ 100 c)]
+              ;(spyx [a c])
+              (restruct)))
+      (is= it {:a 101, :b {:c 103, :d 4}}))))
+
+(dotest
+  (let [info  {:a 777
+               :b [2 3 4]}
+        mania [{:a 11} {:b 22} {:c [7 8 9]}]]
+    ;(spy :info-orig info)
+    ;(spy :mania-orig mania)
+    (it-> (destruct [info {:a z
+                           :b [d e f]}
+                     mania [{:a ?} BBB {:c clutter}]]
+            ;(spyx z)
+            ;(spyx [d e f])
+            ;(spyx a)
+            ;(spyx BBB)
+            ;(spyx clutter)
+            (let [clutter (mapv inc clutter)
+                  BBB     {:BBB 33}
+                  z       77
+                  d       (+ 7 d)]
+              (restruct-all)))
       (with-map-vals it [info mania]
-        (spy :info info)
-        (spy :mania mania)
-        ))
-    ; (restruct) => restruct the (only) data arg to destruct; error if more than one data src
-    ; (restruct info) => restruct a single data arg (e.g. `info`) to destruct
-    ; (restruct-all) => returns all data args to destruct as a label-map {:x x ...}
-    ))
+        (is= info {:a 77, :b [9 3 4]})
+        (is= mania [{:a 11} {:BBB 33} {:c [8 9 10]}])))))
 
 
 
