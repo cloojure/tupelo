@@ -979,6 +979,10 @@
   (assert #(every? sequential? colls))
   (apply map vector colls))
 
+(defmacro forv ; #todo wrap body in implicit do
+  [& forms]
+  `(vec (for ~@forms)))
+
 (s/defn sequential->idx-map :- {s/Any s/Any} ; #todo move
   [data :- [s/Any]]
   (into (sorted-map)
@@ -1019,6 +1023,12 @@
 
       :else (println :oops-44))))
 
+(defn ^:no-doc is-restruct-one?
+  "Return true if receive a form like either `(restruct)` or `(restruct info)` (i.e. either zero or one symbol args)."
+  [form]
+  (and (contains? #{1 2} (count form))
+    (= 'restruct (cc/first form))))
+
 (defn ^:no-doc destruct-impl
   [bindings forms]
   (when (not (even? (count bindings)))
@@ -1032,47 +1042,94 @@
                              (let [parsed (atom [])]
                                (destruct-tmpl-analyze {:parsed parsed :path [] :tmpl tmpl})
                                @parsed)))]
-    ;(spyx tmpls-parsed)
+    (spyx tmpls-parsed)
     ; look for duplicate variable names
     (let [var-names (vec (for [tmpl-parsed   tmpls-parsed
                                path-name-map tmpl-parsed]
                            (grab :name path-name-map)))]
-      ;(spyx var-names)
+      (spyx var-names)
       (when (not= var-names (distinct var-names))
         (println "destruct: var-names not unique" var-names)
         (throw (ex-info "destruct: var-names not unique" var-names))))
 
     (let [data-parsed-pairs (zip datas tmpls-parsed)]
-      ;(spyx data-parsed-pairs)
-      (let [extraction-pairs   (apply glue
-                                 (for [[data parsed] data-parsed-pairs
-                                       {:keys [name path]} parsed]
-                                   [name `(get-in-strict ~data ~path)]))
+      (spyx data-parsed-pairs)
+      (let [extraction-pairs    (apply glue
+                                  (for [[data parsed] data-parsed-pairs
+                                        {:keys [name path]} parsed]
+                                    [name `(get-in-strict ~data ~path)]))
+            >>   (do (nl) (spyx extraction-pairs))
 
-            ; >> (spyx extraction-pairs)
-            construction-pairs (apply glue
-                                 (for [[data parsed] data-parsed-pairs
-                                       {:keys [name path]} parsed]
-                                   `[~data (assoc-in ~data ~path ~name)]))
-            ; >>  (spyx construction-pairs)
+            construct-one-pairs (apply glue
+                                  (for [[data parsed] data-parsed-pairs]
+                                    {data (apply glue
+                                            (for [{:keys [name path]} parsed]
+                                              `[~data (assoc-in ~data ~path ~name)]))}))
+            >>   (do (nl) (spyx-pretty construct-one-pairs))
 
-            restruct-all-def       (apply list `[fn []
-                                             (let [~@construction-pairs]
-                                               (vals->map ~@datas))])
-            ; >> (spyxx restruct-all-def)
-            res-1              `(let [~@extraction-pairs]
-                                  ~@forms)
-            res-2              (walk/postwalk
-                                 (fn [form]
-                                   (if (not= form '(restruct-all))
-                                     form
-                                     (list 'let ['restruct-fn restruct-all-def
-                                                 'result (list 'restruct-fn)]
-                                       ;'(spyxx result)
-                                       'result)))
-                                 res-1)]
-        ; (spyx res-2)
-        res-2))))
+            construct-all-pairs (apply glue (vals construct-one-pairs))
+            >>   (spyx-pretty construct-all-pairs)
+
+            restruct-one-defs   (apply glue
+                                  (for [[data construction-pairs] construct-one-pairs]
+                                    {data (apply list `[fn []
+                                                        (let [~@construction-pairs]
+                                                          ~data)])}))
+            >>   (do (nl) (spyx-pretty restruct-one-defs))
+
+            restruct-only-defs  (when (= 1 (count datas))
+                                  (let [[data construction-pairs] (only construct-one-pairs)] ; #todo test single data case
+                                    (apply list `[fn []
+                                                  (let [~@construction-pairs]
+                                                    ~data)])))
+            >>   (do (nl) (spyx-pretty restruct-only-defs))
+
+            restruct-all-def    (apply list `[fn []
+                                              (let [~@construct-all-pairs]
+                                                (vals->map ~@datas))])
+            >>   (do (nl) (spyx-pretty restruct-all-def))
+
+            res-raw             `(let [~@extraction-pairs]
+                                   ~@forms)
+            >>   (do (nl) (spyx-pretty res-raw))
+
+            res-all             (walk/postwalk
+                                  (fn [form]
+                                    (if (not= form '(restruct-all))
+                                      form
+                                      (list 'let ['restruct-fn restruct-all-def
+                                                  'result (list 'restruct-fn)]
+                                      ; '(spyxx result)
+                                        'result)))
+                                  res-raw)
+            >>   (do (nl) (spyx-pretty res-all))
+
+            ;res-one             (walk/postwalk
+            ;                      (fn [form]
+            ;                        (if (not= form '(restruct-all))
+            ;                          form
+            ;                          (list 'let ['restruct-fn restruct-all-def
+            ;                                      'result (list 'restruct-fn)]
+            ;                            '(spyxx result)
+            ;                            'result)))
+            ;                      res-all)
+            ;>>   (do (nl) (spyx-pretty res-one))
+            ;
+            ;res-only            (walk/postwalk
+            ;                      (fn [form]
+            ;                        (if (not= form '(restruct))
+            ;                          form
+            ;                          (if (not= 1 (count datas)) ; #todo test exception works
+            ;                            (throw (ex-info "(restruct) error: more than 1 data src present" ~datas))
+            ;                            (list 'let ['restruct-fn restruct-all-def
+            ;                                        'result (list 'restruct-fn)]
+            ;                              '(spyxx result)
+            ;                              'result)))
+            ;                        res-one))
+            ; (do (nl) (spyx-pretty res-only))
+            ]
+        res-all
+        ))))
 
 (defmacro destruct
   [bindings & forms]
@@ -1109,10 +1166,6 @@
     result))
 
 ; #todo max-key -> t/max-by
-
-(defmacro forv ; #todo wrap body in implicit do
-  [& forms]
-  `(vec (for ~@forms)))
 
 (defmacro lazy-cons
   [curr-val recursive-call-form]
