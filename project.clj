@@ -1,13 +1,13 @@
-(defproject tupelo "0.9.106"
+(defproject tupelo "0.9.107"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies
     [
-    ;[org.clojure/clojure "1.8.0"]
+     [org.clojure/clojure "1.8.0"]
     ;[org.clojure/clojure "1.9.0"]
-     [org.clojure/clojure "1.10.0-beta4"]
+    ;[org.clojure/clojure "1.10.0-beta4"]
 
      [clj-time "0.15.1"]
      [cheshire "5.8.1"]
