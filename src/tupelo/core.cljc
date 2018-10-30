@@ -512,9 +512,34 @@
   [the-map items-vec & forms]
   `(i/with-map-vals ~the-map ~items-vec ~@forms))
 
-(defmacro destruct
+(defmacro destruct  ; #todo flesh out
+  "Natural destructuring:
+     (let [data {:a 1
+                 :b {:c 3
+                     :d 4}}]
+       ...
+       (destruct [data {:a ?
+                        :b {:c ?}}]
+       ...
+   then can use local values  a=1, c=3.  With vector data:
+     (let [data [1 2 3 4 5]]
+       ...
+       (destruct [data [a b c]]
+        ...
+     then can use local values a=1 b=2 c=3.  Re-structure with modified values by calling
+     `(restruct)`, `(restruct data)`, or `(restruct-all)`. "
   [bindings & forms]
   `(i/destruct ~bindings ~@forms))
+
+(defn restruct
+  "within a `(destruct [<data> <shape>] ...) form, `(restruct)` or `(restruct <data>)` causes re-structuring
+   & return of original data shape using current values."
+  [& args] (throw (ex-info "restruct: illegal usage - should never get here." args)))
+
+(defn restruct-all
+  "within a `(destruct [<data> <shape>] ...) form, causes re-structuring & return of original data shapes using
+  current values as with (vals->map data-1 data-2 ...)"
+  [& args] (throw (ex-info "restruct-all: illegal usage - should never get here." args)))
 
 (defn keyvals
   "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
