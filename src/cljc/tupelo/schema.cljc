@@ -30,32 +30,32 @@
   "An Enlive tree node"
   {:tag s/Any :attrs KeyMap :content [s/Any]})
 
+(def Tuple
+  "A specific type of sequential collection, typically a vector of constant length where each
+   element has a pre-defined interpretation."
+  [s/Any])
+
+(def TupleList
+  "A sequence of tuples (typically a vector of vectors)"
+  [Tuple])
+
+(def TupleSet
+  "The result of any Datomic using the Entity API is logically a hash-set of tuples (vectors).
+   The contents and order of each tuple is determined by the find clause:
+
+        ----- query -----                         ----- tuples -----
+      (d/q '{:find [?e ?name ?age] ...)     ->    [?e ?name ?age]
+   "
+  #{Tuple})
+
+(def MapList [Map]) ; a list of Maps
+(def TupleMap [Map]) ; a single  result  returned by Datomic pull api  ; #todo needs (s/one ...) ??? or MapList?
+(def TupleMaps [TupleMap]) ; a list of results returned by Datomic pull api
+
+(def Fn (s/make-fn-schema s/Any s/Any))
+
 #?(:clj
    (do
-     (def Tuple
-       "A specific type of sequential collection, typically a vector of constant length where each
-        element has a pre-defined interpretation."
-       [s/Any])
-
-     (def TupleList
-       "A sequence of tuples (typically a vector of vectors)"
-       [Tuple])
-
-     (def TupleSet
-       "The result of any Datomic using the Entity API is logically a hash-set of tuples (vectors).
-        The contents and order of each tuple is determined by the find clause:
-
-             ----- query -----                         ----- tuples -----
-           (d/q '{:find [?e ?name ?age] ...)     ->    [?e ?name ?age]
-        "
-       #{Tuple})
-
-     (def MapList [Map]) ; a list of Maps
-     (def TupleMap [Map]) ; a single  result  returned by Datomic pull api  ; #todo needs (s/one ...) ??? or MapList?
-     (def TupleMaps [TupleMap]) ; a list of results returned by Datomic pull api
-
-     (def Fn (s/make-fn-schema s/Any s/Any))
-
      ;-----------------------------------------------------------------------------
      ; Datomic-related stuff
 
