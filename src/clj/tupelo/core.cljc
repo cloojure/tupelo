@@ -141,6 +141,64 @@
   Equivalent to `(apply glue ...)`"
   [coll-2d] (i/glue-rows coll-2d))
 
+(defn increasing?
+  "Returns true iff the vectors are in (strictly) lexicographically increasing order
+    [1 2]  [1]        -> false
+    [1 2]  [1 1]      -> false
+    [1 2]  [1 2]      -> false
+    [1 2]  [1 2 nil]  -> true
+    [1 2]  [1 2 3]    -> true
+    [1 2]  [1 3]      -> true
+    [1 2]  [2 1]      -> true
+    [1 2]  [2]        -> true "
+  [a b] (i/increasing? a b))
+
+(defn increasing-or-equal?
+  "Returns true iff the vectors are in (strictly) lexicographically increasing-or-equal order
+    [1 2]  [1]        -> false
+    [1 2]  [1 1]      -> false
+    [1 2]  [1 2]      -> true
+    [1 2]  [1 2 nil]  -> true
+    [1 2]  [1 2 3]    -> true
+    [1 2]  [1 3]      -> true
+    [1 2]  [2 1]      -> true
+    [1 2]  [2]        -> true "
+  [a b] (i/increasing-or-equal? a b))
+
+(defn not-nil?
+  "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
+   or the poorly-named clojure.core/some? "
+  [arg] (i/not-nil? arg))
+
+(defn not-empty?
+  "For any collection coll, returns true if coll contains any items; otherwise returns false.
+   Equivalent to (not (empty? coll))."
+  [coll] (i/not-empty? coll))
+
+(defn kw->sym       ; #todo ->sym  ->str  -> chars ->kw
+  "Converts a keyword to a symbol"
+  [arg] (i/kw->sym arg))
+(defn kw->str
+  "Converts a keyword to a string"
+  [arg] (i/kw->str arg))
+
+(defn str->kw
+  "Converts a string to a keyword"
+  [arg] (i/str->kw arg))
+(defn str->sym
+  "Converts a string to a symbol"
+  [arg] (i/str->sym arg))
+(defn str->chars
+  "Converts a string to a vector of chars"
+  [arg] (i/str->chars arg))
+
+(defn sym->kw
+  "Converts a symbol to a keyword"
+  [arg] (i/sym->kw arg))
+(defn sym->str
+  "Converts a symbol to a string"
+  [arg] (i/sym->str arg))
+
 
 ; ***** toptop *****
 #?(:clj (do
@@ -170,30 +228,6 @@
       [3]
       [3 :y] "
   [a b] (i/lexical-compare a b))
-
-(defn kw->sym
-  "Converts a keyword to a symbol"
-  [arg] (i/kw->sym arg))
-(defn kw->str
-  "Converts a keyword to a string"
-  [arg] (i/kw->str arg))
-
-(defn str->kw
-  "Converts a string to a keyword"
-  [arg] (i/str->kw arg))
-(defn str->sym
-  "Converts a string to a symbol"
-  [arg] (i/str->sym arg))
-(defn str->chars
-  "Converts a string to a vector of chars"
-  [arg] (i/str->chars arg))
-
-(defn sym->kw
-  "Converts a symbol to a keyword"
-  [arg] (i/sym->kw arg))
-(defn sym->str
-  "Converts a symbol to a string"
-  [arg] (i/sym->str arg))
 
 (defn zip*
   "Usage:  (zip* context & colls)
@@ -395,30 +429,6 @@
       (submap-by-vals {:a 1 :b 2 :A 1} #{1 9} :missing-ok )  =>  {:a 1 :A 1} "
   [map-arg keep-vals & opts] (apply i/submap-by-vals map-arg keep-vals opts))
 
-(defn increasing?
-  "Returns true iff the vectors are in (strictly) lexicographically increasing order
-    [1 2]  [1]        -> false
-    [1 2]  [1 1]      -> false
-    [1 2]  [1 2]      -> false
-    [1 2]  [1 2 nil]  -> true
-    [1 2]  [1 2 3]    -> true
-    [1 2]  [1 3]      -> true
-    [1 2]  [2 1]      -> true
-    [1 2]  [2]        -> true "
-  [a b] (i/increasing? a b))
-
-(defn increasing-or-equal?
-  "Returns true iff the vectors are in (strictly) lexicographically increasing-or-equal order
-    [1 2]  [1]        -> false
-    [1 2]  [1 1]      -> false
-    [1 2]  [1 2]      -> true
-    [1 2]  [1 2 nil]  -> true
-    [1 2]  [1 2 3]    -> true
-    [1 2]  [1 3]      -> true
-    [1 2]  [2 1]      -> true
-    [1 2]  [2]        -> true "
-  [a b] (i/increasing-or-equal? a b))
-
 ;-----------------------------------------------------------------------------
 ; Java version stuff
 
@@ -495,16 +505,6 @@
 (defn contains-val?
   "For any map, returns true if elem is present in the map for at least one key."
   [map elem] (i/contains-val? map elem))
-
-(defn not-nil?
-  "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
-   or the poorly-named clojure.core/some? "
-  [arg] (i/not-nil? arg))
-
-(defn not-empty?
-  "For any collection coll, returns true if coll contains any items; otherwise returns false.
-   Equivalent to (not (empty? coll))."
-  [coll] (i/not-empty? coll))
 
 (defmacro vals->map ; #todo -> README
   "Called with a list of symbols like `(vals->map a b c)` returns a map

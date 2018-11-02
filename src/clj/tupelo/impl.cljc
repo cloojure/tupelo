@@ -172,9 +172,6 @@
   (reduce into [] coll-2d))
 
 
-; ***** toptop *****
-#?(:clj (do
-
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
 
@@ -202,6 +199,75 @@
    b :- tsk/List]
   (or (= a b)
     (increasing? a b)))
+
+;-----------------------------------------------------------------------------
+(declare clip-str
+  )
+
+;-----------------------------------------------------------------------------
+(s/defn not-nil? :- s/Bool
+  [arg :- s/Any]
+  (not (nil? arg)))
+
+(s/defn not-empty? :- s/Bool
+  ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
+  [coll]
+  (not (empty? coll)))
+
+; #todo add not-neg? not-pos? not-zero?
+
+(s/defn kw->sym :- s/Symbol
+  [arg :- s/Keyword]
+  (symbol (name arg)))
+
+(s/defn kw->str :- s/Str
+  "Returns the string version of a keyword, stripped of the leading ':' (colon)."
+  [arg :- s/Keyword]
+  (name arg))
+
+(s/defn sym->str :- s/Str
+  [arg :- s/Symbol]
+  (name arg))
+
+(s/defn sym->kw :- s/Keyword
+  "Returns a keyword constructed from a normalized string"
+  [arg :- s/Symbol]
+  (keyword arg))
+
+(s/defn str->sym :- s/Symbol
+  [arg :- s/Str]
+  (symbol arg))
+
+; #todo throw if bad string
+(s/defn str->kw :- s/Keyword
+  [arg :- s/Str]
+  (keyword arg))
+
+(s/defn str->chars :- s/Keyword
+  [arg :- s/Str]
+  (vec arg))
+
+;-----------------------------------------------------------------------------
+(defn prettify
+  [coll]
+  (let [prettify-item (fn prettify-item [item]
+                        (cond
+                          (sequential? item) (vec item)
+                          (map? item) (into (sorted-map) item)
+                          (set? item) (into (sorted-set) item)
+                          (instance? java.io.InputStream item) (prettify-item (slurp item)) ; #todo need test
+                          :else item))
+        result        (walk/postwalk prettify-item coll)]
+    result ))
+
+; ***** toptop *****
+#?(:clj (do
+
+(ns-unmap *ns* 'first) ; #todo -> (set-tupelo-strict! true/false)
+(ns-unmap *ns* 'second)
+(ns-unmap *ns* 'rest)
+(ns-unmap *ns* 'next)
+(ns-unmap *ns* 'last)
 
 (defn is-clojure-1-7-plus? []
   (let [{:keys [major minor]} *clojure-version*]
@@ -245,41 +311,6 @@
     '[clojure.spec.alpha :as sp]
     '[clojure.spec.gen.alpha :as gen]
     '[clojure.spec.test.alpha :as stest] ))
-
-(ns-unmap *ns* 'first) ; #todo -> (set-tupelo-strict! true/false)
-(ns-unmap *ns* 'second)
-(ns-unmap *ns* 'rest)
-(ns-unmap *ns* 'next)
-(ns-unmap *ns* 'last)
-
-;-----------------------------------------------------------------------------
-(declare clip-str xfirst xlast xrest
-  )
-
-;-----------------------------------------------------------------------------
-(s/defn not-nil? :- s/Bool
-  [arg :- s/Any]
-  (not (nil? arg)))
-
-(s/defn not-empty? :- s/Bool
-  ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
-  [coll]
-  (not (empty? coll)))
-
-; #todo add not-neg? not-pos? not-zero?
-
-;-----------------------------------------------------------------------------
-(defn prettify
-  [coll]
-  (let [prettify-item (fn prettify-item [item]
-                        (cond
-                          (sequential? item) (vec item)
-                          (map? item) (into (sorted-map) item)
-                          (set? item) (into (sorted-set) item)
-                          (instance? java.io.InputStream item) (prettify-item (slurp item)) ; #todo need test
-                          :else item))
-        result        (walk/postwalk prettify-item coll)]
-    result ))
 
 ;-----------------------------------------------------------------------------
 ; spy stuff
@@ -556,37 +587,6 @@
 ; #todo    (drop-last N coll)  (take-last N coll)
 ; #todo    subvec
 ; #todo    others???
-
-(s/defn kw->sym :- s/Symbol
-  [arg :- s/Keyword]
-  (symbol (name arg)))
-
-(s/defn kw->str :- s/Str
-  "Returns the string version of a keyword, stripped of the leading ':' (colon)."
-  [arg :- s/Keyword]
-  (name arg))
-
-(s/defn sym->str :- s/Str
-  [arg :- s/Symbol]
-  (name arg))
-
-(s/defn sym->kw :- s/Keyword
-  "Returns a keyword constructed from a normalized string"
-  [arg :- s/Symbol]
-  (keyword arg))
-
-(s/defn str->sym :- s/Symbol
-  [arg :- s/Str]
-  (symbol arg))
-
-; #todo throw if bad string
-(s/defn str->kw :- s/Keyword
-  [arg :- s/Str]
-  (keyword arg))
-
-(s/defn str->chars :- s/Keyword
-  [arg :- s/Str]
-  (vec arg))
 
 ; #todo add postwalk and change to all sorted-map, sorted-set
 ; #todo rename to pp or pprint ?
