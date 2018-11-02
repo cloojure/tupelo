@@ -11,16 +11,15 @@
     [clojure.core.async :as ca]
     [clojure.string :as str]
     [clojure.test]
+    [clojure.set :as set]
+    [clojure.walk :as walk]
+    [tupelo.schema :as tsk]
     [schema.core :as s]
     #?@(:clj [
               [clojure.core.match :as ccm]
               [clojure.pprint :as pprint]
-              [clojure.set :as set]
-              [clojure.walk :as walk]
-              [tupelo.schema :as tsk]
               ;[tupelo.spec :as tsp]
               [tupelo.types :as types]
-              [tupelo.schema :as ts]
              ])))
 
 ; #todo wrap = < <= et al to throw ArityException if only 1 arg
@@ -40,15 +39,101 @@
   [arg]
   (if arg false true))
 
+(defn nl [] (newline))
 
+(defn unlazy
+  [coll]
+  (let [unlazy-item (fn [item]
+                      (cond
+                        (sequential? item) (vec item)
+                        (map? item) (into {} item)
+                        (set? item) (into #{} item)
+                        (instance? java.io.InputStream item) (slurp item) ; #todo need test
+                        :else item))
+        result    (walk/postwalk unlazy-item coll) ]
+    result ))
+
+(defn has-length?
+  [coll n]
+  (when (nil? coll) (throw (ex-info "has-length?: coll must not be nil" coll)))
+  (let [take-items (clojure.core/take n coll)
+        rest-items (clojure.core/drop n coll)]
+    (and (= n (count take-items))
+      (empty? rest-items))))
+
+(defn only
+  [coll]
+  (when-not (has-length? coll 1)
+    (throw (ex-info "only: num-items must=1; coll=" coll)))
+  (clojure.core/first coll))
+
+(defn onlies
+  [coll] (into (unlazy (empty coll)) (mapv only coll)))
+
+(defn only2
+  [coll] (only (only coll)))
+
+(defn single?
+  [coll] (has-length? coll 1))
+
+(defn pair?
+  [coll] (has-length? coll 2))
+
+(defn triple?
+  [coll] (has-length? coll 3))
+
+(defn quad?
+  [coll] (has-length? coll 4))
+
+; #todo make xdrop ?
+(defn xtake
+  [n coll]
+  (when (or (nil? coll) (empty? coll))
+    (throw (IllegalArgumentException. (str "xtake: invalid coll: " coll))))
+  (let [items (cc/take n coll)
+        actual (count items)]
+    (when (<  actual n)
+      (throw (IllegalArgumentException. (format "xtake: insufficient items, wanted %d found %d " n actual))))
+    (if (map? coll)
+      (into {} items)
+      (vec items))))
+
+(defn xfirst        ; #todo -> tests
+  [coll]
+  (when (or (nil? coll) (empty? coll))
+    (throw (IllegalArgumentException. (str "xfirst: invalid coll: " coll))))
+  (nth coll 0))
+
+; #todo fix up for maps
+; #todo (it-> coll (take 2 it), (validate (= 2 (count it))), (last it))
+(defn xsecond  ; #todo -> tests
+  [coll]
+  (when (or (nil? coll) (empty? coll))
+    (throw (IllegalArgumentException. (str "xsecond: invalid coll: " coll))))
+  (nth coll 1))
+
+; #todo fix up for maps
+(defn xthird  ; #todo -> tests
+  [coll ]
+  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xthird: invalid coll: " coll))))
+  (nth coll 2))
+
+; #todo fix up for maps
+(defn xfourth  ; #todo -> tests
+  [coll]
+  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xfourth: invalid coll: " coll))))
+  (nth coll 3))
+
+
+; ***** toptop *****
 #?(:clj (do
 
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
 
 (s/defn increasing? :- s/Bool
-  [a :- ts/List
-   b :- ts/List]
+  [a :- tsk/List
+   b :- tsk/List]
   (let [len-a        (count a)
         len-b        (count b)
         cmpr         (fn [x y] (cond
@@ -66,8 +151,8 @@
       (nil? first-change)           (< len-a len-b))))
 
 (s/defn increasing-or-equal? :- s/Bool
-  [a :- ts/List
-   b :- ts/List]
+  [a :- tsk/List
+   b :- tsk/List]
   (or (= a b)
     (increasing? a b)))
 
@@ -137,19 +222,6 @@
 ; #todo add not-neg? not-pos? not-zero?
 
 ;-----------------------------------------------------------------------------
-; #todo need tests & docs. Use for datomic Entity?
-(defn unlazy
-  [coll]
-  (let [unlazy-item (fn [item]
-                      (cond
-                        (sequential? item) (vec item)
-                        (map? item) (into {} item)
-                        (set? item) (into #{} item)
-                        (instance? java.io.InputStream item) (slurp item) ; #todo need test
-                        :else item))
-        result    (walk/postwalk unlazy-item coll) ]
-    result ))
-
 (defn prettify
   [coll]
   (let [prettify-item (fn prettify-item [item]
@@ -161,9 +233,6 @@
                           :else item))
         result        (walk/postwalk prettify-item coll)]
     result ))
-
-(defn nl
-  [] (newline))
 
 ;-----------------------------------------------------------------------------
 ; spy stuff
@@ -410,65 +479,6 @@
 ;-----------------------------------------------------------------------------
 ; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
 
-(defn has-length?
-  [coll n]
-  (when (nil? coll) (throw (IllegalArgumentException. (str "has-length?: coll must not be nil: " coll))))
-  (let [take-items (clojure.core/take n coll)
-        rest-items (clojure.core/drop n coll)]
-    (and (= n (count take-items))
-      (empty? rest-items))))
-
-(defn only
-  [coll]
-  (when-not (has-length? coll 1)
-    (throw (IllegalArgumentException. (str "only: num-items must=1; coll="
-                                        (clip-str 99 (clojure.core/take 99 coll))))))
-  (clojure.core/first coll))
-
-(defn onlies
-  [coll] (into (unlazy (empty coll)) (mapv only coll)))
-
-(defn only2
-  [coll] (only (only coll)))
-
-(defn single?
-  [coll] (has-length? coll 1))
-
-(defn pair?
-  [coll] (has-length? coll 2))
-
-(defn triple?
-  [coll] (has-length? coll 3))
-
-(defn quad?
-  [coll] (has-length? coll 4))
-
-(defn xfirst        ; #todo -> tests
-  [coll]
-  (when (or (nil? coll) (empty? coll))
-    (throw (IllegalArgumentException. (str "xfirst: invalid coll: " coll))))
-  (nth coll 0))
-
-; #todo fix up for maps
-; #todo (it-> coll (take 2 it), (validate (= 2 (count it))), (last it))
-(defn xsecond  ; #todo -> tests
-  [coll]
-  (when (or (nil? coll) (empty? coll))
-    (throw (IllegalArgumentException. (str "xsecond: invalid coll: " coll))))
-  (nth coll 1))
-
-; #todo fix up for maps
-(defn xthird  ; #todo -> tests
-  [coll ]
-  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xthird: invalid coll: " coll))))
-  (nth coll 2))
-
-; #todo fix up for maps
-(defn xfourth  ; #todo -> tests
-  [coll]
-  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xfourth: invalid coll: " coll))))
-  (nth coll 3))
-
 ; #todo fix up for maps
 (s/defn xlast :- s/Any ; #todo -> tests
   [coll :- [s/Any]]
@@ -497,19 +507,6 @@
   [coll :- [s/Any]]
   (when (nil? coll) (throw (IllegalArgumentException. (str "xvec: invalid coll: " coll))))
   (clojure.core/vec coll))
-
-; #todo make xdrop ?
-(defn xtake
-  [n coll]
-  (when (or (nil? coll) (empty? coll))
-    (throw (IllegalArgumentException. (str "xtake: invalid coll: " coll))))
-  (let [items (cc/take n coll)
-        actual (count items)]
-    (when (<  actual n)
-      (throw (IllegalArgumentException. (format "xtake: insufficient items, wanted %d found %d " n actual))))
-    (if (map? coll)
-      (into {} items)
-      (vec items))))
 
 ; #todo fix up for maps
 (defn rand-elem
@@ -858,8 +855,8 @@
                  "  start-val=" start-val "  stop-val=" stop-val))))
     (mapv char (thru start-val stop-val))))
 
-(s/defn glue-rows :- ts/List ; #todo necessary?
-  [coll-2d :- ts/List]
+(s/defn glue-rows :- tsk/List ; #todo necessary?
+  [coll-2d :- tsk/List]
   (when-not (sequential? coll-2d)
     (throw (IllegalArgumentException. (str "Sequential collection required, found=" coll-2d))))
   (when-not (every? sequential? coll-2d)
@@ -1322,7 +1319,7 @@
 
 (def MapKeySpec (s/either [s/Any] #{s/Any}))
 (s/defn validate-map-keys :- s/Any
-  [tst-map :- ts/Map
+  [tst-map :- tsk/Map
    valid-keys :- MapKeySpec]
   (let [valid-keys (set valid-keys)
         map-keys   (keys tst-map)]

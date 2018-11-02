@@ -37,26 +37,13 @@
    to (not (truthy? arg))."
   [arg] (i/falsey? arg))
 
-#?(:clj (do
-
-(defmacro when-clojure-1-8-plus [& forms]
-  `(i/when-clojure-1-8-plus ~@forms))
-
-(defmacro when-clojure-1-9-plus [& forms]
-  `(i/when-clojure-1-9-plus ~@forms))
-
 (defn nl
   "Abbreviated name for `newline` "
   [] (i/nl))
 
-(defn unlazy
+(defn unlazy ; #todo need tests & docs. Use for datomic Entity?
   "Converts a lazy collection to a concrete (eager) collection of the same type."
   [coll] (i/unlazy coll))
-
-(defn prettify
-  "Recursively walks a data structure and returns a prettified version.
-  Converts all lists to vectors. Converts all maps & sets to sorted collections."
-  [coll] (i/prettify coll))
 
 (defn has-length?
   "Returns true if the collection has the indicated length. Does not hang for infinite sequences."
@@ -93,6 +80,20 @@
 (defn quad?
   "Returns true if the collection contains exactly 4 items."
   [coll] (i/quad? coll))
+
+; ***** toptop *****
+#?(:clj (do
+
+(defmacro when-clojure-1-8-plus [& forms]
+  `(i/when-clojure-1-8-plus ~@forms))
+
+(defmacro when-clojure-1-9-plus [& forms]
+  `(i/when-clojure-1-9-plus ~@forms))
+
+(defn prettify
+  "Recursively walks a data structure and returns a prettified version.
+  Converts all lists to vectors. Converts all maps & sets to sorted collections."
+  [coll] (i/prettify coll))
 
 (defn xtake
   "Returns the first n values from a collection.  Returns map for map colls.
