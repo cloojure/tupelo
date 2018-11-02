@@ -11,11 +11,10 @@
     [tupelo.impl :as i]
     [clojure.string :as str]
     #?@(:clj [[cheshire.core :as cc]
-             [schema.core :as s]
-             [tupelo.schema :as tsk]
-             [tupelo.string :as ts]]))
-  #?(:clj
-     (:import [java.io BufferedReader StringReader ByteArrayOutputStream PrintStream]))
+              [schema.core :as s]
+              [tupelo.schema :as tsk]
+              [tupelo.string :as ts]]))
+  #?(:clj (:import [java.io PrintStream ByteArrayOutputStream]))
   )
 
 ; #todo unify terminolgy (atom/ref/agent)
@@ -1209,14 +1208,6 @@
       (-> x .getClass .isArray)
       (string? x)
       (instance? java.util.Map x))))
-
-; duplicate of str/split-lines
-(defn ^:deprecated ^:no-doc str->lines
-  "***** DEPRECATED:  duplicate of str/split-lines *****
-
-  Returns a lazy seq of lines from a string"
-  [string-arg]
-  (line-seq (BufferedReader. (StringReader. string-arg))))
 
 ;---------------------------------------------------------------------------------------------------
 ; Another benefit of test-all:  don't need "-test" suffix like in lein test:
