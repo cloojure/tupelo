@@ -56,15 +56,15 @@
 (defn has-length?
   [coll n]
   (when (nil? coll) (throw (ex-info "has-length?: coll must not be nil" coll)))
-  (let [take-items (clojure.core/take n coll)
-        rest-items (clojure.core/drop n coll)]
+  (let [take-items (cc/take n coll)
+        rest-items (cc/drop n coll)]
     (and (= n (count take-items))
       (empty? rest-items))))
 
 (defn only
   [coll]
   (when-not (has-length? coll 1)
-    (throw (ex-info "only: num-items must=1; coll=" coll)))
+    (throw (ex-info "only: num-items must=1" coll)))
   (clojure.core/first coll))
 
 (defn onlies
@@ -89,11 +89,11 @@
 (defn xtake
   [n coll]
   (when (or (nil? coll) (empty? coll))
-    (throw (IllegalArgumentException. (str "xtake: invalid coll: " coll))))
+    (throw (ex-info "xtake: invalid coll: " coll)))
   (let [items (cc/take n coll)
         actual (count items)]
     (when (<  actual n)
-      (throw (IllegalArgumentException. (format "xtake: insufficient items, wanted %d found %d " n actual))))
+      (throw (ex-info (format "xtake: insufficient items, wanted %d found %d " n actual))))
     (if (map? coll)
       (into {} items)
       (vec items))))
@@ -101,7 +101,7 @@
 (defn xfirst        ; #todo -> tests
   [coll]
   (when (or (nil? coll) (empty? coll))
-    (throw (IllegalArgumentException. (str "xfirst: invalid coll: " coll))))
+    (throw (ex-info "xfirst: invalid coll: " coll)))
   (nth coll 0))
 
 ; #todo fix up for maps
@@ -109,20 +109,67 @@
 (defn xsecond  ; #todo -> tests
   [coll]
   (when (or (nil? coll) (empty? coll))
-    (throw (IllegalArgumentException. (str "xsecond: invalid coll: " coll))))
+    (throw (ex-info "xsecond: invalid coll: " coll)))
   (nth coll 1))
 
 ; #todo fix up for maps
 (defn xthird  ; #todo -> tests
   [coll ]
-  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xthird: invalid coll: " coll))))
+  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xthird: invalid coll: " coll)))
   (nth coll 2))
 
 ; #todo fix up for maps
 (defn xfourth  ; #todo -> tests
   [coll]
-  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xfourth: invalid coll: " coll))))
+  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xfourth: invalid coll: " coll)))
   (nth coll 3))
+
+; #todo fix up for maps
+(s/defn xlast :- s/Any ; #todo -> tests
+  [coll :- [s/Any]]
+  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xlast: invalid coll: " coll)))
+  (clojure.core/last coll))
+
+; #todo fix up for maps
+(s/defn xbutlast :- s/Any ; #todo -> tests
+  [coll :- [s/Any]]
+  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xbutlast: invalid coll: " coll)))
+  (vec (clojure.core/butlast coll)))
+
+; #todo fix up for maps
+(defn xrest ; #todo -> tests
+  [coll]
+  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xrest: invalid coll: " coll)))
+  (clojure.core/rest coll))
+
+(defn xreverse ; #todo -> tests & doc
+  "Returns a vector containing a sequence in reversed order. Throws if nil."
+  [coll]
+  (when (nil? coll) (throw (ex-info "xreverse: invalid coll: " coll)))
+  (vec (clojure.core/reverse coll)))
+
+(s/defn xvec :- [s/Any]
+  [coll :- [s/Any]]
+  (when (nil? coll) (throw (ex-info "xvec: invalid coll: " coll)))
+  (clojure.core/vec coll))
+
+(defn glue
+  [& colls]
+  (let [string-or-char? #(or (string? %) (char? %))]
+    (cond
+      (every? sequential? colls)        (reduce into [] colls) ; coerce to vector result
+      (every? map? colls)               (reduce into    colls) ; first item determines type of result
+      (every? set? colls)               (reduce into    colls) ; first item determines type of result
+      (every? string-or-char? colls)    (apply str colls)
+      :else (throw (ex-info "glue: colls must be all same type; found types=" (mapv type colls))))))
+
+(s/defn glue-rows :- tsk/List ; #todo necessary?
+  [coll-2d :- tsk/List]
+  (when-not (sequential? coll-2d)
+    (throw (ex-info "Sequential collection required, found=" coll-2d)))
+  (when-not (every? sequential? coll-2d)
+    (throw (ex-info "Nested sequential collections required, found=" coll-2d)))
+  (reduce into [] coll-2d))
 
 
 ; ***** toptop *****
@@ -480,35 +527,6 @@
 ; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
 
 ; #todo fix up for maps
-(s/defn xlast :- s/Any ; #todo -> tests
-  [coll :- [s/Any]]
-  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xlast: invalid coll: " coll))))
-  (clojure.core/last coll))
-
-; #todo fix up for maps
-(s/defn xbutlast :- s/Any ; #todo -> tests
-  [coll :- [s/Any]]
-  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xbutlast: invalid coll: " coll))))
-  (vec (clojure.core/butlast coll)))
-
-; #todo fix up for maps
-(defn xrest ; #todo -> tests
-  [coll]
-  (when (or (nil? coll) (empty? coll)) (throw (IllegalArgumentException. (str "xrest: invalid coll: " coll))))
-  (clojure.core/rest coll))
-
-(defn xreverse ; #todo -> tests & doc
-  "Returns a vector containing a sequence in reversed order. Throws if nil."
-  [coll]
-  (when (nil? coll) (throw (IllegalArgumentException. (str "xreverse: invalid coll: " coll))))
-  (vec (clojure.core/reverse coll)))
-
-(s/defn xvec :- [s/Any]
-  [coll :- [s/Any]]
-  (when (nil? coll) (throw (IllegalArgumentException. (str "xvec: invalid coll: " coll))))
-  (clojure.core/vec coll))
-
-; #todo fix up for maps
 (defn rand-elem
   [coll]
   (verify (not-nil? coll))
@@ -649,18 +667,6 @@
     :args (sp/cat :arg ::anything)
     :ret boolean?
     :fn #(= (:ret %) (not (truthy? (-> % :args :arg))))))
-
-(defn glue
-  [& colls]
-  (let [string-or-char? #(or (string? %) (char? %))]
-    (cond
-      (every? sequential? colls)        (reduce into [] colls) ; coerce to vector result
-      (every? map? colls)               (reduce into    colls) ; first item determines type of result
-      (every? set? colls)               (reduce into    colls) ; first item determines type of result
-      (every? string-or-char? colls)    (apply str colls)
-      :else (throw (IllegalArgumentException.
-                     (str "glue: colls must be all same type; found types=" (mapv type colls)))))))
-; #todo look at using (ex-info ...)
 
 ; #todo rename to (map-of a b c ...)  ??? (re. potpuri)
 (defmacro vals->map ; #todo -> README
@@ -854,14 +860,6 @@
                (str "char-seq: start-char must come before stop-char."
                  "  start-val=" start-val "  stop-val=" stop-val))))
     (mapv char (thru start-val stop-val))))
-
-(s/defn glue-rows :- tsk/List ; #todo necessary?
-  [coll-2d :- tsk/List]
-  (when-not (sequential? coll-2d)
-    (throw (IllegalArgumentException. (str "Sequential collection required, found=" coll-2d))))
-  (when-not (every? sequential? coll-2d)
-    (throw (IllegalArgumentException. (str "Nested sequential collections required, found=" coll-2d))))
-  (reduce into [] coll-2d))
 
 (s/defn append :- tsk/List
   [listy :- tsk/List

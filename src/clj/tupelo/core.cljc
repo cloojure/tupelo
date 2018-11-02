@@ -81,20 +81,6 @@
   "Returns true if the collection contains exactly 4 items."
   [coll] (i/quad? coll))
 
-; ***** toptop *****
-#?(:clj (do
-
-(defmacro when-clojure-1-8-plus [& forms]
-  `(i/when-clojure-1-8-plus ~@forms))
-
-(defmacro when-clojure-1-9-plus [& forms]
-  `(i/when-clojure-1-9-plus ~@forms))
-
-(defn prettify
-  "Recursively walks a data structure and returns a prettified version.
-  Converts all lists to vectors. Converts all maps & sets to sorted collections."
-  [coll] (i/prettify coll))
-
 (defn xtake
   "Returns the first n values from a collection.  Returns map for map colls.
   Throws if empty."
@@ -130,6 +116,45 @@
 (defn xvec
   "Converts a collection into a vector. Throws if given nil."
   [coll] (i/xvec coll))
+
+(defn glue
+  "Glues together like collections:
+
+     (glue [1 2] [3 4] [5 6])                -> [1 2 3 4 5 6]
+     (glue {:a 1} {:b 2} {:c 3})             -> {:a 1 :c 3 :b 2}
+     (glue #{1 2} #{3 4} #{6 5})             -> #{1 2 6 5 3 4}
+     (glue \"I\" \" like \" \\a \" nap!\" )  -> \"I like a nap!\"
+
+  If you want to convert to a sorted set or map, just put an empty one first:
+
+     (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
+     (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
+
+   If there are duplicate keys when using glue for maps or sets, then \"the last one wins\":
+
+     (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
+  [& colls]
+  (apply i/glue colls))
+
+(defn glue-rows
+  " Convert a vector of vectors (2-dimensional) into a single vector (1-dimensional).
+  Equivalent to `(apply glue ...)`"
+  [coll-2d] (i/glue-rows coll-2d))
+
+
+; ***** toptop *****
+#?(:clj (do
+
+(defmacro when-clojure-1-8-plus [& forms]
+  `(i/when-clojure-1-8-plus ~@forms))
+
+(defmacro when-clojure-1-9-plus [& forms]
+  `(i/when-clojure-1-9-plus ~@forms))
+
+(defn prettify
+  "Recursively walks a data structure and returns a prettified version.
+  Converts all lists to vectors. Converts all maps & sets to sorted collections."
+  [coll] (i/prettify coll))
 
 (defn rand-elem
   "Returns a random element from a collection"
@@ -554,30 +579,6 @@
   ([the-map :- tsk/KeyMap
     the-keys :- [s/Any]]
     (keyvals-seq (vals->map the-map the-keys))) )
-
-(defn glue
-  "Glues together like collections:
-
-     (glue [1 2] [3 4] [5 6])                -> [1 2 3 4 5 6]
-     (glue {:a 1} {:b 2} {:c 3})             -> {:a 1 :c 3 :b 2}
-     (glue #{1 2} #{3 4} #{6 5})             -> #{1 2 6 5 3 4}
-     (glue \"I\" \" like \" \\a \" nap!\" )  -> \"I like a nap!\"
-
-  If you want to convert to a sorted set or map, just put an empty one first:
-
-     (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
-     (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
-
-   If there are duplicate keys when using glue for maps or sets, then \"the last one wins\":
-
-     (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
-  [& colls]
-  (apply i/glue colls))
-
-(defn glue-rows
-  " Convert a vector of vectors (2-dimensional) into a single vector (1-dimensional).
-  Equivalent to `(apply glue ...)`"
-  [coll-2d] (i/glue-rows coll-2d))
 
 (defn unwrap
   "Works with the `->vector` function to unwrap vectors/lists to insert
