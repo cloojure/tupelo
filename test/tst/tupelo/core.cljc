@@ -2447,22 +2447,23 @@
         mania [{:a 11} {:b 22} {:c [7 8 9]}]]
     ;(spy :info-orig info)
     ;(spy :mania-orig mania)
-    (it-> (destruct [info {:a z
-                           :b [d e f]}
-                     mania [{:a ?} BBB {:c clutter}]]
-            ;(spyx z)
-            ;(spyx [d e f])
-            ;(spyx a)
-            ;(spyx BBB)
-            ;(spyx clutter)
-            (let [clutter (mapv inc clutter)
-                  BBB     {:BBB 33}
-                  z       77
-                  d       (+ 7 d)]
-              (restruct-all)))
-      (with-map-vals it [info mania]
-        (is= info {:a 77, :b [9 3 4]})
-        (is= mania [{:a 11} {:BBB 33} {:c [8 9 10]}])))))
+    (let [z ::dummy]
+      (it-> (destruct [info {:a z
+                             :b [d e f]}
+                       mania [{:a ?} BBB {:c clutter}]]
+              ;(spyx z)
+              ;(spyx [d e f])
+              ;(spyx a)
+              ;(spyx BBB)
+              ;(spyx clutter)
+              (let [clutter (mapv inc clutter)
+                    BBB     {:BBB 33}
+                    z       77
+                    d       (+ 7 d)]
+                (restruct-all)))
+        (with-map-vals it [info mania]
+          (is= info {:a 77, :b [9 3 4]})
+          (is= mania [{:a 11} {:BBB 33} {:c [8 9 10]}]))))))
 
 (dotest
   (let [data {:a 1

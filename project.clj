@@ -25,6 +25,7 @@
      [org.clojure/tools.analyzer "0.6.9"]
      [org.clojure/tools.reader "1.3.1"]
      [prismatic/schema "1.1.9"]]
+
   :update :daily    ; :always
 
   :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]]
