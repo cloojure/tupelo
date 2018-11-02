@@ -24,8 +24,6 @@
          [tupelo.schema :as ts] )
        ]))
 
-#?(:clj (do
-
 ; #todo wrap = < <= et al to throw ArityException if only 1 arg
 ; #todo or if not number?
 ; #todo wrap contains? get etc to enforce "normal" input types: map/set vs vec/list
@@ -33,6 +31,18 @@
 ; #todo (fnil inc 0) => (with-default-args [0 "hello" :cc]
 ; #todo                   some-fn-of-3-or-more-args)
 ; #todo    like (some-fn* (glue {0 0   1 "hello"   2 :cc} {<user args here>} ))
+
+
+(defn truthy?
+  [arg]
+  (if arg true false))
+
+(defn falsey?
+  [arg]
+  (if arg false true))
+
+
+#?(:clj (do
 
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
@@ -116,14 +126,6 @@
   )
 
 ;-----------------------------------------------------------------------------
-(defn truthy?
-  [arg]
-  (if arg true false))
-
-(defn falsey?
-  [arg]
-  (if arg false true))
-
 (s/defn not-nil? :- s/Bool
   [arg :- s/Any]
   (not (nil? arg)))

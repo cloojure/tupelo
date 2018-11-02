@@ -13,6 +13,8 @@
     [tst.flintstones.pebbles]
     [tst.flintstones.slate]
     [tst.flintstones.bambam]
+
+    [tst.tupelo.core]
   ))
 
 (enable-console-print!)
@@ -24,5 +26,7 @@
   'tst.flintstones.pebbles
   'tst.flintstones.slate
   'tst.flintstones.bambam
+
+  'tst.tupelo.core
 )
 (println "doorunner - end")

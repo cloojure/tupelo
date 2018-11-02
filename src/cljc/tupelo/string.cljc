@@ -6,18 +6,17 @@
 ;   software.
 (ns tupelo.string
   "Tupelo - Making Clojure even sweeter"
-  #?@(:clj [
-      (:refer-clojure :exclude [drop take contains?])
-      (:require
-        [clojure.core :as cc]
-        [clojure.java.io :as io]
-        [clojure.string :as str]
-        [schema.core :as s]
-        [tupelo.char :as char]
-        [tupelo.impl :as i] )
-  ])
-  (:import [java.io InputStream ByteArrayInputStream]
-           [java.nio.charset StandardCharsets]))
+  #?(:clj (:refer-clojure :exclude [drop take contains?]))
+  (:require
+    #?@(:clj [[clojure.core :as cc]
+              [clojure.java.io :as io]
+              [clojure.string :as str]
+              [schema.core :as s]
+              [tupelo.char :as char]
+              [tupelo.impl :as i]]))
+ #?(:clj
+    (:import [java.io InputStream ByteArrayInputStream]
+             [java.nio.charset StandardCharsets])))
 
 (def phonetic-alphabet
   "A map from keyword character to string phonetic name:

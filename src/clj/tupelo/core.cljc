@@ -6,17 +6,17 @@
 ;   software.
 (ns tupelo.core
   "Tupelo - Making Clojure even sweeter"
+  (:refer-clojure :exclude [map seqable?])
+  (:require
+    [tupelo.impl :as i]
+    [clojure.string :as str]
+    #?@(:clj [[cheshire.core :as cc]
+             [schema.core :as s]
+             [tupelo.schema :as tsk]
+             [tupelo.string :as ts]]))
   #?(:clj
-     (:require
-       [cheshire.core :as cc]
-       [clojure.string :as str]
-       [schema.core :as s]
-       [tupelo.impl :as i]
-       [tupelo.schema :as tsk]
-       [tupelo.string :as ts] ))
-  #?@(:clj [(:refer-clojure :exclude [map seqable?])
-            (:import [java.io BufferedReader StringReader ByteArrayOutputStream PrintStream])
-     ]))
+     (:import [java.io BufferedReader StringReader ByteArrayOutputStream PrintStream]))
+  )
 
 ; #todo unify terminolgy (atom/ref/agent)
 ;   -> reset!/ref-set => set
@@ -28,6 +28,15 @@
 ; #todo need (defkw :fred) and (kw :fred) to catch errors like
 ; (when (= person :frid)  ; (kw :frid) -> throws
 ;    (println "Hi Barney!"))
+
+(defn truthy?
+  "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
+  [arg] (i/truthy? arg))
+
+(defn falsey?
+  "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
+   to (not (truthy? arg))."
+  [arg] (i/falsey? arg))
 
 #?(:clj (do
 
@@ -425,20 +434,6 @@
 
 ; #todo need min-java-1-8  ???
 
-
-; original
-#_(s/defn truthy? :- s/Bool
-    "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
-    [arg :- s/Any]
-    (if arg true false))
-
-(defn truthy?
-  "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
-  [arg] (i/truthy? arg))
-(defn falsey?
-  "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
-   to (not (truthy? arg))."
-  [arg] (i/falsey? arg))
 
 (defn validate
   "(validate tst-fn tst-val)

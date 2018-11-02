@@ -6,15 +6,13 @@
 ;   software.
 (ns tupelo.char
   "Tupelo - Making Clojure even sweeter"
-  #?@(:clj [
-  (:refer-clojure :exclude [drop take] )
+  #?(:clj (:refer-clojure :exclude [drop take]))
   (:require
     [clojure.set :as set]
-    [schema.core :as s]
-    [tupelo.impl :as i]
-    [tupelo.schema :as tsk])
-            ])
-      )
+    #?@(:clj [
+              [schema.core :as s]
+              [tupelo.impl :as i]
+              [tupelo.schema :as tsk]])))
 
 #?(:clj (do
 ; #todo: docstrings
