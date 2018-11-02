@@ -13,7 +13,7 @@
               ])
   ))
 
-(enable-console-print!)
+#?(:cljs (enable-console-print!))
 
 (define-fixture :once
      {:enter (fn [ctx] (println "*** TEST ONCE *** - enter "))
