@@ -14,6 +14,10 @@
 (dotest
   (println "tst.tupelo.core test 1")
   (is= 2 (+ 1 1))
+
   (is (t/truthy? true))
+  (is (t/truthy? 5))
+  (is (t/falsey? false))
+  (is (t/falsey? nil))
   )
 

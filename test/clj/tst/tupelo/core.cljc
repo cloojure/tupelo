@@ -267,7 +267,6 @@
     ))
 
 (dotest
-  (is (truthy? 5))
 ; (spyx (s/check-fn truthy? ))
 
   (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]

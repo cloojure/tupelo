@@ -10,12 +10,12 @@
   (:require
     [tupelo.impl :as i]
     [clojure.string :as str]
-    #?@(:clj [[cheshire.core :as cc]
+    #?@(:clj [[cheshire.core :as cheshire]
               [schema.core :as s]
               [tupelo.schema :as tsk]
               [tupelo.string :as ts]]))
   #?(:clj (:import [java.io PrintStream ByteArrayOutputStream]))
-  )
+)
 
 ; #todo unify terminolgy (atom/ref/agent)
 ;   -> reset!/ref-set => set
@@ -942,12 +942,12 @@
 ; #todo add test & README
 (defn json->edn [arg]
   "Shortcut to cheshire.core/parse-string"
-  (cc/parse-string arg true))   ; true => keywordize-keys
+  (cheshire/parse-string arg true))   ; true => keywordize-keys
 
 ; #todo add test & README
 (defn edn->json [arg]
   "Shortcut to cheshire.core/generate-string"
-  (cc/generate-string arg))
+  (cheshire/generate-string arg))
 
 ;                                               "1234.4567.89ab.cdef"  also valid for read
 ; #todo need conversion from Long -> hex string="1234-4567-89ab-cdef" (& inverse)

@@ -6,23 +6,22 @@
 ;   software.
 (ns ^:no-doc tupelo.impl
   "Tupelo - Making Clojure even sweeter"
-  #?@(:clj
-      [
-       (:require
-         [clojure.core :as cc]
-         [clojure.core.async :as ca]
-         [clojure.core.match :as ccm]
-         [clojure.pprint :as pprint]
-         [clojure.set :as set]
-         [clojure.string :as str]
-         [clojure.test]
-         [clojure.walk :as walk]
-         [schema.core :as s]
-         [tupelo.schema :as tsk]
-         ;[tupelo.spec :as tsp]
-         [tupelo.types :as types]
-         [tupelo.schema :as ts] )
-       ]))
+  (:require
+    [clojure.core :as cc]
+    [clojure.core.async :as ca]
+    [clojure.string :as str]
+    [clojure.test]
+    [schema.core :as s]
+    #?@(:clj [
+              [clojure.core.match :as ccm]
+              [clojure.pprint :as pprint]
+              [clojure.set :as set]
+              [clojure.walk :as walk]
+              [tupelo.schema :as tsk]
+              ;[tupelo.spec :as tsp]
+              [tupelo.types :as types]
+              [tupelo.schema :as ts]
+             ])))
 
 ; #todo wrap = < <= et al to throw ArityException if only 1 arg
 ; #todo or if not number?
