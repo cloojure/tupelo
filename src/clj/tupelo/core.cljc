@@ -199,73 +199,10 @@
   "Converts a symbol to a string"
   [arg] (i/sym->str arg))
 
-
-; ***** toptop *****
-#?(:clj (do
-
-(defmacro when-clojure-1-8-plus [& forms]
-  `(i/when-clojure-1-8-plus ~@forms))
-
-(defmacro when-clojure-1-9-plus [& forms]
-  `(i/when-clojure-1-9-plus ~@forms))
-
 (defn prettify
   "Recursively walks a data structure and returns a prettified version.
   Converts all lists to vectors. Converts all maps & sets to sorted collections."
   [coll] (i/prettify coll))
-
-(defn rand-elem
-  "Returns a random element from a collection"
-  [coll] (i/rand-elem coll))
-
-(defn lexical-compare
-  "Performs a lexical comparison of 2 sequences, sorting as follows:
-      [1]
-      [1 :a]
-      [1 :b]
-      [1 :b 3]
-      [2]
-      [3]
-      [3 :y] "
-  [a b] (i/lexical-compare a b))
-
-(defn zip*
-  "Usage:  (zip* context & colls)
-  where context is a map with default values:  {:strict true}
-  Not lazy. "
-  [context & colls]
-  (apply i/zip* context colls))
-
-(defn zip
-  "Zips together vectors producing a vector of tuples (like Python zip). Not lazy.
-  Example:
-
-     (zip [:a :b :c] [1 2 3]) ->  [ [:a 1] [:b 2] [:c 3] ]
-
-   ***** WARNING - will hang for infinite length inputs ***** "
-  [& args]
-  (apply i/zip args))
-
-(defn zip-lazy
-  "Usage:  (zip-lazy coll1 coll2 ...)
-      (zip-lazy xs ys zs) -> [ [x0 y0 z0]
-                               [x1 y1 z1]
-                               [x2 y2 z2]
-                               ... ]
-
-  Returns a lazy result. Will truncate to the length of the shortest collection.
-  A convenience wrapper for `(map vector coll1 coll2 ...)`.  "
-  [& colls]
-  (apply i/zip-lazy colls))
-
-(defn indexed
-  "Given one or more collections, returns a sequence of indexed tuples from the collections:
-      (indexed xs ys zs) -> [ [0 x0 y0 z0]
-                              [1 x1 y1 z1]
-                              [2 x2 y2 z2]
-                              ... ] "
-  [& colls]
-  (apply i/indexed colls))
 
 (defmacro with-spy-indent
   "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
@@ -319,6 +256,69 @@
         2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
         prints 'spy => 5' to stdout.  "
   [& args] (apply i/spy args))
+
+
+; ***** toptop *****
+#?(:clj (do
+
+(defmacro when-clojure-1-8-plus [& forms]
+  `(i/when-clojure-1-8-plus ~@forms))
+
+(defmacro when-clojure-1-9-plus [& forms]
+  `(i/when-clojure-1-9-plus ~@forms))
+
+(defn rand-elem
+  "Returns a random element from a collection"
+  [coll] (i/rand-elem coll))
+
+(defn lexical-compare
+  "Performs a lexical comparison of 2 sequences, sorting as follows:
+      [1]
+      [1 :a]
+      [1 :b]
+      [1 :b 3]
+      [2]
+      [3]
+      [3 :y] "
+  [a b] (i/lexical-compare a b))
+
+(defn zip*
+  "Usage:  (zip* context & colls)
+  where context is a map with default values:  {:strict true}
+  Not lazy. "
+  [context & colls]
+  (apply i/zip* context colls))
+
+(defn zip
+  "Zips together vectors producing a vector of tuples (like Python zip). Not lazy.
+  Example:
+
+     (zip [:a :b :c] [1 2 3]) ->  [ [:a 1] [:b 2] [:c 3] ]
+
+   ***** WARNING - will hang for infinite length inputs ***** "
+  [& args]
+  (apply i/zip args))
+
+(defn zip-lazy
+  "Usage:  (zip-lazy coll1 coll2 ...)
+      (zip-lazy xs ys zs) -> [ [x0 y0 z0]
+                               [x1 y1 z1]
+                               [x2 y2 z2]
+                               ... ]
+
+  Returns a lazy result. Will truncate to the length of the shortest collection.
+  A convenience wrapper for `(map vector coll1 coll2 ...)`.  "
+  [& colls]
+  (apply i/zip-lazy colls))
+
+(defn indexed
+  "Given one or more collections, returns a sequence of indexed tuples from the collections:
+      (indexed xs ys zs) -> [ [0 x0 y0 z0]
+                              [1 x1 y1 z1]
+                              [2 x2 y2 z2]
+                              ... ] "
+  [& colls]
+  (apply i/indexed colls))
 
 (defmacro spyx
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied

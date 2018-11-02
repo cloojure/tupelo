@@ -260,58 +260,6 @@
         result        (walk/postwalk prettify-item coll)]
     result ))
 
-; ***** toptop *****
-#?(:clj (do
-
-(ns-unmap *ns* 'first) ; #todo -> (set-tupelo-strict! true/false)
-(ns-unmap *ns* 'second)
-(ns-unmap *ns* 'rest)
-(ns-unmap *ns* 'next)
-(ns-unmap *ns* 'last)
-
-(defn is-clojure-1-7-plus? []
-  (let [{:keys [major minor]} *clojure-version*]
-    (increasing-or-equal? [1 7] [major minor])))
-
-(defn is-clojure-1-8-plus? []
-  (let [{:keys [major minor]} *clojure-version*]
-    (increasing-or-equal? [1 8] [major minor])))
-
-(defn is-clojure-1-9-plus? []
-  (let [{:keys [major minor]} *clojure-version*]
-    (increasing-or-equal? [1 9] [major minor])))
-
-(defn is-pre-clojure-1-8? [] (not (is-clojure-1-8-plus?)))
-(defn is-pre-clojure-1-9? [] (not (is-clojure-1-9-plus?)))
-
-; #todo add is-clojure-1-8-max?
-; #todo need clojure-1-8-plus-or-throw  ??
-
-(defmacro when-clojure-1-8-plus
-  "Wraps code that should only be included for Clojure 1.8 or higher.  Otherwise, code is supressed."
-  [& forms]
-  (if (is-clojure-1-8-plus?)
-    `(do ~@forms)))
-
-(defmacro when-clojure-1-9-plus
-  "Wraps code that should only be included for Clojure 1.9 or higher.  Otherwise, code is supressed."
-  [& forms]
-  (if (is-clojure-1-9-plus?)
-    `(do ~@forms)))
-
-(defmacro when-not-clojure-1-9-plus
-  "Wraps code that should only be included for Clojure versions prior to 1.9.  Otherwise, code is supressed."
-  [& forms]
-  (if (is-pre-clojure-1-9?)
-    `(do ~@forms)))
-
-;----------------------------------------------------------------------------
-(when-clojure-1-9-plus
-  (require
-    '[clojure.spec.alpha :as sp]
-    '[clojure.spec.gen.alpha :as gen]
-    '[clojure.spec.test.alpha :as stest] ))
-
 ;-----------------------------------------------------------------------------
 ; spy stuff
 
@@ -367,6 +315,59 @@
      value ))
   ([value] ; 1-arg arity uses a generic "spy" message
    (spy :spy value)))
+
+
+; ***** toptop *****
+#?(:clj (do
+
+(ns-unmap *ns* 'first) ; #todo -> (set-tupelo-strict! true/false)
+(ns-unmap *ns* 'second)
+(ns-unmap *ns* 'rest)
+(ns-unmap *ns* 'next)
+(ns-unmap *ns* 'last)
+
+(defn is-clojure-1-7-plus? []
+  (let [{:keys [major minor]} *clojure-version*]
+    (increasing-or-equal? [1 7] [major minor])))
+
+(defn is-clojure-1-8-plus? []
+  (let [{:keys [major minor]} *clojure-version*]
+    (increasing-or-equal? [1 8] [major minor])))
+
+(defn is-clojure-1-9-plus? []
+  (let [{:keys [major minor]} *clojure-version*]
+    (increasing-or-equal? [1 9] [major minor])))
+
+(defn is-pre-clojure-1-8? [] (not (is-clojure-1-8-plus?)))
+(defn is-pre-clojure-1-9? [] (not (is-clojure-1-9-plus?)))
+
+; #todo add is-clojure-1-8-max?
+; #todo need clojure-1-8-plus-or-throw  ??
+
+(defmacro when-clojure-1-8-plus
+  "Wraps code that should only be included for Clojure 1.8 or higher.  Otherwise, code is supressed."
+  [& forms]
+  (if (is-clojure-1-8-plus?)
+    `(do ~@forms)))
+
+(defmacro when-clojure-1-9-plus
+  "Wraps code that should only be included for Clojure 1.9 or higher.  Otherwise, code is supressed."
+  [& forms]
+  (if (is-clojure-1-9-plus?)
+    `(do ~@forms)))
+
+(defmacro when-not-clojure-1-9-plus
+  "Wraps code that should only be included for Clojure versions prior to 1.9.  Otherwise, code is supressed."
+  [& forms]
+  (if (is-pre-clojure-1-9?)
+    `(do ~@forms)))
+
+;----------------------------------------------------------------------------
+(when-clojure-1-9-plus
+  (require
+    '[clojure.spec.alpha :as sp]
+    '[clojure.spec.gen.alpha :as gen]
+    '[clojure.spec.test.alpha :as stest] ))
 
 (defn spyx-proc
   [exprs]
