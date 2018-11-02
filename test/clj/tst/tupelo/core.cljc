@@ -856,12 +856,6 @@
                                #{ :even :prime } :missing-ok )))
 )
 
-(dotest
-  (is= :23 (int->kw  23))
-  (is=  23 (kw->int :23))
-  (is= {:a 1 :b 2} (json->edn "{\"a\":1, \"b\":2}"))
-  (is= "{'a':1,'b':2}" (ts/quotes->single (edn->json {:a 1 :b 2}))) )
-
 (dotest             ; -1 implies "in order"
   ; empty list is smaller than any non-empty list
   (is (neg? (lexical-compare [] [2])))
@@ -2213,14 +2207,6 @@
   (isnt (macro? 'if)))
 
 (dotest
-  (is= 'abc (kw->sym :abc))
-  (is= "abc" (kw->str :abc))
-  (is= 'abc (str->sym "abc"))
-  (is= :abc (str->kw "abc"))
-  (is= :abc (sym->kw 'abc))
-  (is= "abc" (sym->str 'abc)))
-
-(dotest
   (is (submap? {:a 1} {:a 1 :b 2}))
   (is (submap? {:b 2} {:a 1 :b 2})) )
 
@@ -2260,20 +2246,6 @@
     )
   (is= [1 2 3] (unlazy (map inc (range 3))))
   (is= #{1 2 3} (unlazy #{3 2 1})))
-
-(dotest
-  (let [orig  {:b #{3 2 1}
-               :a [1 2 3 { 5 :five 6 :six 4 :four }]
-               :c (list 4 5 6)}
-       result (str/replace
-                (with-out-str (println (prettify orig)))
-                \, \space)
-        expected "{:a  [1 2    3 {4 :four
-                                  5 :five
-                                  6 :six}]
-                   :b #{1 2 3}
-                   :c  [4 5 6]} " ]
-    (nonblank= result expected )))
 
 (dotest
   (let [info  {:a 1

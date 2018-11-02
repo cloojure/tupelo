@@ -247,6 +247,32 @@
   [arg :- s/Str]
   (vec arg))
 
+; #todo:  make (map-ctx {:trunc false :eager true} <fn> <coll1> <coll2> ...) <- default ctx
+; #todo:  mapz, forz, filterz, ...?
+(defn keep-if
+  "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
+  [pred coll]
+  (cond
+    (sequential? coll) (vec (clojure.core/filter pred coll))
+    (map? coll) (reduce-kv (fn [cum-map k v]
+                             (if (pred k v)
+                               (assoc cum-map k v)
+                               cum-map))
+                  {}
+                  coll)
+    (set? coll) (reduce (fn [cum-set elem]
+                          (if (pred elem)
+                            (conj cum-set elem)
+                            cum-set))
+                  #{}
+                  (seq coll))
+    :else (throw (ex-info "keep-if: coll must be sequential, map, or set." coll))))
+
+(defn drop-if
+  "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
+  [pred coll]
+  (keep-if (complement pred) coll))
+
 ;-----------------------------------------------------------------------------
 (defn prettify
   [coll]
@@ -259,6 +285,36 @@
                           :else item))
         result        (walk/postwalk prettify-item coll)]
     result ))
+
+(defn strcat
+  [& args]
+  (let [
+        ; We need to use flatten twice since the inner one doesn't change a string into a
+        ; sequence of chars, nor does it affect byte-array, et al.  We eventually get
+        ; seq-of-scalars which can look like [ \a \b 77 78 \66 \z ]
+        seq-of-scalars (flatten
+                         (for [it (keep-if not-nil? (flatten [args])) ]
+                           ; Note that "sequential?" returns false for sets, strings, and the various
+                           ; array types.
+                           (cond
+                             (or (sequential? it)
+                               (set? it)
+                               (string? it)
+                               (types/byte-array? it)
+                               (types/char-array? it)
+                               (types/int-array? it)
+                               (types/long-array? it)
+                               (types/object-array? it)
+                               (types/short-array? it))        (seq it)
+                             (instance? java.io.InputStream it) (seq (slurp it))
+                             :else it )))
+        ; Coerce any integer values into character equivalents (e.g. 65 -> \A), then combine
+        ; into a single string.
+        result         (apply str
+                         (clojure.core/map char
+                           (keep-if not-nil? seq-of-scalars)))
+        ]
+    result))
 
 ;-----------------------------------------------------------------------------
 ; spy stuff
@@ -315,6 +371,22 @@
      value ))
   ([value] ; 1-arg arity uses a generic "spy" message
    (spy :spy value)))
+
+;-----------------------------------------------------------------------------
+; #todo  Need it?-> like some-> that short-circuits on nil
+(defmacro it->
+  [expr & forms]
+  `(let [~'it ~expr
+         ~@(interleave (repeat 'it) forms)
+         ]
+     ~'it))
+
+;-----------------------------------------------------------------------------
+(defn clip-str      ; #todo -> tupelo.string?
+  [nchars & args]
+  (it-> (apply str args)
+    (take nchars it)
+    (apply str it)))
 
 
 ; ***** toptop *****
@@ -477,15 +549,6 @@
         r1    (vec (mapcat  fmt-pair pairs ))
         final-code  `(let ~r1 ~@forms ) ]
     final-code ))
-
-;-----------------------------------------------------------------------------
-; #todo  Need it?-> like some-> that short-circuits on nil
-(defmacro it->
-  [expr & forms]
-  `(let [~'it ~expr
-         ~@(interleave (repeat 'it) forms)
-         ]
-     ~'it))
 
 (defmacro let-some
   [bindings & forms]
@@ -688,40 +751,6 @@
                       kw  (keyword item)]]
             [sym (list 'grab kw the-map)]))
        ~@forms)))
-
-; #todo:  make (map-ctx {:trunc false :eager true} <fn> <coll1> <coll2> ...) <- default ctx
-; #todo:  mapz, forz, filterz, ...?
-(defn keep-if
-  "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
-  [pred coll]
-  (cond
-    (sequential? coll) (vec (clojure.core/filter pred coll))
-    (map? coll) (reduce-kv (fn [cum-map k v]
-                             (if (pred k v)
-                               (assoc cum-map k v)
-                               cum-map))
-                  {}
-                  coll)
-    (set? coll) (reduce (fn [cum-set elem]
-                          (if (pred elem)
-                            (conj cum-set elem)
-                            cum-set))
-                  #{}
-                  (seq coll))
-    :else (throw (IllegalArgumentException.
-                   (str "keep-if: coll must be sequential, map, or set, class=" (class coll))))))
-
-(defn drop-if
-  "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
-  [pred coll]
-  (keep-if (complement pred) coll))
-
-;-----------------------------------------------------------------------------
-(defn clip-str      ; #todo -> tupelo.string?
-  [nchars & args]
-  (it-> (apply str args)
-    (take nchars it)
-    (apply str it)))
 
 ; #todo -> README
 (s/defn has-some? :- s/Bool ; #todo rename to has-any?   Add warning re new clj/any?
@@ -1131,36 +1160,6 @@
 (defmacro destruct
   [bindings & forms]
   (destruct-impl bindings forms))
-
-(defn strcat
-  [& args]
-  (let [
-        ; We need to use flatten twice since the inner one doesn't change a string into a
-        ; sequence of chars, nor does it affect byte-array, et al.  We eventually get
-        ; seq-of-scalars which can look like [ \a \b 77 78 \66 \z ]
-        seq-of-scalars (flatten
-                         (for [it (keep-if not-nil? (flatten [args])) ]
-                           ; Note that "sequential?" returns false for sets, strings, and the various
-                           ; array types.
-                           (cond
-                             (or (sequential? it)
-                                 (set? it)
-                                 (string? it)
-                                 (types/byte-array? it)
-                                 (types/char-array? it)
-                                 (types/int-array? it)
-                                 (types/long-array? it)
-                                 (types/object-array? it)
-                                 (types/short-array? it))        (seq it)
-                             (instance? java.io.InputStream it) (seq (slurp it))
-                             :else it )))
-        ; Coerce any integer values into character equivalents (e.g. 65 -> \A), then combine
-        ; into a single string.
-        result         (apply str
-                         (clojure.core/map char
-                           (keep-if not-nil? seq-of-scalars)))
-        ]
-    result))
 
 ; #todo max-key -> t/max-by
 

@@ -10,10 +10,10 @@
   (:require
     [tupelo.impl :as i]
     [clojure.string :as str]
-    #?@(:clj [[cheshire.core :as cheshire]
-              [schema.core :as s]
-              [tupelo.schema :as tsk]
-              [tupelo.string :as ts]]))
+    [schema.core :as s]
+    [tupelo.schema :as tsk]
+    [tupelo.string :as ts]
+    #?@(:clj [ [cheshire.core :as cheshire]] ))
   #?(:clj (:import [java.io PrintStream ByteArrayOutputStream]))
 )
 
@@ -199,6 +199,15 @@
   "Converts a symbol to a string"
   [arg] (i/sym->str arg))
 
+(defn int->kw [arg]
+  (keyword (str arg)))
+#?(:clj
+   (defn kw->int [arg]
+     (Integer/parseInt (kw->str arg))))
+#?(:cljs
+   (defn kw->int [arg]
+     (js/parseInt (kw->str arg) 10)))
+
 (defn prettify
   "Recursively walks a data structure and returns a prettified version.
   Converts all lists to vectors. Converts all maps & sets to sorted collections."
@@ -257,6 +266,34 @@
         prints 'spy => 5' to stdout.  "
   [& args] (apply i/spy args))
 
+#?(:clj
+   (do
+     ; #todo add test & README
+     (defn json->edn
+       "Shortcut to cheshire.core/parse-string"
+       [arg]
+       (cheshire/parse-string arg true)) ; true => keywordize-keys
+
+     ; #todo add test & README
+     (defn edn->json
+       "Shortcut to cheshire.core/generate-string"
+       [arg]
+       (cheshire/generate-string arg))
+     ))
+#?(:cljs
+   (do
+     ; #todo add test & README
+     (defn json->edn
+       "Convert from json -> edn"
+       [arg]
+       (js->clj (.parse js/JSON arg) :keywordize-keys true)) ; true => keywordize-keys
+
+     ; #todo add test & README
+     (defn edn->json
+       "Convert from edn -> json "
+       [arg]
+       (.stringify js/JSON (clj->js arg)))
+     ))
 
 ; ***** toptop *****
 #?(:clj (do
@@ -934,22 +971,6 @@
     (println hyphens)
     (println version-str)
     (println hyphens) ))
-
-(defn int->kw [arg]
-  (keyword (str arg)))
-
-(defn kw->int [arg]
-  (Integer/parseInt (kw->str arg)))
-
-; #todo add test & README
-(defn json->edn [arg]
-  "Shortcut to cheshire.core/parse-string"
-  (cheshire/parse-string arg true))   ; true => keywordize-keys
-
-; #todo add test & README
-(defn edn->json [arg]
-  "Shortcut to cheshire.core/generate-string"
-  (cheshire/generate-string arg))
 
 ;                                               "1234.4567.89ab.cdef"  also valid for read
 ; #todo need conversion from Long -> hex string="1234-4567-89ab-cdef" (& inverse)

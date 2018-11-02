@@ -8,12 +8,13 @@
   "Tupelo - Making Clojure even sweeter"
   #?(:clj (:refer-clojure :exclude [drop take contains?]))
   (:require
-    #?@(:clj [[clojure.core :as cc]
-              [clojure.java.io :as io]
-              [clojure.string :as str]
-              [schema.core :as s]
+    [schema.core :as s]
+    [clojure.core :as cc]
+    [clojure.string :as str]
+    [tupelo.impl :as i]
+    #?@(:clj [[clojure.java.io :as io]
               [tupelo.char :as char]
-              [tupelo.impl :as i]]))
+              ]))
  #?(:clj
     (:import [java.io InputStream ByteArrayInputStream]
              [java.nio.charset StandardCharsets])))
@@ -29,28 +30,13 @@
     :o "oscar"    :p "papa"     :q "quebec"   :r "romeo "   :s "sierra"   :t "tango"    :u "uniform"
     :v "victor"   :w "whiskey"  :x "x-ray"    :y "yankee"   :z "zulu" } )
 
-#?(:clj (do
+(s/defn quotes->single :- s/Str ; #todo readme & blog
+  [arg :- s/Str]
+  (str/replace arg "\""  "'"))
 
-(defn alphanumeric?       [& args] (every? char/alphanumeric?        (i/strcat args)))
-(defn whitespace-horiz?   [& args] (every? char/whitespace-horiz?    (i/strcat args)))
-(defn whitespace-eol?     [& args] (every? char/whitespace-eol?      (i/strcat args)))
-(defn whitespace?         [& args] (every? char/whitespace?          (i/strcat args)))
-(defn lowercase?          [& args] (every? char/lowercase?           (i/strcat args)))
-(defn uppercase?          [& args] (every? char/uppercase?           (i/strcat args)))
-(defn digit?              [& args] (every? char/digit?               (i/strcat args)))
-(defn hex?                [& args] (every? char/hex?                 (i/strcat args)))
-(defn alpha?              [& args] (every? char/alpha?               (i/strcat args)))
-(defn visible?            [& args] (every? char/visible?             (i/strcat args)))
-(defn text?               [& args] (every? char/text?                (i/strcat args)))
-
-; #todo make general version vec -> vec; str-specific version str -> str
-; #todo need (substring {:start I :stop J                 } ) ; half-open (or :stop)
-; #todo need (substring {:start I :stop J :inclusive true } ) ; closed interval
-; #todo need (substring {:start I :count N })
-
-; #todo need (idx "abcdef" 2) -> [ \c ]
-; #todo need (indexes "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5]) -> [ \b \d \f ]
-; #todo need (idxs    "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5])   ; like matlab
+(s/defn quotes->double :- s/Str ; #todo readme & blog
+  [arg :- s/Str]
+  (str/replace arg "'" "\"" ))
 
 (s/defn ^:no-doc tab-space-oneline-impl :- s/Str
   [tab-size :- s/Int
@@ -90,15 +76,6 @@
         (for [line lines]
           (tab-space-oneline-impl tab-size line))))))
 
-(defn clip-text
-  "Given a multi-line string, returns a string with each line clipped to a max of N chars "
-  [N
-   src-str]
-  (str/join \newline
-    (let [lines (str/split-lines src-str)]
-      (for [line lines]
-        (i/clip-str N line)))))
-
 ; #todo -> tupelo.string
 (defn collapse-whitespace ; #todo readme & blog
   "Replaces all consecutive runs of whitespace characters (including newlines) with a single space.
@@ -134,16 +111,40 @@
 ; #todo need (squash-equals?) -> (apply = (mapv squash args))              ; (smash-equals? ...)  ?
 ;    or (equals-base) or (equals-root) or (squash-equals) or (base-equals) or (core-equals) or (equals-collapse-string...)
 
-(s/defn quotes->single :- s/Str ; #todo readme & blog
-  [arg :- s/Str]
-  (str/replace arg \" \'))
-
-(s/defn quotes->double :- s/Str ; #todo readme & blog
-  [arg :- s/Str]
-  (str/replace arg \' \"))
-
 (defn ^:deprecated ^:no-doc double-quotes->single-quotes [& args] (apply quotes->single args))
 (defn ^:deprecated ^:no-doc single-quotes->double-quotes [& args] (apply quotes->double args))
+
+#?(:clj (do
+
+(defn alphanumeric?       [& args] (every? char/alphanumeric?        (i/strcat args)))
+(defn whitespace-horiz?   [& args] (every? char/whitespace-horiz?    (i/strcat args)))
+(defn whitespace-eol?     [& args] (every? char/whitespace-eol?      (i/strcat args)))
+(defn whitespace?         [& args] (every? char/whitespace?          (i/strcat args)))
+(defn lowercase?          [& args] (every? char/lowercase?           (i/strcat args)))
+(defn uppercase?          [& args] (every? char/uppercase?           (i/strcat args)))
+(defn digit?              [& args] (every? char/digit?               (i/strcat args)))
+(defn hex?                [& args] (every? char/hex?                 (i/strcat args)))
+(defn alpha?              [& args] (every? char/alpha?               (i/strcat args)))
+(defn visible?            [& args] (every? char/visible?             (i/strcat args)))
+(defn text?               [& args] (every? char/text?                (i/strcat args)))
+
+; #todo make general version vec -> vec; str-specific version str -> str
+; #todo need (substring {:start I :stop J                 } ) ; half-open (or :stop)
+; #todo need (substring {:start I :stop J :inclusive true } ) ; closed interval
+; #todo need (substring {:start I :count N })
+
+; #todo need (idx "abcdef" 2) -> [ \c ]
+; #todo need (indexes "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5]) -> [ \b \d \f ]
+; #todo need (idxs    "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5])   ; like matlab
+
+(defn clip-text
+  "Given a multi-line string, returns a string with each line clipped to a max of N chars "
+  [N
+   src-str]
+  (str/join \newline
+    (let [lines (str/split-lines src-str)]
+      (for [line lines]
+        (i/clip-str N line)))))
 
 ; #todo need tests
 (defn normalize-str

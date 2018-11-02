@@ -1,10 +1,19 @@
 (ns tst.tupelo.core
   (:require
-    #?@(:clj [[tupelo.test   :refer [define-fixture dotest is isnt is= isnt= testing throws?]]
-              [tupelo.core :as t]])
-    #?@(:cljs [[tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= testing throws?]]
-               [tupelo.core :as t :include-macros true]])
+    [clojure.string :as str]
+    #?@(:clj [
+              [tupelo.test   :refer [define-fixture dotest is isnt is= isnt= nonblank= testing throws?]]
+              [tupelo.core :as t]
+              [tupelo.string :as ts]
+             ])
+    #?@(:cljs [
+               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= nonblank= testing throws?]]
+               [tupelo.core :as t :include-macros true]
+               [tupelo.string :as ts :include-macros true]
+              ])
   ))
+
+(enable-console-print!)
 
 (define-fixture :once
      {:enter (fn [ctx] (println "*** TEST ONCE *** - enter "))
@@ -139,4 +148,35 @@
     (is= [1] (t/xvec '(1)))
     (is= [1 2] (t/xvec [1 2]))
     ))
+
+(dotest
+  (is= :23 (t/int->kw  23))
+  (is=  23 (t/kw->int :23))
+
+  (println :01 (t/edn->json {:a 1 :b 2}))
+  (prn     :02 (t/edn->json {:a 1 :b 2}))
+
+  (is=  {:a  1 :b  2}  (t/json->edn (ts/quotes->double "{'a':1, 'b':2}")))
+  (is= "{'a':1,'b':2}" (ts/quotes->single (t/edn->json  {:a  1  :b  2})))
+
+  (is= 'abc (t/kw->sym :abc))
+  (is= "abc" (t/kw->str :abc))
+  (is= 'abc (t/str->sym "abc"))
+  (is= :abc (t/str->kw "abc"))
+  (is= :abc (t/sym->kw 'abc))
+  (is= "abc" (t/sym->str 'abc)))
+
+;(dotest
+;  (let [orig  {:b #{3 2 1}
+;               :a [1 2 3 { 5 :five 6 :six 4 :four }]
+;               :c (list 4 5 6)}
+;        result (str/replace
+;                 (with-out-str (println (t/prettify orig)))
+;                 \, \space)
+;        expected "{:a  [1 2    3 {4 :four
+;                                  5 :five
+;                                  6 :six}]
+;                   :b #{1 2 3}
+;                   :c  [4 5 6]} " ]
+;    (nonblank= result expected )))
 

@@ -1,5 +1,8 @@
 (ns tupelo.test-cljs ; this file defines macros
-  (:require [cljs.test :as ct]))
+  (:require
+    [cljs.test :as ct]
+    [tupelo.string :as ts]
+    ))
 
 (comment ; #todo  new format?
   (define-fixtures  ; #todo cljs allows only one choice of :each of :once   :(
@@ -45,6 +48,15 @@
   "Use (isnt= ...) instead of (is (not= ...)) for clojure.test"
   [& body]
   `(ct/is (not (= ~@body))))
+
+; #todo need test
+(defmacro nonblank=  ; #todo readme/test
+  "Returns true if each input string is equal treating all whitespace as equivalent."
+  [& forms]
+  (if (<= (count forms) 1 )
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (ex-info (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
+    `(is (ts/equals-ignore-spacing? ~@forms) )))
 
 ; #?(:cljs (do ))
 
