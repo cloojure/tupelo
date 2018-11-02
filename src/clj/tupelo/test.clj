@@ -65,14 +65,12 @@
        (fn [] (clojure.test/test-var (var ~label))))))
 
 
-
 (defmacro is
   "Equivalent to clojure.test/is."
   [& forms]
   (if (not= (count forms) 1)
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-      `(throw (IllegalArgumentException.
-                (str "tupelo.test/is requires exactly 1 form " ~line-str))))
+      `(throw (ex-info (str "tupelo.test/is requires exactly 1 form " ~line-str))))
     `(ct/is ~@forms)))
 
 (defmacro isnt      ; #todo readme/test
@@ -80,8 +78,7 @@
   [& forms]
   (if (not= (count forms) 1)
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-      `(throw (IllegalArgumentException.
-                (str "tupelo.test/isnt requires exactly 1 form " ~line-str))))
+      `(throw (ex-info (str "tupelo.test/isnt requires exactly 1 form " ~line-str))))
     `(ct/is (not ~@forms))))
 
 (defmacro is=  ; #todo readme/test
@@ -89,8 +86,7 @@
   [& forms]
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-     `(throw (IllegalArgumentException.
-               (str "tupelo.test/is= requires at least 2 forms " ~line-str))))
+     `(throw (ex-info (str "tupelo.test/is= requires at least 2 forms " ~line-str))))
      `(is (= ~@forms))))
 
 (defmacro isnt=         ; #todo readme/test
@@ -98,37 +94,24 @@
   [& forms]
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-      `(throw (IllegalArgumentException.
-                (str "tupelo.test/isnt= requires at least 2 forms " ~line-str))))
+      `(throw (ex-info (str "tupelo.test/isnt= requires at least 2 forms " ~line-str))))
     `(isnt (= ~@forms))))
-
-;(defmacro sets=
-;  "Converts each input collection to a set, then tests for equality."
-;  [& forms]
-;  `(is= ~@(mapv #(list 'set %) forms)))
 
 (defmacro set=  ; #todo readme/test
   "Converts each input collection to a set, then tests for equality."
   [& forms]
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-      `(throw (IllegalArgumentException.
-                (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
+      `(throw (ex-info (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
     `(is= ~@(mapv #(list 'set %) forms))))
 
 ; #todo need test
-;(defmacro nonblank=
-;  "Returns true if each input string is equal treating all whitespace as equivalent."
-;  [& strings ]
-;  (is (apply ts/equals-ignore-spacing? strings)))
-
 (defmacro nonblank=  ; #todo readme/test
   "Returns true if each input string is equal treating all whitespace as equivalent."
   [& forms]
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-      `(throw (IllegalArgumentException.
-                (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
+      `(throw (ex-info (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
     `(is (tstr/equals-ignore-spacing? ~@forms) )))
 
 ;---------------------------------------------------------------------------------------------------
