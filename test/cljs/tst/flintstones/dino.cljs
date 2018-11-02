@@ -1,6 +1,6 @@
 (ns tst.flintstones.dino
   (:require
-    [flintstones.test-cljs :refer [dotest is isnt is= isnt= testing define-fixture]]
+    [tupelo.test-cljs :refer [dotest is isnt is= isnt= testing define-fixture]]
     [dinoPhony] ))
 
 (define-fixture :each

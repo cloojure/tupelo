@@ -1,8 +1,8 @@
 (ns tst.tupelo.core
   (:require
-    #?@(:clj [[flintstones.test-clj   :refer [dotest is isnt is= isnt= testing define-fixture]]
+    #?@(:clj [[tupelo.test   :refer [dotest is isnt is= isnt= testing define-fixture]]
               [tupelo.core :as t]])
-    #?@(:cljs [[flintstones.test-cljs :refer [dotest is isnt is= isnt= testing define-fixture]]
+    #?@(:cljs [[tupelo.test-cljs :refer [dotest is isnt is= isnt= testing define-fixture]]
                [tupelo.core :as t :include-macros true]])
   ))
 

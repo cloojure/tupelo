@@ -1,9 +1,9 @@
 (ns tst.flintstones.slate
   (:require
-    #?@(:clj [[flintstones.test-clj :refer [dotest is isnt is= isnt=]]
+    #?@(:clj [[tupelo.test :refer [dotest is isnt is= isnt=]]
               [flintstones.slate :as slate]])
 
-    #?@(:cljs [[flintstones.test-cljs :refer [dotest is isnt is= isnt=]]
+    #?@(:cljs [[tupelo.test-cljs :refer [dotest is isnt is= isnt=]]
                [flintstones.slate :as slate :include-macros true]])
   ))
 

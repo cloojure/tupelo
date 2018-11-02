@@ -1,7 +1,7 @@
 (ns tst.flintstones.wilma
   (:require
     [clojure.string :as str]
-    [flintstones.test-cljs :refer [dotest is isnt is= isnt= testing define-fixture]]
+    [tupelo.test-cljs :refer [dotest is isnt is= isnt= testing define-fixture]]
     [wilmaPhony]    ; This one must be first or get;
          ; "WARNING: Use of undeclared Var cljs.test/test-var at line 15 test/cljs/tst/flintstones/wilma.cljs"
   ))

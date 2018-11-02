@@ -6,21 +6,65 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.test
   "Testing functions."
-  #?@(:clj [
-       (:require
-         [clojure.test :as ct]
-         [clojure.test.check :as ctc]
-         [tupelo.impl :as i]
-         [tupelo.string :as tstr])
-       ]))
+  (:require
+     [clojure.test :as ct]
+     [clojure.test.check :as ctc]
+     [tupelo.impl :as i]
+     [tupelo.string :as tstr]
+  ))
 
 (defn use-fixtures [& args] (apply ct/use-fixtures args))
 (defmacro testing [& forms] `(ct/testing ~@forms))
 
-;(defmacro is
-;  "Equivalent to clojure.test/is."
-;  [arg]
-;  `(ct/is ~arg))
+(defmacro define-fixture ; #todo maybe (define-fixture ...)
+  [mode interceptor-map]
+  (assert (contains? #{:each :once} mode))
+  (assert (map? interceptor-map))
+  (let [enter-fn  (:enter interceptor-map) ; #todo grab
+        leave-fn  (:leave interceptor-map) ; #todo grab
+        ctx       (meta &form)]
+    `(ct/use-fixtures ~mode
+       {:before #(~enter-fn ~ctx)
+        :after  #(~leave-fn ~ctx)})))
+
+; #todo maybe def-anon-test, or anon-test
+(defmacro deftest ; #todo README & tests
+  "Like clojure.test/deftest, but doesn't require a test name. Usage:
+
+      (ns xyz..
+        (:use tupelo.test))
+
+      (dotest
+        (is= 5 (+ 2 3))          ; contraction of (is (= ...))
+        (isnt false)             ; contraction of (is (not ...))
+        (set= [1 2 3] [3 2 1])   ; set equality semantics
+        (throws? (/ 1 0)))
+  "
+  [& items]
+  (let [item-1 (clojure.core/first items)
+        suffix (str "-line-" (:line (meta &form)))
+        [label forms] (cond
+                        (symbol? item-1) [(symbol (str (clojure.core/name           item-1) suffix)) (vec (clojure.core/rest items))]
+                        (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
+                        :else [(symbol (str "deftest-block" suffix)) (vec items)]) ]
+    `(def ~(vary-meta label assoc
+             :test `(fn [] ~@forms))
+       (fn [] (clojure.test/test-var (var ~label))))))
+
+(defmacro dotest ; #todo README & tests
+  "Alias for tupelo.test/deftest "
+  [& items]
+  (let [item-1 (clojure.core/first items)
+        suffix (str "-line-" (:line (meta &form)))
+        [label forms] (cond
+                        (symbol? item-1) [(symbol (str (clojure.core/name           item-1) suffix)) (vec (clojure.core/rest items))]
+                        (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
+                        :else [(symbol (str "dotest-block" suffix)) (vec items)]) ]
+    `(def ~(vary-meta label assoc
+             :test `(fn [] ~@forms))
+       (fn [] (clojure.test/test-var (var ~label))))))
+
+
 
 (defmacro is
   "Equivalent to clojure.test/is."
@@ -31,10 +75,6 @@
                 (str "tupelo.test/is requires exactly 1 form " ~line-str))))
     `(ct/is ~@forms)))
 
-;(defmacro isnt      ; #todo readme/test
-;  "Use (isnt ...) instead of (is (not ...)) for clojure.test"
-;  [arg]
-;  `(ct/is (not ~arg)))
 (defmacro isnt      ; #todo readme/test
   "Use (isnt ...) instead of (is (not ...)) for clojure.test"
   [& forms]
@@ -43,7 +83,6 @@
       `(throw (IllegalArgumentException.
                 (str "tupelo.test/isnt requires exactly 1 form " ~line-str))))
     `(ct/is (not ~@forms))))
-
 
 (defmacro is=  ; #todo readme/test
   "Use (is= ...) instead of (is (= ...)) for clojure.test"
@@ -92,7 +131,8 @@
                 (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
     `(is (tstr/equals-ignore-spacing? ~@forms) )))
 
-#?(:clj (do
+;---------------------------------------------------------------------------------------------------
+; non-CLJS follows ; #?(:clj (do ))
 
 (defn throws?-impl
   [& forms]
@@ -103,23 +143,23 @@
       `(ct/is
          (try
            ~@(rest forms)
-           false        ; fail if no exception thrown
+           false    ; fail if no exception thrown
            (catch ~(first forms) t1#
-             true) ; if catch expected type, test succeeds
+             true)  ; if catch expected type, test succeeds
            (catch Throwable t2#
              false))) ; if thrown type is unexpected, test fails
       )
-    (do ; expected Throwable not provided
+    (do             ; expected Throwable not provided
       ; (println "symbol not found")
       `(ct/is
          (try
            ~@forms
-           false        ; fail if no exception thrown
+           false    ; fail if no exception thrown
            (catch Throwable t3#
              true))) ; if anything is thrown, test succeeds
       )))
 
-(defmacro throws?  ; #todo document in readme
+(defmacro throws?   ; #todo document in readme
   "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
 
      (throws? (/ 1 0))                      ; catches any Throwable
@@ -127,57 +167,19 @@
   [& forms]
   (apply throws?-impl forms))
 
-; #todo maybe def-anon-test, or anon-test
-(defmacro deftest ; #todo README & tests
-  "Like clojure.test/deftest, but doesn't require a test name. Usage:
-
-      (ns xyz..
-        (:use tupelo.test))
-
-      (dotest
-        (is= 5 (+ 2 3))          ; contraction of (is (= ...))
-        (isnt false)             ; contraction of (is (not ...))
-        (set= [1 2 3] [3 2 1])   ; set equality semantics
-        (throws? (/ 1 0)))
-  "
-  [& items]
-  (let [item-1 (clojure.core/first items)
-        suffix (str "-line-" (:line (meta &form)))
-        [label forms] (cond
-                        (symbol? item-1) [(symbol (str (clojure.core/name           item-1) suffix)) (vec (clojure.core/rest items))]
-                        (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
-                        :else [(symbol (str "deftest-block" suffix)) (vec items)]) ]
-    `(def ~(vary-meta label assoc
-             :test `(fn [] ~@forms))
-       (fn [] (clojure.test/test-var (var ~label))))))
-
 (defmacro deftest-focus ; #todo README & tests
   "Like `deftest`, but invokes lein-test-refresh focus mode; i.e. applies metadata {:test-refresh/focus true}"
   [& items]
   (let [item-1 (clojure.core/first items)
         suffix (str "-line-" (:line (meta &form)))
         [label forms] (cond
-                        (symbol? item-1) [(symbol (str (clojure.core/name           item-1) suffix)) (vec (clojure.core/rest items))]
+                        (symbol? item-1) [(symbol (str (clojure.core/name item-1) suffix)) (vec (clojure.core/rest items))]
                         (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
-                        :else [(symbol (str "deftest-focus-block" suffix)) (vec items)]) ]
+                        :else [(symbol (str "deftest-focus-block" suffix)) (vec items)])]
     `(def ~(vary-meta label assoc
              :test `(fn [] ~@forms)
-             :test-refresh/focus true )
+             :test-refresh/focus true)
        (fn [] (clojure.test/test-var (var ~label))))))
-
-(defmacro dotest ; #todo README & tests
-  "Alias for tupelo.test/deftest "
-  [& items]
-  (let [item-1 (clojure.core/first items)
-        suffix (str "-line-" (:line (meta &form)))
-        [label forms] (cond
-                        (symbol? item-1) [(symbol (str (clojure.core/name           item-1) suffix)) (vec (clojure.core/rest items))]
-                        (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
-                        :else [(symbol (str "dotest-block" suffix)) (vec items)]) ]
-    `(def ~(vary-meta label assoc
-             :test `(fn [] ~@forms))
-       (fn [] (clojure.test/test-var (var ~label))))))
-
 
 (defmacro dotest-focus ; #todo README & tests
   "Alias for tupelo.test/deftest-focus "
@@ -185,12 +187,12 @@
   (let [item-1 (clojure.core/first items)
         suffix (str "-line-" (:line (meta &form)))
         [label forms] (cond
-                        (symbol? item-1) [(symbol (str (clojure.core/name           item-1) suffix)) (vec (clojure.core/rest items))]
+                        (symbol? item-1) [(symbol (str (clojure.core/name item-1) suffix)) (vec (clojure.core/rest items))]
                         (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
-                        :else [(symbol (str "dotest-focus-block" suffix)) (vec items)]) ]
+                        :else [(symbol (str "dotest-focus-block" suffix)) (vec items)])]
     `(def ~(vary-meta label assoc
              :test `(fn [] ~@forms)
-             :test-refresh/focus true )
+             :test-refresh/focus true)
        (fn [] (clojure.test/test-var (var ~label))))))
 
 ; #todo ^:slow not working (always executed); need to fix
@@ -198,7 +200,7 @@
 ; #todo maybe integrate with `dotest` like:   (dotest 999 ...)  ; 999 1st item implies generative test
 (defmacro dospec [& body] ; #todo README & tests
   (let [test-name-sym (symbol (str "dospec-line-" (:line (meta &form))))]
-  `(clojure.test.check.clojure-test/defspec ^:slow ~test-name-sym ~@body)))
+    `(clojure.test.check.clojure-test/defspec ^:slow ~test-name-sym ~@body)))
 
 (defmacro check-is [& body] ; #todo README & tests
   `(ct/is (i/grab :result (ctc/quick-check ~@body))))
@@ -208,4 +210,3 @@
 
 ; #todo: gen/elements -> clojure.check/rand-nth
 
-))
