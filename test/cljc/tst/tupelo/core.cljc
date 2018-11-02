@@ -166,17 +166,17 @@
   (is= :abc (t/sym->kw 'abc))
   (is= "abc" (t/sym->str 'abc)))
 
-;(dotest
-;  (let [orig  {:b #{3 2 1}
-;               :a [1 2 3 { 5 :five 6 :six 4 :four }]
-;               :c (list 4 5 6)}
-;        result (str/replace
-;                 (with-out-str (println (t/prettify orig)))
-;                 \, \space)
-;        expected "{:a  [1 2    3 {4 :four
-;                                  5 :five
-;                                  6 :six}]
-;                   :b #{1 2 3}
-;                   :c  [4 5 6]} " ]
-;    (nonblank= result expected )))
+(dotest
+  (let [orig  {:b #{3 2 1}
+               :a [1 2 3 { 5 :five 6 :six 4 :four }]
+               :c (list 4 5 6)}
+        result (str/replace
+                 (with-out-str (println (t/prettify orig)))
+                 \, \space)
+        expected "{:a  [1 2    3 {4 :four
+                                  5 :five
+                                  6 :six}]
+                   :b #{1 2 3}
+                   :c  [4 5 6]} " ]
+    (nonblank= result expected )))
 
