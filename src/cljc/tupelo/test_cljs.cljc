@@ -46,3 +46,27 @@
   [& body]
   `(ct/is (not (= ~@body))))
 
+; #?(:cljs (do ))
+
+  (defn throws?-impl
+    [& forms]
+    (if (= clojure.lang.Symbol (class (first forms)))
+      ; symbol 1st arg => expected Throwable provided
+      (do
+        (println "symbol found")
+        (println "Error - CLJS impl not allow specific exception type to be specified" (first forms))
+        (throw (ex-info "Error - CLJS impl not allow specific exception type to be specified" (first forms))) )
+      (do  ; expected Throwable not provided
+        ; (println "symbol not found")
+        `(ct/is
+           (try
+             ~@forms
+             false    ; fail if no exception thrown
+             (catch :default ex#    ; NOTE:  cannot catch java.lang.Throwable
+               true)))))) ; if anything is thrown, test succeeds
+
+  (defmacro throws?   ; #todo document in readme
+    "Use (t/throws? ...) instead of (is (thrown? ...)) from clojure.test. Usage:
+       (throws? (/ 1 0))  ; catches any Throwable "
+    [& forms]
+    (apply throws?-impl forms))
