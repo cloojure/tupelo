@@ -295,6 +295,30 @@
        (.stringify js/JSON (clj->js arg)))
      ))
 
+(defmacro forv
+  "Like clojure.core/for but returns results in a vector.   Not lazy."
+  [& forms] `(i/forv ~@forms))
+
+(defn keep-if
+  "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
+  [pred coll] (i/keep-if pred coll))
+
+(defn drop-if
+  "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
+  [pred coll] (i/drop-if pred coll))
+
+(defn has-some?
+  "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
+   coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
+  [pred coll]
+  (i/has-some? pred coll))
+
+(defn has-none?
+  "For any predicate pred & collection coll, returns false if (pred x) is logical true for at least one x in
+   coll; otherwise returns true.  Equivalent to clojure.core/not-any?, but inverse of has-some?."
+  [pred coll]
+  (i/has-none? pred coll))
+
 ; ***** toptop *****
 #?(:clj (do
 
@@ -387,10 +411,6 @@
    expressions, printing both the expression and its value to stdout. Returns the value of the
    last expression."
   [& forms] `(i/let-spy-pretty ~@forms))
-
-(defmacro forv
-  "Like clojure.core/for but returns results in a vector.   Not lazy."
-  [& forms] `(i/forv ~@forms))
 
 (defn chan->lazy-seq
   "Accepts a core.async channel and returns the contents as a lazy list."
@@ -519,17 +539,6 @@
   is truthy.  Otherwise, throws IllegalArgumentException."
   [form]
   `(i/verify ~form))
-
-(defn has-some?
-  "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
-   coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
-  [pred coll]
-  (i/has-some? pred coll))
-(defn has-none?
-  "For any predicate pred & collection coll, returns false if (pred x) is logical true for at least one x in
-   coll; otherwise returns true.  Equivalent to clojure.core/not-any?, but inverse of has-some?."
-  [pred coll]
-  (i/has-none? pred coll))
 
 (defn contains-elem?
   "For any collection coll & element tgt, returns true if coll contains at least one
@@ -861,14 +870,6 @@
 (defn thru
   "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. Not lazy. "
   [& args] (apply i/thru args))
-
-(defn keep-if
-  "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
-  [pred coll] (i/keep-if pred coll))
-
-(defn drop-if
-  "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
-  [pred coll] (i/drop-if pred coll))
 
 (defn fibonacci-seq
   "A lazy seq of Fibonacci numbers (memoized)."

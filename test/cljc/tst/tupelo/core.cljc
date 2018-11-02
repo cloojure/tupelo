@@ -27,8 +27,7 @@
   (is (t/truthy? true))
   (is (t/truthy? 5))
   (is (t/falsey? false))
-  (is (t/falsey? nil))
-  )
+  (is (t/falsey? nil)))
 
 (dotest
   (let [inf-rng-1 (map inc (range))]
@@ -179,4 +178,57 @@
                    :b #{1 2 3}
                    :c  [4 5 6]} " ]
     (nonblank= result expected )))
+
+(dotest
+  ; (spyx (s/check-fn t/truthy? ))
+
+  (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]
+    (testing "basic usage"
+      (let [truthies    (t/keep-if boolean data)       ; coerce to primitive type
+            falsies     (t/keep-if not     data) ]     ; unnatural syntax
+        (is (and  (= truthies [true :a 'my-symbol 1 "hello" \x] )
+              (= falsies  [false nil] ) )))
+      (let [truthies    (t/keep-if t/truthy? data)
+            falsies     (t/keep-if t/falsey? data) ]
+        (is (and  (= truthies [true :a 'my-symbol 1 "hello" \x] )
+              (= falsies  [false nil] ) ))
+        (is (every? t/truthy? [true :a 'my-symbol 1 "hello" \x] ))
+        (is (every? t/falsey? [false nil] ))
+        (is (t/has-none? t/falsey? truthies))
+        (is (t/has-none? t/truthy? falsies))
+
+        (isnt (every? t/truthy? [true false]))
+        (is (every? t/truthy? [true "FALSE"]))
+        (is (every? t/truthy? [true ]))
+        (is (every? t/truthy? []))))
+
+    (testing "improved usage"
+      (let [count-if (comp count t/keep-if) ]
+        (let [num-true    (count-if boolean data)   ; awkward phrasing
+              num-false   (count-if not     data) ] ; doesn't feel natural
+          (is (and  (= 6 num-true)
+                (= 2 num-false) )))
+        (let [num-true    (count-if t/truthy? data)   ; matches intent much better
+              num-false   (count-if t/falsey? data) ]
+          (is (and  (= 6 num-true)
+                (= 2 num-false) ))))))
+
+  (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]
+    (testing "basic usage"
+      (let [notties   (t/keep-if t/not-nil? data)
+            nillies   (t/drop-if t/not-nil? data) ]
+        (is (and  (= notties [true :a 'my-symbol 1 "hello" \x false] )
+              (= nillies [nil] )))
+        (is (every?    t/not-nil? notties))
+        (is (every?        nil? [nil] ))
+        (is (t/has-none?     nil? notties))
+        (is (t/has-none? t/not-nil? nillies))))
+
+    (testing "improved usage"
+      (let [count-if (comp count t/keep-if) ]
+        (let [num-valid-1     (count-if some?    data)  ; awkward phrasing, doesn't feel natural
+              num-valid-2     (count-if t/not-nil? data)  ; matches intent much better
+              num-nil         (count-if nil?     data) ]    ; intent is plain
+          (is (and  (= 7 num-valid-1 num-valid-2 )
+                (= 1 num-nil) )))))))
 

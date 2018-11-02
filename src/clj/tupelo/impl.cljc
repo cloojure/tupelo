@@ -48,7 +48,7 @@
                         (sequential? item) (vec item)
                         (map? item) (into {} item)
                         (set? item) (into #{} item)
-                        (instance? java.io.InputStream item) (slurp item) ; #todo need test
+             #?@(:clj [ (instance? java.io.InputStream item) (slurp item) ])  ; #todo need test
                         :else item))
         result    (walk/postwalk unlazy-item coll) ]
     result ))
@@ -93,7 +93,7 @@
   (let [items (cc/take n coll)
         actual (count items)]
     (when (<  actual n)
-      (throw (ex-info (format "xtake: insufficient items, wanted %d found %d " n actual))))
+      (throw (ex-info "xtake: insufficient items" {:n n :actual actual} )))
     (if (map? coll)
       (into {} items)
       (vec items))))
@@ -184,7 +184,7 @@
                                  (= x y) :eq
                                  (< x y) :incr
                                  (> x y) :decr
-                                 :else (throw (IllegalStateException. "should never get here"))))
+                                 :else (throw (ex-info "should never get here" nil))))
         cmpr-res     (mapv cmpr a b)
         first-change (first (drop-while #{:eq} cmpr-res)) ; nil if all :eq
         ]
@@ -272,6 +272,19 @@
   "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
   [pred coll]
   (keep-if (complement pred) coll))
+
+; #todo -> README
+(s/defn has-some? :- s/Bool ; #todo rename to has-any?   Add warning re new clj/any?
+  [pred :-  s/Any
+   coll :- [s/Any] ]
+  (truthy? (some pred coll)))
+; NOTE: was `any?` prior to new `clojure.core/any?` added in clojure 1.9.0-alpha10
+
+; #todo -> README
+(s/defn has-none? :- s/Bool
+  [pred :-  s/Any
+   coll :- [s/Any] ]
+  (falsey? (some pred coll))) ; #todo -> (not (has-some? pred coll))
 
 ;-----------------------------------------------------------------------------
 (defn prettify
@@ -372,8 +385,7 @@
    (let [[tag value] (cond
                        (keyword? arg1) [arg1 arg2]
                        (keyword? arg2) [arg2 arg1]
-                       :else (throw (IllegalArgumentException. (str "spy: either first or 2nd arg must be a keyword tag \n   args:"
-                                                                 (pr-str [arg1 arg2])))))]
+                       :else (throw (ex-info "spy: either first or 2nd arg must be a keyword tag \n   args:" [arg1 arg2])))]
      (when *spy-enabled*
        (println (str (spy-indent-spaces) tag " => " (pr-str value))))
      value ))
@@ -395,6 +407,10 @@
   (it-> (apply str args)
     (take nchars it)
     (apply str it)))
+
+(defmacro forv ; #todo wrap body in implicit do
+  [& forms]
+  `(vec (for ~@forms)))
 
 
 ; ***** toptop *****
@@ -532,7 +548,7 @@
   [& exprs]
   (let [decls      (xfirst exprs)
         _          (when (not (even? (count decls)))
-                     (throw (IllegalArgumentException. (str "spy-let-proc: uneven number of decls:" decls))))
+                     (throw (ex-info "spy-let-proc: uneven number of decls:" decls)))
         forms      (xrest exprs)
         fmt-pair   (fn [[dest src]]
                      [dest src
@@ -548,7 +564,7 @@
   [& exprs]
   (let [decls (xfirst exprs)
         _     (when (not (even? (count decls)))
-                (throw (IllegalArgumentException. (str "spy-let-pretty-impl: uneven number of decls:" decls))))
+                (throw (ex-info "spy-let-pretty-impl: uneven number of decls:" decls)))
         forms (xrest exprs)
         fmt-pair (fn [[dest src]]
                    [dest src
@@ -759,19 +775,6 @@
                       kw  (keyword item)]]
             [sym (list 'grab kw the-map)]))
        ~@forms)))
-
-; #todo -> README
-(s/defn has-some? :- s/Bool ; #todo rename to has-any?   Add warning re new clj/any?
-  [pred :-  s/Any
-   coll :- [s/Any] ]
-  (truthy? (some pred coll)))
-; NOTE: was `any?` prior to new `clojure.core/any?` added in clojure 1.9.0-alpha10
-
-; #todo -> README
-(s/defn has-none? :- s/Bool
-  [pred :-  s/Any
-   coll :- [s/Any] ]
-  (falsey? (some pred coll))) ; #todo -> (not (has-some? pred coll))
 
 (s/defn contains-elem? :- s/Bool
   [coll :- s/Any
@@ -1012,10 +1015,6 @@
   [& colls]  ; #todo how use Schema with "rest" args?
   (assert #(every? sequential? colls))
   (apply map vector colls))
-
-(defmacro forv ; #todo wrap body in implicit do
-  [& forms]
-  `(vec (for ~@forms)))
 
 (s/defn sequential->idx-map :- {s/Any s/Any} ; #todo move
   [data :- [s/Any]]

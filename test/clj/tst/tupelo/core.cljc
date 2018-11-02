@@ -267,61 +267,6 @@
     ))
 
 (dotest
-; (spyx (s/check-fn truthy? ))
-
-  (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]
-    (testing "basic usage"
-      (let [truthies    (keep-if boolean data)       ; coerce to primitive type
-            falsies     (keep-if not     data) ]     ; unnatural syntax
-        (is (and  (= truthies [true :a 'my-symbol 1 "hello" \x] )
-                  (= falsies  [false nil] ) )))
-      (let [truthies    (keep-if truthy? data)
-            falsies     (keep-if falsey? data) ]
-        (is (and  (= truthies [true :a 'my-symbol 1 "hello" \x] )
-                  (= falsies  [false nil] ) ))
-        (is (every? truthy? [true :a 'my-symbol 1 "hello" \x] ))
-        (is (every? falsey? [false nil] ))
-        (is (has-none? falsey? truthies))
-        (is (has-none? truthy? falsies))
-
-        (isnt (every? truthy? [true false]))
-        (is (every? truthy? [true "FALSE"]))
-        (is (every? truthy? [true ]))
-        (is (every? truthy? []))))
-
-    (testing "improved usage"
-      (let [count-if (comp count keep-if) ]
-        (let [num-true    (count-if boolean data)   ; awkward phrasing
-              num-false   (count-if not     data) ] ; doesn't feel natural
-          (is (and  (= 6 num-true)
-                    (= 2 num-false) )))
-        (let [num-true    (count-if truthy? data)   ; matches intent much better
-              num-false   (count-if falsey? data) ]
-          (is (and  (= 6 num-true)
-                    (= 2 num-false) )))))
-  ))
-
-(dotest
-  (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]
-    (testing "basic usage"
-      (let [notties   (keep-if not-nil? data)
-            nillies   (drop-if not-nil? data) ]
-        (is (and  (= notties [true :a 'my-symbol 1 "hello" \x false] )
-                  (= nillies [nil] )))
-        (is (every?    not-nil? notties))
-        (is (every?        nil? [nil] ))
-        (is (has-none?     nil? notties))
-        (is (has-none? not-nil? nillies))))
-
-    (testing "improved usage"
-      (let [count-if (comp count keep-if) ]
-        (let [num-valid-1     (count-if some?    data)  ; awkward phrasing, doesn't feel natural
-              num-valid-2     (count-if not-nil? data)  ; matches intent much better
-              num-nil         (count-if nil?     data) ]    ; intent is plain
-          (is (and  (= 7 num-valid-1 num-valid-2 )
-                    (= 1 num-nil) )))))))
-
-(dotest
   (is= true   (has-some? odd? [1 2 3] ) )
   (is= false  (has-some? odd? [2 4 6] ) )
   (is= false  (has-some? odd? []      ) )
@@ -1045,16 +990,15 @@
   (is (rel= 1 1 :digits 4 ))
   (is (rel= 1 1 :tol    0.01 ))
 
-  (throws? IllegalArgumentException  (rel= 1 1 ))
-  (throws? IllegalArgumentException  (rel= 1 1 4))
-  (throws? IllegalArgumentException  (rel= 1 1 :xxdigits 4      ))
-  (throws? IllegalArgumentException  (rel= 1 1 :digits   4.1    ))
-  (throws? IllegalArgumentException  (rel= 1 1 :digits   0      ))
-  (throws? IllegalArgumentException  (rel= 1 1 :digits  -4      ))
-
-  (throws? IllegalArgumentException  (rel= 1 1 :tol    -0.01    ))
-  (throws? IllegalArgumentException  (rel= 1 1 :tol     "xx"    ))
-  (throws? IllegalArgumentException  (rel= 1 1 :xxtol   0.01    ))
+  (throws? (rel= 1 1 ))
+  (throws? (rel= 1 1 4))
+  (throws? (rel= 1 1 :xxdigits 4      ))
+  (throws? (rel= 1 1 :digits   4.1    ))
+  (throws? (rel= 1 1 :digits   0      ))
+  (throws? (rel= 1 1 :digits  -4      ))
+  (throws? (rel= 1 1 :tol    -0.01    ))
+  (throws? (rel= 1 1 :tol     "xx"    ))
+  (throws? (rel= 1 1 :xxtol   0.01    ))
 
   (is      (rel=   0   0   :digits 3 ))
   (is      (rel=  42  42   :digits 99 ))
