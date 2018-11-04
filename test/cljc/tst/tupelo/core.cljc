@@ -180,7 +180,7 @@
     (nonblank= result expected )))
 
 (dotest
-  ; (spyx (s/check-fn t/truthy? ))
+  ; (t/spyx (s/check-fn t/truthy? ))
 
   (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]
     (testing "basic usage"
@@ -231,4 +231,167 @@
               num-nil         (count-if nil?     data) ]    ; intent is plain
           (is (and  (= 7 num-valid-1 num-valid-2 )
                 (= 1 num-nil) )))))))
+
+
+(dotest
+  (is= true   (t/has-some? odd? [1 2 3] ) )
+  (is= false  (t/has-some? odd? [2 4 6] ) )
+  (is= false  (t/has-some? odd? []      ) )
+
+  (is= false  (t/has-none? odd? [1 2 3] ) )
+  (is= true   (t/has-none? odd? [2 4 6] ) )
+  (is= true   (t/has-none? odd? []      ) ))
+
+(dotest
+  (is (every?        t/not-empty? ["one" [1] '(1) {:1 1} #{1}     ] ))
+  (is (t/has-none?   t/not-empty? [ ""   [ ] '( ) {}     #{ }  nil] ))
+
+  (is (t/has-none?   empty? ["one" [1] '(1) {:1 1} #{1}     ] ))
+  (is (every?        empty? [ ""   [ ] '( ) {}     #{ }  nil] ))
+
+  (is= (map t/not-empty? ["1" [1] '(1) {:1 1} #{1} ] )
+    [true true true true true]  )
+  (is= (map t/not-empty? ["" [] '() {} #{} nil] )
+    [false false false false false false ] )
+
+  (is= (t/keep-if t/not-empty?  ["1" [1] '(1) {:1 1} #{1} ] )
+    ["1" [1] '(1) {:1 1} #{1} ] )
+  (is= (t/drop-if t/not-empty?  [""  []  '()  {}     #{}  nil] )
+    [""  []  '()  {}     #{}  nil] )
+
+  (throws? (t/not-empty? 5))
+  (throws? (t/not-empty? 3.14)))
+
+;-----------------------------------------------------------------------------
+; spy stuff
+(dotest
+  (is= "(+ 2 3) => 5"
+    (ts/collapse-whitespace
+      (with-out-str
+        (is= 5 (t/spyx (+ 2 3))))))
+
+  ; #todo -> readme
+  (is= (ts/collapse-whitespace   "(inc 0) => 1
+                                  (inc 1) => 2
+                                  (inc 2) => 3 " )
+    (ts/collapse-whitespace
+      (with-out-str
+        (is= 3 (t/spyx (inc 0)
+                 (inc 1)
+                 (inc 2))))))
+
+  ; #todo -> readme
+  (is= (ts/collapse-whitespace   ":some-kw
+                                  (inc 1) => 2
+                                  (inc 2) => 3 " )
+    (ts/collapse-whitespace
+      (with-out-str
+        (is= 3    (t/spyx :some-kw
+                    (inc 1)
+                    (inc 2)))))) )
+
+; #todo blog about this nested (is= ...) testing technique
+(dotest
+  (is=
+    (ts/collapse-whitespace  " a => 1
+                               b => 5
+                               (-> (inc a) (* 2) inc) => 5 " )
+    (ts/collapse-whitespace
+      (with-out-str
+        (is= 13
+          (t/let-spy [a (inc 0)
+                    b (+ 2 3)]
+                   (t/spyx (-> (inc a) (* 2) inc))
+            (-> b (* 2) (+ 3)))))))
+
+  (is= (ts/collapse-whitespace  " a => 1
+                                  b => 5 " )
+    (ts/collapse-whitespace
+      (with-out-str
+        (is= 17
+          (t/let-spy [a (inc 0)
+                    b (+ 2 3)]
+                   (-> b (* (inc a)) (+ 7))))))))
+
+
+(dotest
+  (testing "basic usage"
+    (let [side-effect-cum-sum (atom 0)  ; side-effect running total
+
+          ; Returns the sum of its arguments AND keep a running total.
+          side-effect-add!  (fn [ & args ]
+                              (let [result (apply + args) ]
+                                (swap! side-effect-cum-sum + result)
+                                result)) ]
+      (is= ":hi => 5"
+        (ts/collapse-whitespace (with-out-str (t/spy (side-effect-add! 2 3) :hi))) )
+      (is= ":hi => 5"
+        (ts/collapse-whitespace (with-out-str (t/spy :hi  (side-effect-add! 2 3)))) )
+      (is= ":after-inc => 2"
+        (ts/collapse-whitespace (with-out-str (-> 1
+                                                (inc)
+                                                (t/spy :after-inc) ; add a custom keyword message
+                                                (* 2)))))
+      (is= ":after-inc => 2"
+        (ts/collapse-whitespace (with-out-str (->> 1
+                                                (inc)
+                                                (t/spy :after-inc) ; add a custom keyword message
+                                                (* 2)))))
+
+      (is= "(side-effect-add! 2 3) => 5"
+        (ts/collapse-whitespace (with-out-str (t/spyx (side-effect-add! 2 3)))) )
+      (is= 15 @side-effect-cum-sum))
+
+    (is= ":first => 5 :second => 25"
+      (ts/collapse-whitespace
+        (with-out-str (-> 2
+                        (+ 3)
+                        (t/spy :first )
+                        (* 5)
+                        (t/spy :second) ))))
+    (is= ":first => 5 :second => 25"
+      (ts/collapse-whitespace
+        (with-out-str (->> 2
+                        (+ 3)
+                        (t/spy :first )
+                        (* 5)
+                        (t/spy :second) ))))
+
+    (let [side-effect-cum-sum (atom 0)  ; side-effect running total
+
+          ; Returns the sum of its arguments AND keep a running total.
+          side-effect-add!  (fn [ & args ]
+                              (let [result (apply + args) ]
+                                (swap! side-effect-cum-sum + result)
+                                result))
+          ]
+      (is= ":value => 5"
+        (ts/collapse-whitespace (with-out-str (t/spy (side-effect-add! 2 3) :value))))
+      (is= ":value => 5"
+        (ts/collapse-whitespace (with-out-str (t/spy :value  (side-effect-add! 2 3)))))
+      (is= 10 @side-effect-cum-sum)
+
+      (is= ":value => 5" (ts/collapse-whitespace (with-out-str (t/spy :value (+ 2 3) ))))
+      (is=   ":spy => 5" (ts/collapse-whitespace (with-out-str (t/spy        (+ 2 3) ))))
+
+      (is= "(str \"abc\" \"def\") => \"abcdef\""
+        (ts/collapse-whitespace (with-out-str (t/spyx (str "abc" "def") ))))
+
+      (throws? (t/spy :some-tag "some-str" 42)) )))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

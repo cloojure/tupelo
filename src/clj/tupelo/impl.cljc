@@ -552,7 +552,7 @@
         forms      (xrest exprs)
         fmt-pair   (fn [[dest src]]
                      [dest src
-                      '_ (list 'spyx dest)]) ; #todo gensym instead of underscore?
+                      '_ (list 'tupelo.core/spyx dest)]) ; #todo gensym instead of underscore?
         pairs      (vec (partition 2 decls))
         r1         (vec (mapcat fmt-pair pairs))
         final-code `(let ~r1 ~@forms)]
