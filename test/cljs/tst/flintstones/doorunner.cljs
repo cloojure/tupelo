@@ -15,10 +15,11 @@
     [tst.flintstones.slate]
     [tst.flintstones.bambam]
 
+    [tst.tupelo._bootstrap]
     [tst.tupelo.core]
   ))
 
-(s/set-fn-validation! true) ; enforce fn schemas
+; (s/set-fn-validation! true) ; enforce fn schemas
 
 (enable-console-print!)
 (println "doorunner - beginning")
@@ -30,6 +31,7 @@
   'tst.flintstones.slate
   'tst.flintstones.bambam
 
+  'tst.tupelo._bootstrap
   'tst.tupelo.core
 )
 (println "doorunner - end")

@@ -367,7 +367,32 @@
   "For any map, returns true if elem is present in the map for at least one key."
   [map elem] (i/contains-val? map elem))
 
-; ***** toptop *****
+(defn strcat
+  "Recursively concatenate all arguments into a single string result."
+  [& args] (apply i/strcat args))
+
+(defn print-versions [] ; #todo need CLJS version
+  #?(:clj
+     (let [version-str (format "Clojure %s    Java %s"
+                         (clojure-version) (System/getProperty "java.version"))
+           num-hyphen  (+ 6 (count version-str))
+           hyphens     (strcat (repeat num-hyphen \-))
+           version-str (strcat "   " version-str)]
+       (nl)
+       (println hyphens)
+       (println version-str)
+       (println hyphens)))
+  #?(:cljs
+     (let [version-str (str "ClojureScript " *clojurescript-version* )
+           num-hyphen  (+ 6 (count version-str))
+           hyphens     (strcat (repeat num-hyphen \-))
+           version-str (strcat "   " version-str)]
+       (nl)
+       (println hyphens)
+       (println version-str)
+       (println hyphens))) )
+
+; #todo ***** toptop *****
 #?(:clj (do
 
 (defmacro when-clojure-1-8-plus [& forms]
@@ -375,6 +400,8 @@
 
 (defmacro when-clojure-1-9-plus [& forms]
   `(i/when-clojure-1-9-plus ~@forms))
+
+; #todo ----- gogo -----
 
 (defn rand-elem
   "Returns a random element from a collection"
@@ -945,10 +972,6 @@
       (print \space)
       (pr it))))
 
-(defn strcat
-  "Recursively concatenate all arguments into a single string result."
-  [& args] (apply i/strcat args))
-
 (defn chars-thru
   "Given two characters (or numerical equivalents), returns a seq of characters
   (inclusive) from the first to the second.  Characters must be in ascending order."
@@ -961,17 +984,6 @@
 (defn pretty
   "Shortcut to clojure.pprint/pprint. Returns it (1st) argument."
   [& args] (apply i/pretty args))
-
-(defn print-versions []
-  (let [version-str (format "Clojure %s    Java %s"
-                      (clojure-version) (System/getProperty "java.version"))
-        num-hyphen  (+ 6 (count version-str))
-        hyphens     (strcat (repeat num-hyphen \-))
-        version-str (strcat "   " version-str)]
-    (nl)
-    (println hyphens)
-    (println version-str)
-    (println hyphens) ))
 
 ;                                               "1234.4567.89ab.cdef"  also valid for read
 ; #todo need conversion from Long -> hex string="1234-4567-89ab-cdef" (& inverse)
