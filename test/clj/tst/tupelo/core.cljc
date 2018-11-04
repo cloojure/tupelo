@@ -133,9 +133,6 @@
     (is= "(mapv inc (range 3)) => <#clojure.lang.PersistentVector [1 2 3]>"
       (ts/collapse-whitespace (with-out-str (t/spyxx (mapv inc (range 3)))))) ))
 
-
-; toptop
-
 ;(sp/def ::vector (sp/coll-of clj/any :kind vector?))
 ;(dotest
 ;  (is   (sp/valid? ::vector [1 2 3]))
@@ -144,13 +141,8 @@
 ; ;(spyx (sp/exercise ::vector))
 ;)
 
-(dotest
-  (is= (forv [x (range 4)] (* x x))
-         [0 1 4 9] )
-  (is= (forv [x (range 23)] (* x x))
-       (for  [x (range 23)] (* x x)))
-  (is= (forv [x (range 5)  y (range 2 9)] (str x y))
-       (for  [x (range 5)  y (range 2 9)] (str x y))))
+
+; #todo ***** toptop *****
 
 (dotest
   (let [xs [1 2 3]
