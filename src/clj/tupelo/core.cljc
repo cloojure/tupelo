@@ -392,7 +392,42 @@
        (println version-str)
        (println hyphens))) )
 
-; #todo ***** toptop *****
+(defmacro map-let*
+  "Usage:  (map-let* ctx bindings & forms)
+
+  where ctx is a map with default values:
+    {:strict true
+     :lazy   false}"
+  [context bindings & forms] `(i/map-let* ~context ~bindings ~@forms) )
+
+(defmacro map-let
+  "Usage:
+    (map-let bindings & forms)
+
+  Given bindings and forms like `(map-let [x xs, y ys, ...] (+ x y))`, will iterate over the
+  collections [xs ys ...] assigning successive values of each collection to [x y ...], respectively.
+  The local symbols [x y ...] can then be used in `forms` to generate the output mapping.
+  Will throw if collections are not all of the same length. Not lazy."
+  [bindings & forms] `(i/map-let ~bindings ~@forms))
+
+; #todo replace clojure.core/map => tupelo.lazy/map if (t/refer-tupelo :strict)
+; #todo replace clojure.core/map : not lazy; can add one of :trunc or :lazy modifiers
+; (map + (range 5))
+; (map + 0 (range 5))
+; (map + (range 5) :lazy)
+; (map vector [:a :b :c] (range 9) :trunc)  ; error w/o :trunc
+;(defn mapper [& args]   ; alts:  mapr  onto  morph  vmap
+;  "An eager version of clojure.core/map
+;   Use (zip ... :trunc) if you want to truncate all inputs to the lenght of the shortest.
+;   Use (zip ... :lazy)  if you want it to be lazy.  "
+;  (apply clojure.core/map args))
+; #todo (map-indexed ... :lazy)   vmap-indexed
+; #todo (mapcat ... :lazy)    vmapcat
+; #todo (for ... :lazy)       vfor
+; #todo (concat ... :lazy)    vconcat
+
+
+; #todo ***** toptop ***********************************************************************************
 #?(:clj (do
 
 (defmacro when-clojure-1-8-plus [& forms]
@@ -401,7 +436,7 @@
 (defmacro when-clojure-1-9-plus [& forms]
   `(i/when-clojure-1-9-plus ~@forms))
 
-; #todo ----- gogo -----
+; #todo ----- gogo ----------------------------------------------------------------------------------
 
 (defn rand-elem
   "Returns a random element from a collection"
@@ -460,40 +495,6 @@
   "Accepts a core.async channel and returns the contents as a lazy list."
   [chan]
   (i/chan->lazy-seq chan))
-
-(defmacro map-let*
-  "Usage:  (map-let* ctx bindings & forms)
-
-  where ctx is a map with default values:
-    {:strict true
-     :lazy   false}"
-  [context bindings & forms] `(i/map-let* ~context ~bindings ~@forms) )
-
-(defmacro map-let
-  "Usage:
-    (map-let bindings & forms)
-
-  Given bindings and forms like `(map-let [x xs, y ys, ...] (+ x y))`, will iterate over the
-  collections [xs ys ...] assigning successive values of each collection to [x y ...], respectively.
-  The local symbols [x y ...] can then be used in `forms` to generate the output mapping.
-  Will throw if collections are not all of the same length. Not lazy."
-  [bindings & forms] `(i/map-let ~bindings ~@forms))
-
-; #todo replace clojure.core/map => tupelo.lazy/map if (t/refer-tupelo :strict)
-; #todo replace clojure.core/map : not lazy; can add one of :trunc or :lazy modifiers
-; (map + (range 5))
-; (map + 0 (range 5))
-; (map + (range 5) :lazy)
-; (map vector [:a :b :c] (range 9) :trunc)  ; error w/o :trunc
-;(defn mapper [& args]   ; alts:  mapr  onto  morph  vmap
-;  "An eager version of clojure.core/map
-;   Use (zip ... :trunc) if you want to truncate all inputs to the lenght of the shortest.
-;   Use (zip ... :lazy)  if you want it to be lazy.  "
-;  (apply clojure.core/map args))
-; #todo (map-indexed ... :lazy)   vmap-indexed
-; #todo (mapcat ... :lazy)    vmapcat
-; #todo (for ... :lazy)       vfor
-; #todo (concat ... :lazy)    vconcat
 
 (defn fetch-in
   "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),

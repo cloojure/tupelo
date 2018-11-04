@@ -542,8 +542,42 @@
   (has-some? truthy?
     (mapv #(= elem %) (vals map))))
 
+; #todo fix so doesn't hang if give infinite lazy seq
+; #todo rename :strict -> :trunc
+(defmacro map-let*
+  [context bindings & forms]
+  (when (empty? bindings)
+    (throw (IllegalArgumentException. (str "map-let*: bindings cannot be empty=" bindings))))
+  (when-not (even? (count bindings))
+    (throw (IllegalArgumentException. (str "map-let*: (count bindings) must be even=" bindings))))
+  (when-not (pos? (count forms))
+    (throw (IllegalArgumentException. (str "map-let*: forms cannot be empty=" forms))))
+  (let [binding-pairs (partition 2 bindings)
+        syms          (mapv xfirst binding-pairs)
+        colls         (mapv xsecond binding-pairs) ]
+    `(do
+       (when-not (map? ~context)
+         (throw (IllegalArgumentException. (str "map-let*: context must be a map=" ~context))))
+       (let [lazy#          (get ~context :lazy false)
+             strict#        (get ~context :strict true)
+             lengths#       (mapv count ~colls)
+             lengths-equal# (apply = lengths#)
+             map-fn#        (fn ~syms ~@forms)
+             output-fn#     (if lazy# identity vec)]
+         (when (and strict#
+                 (not lengths-equal#))
+           (throw (IllegalArgumentException.
+                    (str "map-let*: colls must all be same length; lengths=" lengths#))))
+         (output-fn# (map map-fn# ~@colls))))))
 
-; ***** toptop *****
+(defmacro map-let
+  [bindings & forms]
+  `(map-let* {:strict true
+              :lazy   false}
+     ~bindings ~@forms))
+
+
+; #todo ***** toptop **********************************************************************************
 #?(:clj (do
 
 (ns-unmap *ns* 'first) ; #todo -> (set-tupelo-strict! true/false)
@@ -1211,40 +1245,6 @@
      (doseq [value# ~values]
        (yield value#))
      (vec ~values)))
-
-; #todo fix so doesn't hang if give infinite lazy seq
-; #todo rename :strict -> :trunc
-(defmacro map-let*
-  [context bindings & forms]
-  (when (empty? bindings)
-    (throw (IllegalArgumentException. (str "map-let*: bindings cannot be empty=" bindings))))
-  (when-not (even? (count bindings))
-    (throw (IllegalArgumentException. (str "map-let*: (count bindings) must be even=" bindings))))
-  (when-not (pos? (count forms))
-    (throw (IllegalArgumentException. (str "map-let*: forms cannot be empty=" forms))))
-  (let [binding-pairs (partition 2 bindings)
-        syms          (mapv xfirst binding-pairs)
-        colls         (mapv xsecond binding-pairs) ]
-       `(do
-          (when-not (map? ~context)
-            (throw (IllegalArgumentException. (str "map-let*: context must be a map=" ~context))))
-          (let [lazy#          (get ~context :lazy false)
-                strict#        (get ~context :strict true)
-                lengths#       (mapv count ~colls)
-                lengths-equal# (apply = lengths#)
-                map-fn#        (fn ~syms ~@forms)
-                output-fn#     (if lazy# identity vec)]
-               (when (and strict#
-                       (not lengths-equal#))
-                 (throw (IllegalArgumentException.
-                          (str "map-let*: colls must all be same length; lengths=" lengths#))))
-            (output-fn# (map map-fn# ~@colls))))))
-
-(defmacro map-let
-  [bindings & forms]
-  `(map-let* {:strict true
-              :lazy   false}
-     ~bindings ~@forms))
 
 (defn indexed
   [& colls]

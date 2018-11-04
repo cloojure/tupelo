@@ -145,25 +145,6 @@
 ; #todo ***** toptop *****
 
 (dotest
-  (let [xs [1 2 3]
-        ys [10 20 30]]
-    (is= [11 22 33]
-      (map-let [x xs y ys] (+ x y))
-      (map-let* {:lazy false :strict false} [x xs y ys] (+ x y))
-      (map-let* {:lazy false :strict true}  [x xs y ys] (+ x y))
-      (map-let* {:lazy true :strict false}  [x xs y ys] (+ x y))
-      (map-let* {:lazy true :strict true}   [x xs y ys] (+ x y)))
-    (is (instance? clojure.lang.PersistentVector
-          (map-let* {:lazy false :strict true} [x xs y ys] (+ x y))))
-    (is (instance? clojure.lang.LazySeq
-          (map-let* {:lazy true :strict true} [x xs y ys] (+ x y)))))
-  (let [xs [1 2 3]
-        ys [10 20 30 40]]
-    (throws?        (map-let                  [x xs y ys] (+ x y)))
-    (throws?        (map-let* {:strict true}  [x xs y ys] (+ x y)))
-    (is= [11 22 33] (map-let* {:strict false} [x xs y ys] (+ x y)))))
-
-(dotest
   (is= (vector [])               [[]] )
   (is= (mapv identity [] [])      []  )
 
