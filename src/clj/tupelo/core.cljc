@@ -319,6 +319,54 @@
   [pred coll]
   (i/has-none? pred coll))
 
+(defmacro spyx
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expressions, printing both the expression and its value to stdout. Returns the value of the
+   last expression."
+  [& forms] `(i/spyx ~@forms))
+
+(defmacro spyxx
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expression, printing both the expression, its type, and its value to stdout, then returns the value."
+  [expr] `(i/spyxx ~expr))
+
+(defmacro spyx-pretty
+  "Like `spyx` but with pretty printing (clojure.pprint/pprint)"
+  [& forms] `(i/spyx-pretty ~@forms))
+
+(defmacro spy-pretty
+  "Like `spyx-pretty` but without printing the original form"
+  [& forms] `(i/spy-pretty ~@forms))
+
+(defmacro let-spy
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expressions, printing both the expression and its value to stdout. Returns the value of the
+   last expression."
+  [& forms] `(i/let-spy ~@forms))
+
+(defmacro let-spy-pretty
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expressions, printing both the expression and its value to stdout. Returns the value of the
+   last expression."
+  [& forms] `(i/let-spy-pretty ~@forms))
+
+(defmacro let-some
+  "Threads forms as with `when-some`, but allow more than 1 pair of binding forms."
+  [bindings & forms]
+  `(i/let-some ~bindings ~@forms))
+
+(defn contains-elem?
+  "For any collection coll & element tgt, returns true if coll contains at least one
+  instance of tgt; otherwise returns false. Note that, for maps, each element is a
+  vector (i.e MapEntry) of the form [key value]."
+  [coll elem] (i/contains-elem? coll elem))
+(defn contains-key?
+  "For any map or set, returns true if elem is a map key or set element, respectively"
+  [map-or-set elem ] (i/contains-key? map-or-set elem))
+(defn contains-val?
+  "For any map, returns true if elem is present in the map for at least one key."
+  [map elem] (i/contains-val? map elem))
+
 ; ***** toptop *****
 #?(:clj (do
 
@@ -380,37 +428,6 @@
                               ... ] "
   [& colls]
   (apply i/indexed colls))
-
-(defmacro spyx
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expressions, printing both the expression and its value to stdout. Returns the value of the
-   last expression."
-  [& forms] `(i/spyx ~@forms))
-
-(defmacro spyxx
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expression, printing both the expression, its type, and its value to stdout, then returns the value."
-  [expr] `(i/spyxx ~expr))
-
-(defmacro spyx-pretty
-  "Like `spyx` but with pretty printing (clojure.pprint/pprint)"
-  [& forms] `(i/spyx-pretty ~@forms))
-
-(defmacro spy-pretty
-  "Like `spyx-pretty` but without printing the original form"
-  [& forms] `(i/spy-pretty ~@forms))
-
-(defmacro let-spy
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expressions, printing both the expression and its value to stdout. Returns the value of the
-   last expression."
-  [& forms] `(i/let-spy ~@forms))
-
-(defmacro let-spy-pretty
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expressions, printing both the expression and its value to stdout. Returns the value of the
-   last expression."
-  [& forms] `(i/let-spy-pretty ~@forms))
 
 (defn chan->lazy-seq
   "Accepts a core.async channel and returns the contents as a lazy list."
@@ -539,18 +556,6 @@
   is truthy.  Otherwise, throws IllegalArgumentException."
   [form]
   `(i/verify ~form))
-
-(defn contains-elem?
-  "For any collection coll & element tgt, returns true if coll contains at least one
-  instance of tgt; otherwise returns false. Note that, for maps, each element is a
-  vector (i.e MapEntry) of the form [key value]."
-  [coll elem] (i/contains-elem? coll elem))
-(defn contains-key?
-  "For any map or set, returns true if elem is a map key or set element, respectively"
-  [map-or-set elem ] (i/contains-key? map-or-set elem))
-(defn contains-val?
-  "For any map, returns true if elem is present in the map for at least one key."
-  [map elem] (i/contains-val? map elem))
 
 (defmacro vals->map ; #todo -> README
   "Called with a list of symbols like `(vals->map a b c)` returns a map
@@ -744,11 +749,6 @@
   "Returns `sample-val` if not nil; else returns `default-val`"
   [default-val sample-val]
   (i/with-nil-default default-val sample-val))
-
-(defmacro let-some
-  "Threads forms as with `when-some`, but allow more than 1 pair of binding forms."
-  [bindings & forms]
-  `(i/let-some ~bindings ~@forms))
 
 (defmacro lazy-cons
   "The simple way to create a lazy sequence:

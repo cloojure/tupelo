@@ -379,6 +379,138 @@
 
       (throws? (t/spy :some-tag "some-str" 42)) )))
 
+(dotest
+  (let [fn2   (fn []  (t/with-spy-indent
+                        (t/spy :msg2 (+ 2 3))))
+        fn1   (fn []  (t/with-spy-indent
+                        (t/spy :msg1 (+ 2 3))
+                        (fn2)))
+        fn0   (fn [] (t/spy :msg0 (+ 2 3))) ]
+    (is= ":msg2 => 5"            (ts/collapse-whitespace (with-out-str (fn2))))
+    (is= ":msg1 => 5 :msg2 => 5" (ts/collapse-whitespace (with-out-str (fn1))))
+    (is= ":msg0 => 5"            (ts/collapse-whitespace (with-out-str (fn0)))) ))
+
+
+(dotest
+  (is= 3 (t/let-some [a 1
+                      b 2
+                      c (+ a b)]
+           c))
+  (is= nil (t/let-some [a 1
+                        b nil
+                        c 3]
+             [a b c]))
+
+  (is= 5 (t/let-some [a (+ 2 3)]
+           a))
+  (is= 7 (t/let-some [a (+ 2 3)
+                      b (inc a)
+                      c (inc b)]
+           c))
+  (is= nil (t/let-some [a (+ 2 3)
+                        b nil
+                        c (inc b)]
+             c))
+  (is= nil (t/let-some [a (+ 2 3)
+                        b (when (< 5 0) a)
+                        c (inc b)]
+             c))
+  (is= [0 [1 2 3 4]] (t/let-some [tgt 5
+                                  [x & others] (range tgt)]
+                       [x others]))
+  (is= nil (t/let-some [tgt nil
+                        [x & others] (range tgt)]
+             [x others])))
+
+(dotest
+  (testing "vecs"
+    (let [coll (range 3)]
+      (isnt (t/contains-elem? coll -1))
+      (is   (t/contains-elem? coll  0))
+      (is   (t/contains-elem? coll  1))
+      (is   (t/contains-elem? coll  2))
+      (isnt (t/contains-elem? coll  3))
+      (isnt (t/contains-elem? coll  nil)))
+
+    (let [coll [ 1 :two "three" \4]]
+      (isnt (t/contains-elem? coll  :no-way))
+      (isnt (t/contains-elem? coll  nil))
+      (is   (t/contains-elem? coll  1))
+      (is   (t/contains-elem? coll  :two))
+      (is   (t/contains-elem? coll  "three"))
+      (is   (t/contains-elem? coll  \4)))
+
+    (let [coll [:yes nil 3]]
+      (isnt (t/contains-elem? coll  :no-way))
+      (is   (t/contains-elem? coll  :yes))
+      (is   (t/contains-elem? coll  nil))))
+
+  (testing "maps"
+    (let [coll {1 :two "three" \4}]
+      (isnt (t/contains-elem? coll nil ))
+      (isnt (t/contains-elem? coll [1 :no-way] ))
+      (is   (t/contains-elem? coll [1 :two]))
+      (is   (t/contains-elem? coll ["three" \4])))
+    (let [coll {1 nil "three" \4}]
+      (isnt (t/contains-elem? coll [nil 1] ))
+      (is   (t/contains-elem? coll [1 nil] )))
+    (let [coll {nil 2 "three" \4}]
+      (isnt (t/contains-elem? coll [1 nil] ))
+      (is   (t/contains-elem? coll [nil 2] ))))
+
+  (testing "sets"
+    (let [coll #{1 :two "three" \4}]
+      (isnt (t/contains-elem? coll  :no-way))
+      (is   (t/contains-elem? coll  1))
+      (is   (t/contains-elem? coll  :two))
+      (is   (t/contains-elem? coll  "three"))
+      (is   (t/contains-elem? coll  \4)))
+
+    (let [coll #{:yes nil}]
+      (isnt (t/contains-elem? coll  :no-way))
+      (is   (t/contains-elem? coll  :yes))
+      (is   (t/contains-elem? coll  nil)))))
+
+(dotest
+  (is   (t/contains-key?  {:a 1 :b 2} :a))
+  (is   (t/contains-key?  {:a 1 :b 2} :b))
+  (isnt (t/contains-key?  {:a 1 :b 2} :x))
+  (isnt (t/contains-key?  {:a 1 :b 2} :c))
+  (isnt (t/contains-key?  {:a 1 :b 2}  1))
+  (isnt (t/contains-key?  {:a 1 :b 2}  2))
+
+  (is   (t/contains-key?  {:a 1 nil   2} nil))
+  (isnt (t/contains-key?  {:a 1 :b  nil} nil))
+  (isnt (t/contains-key?  {:a 1 :b    2} nil))
+
+  (is   (t/contains-key? #{:a 1 :b 2} :a))
+  (is   (t/contains-key? #{:a 1 :b 2} :b))
+  (is   (t/contains-key? #{:a 1 :b 2}  1))
+  (is   (t/contains-key? #{:a 1 :b 2}  2))
+  (isnt (t/contains-key? #{:a 1 :b 2} :x))
+  (isnt (t/contains-key? #{:a 1 :b 2} :c))
+
+  (is   (t/contains-key? #{:a 5 nil   "hello"} nil))
+  (isnt (t/contains-key? #{:a 5 :doh! "hello"} nil))
+
+  (throws? (t/contains-key? [:a 1 :b 2] :a))
+  (throws? (t/contains-key? [:a 1 :b 2]  1)))
+
+(dotest
+  (is   (t/contains-val? {:a 1 :b 2} 1))
+  (is   (t/contains-val? {:a 1 :b 2} 2))
+  (isnt (t/contains-val? {:a 1 :b 2} 0))
+  (isnt (t/contains-val? {:a 1 :b 2} 3))
+  (isnt (t/contains-val? {:a 1 :b 2} :a))
+  (isnt (t/contains-val? {:a 1 :b 2} :b))
+
+  (is   (t/contains-val? {:a 1 :b nil} nil))
+  (isnt (t/contains-val? {:a 1 nil  2} nil))
+  (isnt (t/contains-val? {:a 1 :b   2} nil))
+
+  (throws? (t/contains-val?  [:a 1 :b 2] 1))
+  (throws? (t/contains-val? #{:a 1 :b 2} 1)))
+
 
 
 

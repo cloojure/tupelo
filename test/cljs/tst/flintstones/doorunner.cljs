@@ -7,6 +7,7 @@
 (ns tst.flintstones.doorunner
   (:require
     [doo.runner :refer-macros [doo-tests]]
+    [schema.core :as s]
 
     [tst.flintstones.dino]
     [tst.flintstones.wilma]
@@ -16,6 +17,8 @@
 
     [tst.tupelo.core]
   ))
+
+(s/set-fn-validation! true) ; enforce fn schemas
 
 (enable-console-print!)
 (println "doorunner - beginning")

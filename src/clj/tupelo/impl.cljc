@@ -9,6 +9,7 @@
   (:require
     [clojure.core :as cc]
     [clojure.core.async :as ca]
+    [clojure.pprint :as pprint]
     [clojure.string :as str]
     [clojure.test]
     [clojure.set :as set]
@@ -17,7 +18,6 @@
     [schema.core :as s]
     #?@(:clj [
               [clojure.core.match :as ccm]
-              [clojure.pprint :as pprint]
               ;[tupelo.spec :as tsp]
               [tupelo.types :as types]
              ])))
@@ -380,6 +380,26 @@
   []
   (swap! spy-indent-level dec))
 
+;-----------------------------------------------------------------------------
+; #todo  Need it?-> like some-> that short-circuits on nil
+(defmacro it->
+  [expr & forms]
+  `(let [~'it ~expr
+         ~@(interleave (repeat 'it) forms)
+         ]
+     ~'it))
+
+(defn clip-str      ; #todo -> tupelo.string?
+  [nchars & args]
+  (it-> (apply str args)
+    (take nchars it)
+    (apply str it)))
+
+(defmacro forv ; #todo wrap body in implicit do
+  [& forms]
+  `(vec (for ~@forms)))
+
+;-----------------------------------------------------------------------------
 (defn spy
   ([arg1 arg2]
    (let [[tag value] (cond
@@ -392,25 +412,135 @@
   ([value] ; 1-arg arity uses a generic "spy" message
    (spy :spy value)))
 
-;-----------------------------------------------------------------------------
-; #todo  Need it?-> like some-> that short-circuits on nil
-(defmacro it->
-  [expr & forms]
-  `(let [~'it ~expr
-         ~@(interleave (repeat 'it) forms)
-         ]
-     ~'it))
+(defn spyx-proc
+  [exprs]
+  (let [r1         (for [expr (butlast exprs)]
+                     (when *spy-enabled*
+                       (if (keyword? expr)
+                         `(when *spy-enabled* (print (str (spy-indent-spaces) ~expr \space)))
+                         `(when *spy-enabled* (println (str (spy-indent-spaces) '~expr " => " ~expr))))))
+        r2         (let [expr (xlast exprs)]
+                     `(let [spy-val# ~expr]
+                        (when *spy-enabled*
+                          (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val#))))
+                        spy-val#))
+        final-code `(do ~@r1 ~r2) ]
+    final-code))
 
-;-----------------------------------------------------------------------------
-(defn clip-str      ; #todo -> tupelo.string?
-  [nchars & args]
-  (it-> (apply str args)
-    (take nchars it)
-    (apply str it)))
+; #todo allow spyx to have labels like (spyx :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
+(defmacro spyx
+  [& exprs]
+  (spyx-proc exprs))
 
-(defmacro forv ; #todo wrap body in implicit do
+(defn ^:no-doc spy-pretty-proc ; #todo => core
+  [exprs]
+  (let [r1         (for [expr (butlast exprs)]
+                     `(when *spy-enabled* (println (tupelo.impl/spy-indent-spaces) (str ~expr))))
+        r2         (let [expr (xlast exprs)]
+                     `(let [spy-val# ~expr]
+                        (when *spy-enabled*
+                          (println (indent-lines-with (tupelo.impl/spy-indent-spaces)
+                                     (tupelo.impl/pretty-str spy-val#))))
+                        spy-val#))
+        final-code `(do
+                      ~@r1
+                      ~r2)]
+    final-code))
+; #todo only allow 1 arg + optional kw-label
+(defmacro spy-pretty ; #todo => core
+  [& exprs]
+  (spy-pretty-proc exprs)) ; #todo add in use of `prettify` for each value
+
+(defn ^:no-doc spyx-pretty-proc
+  [exprs]
+  (let [r1         (for [expr (butlast exprs)]
+                     (if (keyword? expr)
+                       `(when *spy-enabled* (println (tupelo.impl/spy-indent-spaces) (str ~expr)))
+                       `(when *spy-enabled* (println (tupelo.impl/spy-indent-spaces) (str '~expr " => " ~expr)))))
+        r2         (let [expr (xlast exprs)]
+                     `(let [spy-val# ~expr]
+                        (when *spy-enabled*
+                          (println (str (tupelo.impl/spy-indent-spaces) '~expr " => "))
+                          (println (indent-lines-with (tupelo.impl/spy-indent-spaces)
+                                     (tupelo.impl/pretty-str spy-val#))))
+                        spy-val#))
+        final-code `(do
+                      ~@r1
+                      ~r2)]
+    final-code))
+; #todo only allow 1 arg + optional kw-label
+; #todo On all spy* make print file & line number
+; #todo allow spyx-pretty to have labels like (spyx-pretty :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
+(defmacro spyx-pretty
+  [& exprs]
+  (spyx-pretty-proc exprs)) ; #todo add in use of `prettify` for each value
+
+(defmacro with-spy-indent
   [& forms]
-  `(vec (for ~@forms)))
+  `(do
+     (tupelo.impl/spy-indent-inc)
+     (let [result# (do ~@forms)]
+       (tupelo.impl/spy-indent-dec)
+       result#)))
+
+(defmacro let-spy
+  [& exprs]
+  (let [decls      (xfirst exprs)
+        _          (when (not (even? (count decls)))
+                     (throw (ex-info "spy-let-proc: uneven number of decls:" decls)))
+        forms      (xrest exprs)
+        fmt-pair   (fn [[dest src]]
+                     [dest src
+                      '_ (list 'tupelo.core/spyx dest)]) ; #todo gensym instead of underscore?
+        pairs      (vec (partition 2 decls))
+        r1         (vec (mapcat fmt-pair pairs))
+        final-code `(let ~r1 ~@forms)]
+    final-code))
+
+;-----------------------------------------------------------------------------
+
+(defmacro let-spy-pretty   ; #todo -> deprecated
+  [& exprs]
+  (let [decls (xfirst exprs)
+        _     (when (not (even? (count decls)))
+                (throw (ex-info "spy-let-pretty-impl: uneven number of decls:" decls)))
+        forms (xrest exprs)
+        fmt-pair (fn [[dest src]]
+                   [dest src
+                    '_ (list 'tupelo.core/spyx-pretty dest)] ) ; #todo gensym instead of underscore?
+        pairs (vec (partition 2 decls))
+        r1    (vec (mapcat  fmt-pair pairs ))
+        final-code  `(let ~r1 ~@forms ) ]
+    final-code ))
+
+(defmacro let-some
+  [bindings & forms]
+  (let [num-bindings (count bindings)]
+    (when-not (even? num-bindings)
+      (throw (ex-info (str "num-bindings must be even; value=" num-bindings) bindings)))
+    (if (pos? num-bindings)
+      `(let [result# ~(cc/second bindings)]
+         (when (not-nil? result#)
+           (let [~(cc/first bindings) result#]
+             (let-some ~(cc/drop 2 bindings) ~@forms))))
+      `(do ~@forms))))
+
+(s/defn contains-elem? :- s/Bool
+  [coll :- s/Any
+   elem :- s/Any ]
+  (has-some? truthy?
+    (mapv #(= elem %) (seq coll))))
+
+(s/defn contains-key? :- s/Bool
+  [map-or-set :- (s/pred #(or (map? %) (set? %)))
+   elem :- s/Any ]
+  (contains? map-or-set elem))
+
+(s/defn contains-val? :- s/Bool
+  [map :- tsk/Map
+   elem :- s/Any ]
+  (has-some? truthy?
+    (mapv #(= elem %) (vals map))))
 
 
 ; ***** toptop *****
@@ -465,26 +595,6 @@
     '[clojure.spec.gen.alpha :as gen]
     '[clojure.spec.test.alpha :as stest] ))
 
-(defn spyx-proc
-  [exprs]
-  (let [r1         (for [expr (butlast exprs)]
-                     (when *spy-enabled*
-                       (if (keyword? expr)
-                         `(when *spy-enabled* (print (str (spy-indent-spaces) ~expr \space)))
-                         `(when *spy-enabled* (println (str (spy-indent-spaces) '~expr " => " ~expr))))))
-        r2         (let [expr (xlast exprs)]
-                     `(let [spy-val# ~expr]
-                        (when *spy-enabled*
-                          (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val#))))
-                        spy-val#))
-        final-code `(do ~@r1 ~r2) ]
-    final-code))
-
-; #todo allow spyx to have labels like (spyx :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
-(defmacro spyx
-  [& exprs]
-  (spyx-proc exprs))
-
 (defmacro spyxx
   [expr]
   `(let [spy-val#    ~expr
@@ -493,98 +603,7 @@
        (println (str (spy-indent-spaces) '~expr " => <#" class-name# " " (pr-str spy-val#) ">")))
      spy-val#))
 
-(defn ^:no-doc spy-pretty-proc ; #todo => core
-  [exprs]
-  (let [r1         (for [expr (butlast exprs)]
-                     `(when *spy-enabled* (println (spy-indent-spaces) (str ~expr))))
-        r2         (let [expr (xlast exprs)]
-                     `(let [spy-val# ~expr]
-                        (when *spy-enabled*
-                          (println (indent-lines-with (spy-indent-spaces)
-                                     (pretty-str spy-val#))))
-                        spy-val#))
-        final-code `(do
-                      ~@r1
-                      ~r2)]
-    final-code))
- ; #todo only allow 1 arg + optional kw-label
-(defmacro spy-pretty ; #todo => core
-  [& exprs]
-  (spy-pretty-proc exprs)) ; #todo add in use of `prettify` for each value
-
-(defn ^:no-doc spyx-pretty-proc
-  [exprs]
-  (let [r1         (for [expr (butlast exprs)]
-                     (if (keyword? expr)
-                       `(when *spy-enabled* (println (spy-indent-spaces) (str ~expr)))
-                       `(when *spy-enabled* (println (spy-indent-spaces) (str '~expr " => " ~expr)))))
-        r2         (let [expr (xlast exprs)]
-                     `(let [spy-val# ~expr]
-                        (when *spy-enabled*
-                          (println (str (spy-indent-spaces) '~expr " => "))
-                          (println (indent-lines-with (spy-indent-spaces)
-                                     (pretty-str spy-val#))))
-                        spy-val#))
-        final-code `(do
-                      ~@r1
-                      ~r2)]
-    final-code))
-; #todo only allow 1 arg + optional kw-label
-; #todo On all spy* make print file & line number
-; #todo allow spyx-pretty to have labels like (spyx-pretty :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
-(defmacro spyx-pretty
-  [& exprs]
-  (spyx-pretty-proc exprs)) ; #todo add in use of `prettify` for each value
-
-(defmacro with-spy-indent
-  [& forms]
-  `(do
-     (spy-indent-inc)
-     (let [result# (do ~@forms)]
-       (spy-indent-dec)
-       result#)))
-
-(defmacro let-spy
-  [& exprs]
-  (let [decls      (xfirst exprs)
-        _          (when (not (even? (count decls)))
-                     (throw (ex-info "spy-let-proc: uneven number of decls:" decls)))
-        forms      (xrest exprs)
-        fmt-pair   (fn [[dest src]]
-                     [dest src
-                      '_ (list 'tupelo.core/spyx dest)]) ; #todo gensym instead of underscore?
-        pairs      (vec (partition 2 decls))
-        r1         (vec (mapcat fmt-pair pairs))
-        final-code `(let ~r1 ~@forms)]
-    final-code))
-
-;-----------------------------------------------------------------------------
-
-(defmacro let-spy-pretty   ; #todo -> deprecated
-  [& exprs]
-  (let [decls (xfirst exprs)
-        _     (when (not (even? (count decls)))
-                (throw (ex-info "spy-let-pretty-impl: uneven number of decls:" decls)))
-        forms (xrest exprs)
-        fmt-pair (fn [[dest src]]
-                   [dest src
-                    '_ (list 'spyx-pretty dest)] ) ; #todo gensym instead of underscore?
-        pairs (vec (partition 2 decls))
-        r1    (vec (mapcat  fmt-pair pairs ))
-        final-code  `(let ~r1 ~@forms ) ]
-    final-code ))
-
-(defmacro let-some
-  [bindings & forms]
-  (let [num-bindings (count bindings)]
-    (when-not (even? num-bindings)
-      (throw (ex-info (str "num-bindings must be even; value=" num-bindings) bindings)))
-    (if (pos? num-bindings)
-      `(let [result# ~(cc/second bindings)]
-         (when (not-nil? result#)
-           (let [~(cc/first bindings) result#]
-             (let-some ~(cc/drop 2 bindings) ~@forms))))
-      `(do ~@forms))))
+; #todo gogo ---------------------------------------------------------------------------------------------------
 
 
 (defn cond-it-impl
@@ -775,23 +794,6 @@
                       kw  (keyword item)]]
             [sym (list 'grab kw the-map)]))
        ~@forms)))
-
-(s/defn contains-elem? :- s/Bool
-  [coll :- s/Any
-   elem :- s/Any ]
-  (has-some? truthy?
-    (mapv #(= elem %) (seq coll))))
-
-(s/defn contains-key? :- s/Bool
-  [map-or-set :- (s/pred #(or (map? %) (set? %)))
-   elem :- s/Any ]
-  (contains? map-or-set elem))
-
-(s/defn contains-val? :- s/Bool
-  [map :- tsk/Map
-   elem :- s/Any ]
-  (has-some? truthy?
-    (mapv #(= elem %) (vals map))))
 
 ; #todo maybe submap-without-keys, submap-without-vals ?
 ; #todo filter by pred in addition to set/list?

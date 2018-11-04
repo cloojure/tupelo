@@ -124,119 +124,17 @@
     (isnt (i/is-pre-clojure-1-9?)))
 )
 
-; toptop
-
 (dotest
   (let [val1 (into (sorted-map) {:a 1 :b 2})]
-   (is= "val1 => <#clojure.lang.PersistentTreeMap {:a 1, :b 2}>"
-      (ts/collapse-whitespace (with-out-str (spyxx val1))))
-
+    (is= "val1 => <#clojure.lang.PersistentTreeMap {:a 1, :b 2}>"
+      (ts/collapse-whitespace (with-out-str (t/spyxx val1))))
     (is= "(+ 2 3) => <#java.lang.Long 5>"
-      (ts/collapse-whitespace (with-out-str (spyxx (+ 2 3)))))
-
+      (ts/collapse-whitespace (with-out-str (t/spyxx (+ 2 3)))))
     (is= "(mapv inc (range 3)) => <#clojure.lang.PersistentVector [1 2 3]>"
-      (ts/collapse-whitespace (with-out-str (spyxx (mapv inc (range 3)))))) ))
+      (ts/collapse-whitespace (with-out-str (t/spyxx (mapv inc (range 3)))))) ))
 
-(dotest
-  (let [fn2   (fn []  (with-spy-indent
-                        (spy :msg2 (+ 2 3))))
-        fn1   (fn []  (with-spy-indent
-                        (spy :msg1 (+ 2 3))
-                        (fn2)))
-        fn0   (fn [] (spy :msg0 (+ 2 3))) ]
-    (is= ":msg2 => 5"            (ts/collapse-whitespace (with-out-str (fn2))))
-    (is= ":msg1 => 5 :msg2 => 5" (ts/collapse-whitespace (with-out-str (fn1))))
-    (is= ":msg0 => 5"            (ts/collapse-whitespace (with-out-str (fn0))))
-    ))
 
-(dotest
-  (testing "vecs"
-    (let [coll (range 3)]
-      (isnt (contains-elem? coll -1))
-      (is   (contains-elem? coll  0))
-      (is   (contains-elem? coll  1))
-      (is   (contains-elem? coll  2))
-      (isnt (contains-elem? coll  3))
-      (isnt (contains-elem? coll  nil)))
-
-    (let [coll [ 1 :two "three" \4]]
-      (isnt (contains-elem? coll  :no-way))
-      (isnt (contains-elem? coll  nil))
-      (is   (contains-elem? coll  1))
-      (is   (contains-elem? coll  :two))
-      (is   (contains-elem? coll  "three"))
-      (is   (contains-elem? coll  \4)))
-
-    (let [coll [:yes nil 3]]
-      (isnt (contains-elem? coll  :no-way))
-      (is   (contains-elem? coll  :yes))
-      (is   (contains-elem? coll  nil))))
-
-  (testing "maps"
-    (let [coll {1 :two "three" \4}]
-      (isnt (contains-elem? coll nil ))
-      (isnt (contains-elem? coll [1 :no-way] ))
-      (is   (contains-elem? coll [1 :two]))
-      (is   (contains-elem? coll ["three" \4])))
-    (let [coll {1 nil "three" \4}]
-      (isnt (contains-elem? coll [nil 1] ))
-      (is   (contains-elem? coll [1 nil] )))
-    (let [coll {nil 2 "three" \4}]
-      (isnt (contains-elem? coll [1 nil] ))
-      (is   (contains-elem? coll [nil 2] ))))
-
-  (testing "sets"
-    (let [coll #{1 :two "three" \4}]
-      (isnt (contains-elem? coll  :no-way))
-      (is   (contains-elem? coll  1))
-      (is   (contains-elem? coll  :two))
-      (is   (contains-elem? coll  "three"))
-      (is   (contains-elem? coll  \4)))
-
-    (let [coll #{:yes nil}]
-      (isnt (contains-elem? coll  :no-way))
-      (is   (contains-elem? coll  :yes))
-      (is   (contains-elem? coll  nil)))))
-
-(dotest
-  (is   (contains-key?  {:a 1 :b 2} :a))
-  (is   (contains-key?  {:a 1 :b 2} :b))
-  (isnt (contains-key?  {:a 1 :b 2} :x))
-  (isnt (contains-key?  {:a 1 :b 2} :c))
-  (isnt (contains-key?  {:a 1 :b 2}  1))
-  (isnt (contains-key?  {:a 1 :b 2}  2))
-
-  (is   (contains-key?  {:a 1 nil   2} nil))
-  (isnt (contains-key?  {:a 1 :b  nil} nil))
-  (isnt (contains-key?  {:a 1 :b    2} nil))
-
-  (is   (contains-key? #{:a 1 :b 2} :a))
-  (is   (contains-key? #{:a 1 :b 2} :b))
-  (is   (contains-key? #{:a 1 :b 2}  1))
-  (is   (contains-key? #{:a 1 :b 2}  2))
-  (isnt (contains-key? #{:a 1 :b 2} :x))
-  (isnt (contains-key? #{:a 1 :b 2} :c))
-
-  (is   (contains-key? #{:a 5 nil   "hello"} nil))
-  (isnt (contains-key? #{:a 5 :doh! "hello"} nil))
-
-  (throws? (contains-key? [:a 1 :b 2] :a))
-  (throws? (contains-key? [:a 1 :b 2]  1)))
-
-(dotest
-  (is   (contains-val? {:a 1 :b 2} 1))
-  (is   (contains-val? {:a 1 :b 2} 2))
-  (isnt (contains-val? {:a 1 :b 2} 0))
-  (isnt (contains-val? {:a 1 :b 2} 3))
-  (isnt (contains-val? {:a 1 :b 2} :a))
-  (isnt (contains-val? {:a 1 :b 2} :b))
-
-  (is   (contains-val? {:a 1 :b nil} nil))
-  (isnt (contains-val? {:a 1 nil  2} nil))
-  (isnt (contains-val? {:a 1 :b   2} nil))
-
-  (throws? (contains-val?  [:a 1 :b 2] 1))
-  (throws? (contains-val? #{:a 1 :b 2} 1)))
+; toptop
 
 ;(sp/def ::vector (sp/coll-of clj/any :kind vector?))
 ;(dotest
@@ -792,37 +690,6 @@
     [0 1 "" [] nil           true false])
     [0 1 "" [] :some-default true false]))
 
-
-(dotest
-  (is= 3 (let-some [a 1
-                    b 2
-                    c (+ a b)]
-           c))
-  (is= nil (let-some [a 1
-                      b nil
-                      c 3]
-             [a b c]))
-
-  (is= 5 (let-some [a (+ 2 3)]
-           a))
-  (is= 7 (let-some [a (+ 2 3)
-                    b (inc a)
-                    c (inc b)]
-           c))
-  (is= nil (let-some [a (+ 2 3)
-                      b nil
-                      c (inc b)]
-             c))
-  (is= nil (let-some [a (+ 2 3)
-                      b (when (< 5 0) a)
-                      c (inc b)]
-             c))
-  (is= [0 [1 2 3 4]] (let-some [tgt 5
-                                [x & others] (range tgt)]
-                       [x others]))
-  (is= nil (let-some [tgt nil
-                      [x & others] (range tgt)]
-             [x others])) )
 
 
 (dotest
