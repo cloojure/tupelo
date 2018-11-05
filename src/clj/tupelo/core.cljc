@@ -434,6 +434,14 @@
   "Given a sequential object (vector or list), add one or more elements to the beginning"
   [& args] (apply i/prepend args))
 
+(defmacro lazy-cons
+  "The simple way to create a lazy sequence:
+      (defn lazy-next-int [n]
+        (t/lazy-cons n (lazy-next-int (inc n))))
+      (def all-ints (lazy-next-int 0)) "
+  [curr-val recursive-call-form]
+  `(i/lazy-cons ~curr-val ~recursive-call-form))
+
 (defn zip*
   "Usage:  (zip* context & colls)
   where context is a map with default values:  {:strict true}
@@ -471,6 +479,34 @@
                               ... ] "
   [& colls]
   (apply i/indexed colls))
+
+(defn range-vec     ; #todo README;  maybe xrange?  maybe kill this?
+  "An eager version clojure.core/range that always returns its result in a vector."
+  [& args] (apply i/range-vec args))
+
+(defn thru
+  "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. Not lazy. "
+  [& args] (apply i/thru args))
+
+(defn fibonacci-seq
+  "A lazy seq of Fibonacci numbers (memoized)."
+  []
+  (let [fibo-step (fn fibo-step [[val1 val2]]
+                    (let [next-val (+ val1 val2)]
+                      (lazy-cons next-val (fibo-step [val2 next-val] )))) ]
+    (cons 0 (cons 1 (fibo-step [0N 1N])))))
+
+(defn fibo-thru
+  "Returns a vector of Fibonacci numbers up to limit (inclusive). Note that a
+  2^62  corresponds to 91'st Fibonacci number."
+  [limit]
+  (vec (take-while #(<= % limit) (fibonacci-seq))))
+
+(defn fibo-nth
+  "Returns the N'th Fibonacci number (zero-based). Note that
+  N=91 corresponds to approx 2^62"
+  [N]
+  (first (drop N (fibonacci-seq))))
 
 
 
@@ -780,14 +816,6 @@
   [default-val sample-val]
   (i/with-nil-default default-val sample-val))
 
-(defmacro lazy-cons
-  "The simple way to create a lazy sequence:
-      (defn lazy-next-int [n]
-        (t/lazy-cons n (lazy-next-int (inc n))))
-      (def all-ints (lazy-next-int 0)) "
-  [curr-val recursive-call-form]
-  `(i/lazy-cons ~curr-val ~recursive-call-form))
-
 (defmacro lazy-gen
   "Creates a 'generator function' that returns a lazy seq of results
   via `yield` (a la Python)."
@@ -892,34 +920,6 @@
 ;  [& colls]
 ;  (assert (< 1 (count colls))) ; #todo add msg
 ;  (apply = (mapv set colls)))
-
-(defn range-vec     ; #todo README;  maybe xrange?  maybe kill this?
-  "An eager version clojure.core/range that always returns its result in a vector."
-  [& args] (apply i/range-vec args))
-
-(defn thru
-  "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. Not lazy. "
-  [& args] (apply i/thru args))
-
-(defn fibonacci-seq
-  "A lazy seq of Fibonacci numbers (memoized)."
-  []
-  (let [fibo-step (fn fibo-step [[val1 val2]]
-                    (let [next-val (+ val1 val2)]
-                      (lazy-cons next-val (fibo-step [val2 next-val] )))) ]
-    (cons 0 (cons 1 (fibo-step [0N 1N])))))
-
-(defn fibo-thru
-  "Returns a vector of Fibonacci numbers up to limit (inclusive). Note that a
-  2^62  corresponds to 91'st Fibonacci number."
-  [limit]
-  (vec (take-while #(<= % limit) (fibonacci-seq))))
-
-(defn fibo-nth
-  "Returns the N'th Fibonacci number (zero-based). Note that
-  N=91 corresponds to approx 2^62"
-  [N]
-  (first (drop N (fibonacci-seq))))
 
 (defmacro with-err-str
   "Evaluates exprs in a context in which *err* is bound to a fresh

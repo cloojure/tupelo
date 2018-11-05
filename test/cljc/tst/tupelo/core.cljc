@@ -2,11 +2,13 @@
   (:require
     [clojure.string :as str]
     #?@(:clj [
+              [schema.core :as s]
               [tupelo.test   :refer [define-fixture dotest is isnt is= isnt= nonblank= testing throws?]]
               [tupelo.core :as t]
               [tupelo.string :as ts]
              ])
     #?@(:cljs [
+               [schema.core :as s]
                [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= nonblank= testing throws?]]
                [tupelo.core :as t :include-macros true]
                [tupelo.string :as ts :include-macros true]
@@ -688,8 +690,72 @@
   (throws? (t/glue  '(1 2)     nil    ))
   (throws? (t/glue   {:a 1}    nil    ))
   (throws? (t/glue   #{:a 1}   nil    ))
-  (throws? (t/glue   "hello"   nil    ))
-  )
+  (throws? (t/glue   "hello"   nil    )) )
+
+(dotest
+  (let [data [[0 1 2]
+              []
+              [3]
+              [4 5]
+              [6 7 8 9]]]
+    (is= (t/thru 9) (t/glue-rows data))
+    (is= (t/thru 9) (reduce into [] data))))
+
+(dotest
+  (throws?            (t/append  1 2        ))
+  (throws?            (t/append [1 2]       ))
+  (throws?            (t/append nil   3     ))
+  (is= [1 2 3    ]    (t/append [1 2] 3     ))
+  (is= [1 2 3 4  ]    (t/append [1 2] 3 4   ))
+  (is= [1 2 3 4 5]    (t/append [1 2] 3 4 5 ))
+
+  (throws?            (t/append '(1 2)       ))
+  (is= [1 2 3    ]    (t/append '(1 2) 3     ))
+  (is= [1 2 3 4  ]    (t/append '(1 2) 3 4   ))
+  (is= [1 2 3 4 5]    (t/append '(1 2) 3 4 5 ))
+
+  (throws?            (t/append   {:a 1} 99     ))
+  (throws?            (t/append   {:a 1} {:b 2} ))
+  (throws?            (t/append  #{:a 1} 99     ))
+  (throws?            (t/append  #{:a 1} #{99}  ))
+
+  (testing "old conjv tests"
+    (is= [  2  ]    (t/append  []  2   ))
+    (is= [  2  ]    (t/append '()  2   ))
+    (is= [  2 3]    (t/append  []  2  3))
+    (is= [  2 3]    (t/append '()  2  3))
+
+    (is= [1 2 3]    (t/append  [1] 2  3))
+    (is= [1 2 3]    (t/append '(1) 2  3))
+    (is= [1 2 3]    (t/append  [1  2] 3))
+    (is= [1 2 3]    (t/append '(1  2) 3))
+
+    (is= [1 2 3 4]  (t/append  [1  2] 3 4))
+    (is= [1 2 3 4]  (t/append '(1  2) 3 4))
+    (is= [1 2 3 4]  (t/append  [1] 2  3 4))
+    (is= [1 2 3 4]  (t/append '(1) 2  3 4))
+
+    (is= [[1 2] [3 4] [5 6]] (t/append  [[1 2] [3 4]]  [5 6] ))
+
+    (is= [0 1 2 3 4 5] (t/append (range 4) 4 5))
+    (is= [0 1 2 3 4 5] (apply t/append [0] (range 1 6)))))
+
+(dotest
+  (throws?            (t/prepend       [2 1] ))
+  (throws?            (t/prepend     3  nil  ))
+  (is= [    3 2 1]    (t/prepend     3 [2 1] ))
+  (is= [  4 3 2 1]    (t/prepend   4 3 [2 1] ))
+  (is= [5 4 3 2 1]    (t/prepend 5 4 3 [2 1] ))
+
+  (throws?            (t/prepend       '(2 1) ))
+  (is= [    3 2 1]    (t/prepend     3 '(2 1) ))
+  (is= [  4 3 2 1]    (t/prepend   4 3 '(2 1) ))
+  (is= [5 4 3 2 1]    (t/prepend 5 4 3 '(2 1) ))
+
+  (throws?            (t/prepend   99     {:a 1} ))
+  (throws?            (t/prepend   {:b 2} {:a 1} ))
+  (throws?            (t/prepend   99    #{:a 1} ))
+  (throws?            (t/prepend  #{99}  #{:a 1} )))
 
 
 

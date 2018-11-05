@@ -163,8 +163,9 @@
       (every? string-or-char? colls)    (apply str colls)
       :else (throw (ex-info "glue: colls must be all same type; found types=" (mapv type colls))))))
 
-(s/defn glue-rows :- tsk/List ; #todo necessary?
-  [coll-2d :- tsk/List]
+(defn glue-rows   ; #todo :- tsk/List ; #todo necessary?
+  [coll-2d          ; :- tsk/List
+   ]
   (when-not (sequential? coll-2d)
     (throw (ex-info "Sequential collection required, found=" coll-2d)))
   (when-not (every? sequential? coll-2d)
@@ -660,6 +661,57 @@
   [& colls]
   (apply zip-lazy (range) colls))
 
+(defmacro lazy-cons
+  [curr-val recursive-call-form]
+  `(lazy-seq (cons ~curr-val ~recursive-call-form)))
+
+(defn range-vec [& args]
+  (vec (apply range args)))
+
+; #todo need docs & tests
+; #todo:  add (thru a b)     -> [a..b] (inclusive)
+;             (thru 1 3)     -> [ 1  2  3]
+;             (thru \a \c)   -> [\a \b \c]
+;             (thru :a :c)   -> [:a :b :c]
+;             (thru 'a 'c)   -> ['a 'b 'c]
+;             (thru 1   2   0.1)     -> [1.0  1.1  1.2 ... 2.0]
+;             (thru 0.1 0.3 0.1)     -> [0.1  0.2  0.3]
+;                  (thru start stop step) uses integer steps and
+;                  (rel= curr stop :tol step) as ending criteria
+;  #todo range version => (butlast (thru ...))
+(defn thru          ; #todo make lazy: (thruz ...) -> (thru* {:lazy true} ...)
+  ([end]       (thru 0 end))
+  ([start end] (thru start end 1))
+  ([start end step]
+   (let [delta          (- (double end)   (double start))
+         nsteps-dbl     (/ (double delta) (double step))
+         nsteps-int     (Math/round nsteps-dbl)
+         rounding-error (Math/abs (- nsteps-dbl nsteps-int)) ]
+     (when (< 0.00001 rounding-error)
+       (throw (IllegalArgumentException. (str
+                                           "thru: non-integer number of steps \n   args:"
+                                           (pr-str [start end step])))))
+     (vec (clojure.core/map #(-> %
+                               (* step)
+                               (+ start))
+            (range (inc nsteps-int)))))))
+
+; #todo need test, readme
+; #todo merge into `thru` using a protocol for int, double, char, string, keyword, symbol, other?
+(defn chars-thru
+  [start-char stop-char]
+  {:pre [ (char start-char) (char stop-char) ] }
+  ; These "dummy" casts are to ensure that any input integer values are within the valid
+  ; range for Unicode characters
+  (let [start-val   (int start-char)
+        stop-val    (int stop-char)]
+    (when-not (<= start-val stop-val)
+      (throw (IllegalArgumentException.
+               (str "char-seq: start-char must come before stop-char."
+                 "  start-val=" start-val "  stop-val=" stop-val))))
+    (mapv char (thru start-val stop-val))))
+
+
 
 ; #todo ***** toptop **********************************************************************************
 #?(:clj (do
@@ -976,52 +1028,6 @@
                             "  map: " the-map \newline
                             "  key: " key \newline))))))))))
 
-(defn range-vec [& args]
-  (vec (apply range args)))
-
-; #todo need docs & tests
-; #todo:  add (thru a b)     -> [a..b] (inclusive)
-;             (thru 1 3)     -> [ 1  2  3]
-;             (thru \a \c)   -> [\a \b \c]
-;             (thru :a :c)   -> [:a :b :c]
-;             (thru 'a 'c)   -> ['a 'b 'c]
-;             (thru 1   2   0.1)     -> [1.0  1.1  1.2 ... 2.0]
-;             (thru 0.1 0.3 0.1)     -> [0.1  0.2  0.3]
-;                  (thru start stop step) uses integer steps and
-;                  (rel= curr stop :tol step) as ending criteria
-;  #todo range version => (butlast (thru ...))
-(defn thru          ; #todo make lazy: (thruz ...) -> (thru* {:lazy true} ...)
-  ([end]       (thru 0 end))
-  ([start end] (thru start end 1))
-  ([start end step]
-   (let [delta          (- (double end)   (double start))
-         nsteps-dbl     (/ (double delta) (double step))
-         nsteps-int     (Math/round nsteps-dbl)
-         rounding-error (Math/abs (- nsteps-dbl nsteps-int)) ]
-     (when (< 0.00001 rounding-error)
-       (throw (IllegalArgumentException. (str
-                                           "thru: non-integer number of steps \n   args:"
-                                           (pr-str [start end step])))))
-     (vec (clojure.core/map #(-> %
-                               (* step)
-                               (+ start))
-            (range (inc nsteps-int)))))))
-
-; #todo need test, readme
-; #todo merge into `thru` using a protocol for int, double, char, string, keyword, symbol, other?
-(defn chars-thru
-  [start-char stop-char]
-  {:pre [ (char start-char) (char stop-char) ] }
-  ; These "dummy" casts are to ensure that any input integer values are within the valid
-  ; range for Unicode characters
-  (let [start-val   (int start-char)
-        stop-val    (int stop-char)]
-    (when-not (<= start-val stop-val)
-      (throw (IllegalArgumentException.
-               (str "char-seq: start-char must come before stop-char."
-                 "  start-val=" start-val "  stop-val=" stop-val))))
-    (mapv char (thru start-val stop-val))))
-
 (defrecord Unwrapped [data])
 (s/defn unwrap :- Unwrapped
   [data :- [s/Any]]
@@ -1208,10 +1214,6 @@
   (destruct-impl bindings forms))
 
 ; #todo max-key -> t/max-by
-
-(defmacro lazy-cons
-  [curr-val recursive-call-form]
-  `(lazy-seq (cons ~curr-val ~recursive-call-form)))
 
 (defn chan->lazy-seq ; #todo add schema, add tests, readme
   [chan]
