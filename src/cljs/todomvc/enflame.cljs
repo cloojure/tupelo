@@ -80,7 +80,7 @@
 ;---------------------------------------------------------------------------------------------------
 (def ascii-code-return 13) ; #todo => tupelo.ascii
 (def ascii-code-escape 27)
-(defn event-val [event]  (-> event .-target .-value))
+(defn event-val [event]  (-> event .-target .-value)) ; #todo maybe (etv event) short for (event->target->value event) ???
 
 (defn from-topic [topic] @(rf/subscribe topic)) ; #todo was (listen ...)
 
