@@ -549,6 +549,65 @@
     (throws?        (t/map-let* {:strict true}  [x xs y ys] (+ x y)))
     (is= [11 22 33] (t/map-let* {:strict false} [x xs y ys] (+ x y)))))
 
+(dotest
+  (is= (vector [])               [[]] )
+  (is= (mapv identity [] [])      []  )
+
+  (is= [[:a 0] [:b 1] [:c 2]]
+    (t/zip-lazy [:a :b :c] [0 1 2])
+    (t/zip-lazy [:a :b :c] (range)))
+  (is= (t/zip-lazy [:a :b :c] [1 2 3])   [[:a 1] [:b 2] [:c 3]] )
+  (is= (t/zip-lazy [:a] [1])             [[:a 1]] )
+  (is= (t/zip-lazy [] [])                []  )
+  (is= (t/zip-lazy [:A :B :C] [:a :b :c] [1 2 3])
+    [[:A :a 1] [:B :b 2] [:C :c 3]] )
+  (is (instance?
+        #?(:clj clojure.lang.LazySeq)
+        #?(:cljs cljs.core/LazySeq)
+        (t/zip-lazy [:a :b :c] (range))))
+
+  (is= (t/zip [:a :b :c] [1 2 3])   [[:a 1] [:b 2] [:c 3]] )   ; #todo fails when use Schema for append/prepend
+  (is= (t/zip [:a] [1])             [[:a 1]] )                 ; #todo fails when use Schema for append/prepend
+  (is= (t/zip [] [])                []  )
+  (is= (t/zip [:A :B :C] [:a :b :c] [1 2 3])
+    [[:A :a 1] [:B :b 2] [:C :c 3]] )
+  (throws? (t/zip [:a :b :c] [1 2 3 4]))
+  (is= (t/zip* {:strict false} [:a :b :c] [1 2 3 4]) [[:a 1] [:b 2] [:c 3]] )
+
+  (is (instance?
+        #?(:clj clojure.lang.PersistentVector)
+        #?(:cljs cljs.core/PersistentVector)
+        (t/zip*  {:trunc false} [:a :b :c] [1 2 3])))
+  (let [keys   [:a :b :c]
+        vals   [1 2 3]
+        result (atom [])]
+    (doseq [[k i] (t/zip keys vals)]
+      (swap! result t/append {k i}))
+    (is= [{:a 1} {:b 2} {:c 3}] @result))
+
+  ; verify that zip throws if unequal lengths, even if some colls are infinite lazy seqs
+  (throws? (t/zip            [:a :b :c] [1 2 3 4]))
+  (throws? (t/zip [:A :B :C] [:a :b :c] [1 2 3 4]))
+  (throws? (t/zip [:a :b :c] (range)))
+  (is= (t/zip* {:strict false} [:a :b :c] (range))   [[:a 0] [:b 1] [:c 2]] )
+  (is= (t/zip* {:strict false} [:a :b :c] [1 2 3 4]) [[:a 1] [:b 2] [:c 3]] )
+  (is= (t/zip* {:strict false} [:A :B :C] [:a :b :c] [1 2 3 4]) [[:A :a 1] [:B :b 2] [:C :c 3]] ))
+
+(dotest
+  (is= (t/indexed [:a :b :c]) [[0 :a] [1 :b] [2 :c]])
+  (is= [[0 0] [1 2] [2 4] [3 6] [4 8]]
+    (take 5 (t/indexed (map #(* 2 %) (range))))) ; can work with infinite lazy lists
+  (is= (t/indexed [:a :b :c]  (map #(+ 10 %) (range)))
+    [ [0 :a 10]
+     [1 :b 11]
+     [2 :c 12] ] )
+  (is= (take 5 (t/indexed (map #(+ 10 %) (range))))
+    [ [0 10]
+     [1 11]
+     [2 12]
+     [3 13]
+     [4 14] ] ))
+
 
 
 

@@ -145,61 +145,6 @@
 ; #todo ***** toptop *****
 
 (dotest
-  (is= (vector [])               [[]] )
-  (is= (mapv identity [] [])      []  )
-
-  (is= [[:a 0] [:b 1] [:c 2]]
-    (zip-lazy [:a :b :c] [0 1 2])
-    (zip-lazy [:a :b :c] (range)))
-  (is= (zip-lazy [:a :b :c] [1 2 3])   [[:a 1] [:b 2] [:c 3]] )
-  (is= (zip-lazy [:a] [1])             [[:a 1]] )
-  (is= (zip-lazy [] [])                []  )
-  (is= (zip-lazy [:A :B :C] [:a :b :c] [1 2 3])
-    [[:A :a 1] [:B :b 2] [:C :c 3]] )
-  (is (instance? clojure.lang.LazySeq
-        (zip-lazy [:a :b :c] (range))))
-
-  (is= (zip [:a :b :c] [1 2 3])   [[:a 1] [:b 2] [:c 3]] )
-  (is= (zip [:a] [1])             [[:a 1]] )
-  (is= (zip [] [])                []  )
-  (is= (zip [:A :B :C] [:a :b :c] [1 2 3])
-    [[:A :a 1] [:B :b 2] [:C :c 3]] )
-  (throws? (zip [:a :b :c] [1 2 3 4]))
-  (is= (zip* {:strict false} [:a :b :c] [1 2 3 4]) [[:a 1] [:b 2] [:c 3]] )
-
-  (is (instance? clojure.lang.PersistentVector
-        (zip*  {:trunc false} [:a :b :c] [1 2 3])))
-  (let [keys   [:a :b :c]
-        vals   [1 2 3]
-        result (atom [])]
-       (doseq [[k i] (zip keys vals)]
-         (swap! result append {k i}))
-    (is= [{:a 1} {:b 2} {:c 3}] @result))
-
-  ; verify that zip throws if unequal lengths, even if some colls are infinite lazy seqs
-  (throws? (zip            [:a :b :c] [1 2 3 4]))
-  (throws? (zip [:A :B :C] [:a :b :c] [1 2 3 4]))
-  (throws? (zip [:a :b :c] (range)))
-  (is= (zip* {:strict false} [:a :b :c] (range))   [[:a 0] [:b 1] [:c 2]] )
-  (is= (zip* {:strict false} [:a :b :c] [1 2 3 4]) [[:a 1] [:b 2] [:c 3]] )
-  (is= (zip* {:strict false} [:A :B :C] [:a :b :c] [1 2 3 4]) [[:A :a 1] [:B :b 2] [:C :c 3]] ))
-
-(dotest
-  (is= (indexed [:a :b :c]) [[0 :a] [1 :b] [2 :c]])
-  (is= [[0 0] [1 2] [2 4] [3 6] [4 8]]
-    (take 5 (indexed (map #(* 2 %) (range))))) ; can work with infinite lazy lists
-  (is= (indexed [:a :b :c]  (map #(+ 10 %) (range)))
-          [ [0 :a 10]
-            [1 :b 11]
-            [2 :c 12] ] )
-  (is= (take 5 (indexed (map #(+ 10 %) (range))))
-    [ [0 10]
-      [1 11]
-      [2 12]
-      [3 13]
-      [4 14] ] ))
-
-(dotest
   ; unexpected results
   (is (= (concat {:a 1} {:b 2} {:c 3} )
                [ [:a 1] [:b 2] [:c 3] ] ))

@@ -426,32 +426,13 @@
 ; #todo (for ... :lazy)       vfor
 ; #todo (concat ... :lazy)    vconcat
 
+(defn append
+  "Given a sequential object (vector or list), add one or more elements to the end."
+  [listy & elems] (apply i/append listy elems))
 
-; #todo ***** toptop ***********************************************************************************
-#?(:clj (do
-
-(defmacro when-clojure-1-8-plus [& forms]
-  `(i/when-clojure-1-8-plus ~@forms))
-
-(defmacro when-clojure-1-9-plus [& forms]
-  `(i/when-clojure-1-9-plus ~@forms))
-
-; #todo ----- gogo ----------------------------------------------------------------------------------
-
-(defn rand-elem
-  "Returns a random element from a collection"
-  [coll] (i/rand-elem coll))
-
-(defn lexical-compare
-  "Performs a lexical comparison of 2 sequences, sorting as follows:
-      [1]
-      [1 :a]
-      [1 :b]
-      [1 :b 3]
-      [2]
-      [3]
-      [3 :y] "
-  [a b] (i/lexical-compare a b))
+(defn prepend
+  "Given a sequential object (vector or list), add one or more elements to the beginning"
+  [& args] (apply i/prepend args))
 
 (defn zip*
   "Usage:  (zip* context & colls)
@@ -490,6 +471,34 @@
                               ... ] "
   [& colls]
   (apply i/indexed colls))
+
+
+
+; #todo ***** toptop ***********************************************************************************
+#?(:clj (do
+
+(defmacro when-clojure-1-8-plus [& forms]
+  `(i/when-clojure-1-8-plus ~@forms))
+
+(defmacro when-clojure-1-9-plus [& forms]
+  `(i/when-clojure-1-9-plus ~@forms))
+
+; #todo ----- gogo ----------------------------------------------------------------------------------
+
+(defn rand-elem
+  "Returns a random element from a collection"
+  [coll] (i/rand-elem coll))
+
+(defn lexical-compare
+  "Performs a lexical comparison of 2 sequences, sorting as follows:
+      [1]
+      [1 :a]
+      [1 :b]
+      [1 :b 3]
+      [2]
+      [3]
+      [3 :y] "
+  [a b] (i/lexical-compare a b))
 
 (defn chan->lazy-seq
   "Accepts a core.async channel and returns the contents as a lazy list."
@@ -686,13 +695,6 @@
 
     (println (macro? 'and))  ;=> true "
   [s] (i/macro? s))
-
-(defn append
-  "Given a sequential object (vector or list), add one or more elements to the end."
-  [listy & elems] (apply i/append listy elems))
-(defn prepend
-  "Given a sequential object (vector or list), add one or more elements to the beginning"
-  [& args] (apply i/prepend args))
 
 (defn drop-at
   "Removes an element from a collection at the specified index."

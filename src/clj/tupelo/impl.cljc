@@ -547,17 +547,17 @@
 (defmacro map-let*
   [context bindings & forms]
   (when (empty? bindings)
-    (throw (IllegalArgumentException. (str "map-let*: bindings cannot be empty=" bindings))))
+    (throw (ex-info "map-let*: bindings cannot be empty=" bindings)))
   (when-not (even? (count bindings))
-    (throw (IllegalArgumentException. (str "map-let*: (count bindings) must be even=" bindings))))
+    (throw (ex-info "map-let*: (count bindings) must be even=" bindings)))
   (when-not (pos? (count forms))
-    (throw (IllegalArgumentException. (str "map-let*: forms cannot be empty=" forms))))
+    (throw (ex-info  "map-let*: forms cannot be empty=" forms)))
   (let [binding-pairs (partition 2 bindings)
         syms          (mapv xfirst binding-pairs)
         colls         (mapv xsecond binding-pairs) ]
     `(do
        (when-not (map? ~context)
-         (throw (IllegalArgumentException. (str "map-let*: context must be a map=" ~context))))
+         (throw (ex-info  "map-let*: context must be a map=" ~context)))
        (let [lazy#          (get ~context :lazy false)
              strict#        (get ~context :strict true)
              lengths#       (mapv count ~colls)
@@ -566,8 +566,7 @@
              output-fn#     (if lazy# identity vec)]
          (when (and strict#
                  (not lengths-equal#))
-           (throw (IllegalArgumentException.
-                    (str "map-let*: colls must all be same length; lengths=" lengths#))))
+           (throw (ex-info  "map-let*: colls must all be same length; lengths=" lengths#)))
          (output-fn# (map map-fn# ~@colls))))))
 
 (defmacro map-let
@@ -575,6 +574,91 @@
   `(map-let* {:strict true
               :lazy   false}
      ~bindings ~@forms))
+
+(defn append    ; :- tsk/List   ; #todo figure out how to use Schema with cljs
+  [listy        ; :- tsk/List
+   & elems      ; :- [s/Any]
+  ]
+  (when-not (sequential? listy)
+    (throw (ex-info  "Sequential collection required, found=" listy)))
+  (when (empty? elems)
+    (throw (ex-info "Nothing to append! elems=" elems)))
+  (vec (concat listy elems)))
+
+(defn prepend       ; :- tsk/List   ; #todo figure out how to use Schema with cljs
+  [& args]
+  (let [elems (butlast args)
+        listy (xlast args)]
+    (when-not (sequential? listy)
+      (throw (ex-info  "Sequential collection required, found=" listy)))
+    (when (empty? elems)
+      (throw (ex-info "Nothing to prepend! elems=" elems)))
+    (vec (concat elems listy))))
+
+; #todo rename :strict -> :trunc
+(defn zip-1*
+  "Usage:  (zip* context & colls)
+  where context is a map with default values:  {:strict true}
+  Not lazy. "
+  [context & colls] ; #todo how use Schema with "rest" args?
+  (assert (map? context))
+  (assert #(every? sequential? colls))
+  (let [strict        (get context :strict true)
+        lengths       (mapv count colls)
+        lengths-equal (apply = lengths) ]
+    (when (and strict
+            (not lengths-equal))
+      (throw (ex-info  "zip*: colls must all be same length; lengths=" lengths)))
+    (vec (apply map vector colls))))
+; #todo fix so doesn't hang if give infinite lazy seq. Technique:
+;  (def x [1 2 3])
+;  (seq (drop 2 x))          =>  (3)
+;  (seq (drop 3 x))          =>  nil
+;  (nil? (seq (drop 3 x)))   =>  true
+;  (nil? (drop 3 (range)))   =>  false
+
+; #todo rename :strict -> :trunc
+(defn zip*
+  [context & colls] ; #todo how use Schema with "rest" args?
+  (assert (map? context))
+  (assert #(every? sequential? colls))
+  (let [num-colls  (count colls)
+        strict-flg (get context :strict true)]
+    (loop [result []
+           colls  colls]
+      (let [empty-flgs  (mapv empty? colls)
+            num-empties (count (keep-if truthy? empty-flgs)) ]
+        (if (zero? num-empties)
+          (do
+            (let [new-row (mapv xfirst colls)
+                  new-results (append result new-row) ]
+              (recur
+                new-results
+                (mapv xrest colls))))
+          (do
+            (when (and strict-flg
+                    (not= num-empties num-colls))
+              (throw (ex-info "zip*: collections are not all same length; empty-flgs=" empty-flgs)))
+            result))))))
+
+; #todo add schema; result = tsk/List[ tsk/Pair ]
+; #todo add :trunc & assert;
+(defn zip
+  ; #todo ***** WARNING - will hang for infinite length inputs *****
+  ; #todo fix so doesn't hang if give infinite lazy seq. Technique:
+  ; #todo Use (zip ... {:trunc true}) if you want to truncate all inputs to the length of the shortest.
+  [& args]
+  (assert #(every? sequential? args))
+  (apply zip* {:strict true} args))
+
+(defn zip-lazy
+  [& colls]  ; #todo how use Schema with "rest" args?
+  (assert #(every? sequential? colls))
+  (apply map vector colls))
+
+(defn indexed
+  [& colls]
+  (apply zip-lazy (range) colls))
 
 
 ; #todo ***** toptop **********************************************************************************
@@ -675,7 +759,7 @@
   [is-valid? sample-val]
   (let [tst-result (is-valid? sample-val)]
     (when-not (truthy? tst-result)
-      (throw (IllegalArgumentException. (format "validate: sample-val=%s, tst-result=%s" sample-val tst-result))))
+      (throw (ex-info  "validate: sample-val=%s, tst-result=%s" {:sample-val sample-val :tst-result tst-result})))
     sample-val))
 
 (defn validate-or-default
@@ -693,7 +777,7 @@
   `(let [value# ~form]
      (if (truthy? value#)
        value#
-       (throw (IllegalArgumentException. (str "verification failed for: " '~form))))))
+       (throw (ex-info "verification failed  " '~form)))))
 
 ;-----------------------------------------------------------------------------
 ; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
@@ -938,25 +1022,6 @@
                  "  start-val=" start-val "  stop-val=" stop-val))))
     (mapv char (thru start-val stop-val))))
 
-(s/defn append :- tsk/List
-  [listy :- tsk/List
-   & elems :- [s/Any]]
-  (when-not (sequential? listy)
-    (throw (IllegalArgumentException. (str "Sequential collection required, found=" listy))))
-  (when (empty? elems)
-    (throw (IllegalArgumentException. (str "Nothing to append! elems=" elems))))
-  (vec (concat listy elems)))
-
-(s/defn prepend :- tsk/List
-  [& args]
-  (let [elems (butlast args)
-        listy (xlast args)]
-    (when-not (sequential? listy)
-      (throw (IllegalArgumentException. (str "Sequential collection required, found=" listy))))
-    (when (empty? elems)
-      (throw (IllegalArgumentException. (str "Nothing to prepend! elems=" elems))))
-    (vec (concat elems listy))))
-
 (defrecord Unwrapped [data])
 (s/defn unwrap :- Unwrapped
   [data :- [s/Any]]
@@ -989,68 +1054,6 @@
                           (unnest-coll item)
                           [item])))]
        result))
-
-; #todo rename :strict -> :trunc
-(defn zip-1*
-  "Usage:  (zip* context & colls)
-  where context is a map with default values:  {:strict true}
-  Not lazy. "
-  [context & colls] ; #todo how use Schema with "rest" args?
-  (assert (map? context))
-  (assert #(every? sequential? colls))
-  (let [strict        (get context :strict true)
-        lengths       (mapv count colls)
-        lengths-equal (apply = lengths) ]
-    (when (and strict
-            (not lengths-equal))
-      (throw (IllegalArgumentException.
-               (str "zip*: colls must all be same length; lengths=" lengths))))
-    (vec (apply map vector colls))))
-; #todo fix so doesn't hang if give infinite lazy seq. Technique:
-;  (def x [1 2 3])
-;  (seq (drop 2 x))          =>  (3)
-;  (seq (drop 3 x))          =>  nil
-;  (nil? (seq (drop 3 x)))   =>  true
-;  (nil? (drop 3 (range)))   =>  false
-
-; #todo rename :strict -> :trunc
-(defn zip*
-  [context & colls] ; #todo how use Schema with "rest" args?
-  (assert (map? context))
-  (assert #(every? sequential? colls))
-  (let [num-colls  (count colls)
-        strict-flg (get context :strict true)]
-    (loop [result []
-           colls  colls]
-      (let [empty-flgs  (mapv empty? colls)
-            num-empties (count (keep-if truthy? empty-flgs)) ]
-        (if (zero? num-empties)
-          (do
-            (let [new-row (mapv xfirst colls)
-                  new-results (append result new-row) ]
-              (recur
-                new-results
-                (mapv xrest colls))))
-          (do
-            (when (and strict-flg
-                    (not= num-empties num-colls))
-              (throw (RuntimeException. (str "zip*: collections are not all same length; empty-flgs=" empty-flgs))))
-            result))))))
-
-; #todo add schema; result = tsk/List[ tsk/Pair ]
-; #todo add :trunc & assert;
-(defn zip
-  ; #todo ***** WARNING - will hang for infinite length inputs *****
-  ; #todo fix so doesn't hang if give infinite lazy seq. Technique:
-  ; #todo Use (zip ... {:trunc true}) if you want to truncate all inputs to the length of the shortest.
-  [& args]
-  (assert #(every? sequential? args))
-  (apply zip* {:strict true} args))
-
-(defn zip-lazy
-  [& colls]  ; #todo how use Schema with "rest" args?
-  (assert #(every? sequential? colls))
-  (apply map vector colls))
 
 (s/defn sequential->idx-map :- {s/Any s/Any} ; #todo move
   [data :- [s/Any]]
@@ -1245,10 +1248,6 @@
      (doseq [value# ~values]
        (yield value#))
      (vec ~values)))
-
-(defn indexed
-  [& colls]
-  (apply zip-lazy (range) colls))
 
 ; #todo rename -> drop-idx
 ; #todo force to vector result
