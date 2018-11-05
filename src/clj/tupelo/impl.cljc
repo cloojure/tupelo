@@ -576,17 +576,16 @@
               :lazy   false}
      ~bindings ~@forms))
 
-(defn append    ; :- tsk/List   ; #todo figure out how to use Schema with cljs
-  [listy        ; :- tsk/List
-   & elems      ; :- [s/Any]
-  ]
+(s/defn append :- tsk/List
+  [listy       :- tsk/List
+   & elems     :- [s/Any] ]
   (when-not (sequential? listy)
     (throw (ex-info  "Sequential collection required, found=" listy)))
   (when (empty? elems)
     (throw (ex-info "Nothing to append! elems=" elems)))
   (vec (concat listy elems)))
 
-(defn prepend       ; :- tsk/List   ; #todo figure out how to use Schema with cljs
+(s/defn prepend :- tsk/List
   [& args]
   (let [elems (butlast args)
         listy (xlast args)]
@@ -710,6 +709,68 @@
                (str "char-seq: start-char must come before stop-char."
                  "  start-val=" start-val "  stop-val=" stop-val))))
     (mapv char (thru start-val stop-val))))
+
+; #todo rename to "get-in-safe" ???
+; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)
+; #todo make throw if any index invalid
+; #todo need safe (assoc-in m [ks] v) (assoc-in m [ks] v :missing-ok)
+; #todo need safe (update-in m [ks] f & args)
+(s/defn fetch-in :- s/Any
+  [the-map   :- tsk/Map
+   keys-vec  :- tsk/Vec ]
+  (let [result (get-in the-map keys-vec ::not-found)]
+    (if (= result ::not-found)
+      (throw (IllegalArgumentException.
+               (str "Key seq not present in map:" \newline
+                 "  map : " the-map \newline
+                 "  keys: " keys-vec \newline)))
+      result)))
+
+(s/defn fetch :- s/Any
+  [the-map :- tsk/Map
+   the-key :- s/Any]
+  (fetch-in the-map [the-key]))
+
+; #todo:  (grab [:person :address :zip] the-map)  => fetch-in
+; #todo:  (grab-all :name :phone [:address :zip] the-map)
+; #todo:      => (mapv #(grab % the-map) keys)
+(s/defn grab :- s/Any
+  [the-key :- s/Any
+   the-map :- tsk/Map]
+  (fetch-in the-map [the-key]))
+
+(defrecord Unwrapped [data])
+(s/defn unwrap :- Unwrapped
+  [data :- [s/Any]]
+  (assert (sequential? data))
+  (->Unwrapped data))
+
+(s/defn ->vector :- [s/Any]
+  [& args :- [s/Any]]
+  (let [result (reduce (fn [accum item]
+                         (let [it-use (cond
+                                        (sequential? item) [ (apply ->vector item) ]
+                                        (instance? Unwrapped item) (apply ->vector (fetch item :data))
+                                        :else [item])
+                               accum-out (glue accum it-use ) ]
+                           accum-out ))
+                 [] args)]
+    result))
+
+(s/defn unnest :- [s/Any] ; #todo readme
+  [& values]
+  (let [unnest-coll (fn fn-unnest-coll [coll]
+                      (apply glue
+                        (for [item coll]
+                          (if (coll? item)
+                            (fn-unnest-coll item)
+                            [item]))))
+        result      (apply glue
+                      (for [item values]
+                        (if (coll? item)
+                          (unnest-coll item)
+                          [item])))]
+    result))
 
 
 
@@ -893,35 +954,6 @@
       (for [line (str/split-lines txt)]
         (str indent-str line)))))
 
-; #todo rename to "get-in-safe" ???
-; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)
-; #todo make throw if any index invalid
-; #todo need safe (assoc-in m [ks] v) (assoc-in m [ks] v :missing-ok)
-; #todo need safe (update-in m [ks] f & args)
-(s/defn fetch-in :- s/Any
-  [the-map   :- tsk/Map
-   keys-vec  :- tsk/Vec ]
-  (let [result (get-in the-map keys-vec ::not-found)]
-       (if (= result ::not-found)
-         (throw (IllegalArgumentException.
-                  (str "Key seq not present in map:" \newline
-                    "  map : " the-map \newline
-                    "  keys: " keys-vec \newline)))
-         result)))
-
-(s/defn fetch :- s/Any
-  [the-map :- tsk/Map
-   the-key :- s/Any]
-  (fetch-in the-map [the-key]))
-
-; #todo:  (grab [:person :address :zip] the-map)  => fetch-in
-; #todo:  (grab-all :name :phone [:address :zip] the-map)
-; #todo:      => (mapv #(grab % the-map) keys)
-(s/defn grab :- s/Any
-  [the-key :- s/Any
-   the-map :- tsk/Map]
-  (fetch-in the-map [the-key]))
-
 (comment
   (is= (merge-deep  ; #todo need a merge-deep where
          {:a {:b 2}}
@@ -1027,39 +1059,6 @@
                        (str "Key not present in map:" \newline
                             "  map: " the-map \newline
                             "  key: " key \newline))))))))))
-
-(defrecord Unwrapped [data])
-(s/defn unwrap :- Unwrapped
-  [data :- [s/Any]]
-  (assert (sequential? data))
-  (->Unwrapped data))
-
-(s/defn ->vector :- [s/Any]
-  [& args :- [s/Any]]
-  (let [result (reduce (fn [accum item]
-                         (let [it-use (cond
-                                           (sequential? item) [ (apply ->vector item) ]
-                                           (instance? Unwrapped item) (apply ->vector (fetch item :data))
-                                           :else [item])
-                               accum-out (glue accum it-use ) ]
-                           accum-out ))
-                 [] args)]
-       result))
-
-(s/defn unnest :- [s/Any] ; #todo readme
-  [& values]
-  (let [unnest-coll (fn fn-unnest-coll [coll]
-                      (apply glue
-                        (for [item coll]
-                          (if (coll? item)
-                            (fn-unnest-coll item)
-                            [item]))))
-        result      (apply glue
-                      (for [item values]
-                        (if (coll? item)
-                          (unnest-coll item)
-                          [item])))]
-       result))
 
 (s/defn sequential->idx-map :- {s/Any s/Any} ; #todo move
   [data :- [s/Any]]

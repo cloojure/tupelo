@@ -508,6 +508,46 @@
   [N]
   (first (drop N (fibonacci-seq))))
 
+(defn fetch-in
+  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
+   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
+   Throws an Exception if the path keys-vec is not present in the-map."
+  [the-map keys-vec] (i/fetch-in the-map keys-vec))
+
+(defn fetch
+  "A fail-fast version of keyword/map lookup.  When invoked as (fetch the-map :the-key),
+   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
+   Throws an Exception if :the-key is not present in the-map."
+  [the-map the-key] (i/fetch the-map the-key))
+
+(defn grab
+  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
+   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
+   Throws an Exception if :the-key is not present in the-map."
+  [the-key the-map] (i/grab the-key the-map))
+
+(defn unwrap
+  "Works with the `->vector` function to unwrap vectors/lists to insert
+  their elements as with the unquote-spicing operator (~@). Examples:
+
+      (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
+      (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9] "
+  [data] (i/unwrap data))
+
+(defn ->vector
+  "Wraps all args in a vector, as with `clojure.core/vector`. Will (recursively) recognize
+  any embedded calls to (unwrap <vec-or-list>) and insert their elements as with the
+  unquote-spicing operator (~@). Examples:
+
+      (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
+      (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9] "
+  [& args] (apply i/->vector args))
+
+(defn unnest
+  "Given any set of arguments including vectors, maps, sets, & scalars, performs a depth-first
+  recursive walk returning scalar args (int, string, keyword, etc) in a single 1-D vector."
+  [& values] (apply i/unnest values))
+
 
 
 ; #todo ***** toptop ***********************************************************************************
@@ -540,24 +580,6 @@
   "Accepts a core.async channel and returns the contents as a lazy list."
   [chan]
   (i/chan->lazy-seq chan))
-
-(defn fetch-in
-  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
-   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
-   Throws an Exception if the path keys-vec is not present in the-map."
-  [the-map keys-vec] (i/fetch-in the-map keys-vec))
-
-(defn fetch
-  "A fail-fast version of keyword/map lookup.  When invoked as (fetch the-map :the-key),
-   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
-   Throws an Exception if :the-key is not present in the-map."
-  [the-map the-key] (i/fetch the-map the-key))
-
-(defn grab
-  "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
-   returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
-   Throws an Exception if :the-key is not present in the-map."
-  [the-key the-map] (i/grab the-key the-map))
 
 (defn submap-by-keys
   "Returns a new map containing entries with the specified keys. Throws for missing keys,
@@ -703,28 +725,6 @@
   ([the-map :- tsk/KeyMap
     the-keys :- [s/Any]]
     (keyvals-seq (vals->map the-map the-keys))) )
-
-(defn unwrap
-  "Works with the `->vector` function to unwrap vectors/lists to insert
-  their elements as with the unquote-spicing operator (~@). Examples:
-
-      (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
-      (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9] "
-  [data] (i/unwrap data))
-
-(defn ->vector
-  "Wraps all args in a vector, as with `clojure.core/vector`. Will (recursively) recognize
-  any embedded calls to (unwrap <vec-or-list>) and insert their elements as with the
-  unquote-spicing operator (~@). Examples:
-
-      (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
-      (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9] "
-  [& args] (apply i/->vector args))
-
-(defn unnest
-  "Given any set of arguments including vectors, maps, sets, & scalars, performs a depth-first
-  recursive walk returning scalar args (int, string, keyword, etc) in a single 1-D vector."
-  [& values] (apply i/unnest values))
 
 (defn macro?
   "Returns true if a quoted symbol resolves to a macro. Usage:

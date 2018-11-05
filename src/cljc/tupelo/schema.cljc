@@ -10,7 +10,7 @@
 (def Set
   "Either a Clojure hash-set or a java.util.HashSet"
   (s/either #{s/Any}
-    java.util.HashSet ))
+    #?(:clj java.util.HashSet)))
 
 (def List
   "An ordered sequence of items of indeterminate length."

@@ -5,12 +5,14 @@
               [schema.core :as s]
               [tupelo.test   :refer [define-fixture dotest is isnt is= isnt= nonblank= testing throws?]]
               [tupelo.core :as t]
+              [tupelo.schema :as tsk]
               [tupelo.string :as ts]
              ])
     #?@(:cljs [
                [schema.core :as s]
                [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= nonblank= testing throws?]]
                [tupelo.core :as t :include-macros true]
+               [tupelo.schema :as tsk]
                [tupelo.string :as ts :include-macros true]
               ])
   ))
@@ -756,6 +758,26 @@
   (throws?            (t/prepend   {:b 2} {:a 1} ))
   (throws?            (t/prepend   99    #{:a 1} ))
   (throws?            (t/prepend  #{99}  #{:a 1} )))
+
+(dotest
+  (is= [1 2 3 4 5 6 7 8 9] (t/->vector 1 2 3 4 5 6 7 8 9))
+  (is= [1 2 3 4 5 6 7 8 9] (t/->vector 1 (t/unwrap [2 3 4 5 6 7 8]) 9))
+  (is= [1 2 3 4 5 6 7 8 9] (t/->vector 1 (t/unwrap [2 (t/unwrap [3 4 5 6 7]) 8]) 9))
+  (is= [1 2 3 4 5 6 7 8 9] (t/->vector 1 (t/unwrap [2 (t/unwrap [3 (t/unwrap [4 5 6]) 7]) 8]) 9))
+  (is= [1 2 3 4 5 6 7 8 9] (t/->vector 1 (t/unwrap [2 (t/unwrap [3 (t/unwrap [4 (t/unwrap [5]) 6]) 7]) 8]) 9))
+  (is= [1 2 3 4 5 6 7 8 9] (t/->vector 1 2 3 (t/unwrap [4 5 6]) 7 8 9))
+  (is= [1 2 3 4 5 6 7 8 9] (t/->vector 1 (t/unwrap [2 3 (t/unwrap [4 5 6]) 7 8]) 9))
+
+  (is= [1 2 3 [4  5  6] 7 8 9] (t/->vector 1 (t/unwrap [2 3 [4  5  6] 7 8]) 9))
+  (is= [1 2 3 [4 [5] 6] 7 8 9] (t/->vector 1 (t/unwrap [2 3 [4 [5] 6] 7 8]) 9))
+
+  (is= [1 [2 3 4 [5] 6 7 8] 9] (t/->vector 1 `(2 3 ~(t/unwrap [4 [5] 6]) 7 8) 9))
+  (is= [1 [2 3 4 [5] 6 7 8] 9] (t/->vector 1  [2 3  (t/unwrap [4 [5] 6]) 7 8] 9))
+
+  (is= [1 2 3 4 5 6 7 8 9] (t/glue   [1] [2] [3] [4 5 6] [7] [8] [9]))
+  (is= [1 2 3 4 5 6 7 8 9] (concat   [1] [2] [3] [4 5 6] [7] [8] [9]))
+  (is= [1 2 3 4 5 6 7 8 9] (t/glue   [1   2   3] [4 5 6] [7   8   9]))
+  (is= [1 2 3 4 5 6 7 8 9] (concat   [1   2   3] [4 5 6] [7   8   9])))
 
 
 
