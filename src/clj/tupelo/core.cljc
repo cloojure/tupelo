@@ -642,7 +642,8 @@
 (defn validate
   "(validate tst-fn tst-val)
   Used to validate intermediate results. Returns tst-val if the result of
-  (tst-fn tst-val) is truthy.  Otherwise, throws IllegalArgumentException."
+  (tst-fn tst-val) is truthy.  Otherwise, throws ex-info with ex-data
+  {:sample-val sample-val :tst-result tst-result}."
   [tst-fn tst-val] (i/validate tst-fn tst-val))
 
 (defmacro verify

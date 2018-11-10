@@ -42,6 +42,8 @@
 
 ; #todo teardown, completion, tasks, commands, orders
 
+; #todo maybe add in Reagent cursors or r/track to read out app-state
+
 ;---------------------------------------------------------------------------------------------------
 ; #todo Need a way to document event names and args
 ; #todo    (defevent set-showing [ctx])

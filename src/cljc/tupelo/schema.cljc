@@ -1,8 +1,7 @@
 (ns tupelo.schema
   "Prismatic Schema type definitions"
   (:require [schema.core :as s])
-  #?(:clj (:import [java.util HashSet] ))
-  #?(:clj (:gen-class)))
+  #?(:clj (:import [java.util HashSet] )) )
 
 (def Map      {s/Any      s/Any} )
 (def KeyMap   {s/Keyword  s/Any} )

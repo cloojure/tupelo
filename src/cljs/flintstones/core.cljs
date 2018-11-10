@@ -75,10 +75,9 @@ Go ahead and edit it and see reloading in action. Again, or not.")
   (flame/dispatch-event [:ajax-demo :get "/fox.txt" {:handler       ajax-handler
                                                      :error-handler ajax-error-handler}])
 
-
-  (r/render [gui/root] (js/document.getElementById "tgt-div"))
-
-)
+  (r/render
+    (fn [] [gui/root]) ; more robust auto-reload???
+    (js/document.getElementById "tgt-div")))
 
 (defonce figwheel-reload-count (atom 0))
 (defn figwheel-reload   ; called from project.clj -> :cljsbuild -> :figwheel -> :on-jsload

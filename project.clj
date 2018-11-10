@@ -2,8 +2,8 @@
   :min-lein-version "2.7.1"
   :dependencies [
    ;[org.clojure/clojure "1.8.0"]
-    [org.clojure/clojure "1.9.0"]
-   ;[org.clojure/clojure "1.10.0-beta4"]
+   ;[org.clojure/clojure "1.9.0"]
+    [org.clojure/clojure "1.10.0-beta5"]
     [org.clojure/clojurescript "1.10.439"]
 
     [binaryage/devtools "0.9.4"]

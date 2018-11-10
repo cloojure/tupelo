@@ -172,6 +172,26 @@
     (throw (ex-info "Nested sequential collections required, found=" coll-2d)))
   (reduce into [] coll-2d))
 
+; #todo rename to (map-of a b c ...)  ??? (re. potpuri)
+(defmacro vals->map ; #todo -> README
+  [& symbols]
+  (let [maps-list (for [symbol symbols]
+                    {(keyword symbol) symbol})]
+    `(glue ~@maps-list)) )
+
+(defmacro with-map-vals ; #todo -> README
+  [ the-map items-vec & forms]
+  `(do
+     ; (assert (map? ~the-map))
+     ; (assert (sequential? ~items-vec))
+     (let  ; generate the binding vector dynamically
+       ~(apply glue
+          (for [item items-vec
+                :let [sym (symbol (name item))
+                      kw  (keyword item)]]
+            [sym (list 'grab kw the-map)]))
+       ~@forms)))
+
 
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
@@ -872,7 +892,7 @@
   [is-valid? sample-val]
   (let [tst-result (is-valid? sample-val)]
     (when-not (truthy? tst-result)
-      (throw (ex-info  "validate: sample-val=%s, tst-result=%s" {:sample-val sample-val :tst-result tst-result})))
+      (throw (ex-info  "validate: " (vals->map sample-val tst-result))))
     sample-val))
 
 (defn validate-or-default
@@ -976,26 +996,6 @@
     :args (sp/cat :arg ::anything)
     :ret boolean?
     :fn #(= (:ret %) (not (truthy? (-> % :args :arg))))))
-
-; #todo rename to (map-of a b c ...)  ??? (re. potpuri)
-(defmacro vals->map ; #todo -> README
-  [& symbols]
-  (let [maps-list (for [symbol symbols]
-                    {(keyword symbol) symbol})]
-    `(glue ~@maps-list)) )
-
-(defmacro with-map-vals ; #todo -> README
-  [ the-map items-vec & forms]
-  `(do
-     ; (assert (map? ~the-map))
-     ; (assert (sequential? ~items-vec))
-     (let  ; generate the binding vector dynamically
-       ~(apply glue
-          (for [item items-vec
-                :let [sym (symbol (name item))
-                      kw  (keyword item)]]
-            [sym (list 'grab kw the-map)]))
-       ~@forms)))
 
 ; #todo maybe submap-without-keys, submap-without-vals ?
 ; #todo filter by pred in addition to set/list?
