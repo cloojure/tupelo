@@ -151,19 +151,25 @@
   [coll] (only (only coll)))
 
 (defn single?
+  "Returns true if the collection contains a single item.`"
   [coll] (has-length? coll 1))
 
 (defn pair?
+  "Returns true if the collection contains exactly 2 items."
   [coll] (has-length? coll 2))
 
 (defn triple?
+  "Returns true if the collection contains exactly 3 items."
   [coll] (has-length? coll 3))
 
 (defn quad?
+  "Returns true if the collection contains exactly 4 items."
   [coll] (has-length? coll 4))
 
 ; #todo make xdrop ?
 (defn xtake
+  "Returns the first n values from a collection.  Returns map for map colls.
+  Throws if empty."
   [n coll]
   (when (or (nil? coll) (empty? coll))
     (throw (ex-info "xtake: invalid coll: " coll)))
@@ -176,6 +182,7 @@
       (vec items))))
 
 (defn xfirst        ; #todo -> tests
+  "Returns the first value in a list or vector. Throws if empty."
   [coll]
   (when (or (nil? coll) (empty? coll))
     (throw (ex-info "xfirst: invalid coll: " coll)))
@@ -184,6 +191,7 @@
 ; #todo fix up for maps
 ; #todo (it-> coll (take 2 it), (validate (= 2 (count it))), (last it))
 (defn xsecond  ; #todo -> tests
+  "Returns the second value in a list or vector. Throws if (< len 2)."
   [coll]
   (when (or (nil? coll) (empty? coll))
     (throw (ex-info "xsecond: invalid coll: " coll)))
@@ -191,30 +199,35 @@
 
 ; #todo fix up for maps
 (defn xthird  ; #todo -> tests
+  "Returns the third value in a list or vector. Throws if (< len 3)."
   [coll ]
   (when (or (nil? coll) (empty? coll)) (throw (ex-info "xthird: invalid coll: " coll)))
   (nth coll 2))
 
 ; #todo fix up for maps
 (defn xfourth  ; #todo -> tests
+  "Returns the fourth value in a list or vector. Throws if (< len 4)."
   [coll]
   (when (or (nil? coll) (empty? coll)) (throw (ex-info "xfourth: invalid coll: " coll)))
   (nth coll 3))
 
 ; #todo fix up for maps
 (s/defn xlast :- s/Any ; #todo -> tests
+  "Returns the last value in a list or vector. Throws if empty."
   [coll :- [s/Any]]
   (when (or (nil? coll) (empty? coll)) (throw (ex-info "xlast: invalid coll: " coll)))
   (clojure.core/last coll))
 
 ; #todo fix up for maps
 (s/defn xbutlast :- s/Any ; #todo -> tests
+  "Returns a vector of all but the last value in a list or vector. Throws if empty."
   [coll :- [s/Any]]
   (when (or (nil? coll) (empty? coll)) (throw (ex-info "xbutlast: invalid coll: " coll)))
   (vec (clojure.core/butlast coll)))
 
 ; #todo fix up for maps
 (defn xrest ; #todo -> tests
+  "Returns the last value in a list or vector. Throws if empty."
   [coll]
   (when (or (nil? coll) (empty? coll)) (throw (ex-info "xrest: invalid coll: " coll)))
   (clojure.core/rest coll))
@@ -226,11 +239,27 @@
   (vec (clojure.core/reverse coll)))
 
 (s/defn xvec :- [s/Any]
+  "Converts a collection into a vector. Throws if given nil."
   [coll :- [s/Any]]
   (when (nil? coll) (throw (ex-info "xvec: invalid coll: " coll)))
   (clojure.core/vec coll))
 
 (defn glue
+  "Glues together like collections:
+
+     (glue [1 2] [3 4] [5 6])                -> [1 2 3 4 5 6]
+     (glue {:a 1} {:b 2} {:c 3})             -> {:a 1 :c 3 :b 2}
+     (glue #{1 2} #{3 4} #{6 5})             -> #{1 2 6 5 3 4}
+     (glue \"I\" \" like \" \\a \" nap!\" )  -> \"I like a nap!\"
+
+  If you want to convert to a sorted set or map, just put an empty one first:
+
+     (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
+     (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
+
+   If there are duplicate keys when using glue for maps or sets, then \"the last one wins\":
+
+     (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
   [& colls]
   (let [string-or-char? #(or (string? %) (char? %))]
     (cond

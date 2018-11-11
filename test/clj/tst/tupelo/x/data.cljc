@@ -46,7 +46,7 @@
 
 (defn print-fracture [fracture]
   (println "-----------------------------------------------------------------------------")
-  (doseq [[hid val] (glue (sorted-map) fracture)]
+  (doseq [[hid val] (i/glue (sorted-map) fracture)]
     (println "  " hid (tstr/indent 4 (pr-str val))))
   (println "-----------------------------------------------------------------------------"))
 
@@ -65,7 +65,7 @@
   [entity :- tsk/Map]
   ;(spyx [:adding hid entity]) (flush)
   (let [hid (new-hid)]
-    (set! *fracture* (glue *fracture* {hid entity}))
+    (set! *fracture* (i/glue *fracture* {hid entity}))
     hid))
 
 (s/defn get-entity :- tsk/Map
@@ -93,7 +93,7 @@
                                         (let [value-hid   (edn->fracture v)
                                               map-entry   {k value-hid}]
                                           map-entry))
-                          map-entity (->MapEntity (apply glue map-entries))
+                          map-entity (->MapEntity (apply i/glue map-entries))
                           hid        (add-entity map-entity)]
                       hid))))
 
@@ -103,7 +103,7 @@
                     (let [vec-entry-maps (forv [[idx v] (indexed data)]
                                            (let [value-hid (edn->fracture v)]
                                              {idx value-hid}))
-                          vec-entity     (->VecEntity (apply glue (sorted-map) vec-entry-maps))
+                          vec-entity     (->VecEntity (apply i/glue (sorted-map) vec-entry-maps))
                           hid            (add-entity vec-entity)]
                       hid))))
 
@@ -128,12 +128,12 @@
                   (with-spy-indent
                     (let [entry-maps (forv [[key val-hid] (grab :content map-entity)]
                                        {key (fracture->edn val-hid)})
-                          map-result (apply glue entry-maps)]
+                          map-result (apply i/glue entry-maps)]
                       map-result))))
 (extend-type VecEntity
   Fracture->Edn (fracture->edn [vec-entity]
                   (with-spy-indent
-                    (let [vec-elems (forv [[idx val-hid] (glue (sorted-map) (grab :content vec-entity))]
+                    (let [vec-elems (forv [[idx val-hid] (i/glue (sorted-map) (grab :content vec-entity))]
                                       (fracture->edn val-hid))]
                       vec-elems))))
 
@@ -157,7 +157,7 @@
           (with-spy-indent
             (spyx [query hid ctx ])
             (let-spy [edn-val (fracture->edn hid)
-                      result-ctx (glue ctx {query edn-val})]
+                      result-ctx (i/glue ctx {query edn-val})]
               (spy :found result-ctx)))))
 
 (extend-type clojure.lang.IPersistentMap
@@ -174,7 +174,7 @@
                                       (cond
                                         (spyx (query-variable? query-key))
                                         (let-spy [sub-results (forv [[shard-key shard-hid] (vec shard)]
-                                                                (let [ctx-inner (glue ctx {query-key shard-key})]
+                                                                (let [ctx-inner (i/glue ctx {query-key shard-key})]
                                                                   (spyx :inner2 [query-key query-val shard-key shard-hid ctx-inner])
                                                                   (match query-val shard-hid ctx-inner)))]
                                           sub-results)
@@ -190,7 +190,7 @@
                       result-ctx-list (if (empty? sub-result-combos-ok)
                                         FAILURE
                                         (forv [sub-result sub-result-combos-ok]
-                                          (apply glue sub-result)))]
+                                          (apply i/glue sub-result)))]
               result-ctx-list))))
 
 (extend-type java.lang.Object

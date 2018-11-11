@@ -28,76 +28,10 @@
 ; (when (= person :frid)  ; (kw :frid) -> throws
 ;    (println "Hi Barney!"))
 
-(defn single?
-  "Returns true if the collection contains a single item.`"
-  [coll] (i/single? coll))
-
-(defn pair?
-  "Returns true if the collection contains exactly 2 items."
-  [coll] (i/pair? coll))
-
-(defn triple?
-  "Returns true if the collection contains exactly 3 items."
-  [coll] (i/triple? coll))
-
-(defn quad?
-  "Returns true if the collection contains exactly 4 items."
-  [coll] (i/quad? coll))
-
-(defn xtake
-  "Returns the first n values from a collection.  Returns map for map colls.
-  Throws if empty."
-  [n coll] (i/xtake n coll))
-
 ; WARNING:  cannot use Plumatic schema for functions that may receive an infinite lazy sequence
 ; as input.  See:  https://groups.google.com/forum/#!topic/clojure/oM1PH4sXzoA
-(defn xfirst
-  "Returns the first value in a list or vector. Throws if empty."
-  [coll] (i/xfirst coll))
-(defn xsecond
-  "Returns the second value in a list or vector. Throws if (< len 2)."
-  [coll] (i/xsecond coll))
-(defn xthird
-  "Returns the third value in a list or vector. Throws if (< len 3)."
-  [coll] (i/xthird coll))
-(defn xfourth
-  "Returns the fourth value in a list or vector. Throws if (< len 4)."
-  [coll] (i/xfourth coll))
-(defn xlast
-  "Returns the last value in a list or vector. Throws if empty."
-  [coll] (i/xlast coll))
-(defn xbutlast
-  "Returns a vector of all but the last value in a list or vector. Throws if empty."
-  [coll] (i/xbutlast coll))
-(defn xrest
-  "Returns the last value in a list or vector. Throws if empty."
-  [coll] (i/xrest coll))
-(defn xreverse
-  "Returns all but the last value in a list or vector. Throws if empty."
-  [coll] (i/xreverse coll))
 
-(defn xvec
-  "Converts a collection into a vector. Throws if given nil."
-  [coll] (i/xvec coll))
 
-(defn glue
-  "Glues together like collections:
-
-     (glue [1 2] [3 4] [5 6])                -> [1 2 3 4 5 6]
-     (glue {:a 1} {:b 2} {:c 3})             -> {:a 1 :c 3 :b 2}
-     (glue #{1 2} #{3 4} #{6 5})             -> #{1 2 6 5 3 4}
-     (glue \"I\" \" like \" \\a \" nap!\" )  -> \"I like a nap!\"
-
-  If you want to convert to a sorted set or map, just put an empty one first:
-
-     (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
-     (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
-
-   If there are duplicate keys when using glue for maps or sets, then \"the last one wins\":
-
-     (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
-  [& colls]
-  (apply i/glue colls))
 
 (defn glue-rows
   " Convert a vector of vectors (2-dimensional) into a single vector (1-dimensional).
@@ -1010,7 +944,7 @@
       (let [
         out-first  (take 1 vals)
         [out-rest unprocessed] (split-using pred (rest vals))
-        out-vals   (glue out-first out-rest)
+        out-vals   (i/glue out-first out-rest)
         new-result (append result out-vals)
       ]
         (recur unprocessed new-result)))))

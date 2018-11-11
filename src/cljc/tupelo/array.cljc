@@ -2,7 +2,6 @@
   #?@(:clj [
   (:use tupelo.core)
   (:require [schema.core :as s]
-            [tupelo.core :as t]
             [tupelo.impl :as i]
             [clojure.set :as set])
             ])
@@ -74,7 +73,7 @@
     (assert (apply = nrows (mapv count col-vecs)))
     (dotimes [jj ncols]
       (assert sequential? (nth col-vecs jj)))
-    (col-data->array nrows ncols (apply glue col-vecs))))
+    (col-data->array nrows ncols (apply i/glue col-vecs))))
 
 (s/defn num-rows :- s/Int
   "Returns the number of rows of an Array."
@@ -140,7 +139,7 @@
   (check-row-idx orig ii)
   (assert (= (num-cols orig) (count new-row)))
   (let [nrows  (num-rows orig)
-        result (glue
+        result (i/glue
                  (forv [ii (range ii)] (row-get orig ii))
                  [new-row]
                  (forv [ii (range (inc ii) nrows)] (row-get orig ii))) ]
@@ -168,7 +167,7 @@
 (s/defn array->row-data
   "Returns the concatenation of all array rows."
   [arr :- Array]
-  (apply glue arr))
+  (apply i/glue arr))
 
 (s/defn col-get :- Vector
   "Gets an Array col"
@@ -288,7 +287,7 @@
         col-lens (mapv count cols)]
     (assert (apply = nrows col-lens))
     (forv [ii (range nrows)]
-      (glue (row-get orig ii) (forv [col cols]
+      (i/glue (row-get orig ii) (forv [col cols]
                                 (nth col ii))))))
 
 (s/defn glue-vert :- Array
@@ -296,15 +295,15 @@
   (assert (pos? (count arrays)))
   (let [ncol-vals (mapv num-cols arrays)]
     (assert (apply = ncol-vals)))
-  (apply glue arrays))
+  (apply i/glue arrays))
 
 (s/defn glue-horiz :- Array
   [& arrays :- [Array] ]
   (assert (pos? (count arrays)))
   (let [nrow-vals (mapv num-rows arrays)]
     (assert (apply = nrow-vals)))
-  (forv [ii (range (num-rows (xfirst arrays)))]
-    (apply glue (mapv #(row-get % ii) arrays))))
+  (forv [ii (range (num-rows (i/xfirst arrays)))]
+    (apply i/glue (mapv #(row-get % ii) arrays))))
 
 (s/defn toString :- s/Str
   [arr :- Array]

@@ -7,15 +7,14 @@
 (ns tupelo.pedestal
   "Utils for Pedestal"
   #?@(:clj
-      [(:use tupelo.core)
+      [(:use tupelo.impl)
        (:require
          [clojure.set :as set]
          [clojure.string :as str]
          [schema.core :as s]
          [tupelo.core :as t]
-         [tupelo.impl :as i]
          [tupelo.schema :as tsk]
-          )]))
+      )]))
 
 ;-----------------------------------------------------------------------------
 ; http string constants
