@@ -36,23 +36,7 @@
 
 
 
-(defmacro map-let*
-  "Usage:  (map-let* ctx bindings & forms)
 
-  where ctx is a map with default values:
-    {:strict true
-     :lazy   false}"
-  [context bindings & forms] `(i/map-let* ~context ~bindings ~@forms) )
-
-(defmacro map-let
-  "Usage:
-    (map-let bindings & forms)
-
-  Given bindings and forms like `(map-let [x xs, y ys, ...] (+ x y))`, will iterate over the
-  collections [xs ys ...] assigning successive values of each collection to [x y ...], respectively.
-  The local symbols [x y ...] can then be used in `forms` to generate the output mapping.
-  Will throw if collections are not all of the same length. Not lazy."
-  [bindings & forms] `(i/map-let ~bindings ~@forms))
 
 ; #todo replace clojure.core/map => tupelo.lazy/map if (t/refer-tupelo :strict)
 ; #todo replace clojure.core/map : not lazy; can add one of :trunc or :lazy modifiers
@@ -69,14 +53,6 @@
 ; #todo (mapcat ... :lazy)    vmapcat
 ; #todo (for ... :lazy)       vfor
 ; #todo (concat ... :lazy)    vconcat
-
-(defn append
-  "Given a sequential object (vector or list), add one or more elements to the end."
-  [listy & elems] (apply i/append listy elems))
-
-(defn prepend
-  "Given a sequential object (vector or list), add one or more elements to the beginning"
-  [& args] (apply i/prepend args))
 
 (defmacro lazy-cons
   "The simple way to create a lazy sequence:
@@ -743,7 +719,7 @@
         out-first  (take 1 vals)
         [out-rest unprocessed] (split-using pred (rest vals))
         out-vals   (i/glue out-first out-rest)
-        new-result (append result out-vals)
+        new-result (i/append result out-vals)
       ]
         (recur unprocessed new-result)))))
 

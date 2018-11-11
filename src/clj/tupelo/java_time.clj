@@ -155,7 +155,7 @@
                                        (mapv #(.isEqual this %) others))
 
     ; attempt to coerce to Instant
-    :else (let [instants (mapv ->instant (prepend this others))]
+    :else (let [instants (mapv ->instant (i/prepend this others))]
             (apply same-instant? instants))))
 
 (def DateTimeStamp (s/either ZonedDateTime Instant))

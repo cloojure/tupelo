@@ -796,6 +796,11 @@
 ; #todo fix so doesn't hang if give infinite lazy seq
 ; #todo rename :strict -> :trunc
 (defmacro map-let*
+  "Usage:  (map-let* ctx bindings & forms)
+
+  where ctx is a map with default values:
+    {:strict true
+     :lazy   false}"
   [context bindings & forms]
   (when (empty? bindings)
     (throw (ex-info "map-let*: bindings cannot be empty=" bindings)))
@@ -821,12 +826,20 @@
          (output-fn# (map map-fn# ~@colls))))))
 
 (defmacro map-let
+  "Usage:
+    (map-let bindings & forms)
+
+  Given bindings and forms like `(map-let [x xs, y ys, ...] (+ x y))`, will iterate over the
+  collections [xs ys ...] assigning successive values of each collection to [x y ...], respectively.
+  The local symbols [x y ...] can then be used in `forms` to generate the output mapping.
+  Will throw if collections are not all of the same length. Not lazy."
   [bindings & forms]
   `(map-let* {:strict true
               :lazy   false}
      ~bindings ~@forms))
 
 (s/defn append :- tsk/List
+  "Given a sequential object (vector or list), add one or more elements to the end."
   [listy       :- tsk/List
    & elems     :- [s/Any] ]
   (when-not (sequential? listy)
@@ -836,6 +849,7 @@
   (vec (concat listy elems)))
 
 (s/defn prepend :- tsk/List
+  "Given a sequential object (vector or list), add one or more elements to the beginning"
   [& args]
   (let [elems (butlast args)
         listy (xlast args)]
