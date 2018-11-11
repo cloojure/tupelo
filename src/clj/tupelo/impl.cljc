@@ -281,6 +281,15 @@
 
 ; #todo rename to (map-of a b c ...)  ??? (re. potpuri)
 (defmacro vals->map ; #todo -> README
+  "Called with a list of symbols like `(vals->map a b c)` returns a map
+   like {:a a :b b :c c}.
+
+       (let [a 1
+             b 2
+             c 3]
+         (vals->map a b c))  ;=>  {:a 1 :b 2 :c 3} }
+
+   See `with-map-vals` for simple destructuring of such maps."
   [& symbols]
   (let [maps-list (for [symbol symbols]
                     {(keyword symbol) symbol})]
@@ -298,7 +307,6 @@
                       kw  (keyword item)]]
             [sym (list 'grab kw the-map)]))
        ~@forms)))
-
 
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
@@ -1331,10 +1339,12 @@
     (set/subset? inner-set outer-set)))
 
 (s/defn keyvals :- [s/Any]
+  "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
+   (apply hash-map (keyvals m)). (keyvals {:a 1 :b 2} => [:a 1 :b 2] "
   [m :- tsk/Map ]
   (reduce into [] (seq m)))
 
-(s/defn keyvals-seq :- [s/Any]
+(s/defn keyvals-seq-impl :- [s/Any]
   [ctx :- tsk/KeyMap]
   (with-map-vals ctx [missing-ok the-map the-keys]
     (apply glue
@@ -1345,6 +1355,20 @@
             (if missing-ok
               []
               (throw (ex-info "Key not present in map:" (vals->map the-map key))))))))))
+
+(s/defn keyvals-seq :- [s/Any]
+  "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
+   (apply hash-map (keyvals m)). (keyvals {:a 1 :b 2} => [:a 1 :b 2]
+
+     Usage:  (keyvals-seq ctx) ctx-default: {:missing-ok false}
+             (keyvals-seq the-map the-keys) "
+  ([ctx :- tsk/KeyMap ]
+    (let [defaults {:missing-ok false}]
+      (keyvals-seq-impl (into defaults ctx))))
+  ([the-map :- tsk/KeyMap
+    the-keys :- [s/Any]]
+    (keyvals-seq (vals->map the-map the-keys))) )
+
 
 
 

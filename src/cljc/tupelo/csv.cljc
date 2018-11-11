@@ -11,7 +11,7 @@
     [clojure.string :as str]
     [clojure-csv.core :as csv]
     [schema.core :as s]
-    [tupelo.core :as t]
+    [tupelo.impl :as i]
     [tupelo.string :as ts])
   (:import  [java.io Reader StringReader] )
             ])
@@ -51,7 +51,7 @@
         csv-reader      (if (string? csv-input) 
                             (StringReader. csv-input)
                             csv-input )
-        parsed-lines    (apply csv/parse-csv csv-reader (t/keyvals opts))
+        parsed-lines    (apply csv/parse-csv csv-reader (i/keyvals opts))
         {:keys [labels-kw data-lines]}  
                         (get-labels-and-data-lines opts parsed-lines)
         data-fn         (:data-fn opts) 
@@ -91,8 +91,8 @@
   each keyword is a vector of string data taken from each subsequent line in the file.
   See tupelo.csv/parse-csv->row-maps for options."
   [csv-input & {:as opts} ] 
-  (let [opts (or opts {} ) ] 
+  (let [opts (or opts {} ) ]
     (row-maps->col-vecs 
-      (apply parse-csv->row-maps csv-input (t/keyvals opts)))))
+      (apply parse-csv->row-maps csv-input (i/keyvals opts)))))
 
 ))
