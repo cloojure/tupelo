@@ -7,7 +7,7 @@
 (ns tst.tupelo.async
   #?@(:clj [
   (:use tupelo.test)
-  (:require [tupelo.core            :as t]
+  (:require [tupelo.impl            :as i]
             [tupelo.async           :as ta]
             [clojure.core.async     :as ca :refer [go go-loop chan thread]]
   )
@@ -17,8 +17,8 @@
   (is (= tst-val arg)))
 
 (deftest t-basic
-  (is= 42 (t/only (ta/vec (go     42)))) ; returns a channel containing its return value
-  (is= 42 (t/only (ta/vec (thread 42)))) ; returns a channel containing its return value
+  (is= 42 (i/only (ta/vec (go 42)))) ; returns a channel containing its return value
+  (is= 42 (i/only (ta/vec (thread 42)))) ; returns a channel containing its return value
 
   ; can create real threads
   (let [ch (chan)]  ; zero-buffer channel
@@ -108,7 +108,7 @@
         (recur (dec cnt))
         (ca/close! ch-pipe)))
     (go-loop [val (ta/take-go! ch-pipe)]
-      (if (t/not-nil? val)
+      (if (i/not-nil? val)
         (do (ta/put-go! ch-out val)
             (recur (ta/take-go! ch-pipe)))
         (ca/close! ch-out)))
@@ -123,7 +123,7 @@
         (recur (dec cnt))
         (ca/close! ch-pipe)))
     (go-loop [val (ta/take-now! ch-pipe)]
-      (if (t/not-nil? val)
+      (if (i/not-nil? val)
         (do (ta/put-now! ch-out val)
             (recur (ta/take-now! ch-pipe)))
         (ca/close! ch-out)))
@@ -138,7 +138,7 @@
         (recur (dec cnt))
         (ca/close! ch-pipe)))
     (go-loop [val (ta/take-now! ch-pipe)]
-      (if (t/not-nil? val)
+      (if (i/not-nil? val)
         (do (ta/put-later! ch-out val)
             (recur (ta/take-now! ch-pipe)))
         (ca/close! ch-out)))

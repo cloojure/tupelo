@@ -107,7 +107,8 @@
       :else (update-in the-map parent-keys dissoc key-to-clear))))
 
 
-(defn unlazy
+(defn unlazy ; #todo need tests & docs. Use for datomic Entity?
+  "Converts a lazy collection to a concrete (eager) collection of the same type."
   [coll]
   (let [unlazy-item (fn [item]
                       (cond
@@ -119,7 +120,10 @@
         result    (walk/postwalk unlazy-item coll) ]
     result ))
 
+; #todo impl-merge *****************************************************************************
+
 (defn has-length?
+  "Returns true if the collection has the indicated length. Does not hang for infinite sequences."
   [coll n]
   (when (nil? coll) (throw (ex-info "has-length?: coll must not be nil" coll)))
   (let [take-items (cc/take n coll)
@@ -128,15 +132,22 @@
       (empty? rest-items))))
 
 (defn only
+  "Ensures that a sequence is of length=1, and returns the only value present.
+  Throws an exception if the length of the sequence is not one.
+  Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
   [coll]
   (when-not (has-length? coll 1)
     (throw (ex-info "only: num-items must=1" coll)))
   (clojure.core/first coll))
 
 (defn onlies
+  "Given an outer collection of length-1 collections, returns a sequence of the unwrapped values.
+    (onlies  [ [1] [2] [3] ])  =>  [1 2 3]
+    (onlies #{ [1] [2] [3] })  => #{1 2 3} "
   [coll] (into (unlazy (empty coll)) (mapv only coll)))
 
 (defn only2
+  "Given a collection like `[[5]]`, returns `5`.  Equivalent to `(only (only coll))`."
   [coll] (only (only coll)))
 
 (defn single?

@@ -28,31 +28,6 @@
 ; (when (= person :frid)  ; (kw :frid) -> throws
 ;    (println "Hi Barney!"))
 
-; #todo cleansing *****************************************************************************
-(defn unlazy ; #todo need tests & docs. Use for datomic Entity?
-  "Converts a lazy collection to a concrete (eager) collection of the same type."
-  [coll] (i/unlazy coll))
-
-(defn has-length?
-  "Returns true if the collection has the indicated length. Does not hang for infinite sequences."
-  [coll n] (i/has-length? coll n))
-
-(defn only
-  "Ensures that a sequence is of length=1, and returns the only value present.
-  Throws an exception if the length of the sequence is not one.
-  Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
-  [coll] (i/only coll))
-
-(defn onlies
-  "Given an outer collection of length-1 collections, returns a sequence of the unwrapped values.
-    (onlies  [ [1] [2] [3] ])  =>  [1 2 3]
-    (onlies #{ [1] [2] [3] })  => #{1 2 3} "
-  [coll] (i/onlies coll))
-
-(defn only2
-  "Given a collection like `[[5]]`, returns `5`.  Equivalent to `(only (only coll))`."
-  [coll] (i/only2 coll))
-
 (defn single?
   "Returns true if the collection contains a single item.`"
   [coll] (i/single? coll))
@@ -877,7 +852,7 @@
 "
   (fn wild-match-dispatch-fn [& args]
     (if (and (= 1 (count args))
-          (map? (only args)))
+          (map? (i/only args)))
       :ctx
       :classic)))
 

@@ -16,7 +16,7 @@
          [clojure.tools.reader.edn :as edn]
          [clojure.walk :as walk]
          [schema.core :as s]
-         [tupelo.core :as t])]) )
+         [tupelo.impl :as i])]) )
 
 ; #todo:  write doc page
 ; #todo:  convert args from [str-val & opts] -> [str-val & {:as opts} ]
@@ -35,7 +35,7 @@
                                   (when-not (= item item-edn)
                                     (throw (IllegalArgumentException. (str ::edn-non-parsible))))
                                   item)))
-        data-unlazy         (unlazy data) ; coerce to map/vector/string wherever possible
+        data-unlazy         (i/unlazy data) ; coerce to map/vector/string wherever possible
         data-parsible       (walk/postwalk edn-parse-roundtrip data-unlazy)]
     data-parsible))
 
@@ -52,7 +52,7 @@
         default-val (get opts-map :default ::none) ]
     (if (= default-val ::none)
       (Byte/parseByte str-val)
-      (t/with-exception-default default-val (Byte/parseByte str-val)))))
+      (i/with-exception-default default-val (Byte/parseByte str-val)))))
 
 (defn parse-short
  "( [str-val]
@@ -66,7 +66,7 @@
         default-val (get opts-map :default ::none) ]
     (if (= default-val ::none)
       (Short/parseShort str-val)
-      (t/with-exception-default default-val (Short/parseShort str-val)) )))
+      (i/with-exception-default default-val (Short/parseShort str-val)))))
 
 (defn parse-int
  "( [str-val]
@@ -80,7 +80,7 @@
         default-val (get opts-map :default ::none) ]
     (if (= default-val ::none)
       (Integer/parseInt str-val)
-      (t/with-exception-default default-val (Integer/parseInt str-val)) )))
+      (i/with-exception-default default-val (Integer/parseInt str-val)))))
 
 (defn parse-long
  "( [str-val]
@@ -94,7 +94,7 @@
         default-val (get opts-map :default ::none) ]
     (if (= default-val ::none)
       (Long/parseLong str-val)
-      (t/with-exception-default default-val (Long/parseLong str-val)) )))
+      (i/with-exception-default default-val (Long/parseLong str-val)))))
 
 (defn parse-float
  "( [str-val]
@@ -108,7 +108,7 @@
         default-val (get opts-map :default ::none) ]
     (if (= default-val ::none)
       (Float/parseFloat str-val)
-      (t/with-exception-default default-val (Float/parseFloat str-val)) )))
+      (i/with-exception-default default-val (Float/parseFloat str-val)))))
 
 (defn parse-double
  "( [str-val]
@@ -122,7 +122,7 @@
         default-val (get opts-map :default ::none) ]
     (if (= default-val ::none)
       (Double/parseDouble str-val)
-      (t/with-exception-default default-val (Double/parseDouble str-val)) )))
+      (i/with-exception-default default-val (Double/parseDouble str-val)))))
 
 #_(defn parse-xxxx
  "( [str-val]
@@ -136,7 +136,7 @@
         default-val (get opts-map :default ::none) ]
     (if (= default-val ::none)
       (XXXX/parseXXXX str-val)
-      (t/with-exception-default default-val (XXXX/parseXXXX str-val)) )))
+      (i/with-exception-default default-val (XXXX/parseXXXX str-val)))))
 
 ; #awt TODO:  finish other parse* functions
 
