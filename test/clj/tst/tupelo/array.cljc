@@ -6,7 +6,7 @@
     [schema.test :as st]
     [tupelo.array :as tar]
     [tupelo.misc :as tm]
-    [tupelo.impl :as i]
+    [tupelo.core :as i]
     [tupelo.string :as ts]
     [clojure.string :as str])
             ]) )

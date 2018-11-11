@@ -19,7 +19,7 @@
   #?@(:clj [
   (:require [clojure.string     :as str]
             [tupelo.base64      :as b64]
-            [tupelo.impl        :as i]
+            [tupelo.core        :as t]
             [tupelo.types       :as types]
             [schema.core        :as s] )
   (:gen-class)
@@ -28,9 +28,9 @@
 #?(:clj (do
 (def encoding-char-set
   "A set of chars used for the Y64 encoding (incl. padding char)"
-  (into #{} (flatten [ (i/chars-thru  \a \z)
-                       (i/chars-thru  \A \Z)
-                       (i/chars-thru  \0 \9)
+  (into #{} (flatten [ (t/chars-thru  \a \z)
+                       (t/chars-thru  \A \Z)
+                       (t/chars-thru  \0 \9)
                        [\. \_ \-] ] )))
 
 (def ^:private b64-code-62  (byte \+ ))

@@ -10,7 +10,7 @@
     [clojure.string :as str]
     [clojure.math.combinatorics :as combo]
     [schema.core :as s]
-    [tupelo.impl :as i] ))
+    [tupelo.core :as i] ))
 
 #?(:clj (do
 

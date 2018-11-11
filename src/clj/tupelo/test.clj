@@ -9,7 +9,7 @@
   (:require
      [clojure.test :as ct]
      [clojure.test.check :as ctc]
-     [tupelo.impl :as i]
+     [tupelo.core :as t]
      [tupelo.string :as tstr]
   ))
 
@@ -186,10 +186,10 @@
     `(clojure.test.check.clojure-test/defspec ^:slow ~test-name-sym ~@body)))
 
 (defmacro check-is [& body] ; #todo README & tests
-  `(ct/is (i/grab :result (ctc/quick-check ~@body))))
+  `(ct/is (t/grab :result (ctc/quick-check ~@body))))
 
 (defmacro check-isnt [& body] ; #todo README & tests
-  `(ct/is (not (i/grab :result (ctc/quick-check ~@body)))))
+  `(ct/is (not (t/grab :result (ctc/quick-check ~@body)))))
 
 ; #todo: gen/elements -> clojure.check/rand-nth
 

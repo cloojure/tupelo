@@ -6,7 +6,7 @@
 ;   software.
 (ns tst.tupelo.forest
   #?@(:clj [
-  (:use tupelo.impl tupelo.forest tupelo.test )
+  (:use tupelo.core tupelo.forest tupelo.test )
   (:require
     [tupelo.misc :as tm]
     [tupelo.forest :as tf]

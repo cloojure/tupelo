@@ -7,22 +7,22 @@
 (ns tupelo.misc
   "Miscellaneous functions."
   #?@(:clj [
-  (:use tupelo.impl)
-            (:require
-              [clj-uuid :as uuid]
-              [clojure.core.async :refer [go go-loop chan buffer close! thread alts! alts!! timeout]]
-              [clojure.data.xml :as xml]
-              [clojure.java.shell :as shell]
-              [clojure.string :as str]
-              [schema.core :as s]
-              [tupelo.schema :as tsk]
-              [tupelo.string :as ts]
-              [tupelo.types :as tt] )
-            (:import
-              [java.nio ByteBuffer]
-              [java.security MessageDigest]
-              [java.util UUID]
-              [java.nio.file Paths])
+  (:use tupelo.core)
+  (:require
+    [clj-uuid :as uuid]
+    [clojure.core.async :refer [go go-loop chan buffer close! thread alts! alts!! timeout]]
+    [clojure.data.xml :as xml]
+    [clojure.java.shell :as shell]
+    [clojure.string :as str]
+    [schema.core :as s]
+    [tupelo.schema :as tsk]
+    [tupelo.string :as ts]
+    [tupelo.types :as tt] )
+  (:import
+    [java.nio ByteBuffer]
+    [java.security MessageDigest]
+    [java.util UUID]
+    [java.nio.file Paths])
 ]) )
 
 #?(:clj (do

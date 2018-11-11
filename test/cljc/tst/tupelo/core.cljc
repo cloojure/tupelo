@@ -4,7 +4,7 @@
     #?@(:clj [
               [schema.core :as s]
               [tupelo.test   :refer [define-fixture dotest is isnt is= isnt= nonblank= testing throws?]]
-              [tupelo.impl :as i]
+              [tupelo.core :as i]
               [tupelo.schema :as tsk]
               [tupelo.string :as ts]
              ])

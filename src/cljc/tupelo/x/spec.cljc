@@ -8,7 +8,7 @@
   "Tupelo - Making Clojure even sweeter"
   #?@(:clj [
   (:require
-    [tupelo.impl :as impl]
+    [tupelo.core :as impl]
   )
             ])
       )

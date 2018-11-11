@@ -2,7 +2,7 @@
   (:use tupelo.test)
   (:require
     [schema.core :as s]
-    [tupelo.impl :as i]))
+    [tupelo.core :as i]))
 
 ;(spyx (supers (type []))) ; => clojure.lang.IPersistentVector
 ;(spyx (supers (type {}))) ; => clojure.lang.IPersistentMap

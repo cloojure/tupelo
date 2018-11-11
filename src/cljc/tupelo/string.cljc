@@ -11,7 +11,7 @@
     [schema.core :as s]
     [clojure.core :as cc]
     [clojure.string :as str]
-    [tupelo.impl :as i]
+    [tupelo.core :as t]
     #?@(:clj [[clojure.java.io :as io]
               [tupelo.char :as char]
               ]))
@@ -41,26 +41,26 @@
 (s/defn ^:no-doc tab-space-oneline-impl :- s/Str
   [tab-size :- s/Int
    src-str :- s/Str]
-  (let [idx->spaces (apply i/glue
-                      (i/forv [idx (range tab-size)]
+  (let [idx->spaces (apply t/glue
+                      (t/forv [idx (range tab-size)]
                         {idx (vec (repeat (- tab-size idx) \space))}))]
     (loop [result []
            chars  (vec src-str)]
       (if (empty? chars)
         (str/join result)
-        (let [c         (i/xfirst chars)
-              remaining (i/xrest chars)]
+        (let [c         (t/xfirst chars)
+              remaining (t/xrest chars)]
           (if (not= c \tab)
-            (recur (i/append result c) remaining)
+            (recur (t/append result c) remaining)
             (let [curr          (count result)
-                  base          (i/it-> (double curr)
+                  base          (t/it-> (double curr)
                                   (/ it tab-size)
                                   (Math/floor it)
                                   (* it tab-size)
                                   (int it))
                   interval-idx  (- curr base)
                   spaces-needed (idx->spaces interval-idx)]
-              (recur (i/glue result spaces-needed) remaining))))))))
+              (recur (t/glue result spaces-needed) remaining))))))))
 
 (s/defn tabs->spaces :- s/Str
   "Replaces all tabs with appropriate number of spaces (default tab-size => 8)
@@ -104,7 +104,7 @@
     "Given N sequences of strings, compares corresponding strings from each sequence for equality
     after collapsing continugous whitespace to a single blank. "
     [& string-seqs]
-    (every? i/truthy? (apply mapv #(tstr/equals-ignore-spacing? %1 %2) string-seqs)))
+    (every? t/truthy? (apply mapv #(tstr/equals-ignore-spacing? %1 %2) string-seqs)))
   )
 
 ; #todo need (squash)         -> (collapse-whitespace (strcat args))       ; (smash ...)         ?
@@ -116,17 +116,17 @@
 
 #?(:clj (do
 
-(defn alphanumeric?       [& args] (every? char/alphanumeric?        (i/strcat args)))
-(defn whitespace-horiz?   [& args] (every? char/whitespace-horiz?    (i/strcat args)))
-(defn whitespace-eol?     [& args] (every? char/whitespace-eol?      (i/strcat args)))
-(defn whitespace?         [& args] (every? char/whitespace?          (i/strcat args)))
-(defn lowercase?          [& args] (every? char/lowercase?           (i/strcat args)))
-(defn uppercase?          [& args] (every? char/uppercase?           (i/strcat args)))
-(defn digit?              [& args] (every? char/digit?               (i/strcat args)))
-(defn hex?                [& args] (every? char/hex?                 (i/strcat args)))
-(defn alpha?              [& args] (every? char/alpha?               (i/strcat args)))
-(defn visible?            [& args] (every? char/visible?             (i/strcat args)))
-(defn text?               [& args] (every? char/text?                (i/strcat args)))
+(defn alphanumeric?       [& args] (every? char/alphanumeric?        (t/strcat args)))
+(defn whitespace-horiz?   [& args] (every? char/whitespace-horiz?    (t/strcat args)))
+(defn whitespace-eol?     [& args] (every? char/whitespace-eol?      (t/strcat args)))
+(defn whitespace?         [& args] (every? char/whitespace?          (t/strcat args)))
+(defn lowercase?          [& args] (every? char/lowercase?           (t/strcat args)))
+(defn uppercase?          [& args] (every? char/uppercase?           (t/strcat args)))
+(defn digit?              [& args] (every? char/digit?               (t/strcat args)))
+(defn hex?                [& args] (every? char/hex?                 (t/strcat args)))
+(defn alpha?              [& args] (every? char/alpha?               (t/strcat args)))
+(defn visible?            [& args] (every? char/visible?             (t/strcat args)))
+(defn text?               [& args] (every? char/text?                (t/strcat args)))
 
 ; #todo make general version vec -> vec; str-specific version str -> str
 ; #todo need (substring {:start I :stop J                 } ) ; half-open (or :stop)
@@ -144,7 +144,7 @@
   (str/join \newline
     (let [lines (str/split-lines src-str)]
       (for [line lines]
-        (i/clip-str N line)))))
+        (t/clip-str N line)))))
 
 ; #todo need tests
 (defn normalize-str
@@ -175,15 +175,15 @@
 
 (defn kw-snake->kabob [kw]
   (-> kw
-    (i/kw->str)
+    (t/kw->str)
     (snake->kabob)
-    (i/str->kw)))
+    (t/str->kw)))
 
 (defn kw-kabob->snake [kw]
   (->> kw
-    (i/kw->str)
+    (t/kw->str)
     (kabob->snake)
-    (i/str->kw)))
+    (t/str->kw)))
 
 ; #todo ch->ascii
 ; #todo ascii->ch
@@ -222,7 +222,7 @@
   [n :- s/Int
    txt :- s/Str]
   (let [indent-str (str/join (repeat n \space))]
-    (i/indent-lines-with indent-str txt)))
+    (t/indent-lines-with indent-str txt)))
 
 (s/defn indent-lines-with :- s/Str  ; #todo delete?  else rename (prefix-lines txt prefix-str) ; add (suffix-lines txt suffix-str)
   "Splits out each line of txt using clojure.string/split-lines, then
@@ -230,7 +230,7 @@
   a single string result, with each line terminated by a single \newline."
   [indent-str :- s/Str
    txt  :- s/Str]
-  (i/indent-lines-with indent-str txt))
+  (t/indent-lines-with indent-str txt))
 
 ; #todo add undent (verify only leading whitespace removed)
 ; #todo add undent-lines
@@ -239,33 +239,33 @@
   "Returns true if a pair of strings are in increasing lexicographic order."
   [a :- s/Str
    b :- s/Str ]
-  (i/string-increasing? a b) )
+  (t/string-increasing? a b) )
 
 (s/defn increasing-or-equal? :- s/Bool ; #todo merge with general in tupelo.core
   "Returns true if a pair of strings are in increasing lexicographic order, or equal."
   [a :- s/Str
    b :- s/Str ]
-  (i/string-increasing-or-equal? a b))
+  (t/string-increasing-or-equal? a b))
 
 (s/defn contains-match?  :- s/Bool
   "Returns true if the regex matches any portion of the intput string."
   [search-str :- s/Str
    re :- s/Any]
   {:pre [(instance? java.util.regex.Pattern re)]}
-  (i/truthy? (re-find re search-str)))
+  (t/truthy? (re-find re search-str)))
 
 (s/defn contains-str?  :- s/Bool
   "Returns true if the intput string contains the target string."
   [search-str :- s/Str
    tgt-str :- s/Str]
-  (i/truthy? (str/includes? search-str tgt-str)))
+  (t/truthy? (str/includes? search-str tgt-str)))
 
 (s/defn grep
   "Given a multi-line text string, returns a string containing lines matching a regex pattern."
   [pattern :- s/Regex
    text :- s/Str]
   (let [lines  (str/split-lines text)
-        result (i/keep-if #(contains-match? % pattern) lines)]
+        result (t/keep-if #(contains-match? % pattern) lines)]
     (str/join result)))
 
 (s/defn fgrep
@@ -273,7 +273,7 @@
   [tgt :- s/Str
    text :- s/Str]
   (let [lines  (str/split-lines text)
-        result (i/keep-if #(contains-str? % tgt) lines)]
+        result (t/keep-if #(contains-str? % tgt) lines)]
     (str/join result)))
 
 (s/defn string->stream :- InputStream

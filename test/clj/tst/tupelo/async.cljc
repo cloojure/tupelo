@@ -7,7 +7,7 @@
 (ns tst.tupelo.async
   #?@(:clj [
   (:use tupelo.test)
-  (:require [tupelo.impl            :as i]
+  (:require [tupelo.core            :as i]
             [tupelo.async           :as ta]
             [clojure.core.async     :as ca :refer [go go-loop chan thread]]
   )

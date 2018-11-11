@@ -12,13 +12,13 @@
     #?@(:clj [
               [schema.core :as s]
               [tupelo.test   :refer [define-fixture dotest is isnt is= isnt= nonblank= testing throws?]]
-              [tupelo.impl :as i]
+              [tupelo.core :as i]
               [tupelo.string :as ts]
               ])
     #?@(:cljs [
                [schema.core :as s]
                [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= nonblank= testing throws?]]
-               [tupelo.impl :as i :include-macros true]
+               [tupelo.core :as i :include-macros true]
                [tupelo.string :as ts :include-macros true]
                ])
   ))

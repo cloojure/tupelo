@@ -8,7 +8,7 @@
   "Convert to/from traditional base64 encoding."
   #?@(:clj [
   (:require [clojure.string :as str]
-            [tupelo.impl    :as i]
+            [tupelo.core    :as t]
             [tupelo.misc    :as misc]
             [tupelo.types   :as types]
             [schema.core    :as s]
@@ -19,18 +19,18 @@
 #?(:clj (do
 (def base64-chars
   "A set of chars used for traditional base64 encoding (incl. padding char)"
-  (into #{} (flatten [ (i/chars-thru  \a \z)
-                       (i/chars-thru  \A \Z)
-                       (i/chars-thru  \0 \9)
+  (into #{} (flatten [ (t/chars-thru  \a \z)
+                       (t/chars-thru  \A \Z)
+                       (t/chars-thru  \0 \9)
                        [\+ \/ \=] ] )))
 
 (defn base64-encoder []
-  (i/if-java-1-8-plus
+  (t/if-java-1-8-plus
     (java.util.Base64/getEncoder)
     (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 
 (defn base64-decoder []
-  (i/if-java-1-8-plus
+  (t/if-java-1-8-plus
     (java.util.Base64/getDecoder)
     (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 

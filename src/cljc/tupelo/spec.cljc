@@ -12,7 +12,6 @@
    ;[clojure.spec.alpha :as sp]
    ;[clojure.spec.test.alpha :as stest]
    ;[clojure.spec.gen.alpha :as gen]
-   ;[tupelo.impl :as i]
   )
   ]) )
 

@@ -9,8 +9,7 @@
   #?@(:clj [
             (:require
               [clojure.core :as cc]
-              [schema.core :as s]
-              [tupelo.impl :as impl]
+              [schema.core :as s] 
               [tupelo.schema :as tsk])
             ]))
 

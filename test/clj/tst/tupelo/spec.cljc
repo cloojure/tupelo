@@ -5,31 +5,31 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.spec
-  (:use tupelo.impl tupelo.test )
+  (:use tupelo.core tupelo.test )
   (:require
     #?@(:clj [
-    [tupelo.impl :as i]
+    [tupelo.core :as t]
     [tupelo.spec :as tsp]
               ])
   ))
 
 #?(:clj (do
-(i/when-clojure-1-9-plus
+(t/when-clojure-1-9-plus
   (require
     '[clojure.spec.alpha :as s]
     '[clojure.spec.gen.alpha :as gen]
     '[clojure.spec.test.alpha :as stest] )
   (dotest
-    (is (s/valid? ::i/anything 5))
-    (is (s/valid? ::i/anything "joe"))
-    (is (s/valid? ::i/anything #{{:blah 42} [:blue 66] :hut! 'hut! "hut!"}))
-    (isnt (s/valid? ::i/nothing 5))
+    (is (s/valid? ::t/anything 5))
+    (is (s/valid? ::t/anything "joe"))
+    (is (s/valid? ::t/anything #{{:blah 42} [:blue 66] :hut! 'hut! "hut!"}))
+    (isnt (s/valid? ::t/nothing 5))
 
     (when false
-      (spyx (s/exercise ::i/anything))
-     ;(spyx (s/exercise ::i/anything {::i/anything gen/int}))  ;#todo not quite right yet
-      (newline) (time (spyx (stest/check `i/truthy? {:clojure.spec.test.check/opts {:num-tests 99}})))
-      (newline) (time (spyx (stest/check `i/falsey? {:clojure.spec.test.check/opts {:num-tests 99}}))))
+      (spyx (s/exercise ::t/anything))
+      ;(spyx (s/exercise ::i/anything {::i/anything gen/int}))  ;#todo not quite right yet
+      (newline) (time (spyx (stest/check `t/truthy? {:clojure.spec.test.check/opts {:num-tests 99}})))
+      (newline) (time (spyx (stest/check `t/falsey? {:clojure.spec.test.check/opts {:num-tests 99}}))))
 
     ))
 ))

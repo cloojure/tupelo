@@ -11,7 +11,7 @@
   (:require [clojure.string   :as str]
             [clojure.core     :as clj]
             [schema.core      :as s]
-            [tupelo.impl      :as i])
+            [tupelo.core      :as i])
             ])
       )
 

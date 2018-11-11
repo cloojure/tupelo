@@ -16,7 +16,7 @@
     [tupelo.base64                     :as b64]
     [tupelo.base64url                  :as b64url]
     [tupelo.char                       :as char]
-    [tupelo.impl                       :as i]
+    [tupelo.core                       :as t]
     [tupelo.misc                       :as misc]
     [tupelo.types                      :as types]
     [tupelo.y64                        :as y64]
@@ -25,7 +25,7 @@
 
 #?(:clj (do
 (dotest
-  (when (i/is-java-1-8-plus?)
+  (when (t/is-java-1-8-plus?)
     (let [orig    (byte-array [(byte \A)])
           b64-str (b64/encode-bytes->str orig)
           result  (b64/decode-str->bytes b64-str)]
@@ -33,7 +33,7 @@
       (is (= (seq orig) (seq result))))))
 
 (dotest
-  (when (i/is-java-1-8-plus?)
+  (when (t/is-java-1-8-plus?)
     ; bytes
     (doseq [step [50 20 7]]
       (let [orig    (byte-array (mapv #(.byteValue %) (range 0 400 step)))
@@ -49,7 +49,7 @@
         (is (every? b64/base64-chars (seq b64-str)))
         (is (= orig result))))))
 
-(when (i/is-java-1-8-plus?)
+(when (t/is-java-1-8-plus?)
   (dospec 999 ; round-trip-bytes
     (prop/for-all [orig gen/bytes]
       (let [string-b64 (b64/encode-bytes->str orig)

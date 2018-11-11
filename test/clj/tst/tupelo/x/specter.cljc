@@ -7,7 +7,7 @@
 (ns tst.tupelo.x.specter
   (:use tupelo.test )
   (:require
-    [tupelo.impl :as t]
+    [tupelo.core :as t]
     [tupelo.schema :as tsk]
     [clojure.set :as set]
     [schema.core :as s]))

@@ -4,7 +4,7 @@
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
-(ns ^:no-doc tupelo.impl
+(ns ^:no-doc tupelo.core
   "Tupelo - Making Clojure even sweeter"
   (:require
     [clojure.core :as cc]
@@ -14,8 +14,8 @@
     [clojure.test]
     [clojure.set :as set]
     [clojure.walk :as walk]
-    [tupelo.schema :as tsk]
     [schema.core :as s]
+    [tupelo.schema :as tsk]
 
     #?@(:clj [[cheshire.core :as cheshire]
               [clojure.core.match :as ccm]
@@ -1674,7 +1674,7 @@
    arg))
 
 ; #todo add test & README
-; #todo defer to tupelo.impl/pretty
+; #todo defer to tupelo.core/pretty
 (defn pretty-str
   "Returns a string that is the result of clojure.pprint/pprint"
   [arg]
@@ -2392,7 +2392,7 @@
 ;    ] )
 ;  (let [flags (set args)]
 ;    (when (contains? flags :dev)
-;      ; (refer 'tupelo.impl :only '[   ])
+;      ; (refer 'tupelo.core :only '[   ])
 ;    )
 ;    (when (contains? flags :strict)
 ;      ; #todo unlink/relink troublesome clojure.core stuff

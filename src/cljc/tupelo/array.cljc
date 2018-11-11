@@ -1,6 +1,6 @@
 (ns tupelo.array
   #?@(:clj [
-  (:use tupelo.impl)
+  (:use tupelo.core)
   (:require [schema.core :as s]
             [clojure.set :as set]) ])
   )

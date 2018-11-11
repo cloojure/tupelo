@@ -11,7 +11,7 @@
     [clojure.set :as set]
     #?@(:clj [
               [schema.core :as s]
-              [tupelo.impl :as i]
+              [tupelo.core :as i]
               [tupelo.schema :as tsk]])))
 
 #?(:clj (do

@@ -9,9 +9,9 @@
     [clojure.string :as str]
     #?@(:clj [[criterium.core :as crit]
               [schema.core :as s]
-              [tupelo.impl :refer :all]
+              [tupelo.core :refer :all]
+              [tupelo.core :as i]
               [tupelo.dev :refer :all]
-              [tupelo.impl :as i]
               [tupelo.test :refer :all]]))
   #?(:clj
      (:import [java.io ByteArrayOutputStream PrintStream])))

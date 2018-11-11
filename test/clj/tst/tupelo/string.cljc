@@ -14,7 +14,7 @@
     [clojure.test.check.generators :as gen]
     [clojure.test.check.properties :as prop]
     [clojure.test.check.clojure-test :as tst]
-    [tupelo.impl  :as i]
+    [tupelo.core  :as t]
     [tupelo.char :as char]
 
   ])
@@ -134,8 +134,8 @@
   (isnt= "abc" (str (cc/drop 1 (str "xabc"))))
   (isnt= "abc" (str (cc/take 3 (str "abcxxx"))))
 
-  (is (i/truthy? (re-find #"clojure.lang.LazySeq@.*" (str (cc/drop 1 (str "xabc"))))))
-  (is (i/truthy? (re-find #"clojure.lang.LazySeq@.*" (str (cc/take 3 (str "abcxxx"))))))
+  (is (t/truthy? (re-find #"clojure.lang.LazySeq@.*" (str (cc/drop 1 (str "xabc"))))))
+  (is (t/truthy? (re-find #"clojure.lang.LazySeq@.*" (str (cc/take 3 (str "abcxxx"))))))
 
   ; Can fix it using str/join
   (is= "abc" (str/join (cc/drop 1 (str "xabc"))))
@@ -149,9 +149,9 @@
   ; A sequence is not a string, but tupelo.core/strcat can turn a sequence into a string.
   ; Also works to flatten out all nested collections.
   (is (not (= "abc"           (seq "abc"))))
-  (is      (= "abc" (i/strcat (seq "abc"))))
-  (is      (= "abcde" (i/strcat ["" \a \b \c "de"] )))
-  (is      (= "abcde" (i/strcat ["" \a \b [\c ["d" \e]]] ))) )
+  (is      (= "abc" (t/strcat (seq "abc"))))
+  (is      (= "abcde" (t/strcat ["" \a \b \c "de"] )))
+  (is      (= "abcde" (t/strcat ["" \a \b [\c ["d" \e]]] ))) )
 
 (deftest
   (is (= "abc def g hij kl"
@@ -198,7 +198,7 @@
 
 (deftest
   (is= :abc-def-gh-qrs (str->kw-normalized "abc def*gh_qrs"))
-  (is= "abc" (i/kw->str :abc))
+  (is= "abc" (t/kw->str :abc))
 
   (is= (snake->kabob "some_multiple_word_str") "some-multiple-word-str")
   (is= (kabob->snake "some-multiple-word-str") "some_multiple_word_str")
@@ -208,9 +208,9 @@
 )
 
 (deftest
-  (is (= " 1 2 3"           (i/seq->str (byte-array [1 2 3]))))
-  (is (= " :a :b 3 4"       (i/seq->str [:a :b 3 4])))
-  (is (= " \\a \\b \\c"     (i/seq->str "abc"))))
+  (is (= " 1 2 3"           (t/seq->str (byte-array [1 2 3]))))
+  (is (= " :a :b 3 4"       (t/seq->str [:a :b 3 4])))
+  (is (= " \\a \\b \\c"     (t/seq->str "abc"))))
 
 (deftest
   (isnt (increasing? "abc" "a"))
@@ -296,7 +296,7 @@
 
 (deftest
   ; clojure.string
-  (i/when-clojure-1-8-plus
+  (t/when-clojure-1-8-plus
     (is (str/starts-with? "abcde" "a"))
     (is (str/starts-with? "abcde" "ab"))
     (is (str/starts-with? "abcde" "abc"))

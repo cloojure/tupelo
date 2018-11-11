@@ -11,7 +11,7 @@
     [clojure.set :as set]
     [clojure.test.check.generators :as gen]
     [clojure.test.check.properties :as prop]
-    [tupelo.impl :as t]
+    [tupelo.core :as t]
     [tupelo.string :as ts]
              ]) ))
 ; #todo add example for duplicates in clojure.core.combo

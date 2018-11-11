@@ -7,12 +7,11 @@
 (ns tupelo.pedestal
   "Utils for Pedestal"
   #?@(:clj
-      [(:use tupelo.impl)
+      [(:use tupelo.core)
        (:require
          [clojure.set :as set]
          [clojure.string :as str]
          [schema.core :as s]
-         [tupelo.core :as t]
          [tupelo.schema :as tsk]
       )]))
 

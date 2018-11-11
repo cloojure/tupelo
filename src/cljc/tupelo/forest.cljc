@@ -8,14 +8,14 @@
   "Allows the use of multiple tree structures. Provides tools to create, manipulate, and query
   the the trees individually and/or collectively."
   #?@(:clj [
-  (:use tupelo.impl )
+  (:use tupelo.core )
   (:require
     [clojure.core.async :as ca]
     [clojure.set :as clj.set]
     [net.cgrand.tagsoup :as enlive-tagsoup]
     [schema.core :as s]
     [tupelo.misc :as tm :refer [HID]]
-    [tupelo.impl :as i]
+    [tupelo.core :as i]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
   )

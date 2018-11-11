@@ -10,7 +10,7 @@
             (:require
               [clojure.string :as str]
               [tupelo.core :as t] ; #todo finish migration to (:use tupelo.core)
-              [tupelo.impl :as i]
+              [tupelo.core :as i]
               [tupelo.string :as ts]
               [tupelo.string :as tstr]) ]) )
 

@@ -12,7 +12,6 @@
             [clojure.test.check.clojure-test :as tst]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
-            [tupelo.impl :as i]
             [tupelo.char :as char]
             [tupelo.misc :as misc]
             [tupelo.types :as types]
@@ -21,7 +20,7 @@
       )
 
 #?(:clj (do
-(when (i/is-java-1-8-plus?)
+(when (is-java-1-8-plus?)
   (dotest
     (let [orig      (byte-array [(byte \A)])
           y64-bytes (y64/encode-bytes orig)

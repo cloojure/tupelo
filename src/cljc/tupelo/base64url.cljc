@@ -8,7 +8,7 @@
   "Convert to/from traditional base64url encoding."
   #?@(:clj [
   (:require [clojure.string :as str]
-            [tupelo.impl    :as i]
+            [tupelo.core    :as i]
             [tupelo.types   :as types]
             [schema.core    :as s])
   (:gen-class)

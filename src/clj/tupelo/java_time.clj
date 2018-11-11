@@ -1,6 +1,6 @@
 (ns tupelo.java-time
   (:refer-clojure :exclude [range])
-  (:use tupelo.impl)
+  (:use tupelo.core)
   (:require
     [clojure.walk :as walk]
     [schema.core :as s] )

@@ -6,10 +6,10 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns ^:fast
   tst.tupelo.misc
-  (:use tupelo.impl tupelo.misc tupelo.test )
+  (:use tupelo.core tupelo.misc tupelo.test )
   (:require
     #?@(:clj [
-    [tupelo.impl    :as i ]
+    [tupelo.core    :as i ]
               [tupelo.string    :as ts ]
               ])
   ))
