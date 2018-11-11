@@ -35,7 +35,6 @@
 ; #todo    like (some-fn* (glue {0 0   1 "hello"   2 :cc} {<user args here>} ))
 
 
-
 (defn truthy?
   "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
   [arg]
@@ -487,6 +486,7 @@
     result))
 
 (defn strcat
+  "Recursively concatenate all arguments into a single string result."
   [& args]
   (let [
         ; We need to use flatten twice since the inner one doesn't change a string into a
@@ -521,6 +521,35 @@
                            (keep-if not-nil? seq-of-scalars)))
         ]
     result))
+
+(defn print-versions [] ; #todo need CLJS version
+  #?(:clj
+     (let [version-str (format "Clojure %s    Java %s"
+                         (clojure-version) (System/getProperty "java.version"))
+           num-hyphen  (+ 6 (count version-str))
+           hyphens     (strcat (repeat num-hyphen \-))
+           version-str (strcat "   " version-str)]
+       (newline)
+       (println hyphens)
+       (println version-str)
+       (println hyphens)))
+  #?(:cljs
+     (let [version-str (str "ClojureScript " *clojurescript-version* )
+           num-hyphen  (+ 6 (count version-str))
+           hyphens     (strcat (repeat num-hyphen \-))
+           version-str (strcat "   " version-str)]
+       (newline)
+       (println hyphens)
+       (println version-str)
+       (println hyphens))) )
+
+(defn seq->str
+  "Convert a seq into a string (using pr) with a space preceding each value"
+  [seq-in]
+  (with-out-str
+    (doseq [it (seq seq-in)]
+      (print \space)
+      (pr it))))
 
 ;-----------------------------------------------------------------------------
 ; spy stuff
@@ -576,6 +605,7 @@
      ~'it))
 
 (defn clip-str      ; #todo -> tupelo.string?
+  "Converts all args to single string and clips any characters beyond nchars."
   [nchars & args]
   (it-> (apply str args)
     (take nchars it)
@@ -750,6 +780,7 @@
     final-code ))
 
 (defmacro let-some
+  "Threads forms as with `when-some`, but allow more than 1 pair of binding forms."
   [bindings & forms]
   (let [num-bindings (count bindings)]
     (when-not (even? num-bindings)

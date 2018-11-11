@@ -33,35 +33,8 @@
 
 ; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
 
-(defmacro let-some
-  "Threads forms as with `when-some`, but allow more than 1 pair of binding forms."
-  [bindings & forms]
-  `(i/let-some ~bindings ~@forms))
 
-(defn strcat
-  "Recursively concatenate all arguments into a single string result."
-  [& args] (apply i/strcat args))
 
-(defn print-versions [] ; #todo need CLJS version
-  #?(:clj
-     (let [version-str (format "Clojure %s    Java %s"
-                         (clojure-version) (System/getProperty "java.version"))
-           num-hyphen  (+ 6 (count version-str))
-           hyphens     (strcat (repeat num-hyphen \-))
-           version-str (strcat "   " version-str)]
-       (i/nl)
-       (println hyphens)
-       (println version-str)
-       (println hyphens)))
-  #?(:cljs
-     (let [version-str (str "ClojureScript " *clojurescript-version* )
-           num-hyphen  (+ 6 (count version-str))
-           hyphens     (strcat (repeat num-hyphen \-))
-           version-str (strcat "   " version-str)]
-       (i/nl)
-       (println hyphens)
-       (println version-str)
-       (println hyphens))) )
 
 (defmacro map-let*
   "Usage:  (map-let* ctx bindings & forms)
@@ -556,13 +529,6 @@
     (.printStackTrace exception)))
 
 
-(defn seq->str
-  "Convert a seq into a string (using pr) with a space preceding each value"
-  [seq-in]
-  (with-out-str
-    (doseq [it (seq seq-in)]
-      (print \space)
-      (pr it))))
 
 (defn chars-thru
   "Given two characters (or numerical equivalents), returns a seq of characters
@@ -581,10 +547,6 @@
 ; #todo need conversion from Long -> hex string="1234-4567-89ab-cdef" (& inverse)
 ; #todo need rand-id/randid/rid/rid-str (rand id) -> 64 bit hex string="1234-4567-89ab-cdef"
 ; i[12] = Random.nextInt(); bytes += i[12].toHexString()
-
-(defn clip-str
-  "Converts all args to single string and clips any characters beyond nchars."
-  [nchars & args] (apply i/clip-str nchars args))
 
  ; #todo fix usage docs
 (defmulti wild-match?

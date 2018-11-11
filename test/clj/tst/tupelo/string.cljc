@@ -14,7 +14,6 @@
     [clojure.test.check.generators :as gen]
     [clojure.test.check.properties :as prop]
     [clojure.test.check.clojure-test :as tst]
-    [tupelo.core  :as t]
     [tupelo.impl  :as i]
     [tupelo.char :as char]
 
@@ -150,9 +149,9 @@
   ; A sequence is not a string, but tupelo.core/strcat can turn a sequence into a string.
   ; Also works to flatten out all nested collections.
   (is (not (= "abc"           (seq "abc"))))
-  (is      (= "abc" (t/strcat (seq "abc"))))
-  (is      (= "abcde" (t/strcat ["" \a \b \c "de"] )))
-  (is      (= "abcde" (t/strcat ["" \a \b [\c ["d" \e]]] ))) )
+  (is      (= "abc" (i/strcat (seq "abc"))))
+  (is      (= "abcde" (i/strcat ["" \a \b \c "de"] )))
+  (is      (= "abcde" (i/strcat ["" \a \b [\c ["d" \e]]] ))) )
 
 (deftest
   (is (= "abc def g hij kl"
@@ -209,9 +208,9 @@
 )
 
 (deftest
-  (is (= " 1 2 3"           (t/seq->str (byte-array [1 2 3]))))
-  (is (= " :a :b 3 4"       (t/seq->str [:a :b 3 4])))
-  (is (= " \\a \\b \\c"     (t/seq->str "abc"))))
+  (is (= " 1 2 3"           (i/seq->str (byte-array [1 2 3]))))
+  (is (= " :a :b 3 4"       (i/seq->str [:a :b 3 4])))
+  (is (= " \\a \\b \\c"     (i/seq->str "abc"))))
 
 (deftest
   (isnt (increasing? "abc" "a"))
@@ -297,7 +296,7 @@
 
 (deftest
   ; clojure.string
-  (t/when-clojure-1-8-plus
+  (i/when-clojure-1-8-plus
     (is (str/starts-with? "abcde" "a"))
     (is (str/starts-with? "abcde" "ab"))
     (is (str/starts-with? "abcde" "abc"))
