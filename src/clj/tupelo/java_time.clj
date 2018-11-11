@@ -1,10 +1,9 @@
 (ns tupelo.java-time
   (:refer-clojure :exclude [range])
-  (:use tupelo.core)
+  (:use tupelo.impl)
   (:require
     [clojure.walk :as walk]
-    [schema.core :as s]
-    [tupelo.impl :as i])
+    [schema.core :as s] )
   (:import
     [java.time DayOfWeek ZoneId ZonedDateTime Instant Period]
     [java.time.format DateTimeFormatter]
@@ -148,14 +147,14 @@
    A thin wrapper over `ZonedDateTime/isEqual`"
   [this & others]
   (cond
-    (every? instant? others) (every? i/truthy?
+    (every? instant? others) (every? truthy?
                                (mapv #(.equals this %) others))
 
-    (every? zoned-date-time? others) (every? i/truthy?
+    (every? zoned-date-time? others) (every? truthy?
                                        (mapv #(.isEqual this %) others))
 
     ; attempt to coerce to Instant
-    :else (let [instants (mapv ->instant (i/prepend this others))]
+    :else (let [instants (mapv ->instant (prepend this others))]
             (apply same-instant? instants))))
 
 (def DateTimeStamp (s/either ZonedDateTime Instant))

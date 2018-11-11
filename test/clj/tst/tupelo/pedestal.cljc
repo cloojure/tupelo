@@ -5,7 +5,7 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.pedestal
-  (:use tupelo.core tupelo.pedestal tupelo.test)
+  (:use tupelo.impl tupelo.pedestal tupelo.test)
   (:require
     [schema.core :as s]
     [tst.tupelo.pedestal-data :as tst-data]
