@@ -1707,8 +1707,34 @@
         res-only ))))
 
 (defmacro destruct
+  "Natural destructuring:
+     (let [data {:a 1
+                 :b {:c 3
+                     :d 4}}]
+       ...
+       (destruct [data {:a ?
+                        :b {:c ?}}]
+       ...
+   then can use local values  a=1, c=3.  With vector data:
+     (let [data [1 2 3 4 5]]
+       ...
+       (destruct [data [a b c]]
+        ...
+     then can use local values a=1 b=2 c=3.  Can use `(restruct)`, `(restruct data)`, or `(restruct-all)`
+     to re-structure & return original data shape using current values."
   [bindings & forms]
   (destruct-impl bindings forms))
+
+(defn restruct
+  "within a `(destruct [<data> <shape>] ...) form, `(restruct)` or `(restruct <data>)` causes re-structuring
+   & return of original data shape using current values."
+  [& args] (throw (ex-info "restruct: illegal usage - should never get here." args)))
+
+(defn restruct-all
+  "within a `(destruct [data-1 <shape-1>
+                        data-2 <shape-2] ...) form, causes re-structuring & return of original data shapes using
+  current values as with (vals->map data-1 data-2 ...)"
+  [& args] (throw (ex-info "restruct-all: illegal usage - should never get here." args)))
 
 ; #todo max-key -> t/max-by
 
