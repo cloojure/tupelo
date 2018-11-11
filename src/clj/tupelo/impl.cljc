@@ -631,6 +631,12 @@
 ;-----------------------------------------------------------------------------
 ; #todo  Need it?-> like some-> that short-circuits on nil
 (defmacro it->
+  "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
+      (it-> 1
+            (inc it)
+            (+ it 3)
+            (/ 10 it))
+      ;=> 2 "
   [expr & forms]
   `(let [~'it ~expr
          ~@(interleave (repeat 'it) forms)
@@ -1216,19 +1222,30 @@
     `(it-> ~expr ~@cond-action-forms)))
 
 (defmacro cond-it->
+  "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
+
+    (let [params {:a 1 :b 1 :c nil :d nil}]
+      (cond-it-> params
+        (:a it)        (update it :b inc)
+        (= (:b it) 2)  (assoc it :c \"here\")
+        (:c it)        (assoc it :d \"again\")))
+
+    ;=> {:a 1, :b 2, :c \"here\", :d \"again\"}"
   [& forms]
   (apply cond-it-impl forms))
 
 ; #todo #wip
 (defmacro some-it->
+  "Threads forms as with `it->`, terminates & returns `nil` if any expression is nil."
   [expr & forms]
   (let [binding-pairs (interleave (repeat 'it) forms) ]
     `(let-some [~'it ~expr
                             ~@binding-pairs]
        ~'it)))
 
-
 (defmacro with-exception-default
+  "Evaluates body & returns its result.  In the event of an exception, default-val is returned
+   instead of the exception."
   [default-val & forms]
   `(try
      ~@forms
@@ -1249,12 +1266,14 @@
     tst-val))
 
 (defn validate-or-default
+  "Returns `sample-val` if `(is-valid? sample-val)` is truthy; else returns `default-val`"
   [is-valid? sample-val default-val]
   (if (is-valid? sample-val)
     sample-val
     default-val))
 
 (defn with-nil-default
+  "Returns `sample-val` if not nil; else returns `default-val`"
   [default-val sample-val]
   (validate-or-default not-nil? sample-val default-val))
 
@@ -1407,6 +1426,8 @@
 (ns-unmap *ns* 'next)
 (ns-unmap *ns* 'last)
 
+;-----------------------------------------------------------------------------
+; Clojure version stuff
 (defn is-clojure-1-7-plus? []
   (let [{:keys [major minor]} *clojure-version*]
     (increasing-or-equal? [1 7] [major minor])))
@@ -1422,6 +1443,8 @@
 (defn is-pre-clojure-1-8? [] (not (is-clojure-1-8-plus?)))
 (defn is-pre-clojure-1-9? [] (not (is-clojure-1-9-plus?)))
 
+;-----------------------------------------------------------------------------
+; Java version stuff
 (s/defn java-version :- s/Str
   []
   (System/getProperty "java.version"))
@@ -1436,6 +1459,8 @@
   Sort is by lexicographic (alphabetic) order."
   [version-str :- s/Str]
   (string-increasing-or-equal? version-str (java-version)))
+
+; #todo need min-java-1-8  ???
 
 (defn is-java-1-7? [] (java-version-matches? "1.7"))
 (defn is-java-1-8? [] (java-version-matches? "1.8"))
@@ -1456,7 +1481,6 @@
   (if (is-java-1-8-plus?)
     `(do ~if-form)
     `(do ~else-form)))
-
 
 ; #todo add is-clojure-1-8-max?
 ; #todo need clojure-1-8-plus-or-throw  ??
@@ -1779,6 +1803,7 @@
 ; #todo force to vector result
 ; #todo allow range to drop
 (s/defn drop-at :- tsk/List
+  "Removes an element from a collection at the specified index."
   [coll :- tsk/List
    index :- s/Int]
   (when (neg? index)
@@ -1793,6 +1818,7 @@
 ; #todo force to vector result
 ; #todo allow vector to insert
 (s/defn insert-at :- tsk/List
+  "Inserts an element into a collection at the specified index."
   [coll :- tsk/List
    index :- s/Int
    elem :- s/Any]
@@ -1808,6 +1834,7 @@
 ; #todo force to vector result
 ; #todo allow idx range to replace with vector (maybe not equal # of elems)
 (s/defn replace-at :- tsk/List
+  "Replaces an element in a collection at the specified index."
   [coll :- tsk/List
    index :- s/Int
    elem :- s/Any]
@@ -1828,6 +1855,7 @@
 ; #todo allow (idx coll [low high]) like python xx( low:high )
 ; #todo multiple dimensions
 (s/defn idx
+  "Indexes into a vector, allowing negative index values"
   [coll       :- tsk/List
    index-val  :- s/Int]
   (when (nil? coll)
@@ -1882,6 +1910,9 @@
     map-out))
 
 (defn macro?
+  "Returns true if a quoted symbol resolves to a macro. Usage:
+
+    (println (macro? 'and))  ;=> true "
   [s]
   (-> s resolve meta :macro boolean))
     ; from Alex Miller StackOverflow answer 2017-5-6

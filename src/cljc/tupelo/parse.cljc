@@ -29,7 +29,7 @@
   with `::non-parsible-object`. "
   [data]
   (let [edn-parse-roundtrip (fn [item]
-                              (with-exception-default ::edn-non-parsible
+                              (i/with-exception-default ::edn-non-parsible
                                 (let [item-str (pr-str item)
                                       item-edn (edn/read-string item-str)]
                                   (when-not (= item item-edn)

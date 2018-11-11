@@ -75,35 +75,13 @@
 #?(:clj (do
 
 
-;-----------------------------------------------------------------------------
-; Java version stuff
-
-; #todo need min-java-1-8  ???
-
 ; #todo ----- gogo ----------------------------------------------------------------------------------
 
 
 
 
-(defn macro?
-  "Returns true if a quoted symbol resolves to a macro. Usage:
 
-    (println (macro? 'and))  ;=> true "
-  [s] (i/macro? s))
 
-(defn drop-at
-  "Removes an element from a collection at the specified index."
-  [coll index] (i/drop-at coll index))
-(defn insert-at
-  "Inserts an element into a collection at the specified index."
-  [coll index elem] (i/insert-at coll index elem))
-(defn replace-at
-  "Replaces an element in a collection at the specified index."
-  [coll index elem] (i/replace-at coll index elem))
-
-(defn idx
-  "Indexes into a vector, allowing negative index values"
-  [coll index-val] (i/idx coll index-val) )
 
 ; #todo:  add in clear-nil-entries to recursively delete all k-v pairs where val is nil or empty?
 
@@ -115,49 +93,11 @@
 ;  [expr & forms]
 ;  (throw (RuntimeException. "Obsolete: replace with:  (validate not-nil? (-> <expr> <forms> ))" )))
 
-(defmacro it->
-  "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
-      (it-> 1
-            (inc it)
-            (+ it 3)
-            (/ 10 it))
-      ;=> 2 "
-  [expr & forms]
-  `(i/it-> ~expr ~@forms))
 
-(defmacro cond-it->
-  "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
 
-    (let [params {:a 1 :b 1 :c nil :d nil}]
-      (cond-it-> params
-        (:a it)        (update it :b inc)
-        (= (:b it) 2)  (assoc it :c \"here\")
-        (:c it)        (assoc it :d \"again\")))
 
-    ;=> {:a 1, :b 2, :c \"here\", :d \"again\"}"
-  [expr & forms]
-  `(i/cond-it-> ~expr ~@forms))
 
-(defmacro some-it->
-  "Threads forms as with `it->`, terminates & returns `nil` if any expression is nil."
-  [expr & forms]
-  `(i/some-it-> ~expr ~@forms))
 
-(defmacro with-exception-default
-  "Evaluates body & returns its result.  In the event of an exception, default-val is returned
-   instead of the exception."
-  [default-val & forms]
-  `(i/with-exception-default ~default-val ~@forms))
-
-(defn validate-or-default
-  "Returns `sample-val` if `(is-valid? sample-val)` is truthy; else returns `default-val`"
-  [is-valid? sample-val default-val]
-  (i/validate-or-default is-valid? sample-val default-val))
-
-(defn with-nil-default
-  "Returns `sample-val` if not nil; else returns `default-val`"
-  [default-val sample-val]
-  (i/with-nil-default default-val sample-val))
 
 (defmacro lazy-gen
   "Creates a 'generator function' that returns a lazy seq of results
