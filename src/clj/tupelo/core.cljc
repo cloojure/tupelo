@@ -31,32 +31,7 @@
 ; WARNING:  cannot use Plumatic schema for functions that may receive an infinite lazy sequence
 ; as input.  See:  https://groups.google.com/forum/#!topic/clojure/oM1PH4sXzoA
 
-
-
-
-
-
 ; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
-
-(defmacro spyx
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expressions, printing both the expression and its value to stdout. Returns the value of the
-   last expression."
-  [& forms] `(i/spyx ~@forms))
-
-(defmacro spyxx
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expression, printing both the expression, its type, and its value to stdout, then returns the value."
-  [expr] `(i/spyxx ~expr))
-
-(defmacro spyx-pretty
-  "Like `spyx` but with pretty printing (clojure.pprint/pprint)"
-  [& forms] `(i/spyx-pretty ~@forms))
-
-(defmacro spy-pretty
-  "Like `spyx-pretty` but without printing the original form"
-  [& forms] `(i/spy-pretty ~@forms))
-
 
 (defmacro let-some
   "Threads forms as with `when-some`, but allow more than 1 pair of binding forms."

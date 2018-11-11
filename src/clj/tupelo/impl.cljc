@@ -652,25 +652,30 @@
 
 ; #todo allow spyx to have labels like (spyx :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
 (defmacro spyx
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expressions, printing both the expression and its value to stdout. Returns the value of the
+   last expression."
   [& exprs]
   (spyx-proc exprs))
 
 (defn ^:no-doc spy-pretty-proc ; #todo => core
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
-                     `(when *spy-enabled* (println (tupelo.impl/spy-indent-spaces) (str ~expr))))
+                     `(when *spy-enabled* (println (spy-indent-spaces) (str ~expr))))
         r2         (let [expr (xlast exprs)]
                      `(let [spy-val# ~expr]
                         (when *spy-enabled*
-                          (println (indent-lines-with (tupelo.impl/spy-indent-spaces)
-                                     (tupelo.impl/pretty-str spy-val#))))
+                          (println (indent-lines-with (spy-indent-spaces)
+                                     (pretty-str spy-val#))))
                         spy-val#))
         final-code `(do
                       ~@r1
                       ~r2)]
     final-code))
+
 ; #todo only allow 1 arg + optional kw-label
 (defmacro spy-pretty ; #todo => core
+  "Like `spyx-pretty` but without printing the original form"
   [& exprs]
   (spy-pretty-proc exprs)) ; #todo add in use of `prettify` for each value
 
@@ -678,14 +683,14 @@
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
                      (if (keyword? expr)
-                       `(when *spy-enabled* (println (tupelo.impl/spy-indent-spaces) (str ~expr)))
-                       `(when *spy-enabled* (println (tupelo.impl/spy-indent-spaces) (str '~expr " => " ~expr)))))
+                       `(when *spy-enabled* (println (spy-indent-spaces) (str ~expr)))
+                       `(when *spy-enabled* (println (spy-indent-spaces) (str '~expr " => " ~expr)))))
         r2         (let [expr (xlast exprs)]
                      `(let [spy-val# ~expr]
                         (when *spy-enabled*
-                          (println (str (tupelo.impl/spy-indent-spaces) '~expr " => "))
-                          (println (indent-lines-with (tupelo.impl/spy-indent-spaces)
-                                     (tupelo.impl/pretty-str spy-val#))))
+                          (println (str (spy-indent-spaces) '~expr " => "))
+                          (println (indent-lines-with (spy-indent-spaces)
+                                     (pretty-str spy-val#))))
                         spy-val#))
         final-code `(do
                       ~@r1
@@ -695,6 +700,7 @@
 ; #todo On all spy* make print file & line number
 ; #todo allow spyx-pretty to have labels like (spyx-pretty :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
 (defmacro spyx-pretty
+  "Like `spyx` but with pretty printing (clojure.pprint/pprint)"
   [& exprs]
   (spyx-pretty-proc exprs)) ; #todo add in use of `prettify` for each value
 
@@ -702,9 +708,9 @@
   "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
   [& forms]
   `(do
-     (tupelo.impl/spy-indent-inc)
+     (spy-indent-inc)
      (let [result# (do ~@forms)]
-       (tupelo.impl/spy-indent-dec)
+       (spy-indent-dec)
        result#)))
 
 (defmacro let-spy
@@ -718,7 +724,7 @@
         forms      (xrest exprs)
         fmt-pair   (fn [[dest src]]
                      [dest src
-                      '_ (list 'tupelo.core/spyx dest)]) ; #todo gensym instead of underscore?
+                      '_ (list `spyx dest)]) ; #todo gensym instead of underscore?
         pairs      (vec (partition 2 decls))
         r1         (vec (mapcat fmt-pair pairs))
         final-code `(let ~r1 ~@forms)]
@@ -737,7 +743,7 @@
         forms (xrest exprs)
         fmt-pair (fn [[dest src]]
                    [dest src
-                    '_ (list 'tupelo.core/spyx-pretty dest)] ) ; #todo gensym instead of underscore?
+                    '_ (list `spyx-pretty dest)] ) ; #todo gensym instead of underscore?
         pairs (vec (partition 2 decls))
         r1    (vec (mapcat  fmt-pair pairs ))
         final-code  `(let ~r1 ~@forms ) ]
@@ -1069,7 +1075,7 @@
 (defmacro some-it->
   [expr & forms]
   (let [binding-pairs (interleave (repeat 'it) forms) ]
-    `(tupelo.core/let-some [~'it ~expr
+    `(let-some [~'it ~expr
                             ~@binding-pairs]
        ~'it)))
 
@@ -1254,6 +1260,8 @@
     '[clojure.spec.test.alpha :as stest] ))
 
 (defmacro spyxx
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expression, printing both the expression, its type, and its value to stdout, then returns the value."
   [expr]
   `(let [spy-val#    ~expr
          class-name# (-> spy-val# class .getName)]
@@ -1494,7 +1502,7 @@
 ; #todo make eager version?  gen-vec, gen-seq, ...
 (defmacro lazy-gen
   [& forms]
-  `(let [~'lazy-gen-output-buffer (ca/chan tupelo.impl/*lazy-gen-buffer-size*) ]
+  `(let [~'lazy-gen-output-buffer (ca/chan *lazy-gen-buffer-size*) ]
         (ca/go
           ~@forms
           (ca/close! ~'lazy-gen-output-buffer))

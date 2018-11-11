@@ -304,7 +304,7 @@
       (with-out-str
         (is= 13
           (i/let-spy [a (inc 0)
-                    b (+ 2 3)]
+                      b (+ 2 3)]
                    (i/spyx (-> (inc a) (* 2) inc))
             (-> b (* 2) (+ 3)))))))
 
