@@ -59,56 +59,10 @@
 
 
 
-(defn lexical-compare
-  "Performs a lexical comparison of 2 sequences, sorting as follows:
-      [1]
-      [1 :a]
-      [1 :b]
-      [1 :b 3]
-      [2]
-      [3]
-      [3 :y] "
-  [a b] (i/lexical-compare a b))
 
-(defn submap-by-keys
-  "Returns a new map containing entries with the specified keys. Throws for missing keys,
-  unless `:missing-ok` is specified. Usage:
 
-      (submap-by-keys {:a 1 :b 2} #{:a   }             )  =>  {:a 1}
-      (submap-by-keys {:a 1 :b 2} #{:a :z} :missing-ok )  =>  {:a 1}
-  "
-  [map-arg keep-keys & opts] (apply i/submap-by-keys map-arg keep-keys opts))
 
-(defn submap-by-vals
-  "Returns a new map containing entries with the specified vals. Throws for missing vals,
-  unless `:missing-ok` is specified. Usage:
 
-      (submap-by-vals {:a 1 :b 2 :A 1} #{1  }             )  =>  {:a 1 :A 1}
-      (submap-by-vals {:a 1 :b 2 :A 1} #{1 9} :missing-ok )  =>  {:a 1 :A 1} "
-  [map-arg keep-vals & opts] (apply i/submap-by-vals map-arg keep-vals opts))
-
-(defn rand-elem
-  "Returns a random element from a collection"
-  [coll] (i/rand-elem coll))
-
-(defn chan->lazy-seq
-  "Accepts a core.async channel and returns the contents as a lazy list."
-  [chan]
-  (i/chan->lazy-seq chan))
-
-(defn validate
-  "(validate tst-fn tst-val)
-  Used to validate intermediate results. Returns tst-val if the result of
-  (tst-fn tst-val) is truthy.  Otherwise, throws ex-info with ex-data
-  {:sample-val sample-val :tst-result tst-result}."
-  [tst-fn tst-val] (i/validate tst-fn tst-val))
-
-(defmacro verify
-  "(verify <some-expr>)
-  Used to verify intermediate results. Returns value of <some-expr> if the result
-  is truthy.  Otherwise, throws IllegalArgumentException."
-  [form]
-  `(i/verify ~form))
 
 (defmacro vals->map ; #todo -> README
   "Called with a list of symbols like `(vals->map a b c)` returns a map

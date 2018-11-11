@@ -1205,11 +1205,15 @@
        e# ~default-val)))
 
 (defn validate
-  [is-valid? sample-val]
-  (let [tst-result (is-valid? sample-val)]
+  "(validate tst-fn tst-val)
+  Used to validate intermediate results. Returns tst-val if the result of
+  (tst-fn tst-val) is truthy.  Otherwise, throws ex-info with ex-data
+  {:sample-val sample-val :tst-result tst-result}."
+  [tst-fn tst-val]
+  (let [tst-result (tst-fn tst-val)]
     (when-not (truthy? tst-result)
-      (throw (ex-info  "validate: " (vals->map sample-val tst-result))))
-    sample-val))
+      (throw (ex-info  "validate: " (vals->map tst-val tst-result))))
+    tst-val))
 
 (defn validate-or-default
   [is-valid? sample-val default-val]
@@ -1222,6 +1226,9 @@
   (validate-or-default not-nil? sample-val default-val))
 
 (defmacro verify
+  "(verify <some-expr>)
+  Used to verify intermediate results. Returns value of <some-expr> if the result
+  is truthy.  Otherwise, throws IllegalArgumentException."
   [form]
   `(let [value# ~form]
      (if (truthy? value#)
@@ -1233,6 +1240,7 @@
 
 ; #todo fix up for maps
 (defn rand-elem
+  "Returns a random element from a collection"
   [coll]
   (verify (not-nil? coll))
   (rand-nth (vec coll)))
@@ -1242,6 +1250,14 @@
 ; #todo add (->sorted-vec <sequential>) => (vec (sort <vec>))
 
 (s/defn lexical-compare :- s/Int
+  "Performs a lexical comparison of 2 sequences, sorting as follows:
+      [1]
+      [1 :a]
+      [1 :b]
+      [1 :b 3]
+      [2]
+      [3]
+      [3 :y] "
   [a :- tsk/List
    b :- tsk/List]
   (cond
@@ -1258,6 +1274,12 @@
 ; #todo filter by pred in addition to set/list?
 ; #todo -> README
 (s/defn submap-by-keys :- tsk/Map
+  "Returns a new map containing entries with the specified keys. Throws for missing keys,
+  unless `:missing-ok` is specified. Usage:
+
+      (submap-by-keys {:a 1 :b 2} #{:a   }             )  =>  {:a 1}
+      (submap-by-keys {:a 1 :b 2} #{:a :z} :missing-ok )  =>  {:a 1}
+  "
   [map-arg :- tsk/Map
    keep-keys :- (s/either tsk/Set tsk/List)
    & opts]
@@ -1280,6 +1302,11 @@
 
 ; #todo -> README
 (s/defn submap-by-vals :- tsk/Map
+  "Returns a new map containing entries with the specified vals. Throws for missing vals,
+  unless `:missing-ok` is specified. Usage:
+
+      (submap-by-vals {:a 1 :b 2 :A 1} #{1  }             )  =>  {:a 1 :A 1}
+      (submap-by-vals {:a 1 :b 2 :A 1} #{1 9} :missing-ok )  =>  {:a 1 :A 1} "
   [map-arg :- tsk/Map
    keep-vals :- (s/either tsk/Set tsk/List)
    & opts]
@@ -1601,6 +1628,7 @@
 ; #todo max-key -> t/max-by
 
 (defn chan->lazy-seq ; #todo add schema, add tests, readme
+  "Accepts a core.async channel and returns the contents as a lazy list."
   [chan]
   (let [curr-item (ca/<!! chan)] ; #todo ta/take-now!
     (when (not-nil? curr-item)
