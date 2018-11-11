@@ -270,6 +270,8 @@
       :else (throw (ex-info "glue: colls must be all same type; found types=" (mapv type colls))))))
 
 (defn glue-rows   ; #todo :- tsk/List ; #todo necessary?
+  " Convert a vector of vectors (2-dimensional) into a single vector (1-dimensional).
+  Equivalent to `(apply glue ...)`"
   [coll-2d          ; :- tsk/List
    ]
   (when-not (sequential? coll-2d)
@@ -303,6 +305,15 @@
 ; Clojure version stuff
 
 (s/defn increasing? :- s/Bool
+  "Returns true iff the vectors are in (strictly) lexicographically increasing order
+    [1 2]  [1]        -> false
+    [1 2]  [1 1]      -> false
+    [1 2]  [1 2]      -> false
+    [1 2]  [1 2 nil]  -> true
+    [1 2]  [1 2 3]    -> true
+    [1 2]  [1 3]      -> true
+    [1 2]  [2 1]      -> true
+    [1 2]  [2]        -> true "
   [a :- tsk/List
    b :- tsk/List]
   (let [len-a        (count a)
@@ -322,6 +333,15 @@
       (nil? first-change)           (< len-a len-b))))
 
 (s/defn increasing-or-equal? :- s/Bool
+  "Returns true iff the vectors are in (strictly) lexicographically increasing-or-equal order
+    [1 2]  [1]        -> false
+    [1 2]  [1 1]      -> false
+    [1 2]  [1 2]      -> true
+    [1 2]  [1 2 nil]  -> true
+    [1 2]  [1 2 3]    -> true
+    [1 2]  [1 3]      -> true
+    [1 2]  [2 1]      -> true
+    [1 2]  [2]        -> true "
   [a :- tsk/List
    b :- tsk/List]
   (or (= a b)
@@ -333,44 +353,55 @@
 
 ;-----------------------------------------------------------------------------
 (s/defn not-nil? :- s/Bool
+  "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
+   or the poorly-named clojure.core/some? "
   [arg :- s/Any]
   (not (nil? arg)))
 
 (s/defn not-empty? :- s/Bool
+  "For any collection coll, returns true if coll contains any items; otherwise returns false.
+   Equivalent to (not (empty? coll))."
   ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
   [coll]
   (not (empty? coll)))
 
 ; #todo add not-neg? not-pos? not-zero?
 
+; #todo make coercing versions of these ->sym ->str ->kw ->int  for args of (kw, str, sym, int)
+
 (s/defn kw->sym :- s/Symbol
+  "Converts a keyword to a symbol"
   [arg :- s/Keyword]
   (symbol (name arg)))
 
 (s/defn kw->str :- s/Str
-  "Returns the string version of a keyword, stripped of the leading ':' (colon)."
+  "Converts a keyword to a string"
   [arg :- s/Keyword]
   (name arg))
 
 (s/defn sym->str :- s/Str
+  "Converts a symbol to a string"
   [arg :- s/Symbol]
   (name arg))
 
 (s/defn sym->kw :- s/Keyword
-  "Returns a keyword constructed from a normalized string"
+  "Converts a symbol to a keyword"
   [arg :- s/Symbol]
   (keyword arg))
 
 (s/defn str->sym :- s/Symbol
+  "Converts a string to a symbol"
   [arg :- s/Str]
   (symbol arg))
 
 ; #todo throw if bad string
 (s/defn str->kw :- s/Keyword
+  "Converts a string to a keyword"
   [arg :- s/Str]
   (keyword arg))
 
 (s/defn str->chars :- s/Keyword
+  "Converts a string to a vector of chars"
   [arg :- s/Str]
   (vec arg))
 
@@ -441,6 +472,8 @@
 
 ;-----------------------------------------------------------------------------
 (defn prettify
+  "Recursively walks a data structure and returns a prettified version.
+  Converts all lists to vectors. Converts all maps & sets to sorted collections."
   [coll]
   (let [prettify-item (fn prettify-item [item]
                         (cond
@@ -501,13 +534,14 @@
 
 (def ^:dynamic *spy-enabled-map* {})
 
-(defmacro with-spy-enabled
+
+(defmacro with-spy-enabled ; #todo README & test
   [tag ; :- s/Keyword #todo schema for macros?
    & forms ]
   `(binding [*spy-enabled-map* (assoc *spy-enabled-map* ~tag true)]
      ~@forms))
 
-(defmacro check-spy-enabled
+(defmacro check-spy-enabled ; #todo README & test
   [tag ; :- s/Keyword #todo schema for macros?
    & forms]
   `(binding [*spy-enabled* (get *spy-enabled-map* ~tag false)]
@@ -549,11 +583,48 @@
     (apply str it)))
 
 (defmacro forv ; #todo wrap body in implicit do
+  "Like clojure.core/for but returns results in a vector.   Not lazy."
   [& forms]
   `(vec (for ~@forms)))
 
 ;-----------------------------------------------------------------------------
 (defn spy
+  "A form of (println ...) to ease debugging display of either intermediate values in threading
+   forms or function return values. There are three variants.  Usage:
+
+    (spy :msg <msg-string>)
+        This variant is intended for use in either thread-first (->) or thread-last (->>)
+        forms.  The keyword :msg is used to identify the message string and works equally
+        well for both the -> and ->> operators. Spy prints both <msg-string>  and the
+        threading value to stdout, then returns the value for further propogation in the
+        threading form. For example, both of the following:
+            (->   2
+                  (+ 3)
+                  (spy :msg \"sum\" )
+                  (* 4))
+            (->>  2
+                  (+ 3)
+                  (spy :msg \"sum\" )
+                  (* 4))
+        will print 'sum => 5' to stdout.
+
+    (spy <msg-string> <value>)
+        This variant is intended for simpler use cases such as function return values.
+        Function return value expressions often invoke other functions and cannot be
+        easily displayed since (println ...) swallows the return value and returns nil
+        itself.  Spy will output both <msg-string> and the value, then return the value
+        for use by further processing.  For example, the following:
+            (println (* 2
+                       (spy \"sum\" (+ 3 4))))
+      will print:
+            sum => 7
+            14
+      to stdout.
+
+    (spy <value>)
+        This variant is intended for use in very simple situations and is the same as the
+        2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
+        prints 'spy => 5' to stdout.  "
   ([arg1 arg2]
    (let [[tag value] (cond
                        (keyword? arg1) [arg1 arg2]
@@ -629,6 +700,7 @@
   (spyx-pretty-proc exprs)) ; #todo add in use of `prettify` for each value
 
 (defmacro with-spy-indent
+  "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
   [& forms]
   `(do
      (tupelo.impl/spy-indent-inc)
@@ -637,6 +709,9 @@
        result#)))
 
 (defmacro let-spy
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expressions, printing both the expression and its value to stdout. Returns the value of the
+   last expression."
   [& exprs]
   (let [decls      (xfirst exprs)
         _          (when (not (even? (count decls)))
@@ -653,6 +728,9 @@
 ;-----------------------------------------------------------------------------
 
 (defmacro let-spy-pretty   ; #todo -> deprecated
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expressions, printing both the expression and its value to stdout. Returns the value of the
+   last expression."
   [& exprs]
   (let [decls (xfirst exprs)
         _     (when (not (even? (count decls)))

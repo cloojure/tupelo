@@ -33,130 +33,10 @@
 
 
 
-(defn glue-rows
-  " Convert a vector of vectors (2-dimensional) into a single vector (1-dimensional).
-  Equivalent to `(apply glue ...)`"
-  [coll-2d] (i/glue-rows coll-2d))
 
-(defn increasing?
-  "Returns true iff the vectors are in (strictly) lexicographically increasing order
-    [1 2]  [1]        -> false
-    [1 2]  [1 1]      -> false
-    [1 2]  [1 2]      -> false
-    [1 2]  [1 2 nil]  -> true
-    [1 2]  [1 2 3]    -> true
-    [1 2]  [1 3]      -> true
-    [1 2]  [2 1]      -> true
-    [1 2]  [2]        -> true "
-  [a b] (i/increasing? a b))
 
-(defn increasing-or-equal?
-  "Returns true iff the vectors are in (strictly) lexicographically increasing-or-equal order
-    [1 2]  [1]        -> false
-    [1 2]  [1 1]      -> false
-    [1 2]  [1 2]      -> true
-    [1 2]  [1 2 nil]  -> true
-    [1 2]  [1 2 3]    -> true
-    [1 2]  [1 3]      -> true
-    [1 2]  [2 1]      -> true
-    [1 2]  [2]        -> true "
-  [a b] (i/increasing-or-equal? a b))
-
-(defn not-nil?
-  "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
-   or the poorly-named clojure.core/some? "
-  [arg] (i/not-nil? arg))
-
-(defn not-empty?
-  "For any collection coll, returns true if coll contains any items; otherwise returns false.
-   Equivalent to (not (empty? coll))."
-  [coll] (i/not-empty? coll))
-
-(defn kw->sym       ; #todo ->sym  ->str  -> chars ->kw
-  "Converts a keyword to a symbol"
-  [arg] (i/kw->sym arg))
-(defn kw->str
-  "Converts a keyword to a string"
-  [arg] (i/kw->str arg))
-
-(defn str->kw
-  "Converts a string to a keyword"
-  [arg] (i/str->kw arg))
-(defn str->sym
-  "Converts a string to a symbol"
-  [arg] (i/str->sym arg))
-(defn str->chars
-  "Converts a string to a vector of chars"
-  [arg] (i/str->chars arg))
-
-(defn sym->kw
-  "Converts a symbol to a keyword"
-  [arg] (i/sym->kw arg))
-(defn sym->str
-  "Converts a symbol to a string"
-  [arg] (i/sym->str arg))
-
-(defn prettify
-  "Recursively walks a data structure and returns a prettified version.
-  Converts all lists to vectors. Converts all maps & sets to sorted collections."
-  [coll] (i/prettify coll))
-
-(defmacro with-spy-indent
-  "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
-  [& forms] `(i/with-spy-indent ~@forms))
-
-(defmacro with-spy-enabled ; #todo README & test
-  [tag & forms]
-  `(i/with-spy-enabled ~tag ~@forms))
-
-(defmacro check-spy-enabled ; #todo README & test
-  [tag & forms]
-  `(i/check-spy-enabled ~tag ~@forms))
 
 ; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
-
-(defn spy
-  "A form of (println ...) to ease debugging display of either intermediate values in threading
-   forms or function return values. There are three variants.  Usage:
-
-    (spy :msg <msg-string>)
-        This variant is intended for use in either thread-first (->) or thread-last (->>)
-        forms.  The keyword :msg is used to identify the message string and works equally
-        well for both the -> and ->> operators. Spy prints both <msg-string>  and the
-        threading value to stdout, then returns the value for further propogation in the
-        threading form. For example, both of the following:
-            (->   2
-                  (+ 3)
-                  (spy :msg \"sum\" )
-                  (* 4))
-            (->>  2
-                  (+ 3)
-                  (spy :msg \"sum\" )
-                  (* 4))
-        will print 'sum => 5' to stdout.
-
-    (spy <msg-string> <value>)
-        This variant is intended for simpler use cases such as function return values.
-        Function return value expressions often invoke other functions and cannot be
-        easily displayed since (println ...) swallows the return value and returns nil
-        itself.  Spy will output both <msg-string> and the value, then return the value
-        for use by further processing.  For example, the following:
-            (println (* 2
-                       (spy \"sum\" (+ 3 4))))
-      will print:
-            sum => 7
-            14
-      to stdout.
-
-    (spy <value>)
-        This variant is intended for use in very simple situations and is the same as the
-        2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
-        prints 'spy => 5' to stdout.  "
-  [& args] (apply i/spy args))
-
-(defmacro forv
-  "Like clojure.core/for but returns results in a vector.   Not lazy."
-  [& forms] `(i/forv ~@forms))
 
 (defn keep-if
   "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
@@ -185,17 +65,6 @@
   "Like `spyx-pretty` but without printing the original form"
   [& forms] `(i/spy-pretty ~@forms))
 
-(defmacro let-spy
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expressions, printing both the expression and its value to stdout. Returns the value of the
-   last expression."
-  [& forms] `(i/let-spy ~@forms))
-
-(defmacro let-spy-pretty
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expressions, printing both the expression and its value to stdout. Returns the value of the
-   last expression."
-  [& forms] `(i/let-spy-pretty ~@forms))
 
 (defmacro let-some
   "Threads forms as with `when-some`, but allow more than 1 pair of binding forms."

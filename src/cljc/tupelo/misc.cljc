@@ -7,7 +7,7 @@
 (ns tupelo.misc
   "Miscellaneous functions."
   #?@(:clj [
-  (:use tupelo.core)
+  (:use tupelo.impl)
             (:require
               [clj-uuid :as uuid]
               [clojure.core.async :refer [go go-loop chan buffer close! thread alts! alts!! timeout]]
@@ -15,7 +15,6 @@
               [clojure.java.shell :as shell]
               [clojure.string :as str]
               [schema.core :as s]
-              [tupelo.core :as t]
               [tupelo.schema :as tsk]
               [tupelo.string :as ts]
               [tupelo.types :as tt] )

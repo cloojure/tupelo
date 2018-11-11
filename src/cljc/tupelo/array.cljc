@@ -1,10 +1,8 @@
 (ns tupelo.array
   #?@(:clj [
-  (:use tupelo.core)
+  (:use tupelo.impl)
   (:require [schema.core :as s]
-            [tupelo.impl :as i]
-            [clojure.set :as set])
-            ])
+            [clojure.set :as set]) ])
   )
 
 #?(:clj (do
@@ -73,7 +71,7 @@
     (assert (apply = nrows (mapv count col-vecs)))
     (dotimes [jj ncols]
       (assert sequential? (nth col-vecs jj)))
-    (col-data->array nrows ncols (apply i/glue col-vecs))))
+    (col-data->array nrows ncols (apply glue col-vecs))))
 
 (s/defn num-rows :- s/Int
   "Returns the number of rows of an Array."
@@ -139,7 +137,7 @@
   (check-row-idx orig ii)
   (assert (= (num-cols orig) (count new-row)))
   (let [nrows  (num-rows orig)
-        result (i/glue
+        result (glue
                  (forv [ii (range ii)] (row-get orig ii))
                  [new-row]
                  (forv [ii (range (inc ii) nrows)] (row-get orig ii))) ]
@@ -167,7 +165,7 @@
 (s/defn array->row-data
   "Returns the concatenation of all array rows."
   [arr :- Array]
-  (apply i/glue arr))
+  (apply glue arr))
 
 (s/defn col-get :- Vector
   "Gets an Array col"
@@ -247,7 +245,7 @@
   (let [nrows (num-rows arr)
         ncols (num-cols arr)]
     (and (= nrows ncols)
-      (every? i/truthy?
+      (every? truthy?
         (for [ii (range  0 nrows)
               jj (range ii ncols)] (= (elem-get arr ii jj)
                                       (elem-get arr jj ii)))))))
@@ -287,7 +285,7 @@
         col-lens (mapv count cols)]
     (assert (apply = nrows col-lens))
     (forv [ii (range nrows)]
-      (i/glue (row-get orig ii) (forv [col cols]
+      (glue (row-get orig ii) (forv [col cols]
                                 (nth col ii))))))
 
 (s/defn glue-vert :- Array
@@ -295,15 +293,15 @@
   (assert (pos? (count arrays)))
   (let [ncol-vals (mapv num-cols arrays)]
     (assert (apply = ncol-vals)))
-  (apply i/glue arrays))
+  (apply glue arrays))
 
 (s/defn glue-horiz :- Array
   [& arrays :- [Array] ]
   (assert (pos? (count arrays)))
   (let [nrow-vals (mapv num-rows arrays)]
     (assert (apply = nrow-vals)))
-  (forv [ii (range (num-rows (i/xfirst arrays)))]
-    (apply i/glue (mapv #(row-get % ii) arrays))))
+  (forv [ii (range (num-rows (xfirst arrays)))]
+    (apply glue (mapv #(row-get % ii) arrays))))
 
 (s/defn toString :- s/Str
   [arr :- Array]
