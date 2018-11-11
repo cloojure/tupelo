@@ -30,8 +30,8 @@
     (when false
       (spyx (s/exercise ::i/anything))
      ;(spyx (s/exercise ::i/anything {::i/anything gen/int}))  ;#todo not quite right yet
-      (nl) (time (spyx (stest/check `i/truthy? {:clojure.spec.test.check/opts {:num-tests 99}})))
-      (nl) (time (spyx (stest/check `i/falsey? {:clojure.spec.test.check/opts {:num-tests 99}}))))
+      (newline) (time (spyx (stest/check `i/truthy? {:clojure.spec.test.check/opts {:num-tests 99}})))
+      (newline) (time (spyx (stest/check `i/falsey? {:clojure.spec.test.check/opts {:num-tests 99}}))))
 
     ))
 ))

@@ -104,7 +104,7 @@
     "Given N sequences of strings, compares corresponding strings from each sequence for equality
     after collapsing continugous whitespace to a single blank. "
     [& string-seqs]
-    (every? truthy? (apply mapv #(tstr/equals-ignore-spacing? %1 %2) string-seqs)))
+    (every? i/truthy? (apply mapv #(tstr/equals-ignore-spacing? %1 %2) string-seqs)))
   )
 
 ; #todo need (squash)         -> (collapse-whitespace (strcat args))       ; (smash ...)         ?

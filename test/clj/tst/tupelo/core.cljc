@@ -6,7 +6,7 @@
 ;   software.
 (ns tst.tupelo.core
   #?@(:clj [
-  (:use tupelo.core tupelo.dev tupelo.test )
+  (:use tupelo.dev tupelo.test )
             (:require
               [clojure.string :as str]
               [tupelo.core :as t] ; #todo finish migration to (:use tupelo.core)
@@ -23,12 +23,12 @@
 #?(:clj (do
 
 (defn fn-any [] 42)
-(defn fn7 [] (if-java-1-7-plus
+(defn fn7 [] (t/if-java-1-7-plus
                7
-               (throw (RuntimeException. "Unimplemented prior to Java 1.7: "))))
-(defn fn8 [] (if-java-1-8-plus
+               (throw (ex-info "Unimplemented prior to Java 1.7: " nil))))
+(defn fn8 [] (t/if-java-1-8-plus
                8
-               (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
+               (throw (ex-info "Unimplemented prior to Java 1.8: " nil))))
 
 (dotest
   (when (is-java-1-7?)
@@ -41,64 +41,64 @@
   (is= 42 (fn-any))
 
   (with-redefs [java-version (constantly "1.7")]
-    (is   (java-version-min? "1.7"))
-    (isnt (java-version-min? "1.7.0"))
-    (isnt (java-version-min? "1.7.0-b1234"))
-    (isnt (java-version-min? "1.8"))
+    (is   (t/java-version-min? "1.7"))
+    (isnt (t/java-version-min? "1.7.0"))
+    (isnt (t/java-version-min? "1.7.0-b1234"))
+    (isnt (t/java-version-min? "1.8"))
 
-    (is   (java-version-matches? "1.7"))
-    (isnt (java-version-matches? "1.7.0"))
-    (isnt (java-version-matches? "1.7.0-b1234"))
-    (isnt (java-version-matches? "1.8"))
+    (is   (t/java-version-matches? "1.7"))
+    (isnt (t/java-version-matches? "1.7.0"))
+    (isnt (t/java-version-matches? "1.7.0-b1234"))
+    (isnt (t/java-version-matches? "1.8"))
     )
   (with-redefs [java-version (constantly "1.7.0")]
-    (is   (java-version-min? "1.7"))
-    (is   (java-version-min? "1.7.0"))
-    (isnt (java-version-min? "1.7.0-b1234"))
-    (isnt (java-version-min? "1.8"))
+    (is   (t/java-version-min? "1.7"))
+    (is   (t/java-version-min? "1.7.0"))
+    (isnt (t/java-version-min? "1.7.0-b1234"))
+    (isnt (t/java-version-min? "1.8"))
 
-    (is   (java-version-matches? "1.7"))
-    (is   (java-version-matches? "1.7.0"))
-    (isnt (java-version-matches? "1.7.0-b1234"))
-    (isnt (java-version-matches? "1.8"))
+    (is   (t/java-version-matches? "1.7"))
+    (is   (t/java-version-matches? "1.7.0"))
+    (isnt (t/java-version-matches? "1.7.0-b1234"))
+    (isnt (t/java-version-matches? "1.8"))
     )
   (with-redefs [java-version (constantly "1.7.0-b1234")]
-    (is   (java-version-min? "1.7"))
-    (is   (java-version-min? "1.7.0"))
-    (is   (java-version-min? "1.7.0-b1234"))
-    (isnt (java-version-min? "1.8"))
+    (is   (t/java-version-min? "1.7"))
+    (is   (t/java-version-min? "1.7.0"))
+    (is   (t/java-version-min? "1.7.0-b1234"))
+    (isnt (t/java-version-min? "1.8"))
 
-    (is   (java-version-matches? "1.7"))
-    (is   (java-version-matches? "1.7.0"))
-    (is   (java-version-matches? "1.7.0-b1234"))
-    (isnt (java-version-matches? "1.8"))
+    (is   (t/java-version-matches? "1.7"))
+    (is   (t/java-version-matches? "1.7.0"))
+    (is   (t/java-version-matches? "1.7.0-b1234"))
+    (isnt (t/java-version-matches? "1.8"))
     )
 
   (with-redefs [java-version (constantly "1.7") ]
     (when false
       (println "testing java 1.7")
-      (spyx (is-java-1-7?))
-      (spyx (is-java-1-8?))
-      (spyx (is-java-1-7-plus?))
-      (spyx (is-java-1-8-plus?)))
+      (t/spyx (t/is-java-1-7?))
+      (t/spyx (t/is-java-1-8?))
+      (t/spyx (t/is-java-1-7-plus?))
+      (t/spyx (t/is-java-1-8-plus?)))
 
-    (is   (is-java-1-7?))
-    (is   (is-java-1-7-plus?))
-    (isnt (is-java-1-8?))
-    (isnt (is-java-1-8-plus?)) )
+    (is   (t/is-java-1-7?))
+    (is   (t/is-java-1-7-plus?))
+    (isnt (t/is-java-1-8?))
+    (isnt (t/is-java-1-8-plus?)) )
 
   (with-redefs [java-version (constantly "1.8") ]
     (when false
       (println "testing java 1.8")
-      (spyx (is-java-1-7?))
-      (spyx (is-java-1-8?))
-      (spyx (is-java-1-7-plus?))
-      (spyx (is-java-1-8-plus?)))
+      (t/spyx (t/is-java-1-7?))
+      (t/spyx (t/is-java-1-8?))
+      (t/spyx (t/is-java-1-7-plus?))
+      (t/spyx (t/is-java-1-8-plus?)))
 
-    (isnt (is-java-1-7?))
-    (is   (is-java-1-7-plus?))
-    (is   (is-java-1-8?))
-    (is   (is-java-1-8-plus?)) ) )
+    (isnt (t/is-java-1-7?))
+    (is   (t/is-java-1-7-plus?))
+    (is   (t/is-java-1-8?))
+    (is   (t/is-java-1-8-plus?)) ) )
 
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
@@ -144,316 +144,6 @@
 
 ; #todo ***** toptop *****
 
-(dotest
-  (isnt (increasing? [1 2] [1]))
-  (isnt (increasing? [1 2] [1 1]))
-  (isnt (increasing? [1 2] [1 2]))
-  (is   (increasing? [1 2] [1 2 nil]))
-  (is   (increasing? [1 2] [1 2 3]))
-  (is   (increasing? [1 2] [1 3]))
-  (is   (increasing? [1 2] [2 1]))
-  (is   (increasing? [1 2] [2]))
-
-  (isnt (increasing-or-equal? [1 2] [1]))
-  (isnt (increasing-or-equal? [1 2] [1 1]))
-  (is   (increasing-or-equal? [1 2] [1 2]))
-  (is   (increasing-or-equal? [1 2] [1 2 nil]))
-  (is   (increasing-or-equal? [1 2] [1 2 3]))
-  (is   (increasing-or-equal? [1 2] [1 3]))
-  (is   (increasing-or-equal? [1 2] [2 1]))
-  (is   (increasing-or-equal? [1 2] [2]))
-)
-
-(dotest
-  (let [map1  { :a 1 :b 2 :c nil
-               nil :NIL
-               "hi" "hello"
-               5 "five"}]
-    (is= 1           (grab :a   map1))
-    (is= 2           (grab :b   map1))
-    (is= nil         (grab :c   map1))
-    (is= :NIL        (grab nil  map1))
-    (is= "hello"     (grab "hi"  map1))
-    (is= "five"      (grab 5  map1))
-    (throws?  (grab :z map1))
-    (throws?  (grab 42 map1))
-    ))
-
-(dotest
-  (testing "basic usage"
-    (let [map1  {:a1 "a1"
-                 :a2 { :b1 "b1"
-                       :b2 { :c1 "c1"
-                             :c2 "c2" }}
-                 nil "NIL"
-                 :nil nil} ]
-      (is= "a1"  (fetch-in map1 [:a1]))
-      (is= "b1"  (fetch-in map1 [:a2 :b1]))
-      (is= "c1"  (fetch-in map1 [:a2 :b2 :c1]))
-      (is= "c2"  (fetch-in map1 [:a2 :b2 :c2]))
-      (is= "NIL" (fetch-in map1 [nil]))
-      (is= nil   (fetch-in map1 [:nil]))
-      (throws?   (fetch-in map1 [:a9]))
-      (throws?   (fetch-in map1 [:a2 :b9]))
-      (throws?   (fetch-in map1 [:a2 :b2 :c9])))))
-
-(dotest
-  (let [mm    {:a { :b { :c "c" }}} ]
-    (is= (dissoc-in mm []         )          mm )
-    (is= (dissoc-in mm [:a]       )          {} )
-    (is= (dissoc-in mm [:a :b]    )          {:a  {}} )
-    (is= (dissoc-in mm [:a :b :c] )          {:a  { :b  {}}} )
-    (is= (dissoc-in mm [:a :x :y] )          {:a  { :b  { :c "c" }
-                                                         :x  nil }} )
-    (is= (dissoc-in mm [:a :x :y :z] )       {:a  { :b  { :c "c" }
-                                                    :x  { :y nil }}} )
-    (is= (dissoc-in mm [:k1 :k2 :k3 :kz] )   {:a  { :b  { :c  "c" }}
-                                              :k1 { :k2 { :k3 nil }}} ))
-  (let [mm    {:a1 "a1"
-               :a2 { :b1 "b1"
-                     :b2 { :c1 "c1"
-                           :c2 "c2" }}} ]
-    (is= (dissoc-in mm [:a1] )
-              {:a2 { :b1 "b1"
-                     :b2 { :c1 "c1"
-                           :c2 "c2" }}} )
-    (is= (dissoc-in mm [:a2] )
-              {:a1 "a1" } )
-    (is= (dissoc-in mm [:a2 :b1] )
-              {:a1 "a1"
-               :a2 { :b2 { :c1 "c1"
-                           :c2 "c2" }}} )
-    (is= (dissoc-in mm [:a2 :b2] )
-              {:a1 "a1"
-               :a2 { :b1 "b1" }} )
-    (is= (dissoc-in mm [:a2 :b2 :c1] )
-              {:a1 "a1"
-               :a2 { :b1 "b1"
-                     :b2 { :c2 "c2" }}} )
-    (is= (dissoc-in mm [:a2 :b2 :c2] )
-              {:a1 "a1"
-               :a2 { :b1 "b1"
-                     :b2 { :c1 "c1" }}} )))
-
-(dotest
-  (is= [nil    ] (conjv nil   nil ))
-  (is= [      9] (conjv nil     9 ))
-
-  (is= [1      ] (conjv nil 1     ))
-  (is= [1 2    ] (conjv nil 1 2   ))
-  (is= [1 2 3  ] (conjv nil 1 2 3 ))
-
-  (is= [1      ] (conjv  [] 1     ))
-  (is= [1 2    ] (conjv  [] 1 2   ))
-  (is= [1 2 3  ] (conjv  [] 1 2 3 ))
-  (is= [1      ] (conjv '() 1     ))
-  (is= [1 2    ] (conjv '() 1 2   ))
-  (is= [1 2 3  ] (conjv '() 1 2 3 ))
-
-  (is= [      9] (conjv  [     ] 9 ))
-  (is= [1     9] (conjv  [1    ] 9 ))
-  (is= [1 2   9] (conjv  [1 2  ] 9 ))
-  (is= [1 2 3 9] (conjv  [1 2 3] 9 ))
-
-  (is= [      9] (conjv '(     ) 9 ))
-  (is= [1     9] (conjv '(1    ) 9 ))
-  (is= [1 2   9] (conjv '(1 2  ) 9 ))
-  (is= [1 2 3 9] (conjv '(1 2 3) 9 ))
-)
-
-(dotest
-  (let [map1  {:a 1 :b 2 :c 3 :d 4 :e 5}]
-    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (submap-by-keys map1 #{ :a :b :c :d :e } ))
-    (is= {     :b 2 :c 3 :d 4 :e 5} (submap-by-keys map1 #{    :b :c :d :e } ))
-    (is= {          :c 3 :d 4 :e 5} (submap-by-keys map1 #{       :c :d :e } ))
-    (is= {               :d 4 :e 5} (submap-by-keys map1 #{          :d :e } ))
-    (is= {                    :e 5} (submap-by-keys map1 #{             :e } ))
-    (is= {                        } (submap-by-keys map1 #{                } ))
-    (throws? (submap-by-keys map1 #{:z}))
-
-    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (submap-by-keys map1 #{ :a :b :c :d :e  :z } :missing-ok))
-    (is= {     :b 2 :c 3 :d 4 :e 5} (submap-by-keys map1 #{    :b :c :d :e  :z } :missing-ok))
-    (is= {          :c 3 :d 4 :e 5} (submap-by-keys map1 #{       :c :d :e  :z } :missing-ok))
-    (is= {               :d 4 :e 5} (submap-by-keys map1 #{          :d :e  :z } :missing-ok))
-    (is= {                    :e 5} (submap-by-keys map1 #{             :e  :z } :missing-ok))
-    (is= {                        } (submap-by-keys map1 #{                 :z } :missing-ok))
-
-    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (submap-by-vals map1 #{ 1 2 3 4 5 } ))
-    (is= {     :b 2 :c 3 :d 4 :e 5} (submap-by-vals map1 #{   2 3 4 5 } ))
-    (is= {          :c 3 :d 4 :e 5} (submap-by-vals map1 #{     3 4 5 } ))
-    (is= {               :d 4 :e 5} (submap-by-vals map1 #{       4 5 } ))
-    (is= {                    :e 5} (submap-by-vals map1 #{         5 } ))
-    (is= {                        } (submap-by-vals map1 #{           } ))
-    (throws? (submap-by-vals map1 #{ 99 }))
-
-    (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (submap-by-vals map1 #{ 1 2 3 4 5  99 } :missing-ok ))
-    (is= {     :b 2 :c 3 :d 4 :e 5} (submap-by-vals map1 #{   2 3 4 5  99 } :missing-ok ))
-    (is= {          :c 3 :d 4 :e 5} (submap-by-vals map1 #{     3 4 5  99 } :missing-ok ))
-    (is= {               :d 4 :e 5} (submap-by-vals map1 #{       4 5  99 } :missing-ok ))
-    (is= {                    :e 5} (submap-by-vals map1 #{         5  99 } :missing-ok ))
-    (is= {                        } (submap-by-vals map1 #{            99 } :missing-ok ))
-    (is= {                        } (submap-by-vals map1 #{               } :missing-ok ))
-
-    (is= { 0 :even 2 :even } (submap-by-vals
-                               { 0 :even 1 :odd 2 :even 3 :odd }
-                               #{ :even } ))
-    (is= { 0 :even 2 :even } (submap-by-vals
-                               { 0 :even 1 :odd 2 :even 3 :odd }
-                               #{ :even :prime } :missing-ok )))
-)
-
-(dotest             ; -1 implies "in order"
-  ; empty list is smaller than any non-empty list
-  (is (neg? (lexical-compare [] [2])))
-  (is (neg? (lexical-compare [] [\b])))
-  (is (neg? (lexical-compare [] ["b"])))
-  (is (neg? (lexical-compare [] [:b])))
-  (is (neg? (lexical-compare [] ['b])))
-
-  ; nil is smaller than any non-nil item
-  (is (neg? (lexical-compare [nil] [2])))
-  (is (neg? (lexical-compare [nil] [\b])))
-  (is (neg? (lexical-compare [nil] ["b"])))
-  (is (neg? (lexical-compare [nil] [:b])))
-  (is (neg? (lexical-compare [nil] ['b])))
-
-  ; Cannot compare items from different classes:  number, char, string, keyword, symbol
-  (throws? (lexical-compare [1] [\b]))
-  (throws? (lexical-compare [1] ["b"]))
-  (throws? (lexical-compare [1] [:b]))
-  (throws? (lexical-compare [1] ['b]))
-  (throws? (lexical-compare [\b] ["b"]))
-  (throws? (lexical-compare [\b] [:b]))
-  (throws? (lexical-compare [\b] ['b]))
-  (throws? (lexical-compare ["b"] [:b]))
-  (throws? (lexical-compare ["b"] ['b]))
-  (throws? (lexical-compare [:b] ['b]))
-
-  ; different positions in list can be of different class
-  (is (neg? (lexical-compare [:a] [:b])))
-  (is (neg? (lexical-compare [:a] [:a 1])))
-  (is (neg? (lexical-compare [1 :a] [2])))
-  (is (neg? (lexical-compare [:a] [:a 1])))
-  (is (neg? (lexical-compare [1] [1 :a])))
-  (is (neg? (lexical-compare [1 :a] [2])))
-
-  ; same position in list can be of different class if sorted by previous positions
-  (is (neg? (lexical-compare [1 :z] [2 9]))) ; OK since prefix lists [1] & [2] define order
-  (throws?  (lexical-compare [1 :z] [1 2])) ; not OK since have same prefix list: [1]
-
-  (is= (vec (sorted-set-by lexical-compare [1 :a] [1] [2]))
-    [[1] [1 :a] [2]])
-  (is= (vec (sorted-set-by lexical-compare [2 0] [2] [3] [3 :y] [1] [1 :a] [1 :b] [1 :b 3]))
-    [[1]
-     [1 :a]
-     [1 :b]
-     [1 :b 3]
-     [2]
-     [2 0]
-     [3]
-     [3 :y]]))
-
-(dotest
-  (is= 3 (validate pos? 3))
-  (is= 3.14 (validate number? 3.14))
-  (is= 3.14 (validate #(< 3 % 4) 3.14))
-  (is= [0 1 2] (validate vector? (vec (range 3))))
-  (is= nil (validate nil? (next [])))
-  (is= [0 1 2] (validate #(= 3 (count %)) [0 1 2]))
-  (throws? Exception (validate number? "hello"))
-  (throws? Exception (validate truthy? nil)) )
-
-(dotest
-  (throws? (verify (= 1 2)))
-  (is= 333 (verify (* 3 111))))
-
-(dotest
-  (let [m1 {:a 1 :b 2 :c 3}
-        m2 {:a 1 :b 2 :c [3 4]}]
-    (is= m1 (apply hash-map (keyvals m1)))
-    (is= m2 (apply hash-map (keyvals m2)))))
-; AWTAWT TODO: add test.check
-
-(dotest
-  (let [m1 {:a 1 :b 2 :c 3} ]
-    (is= [ :a 1 :b 2      ] (keyvals-seq m1 [:a :b]))
-    (is= [ :b 2 :a 1      ] (keyvals-seq m1 [:b :a]))
-    (is= [ :a 1 :b 2 :c 3 ] (keyvals-seq m1 [:a :b :c]))
-    (is= [ :c 3 :a 1 :b 2 ] (keyvals-seq m1 [:c :a :b]))
-    (is= [ :c 3 :b 2 :a 1 ] (keyvals-seq m1 [:c :b :a]))
-    (is= [ :a 1 :b 2 :a 1 ] (keyvals-seq m1 [:a :b :a]))
-
-    (throws? (keyvals-seq m1 [:a :b :z]))
-    (is= [:a 1 :b 2] (keyvals-seq {:missing-ok true
-                                   :the-map    m1 :the-keys [:a :b :z]}))
-    (is= [:b 2 :c 3] (keyvals-seq {:missing-ok true
-                                   :the-map    m1 :the-keys [:z :b :c]})) ))
-
-(dotest
-  (is= 2 (it-> 1
-           (inc it)
-           (+ 3 it)
-           (/ 10 it)))
-  (let [mm  {:a {:b 2}}]
-    (is= (it-> mm (:a it)          )  {:b 2} )
-    (is= (it-> mm (it :a)  (:b it) )      2  ))
-  (is= 48 (it-> 42
-            (let [x 5]
-              (+ x it))
-            (inc it))))
-
-(dotest
-  (let [params {:a 1 :b 1 :c nil :d nil}]
-    (is= (cond-it-> params
-           (:a it)              (update it :b inc)
-           (= (:b it) 2)        (assoc it :c "here")
-           (= "here" (:c it))   (assoc it :d "again"))
-      {:a 1, :b 2, :c "here", :d "again"}))
-
-  (let [params {:a nil :b 1 :c nil :d nil}]
-    (is= (cond-it-> params
-           (:a it)                (update it :b inc)
-           (= (:b it) 1)          (assoc it :c "here")
-           (= "here" (:c it))     (assoc it :d "again"))
-      {:a nil, :b 1, :c "here", :d "again"}))
-
-  (let [params {:a 1 :b 1 :c nil :d nil}]
-    (is= (cond-it-> params
-           (:a it)        (update it :b inc)
-           (= (:b it) 2)  (update it :b inc)
-           (:c it)        (assoc it :d "again"))
-      {:a 1, :b 3, :c nil :d nil})) )
-
-
-(dotest
-  (throws? Exception (/ 1 0))
-  (is= nil (with-exception-default nil (/ 1 0)))
-  (is= :dummy (with-exception-default :dummy (/ 1 0)))
-  (is= 123 (with-exception-default 0 (Long/parseLong "123")))
-  (is= 0 (with-exception-default 0 (Long/parseLong "12xy3"))))
-
-(dotest
-  (is= (validate-or-default not-nil? nil 0) 0)
-  (is= (validate-or-default not-empty? "" "How you doin?") "How you doin?")
-  (is= (mapv #(with-nil-default :some-default %)
-    [0 1 "" [] nil           true false])
-    [0 1 "" [] :some-default true false]))
-
-
-
-(dotest
-  (is= 8 (some-it-> 1
-           (inc it)
-           (* it 3)
-           (+ 2 it)))
-  (is (nil? (some-it-> nil
-              (inc it)
-              (* it 3)
-              (+ 2 it))))
-  (is (nil? (some-it-> 1 (inc it)
-              (when false (* it 3))
-              (+ 2 it))))
-  )
 
 
 (dotest
@@ -487,11 +177,11 @@
 
 
 (dotest
-  (is (every? truthy? (forv [ul (range 0 4)] (vector? (range-vec ul)))))
+  (is (every? i/truthy? (forv [ul (range 0 4)] (vector? (range-vec ul)))))
 
-  (is (every? truthy? (forv [ul (range 0 4)] (= (range-vec ul) (range ul)))))
+  (is (every? i/truthy? (forv [ul (range 0 4)] (= (range-vec ul) (range ul)))))
 
-  (is (every? truthy? (forv [lb (range 0 4)
+  (is (every? i/truthy? (forv [lb (range 0 4)
                              ub (range lb 4) ]
                           (= (range-vec lb ub) (range lb ub))))) )
 
@@ -700,8 +390,8 @@
   (throws? clojure.lang.ArityException (keep-if (fn [arg1 arg2] :dummy) #{1 2 3} ))
 
   ; Verify throw if coll is not a sequential, map, or set.
-  (throws? IllegalArgumentException (keep-if truthy? 2 ))
-  (throws? IllegalArgumentException (keep-if truthy? :some-kw )))
+  (throws? IllegalArgumentException (keep-if i/truthy? 2 ))
+  (throws? IllegalArgumentException (keep-if i/truthy? :some-kw )))
 
 (dotest
   (let [m1  {10  0,   20 0

@@ -186,7 +186,7 @@
 
                                         :else FAILURE)))
                       sub-result-combos (apply combo-all sub-results)
-                      sub-result-combos-ok (drop-if #(has-some? failure? %) sub-result-combos)
+                      sub-result-combos-ok (drop-if #(i/has-some? failure? %) sub-result-combos)
                       result-ctx-list (if (empty? sub-result-combos-ok)
                                         FAILURE
                                         (forv [sub-result sub-result-combos-ok]

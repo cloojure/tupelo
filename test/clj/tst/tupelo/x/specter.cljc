@@ -7,11 +7,10 @@
 (ns tst.tupelo.x.specter
   (:use tupelo.test )
   (:require
-    [tupelo.core :as t]
+    [tupelo.impl :as t]
     [tupelo.schema :as tsk]
     [clojure.set :as set]
     [schema.core :as s]))
-(t/refer-tupelo)
 
 ; #todo -> tupelo.core
 (def ->true  (constantly true))
@@ -27,7 +26,7 @@
   (apply hash-map pair))
 (s/defn map->pair :- tsk/Pair
   [map-arg :- tsk/Map]
-  (only (vec map-arg)))
+  (t/only (vec map-arg)))
 
 ; #todo maybe specialize to tx-map-entry & tx-indexed-elem
 (s/defn tx-val :- s/Any
@@ -47,10 +46,10 @@
    selector-fn      ; fn (or kw shortcut or :*)
    tx-fn            ; fn (map -> map)
    ]
-  (let [map-out (apply glue {}
-                  (forv [entry-pair map-in]
+  (let [map-out (apply t/glue {}
+                  (t/forv [entry-pair map-in]
                     (let [solo-map (pair->map entry-pair)]
-                      (validate map?
+                      (t/validate map?
                         (tx-val solo-map selector-fn tx-fn)))))]
     map-out))
 
@@ -76,8 +75,8 @@
    selector-fn      ; fn (or idx shortcut or :*)
    tx-fn            ; fn (tsk/Single -> tsk/Single)
    ]
-  (let [vec-out (apply glue []
-                  (forv [indexed-elem (indexed vec-in)]
+  (let [vec-out (apply t/glue []
+                  (t/forv [indexed-elem (t/indexed vec-in)]
                     (s/validate tsk/Single
                       (tx-val indexed-elem selector-fn tx-fn))))]
     vec-out))
@@ -100,9 +99,9 @@
 
 (dotest
   (let [hand-data   [{:a 2 :b 3} {:a 1} {:a 4}]
-        hand-result (forv [it hand-data]
-                      (glue it
-                        (let [it (grab :a it)]
+        hand-result (t/forv [it hand-data]
+                      (t/glue it
+                        (let [it (t/grab :a it)]
                           {:a (if (even? it)
                                 (inc it)
                                 it)})))]

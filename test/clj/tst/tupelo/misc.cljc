@@ -6,16 +6,15 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns ^:fast
   tst.tupelo.misc
-  (:use tupelo.misc tupelo.test )
+  (:use tupelo.impl tupelo.misc tupelo.test )
   (:require
     #?@(:clj [
-    [tupelo.core      :as t ]
-    [tupelo.string    :as ts ]
+    [tupelo.impl    :as i ]
+              [tupelo.string    :as ts ]
               ])
   ))
 
 #?(:clj (do
-(t/refer-tupelo)
 
 
 (dotest
@@ -80,10 +79,10 @@
   (is=         (factorial 8)      40320)
   (is=         (factorial 9)     362880)
   (is=         (factorial 10)   3628800)
-  (is (t/rel=  (factorial 15) 1.307674368e+12 :digits 10))
-  (throws? Exception (factorial 1.5))
-  (throws? Exception (factorial -1))
-  (throws? Exception (factorial -1)))
+  (is (i/rel=  (factorial 15) 1.307674368e+12 :digits 10))
+  (throws? (factorial 1.5))
+  (throws? (factorial -1))
+  (throws? (factorial -1)))
 
 (dotest
 ;              0 1 2  3    4    5    6    7   8 9]

@@ -5,15 +5,12 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.x.spec
-  (:use tupelo.test )
+  (:use tupelo.impl tupelo.test )
   (:require
     [clojure.set :as set]
     [clojure.string :as str]
     [clojure.test.check.generators :as tcgen]
-    [tupelo.core :as t]
-    [tupelo.impl :as i]
     [tupelo.spec :as tsp] ))
-(t/refer-tupelo)
 
 (when-clojure-1-9-plus
 

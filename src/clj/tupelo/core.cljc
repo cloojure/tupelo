@@ -28,19 +28,7 @@
 ; (when (= person :frid)  ; (kw :frid) -> throws
 ;    (println "Hi Barney!"))
 
-(defn truthy?
-  "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
-  [arg] (i/truthy? arg))
-
-(defn falsey?
-  "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
-   to (not (truthy? arg))."
-  [arg] (i/falsey? arg))
-
-(defn nl
-  "Abbreviated name for `newline` "
-  [] (i/nl))
-
+; #todo cleansing *****************************************************************************
 (defn unlazy ; #todo need tests & docs. Use for datomic Entity?
   "Converts a lazy collection to a concrete (eager) collection of the same type."
   [coll] (i/unlazy coll))
@@ -199,15 +187,6 @@
   "Converts a symbol to a string"
   [arg] (i/sym->str arg))
 
-(defn int->kw [arg]
-  (keyword (str arg)))
-#?(:clj
-   (defn kw->int [arg]
-     (Integer/parseInt (kw->str arg))))
-#?(:cljs
-   (defn kw->int [arg]
-     (js/parseInt (kw->str arg) 10)))
-
 (defn prettify
   "Recursively walks a data structure and returns a prettified version.
   Converts all lists to vectors. Converts all maps & sets to sorted collections."
@@ -266,35 +245,6 @@
         prints 'spy => 5' to stdout.  "
   [& args] (apply i/spy args))
 
-#?(:clj
-   (do
-     ; #todo add test & README
-     (defn json->edn
-       "Shortcut to cheshire.core/parse-string"
-       [arg]
-       (cheshire/parse-string arg true)) ; true => keywordize-keys
-
-     ; #todo add test & README
-     (defn edn->json
-       "Shortcut to cheshire.core/generate-string"
-       [arg]
-       (cheshire/generate-string arg))
-     ))
-#?(:cljs
-   (do
-     ; #todo add test & README
-     (defn json->edn
-       "Convert from json -> edn"
-       [arg]
-       (js->clj (.parse js/JSON arg) :keywordize-keys true)) ; true => keywordize-keys
-
-     ; #todo add test & README
-     (defn edn->json
-       "Convert from edn -> json "
-       [arg]
-       (.stringify js/JSON (clj->js arg)))
-     ))
-
 (defmacro forv
   "Like clojure.core/for but returns results in a vector.   Not lazy."
   [& forms] `(i/forv ~@forms))
@@ -306,18 +256,6 @@
 (defn drop-if
   "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
   [pred coll] (i/drop-if pred coll))
-
-(defn has-some?
-  "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
-   coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
-  [pred coll]
-  (i/has-some? pred coll))
-
-(defn has-none?
-  "For any predicate pred & collection coll, returns false if (pred x) is logical true for at least one x in
-   coll; otherwise returns true.  Equivalent to clojure.core/not-any?, but inverse of has-some?."
-  [pred coll]
-  (i/has-none? pred coll))
 
 (defmacro spyx
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
@@ -355,18 +293,6 @@
   [bindings & forms]
   `(i/let-some ~bindings ~@forms))
 
-(defn contains-elem?
-  "For any collection coll & element tgt, returns true if coll contains at least one
-  instance of tgt; otherwise returns false. Note that, for maps, each element is a
-  vector (i.e MapEntry) of the form [key value]."
-  [coll elem] (i/contains-elem? coll elem))
-(defn contains-key?
-  "For any map or set, returns true if elem is a map key or set element, respectively"
-  [map-or-set elem ] (i/contains-key? map-or-set elem))
-(defn contains-val?
-  "For any map, returns true if elem is present in the map for at least one key."
-  [map elem] (i/contains-val? map elem))
-
 (defn strcat
   "Recursively concatenate all arguments into a single string result."
   [& args] (apply i/strcat args))
@@ -378,7 +304,7 @@
            num-hyphen  (+ 6 (count version-str))
            hyphens     (strcat (repeat num-hyphen \-))
            version-str (strcat "   " version-str)]
-       (nl)
+       (i/nl)
        (println hyphens)
        (println version-str)
        (println hyphens)))
@@ -387,7 +313,7 @@
            num-hyphen  (+ 6 (count version-str))
            hyphens     (strcat (repeat num-hyphen \-))
            version-str (strcat "   " version-str)]
-       (nl)
+       (i/nl)
        (println hyphens)
        (println version-str)
        (println hyphens))) )
@@ -548,23 +474,6 @@
   recursive walk returning scalar args (int, string, keyword, etc) in a single 1-D vector."
   [& values] (apply i/unnest values))
 
-
-
-; #todo ***** toptop ***********************************************************************************
-#?(:clj (do
-
-(defmacro when-clojure-1-8-plus [& forms]
-  `(i/when-clojure-1-8-plus ~@forms))
-
-(defmacro when-clojure-1-9-plus [& forms]
-  `(i/when-clojure-1-9-plus ~@forms))
-
-; #todo ----- gogo ----------------------------------------------------------------------------------
-
-(defn rand-elem
-  "Returns a random element from a collection"
-  [coll] (i/rand-elem coll))
-
 (defn lexical-compare
   "Performs a lexical comparison of 2 sequences, sorting as follows:
       [1]
@@ -575,11 +484,6 @@
       [3]
       [3 :y] "
   [a b] (i/lexical-compare a b))
-
-(defn chan->lazy-seq
-  "Accepts a core.async channel and returns the contents as a lazy list."
-  [chan]
-  (i/chan->lazy-seq chan))
 
 (defn submap-by-keys
   "Returns a new map containing entries with the specified keys. Throws for missing keys,
@@ -598,46 +502,14 @@
       (submap-by-vals {:a 1 :b 2 :A 1} #{1 9} :missing-ok )  =>  {:a 1 :A 1} "
   [map-arg keep-vals & opts] (apply i/submap-by-vals map-arg keep-vals opts))
 
-;-----------------------------------------------------------------------------
-; Java version stuff
+(defn rand-elem
+  "Returns a random element from a collection"
+  [coll] (i/rand-elem coll))
 
-(s/defn java-version :- s/Str
-  []
-  (System/getProperty "java.version"))
-
-(s/defn java-version-matches? :- s/Bool
-  "Returns true if Java version exactly matches supplied string."
-  [version-str :- s/Str]
-  (str/starts-with? (java-version) version-str))
-
-(s/defn java-version-min? :- s/Bool
-  "Returns true if Java version is at least as great as supplied string.
-  Sort is by lexicographic (alphabetic) order."
-  [version-str :- s/Str]
-  (ts/increasing-or-equal? version-str (java-version)))
-
-(defn is-java-1-7? [] (java-version-matches? "1.7"))
-(defn is-java-1-8? [] (java-version-matches? "1.8"))
-
-(defn is-java-1-7-plus? [] (java-version-min? "1.7"))
-(defn is-java-1-8-plus? [] (java-version-min? "1.8"))
-
-(defmacro if-java-1-7-plus
-  "If JVM is Java 1.7 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
-  [if-form else-form]
-  (if (is-java-1-7-plus?)
-    `(do ~if-form)
-    `(do ~else-form)))
-
-(defmacro if-java-1-8-plus
-  "If JVM is Java 1.8 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
-  [if-form else-form]
-  (if (is-java-1-8-plus?)
-      `(do ~if-form)
-      `(do ~else-form)))
-
-; #todo need min-java-1-8  ???
-
+(defn chan->lazy-seq
+  "Accepts a core.async channel and returns the contents as a lazy list."
+  [chan]
+  (i/chan->lazy-seq chan))
 
 (defn validate
   "(validate tst-fn tst-val)
@@ -679,6 +551,80 @@
   [the-map items-vec & forms]
   `(i/with-map-vals ~the-map ~items-vec ~@forms))
 
+(defn keyvals
+  "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
+   (apply hash-map (keyvals m)). (keyvals {:a 1 :b 2} => [:a 1 :b 2] "
+  [m] (i/keyvals m))
+
+(s/defn keyvals-seq :- [s/Any]
+  "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
+   (apply hash-map (keyvals m)). (keyvals {:a 1 :b 2} => [:a 1 :b 2]
+
+     Usage:  (keyvals-seq ctx) ctx-default: {:missing-ok false}
+             (keyvals-seq the-map the-keys) "
+  ([ctx :- tsk/KeyMap ]
+    (let [defaults {:missing-ok false}]
+      (i/keyvals-seq (into defaults ctx))))
+  ([the-map :- tsk/KeyMap
+    the-keys :- [s/Any]]
+    (keyvals-seq (vals->map the-map the-keys))) )
+
+
+
+
+
+; #todo ***** toptop ***********************************************************************************
+#?(:clj (do
+
+(defmacro when-clojure-1-8-plus [& forms]
+  `(i/when-clojure-1-8-plus ~@forms))
+
+(defmacro when-clojure-1-9-plus [& forms]
+  `(i/when-clojure-1-9-plus ~@forms))
+
+;-----------------------------------------------------------------------------
+; Java version stuff
+
+(s/defn java-version :- s/Str
+  []
+  (System/getProperty "java.version"))
+
+(s/defn java-version-matches? :- s/Bool
+  "Returns true if Java version exactly matches supplied string."
+  [version-str :- s/Str]
+  (str/starts-with? (java-version) version-str))
+
+(s/defn java-version-min? :- s/Bool
+  "Returns true if Java version is at least as great as supplied string.
+  Sort is by lexicographic (alphabetic) order."
+  [version-str :- s/Str]
+  (ts/increasing-or-equal? version-str (java-version)))
+
+(defn is-java-1-7? [] (java-version-matches? "1.7"))
+(defn is-java-1-8? [] (java-version-matches? "1.8"))
+
+(defn is-java-1-7-plus? [] (java-version-min? "1.7"))
+(defn is-java-1-8-plus? [] (java-version-min? "1.8"))
+
+(defmacro if-java-1-7-plus
+  "If JVM is Java 1.7 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
+  [if-form else-form]
+  (if (is-java-1-7-plus?)
+    `(do ~if-form)
+    `(do ~else-form)))
+
+(defmacro if-java-1-8-plus
+  "If JVM is Java 1.8 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
+  [if-form else-form]
+  (if (is-java-1-8-plus?)
+      `(do ~if-form)
+      `(do ~else-form)))
+
+; #todo need min-java-1-8  ???
+
+; #todo ----- gogo ----------------------------------------------------------------------------------
+
+
 (defmacro destruct  ; #todo flesh out
   "Natural destructuring:
      (let [data {:a 1
@@ -709,24 +655,6 @@
   current values as with (vals->map data-1 data-2 ...)"
   [& args] (throw (ex-info "restruct-all: illegal usage - should never get here." args)))
 
-(defn keyvals
-  "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
-   (apply hash-map (keyvals m)). (keyvals {:a 1 :b 2} => [:a 1 :b 2] "
-  [m] (i/keyvals m))
-
-(s/defn keyvals-seq :- [s/Any]
-  "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
-   (apply hash-map (keyvals m)). (keyvals {:a 1 :b 2} => [:a 1 :b 2]
-
-     Usage:  (keyvals-seq ctx) ctx-default: {:missing-ok false}
-             (keyvals-seq the-map the-keys) "
-  ([ctx :- tsk/KeyMap ]
-    (let [defaults {:missing-ok false}]
-      (i/keyvals-seq (into defaults ctx))))
-  ([the-map :- tsk/KeyMap
-    the-keys :- [s/Any]]
-    (keyvals-seq (vals->map the-map the-keys))) )
-
 (defn macro?
   "Returns true if a quoted symbol resolves to a macro. Usage:
 
@@ -746,22 +674,6 @@
 (defn idx
   "Indexes into a vector, allowing negative index values"
   [coll index-val] (i/idx coll index-val) )
-
-(s/defn dissoc-in :- s/Any
-  "A sane version of dissoc-in that will not delete intermediate keys.
-   When invoked as (dissoc-in the-map [:k1 :k2 :k3... :kZ]), acts like
-   (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only
-   the map entry containing the last key :kZ is removed, and all map entries
-   higher than kZ in the hierarchy are unaffected."
-  [the-map :- tsk/KeyMap
-   keys-vec :- [s/Keyword]]
-  (let [num-keys     (count keys-vec)
-        key-to-clear (last keys-vec)
-        parent-keys  (butlast keys-vec)]
-    (cond
-      (zero? num-keys) the-map
-      (= 1 num-keys) (dissoc the-map key-to-clear)
-      :else (update-in the-map parent-keys dissoc key-to-clear))))
 
 ; #todo:  add in clear-nil-entries to recursively delete all k-v pairs where val is nil or empty?
 
@@ -845,75 +757,6 @@
 ;   (round dblVal :incr (Math/pow 10 *digits*)))
 ; (defn round [dblVal :digits 2]
 ;   (round dblVal :exp (- *digits*)))
-
-(defn rel=
-  "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative equality
-   is specified as either (1) the N most significant digits are equal, or (2) the absolute
-   difference is less than a tolerance value.  Input values are coerced to double before comparison.
-   Example:
-
-     (rel= 123450000 123456789   :digits 4   )  ; true
-     (rel= 1         1.001       :tol    0.01)  ; true
-   "
-  [val1 val2 & {:as opts}]
-  {:pre  [(number? val1) (number? val2)]
-   :post [(contains? #{true false} %)]}
-  (let [{:keys [digits tol]} opts]
-    (when-not (or digits tol)
-      (throw (IllegalArgumentException.
-               (str "Must specify either :digits or :tol" \newline
-                 "opts: " opts))))
-    (when tol
-      (when-not (number? tol)
-        (throw (IllegalArgumentException.
-                 (str ":tol must be a number" \newline
-                   "opts: " opts))))
-      (when-not (pos? tol)
-        (throw (IllegalArgumentException.
-                 (str ":tol must be positive" \newline
-                   "opts: " opts)))))
-    (when digits
-      (when-not (integer? digits)
-        (throw (IllegalArgumentException.
-                 (str ":digits must be an integer" \newline
-                   "opts: " opts))))
-      (when-not (pos? digits)
-        (throw (IllegalArgumentException.
-                 (str ":digits must positive" \newline
-                   "opts: " opts)))))
-    ; At this point, there were no invalid args and at least one of
-    ; either :tol and/or :digits was specified.  So, return the answer.
-    (let [val1      (double val1)
-          val2      (double val2)
-          delta-abs (Math/abs (- val1 val2))
-          or-result (truthy?
-                      (or (zero? delta-abs)
-                        (and tol
-                          (let [tol-result (< delta-abs tol)]
-                            tol-result))
-                        (and digits
-                          (let [abs1          (Math/abs val1)
-                                abs2          (Math/abs val2)
-                                max-abs       (Math/max abs1 abs2)
-                                delta-rel-abs (/ delta-abs max-abs)
-                                rel-tol       (Math/pow 10 (- digits))
-                                dig-result    (< delta-rel-abs rel-tol)]
-                            dig-result))))
-          ]
-      or-result)))
-
-(defn all-rel=
-  "Applies"
-  [x-vals y-vals & opts]
-  (let [num-x (count x-vals)
-        num-y (count y-vals)]
-    (when-not (= num-x num-y)
-      (throw (IllegalArgumentException.
-               (str ": x-vals & y-vals must be same length" \newline
-                 "  #x: " num-x "  #y: " num-y)))))
-  (every? truthy?
-    (clojure.core/map #(apply rel= %1 %2 opts)
-      x-vals y-vals)))
 
 ;; #todo delete old definition
 ;(defn set=
@@ -1197,41 +1040,41 @@
       ]
         (recur unprocessed new-result)))))
 
-(defn refer-tupelo  ; #todo document in readme
-  "Refer a number of commonly used tupelo.core functions into the current namespace so they can
-   be used without namespace qualification."
-  [& args]
-  (refer 'tupelo.core :only
-   '[spy spyx spyx-pretty spyxx
-     let-spy let-spy-pretty
-     with-spy-indent with-spy-enabled check-spy-enabled
-     truthy? falsey? not-nil? not-empty? has-some? has-none?
-     contains-key? contains-val? contains-elem?
-     forv map-let* map-let
-     when-clojure-1-8-plus when-clojure-1-9-plus
-     conjv glue glue-rows
-     macro? chars-thru
-     append prepend grab dissoc-in fetch fetch-in
-     submap? submap-by-keys submap-by-vals keyvals keyvals-seq validate-map-keys map-keys map-vals
-     validate only it-> keep-if drop-if zip zip* zip-lazy indexed
-     strcat nl pretty pretty-str json->edn edn->json clip-str range-vec thru rel= all-rel=
-     drop-at insert-at replace-at idx
-     starts-with? int->kw kw->int
-     xfirst xsecond xthird xfourth xlast xbutlast xrest xreverse
-     kw->sym kw->str str->sym str->kw str->chars sym->kw sym->str
-     split-using split-match partition-using
-     wild-item? submatch? val=
-     increasing? increasing-or-equal? ->vector unwrap xvec
-     fibonacci-seq fibo-thru fibo-nth unnest
-     with-exception-default lazy-cons lazy-gen yield yield-all
-    ] )
-  (let [flags (set args)]
-    (when (contains? flags :dev)
-      ; (refer 'tupelo.impl :only '[   ])
-    )
-    (when (contains? flags :strict)
-      ; #todo unlink/relink troublesome clojure.core stuff
-    )))
+;(defn refer-tupelo  ; #todo delete?
+;  "Refer a number of commonly used tupelo.core functions into the current namespace so they can
+;   be used without namespace qualification."
+;  [& args]
+;  (refer 'tupelo.core :only
+;   '[spy spyx spyx-pretty spyxx
+;     let-spy let-spy-pretty
+;     with-spy-indent with-spy-enabled check-spy-enabled
+;     not-nil? not-empty? has-some? has-none?
+;
+;     forv map-let* map-let
+;     when-clojure-1-8-plus when-clojure-1-9-plus
+;     glue glue-rows
+;     macro? chars-thru
+;     append prepend grab dissoc-in fetch fetch-in
+;     submap? submap-by-keys submap-by-vals keyvals keyvals-seq validate-map-keys map-keys map-vals
+;     validate only it-> keep-if drop-if zip zip* zip-lazy indexed
+;     strcat nl pretty pretty-str json->edn edn->json clip-str range-vec thru rel= all-rel=
+;     drop-at insert-at replace-at idx
+;     starts-with? int->kw kw->int
+;     xfirst xsecond xthird xfourth xlast xbutlast xrest xreverse
+;     kw->sym kw->str str->sym str->kw str->chars sym->kw sym->str
+;     split-using split-match partition-using
+;     wild-item? submatch? val=
+;     increasing? increasing-or-equal? ->vector unwrap xvec
+;     fibonacci-seq fibo-thru fibo-nth unnest
+;     with-exception-default lazy-cons lazy-gen yield yield-all
+;    ] )
+;  (let [flags (set args)]
+;    (when (contains? flags :dev)
+;      ; (refer 'tupelo.impl :only '[   ])
+;    )
+;    (when (contains? flags :strict)
+;      ; #todo unlink/relink troublesome clojure.core stuff
+;    )))
 
 ;---------------------------------------------------------------------------------------------------
 ; DEPRECATED functions
@@ -1294,19 +1137,5 @@
 ;    (apply clojure.test/run-tests test-ns-list)
 ;    (println "-----------------------------------------------------------------------------")
 ;    (newline) ))
-
-(s/defn ^:deprecated conjv :- [s/Any] ; #todo remove
-  "***** DEPRECATED:  replaced by tupelo.core/append *****
-
-   Given base-coll and and one or more values, converts base-coll to a vector and then appends the values.
-   The result is always returned as a vector. Note that `(conjv nil 5)` -> `[5]`"
-  ; From Stuart Sierra post 2014-2-10
-  ([base-coll :- [s/Any]
-    value :- s/Any]
-    (conj (vec base-coll) value))
-  ([base-coll :- [s/Any]
-    value :- s/Any
-    & values :- [s/Any]]
-    (apply conj (vec base-coll) value values)))
 
 ))

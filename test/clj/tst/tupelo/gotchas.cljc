@@ -5,14 +5,13 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.gotchas
-  (:use tupelo.core tupelo.test)
+  (:use tupelo.test)
   (:require
     #?@(:clj [
     [clojure.set :as set]
     [clojure.test.check.generators :as gen]
     [clojure.test.check.properties :as prop]
-    [tupelo.core :as t]
-    [tupelo.impl :as i]
+    [tupelo.impl :as t]
     [tupelo.string :as ts]
              ]) ))
 ; #todo add example for duplicates in clojure.core.combo
@@ -135,7 +134,7 @@
   (is= 0    (count nil))
   )
 
-(i/when-clojure-1-9-plus
+(t/when-clojure-1-9-plus
   (dotest
     ; `any?` always returns true
     (is= true (any? false))
@@ -225,7 +224,7 @@
   (prop/for-all [val (gen/vector gen/any)]
     (is (= (not (empty? val)) (t/not-empty? val)))
     (isnt= (empty? val) (empty val))))
-(i/when-clojure-1-9-plus
+(t/when-clojure-1-9-plus
   (dotest
     (check-isnt 33
       (prop/for-all [val (gen/vector gen/int)]
@@ -245,7 +244,7 @@
 (dotest
   (let [sampleRec (->SampleRec 1 2)]
     (isnt  (= sampleRec {:a 1 :b 2})) ; fails for clojure.core/= "
-    (is (val= sampleRec {:a 1 :b 2})))) ; works for tupelo.core/val=
+    (is (t/val= sampleRec {:a 1 :b 2})))) ; works for tupelo.core/val=
 
 ;-----------------------------------------------------------------------------
 ; clojure.set has no type-checking

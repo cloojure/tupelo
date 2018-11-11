@@ -3,6 +3,7 @@
   (:use tupelo.core)
   (:require [schema.core :as s]
             [tupelo.core :as t]
+            [tupelo.impl :as i]
             [clojure.set :as set])
             ])
   )
@@ -247,7 +248,7 @@
   (let [nrows (num-rows arr)
         ncols (num-cols arr)]
     (and (= nrows ncols)
-      (every? truthy?
+      (every? i/truthy?
         (for [ii (range  0 nrows)
               jj (range ii ncols)] (= (elem-get arr ii jj)
                                       (elem-get arr jj ii)))))))

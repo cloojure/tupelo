@@ -16,11 +16,15 @@
     [clojure.walk :as walk]
     [tupelo.schema :as tsk]
     [schema.core :as s]
-    #?@(:clj [
+
+    #?@(:clj [[cheshire.core :as cheshire]
               [clojure.core.match :as ccm]
-              ;[tupelo.spec :as tsp]
               [tupelo.types :as types]
-             ])))
+             ]))
+  #?(:clj (:import [java.io PrintStream ByteArrayOutputStream]))
+)
+
+; #todo make sure works with cljdoc
 
 ; #todo wrap = < <= et al to throw ArityException if only 1 arg
 ; #todo or if not number?
@@ -31,15 +35,77 @@
 ; #todo    like (some-fn* (glue {0 0   1 "hello"   2 :cc} {<user args here>} ))
 
 
+
 (defn truthy?
+  "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
   [arg]
   (if arg true false))
 
 (defn falsey?
+  "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
+   to (not (truthy? arg))."
   [arg]
   (if arg false true))
 
-(defn nl [] (newline))
+(defn nl
+  "Abbreviated name for `newline` "
+  [] (newline))
+
+; #todo -> README
+(s/defn has-some? :- s/Bool ; #todo rename to has-any?   Add warning re new clj/any?
+  "For any predicate pred & collection coll, returns true if (pred x) is logical true for at least one x in
+   coll; otherwise returns false.  Like clojure.core/some, but returns only true or false."
+  [pred :-  s/Any
+   coll :- [s/Any] ]
+  (truthy? (some pred coll)))
+; NOTE: was `any?` prior to new `clojure.core/any?` added in clojure 1.9.0-alpha10
+
+; #todo -> README
+(s/defn has-none? :- s/Bool
+  "For any predicate pred & collection coll, returns false if (pred x) is logical true for at least one x in
+   coll; otherwise returns true.  Equivalent to clojure.core/not-any?, but inverse of has-some?."
+  [pred :-  s/Any
+   coll :- [s/Any] ]
+  (falsey? (some pred coll))) ; #todo -> (not (has-some? pred coll))
+
+(s/defn contains-elem? :- s/Bool
+  "For any collection coll & element tgt, returns true if coll contains at least one
+  instance of tgt; otherwise returns false. Note that, for maps, each element is a
+  vector (i.e MapEntry) of the form [key value]."
+  [coll :- s/Any
+   elem :- s/Any ]
+  (has-some? truthy?
+    (mapv #(= elem %) (seq coll))))
+
+(s/defn contains-key? :- s/Bool
+  "For any map or set, returns true if elem is a map key or set element, respectively"
+  [map-or-set :- (s/pred #(or (map? %) (set? %)))
+   elem :- s/Any ]
+  (contains? map-or-set elem))
+
+(s/defn contains-val? :- s/Bool
+  "For any map, returns true if elem is present in the map for at least one key."
+  [map :- tsk/Map
+   elem :- s/Any ]
+  (has-some? truthy?
+    (mapv #(= elem %) (vals map))))
+
+(s/defn dissoc-in :- s/Any
+  "A sane version of dissoc-in that will not delete intermediate keys.
+   When invoked as (dissoc-in the-map [:k1 :k2 :k3... :kZ]), acts like
+   (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only
+   the map entry containing the last key :kZ is removed, and all map entries
+   higher than kZ in the hierarchy are unaffected."
+  [the-map :- tsk/KeyMap
+   keys-vec :- [s/Keyword]]
+  (let [num-keys     (count keys-vec)
+        key-to-clear (last keys-vec)
+        parent-keys  (butlast keys-vec)]
+    (cond
+      (zero? num-keys) the-map
+      (= 1 num-keys) (dissoc the-map key-to-clear)
+      :else (update-in the-map parent-keys dissoc key-to-clear))))
+
 
 (defn unlazy
   [coll]
@@ -268,6 +334,45 @@
   [arg :- s/Str]
   (vec arg))
 
+(defn int->kw [arg]
+  (keyword (str arg)))
+#?(:clj
+   (defn kw->int [arg]
+     (Integer/parseInt (kw->str arg))))
+#?(:cljs
+   (defn kw->int [arg]
+     (js/parseInt (kw->str arg) 10)))
+
+#?(:clj
+   (do
+     ; #todo add test & README
+     (defn json->edn
+       "Shortcut to cheshire.core/parse-string"
+       [arg]
+       (cheshire/parse-string arg true)) ; true => keywordize-keys
+
+     ; #todo add test & README
+     (defn edn->json
+       "Shortcut to cheshire.core/generate-string"
+       [arg]
+       (cheshire/generate-string arg))
+     ))
+#?(:cljs
+   (do
+     ; #todo add test & README
+     (defn json->edn
+       "Convert from json -> edn"
+       [arg]
+       (js->clj (.parse js/JSON arg) :keywordize-keys true)) ; true => keywordize-keys
+
+     ; #todo add test & README
+     (defn edn->json
+       "Convert from edn -> json "
+       [arg]
+       (.stringify js/JSON (clj->js arg)))
+     ))
+
+
 ; #todo:  make (map-ctx {:trunc false :eager true} <fn> <coll1> <coll2> ...) <- default ctx
 ; #todo:  mapz, forz, filterz, ...?
 (defn keep-if
@@ -293,19 +398,6 @@
   "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
   [pred coll]
   (keep-if (complement pred) coll))
-
-; #todo -> README
-(s/defn has-some? :- s/Bool ; #todo rename to has-any?   Add warning re new clj/any?
-  [pred :-  s/Any
-   coll :- [s/Any] ]
-  (truthy? (some pred coll)))
-; NOTE: was `any?` prior to new `clojure.core/any?` added in clojure 1.9.0-alpha10
-
-; #todo -> README
-(s/defn has-none? :- s/Bool
-  [pred :-  s/Any
-   coll :- [s/Any] ]
-  (falsey? (some pred coll))) ; #todo -> (not (has-some? pred coll))
 
 ;-----------------------------------------------------------------------------
 (defn prettify
@@ -546,22 +638,6 @@
              (let-some ~(cc/drop 2 bindings) ~@forms))))
       `(do ~@forms))))
 
-(s/defn contains-elem? :- s/Bool
-  [coll :- s/Any
-   elem :- s/Any ]
-  (has-some? truthy?
-    (mapv #(= elem %) (seq coll))))
-
-(s/defn contains-key? :- s/Bool
-  [map-or-set :- (s/pred #(or (map? %) (set? %)))
-   elem :- s/Any ]
-  (contains? map-or-set elem))
-
-(s/defn contains-val? :- s/Bool
-  [map :- tsk/Map
-   elem :- s/Any ]
-  (has-some? truthy?
-    (mapv #(= elem %) (vals map))))
 
 ; #todo fix so doesn't hang if give infinite lazy seq
 ; #todo rename :strict -> :trunc
@@ -684,6 +760,77 @@
   [curr-val recursive-call-form]
   `(lazy-seq (cons ~curr-val ~recursive-call-form)))
 
+
+(defn rel=
+  "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative equality
+   is specified as either (1) the N most significant digits are equal, or (2) the absolute
+   difference is less than a tolerance value.  Input values are coerced to double before comparison.
+   Example:
+
+     (rel= 123450000 123456789   :digits 4   )  ; true
+     (rel= 1         1.001       :tol    0.01)  ; true
+   "
+  [val1 val2 & {:as opts}]
+  {:pre  [(number? val1) (number? val2)]
+   :post [(contains? #{true false} %)]}
+  (let [{:keys [digits tol]} opts]
+    (when-not (or digits tol)
+      (throw (IllegalArgumentException.
+               (str "Must specify either :digits or :tol" \newline
+                 "opts: " opts))))
+    (when tol
+      (when-not (number? tol)
+        (throw (IllegalArgumentException.
+                 (str ":tol must be a number" \newline
+                   "opts: " opts))))
+      (when-not (pos? tol)
+        (throw (IllegalArgumentException.
+                 (str ":tol must be positive" \newline
+                   "opts: " opts)))))
+    (when digits
+      (when-not (integer? digits)
+        (throw (IllegalArgumentException.
+                 (str ":digits must be an integer" \newline
+                   "opts: " opts))))
+      (when-not (pos? digits)
+        (throw (IllegalArgumentException.
+                 (str ":digits must positive" \newline
+                   "opts: " opts)))))
+    ; At this point, there were no invalid args and at least one of
+    ; either :tol and/or :digits was specified.  So, return the answer.
+    (let [val1      (double val1)
+          val2      (double val2)
+          delta-abs (Math/abs (- val1 val2))
+          or-result (truthy?
+                      (or (zero? delta-abs)
+                        (and tol
+                          (let [tol-result (< delta-abs tol)]
+                            tol-result))
+                        (and digits
+                          (let [abs1          (Math/abs val1)
+                                abs2          (Math/abs val2)
+                                max-abs       (Math/max abs1 abs2)
+                                delta-rel-abs (/ delta-abs max-abs)
+                                rel-tol       (Math/pow 10 (- digits))
+                                dig-result    (< delta-rel-abs rel-tol)]
+                            dig-result))))
+          ]
+      or-result)))
+
+(defn all-rel=
+  "Applies"
+  [x-vals y-vals & opts]
+  (let [num-x (count x-vals)
+        num-y (count y-vals)]
+    (when-not (= num-x num-y)
+      (throw (IllegalArgumentException.
+               (str ": x-vals & y-vals must be same length" \newline
+                 "  #x: " num-x "  #y: " num-y)))))
+  (every? truthy?
+    (clojure.core/map #(apply rel= %1 %2 opts)
+      x-vals y-vals)))
+
+
 (defn range-vec [& args]
   (vec (apply range args)))
 
@@ -707,9 +854,7 @@
          nsteps-int     (Math/round nsteps-dbl)
          rounding-error (Math/abs (- nsteps-dbl nsteps-int)) ]
      (when (< 0.00001 rounding-error)
-       (throw (IllegalArgumentException. (str
-                                           "thru: non-integer number of steps \n   args:"
-                                           (pr-str [start end step])))))
+       (throw (ex-info "thru: non-integer number of steps \n   args:" (vals->map start end step))))
      (vec (clojure.core/map #(-> %
                                (* step)
                                (+ start))
@@ -725,9 +870,7 @@
   (let [start-val   (int start-char)
         stop-val    (int stop-char)]
     (when-not (<= start-val stop-val)
-      (throw (IllegalArgumentException.
-               (str "char-seq: start-char must come before stop-char."
-                 "  start-val=" start-val "  stop-val=" stop-val))))
+      (throw (ex-info "char-seq: start-char must come before stop-char." (vals->map start-val stop-val))))
     (mapv char (thru start-val stop-val))))
 
 ; #todo rename to "get-in-safe" ???
@@ -740,10 +883,7 @@
    keys-vec  :- tsk/Vec ]
   (let [result (get-in the-map keys-vec ::not-found)]
     (if (= result ::not-found)
-      (throw (IllegalArgumentException.
-               (str "Key seq not present in map:" \newline
-                 "  map : " the-map \newline
-                 "  keys: " keys-vec \newline)))
+      (throw (ex-info "Key seq not present in map:" (vals->map the-map keys-vec)))
       result)))
 
 (s/defn fetch :- s/Any
@@ -791,6 +931,156 @@
                           (unnest-coll item)
                           [item])))]
     result))
+
+(defn cond-it-impl
+  [expr & forms]
+  (let [num-forms (count forms)]
+    (when-not (even? num-forms)
+      (throw (ex-info "num-forms must be even; value=" (vals->map num-forms forms)))))
+  (let [cond-action-pairs (partition 2 forms)
+        cond-action-forms (for [[cond-form action-form] cond-action-pairs]
+                            `(if ~cond-form
+                               ~action-form
+                               ~'it)) ]
+    `(it-> ~expr ~@cond-action-forms)))
+
+(defmacro cond-it->
+  [& forms]
+  (apply cond-it-impl forms))
+
+; #todo #wip
+(defmacro some-it->
+  [expr & forms]
+  (let [binding-pairs (interleave (repeat 'it) forms) ]
+    `(tupelo.core/let-some [~'it ~expr
+                            ~@binding-pairs]
+       ~'it)))
+
+
+(defmacro with-exception-default
+  [default-val & forms]
+  `(try
+     ~@forms
+     (catch
+       #?(:clj Exception)
+       #?(:cljs js/Object) ; js/Error  :default
+       e# ~default-val)))
+
+(defn validate
+  [is-valid? sample-val]
+  (let [tst-result (is-valid? sample-val)]
+    (when-not (truthy? tst-result)
+      (throw (ex-info  "validate: " (vals->map sample-val tst-result))))
+    sample-val))
+
+(defn validate-or-default
+  [is-valid? sample-val default-val]
+  (if (is-valid? sample-val)
+    sample-val
+    default-val))
+
+(defn with-nil-default
+  [default-val sample-val]
+  (validate-or-default not-nil? sample-val default-val))
+
+(defmacro verify
+  [form]
+  `(let [value# ~form]
+     (if (truthy? value#)
+       value#
+       (throw (ex-info "verification failed  " '~form)))))
+
+;-----------------------------------------------------------------------------
+; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
+
+; #todo fix up for maps
+(defn rand-elem
+  [coll]
+  (verify (not-nil? coll))
+  (rand-nth (vec coll)))
+
+; #todo add (->sorted-map <map>)        => (into (sorted-map) <map>)
+; #todo add (->sorted-set <set>)        => (into (sorted-set) <set>)
+; #todo add (->sorted-vec <sequential>) => (vec (sort <vec>))
+
+(s/defn lexical-compare :- s/Int
+  [a :- tsk/List
+   b :- tsk/List]
+  (cond
+    (= a b) 0
+    (empty? a) -1
+    (empty? b) 1
+    :else (let [a0 (xfirst a)
+                b0 (xfirst b)]
+            (if (= a0 b0)
+              (lexical-compare (xrest a) (xrest b))
+              (compare a0 b0)))))
+
+; #todo maybe submap-without-keys, submap-without-vals ?
+; #todo filter by pred in addition to set/list?
+; #todo -> README
+(s/defn submap-by-keys :- tsk/Map
+  [map-arg :- tsk/Map
+   keep-keys :- (s/either tsk/Set tsk/List)
+   & opts]
+ ;(println :awt00 map-arg)
+  (let [keep-keys (set keep-keys)]
+   ;(println :awt01 keep-keys)
+   ;(println :awt02 opts)
+    (if (= opts [:missing-ok])
+      (do
+       ;(println :awt10 )
+        (apply glue {}
+          (for [key keep-keys]
+            (with-exception-default {}
+              {key (grab key map-arg)}))))
+      (do
+       ;(println :awt20 )
+        (apply glue {}
+          (for [key keep-keys]
+            {key (grab key map-arg)}))))))
+
+; #todo -> README
+(s/defn submap-by-vals :- tsk/Map
+  [map-arg :- tsk/Map
+   keep-vals :- (s/either tsk/Set tsk/List)
+   & opts]
+  (let [keep-vals    (set keep-vals)
+        found-map    (into {}
+                       (for [entry map-arg
+                             :let [entry-val (val entry)]
+                             :when (contains? keep-vals entry-val)]
+                         entry))
+        found-vals   (into #{} (vals found-map))
+        missing-vals (set/difference keep-vals found-vals)]
+    (if (or (empty? missing-vals) (= opts [:missing-ok]))
+      found-map
+      (throw (ex-info "submap-by-vals: " (vals->map missing-vals map-arg))))))
+
+; #todo need README
+(s/defn submap? :- s/Bool
+  [inner-map :- {s/Any s/Any}                           ; #todo
+   outer-map :- {s/Any s/Any}]                          ; #todo
+  (let [inner-set (set inner-map)
+        outer-set (set outer-map)]
+    (set/subset? inner-set outer-set)))
+
+(s/defn keyvals :- [s/Any]
+  [m :- tsk/Map ]
+  (reduce into [] (seq m)))
+
+(s/defn keyvals-seq :- [s/Any]
+  [ctx :- tsk/KeyMap]
+  (with-map-vals ctx [missing-ok the-map the-keys]
+    (apply glue
+      (for [key the-keys]
+        (let [val (get the-map key ::missing)]
+          (if-not (= val ::missing)
+            [key val]
+            (if missing-ok
+              []
+              (throw (ex-info "Key not present in map:" (vals->map the-map key))))))))))
+
 
 
 
@@ -857,87 +1147,6 @@
 ; #todo gogo ---------------------------------------------------------------------------------------------------
 
 
-(defn cond-it-impl
-  [expr & forms]
-  (let [num-forms (count forms)]
-    (when-not (even? num-forms)
-      (throw (ex-info (str "num-forms must be even; value=" num-forms) forms))))
-  (let [cond-action-pairs (partition 2 forms)
-        cond-action-forms (for [[cond-form action-form] cond-action-pairs]
-                            `(if ~cond-form
-                               ~action-form
-                               ~'it)) ]
-    `(it-> ~expr ~@cond-action-forms)))
-
-(defmacro cond-it->
-  [& forms]
-  (apply cond-it-impl forms))
-
-; #todo #wip
-(defmacro some-it->
-  [expr & forms]
-  (let [binding-pairs (interleave (repeat 'it) forms) ]
-    `(tupelo.core/let-some [~'it ~expr
-                            ~@binding-pairs]
-       ~'it)))
-
-
-(defmacro with-exception-default
-  [default-val & forms]
-  `(try
-     ~@forms
-     (catch Exception e# ~default-val)))
-
-(defn validate
-  [is-valid? sample-val]
-  (let [tst-result (is-valid? sample-val)]
-    (when-not (truthy? tst-result)
-      (throw (ex-info  "validate: " (vals->map sample-val tst-result))))
-    sample-val))
-
-(defn validate-or-default
-  [is-valid? sample-val default-val]
-  (if (is-valid? sample-val)
-    sample-val
-    default-val))
-
-(defn with-nil-default
-  [default-val sample-val]
-  (validate-or-default not-nil? sample-val default-val))
-
-(defmacro verify
-  [form]
-  `(let [value# ~form]
-     (if (truthy? value#)
-       value#
-       (throw (ex-info "verification failed  " '~form)))))
-
-;-----------------------------------------------------------------------------
-; #todo need option for (take 3 coll :exact) & drop; xtake xdrop
-
-; #todo fix up for maps
-(defn rand-elem
-  [coll]
-  (verify (not-nil? coll))
-  (rand-nth (vec coll)))
-
-; #todo add (->sorted-map <map>)        => (into (sorted-map) <map>)
-; #todo add (->sorted-set <set>)        => (into (sorted-set) <set>)
-; #todo add (->sorted-vec <sequential>) => (vec (sort <vec>))
-
-(s/defn lexical-compare :- s/Int
-  [a :- tsk/List
-   b :- tsk/List]
-  (cond
-    (= a b) 0
-    (empty? a) -1
-    (empty? b) 1
-    :else (let [a0 (xfirst a)
-                b0 (xfirst b)]
-            (if (= a0 b0)
-              (lexical-compare (xrest a) (xrest b))
-              (compare a0 b0)))))
-
 ; #todo Need safe versions of:
 ; #todo    + - * /  (others?)  (& :strict :safe reassignments)
 ; #todo    and, or    (& :strict :safe reassignments)
@@ -996,69 +1205,6 @@
     :args (sp/cat :arg ::anything)
     :ret boolean?
     :fn #(= (:ret %) (not (truthy? (-> % :args :arg))))))
-
-; #todo maybe submap-without-keys, submap-without-vals ?
-; #todo filter by pred in addition to set/list?
-; #todo -> README
-(s/defn submap-by-keys :- tsk/Map
-  [map-arg :- tsk/Map
-   keep-keys :- (s/either tsk/Set tsk/List)
-   & opts]
-  (let [keep-keys (set keep-keys)]
-    (if (= opts [:missing-ok])
-      (apply glue {}
-        (for [key keep-keys]
-          (with-exception-default {}
-            {key (grab key map-arg)})))
-      (apply glue {}
-        (for [key keep-keys]
-          {key (grab key map-arg)})))))
-
-; #todo -> README
-(s/defn submap-by-vals :- tsk/Map
-  [map-arg :- tsk/Map
-   keep-vals :- (s/either tsk/Set tsk/List)
-   & opts]
-  (let [keep-vals    (set keep-vals)
-        found-map    (into {}
-                       (for [entry map-arg
-                             :let [entry-val (val entry)]
-                             :when (contains? keep-vals entry-val)]
-                         entry))
-        found-vals   (into #{} (vals found-map))
-        missing-vals (set/difference keep-vals found-vals)]
-    (if (or (empty? missing-vals) (= opts [:missing-ok]))
-      found-map
-      (throw (IllegalArgumentException.
-               (format "submap-by-vals: missing values= %s  map-arg= %s  " missing-vals (pretty-str map-arg)))))))
-
-; #todo need README
-(s/defn submap? :- Boolean
-  [inner-map :- {s/Any s/Any}                           ; #todo
-   outer-map :- {s/Any s/Any}]                          ; #todo
-  (let [inner-set (set inner-map)
-        outer-set (set outer-map)]
-    (set/subset? inner-set outer-set)))
-
-
-(s/defn keyvals :- [s/Any]
-  [m :- tsk/Map ]
-  (reduce into [] (seq m)))
-
-(s/defn keyvals-seq :- [s/Any]
-  [ctx :- tsk/KeyMap]
-  (with-map-vals ctx [missing-ok the-map the-keys]
-    (apply glue
-      (for [key the-keys]
-        (let [val (get the-map key ::missing)]
-          (if-not (= val ::missing)
-            [key val]
-            (if missing-ok
-              []
-              (throw (IllegalArgumentException.
-                       (str "Key not present in map:" \newline
-                            "  map: " the-map \newline
-                            "  key: " key \newline))))))))))
 
 (s/defn sequential->idx-map :- {s/Any s/Any} ; #todo move
   [data :- [s/Any]]

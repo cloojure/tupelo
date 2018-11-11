@@ -15,6 +15,7 @@
     [net.cgrand.tagsoup :as enlive-tagsoup]
     [schema.core :as s]
     [tupelo.misc :as tm :refer [HID]]
+    [tupelo.impl :as i]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
   )
@@ -285,7 +286,7 @@
   [node :- tsk/KeyMap]
   (let [kids (grab ::kids node)]
        (and (pos? (count kids))
-         (every? truthy? (mapv raw-leaf-node? kids)))))
+         (every? i/truthy? (mapv raw-leaf-node? kids)))))
 
 (s/defn consolidate-raw-kids :- tsk/Vec
   "Consolidates ::raw kids for a node into a single Enlive :content vector"

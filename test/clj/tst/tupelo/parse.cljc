@@ -9,7 +9,7 @@
       [ (:use tupelo.core tupelo.test)
        (:require
          [tupelo.parse :as tpar]
-         [tupelo.core :as t]
+         [tupelo.impl :as i]
          [schema.core :as s])
        (:import
          [java.lang Math])]))
@@ -84,8 +84,8 @@
   (is= 15.0                             (tpar/parse-float "15"))
   (is= -5.0                             (tpar/parse-float "-5"))
   (is= 0.5                              (tpar/parse-float "0.5"))
-  (is (t/rel=  0.1                      (tpar/parse-float "0.1")            :digits 7))
-  (is (t/rel=  3.141592654              (tpar/parse-float "3.141592654")    :digits 7))
+  (is (i/rel=  0.1                      (tpar/parse-float "0.1")            :digits 7))
+  (is (i/rel=  3.141592654              (tpar/parse-float "3.141592654")    :digits 7))
   (throws? NumberFormatException        (tpar/parse-float ""))
   (throws? NumberFormatException        (tpar/parse-float "xyz")
 
@@ -94,8 +94,8 @@
   (is= nil                              (tpar/parse-float ""                 :default nil ))
   (is= 0                                (tpar/parse-float "xyz"              :default 0   ))
   (is= 0.5                              (tpar/parse-float "0.5"              :default nil ))
-  (is (t/rel=  (/ 1 10)                 (tpar/parse-float "0.1"              :default 0) :digits 7))
-  (is (t/rel=  3.141592654              (tpar/parse-float "3.141592654"      :default 0) :digits 7))) )
+  (is (i/rel=  (/ 1 10)                 (tpar/parse-float "0.1"              :default 0) :digits 7))
+  (is (i/rel=  3.141592654              (tpar/parse-float "3.141592654"      :default 0) :digits 7))) )
 
 (dotest
   (is= 15.0                             (tpar/parse-double "15"))
@@ -103,15 +103,15 @@
   (throws? NumberFormatException        (tpar/parse-double ""))
   (throws? NumberFormatException        (tpar/parse-double "xyz"))
   (is= 0.5                              (tpar/parse-double "0.5"))
-  (is (t/rel=  (double (/ 1 10) )       (tpar/parse-double "0.1")           :digits 9))
-  (is (t/rel=  Math/PI                  (tpar/parse-double "3.141592654")   :digits 9))
+  (is (i/rel=  (double (/ 1 10) )       (tpar/parse-double "0.1")           :digits 9))
+  (is (i/rel=  Math/PI                  (tpar/parse-double "3.141592654")   :digits 9))
 
   (is= 15.0                             (tpar/parse-double "15"          :default nil ))
   (is= -5.0                             (tpar/parse-double "-5"          :default nil ))
   (is= nil                              (tpar/parse-double ""            :default nil ))
   (is= 0                                (tpar/parse-double "xyz"         :default 0   ))
   (is= 0.5                              (tpar/parse-double "0.5"         :default nil ))
-  (is (t/rel= (/ 1 10)                  (tpar/parse-double "0.1"         :default 0)     :digits 9))
-  (is (t/rel= Math/PI                   (tpar/parse-double "3.141592654" :default 0)     :digits 9)) )
+  (is (i/rel= (/ 1 10)                  (tpar/parse-double "0.1"         :default 0)     :digits 9))
+  (is (i/rel= Math/PI                   (tpar/parse-double "3.141592654" :default 0)     :digits 9)) )
 
 ))
