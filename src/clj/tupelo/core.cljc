@@ -38,14 +38,6 @@
 
 ; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
 
-(defn keep-if
-  "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
-  [pred coll] (i/keep-if pred coll))
-
-(defn drop-if
-  "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
-  [pred coll] (i/drop-if pred coll))
-
 (defmacro spyx
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
    expressions, printing both the expression and its value to stdout. Returns the value of the

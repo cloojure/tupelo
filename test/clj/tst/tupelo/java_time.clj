@@ -1,6 +1,6 @@
 (ns tst.tupelo.java-time
   (:refer-clojure :exclude [range])
-  (:use tupelo.java-time tupelo.core tupelo.test)
+  (:use tupelo.java-time tupelo.impl tupelo.test)
   (:require
     [clj-time.core :as joda]
     [clojure.string :as str])
