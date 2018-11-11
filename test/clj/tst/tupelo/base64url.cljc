@@ -13,15 +13,15 @@
             [clojure.test.check.properties          :as prop]
             [clojure.test.check.clojure-test        :as tst]
             [tupelo.base64url                       :as b64url]
-            [tupelo.core :as t]
-            [tupelo.misc                            :as misc]
             [tupelo.char                            :as char]
+            [tupelo.impl                            :as i]
+            [tupelo.misc                            :as misc]
             [tupelo.types                           :as types]
   )
             ]) )
 
 #?(:clj (do
-(when (t/is-java-1-8-plus?)
+(when (i/is-java-1-8-plus?)
   (dotest
     (let [orig     (byte-array [(byte \A)])
           code-str (b64url/encode-bytes->str orig)

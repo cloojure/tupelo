@@ -8,7 +8,6 @@
   "Convert to/from traditional base64url encoding."
   #?@(:clj [
   (:require [clojure.string :as str]
-            [tupelo.core    :as t]
             [tupelo.impl    :as i]
             [tupelo.types   :as types]
             [schema.core    :as s])
@@ -26,12 +25,12 @@
                        [\- \_ \=] ] )))
 
 (defn base64url-encoder []
-  (t/if-java-1-8-plus
+  (i/if-java-1-8-plus
     (java.util.Base64/getUrlEncoder)
     (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 
 (defn base64url-decoder []
-  (t/if-java-1-8-plus
+  (i/if-java-1-8-plus
     (java.util.Base64/getUrlDecoder)
     (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 

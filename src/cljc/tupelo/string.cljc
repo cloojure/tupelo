@@ -239,14 +239,13 @@
   "Returns true if a pair of strings are in increasing lexicographic order."
   [a :- s/Str
    b :- s/Str ]
-  (neg? (compare a b)))
+  (i/string-increasing? a b) )
 
 (s/defn increasing-or-equal? :- s/Bool ; #todo merge with general in tupelo.core
   "Returns true if a pair of strings are in increasing lexicographic order, or equal."
   [a :- s/Str
    b :- s/Str ]
-  (or (= a b)
-      (increasing? a b)))
+  (i/string-increasing-or-equal? a b))
 
 (s/defn contains-match?  :- s/Bool
   "Returns true if the regex matches any portion of the intput string."

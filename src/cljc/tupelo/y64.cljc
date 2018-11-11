@@ -19,9 +19,7 @@
   #?@(:clj [
   (:require [clojure.string     :as str]
             [tupelo.base64      :as b64]
-            [tupelo.core        :as t]
             [tupelo.impl        :as i]
-            [tupelo.misc        :as misc]
             [tupelo.types       :as types]
             [schema.core        :as s] )
   (:gen-class)
