@@ -32,7 +32,7 @@
     #?@(:clj [[cheshire.core :as cheshire]
               [clojure.core.match :as ccm]
               [tupelo.types :as types] ]))
-  #?(:clj (:import [java.io PrintStream ByteArrayOutputStream]))
+  #?(:clj (:import [java.io BufferedReader ByteArrayOutputStream PrintStream StringReader ] ))
 )
 
 ;---------------------------------------------------------------------------------------------------
@@ -2402,6 +2402,15 @@
                 (-> x .getClass .isArray)
                 (string? x)
                 (instance? java.util.Map x))))
+
+          ; duplicate of str/split-lines
+          (defn ^:deprecated ^:no-doc str->lines
+            "***** DEPRECATED:  duplicate of str/split-lines *****
+
+            Returns a lazy seq of lines from a string"
+            [string-arg]
+            (line-seq (BufferedReader. (StringReader. string-arg))))
+
 
           ))
 
