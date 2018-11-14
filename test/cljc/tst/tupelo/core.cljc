@@ -1396,22 +1396,25 @@
 
   ; #todo make work for CLJS
   (is= "abcd" (t/strcat 97 98 "cd"))
+  (is= "abcd" (t/strcat [97 98] "cd"))
+  (is= "abcd" (str/join (t/chars-thru \a \d)))
   #?(:clj
      (do
-       (is= "abcd" (t/strcat [97 98] "cd"))
        (is= "abcd" (t/strcat (byte-array [97 98]) "cd"))
 
        (is= (t/strcat "I " [\h \a nil \v [\e \space nil (byte-array [97])
                                           [nil 32 "complicated" (Math/pow 2 5) '("str" nil "ing")]]])
-         "I have a complicated string")
-
-       (let [chars-set (into #{} (t/chars-thru \a \z))
-             str-val   (t/strcat chars-set)]
-         (is= 26 (count chars-set))
-         (is= 26 (count str-val))
-         (is= 26 (count (re-seq #"[a-z]" str-val)))
-         (is= "abc" (str/join (t/chars-thru \a \c)))
-     ))))
+         "I have a complicated string")))
+  #?(:cljs
+     (do
+       (is= (t/strcat "I " [\h \a nil \v [\e \space nil [97]
+                                          [nil 32 "complicated" (Math/pow 2 5) '("str" nil "ing")]]])
+         "I have a complicated string")))
+  (let [chars-set (into #{} (t/chars-thru \a \z))
+        str-val   (t/strcat chars-set)]
+    (is= 26 (count chars-set))
+    (is= 26 (count str-val))
+    (is= 26 (count (re-seq #"[a-z]" str-val)))))
 
 (dotest
   (testing "single string"
