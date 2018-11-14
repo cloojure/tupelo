@@ -871,21 +871,15 @@
             :b2 { :c1 "c1" }}} )))
 
 (dotest
- (println :awt200 "*****************************************************************************")
- (t/try-catchall
-   (throw (ex-info "some-big-error" {:answer 43}))
-   (catch e
-     (println "Caught:" e) ) )
- (println :awt299 "*****************************************************************************") )
+  (t/try-catchall
+    (throw (ex-info "some-big-error" {:answer 43}))
+    (catch e
+           (println "Caught:" e)))
 
-(dotest
-  (println :awt100 "*****************************************************************************")
   (let [x (t/with-exception-default :XXX
-            (throw (ex-info "some-big-error" {:answer 43})) )]
+            (throw (ex-info "some-big-error" {:answer 43})))]
     (println :awt110 x)
-    (is true))
-  (println :awt199 "*****************************************************************************")
-  )
+    (is true)))
 
 (dotest
   (let [map1  {:a 1 :b 2 :c 3 :d 4 :e 5}]
@@ -1065,23 +1059,23 @@
               (+ 2 it)))) )
 
 (dotest
-  (throws? (throw (ex-info "some msg" :some-data)))
-
   ; java way to throw
   #?(:clj
-     (do (is= nil (t/with-exception-default nil (throw (RuntimeException. "bummer"))))
+     (do (throws? (throw (RuntimeException. "bummer")))
+         (is= nil (t/with-exception-default nil (throw (RuntimeException. "bummer"))))
          (is= :dummy (t/with-exception-default :dummy (throw (RuntimeException. "bummer dude"))))
 
          (is= 123 (t/with-exception-default 0 (Long/parseLong "123")))
          (is= 0 (t/with-exception-default 0 (Long/parseLong "12xy3")))))
   ; clojurescript way to throw
   #?(:cljs
-     (do (is= nil (t/with-exception-default nil (throw (js/Error "bummer"))))
+     (do (throws? (throw (js/Error "bummer")))
+         (is= nil (t/with-exception-default nil (throw (js/Error "bummer"))))
          (is= :dummy (t/with-exception-default :dummy (throw (js/Error "bummer dude"))))))
   ; cross-platform way to throw
-  (do
-    (is= nil (t/with-exception-default nil (throw (ex-info "bummer"))))
-    (is= :dummy (t/with-exception-default :dummy (throw (ex-info "bummer dude"))))))
+  (do (throws? (throw (ex-info "some msg" :some-data)))
+      (is= nil (t/with-exception-default nil (throw (ex-info "bummer"))))
+      (is= :dummy (t/with-exception-default :dummy (throw (ex-info "bummer dude"))))))
 
 (dotest
   (is= (t/validate-or-default t/not-nil? nil 0) 0)
