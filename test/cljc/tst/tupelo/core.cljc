@@ -1934,6 +1934,23 @@
     (is= flat-seq [0 1 2 3 4 10 11 12 13 14 20 21 22 23 24])))
 ))
 
+(dotest
+  (is (t/submap? {:a 1} {:a 1 :b 2}))
+  (is (t/submap? {:b 2} {:a 1 :b 2})) )
+
+(dotest
+  (is= (range 5) (t/unlazy (range 5)))
+  (let [c1 {:a 1 :b (range 3) :c {:x (range 4) (range 5) "end"}}]
+    (is= c1 (t/unlazy c1)))
+  (let [l2 '({:a ("zero" 0)} {:a ("one" 1)} {:a ("two" 2)})
+        e2 (t/unlazy l2)]
+    (is= l2 e2)
+    (is= "one" (get-in e2 [1 :a 0] l2))
+    ; (throws? (spyx (get-in l2 [1 :a 0] l2)))    ; #todo: SHOULD throw
+    )
+  (is= [1 2 3] (t/unlazy (map inc (range 3))))
+  (is= #{1 2 3} (t/unlazy #{3 2 1})))
+
 
 
 

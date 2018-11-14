@@ -466,41 +466,16 @@
 )
 
 (dotest
-  ; (println "t-throws enter")
-  ; (newline) (spyx (throws?-impl '(/ 1 2)))
-  ; (newline) (spyx (throws?-impl 'Exception '(/ 1 2)))
-  ; (newline) (spyx (throws?-impl 'ArithmeticException '(/ 1 2)))
-
   (throws? (/ 1 0))
-  (throws? Exception (/ 1 0))             ; catches specified Throwable (or subclass)
-  (throws? ArithmeticException (/ 1 0))   ; catches specified Throwable (or subclass)
-
-  ; (println "t-throws exit")
+  (throws? Exception (/ 1 0))             ; catches specified Throwable (or subclass) - JVM only
+  (throws? ArithmeticException (/ 1 0))   ; catches specified Throwable (or subclass) - JVM only
 )
-
 
 (dotest
   (is   (macro? 'and))
   (is   (macro? '->))
   (isnt (macro? '+))
   (isnt (macro? 'if)))
-
-(dotest
-  (is (submap? {:a 1} {:a 1 :b 2}))
-  (is (submap? {:b 2} {:a 1 :b 2})) )
-
-(dotest
-  (is= (range 5) (unlazy (range 5)))
-  (let [c1 {:a 1 :b (range 3) :c {:x (range 4) (range 5) "end"}}]
-    (is= c1 (unlazy c1)))
-  (let [l2 '({:a ("zero" 0)} {:a ("one" 1)} {:a ("two" 2)})
-        e2 (unlazy l2)]
-    (is= l2 e2)
-    (is= "one" (get-in e2 [1 :a 0] l2))
-    ; (throws? (spyx (get-in l2 [1 :a 0] l2)))    ; #todo: SHOULD throw
-    )
-  (is= [1 2 3] (unlazy (map inc (range 3))))
-  (is= #{1 2 3} (unlazy #{3 2 1})))
 
 (dotest
   (let [info  {:a 1
