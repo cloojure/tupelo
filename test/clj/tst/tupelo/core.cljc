@@ -195,19 +195,6 @@
 
 
 
-(dotest
-  (is (= [\a ]              (chars-thru \a \a)))
-  (is (= [\a \b]            (chars-thru \a \b)))
-  (is (= [\a \b \c]         (chars-thru \a \c)))
-
-  (is (= [\a ]              (chars-thru 97 97)))
-  (is (= [\a \b]            (chars-thru 97 98)))
-  (is (= [\a \b \c]         (chars-thru 97 99)))
-
-  (throws? Exception (chars-thru 987654321 987654321))
-  (throws? Exception (chars-thru \c \a))
-  (throws? Exception (chars-thru 99 98)))
-
 ; #todo add different lengths a/b
 ; #todo add missing entries a/b
 (dotest

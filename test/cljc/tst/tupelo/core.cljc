@@ -11,7 +11,7 @@
     #?@(:cljs [
                [schema.core :as s]
                [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= nonblank= testing throws?]]
-               [tupelo.core :as t :include-macros true]
+               [tupelo.core :as t :refer [spyx spyxx] :include-macros true]
                [tupelo.schema :as tsk]
                [tupelo.string :as ts :include-macros true]
               ])
@@ -873,8 +873,8 @@
 (dotest
   (t/try-catchall
     (throw (ex-info "some-big-error" {:answer 43}))
-    (catch e
-           (println "Caught:" e)))
+    (catch e        ; (println "Caught exception:" e)
+      (is= (ex-data e) {:answer 43}) ))
 
   (let [result (t/with-exception-default :some-val
             (throw (ex-info "some-big-error" {:answer 43})))]
@@ -1374,6 +1374,13 @@
     ; If we supply a 2-arg fn when filtering a set, we get an Exception
     #?(:clj (throws? (t/keep-if (fn [arg1 arg2] :dummy) #{1 2 3}))) ))
 
+#?(:cljs
+   (dotest ; in JS a char is just a single-char string
+     (is= "a" \a (t/int->char 97))
+     (is= 97 (t/char->int "a") (t/char->int \a))
+     (is= [\a \b \c] (vec "abc"))
+     (is= [97 98 99] (t/spyx (mapv t/char->int (t/str->chars "abc"))))))
+
 (dotest
   (is= "a" (t/strcat \a  ) (t/strcat [\a]  ))
   (is= "a" (t/strcat "a" ) (t/strcat ["a"] ))
@@ -1388,9 +1395,9 @@
   (is= "ab" (t/strcat ""  "ab"  ) (t/strcat ["" \a "b"]))
 
   ; #todo make work for CLJS
+  (is= "abcd" (t/strcat 97 98 "cd"))
   #?(:clj
      (do
-       (is= "abcd" (t/strcat 97 98 "cd"))
        (is= "abcd" (t/strcat [97 98] "cd"))
        (is= "abcd" (t/strcat (byte-array [97 98]) "cd"))
 
@@ -1508,6 +1515,20 @@
 (dotest             ; #todo need more tests
   (is= (mapv #(mod % 3) (t/thru -6 6)) [0 1 2 0 1 2 0 1 2 0 1 2 0])
   (is= (mapv #(t/idx [0 1 2] %) (t/thru -3 3)) [0 1 2 0 1 2 0 ]))
+
+(dotest
+  (println :awt100 (t/chars-thru \a \a))
+  (is (= [\a ] (t/spyx (t/chars-thru \a \a))))
+  (is (= [\a \b]            (t/chars-thru \a \b)))
+  (is (= [\a \b \c]         (t/chars-thru \a \c)))
+
+  (is (= [\a ]              (t/chars-thru 97 97)))
+  (is (= [\a \b]            (t/chars-thru 97 98)))
+  (is (= [\a \b \c]         (t/chars-thru 97 99)))
+
+  (throws? (t/chars-thru 987654321 987654321))
+  (throws? (t/chars-thru \c \a))
+  (throws? (t/chars-thru 99 98)))
 
 
 

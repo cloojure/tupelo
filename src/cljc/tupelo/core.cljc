@@ -127,6 +127,29 @@
 ; #todo                   some-fn-of-3-or-more-args)
 ; #todo    like (some-fn* (glue {0 0   1 "hello"   2 :cc} {<user args here>} ))
 
+(defn cljs-env?     ; from plumatic schema/macros.clj
+  "Take the &env from a macro, and tell whether we are expanding into cljs."
+  [env]
+  (boolean (:ns env)))
+
+(defmacro if-cljs     ; from plumatic schema/macros.clj
+  "Return then if we are generating cljs code and else for Clojure code.
+   https://groups.google.com/d/msg/clojurescript/iBY5HaQda4A/w1lAQi9_AwsJ"
+  [then else]
+  (if (cljs-env? &env) then else))
+
+(defmacro try-catchall     ; from plumatic schema/macros.clj
+  "A cross-platform variant of try-catch that catches all exceptions.
+   Does not (yet) support finally, and does not need or want an exception class."
+  [& body]
+  (let [try-body (butlast body)
+        [catch sym & catch-body :as catch-form] (last body)]
+    (assert (= catch 'catch))
+    (assert (symbol? sym))
+    `(if-cljs
+       (try ~@try-body (~'catch js/Object ~sym ~@catch-body))
+       (try ~@try-body (~'catch Throwable ~sym ~@catch-body)))))
+
 ;-----------------------------------------------------------------------------
 ; for tupelo.string
 
@@ -572,13 +595,33 @@
   [arg :- s/Str]
   (keyword arg))
 
-(s/defn str->chars :- s/Keyword
+(s/defn str->chars  :- [s/Any]  ;  #todo  make tighter
   "Converts a string to a vector of chars"
   [arg :- s/Str]
   (vec arg))
 
 (defn int->kw [arg]
   (keyword (str arg)))
+
+(s/defn int->char :- s/Str
+  "Convert a unicode int to a char"
+  [arg :- s/Int]
+  #?(:clj (char arg))
+  #?(:cljs
+     (do
+       (assert (int? arg))
+       (.fromCharCode js/String arg) ; #todo just use cljs.core/char  ???
+       )))
+
+(s/defn char->int :- s/Int
+  "Convert a char to an unicode int"
+  [arg :- s/Str]
+  #?(:clj (int arg))
+  #?(:cljs
+     (do
+       (assert (= 1 (count arg)))
+       (.charCodeAt arg 0))))
+
 #?(:clj
    (defn kw->int [arg]
      (Integer/parseInt (kw->str arg))))
@@ -666,7 +709,7 @@
         ; sequence of chars, nor does it affect byte-array, et al.  We eventually get
         ; seq-of-scalars which can look like [ \a \b 77 78 \66 \z ]
         seq-of-scalars (flatten
-                         (for [it (keep-if not-nil? (flatten [args])) ]
+                         (for [it (keep-if not-nil? (flatten [args]))]
                            ; Note that "sequential?" returns false for sets, strings, and the various
                            ; array types.
                            (cond
@@ -674,25 +717,24 @@
                                (sequential? it)
                                (set? it)
                                (string? it)
-                    #?@(:clj [
-                               (types/byte-array? it)
-                               (types/char-array? it)
-                               (types/int-array? it)
-                               (types/long-array? it)
-                               (types/object-array? it)
-                               (types/short-array? it)
-                             ])
-                             ) (seq it)
+                               #?@(:clj [
+                                         (types/byte-array? it)
+                                         (types/char-array? it)
+                                         (types/int-array? it)
+                                         (types/long-array? it)
+                                         (types/object-array? it)
+                                         (types/short-array? it)
+                                         ])
+                               ) (seq it)
 
-                    #?@(:clj [ (instance? java.io.InputStream it) (seq (slurp it)) ])
+                             #?@(:clj [(instance? java.io.InputStream it) (seq (slurp it))])
 
-                             :else it )))
+                             :else it)))
         ; Coerce any integer values into character equivalents (e.g. 65 -> \A), then combine
         ; into a single string.
         result         (apply str
                          (clojure.core/map char
-                           (keep-if not-nil? seq-of-scalars)))
-        ]
+                           (keep-if not-nil? seq-of-scalars)))]
     result))
 
 (defn print-versions [] ; #todo need CLJS version
@@ -1243,20 +1285,34 @@
                                (+ start))
             (range (inc nsteps-int)))))))
 
+; #todo need CLJ/CLJS coercion ->kw (char/str, sym)
+; #todo need CLJ/CLJS coercion ->sym (char/str, kw, sym)
+; #todo need CLJ/CLJS coercion ->str (char/str, kw, sym, )
+
+; #todo need CLJS coercion ->char (char/str or int)
+; #todo need CLJS coercion ->int (char/str or int)
+; #todo need CLJS version of char? => len-1 string
 ; #todo need test, readme
 ; #todo merge into `thru` using a protocol for int, double, char, string, keyword, symbol, other?
-(defn chars-thru
+(defn chars-thru    ; #todo add schema.
   "Given two characters (or numerical equivalents), returns a seq of characters
   (inclusive) from the first to the second.  Characters must be in ascending order."
   [start-char stop-char]
-  {:pre [ (char start-char) (char stop-char) ] }
-  ; These "dummy" casts are to ensure that any input integer values are within the valid
-  ; range for Unicode characters
-  (let [start-val   (int start-char)
-        stop-val    (int stop-char)]
-    (when-not (<= start-val stop-val)
-      (throw (ex-info "char-seq: start-char must come before stop-char." (vals->map start-val stop-val))))
-    (mapv char (thru start-val stop-val))))
+  ; #todo throw if not char or int
+  (let [start-int   (if (integer? start-char) start-char (char->int start-char))
+        stop-int    (if (integer? stop-char) stop-char (char->int stop-char))
+        thru-vals   (thru start-int stop-int)
+        char-vals   (mapv int->char thru-vals) ]
+    (when (< 65535 stop-int) ; #todo cleanup limit
+      (throw (ex-info "chars-thru: stop-int too large" (vals->map start-int stop-int))))
+    (println "-------------------------------------------------------")
+    (spyx start-int)
+    (spyx stop-int)
+    (spyx thru-vals)
+    (println :awt202 char-vals)
+    (when-not (<= start-int stop-int)
+      (throw (ex-info "chars-thru: start-char must come before stop-char." (vals->map start-int stop-int))))
+    char-vals))
 
 ; #todo rename to "get-in-safe" ???
 ; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)
@@ -1372,29 +1428,6 @@
     `(let-some [~'it ~expr
                             ~@binding-pairs]
        ~'it)))
-
-(defn cljs-env?     ; from plumatic schema/macros.clj
-  "Take the &env from a macro, and tell whether we are expanding into cljs."
-  [env]
-  (boolean (:ns env)))
-
-(defmacro if-cljs     ; from plumatic schema/macros.clj
-  "Return then if we are generating cljs code and else for Clojure code.
-   https://groups.google.com/d/msg/clojurescript/iBY5HaQda4A/w1lAQi9_AwsJ"
-  [then else]
-  (if (cljs-env? &env) then else))
-
-(defmacro try-catchall     ; from plumatic schema/macros.clj
-  "A cross-platform variant of try-catch that catches all exceptions.
-   Does not (yet) support finally, and does not need or want an exception class."
-  [& body]
-  (let [try-body (butlast body)
-        [catch sym & catch-body :as catch-form] (last body)]
-    (assert (= catch 'catch))
-    (assert (symbol? sym))
-    `(if-cljs
-       (try ~@try-body (~'catch js/Object ~sym ~@catch-body))
-       (try ~@try-body (~'catch Throwable ~sym ~@catch-body)))))
 
 (defmacro with-exception-default
   "Evaluates body & returns its result.  In the event of an exception, default-val is returned
@@ -1741,10 +1774,13 @@
    expression, printing both the expression, its type, and its value to stdout, then returns the value."
   [expr]
   `(let [spy-val#    ~expr
-         class-name# (-> spy-val# class .getName)]
+         class-name# (if-cljs
+                       (-> spy-val# type)
+                       (-> spy-val# class .getName) )]
      (when *spy-enabled*
        (println (str (spy-indent-spaces) '~expr " => <#" class-name# " " (pr-str spy-val#) ">")))
      spy-val#))
+
 
 ; #todo gogo ---------------------------------------------------------------------------------------------------
 
@@ -2391,7 +2427,7 @@
 ;     forv map-let* map-let
 ;     when-clojure-1-8-plus when-clojure-1-9-plus
 ;     glue glue-rows
-;     macro? chars-thru
+;     macro?
 ;     append prepend grab dissoc-in fetch fetch-in
 ;     submap? submap-by-keys submap-by-vals keyvals keyvals-seq validate-map-keys map-keys map-vals
 ;     validate only it-> keep-if drop-if zip zip* zip-lazy indexed
