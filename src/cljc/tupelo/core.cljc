@@ -15,7 +15,7 @@
          vals->map with-map-vals forv
          with-spy-indent spyx spyxx spy-pretty spyx-pretty
          let-spy let-spy-pretty let-some map-let* map-let lazy-cons
-         with-exception-default verify
+         try-catchall with-exception-default verify
          if-java-1-7-plus if-java-1-8-plus
          when-clojure-1-8-plus when-clojure-1-9-plus when-not-clojure-1-9-plus
          destruct lazy-gen yield yield-all matches?
@@ -1373,16 +1373,34 @@
                             ~@binding-pairs]
        ~'it)))
 
+(defn cljs-env?     ; from plumatic schema/macros.clj
+  "Take the &env from a macro, and tell whether we are expanding into cljs."
+  [env]
+  (boolean (:ns env)))
+
+(defmacro if-cljs     ; from plumatic schema/macros.clj
+  "Return then if we are generating cljs code and else for Clojure code.
+   https://groups.google.com/d/msg/clojurescript/iBY5HaQda4A/w1lAQi9_AwsJ"
+  [then else]
+  (if (cljs-env? &env) then else))
+
+(defmacro try-catchall     ; from plumatic schema/macros.clj
+  "A cross-platform variant of try-catch that catches all exceptions.
+   Does not (yet) support finally, and does not need or want an exception class."
+  [& body]
+  (let [try-body (butlast body)
+        [catch sym & catch-body :as catch-form] (last body)]
+    (assert (= catch 'catch))
+    (assert (symbol? sym))
+    `(if-cljs
+       (try ~@try-body (~'catch js/Object ~sym ~@catch-body))
+       (try ~@try-body (~'catch Throwable ~sym ~@catch-body)))))
+
 (defmacro with-exception-default
   "Evaluates body & returns its result.  In the event of an exception, default-val is returned
    instead of the exception."
-  [default-val & forms]
-  `(try
-     ~@forms
-     (catch
-       #?(:clj Exception)
-       #?(:cljs js/Object) ; js/Error  :default
-       e# ~default-val)))
+  [default-val & forms] ; :default
+  `(try-catchall ~@forms (catch e# ~default-val)))
 
 (defn validate
   "(validate tst-fn tst-val)

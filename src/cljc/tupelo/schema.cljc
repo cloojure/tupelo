@@ -1,7 +1,9 @@
 (ns tupelo.schema
   "Prismatic Schema type definitions"
+  (:refer-clojure :exclude [Fn List Single])
   (:require [schema.core :as s])
-  #?(:clj (:import [java.util HashSet] )) )
+  #?(:clj
+     (:import [java.util HashSet])))
 
 (def Map      {s/Any      s/Any} )
 (def KeyMap   {s/Keyword  s/Any} )
@@ -15,9 +17,10 @@
   "An ordered sequence of items of indeterminate length."
   [s/Any] )
 
-(def CharVec
-  "An ordered sequence of characters of indeterminate length."
-  [Character] )
+#?(:clj             ; #todo cljs?
+   (def CharVec
+     "An ordered sequence of characters of indeterminate length."
+     [Character]))
 
 (def Single [(s/one s/Any "x1")]) ; length-1 vector
 (def Pair [(s/one s/Any "x1") (s/one s/Any "x2")]) ; length-2 vector

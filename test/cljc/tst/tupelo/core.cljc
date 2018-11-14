@@ -381,7 +381,8 @@
       (is= "(str \"abc\" \"def\") => \"abcdef\""
         (ts/collapse-whitespace (with-out-str (t/spyx (str "abc" "def") ))))
 
-      (throws? (t/spy :some-tag "some-str" 42)) )))
+      ; (throws? (t/spy :some-tag "some-str" 42))  ; #todo how test in cljs?
+    )))
 
 (dotest
   (let [fn2   (fn []  (t/with-spy-indent
@@ -870,10 +871,20 @@
             :b2 { :c1 "c1" }}} )))
 
 (dotest
+ (println :awt200 "*****************************************************************************")
+ (t/try-catchall
+   (throw (ex-info "some-big-error" {:answer 43}))
+   (catch e
+     (println "Caught:" e) ) )
+ (println :awt299 "*****************************************************************************") )
+
+(dotest
   (println :awt100 "*****************************************************************************")
-  (let [x (t/with-exception-default :XXX (throw (ex-info "some-big-error" nil)) )]
-    (println :awt110 x) )
-  (println :awt100 "*****************************************************************************")
+  (let [x (t/with-exception-default :XXX
+            (throw (ex-info "some-big-error" {:answer 43})) )]
+    (println :awt110 x)
+    (is true))
+  (println :awt199 "*****************************************************************************")
   )
 
 (dotest
@@ -936,7 +947,9 @@
   (throws? (t/lexical-compare [1] ["b"]))
   (throws? (t/lexical-compare [1] [:b]))
   (throws? (t/lexical-compare [1] ['b]))
-  (throws? (t/lexical-compare [\b] ["b"]))
+
+ #?(:clj (throws? (t/lexical-compare [\b] ["b"])))
+
   (throws? (t/lexical-compare [\b] [:b]))
   (throws? (t/lexical-compare [\b] ['b]))
   (throws? (t/lexical-compare ["b"] [:b]))
@@ -1052,17 +1065,29 @@
               (+ 2 it)))) )
 
 (dotest
-  (throws? (/ 1 0))
-  (is= nil (t/with-exception-default nil (/ 1 0)))
-  (is= :dummy (t/with-exception-default :dummy (/ 1 0)))
-  (is= 123 (t/with-exception-default 0 (Long/parseLong "123")))
-  (is= 0 (t/with-exception-default 0 (Long/parseLong "12xy3"))))
+  (throws? (throw (ex-info "some msg" :some-data)))
+
+  ; java way to throw
+  #?(:clj
+     (do (is= nil (t/with-exception-default nil (throw (RuntimeException. "bummer"))))
+         (is= :dummy (t/with-exception-default :dummy (throw (RuntimeException. "bummer dude"))))
+
+         (is= 123 (t/with-exception-default 0 (Long/parseLong "123")))
+         (is= 0 (t/with-exception-default 0 (Long/parseLong "12xy3")))))
+  ; clojurescript way to throw
+  #?(:cljs
+     (do (is= nil (t/with-exception-default nil (throw (js/Error "bummer"))))
+         (is= :dummy (t/with-exception-default :dummy (throw (js/Error "bummer dude"))))))
+  ; cross-platform way to throw
+  (do
+    (is= nil (t/with-exception-default nil (throw (ex-info "bummer"))))
+    (is= :dummy (t/with-exception-default :dummy (throw (ex-info "bummer dude"))))))
 
 (dotest
   (is= (t/validate-or-default t/not-nil? nil 0) 0)
   (is= (t/validate-or-default t/not-empty? "" "How you doin?") "How you doin?")
   (is= (mapv #(t/with-nil-default :some-default %)
-         [0 1 "" [] nil           true false])
+         [0 1 "" [] nil true false])
     [0 1 "" [] :some-default true false]))
 
 
