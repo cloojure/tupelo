@@ -141,12 +141,6 @@
 ; ;(spyx (sp/exercise ::vector))
 ;)
 
-
-; #todo ***** toptop *****
-
-
-
-
 #_(tst/defspec ^:slow t-keep-if-drop-if 999
   (prop/for-all [vv (gen/vector gen/int) ]
     (let [even-1      (keep-if   even?  vv)
@@ -197,34 +191,11 @@
       (and  (= even-1 even-2 even-filt)
             (=  odd-1  odd-2  odd-rem)))))
 
-(dotest
-  (is= "a" (strcat \a  ) (strcat [\a]  ))
-  (is= "a" (strcat "a" ) (strcat ["a"] ))
-  (is= "a" (strcat 97  ) (strcat [97]  ))
 
-  (is= "ab" (strcat \a   \b   ) (strcat [\a]  \b   ))
-  (is= "ab" (strcat \a  [\b]  ) (strcat [\a   \b]  ))
-  (is= "ab" (strcat "a"  "b"  ) (strcat ["a"] "b"  ))
-  (is= "ab" (strcat "a" ["b"] ) (strcat ["a"  "b"] ))
-  (is= "ab" (strcat 97   98   ) (strcat [97]  98   ))
-  (is= "ab" (strcat 97  [98]  ) (strcat [97   98]  ))
-  (is= "ab" (strcat ""  "ab"  ) (strcat ["" \a "b"]))
 
-  (is= "abcd" (strcat              97  98   "cd" ))
-  (is= "abcd" (strcat             [97  98]  "cd" ))
-  (is= "abcd" (strcat (byte-array [97  98]) "cd" ))
+; #todo ***** toptop *****
 
-  (is= (strcat "I " [ \h \a nil \v [\e \space nil (byte-array [97])
-                        [ nil 32 "complicated" (Math/pow 2 5) '( "str" nil "ing") ]]] )
-         "I have a complicated string" )
 
-  (let [chars-set   (into #{} (chars-thru \a \z))
-        str-val     (strcat chars-set) ]
-    (is= 26 (count chars-set))
-    (is= 26 (count str-val))
-    (is= 26 (count (re-seq #"[a-z]" str-val)))
-    (is= "abc" (str/join (chars-thru \a \c)))
-    ))
 
 (dotest
   (testing "single string"

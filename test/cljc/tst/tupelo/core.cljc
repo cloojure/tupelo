@@ -1374,6 +1374,38 @@
     ; If we supply a 2-arg fn when filtering a set, we get an Exception
     #?(:clj (throws? (t/keep-if (fn [arg1 arg2] :dummy) #{1 2 3}))) ))
 
+(dotest
+  (is= "a" (t/strcat \a  ) (t/strcat [\a]  ))
+  (is= "a" (t/strcat "a" ) (t/strcat ["a"] ))
+  (is= "a" (t/strcat 97  ) (t/strcat [97]  ))
+
+  (is= "ab" (t/strcat \a   \b   ) (t/strcat [\a]  \b   ))
+  (is= "ab" (t/strcat \a  [\b]  ) (t/strcat [\a   \b]  ))
+  (is= "ab" (t/strcat "a"  "b"  ) (t/strcat ["a"] "b"  ))
+  (is= "ab" (t/strcat "a" ["b"] ) (t/strcat ["a"  "b"] ))
+  (is= "ab" (t/strcat 97   98   ) (t/strcat [97]  98   ))
+  (is= "ab" (t/strcat 97  [98]  ) (t/strcat [97   98]  ))
+  (is= "ab" (t/strcat ""  "ab"  ) (t/strcat ["" \a "b"]))
+
+  ; #todo make work for CLJS
+  #?(:clj
+     (do
+       (is= "abcd" (t/strcat 97 98 "cd"))
+       (is= "abcd" (t/strcat [97 98] "cd"))
+       (is= "abcd" (t/strcat (byte-array [97 98]) "cd"))
+
+       (is= (t/strcat "I " [\h \a nil \v [\e \space nil (byte-array [97])
+                                          [nil 32 "complicated" (Math/pow 2 5) '("str" nil "ing")]]])
+         "I have a complicated string")
+
+       (let [chars-set (into #{} (t/chars-thru \a \z))
+             str-val   (t/strcat chars-set)]
+         (is= 26 (count chars-set))
+         (is= 26 (count str-val))
+         (is= 26 (count (re-seq #"[a-z]" str-val)))
+         (is= "abc" (str/join (t/chars-thru \a \c)))
+     ))))
+
 
 
 
