@@ -197,58 +197,6 @@
 
 
 
-(dotest
-  (testing "single string"
-    (is (= ""         (clip-str 0 "abcdefg")))
-    (is (= "a"        (clip-str 1 "abcdefg")))
-    (is (= "ab"       (clip-str 2 "abcdefg")))
-    (is (= "abc"      (clip-str 3 "abcdefg")))
-    (is (= "abcd"     (clip-str 4 "abcdefg")))
-    (is (= "abcde"    (clip-str 5 "abcdefg"))))
-  (testing "two strings"
-    (is (= ""         (clip-str 0 "abc defg")))
-    (is (= "a"        (clip-str 1 "abc defg")))
-    (is (= "ab"       (clip-str 2 "abc defg")))
-    (is (= "abc"      (clip-str 3 "abc defg")))
-    (is (= "abc "     (clip-str 4 "abc defg")))
-    (is (= "abc d"    (clip-str 5 "abc defg"))))
-  (testing "two strings & char"
-    (is (= ""         (clip-str 0 "ab" \c "defg")))
-    (is (= "a"        (clip-str 1 "ab" \c "defg")))
-    (is (= "ab"       (clip-str 2 "ab" \c "defg")))
-    (is (= "abc"      (clip-str 3 "ab" \c "defg")))
-    (is (= "abcd"     (clip-str 4 "ab" \c "defg")))
-    (is (= "abcde"    (clip-str 5 "ab" \c "defg"))))
-  (testing "two strings & digit"
-    (is (= ""         (clip-str 0 "ab" 9 "defg")))
-    (is (= "a"        (clip-str 1 "ab" 9 "defg")))
-    (is (= "ab"       (clip-str 2 "ab" 9 "defg")))
-    (is (= "ab9"      (clip-str 3 "ab" 9 "defg")))
-    (is (= "ab9d"     (clip-str 4 "ab" 9 "defg")))
-    (is (= "ab9de"    (clip-str 5 "ab" 9 "defg"))))
-  (testing "vector"
-    (is (= ""               (clip-str  0 [1 2 3 4 5] )))
-    (is (= "["              (clip-str  1 [1 2 3 4 5] )))
-    (is (= "[1"             (clip-str  2 [1 2 3 4 5] )))
-    (is (= "[1 2"           (clip-str  4 [1 2 3 4 5] )))
-    (is (= "[1 2 3 4"       (clip-str  8 [1 2 3 4 5] )))
-    (is (= "[1 2 3 4 5]"    (clip-str 16 [1 2 3 4 5] ))))
-  (testing "map"
-    (is (= ""               (clip-str  0 (sorted-map :a 1 :b 2) )))
-    (is (= "{"              (clip-str  1 (sorted-map :a 1 :b 2) )))
-    (is (= "{:"             (clip-str  2 (sorted-map :a 1 :b 2) )))
-    (is (= "{:a "           (clip-str  4 (sorted-map :a 1 :b 2) )))
-    (is (= "{:a 1, :"       (clip-str  8 (sorted-map :a 1 :b 2) )))
-    (is (= "{:a 1, :b 2}"   (clip-str 16 (sorted-map :a 1 :b 2) ))))
-  (testing "set"
-    (let [tst-set (sorted-set 5 4 3 2 1) ]
-      (is (= ""             (clip-str  0 tst-set )))
-      (is (= "#"            (clip-str  1 tst-set )))
-      (is (= "#{"           (clip-str  2 tst-set )))
-      (is (= "#{1 "         (clip-str  4 tst-set )))
-      (is (= "#{1 2 3 "     (clip-str  8 tst-set )))
-      (is (= "#{1 2 3 4 5}" (clip-str 16 tst-set )))))
-)
 
 (dotest
   (is (= [\a ]              (chars-thru \a \a)))
@@ -538,17 +486,17 @@
     (is (submatch? {:a 1 :b 2} sample-rec))))
 
 (dotest
-  (is (i/set-match? #{1 2 3} #{1 2 3}))
-  (is (i/set-match? #{:* 2 3} #{1 2 3}))
-  (is (i/set-match? #{1 :* 3} #{1 2 3}))
-  (is (i/set-match? #{1 2 :*} #{1 2 3}))
+  (is (t/set-match? #{1 2 3} #{1 2 3}))
+  (is (t/set-match? #{:* 2 3} #{1 2 3}))
+  (is (t/set-match? #{1 :* 3} #{1 2 3}))
+  (is (t/set-match? #{1 2 :*} #{1 2 3}))
 
-  (is (i/set-match? #{1 2 3 4 5} #{1 2 3 4 5}))
-  (is (i/set-match? #{:* 2 3 4 5} #{1 2 3 4 5}))
-  (is (i/set-match? #{1 :* 3 4 5} #{1 2 3 4 5}))
-  (is (i/set-match? #{1 2 :* 4 5} #{1 2 3 4 5}))
-  (is (i/set-match? #{1 2 3 :* 5} #{1 2 3 4 5}))
-  (is (i/set-match? #{1 2 3 4 :*} #{1 2 3 4 5}))
+  (is (t/set-match? #{1 2 3 4 5} #{1 2 3 4 5}))
+  (is (t/set-match? #{:* 2 3 4 5} #{1 2 3 4 5}))
+  (is (t/set-match? #{1 :* 3 4 5} #{1 2 3 4 5}))
+  (is (t/set-match? #{1 2 :* 4 5} #{1 2 3 4 5}))
+  (is (t/set-match? #{1 2 3 :* 5} #{1 2 3 4 5}))
+  (is (t/set-match? #{1 2 3 4 :*} #{1 2 3 4 5}))
 
   (is   (wild-item? :*))
   (isnt (wild-item? :a))
@@ -582,19 +530,19 @@
   (isnt (wild-item? {:a {:b 2 :c 3}}))
   (isnt (wild-item? {:a {:b {:c 3}}}))
 
-  (is (i/set-match? #{#{1 2 3} #{4 5 :*}} #{#{1 2 3} #{4 5 6}}))
-  (is (i/set-match? #{#{1 2 3} #{4 :* 6}} #{#{1 2 3} #{4 5  6}}))
-  (is (i/set-match? #{#{1 2 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
-  (is (i/set-match? #{#{:* 2 3} #{4 5 6}} #{#{1 2 3} #{4 5 6}}))
-  (is (i/set-match? #{#{1 :* 3} #{4 5 6}} #{#{1 2 3} #{4 5 6}}))
-  (is (i/set-match? #{#{1 2 :*} #{4 5 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{1 2 3} #{4 5 :*}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{1 2 3} #{4 :* 6}} #{#{1 2 3} #{4 5  6}}))
+  (is (t/set-match? #{#{1 2 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{:* 2 3} #{4 5 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{1 :* 3} #{4 5 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{1 2 :*} #{4 5 6}} #{#{1 2 3} #{4 5 6}}))
 
-  (is (i/set-match? #{#{1 :* 3} #{4 5 :*}} #{#{1 2 3} #{4 5 6}}))
-  (is (i/set-match? #{#{1 2 :*} #{4 :* 6}} #{#{1 2 3} #{4 5  6}}))
-  (is (i/set-match? #{#{:* 2 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
-  (is (i/set-match? #{#{:* 2 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
-  (is (i/set-match? #{#{1 :* 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
-  (is (i/set-match? #{#{1 2 :*} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{1 :* 3} #{4 5 :*}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{1 2 :*} #{4 :* 6}} #{#{1 2 3} #{4 5  6}}))
+  (is (t/set-match? #{#{:* 2 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{:* 2 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{1 :* 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{1 2 :*} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
 )
 
 (dotest
@@ -1184,7 +1132,7 @@
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
 (dotest
   ; ^{:deprecated "1.9.0-alpha5" }
-  (i/when-not-clojure-1-9-plus
+  (t/when-not-clojure-1-9-plus
     (is   (seqable?   "abc"))
     (is   (seqable?   {1 2 3 4} ))
     (is   (seqable?  #{1 2 3} ))
