@@ -1563,6 +1563,63 @@
     the-keys :- [s/Any]]
     (keyvals-seq (vals->map the-map the-keys))) )
 
+; #todo rename -> drop-idx
+; #todo force to vector result
+; #todo allow range to drop
+(s/defn drop-at :- tsk/List
+  "Removes an element from a collection at the specified index."
+  [coll :- tsk/List
+   index :- s/Int]
+  (when (neg? index)
+    (throw (ex-info "Index cannot be negative " index)))
+  (when (<= (count coll) index)
+    (throw (ex-info "Index cannot exceed collection length: " {:length (count coll) :index index})))
+  (glue (take index coll)
+    (drop (inc index) coll)))
+
+; #todo rename -> insert-idx
+; #todo force to vector result
+; #todo allow vector to insert
+(s/defn insert-at :- tsk/List
+  "Inserts an element into a collection at the specified index."
+  [coll :- tsk/List
+   index :- s/Int
+   elem :- s/Any]
+  (when (neg? index)
+    (throw (ex-info "Index cannot be negative " index)))
+  (when (< (count coll) index)
+    (throw (ex-info "Index cannot exceed collection length: "  {:length (count coll) :index index} )))
+  (glue (take index coll) [elem]
+    (drop index coll)))
+
+; #todo rename -> elem-set
+; #todo force to vector result
+; #todo allow idx range to replace with vector (maybe not equal # of elems)
+(s/defn replace-at :- tsk/List
+  "Replaces an element in a collection at the specified index."
+  [coll :- tsk/List
+   index :- s/Int
+   elem :- s/Any]
+  (when (neg? index)
+    (throw (ex-info "Index cannot be negative " index)))
+  (when (<= (count coll) index)
+    (throw (ex-info "Index cannot exceed collection length: " {:length (count coll) :index index} )))
+  (glue
+    (take index coll)
+    [elem]
+    (drop (inc index) coll)))
+
+(s/defn indent-lines-with :- s/Str  ; #todo add readme ;  need test
+  "Splits out each line of txt using clojure.string/split-lines, then
+  indents each line by prepending it with the supplied string. Joins lines together into
+  a single string result, with each line terminated by a single \newline."
+  [indent-str :- s/Str
+   txt  :- s/Str]
+  (str/join
+    (interpose \newline
+      (for [line (str/split-lines txt)]
+        (str indent-str line)))))
+
 
 
 
@@ -1699,17 +1756,6 @@
   "Returns a string that is the result of clojure.pprint/pprint"
   [arg]
   (with-out-str (pprint/pprint arg)))
-
-(s/defn indent-lines-with :- s/Str  ; #todo add readme ;  need test
-  "Splits out each line of txt using clojure.string/split-lines, then
-  indents each line by prepending it with the supplied string. Joins lines together into
-  a single string result, with each line terminated by a single \newline."
-  [indent-str :- s/Str
-   txt  :- s/Str]
-  (str/join
-    (interpose \newline
-      (for [line (str/split-lines txt)]
-        (str indent-str line)))))
 
 (comment
   (is= (merge-deep  ; #todo need a merge-deep where
@@ -1956,55 +2002,6 @@
      (doseq [value# ~values]
        (yield value#))
      (vec ~values)))
-
-; #todo rename -> drop-idx
-; #todo force to vector result
-; #todo allow range to drop
-(s/defn drop-at :- tsk/List
-  "Removes an element from a collection at the specified index."
-  [coll :- tsk/List
-   index :- s/Int]
-  (when (neg? index)
-    (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
-  (when (<= (count coll) index)
-    (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
-                                        " (count coll)=" (count coll) " index=" index))))
-  (glue (take index coll)
-    (drop (inc index) coll)))
-
-; #todo rename -> insert-idx
-; #todo force to vector result
-; #todo allow vector to insert
-(s/defn insert-at :- tsk/List
-  "Inserts an element into a collection at the specified index."
-  [coll :- tsk/List
-   index :- s/Int
-   elem :- s/Any]
-  (when (neg? index)
-    (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
-  (when (< (count coll) index)
-    (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
-                                        " (count coll)=" (count coll) " index=" index))))
-  (glue (take index coll) [elem]
-    (drop index coll)))
-
-; #todo rename -> elem-set
-; #todo force to vector result
-; #todo allow idx range to replace with vector (maybe not equal # of elems)
-(s/defn replace-at :- tsk/List
-  "Replaces an element in a collection at the specified index."
-  [coll :- tsk/List
-   index :- s/Int
-   elem :- s/Any]
-  (when (neg? index)
-    (throw (IllegalArgumentException. (str "Index cannot be negative: " index))))
-  (when (<= (count coll) index)
-    (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
-                                        " (count coll)=" (count coll) " index=" index))))
-  (glue
-    (take index coll)
-    [elem]
-    (drop (inc index) coll)))
 
 ; #todo make replace-in that is like assoc-in but verifies path first !!! (merge with replace-at)
 

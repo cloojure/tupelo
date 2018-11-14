@@ -1458,6 +1458,53 @@
       (is (= "#{1 2 3 "     (t/clip-str  8 tst-set )))
       (is (= "#{1 2 3 4 5}" (t/clip-str 16 tst-set ))))) )
 
+(dotest
+  (is= [] (t/drop-at (range 1) 0))
+
+  (is= [  1] (t/drop-at (range 2) 0))
+  (is= [0  ] (t/drop-at (range 2) 1))
+
+  (is= [  1 2] (t/drop-at (range 3) 0))
+  (is= [0   2] (t/drop-at (range 3) 1))
+  (is= [0 1  ] (t/drop-at (range 3) 2))
+
+  (throws? (t/drop-at []         0))
+  (throws? (t/drop-at (range 3) -1))
+  (throws? (t/drop-at (range 3)  3)))
+
+(dotest
+  (is= [9] (t/insert-at [] 0 9))
+
+  (is= [9 0] (t/insert-at [0] 0 9))
+  (is= [0 9] (t/insert-at [0] 1 9))
+
+  (is= [9 0 1] (t/insert-at [0 1] 0 9))
+  (is= [0 9 1] (t/insert-at [0 1] 1 9))
+  (is= [0 1 9] (t/insert-at [0 1] 2 9))
+
+  (throws? (t/insert-at [] -1 9))
+  (throws? (t/insert-at []  1 9))
+
+  (throws? (t/insert-at [0] -1 9))
+  (throws? (t/insert-at [0]  2 9))
+
+  (throws? (t/insert-at [0 1] -1 9))
+  (throws? (t/insert-at [0 1]  3 9)))
+
+(dotest
+  (is= [9] (t/replace-at (range 1) 0 9))
+
+  (is= [9 1] (t/replace-at (range 2) 0 9))
+  (is= [0 9] (t/replace-at (range 2) 1 9))
+
+  (is= [9 1 2] (t/replace-at (range 3) 0 9))
+  (is= [0 9 2] (t/replace-at (range 3) 1 9))
+  (is= [0 1 9] (t/replace-at (range 3) 2 9))
+
+  (throws? (t/replace-at []         0 9))
+  (throws? (t/replace-at (range 3) -1 9))
+  (throws? (t/replace-at (range 3)  3 9)))
+
 
 
 

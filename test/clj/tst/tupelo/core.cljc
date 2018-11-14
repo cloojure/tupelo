@@ -191,10 +191,7 @@
       (and  (= even-1 even-2 even-filt)
             (=  odd-1  odd-2  odd-rem)))))
 
-
-
 ; #todo ***** toptop *****
-
 
 
 
@@ -210,53 +207,6 @@
   (throws? Exception (chars-thru 987654321 987654321))
   (throws? Exception (chars-thru \c \a))
   (throws? Exception (chars-thru 99 98)))
-
-(dotest
-  (is= [] (drop-at (range 1) 0))
-
-  (is= [  1] (drop-at (range 2) 0))
-  (is= [0  ] (drop-at (range 2) 1))
-
-  (is= [  1 2] (drop-at (range 3) 0))
-  (is= [0   2] (drop-at (range 3) 1))
-  (is= [0 1  ] (drop-at (range 3) 2))
-
-  (throws? IllegalArgumentException (drop-at []         0))
-  (throws? IllegalArgumentException (drop-at (range 3) -1))
-  (throws? IllegalArgumentException (drop-at (range 3)  3)))
-
-(dotest
-  (is= [9] (insert-at [] 0 9))
-
-  (is= [9 0] (insert-at [0] 0 9))
-  (is= [0 9] (insert-at [0] 1 9))
-
-  (is= [9 0 1] (insert-at [0 1] 0 9))
-  (is= [0 9 1] (insert-at [0 1] 1 9))
-  (is= [0 1 9] (insert-at [0 1] 2 9))
-
-  (throws? IllegalArgumentException (insert-at [] -1 9))
-  (throws? IllegalArgumentException (insert-at []  1 9))
-
-  (throws? IllegalArgumentException (insert-at [0] -1 9))
-  (throws? IllegalArgumentException (insert-at [0]  2 9))
-
-  (throws? IllegalArgumentException (insert-at [0 1] -1 9))
-  (throws? IllegalArgumentException (insert-at [0 1]  3 9)))
-
-(dotest
-  (is= [9] (replace-at (range 1) 0 9))
-
-  (is= [9 1] (replace-at (range 2) 0 9))
-  (is= [0 9] (replace-at (range 2) 1 9))
-
-  (is= [9 1 2] (replace-at (range 3) 0 9))
-  (is= [0 9 2] (replace-at (range 3) 1 9))
-  (is= [0 1 9] (replace-at (range 3) 2 9))
-
-  (throws? IllegalArgumentException (replace-at []         0 9))
-  (throws? IllegalArgumentException (replace-at (range 3) -1 9))
-  (throws? IllegalArgumentException (replace-at (range 3)  3 9)))
 
 (dotest             ; #todo need more tests
   (is= (mapv #(mod % 3) (thru -6 6)) [0 1 2 0 1 2 0 1 2 0 1 2 0])
