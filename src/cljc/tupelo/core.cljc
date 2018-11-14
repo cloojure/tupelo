@@ -1667,6 +1667,46 @@
         result   (clojure.core/get data-vec ii)]
     result))
 
+(s/defn map-keys :- tsk/Map ; #todo README
+  "Transforms each key in a map using the supplied `tx-fn`:
+
+    (t/map-keys {1 :a 2 :b 3 :c} inc)                  =>  {  2 :a   3 :b 4   :c}
+    (t/map-keys {1 :a 2 :b 3 :c} {1 101 2 202 3 303})  =>  {101 :a 202 :b 303 :c}"
+  [map-in :- tsk/Map
+   tx-fn  :- tsk/Fn
+   & tx-args ]
+  (let [tuple-seq-orig (vec map-in)
+        tuple-seq-out  (for [[tuple-key tuple-val] tuple-seq-orig]
+                         [ (apply tx-fn tuple-key tx-args) tuple-val])
+        map-out        (into {} tuple-seq-out) ]
+    map-out))
+
+(s/defn map-vals :- tsk/Map ; #todo README ; #todo docstring, README
+  "Transforms each value in a map using the supplied `tx-fn`:
+
+      (t/map-vals {:a 1 :b 2 :c 3} inc)                  =>  {:a 2,   :b 3,   :c 4}
+      (t/map-vals {:a 1 :b 2 :c 3} {1 101 2 202 3 303})  =>  {:a 101, :b 202, :c 303} "
+  [map-in :- tsk/Map
+   tx-fn  :- tsk/Fn
+   & tx-args ]
+  (let [tuple-seq-orig (vec map-in)
+        tuple-seq-out  (for [[tuple-key tuple-val] tuple-seq-orig]
+                         [tuple-key (apply tx-fn tuple-val tx-args) ])
+        map-out        (into {} tuple-seq-out) ]
+    map-out))
+
+(def MapKeySpec (s/either [s/Any] #{s/Any}))
+(s/defn validate-map-keys :- s/Any ; #todo docstring, README
+  [tst-map :- tsk/Map
+   valid-keys :- MapKeySpec]
+  (let [valid-keys (set valid-keys)
+        map-keys   (keys tst-map)]
+    (when-not (every? truthy?
+                (forv [curr-key map-keys]
+                  (contains-key? valid-keys curr-key)))
+      (throw (ex-info "validate-map-keys: invalid key found " (vals->map tst-map valid-keys))))
+    tst-map))
+
 
 
 
@@ -2146,46 +2186,6 @@
             `(ccm/match ~value
                ~pattern true
                :else false))))
-
-(def MapKeySpec (s/either [s/Any] #{s/Any}))
-(s/defn validate-map-keys :- s/Any ; #todo docstring, README
-  [tst-map :- tsk/Map
-   valid-keys :- MapKeySpec]
-  (let [valid-keys (set valid-keys)
-        map-keys   (keys tst-map)]
-    (when-not (every? truthy?
-                (forv [curr-key map-keys]
-                  (contains-key? valid-keys curr-key)))
-      (throw (IllegalArgumentException. (format "validate-map-keys: invalid key found tst-map=%s, valid-keys=%s" tst-map valid-keys))))
-    tst-map))
-
-(s/defn map-keys :- tsk/Map ; #todo README
-  "Transforms each key in a map using the supplied `tx-fn`:
-
-    (t/map-keys {1 :a 2 :b 3 :c} inc)                  =>  {  2 :a   3 :b 4   :c}
-    (t/map-keys {1 :a 2 :b 3 :c} {1 101 2 202 3 303})  =>  {101 :a 202 :b 303 :c}"
-  [map-in :- tsk/Map
-   tx-fn  :- tsk/Fn
-   & tx-args ]
-  (let [tuple-seq-orig (vec map-in)
-        tuple-seq-out  (for [[tuple-key tuple-val] tuple-seq-orig]
-                         [ (apply tx-fn tuple-key tx-args) tuple-val])
-        map-out        (into {} tuple-seq-out) ]
-    map-out))
-
-(s/defn map-vals :- tsk/Map ; #todo README ; #todo docstring, README
-  "Transforms each value in a map using the supplied `tx-fn`:
-
-      (t/map-vals {:a 1 :b 2 :c 3} inc)                  =>  {:a 2,   :b 3,   :c 4}
-      (t/map-vals {:a 1 :b 2 :c 3} {1 101 2 202 3 303})  =>  {:a 101, :b 202, :c 303} "
-  [map-in :- tsk/Map
-   tx-fn  :- tsk/Fn
-   & tx-args ]
-  (let [tuple-seq-orig (vec map-in)
-        tuple-seq-out  (for [[tuple-key tuple-val] tuple-seq-orig]
-                         [tuple-key (apply tx-fn tuple-val tx-args) ])
-        map-out        (into {} tuple-seq-out) ]
-    map-out))
 
 (defn macro?
   "Returns true if a quoted symbol resolves to a macro. Usage:

@@ -871,30 +871,6 @@
   (is (submap? {:b 2} {:a 1 :b 2})) )
 
 (dotest
-  (let [map-ab  {:a 1 :b 2}
-        map-abc {:a 1 :b 2 :c 3}]
-    (is= map-ab (validate-map-keys map-ab [:a :b]))
-    (is= map-ab (validate-map-keys map-ab [:a :b :x]))
-    (is= map-ab (validate-map-keys map-ab #{:a :b}))
-    (is= map-ab (validate-map-keys map-ab #{:a :b :x}))
-    (is= map-abc (validate-map-keys map-abc [:a :b :c :x]))
-    (throws? IllegalArgumentException (validate-map-keys map-ab [:a]))
-    (throws? IllegalArgumentException (validate-map-keys map-ab [:b]))
-    (throws? IllegalArgumentException (validate-map-keys map-ab [:a :x]))
-    (throws? IllegalArgumentException (validate-map-keys map-abc [:a :b]))
-    (throws? IllegalArgumentException (validate-map-keys map-abc [:a :c :x]))))
-
-(dotest
-  (let [map-123 {1 :a 2 :b 3 :c}
-        tx-fn   {1 101 2 202 3 303}]
-    (is= (map-keys map-123 inc) {2 :a 3 :b 4 :c})
-    (is= (map-keys map-123 tx-fn) {101 :a 202 :b 303 :c}))
-  (let [map-123 {:a 1 :b 2 :c 3}
-        tx-fn   {1 101 2 202 3 303}]
-    (is= (map-vals map-123 inc) {:a 2, :b 3, :c 4})
-    (is= (map-vals map-123 tx-fn) {:a 101, :b 202, :c 303})))
-
-(dotest
   (is= (range 5) (unlazy (range 5)))
   (let [c1 {:a 1 :b (range 3) :c {:x (range 4) (range 5) "end"}}]
     (is= c1 (unlazy c1)))

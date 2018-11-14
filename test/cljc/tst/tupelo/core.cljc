@@ -1533,6 +1533,30 @@
   (throws? (t/chars-thru \c \a))
   (throws? (t/chars-thru 99 98)))
 
+(dotest
+  (let [map-ab  {:a 1 :b 2}
+        map-abc {:a 1 :b 2 :c 3}]
+    (is= map-ab (t/validate-map-keys map-ab [:a :b]))
+    (is= map-ab (t/validate-map-keys map-ab [:a :b :x]))
+    (is= map-ab (t/validate-map-keys map-ab #{:a :b}))
+    (is= map-ab (t/validate-map-keys map-ab #{:a :b :x}))
+    (is= map-abc (t/validate-map-keys map-abc [:a :b :c :x]))
+    (throws? (t/validate-map-keys map-ab [:a]))
+    (throws? (t/validate-map-keys map-ab [:b]))
+    (throws? (t/validate-map-keys map-ab [:a :x]))
+    (throws? (t/validate-map-keys map-abc [:a :b]))
+    (throws? (t/validate-map-keys map-abc [:a :c :x]))))
+
+(dotest
+  (let [map-123 {1 :a 2 :b 3 :c}
+        tx-fn   {1 101 2 202 3 303}]
+    (is= (t/map-keys map-123 inc) {2 :a 3 :b 4 :c})
+    (is= (t/map-keys map-123 tx-fn) {101 :a 202 :b 303 :c}))
+  (let [map-123 {:a 1 :b 2 :c 3}
+        tx-fn   {1 101 2 202 3 303}]
+    (is= (t/map-vals map-123 inc) {:a 2, :b 3, :c 4})
+    (is= (t/map-vals map-123 tx-fn) {:a 101, :b 202, :c 303})))
+
 
 
 
