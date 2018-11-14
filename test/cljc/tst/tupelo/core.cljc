@@ -1312,8 +1312,67 @@
   (testing "floats"
     (is (t/all-rel= [1.1 1.3 1.5 1.7] (t/thru 1.1 1.7 0.2) :digits 7))
     (is (t/all-rel= [1.1 1.2 1.3 1.4] (t/thru 1.1 1.4 0.1) :digits 7)))
-  (throws? (t/thru 1.1 2.1 0.3))
-  )
+  (throws? (t/thru 1.1 2.1 0.3)) )
+
+(dotest
+  (is= [0 2 4 6 8]  (t/keep-if even? (range 10))
+    (t/drop-if odd?  (range 10)))
+  (is= [1 3 5 7 9]  (t/keep-if odd?  (range 10))
+    (t/drop-if even? (range 10)))
+
+  ; If we supply a 2-arg fn when filtering a sequence, we get an Exception (CLJ only)
+  #?(:clj (throws? (t/keep-if (fn [arg1 arg2] :dummy) #{1 2 3})))
+
+  ; Verify throw if coll is not a sequential, map, or set.
+  (throws? (t/keep-if i/truthy? 2 ))
+  (throws? (t/keep-if i/truthy? :some-kw )))
+
+(dotest
+  (let [m1 {10 0, 20 0
+            11 1, 21 1
+            12 2, 22 2
+            13 3, 23 3}]
+    (is= (t/keep-if (fn [k v] (odd? k)) m1)
+      (t/drop-if (fn [k v] (even? k)) m1)
+      {11 1, 21 1
+       13 3, 23 3})
+    (is= (t/keep-if (fn [k v] (even? k)) m1) (t/keep-if (fn [k v] (even? v)) m1)
+      (t/drop-if (fn [k v] (odd? k)) m1) (t/drop-if (fn [k v] (odd? v)) m1)
+      {10 0, 20 0
+       12 2, 22 2})
+    (is= (t/keep-if (fn [k v] (< k 19)) m1)
+      (t/drop-if (fn [k v] (> k 19)) m1)
+      {10 0
+       11 1
+       12 2
+       13 3})
+    (is= (t/keep-if (fn [k v] (= 1 (int (/ k 10)))) m1)
+      (t/drop-if (fn [k v] (= 2 (int (/ k 10)))) m1)
+      {10 0
+       11 1
+       12 2
+       13 3})
+    (is= (t/keep-if (fn [k v] (= 2 (int (/ k 10)))) m1)
+      (t/drop-if (fn [k v] (= 1 (int (/ k 10)))) m1)
+      {20 0
+       21 1
+       22 2
+       23 3})
+    (is= (t/keep-if (fn [k v] (<= v 1)) m1)
+      (t/drop-if (fn [k v] (<= 2 v)) m1)
+      {10 0, 20 0
+       11 1, 21 1})
+
+    ; If we supply a 1-arg fn when filtering a map, we get an Exception
+    #?(:clj (throws? (t/keep-if (fn [arg] :dummy) {:a 1}))) )
+  (let [s1 (into (sorted-set) (range 10))]
+    (is= #{0 2 4 6 8} (t/keep-if even? s1)
+      (t/drop-if odd? s1))
+    (is= #{1 3 5 7 9} (t/keep-if odd? s1)
+      (t/drop-if even? s1))
+
+    ; If we supply a 2-arg fn when filtering a set, we get an Exception
+    #?(:clj (throws? (t/keep-if (fn [arg1 arg2] :dummy) #{1 2 3}))) ))
 
 
 

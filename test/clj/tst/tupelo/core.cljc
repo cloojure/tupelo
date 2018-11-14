@@ -147,69 +147,6 @@
 
 
 
-(dotest
-  (is= [0 2 4 6 8]  (keep-if even? (range 10))
-                    (drop-if odd?  (range 10)))
-  (is= [1 3 5 7 9]  (keep-if odd?  (range 10))
-                    (drop-if even? (range 10)))
-
-  ; If we supply a 2-arg fn when filtering a sequence, we get an Exception
-  (throws? clojure.lang.ArityException (keep-if (fn [arg1 arg2] :dummy) #{1 2 3} ))
-
-  ; Verify throw if coll is not a sequential, map, or set.
-  (throws? IllegalArgumentException (keep-if i/truthy? 2 ))
-  (throws? IllegalArgumentException (keep-if i/truthy? :some-kw )))
-
-(dotest
-  (let [m1  {10  0,   20 0
-             11  1,   21 1
-             12  2,   22 2
-             13  3,   23 3} ]
-    (is= (keep-if   (fn [k v] (odd?  k))  m1)
-         (drop-if   (fn [k v] (even? k))  m1)
-          {11  1,   21 1
-           13  3,   23 3} )
-    (is= (keep-if   (fn [k v] (even? k))  m1)     (keep-if   (fn [k v] (even? v))  m1)
-         (drop-if   (fn [k v] (odd?  k))  m1)     (drop-if   (fn [k v] (odd?  v))  m1)
-          {10  0,   20 0
-           12  2,   22 2} )
-    (is=  (keep-if   (fn [k v] (< k 19))  m1)
-          (drop-if   (fn [k v] (> k 19))  m1)
-          {10  0
-           11  1
-           12  2
-           13  3} )
-    (is=  (keep-if   (fn [k v] (= 1 (int (/ k 10))))  m1)
-          (drop-if   (fn [k v] (= 2 (int (/ k 10))))  m1)
-          {10  0
-           11  1
-           12  2
-           13  3} )
-    (is=  (keep-if   (fn [k v] (= 2 (int (/ k 10))))  m1)
-          (drop-if   (fn [k v] (= 1 (int (/ k 10))))  m1)
-          {20  0
-           21  1
-           22  2
-           23  3} )
-    (is=  (keep-if   (fn [k v] (<= v 1   ))  m1)
-          (drop-if   (fn [k v] (<=   2 v ))  m1)
-            {10  0,   20 0
-             11  1,   21 1 } )
-
-    ; If we supply a 1-arg fn when filtering a map, we get an Exception
-    (throws? clojure.lang.ArityException (keep-if (fn [arg] :dummy) {:a 1} ))
-  ))
-
-(dotest
-  (let [s1  (into (sorted-set) (range 10)) ]
-    (is= #{0 2 4 6 8}   (keep-if even? s1)
-                        (drop-if odd?  s1))
-    (is= #{1 3 5 7 9}   (keep-if odd?  s1)
-                        (drop-if even? s1))
-
-    ; If we supply a 2-arg fn when filtering a set, we get an Exception
-    (throws? clojure.lang.ArityException (keep-if (fn [arg1 arg2] :dummy) #{1 2 3} ))))
-
 #_(tst/defspec ^:slow t-keep-if-drop-if 999
   (prop/for-all [vv (gen/vector gen/int) ]
     (let [even-1      (keep-if   even?  vv)
