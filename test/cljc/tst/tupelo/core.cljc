@@ -876,10 +876,9 @@
     (catch e
            (println "Caught:" e)))
 
-  (let [x (t/with-exception-default :XXX
+  (let [result (t/with-exception-default :some-val
             (throw (ex-info "some-big-error" {:answer 43})))]
-    (println :awt110 x)
-    (is true)))
+    (is= result :some-val)))
 
 (dotest
   (let [map1  {:a 1 :b 2 :c 3 :d 4 :e 5}]
@@ -1083,6 +1082,238 @@
   (is= (mapv #(t/with-nil-default :some-default %)
          [0 1 "" [] nil true false])
     [0 1 "" [] :some-default true false]))
+
+(dotest
+  (is (t/rel= 1 1 :digits 4 ))
+  (is (t/rel= 1 1 :tol    0.01 ))
+
+  (throws? (t/rel= 1 1 ))
+  (throws? (t/rel= 1 1 4))
+  (throws? (t/rel= 1 1 :xxdigits 4      ))
+  (throws? (t/rel= 1 1 :digits   4.1    ))
+  (throws? (t/rel= 1 1 :digits   0      ))
+  (throws? (t/rel= 1 1 :digits  -4      ))
+  (throws? (t/rel= 1 1 :tol    -0.01    ))
+  (throws? (t/rel= 1 1 :tol     "xx"    ))
+  (throws? (t/rel= 1 1 :xxtol   0.01    ))
+
+  (is      (t/rel=   0   0   :digits 3 ))
+  (is      (t/rel=  42  42   :digits 99 ))
+  (is      (t/rel=  42  42.0 :digits 99 ))
+
+  (is      (t/rel= 1 1.001 :digits 3 ))
+  (is (not (t/rel= 1 1.001 :digits 4 )))
+  (is      (t/rel=   123450000   123456789 :digits 4 ))
+  (is (not (t/rel=   123450000   123456789 :digits 6 )))
+  (is      (t/rel= 0.123450000 0.123456789 :digits 4 ))
+  (is (not (t/rel= 0.123450000 0.123456789 :digits 6 )))
+
+  (is      (t/rel= 1 1.001 :tol 0.01 ))
+  (is (not (t/rel= 1 1.001 :tol 0.0001 ))) )
+
+(dotest
+  (is (every? t/truthy? (t/forv [ul (range 0 4)] (vector? (t/range-vec ul)))))
+
+  (is (every? t/truthy? (t/forv [ul (range 0 4)] (= (t/range-vec ul) (range ul)))))
+
+  (is (every? t/truthy? (t/forv [lb (range 0 4)
+                                 ub (range lb 4)]
+                          (= (t/range-vec lb ub) (range lb ub))))))
+
+(dotest
+  (testing "positive step"
+    (is= [0      ] (t/thru 0))
+    (is= [0 1    ] (t/thru 1))
+    (is= [0 1 2  ] (t/thru 2))
+    (is= [0 1 2 3] (t/thru 3))
+
+    (is= [0      ] (t/thru 0 0))
+    (is= [0 1    ] (t/thru 0 1))
+    (is= [0 1 2  ] (t/thru 0 2))
+    (is= [0 1 2 3] (t/thru 0 3))
+
+    (is= [       ] (t/thru 1 0))
+    (is= [  1    ] (t/thru 1 1))
+    (is= [  1 2  ] (t/thru 1 2))
+    (is= [  1 2 3] (t/thru 1 3))
+
+    (is= [       ] (t/thru 2 0))
+    (is= [       ] (t/thru 2 1))
+    (is= [    2  ] (t/thru 2 2))
+    (is= [    2 3] (t/thru 2 3))
+
+    (is= [       ] (t/thru 3 0))
+    (is= [       ] (t/thru 3 1))
+    (is= [       ] (t/thru 3 2))
+    (is= [      3] (t/thru 3 3))
+
+    (is= [       ] (t/thru 4 0))
+    (is= [       ] (t/thru 4 1))
+    (is= [       ] (t/thru 4 2))
+    (is= [       ] (t/thru 4 3))
+
+
+    (is= [0      ] (t/thru 0 0 1))
+    (is= [0 1    ] (t/thru 0 1 1))
+    (is= [0 1 2  ] (t/thru 0 2 1))
+    (is= [0 1 2 3] (t/thru 0 3 1))
+
+    (is= [       ] (t/thru 1 0 1))
+    (is= [  1    ] (t/thru 1 1 1))
+    (is= [  1 2  ] (t/thru 1 2 1))
+    (is= [  1 2 3] (t/thru 1 3 1))
+
+    (is= [       ] (t/thru 2 0 1))
+    (is= [       ] (t/thru 2 1 1))
+    (is= [    2  ] (t/thru 2 2 1))
+    (is= [    2 3] (t/thru 2 3 1))
+
+    (is= [       ] (t/thru 3 0 1))
+    (is= [       ] (t/thru 3 1 1))
+    (is= [       ] (t/thru 3 2 1))
+    (is= [      3] (t/thru 3 3 1))
+
+    (is= [       ] (t/thru 4 0 1))
+    (is= [       ] (t/thru 4 1 1))
+    (is= [       ] (t/thru 4 2 1))
+    (is= [       ] (t/thru 4 3 1))
+
+
+    (is=        [0      ] (t/thru 0 0 2))
+    (throws?              (t/thru 0 1 2))
+    (is=        [0   2  ] (t/thru 0 2 2))
+    (throws?              (t/thru 0 3 2))
+
+    (throws?              (t/thru 1 0 2))
+    (is=        [  1    ] (t/thru 1 1 2))
+    (throws?              (t/thru 1 2 2))
+    (is=        [  1   3] (t/thru 1 3 2))
+
+    (is=        [       ] (t/thru 2 0 2))
+    (throws?              (t/thru 2 1 2))
+    (is=        [    2  ] (t/thru 2 2 2))
+    (throws?              (t/thru 2 3 2))
+
+    (throws?              (t/thru 3 0 2))
+    (is=        [       ] (t/thru 3 1 2))
+    (throws?              (t/thru 3 2 2))
+    (is=        [      3] (t/thru 3 3 2))
+
+
+    (is=        [0      ] (t/thru 0 0 3))
+    (throws?              (t/thru 0 1 3))
+    (throws?              (t/thru 0 2 3))
+    (is=        [0     3] (t/thru 0 3 3))
+
+    (throws?              (t/thru 1 0 3))
+    (is=        [  1    ] (t/thru 1 1 3))
+    (throws?              (t/thru 1 2 3))
+    (throws?              (t/thru 1 3 3))
+
+    (throws?              (t/thru 2 0 3))
+    (throws?              (t/thru 2 1 3))
+    (is=        [    2  ] (t/thru 2 2 3))
+    (throws?              (t/thru 2 3 3))
+
+    (is=        [       ] (t/thru 3 0 3))
+    (throws?              (t/thru 3 1 3))
+    (throws?              (t/thru 3 2 3))
+    (is=        [      3] (t/thru 3 3 3)))
+  (testing "negative step"
+    (is= [      0] (t/thru 0 0 -1))
+    (is= [    1 0] (t/thru 1 0 -1))
+    (is= [  2 1 0] (t/thru 2 0 -1))
+    (is= [3 2 1 0] (t/thru 3 0 -1))
+
+    (is= [       ] (t/thru 0 1 -1))
+    (is= [    1  ] (t/thru 1 1 -1))
+    (is= [  2 1  ] (t/thru 2 1 -1))
+    (is= [3 2 1  ] (t/thru 3 1 -1))
+
+    (is= [       ] (t/thru 0 2 -1))
+    (is= [       ] (t/thru 1 2 -1))
+    (is= [  2    ] (t/thru 2 2 -1))
+    (is= [3 2    ] (t/thru 3 2 -1))
+
+    (is= [       ] (t/thru 0 3 -1))
+    (is= [       ] (t/thru 1 3 -1))
+    (is= [       ] (t/thru 2 3 -1))
+    (is= [3      ] (t/thru 3 3 -1))
+
+
+    (is=         [      0] (t/thru 0 0 -2))
+    (throws?               (t/thru 1 0 -2))
+    (is=         [  2   0] (t/thru 2 0 -2))
+    (throws?               (t/thru 3 0 -2))
+
+    (throws?               (t/thru 0 1 -2))
+    (is=         [    1  ] (t/thru 1 1 -2))
+    (throws?               (t/thru 2 1 -2))
+    (is=         [3   1  ] (t/thru 3 1 -2))
+
+    (is=         [       ] (t/thru 0 2 -2))
+    (throws?               (t/thru 1 2 -2))
+    (is=         [  2    ] (t/thru 2 2 -2))
+    (throws?               (t/thru 3 2 -2))
+
+    (throws?               (t/thru 0 3 -2))
+    (is=         [       ] (t/thru 1 3 -2))
+    (throws?               (t/thru 2 3 -2))
+    (is=         [3      ] (t/thru 3 3 -2))
+
+
+    (is=         [      0] (t/thru 0 0 -3))
+    (throws?               (t/thru 1 0 -3))
+    (throws?               (t/thru 2 0 -3))
+    (is=         [3     0] (t/thru 3 0 -3))
+
+    (throws?               (t/thru 0 1 -3))
+    (is=         [    1  ] (t/thru 1 1 -3))
+    (throws?               (t/thru 2 1 -3))
+    (throws?               (t/thru 3 1 -3))
+
+    (throws?               (t/thru 0 2 -3))
+    (throws?               (t/thru 1 2 -3))
+    (is=         [  2    ] (t/thru 2 2 -3))
+    (throws?               (t/thru 3 2 -3))
+
+    (is=         [       ] (t/thru 0 3 -3))
+    (throws?               (t/thru 1 3 -3))
+    (throws?               (t/thru 2 3 -3))
+    (is=         [3      ] (t/thru 3 3 -3)))
+  (testing "combinations"
+    (is= [    0  2  4  6  8  10] (t/thru   0  10  2))
+    (is= [    0 -2 -4 -6 -8 -10] (t/thru   0 -10 -2))
+    (is= [       2  4  6  8  10] (t/thru   2  10  2))
+    (is= [      -2 -4 -6 -8 -10] (t/thru  -2 -10 -2))
+    (is= [ 2  0 -2 -4 -6 -8 -10] (t/thru   2 -10 -2))
+    (is= [-2  0  2  4  6  8  10] (t/thru  -2  10  2))
+
+    (is= [ 10  8  6  4  2  0   ] (t/thru  10   0 -2))
+    (is= [-10 -8 -6 -4 -2  0   ] (t/thru -10   0  2))
+    (is= [ 10  8  6  4  2      ] (t/thru  10   2 -2))
+    (is= [-10 -8 -6 -4 -2      ] (t/thru -10  -2  2))
+    (is= [ 10  8  6  4  2  0 -2] (t/thru  10  -2 -2))
+    (is= [-10 -8 -6 -4 -2  0  2] (t/thru -10   2  2))
+
+    (is= [    0  5  10] (t/thru   0  10  5))
+    (is= [    0 -5 -10] (t/thru   0 -10 -5))
+    (is= [       5  10] (t/thru   5  10  5))
+    (is= [      -5 -10] (t/thru  -5 -10 -5))
+    (is= [ 5  0 -5 -10] (t/thru   5 -10 -5))
+    (is= [-5  0  5  10] (t/thru  -5  10  5))
+
+    (is= [ 10  5  0   ] (t/thru  10   0 -5))
+    (is= [-10 -5  0   ] (t/thru -10   0  5))
+    (is= [ 10  5      ] (t/thru  10   5 -5))
+    (is= [-10 -5      ] (t/thru -10  -5  5))
+    (is= [ 10  5  0 -5] (t/thru  10  -5 -5))
+    (is= [-10 -5  0  5] (t/thru -10   5  5)))
+  (testing "floats"
+    (is (t/all-rel= [1.1 1.3 1.5 1.7] (t/thru 1.1 1.7 0.2) :digits 7))
+    (is (t/all-rel= [1.1 1.2 1.3 1.4] (t/thru 1.1 1.4 0.1) :digits 7)))
+  (throws? (t/thru 1.1 2.1 0.3))
+  )
 
 
 
