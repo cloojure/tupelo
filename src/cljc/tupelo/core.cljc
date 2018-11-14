@@ -1707,6 +1707,91 @@
       (throw (ex-info "validate-map-keys: invalid key found " (vals->map tst-map valid-keys))))
     tst-map))
 
+; #todo readme
+(s/defn starts-with? :- s/Bool
+  "Returns true when the initial elements of coll match those of tgt"
+  [coll tgt-in]     ; #todo schema
+  (let [tgt-vec (vec tgt-in)
+        tgt-len (count tgt-vec) ]
+    (if (< (count coll) tgt-len)
+      false
+      (let [coll-vals (take tgt-len coll)]
+        (= coll-vals tgt-vec)))))
+
+; #todo readme
+(defn index-using
+  "Finds the first index N where (< N (count coll)) such that (pred (drop N coll)) is truthy.
+  Returns `nil` if no match found."
+  [pred coll]
+  (let [all-vals (vec coll)
+        num-vals (count all-vals)]
+    (loop [i 0]
+      (if (<= num-vals i)
+        nil         ; did not find match
+        (let [curr-vals (subvec all-vals i)]
+          (if (pred curr-vals)
+            i
+            (recur (inc i))))))))
+
+; #todo readme
+(defn split-using    ; #todo schema
+  "Splits a collection based on a predicate with a collection argument.
+  Finds the first index N such that (pred (drop N coll)) is true. Returns a length-2 vector
+  of [ (take N coll) (drop N coll) ]. If pred is never satisified, [ coll [] ] is returned."
+  [pred coll]
+  (let [N (index-using pred (vec coll))]
+    (if (nil? N)
+      [coll []]
+      [(take N coll) (drop N coll)])))
+
+; #todo readme
+(defn split-match    ; #todo schema
+  "Splits a collection src by matching with a sub-sequence tgt of length L.
+  Finds the first index N such that (= tgt (->> coll (drop N) (take L))) is true.
+  Returns a length-2 vector of [ (take N coll) (drop N coll) ].
+  If no match is found, [ coll [] ] is returned."
+  [coll tgt]
+  (split-using
+    (fn [partial-coll] (starts-with? partial-coll (vec tgt)))
+    (vec coll)))
+
+; #todo readme
+(s/defn partition-using
+  "Partitions a collection into vector of segments based on a predicate with a collection argument.
+  The first segment is initialized by removing the first element from `values`, with subsequent
+  elements similarly transferred as long as `(pred remaining-values)` is falsey. When
+  `(pred remaining-values)` becomes truthy, the algorithm begins building the next segment.
+  Thus, the first partition finds the smallest N (< 0 N) such that (pred (drop N values))
+  is true, and constructs the segment as (take N values). If pred is never satisified,
+  [values] is returned."
+  [pred   :- s/Any    ; a predicate function  taking a list arg
+   values :- tsk/List ]
+  (loop [vals   (vec values)
+         result []]
+    (if (empty? vals)
+      result
+      (let [
+            out-first  (take 1 vals)
+            [out-rest unprocessed] (split-using pred (cc/rest vals))
+            out-vals   (glue out-first out-rest)
+            new-result (append result out-vals)
+            ]
+        (recur unprocessed new-result)))))
+
+(s/defn val= :- s/Bool ; maybe value=  or   map=  (like set=)
+  "Compares values for equality using clojure.core/=, treating records as plain map values:
+
+      (defrecord SampleRec [a b])
+      (assert (val= (->SampleRec 1 2) {:a 1 :b 2}))   ; fails for clojure.core/= "
+  [& vals]
+  (let [mapify   (fn [arg]
+                   (if (map? arg)
+                     (into {} arg)
+                     arg))
+        mapified (mapv #(walk/postwalk mapify %) vals)
+        result   (apply = mapified)]
+    result))
+
 
 
 
@@ -2095,77 +2180,6 @@
 
 ; #todo make replace-in that is like assoc-in but verifies path first !!! (merge with replace-at)
 
-; #todo readme
-(s/defn starts-with? :- s/Bool
-  "Returns true when the initial elements of coll match those of tgt"
-  [coll tgt-in]     ; #todo schema
-  (let [tgt-vec (vec tgt-in)
-        tgt-len (count tgt-vec) ]
-    (if (< (count coll) tgt-len)
-      false
-      (let [coll-vals (take tgt-len coll)]
-        (= coll-vals tgt-vec)))))
-
-; #todo readme
-(defn index-using
-  "Finds the first index N where (< N (count coll)) such that (pred (drop N coll)) is truthy.
-  Returns `nil` if no match found."
-  [pred coll]
-  (let [all-vals (vec coll)
-        num-vals (count all-vals)]
-    (loop [i 0]
-      (if (<= num-vals i)
-        nil         ; did not find match
-        (let [curr-vals (subvec all-vals i)]
-          (if (pred curr-vals)
-            i
-            (recur (inc i))))))))
-
-; #todo readme
-(defn split-using    ; #todo schema
-  "Splits a collection based on a predicate with a collection argument.
-  Finds the first index N such that (pred (drop N coll)) is true. Returns a length-2 vector
-  of [ (take N coll) (drop N coll) ]. If pred is never satisified, [ coll [] ] is returned."
-  [pred coll]
-  (let [N (index-using pred (vec coll))]
-    (if (nil? N)
-      [coll []]
-      [(take N coll) (drop N coll)])))
-
-; #todo readme
-(defn split-match    ; #todo schema
-  "Splits a collection src by matching with a sub-sequence tgt of length L.
-  Finds the first index N such that (= tgt (->> coll (drop N) (take L))) is true.
-  Returns a length-2 vector of [ (take N coll) (drop N coll) ].
-  If no match is found, [ coll [] ] is returned."
-  [coll tgt]
-  (split-using
-    (fn [partial-coll] (starts-with? partial-coll (vec tgt)))
-    (vec coll)))
-
-; #todo readme
-(s/defn partition-using
-  "Partitions a collection into vector of segments based on a predicate with a collection argument.
-  The first segment is initialized by removing the first element from `values`, with subsequent
-  elements similarly transferred as long as `(pred remaining-values)` is falsey. When
-  `(pred remaining-values)` becomes truthy, the algorithm begins building the next segment.
-  Thus, the first partition finds the smallest N (< 0 N) such that (pred (drop N values))
-  is true, and constructs the segment as (take N values). If pred is never satisified,
-  [values] is returned."
-  [pred   :- s/Any    ; a predicate function  taking a list arg
-   values :- tsk/List ]
-  (loop [vals   (vec values)
-         result []]
-    (if (empty? vals)
-      result
-      (let [
-            out-first  (take 1 vals)
-            [out-rest unprocessed] (split-using pred (cc/rest vals))
-            out-vals   (glue out-first out-rest)
-            new-result (append result out-vals)
-            ]
-        (recur unprocessed new-result)))))
-
 (defmacro matches?
   "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
    matches the pattern value.  Underscores serve as wildcard values. Usage:
@@ -2194,20 +2208,6 @@
   [s]
   (-> s resolve meta :macro boolean))
     ; from Alex Miller StackOverflow answer 2017-5-6
-
-(s/defn val= :- s/Bool ; maybe value=  or   map=  (like set=)
-  "Compares values for equality using clojure.core/=, treating records as plain map values:
-
-      (defrecord SampleRec [a b])
-      (assert (val= (->SampleRec 1 2) {:a 1 :b 2}))   ; fails for clojure.core/= "
-  [& vals]
-  (let [mapify   (fn [arg]
-                   (if (map? arg)
-                     (into {} arg)
-                     arg))
-        mapified (mapv #(walk/postwalk mapify %) vals)
-        result   (apply = mapified)]
-    result))
 
 ; #todo allow pred fn to replace entire node in search path:
 ; #todo    (fn [node] (and (contains? #{:horse :dog} (grab :animal/species node))

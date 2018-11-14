@@ -1557,6 +1557,132 @@
     (is= (t/map-vals map-123 inc) {:a 2, :b 3, :c 4})
     (is= (t/map-vals map-123 tx-fn) {:a 101, :b 202, :c 303})))
 
+(dotest
+  (is   (t/starts-with? (range 0 3) (range 0 0)))
+
+  (is   (t/starts-with? (range 0 3) (range 0 1)))
+  (is   (t/starts-with? (range 0 3) (range 0 2)))
+  (is   (t/starts-with? (range 0 3) (range 0 3)))
+
+  (isnt (t/starts-with? (range 0 3) (range 1 2)))
+  (isnt (t/starts-with? (range 0 3) (range 1 3)))
+
+  (isnt (t/starts-with? (range 0 3) (range 2 3)))
+
+  (isnt (t/starts-with? (range 1 3) (range 0 1)))
+  (isnt (t/starts-with? (range 1 3) (range 0 2)))
+  (isnt (t/starts-with? (range 1 3) (range 0 3)))
+
+  (is   (t/starts-with? (range 1 3) (range 1 2)))
+  (is   (t/starts-with? (range 1 3) (range 1 3)))
+
+  (isnt (t/starts-with? (range 1 3) (range 2 3)))
+
+  (isnt (t/starts-with? (range 2 3) (range 0 1)))
+  (isnt (t/starts-with? (range 2 3) (range 0 2)))
+  (isnt (t/starts-with? (range 2 3) (range 0 3)))
+
+  (isnt (t/starts-with? (range 2 3) (range 1 2)))
+  (isnt (t/starts-with? (range 2 3) (range 1 3)))
+
+  (is   (t/starts-with? (range 2 3) (range 2 3)))
+
+  (isnt (t/starts-with? (range 3 3) (range 0 1)))
+  (isnt (t/starts-with? (range 3 3) (range 0 2)))
+  (isnt (t/starts-with? (range 3 3) (range 0 3))) )
+
+(defrecord SampleRec [a b])
+(dotest
+  (let [sr1 (->SampleRec 1 2)]
+    (is (map? sr1))
+    (is (t/val= sr1 {:a 1 :b 2}))
+    (is (t/val= 1 1))
+    (is (t/val= "abc" "abc"))
+    (is (t/val= [1 2 3] [1 2 3]))
+    (is (t/val= #{1 2 sr1} #{1 2 {:a 1 :b 2}}))
+    (is (t/val= [1 2 3 #{1 2 sr1}] [1 2 3 #{1 2 {:a 1 :b 2}}])) ) )
+
+(dotest
+  (testing "fibo stuff"
+    (is= (take  0 (t/fibonacci-seq))  [] )
+    (is= (take  5 (t/fibonacci-seq))  [0 1 1 2 3] )
+    (is= (take 10 (t/fibonacci-seq))  [0 1 1 2 3 5 8 13 21 34] )
+
+    (is= (t/fibo-thru  0) [0] )
+    (is= (t/fibo-thru  1) [0 1 1] )
+    (is= (t/fibo-thru  2) [0 1 1 2] )
+    (is= (t/fibo-thru  3) [0 1 1 2 3] )
+    (is= (t/fibo-thru  4) [0 1 1 2 3] )
+    (is= (t/fibo-thru  5) [0 1 1 2 3 5] )
+    (is= (t/fibo-thru  6) [0 1 1 2 3 5] )
+    (is= (t/fibo-thru  7) [0 1 1 2 3 5] )
+    (is= (t/fibo-thru  8) [0 1 1 2 3 5 8] )
+    (is= (t/fibo-thru 34) [0 1 1 2 3 5 8 13 21 34] )
+
+    (is=  0 (t/fibo-nth 0))
+    (is=  1 (t/fibo-nth 1))
+    (is=  1 (t/fibo-nth 2))
+    (is=  2 (t/fibo-nth 3))
+    (is=  3 (t/fibo-nth 4))
+    (is=  5 (t/fibo-nth 5))
+    (is=  8 (t/fibo-nth 6))
+    (is= 13 (t/fibo-nth 7))
+    (is= 21 (t/fibo-nth 8))
+    (is= 34 (t/fibo-nth 9))
+    (is (< (Math/pow 2 62) (t/fibo-nth 91) (Math/pow 2 63)))))
+
+;---------------------------------------------------------------------------------------------------
+(dotest
+  (is= [ [] [\a   \b   \c   \d   \e   \f]      ] (t/split-match "abcdef" "a"   ))
+  (is= [ [] [\a   \b   \c   \d   \e   \f]      ] (t/split-match "abcdef" "ab"  ))
+  (is= [    [\a] [\b   \c   \d   \e   \f]      ] (t/split-match "abcdef" "bc"  ))
+  (is= [    [\a   \b] [\c   \d   \e   \f]      ] (t/split-match "abcdef" "cde" ))
+  (is= [    [\a   \b   \c] [\d   \e   \f]      ] (t/split-match "abcdef" "de"  ))
+  (is= [    [\a   \b   \c   \d] [\e   \f]      ] (t/split-match "abcdef" "ef"  ))
+  (is= [    [\a   \b   \c   \d   \e] [\f]      ] (t/split-match "abcdef" "f"   ))
+  (is= [    [\a   \b   \c   \d   \e   \f]  []  ] (t/split-match "abcdef" "fg"  ))
+  (is= [    [\a   \b   \c   \d   \e   \f]  []  ] (t/split-match "abcdef" "gh"  ))
+
+  (is= [    [0   1   2   3   4   5]  []  ]       (t/split-match (range 6) [-1]    ))
+  (is= [ [] [0   1   2   3   4   5]      ]       (t/split-match (range 6) [0]     ))
+  (is= [ [] [0   1   2   3   4   5]      ]       (t/split-match (range 6) [0 1]   ))
+  (is= [    [0   1] [2   3   4   5]      ]       (t/split-match (range 6) [2 3]   ))
+  (is= [    [0   1   2] [3   4   5]      ]       (t/split-match (range 6) [3 4 5] ))
+  (is= [    [0   1   2   3] [4   5]      ]       (t/split-match (range 6) [4 5]   ))
+  (is= [    [0   1   2   3   4] [5]      ]       (t/split-match (range 6) [5]     ))
+  (is= [    [0   1   2   3   4   5]  []  ]       (t/split-match (range 6) [5 6]   ))
+  (is= [    [0   1   2   3   4   5]  []  ]       (t/split-match (range 6) [6 7]   )))
+
+(dotest
+  (is= nil (t/index-using #(= [666]       %) (range 5)))
+  (is= 0   (t/index-using #(= [0 1 2 3 4] %) (range 5)))
+  (is= 1   (t/index-using #(= [  1 2 3 4] %) (range 5)))
+  (is= 2   (t/index-using #(= [    2 3 4] %) (range 5)))
+  (is= 3   (t/index-using #(= [      3 4] %) (range 5)))
+  (is= 4   (t/index-using #(= [        4] %) (range 5)))
+  (is= nil (t/index-using #(= [         ] %) (range 5))))
+
+(dotest
+  (is= [ [] [0   1   2   3   4]    ] (t/split-using #(= 0 (first %)) (range 5)))
+  (is= [    [0] [1   2   3   4]    ] (t/split-using #(= 1 (first %)) (range 5)))
+  (is= [    [0   1] [2   3   4]    ] (t/split-using #(= 2 (first %)) (range 5)))
+  (is= [    [0   1   2] [3   4]    ] (t/split-using #(= 3 (first %)) (range 5)))
+  (is= [    [0   1   2   3] [4]    ] (t/split-using #(= 4 (first %)) (range 5)))
+  (is= [    [0   1   2   3   4] [] ] (t/split-using #(= 5 (first %)) (range 5)))
+  (is= [    [0   1   2   3   4] [] ] (t/split-using #(= 9 (first %)) (range 5)))
+
+  (is= [[\a \b \c] [\d \e \f]] (t/split-using #(t/starts-with? % "de") "abcdef")))
+
+(dotest
+  (let [start-segment? (fn [vals] (zero? (rem (first vals) 3))) ]
+    (is= (t/partition-using start-segment? [1 2 3 6 7 8])
+      [[1 2] [3] [6 7 8]])
+    (is= (t/partition-using start-segment? [3 6 7 9])
+      [[3] [6 7] [9]])
+    (is= (t/partition-using start-segment? [1 2 3 6 7 8 9 12 13 15 16 17 18 18 18 3 4 5])
+      [[1 2] [3] [6 7 8] [9] [12 13] [15 16 17] [18] [18] [18] [3 4 5]]))
+  (throws? (t/partition-using even? 5)))
+
 
 
 
