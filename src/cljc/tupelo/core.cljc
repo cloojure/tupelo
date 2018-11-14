@@ -1903,6 +1903,7 @@
                                    ~@forms)
             ; >>   (do (nl) (spyx-pretty res-raw))
 
+            ; #todo fix to work for "namespaced" calls like (t/restruct) & (t/restruct-all)
             res-all             (walk/postwalk
                                   (fn [form]
                                     (if (not= form '(restruct-all))

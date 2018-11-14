@@ -1951,6 +1951,156 @@
   (is= [1 2 3] (t/unlazy (map inc (range 3))))
   (is= #{1 2 3} (t/unlazy #{3 2 1})))
 
+(dotest
+  (let [info  {:a 1
+               :b {:c 3
+                   :d 4}}
+        mania {:x 6
+               :y {:w 333
+                   :z 666}}]
+
+    ;(spy :info-orig info)
+    ;(spy :mania-orig mania)
+    (t/it-> (t/destruct [info {:a ?
+                               :b {:c ?
+                                   :d ?}}
+                         mania {:y {:z ?}}] ; can ignore unwanted keys like :x
+              ;(spyx [a c])
+              (let [a (+ 100 a)
+                    c (+ 100 c)
+                    d z
+                    z 777]
+                ;(spyx [a c])
+                (restruct-all)))
+      (t/with-map-vals it [info mania]
+        (is= info {:a 101, :b {:c 103, :d 666}})
+        (is= mania {:x 6, :y {:w 333, :z 777}})))
+
+    (t/it-> (t/destruct [info {:a ?
+                               :b {:c ?
+                                   :d ?}}
+                         mania {:y {:z ?}}] ; can ignore unwanted keys like :x
+              ;(spyx [a c])
+              (let [a (+ 100 a)
+                    c (+ 100 c)
+                    d z
+                    z 777]
+                ;(spyx [a c])
+                (restruct info)))
+      (is= it {:a 101, :b {:c 103, :d 666}}))
+
+    (t/it-> (t/destruct [info {:a ?
+                               :b {:c ?
+                                   :d ?}}]
+              ;(spyx [a c])
+              (let [a (+ 100 a)
+                    c (+ 100 c)]
+                ;(spyx [a c])
+                (restruct)))
+      (is= it {:a 101, :b {:c 103, :d 4}}))))
+
+(dotest
+  (let [info  {:a 777
+               :b [2 3 4]}
+        mania [{:a 11} {:b 22} {:c [7 8 9]}]]
+    ;(spy :info-orig info)
+    ;(spy :mania-orig mania)
+    (let [z ::dummy]
+      (t/it-> (t/destruct [info {:a z
+                                 :b [d e f]}
+                           mania [{:a ?} BBB {:c clutter}]]
+                ;(spyx z)
+                ;(spyx [d e f])
+                ;(spyx a)
+                ;(spyx BBB)
+                ;(spyx clutter)
+                (let [clutter (mapv inc clutter)
+                      BBB     {:BBB 33}
+                      z       77
+                      d       (+ 7 d)]
+                  (restruct-all)))
+        (t/with-map-vals it [info mania]
+          (is= info {:a 77, :b [9 3 4]})
+          (is= mania [{:a 11} {:BBB 33} {:c [8 9 10]}]))))))
+
+(dotest
+  (let [data {:a 1
+              :b {:c 3
+                  :d 4}}] ; can ignore unwanted keys like :d
+    (t/destruct [data {:a ?
+                     :b {:c ?}}]
+      (is= [1 3] [a c]))
+    (throws?
+      (t/destruct [data {:a ?
+                       :b {:z ?}}] ; bad data example (non-existant key)
+        (println [a z]))))
+
+  (let [data [1 2 3 4 5]]
+    (t/destruct [data [a b c]] ; can ignore unwanted indexes 3 or 4 (0-based)
+      (is= [1 2 3] [a b c]))
+    (t/destruct [data {0 a
+                     2 c}] ; can destructure vectors using map-index technique
+      (is= [1 3] [a c])))
+  (throws?
+    (let [data [1 2 3]]
+      (t/destruct [data [a b c d]] ; bad data example (non-existant element)
+        (println [a b c d]))))
+
+  ; multi-destruct
+  (let [data-1 {:a 1 :b {:c 3}}
+        data-2 {:x 7 :y {:z 9}}]
+    (t/destruct [data-1 {:a ? :b {:c ?}}
+                 data-2 {:x ? :y {:z ?}}]
+      (is= [1 3 7 9] [a c x z])))
+  (let [data-1 {:a 1 :b {:c 3}}
+        data-2 [:x :y :z :666]]
+    (t/destruct [data-1 {:a ? :b {:c ?}}
+                 data-2 [x y z]]
+      (is= [1 3 :x :y :z] [a c x y z]))
+    (t/destruct [[data-1 data-2]
+                 [item-1 item-2]]
+      (is= [item-1 item-2] [data-1 data-2])))
+  (let [data-1 {:a 1 :b {:c [:x :y :z :666]}}]
+    (t/destruct [data-1 {:a ? :b {:c [x y z]}}]
+      (is= [1 :x :y :z] [a x y z]))
+    (t/destruct [data-1 {:a ? :b ?}]
+      (is= a 1 )
+      (is= b {:c [:x :y :z :666]}) ) )
+
+  (let [data [{:a 1 :b {:c 3}}
+              {:x 7 :y {:z 9}}]]
+    (t/destruct [data
+               [{:a ? :b {:c ?}}
+                {:x ? :y {:z ?}}]]
+      (is= [1 3 7 9] [a c x z])))
+  (let [data {:a [{:b 2}
+                  {:c 3}
+                  [7 8 9]]} ]
+    (t/destruct [data {:a [{:b p}
+                         {:c q}
+                         [r s t]]} ]
+      (is= [2 3 7 8 9] [p q r s t])))
+
+  ; duplicate vars
+  (let [data-1 {:a 1 :b {:c 3}}
+        data-2 {:x 7 :y {:c 9}}]
+    (t/destruct [data-1 {:a ? :b {:c p}}
+               data-2 {:x ? :y {:c q}}]
+      (is= [1 7 3 9] [a x p q]))
+    (t/destruct [data-1 {:a ? :b {:c ?}}
+               data-2 {:x ? :y {:c q}}]
+      (is= [1 7 3 9] [a x c q]))
+
+    ; duplicate variables: these generate compile-time errors
+    (comment
+      (t/destruct [data-1 {:a ? :b {:c ?}}
+                   data-2 {:x ? :y {:c ?}}]
+        (println "destruct/dummy"))
+      (t/destruct [{:a {:b {:c ?}}
+                    :x {:y {:c ?}}}]
+        (println "destruct/dummy")))))
+
+
 
 
 
