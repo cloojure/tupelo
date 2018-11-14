@@ -1,17 +1,18 @@
 (ns tst.tupelo.core
   (:require
+    [clojure.core.async :as ca]
     [clojure.string :as str]
     #?@(:clj [
               [schema.core :as s]
-              [tupelo.test   :refer [define-fixture dotest is isnt is= isnt= nonblank= testing throws?]]
-              [tupelo.core :as t]
+              [tupelo.test   :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+              [tupelo.core :as t :refer [spy spyx spyxx] ]
               [tupelo.schema :as tsk]
               [tupelo.string :as ts]
              ])
     #?@(:cljs [
                [schema.core :as s]
-               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= nonblank= testing throws?]]
-               [tupelo.core :as t :refer [spyx spyxx] :include-macros true]
+               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+               [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
                [tupelo.schema :as tsk]
                [tupelo.string :as ts :include-macros true]
               ])
@@ -183,7 +184,7 @@
     (nonblank= result expected )))
 
 (dotest
-  ; (t/spyx (s/check-fn t/truthy? ))
+  ; (spyx (s/check-fn t/truthy? ))
 
   (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]
     (testing "basic usage"
@@ -271,7 +272,7 @@
   (is= "(+ 2 3) => 5"
     (ts/collapse-whitespace
       (with-out-str
-        (is= 5 (t/spyx (+ 2 3))))))
+        (is= 5 (spyx (+ 2 3))))))
 
   ; #todo -> readme
   (is= (ts/collapse-whitespace   "(inc 0) => 1
@@ -279,7 +280,7 @@
                                   (inc 2) => 3 " )
     (ts/collapse-whitespace
       (with-out-str
-        (is= 3 (t/spyx (inc 0)
+        (is= 3 (spyx (inc 0)
                  (inc 1)
                  (inc 2))))))
 
@@ -289,7 +290,7 @@
                                   (inc 2) => 3 " )
     (ts/collapse-whitespace
       (with-out-str
-        (is= 3    (t/spyx :some-kw
+        (is= 3    (spyx :some-kw
                     (inc 1)
                     (inc 2)))))) )
 
@@ -304,7 +305,7 @@
         (is= 13
           (t/let-spy [a (inc 0)
                       b (+ 2 3)]
-                   (t/spyx (-> (inc a) (* 2) inc))
+                   (spyx (-> (inc a) (* 2) inc))
             (-> b (* 2) (+ 3)))))))
 
   (is= (ts/collapse-whitespace  " a => 1
@@ -327,38 +328,38 @@
                                 (swap! side-effect-cum-sum + result)
                                 result)) ]
       (is= ":hi => 5"
-        (ts/collapse-whitespace (with-out-str (t/spy (side-effect-add! 2 3) :hi))) )
+        (ts/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :hi))) )
       (is= ":hi => 5"
-        (ts/collapse-whitespace (with-out-str (t/spy :hi  (side-effect-add! 2 3)))) )
+        (ts/collapse-whitespace (with-out-str (spy :hi  (side-effect-add! 2 3)))) )
       (is= ":after-inc => 2"
         (ts/collapse-whitespace (with-out-str (-> 1
                                                 (inc)
-                                                (t/spy :after-inc) ; add a custom keyword message
+                                                (spy :after-inc) ; add a custom keyword message
                                                 (* 2)))))
       (is= ":after-inc => 2"
         (ts/collapse-whitespace (with-out-str (->> 1
                                                 (inc)
-                                                (t/spy :after-inc) ; add a custom keyword message
+                                                (spy :after-inc) ; add a custom keyword message
                                                 (* 2)))))
 
       (is= "(side-effect-add! 2 3) => 5"
-        (ts/collapse-whitespace (with-out-str (t/spyx (side-effect-add! 2 3)))) )
+        (ts/collapse-whitespace (with-out-str (spyx (side-effect-add! 2 3)))) )
       (is= 15 @side-effect-cum-sum))
 
     (is= ":first => 5 :second => 25"
       (ts/collapse-whitespace
         (with-out-str (-> 2
                         (+ 3)
-                        (t/spy :first )
+                        (spy :first )
                         (* 5)
-                        (t/spy :second) ))))
+                        (spy :second) ))))
     (is= ":first => 5 :second => 25"
       (ts/collapse-whitespace
         (with-out-str (->> 2
                         (+ 3)
-                        (t/spy :first )
+                        (spy :first )
                         (* 5)
-                        (t/spy :second) ))))
+                        (spy :second) ))))
 
     (let [side-effect-cum-sum (atom 0)  ; side-effect running total
 
@@ -369,27 +370,27 @@
                                 result))
           ]
       (is= ":value => 5"
-        (ts/collapse-whitespace (with-out-str (t/spy (side-effect-add! 2 3) :value))))
+        (ts/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :value))))
       (is= ":value => 5"
-        (ts/collapse-whitespace (with-out-str (t/spy :value  (side-effect-add! 2 3)))))
+        (ts/collapse-whitespace (with-out-str (spy :value  (side-effect-add! 2 3)))))
       (is= 10 @side-effect-cum-sum)
 
-      (is= ":value => 5" (ts/collapse-whitespace (with-out-str (t/spy :value (+ 2 3) ))))
-      (is=   ":spy => 5" (ts/collapse-whitespace (with-out-str (t/spy        (+ 2 3) ))))
+      (is= ":value => 5" (ts/collapse-whitespace (with-out-str (spy :value (+ 2 3) ))))
+      (is=   ":spy => 5" (ts/collapse-whitespace (with-out-str (spy        (+ 2 3) ))))
 
       (is= "(str \"abc\" \"def\") => \"abcdef\""
-        (ts/collapse-whitespace (with-out-str (t/spyx (str "abc" "def") ))))
+        (ts/collapse-whitespace (with-out-str (spyx (str "abc" "def") ))))
 
-      ; (throws? (t/spy :some-tag "some-str" 42))  ; #todo how test in cljs?
+      ; (throws? (spy :some-tag "some-str" 42))  ; #todo how test in cljs?
     )))
 
 (dotest
   (let [fn2   (fn []  (t/with-spy-indent
-                        (t/spy :msg2 (+ 2 3))))
+                        (spy :msg2 (+ 2 3))))
         fn1   (fn []  (t/with-spy-indent
-                        (t/spy :msg1 (+ 2 3))
+                        (spy :msg1 (+ 2 3))
                         (fn2)))
-        fn0   (fn [] (t/spy :msg0 (+ 2 3))) ]
+        fn0   (fn [] (spy :msg0 (+ 2 3))) ]
     (is= ":msg2 => 5"            (ts/collapse-whitespace (with-out-str (fn2))))
     (is= ":msg1 => 5 :msg2 => 5" (ts/collapse-whitespace (with-out-str (fn1))))
     (is= ":msg0 => 5"            (ts/collapse-whitespace (with-out-str (fn0)))) ))
@@ -534,8 +535,8 @@
       (t/map-let* {:lazy true :strict true}   [x xs y ys] (+ x y)))
     (let [result-vec (t/map-let* {:lazy false :strict true} [x xs y ys] (+ x y))
           result-lazyseq (t/map-let* {:lazy true :strict true} [result-vec xs y ys] (+ result-vec y))]
-      (t/spyx (type result-vec))
-      (t/spyx (type result-lazyseq))
+      (spyx (type result-vec))
+      (spyx (type result-lazyseq))
 
       (is (instance?
             #?(:clj clojure.lang.PersistentVector)
@@ -1731,6 +1732,207 @@
     (is= (lazy-countdown  1) [1 0] )
     (is= (lazy-countdown  0) [0] )
     (is= (lazy-countdown -1) nil )))
+
+(dotest
+  (is= (range 10)   ; vector/list
+    (t/unnest  0 1 2 3 4 5 6 7 8 9 )
+    (t/unnest  0 1 2 [3 [4] 5 6] 7 [8 9])
+    (t/unnest [0 1 2 3 4 5 6 7 8 9])
+    (t/unnest [0 [1 2 3 4 5 6 7 8 9]])
+    (t/unnest [0 [1 [2 3 4 5 6 7 8 9]]])
+    (t/unnest [0 [1 [2 [3 4 5 6 7 8 9]]]])
+    (t/unnest [0 [1 [2 [3 [4 5 6 7 8 9]]]]])
+    (t/unnest [0 [1 [2 [3 [4 [5 6 7 8 9]]]]]])
+    (t/unnest [0 [1 [2 [3 [4 [5 [6 7 8 9]]]]]]])
+    (t/unnest [0 [1 [2 [3 [4 [5 [6 [7 8 9]]]]]]]])
+    (t/unnest [0 [1 [2 [3 [4 [5 [6 [7 [8 9]]]]]]]]])
+    (t/unnest [0 [1 [2 [3 [4 [5 [6 [7 [8 [9]]]]]]]]]])
+    (t/unnest [[[[[[[[[[0] 1] 2] 3] 4] 5] 6] 7] 8] 9])
+    (t/unnest [0 1 [2 [3 [4] 5] 6] 7 8 9]) )
+
+  (is= [1 2 3 4 5] (t/unnest [[[1] 2] [3 [4 [5]]]]))
+
+  (is= (set [:a :1 :b 2 :c 3]) ; map
+    (set (t/unnest [:a :1 {:b 2 :c 3}]))
+    (set (t/unnest [:a :1 {[:b] 2 #{3} :c}]))
+    (set (t/unnest [:a :1 {:b 2 :c 3}]))
+    (set (t/unnest [:a :1 {:b {:c [2 3]}}])))
+  (set= #{ 1 2 3 4 5 6 } (t/unnest {1 {2 {3 {4 {5 6}}}}}))
+
+  (is= (set (range 10)) ; set
+    (set (t/unnest #{0 1 2 3 4 5 6 7 8 9}))
+    (set (t/unnest #{0 1 #{2 3 4 5 6 7 8} 9}))
+    (set (t/unnest #{0 1 #{2 3 #{4 5 6} 7 8} 9})) )
+  (set= #{ 1 2 3 4 5 6 } (t/unnest #{1 #{2 #{3 #{4 #{5 #{6}}}}}})))
+
+;-----------------------------------------------------------------------------
+; lazy-gen/yield tests
+
+#?(:clj (do
+
+(dotest
+  (let [empty-gen-fn (fn [] (t/lazy-gen))]
+    (is (nil? (spyx (empty-gen-fn)))))
+
+  (let [range-gen (fn [limit] ; "A generator 'range' function."
+                    (t/lazy-gen
+                      (loop [cnt 0]
+                        (when (< cnt limit)
+                          (assert (= cnt (t/yield cnt)))
+                          (recur (inc cnt))))))]
+
+    (is= (range 1) (range-gen 1))
+    (is= (range 5) (range-gen 5))
+    (is= (range 10) (range-gen 10))
+
+    ; Note different behavior for empty result
+    (is= [] (range 0))
+    (is= nil (range-gen 0))
+    (is= (seq (range 0))
+      (seq (range-gen 0))
+      nil))
+
+  (let [concat-gen        (fn [& collections]
+                            (t/lazy-gen
+                              (doseq [curr-coll collections]
+                                (doseq [item curr-coll]
+                                  (t/yield item)))))
+        concat-gen-mirror (fn [& collections]
+                            (t/lazy-gen
+                              (doseq [curr-coll collections]
+                                (doseq [item curr-coll]
+                                  (let [items [item (- item)]]
+                                    (assert (= items (t/yield-all items))))))))
+        c1                [1 2 3]
+        c2                [4 5 6]
+        c3                [7 8 9]
+        ]
+    (is= [1 2 3 4 5 6 7 8 9] (concat-gen c1 c2 c3))
+    (is= [1 -1 2 -2 3 -3 4 -4 5 -5 6 -6 7 -7 8 -8 9 -9] (concat-gen-mirror c1 c2 c3))) )
+
+(dotest
+  (let [sq-yield   (fn [xs]
+                     (t/lazy-gen
+                       (doseq [x xs]
+                         (t/yield (* x x)))))
+
+        sq-recur   (fn [xs]
+                     (loop [cum-result []
+                            xs         xs]
+                       (if (empty? xs)
+                         cum-result
+                         (let [x (first xs)]
+                           (recur (conj cum-result (* x x))
+                             (rest xs))))))
+
+        sq-lazyseq (fn lazy-squares [xs]
+                     (when (t/not-empty? xs)
+                       (let [x (first xs)]
+                         (lazy-seq (cons (* x x) (lazy-squares (rest xs)))))))
+
+        sq-reduce  (fn [xs]
+                     (reduce (fn [cum-result x]
+                               (conj cum-result (* x x)))
+                       [] xs))
+
+        sq-for     (fn [xs]
+                     (for [x xs]
+                       (* x x)))
+
+        sq-map     (fn [xs]
+                     (map #(* % %) xs))
+
+        xs         (range 5)
+        res-yield  (sq-yield xs)
+        res-recur  (sq-recur xs)
+        res-lzsq   (sq-lazyseq xs)
+        res-reduce (sq-reduce xs)
+        res-for    (sq-for xs)
+        res-map    (sq-map xs)
+        ]
+    (is= [0 1 4 9 16]
+      res-yield
+      res-recur
+      res-lzsq
+      res-reduce
+      res-for
+      res-map )))
+
+(dotest
+  (let [heads-pairs (fn [flips]
+                      (reduce +
+                        (let [flips (vec flips)]
+                          (t/lazy-gen
+                            (doseq [i (range (dec (count flips)))]
+                              (when (= :h (flips i) (flips (inc i)))
+                                (t/yield 1)))))))]
+    (is= 3 (heads-pairs [:h :t :h :h :h :t :h :h])))
+
+  ; from S. Sierra blogpost: https://stuartsierra.com/2015/04/26/clojure-donts-concat
+  (let [next-results   (fn [n] (t/thru 1 n)) ; (thru 1 3) => [1 2 3]
+        build-1        (fn [n]
+                         (t/lazy-gen
+                           (loop [counter 1]
+                             (when (<= counter n)
+                               (doseq [item (next-results counter)] ; #todo -> yield-all
+                                 (t/yield item))
+                               (recur (inc counter))))))
+        build-2        (fn [n]
+                         (t/lazy-gen
+                           (doseq [counter (t/thru n)]
+                             (when (<= counter n)
+                               (doseq [item (next-results counter)] ; #todo -> yield-all
+                                 (t/yield item))))))
+        build-3        (fn [n]
+                         (t/lazy-gen
+                           (doseq [counter (t/thru n)]
+                             (t/yield-all (next-results counter)))))
+        build-result-1 (build-1 3) ; => (1 1 2 1 2 3)
+        build-result-2 (build-2 3)
+        build-result-3 (build-3 3)]
+    (is= [1 1 2 1 2 3] build-result-1 build-result-2 build-result-3)))
+
+(dotest
+  (let [N                99
+        cat-glue-fn      (fn [coll] (t/lazy-gen
+                                      (t/yield-all (t/glue coll [1 2 3]))))
+        iter-glue        (iterate cat-glue-fn [1 2 3]) ; #todo some sort of bug here!
+        iter-glue-result (nth iter-glue N) ; #todo hangs w. 2 'yield-all' if (50 < x < 60)
+
+        cat-flat-fn      (fn [coll] (t/lazy-gen
+                                      (t/yield-all (t/unnest [coll [1 [2 [3]]]]))))
+        iter-flat        (iterate cat-flat-fn [1 2 3]) ; #todo some sort of bug here!
+        iter-flat-result (nth iter-flat N) ; #todo hangs w. 2 'yield-all' if (50 < x < 60)
+        ]
+    (when false
+      (spyx (count iter-glue-result))
+      (spyx (count iter-flat-result)))
+    ; for N = 1299
+    ; (count iter-glue-result) => 3900 "Elapsed time: 2453.917953 msecs"
+    ; (count iter-flat-result) => 3900 "Elapsed time: 2970.726412 msecs"
+    (is= iter-glue-result iter-flat-result))
+
+  ; Bare yield won't compile => java.lang.RuntimeException: Unable to resolve symbol: lazy-gen-output-buffer
+  ; (t/yield 99)
+
+  ; (lazy-seq nil) => ()
+  ; (lazy-cons 3 (lazy-seq nil)) => (3)
+  ; (lazy-cons 2 (lazy-cons 3 (lazy-seq nil))) => (2 3)
+  ; (lazy-cons 1 (lazy-cons 2 (lazy-cons 3 (lazy-seq nil)))) => (1 2 3)
+  ;
+  ; (range-gen 5) => (0 1 2 3 4)
+  ; (range-gen 10) => (0 1 2 3 4 5 6 7 8 9)
+  ; (concat-gen [1 2 3] [4 5 6] [7 8 9]) => (1 2 3 4 5 6 7 8 9)
+  ; (empty-gen-fn) => nil
+
+  (let [seq-of-seqs [(range 0 5)
+                     (range 10 15)
+                     (range 20 25)]
+        flat-seq    (t/lazy-gen
+                      (doseq [curr-seq seq-of-seqs]
+                        (t/yield-all curr-seq)))]
+    (is= flat-seq [0 1 2 3 4 10 11 12 13 14 20 21 22 23 24])))
+))
 
 
 

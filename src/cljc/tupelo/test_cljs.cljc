@@ -4,6 +4,8 @@
     [tupelo.string :as ts]
     ))
 
+; #todo merge into a single namespace using `is-cljs` macro when necessary
+
 (comment            ; #todo  new format?
   (define-fixtures  ; #todo cljs allows only one choice of :each of :once   :(
     {:once {:enter (fn [] (println "*** TEST ONCE *** - enter"))
@@ -48,6 +50,14 @@
   "Use (isnt= ...) instead of (is (not= ...)) for clojure.test"
   [& body]
   `(ct/is (not (= ~@body))))
+
+(defmacro set=  ; #todo readme/test
+  "Converts each input collection to a set, then tests for equality."
+  [& forms]
+  (if (<= (count forms) 1 )
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (ex-info  "tupelo.test-cljs/set= requires at least 2 forms " ~line-str)))
+    `(is= ~@(mapv #(list 'set %) forms))))
 
 ; #todo need test
 (defmacro nonblank= ; #todo readme/test

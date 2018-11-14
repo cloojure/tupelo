@@ -1792,6 +1792,20 @@
         result   (apply = mapified)]
     result))
 
+(s/defn sequential->idx-map :- {s/Any s/Any} ; #todo move
+  [data :- [s/Any]]
+  (into (sorted-map)
+    (map-indexed (fn [idx val] [idx val])
+      data)))
+
+(defn char->sym [ch] (symbol (str ch))) ; #todo move
+
+(defn get-in-strict [data path] ; #todo move
+  (let [result (get-in data path ::not-found)]
+    (when (= result ::not-found)
+      (throw (ex-info "destruct(get-in-strict): value not found" {:data data :path path})))
+    result))
+
 
 
 
@@ -1902,9 +1916,6 @@
      spy-val#))
 
 
-; #todo gogo ---------------------------------------------------------------------------------------------------
-
-
 ; #todo Need safe versions of:
 ; #todo    + - * /  (others?)  (& :strict :safe reassignments)
 ; #todo    and, or    (& :strict :safe reassignments)
@@ -1955,19 +1966,7 @@
     :ret boolean?
     :fn #(= (:ret %) (not (truthy? (-> % :args :arg))))))
 
-(s/defn sequential->idx-map :- {s/Any s/Any} ; #todo move
-  [data :- [s/Any]]
-  (into (sorted-map)
-    (map-indexed (fn [idx val] [idx val])
-      data)))
-
-(defn char->sym [ch] (symbol (str ch))) ; #todo move
-
-(defn get-in-strict [data path] ; #todo move
-  (let [result (get-in data path ::not-found)]
-    (when (= result ::not-found)
-      (throw (ex-info "destruct(get-in-strict): value not found" {:data data :path path})))
-    result))
+; #todo gogo ---------------------------------------------------------------------------------------------------
 
 (defn ^:no-doc destruct-tmpl-analyze
   [ctx]
