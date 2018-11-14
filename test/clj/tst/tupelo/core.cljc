@@ -208,10 +208,6 @@
   (throws? Exception (chars-thru \c \a))
   (throws? Exception (chars-thru 99 98)))
 
-(dotest             ; #todo need more tests
-  (is= (mapv #(mod % 3) (thru -6 6)) [0 1 2 0 1 2 0 1 2 0 1 2 0])
-  (is= (mapv #(idx [0 1 2] %) (thru -3 3)) [0 1 2 0 1 2 0]))
-
 ; #todo add different lengths a/b
 ; #todo add missing entries a/b
 (dotest

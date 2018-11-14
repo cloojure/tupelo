@@ -1073,8 +1073,8 @@
          (is= :dummy (t/with-exception-default :dummy (throw (js/Error "bummer dude"))))))
   ; cross-platform way to throw
   (do (throws? (throw (ex-info "some msg" :some-data)))
-      (is= nil (t/with-exception-default nil (throw (ex-info "bummer"))))
-      (is= :dummy (t/with-exception-default :dummy (throw (ex-info "bummer dude"))))))
+      (is= nil (t/with-exception-default nil (throw (ex-info "bummer" nil))))
+      (is= :dummy (t/with-exception-default :dummy (throw (ex-info "bummer " " dude"))))))
 
 (dotest
   (is= (t/validate-or-default t/not-nil? nil 0) 0)
@@ -1504,6 +1504,10 @@
   (throws? (t/replace-at []         0 9))
   (throws? (t/replace-at (range 3) -1 9))
   (throws? (t/replace-at (range 3)  3 9)))
+
+(dotest             ; #todo need more tests
+  (is= (mapv #(mod % 3) (t/thru -6 6)) [0 1 2 0 1 2 0 1 2 0 1 2 0])
+  (is= (mapv #(t/idx [0 1 2] %) (t/thru -3 3)) [0 1 2 0 1 2 0 ]))
 
 
 

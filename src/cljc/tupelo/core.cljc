@@ -1620,6 +1620,25 @@
       (for [line (str/split-lines txt)]
         (str indent-str line)))))
 
+; #todo use (idx    coll int-or-kw) as `get` replacement?
+; #todo use (idx-in coll [kw's]) as `fetch-in` replacement?
+; #todo allow (idx coll [low high]) like python xx( low:high )
+; #todo multiple dimensions
+(s/defn idx
+  "Indexes into a vector, allowing negative index values"
+  [coll       :- tsk/List
+   index-val  :- s/Int]
+  (when (nil? coll)
+    (throw (ex-info "idx: coll cannot be nil: " coll)))
+  (let [data-vec (vec coll)
+        N        (count data-vec)
+        >>       (assert (pos? N))
+        ii       (mod index-val N)
+        >>       (when (<= (count coll) ii)
+                   (throw (ex-info "Index cannot exceed collection length: " {:len (count coll) :index ii})))
+        result   (clojure.core/get data-vec ii)]
+    result))
+
 
 
 
@@ -2004,26 +2023,6 @@
      (vec ~values)))
 
 ; #todo make replace-in that is like assoc-in but verifies path first !!! (merge with replace-at)
-
-; #todo use (idx    coll int-or-kw) as `get` replacement?
-; #todo use (idx-in coll [kw's]) as `fetch-in` replacement?
-; #todo allow (idx coll [low high]) like python xx( low:high )
-; #todo multiple dimensions
-(s/defn idx
-  "Indexes into a vector, allowing negative index values"
-  [coll       :- tsk/List
-   index-val  :- s/Int]
-  (when (nil? coll)
-    (throw (IllegalArgumentException. (str "idx: coll cannot be nil: " coll))))
-  (let [data-vec (vec coll)
-        N        (count data-vec)
-        >>       (assert (pos? N))
-        ii       (mod index-val N)
-        >>       (when (<= (count coll) ii)
-                   (throw (IllegalArgumentException. (str "Index cannot exceed collection length: "
-                                                       " (count coll)=" (count coll) " index=" ii))))
-        result   (clojure.core/get data-vec ii)]
-    result))
 
 ; #todo readme
 (s/defn starts-with? :- s/Bool
