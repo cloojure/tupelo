@@ -1324,8 +1324,8 @@
   #?(:clj (throws? (t/keep-if (fn [arg1 arg2] :dummy) #{1 2 3})))
 
   ; Verify throw if coll is not a sequential, map, or set.
-  (throws? (t/keep-if i/truthy? 2 ))
-  (throws? (t/keep-if i/truthy? :some-kw )))
+  (throws? (t/keep-if t/truthy? 2 ))
+  (throws? (t/keep-if t/truthy? :some-kw )))
 
 (dotest
   (let [m1 {10 0, 20 0
