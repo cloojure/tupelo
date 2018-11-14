@@ -603,7 +603,7 @@
 (defn int->kw [arg]
   (keyword (str arg)))
 
-(s/defn int->char :- s/Str
+(s/defn int->char :- s/Any    ; #todo need clj/cljs char? test
   "Convert a unicode int to a char"
   [arg :- s/Int]
   #?(:clj (char arg))
@@ -615,7 +615,7 @@
 
 (s/defn char->int :- s/Int
   "Convert a char to an unicode int"
-  [arg :- s/Str]
+  [arg :- s/Any ]   ; #todo need clj/cljs char? test
   #?(:clj (int arg))
   #?(:cljs
      (do
@@ -1305,11 +1305,6 @@
         char-vals   (mapv int->char thru-vals) ]
     (when (< 65535 stop-int) ; #todo cleanup limit
       (throw (ex-info "chars-thru: stop-int too large" (vals->map start-int stop-int))))
-    (println "-------------------------------------------------------")
-    (spyx start-int)
-    (spyx stop-int)
-    (spyx thru-vals)
-    (println :awt202 char-vals)
     (when-not (<= start-int stop-int)
       (throw (ex-info "chars-thru: start-char must come before stop-char." (vals->map start-int stop-int))))
     char-vals))
