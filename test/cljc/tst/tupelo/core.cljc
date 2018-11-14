@@ -2100,6 +2100,232 @@
                     :x {:y {:c ?}}}]
         (println "destruct/dummy")))))
 
+; #todo add different lengths a/b
+; #todo add missing entries a/b
+(dotest
+  (testing "vectors"
+    (is   (t/wild-match? [1]  [1] ))
+    (is   (t/wild-match? [1]  [1] [1] ))
+    (is   (t/wild-match? [:*] [1] [1] ))
+    (is   (t/wild-match? [:*] [1] [9] ))
+
+    (is   (t/wild-match? [1] [1] ))
+    (is   (t/wild-match? [1] [1] [1] ))
+
+    (isnt (t/wild-match? [1] [ ] ))
+    (isnt (t/wild-match? [ ] [1] ))
+    (isnt (t/wild-match? [1] [ ] [ ] ))
+    (isnt (t/wild-match? [ ] [1] [ ] ))
+    (isnt (t/wild-match? [ ] [ ] [1] ))
+    (isnt (t/wild-match? [1] [1] [ ] ))
+    (isnt (t/wild-match? [1] [ ] [1] ))
+
+    (is   (t/wild-match? [1 2  3]
+            [1 2  3] ))
+    (is   (t/wild-match? [1 :* 3]
+            [1 2  3] ))
+    (is   (t/wild-match? [1 :* 3]
+            [1 2  3]
+            [1 9  3] ))
+    (isnt (t/wild-match? [1 2  3]
+            [1 2  9] ))
+    (isnt (t/wild-match? [1 2   ]
+            [1 2  9] ))
+    (isnt (t/wild-match? [1 2  3]
+            [1 2   ] ))
+
+    (is   (t/wild-match? [1  [2 3]]
+            [1  [2 3]] ))
+    (is   (t/wild-match? [:* [2 3]]
+            [1  [2 3]] ))
+    (is   (t/wild-match? [:* [2 3]]
+            [1  [2 3]]
+            [9  [2 3]] ))
+    (is   (t/wild-match? [1  [2 :*]]
+            [1  [2 33]]
+            [1  [2 99]] ))
+    (is   (t/wild-match? [1  :*]
+            [1   2]
+            [1  [2 3]] ))
+    (isnt (t/wild-match? [1  [2 3]]
+            [1  [2 9]] ))
+    )
+  (testing "maps"
+    (is (t/wild-match? {:a 1 } {:a 1} ))
+    (is (t/wild-match? {:a :*} {:a 1} ))
+    (is (t/wild-match? {:a :*} {:a 1 } {:a 1 } ))
+    (is (t/wild-match? {:a :*} {:a 1 } {:a 9 } ))
+    (is (t/wild-match? {:a :*} {:a :*} {:a 9 } ))
+    (is (t/wild-match? {:a :*} {:a :*} {:a :*} ))
+
+    (isnt (t/wild-match? {:a 1 } {:a 9} ))
+    (isnt (t/wild-match? {:a 1 } {:a 1 :b 2} ))
+    (isnt (t/wild-match? {:a :*} {:b 1} ))
+    (isnt (t/wild-match? {:a :*} {:a 1} {:b 1} ))
+    (isnt (t/wild-match? {:a :*} {:a 1 :b 2} ))
+
+    (let [vv {:a 1  :b {:c 3}}
+          tt {:a 1  :b {:c 3}}
+          w2 {:a :* :b {:c 3}}
+          w5 {:a 1  :b {:c :*}}
+          zz {:a 2  :b {:c 3}}
+          ]
+      (is   (t/wild-match? tt vv))
+      (is   (t/wild-match? w2 vv))
+      (is   (t/wild-match? w5 vv))
+      (isnt (t/wild-match? zz vv)))
+    )
+  (testing "vecs & maps 1"
+    (let [vv [:a 1  :b {:c  3} ]
+          tt [:a 1  :b {:c  3} ]
+          w1 [:* 1  :b {:c  3} ]
+          w2 [:a :* :b {:c  3} ]
+          w3 [:a 1  :* {:c  3} ]
+          w5 [:a 1  :b {:c :*} ]
+          zz [:a 2  :b {:c  3} ]
+          ]
+      (is (t/wild-match? tt vv))
+      (is (t/wild-match? w1 vv))
+      (is (t/wild-match? w2 vv))
+      (is (t/wild-match? w3 vv))
+      (is (t/wild-match? w5 vv))
+      (isnt (t/wild-match? zz vv)))
+    )
+  (testing "vecs & maps 2"
+    (let [vv {:a 1  :b [:c  3] }
+          tt {:a 1  :b [:c  3] }
+          w2 {:a :* :b [:c  3] }
+          w4 {:a 1  :b [:*  3] }
+          w5 {:a 1  :b [:c :*] }
+          z1 {:a 2  :b [:c  3] }
+          z2 {:a 1  :b [:c  9] }
+          ]
+      (is (t/wild-match? tt vv))
+      (is (t/wild-match? w2 vv))
+      (is (t/wild-match? w4 vv))
+      (is (t/wild-match? w5 vv))
+      (isnt (t/wild-match? z1 vv))
+      (isnt (t/wild-match? z2 vv)))
+    )
+  (testing "sets"
+    (is   (t/wild-match? #{1} #{1} ))
+    (isnt (t/wild-match? #{1} #{9} ))
+    (isnt (t/wild-match? #{1} #{:a :b} ))
+    (is   (t/wild-match? #{1  #{:a :b}}
+            #{1  #{:a :b} }))
+    (isnt (t/wild-match? #{1  #{:a :c}}
+            #{1  #{:a :x} }))
+    ))
+
+(dotest
+  (isnt (t/wild-match? #{1 2} #{1 2 3 4}))
+  (isnt (t/wild-match? {:pattern #{1 2}
+                        :values  [#{1 2 3 4}]}))
+  (is (t/wild-match? {:subset-ok true
+                      :pattern   #{1 2}
+                      :values    [#{1 2 3 4}]}))
+
+  (isnt (t/wild-match? {:a 1} {:a 1 :b 2}))
+  (isnt (t/wild-match? {:pattern {:a 1}
+                        :values  [{:a 1 :b 2}]}))
+  (is (t/wild-match? {:submap-ok true
+                      :pattern   {:a 1}
+                      :values    [{:a 1 :b 2}]}))
+
+  (isnt (t/wild-match? '(1 2) '(1 2 3 4)))
+  (isnt (t/wild-match? {:pattern '(1 2)
+                        :values  ['(1 2 3 4)]}))
+  (is (t/wild-match? {:subvec-ok true
+                      :pattern   '(1 2)
+                      :values    ['(1 2 3 4)]}))
+
+  (isnt (t/wild-match? [1 2] [1 2 3 4]))
+  (isnt (t/wild-match? {:pattern [1 2]
+                        :values  [[1 2 3 4]]}))
+  (is (t/wild-match? {:subvec-ok true
+                      :pattern   [1 2]
+                      :values    [[1 2 3 4]]}))
+
+  (isnt (t/wild-submatch? #{1 :*}    #{1 2 3 4}))
+  (is (t/wild-submatch?   #{1 2}     #{1 2 3 4}))
+  (is (t/wild-submatch?    {:a :*}    {:a 1 :b 2}))
+  (is (t/wild-submatch?   '(1 :* 3)  '(1 2 3 4)))
+  (is (t/wild-submatch?    [1 :* 3]   [1 2 3 4]))
+
+  (is (t/submatch? #{1 2} #{1 2 3 4}))
+  (is (t/submatch? {:a 1} {:a 1 :b 2}))
+  (is (t/submatch? '(1 2) '(1 2 3 4)))
+  (is (t/submatch? [1 2 3] [1 2 3 4]))
+  (isnt (t/submatch? [1 :* 3] [1 2 3 4]))
+  (isnt (t/submatch? {:a :*} {:a 1 :b 2}))
+  (isnt (t/submatch? #{1 :*} #{1 2 3 4}))
+
+  (let [sample-rec (->SampleRec 1 2)]
+    (isnt= sample-rec {:a 1 :b 2})
+    (is (t/wild-submatch? sample-rec {:a 1 :b 2}))
+    (is (t/wild-submatch? {:a 1 :b 2} sample-rec))
+    (is (t/submatch? sample-rec {:a 1 :b 2}))
+    (is (t/submatch? {:a 1 :b 2} sample-rec))))
+
+(dotest
+  (is (t/set-match? #{1 2 3} #{1 2 3}))
+  (is (t/set-match? #{:* 2 3} #{1 2 3}))
+  (is (t/set-match? #{1 :* 3} #{1 2 3}))
+  (is (t/set-match? #{1 2 :*} #{1 2 3}))
+
+  (is (t/set-match? #{1 2 3 4 5} #{1 2 3 4 5}))
+  (is (t/set-match? #{:* 2 3 4 5} #{1 2 3 4 5}))
+  (is (t/set-match? #{1 :* 3 4 5} #{1 2 3 4 5}))
+  (is (t/set-match? #{1 2 :* 4 5} #{1 2 3 4 5}))
+  (is (t/set-match? #{1 2 3 :* 5} #{1 2 3 4 5}))
+  (is (t/set-match? #{1 2 3 4 :*} #{1 2 3 4 5}))
+
+  (is   (t/wild-item? :*))
+  (isnt (t/wild-item? :a))
+
+  (is   (t/wild-item? :*))
+  (isnt (t/wild-item? :a))
+  (isnt (t/wild-item? 5))
+  (isnt (t/wild-item? "hello"))
+
+  (is   (t/wild-item? [:* 2 3]))
+  (is   (t/wild-item? [1 [:* 3]]))
+  (is   (t/wild-item? [1 [2 [:*]]]))
+  (isnt (t/wild-item? [1 2 3]))
+  (isnt (t/wild-item? [1 [2 3]]))
+  (isnt (t/wild-item? [1 [2 [3]]]))
+
+  (is   (t/wild-item? #{:* 2 3}))
+  (is   (t/wild-item? #{1 #{:* 3}}))
+  (is   (t/wild-item? #{1 #{2 #{:*}}}))
+  (isnt (t/wild-item? #{1 2 3}))
+  (isnt (t/wild-item? #{1 #{2 3}}))
+  (isnt (t/wild-item? #{1 #{2 #{3}}}))
+
+  (is   (t/wild-item? {:* 1 :b 2 :c 3}))
+  (is   (t/wild-item? {:a {:* 2 :c 3}}))
+  (is   (t/wild-item? {:a {:b {:* 3}}}))
+  (is   (t/wild-item? {:a :* :b 2 :c 3}))
+  (is   (t/wild-item? {:a {:b :* :c 3}}))
+  (is   (t/wild-item? {:a {:b {:c :*}}}))
+  (isnt (t/wild-item? {:a 1 :b 2 :c 3}))
+  (isnt (t/wild-item? {:a {:b 2 :c 3}}))
+  (isnt (t/wild-item? {:a {:b {:c 3}}}))
+
+  (is (t/set-match? #{#{1 2 3} #{4 5 :*}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{1 2 3} #{4 :* 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{1 2 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{:* 2 3} #{4 5 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{1 :* 3} #{4 5 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{1 2 :*} #{4 5 6}} #{#{1 2 3} #{4 5 6}}))
+
+  (is (t/set-match? #{#{1 :* 3} #{4 5 :*}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{1 2 :*} #{4 :* 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{:* 2 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{:* 2 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{1 :* 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
+  (is (t/set-match? #{#{1 2 :*} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
+  )
 
 
 
