@@ -493,7 +493,7 @@
           (for [item items-vec
                 :let [sym (symbol (name item))
                       kw  (keyword item)]]
-            [sym (list 'grab kw the-map)]))
+            [sym (list `grab kw the-map)]))
        ~@forms)))
 
 ;-----------------------------------------------------------------------------

@@ -156,11 +156,10 @@
   (is= :23 (t/int->kw  23))
   (is=  23 (t/kw->int :23))
 
-  (println :01 (t/edn->json {:a 1 :b 2}))
-  (prn     :02 (t/edn->json {:a 1 :b 2}))
-
   (is=  {:a  1 :b  2}  (t/json->edn (ts/quotes->double "{'a':1, 'b':2}")))
   (is= "{'a':1,'b':2}" (ts/quotes->single (t/edn->json  {:a  1  :b  2})))
+  (is= {:a 1 :b 2} (-> {:a 1 :b 2} (t/edn->json) (t/json->edn)))
+
 
   (is= 'abc (t/kw->sym :abc))
   (is= "abc" (t/kw->str :abc))
@@ -1379,7 +1378,7 @@
      (is= "a" \a (t/int->char 97))
      (is= 97 (t/char->int "a") (t/char->int \a))
      (is= [\a \b \c] (vec "abc"))
-     (is= [97 98 99] (t/spyx (mapv t/char->int (t/str->chars "abc"))))))
+     (is= [97 98 99] (mapv t/char->int (t/str->chars "abc")))))
 
 (dotest
   (is= "a" (t/strcat \a  ) (t/strcat [\a]  ))
@@ -1520,8 +1519,7 @@
   (is= (mapv #(t/idx [0 1 2] %) (t/thru -3 3)) [0 1 2 0 1 2 0 ]))
 
 (dotest
-  (println :awt100 (t/chars-thru \a \a))
-  (is (= [\a ] (t/spyx (t/chars-thru \a \a))))
+  (is (= [\a ]              (t/chars-thru \a \a)))
   (is (= [\a \b]            (t/chars-thru \a \b)))
   (is (= [\a \b \c]         (t/chars-thru \a \c)))
 
@@ -1682,6 +1680,57 @@
     (is= (t/partition-using start-segment? [1 2 3 6 7 8 9 12 13 15 16 17 18 18 18 3 4 5])
       [[1 2] [3] [6 7 8] [9] [12 13] [15 16 17] [18] [18] [18] [3 4 5]]))
   (throws? (t/partition-using even? 5)))
+
+(dotest
+  (let [ctx (let [a 1
+                  b 2
+                  c 3
+                  d 4
+                  e 5]
+              (t/vals->map a b c d e))]
+    (is= ctx {:a 1 :b 2 :c 3 :d 4 :e 5})
+
+    (let [{:keys [a b c d e]} ctx]
+      (is= [a b c d e] [1 2 3 4 5]))
+    (t/with-map-vals ctx [a b c d e]
+      (is= [a b c d e] [1 2 3 4 5])
+      (is= 15 (+ a b c d e)))
+    (t/with-map-vals ctx [b a d c e] ; order doesn't matter
+      (is= [a b c d e] [1 2 3 4 5])
+      (is= 15 (+ a b c d e)))
+
+    (throws?
+      (t/with-map-vals ctx [x y z]
+        (println "shouldn't ever get here")))))
+
+(dotest
+  (let [lazy-next-int (fn lazy-next-int [n]
+                        (t/lazy-cons n (lazy-next-int (inc n))))
+        all-ints      (lazy-next-int 0)
+        ]
+    (is= (take 0 all-ints) [])
+    (is= (take 1 all-ints) [0] )
+    (is= (take 5 all-ints) [0 1 2 3 4] ))
+
+  (let [lazy-range (fn lazy-range
+                     [limit]
+                     (let [lazy-range-step (fn lazy-range-step [curr limit]
+                                             ; (spyx [curr limit]) (flush)
+                                             (when (< curr limit)
+                                               (t/lazy-cons curr (lazy-range-step (inc curr) limit))))]
+                       (lazy-range-step 0 limit))) ]
+    (is= (lazy-range 0) nil)
+    (is= (lazy-range 1) [0])
+    (is= (lazy-range 5) [0 1 2 3 4]))
+
+  (let [lazy-countdown
+        (fn lazy-countdown [n]
+          (when (<= 0 n)
+            (t/lazy-cons n (lazy-countdown (dec n))))) ]
+    (is= (lazy-countdown  5) [5 4 3 2 1 0] )
+    (is= (lazy-countdown  1) [1 0] )
+    (is= (lazy-countdown  0) [0] )
+    (is= (lazy-countdown -1) nil )))
 
 
 

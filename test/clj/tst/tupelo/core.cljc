@@ -513,34 +513,6 @@
   ; (println "t-throws exit")
 )
 
-  (testing "lazy-cons"
-    (let [lazy-next-int (fn lazy-next-int [n]
-                          (lazy-cons n (lazy-next-int (inc n))))
-          all-ints      (lazy-next-int 0)
-          ]
-      (is= (take 0 all-ints) [])
-      (is= (take 1 all-ints) [0] )
-      (is= (take 5 all-ints) [0 1 2 3 4] ))
-
-    (let [lazy-range (fn lazy-range
-                       [limit]
-                       (let [lazy-range-step (fn lazy-range-step [curr limit]
-                                               ; (spyx [curr limit]) (flush)
-                                               (when (< curr limit)
-                                                 (lazy-cons curr (lazy-range-step (inc curr) limit))))]
-                         (lazy-range-step 0 limit))) ]
-      (is= (lazy-range 0) nil)
-      (is= (lazy-range 1) [0])
-      (is= (lazy-range 5) [0 1 2 3 4]))
-
-    (let [lazy-countdown
-          (fn lazy-countdown [n]
-            (when (<= 0 n)
-              (lazy-cons n (lazy-countdown (dec n))))) ]
-      (is= (lazy-countdown  5) [5 4 3 2 1 0] )
-      (is= (lazy-countdown  1) [1 0] )
-      (is= (lazy-countdown  0) [0] )
-      (is= (lazy-countdown -1) nil )))
 
 ;-----------------------------------------------------------------------------
 ; lazy-gen/yield tests
@@ -707,30 +679,6 @@
     (is= flat-seq [0 1 2 3 4 10 11 12 13 14 20 21 22 23 24]))
 
 )
-
-(dotest
-  (let [ctx     (let [a 1
-                      b 2
-                      c 3
-                      d 4
-                      e 5]
-                  (vals->map a b c d e)) ]
-    (is= ctx {:a 1 :b 2 :c 3 :d 4 :e 5})
-
-    (let [{:keys [a b c d e]} ctx]
-      (is= [a b c d e] [1 2 3 4 5]))
-
-    (with-map-vals ctx [a b c d e]
-      (is= [a b c d e] [1 2 3 4 5])
-      (is= 15 (+ a b c d e)))
-    (with-map-vals ctx [b a d c e] ; order doesn't matter
-      (is= [a b c d e] [1 2 3 4 5])
-      (is= 15 (+ a b c d e)))
-
-    (throws?
-      (with-map-vals ctx [x y z]
-        (println "shouldn't ever get here")))))
-
 
 (dotest
   (is   (macro? 'and))
