@@ -6,6 +6,20 @@
 ;   software.
 (ns ^:no-doc tupelo.core
   "Tupelo - Making Clojure even sweeter"
+  ; We use the self-require trick to force separate compilation stages for macros
+  ; See "ClojureScript Macro Tower & Loop" by Mike Fikes (2015-12-18)
+  #?(:cljs          ; http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+     (:require-macros
+       [tupelo.core :refer
+        [it-> cond-it-> some-it->
+         vals->map with-map-vals forv
+         with-spy-indent spyx spyxx spy-pretty spyx-pretty
+         let-spy let-spy-pretty let-some map-let* map-let lazy-cons
+         with-exception-default verify
+         if-java-1-7-plus if-java-1-8-plus
+         when-clojure-1-8-plus when-clojure-1-9-plus when-not-clojure-1-9-plus
+         destruct lazy-gen yield yield-all matches?
+        ]]))
   (:require
     [clojure.core :as cc]
     [clojure.core.async :as ca]
@@ -1154,27 +1168,17 @@
    :post [(contains? #{true false} %)]}
   (let [{:keys [digits tol]} opts]
     (when-not (or digits tol)
-      (throw (IllegalArgumentException.
-               (str "Must specify either :digits or :tol" \newline
-                 "opts: " opts))))
+      (throw (ex-info "Must specify either :digits or :tol" opts)))
     (when tol
       (when-not (number? tol)
-        (throw (IllegalArgumentException.
-                 (str ":tol must be a number" \newline
-                   "opts: " opts))))
+        (throw (ex-info ":tol must be a number" opts)))
       (when-not (pos? tol)
-        (throw (IllegalArgumentException.
-                 (str ":tol must be positive" \newline
-                   "opts: " opts)))))
+        (throw (ex-info ":tol must be positive" opts))))
     (when digits
       (when-not (integer? digits)
-        (throw (IllegalArgumentException.
-                 (str ":digits must be an integer" \newline
-                   "opts: " opts))))
+        (throw (ex-info ":digits must be an integer" opts)))
       (when-not (pos? digits)
-        (throw (IllegalArgumentException.
-                 (str ":digits must positive" \newline
-                   "opts: " opts)))))
+        (throw (ex-info ":digits must positive" opts))))
     ; At this point, there were no invalid args and at least one of
     ; either :tol and/or :digits was specified.  So, return the answer.
     (let [val1      (double val1)
@@ -1202,9 +1206,7 @@
   (let [num-x (count x-vals)
         num-y (count y-vals)]
     (when-not (= num-x num-y)
-      (throw (IllegalArgumentException.
-               (str ": x-vals & y-vals must be same length" \newline
-                 "  #x: " num-x "  #y: " num-y)))))
+      (throw (ex-info ": x-vals & y-vals must be same length" (vals->map num-x num-y)))))
   (every? truthy?
     (clojure.core/map #(apply rel= %1 %2 opts)
       x-vals y-vals)))
@@ -1605,7 +1607,7 @@
     `(do ~if-form)
     `(do ~else-form)))
 
-(defmacro if-java-1-8-plus
+(defmacro if-java-1-8-plus ; #todo need for java 9, 10, 11, ...
   "If JVM is Java 1.8 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
   [if-form else-form]
   (if (is-java-1-8-plus?)
@@ -1928,7 +1930,7 @@
      (ca/>! ~'lazy-gen-output-buffer ~value)
      ~value))
 
-(defmacro yield-all
+(defmacro yield-all ; #todo maybe pattern after `restruct` and make function + dynamic value???
   "Within a 'generator function' created by `lazy-gen`, populates the
   result lazy seq with each item from the supplied collection. Returns the collection."
   [values]
