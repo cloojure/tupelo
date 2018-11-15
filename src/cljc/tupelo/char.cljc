@@ -11,11 +11,8 @@
     [clojure.set :as set]
     #?@(:clj [
               [schema.core :as s]
-              [tupelo.core :as i]
+              [tupelo.core :as t]
               [tupelo.schema :as tsk]])))
-
-#?(:clj
-   (do
 
      ; #todo: docstrings
      (s/def whitespace-horiz :- tsk/Set
@@ -25,30 +22,30 @@
        (set [\return \newline]))
 
      (s/def whitespace :- tsk/Set
-       (i/glue whitespace-horiz whitespace-eol))
+       (t/glue whitespace-horiz whitespace-eol))
 
      (s/def lowercase :- tsk/Set
-       (into (sorted-set) (i/chars-thru \a \z)))
+       (into (sorted-set) (t/chars-thru \a \z)))
 
      (s/def uppercase :- tsk/Set
-       (into (sorted-set) (i/chars-thru \A \Z)))
+       (into (sorted-set) (t/chars-thru \A \Z)))
 
      (s/def digit :- tsk/Set
-       (into (sorted-set) (i/chars-thru \0 \9)))
+       (into (sorted-set) (t/chars-thru \0 \9)))
 
      (s/def hex :- tsk/Set
-       (into (sorted-set) (flatten [(i/chars-thru \a \f) (i/chars-thru \A \F) (i/chars-thru \0 \9)])))
+       (into (sorted-set) (flatten [(t/chars-thru \a \f) (t/chars-thru \A \F) (t/chars-thru \0 \9)])))
 
      (s/def alpha :- tsk/Set
-       (i/glue lowercase uppercase))
+       (t/glue lowercase uppercase))
 
      (s/def alphanumeric :- tsk/Set
-       (i/glue alpha digit))
+       (t/glue alpha digit))
 
      (s/def visible :- tsk/Set
        "Set of all visible (printing) ASCII chars from exclamation point (33) to tilde (126).
        Excludes all whitespace & control chars."
-       (into (sorted-set) (mapv char (i/thru 33 126))))
+       (into (sorted-set) (mapv t/int->char (t/thru 33 126))))
 
      (s/def visible-no-dquote :- tsk/Set
        "All visible (printing) ASCII chars except double-quote."
@@ -60,7 +57,7 @@
 
      (s/def text :- tsk/Set
        "Set of chars used in 'normal' text. Includes all visible chars plus whitespace & EOL chars."
-       (i/glue visible whitespace))
+       (t/glue visible whitespace))
 
      (defn alphanumeric? [ch] (contains? alphanumeric ch))
      (defn whitespace-horiz? [ch] (contains? whitespace-horiz ch))
@@ -74,4 +71,3 @@
      (defn visible? [ch] (contains? visible ch))
      (defn text? [ch] (contains? text ch))
 
-))

@@ -19,6 +19,7 @@
     [tst.tupelo.core]
     [tst.tupelo.set]
     [tst.tupelo.lazy]
+    [tst.tupelo.string]
    ;[tst.tupelo.xxx]
   ))
 
@@ -38,6 +39,7 @@
   'tst.tupelo.core
   'tst.tupelo.set
   'tst.tupelo.lazy
+  'tst.tupelo.string
  ;'tst.tupelo.xxx
 )
 (println "doorunner - end")

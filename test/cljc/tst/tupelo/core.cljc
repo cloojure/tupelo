@@ -2330,8 +2330,30 @@
   (is (t/set-match? #{#{:* 2 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
   (is (t/set-match? #{#{:* 2 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
   (is (t/set-match? #{#{1 :* 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
-  (is (t/set-match? #{#{1 2 :*} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
-  )
+  (is (t/set-match? #{#{1 2 :*} #{:* 5 6}} #{#{1 2 3} #{4 5 6}})) )
+
+;-----------------------------------------------------------------------------
+; Clojure version stuff
+
+(dotest
+  (binding [*clojure-version* {:major 1 :minor 7}]
+    (is   (t/is-clojure-1-7-plus?))
+    (isnt (t/is-clojure-1-8-plus?))
+    (isnt (t/is-clojure-1-9-plus?))
+    (is   (t/is-pre-clojure-1-8?))
+    (is   (t/is-pre-clojure-1-9?)))
+  (binding [*clojure-version* {:major 1 :minor 8}]
+    (is   (t/is-clojure-1-7-plus?))
+    (is   (t/is-clojure-1-8-plus?))
+    (isnt (t/is-clojure-1-9-plus?))
+    (isnt (t/is-pre-clojure-1-8?))
+    (is   (t/is-pre-clojure-1-9?)))
+  (binding [*clojure-version* {:major 1 :minor 9}]
+    (is   (t/is-clojure-1-7-plus?))
+    (is   (t/is-clojure-1-8-plus?))
+    (is   (t/is-clojure-1-9-plus?))
+    (isnt (t/is-pre-clojure-1-8?))
+    (isnt (t/is-pre-clojure-1-9?))) )
 
 ;***************************************************************************************************
 ;***************************************************************************************************
@@ -2421,30 +2443,6 @@
               (is   (t/is-java-1-7-plus?))
               (is   (t/is-java-1-8?))
               (is   (t/is-java-1-8-plus?)) ) )
-
-          ;-----------------------------------------------------------------------------
-          ; Clojure version stuff
-
-          (dotest
-            (binding [*clojure-version* {:major 1 :minor 7}]
-              (is   (t/is-clojure-1-7-plus?))
-              (isnt (t/is-clojure-1-8-plus?))
-              (isnt (t/is-clojure-1-9-plus?))
-              (is   (t/is-pre-clojure-1-8?))
-              (is   (t/is-pre-clojure-1-9?)))
-            (binding [*clojure-version* {:major 1 :minor 8}]
-              (is   (t/is-clojure-1-7-plus?))
-              (is   (t/is-clojure-1-8-plus?))
-              (isnt (t/is-clojure-1-9-plus?))
-              (isnt (t/is-pre-clojure-1-8?))
-              (is   (t/is-pre-clojure-1-9?)))
-            (binding [*clojure-version* {:major 1 :minor 9}]
-              (is   (t/is-clojure-1-7-plus?))
-              (is   (t/is-clojure-1-8-plus?))
-              (is   (t/is-clojure-1-9-plus?))
-              (isnt (t/is-pre-clojure-1-8?))
-              (isnt (t/is-pre-clojure-1-9?)))
-            )
 
           (dotest
             (let [val1 (into (sorted-map) {:a 1 :b 2})]

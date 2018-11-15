@@ -114,8 +114,6 @@
 (defn ^:deprecated ^:no-doc double-quotes->single-quotes [& args] (apply quotes->single args))
 (defn ^:deprecated ^:no-doc single-quotes->double-quotes [& args] (apply quotes->double args))
 
-#?(:clj (do
-
 (defn alphanumeric?       [& args] (every? char/alphanumeric?        (t/strcat args)))
 (defn whitespace-horiz?   [& args] (every? char/whitespace-horiz?    (t/strcat args)))
 (defn whitespace-eol?     [& args] (every? char/whitespace-eol?      (t/strcat args)))
@@ -137,10 +135,10 @@
 ; #todo need (indexes "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5]) -> [ \b \d \f ]
 ; #todo need (idxs    "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5])   ; like matlab
 
-(defn clip-text
+(s/defn clip-text :- s/Str
   "Given a multi-line string, returns a string with each line clipped to a max of N chars "
-  [N
-   src-str]
+  [N       :- s/Int
+   src-str :- s/Str ]
   (str/join \newline
     (let [lines (str/split-lines src-str)]
       (for [line lines]
@@ -161,7 +159,6 @@
   "Returns a keyword constructed from a normalized string"
   [arg]
   (keyword (normalize-str arg)))
-
 
 (defn snake->kabob
   "Converts a string from a_snake_case_value to a-kabob-case-value"
@@ -281,5 +278,4 @@
   (io/input-stream
       (.getBytes str-val StandardCharsets/UTF_8)))
 
-))
 
