@@ -1930,7 +1930,7 @@
                                       (if (not= 1 (count datas)) ; #todo test exception works
                                         (do
                                           (println "(restruct) error: more than 1 data src present" datas)
-                                          (throw (IllegalArgumentException. "restruct:  aborting...")))
+                                          (throw (ex-info "restruct:  aborting..." (:count (count datas)))))
                                         (list 'let ['restruct-fn restruct-only-def
                                                     'result (list 'restruct-fn)]
                                           'result))))

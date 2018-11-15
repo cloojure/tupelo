@@ -6,14 +6,10 @@
 ;   software.
 (ns tupelo.set
   "Tupelo - Making Clojure even sweeter"
-#?@(:clj [
-          (:require [clojure.set :as raw] ) ]))
+  (:require [clojure.set :as raw]))
 
-#?(:clj
-   (do
-     (defn union [& args]
-       (assert (every? set? args))
-       (apply raw/union args) )
+(defn union [& args]
+  (assert (every? set? args))
+  (apply raw/union args))
 
-     ; #todo copy clojure.set stuff
-))
+; #todo copy clojure.set stuff
