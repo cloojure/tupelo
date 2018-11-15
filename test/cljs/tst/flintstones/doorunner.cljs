@@ -18,6 +18,8 @@
     [tst.tupelo._bootstrap]
     [tst.tupelo.core]
     [tst.tupelo.set]
+    [tst.tupelo.lazy]
+   ;[tst.tupelo.xxx]
   ))
 
 ; (s/set-fn-validation! true) ; enforce fn schemas
@@ -35,5 +37,7 @@
   'tst.tupelo._bootstrap
   'tst.tupelo.core
   'tst.tupelo.set
+  'tst.tupelo.lazy
+ ;'tst.tupelo.xxx
 )
 (println "doorunner - end")

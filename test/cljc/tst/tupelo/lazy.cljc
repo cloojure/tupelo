@@ -5,19 +5,26 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.lazy
-  (:use tupelo.core tupelo.test)
   (:require
-    #?@(:clj [[clojure.core :as cc]
-              [tupelo.lazy :as lazy]
-              [tupelo.string :as ts]
-              ])
+    [clojure.string :as str]
+    [tupelo.core :as t]
+    [tupelo.lazy :as lazy]
+    #?@(:clj [
+              [schema.core :as s]
+              [tupelo.test :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+              [tupelo.core :as t :refer [spy spyx spyxx]]
+              [tupelo.schema :as tsk]
+              [tupelo.string :as ts] ])
+    #?@(:cljs [
+               [schema.core :as s]
+               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+               [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
+               [tupelo.schema :as tsk]
+               [tupelo.string :as ts :include-macros true] ])
     ))
 
 ; #todo add generative testing?
 ; #todo add clojure.spec testing?
-
-#?(:clj
-   (do
 
 (dotest
   (is= [] (lazy/join [[]]))
@@ -26,5 +33,3 @@
   (is= [1 2 3 4 5 6] (lazy/join [[1] [2 3] [4 5 6]]))
   (is= [1 2 3 4 5 6] (lazy/join [[] [1] [] [2 3] [4 5 6] []])))
 
-
-))

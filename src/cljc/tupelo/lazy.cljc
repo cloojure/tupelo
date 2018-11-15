@@ -6,21 +6,13 @@
 ;   software.
 (ns tupelo.lazy
   "Tupelo - Making Clojure even sweeter"
-  #?@(:clj [
-            (:require
-              [clojure.core :as cc]
-              [schema.core :as s] 
-              [tupelo.schema :as tsk])
-            ]))
+  (:require [clojure.core :as cc]
+            [schema.core :as s]
+            [tupelo.schema :as tsk]))
 
-#?(:clj
-   (do
-
-     (defn join
-       "Lazily concatenates a sequence-of-sequences into a flat sequence."
-       [sequences]
-       (lazy-seq
-         (when-let [seq-of-seqs (seq sequences)]
-           (concat (first seq-of-seqs) (join (rest seq-of-seqs))))))
-
-))
+(defn join
+  "Lazily concatenates a sequence-of-sequences into a flat sequence."
+  [sequences]
+  (lazy-seq
+    (when-let [seq-of-seqs (seq sequences)]
+      (concat (cc/first seq-of-seqs) (join (cc/rest seq-of-seqs))))))
