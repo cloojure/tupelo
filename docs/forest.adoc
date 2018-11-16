@@ -153,8 +153,6 @@ Some typical HID values might be:
     :b40b6f37e6a746f815b092a8590cefe5cf37121a
     :c3b0dccd4d344ac765183f49940f4d685de7a3f5
     :76859beedd81468b4ee3cc5f17a5fdcf7a34a787
-    :c3b0dccd4d344ac765183f49940f4d685de7a3f5
-    :5c0cb1ba6657ba0ac40cc5099f2be091b5637a3b
 ----
 
 The HID format is designed so that each node will always have a unique ID value, without requireing coordination
@@ -163,8 +161,8 @@ atoms on Earth, we can be confident that no two tree nodes will ever have the sa
 
 ==== Debugging with HIDs
 
-At times, it may be easier to perform debugging or other tasks with a shorter and deterministic HID format.
-In this case, you may wrap the entire `(with-forest ...)` expression like so:
+At times, it may be easier to perform debugging or other tasks using short, deterministic HIDs.
+In this case, you may use `(with-debug-hid ...)` to wrap an entire forest expression:
 
 [source,clojure]
 ----
