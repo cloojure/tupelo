@@ -246,7 +246,7 @@ Each node in the path is represented by its HID in the path vector.
 - hiccup
 - tree
 
-=== Workign with Sibling Nodes
+=== Working with Sibling Nodes
 
 Suppose we have some Hiccup nodes like the following:
 
