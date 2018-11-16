@@ -25,7 +25,7 @@ Please see the xref:tupelo-core-overview[tupelo.core] docs further below.
 
 ==== Tupelo-Forest - A library for searching & manipulating tree-like data structures
 
-Please see the xref:docs/forest.adoc[tupelo.forest] docs for further information.
+Please see the link:docs/forest.adoc[tupelo.forest] docs for further information.
 
 ==== Tupelo-Datomic - A library of helper functions for Datomic.
 
