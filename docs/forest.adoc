@@ -1,5 +1,5 @@
 
-= tupelo.forest - One Tree To Rule Them All
+= Tupelo Forest - One Tree To Rule Them All
 
 == Overview
 
@@ -16,6 +16,94 @@ If so, then the `tupelo.forest` library is for you!  Forest allows you to:
 In addition, `tupelo.forest` allows you to update the tree by adding, changing, or deleting nodes.
 Since `tupelo.forest` allows one to easily find parent and/or sibling nodes, this is a powerful feature
 missing in most other tree-processing libraries.
+
+== Quick Start
+
+Create a tree using Hiccup:
+
+[source,clojure]
+----
+(ns xyz
+  (:use tupelo.core tupelo.forest))
+
+(with-forest (new-forest)
+  (let [root-hid (add-tree-hiccup [:a
+                                   [:b 1]
+                                   [:b 2]
+                                   [:b
+                                    [:c 4]
+                                    [:c 5]]
+                                   [:c 9]])]
+----
+
+Display the tree in a compact format:
+
+[source,clojure]
+----
+(is= (format-paths (find-paths root-hid [:a]))
+  [[{:tag :a}
+    [{:tag :b, :value 1}]
+    [{:tag :b, :value 2}]
+    [{:tag :b}
+     [{:tag :c, :value 4}]
+     [{:tag :c, :value 5}]]
+    [{:tag :c, :value 9}]]])
+----
+
+Display the path from the root to all `:c` nodes:
+
+[source,clojure]
+----
+(let [c-paths (find-paths root-hid [:** :c]) ]
+  (is= c-paths [[:0006 :0004 :0002]
+                [:0006 :0004 :0003]
+                [:0006 :0005]])
+----
+
+Each value like `:0004` is a Hexidecimal ID (HID) that serves as a pointer to a tree node like `[:c 9]`.
+Each vector of HIDs is a path from the root node `:a` to a `:c` node.  There are three `:c` nodes and, hence,
+three paths. You can see that the length of the 3 paths matches the position in the tree of the 3 `:c` nodes.
+The three `:c` nodes are at the end of the three paths.  Display the last one as Hiccup:
+
+[source,clojure]
+----
+(is= (hid->hiccup :0005) [:c 9] )
+----
+
+Find paths to all `[:c 4]` nodes. There is only one:
+
+[source,clojure]
+----
+  (let [c4-paths (find-paths root-hid [:** {:tag :c :value 4}]) ]
+    (is= c4-paths [[:0006 :0004 :0002]] ))
+----
+
+Find the parent of the `[:c 4]` node:
+
+[source,clojure]
+----
+(let [c4-parent (-> c4-paths only reverse second)]
+  (is= c4-parent :0004)
+  (is= (hid->hiccup c4-parent)  [:b [:c 4] [:c 5]] )
+  (is= (hid->node   c4-parent)  {:tag :b, :tupelo.forest/khids [:0002 :0003] } )
+----
+
+This shows the internal structure of tree nodes as simple maps. Node :0004 has a `:tag` value of `:b` and 2 child
+nodes (Kid HIDs => `khids`).
+
+Modify the value of the `[:c 4]` node:
+
+[source,clojure]
+----
+(let [c4-hid (-> c4-paths only last)]
+  (is= c4-hid :0002)
+  (value-update c4-hid inc)
+  (is= (hid->node c4-hid) {:tupelo.forest/khids [], :tag :c, :value 5}) )
+----
+
+
+
+
 
 == Creating a Tree
 
@@ -41,6 +129,9 @@ Here we create a new (empty) forest data-structure with `(new-forest)`.
 The expression `(add-tree-hiccup ...)` inserts a tree (represented as hiccup data) into the forest,
 returning the address of the tree root at `root-hid`. Each forest can contain many trees.
 
+ - add-tree-enlive
+ - add-tree-xml
+
 === What is an HID?
 
 `tupelo.forest` uses an opaque value called an Hexadecimal ID (HID) as a pointer to each tree node.  An HID
@@ -49,12 +140,12 @@ Some typical HID values might be:
 
 [source,clojure]
 ----
-:c3b0dccd4d344ac765183f49940f4d685de7a3f5
-:b40b6f37e6a746f815b092a8590cefe5cf37121a
-:c3b0dccd4d344ac765183f49940f4d685de7a3f5
-:76859beedd81468b4ee3cc5f17a5fdcf7a34a787
-:c3b0dccd4d344ac765183f49940f4d685de7a3f5
-:5c0cb1ba6657ba0ac40cc5099f2be091b5637a3b
+    :c3b0dccd4d344ac765183f49940f4d685de7a3f5
+    :b40b6f37e6a746f815b092a8590cefe5cf37121a
+    :c3b0dccd4d344ac765183f49940f4d685de7a3f5
+    :76859beedd81468b4ee3cc5f17a5fdcf7a34a787
+    :c3b0dccd4d344ac765183f49940f4d685de7a3f5
+    :5c0cb1ba6657ba0ac40cc5099f2be091b5637a3b
 ----
 
 The HID format is designed so that each node will always have a unique ID value, without requireing coordination
@@ -80,18 +171,18 @@ using `with-debug-hid` might be:
 
 [source,clojure]
 ----
-:0000
-:0001
-:0002
-:0003
+    :0000
+    :0001
+    :0002
+    :0003
 ----
 
 === Displaying a Tree
 
-- hid->tree
-- hid->bush
-- hid->hiccup
-- hid->enlive
+- hid\->tree
+- hid\->bush
+- hid\->hiccup
+- hid\->enlive
 
 == Searching a Tree
 
@@ -106,8 +197,116 @@ Each node in the path is represented by its HID in the path vector.
 
 - format-paths
 
+==== Getting Node Information
 
+- attribute(s)
+- hid\->attr
+- hid\->attrs
+- hid\->bush
+- hid\->enlive
+- hid\->higgup
+- hid\->kids
+- hid\->leaf
+- hid\->node
+- hid\->tree
 
+=== Manipulating a Tree
+
+==== Adding Nodes
+
+- node
+- leaf
+- tree
+
+==== Modifying Child Nodes
+
+- kids-append
+- kids-prepend
+- kids-set
+- kids-update
+
+==== Modifying Node Attributes
+
+- get
+- set
+- remove
+- update
+
+=== Converting Between Formats
+
+- bush
+- enlive
+- hiccup
+- tree
+
+=== Workign with Sibling Nodes
+
+Suppose we have some Hiccup nodes like the following:
+
+[source,clojure]
+----
+  (with-debug-hid
+    (with-forest (new-forest)
+      (let [root-hid        (add-tree-hiccup
+                              [:div {:class :some-div-1}
+                               [:div {:class :some-div-2}
+                                [:label "Some Junk"]
+                                [:div {:class :some-div-3}
+                                 [:label "Specify your shipping address"]
+                                 [:div {:class :some-div-4}
+                                  [:input {:type        "text" :autocomplete "off" :required "required"
+                                           :placeholder "" :class "el-input__inner"}]]]]])
+----
+
+We want to find the `:input` node in the same `:div` as the `:label` node with text "Specify your shipping address".
+We then find its parent, and use the parent as the beginning of a new search for the desired `:input` node:
+
+[source,clojure]
+----
+label-path                   (only (find-paths root-hid [:** {:tag :label :value "Specify your shipping address"}]))
+parent-div-hid               (-> label-path reverse second)
+shipping-address-input-hid   (find-hid parent-div-hid [:div :div :input])
+----
+
+Unit test show it working:
+
+[source,clojure]
+----
+(is= label-path [:0006 :0005 :0004 :0001])
+(is= parent-div-hid :0004)
+(is= (hid->hiccup shipping-address-input-hid)
+  [:input {:type        "text", :autocomplete "off", :required "required",
+           :placeholder "", :class "el-input__inner"}])
+(value-set shipping-address-input-hid "1234 Main St")
+(is= (hid->hiccup shipping-address-input-hid)
+  [:input {:type         "text", :autocomplete "off", :required     "required",
+           :placeholder  "", :class        "el-input__inner"}
+   "1234 Main St"])
+----
+
+We can output the final modified tree:
+
+[source,clojure]
+----
+(hid->hiccup root-hid) =>
+    [:div
+     {:class :some-div-1}
+     [:div
+      {:class :some-div-2}
+      [:label "Some Junk"]
+      [:div
+       {:class :some-div-3}
+       [:label "Specify your shipping address"]
+       [:div
+        {:class :some-div-4}
+        [:input
+         {:type "text",
+          :autocomplete "off",
+          :required "required",
+          :placeholder "",
+          :class "el-input__inner"}
+         "1234 Main St"]]]]]
+----
 
 
 

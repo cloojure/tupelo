@@ -24,6 +24,32 @@
 (dotest
   (with-debug-hid
     (with-forest (new-forest)
+      (let [root-hid  (add-tree-hiccup [:a
+                                        [:b 1]
+                                        [:b 2]
+                                        [:b
+                                         [:c 4]
+                                         [:c 5]]
+                                        [:c 9]])
+            c-paths   (find-paths root-hid [:** :c])
+            c4-paths  (find-paths root-hid [:** {:tag :c :value 4}])
+            c4-hid    (-> c4-paths only last)
+            c4-parent (-> c4-paths only reverse second)]
+        (is= c-paths [[:0006 :0004 :0002]
+                      [:0006 :0004 :0003]
+                      [:0006 :0005]])
+        (is= (hid->hiccup :0005) [:c 9])
+        (is= c4-paths [[:0006 :0004 :0002]])
+        (is= :0004 c4-parent)
+        (is= (hid->hiccup c4-parent) [:b [:c 4] [:c 5]])
+        (is= (hid->node c4-parent) {:tag :b, :tupelo.forest/khids [:0002 :0003]})
+        (is= c4-hid :0002)
+        (value-update c4-hid inc)
+        (is= (hid->node c4-hid) {:tupelo.forest/khids [], :tag :c, :value 5})))))
+
+(dotest
+  (with-debug-hid
+    (with-forest (new-forest)
       (let [root-hid (add-tree-hiccup [:a
                                        [:b 1]
                                        [:b 2]
@@ -80,7 +106,8 @@
         (is= (format-paths (find-paths root-hid [:** :c]))
           [[{:tag :a} [{:tag :b} [{:tag :c, :value 4}]]]
            [{:tag :a} [{:tag :b} [{:tag :c, :value 5}]]]
-           [{:tag :a} [{:tag :c, :value 9}]]]))))
+           [{:tag :a} [{:tag :c, :value 9}]]])
+      )))
 
   (with-forest (new-forest)
                (let [root-hid (add-tree-hiccup [:a
@@ -1314,32 +1341,47 @@
 (dotest
   (with-debug-hid
     (with-forest (new-forest)
-      (let [root-hid        (add-tree-hiccup
-                              [:div {:class :some-div-1}
-                               [:div {:class :some-div-2}
-                                [:label "Some Junk"]
-                                [:div {:class :some-div-3}
-                                 [:label "Specify your shipping address"]
-                                 [:div {:class :some-div-4}
-                                  [:input {:type        "text" :autocomplete "off" :required "required"
-                                           :placeholder "" :class "el-input__inner"}]]]]])
-            ship-label-path? (fn [path]
-                              (let [tgt-txt "Specify your shipping address"
-                                    label-hid (last path)
-                                    label-node (tf/hid->node label-hid)
-                                    >> (spyx label-node)
-                                    ]
-                                )
-                              )
-
-            label-paths (find-paths root-hid [:** :label] )
-            label-hids  (mapv last label-paths)
-            label-nodes (mapv tf/hid->node label-hids)
+      (let [root-hid                   (add-tree-hiccup
+                                         [:div {:class :some-div-1}
+                                          [:div {:class :some-div-2}
+                                           [:label "Some Junk"]
+                                           [:div {:class :some-div-3}
+                                            [:label "Specify your shipping address"]
+                                            [:div {:class :some-div-4}
+                                             [:input {:type        "text" :autocomplete "off" :required "required"
+                                                      :placeholder "" :class "el-input__inner"}]]]]])
+            label-path                 (only (find-paths root-hid [:** {:tag :label :value "Specify your shipping address"}]))
+            parent-div-hid             (-> label-path reverse second)
+            shipping-address-input-hid (find-hid parent-div-hid [:div :div :input])
             ]
-        (spyx-pretty (format-paths label-paths ) )
-
-
-  ) ) ) )
+        (is= label-path [:0006 :0005 :0004 :0001])
+        (is= parent-div-hid :0004)
+        (is= (hid->hiccup shipping-address-input-hid)
+          [:input {:type        "text", :autocomplete "off", :required "required",
+                   :placeholder "", :class "el-input__inner"}])
+        (value-set shipping-address-input-hid "1234 Main St")
+        (is= (hid->hiccup shipping-address-input-hid)
+          [:input {:type        "text", :autocomplete "off", :required "required",
+                   :placeholder "", :class "el-input__inner"}
+           "1234 Main St"])
+        (is= (hid->hiccup root-hid)
+          [:div
+           {:class :some-div-1}
+           [:div
+            {:class :some-div-2}
+            [:label "Some Junk"]
+            [:div
+             {:class :some-div-3}
+             [:label "Specify your shipping address"]
+             [:div
+              {:class :some-div-4}
+              [:input
+               {:type         "text",
+                :autocomplete "off",
+                :required     "required",
+                :placeholder  "",
+                :class        "el-input__inner"}
+               "1234 Main St"]]]]])))))
 
 
 
