@@ -50,7 +50,7 @@ Display the tree in a compact format:
     [{:tag :c, :value 9}]]])
 ----
 
-Display the path from the root to all `:c` nodes:
+Display the paths from the root to all `:c` nodes:
 
 [source,clojure]
 ----
@@ -62,8 +62,10 @@ Display the path from the root to all `:c` nodes:
 
 Each value like `:0004` is a Hexidecimal ID (HID) that serves as a pointer to a tree node like `[:c 9]`.
 Each vector of HIDs is a path from the root node `:a` to a `:c` node.  There are three `:c` nodes and, hence,
-three paths. You can see that the length of the 3 paths matches the position in the tree of the 3 `:c` nodes.
-The three `:c` nodes are at the end of the three paths.  Display the last one as Hiccup:
+three paths. You can see that the length of each of the 3 paths matches the position in the
+tree of the 3 `:c` nodes. Each `:c` node is at the end of its respective path.
+
+Display the last `:c` node as Hiccup:
 
 [source,clojure]
 ----
@@ -88,8 +90,8 @@ Find the parent of the `[:c 4]` node:
   (is= (hid->node   c4-parent)  {:tag :b, :tupelo.forest/khids [:0002 :0003] } )
 ----
 
-This shows the internal structure of tree nodes as simple maps. Node :0004 has a `:tag` value of `:b` and 2 child
-nodes (Kid HIDs => `khids`).
+This shows the internal structure of tree nodes as simple maps. Node `:0004` has a `:tag` value of `:b` and 2 child
+nodes (Kid HIDs => "khids").
 
 Modify the value of the `[:c 4]` node:
 
