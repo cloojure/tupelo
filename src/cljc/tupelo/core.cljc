@@ -2141,23 +2141,6 @@
     (for [value values]
       (set-match-impl {} pattern value))))
 
-;-----------------------------------------------------------------------------
-; Clojure version stuff
-(defn is-clojure-1-7-plus? []
-  (let [{:keys [major minor]} *clojure-version*]
-    (increasing-or-equal? [1 7] [major minor])))
-
-(defn is-clojure-1-8-plus? []
-  (let [{:keys [major minor]} *clojure-version*]
-    (increasing-or-equal? [1 8] [major minor])))
-
-(defn is-clojure-1-9-plus? []
-  (let [{:keys [major minor]} *clojure-version*]
-    (increasing-or-equal? [1 9] [major minor])))
-
-(defn is-pre-clojure-1-8? [] (not (is-clojure-1-8-plus?)))
-(defn is-pre-clojure-1-9? [] (not (is-clojure-1-9-plus?)))
-
 
 
 ;***************************************************************************************************
@@ -2170,6 +2153,23 @@
           (ns-unmap *ns* 'rest)
           (ns-unmap *ns* 'next)
           (ns-unmap *ns* 'last)
+
+          ;-----------------------------------------------------------------------------
+          ; Clojure version stuff
+          (defn is-clojure-1-7-plus? []
+            (let [{:keys [major minor]} *clojure-version*]
+              (increasing-or-equal? [1 7] [major minor])))
+
+          (defn is-clojure-1-8-plus? []
+            (let [{:keys [major minor]} *clojure-version*]
+              (increasing-or-equal? [1 8] [major minor])))
+
+          (defn is-clojure-1-9-plus? []
+            (let [{:keys [major minor]} *clojure-version*]
+              (increasing-or-equal? [1 9] [major minor])))
+
+          (defn is-pre-clojure-1-8? [] (not (is-clojure-1-8-plus?)))
+          (defn is-pre-clojure-1-9? [] (not (is-clojure-1-9-plus?)))
 
           ;-----------------------------------------------------------------------------
           ; Java version stuff

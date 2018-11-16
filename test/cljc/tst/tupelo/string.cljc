@@ -7,29 +7,20 @@
 (ns tst.tupelo.string
   (:refer-clojure :exclude [take drop])
   (:require
-    [clojure.core.async :as ca]
+    [clojure.core :as cc]
     [clojure.string :as str]
-    #?@(:clj [
-              [clojure.core :as cc]
-              [clojure.string :as str]
-              [tupelo.char :as char]
-              [tupelo.core :as t :refer [spy spyx spyxx]]
-              [tupelo.string :as ts]
+    [tupelo.char :as char]
+    #?@(:clj [[tupelo.core :as t :refer [spy spyx spyxx]]
               [tupelo.test :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
-              ])
-    #?@(:cljs [
-               [clojure.core :as cc]
-               [clojure.string :as str]
+              [tupelo.string :as ts]
+             ])
+    #?@(:cljs [[tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
                [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
-               [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
                [tupelo.string :as ts :include-macros true]
-               ])
-  ))
-
+              ])))
 
 ; #todo add generative testing?
 ; #todo add clojure.spec testing?
-
 
 (dotest
   (is= "" (ts/tabs->spaces ""))
@@ -302,16 +293,16 @@
 
 (dotest
   ; clojure.string
-  (t/when-clojure-1-8-plus
-    (is (str/starts-with? "abcde" "a"))
-    (is (str/starts-with? "abcde" "ab"))
-    (is (str/starts-with? "abcde" "abc"))
+; (t/when-clojure-1-8-plus)
+  (is (str/starts-with? "abcde" "a"))
+  (is (str/starts-with? "abcde" "ab"))
+  (is (str/starts-with? "abcde" "abc"))
 
-    (is (not (str/starts-with? "abcde" "b")))
-    (is (not (str/starts-with? "abcde" "bc")))
+  (is (not (str/starts-with? "abcde" "b")))
+  (is (not (str/starts-with? "abcde" "bc")))
 
-    (is (not (str/starts-with? "a" "ab")))
-    (is (not (str/starts-with? "ab" "abc"))))
+  (is (not (str/starts-with? "a" "ab")))
+  (is (not (str/starts-with? "ab" "abc")))
 
   ;-----------------------------------------------------------------------------
   ; tupelo.string

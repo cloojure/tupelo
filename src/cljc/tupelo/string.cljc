@@ -12,12 +12,11 @@
     [clojure.core :as cc]
     [clojure.string :as str]
     [tupelo.core :as t]
-    #?@(:clj [[clojure.java.io :as io]
-              [tupelo.char :as char]
-              ]))
- #?(:clj
-    (:import [java.io InputStream ByteArrayInputStream]
-             [java.nio.charset StandardCharsets])))
+    [tupelo.char :as char]
+    #?(:clj [clojure.java.io :as io]))
+  #?(:clj
+     (:import [java.io InputStream ByteArrayInputStream]
+              [java.nio.charset StandardCharsets])))
 
 (def phonetic-alphabet
   "A map from keyword character to string phonetic name:
@@ -248,7 +247,7 @@
   "Returns true if the regex matches any portion of the intput string."
   [search-str :- s/Str
    re :- s/Any]
-  {:pre [(instance? java.util.regex.Pattern re)]}
+  #?(:clj (assert (instance? java.util.regex.Pattern re)))
   (t/truthy? (re-find re search-str)))
 
 (s/defn contains-str?  :- s/Bool
@@ -273,9 +272,10 @@
         result (t/keep-if #(contains-str? % tgt) lines)]
     (str/join result)))
 
-(s/defn string->stream :- InputStream
-  [str-val :- s/Str]
-  (io/input-stream
-      (.getBytes str-val StandardCharsets/UTF_8)))
+#?(:clj
+   (s/defn string->stream :- InputStream
+     [str-val :- s/Str]
+     (io/input-stream
+       (.getBytes str-val StandardCharsets/UTF_8))))
 
 

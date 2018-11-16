@@ -2335,30 +2335,31 @@
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
 
-(dotest
-  (binding [*clojure-version* {:major 1 :minor 7}]
-    (is   (t/is-clojure-1-7-plus?))
-    (isnt (t/is-clojure-1-8-plus?))
-    (isnt (t/is-clojure-1-9-plus?))
-    (is   (t/is-pre-clojure-1-8?))
-    (is   (t/is-pre-clojure-1-9?)))
-  (binding [*clojure-version* {:major 1 :minor 8}]
-    (is   (t/is-clojure-1-7-plus?))
-    (is   (t/is-clojure-1-8-plus?))
-    (isnt (t/is-clojure-1-9-plus?))
-    (isnt (t/is-pre-clojure-1-8?))
-    (is   (t/is-pre-clojure-1-9?)))
-  (binding [*clojure-version* {:major 1 :minor 9}]
-    (is   (t/is-clojure-1-7-plus?))
-    (is   (t/is-clojure-1-8-plus?))
-    (is   (t/is-clojure-1-9-plus?))
-    (isnt (t/is-pre-clojure-1-8?))
-    (isnt (t/is-pre-clojure-1-9?))) )
-
 ;***************************************************************************************************
 ;***************************************************************************************************
 ;***************************************************************************************************
 #?(:clj (do
+
+          (dotest
+            (spyx *clojure-version*)
+            (binding [*clojure-version* {:major 1 :minor 7}]
+              (is (spyx (t/is-clojure-1-7-plus?)))
+              (isnt (t/is-clojure-1-8-plus?))
+              (isnt (t/is-clojure-1-9-plus?))
+              (is   (t/is-pre-clojure-1-8?))
+              (is   (t/is-pre-clojure-1-9?)))
+            (binding [*clojure-version* {:major 1 :minor 8}]
+              (is   (t/is-clojure-1-7-plus?))
+              (is   (t/is-clojure-1-8-plus?))
+              (isnt (t/is-clojure-1-9-plus?))
+              (isnt (t/is-pre-clojure-1-8?))
+              (is   (t/is-pre-clojure-1-9?)))
+            (binding [*clojure-version* {:major 1 :minor 9}]
+              (is   (t/is-clojure-1-7-plus?))
+              (is   (t/is-clojure-1-8-plus?))
+              (is   (t/is-clojure-1-9-plus?))
+              (isnt (t/is-pre-clojure-1-8?))
+              (isnt (t/is-pre-clojure-1-9?))) )
 
           ; (s/instrument-all)
           ; (s/instrument #'tupelo.core/truthy?)  ; instrument just one var
