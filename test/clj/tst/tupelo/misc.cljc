@@ -14,18 +14,17 @@
               ])
   ))
 
-#?(:clj (do
-
-
 (dotest
   (let [data [1 2 3]]
     (is (= (drop 0 data) [1 2 3]))
     (is (= (drop 1 data) [  2 3]))
     (is (= (drop 2 data) [    3]))
-    (is (= (drop 3 data) [     ])))
-)
+    (is (= (drop 3 data) [     ]))))
 
-(dotest
+#?(:clj (do
+
+
+          (dotest
   (is (#{:windows :linux :mac} (get-os))))
 
 (dotest
