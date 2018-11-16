@@ -683,12 +683,12 @@
 (dotest
   (with-forest (new-forest)
     (let [xml-str  "<html>
-                             <body>
-                               <div class='one'>
-                                 <div class='two'></div>
-                               </div>
-                             </body>
-                           </html>"
+                     <body>
+                       <div class='one'>
+                         <div class='two'></div>
+                       </div>
+                     </body>
+                   </html>"
           root-hid (add-tree-xml xml-str)
 
           ; Removing whitespace nodes is optional; just done to keep things neat
@@ -802,23 +802,23 @@
   (with-debug-hid
     (with-forest (new-forest)
       (let [xml-str  "<top>
-                              <group>
-                                  <group>
-                                      <item>
-                                          <number>1</number>
-                                      </item>
-                                      <item>
-                                          <number>2</number>
-                                      </item>
-                                      <item>
-                                          <number>3</number>
-                                      </item>
-                                  </group>
-                                  <item>
-                                      <number>0</number>
-                                  </item>
-                              </group>
-                          </top>"
+                        <group>
+                            <group>
+                                <item>
+                                    <number>1</number>
+                                </item>
+                                <item>
+                                    <number>2</number>
+                                </item>
+                                <item>
+                                    <number>3</number>
+                                </item>
+                            </group>
+                            <item>
+                                <number>0</number>
+                            </item>
+                        </group>
+                    </top>"
             root-hid (add-tree-xml xml-str)
             >>       (remove-whitespace-leaves)
 
@@ -1151,7 +1151,7 @@
 ))
 
 ;-----------------------------------------------------------------------------
-; Random AST generation of specified sizeo
+; Random AST generation of specified size
 ;   https://stackoverflow.com/questions/52125331/why-is-a-successful-update-returning-1-rows-affected
 ;   https://cs.gmu.edu/~sean/book/metaheuristics/
 
@@ -1310,4 +1310,55 @@
              {"ID"          "90e39036-cb0f-11e8-a8d5-f2801f1b9fd1",
               "Attribute_1" "Value_1b",
               "Attribute_2" "Value_2b"}]))))))
+
+(dotest
+  (with-debug-hid
+    (with-forest (new-forest)
+      (let [root-hid        (add-tree-hiccup
+                              [:div {:class :some-div-1}
+                               [:div {:class :some-div-2}
+                                [:label "Some Junk"]
+                                [:div {:class :some-div-3}
+                                 [:label "Specify your shipping address"]
+                                 [:div {:class :some-div-4}
+                                  [:input {:type        "text" :autocomplete "off" :required "required"
+                                           :placeholder "" :class "el-input__inner"}]]]]])
+            ship-label-path? (fn [path]
+                              (let [tgt-txt "Specify your shipping address"
+                                    label-hid (last path)
+                                    label-node (tf/hid->node label-hid)
+                                    >> (spyx label-node)
+                                    ]
+                                )
+                              )
+
+            label-paths (find-paths root-hid [:** :label] )
+            label-hids  (mapv last label-paths)
+            label-nodes (mapv tf/hid->node label-hids)
+            ]
+        (spyx-pretty (format-paths label-paths ) )
+
+
+  ) ) ) )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

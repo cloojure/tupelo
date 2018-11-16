@@ -23,6 +23,10 @@ namespaces, each with a single area of focus. These are:
 
 Please see the xref:tupelo-core-overview[tupelo.core] docs further below.
 
+==== Tupelo-Forest - A library for searching & manipulating tree-like data structures
+
+Please see the xref:docs/forest.adoc[tupelo.forest] docs for further information.
+
 ==== Tupelo-Datomic - A library of helper functions for Datomic.
 
 The *_tupelo-datomic_* library has been split out into an independent project.  Please

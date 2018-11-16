@@ -1,0 +1,127 @@
+
+= tupelo.forest - One Tree To Rule Them All
+
+== Overview
+
+Have you ever wanted to do manipulate tree-like datastructures such as hiccup/HTML?
+If so, then the `tupelo.forest` library is for you!  Forest allows you to:
+
+- Easily search for tree nodes based on the path from the tree root
+- Search for tree nodes based on content
+- Limit a search to nodes in an arbitrary sub-tree
+- Find parents and siblings of a node found in a search
+- Chain searches together, so that nodes found in one search are used to limit
+  the scope of sub-searches
+
+In addition, `tupelo.forest` allows you to update the tree by adding, changing, or deleting nodes.
+Since `tupelo.forest` allows one to easily find parent and/or sibling nodes, this is a powerful feature
+missing in most other tree-processing libraries.
+
+== Creating a Tree
+
+The easiest way to create a tree is by using Hiccup:
+
+[source,clojure]
+----
+(ns xyz
+  (:use tupelo.core tupelo.forest))
+
+(with-forest (new-forest)
+  (let [root-hid (add-tree-hiccup [:a
+                                   [:b 1]
+                                   [:b 2]
+                                   [:b
+                                    [:c 4]
+                                    [:c 5]]
+                                   [:c 9]])]
+----
+
+The expression `(with-forest ...)` defines a context for all contained expressions.
+Here we create a new (empty) forest data-structure with `(new-forest)`.
+The expression `(add-tree-hiccup ...)` inserts a tree (represented as hiccup data) into the forest,
+returning the address of the tree root at `root-hid`. Each forest can contain many trees.
+
+=== What is an HID?
+
+`tupelo.forest` uses an opaque value called an Hexadecimal ID (HID) as a pointer to each tree node.  An HID
+is a Clojure keyword derived from the SHA-1 of a UUID and are 20 hex digits long (160 bits total).
+Some typical HID values might be:
+
+[source,clojure]
+----
+:c3b0dccd4d344ac765183f49940f4d685de7a3f5
+:b40b6f37e6a746f815b092a8590cefe5cf37121a
+:c3b0dccd4d344ac765183f49940f4d685de7a3f5
+:76859beedd81468b4ee3cc5f17a5fdcf7a34a787
+:c3b0dccd4d344ac765183f49940f4d685de7a3f5
+:5c0cb1ba6657ba0ac40cc5099f2be091b5637a3b
+----
+
+The HID format is designed so that each node will always have a unique ID value, without requireing coordination
+with trees created in other locations or at other times.  Since 2^160 is approximately equal to the number of
+atoms on Earth, we can be confident that no two tree nodes will ever have the same HID value.
+
+==== Debugging with HIDs
+
+At times, it may be easier to perform debugging or other tasks with a shorter and deterministic HID format.
+In this case, you may wrap the entire `(with-forest ...)` expression like so:
+
+[source,clojure]
+----
+(with-debug-hid
+  (with-forest (new-forest)
+    ... ))
+----
+
+The `(with-debug-hid ...)` form will cause all HIDs to be limited to 4 hex digits (65536 values max).
+The HIDs will also be created deterministically, counting up from `:0000`.  Some typical HIDs created
+using `with-debug-hid` might be:
+
+
+[source,clojure]
+----
+:0000
+:0001
+:0002
+:0003
+----
+
+=== Displaying a Tree
+
+- hid->tree
+- hid->bush
+- hid->hiccup
+- hid->enlive
+
+== Searching a Tree
+
+- find-paths
+
+=== What is a Path?
+
+A path is nothing more than a vector of HIDs.  It describes tha path from one node to one of its descendant nodes.
+Each node in the path is represented by its HID in the path vector.
+
+==== Displaying a Path
+
+- format-paths
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
