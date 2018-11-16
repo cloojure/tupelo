@@ -91,7 +91,7 @@ Find the parent of the `[:c 4]` node:
 ----
 
 This shows the internal structure of tree nodes as simple maps. Node `:0004` has a `:tag` value of `:b` and 2 child
-nodes (Kid HIDs => "khids").
+nodes (Kid HIDs \=> "khids").
 
 Modify the value of the `[:c 4]` node:
 
