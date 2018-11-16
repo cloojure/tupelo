@@ -147,7 +147,7 @@ returning the address of the tree root at `root-hid`. Each forest can contain ma
 is a Clojure keyword derived from the SHA-1 of a UUID and are 20 hex digits long (160 bits total).
 Some typical HID values might be:
 
-[source,clojure]
+[source,code]
 ----
     :c3b0dccd4d344ac765183f49940f4d685de7a3f5
     :b40b6f37e6a746f815b092a8590cefe5cf37121a
