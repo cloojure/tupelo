@@ -104,7 +104,14 @@ Modify the value of the `[:c 4]` node:
 ----
 
 
+== Better than Zippers
 
+Examples from:
+
+ - http://josf.info/blog/2014/03/21/getting-acquainted-with-clojure-zippers/
+ - http://josf.info/blog/2014/03/28/clojure-zippers-structure-editing-with-your-mind/
+ - http://josf.info/blog/2014/04/14/seqs-of-clojure-zippers/
+ - http://josf.info/blog/2014/10/02/practical-zippers-extracting-text-with-enlive/
 
 
 == Creating a Tree
