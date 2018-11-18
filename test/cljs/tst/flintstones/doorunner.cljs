@@ -20,6 +20,7 @@
     [tst.tupelo.set]
     [tst.tupelo.lazy]
     [tst.tupelo.string]
+    [tst.tupelo.misc]
     [tst.tupelo.cljs.misc]
    ;[tst.tupelo.xxx]
   ))
@@ -41,6 +42,7 @@
   'tst.tupelo.set
   'tst.tupelo.lazy
   'tst.tupelo.string
+  'tst.tupelo.misc
   'tst.tupelo.cljs.misc
  ;'tst.tupelo.xxx
 )

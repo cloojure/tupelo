@@ -5,19 +5,22 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.forest-examples
-  #?@(:clj [
-  (:use tupelo.core tupelo.forest tupelo.test )
+  #?(:clj (:use tupelo.core tupelo.forest tupelo.test))
   (:require
-    [clojure.java.io :as io]
     [clojure.set :as cs]
     [clojure.string :as str]
-    [net.cgrand.tagsoup :as enlive-tagsoup]
     [schema.core :as s]
-    [tupelo.forest :as tf]
-    [tupelo.misc :as tm :refer [HID]]
     [tupelo.string :as ts]
-    [tupelo.schema :as tsk] )
-  (:import [java.io StringReader]) ]) )
+    [tupelo.schema :as tsk]
+    #?@(:clj [[clojure.data.xml :as xml]
+              [clojure.java.io :as io]
+              [net.cgrand.tagsoup :as enlive-tagsoup]
+              [tupelo.forest :as tf]
+              [tupelo.misc :as tm :refer [HID]]
+              ])
+  )
+    #?(:clj (:import [java.io StringReader])  )
+)
 
 #?(:clj (do
 
@@ -416,9 +419,9 @@
         ;     (println "*****************************************************************************")
         ;     (nl))
 
-       ;>> (println "clojure.data.xml/parse - BEFORE")
-        v3 (clojure.data.xml/parse v2)
-       ;>> (println "clojure.data.xml/parse - AFTER")
+       ;>> (println "xml/parse - BEFORE")
+        v3 (xml/parse v2)
+       ;>> (println "xml/parse - AFTER")
       ]
     v3))
 
@@ -1083,7 +1086,7 @@
             [{:id "2.3", :tag :word, :value "recognition"}]]])
         (set= sentences ["foo bar" "beyond all recognition"])))
     (with-forest (new-forest)
-      (let [enlive-tree-lazy (clojure.data.xml/parse (StringReader. xml-str))
+      (let [enlive-tree-lazy (xml/parse (StringReader. xml-str))
             enlive-words     (filter-enlive-subtrees enlive-tree-lazy [:document :sentence :word])
             root-hids        (forv [word enlive-words] (add-tree-enlive word))
             >>               (remove-whitespace-leaves)
@@ -1105,7 +1108,7 @@
             [{:id "2", :tag :sentence}
              [{:id "2.3", :tag :word, :value "recognition"}]]]])))
     (with-forest (new-forest)
-      (let [enlive-tree-lazy    (clojure.data.xml/parse (StringReader. xml-str))
+      (let [enlive-tree-lazy    (xml/parse (StringReader. xml-str))
             enlive-sentences    (filter-enlive-subtrees enlive-tree-lazy [:document :sentence])
             root-hids           (forv [sentence enlive-sentences] (add-tree-enlive sentence))
             >>                  (remove-whitespace-leaves)
@@ -1129,7 +1132,7 @@
              [{:id "2.3", :tag :word, :value "recognition"}]]]])
         (set= result-sentences ["foo bar" "beyond all recognition"])))
     (with-forest (new-forest)
-      (let [enlive-tree-lazy (clojure.data.xml/parse (StringReader. xml-str))
+      (let [enlive-tree-lazy (xml/parse (StringReader. xml-str))
             enlive-document  (only (filter-enlive-subtrees enlive-tree-lazy [:document]))
             root-hid         (add-tree-enlive enlive-document)
             >>               (remove-whitespace-leaves)
@@ -1174,8 +1177,6 @@
           result      (re-find #"http.*$" value-str)]
       (is= value-str "\nPermanent link to this comic: https://xkcd.com/1988/")
       (is= "https://xkcd.com/1988/" result))))
-
-))
 
 ;-----------------------------------------------------------------------------
 ; Random AST generation of specified size
@@ -1403,4 +1404,6 @@
 
 
 
+
+))
 

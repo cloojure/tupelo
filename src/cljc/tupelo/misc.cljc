@@ -1,4 +1,4 @@
-;   Copyright (c) Alan Thompson. All rights reserved. 
+;   Copyright (c) Alan Thompson. All rights reserved.
 ;   The use and distribution terms for this software are covered by the Eclipse Public
 ;   License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
@@ -6,24 +6,25 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.misc
   "Miscellaneous functions."
-  #?@(:clj [
-  (:use tupelo.core)
+  ; We use the self-require trick to force separate compilation stages for macros
+  ; See "ClojureScript Macro Tower & Loop" by Mike Fikes (2015-12-18)
+  #?(:cljs          ; http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+     (:require-macros
+       [tupelo.misc :refer [with-dots]]))
   (:require
-    [clj-uuid :as uuid]
-    [clojure.core.async :refer [go go-loop chan buffer close! thread alts! alts!! timeout]]
-    [clojure.data.xml :as xml]
-    [clojure.java.shell :as shell]
     [clojure.string :as str]
     [schema.core :as s]
+    [tupelo.core :as t :refer [grab thru kw->str validate it->]]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
-    [tupelo.types :as tt] )
-  (:import
-    [java.nio ByteBuffer]
-    [java.security MessageDigest]
-    [java.util UUID]
-    [java.nio.file Paths])
-]) )
+    [tupelo.types :as tt]
+    #?@(:clj [[clj-uuid :as uuid]
+              [clojure.java.shell :as shell]]))
+  #?(:clj (:import
+            [java.nio ByteBuffer]
+            [java.security MessageDigest]
+            [java.util UUID]
+            [java.nio.file Paths])))
 
 #?(:clj (do
 ;  #todo Make clojure versions of all pcapng stuff
