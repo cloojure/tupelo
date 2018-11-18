@@ -6,18 +6,19 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.misc
   (:require
-    [tupelo.misc    :as misc  ]
+    [tupelo.misc :as misc]
     #?@(:clj [[schema.core :as s]
-              [tupelo.test   :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
-              [tupelo.core :as t :refer [spy spyx spyxx] ]
+              [tupelo.test :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+              [tupelo.core :as t :refer [spy spyx spyxx]]
               [tupelo.string :as ts]
-             ])
+              ])
     #?@(:cljs [[schema.core :as s]
                [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
                [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
                [tupelo.string :as ts :include-macros true]
-              ])
-  ))
+               [goog.crypt :as crypt]
+               [goog.crypt.Sha1]
+               ])))
 
 #?(:cljs (enable-console-print!))
 
@@ -73,8 +74,12 @@
   (is= [2] (misc/find-pattern [2] [0 1 2 3]))
   (is= [3] (misc/find-pattern [3] [0 1 2 3]))
   (is= [] (misc/find-pattern [3 4] [0 1 2 3]))
-  (is= [] (misc/find-pattern [9] [0 1 2 3]))
-  )
+  (is= [] (misc/find-pattern [9] [0 1 2 3])) )
+
+
+(dotest
+  (is= (misc/str->sha "abc") "a9993e364706816aba3e25717850c26c9cd0d89d")
+  (is= (misc/str->sha "abd") "cb4cc28df0fdbe0ecf9d9662e294b118092a5735"))
 
 ;----- toptop -----------------------------------------------------------------------------
 
