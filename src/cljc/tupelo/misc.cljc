@@ -54,6 +54,20 @@
                         parts)]
     idxs))
 
+(defn take-dist
+  "Returns a sequence of n items from a collection, distributed
+   evenly between first & last elements, which are always included."
+  ; #todo write tests, incl degenerate cases of N=0,1,2, etc
+  [n coll]
+  {:pre [(pos? n)] }
+  (let [coll (vec coll)]
+    (if (= n 1)
+      [ (first coll) ]
+      (let [interval (Math/round (double (/ (count coll) (- n 1))))
+            result   (flatten [(take (- n 1) (take-nth interval coll))
+                               (last coll)])]
+        result))))
+
 ;----- toptop -----------------------------------------------------------------------------
 
 #?(:clj (do
@@ -100,20 +114,6 @@
 
 ; #todo
 ; (defn instaparse-failure? [result] (= (class result) instaparse.gll.Failure))
-
-(defn take-dist
-  "Returns a sequence of n items from a collection, distributed
-   evenly between first & last elements, which are always included."
-  ; #todo write tests, incl degenerate cases of N=0,1,2, etc
-  [n coll]
-  {:pre [(pos? n)] }
-  (let [coll (vec coll)]
-    (if (= n 1)
-      [ (first coll) ]
-      (let [interval (Math/round (double (/ (count coll) (- n 1))))
-            result   (flatten [(take (- n 1) (take-nth interval coll))
-                               (last coll)])]
-        result))))
 
 (defn shell-cmd
   "Runs a command string in the default OS shell (/bin/bash); returns result in a Clojure map.
