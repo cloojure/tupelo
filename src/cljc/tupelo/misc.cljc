@@ -26,6 +26,36 @@
             [java.util UUID]
             [java.nio.file Paths])))
 
+(s/defn factorial :- s/Int
+  "Computes the factorial of N"
+  [n :- s/Int]
+  (when (neg? n)
+    (throw (IllegalArgumentException.
+             (str "factorial: N must be a non-negative integer=" n))))
+  (if (zero? n)
+    1
+    (apply * (thru 1 n))))
+
+(defn bytes->hex-str
+  "Converts a byte array to a hex string, where each byte becomes 2 hex digits."
+  [bytes]
+  (validate tt/byte-array? bytes)
+  (str/join (map #(format "%02x" %) bytes)))
+
+(s/defn find-pattern :- [s/Int]
+  "Searches for pattern-vec within data-vec, returning a lazy seq of indexes into data-vec."
+  [pattern-vec :- tsk/List
+   data-vec :- tsk/List]
+  (let [parts         (partition (count pattern-vec) 1 data-vec)
+        idxs          (keep-indexed
+                        (fn [idx candidate]
+                          (when (= candidate pattern-vec)
+                            idx))
+                        parts)]
+    idxs))
+
+;----- toptop -----------------------------------------------------------------------------
+
 #?(:clj (do
 ;  #todo Make clojure versions of all pcapng stuff
 ;
@@ -178,25 +208,10 @@
       (println (format "%10d total" @dot-counter))
       result#)))
 
-(s/defn factorial :- s/Int
-  "Computes the factorial of N"
-  [n :- s/Int]
-  (when (neg? n)
-    (throw (IllegalArgumentException.
-             (str "factorial: N must be a non-negative integer=" n))))
-  (if (zero? n)
-    1
-    (apply * (thru 1 n))))
-
 ; -----------------------------------------------------------------------------
 ; #todo maybe move to tupelo.bytes ns
 
-(defn bytes->hex-str
-  "Converts a byte array to a hex string, where each byte becomes 2 hex digits."
-  [bytes]
-  (validate tt/byte-array? bytes)
-  (str/join (map #(format "%02x" %) bytes)))
-
+; ----- gogo -----------------------------------------------------------------------------
 (s/defn long->bytes
   "Converts a Long into an array of bytes (big-endian)."
   [arg]
@@ -265,18 +280,6 @@
 ;-----------------------------------------------------------------------------
 ; #todo -> tupelo.vector
 ; #todo README & more tests
-
-(s/defn find-pattern :- [s/Int]
-  "Searches for pattern-vec within data-vec, returning a lazy seq of indexes into data-vec."
-  [pattern-vec :- tsk/List
-   data-vec :- tsk/List]
-  (let [parts         (partition (count pattern-vec) 1 data-vec)
-        idxs          (keep-indexed
-                        (fn [idx candidate]
-                          (when (= candidate pattern-vec)
-                            idx))
-                        parts)]
-      idxs))
 
 ;; Assuming require [clojure.tools.logging :as log]
 (defn log-uncaught-exceptions []
