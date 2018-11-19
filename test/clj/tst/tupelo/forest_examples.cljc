@@ -1384,12 +1384,49 @@
                 :class        "el-input__inner"}
                "1234 Main St"]]]]])))))
 
+;---------------------------------------------------------------------------------------------------
+; Find dependencies (children) in a tree. Given this data:
+;[{:value "A"}
+;  [{:value "B"}
+;    [{:value "C"} {:value "D"}]
+;  [{:value "E"} [{:value "F"}]]]]
+;
+;we want output like:
+; {:A [:B :E]
+;  :B [:C :D]
+;  :C []
+;  :D []
+;  :E [:F]
+;  :F}
 
-
-
-
-
-
+(dotest
+  (let [relationhip-data-hiccup [:A
+                                 [:B
+                                  [:C]
+                                  [:D]]
+                                 [:E
+                                  [:F]]]
+        expected-result         {:A [:B :E]
+                                 :B [:C :D]
+                                 :C []
+                                 :D []
+                                 :E [:F]
+                                 :F []} ]
+    (with-debug-hid
+      (with-forest (new-forest)
+        (let [root-hid (tf/add-tree-hiccup relationhip-data-hiccup)
+              result   (apply glue (sorted-map)
+                         (forv [hid (all-hids)]
+                           (let [parent-tag (grab :tag (hid->node hid))
+                                 kid-tags   (forv [kid-hid (hid->kids hid)]
+                                              (let [kid-tag (grab :tag (hid->node kid-hid))]
+                                                kid-tag))]
+                             {parent-tag kid-tags})))]
+          (is= (format-paths (find-paths root-hid [:A]))
+            [[{:tag :A}
+              [{:tag :B} [{:tag :C}] [{:tag :D}]]
+              [{:tag :E} [{:tag :F}]]]])
+          (is= result  expected-result ))))))
 
 
 

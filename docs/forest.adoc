@@ -19,6 +19,8 @@ missing in most other tree-processing libraries.
 
 == Quick Start
 
+You can watch a video of the :link:https://youtu.be/RtavTnRr0oM[tupelo.forest Lightning Talk] from the 2017 Clojure Conj.
+
 Create a tree using Hiccup:
 
 [source,clojure]

@@ -79,7 +79,9 @@
 
 (dotest
   (is= (misc/str->sha "abc") "a9993e364706816aba3e25717850c26c9cd0d89d")
-  (is= (misc/str->sha "abd") "cb4cc28df0fdbe0ecf9d9662e294b118092a5735"))
+  (is= (misc/str->sha "abd") "cb4cc28df0fdbe0ecf9d9662e294b118092a5735")
+  ; (spyx (random-uuid))
+  )
 
 ;----- toptop -----------------------------------------------------------------------------
 
