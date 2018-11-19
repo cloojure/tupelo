@@ -14,19 +14,22 @@
   (:require
     [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.core :as t :refer [grab thru kw->str validate it->]]
+    [tupelo.core :as t :refer [grab thru kw->str validate it-> spyx spyxx]]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
     [tupelo.types :as tt]
     #?@(:clj [[clj-uuid :as uuid]
               [clojure.java.shell :as shell]])
     #?@(:cljs [[goog.crypt :as crypt]
-               [goog.crypt.Sha1]]))
+               [goog.crypt.Sha1]
+               [reagent.format :as rf] ]))
   #?(:clj (:import
+            [java.lang Byte Integer]
             [java.nio ByteBuffer]
             [java.security MessageDigest]
             [java.util UUID]
-            [java.nio.file Paths])))
+            [java.nio.file Paths]))
+  )
 
 (s/defn factorial :- s/Int
   "Computes the factorial of N"
@@ -64,14 +67,44 @@
                                (last coll)])]
         result))))
 
+(s/defn unsigned->byte-array
+  "Converts a vector of unsigned int values into a byte array."
+  [unsigned-bytes   :- [s/Int] ]
+  (byte-array
+    (for [unsigned-val unsigned-bytes]
+      (do
+        (when-not (int? unsigned-val)
+          (throw (ex-info "unsigned->byte-array: value must be an int" unsigned-val)))
+        (when-not (<= 0 unsigned-val 255)
+          (throw (ex-info "unsigned->byte-array: value out of range" unsigned-val)))
+        (let [byte-val (.byteValue (Integer. unsigned-val))]
+          byte-val)))))
+
+(s/defn byte-array->hex-str :- s/Str
+  "Converts a vector of bytes to a hex string, where each byte becomes 2 hex digits."
+  [byte-arr]
+  #?(:clj (let [result (str/join
+                         (for [byte-val byte-arr]
+                           (let [int-val (Byte/toUnsignedInt byte-val)]
+                             (when-not (<= 0 int-val 255)
+                               (throw (ex-info "byte-array->hex-str: value out of range" int-val)))
+                             (format "%02x" int-val))))]
+             result))
+  #?(:cljs (do
+             (doseq [byte-val byte-arr]
+               (let [int-val (int byte-val)]
+                 (spyxx int-val)
+                 (when-not (<= 0 int-val 255)
+                   (throw (ex-info "byte-array->hex-str: value out of range" int-val)))))
+             (crypt/byteArrayToHex byte-arr))))
+
+(s/defn bytes->hex-str :- s/Str
+  "Converts a sequence of bytes to a hex string, where each byte becomes 2 hex digits."
+  [byte-vec :- [s/Int]]
+  (byte-array->hex-str (to-array byte-vec)) )
+
 #?(:clj
    (do
-
-     (defn bytes->hex-str
-       "Converts a byte array to a hex string, where each byte becomes 2 hex digits."
-       [bytes]
-       (validate tt/byte-array? bytes)
-       (str/join (map #(format "%02x" %) bytes)))
 
      (def str->sha
        "Returns the SHA-1 hex string for a string"
@@ -81,28 +114,23 @@
            (.reset sha-1-instance)
            (doseq [ch str-arg]
              (.update sha-1-instance (byte ch)))
-           (bytes->hex-str (.digest sha-1-instance))))) ))
+           (byte-array->hex-str (.digest sha-1-instance)))))))
 #?(:cljs
    (do
-     (defn str->bytes
+     (defn str->byte-array
        [s]
        (crypt/stringToUtf8ByteArray s))
-
-     (s/defn bytes->hex-str  :- s/Str
-       [bytes ]     ; input is #js byte array
-       (crypt/byteArrayToHex bytes))
 
      (s/defn str->sha ; modeled after reagent-utils reagent.crypt
        [str-in :- s/Str]
        (let [sha-1-instance (goog.crypt.Sha1.)]
-         (.update sha-1-instance (str->bytes str-in))
+         (.update sha-1-instance (str->byte-array str-in))
          (let [bytes (.digest sha-1-instance)]
-           (bytes->hex-str bytes) ))) ))
+           (byte-array->hex-str bytes))))))
 
 #?(:clj
    (do
-
-     (s/defn long->bytes
+     (s/defn long->byte-array
        "Converts a Long into an array of bytes (big-endian)."
        [arg]
        (validate tt/long? arg)
@@ -115,15 +143,31 @@
        (let [sha-1-instance (MessageDigest/getInstance "SHA")]
          (s/fn uuid->str :- s/Str
            [uuid :- java.util.UUID]
-           (let [bytes-big    (long->bytes (.getMostSignificantBits ^UUID uuid))
-                 bytes-little (long->bytes (.getLeastSignificantBits ^UUID uuid))]
+           (let [bytes-big    (long->byte-array (.getMostSignificantBits ^UUID uuid))
+                 bytes-little (long->byte-array (.getLeastSignificantBits ^UUID uuid))]
              (.reset sha-1-instance)
              (.update sha-1-instance bytes-big)
              (.update sha-1-instance bytes-little)
              (let [bytes (.digest sha-1-instance)]
-               (bytes->hex-str bytes))))))
+               (byte-array->hex-str bytes))))))))
+#?(:cljs
+   (defn uuid->str
+     "Returns the SHA-1 hex string for a UUID"
+     [uuid-cljs]
+     (assert (= cljs.core/UUID (type uuid-cljs) ))
+     (let [ustr   (.-uuid uuid-cljs)
+           uchars (remove #(= \- %) (vec ustr))
+           u2     (str/join uchars)
+           usha   (str->sha u2)]
+       usha)))
 
-     ))
+(s/defn sha-uuid :- s/Str
+  "Returns a string that is the SHA-1 hash of the `uuid/v1`."
+  []
+  (uuid->str
+    #?(:clj (uuid/v1))
+    #?(:cljs (random-uuid)) ))
+
 
 ;----- toptop -----------------------------------------------------------------------------
 
@@ -230,7 +274,9 @@
          (when (not= old-count new-count)
            (locking dot-counter
              (when (zero? (rem old-count counts-per-row))
-               (print (format "%10d " old-count))
+               (print ( #?(:clj format)
+                        #?(:cljs rf/format)
+                        "%10d " old-count))
                (flush))
              (when (zero? (rem old-count decimation))
                (print \.)
@@ -262,18 +308,16 @@
           (reset! dot-counter 0)
           (add-watch dot-counter :dot-counter dot-counter-watch-fn)
           (let [result# (do ~@body)]
-            (newline)
-            (println (format "%10d total" @dot-counter))
+            (newline) (println (
+                                 #?(:clj format)
+                                 #?(:cljs rf/format)
+                                 "%10d total" @dot-counter))
             result#)))
 
      ; -----------------------------------------------------------------------------
      ; #todo maybe move to tupelo.bytes ns
 
      ; ----- gogo -----------------------------------------------------------------------------
-     (s/defn sha-uuid :- s/Str
-       "Returns a string that is the SHA-1 hash of the `uuid/v1`."
-       []
-       (uuid->str (uuid/v1)))
 
      (def HID s/Keyword) ; #todo find way to validate
      (s/defn new-hid :- HID

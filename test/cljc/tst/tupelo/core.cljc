@@ -539,11 +539,8 @@
       (t/map-let* {:lazy false :strict true}  [x xs y ys] (+ x y))
       (t/map-let* {:lazy true :strict false}  [x xs y ys] (+ x y))
       (t/map-let* {:lazy true :strict true}   [x xs y ys] (+ x y)))
-    (let [result-vec (t/map-let* {:lazy false :strict true} [x xs y ys] (+ x y))
+    (let [result-vec     (t/map-let* {:lazy false :strict true} [x xs y ys] (+ x y))
           result-lazyseq (t/map-let* {:lazy true :strict true} [result-vec xs y ys] (+ result-vec y))]
-      (spyx (type result-vec))
-      (spyx (type result-lazyseq))
-
       (is (instance?
             #?(:clj clojure.lang.PersistentVector)
             #?(:cljs cljs.core/PersistentVector)

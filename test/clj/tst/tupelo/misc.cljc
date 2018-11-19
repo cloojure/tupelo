@@ -6,9 +6,10 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.misc
   (:require
+    [clojure.string :as str]
     [tupelo.misc :as misc]
     #?@(:clj [[schema.core :as s]
-              [tupelo.test :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+              [tupelo.test :refer [define-fixture dotest dotest-focus is isnt is= isnt= set= nonblank= testing throws?]]
               [tupelo.core :as t :refer [spy spyx spyxx]]
               [tupelo.string :as ts]
               ])
@@ -18,7 +19,10 @@
                [tupelo.string :as ts :include-macros true]
                [goog.crypt :as crypt]
                [goog.crypt.Sha1]
-               ])))
+               [reagent.format :as rf]
+               ]))
+  #?(:clj (:import [java.lang Byte Integer]))
+  )
 
 #?(:cljs (enable-console-print!))
 
@@ -77,11 +81,43 @@
   (is= [] (misc/find-pattern [9] [0 1 2 3])) )
 
 
-(dotest
+(dotest-focus
   (is= (misc/str->sha "abc") "a9993e364706816aba3e25717850c26c9cd0d89d")
   (is= (misc/str->sha "abd") "cb4cc28df0fdbe0ecf9d9662e294b118092a5735")
-  ; (spyx (random-uuid))
-  )
+  (let [unsigned-vals [0 15 16 240 255]
+        byte-arr      (misc/unsigned->byte-array unsigned-vals)]
+    (is= (vec byte-arr) [0 15 16 -16 -1])
+    (is= "000f10f0ff" (misc/byte-array->hex-str byte-arr)))
+
+  #?(:cljs
+     (let [u (random-uuid)]
+       (spyx u)
+       (spyx (clj->js [1 2 3]))
+       (spyx (misc/byte-array->hex-str (clj->js [1 2 3])))
+       (spyx (misc/uuid->str u))))
+
+  (let [vals (range 32)]
+    (is=
+      (misc/bytes->hex-str vals)
+      (misc/byte-array->hex-str (into-array vals))
+      (str
+        "00" "01" "02" "03" "04" "05" "06" "07" "08" "09" "0a" "0b" "0c" "0d" "0e" "0f"
+        "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "1a" "1b" "1c" "1d" "1e" "1f")))
+  (let [int-vals (range (- 256 16) 256)
+        byte-arr (misc/unsigned->byte-array int-vals)]
+    (is=
+      (misc/byte-array->hex-str byte-arr)
+      (str "f0" "f1" "f2" "f3" "f4" "f5" "f6" "f7" "f8" "f9" "fa" "fb" "fc" "fd" "fe" "ff")))
+
+  (let [uuid-val #uuid "0b37e120-2c65-11e7-aa8d-91b7120fbbd1"] ; tagged-literal literal for UUID type
+    (is= uuid-val #uuid "0b37e120-2c65-11e7-aa8d-91b7120fbbd1")
+
+    #?(:clj (do
+              (is= (class uuid-val) java.util.UUID)
+              (is= (pr-str uuid-val) "#uuid \"0b37e120-2c65-11e7-aa8d-91b7120fbbd1\"")))
+
+    (is= (spyx (misc/uuid->str uuid-val)) "e604d9bbcfb53cee6c3f305992c4a1531972b7a1")
+    (is= (misc/str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d")))
 
 ;----- toptop -----------------------------------------------------------------------------
 
@@ -132,19 +168,5 @@
              99 total")))
 
 ; ----- gogo -----------------------------------------------------------------------------
-     (dotest
-       (is= (misc/bytes->hex-str (byte-array (range 32)))
-         (str
-           "00" "01" "02" "03" "04" "05" "06" "07" "08" "09" "0a" "0b" "0c" "0d" "0e" "0f"
-           "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "1a" "1b" "1c" "1d" "1e" "1f"))
-       (is= (misc/bytes->hex-str (byte-array (range (- 256 16) 256)))
-         (str "f0" "f1" "f2" "f3" "f4" "f5" "f6" "f7" "f8" "f9" "fa" "fb" "fc" "fd" "fe" "ff"))
-
-       (let [uuid-val #uuid "0b37e120-2c65-11e7-aa8d-91b7120fbbd1"] ; tagged-literal literal for UUID type
-         (is= uuid-val #uuid "0b37e120-2c65-11e7-aa8d-91b7120fbbd1")
-         (is= (class uuid-val) java.util.UUID)
-         (is= (pr-str uuid-val) "#uuid \"0b37e120-2c65-11e7-aa8d-91b7120fbbd1\"")
-         (is= (misc/uuid->str uuid-val) "e604d9bbcfb53cee6c3f305992c4a1531972b7a1")
-         (is= (misc/str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d")))
 
      ))
