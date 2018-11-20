@@ -6,7 +6,6 @@
 ;   software.
 (ns tupelo.char
   "Tupelo - Making Clojure even sweeter"
-  #?(:clj (:refer-clojure :exclude [drop take]))
   (:require
     [clojure.set :as set]
     [schema.core :as s]
