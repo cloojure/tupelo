@@ -5,16 +5,14 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.parse
-  #?@(:clj
-      [ (:use tupelo.core tupelo.test)
-       (:require
-         [tupelo.core :as t]
-         [tupelo.parse :as tpar]
-         [schema.core :as s])
-       (:import
-         [java.lang Math])]))
+  (:use tupelo.core tupelo.test)
+  (:require
+    [tupelo.core :as t]
+    [tupelo.parse :as tpar]
+    [schema.core :as s])
+  (:import
+    [java.lang Math]) )
 
-#?(:clj (do
 
 (dotest
   (is= (tpar/edn-parsible {:a 1 :b "two" :c [1 2 3]}) ; function object is not edn-parsible
@@ -114,4 +112,3 @@
   (is (t/rel= (/ 1 10)                  (tpar/parse-double "0.1"         :default 0)     :digits 9))
   (is (t/rel= Math/PI                   (tpar/parse-double "3.141592654" :default 0)     :digits 9)) )
 
-))

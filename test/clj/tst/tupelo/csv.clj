@@ -5,13 +5,11 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.csv
-  #?@(:clj [
   (:use tupelo.csv clojure.test)
   (:require [clojure.string         :as str]
             [clojure.java.io        :as io]
             [schema.core            :as s] )
-  (:import  [java.io Reader StringReader] )
-            ]) )
+  (:import  [java.io Reader StringReader] ) )
 
 (def test1-str-no-label
 "01002,00006,4
@@ -58,7 +56,6 @@
   { :zipcode            ["01002" "01002" "01003" "01008" "01009" "01020"]
     :store-id           [     6     277     277    1217     439    1193 ] } )
 
-#?(:clj (do
 (deftest parse-csv->row-maps-test
   (testing "basic parse-csv->row-maps test, using String"
     (let [result (parse-csv->row-maps test1-str-label ) ]
@@ -112,4 +109,3 @@
                       :zipcode                           (:ZIP-POSTAL-CODE raw-maps) } ]
     (is (= result test4-expected)) )))
 
-))

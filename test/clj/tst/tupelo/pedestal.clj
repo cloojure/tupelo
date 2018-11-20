@@ -11,8 +11,6 @@
     [tst.tupelo.pedestal-data :as tst-data]
   ))
 
-#?(:clj
-   (do
 
  (dotest
    (is= content-type "Content-Type")
@@ -76,4 +74,3 @@
    (throws? (s/validate Request tst-data/sample-context))
    (throws? (s/validate Context tst-data/sample-request)) )
 
- ))

@@ -7,16 +7,15 @@
 (ns tst.tupelo.gotchas
   (:use tupelo.test)
   (:require
-    #?@(:clj [
-    [clojure.set :as set]
-    [clojure.test.check.generators :as gen]
-    [clojure.test.check.properties :as prop]
-    [tupelo.core :as t]
-    [tupelo.string :as ts]
-             ]) ))
+    #?@(:clj [[clojure.set :as set]
+              [clojure.test.check.generators :as gen]
+              [clojure.test.check.properties :as prop]
+              [tupelo.core :as t]
+              [tupelo.string :as ts]
+              ])))
 ; #todo add example for duplicates in clojure.core.combo
 
-#?(:clj (do
+#?(:clj (do         ; #todo make work for clj/cljs
 
 ; rest/next too loose
 (dotest

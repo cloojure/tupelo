@@ -5,13 +5,11 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.async
-  #?@(:clj [
-  (:use tupelo.test)
+(:use tupelo.test)
   (:require [tupelo.core            :as i]
             [tupelo.async           :as ta]
             [clojure.core.async     :as ca :refer [go go-loop chan thread]]
-  )
-            ]) )
+  ))
 
 (defn is-expected-val? [tst-val arg]
   (is (= tst-val arg)))

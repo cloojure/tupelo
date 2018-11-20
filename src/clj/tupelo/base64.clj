@@ -6,17 +6,13 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.base64
   "Convert to/from traditional base64 encoding."
-  #?@(:clj [
   (:require [clojure.string :as str]
             [tupelo.core    :as t]
             [tupelo.misc    :as misc]
             [tupelo.types   :as types]
             [schema.core    :as s]
-  )
-            ])
-      )
+  ) )
 
-#?(:clj (do
 (def base64-chars
   "A set of chars used for traditional base64 encoding (incl. padding char)"
   (into #{} (flatten [ (t/chars-thru  \a \z)
@@ -67,4 +63,3 @@
   [code-str :- s/Str]
   (-> code-str decode-str->bytes types/bytes->str))
 
-))

@@ -5,14 +5,9 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.types
-  #?@(:clj [
   (:refer-clojure :exclude [float? integer? double?])
   (:use tupelo.types tupelo.core tupelo.test )
-  (:require [tupelo.core :as t] )
-            ])
-  )
-
-#?(:clj (do
+  (:require [tupelo.core :as t] ) )
 
 ; As of Clojure 1.9.0-alpha5, boolean? is native to clojure
 #_(dotest
@@ -150,4 +145,3 @@
   (is (= "ABC" (bytes->str (byte-array [65 66 67]))))
   (is (= "Hello World!" (-> "Hello World!" (str->bytes) (bytes->str)))))
 
-))

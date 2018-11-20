@@ -8,8 +8,6 @@
   (:use tupelo.core
         tupelo.pedestal))
 
-#?(:clj
-   (do
 
      (def sample-context
        {:async?                                     :tupelo.parse/edn-non-parsible,
@@ -122,4 +120,3 @@
 
      (def sample-request (grab :request sample-context))
 
-   ))

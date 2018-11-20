@@ -5,24 +5,20 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.forest-examples
-  #?(:clj (:use tupelo.core tupelo.forest tupelo.test))
+  (:use tupelo.core tupelo.forest tupelo.test)
   (:require
     [clojure.set :as cs]
     [clojure.string :as str]
     [schema.core :as s]
     [tupelo.string :as ts]
     [tupelo.schema :as tsk]
-    #?@(:clj [[clojure.data.xml :as xml]
-              [clojure.java.io :as io]
-              [net.cgrand.tagsoup :as enlive-tagsoup]
-              [tupelo.forest :as tf]
-              [tupelo.misc :as tm :refer [HID]]
-              ])
-  )
-    #?(:clj (:import [java.io StringReader])  )
-)
+    [clojure.data.xml :as xml]
+    [clojure.java.io :as io]
+    [net.cgrand.tagsoup :as enlive-tagsoup]
+    [tupelo.forest :as tf]
+    [tupelo.misc :as tm :refer [HID]])
+  (:import [java.io StringReader]))
 
-#?(:clj (do
 
 (dotest
   (with-debug-hid
@@ -1441,6 +1437,4 @@
 
 
 
-
-))
 

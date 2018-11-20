@@ -6,17 +6,13 @@
 ;   software.
 (ns tupelo.async
   "tupelo - Making Clojure even sweeter"
-  #?@(:clj [
   (:use tupelo.core)
   (:require [clojure.core.async :as async]
             [tupelo.core :as t]
             [schema.core :as s] )
-  (:refer-clojure :exclude [vec] )
-  (:gen-class)
-            ])
-      )
+  (:refer-clojure :exclude [vec] ))
 
-#?(:clj (do
+
 ; #todo finish this?
 ; (defn refer-tupelo-async [] nil)
 ; #todo or just copy all core.async as alias?
@@ -66,4 +62,3 @@
   [ch]
   (take-now! (async/into [] ch)))
 
-))

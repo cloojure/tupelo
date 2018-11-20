@@ -5,13 +5,11 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.test
-  #?@(:clj
-      [(:use tupelo.core tupelo.test)
-       (:require
-         [clojure.string :as str] )
-      ]))
+  (:use tupelo.core tupelo.test)
+  (:require
+    [clojure.string :as str]) )
 
-(deftest
+(dotest
   (is true)         ; basic functionality
   (throws? (is))    ; must have exactly 1 arg
   (throws? (is true true)) ; must have exactly 1 arg
@@ -31,7 +29,7 @@
   (isnt= 1 2 1 1)
   )
 
-(deftest
+(dotest
   (throws? (set= [1]))
   (set= [1] [1])
   (set= [1 2] [2 1])

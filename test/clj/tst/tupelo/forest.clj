@@ -5,15 +5,11 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.forest
-  #?@(:clj [
   (:use tupelo.core tupelo.forest tupelo.test )
   (:require
     [tupelo.misc :as tm]
     [tupelo.forest :as tf]
-  ) ]) )
-
-#?(:clj
-   (do
+  ))
 
 (dotest
  (is= "0013" (format "%04x" 19))
@@ -1412,5 +1408,4 @@
               :attrs   {:b 2},
               :content [{:tag :c, :attrs {:c 3}, :content [3 3 3]}]}]}))
 
-))
 

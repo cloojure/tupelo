@@ -5,15 +5,12 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.spec
-  (:use tupelo.core tupelo.test )
+  (:use tupelo.core tupelo.test)
   (:require
-    #?@(:clj [
     [tupelo.core :as t]
     [tupelo.spec :as tsp]
-              ])
-  ))
+    [clojure.spec.alpha :as s]))
 
-#?(:clj (do
 (t/when-clojure-1-9-plus
   (require
     '[clojure.spec.alpha :as s]
@@ -32,4 +29,3 @@
       (newline) (time (spyx (stest/check `t/falsey? {:clojure.spec.test.check/opts {:num-tests 99}}))))
 
     ))
-))

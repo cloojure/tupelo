@@ -7,14 +7,12 @@
 (ns tst.tupelo.dev
   (:require
     [clojure.string :as str]
-    #?@(:clj [[criterium.core :as crit]
-              [schema.core :as s]
-              [tupelo.core :refer :all]
-              [tupelo.core :as i]
-              [tupelo.dev :refer :all]
-              [tupelo.test :refer :all]]))
-  #?(:clj
-     (:import [java.io ByteArrayOutputStream PrintStream])))
+    [criterium.core :as crit]
+    [schema.core :as s]
+    [tupelo.core :refer :all]
+    [tupelo.core :as i]
+    [tupelo.dev :refer :all]
+    [tupelo.test :refer :all]) )
 
 (dotest ; #todo move
   (is= {0 :a 1 :b 2 :c} (i/sequential->idx-map [:a :b :c]))
