@@ -22,7 +22,7 @@
               [clojure.java.shell :as shell]])
     #?@(:cljs [[goog.crypt :as crypt]
                [goog.crypt.Sha1]
-               [reagent.format :as rf]]))
+               [reagent.format :as rfmt]]))
   #?(:clj (:import
             [java.lang Byte Integer]
             [java.nio ByteBuffer]
@@ -352,7 +352,7 @@
            (locking dot-counter
              (when (zero? (rem old-count counts-per-row))
                (print ( #?(:clj format)
-                        #?(:cljs rf/format)
+                        #?(:cljs rfmt/format)
                         "%10d " old-count))
                (flush))
              (when (zero? (rem old-count decimation))
@@ -387,7 +387,7 @@
           (let [result# (do ~@body)]
             (newline) (println (
                                  #?(:clj format)
-                                 #?(:cljs rf/format)
+                                 #?(:cljs rfmt/format)
                                  "%10d total" @dot-counter))
             result#)))
 

@@ -11,7 +11,7 @@
     [schema.core :as s]
     [clojure.core :as cc]
     [clojure.string :as str]
-    [tupelo.core :as t]
+    [tupelo.core :as t :refer [spy spyx spyx-pretty let-spy forv]]
     [tupelo.char :as char]
     #?(:clj [clojure.java.io :as io]))
   #?(:clj
@@ -277,5 +277,51 @@
      [str-val :- s/Str]
      (io/input-stream
        (.getBytes str-val StandardCharsets/UTF_8))))
+
+(s/defn pad-left :- s/Str
+  "Pads a string on the left until it is at least N chars in size"
+  ([str-val :- s/Str
+    N :- s/Int] (pad-left str-val N \space))
+  ([str-val :- s/Str
+    N :- s/Int
+    pad-char]
+    (let [len    (count str-val)
+          needed (max 0 (- N len))
+          result (str (str/join (repeat needed pad-char)) str-val)]
+      result)))
+
+(s/defn pad-right :- s/Str
+  "Pads a string on the right until it is at least N chars in size"
+  ([str-val :- s/Str
+    N :- s/Int] (pad-right str-val N \space))
+  ([str-val :- s/Str
+    N :- s/Int
+    pad-char]
+    (let [len    (count str-val)
+          needed (max 0 (- N len))
+          result (str str-val (str/join (repeat needed pad-char)))]
+      result)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -376,3 +376,52 @@
   (is (apply ts/visible?                   (vec char/visible)))
   (is (apply ts/text?                      (vec char/text))) )
 
+(dotest
+  (is=  (ts/pad-left "a"     4) "   a")
+  (is=  (ts/pad-left "ab"    4) "  ab")
+  (is=  (ts/pad-left "abc"   4) " abc")
+  (is=  (ts/pad-left "abcd"  4) "abcd")
+  (is=  (ts/pad-left "abcde" 4) "abcde")
+
+  (is=  (ts/pad-right "a"     4) "a   ")
+  (is=  (ts/pad-right "ab"    4) "ab  ")
+  (is=  (ts/pad-right "abc"   4) "abc ")
+  (is=  (ts/pad-right "abcd"  4) "abcd")
+  (is=  (ts/pad-right "abcde" 4) "abcde")
+
+  (is=  (ts/pad-left "a"     4 \-) "---a")
+  (is=  (ts/pad-left "ab"    4 \-) "--ab")
+  (is=  (ts/pad-left "abc"   4 \-) "-abc")
+  (is=  (ts/pad-left "abcd"  4 \-) "abcd")
+  (is=  (ts/pad-left "abcde" 4 \-) "abcde")
+
+  (is=  (ts/pad-right "a"     4 \-) "a---")
+  (is=  (ts/pad-right "ab"    4 \-) "ab--")
+  (is=  (ts/pad-right "abc"   4 \-) "abc-")
+  (is=  (ts/pad-right "abcd"  4 \-) "abcd")
+  (is=  (ts/pad-right "abcde" 4 \-) "abcde")
+
+  )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

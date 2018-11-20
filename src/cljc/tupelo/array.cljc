@@ -1,12 +1,14 @@
 (ns tupelo.array
   (:require
     [clojure.set :as set]
+    [clojure.string :as str]
     [schema.core :as s]
-    #?@(:clj [[tupelo.core :as t :refer [spy spyx spyxx forv  glue grab vals->map]]
+    #?@(:clj [[tupelo.core :as t :refer [spy spyx spyxx forv  glue grab vals->map truthy?]]
               [tupelo.string :as ts]
               ])
-    #?@(:cljs [[tupelo.core :as t :refer [spy spyx spyxx forv glue grab vals->map] :include-macros true]
+    #?@(:cljs [[tupelo.core :as t :refer [spy spyx spyxx forv glue grab vals->map truthy?] :include-macros true]
                [tupelo.string :as ts :include-macros true]
+               [reagent.format :as rfmt]
                ])
     ))
 
@@ -197,7 +199,7 @@
         result (forv [ii (range nrows)]
                  (let [curr-row (row-get orig ii)
                        new-val  (nth new-col ii)
-                       new-row  (replace-at curr-row jj new-val)]
+                       new-row  (t/replace-at curr-row jj new-val)]
                    new-row))]
     result))
 
@@ -304,14 +306,34 @@
   (assert (pos? (count arrays)))
   (let [nrow-vals (mapv num-rows arrays)]
     (assert (apply = nrow-vals)))
-  (forv [ii (range (num-rows (xfirst arrays)))]
+  (forv [ii (range (num-rows (t/xfirst arrays)))]
     (apply glue (mapv #(row-get % ii) arrays))))
 
-(s/defn toString :- s/Str
+(s/defn array->str :- s/Str
   [arr :- Array]
-  (with-out-str
-    (dotimes [ii (num-rows arr)]
-      (dotimes [jj (num-cols arr)]
-        (print (format "%8s" (elem-get arr ii jj))))
-      (newline))))
+  (let [result (str/join
+                 (flatten
+                   (for [ii (range (num-rows arr))]
+                     (t/append
+                       (for [jj (range (num-cols arr))]
+                         (let [val (str (elem-get arr ii jj))]
+                           (ts/pad-left val 8)))
+                       \newline))))]
+    result ))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
