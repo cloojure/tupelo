@@ -90,31 +90,15 @@
     (+ signed-byte 256)
     signed-byte))
 
-(s/defn unsigned->byte-array
-  "Converts a vector of unsigned int values into a byte array."
-  [unsigned-bytes :- [s/Int]]
-  (#?(:clj byte-array)
-   #?(:cljs into-array)
-    (for [unsigned-val unsigned-bytes]
-      (byte-unsigned->signed unsigned-val))))
+(s/defn bytes-unsigned->signed
+  "Converts a vector of unsigned byte values [0..255] into one of signed byte values [-128..127]"
+  [byte-vals]
+  (mapv byte-unsigned->signed byte-vals ))
 
-;(s/defn byte-array->hex-str :- s/Str
-;  "Converts a vector of bytes to a hex string, where each byte becomes 2 hex digits."
-;  [byte-arr]
-;  #?(:clj (let [result (str/join
-;                         (for [byte-val byte-arr]
-;                           (let [int-val (Byte/toUnsignedInt byte-val)]
-;                             (when-not (<= 0 int-val 255)
-;                               (throw (ex-info "byte-array->hex-str: value out of range" int-val)))
-;                             (format "%02x" int-val))))]
-;             result))
-;  #?(:cljs (do
-;             (doseq [byte-val byte-arr]
-;               (let [int-val (int byte-val)]
-;                 (when-not (<= 0 int-val 255)
-;                   (throw (ex-info "byte-array->hex-str: value out of range" int-val)))))
-;             (crypt/byteArrayToHex byte-arr))) ; NOTE: requires unsigned vals [0..255]
-;  )
+(s/defn bytes-signed->unsigned
+  "Converts a vector of signed byte values [-128..127] into one of unsigned byte values [0..255] "
+  [byte-vals]
+  (mapv byte-signed->unsigned byte-vals ))
 
 (def hex-chars [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f])
 (s/defn unsigned-byte->hex :- s/Str
@@ -135,12 +119,12 @@
   [signed-byte]
   (-> signed-byte byte-signed->unsigned unsigned-byte->hex))
 
-(s/defn unsigned-bytes->hex-str :- s/Str
+(s/defn bytes-unsigned->hex-str :- s/Str
   "Converts a sequence of unsigned bytes [0..255] to a hex string, where each byte becomes 2 hex digits."
   [unsigned-bytes :- [s/Int]]
   (str/join (map unsigned-byte->hex unsigned-bytes)))
 
-(s/defn signed-bytes->hex-str :- s/Str
+(s/defn bytes-signed->hex-str :- s/Str
   "Converts a sequence of signed bytes [-128..127] to a hex string, where each byte becomes 2 hex digits."
   [signed-bytes :- [s/Int]]
   (str/join (map signed-byte->hex signed-bytes)))
@@ -151,7 +135,7 @@
   [str-val :- s/Str]
   (let [unsigned-bytes (mapv t/char->int (t/str->chars str-val))
         byte-arr       (do
-                         #?(:clj (byte-array (mapv byte-unsigned->signed unsigned-bytes)))
+                         #?(:clj (byte-array (bytes-unsigned->signed unsigned-bytes)))
                          #?(:cljs (into-array unsigned-bytes)))]
     byte-arr))
 
@@ -165,7 +149,7 @@
            (.reset sha-1-instance)
            (.update sha-1-instance byte-arr)
            (let [bytes      (vec (.digest sha-1-instance))
-                 hex-result (signed-bytes->hex-str bytes)]
+                 hex-result (bytes-signed->hex-str bytes)]
              hex-result))))))
 #?(:cljs
    (s/defn str->sha ; modeled after reagent-utils reagent.crypt
@@ -174,7 +158,7 @@
        (let [byte-arr (str->byte-array str-val)]
          (.update sha-1-instance byte-arr))
        (let [bytes      (vec (.digest sha-1-instance))
-             hex-result (unsigned-bytes->hex-str bytes)]
+             hex-result (bytes-unsigned->hex-str bytes)]
          hex-result))))
 
 ;#?(:clj  ; #todo old way; delete?
@@ -204,7 +188,7 @@
 ;             (let [bytes (.digest sha-1-instance)]
 ;               (signed-bytes->hex-str (vec bytes)))))))))
 
-   (defn uuid->sha1
+   (defn uuid->sha
      "Returns the SHA-1 hex string for a UUID's string representation"
      [uuid]
      (when-not (uuid? uuid)
@@ -220,7 +204,7 @@
     Clojure:         (clj-uuid/v1)
     ClojureScript:   (cljs.core/random-uuid)  "
   []
-  (uuid->sha1
+  (uuid->sha
     #?(:clj (clj-uuid/v1))
     #?(:cljs (random-uuid)) ))
 

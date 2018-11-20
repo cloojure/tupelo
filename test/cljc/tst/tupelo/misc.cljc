@@ -84,15 +84,16 @@
 (dotest
   (is= (misc/str->sha "abc") "a9993e364706816aba3e25717850c26c9cd0d89d")
   (is= (misc/str->sha "abd") "cb4cc28df0fdbe0ecf9d9662e294b118092a5735")
+  (is= (misc/str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d")
 
   (let [unsigned-vals [0 15 16 240 255]
-        signed-vals (mapv misc/byte-unsigned->signed unsigned-vals )
-        unsigned-vals-2 (mapv misc/byte-signed->unsigned signed-vals)]
+        signed-vals (misc/bytes-unsigned->signed unsigned-vals )
+        unsigned-vals-2 (misc/bytes-signed->unsigned signed-vals)]
     (is= unsigned-vals unsigned-vals-2)
     (is= signed-vals [0 15 16 -16 -1])
     (is= "000f10f0ff"
-      (misc/unsigned-bytes->hex-str unsigned-vals)
-      (misc/signed-bytes->hex-str signed-vals) )
+      (misc/bytes-unsigned->hex-str unsigned-vals)
+      (misc/bytes-signed->hex-str signed-vals) )
 
     #?(:cljs
        (do
@@ -106,27 +107,26 @@
 
   (let [vals (range 32)]
     (is=
-      (misc/unsigned-bytes->hex-str vals)
-      (misc/signed-bytes->hex-str vals)
+      (misc/bytes-unsigned->hex-str vals)
+      (misc/bytes-signed->hex-str vals)
       (str
         "00" "01" "02" "03" "04" "05" "06" "07" "08" "09" "0a" "0b" "0c" "0d" "0e" "0f"
         "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "1a" "1b" "1c" "1d" "1e" "1f")))
 
   (let [unsigned-vals (range (- 256 16) 256)
-        signed-vals (mapv misc/byte-unsigned->signed unsigned-vals ) ]
-    (is= unsigned-vals (mapv misc/byte-signed->unsigned signed-vals))
+        signed-vals (misc/bytes-unsigned->signed unsigned-vals ) ]
+    (is= unsigned-vals (misc/bytes-signed->unsigned signed-vals))
     (is=
-      (misc/unsigned-bytes->hex-str unsigned-vals)
+      (misc/bytes-unsigned->hex-str unsigned-vals)
       (str "f0" "f1" "f2" "f3" "f4" "f5" "f6" "f7" "f8" "f9" "fa" "fb" "fc" "fd" "fe" "ff")))
 
   (let [uuid-val #uuid "0b37e120-2c65-11e7-aa8d-91b7120fbbd1"] ; tagged-literal literal for UUID type
-    #?(:clj (do
-              (is= (class uuid-val) java.util.UUID)
-              (is= (pr-str uuid-val) "#uuid \"0b37e120-2c65-11e7-aa8d-91b7120fbbd1\"")))
-
+    (is (uuid? uuid-val))
     (is= uuid-val #uuid "0b37e120-2c65-11e7-aa8d-91b7120fbbd1")
-    (is= (misc/uuid->sha1 uuid-val)  "03a49d4729c971a0dc8ddf8d8847290416ad58d2")
-    (is= (misc/str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d")) )
+    (is= (pr-str uuid-val) "#uuid \"0b37e120-2c65-11e7-aa8d-91b7120fbbd1\"")
+    (is= (type uuid-val) (do #?(:clj java.util.UUID)
+                              #?(:cljs cljs.core/UUID)))
+    (is= (misc/uuid->sha uuid-val) "03a49d4729c971a0dc8ddf8d8847290416ad58d2")))
 
 #?(:clj
    (do
