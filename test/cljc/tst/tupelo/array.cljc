@@ -35,6 +35,19 @@
     (is (every? #(= :a %) (forv [ii (range (tar/num-rows a34))
                                  jj (range (tar/num-cols a34))]
                             (tar/elem-get a34 ii jj)))))
+  )
+
+#?(:clj (do
+(dotest
+  (let [a34  (tar/create 3 4 :a)
+        a34f (flatten a34)]
+    (is= 3 (count a34) (tar/num-rows a34))
+    (is= 4 (count (a34 0)) (tar/num-cols a34))
+    (is= 12 (count a34f))
+    (is (every? #(= :a %) a34f))
+    (is (every? #(= :a %) (forv [ii (range (tar/num-rows a34))
+                                 jj (range (tar/num-cols a34))]
+                            (tar/elem-get a34 ii jj)))))
 
   (let [a34  (tar/create 3 4)
         a34f (flatten a34)]
@@ -128,7 +141,6 @@
     (is= target-rot-left-1 (-> target (tar/rot-right) (tar/rot-right) (tar/rot-right)))
     (is= target            (-> target (tar/rot-right) (tar/rot-right) (tar/rot-right) (tar/rot-right)))))
 
-#?(:clj (do
 (dotest
   (let [demo  [[00 01 02 03]
                [10 11 12 13]
