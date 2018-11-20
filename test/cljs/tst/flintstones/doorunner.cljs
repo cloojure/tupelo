@@ -16,6 +16,7 @@
     [tst.flintstones.bambam]
 
     [tst.tupelo._bootstrap]
+    [tst.tupelo.array]
     [tst.tupelo.core]
     [tst.tupelo.set]
     [tst.tupelo.lazy]
@@ -38,6 +39,7 @@
   'tst.flintstones.bambam
 
   'tst.tupelo._bootstrap
+  'tst.tupelo.array
   'tst.tupelo.core
   'tst.tupelo.set
   'tst.tupelo.lazy

@@ -13,7 +13,6 @@
   "A 2-D array of values (a vector of vectors)."
   [[s/Any]] )
 
-#?(:clj (do
 (s/defn create :- Array
   "([nrows ncols] [nrows ncols init-val])
   Return a new Array of size=[nrows ncols] initialized to zero (or init-val if supplied)"
@@ -311,4 +310,3 @@
         (print (format "%8s" (elem-get arr ii jj))))
       (newline))))
 
-))

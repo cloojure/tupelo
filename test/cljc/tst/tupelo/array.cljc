@@ -6,16 +6,14 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.array
   (:require
-    [clojure.string :as str]
     [schema.test :as st]
+    [tupelo.array :as tar]
     #?@(:clj [[schema.core :as s]
-              [tupelo.array :as tar]
               [tupelo.test :refer [define-fixture dotest dotest-focus is isnt is= isnt= set= nonblank= testing throws?]]
               [tupelo.core :as t :refer [spy spyx spyxx forv]]
               [tupelo.string :as ts]
              ])
     #?@(:cljs [[schema.core :as s]
-               [tupelo.array :as tar]
                [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
                [tupelo.core :as t :refer [spy spyx spyxx forv] :include-macros true]
                [tupelo.string :as ts :include-macros true]
@@ -27,7 +25,6 @@
 
 ; #todo restore this???  (st/use-fixtures :once st/validate-schemas)
 
-#?(:clj (do
 (dotest
   (let [a34  (tar/create 3 4 :a)
         a34f (flatten a34)]
@@ -99,11 +96,11 @@
     (is= (tar/col-get target 3) [03 13 23])
 
     (is= (tar/to-rowwise-data target) [00 01 02 03
-                                   10 11 12 13
-                                   20 21 22 23])
+                                       10 11 12 13
+                                       20 21 22 23])
     (is= (-> target (tar/transpose) (tar/to-colwise-data)) [00 01 02 03
-                                                10 11 12 13
-                                                20 21 22 23])
+                                                            10 11 12 13
+                                                            20 21 22 23])
 
     (is= target-rows-vec (tar/to-rowwise-data target))
     (is= target-cols-vec (tar/to-colwise-data target))
@@ -131,6 +128,7 @@
     (is= target-rot-left-1 (-> target (tar/rot-right) (tar/rot-right) (tar/rot-right)))
     (is= target            (-> target (tar/rot-right) (tar/rot-right) (tar/rot-right) (tar/rot-right)))))
 
+#?(:clj (do
 (dotest
   (let [demo  [[00 01 02 03]
                [10 11 12 13]
