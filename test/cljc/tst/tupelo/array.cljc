@@ -89,8 +89,7 @@
     (let [arr-val @a34
           str-val (tar/array->str arr-val)]
       (is (ts/equals-ignore-spacing? str-val
-            " 0    1    2    3    10   11   12   13    20   21   22   23"))
-      )
+            " 0    1    2    3    10   11   12   13    20   21   22   23")) )
 
     (is= (tar/row-get target 0) [00 01 02 03])
     (is= (tar/row-get target 1) [10 11 12 13])
