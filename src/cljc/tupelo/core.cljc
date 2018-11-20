@@ -978,8 +978,6 @@
         final-code `(let ~r1 ~@forms)]
     final-code))
 
-;-----------------------------------------------------------------------------
-
 (defmacro let-spy-pretty   ; #todo -> deprecated
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
    expressions, printing both the expression and its value to stdout. Returns the value of the
@@ -996,6 +994,20 @@
         r1    (vec (mapcat  fmt-pair pairs ))
         final-code  `(let ~r1 ~@forms ) ]
     final-code ))
+
+(defmacro spyxx
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expression, printing both the expression, its type, and its value to stdout, then returns the value."
+  [expr]
+  `(let [spy-val#    ~expr
+         type-name# (if-cljs
+                      (type spy-val#)
+                      (.getName (class spy-val#)))]
+     (when *spy-enabled*
+       (println (str (spy-indent-spaces) '~expr " => <#" type-name# " " (pr-str spy-val#) ">")))
+     spy-val#))
+
+;-----------------------------------------------------------------------------
 
 (defmacro let-some
   "Threads forms as with `when-some`, but allow more than 1 pair of binding forms."
@@ -2238,18 +2250,6 @@
               '[clojure.spec.gen.alpha :as gen]
               '[clojure.spec.test.alpha :as stest]))
 
-          (defmacro spyxx
-            "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-             expression, printing both the expression, its type, and its value to stdout, then returns the value."
-            [expr]
-            `(let [spy-val#    ~expr
-                   class-name# (if-cljs
-                                 (-> spy-val# type)
-                                 (-> spy-val# class .getName))]
-               (when *spy-enabled*
-                 (println (str (spy-indent-spaces) '~expr " => <#" class-name# " " (pr-str spy-val#) ">")))
-               spy-val#))
-
 
           ; #todo Need safe versions of:
           ; #todo    + - * /  (others?)  (& :strict :safe reassignments)
@@ -2419,9 +2419,7 @@
 ;   be used without namespace qualification."
 ;  [& args]
 ;  (refer 'tupelo.core :only
-;   '[spy spyx spyx-pretty spyxx
-;     let-spy let-spy-pretty
-;     with-spy-indent with-spy-enabled check-spy-enabled
+;   '[
 ;     not-nil? not-empty? has-some? has-none?
 ;
 ;     forv map-let* map-let

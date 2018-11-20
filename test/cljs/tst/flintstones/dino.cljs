@@ -3,9 +3,10 @@
     [tupelo.test-cljs :refer [dotest is isnt is= isnt= testing define-fixture]]
     [dinoPhony] ))
 
-(define-fixture :each
-  {:enter (fn [ctx] (println "*** TEST EACH *** - enter ctx=" ctx))
-   :leave (fn [ctx] (println "*** TEST EACH *** - leave ctx=" ctx))})
+; #todo fix this
+;(define-fixture :each
+;  {:enter (fn [ctx] (println "*** TEST EACH *** - enter ctx=" ctx))
+;   :leave (fn [ctx] (println "*** TEST EACH *** - leave ctx=" ctx))})
 
 (dotest (is= 5 (+ 2 3)))
 ; (deftest t-will-fail (is (= 95 (+ 2 3))))

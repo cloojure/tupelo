@@ -6,29 +6,25 @@
 ;   software.
 (ns tst.tupelo.core
   (:require
-    [clojure.core.async :as ca]
     [clojure.string :as str]
+    [tupelo.string :as ts]
     #?@(:clj [
-              [schema.core :as s]
-              [tupelo.test   :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+              [tupelo.test   :refer [define-fixture deftest dotest is isnt is= isnt= set= nonblank= testing throws?]]
               [tupelo.core :as t :refer [spy spyx spyxx] ]
-              [tupelo.schema :as tsk]
-              [tupelo.string :as ts]
              ])
     #?@(:cljs [
-               [schema.core :as s]
-               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+               [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= set= nonblank= testing throws?]]
                [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
-               [tupelo.schema :as tsk]
                [tupelo.string :as ts :include-macros true]
               ])
   ))
 
 #?(:cljs (enable-console-print!))
 
-(define-fixture :once
-     {:enter (fn [ctx] (println "*** TEST ONCE *** - enter "))
-      :leave (fn [ctx] (println "*** TEST ONCE *** - leave "))})
+; #todo fix this
+;(define-fixture :once
+;     {:enter (fn [ctx] (println "*** TEST ONCE *** - enter "))
+;      :leave (fn [ctx] (println "*** TEST ONCE *** - leave "))})
 ;--------------------------------------------------------------------------------------------------
 
 (dotest
@@ -37,6 +33,7 @@
 
   (is (t/truthy? true))
   (is (t/truthy? 5))
+  (is (t/truthy? nil))
   (is (t/falsey? false))
   (is (t/falsey? nil)))
 
@@ -2328,6 +2325,22 @@
   (is (t/set-match? #{#{:* 2 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
   (is (t/set-match? #{#{1 :* 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
   (is (t/set-match? #{#{1 2 :*} #{:* 5 6}} #{#{1 2 3} #{4 5 6}})) )
+
+(deftest t-2332
+  (is true)
+  (spyx "abc")
+  (spyx (type "abc"))
+  (spyxx "abc")
+  (spyx 42)
+  (spyx (type 42))
+  (spyxx 42)
+  (spyx {:a 1})
+  (spyx (type {:a 1}))
+  (spyxx {:a 1})
+  (is false)
+  (is true)
+  )
+
 
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff

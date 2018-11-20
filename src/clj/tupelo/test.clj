@@ -16,7 +16,8 @@
 (defn use-fixtures [& args] (apply ct/use-fixtures args))
 (defmacro testing [& forms] `(ct/testing ~@forms))
 
-(defmacro define-fixture ; #todo maybe (define-fixture ...)
+; #todo fix this
+(defmacro define-fixture
   [mode interceptor-map]
   (assert (contains? #{:each :once} mode))
   (assert (map? interceptor-map))
@@ -24,8 +25,10 @@
         leave-fn  (:leave interceptor-map) ; #todo grab
         ctx       (meta &form)]
     `(ct/use-fixtures ~mode
-       {:before #(~enter-fn ~ctx)
-        :after  #(~leave-fn ~ctx)})))
+       (fn fixture-fn [tgt-fn]
+         (~enter-fn ~ctx)
+         (tgt-fn)
+         (~leave-fn ~ctx)))))
 
 ; #todo maybe def-anon-test, or anon-test
 (defmacro deftest ; #todo README & tests
