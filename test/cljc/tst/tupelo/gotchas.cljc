@@ -5,64 +5,73 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.gotchas
-  (:use tupelo.test)
   (:require
-    #?@(:clj [[clojure.set :as set]
-              [clojure.test.check.generators :as gen]
+    [clojure.set :as set]
+    [tupelo.string :as ts]
+    #?@(:clj [[clojure.test.check.generators :as gen]
               [clojure.test.check.properties :as prop]
-              [tupelo.core :as t]
-              [tupelo.string :as ts]
-              ])))
+              [tupelo.test :as tt :refer [define-fixture dotest dotest-focus is isnt is= isnt= set= nonblank= testing throws? ]]
+              [tupelo.core :as t :refer [spy spyx spyxx]]
+              ])
+    #?@(:cljs [[tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+               [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
+               [tupelo.string :as ts :include-macros true]
+               ])))
+
 ; #todo add example for duplicates in clojure.core.combo
 
-#?(:clj (do         ; #todo make work for clj/cljs
 
 ; rest/next too loose
 (dotest
   ; Expected, intuitive behavior
-  (throws? (seq  5))
-  (= [5]   (vector 5))
-  (throws? (vec  5))
-  (= [5]   (list 5))
+  (throws? (seq 5))
+  (= [5] (vector 5))
+  (throws? (vec 5))
+  (= [5] (list 5))
   (throws? (apply list 5))
   (throws? (first 5))
   (throws? (second 5))
   (throws? (rest 5))
-  (throws? (next 5))
+  (throws? (next 5)) )
 
+#?(:clj (do         ; #todo make work for clj/cljs
+(dotest
   ; Unexpected, non-intuitive behavior
-  (is= nil   (seq  nil)) ; should throw
-  (is= [nil] (vector  nil))
-  (is= []    (vec  nil)) ; should throw
-  (is= [nil] (list  nil))
-  (is= []    (apply list nil))
-  (is= nil   (first nil)) ; should throw
-  (is= nil   (second nil)) ; should throw
-  (is= []    (rest nil)) ; should throw
-  (is= nil   (next nil)) ; should throw
+  (is= nil (seq nil)) ; should throw
+  (is= [nil] (vector nil))
+  (is= [] (vec nil)) ; should throw
+  (is= [nil] (list nil))
+  (is= [] (apply list nil))
+  (is= nil (first nil)) ; should throw
+  (is= nil (second nil)) ; should throw
+  (is= [] (rest nil)) ; should throw
+  (is= nil (next nil))) ; should throw
 
+(dotest
   ; Unexpected, non-intuitive behavior
-  (is= nil   (seq  [])) ; should be []
-  (is= []    (vec  []))
-  (is= [[]]  (list  []))
-  (is= []    (apply list []))
-  (is= nil   (first [])) ; should throw
-  (is= nil   (second [])) ; should throw
-  (is= []    (rest [])) ; should throw
-  (is= nil   (next [])) ; should throw
+  (is= nil (seq [])) ; should be []
+  (is= [] (vec []))
+  (is= [[]] (list []))
+  (is= [] (apply list []))
+  (is= nil (first [])) ; should throw
+  (is= nil (second [])) ; should throw
+  (is= [] (rest [])) ; should throw
+  (is= nil (next []))) ; should throw
 
-  (is= [5]   (seq  [5]))
-  (is= [5]   (vec  [5]))
-  (is= [5 6] (vec  [5 6]))
-  (is= [[5]] (list  [5]))
-  (is= [5]   (apply list [5]))
+(dotest
+  (is= [5] (seq [5]))
+  (is= [5] (vec [5]))
+  (is= [5 6] (vec [5 6]))
+  (is= [[5]] (list [5]))
+  (is= [5] (apply list [5]))
   (is= [5 6] (apply list [5 6]))
   (is= [6 5] (into (list) [5 6])) ; accidentally reversed
-  (is= 5     (first [5]))
-  (is= nil   (second [5])) ; should throw
-  (is= []    (rest [5]))
-  (is= nil   (next [5])) ; should be []
+  (is= 5 (first [5]))
+  (is= nil (second [5])) ; should throw
+  (is= [] (rest [5]))
+  (is= nil (next [5]))) ; should be []
 
+(dotest
   ; Predictable bahavior
   (throws? (t/xfirst nil))
   (throws? (t/xsecond nil))
@@ -72,12 +81,10 @@
   (throws? (t/xsecond []))
   (throws? (t/xrest [])) ; drop first item or throw if not more
 
-  (is= 5   (t/xfirst [5]))
+  (is= 5 (t/xfirst [5]))
   (throws? (t/xsecond [5]))
-  (is= []  (t/xrest [5])) ; drop first item or throw if not more
-  (is= [5] (t/xrest [4 5]))
-
-)
+  (is= [] (t/xrest [5])) ; drop first item or throw if not more
+  (is= [5] (t/xrest [4 5])))
 
 ; vec & (apply list ...) too loose
 (dotest
@@ -104,8 +111,7 @@
 
   (is= [3 2 1] (into (list) [1 2 3]))
   (is= [3 2 1] (into (list 1) [2 3]))
-  (is= [3 1 2] (into (list 1 2) [3]))
-)
+  (is= [3 1 2] (into (list 1 2) [3])) )
 
 ; Clojure is consistent & symmetric for if/if-not, when/when-not, every?/not-every?
 ; Clojure is inconsistent & broken for
@@ -216,44 +222,46 @@
   (is (every? even? []))
   (is (every? odd? [])))
 
-
-; samples for dospec & check-isnt
-;-----------------------------------------------------------------------------
-(dospec 9
-  (prop/for-all [val (gen/vector gen/any)]
-    (is (= (not (empty? val)) (t/not-empty? val)))
-    (isnt= (empty? val) (empty val))))
-(t/when-clojure-1-9-plus
-  (dotest
-    (check-isnt 33
-      (prop/for-all [val (gen/vector gen/int)]
-        (= (any? val) (not-any? odd? val))))))
-
-;-----------------------------------------------------------------------------
-; quote surprises
-(dotest
-  (is= 'quote (first ''hello)) ; 2 single quotes
-  (isnt=  '{:a 1 :b [1 2]} '{:a 1 :b '[1 2]})
-  (is=    '{:a 1 :b [1 2]} `{:a 1 :b [1 2]})
-  (is=    '{:a 1 :b [1 2]} (quote {:a 1 :b [1 2]})))
-
-;-----------------------------------------------------------------------------
-; record-map equality fails
-(defrecord SampleRec [a b])
-(dotest
-  (let [sampleRec (->SampleRec 1 2)]
-    (isnt  (= sampleRec {:a 1 :b 2})) ; fails for clojure.core/= "
-    (is (t/val= sampleRec {:a 1 :b 2})))) ; works for tupelo.core/val=
-
-;-----------------------------------------------------------------------------
-; clojure.set has no type-checking
-(dotest
-  (is= [:z :y :x  1  2  3] (set/union '(1 2 3) '(:x :y :z)))
-  (is= [ 1  2  3 :x :y :z] (set/union  [1 2 3]  [:x :y :z]))
-  (is= #{1  2  3 :x :y :z} (set/union #{1 2 3} #{:x :y :z}))
-)
-
 ))
+
+#?(:clj (do
+          ; samples for dospec & check-isnt
+          ;-----------------------------------------------------------------------------
+          (tt/dospec 9
+            (prop/for-all [val (gen/vector gen/any)]
+              (is (= (not (empty? val)) (t/not-empty? val)))
+              (isnt= (empty? val) (empty val))))
+          (t/when-clojure-1-9-plus
+            (dotest
+              (tt/check-isnt 33
+                (prop/for-all [val (gen/vector gen/int)]
+                  (= (any? val) (not-any? odd? val))))))
+
+          ;-----------------------------------------------------------------------------
+          ; quote surprises
+          (dotest
+            (is= 'quote (first ''hello)) ; 2 single quotes
+            (isnt=  '{:a 1 :b [1 2]} '{:a 1 :b '[1 2]})
+            (is=    '{:a 1 :b [1 2]} `{:a 1 :b [1 2]})
+            (is=    '{:a 1 :b [1 2]} (quote {:a 1 :b [1 2]})))
+
+          ;-----------------------------------------------------------------------------
+          ; record-map equality fails
+          (defrecord SampleRec [a b])
+          (dotest
+            (let [sampleRec (->SampleRec 1 2)]
+              (isnt  (= sampleRec {:a 1 :b 2})) ; fails for clojure.core/= "
+              (is (t/val= sampleRec {:a 1 :b 2})))) ; works for tupelo.core/val=
+
+          ;-----------------------------------------------------------------------------
+          ; clojure.set has no type-checking
+          (dotest
+            (is= [:z :y :x  1  2  3] (set/union '(1 2 3) '(:x :y :z)))
+            (is= [ 1  2  3 :x :y :z] (set/union  [1 2 3]  [:x :y :z]))
+            (is= #{1  2  3 :x :y :z} (set/union #{1 2 3} #{:x :y :z}))
+            )
+          ))
+
 
 #?(:cljs
    (do
