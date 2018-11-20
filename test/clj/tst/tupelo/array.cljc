@@ -1,17 +1,31 @@
+;   Copyright (c) Alan Thompson. All rights reserved.
+;   The use and distribution terms for this software are covered by the Eclipse Public
+;   License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the
+;   file epl-v10.html at the root of this distribution.  By using this software in any
+;   fashion, you are agreeing to be bound by the terms of this license.
+;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.array
-  #?@(:clj [
-  (:use tupelo.array
-        tupelo.test)
   (:require
+    [clojure.string :as str]
     [schema.test :as st]
-    [tupelo.array :as tar]
-    [tupelo.misc :as tm]
-    [tupelo.core :as i]
-    [tupelo.string :as ts]
-    [clojure.string :as str])
-            ]) )
+    #?@(:clj [[schema.core :as s]
+              [tupelo.array :as tar]
+              [tupelo.test :refer [define-fixture dotest dotest-focus is isnt is= isnt= set= nonblank= testing throws?]]
+              [tupelo.core :as t :refer [spy spyx spyxx forv]]
+              [tupelo.string :as ts]
+             ])
+    #?@(:cljs [[schema.core :as s]
+               [tupelo.array :as tar]
+               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+               [tupelo.core :as t :refer [spy spyx spyxx forv] :include-macros true]
+               [tupelo.string :as ts :include-macros true]
+               [goog.crypt :as crypt]
+               [goog.crypt.Sha1]
+               [reagent.format :as rf]
+              ])
+  ))
 
-(use-fixtures :once st/validate-schemas)
+; #todo restore this???  (st/use-fixtures :once st/validate-schemas)
 
 #?(:clj (do
 (dotest
@@ -21,7 +35,7 @@
     (is= 4 (count (a34 0)) (tar/num-cols a34))
     (is= 12 (count a34f))
     (is (every? #(= :a %) a34f))
-    (is (every? #(= :a %) (i/forv [ii (range (tar/num-rows a34))
+    (is (every? #(= :a %) (forv [ii (range (tar/num-rows a34))
                                  jj (range (tar/num-cols a34))]
                             (tar/elem-get a34 ii jj)))))
 
@@ -31,7 +45,7 @@
     (is= 4 (count (a34 0)) (tar/num-cols a34))
     (is= 12 (count a34f))
     (is (every? nil? a34f))
-    (is (every? nil? (i/forv [ii (range (tar/num-rows a34))
+    (is (every? nil? (forv [ii (range (tar/num-rows a34))
                             jj (range (tar/num-cols a34))]
                        (tar/elem-get a34 ii jj)))))
 
@@ -84,23 +98,23 @@
     (is= (tar/col-get target 2) [02 12 22])
     (is= (tar/col-get target 3) [03 13 23])
 
-    (is= (array->row-data target) [00 01 02 03
+    (is= (tar/to-rowwise-data target) [00 01 02 03
                                    10 11 12 13
                                    20 21 22 23])
-    (is= (-> target (transpose) (array->col-data)) [00 01 02 03
-                                                    10 11 12 13
-                                                    20 21 22 23])
+    (is= (-> target (tar/transpose) (tar/to-colwise-data)) [00 01 02 03
+                                                10 11 12 13
+                                                20 21 22 23])
 
-    (is= target-rows-vec (array->row-data target))
-    (is= target-cols-vec (array->col-data target))
-    (is= target (row-data->array 3 4 target-rows-vec))
-    (is= target (col-data->array 3 4 target-cols-vec))
+    (is= target-rows-vec (tar/to-rowwise-data target))
+    (is= target-cols-vec (tar/to-colwise-data target))
+    (is= target (tar/from-rowwise-data 3 4 target-rows-vec))
+    (is= target (tar/from-colwise-data 3 4 target-cols-vec))
     (is= target (->> target
-                  (array->row-data)
-                  (row-data->array 3 4)))
+                  (tar/to-rowwise-data)
+                  (tar/from-rowwise-data 3 4)))
     (is= target (->> target
-                  (array->col-data)
-                  (col-data->array 3 4)))
+                  (tar/to-colwise-data)
+                  (tar/from-colwise-data 3 4)))
 
     (is= target @a34)
     (is= target-flip-ud (tar/flip-ud target))
@@ -122,66 +136,66 @@
                [10 11 12 13]
                [20 21 22 23]]
       ]
-    (throws? IllegalArgumentException (rows-get demo 0 0))
-    (is= (rows-get demo 0 1) [[00 01 02 03]])
-    (is= (rows-get demo 0 2) [[00 01 02 03]
-                              [10 11 12 13]])
-    (is= (rows-get demo 0 3) [[00 01 02 03]
-                              [10 11 12 13]
-                              [20 21 22 23]])
-    (is= (rows-get demo 1 3) [[10 11 12 13]
-                              [20 21 22 23]])
-    (is= (rows-get demo 2 3) [[20 21 22 23]])
-    (throws? IllegalArgumentException (rows-get demo 3 3))
-
-    (is= demo (rows-get demo))
-    (is= (rows-get demo [2 0 1]) [[20 21 22 23]
-                                  [00 01 02 03]
+    (throws? (tar/rows-get demo 0 0))
+    (is= (tar/rows-get demo 0 1) [[00 01 02 03]])
+    (is= (tar/rows-get demo 0 2) [[00 01 02 03]
                                   [10 11 12 13]])
-    (is= demo (rows->array [[00 01 02 03]
-                            [10 11 12 13]
-                            [20 21 22 23]]))
-    (throws? (rows->array [[00 01 02 03]
-                           [10 11 12   ]
-                           [20 21 22 23]]))))
+    (is= (tar/rows-get demo 0 3) [[00 01 02 03]
+                                  [10 11 12 13]
+                                  [20 21 22 23]])
+    (is= (tar/rows-get demo 1 3) [[10 11 12 13]
+                                  [20 21 22 23]])
+    (is= (tar/rows-get demo 2 3) [[20 21 22 23]])
+    (throws? (tar/rows-get demo 3 3))
+
+    (is= demo (tar/rows-get demo))
+    (is= (tar/rows-get demo [2 0 1]) [[20 21 22 23]
+                                      [00 01 02 03]
+                                      [10 11 12 13]])
+    (is= demo (tar/rows->array [[00 01 02 03]
+                                [10 11 12 13]
+                                [20 21 22 23]]))
+    (throws? (tar/rows->array [[00 01 02 03]
+                               [10 11 12   ]
+                               [20 21 22 23]]))))
 
 (dotest
   (let [demo [[00 01 02 03]
               [10 11 12 13]
               [20 21 22 23]]
         ]
-    (throws? IllegalArgumentException (cols-get demo 0 0))
-    (is= (cols-get demo 0 1) [[00 10 20]])
-    (is= (cols-get demo 0 2) [[00 10 20]
-                              [01 11 21]])
-    (is= (cols-get demo 0 3) [[00 10 20]
-                              [01 11 21]
-                              [02 12 22]])
-    (is= (cols-get demo 0 4) [[00 10 20]
-                              [01 11 21]
-                              [02 12 22]
-                              [03 13 23]])
-    (is= (cols-get demo 1 4) [[01 11 21]
-                              [02 12 22]
-                              [03 13 23]])
-    (is= (cols-get demo 2 4) [[02 12 22]
-                              [03 13 23]])
-    (is= (cols-get demo 3 4) [[03 13 23]])
-    (throws? IllegalArgumentException (cols-get demo 4 4))
+    (throws? (tar/cols-get demo 0 0))
+    (is= (tar/cols-get demo 0 1) [[00 10 20]])
+    (is= (tar/cols-get demo 0 2) [[00 10 20]
+                                  [01 11 21]])
+    (is= (tar/cols-get demo 0 3) [[00 10 20]
+                                  [01 11 21]
+                                  [02 12 22]])
+    (is= (tar/cols-get demo 0 4) [[00 10 20]
+                                  [01 11 21]
+                                  [02 12 22]
+                                  [03 13 23]])
+    (is= (tar/cols-get demo 1 4) [[01 11 21]
+                                  [02 12 22]
+                                  [03 13 23]])
+    (is= (tar/cols-get demo 2 4) [[02 12 22]
+                                  [03 13 23]])
+    (is= (tar/cols-get demo 3 4) [[03 13 23]])
+    (throws? (tar/cols-get demo 4 4))
 
-    (is= (cols-get demo) (cols-get demo 0 4))
-    (is= (cols-get demo [2 0 3 1]) [[02 12 22]
-                                    [00 10 20]
-                                    [03 13 23]
-                                    [01 11 21]])
-    (is= demo (cols->array [[00 10 20]
-                            [01 11 21]
-                            [02 12 22]
-                            [03 13 23]]))
-    (throws? (cols->array [[00 10 20]
-                           [01 11 21]
-                           [02 12]
-                           [03 13 23]]))))
+    (is= (tar/cols-get demo) (tar/cols-get demo 0 4))
+    (is= (tar/cols-get demo [2 0 3 1]) [[02 12 22]
+                                        [00 10 20]
+                                        [03 13 23]
+                                        [01 11 21]])
+    (is= demo (tar/cols->array [[00 10 20]
+                                [01 11 21]
+                                [02 12 22]
+                                [03 13 23]]))
+    (throws? (tar/cols->array [[00 10 20]
+                               [01 11 21]
+                               [02 12]
+                               [03 13 23]]))))
 
 (dotest
   (is (tar/symmetric? [[1 2]

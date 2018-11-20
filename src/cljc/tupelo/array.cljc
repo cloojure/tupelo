@@ -5,7 +5,6 @@
             [clojure.set :as set]) ])
   )
 
-#?(:clj (do
 (def Vector
   "A 1-D array of values (a vector of vectors)."
   [s/Any] )
@@ -14,6 +13,7 @@
   "A 2-D array of values (a vector of vectors)."
   [[s/Any]] )
 
+#?(:clj (do
 (s/defn create :- Array
   "([nrows ncols] [nrows ncols init-val])
   Return a new Array of size=[nrows ncols] initialized to zero (or init-val if supplied)"
@@ -27,7 +27,7 @@
     (forv [ii (range nrows)]
       (vec (repeat ncols init-val)))))
 
-(s/defn row-data->array :- Array
+(s/defn from-rowwise-data :- Array
   "([nrows ncols rows-vec])
   Return a new Array of size=[nrows ncols] initialized from rows-vec."
   [nrows :- s/Int
@@ -38,7 +38,7 @@
   (mapv vec
     (partition ncols rows-vec)))
 
-(s/defn col-data->array :- Array
+(s/defn from-colwise-data :- Array
   "([nrows ncols cols-vec])
   Return a new Array of size=[nrows ncols] initialized from cols-vec."
   [nrows :- s/Int
@@ -71,7 +71,7 @@
     (assert (apply = nrows (mapv count col-vecs)))
     (dotimes [jj ncols]
       (assert sequential? (nth col-vecs jj)))
-    (col-data->array nrows ncols (apply glue col-vecs))))
+    (from-colwise-data nrows ncols (apply glue col-vecs))))
 
 (s/defn num-rows :- s/Int
   "Returns the number of rows of an Array."
@@ -162,10 +162,17 @@
       (row-get arr ii))))
 ; #todo need parallel rows-set
 
-(s/defn array->row-data
+(s/defn to-rowwise-data :- Vector
   "Returns the concatenation of all array rows."
   [arr :- Array]
   (apply glue arr))
+
+(s/defn to-colwise-data :- Vector
+  "Returns the concatenation of all array cols."
+  [arr :- Array]
+  (forv [jj (range (num-cols arr))
+         ii (range (num-rows arr)) ]
+    (elem-get arr ii jj)))
 
 (s/defn col-get :- Vector
   "Gets an Array col"
@@ -207,13 +214,6 @@
     (forv [jj (range low high)]
       (col-get arr jj))) )
 ; #todo need parallel cols-set
-
-(s/defn array->col-data :- Vector
-  "Returns the concatenation of all array cols."
-  [arr :- Array]
-  (forv [jj (range (num-cols arr))
-         ii (range (num-rows arr)) ]
-    (elem-get arr ii jj)))
 
 (s/defn transpose :- Array
   [orig :- Array]
