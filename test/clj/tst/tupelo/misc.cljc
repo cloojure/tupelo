@@ -81,13 +81,14 @@
   (is= [] (misc/find-pattern [9] [0 1 2 3])) )
 
 
-(dotest-focus
+(dotest
   (is= (misc/str->sha "abc") "a9993e364706816aba3e25717850c26c9cd0d89d")
   (is= (misc/str->sha "abd") "cb4cc28df0fdbe0ecf9d9662e294b118092a5735")
 
   (let [unsigned-vals [0 15 16 240 255]
-        signed-vals (mapv misc/byte-unsigned->signed unsigned-vals ) ]
-    (is= unsigned-vals (mapv misc/byte-signed->unsigned signed-vals))
+        signed-vals (mapv misc/byte-unsigned->signed unsigned-vals )
+        unsigned-vals-2 (mapv misc/byte-signed->unsigned signed-vals)]
+    (is= unsigned-vals unsigned-vals-2)
     (is= signed-vals [0 15 16 -16 -1])
     (is= "000f10f0ff"
       (misc/unsigned-bytes->hex-str unsigned-vals)
@@ -95,12 +96,13 @@
 
     #?(:cljs
        (do
-         (spyx (crypt/byteArrayToHex (into-array unsigned-vals))) ; ***** must unsigned bytes *****
+         (is= "000f10f0ff" (crypt/byteArrayToHex (into-array unsigned-vals))) ; ***** must be unsigned bytes *****
          (let [u (random-uuid)]
-           (spyxx u)
-           (spyxx (misc/uuid->str u)))))
-
-    )
+          ;(spyx u)
+           (is= cljs.core/UUID (type u))
+          ;(spyx (misc/uuid->sha1 u))
+           )))
+  )
 
   (let [vals (range 32)]
     (is=
@@ -123,7 +125,7 @@
               (is= (pr-str uuid-val) "#uuid \"0b37e120-2c65-11e7-aa8d-91b7120fbbd1\"")))
 
     (is= uuid-val #uuid "0b37e120-2c65-11e7-aa8d-91b7120fbbd1")
-    (is= (misc/uuid->str uuid-val) "e604d9bbcfb53cee6c3f305992c4a1531972b7a1")
+    (is= (misc/uuid->sha1 uuid-val)  "03a49d4729c971a0dc8ddf8d8847290416ad58d2")
     (is= (misc/str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d"))
 
   )

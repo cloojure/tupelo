@@ -18,7 +18,7 @@
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
     [tupelo.types :as tt]
-    #?@(:clj [[clj-uuid :as uuid]
+    #?@(:clj [[clj-uuid :as clj-uuid]
               [clojure.java.shell :as shell]])
     #?@(:cljs [[goog.crypt :as crypt]
                [goog.crypt.Sha1]
@@ -143,68 +143,99 @@
   [signed-bytes :- [s/Int]]
   (str/join (map signed-byte->hex signed-bytes)))
 
+
+; for ref:  (crypt/stringToUtf8ByteArray s)
+(s/defn str->byte-array
+  [str-val :- s/Str]
+  (let [unsigned-bytes (mapv t/char->int (t/str->chars str-val))
+        byte-arr       (do
+                         #?(:clj (byte-array (mapv byte-unsigned->signed unsigned-bytes)))
+                         #?(:cljs (into-array unsigned-bytes)))]
+    byte-arr))
+
 #?(:clj
    (def str->sha
      "Returns the SHA-1 hex string for a string"
      (let [sha-1-instance (MessageDigest/getInstance "SHA")]
        (s/fn str->sha :- s/Str
-         [str-arg :- s/Str]
-         (.reset sha-1-instance)
-         (doseq [ch str-arg]
-           (.update sha-1-instance (byte ch)))
-         (signed-bytes->hex-str (vec (.digest sha-1-instance)))))))
+         [str-val :- s/Str]
+         (let [byte-arr (str->byte-array str-val)]
+           (.reset sha-1-instance)
+           (.update sha-1-instance byte-arr)
+           (let [bytes      (vec (.digest sha-1-instance))
+                 hex-result (signed-bytes->hex-str bytes)]
+             hex-result))))))
 #?(:cljs
-   (do
-     (defn str->byte-array
-       [s]
-       (crypt/stringToUtf8ByteArray s))
+   (s/defn str->sha ; modeled after reagent-utils reagent.crypt
+     [str-val :- s/Str]
+     (let [sha-1-instance (goog.crypt.Sha1.)]
+       (let [byte-arr (str->byte-array str-val)]
+         (.update sha-1-instance byte-arr))
+       (let [bytes      (vec (.digest sha-1-instance))
+             hex-result (unsigned-bytes->hex-str bytes)]
+         hex-result))))
 
-     (s/defn str->sha ; modeled after reagent-utils reagent.crypt
-       [str-in :- s/Str]
-       (let [sha-1-instance (goog.crypt.Sha1.)]
-         (.update sha-1-instance (str->byte-array str-in))
-         (let [bytes (.digest sha-1-instance)]
-           (byte-array->hex-str bytes))))))
+;#?(:clj  ; #todo old way; delete?
+;   (do
+;     ;(s/defn long->byte-array
+;     ;  "Converts a Long into an array of bytes (big-endian)."
+;     ;  [arg]
+;     ;  (validate tt/long? arg)
+;     ;  (it-> (ByteBuffer/allocate Long/BYTES)
+;     ;    (.putLong it arg)
+;     ;    (.array it)))
+;
+;     (def uuid->str
+;       "Returns the SHA-1 hex string for a UUID string"
+;       (let [sha-1-instance (MessageDigest/getInstance "SHA")]
+;         (s/fn uuid->str :- s/Str
+;           [uuid :- java.util.UUID]
+;           (let [bytes-big    (long->byte-array (.getMostSignificantBits ^UUID uuid))
+;                 bytes-little (long->byte-array (.getLeastSignificantBits ^UUID uuid))
+;                 bytes-all-vec (into (vec bytes-big) (vec bytes-little))
+;                 bytes-all (byte-array bytes-all-vec)
+;                 ]
+;             (spyx (vec bytes-all-vec))
+;             (.reset sha-1-instance)
+;             (.update sha-1-instance bytes-big)
+;             (.update sha-1-instance bytes-little)
+;             (let [bytes (.digest sha-1-instance)]
+;               (signed-bytes->hex-str (vec bytes)))))))))
 
-#?(:clj
-   (do
-     (s/defn long->byte-array
-       "Converts a Long into an array of bytes (big-endian)."
-       [arg]
-       (validate tt/long? arg)
-       (it-> (ByteBuffer/allocate Long/BYTES)
-         (.putLong it arg)
-         (.array it)))
-
-     (def uuid->str
-       "Returns the SHA-1 hex string for a UUID"
-       (let [sha-1-instance (MessageDigest/getInstance "SHA")]
-         (s/fn uuid->str :- s/Str
-           [uuid :- java.util.UUID]
-           (let [bytes-big    (long->byte-array (.getMostSignificantBits ^UUID uuid))
-                 bytes-little (long->byte-array (.getLeastSignificantBits ^UUID uuid))]
-             (.reset sha-1-instance)
-             (.update sha-1-instance bytes-big)
-             (.update sha-1-instance bytes-little)
-             (let [bytes (.digest sha-1-instance)]
-               (signed-bytes->hex-str (vec bytes)))))))))
-#?(:cljs
-   (defn uuid->str
-     "Returns the SHA-1 hex string for a UUID"
-     [uuid-cljs]
-     (assert (= cljs.core/UUID (type uuid-cljs) ))
-     (let [ustr   (.-uuid uuid-cljs)
-           uchars (remove #(= \- %) (vec ustr))
-           u2     (str/join uchars)
-           usha   (str->sha u2)]
-       usha)))
+   (defn uuid->sha1
+     "Returns the SHA-1 hex string for a UUID's string representation"
+     [uuid]
+     (when-not (uuid? uuid)
+       (throw (ex-info "arg must be a uuid" (t/vals->map uuid))))
+     (let [uuid-str (do
+                      #?(:clj (str uuid))
+                      #?(:cljs (.-uuid uuid)))
+           usha     (str->sha uuid-str)]
+       usha))
 
 (s/defn sha-uuid :- s/Str
-  "Returns a string that is the SHA-1 hash of the `uuid/v1`."
+  "Returns a string that is the SHA-1 hash of the
+    Clojure:         (clj-uuid/v1)
+    ClojureScript:   (cljs.core/random-uuid)  "
   []
-  (uuid->str
-    #?(:clj (uuid/v1))
+  (uuid->sha1
+    #?(:clj (clj-uuid/v1))
     #?(:cljs (random-uuid)) ))
+
+(def HID s/Keyword) ; #todo find way to validate
+(s/defn new-hid :- HID
+  "Returns a new HexID"
+  []
+  (keyword (sha-uuid)))
+
+(s/defn hid? :- s/Bool
+  "Returns true if the arg is a legal HexID"
+  [arg]
+  (and (keyword? arg)
+    (let [name-str (kw->str arg)]
+      (and (ts/hex? name-str)
+        ; (= 40 (count name-str)) ; #todo make more robust re. with-debug-hid
+        ))))
 
 
 ;----- toptop -----------------------------------------------------------------------------
@@ -355,21 +386,6 @@
      ; #todo maybe move to tupelo.bytes ns
 
      ; ----- gogo -----------------------------------------------------------------------------
-
-     (def HID s/Keyword) ; #todo find way to validate
-     (s/defn new-hid :- HID
-       "Returns a new HexID"
-       []
-       (keyword (sha-uuid)))
-
-     (s/defn hid? :- s/Bool
-       "Returns true if the arg is a legal HexID"
-       [arg]
-       (and (keyword? arg)
-         (let [name-str (kw->str arg)]
-           (and (ts/hex? name-str)
-             ; (= 40 (count name-str)) ; #todo make more robust re. with-debug-hid
-             ))))
 
      (s/defn hid->wid :- s/Keyword
        "Uses an HID to look up a human-friendly Word-ID (WID) from an English dictionary.
