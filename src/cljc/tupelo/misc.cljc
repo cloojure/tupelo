@@ -14,7 +14,7 @@
   (:require
     [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.core :as t :refer [grab thru kw->str validate it-> spyx spyxx]]
+    [tupelo.core :as t :refer [grab thru kw->str validate it-> spyx spyxx vals->map]]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
     [tupelo.types :as tt]
@@ -35,8 +35,7 @@
   "Computes the factorial of N"
   [n :- s/Int]
   (when (neg? n)
-    (throw (IllegalArgumentException.
-             (str "factorial: N must be a non-negative integer=" n))))
+    (throw (ex-info "factorial: N must be a non-negative integer=" (vals->map n))))
   (if (zero? n)
     1
     (apply * (thru 1 n))))
@@ -67,54 +66,93 @@
                                (last coll)])]
         result))))
 
+(s/defn byte-unsigned->signed
+  "Converts an unsigned int value [0..255] into a signed byte [-128..127]."
+  [unsigned-int :- s/Int]
+  (when-not (int? unsigned-int)
+    (throw (ex-info "byte-unsigned->signed: value must be an int" (t/vals->map unsigned-int))))
+  (when-not (<= 0 unsigned-int 255)
+    (throw (ex-info "byte-unsigned->signed: value out of range" (t/vals->map unsigned-int))))
+  (if (< unsigned-int 128)
+    unsigned-int
+    (- unsigned-int 256)))
+
+(s/defn byte-signed->unsigned
+  "Converts a signed byte [-128..127] into an unsigned byte [0..255]."
+  [signed-byte :- s/Int]
+  (when-not (int? signed-byte)
+    (throw (ex-info "byte-signed->unsigned: value must be an int" (t/vals->map signed-byte))))
+  (when-not (<= -128 signed-byte 127)
+    (throw (ex-info "byte-signed->unsigned: value out of range" (t/vals->map signed-byte))))
+  (if (neg? signed-byte)
+    (+ signed-byte 256)
+    signed-byte))
+
 (s/defn unsigned->byte-array
   "Converts a vector of unsigned int values into a byte array."
-  [unsigned-bytes   :- [s/Int] ]
-  (byte-array
+  [unsigned-bytes :- [s/Int]]
+  (#?(:clj byte-array)
+   #?(:cljs into-array)
     (for [unsigned-val unsigned-bytes]
-      (do
-        (when-not (int? unsigned-val)
-          (throw (ex-info "unsigned->byte-array: value must be an int" unsigned-val)))
-        (when-not (<= 0 unsigned-val 255)
-          (throw (ex-info "unsigned->byte-array: value out of range" unsigned-val)))
-        (let [byte-val (.byteValue (Integer. unsigned-val))]
-          byte-val)))))
+      (byte-unsigned->signed unsigned-val))))
 
-(s/defn byte-array->hex-str :- s/Str
-  "Converts a vector of bytes to a hex string, where each byte becomes 2 hex digits."
-  [byte-arr]
-  #?(:clj (let [result (str/join
-                         (for [byte-val byte-arr]
-                           (let [int-val (Byte/toUnsignedInt byte-val)]
-                             (when-not (<= 0 int-val 255)
-                               (throw (ex-info "byte-array->hex-str: value out of range" int-val)))
-                             (format "%02x" int-val))))]
-             result))
-  #?(:cljs (do
-             (doseq [byte-val byte-arr]
-               (let [int-val (int byte-val)]
-                 (spyxx int-val)
-                 (when-not (<= 0 int-val 255)
-                   (throw (ex-info "byte-array->hex-str: value out of range" int-val)))))
-             (crypt/byteArrayToHex byte-arr))))
+;(s/defn byte-array->hex-str :- s/Str
+;  "Converts a vector of bytes to a hex string, where each byte becomes 2 hex digits."
+;  [byte-arr]
+;  #?(:clj (let [result (str/join
+;                         (for [byte-val byte-arr]
+;                           (let [int-val (Byte/toUnsignedInt byte-val)]
+;                             (when-not (<= 0 int-val 255)
+;                               (throw (ex-info "byte-array->hex-str: value out of range" int-val)))
+;                             (format "%02x" int-val))))]
+;             result))
+;  #?(:cljs (do
+;             (doseq [byte-val byte-arr]
+;               (let [int-val (int byte-val)]
+;                 (when-not (<= 0 int-val 255)
+;                   (throw (ex-info "byte-array->hex-str: value out of range" int-val)))))
+;             (crypt/byteArrayToHex byte-arr))) ; NOTE: requires unsigned vals [0..255]
+;  )
 
-(s/defn bytes->hex-str :- s/Str
-  "Converts a sequence of bytes to a hex string, where each byte becomes 2 hex digits."
-  [byte-vec :- [s/Int]]
-  (byte-array->hex-str (to-array byte-vec)) )
+(def hex-chars [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f])
+(s/defn unsigned-byte->hex :- s/Str
+  "Converts a sequence of unsigned bytes [0..255] to a hex string, where each byte becomes 2 hex digits."
+  [unsigned-byte]
+  (when-not (int? unsigned-byte)
+    (throw (ex-info "unsigned-byte->hex value must be an int" (t/vals->map unsigned-byte))))
+  (when-not (<= 0 unsigned-byte 255)
+    (throw (ex-info "unsigned-byte->hex value out of range" (t/vals->map unsigned-byte))))
+  (let [high-bits-val (quot unsigned-byte 16)
+        low-bits-val  (mod unsigned-byte 16)
+        high-char     (get hex-chars high-bits-val)
+        low-char      (get hex-chars low-bits-val)]
+    (str high-char low-char))) ; (crypt/byteArrayToHex byte-arr) ; NOTE: requires unsigned vals [0..255]
+
+(s/defn signed-byte->hex :- s/Str
+  "Converts a sequence of unsigned bytes [0..255] to a hex string, where each byte becomes 2 hex digits."
+  [signed-byte]
+  (-> signed-byte byte-signed->unsigned unsigned-byte->hex))
+
+(s/defn unsigned-bytes->hex-str :- s/Str
+  "Converts a sequence of unsigned bytes [0..255] to a hex string, where each byte becomes 2 hex digits."
+  [unsigned-bytes :- [s/Int]]
+  (str/join (map unsigned-byte->hex unsigned-bytes)))
+
+(s/defn signed-bytes->hex-str :- s/Str
+  "Converts a sequence of signed bytes [-128..127] to a hex string, where each byte becomes 2 hex digits."
+  [signed-bytes :- [s/Int]]
+  (str/join (map signed-byte->hex signed-bytes)))
 
 #?(:clj
-   (do
-
-     (def str->sha
-       "Returns the SHA-1 hex string for a string"
-       (let [sha-1-instance (MessageDigest/getInstance "SHA")]
-         (s/fn str->sha :- s/Str
-           [str-arg :- s/Str]
-           (.reset sha-1-instance)
-           (doseq [ch str-arg]
-             (.update sha-1-instance (byte ch)))
-           (byte-array->hex-str (.digest sha-1-instance)))))))
+   (def str->sha
+     "Returns the SHA-1 hex string for a string"
+     (let [sha-1-instance (MessageDigest/getInstance "SHA")]
+       (s/fn str->sha :- s/Str
+         [str-arg :- s/Str]
+         (.reset sha-1-instance)
+         (doseq [ch str-arg]
+           (.update sha-1-instance (byte ch)))
+         (signed-bytes->hex-str (vec (.digest sha-1-instance)))))))
 #?(:cljs
    (do
      (defn str->byte-array
@@ -149,7 +187,7 @@
              (.update sha-1-instance bytes-big)
              (.update sha-1-instance bytes-little)
              (let [bytes (.digest sha-1-instance)]
-               (byte-array->hex-str bytes))))))))
+               (signed-bytes->hex-str (vec bytes)))))))))
 #?(:cljs
    (defn uuid->str
      "Returns the SHA-1 hex string for a UUID"
@@ -231,8 +269,7 @@
        (let [result (shell/sh *os-shell* "-c" cmd-str)]
          (if (= 0 (grab :exit result))
            result
-           (throw (ex-info (str "shell-cmd: clojure.java.shell/sh failed, cmd-str:" cmd-str)
-                    result)))))
+           (throw (ex-info "shell-cmd: clojure.java.shell/sh failed, cmd-str:" (vals->map cmd-str result))))))
 
      (defn get-os []
        (let [os-name (System/getProperty "os.name")]
@@ -240,13 +277,13 @@
            #"windows" :windows
            #"linux" :linux
            #"mac" :mac
-           (throw (RuntimeException. (str "get-os: Unknown operating system found: " os-name))))))
+           (throw (ex-info "get-os: Unknown operating system found: " (vals->map os-name))))))
 
      (comment "stuff to make a generic run-shell-cmd"
 
        (defn format-shell-cmd-vec [cmd-str]
          (when-not (string? cmd-str)
-           (throw (IllegalArgumentException. (str "format-shell-cmd: cmd-str must be a string; received=" cmd-str))))
+           (throw (ex-info "format-shell-cmd: cmd-str must be a string; received=" (vals->map cmd-str))))
          (if (is-windows?)
            ["cmd.exe" "/c" cmd-str :dir "c:\\users"] ; windows
            ["bash" "-c" cmd-str] ; linux
@@ -254,7 +291,7 @@
 
        (defn run-shell-cmd [cmd-str]
          (when-not (string? cmd-str)
-           (throw (IllegalArgumentException. (str "format-shell-cmd: cmd-str must be a string; received=" cmd-str))))
+           (throw (ex-info "format-shell-cmd: cmd-str must be a string; received=" (vals->map cmd-str))))
          (apply shell/sh (util/format-shell-cmd-vec cmd-str)))
 
        )
