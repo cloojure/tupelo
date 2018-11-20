@@ -101,22 +101,22 @@
     (is= (tar/col-get target 2) [02 12 22])
     (is= (tar/col-get target 3) [03 13 23])
 
-    (is= (tar/rows->vec target) [00 01 02 03
+    (is= (tar/array-rows->vec target) [00 01 02 03
                                        10 11 12 13
                                        20 21 22 23])
-    (is= (-> target (tar/transpose) (tar/cols->vec)) [00 01 02 03
+    (is= (-> target (tar/transpose) (tar/array-cols->vec)) [00 01 02 03
                                                             10 11 12 13
                                                             20 21 22 23])
 
-    (is= target-rows-vec (tar/rows->vec target))
-    (is= target-cols-vec (tar/cols->vec target))
+    (is= target-rows-vec (tar/array-rows->vec target))
+    (is= target-cols-vec (tar/array-cols->vec target))
     (is= target (tar/vec->array-rows 3 4 target-rows-vec))
     (is= target (tar/vec->array-cols 3 4 target-cols-vec))
     (is= target (->> target
-                  (tar/rows->vec)
+                  (tar/array-rows->vec)
                   (tar/vec->array-rows 3 4)))
     (is= target (->> target
-                  (tar/cols->vec)
+                  (tar/array-cols->vec)
                   (tar/vec->array-cols 3 4)))
 
     (is= target @a34)

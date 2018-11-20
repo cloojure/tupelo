@@ -168,12 +168,12 @@
       (row-get arr ii))))
 ; #todo need parallel rows-set
 
-(s/defn rows->vec :- Vector
+(s/defn array-rows->vec :- Vector
   "Returns the concatenation of all array rows."
   [arr :- Array]
   (apply glue arr))
 
-(s/defn cols->vec :- Vector
+(s/defn array-cols->vec :- Vector
   "Returns the concatenation of all array cols."
   [arr :- Array]
   (forv [jj (range (num-cols arr))
