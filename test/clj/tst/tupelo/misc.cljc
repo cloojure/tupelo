@@ -126,15 +126,10 @@
 
     (is= uuid-val #uuid "0b37e120-2c65-11e7-aa8d-91b7120fbbd1")
     (is= (misc/uuid->sha1 uuid-val)  "03a49d4729c971a0dc8ddf8d8847290416ad58d2")
-    (is= (misc/str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d"))
-
-  )
-
-;----- toptop -----------------------------------------------------------------------------
+    (is= (misc/str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d")) )
 
 #?(:clj
    (do
-
 
      (dotest
        (is (#{:windows :linux :mac} (misc/get-os))))
@@ -178,6 +173,4 @@
              90 ...
              99 total")))
 
-; ----- gogo -----------------------------------------------------------------------------
-
-     ))
+))

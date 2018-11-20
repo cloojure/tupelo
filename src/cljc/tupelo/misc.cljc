@@ -22,7 +22,7 @@
               [clojure.java.shell :as shell]])
     #?@(:cljs [[goog.crypt :as crypt]
                [goog.crypt.Sha1]
-               [reagent.format :as rf] ]))
+               [reagent.format :as rf]]))
   #?(:clj (:import
             [java.lang Byte Integer]
             [java.nio ByteBuffer]
@@ -66,6 +66,8 @@
                                (last coll)])]
         result))))
 
+; -----------------------------------------------------------------------------
+; #todo maybe move to tupelo.bytes ns
 (s/defn byte-unsigned->signed
   "Converts an unsigned int value [0..255] into a signed byte [-128..127]."
   [unsigned-int :- s/Int]
@@ -381,11 +383,6 @@
                                  #?(:cljs rf/format)
                                  "%10d total" @dot-counter))
             result#)))
-
-     ; -----------------------------------------------------------------------------
-     ; #todo maybe move to tupelo.bytes ns
-
-     ; ----- gogo -----------------------------------------------------------------------------
 
      (s/defn hid->wid :- s/Keyword
        "Uses an HID to look up a human-friendly Word-ID (WID) from an English dictionary.
