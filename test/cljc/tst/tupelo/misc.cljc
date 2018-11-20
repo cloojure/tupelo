@@ -82,28 +82,36 @@
 
 
 (dotest
+  (is= misc/int->hex {0 \0, 1 \1, 2 \2, 3 \3, 4 \4, 5 \5, 6 \6, 7 \7, 8 \8, 9 \9, 10 \a, 11 \b, 12 \c, 13 \d, 14 \e, 15 \f})
+  (is= misc/hex->int {\0 0, \1 1, \2 2, \3 3, \4 4, \5 5, \6 6, \7 7, \8 8, \9 9, \a 10, \b 11, \c 12, \d 13, \e 14, \f 15})
+
+
   (is= (misc/str->sha "abc") "a9993e364706816aba3e25717850c26c9cd0d89d")
   (is= (misc/str->sha "abd") "cb4cc28df0fdbe0ecf9d9662e294b118092a5735")
   (is= (misc/str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d")
 
-  (let [unsigned-vals [0 15 16 240 255]
-        signed-vals (misc/bytes-unsigned->signed unsigned-vals )
-        unsigned-vals-2 (misc/bytes-signed->unsigned signed-vals)]
+  (let [unsigned-vals   [0 15 16 240 255]
+        signed-vals     (misc/bytes-unsigned->signed unsigned-vals)
+        unsigned-vals-2 (misc/bytes-signed->unsigned signed-vals)
+        hex-expected    "000f10f0ff"]
     (is= unsigned-vals unsigned-vals-2)
     (is= signed-vals [0 15 16 -16 -1])
-    (is= "000f10f0ff"
+    (is= hex-expected
       (misc/bytes-unsigned->hex-str unsigned-vals)
-      (misc/bytes-signed->hex-str signed-vals) )
+      (misc/bytes-signed->hex-str signed-vals))
+    (let [unsigned-vals-reverse (misc/hex-str->unsigned-bytes hex-expected)
+          signed-vals-reverse   (misc/hex-str->signed-bytes hex-expected)]
+      (is= unsigned-vals unsigned-vals-reverse)
+      (is= signed-vals signed-vals-reverse))
 
     #?(:cljs
        (do
          (is= "000f10f0ff" (crypt/byteArrayToHex (into-array unsigned-vals))) ; ***** must be unsigned bytes *****
          (let [u (random-uuid)]
-          ;(spyx u)
+           ;(spyx u)
            (is= cljs.core/UUID (type u))
-          ;(spyx (misc/uuid->sha1 u))
-           )))
-  )
+           ;(spyx (misc/uuid->sha1 u))
+           ))))
 
   (let [vals (range 32)]
     (is=
@@ -114,7 +122,7 @@
         "10" "11" "12" "13" "14" "15" "16" "17" "18" "19" "1a" "1b" "1c" "1d" "1e" "1f")))
 
   (let [unsigned-vals (range (- 256 16) 256)
-        signed-vals (misc/bytes-unsigned->signed unsigned-vals ) ]
+        signed-vals   (misc/bytes-unsigned->signed unsigned-vals)]
     (is= unsigned-vals (misc/bytes-signed->unsigned signed-vals))
     (is=
       (misc/bytes-unsigned->hex-str unsigned-vals)
@@ -125,7 +133,7 @@
     (is= uuid-val #uuid "0b37e120-2c65-11e7-aa8d-91b7120fbbd1")
     (is= (pr-str uuid-val) "#uuid \"0b37e120-2c65-11e7-aa8d-91b7120fbbd1\"")
     (is= (type uuid-val) (do #?(:clj java.util.UUID)
-                              #?(:cljs cljs.core/UUID)))
+                             #?(:cljs cljs.core/UUID)))
     (is= (misc/uuid->sha uuid-val) "03a49d4729c971a0dc8ddf8d8847290416ad58d2")))
 
 #?(:clj

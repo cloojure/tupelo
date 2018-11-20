@@ -101,6 +101,8 @@
   (mapv byte-signed->unsigned byte-vals ))
 
 (def hex-chars [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f])
+(def int->hex (zipmap (range 16) hex-chars))
+(def hex->int (zipmap hex-chars (range 16)))
 (s/defn unsigned-byte->hex :- s/Str
   "Converts a sequence of unsigned bytes [0..255] to a hex string, where each byte becomes 2 hex digits."
   [unsigned-byte]
@@ -118,6 +120,27 @@
   "Converts a sequence of unsigned bytes [0..255] to a hex string, where each byte becomes 2 hex digits."
   [signed-byte]
   (-> signed-byte byte-signed->unsigned unsigned-byte->hex))
+
+(s/defn hex-str->unsigned-bytes
+  "Converts a hex string to a vector of unsigned bytes"
+  [hex-str :- s/Str]
+  (when-not (even? (count hex-str))
+    (throw (ex-info "hex-str must have a whole number of bytes (even length)" {:hex-str hex-str :len (count hex-str)})))
+  (let [hex-pairs      (partition 2 (t/str->chars hex-str))
+        bytes-unsigned (t/forv [hex-pair hex-pairs]
+                         (let [char-high (first hex-pair)
+                               char-low  (second hex-pair)
+                               val-high  (grab char-high hex->int)
+                               val-low   (grab char-low hex->int)
+                               byte-val  (+ val-low (* 16 val-high)) ]
+                           byte-val)) ]
+    bytes-unsigned) )
+
+(s/defn hex-str->signed-bytes
+  "Converts a hex string to a vector of unsigned bytes"
+  [hex-str :- s/Str]
+  (bytes-unsigned->signed
+    (hex-str->unsigned-bytes hex-str)))
 
 (s/defn bytes-unsigned->hex-str :- s/Str
   "Converts a sequence of unsigned bytes [0..255] to a hex string, where each byte becomes 2 hex digits."
