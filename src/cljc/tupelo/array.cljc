@@ -33,29 +33,29 @@
     (forv [ii (range nrows)]
       (vec (repeat ncols init-val)))))
 
-(s/defn from-rowwise-data :- Array
-  "([nrows ncols rows-vec])
-  Return a new Array of size=[nrows ncols] initialized from rows-vec."
+(s/defn vec->array-rows :- Array
+  "([nrows ncols data-vec])
+  Return a new Array of size=[nrows ncols] row-wise from data-vec."
   [nrows :- s/Int
    ncols :- s/Int
-   rows-vec :- Vector]
+   data-vec :- Vector]
   (assert (and (pos? nrows) (pos? ncols)))
-  (assert (= (* nrows ncols) (count rows-vec)))
+  (assert (= (* nrows ncols) (count data-vec)))
   (mapv vec
-    (partition ncols rows-vec)))
+    (partition ncols data-vec)))
 
-(s/defn from-colwise-data :- Array
-  "([nrows ncols cols-vec])
-  Return a new Array of size=[nrows ncols] initialized from cols-vec."
+(s/defn vec->array-cols :- Array
+  "([nrows ncols data-vec])
+  Return a new Array of size=[nrows ncols] col-wise from data-vec."
   [nrows :- s/Int
    ncols :- s/Int
-   cols-vec :- Vector]
+   data-vec :- Vector]
   (assert (and (pos? nrows) (pos? ncols)))
-  (assert (= (* nrows ncols) (count cols-vec)))
-  (let [cols-vec (vec cols-vec)]
+  (assert (= (* nrows ncols) (count data-vec)))
+  (let [data-vec (vec data-vec)]
     (forv [ii (range nrows)]
       (forv [jj (range ncols) ]
-        (nth cols-vec (+ ii (* jj nrows)))))))
+        (nth data-vec (+ ii (* jj nrows)))))))
 
 (s/defn rows->array :- Array
   "[row-vecs]
@@ -77,7 +77,7 @@
     (assert (apply = nrows (mapv count col-vecs)))
     (dotimes [jj ncols]
       (assert sequential? (nth col-vecs jj)))
-    (from-colwise-data nrows ncols (apply glue col-vecs))))
+    (vec->array-cols nrows ncols (apply glue col-vecs))))
 
 (s/defn num-rows :- s/Int
   "Returns the number of rows of an Array."
@@ -168,12 +168,12 @@
       (row-get arr ii))))
 ; #todo need parallel rows-set
 
-(s/defn to-rowwise-data :- Vector
+(s/defn rows->vec :- Vector
   "Returns the concatenation of all array rows."
   [arr :- Array]
   (apply glue arr))
 
-(s/defn to-colwise-data :- Vector
+(s/defn cols->vec :- Vector
   "Returns the concatenation of all array cols."
   [arr :- Array]
   (forv [jj (range (num-cols arr))
