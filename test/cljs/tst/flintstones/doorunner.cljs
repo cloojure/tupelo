@@ -18,12 +18,14 @@
     [tst.tupelo._bootstrap]
     [tst.tupelo.array]
     [tst.tupelo.core]
-    [tst.tupelo.set]
     [tst.tupelo.lazy]
-    [tst.tupelo.string]
     [tst.tupelo.misc]
-    [tst.tupelo.cljs.misc]
+    [tst.tupelo.schema]
+    [tst.tupelo.set]
+    [tst.tupelo.string]
    ;[tst.tupelo.xxx]
+
+    [tst.tupelo.cljs.misc]
   ))
 
 ; (s/set-fn-validation! true) ; enforce fn schemas
@@ -41,11 +43,13 @@
   'tst.tupelo._bootstrap
   'tst.tupelo.array
   'tst.tupelo.core
-  'tst.tupelo.set
   'tst.tupelo.lazy
-  'tst.tupelo.string
   'tst.tupelo.misc
-  'tst.tupelo.cljs.misc
+  'tst.tupelo.schema
+  'tst.tupelo.set
+  'tst.tupelo.string
  ;'tst.tupelo.xxx
+
+  'tst.tupelo.cljs.misc
 )
 (println "doorunner - end")
