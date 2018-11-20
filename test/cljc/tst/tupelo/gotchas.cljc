@@ -34,7 +34,6 @@
   (throws? (rest 5))
   (throws? (next 5)) )
 
-#?(:clj (do         ; #todo make work for clj/cljs
 (dotest
   ; Unexpected, non-intuitive behavior
   (is= nil (seq nil)) ; should throw
@@ -136,25 +135,7 @@
 
   ; empty? / count too loose:
   (is= true (empty? nil))
-  (is= 0    (count nil))
-  )
-
-(t/when-clojure-1-9-plus
-  (dotest
-    ; `any?` always returns true
-    (is= true (any? false))
-    (is= true (any? nil))
-    (is= true (any? 5))
-    (is= true (any? "hello"))
-
-    ; tests a predicate fn on each element
-    (is= false (not-any? odd? [1 2 3]))
-    (is= true (not-any? odd? [2 4 6]))
-
-    ; explicit & consistent way of testing predicate
-    (is (t/has-some? odd? [1 2 3]))
-    (is (t/has-none? odd? [2 4 6]))
-  ))
+  (is= 0    (count nil)) )
 
 (dotest
   (is= nil  (some #{false}      [false true]))
@@ -190,8 +171,8 @@
   (is= "abc" (str "ab" nil \c))
   (is=  "123" (ts/quotes->single (pr-str 123)))
   (is= "'abc'" (ts/quotes->single (pr-str "abc")))
-  (is= "nil" (ts/quotes->single (pr-str nil)))
-  )
+  (is= "nil" (ts/quotes->single (pr-str nil))) )
+
 
 ; "generic" indexing is a problem; always be explicit with first, nth, get, etc
 (dotest
@@ -199,14 +180,13 @@
         ll (list 1 2 3)
         cc (cons 1 [2 3])]
     (is= 1 (vv 0))  ; works fine
-    (throws? ClassCastException (ll 0)) ; clojure.lang.PersistentList cannot be cast to clojure.lang.IFn
-    (throws? ClassCastException (cc 0)) ; clojure.lang.Cons cannot be cast to clojure.lang.IFn
+    (throws? (ll 0)) ; clojure.lang.PersistentList cannot be cast to clojure.lang.IFn
+    (throws? (cc 0)) ; clojure.lang.Cons cannot be cast to clojure.lang.IFn
 
     ; best solution
     (is= 1 (first vv))
     (is= 1 (first ll))
     (is= 1 (first cc))))
-
 
 ; binding operates in parallel, not sequentially
 (def ^:dynamic xx nil)
@@ -222,45 +202,62 @@
   (is (every? even? []))
   (is (every? odd? [])))
 
-))
+#?(:clj
+   (do              ; #todo make work for clj/cljs
 
-#?(:clj (do
-          ; samples for dospec & check-isnt
-          ;-----------------------------------------------------------------------------
-          (tt/dospec 9
-            (prop/for-all [val (gen/vector gen/any)]
-              (is (= (not (empty? val)) (t/not-empty? val)))
-              (isnt= (empty? val) (empty val))))
-          (t/when-clojure-1-9-plus
-            (dotest
-              (tt/check-isnt 33
-                (prop/for-all [val (gen/vector gen/int)]
-                  (= (any? val) (not-any? odd? val))))))
+     (t/when-clojure-1-9-plus
+       (dotest
+         ; `any?` always returns true
+         (is= true (any? false))
+         (is= true (any? nil))
+         (is= true (any? 5))
+         (is= true (any? "hello"))
 
-          ;-----------------------------------------------------------------------------
-          ; quote surprises
-          (dotest
-            (is= 'quote (first ''hello)) ; 2 single quotes
-            (isnt=  '{:a 1 :b [1 2]} '{:a 1 :b '[1 2]})
-            (is=    '{:a 1 :b [1 2]} `{:a 1 :b [1 2]})
-            (is=    '{:a 1 :b [1 2]} (quote {:a 1 :b [1 2]})))
+         ; tests a predicate fn on each element
+         (is= false (not-any? odd? [1 2 3]))
+         (is= true (not-any? odd? [2 4 6]))
 
-          ;-----------------------------------------------------------------------------
-          ; record-map equality fails
-          (defrecord SampleRec [a b])
-          (dotest
-            (let [sampleRec (->SampleRec 1 2)]
-              (isnt  (= sampleRec {:a 1 :b 2})) ; fails for clojure.core/= "
-              (is (t/val= sampleRec {:a 1 :b 2})))) ; works for tupelo.core/val=
+         ; explicit & consistent way of testing predicate
+         (is (t/has-some? odd? [1 2 3]))
+         (is (t/has-none? odd? [2 4 6]))
+         ))
 
-          ;-----------------------------------------------------------------------------
-          ; clojure.set has no type-checking
-          (dotest
-            (is= [:z :y :x  1  2  3] (set/union '(1 2 3) '(:x :y :z)))
-            (is= [ 1  2  3 :x :y :z] (set/union  [1 2 3]  [:x :y :z]))
-            (is= #{1  2  3 :x :y :z} (set/union #{1 2 3} #{:x :y :z}))
-            )
-          ))
+     ; samples for dospec & check-isnt
+     ;-----------------------------------------------------------------------------
+     (tt/dospec 9
+       (prop/for-all [val (gen/vector gen/any)]
+         (is (= (not (empty? val)) (t/not-empty? val)))
+         (isnt= (empty? val) (empty val))))
+     (t/when-clojure-1-9-plus
+       (dotest
+         (tt/check-isnt 33
+           (prop/for-all [val (gen/vector gen/int)]
+             (= (any? val) (not-any? odd? val))))))
+
+     ;-----------------------------------------------------------------------------
+     ; quote surprises
+     (dotest
+       (is= 'quote (first ''hello)) ; 2 single quotes
+       (isnt= '{:a 1 :b [1 2]} '{:a 1 :b '[1 2]})
+       (is= '{:a 1 :b [1 2]} `{:a 1 :b [1 2]})
+       (is= '{:a 1 :b [1 2]} (quote {:a 1 :b [1 2]})))
+
+     ;-----------------------------------------------------------------------------
+     ; record-map equality fails
+     (defrecord SampleRec [a b])
+     (dotest
+       (let [sampleRec (->SampleRec 1 2)]
+         (isnt (= sampleRec {:a 1 :b 2})) ; fails for clojure.core/= "
+         (is (t/val= sampleRec {:a 1 :b 2})))) ; works for tupelo.core/val=
+
+     ;-----------------------------------------------------------------------------
+     ; clojure.set has no type-checking
+     (dotest
+       (is= [:z :y :x 1 2 3] (set/union '(1 2 3) '(:x :y :z)))
+       (is= [1 2 3 :x :y :z] (set/union [1 2 3] [:x :y :z]))
+       (is= #{1 2 3 :x :y :z} (set/union #{1 2 3} #{:x :y :z}))
+       )
+     ))
 
 
 #?(:cljs
@@ -272,4 +269,4 @@
        (is= 1 (inc nil))
        (is= 1 (+ 1 nil)))
 
-   ))
+     ))

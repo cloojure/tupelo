@@ -18,12 +18,12 @@
     [tst.tupelo._bootstrap]
     [tst.tupelo.array]
     [tst.tupelo.core]
+    [tst.tupelo.gotchas]
     [tst.tupelo.lazy]
     [tst.tupelo.misc]
     [tst.tupelo.schema]
     [tst.tupelo.set]
     [tst.tupelo.string]
-   ;[tst.tupelo.xxx]
 
     [tst.tupelo.cljs.misc]
   ))
@@ -43,12 +43,12 @@
   'tst.tupelo._bootstrap
   'tst.tupelo.array
   'tst.tupelo.core
+  'tst.tupelo.gotchas
   'tst.tupelo.lazy
   'tst.tupelo.misc
   'tst.tupelo.schema
   'tst.tupelo.set
   'tst.tupelo.string
- ;'tst.tupelo.xxx
 
   'tst.tupelo.cljs.misc
 )
