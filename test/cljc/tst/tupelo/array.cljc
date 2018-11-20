@@ -85,59 +85,56 @@
       (dotimes [jj 4]
         (do
           (let [elem-val (+ (* ii 10) jj)]
-            (spyx [ii jj elem-val])
             (swap! a34 tar/elem-set ii jj elem-val) ))))
-    (spyx @a34)
     (let [arr-val @a34
           str-val (tar/array->str arr-val)]
       (is (ts/equals-ignore-spacing? str-val
             " 0    1    2    3    10   11   12   13    20   21   22   23"))
       )
 
-    ;(is= (tar/row-get target 0) [00 01 02 03])
-    ;(is= (tar/row-get target 1) [10 11 12 13])
-    ;(is= (tar/row-get target 2) [20 21 22 23])
-    ;
-    ;(is= (tar/col-get target 0) [00 10 20])
-    ;(is= (tar/col-get target 1) [01 11 21])
-    ;(is= (tar/col-get target 2) [02 12 22])
-    ;(is= (tar/col-get target 3) [03 13 23])
-    ;
-    ;(is= (tar/to-rowwise-data target) [00 01 02 03
-    ;                                   10 11 12 13
-    ;                                   20 21 22 23])
-    ;(is= (-> target (tar/transpose) (tar/to-colwise-data)) [00 01 02 03
-    ;                                                        10 11 12 13
-    ;                                                        20 21 22 23])
-    ;
-    ;(is= target-rows-vec (tar/to-rowwise-data target))
-    ;(is= target-cols-vec (tar/to-colwise-data target))
-    ;(is= target (tar/from-rowwise-data 3 4 target-rows-vec))
-    ;(is= target (tar/from-colwise-data 3 4 target-cols-vec))
-    ;(is= target (->> target
-    ;              (tar/to-rowwise-data)
-    ;              (tar/from-rowwise-data 3 4)))
-    ;(is= target (->> target
-    ;              (tar/to-colwise-data)
-    ;              (tar/from-colwise-data 3 4)))
-    ;
-    ;(is= target @a34)
-    ;(is= target-flip-ud (tar/flip-ud target))
-    ;(is= target-flip-lr (tar/flip-lr target))
-    ;(is= target-tx      (tar/transpose target))
-    ;
-    ;(is= target-rot-left-1 (-> target (tar/rot-left)))
-    ;(is= target-rot-left-2 (-> target (tar/rot-left) (tar/rot-left)))
-    ;(is= target-rot-left-3 (-> target (tar/rot-left) (tar/rot-left) (tar/rot-left)))
-    ;(is= target            (-> target (tar/rot-left) (tar/rot-left) (tar/rot-left) (tar/rot-left)))
-    ;
-    ;(is= target-rot-left-3 (-> target (tar/rot-right)))
-    ;(is= target-rot-left-2 (-> target (tar/rot-right) (tar/rot-right)))
-    ;(is= target-rot-left-1 (-> target (tar/rot-right) (tar/rot-right) (tar/rot-right)))
-    ;(is= target            (-> target (tar/rot-right) (tar/rot-right) (tar/rot-right) (tar/rot-right)))
+    (is= (tar/row-get target 0) [00 01 02 03])
+    (is= (tar/row-get target 1) [10 11 12 13])
+    (is= (tar/row-get target 2) [20 21 22 23])
+
+    (is= (tar/col-get target 0) [00 10 20])
+    (is= (tar/col-get target 1) [01 11 21])
+    (is= (tar/col-get target 2) [02 12 22])
+    (is= (tar/col-get target 3) [03 13 23])
+
+    (is= (tar/to-rowwise-data target) [00 01 02 03
+                                       10 11 12 13
+                                       20 21 22 23])
+    (is= (-> target (tar/transpose) (tar/to-colwise-data)) [00 01 02 03
+                                                            10 11 12 13
+                                                            20 21 22 23])
+
+    (is= target-rows-vec (tar/to-rowwise-data target))
+    (is= target-cols-vec (tar/to-colwise-data target))
+    (is= target (tar/from-rowwise-data 3 4 target-rows-vec))
+    (is= target (tar/from-colwise-data 3 4 target-cols-vec))
+    (is= target (->> target
+                  (tar/to-rowwise-data)
+                  (tar/from-rowwise-data 3 4)))
+    (is= target (->> target
+                  (tar/to-colwise-data)
+                  (tar/from-colwise-data 3 4)))
+
+    (is= target @a34)
+    (is= target-flip-ud (tar/flip-ud target))
+    (is= target-flip-lr (tar/flip-lr target))
+    (is= target-tx      (tar/transpose target))
+
+    (is= target-rot-left-1 (-> target (tar/rot-left)))
+    (is= target-rot-left-2 (-> target (tar/rot-left) (tar/rot-left)))
+    (is= target-rot-left-3 (-> target (tar/rot-left) (tar/rot-left) (tar/rot-left)))
+    (is= target            (-> target (tar/rot-left) (tar/rot-left) (tar/rot-left) (tar/rot-left)))
+
+    (is= target-rot-left-3 (-> target (tar/rot-right)))
+    (is= target-rot-left-2 (-> target (tar/rot-right) (tar/rot-right)))
+    (is= target-rot-left-1 (-> target (tar/rot-right) (tar/rot-right) (tar/rot-right)))
+    (is= target            (-> target (tar/rot-right) (tar/rot-right) (tar/rot-right) (tar/rot-right)))
   ))
 
-#?(:clj (do
 (dotest
   (let [demo  [[00 01 02 03]
                [10 11 12 13]
@@ -217,8 +214,7 @@
                          [3 5 6]]))
   (isnt (tar/symmetric? [[1 2 9]
                          [2 4 5]
-                         [3 5 6]]))
-  )
+                         [3 5 6]])) )
 
 (dotest
   (let [demo [[00 01 02 03]
@@ -239,7 +235,7 @@
     (is= (tar/col-drop demo 0 2 3) [[01]
                                     [11]
                                     [21]])
-    (throws? Exception (tar/row-drop demo :x))))
+    (throws? (tar/row-drop demo :x))))
 
 (dotest
   (let [a13 [[00 01 02]]
@@ -251,9 +247,9 @@
         a34 [[00 01 02 03]
              [10 11 12 13]
              [20 21 22 23]]]
-    (throws? Error (tar/row-add a13 [1 2]))
-    (throws? Error (tar/row-add a13 [1 2] [1 2 3]))
-    (throws? Error (tar/row-add a13 [1 2 3 4]))
+    (throws? (tar/row-add a13 [1 2]))
+    (throws? (tar/row-add a13 [1 2] [1 2 3]))
+    (throws? (tar/row-add a13 [1 2 3 4]))
     (is= a23 (tar/row-add a13 [10 11 12]))
     (is= a33 (tar/row-add a13 [10 11 12] [20 21 22]))))
 
@@ -264,8 +260,8 @@
              [10 11 12]]
         a24 [[00 01 02 03]
              [10 11 12 13]]]
-    (throws? Error (tar/col-add a23 [1 2 3]))
-    (throws? Error (tar/col-add a23 [1 2] [1 2 3]))
+    (throws? (tar/col-add a23 [1 2 3]))
+    (throws? (tar/col-add a23 [1 2] [1 2 3]))
     (is= a23 (tar/col-add a22 [2 12]))
     (is= a24 (tar/col-add a22 [2 12] [3 13]))))
 
@@ -280,7 +276,7 @@
              [10 11]
              [20 21]
              [30 31]]]
-    (throws? Error (tar/glue-vert a22 [[1 2 3]]))
+    (throws? (tar/glue-vert a22 [[1 2 3]]))
     (is= a22 (tar/glue-vert
                [[00 01]]
                [[10 11]]))
@@ -323,6 +319,7 @@
         [[10 11]
          [20 21]
          [30 31]]))))
+
 (dotest
   (let [a21 [[00]
              [10]]
@@ -332,7 +329,7 @@
              [10 11 12]]
         a24 [[00 01 02 03]
              [10 11 12 13]]]
-    (throws? Error (tar/glue-horiz a22 [[1 2 3]]))
+    (throws? (tar/glue-horiz a22 [[1 2 3]]))
     (is= a22 (tar/glue-horiz a21
                [[01]
                 [11]]))
@@ -358,6 +355,7 @@
                 [11]]
                [[02 03]
                 [12 13]]))))
+
 (dotest
   (let [demo
         [[1 2 3]
@@ -370,8 +368,4 @@
     (throws? (tar/col-set demo 3 [[1 2]]))
     (throws? (tar/col-set demo 1 [[1 2 3 4]]))
     (is= (tar/col-set demo 1 [7 8]) [[1 7 3]
-                                     [4 8 6]])
-
-    )
-  )
-))
+                                     [4 8 6]]) ) )
