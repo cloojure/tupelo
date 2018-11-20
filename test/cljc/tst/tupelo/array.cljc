@@ -6,6 +6,7 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.array
   (:require
+    [schema.core :as s]
     [schema.test :as st]
     [tupelo.array :as tar]
     #?@(:clj [[schema.core :as s]
@@ -13,7 +14,7 @@
               [tupelo.core :as t :refer [spy spyx spyxx forv]]
               [tupelo.string :as ts]
              ])
-    #?@(:cljs [[schema.core :as s]
+    #?@(:cljs [
                [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
                [tupelo.core :as t :refer [spy spyx spyxx forv] :include-macros true]
                [tupelo.string :as ts :include-macros true]

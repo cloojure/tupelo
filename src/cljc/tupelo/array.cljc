@@ -1,9 +1,14 @@
 (ns tupelo.array
-  #?@(:clj [
-  (:use tupelo.core)
-  (:require [schema.core :as s]
-            [clojure.set :as set]) ])
-  )
+  (:require
+    [clojure.set :as set]
+    [schema.core :as s]
+    #?@(:clj [[tupelo.core :as t :refer [spy spyx spyxx forv  glue grab vals->map]]
+              [tupelo.string :as ts]
+              ])
+    #?@(:cljs [[tupelo.core :as t :refer [spy spyx spyxx forv glue grab vals->map] :include-macros true]
+               [tupelo.string :as ts :include-macros true]
+               ])
+    ))
 
 (def Vector
   "A 1-D array of values (a vector of vectors)."
@@ -87,14 +92,14 @@
    idx :- s/Int]
   (let [limit (num-rows arr)]
     (when-not (< -1 idx limit)
-      (throw (IllegalArgumentException. (format "Row index %d out of range; limit = %d" idx limit))))))
+      (throw (ex-info "Row index out of range" (vals->map idx limit))))))
 
 (s/defn ^:no-doc check-col-idx
   [arr :- Array
    idx :- s/Int]
   (let [limit (num-cols arr)]
     (when-not (< -1 idx limit)
-      (throw (IllegalArgumentException. (format "Col index %d out of range; limit = %d" idx limit))))))
+      (throw (ex-info "Col index out of range" (vals->map idx limit))))))
 
 (s/defn ^:no-doc check-array-indexes
   [arr :- Array
