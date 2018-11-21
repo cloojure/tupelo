@@ -9,7 +9,7 @@
     [clojure.string :as str]
     [tupelo.string :as ts]
     #?@(:clj [
-              [tupelo.test   :refer [define-fixture deftest dotest is isnt is= isnt= set= nonblank= testing throws?]]
+              [tupelo.test :as ttst :refer [define-fixture deftest dotest is isnt is= isnt= set= nonblank= testing throws?]]
               [tupelo.core :as t :refer [spy spyx spyxx] ]
              ])
     #?@(:cljs [
@@ -21,19 +21,21 @@
 
 #?(:cljs (enable-console-print!))
 
-; #todo fix this
-;(define-fixture :once
-;     {:enter (fn [ctx] (println "*** TEST ONCE *** - enter "))
-;      :leave (fn [ctx] (println "*** TEST ONCE *** - leave "))})
+(define-fixture :once
+  {:enter (fn [ctx] (println "*** TEST ONCE *** - enter "))
+   :leave (fn [ctx] (println "*** TEST ONCE *** - leave "))})
+
 ;--------------------------------------------------------------------------------------------------
 
 (dotest
-  (println "tst.tupelo.core test 1")
-  (is= 2 (+ 1 1))
-
   (is (t/truthy? true))
+  (is (t/truthy? :never))
   (is (t/truthy? 5))
-  (is (t/truthy? nil))
+  (is (t/truthy? 0))
+  (is (t/truthy? "false"))
+  (is (t/truthy? []))
+  (is (t/truthy? {}))
+  (is (t/truthy? #{}))
   (is (t/falsey? false))
   (is (t/falsey? nil)))
 
@@ -2326,20 +2328,18 @@
   (is (t/set-match? #{#{1 :* 3} #{:* 5 6}} #{#{1 2 3} #{4 5 6}}))
   (is (t/set-match? #{#{1 2 :*} #{:* 5 6}} #{#{1 2 3} #{4 5 6}})) )
 
-(deftest t-2332
-  (is true)
-  (spyx "abc")
-  (spyx (type "abc"))
-  (spyxx "abc")
-  (spyx 42)
-  (spyx (type 42))
-  (spyxx 42)
-  (spyx {:a 1})
-  (spyx (type {:a 1}))
-  (spyxx {:a 1})
-  (is false)
-  (is true)
-  )
+; #todo fix for cljs
+;(deftest t-2332
+;  (spyx "abc")
+;  (spyx (type "abc"))
+;  (spyxx "abc")
+;  (spyx 42)
+;  (spyx (type 42))
+;  (spyxx 42)
+;  (spyx {:a 1})
+;  (spyx (type {:a 1}))
+;  (spyxx {:a 1})
+;  )
 
 
 ;-----------------------------------------------------------------------------

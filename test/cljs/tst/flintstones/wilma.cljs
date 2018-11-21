@@ -6,11 +6,9 @@
          ; "WARNING: Use of undeclared Var cljs.test/test-var at line 15 test/cljs/tst/flintstones/wilma.cljs"
   ))
 
-
-; #todo fix this
-;(define-fixture :each
-;  {:enter (fn [ctx] (println "*** TEST EACH *** - enter ctx=" ctx))
-;   :leave (fn [ctx] (println "*** TEST EACH *** - leave ctx=" ctx))})
+(define-fixture :each
+  {:enter (fn [ctx] (println "*** TEST EACH *** - enter ctx=" ctx))
+   :leave (fn [ctx] (println "*** TEST EACH *** - leave ctx=" ctx))})
 
 (dotest
   (println "wilma: testing add" )

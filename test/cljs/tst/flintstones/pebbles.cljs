@@ -3,10 +3,9 @@
     [clojure.string :as str]
     [tupelo.test-cljs :refer [dotest is isnt is= isnt= testing define-fixture]] ))
 
-; #todo fix this
-;(define-fixture :each
-;  {:enter (fn [ctx] (println "*** TEST EACH *** - enter ctx=" ctx))
-;   :leave (fn [ctx] (println "*** TEST EACH *** - leave ctx=" ctx))})
+(define-fixture :each
+  {:enter (fn [ctx] (println "*** TEST EACH *** - enter ctx=" ctx))
+   :leave (fn [ctx] (println "*** TEST EACH *** - leave ctx=" ctx))})
 
 (dotest
   (is= 2 (+ 1 1))   ; this works

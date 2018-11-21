@@ -9,26 +9,33 @@
   (:require
      [clojure.test :as ct]
      [clojure.test.check :as ctc]
-     [tupelo.core :as t]
+     [tupelo.core :as t ]
      [tupelo.string :as tstr]
   ))
 
 (defn use-fixtures [& args] (apply ct/use-fixtures args))
 (defmacro testing [& forms] `(ct/testing ~@forms))
 
-; #todo fix this
+(defn define-fixture-impl
+  [ctx mode interceptor-map]
+  (let [enter-fn (or (:enter interceptor-map) `identity)
+        leave-fn (or (:leave interceptor-map) `identity) ]
+   ;(println :enter-fn enter-fn)
+   ;(println :leave-fn leave-fn)
+    `(ct/use-fixtures ~mode
+       (fn [tgt-fn#] ; #todo fixture-fn
+         (~enter-fn ~ctx)
+         (tgt-fn#)
+         (~leave-fn ~ctx))))
+  )
+
 (defmacro define-fixture
   [mode interceptor-map]
   (assert (contains? #{:each :once} mode))
   (assert (map? interceptor-map))
-  (let [enter-fn  (:enter interceptor-map) ; #todo grab
-        leave-fn  (:leave interceptor-map) ; #todo grab
-        ctx       (meta &form)]
-    `(ct/use-fixtures ~mode
-       (fn fixture-fn [tgt-fn]
-         (~enter-fn ~ctx)
-         (tgt-fn)
-         (~leave-fn ~ctx)))))
+  (let [ctx (meta &form)]
+   ;(println :ctx ctx)
+    (define-fixture-impl ctx mode interceptor-map)))
 
 ; #todo maybe def-anon-test, or anon-test
 (defmacro deftest ; #todo README & tests

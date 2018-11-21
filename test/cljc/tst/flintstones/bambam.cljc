@@ -6,10 +6,9 @@
                [flintstones.bambam :as bam :include-macros true]])
   ))
 
-; #todo fix this
-;(define-fixture :once
-;     {:enter (fn [ctx] (println "*** TEST ONCE *** - enter ctx=" ctx))
-;      :leave (fn [ctx] (println "*** TEST ONCE *** - leave ctx=" ctx))})
+(define-fixture :once
+     {:enter (fn [ctx] (println "*** TEST ONCE *** - enter ctx=" ctx))
+      :leave (fn [ctx] (println "*** TEST ONCE *** - leave ctx=" ctx))})
 ;--------------------------------------------------------------------------------------------------
 
 (defn tosser [] (throw (ex-info "It threw!" {:a 1})))
