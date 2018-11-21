@@ -20,8 +20,6 @@
   [ctx mode interceptor-map]
   (let [enter-fn (or (:enter interceptor-map) `identity)
         leave-fn (or (:leave interceptor-map) `identity) ]
-   ;(println :enter-fn enter-fn)
-   ;(println :leave-fn leave-fn)
     `(ct/use-fixtures ~mode
        (fn [tgt-fn#] ; #todo fixture-fn
          (~enter-fn ~ctx)
@@ -34,7 +32,6 @@
   (assert (contains? #{:each :once} mode))
   (assert (map? interceptor-map))
   (let [ctx (meta &form)]
-   ;(println :ctx ctx)
     (define-fixture-impl ctx mode interceptor-map)))
 
 ; #todo maybe def-anon-test, or anon-test
