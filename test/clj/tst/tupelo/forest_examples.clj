@@ -16,7 +16,8 @@
     [clojure.java.io :as io]
     [net.cgrand.tagsoup :as enlive-tagsoup]
     [tupelo.forest :as tf]
-    [tupelo.misc :as tm :refer [HID]])
+    [tupelo.misc :as tm :refer [HID]]
+    [tupelo.core :as t])
   (:import [java.io StringReader]))
 
 
@@ -980,46 +981,92 @@
 
 ;---------------------------------------------------------------------------
 (dotest
-  (with-forest (new-forest)
-    (let [root-hid (add-tree
-                     (data->tree
-                       {:bucket-aggregation
-                        {:buckets
-                         [{:key "outer_bucket"
-                           :bucket-aggregation
-                                {:buckets
-                                 [{:key "inner_bucket_1"
-                                   :bucket-aggregation
-                                        {:buckets
-                                         [{:key 1510657200000, :sum {:value 25}}
-                                          {:key 1510660800000, :sum {:value 50}}]}}
-                                  {:key "inner_bucket_2"
-                                   :bucket-aggregation
-                                        {:buckets
-                                         [{:key 1510657200000, :sum {:value 30}}
-                                          {:key 1510660800000, :sum {:value 35}}]}}
-                                  {:key "inner_bucket_3"
-                                   :bucket-aggregation
-                                        {:buckets
-                                         [{:key 1510657200000, :sum {:value 40}}
-                                          {:key 1510660800000, :sum {:value 45}}]}}]}}]}}
-                         )
-                       )
-          value-paths (find-paths root-hid [:** {::tf/key :value} {::tf/value :*}])
-          tail-hids (mapv last value-paths)
-          value-nodes (mapv #(grab ::tf/value (hid->node %)) tail-hids) ]
+  (with-debug-hid
+    (with-forest (new-forest)
+      (let [root-hid    (add-tree
+                          (edn->tree
+                            {:bucket-aggregation
+                             {:buckets
+                              [{:key "outer_bucket"
+                                :bucket-aggregation
+                                     {:buckets
+                                      [{:key "inner_bucket_1"
+                                        :bucket-aggregation
+                                             {:buckets
+                                              [{:key 1510657200000, :sum {:value 25}}
+                                               {:key 1510660800000, :sum {:value 50}}]}}
+                                       {:key "inner_bucket_2"
+                                        :bucket-aggregation
+                                             {:buckets
+                                              [{:key 1510657200000, :sum {:value 30}}
+                                               {:key 1510660800000, :sum {:value 35}}]}}
+                                       {:key "inner_bucket_3"
+                                        :bucket-aggregation
+                                             {:buckets
+                                              [{:key 1510657200000, :sum {:value 40}}
+                                               {:key 1510660800000, :sum {:value 45}}]}}]}}]}}
+                            )
+                          )
+            value-paths (find-paths root-hid [:** {::tf/key :value} {::tf/value :*}])
+            tail-hids   (mapv last value-paths)
+            value-nodes (mapv #(grab ::tf/value (hid->node %)) tail-hids)
+            colt-path   (only (find-paths root-hid [:** {::tf/key :value} {::tf/value 45}]))
+            colt-nodes  (forv [hid colt-path] (hid->node hid))
+            ]
+        (is= (format-path colt-path)
+          [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
+           [#:tupelo.forest{:tag :tupelo.forest/entry, :key :bucket-aggregation}
+            [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
+             [#:tupelo.forest{:tag :tupelo.forest/entry, :key :buckets}
+              [#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
+               [#:tupelo.forest{:tag :tupelo.forest/entity, :index 0}
+                [#:tupelo.forest{:tag :tupelo.forest/entry, :key :bucket-aggregation}
+                 [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
+                  [#:tupelo.forest{:tag :tupelo.forest/entry, :key :buckets}
+                   [#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
+                    [#:tupelo.forest{:tag :tupelo.forest/entity, :index 2}
+                     [#:tupelo.forest{:tag :tupelo.forest/entry, :key :bucket-aggregation}
+                      [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
+                       [#:tupelo.forest{:tag :tupelo.forest/entry, :key :buckets}
+                        [#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
+                         [#:tupelo.forest{:tag :tupelo.forest/entity, :index 1}
+                          [#:tupelo.forest{:tag :tupelo.forest/entry, :key :sum}
+                           [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
+                            [#:tupelo.forest{:tag :tupelo.forest/entry, :key :value}
+                             [#:tupelo.forest{:value 45, :index nil}]]]]]]]]]]]]]]]]]]]])
+        (is= colt-nodes
+          [#:tupelo.forest{:khids [:0049], :tag :tupelo.forest/entity, :index nil}
+           #:tupelo.forest{:khids [:0048], :tag :tupelo.forest/entry, :key :bucket-aggregation}
+           #:tupelo.forest{:khids [:0047], :tag :tupelo.forest/entity, :index nil}
+           #:tupelo.forest{:khids [:0046], :tag :tupelo.forest/entry, :key :buckets}
+           #:tupelo.forest{:khids [:0045], :tag :tupelo.forest/list, :index nil}
+           #:tupelo.forest{:khids [:0001 :0044], :tag :tupelo.forest/entity, :index 0}
+           #:tupelo.forest{:khids [:0043], :tag :tupelo.forest/entry, :key :bucket-aggregation}
+           #:tupelo.forest{:khids [:0042], :tag :tupelo.forest/entity, :index nil}
+           #:tupelo.forest{:khids [:0041], :tag :tupelo.forest/entry, :key :buckets}
+           #:tupelo.forest{:khids [:0016 :002b :0040], :tag :tupelo.forest/list, :index nil}
+           #:tupelo.forest{:khids [:002d :003f], :tag :tupelo.forest/entity, :index 2}
+           #:tupelo.forest{:khids [:003e], :tag :tupelo.forest/entry, :key :bucket-aggregation}
+           #:tupelo.forest{:khids [:003d], :tag :tupelo.forest/entity, :index nil}
+           #:tupelo.forest{:khids [:003c], :tag :tupelo.forest/entry, :key :buckets}
+           #:tupelo.forest{:khids [:0034 :003b], :tag :tupelo.forest/list, :index nil}
+           #:tupelo.forest{:khids [:0036 :003a], :tag :tupelo.forest/entity, :index 1}
+           #:tupelo.forest{:khids [:0039], :tag :tupelo.forest/entry, :key :sum}
+           #:tupelo.forest{:khids [:0038], :tag :tupelo.forest/entity, :index nil}
+           #:tupelo.forest{:khids [:0037], :tag :tupelo.forest/entry, :key :value}
+           #:tupelo.forest{:khids [], :value 45, :index nil}] )
 
-      (is= value-nodes [25 50 30 35 40 45])
-      ; #todo  Want output like so (better than DataScript):
-      ; #todo  RE:  https://stackoverflow.com/questions/47438985/clojure-parsing-elasticsearch-query-response-and-extracting-values
-      (def desired-result
-        [{:key ["outer_bucket" "inner_bucket_1" 1510657200000], :value 25}
-         {:key ["outer_bucket" "inner_bucket_1" 1510660800000], :value 50}
-         {:key ["outer_bucket" "inner_bucket_2" 1510657200000], :value 30}
-         {:key ["outer_bucket" "inner_bucket_2" 1510660800000], :value 35}
-         {:key ["outer_bucket" "inner_bucket_3" 1510657200000], :value 40}
-         {:key ["outer_bucket" "inner_bucket_3" 1510660800000], :value 45}]
-        ))))
+        (is= value-nodes [25 50 30 35 40 45])
+        ; #todo  Want output like so (better than DataScript):
+        ; #todo  RE:  https://stackoverflow.com/questions/47438985/clojure-parsing-elasticsearch-query-response-and-extracting-values
+        (def desired-result
+          [{:key ["outer_bucket" "inner_bucket_1" 1510657200000], :value 25}
+           {:key ["outer_bucket" "inner_bucket_1" 1510660800000], :value 50}
+           {:key ["outer_bucket" "inner_bucket_2" 1510657200000], :value 30}
+           {:key ["outer_bucket" "inner_bucket_2" 1510660800000], :value 35}
+           {:key ["outer_bucket" "inner_bucket_3" 1510657200000], :value 40}
+           {:key ["outer_bucket" "inner_bucket_3" 1510660800000], :value 45}]
+          )))))
 
 ;-----------------------------------------------------------------------------
 (dotest
@@ -1423,6 +1470,55 @@
               [{:tag :B} [{:tag :C}] [{:tag :D}]]
               [{:tag :E} [{:tag :F}]]]])
           (is= result  expected-result ))))))
+
+;---------------------------------------------------------------------------------------------------
+(dotest
+  (let [job-data  {:_id                  "56044a42a27847d11d61bfc0"
+                   :schedule-template-id "55099ebdcca58a0c717df912"
+                   :jobs                 [{:job-template-id "55099ebdcca58a0c717df91f"
+                                           :_id             "56044a42a27847d11d61bfd5"
+                                           :step-templates  [{:job-step-template-id "55099ebdcca58a0c717df921"
+                                                              :_id                  "56044a42a27847d11d61bfd9"}
+                                                             {:job-step-template-id "55099ebdcca58a0c717df920"
+                                                              :_id                  "56044a42a27847d11d61bfd7"}]}
+                                          {:job-template-id "55099ebdcca58a0c717df91c"
+                                           :_id             "56044a42a27847d11d61bfd0"
+                                           :step-templates  [{:job-step-template-id "55099ebdcca58a0c717df91d"
+                                                              :_id                  "56044a42a27847d11d61bfd3"}]}
+                                          {:job-template-id "55099ebdcca58a0c717df919"
+                                           :_id             "56044a42a27847d11d61bfcb"
+                                           :step-templates  [{:job-step-template-id "55099ebdcca58a0c717df91a"
+                                                              :_id                  "56044a42a27847d11d61bfce"}]}
+                                          {:job-template-id "55099ebdcca58a0c717df916"
+                                           :_id             "56044a42a27847d11d61bfc6"
+                                           :step-templates  [{:job-step-template-id "55099ebdcca58a0c717df917"
+                                                              :_id                  "56044a42a27847d11d61bfc9"}]}
+                                          {:job-template-id "550aede1cca58a0c717df927"
+                                           :_id             "56044a42a27847d11d61bfc1"
+                                           :step-templates  [{:job-step-template-id "550aedebcca58a0c717df929"
+                                                              :_id                  "56044a42a27847d11d61bfc4"}]}
+                                          ]}
+        find-step (fn [step-id]
+                    (with-forest (new-forest)
+                      (let [root-hid   (add-tree (edn->tree job-data))
+                            tmpl-paths (find-paths root-hid [:** {::tf/value step-id}])]
+                        (when (not-empty? tmpl-paths)
+                          (let [tmpl-hid (t/xthird (reverse (only tmpl-paths)))
+                                tmpl-edn (tree->edn (hid->tree tmpl-hid))]
+                            tmpl-edn)))))
+        ]
+    ; Given an _id of a step-template, we need to return the step-template map.
+    (is= (find-step "56044a42a27847d11d61bfd9")
+      {:job-step-template-id "55099ebdcca58a0c717df921",
+       :_id                  "56044a42a27847d11d61bfd9"})
+
+    (is= (find-step "56044a42a27847d11d61bfd3")
+      {:job-step-template-id "55099ebdcca58a0c717df91d",
+       :_id                  "56044a42a27847d11d61bfd3"})
+
+    (is (nil? (find-step "invalid-id")))
+
+    ))
 
 
 

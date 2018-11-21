@@ -155,22 +155,23 @@
   (and (tree-node? arg)
     (empty? (grab ::kids arg))))
 
-(s/defn data->tree
+(s/defn edn->tree
+  "Creates a tupelo.corest tree from an EDN data structure"
   ([data :- s/Any]
-    (data->tree nil data))
+    (edn->tree nil data))
   ([idx :- (s/either s/Int (s/eq nil))
     data :- s/Any]
     (cond
       (sequential? data) {::tag   ::list
                           ::index idx
                           ::kids  (forv [[idx val] (indexed data)]
-                                    (data->tree idx val))}
+                                    (edn->tree idx val))}
       (map? data) {::tag   ::entity
                    ::index idx
                    ::kids  (forv [[child-key child-val] data]
                              {::tag ::entry
                               ::key child-key
-                              ::kids [(data->tree child-val)]})}
+                              ::kids [(edn->tree child-val)]})}
       :else {::value data ::index idx ::kids []})))
 
 (defn ^:no-doc validate-list-kids-idx
@@ -199,7 +200,7 @@
   (and (= #{::value ::index ::kids} (set (keys node)))
     (= [] (grab ::kids node))))
 
-(defn tree->data
+(defn tree->edn
   [node]
   ; #todo assert valid tree?
   (cond
@@ -208,13 +209,13 @@
 
     (data-list-node? node) (let [kids-sorted (validate-list-kids-idx node)
                                  kids-data   (forv [kid kids-sorted]
-                                               (tree->data kid))]
+                                               (tree->edn kid))]
                              kids-data)
 
     (data-entity-node? node) (let [entries  (grab ::kids node)
                                    map-data (apply glue
                                               (forv [entry entries]
-                                                {(grab ::key entry) (tree->data (only (grab ::kids entry)))}))]
+                                                {(grab ::key entry) (tree->edn (only (grab ::kids entry)))}))]
                                map-data)
 
     :else (throw (IllegalArgumentException. (str "tree->data: unrecognized node=" node)))))
@@ -529,6 +530,13 @@
   [bush :- tsk/Vec]
   (-> bush bush->tree tree->enlive))
 
+(s/defn xml->enlive :- tsk/KeyMap ; #todo need tree->xml  ???
+  [xml-str :- s/Str]
+  (->> xml-str
+    ts/string->stream
+    enlive-tagsoup/parser
+    only))
+
 (s/defn hiccup->tree :- tsk/KeyMap
   "Converts a Hiccup-format data structure to a Tree."
   [arg :- tsk/Vec]
@@ -569,18 +577,11 @@
   [arg]
   (add-tree (enlive->tree arg)))
 
-(s/defn add-tree-hiccup :- HID
+(s/defn add-tree-hiccup :- HID  ; #todo maybe make (add-tree-edn ...) for simplicity?
   "Adds a Hiccup-format tree to the forest. Tag values are converted to nil attributes:
   [:a ...] -> {:a nil ...}..."
   [arg]
   (add-tree (hiccup->tree arg)))
-
-(s/defn xml->enlive :- tsk/KeyMap
-  [xml-str :- s/Str]
-  (->> xml-str
-    ts/string->stream
-    enlive-tagsoup/parser
-    only))
 
 (s/defn add-tree-xml :- HID
   "Adds a tree to the forest from an XML string."

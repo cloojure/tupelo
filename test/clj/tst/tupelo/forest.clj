@@ -1057,15 +1057,15 @@
                       [[30]]
                       [[2]]]
 
-          tree-1     (data->tree data-1)
-          tree-2     (data->tree data-2)
-          tree-3     (data->tree data-3)
-          tree-4     (data->tree data-4)
+          tree-1     (edn->tree data-1)
+          tree-2     (edn->tree data-2)
+          tree-3     (edn->tree data-3)
+          tree-4     (edn->tree data-4)
 
-          return-1     (tree->data tree-1)
-          return-2     (tree->data tree-2)
-          return-3     (tree->data tree-3)
-          return-4     (tree->data tree-4)
+          return-1     (tree->edn tree-1)
+          return-2     (tree->edn tree-2)
+          return-3     (tree->edn tree-3)
+          return-4     (tree->edn tree-4)
 
           root-hid-1 (add-tree tree-1)
           root-hid-2 (add-tree tree-2)
@@ -1285,10 +1285,10 @@
 (dotest
   (with-forest (new-forest)
     (let [data-1     {:a 1 :b 2}
-          tree-1     (data->tree data-1)
+          tree-1     (edn->tree data-1)
           root-hid-1 (add-tree tree-1)
           bush-1     (hid->bush root-hid-1)
-          return-1     (tree->data tree-1)
+          return-1     (tree->edn tree-1)
          ]
       ;(is= tree-1
       ;  #:tupelo.forest{:tag  :tupelo.forest/entity, :index nil,
@@ -1307,10 +1307,10 @@
 (dotest
   (with-forest (new-forest)
     (let [data-2     {:a 1 :b [2 3 4]}
-          tree-2     (data->tree data-2)
+          tree-2     (edn->tree data-2)
           root-hid-2 (add-tree tree-2)
           bush-2     (hid->bush root-hid-2)
-          return-2     (tree->data tree-2) ]
+          return-2     (tree->edn tree-2) ]
       (is= data-2 return-2)
       ;(is= tree-2
       ;  #:tupelo.forest{:tag  :tupelo.forest/entity, :index nil,
@@ -1337,10 +1337,10 @@
 (dotest
   (with-forest (new-forest)
     (let [data-3     {:a 1 :b {:c 3}}
-          tree-3     (data->tree data-3)
+          tree-3     (edn->tree data-3)
           root-hid-3 (add-tree tree-3)
           bush-3     (hid->bush root-hid-3)
-          return-3   (tree->data tree-3)]
+          return-3   (tree->edn tree-3)]
       (is= data-3 return-3)
       ;(is= tree-3
       ;  #:tupelo.forest{:tag  :tupelo.forest/entity, :index nil,
@@ -1377,16 +1377,16 @@
 
 (dotest
   (let [data-1   {:a 1 :b 2}
-        tree-1   (data->tree data-1)
-        return-1 (tree->data tree-1)]
+        tree-1   (edn->tree data-1)
+        return-1 (tree->edn tree-1)]
     (is= return-1 data-1))
   (let [data-2   {:a 1 :b [2 3 4]}
-        tree-2   (data->tree data-2)
-        return-2 (tree->data tree-2)]
+        tree-2   (edn->tree data-2)
+        return-2 (tree->edn tree-2)]
     (is= return-2 data-2))
   (let [data-3   {:a 1 :b {:c 3}}
-        tree-3   (data->tree data-3)
-        return-3 (tree->data tree-3)]
+        tree-3   (edn->tree data-3)
+        return-3 (tree->edn tree-3)]
     (is= return-3 data-3)) )
 
 (dotest
