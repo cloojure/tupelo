@@ -64,7 +64,6 @@
   :source-paths [  "src/clj"   "src/cljc" ]
   :test-paths   [ "test/clj"  "test/cljc" ]
   :target-path  "target/%s"
-  :clean-targets [:target-path]
 
   :cljsbuild {:builds
               [{:id           "dev"
