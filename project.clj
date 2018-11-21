@@ -1,5 +1,11 @@
-(defproject cljs-enflame "0.1.0-SNAPSHOT"
+(defproject tupelo "0.9.108"
+  :description "Tupelo:  Clojure With A Spoonful of Honey"
+  :url "http://github.com/cloojure/tupelo"
+  :license {:name "Eclipse Public License"
+            :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :min-lein-version "2.7.1"
+
+
   :dependencies [
    ;[org.clojure/clojure "1.8.0"]
    ;[org.clojure/clojure "1.9.0"]
@@ -55,9 +61,10 @@
 
   :global-vars {*warn-on-reflection*      false }
 
-  :source-paths [ "src/cljc" "src/clj" ]
-  :test-paths   [ "test/cljc" "test/clj" ]
+  :source-paths [  "src/clj"   "src/cljc" ]
+  :test-paths   [ "test/clj"  "test/cljc" ]
   :target-path  "target/%s"
+  :clean-targets [:target-path]
 
   :cljsbuild {:builds
               [{:id           "dev"

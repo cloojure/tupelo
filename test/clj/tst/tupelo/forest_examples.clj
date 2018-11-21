@@ -1014,47 +1014,47 @@
             colt-nodes  (forv [hid colt-path] (hid->node hid))
             ]
         (is= (format-path colt-path)
-          [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
-           [#:tupelo.forest{:tag :tupelo.forest/entry, :key :bucket-aggregation}
-            [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
-             [#:tupelo.forest{:tag :tupelo.forest/entry, :key :buckets}
-              [#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
-               [#:tupelo.forest{:tag :tupelo.forest/entity, :index 0}
-                [#:tupelo.forest{:tag :tupelo.forest/entry, :key :bucket-aggregation}
-                 [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
-                  [#:tupelo.forest{:tag :tupelo.forest/entry, :key :buckets}
-                   [#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
-                    [#:tupelo.forest{:tag :tupelo.forest/entity, :index 2}
-                     [#:tupelo.forest{:tag :tupelo.forest/entry, :key :bucket-aggregation}
-                      [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
-                       [#:tupelo.forest{:tag :tupelo.forest/entry, :key :buckets}
-                        [#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
-                         [#:tupelo.forest{:tag :tupelo.forest/entity, :index 1}
-                          [#:tupelo.forest{:tag :tupelo.forest/entry, :key :sum}
-                           [#:tupelo.forest{:tag :tupelo.forest/entity, :index nil}
-                            [#:tupelo.forest{:tag :tupelo.forest/entry, :key :value}
-                             [#:tupelo.forest{:value 45, :index nil}]]]]]]]]]]]]]]]]]]]])
+          [#::tf{:tag :tupelo.forest/entity, :index nil}
+           [#::tf{:tag :tupelo.forest/entry, :key :bucket-aggregation}
+            [#::tf{:tag :tupelo.forest/entity, :index nil}
+             [#::tf{:tag :tupelo.forest/entry, :key :buckets}
+              [#::tf{:tag :tupelo.forest/list, :index nil}
+               [#::tf{:tag :tupelo.forest/entity, :index 0}
+                [#::tf{:tag :tupelo.forest/entry, :key :bucket-aggregation}
+                 [#::tf{:tag :tupelo.forest/entity, :index nil}
+                  [#::tf{:tag :tupelo.forest/entry, :key :buckets}
+                   [#::tf{:tag :tupelo.forest/list, :index nil}
+                    [#::tf{:tag :tupelo.forest/entity, :index 2}
+                     [#::tf{:tag :tupelo.forest/entry, :key :bucket-aggregation}
+                      [#::tf{:tag :tupelo.forest/entity, :index nil}
+                       [#::tf{:tag :tupelo.forest/entry, :key :buckets}
+                        [#::tf{:tag :tupelo.forest/list, :index nil}
+                         [#::tf{:tag :tupelo.forest/entity, :index 1}
+                          [#::tf{:tag :tupelo.forest/entry, :key :sum}
+                           [#::tf{:tag :tupelo.forest/entity, :index nil}
+                            [#::tf{:tag :tupelo.forest/entry, :key :value}
+                             [#::tf{:value 45, :index nil}]]]]]]]]]]]]]]]]]]]])
         (is= colt-nodes
-          [#:tupelo.forest{:khids [:0049], :tag :tupelo.forest/entity, :index nil}
-           #:tupelo.forest{:khids [:0048], :tag :tupelo.forest/entry, :key :bucket-aggregation}
-           #:tupelo.forest{:khids [:0047], :tag :tupelo.forest/entity, :index nil}
-           #:tupelo.forest{:khids [:0046], :tag :tupelo.forest/entry, :key :buckets}
-           #:tupelo.forest{:khids [:0045], :tag :tupelo.forest/list, :index nil}
-           #:tupelo.forest{:khids [:0001 :0044], :tag :tupelo.forest/entity, :index 0}
-           #:tupelo.forest{:khids [:0043], :tag :tupelo.forest/entry, :key :bucket-aggregation}
-           #:tupelo.forest{:khids [:0042], :tag :tupelo.forest/entity, :index nil}
-           #:tupelo.forest{:khids [:0041], :tag :tupelo.forest/entry, :key :buckets}
-           #:tupelo.forest{:khids [:0016 :002b :0040], :tag :tupelo.forest/list, :index nil}
-           #:tupelo.forest{:khids [:002d :003f], :tag :tupelo.forest/entity, :index 2}
-           #:tupelo.forest{:khids [:003e], :tag :tupelo.forest/entry, :key :bucket-aggregation}
-           #:tupelo.forest{:khids [:003d], :tag :tupelo.forest/entity, :index nil}
-           #:tupelo.forest{:khids [:003c], :tag :tupelo.forest/entry, :key :buckets}
-           #:tupelo.forest{:khids [:0034 :003b], :tag :tupelo.forest/list, :index nil}
-           #:tupelo.forest{:khids [:0036 :003a], :tag :tupelo.forest/entity, :index 1}
-           #:tupelo.forest{:khids [:0039], :tag :tupelo.forest/entry, :key :sum}
-           #:tupelo.forest{:khids [:0038], :tag :tupelo.forest/entity, :index nil}
-           #:tupelo.forest{:khids [:0037], :tag :tupelo.forest/entry, :key :value}
-           #:tupelo.forest{:khids [], :value 45, :index nil}] )
+          [#::tf{:khids [:0049], :tag :tupelo.forest/entity, :index nil}
+           #::tf{:khids [:0048], :tag :tupelo.forest/entry, :key :bucket-aggregation}
+           #::tf{:khids [:0047], :tag :tupelo.forest/entity, :index nil}
+           #::tf{:khids [:0046], :tag :tupelo.forest/entry, :key :buckets}
+           #::tf{:khids [:0045], :tag :tupelo.forest/list, :index nil}
+           #::tf{:khids [:0001 :0044], :tag :tupelo.forest/entity, :index 0}
+           #::tf{:khids [:0043], :tag :tupelo.forest/entry, :key :bucket-aggregation}
+           #::tf{:khids [:0042], :tag :tupelo.forest/entity, :index nil}
+           #::tf{:khids [:0041], :tag :tupelo.forest/entry, :key :buckets}
+           #::tf{:khids [:0016 :002b :0040], :tag :tupelo.forest/list, :index nil}
+           #::tf{:khids [:002d :003f], :tag :tupelo.forest/entity, :index 2}
+           #::tf{:khids [:003e], :tag :tupelo.forest/entry, :key :bucket-aggregation}
+           #::tf{:khids [:003d], :tag :tupelo.forest/entity, :index nil}
+           #::tf{:khids [:003c], :tag :tupelo.forest/entry, :key :buckets}
+           #::tf{:khids [:0034 :003b], :tag :tupelo.forest/list, :index nil}
+           #::tf{:khids [:0036 :003a], :tag :tupelo.forest/entity, :index 1}
+           #::tf{:khids [:0039], :tag :tupelo.forest/entry, :key :sum}
+           #::tf{:khids [:0038], :tag :tupelo.forest/entity, :index nil}
+           #::tf{:khids [:0037], :tag :tupelo.forest/entry, :key :value}
+           #::tf{:khids [], :value 45, :index nil}] )
 
         (is= value-nodes [25 50 30 35 40 45])
         ; #todo  Want output like so (better than DataScript):
