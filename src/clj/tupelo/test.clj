@@ -21,7 +21,7 @@
   (let [enter-fn (or (:enter interceptor-map) `identity)
         leave-fn (or (:leave interceptor-map) `identity) ]
     `(ct/use-fixtures ~mode
-       (fn [tgt-fn#] ; #todo fixture-fn
+       (fn ~'fixture-fn [tgt-fn#] ; #todo
          (~enter-fn ~ctx)
          (tgt-fn#)
          (~leave-fn ~ctx))))
