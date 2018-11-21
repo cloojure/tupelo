@@ -1774,7 +1774,7 @@
 
 (dotest
   (let [empty-gen-fn (fn [] (t/lazy-gen))]
-    (is (nil? (spyx (empty-gen-fn)))))
+    (is (nil? (empty-gen-fn))))
 
   (let [range-gen (fn [limit] ; "A generator 'range' function."
                     (t/lazy-gen
@@ -2351,7 +2351,6 @@
 #?(:clj (do
 
           (dotest
-            (spyx *clojure-version*)
             (binding [*clojure-version* {:major 1 :minor 7}]
               (is (spyx (t/is-clojure-1-7-plus?)))
               (isnt (t/is-clojure-1-8-plus?))
