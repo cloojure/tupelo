@@ -5,7 +5,6 @@
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :min-lein-version "2.7.1"
 
-
   :dependencies [
    ;[org.clojure/clojure "1.8.0"]
    ;[org.clojure/clojure "1.9.0"]

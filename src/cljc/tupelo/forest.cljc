@@ -155,8 +155,9 @@
   (and (tree-node? arg)
     (empty? (grab ::kids arg))))
 
+;---------------------------------------------------------------------------------------------------
 (s/defn edn->tree
-  "Creates a tupelo.corest tree from an EDN data structure"
+  "Creates a tree from an EDN data structure"
   ([data :- s/Any]
     (edn->tree nil data))
   ([idx :- (s/either s/Int (s/eq nil))
@@ -201,6 +202,7 @@
     (= [] (grab ::kids node))))
 
 (defn tree->edn
+  "Converts a tree to an EDN data structure"
   [node]
   ; #todo assert valid tree?
   (cond
@@ -220,6 +222,7 @@
 
     :else (throw (IllegalArgumentException. (str "tree->data: unrecognized node=" node)))))
 
+;---------------------------------------------------------------------------------------------------
 (defn enlive-node-lax?
   "Returns true for nominal Enlive nodes, else false"
   [arg]

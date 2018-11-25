@@ -629,31 +629,29 @@
 #?(:clj
    (do
      ; #todo add test & README
-     (defn json->edn
+     (s/defn json->edn
        "Shortcut to cheshire.core/parse-string"
-       [arg]
-       (cheshire/parse-string arg true)) ; true => keywordize-keys
+       [json-str :- s/Str]
+       (cheshire/parse-string json-str true)) ; true => keywordize-keys
 
      ; #todo add test & README
-     (defn edn->json
+     (s/defn edn->json :- s/Str
        "Shortcut to cheshire.core/generate-string"
        [arg]
-       (cheshire/generate-string arg))
-     ))
+       (cheshire/generate-string arg)) ))
 #?(:cljs
    (do
      ; #todo add test & README
-     (defn json->edn
+     (s/defn json->edn
        "Convert from json -> edn"
-       [arg]
-       (js->clj (.parse js/JSON arg) :keywordize-keys true)) ; true => keywordize-keys
+       [json-str :- s/Str]
+       (js->clj (.parse js/JSON json-str) :keywordize-keys true)) ; true => keywordize-keys
 
      ; #todo add test & README
-     (defn edn->json
+     (s/defn edn->json :- s/Str
        "Convert from edn -> json "
        [arg]
-       (.stringify js/JSON (clj->js arg)))
-     ))
+       (.stringify js/JSON (clj->js arg))) ))
 
 ; #todo:  make (map-ctx {:trunc false :eager true} <fn> <coll1> <coll2> ...) <- default ctx
 ; #todo:  mapz, forz, filterz, ...?
@@ -1465,7 +1463,7 @@
 (defmacro verify
   "(verify <some-expr>)
   Used to verify intermediate results. Returns value of <some-expr> if the result
-  is truthy.  Otherwise, throws IllegalArgumentException."
+  is truthy.  Otherwise, throws an Exception."
   [form]
   `(let [value# ~form]
      (if (truthy? value#)
