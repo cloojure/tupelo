@@ -4,7 +4,7 @@
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
-(ns ^:no-doc tupelo.core
+(ns tupelo.core
   "Tupelo - Making Clojure even sweeter"
   ; We use the self-require trick to force separate compilation stages for macros
   ; See "ClojureScript Macro Tower & Loop" by Mike Fikes (2015-12-18)

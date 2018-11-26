@@ -36,7 +36,7 @@
     [secretary "1.2.3"]
   ]
   :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]] 
-            [lein-codox "0.10.3"]
+            [lein-codox "0.10.5"]
             [lein-doo "0.1.10"]
             [lein-figwheel "0.5.17"]]
 
@@ -47,7 +47,10 @@
                ; :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
   :codox {:src-dir-uri               "http://github.com/cloojure/tupelo/blob/master/"
-          :src-linenum-anchor-prefix "L"}
+          :src-linenum-anchor-prefix "L"
+          :source-paths               ["src/clj" "src/cljc"]
+          :language                   :clojure
+          :namespaces                 [ #"^tupelo\." ] }
 
   :deploy-repositories {"snapshots"    :clojars
                         "releases"     :clojars
