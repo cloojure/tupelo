@@ -302,6 +302,12 @@
           result (str str-val (str/join (repeat needed pad-char)))]
       result)))
 
+(defn pluralize-with
+  "Returns `base-str` when N=1; otherwise appends an `s`"
+  [N base-str]
+  (if (= N 1)
+    base-str
+    (t/glue base-str \s)))
 
 
 
