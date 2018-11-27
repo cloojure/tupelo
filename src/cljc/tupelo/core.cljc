@@ -2151,8 +2151,20 @@
     (for [value values]
       (set-match-impl {} pattern value))))
 
+(defn swap-out!     ; #todo => tupelo/core.cljc
+  "Just like clojure.core/swap!, but returns the old value"
+  [tgt-atom swap-fn & args]
+  (let [[old -new-] (apply swap-vals! tgt-atom swap-fn args)]
+    old))
+
+(s/defn ->sorted-map :- tsk/Map
+  "Coerces a map into a sorted-map"
+  [map-in :- tsk/Map]
+  (glue (sorted-map) map-in))
 
 
+
+; bottom
 ;***************************************************************************************************
 ;***************************************************************************************************
 ;***************************************************************************************************
