@@ -12,6 +12,17 @@
     [tupelo.core :as t]
     [tupelo.schema :as tsk] ))
 
+;-----------------------------------------------------------------------------
+(def code-point-backspace 8)
+(def code-point-tab 9)
+(def code-point-newline 10)
+(def code-point-tab-vertical 11)
+(def code-point-formfeed 12)
+(def code-point-return 13)
+(def code-point-escape 27)
+(def code-point-del 127)
+;-----------------------------------------------------------------------------
+
 ; #todo: docstrings
 (s/def whitespace-horiz :- tsk/Set
   (set [\space \tab]))

@@ -5,7 +5,9 @@
     [clojure.string :as str]
     [oops.core :as oops]
     [reagent.core :as r]
-    [todomvc.enflame :as flame]))
+    [todomvc.enflame :as flame]
+    [tupelo.char :as char]
+    ))
 
 ; NOTE:  it seems this must be in a *.cljs file or it doesn't work on figwheel reloading
 (enable-console-print!)
@@ -31,8 +33,8 @@
           :on-change   #(reset! text-val (flame/event-val %))
           :on-key-down #(let [rcvd (.-which %)] ; KeyboardEvent property
                           (condp = rcvd
-                            flame/ascii-code-return (save-fn)
-                            flame/ascii-code-escape (stop-fn)
+                            char/code-point-return (save-fn)
+                            char/code-point-escape (stop-fn)
                             nil))})])))
 
 (defn task-list-row []
