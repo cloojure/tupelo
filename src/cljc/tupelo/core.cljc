@@ -18,7 +18,7 @@
                             if-java-1-7-plus if-java-1-8-plus
                             when-clojure-1-8-plus when-clojure-1-9-plus when-not-clojure-1-9-plus
                             destruct lazy-gen yield yield-all matches? ]]))
-  (:refer-clojure :exclude [empty? ])
+ ;(:refer-clojure :exclude [empty? ])
   (:require
     [clojure.core :as cc]
     [clojure.core.async :as async]
@@ -234,11 +234,11 @@
   [arg :- s/Any]
   (not (nil? arg)))
 
-(s/defn empty? :- s/Bool
-  "Synonym for clojure.core/empty? "
-  ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
-  [coll]
-  (cc/empty? coll))
+;(s/defn empty? :- s/Bool
+;  "Synonym for clojure.core/empty? "
+;  ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
+;  [coll]
+;  (cc/empty? coll))
 
 (s/defn not-empty? :- s/Bool
   "For any collection coll, returns true if coll contains any items; otherwise returns false.
@@ -302,6 +302,9 @@
       (= 1 num-keys) (dissoc the-map key-to-clear)
       :else (update-in the-map parent-keys dissoc key-to-clear))))
 
+;(defn case
+;  [& args]
+;  (throw (ex-info "`case` is evil, use `cond` instead" {:args args} )))
 
 (defn unlazy ; #todo need tests & docs. Use for datomic Entity?
   "Converts a lazy collection to a concrete (eager) collection of the same type."
