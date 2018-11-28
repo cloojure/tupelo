@@ -18,6 +18,7 @@
                             if-java-1-7-plus if-java-1-8-plus
                             when-clojure-1-8-plus when-clojure-1-9-plus when-not-clojure-1-9-plus
                             destruct lazy-gen yield yield-all matches? ]]))
+  (:refer-clojure :exclude [empty? ])
   (:require
     [clojure.core :as cc]
     [clojure.core.async :as async]
@@ -225,6 +226,26 @@
 (defn nl
   "Abbreviated name for `newline` "
   [] (newline))
+
+;-----------------------------------------------------------------------------
+(s/defn not-nil? :- s/Bool
+  "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
+   or the poorly-named clojure.core/some? "
+  [arg :- s/Any]
+  (not (nil? arg)))
+
+(s/defn empty? :- s/Bool
+  "Synonym for clojure.core/empty? "
+  ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
+  [coll]
+  (cc/empty? coll))
+
+(s/defn not-empty? :- s/Bool
+  "For any collection coll, returns true if coll contains any items; otherwise returns false.
+   Equivalent to (not (empty? coll))."
+  ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
+  [coll]
+  (not (cc/empty? coll)))
 
 ; #todo -> README
 (s/defn has-some? :- s/Bool ; #todo rename to has-any?   Add warning re new clj/any?
@@ -542,20 +563,6 @@
 ;-----------------------------------------------------------------------------
 (declare clip-str
   )
-
-;-----------------------------------------------------------------------------
-(s/defn not-nil? :- s/Bool
-  "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
-   or the poorly-named clojure.core/some? "
-  [arg :- s/Any]
-  (not (nil? arg)))
-
-(s/defn not-empty? :- s/Bool
-  "For any collection coll, returns true if coll contains any items; otherwise returns false.
-   Equivalent to (not (empty? coll))."
-  ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
-  [coll]
-  (not (empty? coll)))
 
 ; #todo add not-neg? not-pos? not-zero?
 

@@ -114,8 +114,8 @@
 
 ; Clojure is consistent & symmetric for if/if-not, when/when-not, every?/not-every?
 ; Clojure is inconsistent & broken for
-;  not-empty
-;  empty?
+;      empty vs     empty?
+;  not-empty vs not-empty?
 ;  any?
 ;  some vs some? (truthy vs not-nil?)
 
