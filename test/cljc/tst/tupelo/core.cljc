@@ -2352,7 +2352,7 @@
 
           (dotest
             (binding [*clojure-version* {:major 1 :minor 7}]
-              (is (spyx (t/is-clojure-1-7-plus?)))
+              (is (t/is-clojure-1-7-plus?))
               (isnt (t/is-clojure-1-8-plus?))
               (isnt (t/is-clojure-1-9-plus?))
               (is   (t/is-pre-clojure-1-8?))

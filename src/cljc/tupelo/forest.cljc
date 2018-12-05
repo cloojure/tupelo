@@ -9,16 +9,16 @@
   the the trees individually and/or collectively."
   #?@(:clj [
   (:use tupelo.core )
-  (:require
-    [clojure.core.async :as ca]
-    [clojure.set :as clj.set]
-    [net.cgrand.tagsoup :as enlive-tagsoup]
-    [schema.core :as s]
-    [tupelo.misc :as tm :refer [HID]]
-    [tupelo.core :as i]
-    [tupelo.schema :as tsk]
-    [tupelo.string :as ts]
-  )
+            (:require
+              [clojure.core.async :as ca]
+              [clojure.set :as clj.set]
+              [net.cgrand.tagsoup :as enlive-tagsoup]
+              [schema.core :as s]
+              [tupelo.misc :as tm :refer [HID]]
+              [tupelo.core :as i]
+              [tupelo.schema :as tsk]
+              [tupelo.string :as ts]
+              [clojure.set :as set])
             ]) )
 
 ; Benefits compared to nested maps like Enlive:
@@ -107,9 +107,9 @@
 ; #todo validate-tree: kids ordered or not, exact or extras ok
 
 ; #todo MAYBE???
-; #todo merge Node/Node -> genric Node: {:attrs <some map> :value <something> ::kids []}
-; #todo              or -> plain map:   {:tupelo.forest/khids []  :value <something> :attr1 val1 :attr2 val2}
-;                                        ^req      ^optional
+; #todo merge Node/Node -> generic Node: {:attrs <some map> :value <something> ::kids []}
+; #todo              or -> plain map:    {:tupelo.forest/khids []  :value <something> :attr1 val1 :attr2 val2}
+;                                         ^req      ^optional
 ; #todo maybe :value is just a regular (user-defined) attribute. not a special key
 
 ; #todo add { :parents #{:23 :14 :ab9} } to Node
@@ -129,7 +129,7 @@
   "Constructs a Node from a vector of HIDs"
   [hids :- [HID]]
   (assert (every? tm/hid? hids))
-  { ::khids hids } )
+  {::khids hids})
 
 (s/defn forest-node? :- s/Bool
   "Returns true if the arg is a legal forest node"
@@ -139,21 +139,29 @@
 
 (s/defn forest-leaf? :- s/Bool
   "Returns true if the arg is a leaf node (empty :tupelo.forest/khids). "
-  [arg :- tsk/KeyMap]
-  (and (forest-node? arg)
-    (empty? (grab ::khids arg))))
+  [node :- tsk/KeyMap]
+  (and (forest-node? node)
+    (empty? (grab ::khids node))))
 
+(s/defn empty-leaf? :- s/Bool
+  "Returns true if the arg is a leaf node (no kids) and has no `:value` "
+  [node :- tsk/KeyMap]
+  (and (forest-leaf? node)
+    (not (contains-key? node :value))))
+
+;-----------------------------------------------------------------------------
+; #todo need to delete these???  Concentrate on forest nodes
 (s/defn tree-node? :- s/Bool
   "Returns true if the arg is a legal tree node"
-  [arg :- tsk/KeyMap]
-  (and   (contains-key? arg ::kids)
-    (not (contains-key? arg ::khids))))
+  [node :- tsk/KeyMap]
+  (and   (contains-key? node ::kids)
+    (not (contains-key? node ::khids))))
 
 (s/defn tree-leaf? :- s/Bool
   "Returns true if the arg is a leaf node (no kids). "
-  [arg :- tsk/KeyMap]
-  (and (tree-node? arg)
-    (empty? (grab ::kids arg))))
+  [node :- tsk/KeyMap]
+  (and (tree-node? node)
+    (empty? (grab ::kids node))))
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn edn->tree
@@ -385,24 +393,17 @@
   [hid :- HID]
   (forest-leaf? (hid->node hid)))
 
-(s/defn leaf-value-hid? :- s/Bool ; #todo need test
-  "Returns true iff an HID is a leaf and has the :value attribute"
+(s/defn empty-leaf-hid? :- s/Bool
+  "Returns true if the arg is a leaf node (no kids) and has no `:value` "
   [hid :- HID]
-  (let [node (hid->node hid)]
-    (and (forest-leaf? node)
-      (contains-key? node :value))))
+  (empty-leaf? (hid->node hid)))
 
 (s/defn all-hids :- #{HID} ; #todo test
   "Returns a set of all HIDs in the forest"
   []
-  (set (keys *forest*)))
+  (set (keys *forest*)) )
 
-(s/defn all-node-hids :- #{HID}  ; #todo remove OBE?
-  "Returns a set of all node HIDs in the forest"
-  []
-  (all-hids))
-
-(s/defn all-leaf-hids :- #{HID}   ; #todo remove OBE?
+(s/defn all-leaf-hids :- #{HID} ; #todo remove OBE?
   "Returns a set of all leaf HIDs in the forest"
   []
   (set (keep-if leaf-hid? (all-hids))))
@@ -494,9 +495,8 @@
   (when-not (tree-node? tree-node)
     (throw (IllegalArgumentException. (str "add-tree: invalid element=" tree-node))))
   (let [tree-node-attrs (dissoc tree-node ::kids)
-        kid-hids (glue [] ; glue to an empty vec in case no kids
-                   (for [child (grab ::kids tree-node)] ; #todo forv & no glue ???
-                     (add-tree child)))]
+        kid-hids        (forv [child (grab ::kids tree-node)] ; #todo forv & no glue ???
+                          (add-tree child))]
        (add-node tree-node-attrs kid-hids)))
 
 (s/defn bush-node? :- s/Bool ; #todo add test
@@ -950,6 +950,29 @@
       (find-paths-impl result-atom [] root tgt-path))
     @result-atom))
 
+
+
+(s/defn walk-tree   ; #todo add more tests
+  "Recursively walks a subtree of the forest, applying the supplied `:enter` and ':leave` functions
+   to each node.   Usage:
+
+       (walk-tree <subtree-root-hid>  { :enter <pre-fn>       ; defaults to `identity`
+                                        :leave <post-fn> }    ; defaults to `identity`
+
+   Where `pre-fn` and `post-fn` accept a single HID value.
+   "
+  [root-hid :- HID
+   intc-map :- tsk/KeyMap ]
+  (when (not-empty? (set/difference (set (keys intc-map)) #{:enter :leave}))
+    (throw (ex-info "walk-tree: unrecognized keys found:" intc-map)))
+  (let [enter-fn (or (:enter intc-map) identity)
+        leave-fn (or (:leave intc-map) identity)]
+    (enter-fn root-hid)
+    (doseq [kid-hid (hid->kids root-hid)]
+      (walk-tree kid-hid {:enter enter-fn
+                          :leave leave-fn}))
+    (leave-fn root-hid)))
+
 (s/defn find-hids :- [HID] ; #todo need test
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec]
@@ -998,10 +1021,12 @@
 
 (s/defn whitespace-leaf-hid? :- s/Bool
   [hid :- HID]
-  (and (leaf-value-hid?  hid) ; ensure it is a leaf node and has :value
-    (let [value (grab :value (hid->node hid))]
-      (and (string? value)
-        (ts/whitespace? value))))) ; all whitespace string
+  (let [node (hid->node hid)]
+    (and (forest-leaf? node)
+      (contains-key? node :value)
+      (let [value (grab :value node)]
+        (and (string? value)
+          (ts/whitespace? value)))))) ; all whitespace string
 
 (defn remove-whitespace-leaves
   "Removes leaves from all trees in the forest that are whitespace-only strings

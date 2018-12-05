@@ -347,7 +347,7 @@
           [:item :b]
           [:item [:item 3] [:item 4] [:item :c] [:item :d] [:item 5]]
           [:item :e]] )
-      (mapv wrap-adjacent-kw-kids (all-node-hids))
+      (mapv wrap-adjacent-kw-kids (all-hids))
       (is= (hid->hiccup root-hid)
         [:item
          [:item 1]
@@ -390,7 +390,7 @@
             [:item :d]
             [:item :e]
             [:item 3]])
-      (mapv wrap-adjacent-kw-kids (all-node-hids))
+      (mapv wrap-adjacent-kw-kids (all-hids))
       (is= (hid->hiccup root-hid)
         [:item
          [:item 1]
@@ -1516,14 +1516,11 @@
       {:job-step-template-id "55099ebdcca58a0c717df91d",
        :_id                  "56044a42a27847d11d61bfd3"})
 
-    (is (nil? (find-step "invalid-id")))
-
-    ))
+    (is (nil? (find-step "invalid-id"))) ))
 
 ;-----------------------------------------------------------------------------
-(dotest-focus
-  (with-forest (new-forest)
-    (let [xml-data "<foo>
+(dotest
+  (let [xml-data "<foo>
                   <name>John</name>
                   <address>1 hacker way</address>
                   <phone></phone>
@@ -1537,13 +1534,28 @@
                       <address></address>
                       <state></state>
                   </college>
-                </foo> "
-          root-hid (add-tree-xml xml-data)
-          ]
-      (remove-whitespace-leaves)
-      (spyx-pretty (hid->hiccup root-hid))
-      ))
-  )
+                </foo> "]
+    (with-debug-hid
+      (with-forest (new-forest)
+        (let [root-hid (add-tree-xml xml-data)]
+          (remove-whitespace-leaves)
+          (is= (hid->hiccup root-hid)
+            [:foo
+             [:name "John"]
+             [:address "1 hacker way"]
+             [:phone]
+             [:school [:name] [:state] [:type]]
+             [:college [:name "mit"] [:address] [:state]]])
+          (walk-tree root-hid {:leave (fn [hid]
+                                        (when (empty-leaf-hid? hid)
+                                          (remove-hid hid)))})
+          (is= (hid->hiccup root-hid)
+            [:foo [:name "John"] [:address "1 hacker way"] [:college [:name "mit"]]]) )))))
+
+
+
+
+
 
 
 
