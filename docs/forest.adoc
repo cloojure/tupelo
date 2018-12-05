@@ -20,7 +20,7 @@ missing in most other tree-processing libraries.
 == Quick Start
 
 You can link:https://youtu.be/RtavTnRr0oM[watch a video of the Lightning Talk] about tupelo.forest from
-the 2017 Clojure/Conj.
+the 2017 Clojure/Conj.  Be sure to also read the link:https://cloojure.github.io/doc/tupelo/tupelo.forest.html[Tupelo Forest API docs].
 
 Create a tree using Hiccup:
 

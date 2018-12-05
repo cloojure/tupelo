@@ -1520,7 +1520,30 @@
 
     ))
 
-
+;-----------------------------------------------------------------------------
+(dotest-focus
+  (with-forest (new-forest)
+    (let [xml-data "<foo>
+                  <name>John</name>
+                  <address>1 hacker way</address>
+                  <phone></phone>
+                  <school>
+                      <name></name>
+                      <state></state>
+                      <type></type>
+                  </school>
+                  <college>
+                      <name>mit</name>
+                      <address></address>
+                      <state></state>
+                  </college>
+                </foo> "
+          root-hid (add-tree-xml xml-data)
+          ]
+      (remove-whitespace-leaves)
+      (spyx-pretty (hid->hiccup root-hid))
+      ))
+  )
 
 
 
