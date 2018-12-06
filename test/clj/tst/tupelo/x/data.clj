@@ -1,5 +1,5 @@
 (ns tst.tupelo.x.data
-  (:use tupelo.core tupelo.x.data tupelo.test )
+  (:use tupelo.core tupelo.test )
   (:require
     [clojure.math.combinatorics :as combo]
     [clojure.string :as str]
