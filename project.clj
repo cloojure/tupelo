@@ -6,17 +6,12 @@
   :min-lein-version "2.7.1"
 
   :dependencies [
-    [org.clojure/clojure "1.8.0"]
-   ;[org.clojure/clojure "1.9.0"]
-   ;[org.clojure/clojure "1.10.0-RC3"]
-    [org.clojure/clojurescript "1.10.439"]
-
-    [binaryage/devtools "0.9.10"]
-    [binaryage/oops "0.6.3"]
+    [org.clojure/clojure "1.8.0" :scope "provided"]
+    [org.clojure/clojurescript "1.10.439" :scope "provided"]
+    [criterium "0.4.4" :scope "provided"]
     [cheshire "5.8.1"]
     [clj-time "0.15.1"]
     [clojure-csv/clojure-csv "2.0.2"]
-    [criterium "0.4.4"]
     [danlentz/clj-uuid "0.1.7"]
     [enlive "1.1.6"]
     [joda-time/joda-time "2.10.1"]
@@ -26,20 +21,19 @@
     [org.clojure/math.combinatorics "0.1.4"]
     [org.clojure/spec.alpha "0.2.176"]
     [org.clojure/test.check "0.9.0"]
-   ;[org.clojure/tools.analyzer "0.6.9"]
     [org.clojure/tools.reader "1.3.2"]
-    [prismatic/schema "1.1.9"]
-    [reagent-utils "0.3.1"]
-  ]
+    [prismatic/schema "1.1.9"]]
+
   :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]] 
             [lein-codox "0.10.5"]
             [lein-doo "0.1.10"]
             [lein-figwheel "0.5.17"]]
 
-  :profiles {:dev {:dependencies [[com.jakemccrary/lein-test-refresh "0.23.0"]
-                                 ;[binaryage/devtools "0.9.10"]
-                                 ;[com.cemerick/piggieback "0.2.2"]
-                                 ] }}
+  :profiles {:dev {:dependencies [[binaryage/devtools "0.9.10"]
+                                  [binaryage/oops "0.6.3"]
+                                  [com.jakemccrary/lein-test-refresh "0.23.0"]
+                                  ;;[com.cemerick/piggieback "0.2.2"]
+                                  ]}}
                ; :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
   :codox {:src-dir-uri               "http://github.com/cloojure/tupelo/blob/master/"
