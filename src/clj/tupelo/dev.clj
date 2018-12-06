@@ -12,8 +12,6 @@
     [schema.core :as s]
     [tupelo.core :as i] ))
 
-#?(:clj (do
-
   (defn find-idxs-impl
     [idxs data pred-fn]
     (apply i/glue
@@ -53,4 +51,3 @@
   (defn parse-string [line]
     (mapv read-string (str/split line #" ")))
 
-))
