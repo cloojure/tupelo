@@ -6,19 +6,15 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns ^:no-doc ^:deprecated tupelo.explicit
   "Functions that avoid ambiguity"
-  #?@(:clj [
   (:refer-clojure :exclude [get get-in] )
   (:require [clojure.string   :as str]
             [clojure.core     :as clj]
             [schema.core      :as s]
-            [tupelo.core      :as i])
-            ])
-      )
+            [tupelo.core      :as i] ))
 
 ; If necessary, can copy the following syntax to override clojure/core vars
 ;       (:refer-clojure :exclude [* - + == /])
 
-#?(:clj (do
 (defn ^:no-doc ^:deprecated get
   "A fail-fast version of clojure.core/get. For map m & key k, returns
   the value v associated with k in m.  Throws an exception if k is not
@@ -33,4 +29,3 @@
   [m  ks]
   (i/fetch-in m ks))
 
-))
