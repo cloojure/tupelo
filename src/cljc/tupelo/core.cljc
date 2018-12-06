@@ -563,6 +563,95 @@
   (or (= a b)
     (increasing? a b)))
 
+#?(:clj
+   (do
+     ;-----------------------------------------------------------------------------
+     ; Java version stuff
+     (s/defn java-version :- s/Str
+       []
+       (System/getProperty "java.version"))
+
+     (s/defn java-version-matches? :- s/Bool
+       "Returns true if Java version exactly matches supplied string."
+       [version-str :- s/Str]
+       (str/starts-with? (java-version) version-str))
+
+     (s/defn java-version-min? :- s/Bool
+       "Returns true if Java version is at least as great as supplied string.
+       Sort is by lexicographic (alphabetic) order."
+       [version-str :- s/Str]
+       (string-increasing-or-equal? version-str (java-version)))
+
+     ; #todo need min-java-1-8  ???
+
+     (defn is-java-1-7? [] (java-version-matches? "1.7"))
+     (defn is-java-1-8? [] (java-version-matches? "1.8"))
+
+     (defn is-java-1-7-plus? [] (java-version-min? "1.7"))
+     (defn is-java-1-8-plus? [] (java-version-min? "1.8"))
+
+     (defmacro if-java-1-7-plus
+       "If JVM is Java 1.7 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
+       [if-form else-form]
+       (if (is-java-1-7-plus?)
+         `(do ~if-form)
+         `(do ~else-form)))
+
+     (defmacro if-java-1-8-plus ; #todo need for java 9, 10, 11, ...
+       "If JVM is Java 1.8 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
+       [if-form else-form]
+       (if (is-java-1-8-plus?)
+         `(do ~if-form)
+         `(do ~else-form)))
+
+     ;-----------------------------------------------------------------------------
+     ; Clojure version stuff
+     ; #todo add is-clojure-1-8-max?
+     ; #todo need clojure-1-8-plus-or-throw  ??
+     (defn is-clojure-1-7-plus? []
+       (let [{:keys [major minor]} *clojure-version*]
+         (increasing-or-equal? [1 7] [major minor])))
+
+     (defn is-clojure-1-8-plus? []
+       (let [{:keys [major minor]} *clojure-version*]
+         (increasing-or-equal? [1 8] [major minor])))
+
+     (defn is-clojure-1-9-plus? []
+       (let [{:keys [major minor]} *clojure-version*]
+         (increasing-or-equal? [1 9] [major minor])))
+
+     (defn is-pre-clojure-1-8? [] (not (is-clojure-1-8-plus?)))
+     (defn is-pre-clojure-1-9? [] (not (is-clojure-1-9-plus?)))
+
+     (defmacro when-clojure-1-8-plus
+       "Wraps code that should only be included for Clojure 1.8 or higher.  Otherwise, code is supressed."
+       [& forms]
+       (if (is-clojure-1-8-plus?)
+         `(do ~@forms)))
+
+     (defmacro when-clojure-1-9-plus
+       "Wraps code that should only be included for Clojure 1.9 or higher.  Otherwise, code is supressed."
+       [& forms]
+       (if (is-clojure-1-9-plus?)
+         `(do ~@forms)))
+
+     (defmacro when-not-clojure-1-9-plus
+       "Wraps code that should only be included for Clojure versions prior to 1.9.  Otherwise, code is supressed."
+       [& forms]
+       (if (is-pre-clojure-1-9?)
+         `(do ~@forms)))
+
+     ;-----------------------------------------------------------------------------
+     (when-clojure-1-9-plus
+       (defn swap-out! ; #todo => tupelo/core.cljc
+         "Just like clojure.core/swap!, but returns the old value"
+         [tgt-atom swap-fn & args]
+         (let [[old -new-] (apply swap-vals! tgt-atom swap-fn args)]
+           old)))
+
+   ))
+
+
 ;-----------------------------------------------------------------------------
 (declare clip-str
   )
@@ -2161,12 +2250,6 @@
     (for [value values]
       (set-match-impl {} pattern value))))
 
-(defn swap-out!     ; #todo => tupelo/core.cljc
-  "Just like clojure.core/swap!, but returns the old value"
-  [tgt-atom swap-fn & args]
-  (let [[old -new-] (apply swap-vals! tgt-atom swap-fn args)]
-    old))
-
 (s/defn ->sorted-map :- tsk/Map
   "Coerces a map into a sorted-map"
   [map-in :- tsk/Map]
@@ -2178,261 +2261,184 @@
 ;***************************************************************************************************
 ;***************************************************************************************************
 ;***************************************************************************************************
-#?(:clj (do
+#?(:clj
+   (do
 
-          (ns-unmap *ns* 'first) ; #todo -> (set-tupelo-strict! true/false)
-          (ns-unmap *ns* 'second)
-          (ns-unmap *ns* 'rest)
-          (ns-unmap *ns* 'next)
-          (ns-unmap *ns* 'last)
+     (ns-unmap *ns* 'first) ; #todo -> (set-tupelo-strict! true/false)
+     (ns-unmap *ns* 'second)
+     (ns-unmap *ns* 'rest)
+     (ns-unmap *ns* 'next)
+     (ns-unmap *ns* 'last)
 
-          ;-----------------------------------------------------------------------------
-          ; Clojure version stuff
-          (defn is-clojure-1-7-plus? []
-            (let [{:keys [major minor]} *clojure-version*]
-              (increasing-or-equal? [1 7] [major minor])))
-
-          (defn is-clojure-1-8-plus? []
-            (let [{:keys [major minor]} *clojure-version*]
-              (increasing-or-equal? [1 8] [major minor])))
-
-          (defn is-clojure-1-9-plus? []
-            (let [{:keys [major minor]} *clojure-version*]
-              (increasing-or-equal? [1 9] [major minor])))
-
-          (defn is-pre-clojure-1-8? [] (not (is-clojure-1-8-plus?)))
-          (defn is-pre-clojure-1-9? [] (not (is-clojure-1-9-plus?)))
-
-          ;-----------------------------------------------------------------------------
-          ; Java version stuff
-          (s/defn java-version :- s/Str
-            []
-            (System/getProperty "java.version"))
-
-          (s/defn java-version-matches? :- s/Bool
-            "Returns true if Java version exactly matches supplied string."
-            [version-str :- s/Str]
-            (str/starts-with? (java-version) version-str))
-
-          (s/defn java-version-min? :- s/Bool
-            "Returns true if Java version is at least as great as supplied string.
-            Sort is by lexicographic (alphabetic) order."
-            [version-str :- s/Str]
-            (string-increasing-or-equal? version-str (java-version)))
-
-          ; #todo need min-java-1-8  ???
-
-          (defn is-java-1-7? [] (java-version-matches? "1.7"))
-          (defn is-java-1-8? [] (java-version-matches? "1.8"))
-
-          (defn is-java-1-7-plus? [] (java-version-min? "1.7"))
-          (defn is-java-1-8-plus? [] (java-version-min? "1.8"))
-
-          (defmacro if-java-1-7-plus
-            "If JVM is Java 1.7 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
-            [if-form else-form]
-            (if (is-java-1-7-plus?)
-              `(do ~if-form)
-              `(do ~else-form)))
-
-          (defmacro if-java-1-8-plus ; #todo need for java 9, 10, 11, ...
-            "If JVM is Java 1.8 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
-            [if-form else-form]
-            (if (is-java-1-8-plus?)
-              `(do ~if-form)
-              `(do ~else-form)))
-
-          ; #todo add is-clojure-1-8-max?
-          ; #todo need clojure-1-8-plus-or-throw  ??
-
-          (defmacro when-clojure-1-8-plus
-            "Wraps code that should only be included for Clojure 1.8 or higher.  Otherwise, code is supressed."
-            [& forms]
-            (if (is-clojure-1-8-plus?)
-              `(do ~@forms)))
-
-          (defmacro when-clojure-1-9-plus
-            "Wraps code that should only be included for Clojure 1.9 or higher.  Otherwise, code is supressed."
-            [& forms]
-            (if (is-clojure-1-9-plus?)
-              `(do ~@forms)))
-
-          (defmacro when-not-clojure-1-9-plus
-            "Wraps code that should only be included for Clojure versions prior to 1.9.  Otherwise, code is supressed."
-            [& forms]
-            (if (is-pre-clojure-1-9?)
-              `(do ~@forms)))
-
-          ;----------------------------------------------------------------------------
-          (when-clojure-1-9-plus
-            (require
-              '[clojure.spec.alpha :as sp]
-              '[clojure.spec.gen.alpha :as gen]
-              '[clojure.spec.test.alpha :as stest]))
+     ;----------------------------------------------------------------------------
+     (when-clojure-1-9-plus
+       (require
+         '[clojure.spec.alpha :as sp]
+         '[clojure.spec.gen.alpha :as gen]
+         '[clojure.spec.test.alpha :as stest]))
 
 
-          ; #todo Need safe versions of:
-          ; #todo    + - * /  (others?)  (& :strict :safe reassignments)
-          ; #todo    and, or    (& :strict :safe reassignments)
-          ; #todo    = not=   (others?)  (& :strict :safe reassignments)
-          ; #todo    (drop-last N coll)  (take-last N coll)
-          ; #todo    subvec
-          ; #todo    others???
+     ; #todo Need safe versions of:
+     ; #todo    + - * /  (others?)  (& :strict :safe reassignments)
+     ; #todo    and, or    (& :strict :safe reassignments)
+     ; #todo    = not=   (others?)  (& :strict :safe reassignments)
+     ; #todo    (drop-last N coll)  (take-last N coll)
+     ; #todo    subvec
+     ; #todo    others???
 
-          ; #todo add postwalk and change to all sorted-map, sorted-set
-          ; #todo rename to pp or pprint ?
-          ; #todo add test & README
-          (defn pretty ; #todo experimental
-            "Shortcut to clojure.pprint/pprint. Returns it (1st) argument."
-            ([arg]
-             (pprint/pprint arg)
-             arg)
-            ([arg writer]
-             (pprint/pprint arg writer)
-             arg))
+     ; #todo add postwalk and change to all sorted-map, sorted-set
+     ; #todo rename to pp or pprint ?
+     ; #todo add test & README
+     (defn pretty   ; #todo experimental
+       "Shortcut to clojure.pprint/pprint. Returns it (1st) argument."
+       ([arg]
+        (pprint/pprint arg)
+        arg)
+       ([arg writer]
+        (pprint/pprint arg writer)
+        arg))
 
-          ; #todo add test & README
-          ; #todo defer to tupelo.core/pretty
-          (defn pretty-str
-            "Returns a string that is the result of clojure.pprint/pprint"
-            [arg]
-            (with-out-str (pprint/pprint arg)))
+     ; #todo add test & README
+     ; #todo defer to tupelo.core/pretty
+     (defn pretty-str
+       "Returns a string that is the result of clojure.pprint/pprint"
+       [arg]
+       (with-out-str (pprint/pprint arg)))
 
-          (comment
-            (is= (merge-deep ; #todo need a merge-deep where
-                   {:a {:b 2}}
-                   {:a {:c 3}})
-              {:a {:b 2
-                   :c 3}}))
+     (comment
+       (is= (merge-deep ; #todo need a merge-deep where
+              {:a {:b 2}}
+              {:a {:c 3}})
+         {:a {:b 2
+              :c 3}}))
 
-          ;-----------------------------------------------------------------------------
-          ; clojure.spec stuff
-          (when-clojure-1-9-plus
-            (sp/def ::anything (sp/spec (constantly true) :gen gen/any-printable))
-            (sp/def ::nothing (sp/spec (constantly false)))
+     ;-----------------------------------------------------------------------------
+     ; clojure.spec stuff
+     (when-clojure-1-9-plus
+       (sp/def ::anything (sp/spec (constantly true) :gen gen/any-printable))
+       (sp/def ::nothing (sp/spec (constantly false)))
 
-            ; #todo how to test the :ret part?
-            (sp/fdef truthy?
-              :args (sp/cat :arg ::anything)
-              :ret boolean?)
+       ; #todo how to test the :ret part?
+       (sp/fdef truthy?
+         :args (sp/cat :arg ::anything)
+         :ret boolean?)
 
-            (sp/fdef falsey?
-              :args (sp/cat :arg ::anything)
-              :ret boolean?
-              :fn #(= (:ret %) (not (truthy? (-> % :args :arg))))))
+       (sp/fdef falsey?
+         :args (sp/cat :arg ::anything)
+         :ret boolean?
+         :fn #(= (:ret %) (not (truthy? (-> % :args :arg))))))
 
-          ; #todo gogo ---------------------------------------------------------------------------------------------------
+     ; #todo gogo ---------------------------------------------------------------------------------------------------
 
-          ; #todo max-key -> t/max-by
+     ; #todo max-key -> t/max-by
 
-          (defn chan->lazy-seq ; #todo add schema, add tests, readme
-            "Accepts a core.async channel and returns the contents as a lazy list."
-            [chan]
-            (let [curr-item (async/<!! chan)] ; #todo ta/take-now!
-              (when (not-nil? curr-item)
-                (lazy-cons curr-item (chan->lazy-seq chan)))))
+     (defn chan->lazy-seq ; #todo add schema, add tests, readme
+       "Accepts a core.async channel and returns the contents as a lazy list."
+       [chan]
+       (let [curr-item (async/<!! chan)] ; #todo ta/take-now!
+         (when (not-nil? curr-item)
+           (lazy-cons curr-item (chan->lazy-seq chan)))))
 
-          ; #todo document use via binding
-          (def ^:dynamic *lazy-gen-buffer-size*
-            "Default output buffer size for `lazy-gen`."
-            32)
+     ; #todo document use via binding
+     (def ^:dynamic *lazy-gen-buffer-size*
+       "Default output buffer size for `lazy-gen`."
+       32)
 
-          ; #todo add to README
-          ; #todo fix SO posting:  defgen -> lazy-gen
-          ; #todo make null case return [] instead of nil
-          ; #todo make eager version?  gen-vec, gen-seq, ...
-          (defmacro lazy-gen
-            "Creates a 'generator function' that returns a lazy seq of results
-            via `yield` (a la Python)."
-            [& forms]
-            `(let [~'lazy-gen-output-buffer (async/chan *lazy-gen-buffer-size*)]
-               (async/go
-                 ~@forms
-                 (async/close! ~'lazy-gen-output-buffer))
-               (chan->lazy-seq ~'lazy-gen-output-buffer)))
+     ; #todo add to README
+     ; #todo fix SO posting:  defgen -> lazy-gen
+     ; #todo make null case return [] instead of nil
+     ; #todo make eager version?  gen-vec, gen-seq, ...
+     (defmacro lazy-gen
+       "Creates a 'generator function' that returns a lazy seq of results
+       via `yield` (a la Python)."
+       [& forms]
+       `(let [~'lazy-gen-output-buffer (async/chan *lazy-gen-buffer-size*)]
+          (async/go
+            ~@forms
+            (async/close! ~'lazy-gen-output-buffer))
+          (chan->lazy-seq ~'lazy-gen-output-buffer)))
 
-          (defmacro yield ; #todo put-now/put-later & dynamic
-            "Within a 'generator function' created by `lazy-gen`, populates the
-            result lazy seq with the supplied value (a la Python). Returns the value."
-            [value]
-            `(do
-               (async/>! ~'lazy-gen-output-buffer ~value)
-               ~value))
+     (defmacro yield ; #todo put-now/put-later & dynamic
+       "Within a 'generator function' created by `lazy-gen`, populates the
+       result lazy seq with the supplied value (a la Python). Returns the value."
+       [value]
+       `(do
+          (async/>! ~'lazy-gen-output-buffer ~value)
+          ~value))
 
-          (defmacro yield-all ; #todo maybe pattern after `restruct` and make function + dynamic value???
-            "Within a 'generator function' created by `lazy-gen`, populates the
-            result lazy seq with each item from the supplied collection. Returns the collection."
-            [values]
-            `(do
-               (doseq [value# ~values]
-                 (yield value#))
-               (vec ~values)))
+     (defmacro yield-all ; #todo maybe pattern after `restruct` and make function + dynamic value???
+       "Within a 'generator function' created by `lazy-gen`, populates the
+       result lazy seq with each item from the supplied collection. Returns the collection."
+       [values]
+       `(do
+          (doseq [value# ~values]
+            (yield value#))
+          (vec ~values)))
 
-          ; #todo make replace-in that is like assoc-in but verifies path first !!! (merge with replace-at)
+     ; #todo make replace-in that is like assoc-in but verifies path first !!! (merge with replace-at)
 
-          (defmacro matches?
-            "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
-             matches the pattern value.  Underscores serve as wildcard values. Usage:
+     (defmacro matches?
+       "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
+        matches the pattern value.  Underscores serve as wildcard values. Usage:
 
-               (matches? pattern & values)
+          (matches? pattern & values)
 
-             sample:
+        sample:
 
-               (matches?  [1 _ 3] [1 2 3] )         ;=> true
-               (matches?  {:a _ :b _       :c 3}
-                          {:a 1 :b [1 2 3] :c 3}
-                          {:a 2 :b 99      :c 3}
-                          {:a 3 :b nil     :c 3} )  ;=> true
+          (matches?  [1 _ 3] [1 2 3] )         ;=> true
+          (matches?  {:a _ :b _       :c 3}
+                     {:a 1 :b [1 2 3] :c 3}
+                     {:a 2 :b 99      :c 3}
+                     {:a 3 :b nil     :c 3} )  ;=> true
 
-             Note that a wildcald can match either a primitive or a composite value."
-            [pattern & values]
-            `(and ~@(forv [value values]
-                      `(ccm/match ~value
-                         ~pattern true
-                         :else false))))
+        Note that a wildcald can match either a primitive or a composite value."
+       [pattern & values]
+       `(and ~@(forv [value values]
+                 `(ccm/match ~value
+                    ~pattern true
+                    :else false))))
 
-          (defn macro?
-            "Returns true if a quoted symbol resolves to a macro. Usage:
+     (defn macro?
+       "Returns true if a quoted symbol resolves to a macro. Usage:
 
-              (println (macro? 'and))  ;=> true "
-            [s]
-            (-> s resolve meta :macro boolean))
-          ; from Alex Miller StackOverflow answer 2017-5-6
+         (println (macro? 'and))  ;=> true "
+       [s]
+       (-> s resolve meta :macro boolean))
+     ; from Alex Miller StackOverflow answer 2017-5-6
 
-          ; #todo maybe ns-assoc, ns-dissoc, ns-get for intern/ns-unmap
+     ; #todo maybe ns-assoc, ns-dissoc, ns-get for intern/ns-unmap
 
-          ; #todo maybe add explicit arg checking
-          ; #todo   map->entries, entries->map
-          ; #todo   str->chars, chars->str
-          ; #todo   set->vec, vec->set
-          ; #todo   line-seq et al not lazy (+ tupelo.lazy orig)
+     ; #todo maybe add explicit arg checking
+     ; #todo   map->entries, entries->map
+     ; #todo   str->chars, chars->str
+     ; #todo   set->vec, vec->set
+     ; #todo   line-seq et al not lazy (+ tupelo.lazy orig)
 
-          ;---------------------------------------------------------------------------------------------------
-          ; DEPRECATED functions
+     ;---------------------------------------------------------------------------------------------------
+     ; DEPRECATED functions
 
-          ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
-          (when-not-clojure-1-9-plus
-            (defn ^{:deprecated "1.9.0-alpha5"} seqable? ; from clojure.contrib.core/seqable
-              "Returns true if (seq x) will succeed, false otherwise."
-              [x]
-              (or (seq? x)
-                (instance? clojure.lang.Seqable x)
-                (nil? x)
-                (instance? Iterable x)
-                (-> x .getClass .isArray)
-                (string? x)
-                (instance? java.util.Map x))))
+     ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
+     (when-not-clojure-1-9-plus
+       (defn ^{:deprecated "1.9.0-alpha5"} seqable? ; from clojure.contrib.core/seqable
+         "Returns true if (seq x) will succeed, false otherwise."
+         [x]
+         (or (seq? x)
+           (instance? clojure.lang.Seqable x)
+           (nil? x)
+           (instance? Iterable x)
+           (-> x .getClass .isArray)
+           (string? x)
+           (instance? java.util.Map x))))
 
-          ; duplicate of str/split-lines
-          (defn ^:deprecated ^:no-doc str->lines
-            "***** DEPRECATED:  duplicate of str/split-lines *****
+     ; duplicate of str/split-lines
+     (defn ^:deprecated ^:no-doc str->lines
+       "***** DEPRECATED:  duplicate of str/split-lines *****
 
-            Returns a lazy seq of lines from a string"
-            [string-arg]
-            (line-seq (BufferedReader. (StringReader. string-arg))))
+       Returns a lazy seq of lines from a string"
+       [string-arg]
+       (line-seq (BufferedReader. (StringReader. string-arg))))
 
-
-          ))
+     ))
 
 ;(defn refer-tupelo  ; #todo delete?
 ;  "Refer a number of commonly used tupelo.core functions into the current namespace so they can
@@ -2469,7 +2475,6 @@
 ;    )))
 
 ;---------------------------------------------------------------------------------------------------
-; Another benefit of test-all:  don't need "-test" suffix like in lein test:
 ; ~/tupelo > lein test :only tupelo.core
 ; lein test user
 ; Ran 0 tests containing 0 assertions.     ***** Nearly silent failure *****
@@ -2485,32 +2490,6 @@
 ; Ran 1 tests containing 3 assertions.
 ; 0 failures, 0 errors.
 ;
-; #todo:  add run-tests with syntax like lein test :only
-;   (run-tests 'tst.tupelo.core)              ; whole namespace
-;   (run-tests 'tst.tupelo.core/convj-test)   ; one function only
-;
 ; #todo make it handle either tst.orig.namespace or orig.namespace-test
 ; #todo make it a macro to accept unquoted namespace values
-; #todo delete this
-;(defn ^:deprecated ^:no-doc test-all
-;  "Convenience fn to reload a namespace & the corresponding test namespace from disk and
-;  execute tests in the REPL.  Assumes canonical project test file organization with
-;  parallel src/... & test/tst/... directories, where a 'tst.' prefix is added to all src
-;  namespaces to generate the cooresponding test namespace.  Example:
-;
-;    (test-all 'tupelo.core 'tupelo.csv)
-;
-;  This will reload tupelo.core, tst.tupelo.core, tupelo.csv, tst.tupelo.csv and
-;  then execute clojure.test/run-tests on both of the test namespaces."
-;  [& ns-list]
-;  (let [test-ns-list (for [curr-ns ns-list]
-;                       (let [curr-ns-test (symbol (str "tst." curr-ns))]
-;                         (println (str "testing " curr-ns " & " curr-ns-test))
-;                         (require curr-ns curr-ns-test :reload)
-;                         curr-ns-test))
-;        ]
-;    (println "-----------------------------------------------------------------------------")
-;    (apply clojure.test/run-tests test-ns-list)
-;    (println "-----------------------------------------------------------------------------")
-;    (newline) ))
 

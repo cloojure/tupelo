@@ -71,8 +71,9 @@
 (s/defn byte-unsigned->signed
   "Converts an unsigned int value [0..255] into a signed byte [-128..127]."
   [unsigned-int :- s/Int]
-  (when-not (int? unsigned-int)
-    (throw (ex-info "byte-unsigned->signed: value must be an int" (t/vals->map unsigned-int))))
+  (t/when-clojure-1-9-plus
+    (when-not (int? unsigned-int)
+      (throw (ex-info "byte-unsigned->signed: value must be an int" (t/vals->map unsigned-int)))))
   (when-not (<= 0 unsigned-int 255)
     (throw (ex-info "byte-unsigned->signed: value out of range" (t/vals->map unsigned-int))))
   (if (< unsigned-int 128)
@@ -82,8 +83,9 @@
 (s/defn byte-signed->unsigned
   "Converts a signed byte [-128..127] into an unsigned byte [0..255]."
   [signed-byte :- s/Int]
-  (when-not (int? signed-byte)
-    (throw (ex-info "byte-signed->unsigned: value must be an int" (t/vals->map signed-byte))))
+  (t/when-clojure-1-9-plus
+    (when-not (int? signed-byte)
+      (throw (ex-info "byte-signed->unsigned: value must be an int" (t/vals->map signed-byte)))))
   (when-not (<= -128 signed-byte 127)
     (throw (ex-info "byte-signed->unsigned: value out of range" (t/vals->map signed-byte))))
   (if (neg? signed-byte)
@@ -105,9 +107,10 @@
 (def hex->int (zipmap hex-chars (range 16)))
 (s/defn unsigned-byte->hex :- s/Str
   "Converts a sequence of unsigned bytes [0..255] to a hex string, where each byte becomes 2 hex digits."
-  [unsigned-byte]
-  (when-not (int? unsigned-byte)
-    (throw (ex-info "unsigned-byte->hex value must be an int" (t/vals->map unsigned-byte))))
+  [unsigned-byte  :- s/Int]
+  (t/when-clojure-1-9-plus
+    (when-not (int? unsigned-byte)
+      (throw (ex-info "unsigned-byte->hex value must be an int" (t/vals->map unsigned-byte)))))
   (when-not (<= 0 unsigned-byte 255)
     (throw (ex-info "unsigned-byte->hex value out of range" (t/vals->map unsigned-byte))))
   (let [high-bits-val (quot unsigned-byte 16)
@@ -214,8 +217,9 @@
    (defn uuid->sha
      "Returns the SHA-1 hex string for a UUID's string representation"
      [uuid]
-     (when-not (uuid? uuid)
-       (throw (ex-info "arg must be a uuid" (t/vals->map uuid))))
+     (t/when-clojure-1-9-plus
+       (when-not (uuid? uuid)
+         (throw (ex-info "arg must be a uuid" (t/vals->map uuid)))))
      (let [uuid-str (do
                       #?(:clj (str uuid))
                       #?(:cljs (.-uuid uuid)))

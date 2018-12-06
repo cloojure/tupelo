@@ -7,9 +7,7 @@
 (ns tst.tupelo.spec
   (:use tupelo.core tupelo.test)
   (:require
-    [tupelo.core :as t]
-    [tupelo.spec :as tsp]
-    [clojure.spec.alpha :as s]))
+    [tupelo.core :as t] ))
 
 (t/when-clojure-1-9-plus
   (require

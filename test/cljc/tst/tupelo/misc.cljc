@@ -129,8 +129,10 @@
       (str "f0" "f1" "f2" "f3" "f4" "f5" "f6" "f7" "f8" "f9" "fa" "fb" "fc" "fd" "fe" "ff")))
 
   (let [uuid-val #uuid "0b37e120-2c65-11e7-aa8d-91b7120fbbd1"] ; tagged-literal literal for UUID type
-    (is (uuid? uuid-val))
-    (is= uuid-val #uuid "0b37e120-2c65-11e7-aa8d-91b7120fbbd1")
+   #?(:clj
+      (t/when-clojure-1-9-plus
+        (is (uuid? uuid-val))))
+   (is= uuid-val #uuid "0b37e120-2c65-11e7-aa8d-91b7120fbbd1")
     (is= (pr-str uuid-val) "#uuid \"0b37e120-2c65-11e7-aa8d-91b7120fbbd1\"")
     (is= (type uuid-val) (do #?(:clj java.util.UUID)
                              #?(:cljs cljs.core/UUID)))
