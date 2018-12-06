@@ -6,14 +6,13 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.pedestal
   "Utils for Pedestal"
-  #?@(:clj
-      [(:use tupelo.core)
-       (:require
-         [clojure.set :as set]
-         [clojure.string :as str]
-         [schema.core :as s]
-         [tupelo.schema :as tsk]
-      )]))
+  (:use tupelo.core)
+  (:require
+     [clojure.set :as set]
+     [clojure.string :as str]
+     [schema.core :as s]
+     [tupelo.schema :as tsk]
+  ))
 
 ;-----------------------------------------------------------------------------
 ; http string constants
@@ -32,9 +31,6 @@
 (def x-frame-options                              "X-Frame-Options")
 (def x-permitted-cross-domain-policies            "X-Permitted-Cross-Domain-Policies")
 (def x-xss-protection                             "X-XSS-Protection")
-
-#?(:clj
-   (do
 
 ;-----------------------------------------------------------------------------
 ; Plumatic Schema type definitions
@@ -159,4 +155,3 @@
    [name ctx]
    (definterceptor-impl name ctx))
 
- ))

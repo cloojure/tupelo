@@ -10,19 +10,16 @@
   functions, these native-Clojure functions can be used as higher-order functions in maps,
   function arguments, etc.  Each function also provides an optional default-value which
   will be returned if there is an exception during parsing."
-  #?@(:clj
-      [(:use tupelo.core)
-       (:require
-         [clojure.tools.reader.edn :as edn]
-         [clojure.walk :as walk]
-         [schema.core :as s]
-         [tupelo.core :as t]
-       )]) )
+  (:use tupelo.core)
+  (:require
+     [clojure.tools.reader.edn :as edn]
+     [clojure.walk :as walk]
+     [schema.core :as s]
+     [tupelo.core :as t]
+))
 
 ; #todo:  write doc page
 ; #todo:  convert args from [str-val & opts] -> [str-val & {:as opts} ]
-
-#?(:clj (do
 
 (defn edn-parsible
   "Traverses a data structure to ensure it can be serialized with `pr-str` and read via
@@ -141,4 +138,3 @@
 
 ; #awt TODO:  finish other parse* functions
 
-))
