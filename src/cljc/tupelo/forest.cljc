@@ -677,6 +677,7 @@
     (set-node hid node-new)
     node-new))
 
+; #todo need attr-set
 (s/defn attr-get :- tsk/KeyMap ; #todo test
   "Use the supplied function & arguments to update the attr value for a Node as in clojure.core/update"
   [hid :- HID
@@ -705,6 +706,7 @@
         node-new  (dissoc node-curr attr)]
     (set-node hid node-new)))
 
+; #todo make :value just another user-supplied attr :f/value
 (s/defn value-set :- Node
   "Resets the value of a leaf"
   [hid :- HID
