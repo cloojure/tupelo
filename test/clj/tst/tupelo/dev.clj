@@ -5,20 +5,17 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.dev
+  (:use tupelo.core tupelo.test)
   (:require
     [clojure.string :as str]
-    [criterium.core :as crit]
-    [schema.core :as s]
-    [tupelo.core :refer :all]
-    [tupelo.core :as i]
     [tupelo.dev :refer :all]
-    [tupelo.test :refer :all]) )
+    ) )
 
 (dotest ; #todo move
-  (is= {0 :a 1 :b 2 :c} (i/sequential->idx-map [:a :b :c]))
-  (is= {0 :x 1 :y 2 :z} (i/sequential->idx-map [:x :y :z]))
-  (is= 'a (i/char->sym \a))
-  (is= '? (i/char->sym \?)))
+  (is= {0 :a 1 :b 2 :c} (sequential->idx-map [:a :b :c]))
+  (is= {0 :x 1 :y 2 :z} (sequential->idx-map [:x :y :z]))
+  (is= 'a (char->sym \a))
+  (is= '? (char->sym \?)))
 
 ;-----------------------------------------------------------------------------
 (dotest
@@ -99,10 +96,10 @@
       (persistent! v))))
 
 ;; benchmarked (Java 1.8, Clojure 1.7)
-(when false
-  (dotest
-    (nl) (println :v1) (crit/quick-bench (vrange 1000000))
-    (nl) (println :v2) (crit/quick-bench (vrange2 1000000))))
+;(when false
+;  (dotest
+;    (nl) (println :v1) (crit/quick-bench (vrange 1000000))
+;    (nl) (println :v2) (crit/quick-bench (vrange2 1000000))))
 
 (comment            ; #todo fixme broken 2018-11-10 during impl merge
   (dotest

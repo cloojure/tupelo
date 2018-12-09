@@ -66,7 +66,7 @@
 
 (defn validate-forest []
   (when-not (map? *forest*)
-    (throw (IllegalArgumentException. (str "validate-forest: failed forest=" *forest*)))))
+    (throw (ex-info "validate-forest: failed forest=" {:forest *forest*}))))
 
 (defmacro with-forest ; #todo swap names?
   [forest-arg & forms]
@@ -228,7 +228,7 @@
                                                 {(grab ::key entry) (tree->edn (only (grab ::kids entry)))}))]
                                map-data)
 
-    :else (throw (IllegalArgumentException. (str "tree->data: unrecognized node=" node)))))
+    :else (throw (ex-info "tree->data: unrecognized node=" node))))
 
 ;---------------------------------------------------------------------------------------------------
 (defn enlive-node-lax?
@@ -355,7 +355,7 @@
   "Returns HID arg iff it exists in the forest, else throws."
   [hid :- HID]
   (when-not (contains-key? *forest* hid)
-    (throw (IllegalArgumentException. (str "validate-hid: HID does not exist=" hid))))
+    (throw (ex-info "validate-hid: HID does not exist=" (vals->map hid))))
   hid)
 
 (s/defn hid->node :- Node
@@ -461,7 +461,7 @@
   [attrs :- tsk/KeyMap]
   (let [illegal-value?   (s/fn fn-illegal-value [arg] (or (= arg :*) (= arg :**))) ]
     (when (has-some? illegal-value? (keyvals attrs))
-      (throw (IllegalArgumentException. (str "validate-attrs: failed attrs=" (pr-str attrs)))))
+      (throw (ex-info "validate-attrs: failed attrs=" attrs)))
     attrs))
 
 ; #todo avoid self-cycles
@@ -491,9 +491,9 @@
 
 (s/defn add-tree :- HID
   "Adds a tree to the forest."
-  [tree-node]
+  [tree-node  :- tsk/KeyMap]
   (when-not (tree-node? tree-node)
-    (throw (IllegalArgumentException. (str "add-tree: invalid element=" tree-node))))
+    (throw (ex-info "add-tree: invalid element=" tree-node)))
   (let [tree-node-attrs (dissoc tree-node ::kids)
         kid-hids        (forv [child (grab ::kids tree-node)] ; #todo forv & no glue ???
                           (add-tree child))]
@@ -597,7 +597,7 @@
   [nodes :- [tsk/EnliveNode]]
   (let [num-nodes (count nodes)]
     (cond
-      (zero? num-nodes) (throw (IllegalArgumentException. "num-nodes must be positive"))
+      (zero? num-nodes) (throw (ex-info "num-nodes must be positive" (vals->map num-nodes)))
       (= 1 num-nodes)   (only nodes)
       :else (let [nodes-1           (xbutlast nodes)
                   nodes-2           (xbutlast nodes-1)
@@ -795,8 +795,7 @@
           kids-curr           (grab ::khids node-curr)
           missing-kids        (clj.set/difference kids-leaving (into #{} kids-curr))
           _                   (when (and (not-empty? missing-kids) report-missing-kids)
-                                (throw (IllegalArgumentException.
-                                         (str "remove-kids: missing-kids found=" missing-kids))))
+                                (throw (ex-info  "remove-kids: missing-kids found=" (vals->map missing-kids))))
           kid-is-leaving?     (fn fn-kid-is-leaving? [kid] (contains-key? kids-leaving kid))
           kids-new            (drop-if kid-is-leaving? kids-curr)
           node-new            (glue node-curr {::khids kids-new})]
@@ -837,8 +836,7 @@
                   (map?         pattern-in)  pattern-in
                   (sequential?  pattern-in)  (zipmap pattern-in (repeat nil))
                   (keyword?     pattern-in)  {:tag pattern-in}
-                  :else (throw (IllegalArgumentException.
-                                 (str "hid-matches?: illegal pattern-in=" pattern-in))))]
+                  :else (throw (ex-info  "hid-matches?: illegal pattern-in=" (vals->map pattern-in))))]
     (let [pattern-keys         (keys pattern)
           pattern-keys-set     (set pattern-keys)
           node-keys-set        (set (keys node))
@@ -938,16 +936,16 @@
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec ]
   (when (empty? tgt-path)
-    (throw (IllegalStateException. "find-paths: tgt-path is empty")))
+    (throw (ex-info "find-paths: tgt-path is empty" (vals->map tgt-path))))
   (when (= :** (last tgt-path))
-    (throw (IllegalArgumentException. "find-paths: recursive-wildcard `:**` cannot terminate tgt-path")))
+    (throw (ex-info "find-paths: recursive-wildcard `:**` cannot terminate tgt-path" (vals->map tgt-path))))
 
   (let [result-atom (atom [])
         roots (cond
                 (tm/hid? root-spec)     #{root-spec} ; scalar arg -> wrap in a set
                 (vector? root-spec)  (set root-spec) ; vec of root hids -> convert to set
                 (set? root-spec)     root-spec ; set of root hids -> use it as-is
-                :else (throw (IllegalArgumentException. (str "find-paths: invalid root-spec=" root-spec)))) ]
+                :else (throw (ex-info  "find-paths: invalid root-spec=" (vals->map root-spec)))) ]
     (doseq [root roots]
       (find-paths-impl result-atom [] root tgt-path))
     @result-atom))
