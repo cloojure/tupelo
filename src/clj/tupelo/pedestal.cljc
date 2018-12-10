@@ -60,6 +60,7 @@
                           :uri})
 
  (def Request
+   "Plumatic Schema definition of a Pedestal Request"
    {:async-supported? s/Bool
     :body             s/Any
     :headers          {s/Str s/Str}
@@ -75,6 +76,7 @@
     s/Keyword         s/Any})
 
  (def Context
+   "Plumatic Schema definition of a Pedestal Context"
    ; :io.pedestal.interceptor.chain/queue        [s/Any]  ; NOT ALWAYS PRESENT!
    {:bindings                                   tsk/Map
     :io.pedestal.interceptor.chain/execution-id s/Int
@@ -88,6 +90,7 @@
     s/Keyword                                   s/Any})
 
  (def TableRouteInfo
+   "Plumatic Schema definition of a Pedestal TableRouteInfo"
    {:verb                          s/Keyword
     :path                          s/Str
     :route-name                    s/Keyword
@@ -105,16 +108,19 @@
                    :the-map    route-map :the-keys [:route-name :constraints]})))
 
  (s/defn context? :- s/Bool
+   "Returns true if the map arg is a Pedestal context map"
    [map-in :- tsk/KeyMap]
    (let [keys-found (set (keys map-in))]
      (set/subset? context-keys-base keys-found)))
 
  (s/defn request? :- s/Bool
+   "Returns true if the map arg is a Pedestal request map"
    [map-in :- tsk/KeyMap]
    (let [keys-found (set (keys map-in))]
      (set/subset? request-keys-base keys-found)))
 
  (s/defn interceptor? :- s/Bool
+   "Returns true if the map arg is a Pedestal interceptor map"
    [map-in :- tsk/KeyMap]
    (let [enter-fn   (get map-in :enter)
          leave-fn   (get map-in :leave)
@@ -124,7 +130,7 @@
        (or (not-nil? enter-fn) (not-nil? leave-fn) (not-nil? error-fn))
        (set/subset? keys-found #{:name :enter :leave :error}))))
 
- (defn definterceptor-impl
+ (defn ^:no-doc definterceptor-impl
    [name ctx]
    (assert symbol? name)
    (assert map? ctx)
@@ -149,9 +155,9 @@
  (defmacro definterceptor
    "Creates a Pedestal interceptor given a name and a map like
    (definterceptor my-intc
-     {:enter  <enter-fn>
-      :leave  <leave-fn>}
-      :error  <error-fn>} ) "
+     { :enter  <enter-fn>
+       :leave  <leave-fn>
+       :error  <error-fn> } )  "
    [name ctx]
    (definterceptor-impl name ctx))
 
