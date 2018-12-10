@@ -985,7 +985,7 @@
 
 (s/defn find-tree     ; #todo need test (maybe delete?)
   [root-spec :- HidRootSpec
-   tgt-path :- [s/Any] ]
+   tgt-path :- tsk/Vec ]
   (hid->tree (find-hid root-spec tgt-path)))
 
 (s/defn leaf-path? :- s/Bool
@@ -1004,19 +1004,19 @@
 ; #todo remove
 (s/defn find-leaf-hids :- [HID]     ; #todo need test
   [root-spec :- HidRootSpec
-   tgt-path :- [s/Any] ]
+   tgt-path :- tsk/Vec ]
   (mapv last (find-leaf-paths root-spec tgt-path )) )
 
 ; #todo remove
 (s/defn find-leaf-hid ; #todo remove single version -> (only (xyz ...))
   [root-spec :- HidRootSpec
-   tgt-path :- [s/Any] ]
+   tgt-path :- tsk/Vec ]
   (only (find-leaf-hids root-spec tgt-path )))
 
 ; #todo remove
 (s/defn find-leaf
   [root-spec :- HidRootSpec
-   tgt-path :- [s/Any] ]
+   tgt-path :- tsk/Vec ]
   (hid->leaf (find-leaf-hid root-spec tgt-path )))
 
 (s/defn whitespace-leaf-hid? :- s/Bool
@@ -1037,7 +1037,7 @@
 
 (s/defn find-paths-with
   [root-spec :- HidRootSpec
-   tgt-path :- [s/Any]
+   tgt-path :- tsk/Vec
    path-pred :- s/Any] ; #todo how func spec?
   (let [paths-found (find-paths root-spec tgt-path)
         keepers     (keep-if path-pred paths-found)]
@@ -1045,7 +1045,7 @@
 
 (s/defn find-hids-with
   [root-spec :- HidRootSpec
-   tgt-path :- [s/Any]
+   tgt-path :- tsk/Vec
    hid-pred :- s/Any] ; #todo how func spec?
   (let [paths-found (find-paths root-spec tgt-path)
         hids-found  (mapv last paths-found)
@@ -1054,18 +1054,18 @@
 
 (s/defn has-child-path? ; #todo need test
   [root-spec :- HidRootSpec
-   tgt-path :- [s/Any] ]
+   tgt-path :- tsk/Vec ]
   (pos? (count (find-paths root-spec tgt-path))))
 
 (s/defn has-child-path-with? ; #todo need test
   [root-spec :- HidRootSpec
-   tgt-path :- [s/Any]
+   tgt-path :- tsk/Vec
    path-pred :- s/Any] ; #todo how func spec?
   (pos? (count (find-paths-with root-spec tgt-path path-pred))))
 
 (s/defn has-child-leaf?
   [root-spec :- HidRootSpec
-   tgt-path :- [s/Any] ]
+   tgt-path :- tsk/Vec ]
   (pos? (count (find-leaf-hids root-spec tgt-path))))
 
 ))

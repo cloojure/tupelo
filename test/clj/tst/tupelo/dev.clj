@@ -8,6 +8,7 @@
   (:use tupelo.core tupelo.test)
   (:require
     [clojure.string :as str]
+    [criterium.core :as crit]
     [tupelo.dev :refer :all]
     ) )
 
@@ -81,25 +82,24 @@
   (is= [2 3 :x] (with-in-str "2 3 :x"
                   (parse-string (read-line)))))
 
-(defn vrange [n]    ; 1e6 => 30 ms
+(defn vrange-1 [n]    ; 1e6 => 30 ms
   (loop [i 0
          v []]
     (if (< i n)
       (recur (inc i) (conj v i))
       v)))
 
-(defn vrange2 [n]   ; 1e6 => 16 ms
+(defn vrange-2 [n]  ; 1e6 => 16 ms
   (loop [i 0
          v (transient [])]
     (if (< i n)
       (recur (inc i) (conj! v i))
       (persistent! v))))
 
-;; benchmarked (Java 1.8, Clojure 1.7)
-;(when false
-;  (dotest
-;    (nl) (println :v1) (crit/quick-bench (vrange 1000000))
-;    (nl) (println :v2) (crit/quick-bench (vrange2 1000000))))
+(when false
+  (dotest
+    (nl) (time (println :vrange1 (crit/quick-bench (vrange-1 100000))))
+    (nl) (time (println :vrange2 (crit/quick-bench (vrange-2 100000))))))
 
 (comment            ; #todo fixme broken 2018-11-10 during impl merge
   (dotest
