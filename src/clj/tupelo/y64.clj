@@ -4,7 +4,6 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-
 (ns tupelo.y64
   "Convert to/from the URL-safe Y64 encoding.  Y64 is a URL-safe variant of Base64
   encoding created by Yahoo (YUI library) which replaces URL-problematic chars 
@@ -16,20 +15,21 @@
     http://en.wikipedia.org/wiki/Base64  
     http://www.yuiblog.com/blog/2010/07/06/in-the-yui-3-gallery-base64-and-y64-encoding/
   "
-  (:require [clojure.string     :as str]
-            [tupelo.base64      :as b64]
-            [tupelo.core        :as t]
-            [tupelo.types       :as types]
-            [schema.core        :as s] ))
+  (:use tupelo.core)
+  (:require
+    [tupelo.base64 :as b64]
+    [tupelo.types :as types]
+    [schema.core :as s]))
 
 (def encoding-char-set
   "A set of chars used for the Y64 encoding (incl. padding char)"
-  (into #{} (flatten [ (t/chars-thru  \a \z)
-                       (t/chars-thru  \A \Z)
-                       (t/chars-thru  \0 \9)
-                       [\. \_ \-] ] )))
+  (set (glue
+         (chars-thru \a \z)
+         (chars-thru \A \Z)
+         (chars-thru \0 \9)
+         [\. \_ \-])))
 
-(def ^:private b64-code-62  (byte \+ ))
+(def ^:private b64-code-62  (byte \+))
 (def ^:private b64-code-63  (byte \/ ))
 (def ^:private b64-code-pad (byte \= ))
 

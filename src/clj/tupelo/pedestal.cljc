@@ -9,7 +9,6 @@
   (:use tupelo.core)
   (:require
      [clojure.set :as set]
-     [clojure.string :as str]
      [schema.core :as s]
      [tupelo.schema :as tsk]
   ))

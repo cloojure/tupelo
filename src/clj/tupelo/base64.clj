@@ -6,27 +6,27 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.base64
   "Convert to/from traditional base64 encoding."
-  (:require [clojure.string :as str]
-            [tupelo.core    :as t]
-            [tupelo.misc    :as misc]
-            [tupelo.types   :as types]
-            [schema.core    :as s]
-  ) )
+  (:use tupelo.core)
+  (:require
+    [tupelo.types :as types]
+    [schema.core :as s]
+  ))
 
 (def base64-chars
   "A set of chars used for traditional base64 encoding (incl. padding char)"
-  (into #{} (flatten [ (t/chars-thru  \a \z)
-                       (t/chars-thru  \A \Z)
-                       (t/chars-thru  \0 \9)
-                       [\+ \/ \=] ] )))
+  (set (glue
+         (chars-thru \a \z)
+         (chars-thru \A \Z)
+         (chars-thru \0 \9)
+         [\+ \/ \=])))
 
 (defn base64-encoder []
-  (t/if-java-1-8-plus
+  (if-java-1-8-plus
     (java.util.Base64/getEncoder)
     (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 
 (defn base64-decoder []
-  (t/if-java-1-8-plus
+  (if-java-1-8-plus
     (java.util.Base64/getDecoder)
     (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 
@@ -62,4 +62,3 @@
   "Decodes a base64 encoded String, returning a String."
   [code-str :- s/Str]
   (-> code-str decode-str->bytes types/bytes->str))
-

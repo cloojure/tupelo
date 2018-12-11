@@ -6,26 +6,27 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.base64url
   "Convert to/from traditional base64url encoding."
-  (:require [clojure.string :as str]
-            [tupelo.core    :as i]
-            [tupelo.types   :as types]
-            [schema.core    :as s]) )
+  (:use tupelo.core)
+  (:require
+    [tupelo.types :as types]
+    [schema.core :as s] ))
 
 ; #todo -> code-chars (& other ns's)
 (def encoding-char-set
   "A set of chars used for traditional base64url encoding (incl. padding char)"
-  (into #{} (flatten [ (i/chars-thru  \a \z)
-                       (i/chars-thru  \A \Z)
-                       (i/chars-thru  \0 \9)
-                       [\- \_ \=] ] )))
+  (set (glue
+         (chars-thru \a \z)
+         (chars-thru \A \Z)
+         (chars-thru \0 \9)
+         [\- \_ \=])))
 
 (defn base64url-encoder []
-  (i/if-java-1-8-plus
+  (if-java-1-8-plus
     (java.util.Base64/getUrlEncoder)
     (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 
 (defn base64url-decoder []
-  (i/if-java-1-8-plus
+  (if-java-1-8-plus
     (java.util.Base64/getUrlDecoder)
     (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 
@@ -61,4 +62,3 @@
   "Decodes a base64url encoded String, returning a String."
   [code-str :- s/Str]
   (-> code-str decode-str->bytes types/bytes->str))
-

@@ -29,12 +29,12 @@
   :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]] 
             [lein-codox "0.10.5"]
             [lein-doo "0.1.10"]
-            [lein-figwheel "0.5.17"]]
+            [lein-figwheel "0.5.17"]
+            [com.jakemccrary/lein-test-refresh "0.23.0"]]
 
   :profiles {:dev {:dependencies [[binaryage/devtools "0.9.10"]
                                   [binaryage/dirac "1.2.42"]
                                   [com.cemerick/piggieback "0.2.2"]
-                                  [com.jakemccrary/lein-test-refresh "0.23.0"]
                                   [criterium "0.4.4"]
                                   [org.clojure/clojure "1.10.0-RC3"] ]}
              :1.8  {:dependencies [[org.clojure/clojure "1.8.0"]]}
