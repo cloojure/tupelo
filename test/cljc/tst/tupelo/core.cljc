@@ -1378,10 +1378,10 @@
 
 #?(:cljs
    (dotest ; in JS a char is just a single-char string
-     (is= "a" \a (t/int->char 97))
-     (is= 97 (t/char->int "a") (t/char->int \a))
+     (is= "a" \a (t/codepoint->char 97))
+     (is= 97 (t/char->codepoint "a") (t/char->codepoint \a))
      (is= [\a \b \c] (vec "abc"))
-     (is= [97 98 99] (mapv t/char->int (t/str->chars "abc")))))
+     (is= [97 98 99] (mapv t/char->codepoint (t/str->chars "abc")))))
 
 (dotest
   (is= "a" (t/strcat \a  ) (t/strcat [\a]  ))

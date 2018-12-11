@@ -699,7 +699,7 @@
 (defn int->kw [arg]
   (keyword (str arg)))
 
-(s/defn int->char :- s/Any    ; #todo need clj/cljs char? test
+(s/defn codepoint->char :- s/Any    ; #todo need clj/cljs char? test
   "Convert a unicode int to a char"
   [arg :- s/Int]
   #?(:clj (char arg))
@@ -709,7 +709,7 @@
        (.fromCharCode js/String arg) ; #todo just use cljs.core/char  ???
        )))
 
-(s/defn char->int :- s/Int
+(s/defn char->codepoint :- s/Int
   "Convert a char to an unicode int"
   [arg :- s/Any ]   ; #todo need clj/cljs char? test
   #?(:clj (int arg))
@@ -1405,10 +1405,10 @@
   (inclusive) from the first to the second.  Characters must be in ascending order."
   [start-char stop-char]
   ; #todo throw if not char or int
-  (let [start-int   (if (integer? start-char) start-char (char->int start-char))
-        stop-int    (if (integer? stop-char) stop-char (char->int stop-char))
+  (let [start-int   (if (integer? start-char) start-char (char->codepoint start-char))
+        stop-int    (if (integer? stop-char) stop-char (char->codepoint stop-char))
         thru-vals   (thru start-int stop-int)
-        char-vals   (mapv int->char thru-vals) ]
+        char-vals   (mapv codepoint->char thru-vals) ]
     (when (< 65535 stop-int) ; #todo cleanup limit
       (throw (ex-info "chars-thru: stop-int too large" (vals->map start-int stop-int))))
     (when-not (<= start-int stop-int)

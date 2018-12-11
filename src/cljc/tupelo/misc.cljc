@@ -159,7 +159,7 @@
 ; for ref:  (crypt/stringToUtf8ByteArray s)
 (s/defn str->byte-array
   [str-val :- s/Str]
-  (let [unsigned-bytes (mapv t/char->int (t/str->chars str-val))
+  (let [unsigned-bytes (mapv t/char->codepoint (t/str->chars str-val))
         byte-arr       (do
                          #?(:clj (byte-array (bytes-unsigned->signed unsigned-bytes)))
                          #?(:cljs (into-array unsigned-bytes)))]

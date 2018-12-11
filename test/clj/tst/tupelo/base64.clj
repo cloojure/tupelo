@@ -24,8 +24,8 @@
 (dotest
   (when (t/is-java-1-8-plus?)
     (let [orig    (byte-array [(byte \A)])
-          b64-str (b64/encode-bytes->str orig)
-          result  (b64/decode-str->bytes b64-str)]
+          b64-str (b64/byte-array-encode orig)
+          result  (b64/byte-array-decode b64-str)]
       (is (every? b64/base64-chars (seq b64-str)))
       (is (= (seq orig) (seq result))))))
 
@@ -34,31 +34,31 @@
     ; bytes
     (doseq [step [50 20 7]]
       (let [orig    (byte-array (mapv #(.byteValue %) (range 0 400 step)))
-            b64-str (b64/encode-bytes->str orig)
-            result  (b64/decode-str->bytes b64-str)]
+            b64-str (b64/byte-array-encode orig)
+            result  (b64/byte-array-decode b64-str)]
         (is (every? b64/base64-chars (seq b64-str)))
         (is (= (seq orig) (seq result)))))
     ; string
     (doseq [num-chars [1 2 3 7 20]]
       (let [orig    (str/join (misc/take-dist num-chars (vec char/text)))
-            b64-str (b64/encode-str orig)
-            result  (b64/decode-str b64-str)]
+            b64-str (b64/string-encode orig)
+            result  (b64/string-decode b64-str)]
         (is (every? b64/base64-chars (seq b64-str)))
         (is (= orig result))))))
 
 (when (t/is-java-1-8-plus?)
   (dospec 999 ; round-trip-bytes
     (prop/for-all [orig gen/bytes]
-      (let [string-b64 (b64/encode-bytes->str orig)
-            result     (b64/decode-str->bytes string-b64)]
+      (let [string-b64 (b64/byte-array-encode orig)
+            result     (b64/byte-array-decode string-b64)]
         (assert (every? b64/base64-chars (seq string-b64)))
         (assert (types/byte-array? result))
         (= (seq orig) (seq result)))))
   ; Transform a string to a base64 string and back
   (dospec 999 ; round-trip-string
     (prop/for-all [orig gen/string]
-      (let [string-b64 (b64/encode-str orig)
-            result     (b64/decode-str string-b64)]
+      (let [string-b64 (b64/string-encode orig)
+            result     (b64/string-decode string-b64)]
         (assert (every? b64/base64-chars (seq string-b64)))
         (assert (string? result))
         (= orig result)))) )
@@ -66,31 +66,31 @@
 (dotest
   (is= "jack+base64@ladderlife.com or 6a61636b2b686578406c61646465726c6966652e636f6d206f72206d64353a6330373761363662383137643733623536636130623665373265303239396132"
 
-    (b64/decode-str
+    (b64/string-decode
       "amFjaytiYXNlNjRAbGFkZGVybGlmZS5jb20gb3IgNmE2MTYzNmIyYjY4NjU3ODQwNmM2MTY0NjQ2NTcyNmM2OTY2NjUyZTYzNmY2ZDIwNmY3MjIwNmQ2NDM1M2E2MzMwMzczNzYxMzYzNjYyMzgzMTM3NjQzNzMzNjIzNTM2NjM2MTMwNjIzNjY1MzczMjY1MzAzMjM5Mzk2MTMy"
       )
 
-    (b64url/decode-str
+    (b64url/string-decode
       "amFjaytiYXNlNjRAbGFkZGVybGlmZS5jb20gb3IgNmE2MTYzNmIyYjY4NjU3ODQwNmM2MTY0NjQ2NTcyNmM2OTY2NjUyZTYzNmY2ZDIwNmY3MjIwNmQ2NDM1M2E2MzMwMzczNzYxMzYzNjYyMzgzMTM3NjQzNzMzNjIzNTM2NjM2MTMwNjIzNjY1MzczMjY1MzAzMjM5Mzk2MTMy"
       )
 
-    (b64url/decode-str
+    (b64url/string-decode
       "amFjaytiYXNlNjRAbGFkZGVybGlmZS5jb20gb3IgNmE2MTYzNmIyYjY4NjU3ODQwNmM2MTY0NjQ2NTcyNmM2OTY2NjUyZTYzNmY2ZDIwNmY3MjIwNmQ2NDM1M2E2MzMwMzczNzYxMzYzNjYyMzgzMTM3NjQzNzMzNjIzNTM2NjM2MTMwNjIzNjY1MzczMjY1MzAzMjM5Mzk2MTMy"
       ))
 
   ; padding = vs -
-  (is=  (b64/encode-str "begin||end") "YmVnaW58fGVuZA==")
-  (is=  (y64/encode-str "begin||end") "YmVnaW58fGVuZA--")
+  (is=  (b64/string-encode "begin||end") "YmVnaW58fGVuZA==")
+  (is=  (y64/string-encode "begin||end") "YmVnaW58fGVuZA--")
 
   ; / vs _
   (let [ss "Yr?~H1FfGZ}n4!}A([=Wi'k"]
-    (is= (b64/encode-str (str "begin|" ss "|end")) "YmVnaW58WXI/fkgxRmZHWn1uNCF9QShbPVdpJ2t8ZW5k" )
-    (is= (y64/encode-str (str "begin|" ss "|end")) "YmVnaW58WXI_fkgxRmZHWn1uNCF9QShbPVdpJ2t8ZW5k" ))
+    (is= (b64/string-encode (str "begin|" ss "|end")) "YmVnaW58WXI/fkgxRmZHWn1uNCF9QShbPVdpJ2t8ZW5k" )
+    (is= (y64/string-encode (str "begin|" ss "|end")) "YmVnaW58WXI_fkgxRmZHWn1uNCF9QShbPVdpJ2t8ZW5k" ))
 
   ; + vs -
   (let [ss "ql>Q0cQ~\\O6"]
-    (is= (b64/encode-str    (str "begin|" ss "|end")) "YmVnaW58cWw+UTBjUX5cTzZ8ZW5k")
-    (is= (b64url/encode-str (str "begin|" ss "|end")) "YmVnaW58cWw-UTBjUX5cTzZ8ZW5k")))
+    (is= (b64/string-encode    (str "begin|" ss "|end")) "YmVnaW58cWw+UTBjUX5cTzZ8ZW5k")
+    (is= (b64url/string-encode (str "begin|" ss "|end")) "YmVnaW58cWw-UTBjUX5cTzZ8ZW5k")))
 
 (defn -main []
   (newline)
@@ -100,8 +100,8 @@
     (newline)
     (doseq [prefix ["" "a" "ab" "abc"] ]
       (let [orig-str    (str prefix curr-char)
-            enc-str     (b64/encode-str orig-str)
-            dec-str     (b64/decode-str enc-str) ]
+            enc-str     (b64/string-encode orig-str)
+            dec-str     (b64/string-decode enc-str) ]
         (print (format "\"%s\" \"%s\" \"%s\"          " orig-str enc-str dec-str)))))
   (newline))
 

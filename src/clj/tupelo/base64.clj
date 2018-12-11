@@ -30,35 +30,45 @@
     (java.util.Base64/getDecoder)
     (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 
-(defn encode-bytes
+(defn byte-array-encode-native
   "Encodes a byte array into base64, returning a new byte array."
   [data-bytes]
   (assert (types/byte-array? data-bytes))
   (.encode (base64-encoder) data-bytes))
 
-(defn decode-bytes
+(defn byte-array-decode-native
   "Decodes a byte array from base64, returning a new byte array."
   [code-bytes]
   (assert (types/byte-array? code-bytes))
   (.decode (base64-decoder)  code-bytes))
 
-(s/defn encode-bytes->str :- s/Str
+(s/defn byte-array-encode :- s/Str
   "Encodes a byte array into base64, returning a String."
   [data-bytes]
   (assert (types/byte-array? data-bytes))
   (.encodeToString (base64-encoder) data-bytes))
 
-(s/defn decode-str->bytes
+(s/defn byte-array-decode
   "Decodes a base64 encoded String, returning a byte array"
   [code-str :- s/Str]
   (.decode (base64-decoder) code-str))
 
-(s/defn encode-str :- s/Str
+(s/defn bytes-encode :- s/Str ; #todo need test
+  "Encodes a vector of byte values into base64, returning a String."
+  [byte-vec :- [s/Int]]
+  (byte-array-encode (byte-array byte-vec)))
+
+(s/defn bytes-decode :- [s/Int] ; #todo need test
+  "Decodes a base64 encoded String, returning a vector of byte values"
+  [code-str :- s/Str]
+  (vec (byte-array-decode code-str)))
+
+(s/defn string-encode :- s/Str
   "Encodes a String into base64, returning a String."
   [data-str :- s/Str]
-  (-> data-str types/str->bytes encode-bytes->str))
+  (-> data-str types/str->bytes byte-array-encode))
 
-(s/defn decode-str :- s/Str
+(s/defn string-decode :- s/Str
   "Decodes a base64 encoded String, returning a String."
   [code-str :- s/Str]
-  (-> code-str decode-str->bytes types/bytes->str))
+  (-> code-str byte-array-decode types/bytes->str))

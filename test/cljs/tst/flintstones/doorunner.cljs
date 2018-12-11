@@ -9,13 +9,14 @@
     [doo.runner :refer-macros [doo-tests]]
     [schema.core :as s]
 
+    [tst._bootstrap]
+
     [tst.flintstones.dino]
     [tst.flintstones.wilma]
     [tst.flintstones.pebbles]
     [tst.flintstones.slate]
     [tst.flintstones.bambam]
 
-    [tst.tupelo._bootstrap]
     [tst.tupelo.array]
     [tst.tupelo.core]
     [tst.tupelo.gotchas]
@@ -34,13 +35,14 @@
 (println "doorunner - beginning")
 
 (doo-tests
+  'tst._bootstrap
+
   'tst.flintstones.dino
   'tst.flintstones.wilma
   'tst.flintstones.pebbles
   'tst.flintstones.slate
   'tst.flintstones.bambam
 
-  'tst.tupelo._bootstrap
   'tst.tupelo.array
   'tst.tupelo.core
   'tst.tupelo.gotchas

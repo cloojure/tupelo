@@ -54,7 +54,7 @@
 (s/def visible :- tsk/Set
   "Set of all visible (printing) ASCII chars from exclamation point (33) to tilde (126).
   Excludes all whitespace & control chars."
-  (into (sorted-set) (mapv t/int->char (t/thru 33 126))))
+  (into (sorted-set) (mapv t/codepoint->char (t/thru 33 126))))
 
 (s/def visible-no-dquote :- tsk/Set
   "All visible (printing) ASCII chars except double-quote."
