@@ -1028,12 +1028,22 @@
         (and (string? value)
           (ts/whitespace? value)))))) ; all whitespace string
 
-(defn remove-whitespace-leaves
+(s/defn remove-whitespace-leaves
   "Removes leaves from all trees in the forest that are whitespace-only strings
   (including zero-length strings)."
-  []
-  (let [blank-leaf-hids (keep-if whitespace-leaf-hid? (all-leaf-hids))]
-    (apply remove-hid blank-leaf-hids)))
+  ([] (apply remove-whitespace-leaves (root-hids)))
+  ([& root-hids :- [HID]]
+    (let [remove-whitespace-leaf-intc {:leave (fn [hid]
+                                                (let [node (hid->node hid)]
+                                                  (when (and
+                                                          (forest-leaf? node)
+                                                          (contains-key? node :value)
+                                                          (let [value (grab :value node)]
+                                                            (and (string? value)
+                                                              (ts/whitespace? value))))
+                                                    (remove-hid hid))) )}]
+      (doseq [root-hid root-hids]
+        (walk-tree root-hid remove-whitespace-leaf-intc)))))
 
 (s/defn find-paths-with
   [root-spec :- HidRootSpec

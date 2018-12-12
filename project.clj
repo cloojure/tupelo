@@ -6,9 +6,6 @@
   :min-lein-version "2.7.1"
 
   :dependencies [
-    [org.clojure/clojure "1.8.0"]
-    [org.clojure/clojurescript "1.10.439"]
-
     [binaryage/oops "0.6.3"]
     [cheshire "5.8.1"]
     [clj-time "0.15.1"]
@@ -32,13 +29,16 @@
             [lein-figwheel "0.5.17"]
             [com.jakemccrary/lein-test-refresh "0.23.0"]]
 
-  :profiles {:dev {:dependencies [[binaryage/devtools "0.9.10"]
-                                  [binaryage/dirac "1.2.42"]
-                                  [com.cemerick/piggieback "0.2.2"]
-                                  [criterium "0.4.4"]
-                                  [org.clojure/clojure "1.10.0-RC3"] ]}
-             :1.8  {:dependencies [[org.clojure/clojure "1.8.0"]]}
-             :1.9  {:dependencies [[org.clojure/clojure "1.9.0"]]}}
+  :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
+                                       [org.clojure/clojurescript "1.10.439" :scope "provided"]]}
+             :dev      {:dependencies [[binaryage/devtools "0.9.10"]
+                                       [binaryage/dirac "1.2.42"]
+                                       [com.cemerick/piggieback "0.2.2"]
+                                       [criterium "0.4.4"]
+                                       [org.clojure/clojure "1.10.0-RC5"]]}
+             :1.8      {:dependencies [[org.clojure/clojure "1.8.0"]]}
+             :1.9      {:dependencies [[org.clojure/clojure "1.9.0"]]}
+             }
                ; :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
   :codox {:src-dir-uri               "http://github.com/cloojure/tupelo/blob/master/"
