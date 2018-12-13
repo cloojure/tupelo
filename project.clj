@@ -10,6 +10,7 @@
     [cheshire "5.8.1"]
     [clj-time "0.15.1"]
     [clojure-csv/clojure-csv "2.0.2"]
+    [com.climate/claypoole "1.1.4"]
     [danlentz/clj-uuid "0.1.7"]
     [enlive "1.1.6"]
     [joda-time/joda-time "2.10.1"]

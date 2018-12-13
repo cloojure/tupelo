@@ -7,19 +7,18 @@
 (ns tupelo.forest
   "Allows the use of multiple tree structures. Provides tools to create, manipulate, and query
   the the trees individually and/or collectively."
-  #?@(:clj [
-  (:use tupelo.core )
-            (:require
-              [clojure.core.async :as ca]
-              [clojure.set :as clj.set]
-              [net.cgrand.tagsoup :as enlive-tagsoup]
-              [schema.core :as s]
-              [tupelo.misc :as tm :refer [HID]]
-              [tupelo.core :as i]
-              [tupelo.schema :as tsk]
-              [tupelo.string :as ts]
-              [clojure.set :as set])
-            ]) )
+  (:use tupelo.core)
+  (:require
+    [clojure.set :as set]
+    [clojure.core.async :as ca]
+    [schema.core :as s]
+    [tupelo.schema :as tsk]
+    [tupelo.string :as ts]
+    #?@(:clj
+        [[com.climate.claypoole :as claypoole]
+         [net.cgrand.tagsoup :as enlive-tagsoup]
+         [tupelo.misc :as tm :refer [HID]]
+         ])))
 
 ; Benefits compared to nested maps like Enlive:
 ;   generalizes attrs/values; no special role for `tag` like enlive
@@ -491,16 +490,22 @@
 
 ; #todo add [curr-path] to -impl and intc fn args
 (s/defn ^:no-doc walk-tree-impl
-  [parent-path :- [HID]
-   hid :- HID
-   intc-map :- tsk/KeyMap]
-  (let [enter-fn (grab :enter intc-map)
-        leave-fn (grab :leave intc-map)]
-    (enter-fn parent-path hid)
-    (let [parent-path-new (append parent-path hid)]
-      (doseq [kid-hid (hid->kids hid)]
-        (walk-tree-impl parent-path-new kid-hid intc-map)))
-    (leave-fn parent-path hid)))
+  [ctx :- tsk/KeyMap]
+  (with-map-vals ctx [parent-path hid interceptor parallel? threadpool]
+    (s/validate [HID] parent-path)
+    (s/validate HID hid)
+    (s/validate tsk/KeyMap interceptor)
+    (s/validate s/Bool parallel?)
+    (let [enter-fn (grab :enter interceptor)
+          leave-fn (grab :leave interceptor)]
+      (enter-fn parent-path hid)
+      (let [parent-path-new (append parent-path hid)]
+        (if parallel?
+          (claypoole/pdoseq threadpool [kid-hid (hid->kids hid)]
+            (walk-tree-impl parent-path-new kid-hid interceptor))
+          (doseq [kid-hid (hid->kids hid)]
+            (walk-tree-impl parent-path-new kid-hid interceptor))))
+      (leave-fn parent-path hid))))
 
 (s/defn walk-tree   ; #todo add more tests
   "Recursively walks a subtree of the forest, applying the supplied `:enter` and ':leave` functions
@@ -519,24 +524,37 @@
 
    where `parent-path` is a vector of parent HIDs beginning at the root of the sub-tree being processed,
    and `hid` points to the current node to be processed. "
-  [root-hid :- HID
-   intc-map :- tsk/KeyMap]
-  (let [legal-keys   #{:id :enter :leave}
-        counted-keys #{:enter :leave}
-        keys-present (set (keys intc-map))]
-    (let [extra-keys (set/difference keys-present legal-keys)]
-      (when (not-empty? extra-keys)
-        (throw (ex-info "walk-tree: unrecognized keys found:" intc-map))))
-    (let [counted-keys-present (set/intersection counted-keys keys-present)]
-      (when (empty? counted-keys-present)
-        (throw (ex-info "walk-tree: no counted keys found:" intc-map)))))
-  (let [enter-fn        (get intc-map :enter noop)
-        leave-fn        (get intc-map :leave noop)
-        parent-path-new [root-hid]]
-    (enter-fn [] root-hid)
-    (doseq [kid-hid (hid->kids root-hid)]
-      (walk-tree-impl parent-path-new kid-hid {:enter enter-fn :leave leave-fn}))
-    (leave-fn [] root-hid)))
+  ([root-hid :- HID
+    intc-map :- tsk/KeyMap]
+    (walk-tree root-hid intc-map false))
+  ([root-hid :- HID
+    intc-map :- tsk/KeyMap
+    parallel? :- s/Bool]
+    (let [legal-keys   #{:id :enter :leave}
+          counted-keys #{:enter :leave}
+          keys-present (set (keys intc-map))]
+      (let [extra-keys (set/difference keys-present legal-keys)]
+        (when (not-empty? extra-keys)
+          (throw (ex-info "walk-tree: unrecognized keys found:" intc-map))))
+      (let [counted-keys-present (set/intersection counted-keys keys-present)]
+        (when (empty? counted-keys-present)
+          (throw (ex-info "walk-tree: no counted keys found:" intc-map)))))
+    (let [enter-fn        (get intc-map :enter noop)
+          leave-fn        (get intc-map :leave noop) ]
+      (enter-fn [] root-hid)
+      (if parallel?
+        (claypoole/with-shutdown! [threadpool (claypoole/threadpool 8)]
+          (walk-tree-impl {:parent-path []
+                           :hid         root-hid
+                           :interceptor {:enter enter-fn :leave leave-fn}
+                           :parallel?   parallel?
+                           :threadpool  threadpool}))
+        (walk-tree-impl {:parent-path []
+                         :hid         root-hid
+                         :interceptor {:enter enter-fn :leave leave-fn}
+                         :parallel?   parallel?
+                         :threadpool  nil}))
+      (leave-fn [] root-hid))))
 
 (s/defn add-tree :- HID
   "Adds a tree to the forest."
