@@ -97,7 +97,9 @@
 (defn new-forest
   "Returns a new, empty forest."
   []
-  {})
+ ;{}
+  (sorted-map)
+)
 
 ; #todo need an attribute registry { :kw fn-validate }
 ; #todo need fn's to add/delete attributes; to delete verify no uses exist. Change = delete then re-add
