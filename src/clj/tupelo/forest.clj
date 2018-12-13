@@ -14,7 +14,7 @@
     [com.climate.claypoole :as claypoole]
     [net.cgrand.tagsoup :as enlive-tagsoup]
     [schema.core :as s]
-    [tupelo.misc :as tm :refer [HID]]
+   ;[tupelo.misc :as tm :refer [HID]]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts] ))
 
@@ -36,9 +36,21 @@
 ; forest  data-forest  ForestDb forest-db
 ; Sherwood  weald  wald  boreal
 
+(def HID s/Int)
+(def hid-count-base 1000)
+(def hid-count-long (atom hid-count-base))
+(defn hid-count-reset
+  "Reset the hid-count to its initial value"
+  [] (reset! hid-count-long hid-count-base))
+(defn ^:no-doc new-hid-long
+  "Returns the next integer HID"
+  [] (swap! hid-count-long inc))
+(defn forest-hid? [arg] (int? arg))
+
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
 (def ^:dynamic ^:no-doc *forest* nil)
-(def ^:dynamic ^:no-doc *new-hid-fn* tm/new-hid)
+(def ^:dynamic ^:no-doc *new-hid-fn* new-hid-long)
+
 
 (def ^:dynamic ^:no-doc *debug-hid-count* nil)
 (defn ^:no-doc new-hid-debug
@@ -123,7 +135,7 @@
 (s/defn ->Node :- Node
   "Constructs a Node from a vector of HIDs"
   [hids :- [HID]]
-  (assert (every? tm/hid? hids))
+  (assert (every? forest-hid? hids))
   {::khids hids})
 
 (s/defn forest-node? :- s/Bool
@@ -889,6 +901,7 @@
   and update its immediate parent (if any). Does not remove child nodes."
   [parents :- [HID]
    hid :- HID]
+  (println :remove-node-from-parents hid)
   (swap! *forest* dissoc hid)
   (if (not-empty? parents)
     (let [parent-hid       (last parents)
@@ -1025,7 +1038,7 @@
 
   (let [result-atom (atom [])
         roots (cond
-                (tm/hid? root-spec)     #{root-spec} ; scalar arg -> wrap in a set
+                (forest-hid? root-spec)     #{root-spec} ; scalar arg -> wrap in a set
                 (vector? root-spec)  (set root-spec) ; vec of root hids -> convert to set
                 (set? root-spec)     root-spec ; set of root hids -> use it as-is
                 :else (throw (ex-info  "find-paths: invalid root-spec=" (vals->map root-spec)))) ]
