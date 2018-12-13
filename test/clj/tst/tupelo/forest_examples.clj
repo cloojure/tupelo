@@ -287,9 +287,9 @@
 (dotest
   (with-forest (new-forest)
     (let [root-hid  (add-tree-hiccup t0-hiccup)
-          big-paths (find-paths-with root-hid [:** :*] leaf-gt-10?)
-          big-hids  (mapv last big-paths)]
-         (apply remove-hid big-hids)
+          big-paths (find-paths-with root-hid [:** :*] leaf-gt-10?)]
+      (doseq [path big-paths]
+        (remove-subtree-path path))
       (is= (hid->hiccup root-hid)
         [:item
          [:item 1]
@@ -524,16 +524,18 @@
                           </ROOT>"
           root-hid        (add-tree-xml xml-str )
           tree-1          (hid->tree root-hid)
-
-          type-bc-hid?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type :value "B"}])
-                                        (has-child-leaf? hid [:** {:tag :Type :value "C"}])))
-
-          blank-leaf-hids (keep-if whitespace-leaf-hid? (all-hids))
-          >>              (apply remove-hid blank-leaf-hids)
+          >>              (remove-whitespace-leaves root-hid)
           tree-2          (hid->tree root-hid)
 
-          type-bc-hids    (find-hids-with root-hid [:** :Item] type-bc-hid?)
-          >>              (apply remove-hid type-bc-hids)
+          type-bc-path?   (s/fn [path :- [HID]]
+                            (let [hid (last path)]
+                              (or
+                                (has-child-leaf? hid [:** {:tag :Type :value "B"}])
+                                (has-child-leaf? hid [:** {:tag :Type :value "C"}]))))
+
+          type-bc-paths   (find-paths-with root-hid [:** :Item] type-bc-path?)
+          >>              (doseq [path type-bc-paths]
+                            (remove-subtree-path path))
           tree-3          (hid->tree root-hid)
           tree-3-hiccup   (hid->hiccup root-hid)]
      (is= tree-1
@@ -605,8 +607,9 @@
 ;-----------------------------------------------------------------------------
 ; shorter version w/o extra features
 (dotest
-  (with-forest (new-forest)
-    (let [xml-str         "<ROOT>
+  (with-debug-hid
+    (with-forest (new-forest)
+      (let [xml-str       "<ROOT>
                             <Items>
                               <Item><Type>A</Type><Note>AA1</Note></Item>
                               <Item><Type>B</Type><Note>BB1</Note></Item>
@@ -614,17 +617,24 @@
                               <Item><Type>A</Type><Note>AA2</Note></Item>
                             </Items>
                           </ROOT>"
-          root-hid        (add-tree-xml xml-str)
-          has-bc-leaf?    (fn [hid] (or (has-child-leaf? hid [:** {:tag :Type :value "B"}])
-                                      (has-child-leaf? hid [:** {:tag :Type :value "C"}])))
-          >>              (remove-whitespace-leaves)
-          bc-item-hids    (find-hids-with root-hid [:** :Item] has-bc-leaf?)]
-      (apply remove-hid bc-item-hids)
-      (is= (hid->hiccup root-hid)
-        [:ROOT
-         [:Items
-          [:Item [:Type "A"] [:Note "AA1"]]
-          [:Item [:Type "A"] [:Note "AA2"]]]]))))
+            root-hid      (add-tree-xml xml-str)
+            >>            (remove-whitespace-leaves root-hid)
+            has-bc-leaf?  (s/fn [path :- [HID]]
+                            (let [hid (last path)]
+
+                              (or
+                                (has-child-leaf? hid [:** {:tag :Type :value "B"}])
+                                (has-child-leaf? hid [:** {:tag :Type :value "C"}]))))
+            bc-item-paths (find-paths-with root-hid [:** :Item] has-bc-leaf?)]
+       ;(spyx-pretty (format-paths bc-item-paths))
+        (doseq [path bc-item-paths]
+          (remove-subtree-path path))
+
+        (is= (hid->hiccup root-hid)
+          [:ROOT
+           [:Items
+            [:Item [:Type "A"] [:Note "AA1"]]
+            [:Item [:Type "A"] [:Note "AA2"]]]])))))
 
 ;-----------------------------------------------------------------------------
 ; xml searching example
@@ -847,7 +857,7 @@
                         </group>
                     </top>"
             root-hid (add-tree-xml xml-str)
-            >>       (remove-whitespace-leaves)
+            >>       (remove-whitespace-leaves root-hid)
 
             ; Can search for inner `div` 2 ways
             result-1 (find-paths root-hid [:top :group :group])  ; explicit path from root
@@ -1549,9 +1559,9 @@
              [:phone]
              [:school [:name] [:state] [:type]]
              [:college [:name "mit"] [:address] [:state]]])
-          (walk-tree root-hid {:leave (fn [hid]
+          (walk-tree root-hid {:leave (fn [parents hid]
                                         (when (empty-leaf-hid? hid)
-                                          (remove-hid hid)))})
+                                          (remove-subtree-from-parents parents hid)))})
           (is= (hid->hiccup root-hid)
             [:foo [:name "John"] [:address "1 hacker way"] [:college [:name "mit"]]]) )))))
 

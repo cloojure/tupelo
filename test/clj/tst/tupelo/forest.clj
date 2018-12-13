@@ -503,40 +503,43 @@
       (kids-append  r [z  ]) (is= (hid->kids r) [z])
       (kids-prepend r [x y]) (is= (hid->kids r) [x y z])))
 
-  (with-forest (new-forest)
-    (let [x (add-leaf {:tag :char :color :red} "x")
-          y (add-leaf {:tag :char :color :green} "y")
-          z (add-leaf {:tag :char :color :blue} "z")
+  ; #todo fix up re:  remove-node-from-parents
+  ;(with-forest (new-forest)
+  ;  (let [x (add-leaf {:tag :char :color :red} "x")
+  ;        y (add-leaf {:tag :char :color :green} "y")
+  ;        z (add-leaf {:tag :char :color :blue} "z")
+  ;
+  ;        a (add-node {:tag :r1 :color :white} [x y z])
+  ;        b (add-node {:tag :r2 :color :grey} [x y z])
+  ;        c (add-node {:tag :r3 :color :black} [x y z])
+  ;        ]
+  ;    (is= (hid->kids a) [x y z])
+  ;    (is= (hid->kids b) [x y z])
+  ;    (is= (hid->kids c) [x y z])
+  ;    (is= (hid->tree a)
+  ;      {:tag :r1, :color :white,
+  ;       ::tf/kids
+  ;            [{::tf/kids [], :tag :char, :color :red, :value "x"}
+  ;             {::tf/kids [], :tag :char, :color :green, :value "y"}
+  ;             {::tf/kids [], :tag :char, :color :blue, :value "z"}]} )
+  ;    (remove-node-from-parents y z)
+  ;    (is= (hid->kids a) [x])
+  ;    (is= (hid->kids b) [x])
+  ;    (is= (hid->kids c) [x])
+  ;    (is= (hid->tree c)
+  ;      {:tag :r3, :color :black,
+  ;       ::tf/kids
+  ;            [{::tf/kids [], :tag :char, :color :red, :value "x"}]} )
+  ;    (throws? (remove-node-from-parents x y))
+  ;
+  ;    (remove-node-from-parents x)
+  ;    (is= (hid->kids a) [])
+  ;    (is= (hid->kids b) [])
+  ;    (is= (hid->kids c) [])
+  ;    (is= (hid->tree c)
+  ;      {::tf/kids [], :tag :r3, :color :black})))
 
-          a (add-node {:tag :r1 :color :white} [x y z])
-          b (add-node {:tag :r2 :color :grey} [x y z])
-          c (add-node {:tag :r3 :color :black} [x y z])
-          ]
-      (is= (hid->kids a) [x y z])
-      (is= (hid->kids b) [x y z])
-      (is= (hid->kids c) [x y z])
-      (is= (hid->tree a)
-        {:tag :r1, :color :white,
-         ::tf/kids
-              [{::tf/kids [], :tag :char, :color :red, :value "x"}
-               {::tf/kids [], :tag :char, :color :green, :value "y"}
-               {::tf/kids [], :tag :char, :color :blue, :value "z"}]} )
-      (remove-hid y z)
-      (is= (hid->kids a) [x])
-      (is= (hid->kids b) [x])
-      (is= (hid->kids c) [x])
-      (is= (hid->tree c)
-        {:tag :r3, :color :black,
-         ::tf/kids
-              [{::tf/kids [], :tag :char, :color :red, :value "x"}]} )
-      (throws? (remove-hid x y))
-
-      (remove-hid x)
-      (is= (hid->kids a) [])
-      (is= (hid->kids b) [])
-      (is= (hid->kids c) [])
-      (is= (hid->tree c)
-        {::tf/kids [], :tag :r3, :color :black}))))
+)
 
 (dotest
   (with-forest (new-forest)

@@ -65,21 +65,21 @@
   (*new-hid-fn*))
 
 (defn validate-forest []
-  (when-not (map? *forest*)
-    (throw (ex-info "validate-forest: failed forest=" {:forest *forest*}))))
+  (when-not (map? (deref *forest*))
+    (throw (ex-info "validate-forest: failed forest=" {:forest (deref *forest*)}))))
 
 (defmacro with-forest ; #todo swap names?
   [forest-arg & forms]
-  `(binding [*forest* ~forest-arg]
+  `(binding [*forest* (atom ~forest-arg)]
      (validate-forest)
      ~@forms ))
 
 (defmacro with-forest-result ; #todo swap names?
   [forest-arg & forms]
-  `(binding [*forest* ~forest-arg]
+  `(binding [*forest* (atom ~forest-arg)]
      (validate-forest)
      ~@forms
-     *forest*))
+     (deref *forest*)))
 
 ; #todo: copy technique -> (with-state [x y]
 ; #todo:                      (set x 1)
@@ -354,14 +354,14 @@
 (s/defn validate-hid
   "Returns HID arg iff it exists in the forest, else throws."
   [hid :- HID]
-  (when-not (contains-key? *forest* hid)
+  (when-not (contains-key? (deref *forest*) hid)
     (throw (ex-info "validate-hid: HID does not exist=" (vals->map hid))))
   hid)
 
 (s/defn hid->node :- Node
   "Returns the node corresponding to an HID"
   [hid :- HID]
-  (grab hid *forest*))
+  (grab hid (deref *forest*)))
 
 (s/defn hid->leaf :- Node
   "Returns the leaf node corresponding to an HID"
@@ -401,7 +401,7 @@
 (s/defn all-hids :- #{HID} ; #todo test
   "Returns a set of all HIDs in the forest"
   []
-  (set (keys *forest*)) )
+  (set (keys (deref *forest*))) )
 
 (s/defn all-leaf-hids :- #{HID} ; #todo remove OBE?
   "Returns a set of all leaf HIDs in the forest"
@@ -448,7 +448,7 @@
   ([hid :- HID
     node :- Node]
     (assert (not (contains-key? node ::kids)))
-    (set! *forest* (glue *forest* {hid node}))
+    (swap! *forest* glue {hid node})
     node)
   ([hid :- HID
     attrs :- tsk/KeyMap
@@ -488,6 +488,55 @@
                 {:tag (validate keyword? attrs-arg)} )
         attrs (glue attrs {:value value}) ]
     (add-node attrs []))))
+
+; #todo add [curr-path] to -impl and intc fn args
+(s/defn ^:no-doc walk-tree-impl
+  [parent-path :- [HID]
+   hid :- HID
+   intc-map :- tsk/KeyMap]
+  (let [enter-fn (grab :enter intc-map)
+        leave-fn (grab :leave intc-map)]
+    (enter-fn parent-path hid)
+    (let [parent-path-new (append parent-path hid)]
+      (doseq [kid-hid (hid->kids hid)]
+        (walk-tree-impl parent-path-new kid-hid intc-map)))
+    (leave-fn parent-path hid)))
+
+(s/defn walk-tree   ; #todo add more tests
+  "Recursively walks a subtree of the forest, applying the supplied `:enter` and ':leave` functions
+   to each node.   Usage:
+
+       (walk-tree <subtree-root-hid> intc-map)
+
+   where `intc-map` is an interceptor map like:
+
+       { :enter <pre-fn>       ; defaults to `identity`
+         :leave <post-fn> }    ; defaults to `identity`
+
+   Here, `pre-fn` and `post-fn` look like:
+
+       (fn [parent-path hid] ...)
+
+   where `parent-path` is a vector of parent HIDs beginning at the root of the sub-tree being processed,
+   and `hid` points to the current node to be processed. "
+  [root-hid :- HID
+   intc-map :- tsk/KeyMap]
+  (let [legal-keys   #{:id :enter :leave}
+        counted-keys #{:enter :leave}
+        keys-present (set (keys intc-map))]
+    (let [extra-keys (set/difference keys-present legal-keys)]
+      (when (not-empty? extra-keys)
+        (throw (ex-info "walk-tree: unrecognized keys found:" intc-map))))
+    (let [counted-keys-present (set/intersection counted-keys keys-present)]
+      (when (empty? counted-keys-present)
+        (throw (ex-info "walk-tree: no counted keys found:" intc-map)))))
+  (let [enter-fn        (get intc-map :enter noop)
+        leave-fn        (get intc-map :leave noop)
+        parent-path-new [root-hid]]
+    (enter-fn [] root-hid)
+    (doseq [kid-hid (hid->kids root-hid)]
+      (walk-tree-impl parent-path-new kid-hid {:enter enter-fn :leave leave-fn}))
+    (leave-fn [] root-hid)))
 
 (s/defn add-tree :- HID
   "Adds a tree to the forest."
@@ -803,29 +852,38 @@
       node-new)))
 
 (s/defn remove-all-kids :- tsk/KeyMap
-  "Removes all children from a Node."
+  "Disconnects all children from a Node, but does not delete them from the forest. "
   ([hid :- HID ]
     (let [node-curr   (hid->node hid)
           node-new    (glue node-curr {::khids []})]
       (set-node hid node-new)
       node-new)))
 
-(s/defn remove-hid :- #{HID}
-  "Removes one or more nodes and all references to them from the database. May create orphaned nodes."
-  [& hids-leaving :- [HID]]
-  (let [hids-leaving (set hids-leaving)]
-    (doseq [hid hids-leaving]
-      (validate-hid hid))
-    (set! *forest* (reduce
-                     (fn fn-dissoc-elems [curr-forest hid]
-                       (dissoc curr-forest hid))
-                     *forest*
-                     hids-leaving))
-    ; Remove any kid references to deleted nodes
-    (let [hids-staying (keys *forest*)]
-       (doseq [hid hids-staying]
-         (remove-kids hid hids-leaving true))) ; true => missing-kids-ok
-    hids-leaving))
+(s/defn ^:no-doc remove-node-from-parents
+  "Given the HID of a node and its parents, remove the node rooted at that HID
+  and update its immediate parent (if any). Does not remove child nodes."
+  [parents :- [HID]
+   hid :- HID]
+  (swap! *forest* dissoc hid)
+  (if (not-empty? parents)
+    (let [parent-hid       (last parents)
+          parent-node      (hid->node parent-hid)
+          parent-khids     (hid->kids parent-hid)
+          parent-khids-new (drop-if #(= hid %) parent-khids)]
+      (kids-set parent-hid parent-khids-new))))
+
+(s/defn remove-subtree-from-parents
+  "For each HID arg, removes the subtree (including all child nodes) rooted at that HID."
+  [parents :- [HID]
+   hid :- HID]
+  (walk-tree hid {:leave (fn [-parents- hid]
+                           (swap! *forest* dissoc hid))})
+  (remove-node-from-parents parents hid))
+
+(s/defn remove-subtree-path
+  "Given a path from a tree root, remove the subtree beginning at the path end."
+  [path :- [HID]]
+  (remove-subtree-from-parents (butlast path) (last path)))
 
 (s/defn ^:no-doc hid-matches?
   "Returns true if an HID node matches a pattern"
@@ -950,29 +1008,6 @@
       (find-paths-impl result-atom [] root tgt-path))
     @result-atom))
 
-
-
-(s/defn walk-tree   ; #todo add more tests
-  "Recursively walks a subtree of the forest, applying the supplied `:enter` and ':leave` functions
-   to each node.   Usage:
-
-       (walk-tree <subtree-root-hid>  { :enter <pre-fn>       ; defaults to `identity`
-                                        :leave <post-fn> }    ; defaults to `identity`
-
-   Where `pre-fn` and `post-fn` accept a single HID value.
-   "
-  [root-hid :- HID
-   intc-map :- tsk/KeyMap ]
-  (when (not-empty? (set/difference (set (keys intc-map)) #{:enter :leave}))
-    (throw (ex-info "walk-tree: unrecognized keys found:" intc-map)))
-  (let [enter-fn (or (:enter intc-map) identity)
-        leave-fn (or (:leave intc-map) identity)]
-    (enter-fn root-hid)
-    (doseq [kid-hid (hid->kids root-hid)]
-      (walk-tree kid-hid {:enter enter-fn
-                          :leave leave-fn}))
-    (leave-fn root-hid)))
-
 (s/defn find-hids :- [HID] ; #todo need test
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec]
@@ -1031,19 +1066,12 @@
 (s/defn remove-whitespace-leaves
   "Removes leaves from all trees in the forest that are whitespace-only strings
   (including zero-length strings)."
-  ([] (apply remove-whitespace-leaves (root-hids)))
-  ([& root-hids :- [HID]]
-    (let [remove-whitespace-leaf-intc {:leave (fn [hid]
-                                                (let [node (hid->node hid)]
-                                                  (when (and
-                                                          (forest-leaf? node)
-                                                          (contains-key? node :value)
-                                                          (let [value (grab :value node)]
-                                                            (and (string? value)
-                                                              (ts/whitespace? value))))
-                                                    (remove-hid hid))) )}]
-      (doseq [root-hid root-hids]
-        (walk-tree root-hid remove-whitespace-leaf-intc)))))
+  ([] (doseq [hid (root-hids)]
+        (remove-whitespace-leaves hid)))
+  ([root-hid :- HID]
+    (walk-tree root-hid {:leave (fn [parents hid]
+                                  (when (whitespace-leaf-hid? hid)
+                                    (remove-node-from-parents parents hid)))})))
 
 (s/defn find-paths-with
   [root-spec :- HidRootSpec

@@ -212,6 +212,10 @@
 
 
 ;-----------------------------------------------------------------------------
+(def noop
+  "A function that accepts any number of args, does nothing, and returns `nil`."
+  (constantly nil))
+
 (defn truthy?
   "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
   [arg]
