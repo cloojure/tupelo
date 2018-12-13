@@ -9,16 +9,14 @@
   the the trees individually and/or collectively."
   (:use tupelo.core)
   (:require
+    [clojure.core.async :as async]
     [clojure.set :as set]
-    [clojure.core.async :as ca]
+    [com.climate.claypoole :as claypoole]
+    [net.cgrand.tagsoup :as enlive-tagsoup]
     [schema.core :as s]
+    [tupelo.misc :as tm :refer [HID]]
     [tupelo.schema :as tsk]
-    [tupelo.string :as ts]
-    #?@(:clj
-        [[com.climate.claypoole :as claypoole]
-         [net.cgrand.tagsoup :as enlive-tagsoup]
-         [tupelo.misc :as tm :refer [HID]]
-         ])))
+    [tupelo.string :as ts] ))
 
 ; Benefits compared to nested maps like Enlive:
 ;   generalizes attrs/values; no special role for `tag` like enlive
@@ -37,8 +35,6 @@
 
 ; forest  data-forest  ForestDb forest-db
 ; Sherwood  weald  wald  boreal
-
-#?(:clj (do
 
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
 (def ^:dynamic ^:no-doc *forest* nil)
@@ -235,7 +231,7 @@
   [arg]
   (and
     (map? arg)
-    (clj.set/superset? (set (keys arg)) #{:tag :attrs :content} )))
+    (set/superset? (set (keys arg)) #{:tag :attrs :content} )))
 
 (defn enlive-node-strict?
   "Returns true for strictly valid Enlive nodes, else false"
@@ -297,7 +293,7 @@
   [node :- tsk/KeyMap]
   (let [kids (grab ::kids node)]
        (and (pos? (count kids))
-         (every? i/truthy? (mapv raw-leaf-node? kids)))))
+         (every? truthy? (mapv raw-leaf-node? kids)))))
 
 (s/defn consolidate-raw-kids :- tsk/Vec
   "Consolidates ::raw kids for a node into a single Enlive :content vector"
@@ -395,7 +391,10 @@
 (s/defn empty-leaf-hid? :- s/Bool
   "Returns true if the arg is a leaf node (no kids) and has no `:value` "
   [hid :- HID]
-  (empty-leaf? (hid->node hid)))
+  (let [node      (hid->node hid)
+        empty-flg (empty-leaf? node)]
+    ; (nl) (println :empty-leaf-hid? (vals->map hid node empty-flg))
+    empty-flg))
 
 (s/defn all-hids :- #{HID} ; #todo test
   "Returns a set of all HIDs in the forest"
@@ -415,7 +414,7 @@
                       (into cum-kids (grab ::khids (hid->node hid))))
                     #{}
                     (all-hids))
-        root-hids (clj.set/difference (all-hids) kid-hids)]
+        root-hids (set/difference (all-hids) kid-hids)]
     root-hids))
 
 ; #todo need hid->descendent-hids => depth-first list of all descendent hids
@@ -502,9 +501,17 @@
       (let [parent-path-new (append parent-path hid)]
         (if parallel?
           (claypoole/pdoseq threadpool [kid-hid (hid->kids hid)]
-            (walk-tree-impl parent-path-new kid-hid interceptor))
+            (walk-tree-impl {:parent-path parent-path-new
+                             :hid         kid-hid
+                             :interceptor interceptor
+                             :parallel?   parallel?
+                             :threadpool  threadpool}))
           (doseq [kid-hid (hid->kids hid)]
-            (walk-tree-impl parent-path-new kid-hid interceptor))))
+            (walk-tree-impl {:parent-path parent-path-new
+                             :hid         kid-hid
+                             :interceptor interceptor
+                             :parallel?   parallel?
+                             :threadpool  threadpool}))))
       (leave-fn parent-path hid))))
 
 (s/defn walk-tree   ; #todo add more tests
@@ -691,7 +698,7 @@
                                                   :path-target       next-path-target}))
                 (let [enlive-subtree        (append parent-nodes (unlazy curr-node))
                       rooted-enlive-subtree (nest-enlive-nodes enlive-subtree)]
-                  (ca/>!! output-chan rooted-enlive-subtree))))))))))
+                  (async/>!! output-chan rooted-enlive-subtree))))))))))
 
 (def ^:dynamic *enlive-subtree-buffer-size*
   "Default output buffer size for `filter-enlive-subtrees`."
@@ -699,13 +706,13 @@
 (defn filter-enlive-subtrees
   "Lazily read an enlive tree, retaining only rooted subtrees as specified by `subtree-path`"
   [enlive-tree-lazy subtree-path]
-  (let [output-chan (ca/chan *enlive-subtree-buffer-size*) ]
-    (ca/go
+  (let [output-chan (async/chan *enlive-subtree-buffer-size*) ]
+    (async/go
       (filter-enlive-subtrees-helper {:output-chan       output-chan
                                       :enlive-nodes-lazy [enlive-tree-lazy]
                                       :parent-nodes      []
                                       :path-target       subtree-path})
-      (ca/close! output-chan))
+      (async/close! output-chan))
     (chan->lazy-seq output-chan)))
 
 (s/defn hid->bush :- tsk/Vec
@@ -860,7 +867,7 @@
           report-missing-kids (not missing-kids-ok?)
           node-curr           (hid->node hid)
           kids-curr           (grab ::khids node-curr)
-          missing-kids        (clj.set/difference kids-leaving (into #{} kids-curr))
+          missing-kids        (set/difference kids-leaving (into #{} kids-curr))
           _                   (when (and (not-empty? missing-kids) report-missing-kids)
                                 (throw (ex-info  "remove-kids: missing-kids found=" (vals->map missing-kids))))
           kid-is-leaving?     (fn fn-kid-is-leaving? [kid] (contains-key? kids-leaving kid))
@@ -916,7 +923,7 @@
     (let [pattern-keys         (keys pattern)
           pattern-keys-set     (set pattern-keys)
           node-keys-set        (set (keys node))
-          pattern-keys-missing (clj.set/difference pattern-keys-set node-keys-set)]
+          pattern-keys-missing (set/difference pattern-keys-set node-keys-set)]
       (if (not-empty? pattern-keys-missing)
         false
         (let [attrs-tst    (submap-by-keys node pattern-keys-set)
@@ -1124,4 +1131,3 @@
    tgt-path :- tsk/Vec ]
   (pos? (count (find-leaf-hids root-spec tgt-path))))
 
-))

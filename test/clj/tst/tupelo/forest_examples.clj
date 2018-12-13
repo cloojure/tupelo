@@ -1559,11 +1559,19 @@
              [:phone]
              [:school [:name] [:state] [:type]]
              [:college [:name "mit"] [:address] [:state]]])
-          (walk-tree root-hid {:leave (fn [parents hid]
-                                        (when (empty-leaf-hid? hid)
-                                          (remove-subtree-from-parents parents hid)))})
-          (is= (hid->hiccup root-hid)
-            [:foo [:name "John"] [:address "1 hacker way"] [:college [:name "mit"]]]) )))))
+          (walk-tree root-hid
+            {:leave (fn [parents hid]
+                      (when (empty-leaf-hid? hid)
+                        (remove-subtree-from-parents parents hid)))})
+          ; #todo parallel walk-tree broken (race condition)
+          (let [out-hiccup (hid->hiccup root-hid)]
+           ;(spyx-pretty out-hiccup)
+            (is= out-hiccup
+              [:foo
+               [:name "John"]
+               [:address "1 hacker way"]
+               [:college
+                [:name "mit"]]])))))))
 
 
 
