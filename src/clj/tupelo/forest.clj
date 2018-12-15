@@ -13,6 +13,7 @@
     [clojure.set :as set]
     [com.climate.claypoole :as claypoole]
     [net.cgrand.tagsoup :as enlive-tagsoup]
+    [net.cgrand.xml :as enlive-xml]
     [schema.core :as s]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts] ))
@@ -620,11 +621,18 @@
   [bush :- tsk/Vec]
   (-> bush bush->tree tree->enlive))
 
+(s/defn html->enlive :- tsk/KeyMap ; #todo need tree->xml  ???
+  [html-str :- s/Str]
+  (->> html-str
+    ts/string->stream
+    enlive-tagsoup/parser
+    only))
+
 (s/defn xml->enlive :- tsk/KeyMap ; #todo need tree->xml  ???
   [xml-str :- s/Str]
   (->> xml-str
     ts/string->stream
-    enlive-tagsoup/parser
+    enlive-xml/parse
     only))
 
 (s/defn hiccup->tree :- tsk/KeyMap
@@ -672,6 +680,12 @@
   [:a ...] -> {:a nil ...}..."
   [arg]
   (add-tree (hiccup->tree arg)))
+
+(s/defn add-tree-html :- HID
+  "Adds a tree to the forest from an HTML string."
+  [html-str :- s/Str]
+  (add-tree-enlive
+    (html->enlive html-str)))
 
 (s/defn add-tree-xml :- HID
   "Adds a tree to the forest from an XML string."

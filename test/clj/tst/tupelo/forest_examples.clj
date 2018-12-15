@@ -475,35 +475,26 @@
 ;-----------------------------------------------------------------------------
 (dotest
   (with-forest (new-forest)
-    (let [enlive-tree (xml->enlive "<p>sample <em>text</em> with words.</p>" )
+    (let [enlive-tree (xml->enlive "<p>sample <em>text</em> with words.</p>")
           root-hid    (add-tree-enlive enlive-tree)
           leaf-hids   (find-leaf-hids root-hid [:** :*])
           leaf-values (mapv #(grab :value (hid->node %)) leaf-hids)
           result      (apply glue leaf-values)]
-         (is= enlive-tree
-           '{:tag     :html
-             :attrs   nil,
-             :content ({:tag     :body,
-                        :attrs   nil,
-                        :content ({:tag     :p
-                                   :attrs   nil,
-                                   :content ("sample "
-                                              {:tag :em, :attrs nil, :content ("text")}
-                                              " with words.")})})})
+      (is= enlive-tree
+        (quote {:tag   :p,
+                :attrs nil,
+                :content
+                       ("sample " {:tag :em, :attrs nil, :content ("text")} " with words.")}))
       (is= (hid->tree root-hid)
-        {:tag      :html,
-         ::tf/kids [{:tag      :body,
-                     ::tf/kids [{:tag      :p,
-                                 ::tf/kids [{:tag ::tf/raw, :value "sample " ::tf/kids []}
-                                            {:tag :em, :value "text" ::tf/kids []}
-                                            {:tag ::tf/raw, :value " with words." ::tf/kids []}]}]}]})
+        {:tag      :p,
+         ::tf/kids [{:tag ::tf/raw, :value "sample " ::tf/kids []}
+                    {:tag :em, :value "text" ::tf/kids []}
+                    {:tag ::tf/raw, :value " with words." ::tf/kids []}]})
       (is= (hid->hiccup root-hid)
-        [:html
-         [:body
-          [:p
-           [:tupelo.forest/raw "sample "]
-           [:em "text"]
-           [:tupelo.forest/raw " with words."]]]])
+        [:p
+         [:tupelo.forest/raw "sample "]
+         [:em "text"]
+         [:tupelo.forest/raw " with words."]])
 
       (is= result "sample text with words."))))
 
@@ -722,7 +713,7 @@
                        </div>
                      </body>
                    </html>"
-          root-hid (add-tree-xml xml-str)
+          root-hid (add-tree-html xml-str)
 
           ; Removing whitespace nodes is optional; just done to keep things neat
           >>       (remove-whitespace-leaves)
@@ -774,7 +765,7 @@
                                 <a href=“path3” />
                               </div>
                             </div>"
-          root-hid        (add-tree-xml html-str) ; html is a subset of xml
+          root-hid        (add-tree-html html-str) ; html is a subset of xml
 
           ; Removing whitespace nodes is optional; just done to keep things neat
           >>              (remove-whitespace-leaves)
@@ -1526,20 +1517,20 @@
 ;-----------------------------------------------------------------------------
 (dotest
   (let [xml-data "<foo>
-                  <name>John</name>
-                  <address>1 hacker way</address>
-                  <phone></phone>
-                  <school>
-                      <name></name>
-                      <state></state>
-                      <type></type>
-                  </school>
-                  <college>
-                      <name>mit</name>
-                      <address></address>
-                      <state></state>
-                  </college>
-                </foo> "]
+                    <name>John</name>
+                    <address>1 hacker way</address>
+                    <phone></phone>
+                    <school>
+                        <name></name>
+                        <state></state>
+                        <type></type>
+                    </school>
+                    <college>
+                        <name>mit</name>
+                        <address></address>
+                        <state></state>
+                    </college>
+                  </foo> "]
     (with-forest (new-forest)
       (let [root-hid (add-tree-xml xml-data)]
         (remove-whitespace-leaves)
