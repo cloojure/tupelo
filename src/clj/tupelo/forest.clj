@@ -14,7 +14,6 @@
     [com.climate.claypoole :as claypoole]
     [net.cgrand.tagsoup :as enlive-tagsoup]
     [schema.core :as s]
-   ;[tupelo.misc :as tm :refer [HID]]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts] ))
 
