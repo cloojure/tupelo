@@ -903,7 +903,7 @@
   and update its immediate parent (if any). Does not remove child nodes."
   [parents :- [HID]
    hid :- HID]
-  (println :remove-node-from-parents hid)
+ ;(println :remove-node-from-parents hid)
   (swap! *forest* dissoc hid)
   (if (not-empty? parents)
     (let [parent-hid       (last parents)
