@@ -261,21 +261,18 @@
   [node :- s/Any]
   (if-not (sequential? node)
     node ; leaf - just return it
-    (let [tag    (xfirst node)
+    (let [tag    (xfirst node) ; #todo error if not keyword?
           less-1 (xrest node)]
       (if (empty? less-1)
-        {:tag     tag
-         :attrs   {}
-         :content []}
-        (let [v2 (xfirst less-1)]
-          (if (map? v2)
+        {:tag tag :attrs {} :content []}
+        (let [val-2 (xfirst less-1)
+              ctx   (if (map? val-2)
+                      {:attrs val-2 :kids (xrest less-1)}
+                      {:attrs {} :kids less-1})]
+          (glue
+            (submap-by-keys ctx [:attrs])
             {:tag     tag
-             :attrs   v2
-             :content (forv [child (xrest less-1)]
-                        (hiccup->enlive child))}
-            {:tag     tag
-             :attrs   {}
-             :content (forv [child less-1]
+             :content (forv [child (grab :kids ctx)]
                         (hiccup->enlive child))}))))))
 
 (s/defn enlive->hiccup :- s/Any
@@ -300,7 +297,16 @@
         kids    (::kids node)
         kids-ok (or (nil? kids) (= kids []))
         result  (and tag-ok kids-ok)]
-     result))
+    result))
+
+(s/defn raw-whitespace-node? :- s/Bool
+  "Returns true if a node is a leaf with {:tag ::raw} and whitespace value."
+  [node :- tsk/KeyMap]
+  (let [value  (:value node)
+        result (and (raw-leaf-node? node)
+                 (or (nil? value)
+                   (and (string? value) (ts/whitespace? value))))]
+    result))
 
 (s/defn raw-kids-node? :- s/Bool
   "Returns true if all of a node's kids are raw leaf nodes."
@@ -320,14 +326,16 @@
   (let [enlive-attrs (dissoc tree-node ::kids :tag :value)
         enlive-base  (glue (submap-by-keys tree-node #{:tag}) {:attrs enlive-attrs})]
     (cond
-      (raw-kids-node? tree-node) (let [enlive-leaf (glue enlive-base {:content (consolidate-raw-kids tree-node)})]
-                                   enlive-leaf)
+      (raw-kids-node? tree-node)
+      (let [enlive-leaf (glue enlive-base {:content (consolidate-raw-kids tree-node)})]
+        enlive-leaf)
 
-      (tree-leaf? tree-node) (let [enlive-leaf (glue enlive-base
-                                                 {:content (if (contains-key? tree-node :value)
-                                                             [(grab :value tree-node)]
-                                                             [])})]
-                               enlive-leaf)
+      (tree-leaf? tree-node)
+      (let [enlive-leaf (glue enlive-base
+                          {:content (if (contains-key? tree-node :value)
+                                      [(grab :value tree-node)]
+                                      [])})]
+        enlive-leaf)
 
       :else (let [enlive-kids (mapv tree->enlive (grab ::kids tree-node))
                   enlive-node (glue enlive-base {:content enlive-kids})]
@@ -335,30 +343,29 @@
 
 (s/defn enlive->tree :- tsk/KeyMap ; #todo add test
   "Convert an Enlive-format data structure to a tree. "
-  [enlive-tree  :- tsk/KeyMap]
+  [enlive-tree :- tsk/KeyMap]
   (assert (enlive-node-lax? enlive-tree))
-  (let [attrs   (or (:attrs enlive-tree) {})
+  (let [attrs   (or (:attrs enlive-tree) {}) ; replace missing or nil values with valid value
         content (or (:content enlive-tree) [])]
-       (assert (not (contains-key? attrs :tag)))
+    (assert (not (contains-key? attrs :tag)))
     (let [attrs  (glue attrs (submap-by-keys enlive-tree #{:tag}))
           result (cond
                    (every? enlive-node-lax? content)
-                   (let [kid-hids (glue [] (for [child content]
-                                             (enlive->tree child)))]
-                        (glue attrs {::kids kid-hids}))
+                   (let [kids (forv [child content]
+                                (enlive->tree child))]
+                     (glue attrs {::kids kids}))
 
                    (and
                      (= 1 (count content))
                      (not (enlive-node-lax? (only content))))
                    (glue attrs {:value (only content) ::kids []})
 
-                   :else (let [kid-hids (glue []
-                                          (for [child content]
-                                            (if (enlive-node-lax? child)
-                                              (enlive->tree child)
-                                              {:tag ::raw :value child ::kids []})))]
-                              (glue attrs {::kids kid-hids})))]
-         result)))
+                   :else (let [kids (forv [child content]
+                                      (if (enlive-node-lax? child)
+                                        (enlive->tree child)
+                                        {:tag ::raw :value child ::kids []}))]
+                           (glue attrs {::kids kids})))]
+      result)))
 
 (s/defn validate-hid
   "Returns HID arg iff it exists in the forest, else throws."
@@ -577,13 +584,15 @@
                          :threadpool  nil}))
       (leave-fn [] root-hid))))
 
+
 (s/defn add-tree :- HID
   "Adds a tree to the forest."
   [tree-node  :- tsk/KeyMap]
   (when-not (tree-node? tree-node)
     (throw (ex-info "add-tree: invalid element=" tree-node)))
   (let [tree-node-attrs (dissoc tree-node ::kids)
-        kid-hids        (forv [child (grab ::kids tree-node)] ; #todo forv & no glue ???
+        kids-to-add     (drop-if raw-whitespace-node? (grab ::kids tree-node)) ; #todo make optional?
+        kid-hids        (forv [child kids-to-add]
                           (add-tree child))]
        (add-node tree-node-attrs kid-hids)))
 
@@ -600,7 +609,8 @@
   (let [attrs  (xfirst bush)
         others (xrest bush)]
     (if (every? bush-node? others)
-      (let [kids (glue [] (for [it others] (bush->tree it)))]
+      (let [kids (forv [it others]
+                   (bush->tree it))]
         (assoc attrs ::kids kids))
       (glue attrs {:value (only others)}))))
 
@@ -1116,11 +1126,11 @@
         (and (string? value)
           (ts/whitespace? value)))))) ; all whitespace string
 
-(s/defn remove-whitespace-leaves
+(s/defn remove-whitespace-leaves-deprecated ; #todo remove this?
   "Removes leaves from all trees in the forest that are whitespace-only strings
   (including zero-length strings)."
   ([] (doseq [hid (root-hids)]
-        (remove-whitespace-leaves hid)))
+        (remove-whitespace-leaves-deprecated hid)))
   ([root-hid :- HID]
     (walk-tree root-hid {:leave (fn [parents hid]
                                   (when (whitespace-leaf-hid? hid)

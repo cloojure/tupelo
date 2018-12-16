@@ -512,7 +512,6 @@
                           </ROOT>"
           root-hid        (add-tree-xml xml-str )
           tree-1          (hid->tree root-hid)
-          >>              (remove-whitespace-leaves root-hid)
           tree-2          (hid->tree root-hid)
 
           type-bc-path?   (s/fn [path :- [HID]]
@@ -526,34 +525,25 @@
                             (remove-subtree-path path))
           tree-3          (hid->tree root-hid)
           tree-3-hiccup   (hid->hiccup root-hid)]
-     (is= tree-1
-       {:tag :ROOT,
-        ::tf/kids
-             [{::tf/kids [], :tag ::tf/raw, :value "\n                            "}
-              {:tag :Items,
-               ::tf/kids
-                    [{::tf/kids [], :tag ::tf/raw, :value "\n                              "}
-                     {:tag :Item,
-                      ::tf/kids
-                           [{::tf/kids [], :tag :Type, :value "A"}
-                            {::tf/kids [], :tag :Note, :value "AA1"}]}
-                     {::tf/kids [], :tag ::tf/raw, :value "\n                              "}
-                     {:tag :Item,
-                      ::tf/kids
-                           [{::tf/kids [], :tag :Type, :value "B"}
-                            {::tf/kids [], :tag :Note, :value "BB1"}]}
-                     {::tf/kids [], :tag ::tf/raw, :value "\n                              "}
-                     {:tag :Item,
-                      ::tf/kids
-                           [{::tf/kids [], :tag :Type, :value "C"}
-                            {::tf/kids [], :tag :Note, :value "CC1"}]}
-                     {::tf/kids [], :tag ::tf/raw, :value "\n                              "}
-                     {:tag :Item,
-                      ::tf/kids
-                           [{::tf/kids [], :tag :Type, :value "A"}
-                            {::tf/kids [], :tag :Note, :value "AA2"}]}
-                     {::tf/kids [], :tag ::tf/raw, :value "\n                            "}]}
-              {::tf/kids [], :tag ::tf/raw, :value "\n                          "}]} )
+      (is= tree-1
+        {:tag      :ROOT,
+         ::tf/kids [{:tag      :Items,
+                     ::tf/kids [{:tag :Item,
+                                 ::tf/kids
+                                      [{::tf/kids [], :tag :Type, :value "A"}
+                                       {::tf/kids [], :tag :Note, :value "AA1"}]}
+                                {:tag :Item,
+                                 ::tf/kids
+                                      [{::tf/kids [], :tag :Type, :value "B"}
+                                       {::tf/kids [], :tag :Note, :value "BB1"}]}
+                                {:tag :Item,
+                                 ::tf/kids
+                                      [{::tf/kids [], :tag :Type, :value "C"}
+                                       {::tf/kids [], :tag :Note, :value "CC1"}]}
+                                {:tag :Item,
+                                 ::tf/kids
+                                      [{::tf/kids [], :tag :Type, :value "A"}
+                                       {::tf/kids [], :tag :Note, :value "AA2"}]} ]}]})
 
       (is= tree-2
         {:tag      :ROOT,
@@ -605,7 +595,6 @@
                             </Items>
                           </ROOT>"
           root-hid      (add-tree-xml xml-str)
-          >>            (remove-whitespace-leaves root-hid)
           has-bc-leaf?  (s/fn [path :- [HID]]
                           (let [hid (last path)]
 
@@ -653,7 +642,6 @@
 (dotest
   (with-forest (new-forest)
     (let [root-hid             (add-tree-xml xml-str-prod)
-          >>                   (remove-whitespace-leaves)
 
           product-hids         (find-hids root-hid [:** :product])
           product-trees-hiccup (mapv hid->hiccup product-hids)
@@ -715,9 +703,6 @@
                    </html>"
           root-hid (add-tree-html xml-str)
 
-          ; Removing whitespace nodes is optional; just done to keep things neat
-          >>       (remove-whitespace-leaves)
-
           ; Can search for inner `div` 2 ways
           result-1 (find-paths root-hid [:html :body :div :div]) ; explicit path from root
           result-2 (find-paths root-hid [:** {:class "two"}]) ; wildcard path that ends in :class "two"
@@ -766,9 +751,6 @@
                               </div>
                             </div>"
           root-hid        (add-tree-html html-str) ; html is a subset of xml
-
-          ; Removing whitespace nodes is optional; just done to keep things neat
-          >>              (remove-whitespace-leaves)
 
           tree-2          (hid->hiccup root-hid)
           >>              (is= tree-2 [:html
@@ -844,7 +826,6 @@
                         </group>
                     </top>"
           root-hid (add-tree-xml xml-str)
-          >>       (remove-whitespace-leaves root-hid)
 
           ; Can search for inner `div` 2 ways
           result-1 (find-paths root-hid [:top :group :group]) ; explicit path from root
@@ -1076,19 +1057,10 @@
                            </root>"
           root-hid        (add-tree-xml xml-str)
           bush-blanks     (hid->bush root-hid)
-          >>              (remove-whitespace-leaves)
-
-          bush-no-blanks  (hid->bush root-hid)
           leaf-hids       (find-leaf-hids root-hid [:** :*])]
       (is= bush-blanks [{:tag :root}
-                        [{:tag :tupelo.forest/raw, :value "\n                              "}]
                         [{:tag :a, :value "1"}]
-                        [{:tag :tupelo.forest/raw, :value "\n                              "}]
-                        [{:tag :b, :value "2"}]
-                        [{:tag :tupelo.forest/raw, :value "\n                           "}]])
-      (is= bush-no-blanks [{:tag :root}
-                           [{:tag :a, :value "1"}]
-                           [{:tag :b, :value "2"}]])
+                        [{:tag :b, :value "2"}] ])
       (is= (mapv hid->node leaf-hids)
         [{:tupelo.forest/khids [], :tag :a, :value "1"}
          {:tupelo.forest/khids [], :tag :b, :value "2"}]))))
@@ -1108,7 +1080,6 @@
                    </document>")]
     (with-forest (new-forest)
       (let [root-hid       (add-tree-xml xml-str)
-            >>             (remove-whitespace-leaves)
             bush-no-blanks (hid->bush root-hid)
             sentence-hids  (find-hids root-hid [:document :sentence])
             sentences      (forv [sentence-hid sentence-hids]
@@ -1130,7 +1101,6 @@
       (let [enlive-tree-lazy (xml/parse (StringReader. xml-str))
             enlive-words     (filter-enlive-subtrees enlive-tree-lazy [:document :sentence :word])
             root-hids        (forv [word enlive-words] (add-tree-enlive word))
-            >>               (remove-whitespace-leaves)
             bush-words       (forv [root-hid root-hids] (hid->bush root-hid))]
         (is= bush-words
           [[{:tag :document}
@@ -1152,7 +1122,6 @@
       (let [enlive-tree-lazy    (xml/parse (StringReader. xml-str))
             enlive-sentences    (filter-enlive-subtrees enlive-tree-lazy [:document :sentence])
             root-hids           (forv [sentence enlive-sentences] (add-tree-enlive sentence))
-            >>                  (remove-whitespace-leaves)
             bush-sentences      (forv [root-hid root-hids] (hid->bush root-hid))
             sentence-hids       (find-hids root-hids [:document :sentence])
             sentence-extract-fn (fn [sentence-hid]
@@ -1176,7 +1145,6 @@
       (let [enlive-tree-lazy (xml/parse (StringReader. xml-str))
             enlive-document  (only (filter-enlive-subtrees enlive-tree-lazy [:document]))
             root-hid         (add-tree-enlive enlive-document)
-            >>               (remove-whitespace-leaves)
             bush-document    (hid->bush root-hid)]
         (is= bush-document
           [{:tag :document}
@@ -1205,7 +1173,6 @@
       (slurp "https://xkcd.com")))
   (with-forest (new-forest)
     (let [root-hid    (add-tree-enlive (get-xkcd-enlive))
-          >>          (remove-whitespace-leaves)
           hid-keep-fn (fn [hid]
                         (let [node       (hid->node hid)
                               value      (when (contains? node :value) (grab :value node))
@@ -1533,7 +1500,6 @@
                   </foo> "]
     (with-forest (new-forest)
       (let [root-hid (add-tree-xml xml-data)]
-        (remove-whitespace-leaves)
         (is= (hid->hiccup root-hid)
           [:foo
            [:name "John"]
