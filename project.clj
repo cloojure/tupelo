@@ -6,7 +6,7 @@
   :min-lein-version "2.7.1"
 
   :dependencies [
-    [binaryage/oops "0.6.3"]
+    [binaryage/oops "0.6.4"]
     [cheshire "5.8.1"]
     [clj-time "0.15.1"]
     [clojure-csv/clojure-csv "2.0.2"]
@@ -33,10 +33,10 @@
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
                                        [org.clojure/clojurescript "1.10.439" :scope "provided"]]}
              :dev      {:dependencies [[binaryage/devtools "0.9.10"]
-                                       [binaryage/dirac "1.2.42"]
+                                       [binaryage/dirac "1.2.43"]
                                        [com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.4"]
-                                       [org.clojure/clojure "1.10.0-RC5"]]}
+                                       [org.clojure/clojure "1.10.0-RC5"] ]}
              :1.8      {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9      {:dependencies [[org.clojure/clojure "1.9.0"]]}
              }
