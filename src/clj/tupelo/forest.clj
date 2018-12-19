@@ -457,7 +457,7 @@
       (set-node hid node)
       node)))
 
-(s/defn validate-attrs
+(s/defn validate-attrs :- tsk/KeyMap
   [attrs :- tsk/KeyMap]
   (let [illegal-value?   (s/fn fn-illegal-value [arg] (or (= arg :*) (= arg :**))) ]
     (when (has-some? illegal-value? (keyvals attrs))
