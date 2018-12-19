@@ -417,13 +417,13 @@
         forest-2 (with-forest-result forest-1
                    (let [{:keys [x y z r]} @state]
                      (is (val= (hid->node y) {::tf/khids [], :tag :char, :value "y"}))
-                     (is (val= (value-set y "YYY")
+                     (is (val= (attr-set y :value "YYY")
                            {::tf/khids [], :tag :char, :value "YYY"}))
 
-                     (is (val= (value-set y 0)
+                     (is (val= (attr-set y :value 0)
                            {::tf/khids [], :tag :char, :value 0}))
-                     (value-update y + 7)
-                     (value-update y * 6)
+                     (attr-update y :value + 7)
+                     (attr-update y :value * 6)
                      (is (val= (hid->leaf y)
                            {::tf/khids [], :tag :char, :value 42}))))
 

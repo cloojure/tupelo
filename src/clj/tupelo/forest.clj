@@ -406,11 +406,6 @@
   []
   (set (keys (deref *forest*))) )
 
-(s/defn all-leaf-hids :- #{HID} ; #todo remove OBE?
-  "Returns a set of all leaf HIDs in the forest"
-  []
-  (set (keep-if leaf-hid? (all-hids))))
-
 (s/defn root-hids :- #{HID}
   "Return a vector of all root HID's"
   []
@@ -712,7 +707,7 @@
   [hid :- HID]
   (-> (validate-hid hid) hid->tree tree->hiccup))
 
-; #todo make sure all permutations are available
+; #todo make sure all permutations are available;  need test
 (defn hid->enlive [hid]
   (-> hid hid->tree tree->enlive))
 
@@ -770,26 +765,15 @@
     (set-node hid node-new)))
 
 ; #todo make :value just another user-supplied attr :f/value
-(s/defn value-set :- Node
+(s/defn attr-set :- Node
   "Resets the value of a leaf"
   [hid :- HID
-   value-new :- s/Any]
-  (let [leaf-curr  (hid->leaf hid)
-        leaf-new   (glue leaf-curr {:value value-new}) ]
-    (set-node hid leaf-new)
-    leaf-new))
-
-(s/defn value-update :- Node
-  "Given a leaf with a value, updates that value using a function"
-  [hid :- HID
-   fn-update-value  ; signature: (fn-update-value value-curr x y z & more) -> value-new
-   & fn-update-value-args]
-  (let [leaf-curr  (hid->leaf hid)
-        value-curr (grab :value leaf-curr)
-        value-new  (apply fn-update-value value-curr fn-update-value-args)
-        leaf-new   (glue leaf-curr {:value value-new})]
-    (set-node hid leaf-new)
-    leaf-new))
+   attr-name :- s/Keyword
+   attr-val :- s/Any]
+  (let [node-curr  (hid->node hid)
+        node-new   (glue node-curr {attr-name attr-val}) ]
+    (set-node hid node-new)
+    node-new))
 
 ; #todo avoid self-cycles
 ; #todo avoid descendant-cycles

@@ -45,7 +45,7 @@
       (is= (hid->hiccup c4-parent) [:b [:c 4] [:c 5]])
       (is= (hid->node c4-parent) {:tag :b, :tupelo.forest/khids [1003 1004]})
       (is= c4-hid 1003)
-      (value-update c4-hid inc)
+      (attr-update c4-hid :value inc)
       (is= (hid->node c4-hid) {:tupelo.forest/khids [], :tag :c, :value 5}))))
 
 (dotest
@@ -116,7 +116,7 @@
                                                 [:c 9]])
                      ab1-hid (last (only (find-paths root-hid [:** {:tag :b :value 1}])))]
                  (is= (hid->bush ab1-hid) [{:tag :b :value 1}])
-                 (value-update ab1-hid inc)
+                 (attr-update ab1-hid :value inc)
                  (is= (hid->bush ab1-hid) [{:tag :b :value 2}])
                  (is= (hid->bush root-hid)
                       [{:tag :a}
@@ -216,24 +216,20 @@
           [{:tag :item, :value 60}]]])
       ; find all keyword leaves in order
       (let [leaf-hids-1  (keep-if leaf-hid? (find-hids root-hid [:** :*]))
-            leaf-hids-2  (all-leaf-hids)
+            leaf-hids-2  (keep-if leaf-hid? (all-hids))
             kw-leaf-hids (keep-if #(keyword? (grab :value (hid->node %))) leaf-hids-1) ; could keep only first one here
             leaves       (mapv hid->leaf kw-leaf-hids)]
-        (is= (set leaf-hids-1) leaf-hids-2)
-        ; must use `val=` since (not= {:attrs {:tag :item}, ::value :a}
-        ;                  (map->Node {:attrs {:tag :item}, ::value :a} ))
+        (set= leaf-hids-1 leaf-hids-2)
         (is= leaves
           [{::tf/khids [], :tag :item, :value :a}
-           {::tf/khids [], :tag :item, :value :b}]))
-      )))
-
+           {::tf/khids [], :tag :item, :value :b}])) )))
 
 ; update the first child of the root using `inc`
 (dotest
   (with-forest (new-forest)
     (let [root-hid    (add-tree-hiccup t0-hiccup)
           child-1-hid (first (hid->kids root-hid))
-          >>          (value-update child-1-hid inc)
+          >>          (attr-update child-1-hid :value inc)
           result      (hid->leaf child-1-hid)]
          (is= result {::tf/khids [], :tag :item, :value 2} )
       (is= (hid->hiccup root-hid)
@@ -1368,7 +1364,7 @@
       (is= (hid->hiccup shipping-address-input-hid)
         [:input {:type        "text", :autocomplete "off", :required "required",
                  :placeholder "", :class "el-input__inner"}])
-      (value-set shipping-address-input-hid "1234 Main St")
+      (attr-set shipping-address-input-hid :value "1234 Main St")
       (is= (hid->hiccup shipping-address-input-hid)
         [:input {:type        "text", :autocomplete "off", :required "required",
                  :placeholder "", :class "el-input__inner"}
