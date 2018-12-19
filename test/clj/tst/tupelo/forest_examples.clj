@@ -230,7 +230,7 @@
     (let [root-hid    (add-tree-hiccup t0-hiccup)
           child-1-hid (first (hid->kids root-hid))
           >>          (attr-update child-1-hid :value inc)
-          result      (hid->leaf child-1-hid)]
+          result      (hid->node child-1-hid)]
          (is= result {::tf/khids [], :tag :item, :value 2} )
       (is= (hid->hiccup root-hid)
         [:item
@@ -894,7 +894,7 @@
                                  {:tag :Id, :attrs {}, :content ["24740865"]} ]}]})
           id-content-paths (find-paths root-hid [:eSearchResult :IdList :Id])
           id-strings       (forv [path id-content-paths]
-                             (grab :value (hid->leaf (last path))))]
+                             (grab :value (hid->node (last path))))]
       (is= (hid->bush root-hid)
         [{:tag :eSearchResult}
          [{:tag :Count, :value "16"}]
@@ -1080,7 +1080,7 @@
             sentence-hids  (find-hids root-hid [:document :sentence])
             sentences      (forv [sentence-hid sentence-hids]
                              (let [word-hids     (hid->kids sentence-hid)
-                                   words         (mapv #(grab :value (hid->leaf %)) word-hids)
+                                   words         (mapv #(grab :value (hid->node %)) word-hids)
                                    sentence-text (str/join \space words)]
                                sentence-text))]
         (is= bush-no-blanks
@@ -1122,7 +1122,7 @@
             sentence-hids       (find-hids root-hids [:document :sentence])
             sentence-extract-fn (fn [sentence-hid]
                                   (let [word-hids     (hid->kids sentence-hid)
-                                        words         (mapv #(grab :value (hid->leaf %)) word-hids)
+                                        words         (mapv #(grab :value (hid->node %)) word-hids)
                                         sentence-text (str/join \space words)]
                                     sentence-text))
             result-sentences    (mapv sentence-extract-fn sentence-hids)]
