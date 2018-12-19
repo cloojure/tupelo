@@ -282,7 +282,7 @@
     (let [root-hid  (add-tree-hiccup t0-hiccup)
           big-paths (find-paths-with root-hid [:** :*] leaf-gt-10?)]
       (doseq [path big-paths]
-        (remove-subtree-path path))
+        (remove-path-subtree path))
       (is= (hid->hiccup root-hid)
         [:item
          [:item 1]
@@ -518,7 +518,7 @@
 
           type-bc-paths   (find-paths-with root-hid [:** :Item] type-bc-path?)
           >>              (doseq [path type-bc-paths]
-                            (remove-subtree-path path))
+                            (remove-path-subtree path))
           tree-3          (hid->tree root-hid)
           tree-3-hiccup   (hid->hiccup root-hid)]
       (is= tree-1
@@ -593,14 +593,13 @@
           root-hid      (add-tree-xml xml-str)
           has-bc-leaf?  (s/fn [path :- [HID]]
                           (let [hid (last path)]
-
                             (or
                               (has-descendant? hid [:** {:tag :Type :value "B"}])
                               (has-descendant? hid [:** {:tag :Type :value "C"}]))))
           bc-item-paths (find-paths-with root-hid [:** :Item] has-bc-leaf?)]
       ;(spyx-pretty (format-paths bc-item-paths))
       (doseq [path bc-item-paths]
-        (remove-subtree-path path))
+        (remove-path-subtree path))
 
       (is= (hid->hiccup root-hid)
         [:ROOT
@@ -1498,10 +1497,11 @@
     (with-forest (new-forest)
       (let [root-hid                        (add-tree-xml xml-data)
             orig-hiccup                     (hid->hiccup root-hid)
-            remove-empty-leaves-interceptor {:leave (fn [parents hid]
-                                                      (when (leaf-hid? hid)
-                                                        (when-not (contains-key? (hid->node hid) :value)
-                                                          (remove-subtree-from-parents parents hid))))}
+            remove-empty-leaves-interceptor {:leave (fn [path]
+                                                      (when (leaf-path? path)
+                                                        (let [leaf-hid (xlast path)]
+                                                          (when-not (contains-key? (hid->node leaf-hid) :value)
+                                                            (remove-path-subtree path)))))}
             >>                              (walk-tree root-hid remove-empty-leaves-interceptor)
             out-hiccup                      (hid->hiccup root-hid)]
         (is= orig-hiccup

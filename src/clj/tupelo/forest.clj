@@ -283,7 +283,7 @@
              result)))))
 
 (s/defn raw-leaf-treenode? :- s/Bool
-  "Returns true if a node is a leaf with {:tag ::raw}."
+  "Returns true if a TreeNode is a leaf with {:tag ::raw}."
   [node :- tsk/KeyMap]
   (let [tag    (:tag node)
         kids   (::kids node)
@@ -291,8 +291,8 @@
                  (or (nil? kids) (empty? kids)))]
     result))
 
-(s/defn raw-whitespace-treenode? :- s/Bool
-  "Returns true if a node is a leaf with {:tag ::raw} and whitespace value."
+(s/defn raw-whitespace-leaf-treenode? :- s/Bool
+  "Returns true if a TreeNode is a leaf with {:tag ::raw} and whitespace value."
   [node :- tsk/KeyMap]
   (let [value  (:value node)
         result (and (raw-leaf-treenode? node)
@@ -478,22 +478,23 @@
       (set-node hid attrs kid-hids)
       hid)))
 
+(def Interceptor
+  "Plumatic Schema type name for interceptor type used by `walk-tree`."
+  {(s/required-key :enter) s/Any
+   (s/required-key :leave) s/Any
+   (s/optional-key :id)    s/Keyword})
+
 ; #todo add [curr-path] to -impl and intc fn args
-(s/defn ^:private ^:no-doc walk-tree-impl
-  [ctx :- tsk/KeyMap]
-  (with-map-vals ctx [parent-path hid interceptor ]
-    (s/validate [HID] parent-path)
-    (s/validate HID hid)
-    (s/validate tsk/KeyMap interceptor)
-    (let [enter-fn (grab :enter interceptor)
-          leave-fn (grab :leave interceptor)]
-      (enter-fn parent-path hid)
-      (let [parent-path-new (append parent-path hid)]
-        (doseq [kid-hid (hid->kids hid)]
-          (walk-tree-impl {:parent-path parent-path-new
-                           :hid         kid-hid
-                           :interceptor interceptor })))
-      (leave-fn parent-path hid))))
+(s/defn ^:no-doc walk-tree-impl
+  [path :- [HID]
+   interceptor :- Interceptor]
+  (let [enter-fn (grab :enter interceptor)
+        leave-fn (grab :leave interceptor)]
+    (enter-fn path)
+    (doseq [kid-hid (hid->kids (xlast path))]
+      (let [path-new (append path kid-hid)]
+        (walk-tree-impl path-new interceptor)))
+    (leave-fn path)))
 
 (s/defn walk-tree   ; #todo add more tests
   "Recursively walks a subtree of the forest, applying the supplied `:enter` and ':leave` functions
@@ -508,7 +509,7 @@
 
    Here, `pre-fn` and `post-fn` look like:
 
-       (fn [parent-path hid] ...)
+       (fn [path] ...)
 
    where `parent-path` is a vector of parent HIDs beginning at the root of the sub-tree being processed,
    and `hid` points to the current node to be processed. "
@@ -523,14 +524,11 @@
     (let [counted-keys-present (set/intersection counted-keys keys-present)]
       (when (empty? counted-keys-present)
         (throw (ex-info "walk-tree: no counted keys found:" intc-map)))))
-  (let [enter-fn         (get intc-map :enter noop)
-        leave-fn         (get intc-map :leave noop)
-        root-parent-path []]
-    (enter-fn root-parent-path root-hid)
-    (walk-tree-impl {:parent-path root-parent-path
-                     :hid         root-hid
-                     :interceptor {:enter enter-fn :leave leave-fn}})
-    (leave-fn root-parent-path root-hid)))
+  (let [enter-fn              (get intc-map :enter noop)
+        leave-fn              (get intc-map :leave noop)
+        canonical-interceptor {:enter enter-fn :leave leave-fn}
+        root-path             [root-hid]]
+    (walk-tree-impl root-path canonical-interceptor)))
 
 
 (s/defn add-tree :- HID
@@ -539,7 +537,7 @@
   (when-not (tree-node? tree-node)
     (throw (ex-info "add-tree: invalid element=" tree-node)))
   (let [tree-node-attrs (dissoc tree-node ::kids)
-        kids-to-add     (drop-if raw-whitespace-treenode? (grab ::kids tree-node)) ; #todo make optional?
+        kids-to-add     (drop-if raw-whitespace-leaf-treenode? (grab ::kids tree-node)) ; #todo make optional?
         kid-hids        (forv [child kids-to-add]
                           (add-tree child))]
        (add-node tree-node-attrs kid-hids)))
@@ -854,14 +852,6 @@
       (set-node hid node-new)
       node-new)))
 
-(s/defn remove-all-kids :- tsk/KeyMap
-  "Disconnects all children from a Node, but does not delete them from the forest. "
-  ([hid :- HID ]
-    (let [node-curr   (hid->node hid)
-          node-new    (glue node-curr {::khids []})]
-      (set-node hid node-new)
-      node-new)))
-
 (s/defn ^:no-doc remove-node-from-parents
   "Given the HID of a node and its parents, remove the node rooted at that HID
   and update its immediate parent (if any). Does not remove child nodes."
@@ -873,21 +863,18 @@
           parent-khids     (hid->kids parent-hid)
           parent-khids-new (drop-if #(= hid %) parent-khids)]
       (when (= parent-khids parent-khids-new)
-        (throw (ex-info "no nodes dropped" (vals->map parents hid))))
+        (throw (ex-info "parent khids entry not found!" (vals->map parents parent-hid parent-khids hid))))
       (kids-set parent-hid parent-khids-new))))
 
-(s/defn remove-subtree-from-parents
-  "For each HID arg, removes the subtree (including all child nodes) rooted at that HID."
-  [parents :- [HID]
-   hid :- HID]
-  (walk-tree hid {:leave (fn [-parents- hid]
-                           (swap! *forest* dissoc hid))})
-  (remove-node-from-parents parents hid))
-
-(s/defn remove-subtree-path
-  "Given a path from a tree root, remove the subtree beginning at the path end."
-  [path :- [HID]]
-  (remove-subtree-from-parents (butlast path) (last path)))
+(s/defn remove-path-subtree
+  "Given an HID path, removes from the forest all nodes in the subtree rooted at the end of that path."
+  [path :- [HID] ]
+  (let [parents  (butlast path)
+        hid-root (xlast path)]
+    (walk-tree hid-root {:leave (fn [path]
+                                  (let [subtree-hid (xlast path)]
+                                    (swap! *forest* dissoc subtree-hid)))})
+    (remove-node-from-parents parents hid-root)))
 
 (s/defn ^:no-doc hid-matches?
   "Returns true if an HID node matches a pattern"
