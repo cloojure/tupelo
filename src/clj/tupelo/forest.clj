@@ -36,15 +36,20 @@
 ; forest  data-forest  ForestDb forest-db
 ; Sherwood  weald  wald  boreal
 
-(def HID s/Int)
-(def hid-count-base 1000)
-(def hid-count-long (atom hid-count-base))
-(defn hid-count-reset
+(def HID
+  "The Plumatic Schema type name for a pointer to a forest node (abbrev. for Hex ID)"
+  s/Int)
+
+(def ^:no-doc hid-count-base 1000)
+(def ^:no-doc hid-counter (atom hid-count-base))
+
+(defn ^:no-doc hid-count-reset
   "Reset the hid-count to its initial value"
-  [] (reset! hid-count-long hid-count-base))
-(defn ^:no-doc new-hid-long
+  [] (reset! hid-counter hid-count-base))
+
+(defn ^:no-doc new-hid
   "Returns the next integer HID"
-  [] (swap! hid-count-long inc))
+  [] (swap! hid-counter inc))
 
 (defn forest-hid?
   "Returns true if the arg type is a legal HID value"
@@ -52,7 +57,7 @@
 
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
 (def ^:dynamic ^:no-doc *forest* nil)
-(def ^:dynamic ^:no-doc *new-hid-fn* new-hid-long)
+(def ^:dynamic ^:no-doc *new-hid-fn* new-hid)
 
 (s/defn new-hid :- HID
   "Returns a new HexID"
