@@ -409,6 +409,11 @@
   [hid :- HID]
   (forest-leaf? (hid->node hid)))
 
+(s/defn leaf-path? :- s/Bool
+  "Returns true if an HID path ends in a leaf"
+  [path :- [HID]]
+  (leaf-hid? (xlast path)))
+
 (s/defn empty-leaf-hid? :- s/Bool
   "Returns true if the arg is a leaf node (no kids) and has no `:value` "
   [hid :- HID]
@@ -511,28 +516,18 @@
 ; #todo add [curr-path] to -impl and intc fn args
 (s/defn ^:no-doc walk-tree-impl
   [ctx :- tsk/KeyMap]
-  (with-map-vals ctx [parent-path hid interceptor parallel? threadpool]
+  (with-map-vals ctx [parent-path hid interceptor ]
     (s/validate [HID] parent-path)
     (s/validate HID hid)
     (s/validate tsk/KeyMap interceptor)
-    (s/validate s/Bool parallel?)
     (let [enter-fn (grab :enter interceptor)
           leave-fn (grab :leave interceptor)]
       (enter-fn parent-path hid)
       (let [parent-path-new (append parent-path hid)]
-        (if parallel?
-          (claypoole/pdoseq threadpool [kid-hid (hid->kids hid)]
-            (walk-tree-impl {:parent-path parent-path-new
-                             :hid         kid-hid
-                             :interceptor interceptor
-                             :parallel?   parallel?
-                             :threadpool  threadpool}))
-          (doseq [kid-hid (hid->kids hid)]
-            (walk-tree-impl {:parent-path parent-path-new
-                             :hid         kid-hid
-                             :interceptor interceptor
-                             :parallel?   parallel?
-                             :threadpool  threadpool}))))
+        (doseq [kid-hid (hid->kids hid)]
+          (walk-tree-impl {:parent-path parent-path-new
+                           :hid         kid-hid
+                           :interceptor interceptor })))
       (leave-fn parent-path hid))))
 
 (s/defn walk-tree   ; #todo add more tests
@@ -552,37 +547,25 @@
 
    where `parent-path` is a vector of parent HIDs beginning at the root of the sub-tree being processed,
    and `hid` points to the current node to be processed. "
-  ([root-hid :- HID
-    intc-map :- tsk/KeyMap]
-    (walk-tree root-hid intc-map false))
-  ([root-hid :- HID
-    intc-map :- tsk/KeyMap
-    parallel? :- s/Bool]
-    (let [legal-keys   #{:id :enter :leave}
-          counted-keys #{:enter :leave}
-          keys-present (set (keys intc-map))]
-      (let [extra-keys (set/difference keys-present legal-keys)]
-        (when (not-empty? extra-keys)
-          (throw (ex-info "walk-tree: unrecognized keys found:" intc-map))))
-      (let [counted-keys-present (set/intersection counted-keys keys-present)]
-        (when (empty? counted-keys-present)
-          (throw (ex-info "walk-tree: no counted keys found:" intc-map)))))
-    (let [enter-fn        (get intc-map :enter noop)
-          leave-fn        (get intc-map :leave noop) ]
-      (enter-fn [] root-hid)
-      (if parallel?
-        (claypoole/with-shutdown! [threadpool (claypoole/threadpool 8)]
-          (walk-tree-impl {:parent-path []
-                           :hid         root-hid
-                           :interceptor {:enter enter-fn :leave leave-fn}
-                           :parallel?   parallel?
-                           :threadpool  threadpool}))
-        (walk-tree-impl {:parent-path []
-                         :hid         root-hid
-                         :interceptor {:enter enter-fn :leave leave-fn}
-                         :parallel?   parallel?
-                         :threadpool  nil}))
-      (leave-fn [] root-hid))))
+  [root-hid :- HID
+   intc-map :- tsk/KeyMap]
+  (let [legal-keys   #{:id :enter :leave}
+        counted-keys #{:enter :leave}
+        keys-present (set (keys intc-map))]
+    (let [extra-keys (set/difference keys-present legal-keys)]
+      (when (not-empty? extra-keys)
+        (throw (ex-info "walk-tree: unrecognized keys found:" intc-map))))
+    (let [counted-keys-present (set/intersection counted-keys keys-present)]
+      (when (empty? counted-keys-present)
+        (throw (ex-info "walk-tree: no counted keys found:" intc-map)))))
+  (let [enter-fn         (get intc-map :enter noop)
+        leave-fn         (get intc-map :leave noop)
+        root-parent-path []]
+    (enter-fn root-parent-path root-hid)
+    (walk-tree-impl {:parent-path root-parent-path
+                     :hid         root-hid
+                     :interceptor {:enter enter-fn :leave leave-fn}})
+    (leave-fn root-parent-path root-hid)))
 
 
 (s/defn add-tree :- HID
@@ -1074,57 +1057,19 @@
 (s/defn find-hids :- [HID] ; #todo need test
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec]
-  (mapv last (find-paths root-spec tgt-path)))
+  (mapv xlast (find-paths root-spec tgt-path)))
 
 (s/defn find-hid :- HID     ; #todo need test
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec]
   (only (find-hids root-spec tgt-path)))
 
-(s/defn find-tree     ; #todo need test (maybe delete?)
-  [root-spec :- HidRootSpec
-   tgt-path :- tsk/Vec ]
-  (hid->tree (find-hid root-spec tgt-path)))
-
-(s/defn leaf-path? :- s/Bool
-  "Returns true if an HID path ends in a leaf"
-  [path :- [HID]]
-  (leaf-hid? (xlast path)))
-
-; #todo remove
-(s/defn find-leaf-paths  :- [[HID]]    ; #todo need test
-  [root-spec :- HidRootSpec
-   tgt-path :- tsk/Vec ]
-  (let [paths      (find-paths root-spec tgt-path)
-        leaf-paths (keep-if leaf-path? paths)]
-    leaf-paths))
-
-; #todo remove
-(s/defn find-leaf-hids :- [HID]     ; #todo need test
-  [root-spec :- HidRootSpec
-   tgt-path :- tsk/Vec ]
-  (mapv last (find-leaf-paths root-spec tgt-path )) )
-
-; #todo remove
-(s/defn find-leaf-hid ; #todo remove single version -> (only (xyz ...))
-  [root-spec :- HidRootSpec
-   tgt-path :- tsk/Vec ]
-  (only (find-leaf-hids root-spec tgt-path )))
-
-; #todo remove
-(s/defn find-leaf
-  [root-spec :- HidRootSpec
-   tgt-path :- tsk/Vec ]
-  (hid->leaf (find-leaf-hid root-spec tgt-path )))
-
 (s/defn whitespace-leaf-hid? :- s/Bool
   [hid :- HID]
-  (let [node (hid->node hid)]
-    (and (forest-leaf? node)
-      (contains-key? node :value)
-      (let [value (grab :value node)]
-        (and (string? value)
-          (ts/whitespace? value)))))) ; all whitespace string
+  (and leaf-hid?
+    (let [value (:value (hid->node hid))]
+      (and (string? value)
+        (ts/whitespace? value))))) ; all whitespace string
 
 (s/defn remove-whitespace-leaves-deprecated ; #todo remove this?
   "Removes leaves from all trees in the forest that are whitespace-only strings
@@ -1136,7 +1081,7 @@
                                   (when (whitespace-leaf-hid? hid)
                                     (remove-node-from-parents parents hid)))})))
 
-(s/defn find-paths-with
+(s/defn find-paths-with ; #todo RETHINK
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec
    path-pred :- s/Any] ; #todo how func spec?
@@ -1144,28 +1089,23 @@
         keepers     (keep-if path-pred paths-found)]
      keepers))
 
-(s/defn find-hids-with
+(s/defn find-hids-with ; #todo RETHINK
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec
    hid-pred :- s/Any] ; #todo how func spec?
   (let [paths-found (find-paths root-spec tgt-path)
-        hids-found  (mapv last paths-found)
+        hids-found  (mapv xlast paths-found)
         hids-keep   (keep-if hid-pred hids-found)]
     hids-keep))
 
-(s/defn has-child-path? ; #todo need test
+(s/defn has-descendant? ; #todo RETHINK + doc + test
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec ]
   (pos? (count (find-paths root-spec tgt-path))))
 
-(s/defn has-child-path-with? ; #todo need test
+(s/defn has-descendant-with? ; #todo need test (RETHINK)
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec
    path-pred :- s/Any] ; #todo how func spec?
   (pos? (count (find-paths-with root-spec tgt-path path-pred))))
-
-(s/defn has-child-leaf?
-  [root-spec :- HidRootSpec
-   tgt-path :- tsk/Vec ]
-  (pos? (count (find-leaf-hids root-spec tgt-path))))
 

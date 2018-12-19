@@ -805,66 +805,62 @@
           [{:tag :a} [{:c :c9 :value 9}]]})))
 
   (with-forest (new-forest)
-    (let [aa (add-node {:tag :a}
-               [(add-leaf {:tag :b} 2)
-                (add-leaf {:tag :c} 3) ])]
-      (throws? (find-paths aa [:**]))
-      (throws? (find-paths aa [:a :**]))
+    (let [root-hid (add-node {:tag :a}
+                     [(add-leaf {:tag :b} 2)
+                      (add-leaf {:tag :c} 3)])]
+      (throws? (find-paths root-hid [:**]))
+      (throws? (find-paths root-hid [:a :**]))
       (is=
-        (format-paths (find-paths aa [:a :** :c]))
-        (format-paths (find-paths aa [:a :** :** :c]))
-        (format-paths (find-paths aa [:** :c]))
+        (format-paths (find-paths root-hid [:a :** :c]))
+        (format-paths (find-paths root-hid [:a :** :** :c]))
+        (format-paths (find-paths root-hid [:** :c]))
         [[{:tag :a} [{:tag :c :value 3}]]])
-      (is= (format-paths (find-paths aa [:** :*]))
+      (is= (format-paths (find-paths root-hid [:** :*]))
         [[{:tag :a} [{:tag :b :value 2}] [{:tag :c :value 3}]]
          [{:tag :a} [{:tag :b :value 2}]]
          [{:tag :a} [{:tag :c :value 3}]]])
-      (is= (hid->tree aa)
+      (is= (hid->tree root-hid)
         {:tag :a,
          ::tf/kids
               [{::tf/kids [], :tag :b, :value 2}
-               {::tf/kids [], :tag :c, :value 3}]} )
+               {::tf/kids [], :tag :c, :value 3}]})
 
-      ; #todo can't remember what this is for....
-      ;(throws? (find-leaf-paths aa [:** {:value 13} ] ))
-      ;(throws? (find-leaf-paths aa [:a :** {:value 13} ] ))
-
-      (is= (format-paths (find-leaf-paths aa [:a {:tag :b :value 2} ] ))
+      (is= (format-paths (find-paths root-hid [:a {:tag :b :value 2}]))
         [[{:tag :a} [{:tag :b :value 2}]]])
 
-      (is= (format-paths (find-leaf-paths aa [:a :**  {:tag :b :value 2} ] ))
-        [ [{:tag :a} [{:tag :b :value 2}]] ])
-
-      (is= (format-paths (find-leaf-paths aa [:a :** :**  {:tag :b :value 2} ] ))
+      (is= (format-paths (find-paths root-hid [:a :** {:tag :b :value 2}]))
         [[{:tag :a} [{:tag :b :value 2}]]])
 
-      (is= (format-paths (find-leaf-paths aa [:**  {:tag :b :value 2} ] ))
+      (is= (format-paths (find-paths root-hid [:a :** :** {:tag :b :value 2}]))
         [[{:tag :a} [{:tag :b :value 2}]]])
 
-      (is= (format-paths (find-leaf-paths aa [:a  {:tag :c :value 3} ] ))
+      (is= (format-paths (find-paths root-hid [:** {:tag :b :value 2}]))
+        [[{:tag :a} [{:tag :b :value 2}]]])
+
+      (is= (format-paths (find-paths root-hid [:a {:tag :c :value 3}]))
         [[{:tag :a} [{:tag :c :value 3}]]])
 
-      (is= (format-paths (find-leaf-paths aa [:* {:tag :c :value 3} ] ))
+      (is= (format-paths (find-paths root-hid [:* {:tag :c :value 3}]))
         [[{:tag :a} [{:tag :c :value 3}]]])
 
-      (is= (format-paths (find-leaf-paths aa [:a {:value 3} ] ))
+      (is= (format-paths (find-paths root-hid [:a {:value 3}]))
         [[{:tag :a} [{:tag :c :value 3}]]])
 
-      (is= (format-paths (find-leaf-paths aa [:** {:value 3} ] ))
+      (is= (format-paths (find-paths root-hid [:** {:value 3}]))
         [[{:tag :a} [{:tag :c :value 3}]]])
 
-      (is= (format-paths (find-leaf-paths aa [:a :** {:value 3 :tag :c}] ))
+      (is= (format-paths (find-paths root-hid [:a :** {:value 3 :tag :c}]))
         [[{:tag :a} [{:tag :c :value 3}]]])
 
-      (is= (format-paths (find-leaf-paths aa [:a :** :** {:tag :c :value 3 }] ))
+      (is= (format-paths (find-paths root-hid [:a :** :** {:tag :c :value 3}]))
         [[{:tag :a} [{:tag :c :value 3}]]])
 
-      (is= (format-paths (find-leaf-paths aa [:** :*] ))
+      (is= (format-paths (keep-if leaf-path? (find-paths root-hid [:** :*])))
         [[{:tag :a} [{:tag :b :value 2}]]
          [{:tag :a} [{:tag :c :value 3}]]])
 
-      (throws? (find-paths aa [:**]))
-      (throws? (find-paths aa [:a :**]))))
+      (throws? (find-paths root-hid [:**]))
+      (throws? (find-paths root-hid [:a :**]))))
 
   (with-forest (new-forest)
     (throws? (add-node {:a :a1}
@@ -920,12 +916,12 @@
           [{:a :a1} [{:b :b2, :color :red, :value 3}]]
           [{:a :a2} [{:b :b1, :color :green, :value 2}]]
           [{:a :a2} [{:b :b2, :color :green, :value 3}]] } )
-      (is= (set (format-paths (find-leaf-paths (root-hids) [{:a :*} {:b :* :value 3}] )))
+      (is= (set (format-paths (find-paths (root-hids) [{:a :*} {:b :* :value 3}] )))
         #{[{:a :a1} [{:b :b2, :color :red, :value 3}]]
           [{:a :a2} [{:b :b2, :color :green, :value 3}]]} )
-      (is= (format-paths (find-leaf-paths (root-hids) [{:a :*} {:c :* :value 3}]))
+      (is= (format-paths (find-paths (root-hids) [{:a :*} {:c :* :value 3}]))
         [[{:a :a3} [{:c :b2, :color :blue, :value 3}]]] )
-      (is= (set (format-paths (find-leaf-paths (root-hids) [:** {:value 3}])))
+      (is= (set (format-paths (find-paths (root-hids) [:** {:value 3}])))
         #{[{:a :a1} [{:b :b2, :color :red, :value 3}]]
           [{:a :a2} [{:b :b2, :color :green, :value 3}]]
           [{:a :a3} [{:c :b2, :color :blue, :value 3}]]} )
@@ -987,34 +983,34 @@
         [[1006 1004]
          [1006 1005]])
 
-      (is= (set (format-paths (find-leaf-paths (root-hids) [:** {:tag :b :value 2}])))
+      (is= (set (format-paths (find-paths (root-hids) [:** {:tag :b :value 2}])))
         #{[{:tag :a, :id :a1}
            [{:tag :b, :color :red, :value 2}]]
           [{:tag :a, :id :a2}
            [{:tag :b, :color :green, :value 2}]]})
 
-      (is= (format-paths (find-leaf-paths x [:** {:tag :b :value 2}]))
+      (is= (format-paths (find-paths x [:** {:tag :b :value 2}]))
         [[{:tag :a, :id :a1}
           [{:tag :b, :color :red, :value 2}]]])
 
-      (is (val= (find-leaf x [:** {:tag :b :value 2}])
+      (is (val= (hid->leaf (find-hid x [:** {:tag :b :value 2}]))
             {::tf/khids [], :tag :b, :color :red, :value 2}))
 
-      (is (val= (find-leaf (root-hids) [:** {:color :blue :value 2}])
+      (is (val= (hid->leaf (find-hid (root-hids) [:** {:color :blue :value 2}]))
             {::tf/khids [], :tag :c, :color :blue, :value 2}))
 
-      (is= (set (format-paths (find-leaf-paths #{z y} [{:tag :a} {:value 2}])))
+      (is= (set (format-paths (find-paths #{z y} [{:tag :a} {:value 2}])))
         #{[{:tag :a, :id :a2} [{:tag :b, :color :green, :value 2}]]
           [{:tag :a, :id :a3} [{:tag :c, :color :blue, :value 2}]]})
-      (is= (set (format-paths (find-leaf-paths (root-hids) [{:tag :a} {:value 2}])))
+      (is= (set (format-paths (find-paths (root-hids) [{:tag :a} {:value 2}])))
         #{[{:tag :a, :id :a1} [{:tag :b, :color :red, :value 2}]]
           [{:tag :a, :id :a2} [{:tag :b, :color :green, :value 2}]]
           [{:tag :a, :id :a3} [{:tag :c, :color :blue, :value 2}]]})
-      (is= (set (format-paths (find-leaf-paths (root-hids) [{:tag :a} {:tag :c}])))
+      (is= (set (format-paths (find-paths (root-hids) [{:tag :a} {:tag :c}])))
         #{[{:tag :a, :id :a3} [{:tag :c, :color :blue, :value 3}]]
           [{:tag :a, :id :a3} [{:tag :c, :color :blue, :value 2}]]})
 
-      (is= (find-leaf-paths (root-hids) [{:tag :a} {:tag :c}])
+      (is= (find-paths (root-hids) [{:tag :a} {:tag :c}])
         [[1009 1007]
          [1009 1008]]))))
 
@@ -1231,22 +1227,22 @@
       ;     [#:tupelo.forest{:value 2, :index 0}]]]])
 
       ;------------------------------------------------------------------------------
-      ;(is= (format-paths (find-leaf-paths root-hid-1 [:** {::tf/value 2}]))
+      ;(is= (format-paths (find-paths root-hid-1 [:** {::tf/value 2}]))
       ;  [[#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
       ;    [#:tupelo.forest{:value 2, :index 1}]]])
       ;
-      ;(is= (format-paths (find-leaf-paths root-hid-2 [:** {::tf/value 2}]))
+      ;(is= (format-paths (find-paths root-hid-2 [:** {::tf/value 2}]))
       ;  [[#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
       ;    [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
       ;     [#:tupelo.forest{:value 2, :index 1}]]]])
       ;
-      ;(is= (format-paths (find-leaf-paths root-hid-3 [:** {::tf/value 2}]))
+      ;(is= (format-paths (find-paths root-hid-3 [:** {::tf/value 2}]))
       ;  [[#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
       ;    [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
       ;     [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
       ;      [#:tupelo.forest{:value 2, :index 1}]]]]])
       ;
-      ;(is= (format-paths (find-leaf-paths root-hid-4 [:** {::tf/value 2}])) ; #todo document
+      ;(is= (format-paths (find-paths root-hid-4 [:** {::tf/value 2}])) ; #todo document
       ;  [[#:tupelo.forest{:tag :tupelo.forest/list, :index nil}
       ;    [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}
       ;     [#:tupelo.forest{:tag :tupelo.forest/list, :index 0}

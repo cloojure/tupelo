@@ -215,7 +215,7 @@
           [{:tag :item, :value 50}]
           [{:tag :item, :value 60}]]])
       ; find all keyword leaves in order
-      (let [leaf-hids-1  (find-leaf-hids root-hid [:** :*])
+      (let [leaf-hids-1  (keep-if leaf-hid? (find-hids root-hid [:** :*]))
             leaf-hids-2  (all-leaf-hids)
             kw-leaf-hids (keep-if #(keyword? (grab :value (hid->node %))) leaf-hids-1) ; could keep only first one here
             leaves       (mapv hid->leaf kw-leaf-hids)]
@@ -477,7 +477,7 @@
   (with-forest (new-forest)
     (let [enlive-tree (xml->enlive "<p>sample <em>text</em> with words.</p>")
           root-hid    (add-tree-enlive enlive-tree)
-          leaf-hids   (find-leaf-hids root-hid [:** :*])
+          leaf-hids   (keep-if leaf-hid? (find-hids root-hid [:** :*]))
           leaf-values (mapv #(grab :value (hid->node %)) leaf-hids)
           result      (apply glue leaf-values)]
       (is= enlive-tree
@@ -517,8 +517,8 @@
           type-bc-path?   (s/fn [path :- [HID]]
                             (let [hid (last path)]
                               (or
-                                (has-child-leaf? hid [:** {:tag :Type :value "B"}])
-                                (has-child-leaf? hid [:** {:tag :Type :value "C"}]))))
+                                (has-descendant? hid [:** {:tag :Type :value "B"}])
+                                (has-descendant? hid [:** {:tag :Type :value "C"}]))))
 
           type-bc-paths   (find-paths-with root-hid [:** :Item] type-bc-path?)
           >>              (doseq [path type-bc-paths]
@@ -599,8 +599,8 @@
                           (let [hid (last path)]
 
                             (or
-                              (has-child-leaf? hid [:** {:tag :Type :value "B"}])
-                              (has-child-leaf? hid [:** {:tag :Type :value "C"}]))))
+                              (has-descendant? hid [:** {:tag :Type :value "B"}])
+                              (has-descendant? hid [:** {:tag :Type :value "C"}]))))
           bc-item-paths (find-paths-with root-hid [:** :Item] has-bc-leaf?)]
       ;(spyx-pretty (format-paths bc-item-paths))
       (doseq [path bc-item-paths]
@@ -646,12 +646,12 @@
           product-hids         (find-hids root-hid [:** :product])
           product-trees-hiccup (mapv hid->hiccup product-hids)
 
-          has-img2-leaf?       (fn [hid] (has-child-leaf? hid [:product :images {:tag :image :value "img2.jpg"}]))
+          has-img2-leaf?       (fn [hid] (has-descendant? hid [:product :images {:tag :image :value "img2.jpg"}]))
 
           img2-prod-hids       (find-hids-with root-hid [:data :products :product] has-img2-leaf?)
           img2-trees-hiccup    (mapv hid->hiccup img2-prod-hids)
 
-          red-sect-paths       (find-leaf-paths root-hid [:** {:tag :section :value "Red Section"}])
+          red-sect-paths       (find-paths root-hid [:** {:tag :section :value "Red Section"}])
           red-prod-paths       (mapv #(drop-last 1 %) red-sect-paths)
           red-prod-hids        (mapv last red-prod-paths)
           red-trees-hiccup     (mapv hid->hiccup red-prod-hids)]
@@ -1057,7 +1057,7 @@
                            </root>"
           root-hid        (add-tree-xml xml-str)
           bush-blanks     (hid->bush root-hid)
-          leaf-hids       (find-leaf-hids root-hid [:** :*])]
+          leaf-hids       (keep-if leaf-hid? (find-hids root-hid [:** :*]))]
       (is= bush-blanks [{:tag :root}
                         [{:tag :a, :value "1"}]
                         [{:tag :b, :value "2"}] ])
@@ -1306,11 +1306,12 @@
     (with-forest (new-forest)
       (let [root-hid     (add-tree-enlive data-enlive)
             soapobj-hids (find-hids root-hid [:root :SoapObject])
-            objdata->map (fn [objdata-hid]
+            objdata->map (s/fn [objdata-hid :- HID]
                            (let [fieldname-node  (hid->node (find-hid objdata-hid [:ObjectData :FieldName]))
                                  fieldvalue-node (hid->node (find-hid objdata-hid [:ObjectData :FieldValue]))]
-                             {(grab :value fieldname-node) (grab :value fieldvalue-node)}))
-            soapobj->map (fn [soapobj-hid]
+                             {(grab :value fieldname-node)
+                              (grab :value fieldvalue-node)}))
+            soapobj->map (s/fn [soapobj-hid :- HID]
                            (apply glue
                              (for [objdata-hid (hid->kids soapobj-hid)]
                                (objdata->map objdata-hid))))
