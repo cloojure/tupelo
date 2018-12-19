@@ -45,26 +45,14 @@
 (defn ^:no-doc new-hid-long
   "Returns the next integer HID"
   [] (swap! hid-count-long inc))
-(defn forest-hid? [arg] (int? arg))
+
+(defn forest-hid?
+  "Returns true if the arg type is a legal HID value"
+  [arg] (int? arg))
 
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
 (def ^:dynamic ^:no-doc *forest* nil)
 (def ^:dynamic ^:no-doc *new-hid-fn* new-hid-long)
-
-
-(def ^:dynamic ^:no-doc *debug-hid-count* nil)
-(defn ^:no-doc new-hid-debug
-  "Returns the next HID in debug mode"
-  []
-  (let [hex-str (format "%04x" (dec (swap! *debug-hid-count* inc)))
-        hid     (keyword hex-str) ]
-    hid) )
-
-(defmacro with-debug-hid ; #todo swap names?
-  [& forms]
-  `(binding [*debug-hid-count* (atom 0)
-             *new-hid-fn*      new-hid-debug]
-     ~@forms))
 
 (s/defn new-hid :- HID
   "Returns a new HexID"
