@@ -184,7 +184,7 @@
                               ::kids [(edn->tree child-val)]})}
       :else {::value data ::index idx ::kids []})))
 
-(defn ^:no-doc validate-list-kids-idx
+(defn ^:private ^:no-doc validate-list-kids-idx
   "verify that a ::list node in a tree has a valid index for all kid nodes"
   [node]
   (assert (= ::list (grab ::tag node)))
@@ -195,17 +195,17 @@
     (assert (= idx-vals idx-tgts))
     kids-sorted))
 
-(s/defn ^:no-doc data-list-node?
+(s/defn ^:private ^:no-doc data-list-node?
   [node :- tsk/KeyMap]
   (and (contains-key? node ::tag)
     (= ::list (grab ::tag node))))
 
-(s/defn ^:no-doc data-entity-node?
+(s/defn ^:private ^:no-doc data-entity-node?
   [node :- tsk/KeyMap]
   (and (contains-key? node ::tag)
     (= ::entity (grab ::tag node))))
 
-(s/defn ^:no-doc data-leaf-node?
+(s/defn ^:private ^:no-doc data-leaf-node?
   [node :- tsk/KeyMap]
   (and (= #{::value ::index ::kids} (set (keys node)))
     (= [] (grab ::kids node))))
@@ -300,14 +300,14 @@
                    (and (string? value) (ts/whitespace? value))))]
     result))
 
-(s/defn ^:no-doc node-has-all-raw-kids? :- s/Bool
+(s/defn ^:private ^:no-doc node-has-all-raw-kids? :- s/Bool
   "Returns true if all of a node's kids are raw leaf nodes."
   [node :- tsk/KeyMap]
   (let [kids (grab ::kids node)]
     (and (pos? (count kids))
       (every? truthy? (mapv raw-leaf-treenode? kids)))))
 
-(s/defn ^:no-doc consolidate-raw-kids :- tsk/Vec
+(s/defn ^:private ^:no-doc consolidate-raw-kids :- tsk/Vec
   "Consolidates kids with `:tag` value of `::raw` for a node into a single Enlive :content vector"
   [node :- tsk/KeyMap]
   (mapv #(grab :value %) (grab ::kids node)))
@@ -377,11 +377,12 @@
   (validate forest-leaf? (hid->node hid)))
 
 (s/defn hid->attrs :- tsk/KeyMap ; #todo remove OBE
+  "Given an HID, returns all node attributes as a map"
   [hid :- HID]
   (dissoc (hid->node hid) ::khids))
 
 (s/defn hid->attr :- s/Any ; #todo remove OBE
-  "Given an HID, returns a single attr"
+  "Given an HID, returns the value of a single attr"
   [hid :- HID
    attr :- s/Keyword]
   (grab attr (hid->node hid)))
@@ -478,7 +479,7 @@
       hid)))
 
 ; #todo add [curr-path] to -impl and intc fn args
-(s/defn ^:no-doc walk-tree-impl
+(s/defn ^:private ^:no-doc walk-tree-impl
   [ctx :- tsk/KeyMap]
   (with-map-vals ctx [parent-path hid interceptor ]
     (s/validate [HID] parent-path)
@@ -664,7 +665,7 @@
                   nodes-merged-last (append nodes-2 (assoc node-last-1 :content [node-last]))]
               (nest-enlive-nodes nodes-merged-last)))))
 
-(defn ^:no-doc filter-enlive-subtrees-helper
+(defn ^:private ^:no-doc filter-enlive-subtrees-helper
   [ctx]
   (with-map-vals ctx [output-chan enlive-nodes-lazy parent-nodes path-target]
     (let [curr-tag (xfirst path-target)]
@@ -687,6 +688,7 @@
 (def ^:dynamic *enlive-subtree-buffer-size*
   "Default output buffer size for `filter-enlive-subtrees`."
   32)
+
 (defn filter-enlive-subtrees
   "Lazily read an enlive tree, retaining only rooted subtrees as specified by `subtree-path`"
   [enlive-tree-lazy subtree-path]
@@ -700,19 +702,22 @@
     (chan->lazy-seq output-chan)))
 
 (s/defn hid->bush :- tsk/Vec
+  "Returns the subtree rooted ad an HID (bush format)"
   [hid :- HID]
   (-> (validate-hid hid) hid->tree tree->bush))
 
 (s/defn hid->hiccup :- tsk/Vec
+  "Returns the subtree rooted ad an HID (hiccup format)"
   [hid :- HID]
   (-> (validate-hid hid) hid->tree tree->hiccup))
 
 ; #todo make sure all permutations are available;  need test
 (defn hid->enlive [hid]
+  "Returns the subtree rooted ad an HID (enlive format)"
   (-> hid hid->tree tree->enlive))
 
 ; #todo replace with set-node ?
-(s/defn attrs-reset :- tsk/KeyMap
+(s/defn attrs-set :- tsk/KeyMap
   "Replace the attrs of a Node with the supplied attrs map"
   [hid :- HID
    attrs-new :- tsk/KeyMap]
@@ -729,8 +734,8 @@
   "Merge the supplied attrs map into the attrs of a Node "
   [hid :- HID
    attrs-in :- tsk/KeyMap]
-  (let [node-curr  (hid->node hid)
-        node-new  (glue node-curr attrs-in) ]
+  (let [node-curr (hid->node hid)
+        node-new  (glue node-curr attrs-in)]
     (validate-attrs node-new)
     (set-node hid node-new)
     node-new))
@@ -931,6 +936,7 @@
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn format-path
+  "Format an HID path for printing (bush format)"
   [hids :- [HID]]
   (let [[hid-curr & hids-rest] hids]
     (if (empty? hids-rest)
@@ -942,6 +948,7 @@
            result))))
 
 (s/defn format-paths
+  "Format a list of HID paths for printing (bush format)"
   [solns :- [[HID]]]
   (forv [soln solns]
     (format-path soln)))

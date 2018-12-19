@@ -338,7 +338,7 @@
             (hid->node r-hid)))
 
       (attrs-merge x-hid {:color :green})
-      (is (val= (into {} (hid->leaf x-hid))
+      (is (val=  (hid->node x-hid)
             { ::tf/khids [] :tag :char, :color :green, :value "x"} ))
 
       (is= (hid->attrs r-hid) {:tag :root, :color :white})
@@ -346,7 +346,7 @@
       (is= (hid->kids r-hid) [x-hid y-hid z-hid])
       (is= (grab :value (hid->node z-hid)) "z")
 
-      (attrs-reset z-hid {:type :tuna, :name :charlie})
+      (attrs-set z-hid {:type :tuna, :name :charlie})
       (is= (hid->attrs z-hid) {:type :tuna, :name :charlie})
     )))
 
@@ -406,10 +406,10 @@
                      (is= (hid->kids r) [x y z])
                      (is= (grab :value (hid->node z)) "z")
 
-                     (attrs-reset z {:type :tuna, :name :charlie})
+                     (attrs-set z {:type :tuna, :name :charlie})
                      (is= (hid->attrs z) {:type :tuna, :name :charlie})
 
-                     (is (val= (hid->leaf y)
+                     (is (val= (hid->node y)
                            {::tf/khids [], :tag :char, :color :red, :value "y"}))
                      (is (val= (attr-remove y :color)
                            {::tf/khids [], :tag :char, :value "y"}))))
@@ -424,7 +424,7 @@
                            {::tf/khids [], :tag :char, :value 0}))
                      (attr-update y :value + 7)
                      (attr-update y :value * 6)
-                     (is (val= (hid->leaf y)
+                     (is (val= (hid->node y)
                            {::tf/khids [], :tag :char, :value 42}))))
 
         ; forest-1 is unaffected by changes that created forest-2
@@ -435,7 +435,7 @@
 
         forest-4 (with-forest-result forest-2
                    (let [{:keys [x y z r]} @state
-                         >> (is (val= (hid->leaf y)
+                         >> (is (val= (hid->node y)
                                   {::tf/khids [], :tag :char, :value 42})) ; still has forest-2 value
                          a  (add-node {:name :michael :value "do"})
                          b  (add-node {:name :tito :value "re"})
@@ -974,10 +974,10 @@
         [[{:tag :a, :id :a1}
           [{:tag :b, :color :red, :value 2}]]])
 
-      (is (val= (hid->leaf (find-hid x [:** {:tag :b :value 2}]))
+      (is (val= (hid->node (find-hid x [:** {:tag :b :value 2}]))
             {::tf/khids [], :tag :b, :color :red, :value 2}))
 
-      (is (val= (hid->leaf (find-hid (root-hids) [:** {:color :blue :value 2}]))
+      (is (val= (hid->node (find-hid (root-hids) [:** {:color :blue :value 2}]))
             {::tf/khids [], :tag :c, :color :blue, :value 2}))
 
       (is= (set (format-paths (find-paths #{z y} [{:tag :a} {:value 2}])))

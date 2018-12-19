@@ -218,7 +218,7 @@
       (let [leaf-hids-1  (keep-if leaf-hid? (find-hids root-hid [:** :*]))
             leaf-hids-2  (keep-if leaf-hid? (all-hids))
             kw-leaf-hids (keep-if #(keyword? (grab :value (hid->node %))) leaf-hids-1) ; could keep only first one here
-            leaves       (mapv hid->leaf kw-leaf-hids)]
+            leaves       (mapv hid->node kw-leaf-hids)]
         (set= leaf-hids-1 leaf-hids-2)
         (is= leaves
           [{::tf/khids [], :tag :item, :value :a}
