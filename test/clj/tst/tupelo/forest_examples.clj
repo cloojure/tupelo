@@ -248,29 +248,29 @@
 (dotest
   (with-forest (new-forest)
     (let [root-hid  (add-tree-hiccup t0-hiccup)
-          kid-2-hid (xsecond (hid->kids root-hid))
-          >>        (kids-append kid-2-hid [(add-leaf :item :c)])]
-         (is= (hid->hiccup root-hid)
-           [:item
-            [:item 1]
-            [:item [:item :a] [:item :b] [:item :c]]
-            [:item 2]
-            [:item 3]
-            [:item [:item 40] [:item 50] [:item 60]]] ))))
+          kid-2-hid (xsecond (hid->kids root-hid))]
+      (kids-append kid-2-hid [(add-tree-hiccup [:item :c])])
+      (is= (hid->hiccup root-hid)
+        [:item
+         [:item 1]
+         [:item [:item :a] [:item :b] [:item :c]]
+         [:item 2]
+         [:item 3]
+         [:item [:item 40] [:item 50] [:item 60]]]))))
 
 ; update the 2nd child of the root by pre-pending :aa
 (dotest
   (with-forest (new-forest)
     (let [root-hid  (add-tree-hiccup t0-hiccup)
-          kid-2-hid (xsecond (hid->kids root-hid))
-          >>        (kids-prepend kid-2-hid [(add-leaf :item :aa)])]
-         (is= (hid->hiccup root-hid)
-           [:item
-            [:item 1]
-            [:item [:item :aa] [:item :a] [:item :b]]
-            [:item 2]
-            [:item 3]
-            [:item [:item 40] [:item 50] [:item 60]]] ))))
+          kid-2-hid (xsecond (hid->kids root-hid))]
+      (kids-prepend kid-2-hid [(add-tree-hiccup [:item :aa])])
+      (is= (hid->hiccup root-hid)
+        [:item
+         [:item 1]
+         [:item [:item :aa] [:item :a] [:item :b]]
+         [:item 2]
+         [:item 3]
+         [:item [:item 40] [:item 50] [:item 60]]]))))
 
 (defn leaf-gt-10?
   [path]
@@ -1230,7 +1230,7 @@
 (s/defn add-leaf-node :- tsk/KeyMap
   [parent-hid :- HID
    arg :- s/Keyword]
-  (kids-append parent-hid [(add-leaf {:tag :arg :arg arg})]))
+  (kids-append parent-hid [(add-node {:tag :arg :arg arg})]))
 
 (s/defn need-more-op? :- s/Bool
   [tgt-size :- s/Int]

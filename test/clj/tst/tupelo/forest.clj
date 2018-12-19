@@ -269,9 +269,9 @@
 
 (dotest
   (with-forest (new-forest)
-    (let [x-hid  (add-leaf {:tag :char :color :red} "x")
-          y-hid  (add-leaf {:tag :char :color :red} "y")
-          z-hid  (add-leaf {:tag :char :color :red} "z")
+    (let [x-hid  (add-node {:tag :char :color :red :value "x"})
+          y-hid  (add-node {:tag :char :color :red :value "y"})
+          z-hid  (add-node {:tag :char :color :red :value "z"})
           r-hid  (add-node {:tag :root :color :white} [x-hid y-hid z-hid])
 
           x-tree (hid->tree x-hid)
@@ -353,7 +353,7 @@
 
 (dotest
   (with-forest (new-forest)
-    (let [x (add-leaf {:tag :char :color :red :cnt 0} "x")
+    (let [x (add-node {:tag :char :color :red :cnt 0 :value "x"})
           r (add-node {:tag :root :color :white :cnt 0} [x])
           x-tree (hid->tree x)
           r-tree (hid->tree r)]
@@ -398,9 +398,9 @@
 (dotest
   (let [state    (atom {})
         forest-1 (with-forest-result (new-forest)
-                   (let [x (add-leaf {:tag :char :color :red} "x")
-                         y (add-leaf {:tag :char :color :red} "y")
-                         z (add-leaf {:tag :char :color :red} "z")
+                   (let [x (add-node {:tag :char :color :red :value "x"})
+                         y (add-node {:tag :char :color :red :value "y"})
+                         z (add-node {:tag :char :color :red :value "z"})
                          r (add-node {:tag :root :color :white} [x y z])]
                      (reset! state (vals->map x y z r))
                      (is= (hid->kids r) [x y z])
@@ -437,9 +437,9 @@
                    (let [{:keys [x y z r]} @state
                          >> (is (val= (hid->leaf y)
                                   {::tf/khids [], :tag :char, :value 42})) ; still has forest-2 value
-                         a  (add-leaf {:name :michael} "do")
-                         b  (add-leaf {:name :tito} "re")
-                         c  (add-leaf {:name :germain} "mi")]
+                         a  (add-node {:name :michael :value "do"})
+                         b  (add-node {:name :tito :value "re"})
+                         c  (add-node {:name :germain :value "mi"})]
                         (kids-set r [a b c])
                      (is= (hid->tree r)
                        {:tag   :root,
@@ -472,10 +472,10 @@
   ])
 
   (with-forest (new-forest)
-    (let [x (add-leaf {:tag :char :color :red} "x")
-          y (add-leaf {:tag :char :color :green} "y")
-          z (add-leaf {:tag :char :color :blue} "z")
-          r (add-node {:tag :root :color :white} [])]
+    (let [x (add-node {:tag :char :color :red :value "x"})
+          y (add-node {:tag :char :color :green :value "y"})
+          z (add-node {:tag :char :color :blue :value "z"})
+          r (add-node {:tag :root :color :white})]
       (is= (hid->kids r) [])
       (kids-append r [x]) (is= (hid->kids r) [x])
       (kids-append r [y]) (is= (hid->kids r) [x y])
@@ -498,46 +498,36 @@
       (kids-prepend r [x y]) (is= (hid->kids r) [x y z])))
 
   ; #todo fix up re:  remove-node-from-parents
-  ;(with-forest (new-forest)
-  ;  (let [x (add-leaf {:tag :char :color :red} "x")
-  ;        y (add-leaf {:tag :char :color :green} "y")
-  ;        z (add-leaf {:tag :char :color :blue} "z")
-  ;
-  ;        a (add-node {:tag :r1 :color :white} [x y z])
-  ;        b (add-node {:tag :r2 :color :grey} [x y z])
-  ;        c (add-node {:tag :r3 :color :black} [x y z])
-  ;        ]
-  ;    (is= (hid->kids a) [x y z])
-  ;    (is= (hid->kids b) [x y z])
-  ;    (is= (hid->kids c) [x y z])
-  ;    (is= (hid->tree a)
-  ;      {:tag :r1, :color :white,
-  ;       ::tf/kids
-  ;            [{::tf/kids [], :tag :char, :color :red, :value "x"}
-  ;             {::tf/kids [], :tag :char, :color :green, :value "y"}
-  ;             {::tf/kids [], :tag :char, :color :blue, :value "z"}]} )
-  ;    (remove-node-from-parents y z)
-  ;    (is= (hid->kids a) [x])
-  ;    (is= (hid->kids b) [x])
-  ;    (is= (hid->kids c) [x])
-  ;    (is= (hid->tree c)
-  ;      {:tag :r3, :color :black,
-  ;       ::tf/kids
-  ;            [{::tf/kids [], :tag :char, :color :red, :value "x"}]} )
-  ;    (throws? (remove-node-from-parents x y))
-  ;
-  ;    (remove-node-from-parents x)
-  ;    (is= (hid->kids a) [])
-  ;    (is= (hid->kids b) [])
-  ;    (is= (hid->kids c) [])
-  ;    (is= (hid->tree c)
-  ;      {::tf/kids [], :tag :r3, :color :black})))
+  (with-forest (new-forest)
+    (let [x (add-node {:tag :char :color :red :value "x"})
+          y (add-node {:tag :char :color :green :value "y"})
+          z (add-node {:tag :char :color :blue :value "z"})
 
-)
+          a (add-node {:tag :r1 :color :white} [x y z]) ]
+      (is= (hid->kids a) [x y z])
+      (is= (hid->tree a)
+        {:tag :r1, :color :white,
+         ::tf/kids
+              [{::tf/kids [], :tag :char, :color :red, :value "x"}
+               {::tf/kids [], :tag :char, :color :green, :value "y"}
+               {::tf/kids [], :tag :char, :color :blue, :value "z"}]} )
+      (remove-node-from-parents [a] y)
+      (remove-node-from-parents [a] z)
+      (is= (hid->kids a) [x])
+      (is= (hid->tree a)
+        {:tag :r1, :color :white,
+         ::tf/kids
+              [{::tf/kids [], :tag :char, :color :red, :value "x"}]} )
+      (throws? (remove-node-from-parents [x] y))
+
+      (remove-node-from-parents [a] x)
+      (is= (hid->kids a) [])
+      (is= (hid->tree a)
+        {::tf/kids [], :tag :r1, :color :white}))) )
 
 (dotest
   (with-forest (new-forest)
-    (let [x (add-leaf {:a 1 :b 2} "x")]
+    (let [x (add-node {:a 1 :b 2 :value "x"})]
       (is= #{x} (root-hids))
       (is (hid-matches? x {:a 1 :b 2}))
       (is (hid-matches? x {:a nil :b 2}))
@@ -587,29 +577,21 @@
                   [:c 9]]
           root-1 (add-tree-hiccup hiccup-1)
 
-          b1     (add-leaf {:tag :b} 1)
-          b2     (add-leaf {:tag :b} 2)
-          c4     (add-leaf {:tag :c} 4)
-          c5     (add-leaf {:tag :c} 5)
-          c9     (add-leaf {:tag :c} 9)
-          b3     (add-node {:tag :b} [c4 c5])
-          aa     (add-node {:tag :a} [b1 b2 b3 c9])
+          b1     (add-node {:tag :b :value 1})
+          b2     (add-node {:tag :b :value 2})
+          c4     (add-node {:tag :c :value 4})
+          c5     (add-node {:tag :c :value 5})
+          c9     (add-node {:tag :c :value 9})
+          b3     (add-node {:tag :b } [c4 c5])
+          aa     (add-node {:tag :a } [b1 b2 b3 c9])
 
           root-2 (add-node {:tag :a}
-                   [(add-leaf {:tag :b} 1)
-                    (add-leaf {:tag :b} 2)
+                   [(add-node {:tag :b :value 1})
+                    (add-node {:tag :b :value 2})
                     (add-node {:tag :b}
-                      [(add-leaf {:tag :c} 4)
-                       (add-leaf {:tag :c} 5)])
-                    (add-leaf {:tag :c} 9)])
-
-          root-3 (add-node :a
-                   [(add-leaf :b 1)
-                    (add-leaf :b 2)
-                    (add-node :b
-                      [(add-leaf :c 4)
-                       (add-leaf :c 5)])
-                    (add-leaf :c 9)])
+                      [(add-node {:tag :c :value 4})
+                       (add-node {:tag :c :value 5})])
+                    (add-node {:tag :c :value 9})])
     ]
       (is= (hid->tree b1) {::tf/kids [], :tag :b, :value 1} )
       (is= (hid->tree b2) {::tf/kids [], :tag :b, :value 2} )
@@ -635,7 +617,6 @@
         (hid->tree aa)
         (hid->tree root-1)
         (hid->tree root-2)
-        (hid->tree root-3)
         {:tag :a,
          ::tf/kids
               [{::tf/kids [], :tag :b, :value 1}
@@ -705,13 +686,13 @@
 (dotest
   (hid-count-reset)
   (with-forest (new-forest)
-    (let [root-hid (add-node :a
-                     [(add-leaf :b 1)
-                      (add-leaf :b 2)
-                      (add-node :b
-                        [(add-leaf :c 4)
-                         (add-leaf :c 5)])
-                      (add-leaf :c 9)])]
+    (let [root-hid (add-tree-hiccup [:a
+                                     [:b 1]
+                                     [:b 2]
+                                     [:b
+                                      [:c 4]
+                                      [:c 5]]
+                                     [:c 9]])]
 
       (is (empty? (find-paths root-hid [:z])))
       (is (empty? (find-paths root-hid [:z :b])))
@@ -779,12 +760,12 @@
 (dotest
   (with-forest (new-forest)
     (let [aa (add-node :a
-               [(add-leaf {:b :b1} 1)
-                (add-leaf {:b :b2} 2)
+               [(add-node {:b :b1 :value 1})
+                (add-node {:b :b2 :value 2})
                 (add-node {:b :b3}
-                  [(add-leaf {:c :c4} 4)
-                   (add-leaf {:c :c5} 5)])
-                (add-leaf {:c :c9} 9)])]
+                  [(add-node {:c :c4 :value 4})
+                   (add-node {:c :c5 :value 5})])
+                (add-node {:c :c9 :value 9})])]
       (is= (set (format-paths (find-paths aa [:a :** :*])))
         #{[{:tag :a} [{:b :b1 :value 1}]]
           [{:tag :a} [{:b :b2 :value 2}]]
@@ -807,8 +788,8 @@
 
   (with-forest (new-forest)
     (let [root-hid (add-node {:tag :a}
-                     [(add-leaf {:tag :b} 2)
-                      (add-leaf {:tag :c} 3)])]
+                     [(add-node {:tag :b :value 2})
+                      (add-node {:tag :c :value 3})])]
       (throws? (find-paths root-hid [:**]))
       (throws? (find-paths root-hid [:a :**]))
       (is=
@@ -865,30 +846,29 @@
 
   (with-forest (new-forest)
     (throws? (add-node {:a :a1}
-               [(add-leaf {:* :b2} 2)
-                (add-leaf {:c :c3} 3)]))
+               [(add-node {:* :b2 :value 2})
+                (add-node {:c :c3 :value 3})]))
     (throws? (add-node {:a :a1}
-               [(add-leaf {:b :*} 2)
-                (add-leaf {:c :c3} 3)]))
+               [(add-node {:b :* :value 2})
+                (add-node {:c :c3 :value 3})]))
     (throws? (add-node {:a :a1}
-               [(add-leaf {:** :b2} 2)
-                (add-leaf {:c :c3} 3)]))
+               [(add-node {:** :b2 :value 2})
+                (add-node {:c :c3 :value 3})]))
     (throws? (add-node {:a :a1}
-               [(add-leaf {:b :**} 2)
-                (add-leaf {:c :c3} 3)])))
-)
+               [(add-node {:b :** :value 2})
+                (add-node {:c :c3 :value 3})]))))
 
 (dotest
   (with-forest (new-forest)
     (let [x (add-node {:a :a1}
-              [(add-leaf {:b :b1 :color :red} 2)
-               (add-leaf {:b :b2 :color :red} 3)])
+              [(add-node {:b :b1 :color :red :value 2})
+               (add-node {:b :b2 :color :red :value 3})])
           y (add-node {:a :a2}
-              [(add-leaf {:b :b1 :color :green} 2)
-               (add-leaf {:b :b2 :color :green} 3)])
+              [(add-node {:b :b1 :color :green :value 2})
+               (add-node {:b :b2 :color :green :value 3})])
           z (add-node {:a :a3}
-              [(add-leaf {:c :b1 :color :blue} 2)
-               (add-leaf {:c :b2 :color :blue} 3)])]
+              [(add-node {:c :b1 :color :blue :value 2})
+               (add-node {:c :b2 :color :blue :value 3})])]
       (is= (set (mapv hid->tree (root-hids)))
         #{{:a :a1,
            ::tf/kids
@@ -932,8 +912,8 @@
 (dotest
   (with-forest (new-forest)
     (let [aa (add-node {:color :red}
-               [(add-leaf {:color :green} 2)
-                (add-leaf {:color :blue} 3)])]
+               [(add-node {:color :green :value 2})
+                (add-node {:color :blue :value 3})])]
       (is= (format-paths (find-paths aa [{:color :red}]))
         [[{:color :red}
           [{:color :green, :value 2}]
@@ -949,14 +929,14 @@
   (hid-count-reset)
   (with-forest (new-forest)
     (let [x (add-node {:tag :a :id :a1}
-              [(add-leaf {:tag :b :color :red} 2)
-               (add-leaf {:tag :b :color :red} 3)])
+              [(add-node {:tag :b :color :red :value 2})
+               (add-node {:tag :b :color :red :value 3})])
           y (add-node {:tag :a :id :a2}
-              [(add-leaf {:tag :b :color :green} 2)
-               (add-leaf {:tag :b :color :green} 3)])
+              [(add-node {:tag :b :color :green :value 2})
+               (add-node {:tag :b :color :green :value 3})])
           z (add-node {:tag :a :id :a3}
-              [(add-leaf {:tag :c :color :blue} 2)
-               (add-leaf {:tag :c :color :blue} 3)])]
+              [(add-node {:tag :c :color :blue :value 2})
+               (add-node {:tag :c :color :blue :value 3})])]
 
       (is= (set (format-paths (find-paths (root-hids) [{:tag :a}])))
         #{[{:tag :a, :id :a1}

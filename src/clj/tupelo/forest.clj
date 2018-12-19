@@ -11,7 +11,6 @@
   (:require
     [clojure.core.async :as async]
     [clojure.set :as set]
-    [com.climate.claypoole :as claypoole]
     [net.cgrand.tagsoup :as enlive-tagsoup]
     [net.cgrand.xml :as enlive-xml]
     [schema.core :as s]
@@ -29,7 +28,6 @@
 ;   still immutable, native Clojure maps at base
 ;      `with-forest` macro restricted to a single thread at a time
 
-; #todo  move to tupelo-dev.forest (tupelo.x-datapig ?)
 ; #todo  define tf/Bush type (& Hiccup, Enlive)
 
 ; forest  data-forest  ForestDb forest-db
@@ -484,16 +482,6 @@
       (set-node hid attrs kid-hids)
       hid)))
 
-(s/defn add-leaf :- HID  ; #todo remove duplication
-  ([attrs-arg] (add-leaf attrs-arg nil)) ; #todo test ; => ctx (tag required)
-  ([attrs-arg :- (s/either tsk/KeyMap s/Keyword); #todo merge args
-   value :- s/Any ]
-  (let [attrs (if (map? attrs-arg)
-                attrs-arg
-                {:tag (validate keyword? attrs-arg)} )
-        attrs (glue attrs {:value value}) ]
-    (add-node attrs []))))
-
 ; #todo add [curr-path] to -impl and intc fn args
 (s/defn ^:no-doc walk-tree-impl
   [ctx :- tsk/KeyMap]
@@ -890,13 +878,13 @@
   and update its immediate parent (if any). Does not remove child nodes."
   [parents :- [HID]
    hid :- HID]
- ;(println :remove-node-from-parents hid)
   (swap! *forest* dissoc hid)
   (if (not-empty? parents)
     (let [parent-hid       (last parents)
-          parent-node      (hid->node parent-hid)
           parent-khids     (hid->kids parent-hid)
           parent-khids-new (drop-if #(= hid %) parent-khids)]
+      (when (= parent-khids parent-khids-new)
+        (throw (ex-info "no nodes dropped" (vals->map parents hid))))
       (kids-set parent-hid parent-khids-new))))
 
 (s/defn remove-subtree-from-parents
