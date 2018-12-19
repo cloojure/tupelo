@@ -1500,35 +1500,27 @@
                     </college>
                   </foo> "]
     (with-forest (new-forest)
-      (let [root-hid (add-tree-xml xml-data)]
-        (is= (hid->hiccup root-hid)
+      (let [root-hid                        (add-tree-xml xml-data)
+            orig-hiccup                     (hid->hiccup root-hid)
+            remove-empty-leaves-interceptor {:leave (fn [parents hid]
+                                                      (when (leaf-hid? hid)
+                                                        (when-not (contains-key? (hid->node hid) :value)
+                                                          (remove-subtree-from-parents parents hid))))}
+            >>                              (walk-tree root-hid remove-empty-leaves-interceptor)
+            out-hiccup                      (hid->hiccup root-hid)]
+        (is= orig-hiccup
           [:foo
            [:name "John"]
            [:address "1 hacker way"]
            [:phone]
            [:school [:name] [:state] [:type]]
            [:college [:name "mit"] [:address] [:state]]])
-        (walk-tree root-hid
-          {:leave (fn [parents hid]
-                    (when (empty-leaf-hid? hid)
-                      (remove-subtree-from-parents parents hid)))})
-        ; #todo parallel walk-tree broken (race condition)
-        (let [out-hiccup (hid->hiccup root-hid)]
-          ;(spyx-pretty out-hiccup)
-          (is= out-hiccup
-            [:foo
-             [:name "John"]
-             [:address "1 hacker way"]
-             [:college
-              [:name "mit"]]]))))))
-
-
-
-
-
-
-
-
+        (is= out-hiccup
+          [:foo
+           [:name "John"]
+           [:address "1 hacker way"]
+           [:college
+            [:name "mit"]]])))))
 
 
 

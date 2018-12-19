@@ -269,33 +269,34 @@
 
 (dotest
   (with-forest (new-forest)
-    (let [
-          x      (add-leaf {:tag :char :color :red} "x")
-          y      (add-leaf {:tag :char :color :red} "y")
-          z      (add-leaf {:tag :char :color :red} "z")
-          r      (add-node {:tag :root :color :white} [x y z])
-          x-tree (hid->tree x)
-          y-tree (hid->tree y)
-          z-tree (hid->tree z)
-          r-tree (hid->tree r)
-          x-elem (hid->node x)
-          y-elem (hid->node y)
-          z-elem (hid->node z)
-          r-elem (hid->node r)
+    (let [x-hid  (add-leaf {:tag :char :color :red} "x")
+          y-hid  (add-leaf {:tag :char :color :red} "y")
+          z-hid  (add-leaf {:tag :char :color :red} "z")
+          r-hid  (add-node {:tag :root :color :white} [x-hid y-hid z-hid])
 
-          roots (root-hids)]
-      (is (and (forest-hid? x) (forest-hid? y) (forest-hid? z) (forest-hid? r)))
+          x-tree (hid->tree x-hid)
+          y-tree (hid->tree y-hid)
+          z-tree (hid->tree z-hid)
+          r-tree (hid->tree r-hid)
 
-      (is (and (leaf-hid? x) (leaf-hid? y) (leaf-hid? z)))
+          x-node (hid->node x-hid)
+          y-node (hid->node y-hid)
+          z-node (hid->node z-hid)
+          r-node (hid->node r-hid)
+
+          roots  (root-hids)]
+      (is (and (forest-hid? x-hid) (forest-hid? y-hid) (forest-hid? z-hid) (forest-hid? r-hid)))
+
+      (is (and (leaf-hid? x-hid) (leaf-hid? y-hid) (leaf-hid? z-hid)))
       (is (and (tree-leaf? x-tree) (tree-leaf? y-tree) (tree-leaf? z-tree)))
-      (is (and (forest-leaf? x-elem) (forest-leaf? y-elem) (forest-leaf? z-elem)))
+      (is (and (forest-leaf? x-node) (forest-leaf? y-node) (forest-leaf? z-node)))
 
-      (is (node-hid? r))
+      (is (forest-hid? r-hid))
       (is (tree-node? r-tree))
-      (is (forest-node? r-elem))
+      (is (forest-node? r-node))
 
-      (is= #{r} roots)
-      (isnt= #{x} roots)
+      (is= #{r-hid} roots)
+      (isnt= #{x-hid} roots)
 
       (is= x-tree {::tf/kids  [],
                    :tag       :char,
@@ -319,34 +320,34 @@
       (is (wild-match?
             {:tag       :root, :color :white,
              ::tf/khids [:* :* :*]}
-            (hid->node r)))
+            (hid->node r-hid)))
       (is (wild-match?
             {:tag       :root
              :color     :*
              ::tf/khids [:* :* :*]}
-            (hid->node r)))
+            (hid->node r-hid)))
       (isnt (wild-match?
               {:tag       :root
                :color     :*
                ::tf/khids [:* :*]}
-              (hid->node r)))
+              (hid->node r-hid)))
       (is (wild-match?
             {:tag       :root
              :color     :*
              ::tf/khids :*}
-            (hid->node r)))
+            (hid->node r-hid)))
 
-      (attrs-merge x {:color :green})
-      (is (val= (into {} (hid->leaf x))
+      (attrs-merge x-hid {:color :green})
+      (is (val= (into {} (hid->leaf x-hid))
             { ::tf/khids [] :tag :char, :color :green, :value "x"} ))
 
-      (is= (hid->attrs r) {:tag :root, :color :white})
-      (is= (hid->attrs z) {:tag :char, :color :red :value "z"})
-      (is= (hid->kids r) [x y z])
-      (is= (grab :value (hid->node z)) "z")
+      (is= (hid->attrs r-hid) {:tag :root, :color :white})
+      (is= (hid->attrs z-hid) {:tag :char, :color :red :value "z"})
+      (is= (hid->kids r-hid) [x-hid y-hid z-hid])
+      (is= (grab :value (hid->node z-hid)) "z")
 
-      (attrs-reset z {:type :tuna, :name :charlie})
-      (is= (hid->attrs z) {:type :tuna, :name :charlie})
+      (attrs-reset z-hid {:type :tuna, :name :charlie})
+      (is= (hid->attrs z-hid) {:type :tuna, :name :charlie})
     )))
 
 

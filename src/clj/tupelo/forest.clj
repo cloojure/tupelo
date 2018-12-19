@@ -29,7 +29,6 @@
 ;   still immutable, native Clojure maps at base
 ;      `with-forest` macro restricted to a single thread at a time
 
-
 ; #todo  move to tupelo-dev.forest (tupelo.x-datapig ?)
 ; #todo  define tf/Bush type (& Hiccup, Enlive)
 
@@ -39,6 +38,15 @@
 (def HID
   "The Plumatic Schema type name for a pointer to a forest node (abbrev. for Hex ID)"
   s/Int)
+
+(def HidRootSpec
+  "The Plumatic Schema type name for the values accepted as starting points (roots) for a subtree path search."
+  (s/either HID [HID] #{HID})) ; #todo why is this here?
+
+(def Node
+  "The Plumatic Schema description of a legal node in a forest of trees"
+  {(s/required-key ::khids) [HID]
+   s/Keyword                s/Any})
 
 (def ^:no-doc hid-count-base 1000)
 (def ^:no-doc hid-counter (atom hid-count-base))
@@ -54,6 +62,12 @@
 (defn forest-hid?
   "Returns true if the arg type is a legal HID value"
   [arg] (int? arg))
+
+(s/defn ->Node :- Node
+  "Constructs a Node from a vector of HIDs"
+  [hids :- [HID]]
+  (assert (every? forest-hid? hids))
+  {::khids hids})
 
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
 (def ^:dynamic ^:no-doc *forest* nil)
@@ -125,13 +139,6 @@
 ;    ^ req             ^opt k-v's          ^opt/leaf
 ; #todo rename :tupelo.forest/khids -> :kid-hids ?
 ; keep in mind that a Node is a "fragment" of a tree, and only contains "pointers" (HIDs) to the :tupelo.forest/khids
-(def Node { (s/required-key ::khids) [HID]  s/Keyword s/Any } )
-
-(s/defn ->Node :- Node
-  "Constructs a Node from a vector of HIDs"
-  [hids :- [HID]]
-  (assert (every? forest-hid? hids))
-  {::khids hids})
 
 (s/defn forest-node? :- s/Bool
   "Returns true if the arg is a legal forest node"
@@ -144,12 +151,6 @@
   [node :- tsk/KeyMap]
   (and (forest-node? node)
     (empty? (grab ::khids node))))
-
-(s/defn empty-leaf? :- s/Bool
-  "Returns true if the arg is a leaf node (no kids) and has no `:value` "
-  [node :- tsk/KeyMap]
-  (and (forest-leaf? node)
-    (not (contains-key? node :value))))
 
 ;-----------------------------------------------------------------------------
 ; #todo need to delete these???  Concentrate on forest nodes
@@ -283,33 +284,33 @@
               result     (glue tag-attrs content-tx)]
              result)))))
 
-(s/defn raw-leaf-node? :- s/Bool
+(s/defn raw-leaf-treenode? :- s/Bool
   "Returns true if a node is a leaf with {:tag ::raw}."
   [node :- tsk/KeyMap]
-  (let [tag-ok  (= ::raw (:tag node))
-        kids    (::kids node)
-        kids-ok (or (nil? kids) (= kids []))
-        result  (and tag-ok kids-ok)]
+  (let [tag    (:tag node)
+        kids   (::kids node)
+        result (and (= ::raw tag)
+                 (or (nil? kids) (empty? kids)))]
     result))
 
-(s/defn raw-whitespace-node? :- s/Bool
+(s/defn raw-whitespace-treenode? :- s/Bool
   "Returns true if a node is a leaf with {:tag ::raw} and whitespace value."
   [node :- tsk/KeyMap]
   (let [value  (:value node)
-        result (and (raw-leaf-node? node)
+        result (and (raw-leaf-treenode? node)
                  (or (nil? value)
                    (and (string? value) (ts/whitespace? value))))]
     result))
 
-(s/defn raw-kids-node? :- s/Bool
+(s/defn ^:no-doc node-has-all-raw-kids? :- s/Bool
   "Returns true if all of a node's kids are raw leaf nodes."
   [node :- tsk/KeyMap]
   (let [kids (grab ::kids node)]
-       (and (pos? (count kids))
-         (every? truthy? (mapv raw-leaf-node? kids)))))
+    (and (pos? (count kids))
+      (every? truthy? (mapv raw-leaf-treenode? kids)))))
 
-(s/defn consolidate-raw-kids :- tsk/Vec
-  "Consolidates ::raw kids for a node into a single Enlive :content vector"
+(s/defn ^:no-doc consolidate-raw-kids :- tsk/Vec
+  "Consolidates kids with `:tag` value of `::raw` for a node into a single Enlive :content vector"
   [node :- tsk/KeyMap]
   (mapv #(grab :value %) (grab ::kids node)))
 
@@ -319,7 +320,7 @@
   (let [enlive-attrs (dissoc tree-node ::kids :tag :value)
         enlive-base  (glue (submap-by-keys tree-node #{:tag}) {:attrs enlive-attrs})]
     (cond
-      (raw-kids-node? tree-node)
+      (node-has-all-raw-kids? tree-node)
       (let [enlive-leaf (glue enlive-base {:content (consolidate-raw-kids tree-node)})]
         enlive-leaf)
 
@@ -392,11 +393,6 @@
   [hid :- HID]
   (grab ::khids (hid->node hid)))
 
-(s/defn node-hid?  ; #todo remove OBE?
-  "Returns true iff an HID is a Node"
-  [hid :- HID]
-  (forest-node? (hid->node hid)))
-
 (s/defn leaf-hid?
   "Returns true iff an HID is a leaf"
   [hid :- HID]
@@ -406,14 +402,6 @@
   "Returns true if an HID path ends in a leaf"
   [path :- [HID]]
   (leaf-hid? (xlast path)))
-
-(s/defn empty-leaf-hid? :- s/Bool
-  "Returns true if the arg is a leaf node (no kids) and has no `:value` "
-  [hid :- HID]
-  (let [node      (hid->node hid)
-        empty-flg (empty-leaf? node)]
-    ; (nl) (println :empty-leaf-hid? (vals->map hid node empty-flg))
-    empty-flg))
 
 (s/defn all-hids :- #{HID} ; #todo test
   "Returns a set of all HIDs in the forest"
@@ -567,7 +555,7 @@
   (when-not (tree-node? tree-node)
     (throw (ex-info "add-tree: invalid element=" tree-node)))
   (let [tree-node-attrs (dissoc tree-node ::kids)
-        kids-to-add     (drop-if raw-whitespace-node? (grab ::kids tree-node)) ; #todo make optional?
+        kids-to-add     (drop-if raw-whitespace-treenode? (grab ::kids tree-node)) ; #todo make optional?
         kid-hids        (forv [child kids-to-add]
                           (add-tree child))]
        (add-node tree-node-attrs kid-hids)))
@@ -1023,8 +1011,6 @@
                 ;(println (str :350 "    recurse  parents-new:" (mapv #(hid->node %) parents-new)
                 ;           "  tgt-path:" tgt-path))
                 (find-paths-impl result-atom parents-new kid tgt-path)))))))))
-
-(def HidRootSpec (s/either HID [HID] #{HID})) ; #todo why is this here?
 
 ; #todo need a find-paths-pred that takes a predicate fn to choose
 ; #todo maybe a fn like postwalk to apply transformation fn to each node recursively
