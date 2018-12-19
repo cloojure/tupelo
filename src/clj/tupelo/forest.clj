@@ -145,7 +145,7 @@
     (not (contains-key? arg ::kids))))
 
 (s/defn forest-leaf? :- s/Bool
-  "Returns true if the arg is a leaf node (empty :tupelo.forest/khids). "
+  "Returns true if the arg is a forest leaf node (empty :tupelo.forest/khids). "
   [node :- tsk/KeyMap]
   (and (forest-node? node)
     (empty? (grab ::khids node))))
@@ -157,12 +157,6 @@
   [node :- tsk/KeyMap]
   (and   (contains-key? node ::kids)
     (not (contains-key? node ::khids))))
-
-(s/defn tree-leaf? :- s/Bool
-  "Returns true if the arg is a leaf node (no kids). "
-  [node :- tsk/KeyMap]
-  (and (tree-node? node)
-    (empty? (grab ::kids node))))
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn edn->tree
@@ -300,8 +294,13 @@
                    (and (string? value) (ts/whitespace? value))))]
     result))
 
-(s/defn ^:private ^:no-doc node-has-all-raw-kids? :- s/Bool
-  "Returns true if all of a node's kids are raw leaf nodes."
+(s/defn ^:private ^:no-doc treenode-leaf?  :- s/Bool
+  "Returns true if a treenode is a leaf (no kids)."
+  [node :- tsk/KeyMap]
+  (empty? (grab ::kids node)))
+
+(s/defn ^:private ^:no-doc treenode-has-all-raw-kids? :- s/Bool
+  "Returns true if all of a treenode's kids are raw leaf nodes."
   [node :- tsk/KeyMap]
   (let [kids (grab ::kids node)]
     (and (pos? (count kids))
@@ -315,14 +314,15 @@
 (s/defn tree->enlive :- (s/either tsk/KeyMap tsk/Vec)
   [tree-node :- tsk/KeyMap]
   (assert (tree-node? tree-node))
-  (let [enlive-attrs (dissoc tree-node ::kids :tag :value)
-        enlive-base  (glue (submap-by-keys tree-node #{:tag}) {:attrs enlive-attrs})]
+  (let [
+        enlive-attrs   (dissoc tree-node ::kids :tag :value)
+        enlive-base    (glue (submap-by-keys tree-node #{:tag}) {:attrs enlive-attrs})]
     (cond
-      (node-has-all-raw-kids? tree-node)
+      (treenode-has-all-raw-kids? tree-node)
       (let [enlive-leaf (glue enlive-base {:content (consolidate-raw-kids tree-node)})]
         enlive-leaf)
 
-      (tree-leaf? tree-node)
+      (treenode-leaf? tree-node)
       (let [enlive-leaf (glue enlive-base
                           {:content (if (contains-key? tree-node :value)
                                       [(grab :value tree-node)]
@@ -446,7 +446,8 @@
   "Unconditionally sets the value of a Node in the forest"
   ([hid :- HID
     node :- Node]
-    (assert (not (contains-key? node ::kids)))
+    (when-not (forest-node? node)
+      (throw (ex-info "set-node: non forest node detected" (vals->map hid node))))
     (swap! *forest* glue {hid node})
     node)
   ([hid :- HID

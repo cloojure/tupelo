@@ -288,7 +288,6 @@
       (is (and (forest-hid? x-hid) (forest-hid? y-hid) (forest-hid? z-hid) (forest-hid? r-hid)))
 
       (is (and (leaf-hid? x-hid) (leaf-hid? y-hid) (leaf-hid? z-hid)))
-      (is (and (tree-leaf? x-tree) (tree-leaf? y-tree) (tree-leaf? z-tree)))
       (is (and (forest-leaf? x-node) (forest-leaf? y-node) (forest-leaf? z-node)))
 
       (is (forest-hid? r-hid))
