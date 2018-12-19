@@ -1036,7 +1036,8 @@
 ; #todo need a find-paths-pred that takes a predicate fn to choose
 ; #todo maybe a fn like postwalk to apply transformation fn to each node recursively
 (s/defn find-paths :- [[HID]]    ; #todo need update-tree & update-leaf fn's
-  "Searches an Enlive-format tree for the specified tgt-path"
+  "Searches the forest for subtrees matching the `tgt-path` rooted at `root-spec`.
+  Returns a vector of hid-paths."
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec ]
   (when (empty? tgt-path)
@@ -1054,58 +1055,70 @@
       (find-paths-impl result-atom [] root tgt-path))
     @result-atom))
 
+(s/defn find-paths-with ; #todo RETHINK
+  "Searches for subtrees as for `find-paths`, discarding paths that fail the `path-pred` function."
+  [root-spec :- HidRootSpec
+   tgt-path :- tsk/Vec
+   path-pred :- s/Any] ; #todo how func spec?
+  (let [paths-found (find-paths root-spec tgt-path)
+        keepers     (keep-if path-pred paths-found)]
+    keepers))
+
 (s/defn find-hids :- [HID] ; #todo need test
+  "Searches for subtrees as for `find-paths`, but retains only the HID of each subtree root (i.e. the last
+  element of each path vector)"
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec]
   (mapv xlast (find-paths root-spec tgt-path)))
 
-(s/defn find-hid :- HID     ; #todo need test
+(s/defn find-hid :- HID ; #todo need test
+  "Searches as with `find-hids`, expecting & returning a single HID result."
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec]
   (only (find-hids root-spec tgt-path)))
 
+(s/defn find-hids-with ; #todo RETHINK
+  "Searches for subtrees as for `find-hids`, discarding HIDs that fail the `hid-pred` function."
+  [root-spec :- HidRootSpec
+   tgt-path :- tsk/Vec
+   hid-pred :- s/Any] ; #todo how func spec?
+  (let [hids-found  (find-hids root-spec tgt-path)
+        hids-keep   (keep-if hid-pred hids-found)]
+    hids-keep))
+
 (s/defn whitespace-leaf-hid? :- s/Bool
+  "Returns true iff an HID is a leaf node (no children) and has a `:value` attribute containing only whitespace."
   [hid :- HID]
   (and leaf-hid?
     (let [value (:value (hid->node hid))]
       (and (string? value)
         (ts/whitespace? value))))) ; all whitespace string
 
-(s/defn remove-whitespace-leaves-deprecated ; #todo remove this?
+(s/defn ^:deprecated remove-whitespace-leaves
   "Removes leaves from all trees in the forest that are whitespace-only strings
   (including zero-length strings)."
   ([] (doseq [hid (root-hids)]
-        (remove-whitespace-leaves-deprecated hid)))
+        (remove-whitespace-leaves hid)))
   ([root-hid :- HID]
     (walk-tree root-hid {:leave (fn [parents hid]
                                   (when (whitespace-leaf-hid? hid)
                                     (remove-node-from-parents parents hid)))})))
 
-(s/defn find-paths-with ; #todo RETHINK
-  [root-spec :- HidRootSpec
-   tgt-path :- tsk/Vec
-   path-pred :- s/Any] ; #todo how func spec?
-  (let [paths-found (find-paths root-spec tgt-path)
-        keepers     (keep-if path-pred paths-found)]
-     keepers))
-
-(s/defn find-hids-with ; #todo RETHINK
-  [root-spec :- HidRootSpec
-   tgt-path :- tsk/Vec
-   hid-pred :- s/Any] ; #todo how func spec?
-  (let [paths-found (find-paths root-spec tgt-path)
-        hids-found  (mapv xlast paths-found)
-        hids-keep   (keep-if hid-pred hids-found)]
-    hids-keep))
-
 (s/defn has-descendant? ; #todo RETHINK + doc + test
-  [root-spec :- HidRootSpec
+  "Returns true iff `root-hid` has at least one matching subtree"
+  [root-hid :- HID
    tgt-path :- tsk/Vec ]
-  (pos? (count (find-paths root-spec tgt-path))))
+  (pos? (count (find-paths root-hid tgt-path))))
 
 (s/defn has-descendant-with? ; #todo need test (RETHINK)
+  "Returns true iff `root-hid` has at least one matching subtree, after discarding paths failing the 'path-pred' function."
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec
    path-pred :- s/Any] ; #todo how func spec?
   (pos? (count (find-paths-with root-spec tgt-path path-pred))))
+
+
+
+
+
 
