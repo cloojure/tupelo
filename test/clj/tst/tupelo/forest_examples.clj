@@ -1518,6 +1518,23 @@
            [:college
             [:name "mit"]]])))))
 
+;-----------------------------------------------------------------------------
+(dotest
+  (with-forest (new-forest)
+    (let [data-hiccup  [:LangIF
+                        [:before_if "676767; "]
+                        [:condition_expression "0"]
+                        [:statements_OK "1; 2;"]
+                        [:statements_NOK "3+4;"]
+                        [:after_if ""]]
+          root-hid     (add-tree-hiccup data-hiccup)
+          before-hid   (find-hid root-hid [:LangIF :before_if])
+          before-node  (hid->node before-hid)
+          before-value (grab :value before-node)]
+      (is= before-node {:tupelo.forest/khids [], :tag :before_if, :value "676767; "})
+      (is= before-value "676767; "))))
+
+
 
 
 
