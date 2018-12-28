@@ -5,12 +5,10 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.dev
-  (:use tupelo.core tupelo.test)
+  (:use tupelo.dev tupelo.core tupelo.test)
   (:require
-    [clojure.string :as str]
-    [criterium.core :as crit]
-    [tupelo.dev :refer :all]
-    ) )
+    [clojure.string :as str] 
+  ))
 
 (dotest ; #todo move
   (is= {0 :a 1 :b 2 :c} (sequential->idx-map [:a :b :c]))
@@ -96,22 +94,24 @@
       (recur (inc i) (conj! v i))
       (persistent! v))))
 
-(when false
-  (dotest
-    (nl) (time (println :vrange1 (crit/quick-bench (vrange-1 100000))))
-    (nl) (time (println :vrange2 (crit/quick-bench (vrange-2 100000))))))
+(dotest
+  (when false
+    (with-timer-x (vrange-1 100000))
+    (with-timer-x (vrange-2 100000))))
 
 (comment            ; #todo fixme broken 2018-11-10 during impl merge
-  (dotest
-    (try
-      (throw (ex-info "something bad happened" {:a 1 :b 2}))
-      (catch Exception ex
-        (is= "something bad happened" (ex-msg ex))
-        (is= {:a 1 :b 2} (ex-data ex))
-        (is (str/includes? (ex-stacktrace ex)
-              "clojure.lang.ExceptionInfo: something bad happened {:a 1, :b 2}"))
-        (is (str/includes? (ex-stacktrace ex)
-              "at tst.tupelo.")))))
+
+  ; (dotest
+  ;   (try
+  ;     (throw (ex-info "something bad happened" {:a 1 :b 2}))
+  ;     (catch Exception ex
+  ;       (is= "something bad happened" (ex-msg ex))
+  ;       (is= {:a 1 :b 2} (ex-data ex))
+  ;       (is (str/includes? (ex-stacktrace ex)
+  ;             "clojure.lang.ExceptionInfo: something bad happened {:a 1, :b 2}"))
+  ;       (is (str/includes? (ex-stacktrace ex)
+  ;             "at tst.tupelo.")))))
+
 )
 
 

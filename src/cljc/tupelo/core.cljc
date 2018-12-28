@@ -41,6 +41,9 @@
 ;   -> reset!/ref-set => set
 ;   -> swap!/alter => update
 
+; #todo include this stuff:
+;   git@github.com:r0man/noencore.git - noencore/src/no/en/core.cljc
+
 ;(defmacro xxx [& forms]
 ;  `(i/xxx ~@forms))
 
@@ -1107,6 +1110,29 @@
      (when *spy-enabled*
        (println (str (spy-indent-spaces) '~expr " => <#" type-name# " " (pr-str spy-val#) ">")))
      spy-val#))
+
+;-----------------------------------------------------------------------------
+(defmacro with-timer
+  "Prints `id` and the elapsed (elapsed) execution time for a set of forms."
+  [id & forms]
+  `(let [start#   (System/nanoTime)
+         result#  (do ~@forms)
+         stop#    (System/nanoTime)
+         elapsed# (double (- stop# start#))
+         secs#    (/ elapsed# 1e9)]
+     (println (format ":with-timer   %s   = %.3f sec" ~id secs#))
+     result#))
+
+(defmacro with-timer-x
+  "Prints the form and its (elapsed) execution time."
+  [form]
+  `(let [start#   (System/nanoTime)
+         result#  (do ~form)
+         stop#    (System/nanoTime)
+         elapsed# (double (- stop# start#))
+         secs#    (/ elapsed# 1e9)]
+     (println (format ":with-timer-x   %s   = %.3f sec" (str '~form)  secs#))
+     result#))
 
 ;-----------------------------------------------------------------------------
 
