@@ -77,6 +77,8 @@
   (*new-hid-fn*))
 
 (defn validate-forest []
+  (when (nil? *forest*)
+    (throw (ex-info "(nil? *forest*) => true;  Possibly you forgot `(with-forest ...)` " {:nil-forest true})) )
   (when-not (map? (deref *forest*))
     (throw (ex-info "validate-forest: failed forest=" {:forest (deref *forest*)}))))
 
@@ -405,6 +407,7 @@
 (s/defn all-hids :- #{HID} ; #todo test
   "Returns a set of all HIDs in the forest"
   []
+  (validate-forest)
   (set (keys (deref *forest*))) )
 
 (s/defn root-hids :- #{HID}
@@ -535,6 +538,7 @@
 (s/defn add-tree :- HID
   "Adds a tree to the forest."
   [tree-node  :- tsk/KeyMap]
+  (validate-forest)
   (when-not (tree-node? tree-node)
     (throw (ex-info "add-tree: invalid element=" tree-node)))
   (let [tree-node-attrs (dissoc tree-node ::kids)

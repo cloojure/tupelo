@@ -7,8 +7,8 @@
 (ns tst.tupelo.forest
   (:use tupelo.core tupelo.forest tupelo.test )
   (:require
-    [tupelo.misc :as tm]
     [tupelo.forest :as tf]
+    [tupelo.string :as ts]
   ))
 
 (dotest
@@ -28,6 +28,21 @@
   (is= 1009 (new-hid))
   (is= 1010 (new-hid))
   (is= 1011 (new-hid)))
+
+(dotest
+  (let [hiccup-data [:a
+                     [:b 2]
+                     [:c 3]]]
+    (throws? (add-tree-hiccup hiccup-data)) ; should throw since no forest
+    (try
+      (add-tree-hiccup hiccup-data)
+      (catch Exception ex
+        (is (ts/contains-str? (.toString ex) "Possibly you forgot"))
+        (is= {:nil-forest true} (ex-data ex)) ))
+
+    (with-forest (new-forest) ; should work fine
+      (let [root-hid (add-tree-hiccup hiccup-data)]
+        (is= hiccup-data (hid->hiccup root-hid))))))
 
 (dotest
   (let [
