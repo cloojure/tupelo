@@ -1262,7 +1262,8 @@
           (do
             (when (and strict-flg
                     (not= num-empties num-colls))
-              (throw (ex-info "zip*: collections are not all same length; empty-flgs=" empty-flgs)))
+              (throw (ex-info "zip*: collections are not all same length; empty-flgs="
+                       (vals->map empty-flgs))))
             result))))))
 
 ; #todo add schema; result = tsk/List[ tsk/Pair ]

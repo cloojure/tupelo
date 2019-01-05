@@ -45,8 +45,7 @@
         (is= hiccup-data (hid->hiccup root-hid))))))
 
 (dotest
-  (let [
-        tree-2 [:a
+  (let [tree-2 [:a
                 [:b 2]
                 [:c 3]]
         tree-3 [:a {:k1 "v1"}
