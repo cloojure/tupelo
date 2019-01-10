@@ -10,7 +10,7 @@
     [tupelo.misc :as misc]
     #?@(:clj [[schema.core :as s]
               [tupelo.test :refer [define-fixture dotest dotest-focus is isnt is= isnt= set= nonblank= testing throws?]]
-              [tupelo.core :as t :refer [spy spyx spyxx]]
+              [tupelo.core :as t :refer [spy spyx spyxx it-> rel=]]
               [tupelo.string :as ts]
               ])
     #?@(:cljs [[schema.core :as s]
@@ -26,6 +26,21 @@
 
 #?(:cljs (enable-console-print!))
 
+(dotest
+  (let [sqrt-2     1.414213562
+        sqrt-2-rnd (misc/round-pow sqrt-2 -2)
+        error      (- 1.414 sqrt-2-rnd)]
+    (is (<= 0 (Math/abs error) 0.01))
+    (is (rel= sqrt-2-rnd sqrt-2 :tol 0.01)))
+  (let [val     12345
+        val-rnd (misc/round-pow val 2)
+        error   (- val val-rnd)]
+    (is (<= 0 (Math/abs error) 100))
+    (is (rel= val-rnd val :tol 100))
+    (is (rel= val-rnd val :digits 2))
+    (isnt (rel= val-rnd val :digits 4))
+    )
+  )
 
 (dotest
   (let [data [1 2 3]]
