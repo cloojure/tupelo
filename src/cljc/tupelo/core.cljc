@@ -1456,7 +1456,7 @@
    returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
    Throws an Exception if the path keys-vec is not present in the-map."
   [the-map   :- tsk/Map
-   keys-vec  :- tsk/Vec ]
+   keys-vec  :- tsk/Vec ] ; #todo add arity to take default value like `get-in`
   (let [result (get-in the-map keys-vec ::not-found)]
     (if (= result ::not-found)
       (throw (ex-info "Key seq not present in map:" (vals->map the-map keys-vec)))
@@ -2445,29 +2445,7 @@
      ; #todo   set->vec, vec->set
      ; #todo   line-seq et al not lazy (+ tupelo.lazy orig)
 
-     ;---------------------------------------------------------------------------------------------------
-     ; DEPRECATED functions
 
-     ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
-     (when-not-clojure-1-9-plus
-       (defn ^{:deprecated "1.9.0-alpha5"} seqable? ; from clojure.contrib.core/seqable
-         "Returns true if (seq x) will succeed, false otherwise."
-         [x]
-         (or (seq? x)
-           (instance? clojure.lang.Seqable x)
-           (nil? x)
-           (instance? Iterable x)
-           (-> x .getClass .isArray)
-           (string? x)
-           (instance? java.util.Map x))))
-
-     ; duplicate of str/split-lines
-     (defn ^:deprecated ^:no-doc str->lines
-       "***** DEPRECATED:  duplicate of str/split-lines *****
-
-       Returns a lazy seq of lines from a string"
-       [string-arg]
-       (line-seq (BufferedReader. (StringReader. string-arg))))
 
      ))
 

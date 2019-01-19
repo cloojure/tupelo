@@ -2581,35 +2581,6 @@
             (isnt (t/macro? 'if)))
 
 
-          ; #todo move to tst.tupelo.core.deprecated
-          ;---------------------------------------------------------------------------------------------------
-          ; Deprecated functions
-
-          ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
-          (dotest
-            ; ^{:deprecated "1.9.0-alpha5" }
-            (t/when-not-clojure-1-9-plus
-              (is   (t/seqable?   "abc"))
-              (is   (t/seqable?   {1 2 3 4} ))
-              (is   (t/seqable?  #{1 2 3} ))
-              (is   (t/seqable?  '(1 2 3) ))
-              (is   (t/seqable?   [1 2 3] ))
-              (is   (t/seqable?   (byte-array [1 2] )))
-              (isnt (t/seqable?  1 ))
-              (isnt (t/seqable? \a ))))
-
-          (dotest
-            ; ^:deprecated ^:no-doc
-            (let [s1    "  hello there
-                 again
-                 and again!   "
-                  r1     ["hello there"
-                          "again"
-                          "and again!"]
-                  ]
-              (is= r1 (map str/trim (t/str->lines s1)))
-              (is= r1 (map str/trim (str/split-lines s1)))))
-
           ))
 
 
