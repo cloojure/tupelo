@@ -105,7 +105,7 @@
 (def hex-chars [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f])
 (def int->hex (zipmap (range 16) hex-chars))
 (def hex->int (zipmap hex-chars (range 16)))
-(s/defn unsigned-byte->hex :- s/Str
+(s/defn byte-unsigned->hex :- s/Str
   "Converts a sequence of unsigned bytes [0..255] to a hex string, where each byte becomes 2 hex digits."
   [unsigned-byte  :- s/Int]
   (t/when-clojure-1-9-plus
@@ -119,10 +119,10 @@
         low-char      (get hex-chars low-bits-val)]
     (str high-char low-char))) ; (crypt/byteArrayToHex byte-arr) ; NOTE: requires unsigned vals [0..255]
 
-(s/defn signed-byte->hex :- s/Str
+(s/defn byte-signed->hex :- s/Str
   "Converts a sequence of unsigned bytes [0..255] to a hex string, where each byte becomes 2 hex digits."
   [signed-byte]
-  (-> signed-byte byte-signed->unsigned unsigned-byte->hex))
+  (-> signed-byte byte-signed->unsigned byte-unsigned->hex))
 
 (s/defn hex-str->unsigned-bytes
   "Converts a hex string to a vector of unsigned bytes"
@@ -148,12 +148,12 @@
 (s/defn bytes-unsigned->hex-str :- s/Str
   "Converts a sequence of unsigned bytes [0..255] to a hex string, where each byte becomes 2 hex digits."
   [unsigned-bytes :- [s/Int]]
-  (str/join (map unsigned-byte->hex unsigned-bytes)))
+  (str/join (map byte-unsigned->hex unsigned-bytes)))
 
 (s/defn bytes-signed->hex-str :- s/Str
   "Converts a sequence of signed bytes [-128..127] to a hex string, where each byte becomes 2 hex digits."
   [signed-bytes :- [s/Int]]
-  (str/join (map signed-byte->hex signed-bytes)))
+  (str/join (map byte-signed->hex signed-bytes)))
 
 
 ; for ref:  (crypt/stringToUtf8ByteArray s)
