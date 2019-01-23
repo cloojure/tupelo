@@ -33,7 +33,8 @@
     #?@(:clj [[cheshire.core :as cheshire]
               [clojure.core.match :as ccm]
               [tupelo.types :as types] ]))
-  #?(:clj (:import [java.io BufferedReader ByteArrayOutputStream PrintStream StringReader ] ))
+  #?(:clj (:import [java.io BufferedReader ByteArrayOutputStream PrintStream StringReader]
+                   [java.nio ByteBuffer]))
 )
 
 ;---------------------------------------------------------------------------------------------------
@@ -450,6 +451,17 @@
   (when (nil? coll) (throw (ex-info "xvec: invalid coll: " coll)))
   (clojure.core/vec coll))
 
+(defn ^:no-doc glue-byte-arrays
+  "Glues together N byte arrays."
+  [& byte-arrays]
+  #?(:clj
+     (let [total-len   (apply + 0 (mapv count byte-arrays))
+           byte-buffer (ByteBuffer/allocate total-len)]
+       (doseq [byte-array-curr byte-arrays]
+         (.put byte-buffer byte-array-curr))
+       (.array byte-buffer)))
+  #?(:cljs (throw (ex-info "glue-byte-arrays: unimplemented on CLJS" {}))))
+
 (defn glue
   "Glues together like collections:
 
@@ -473,6 +485,11 @@
       (every? map? colls)               (reduce into    colls) ; first item determines type of result
       (every? set? colls)               (reduce into    colls) ; first item determines type of result
       (every? string-or-char? colls)    (apply str colls)
+
+      (do #?(:clj (every? types/byte-array? colls))
+          #?(:cljs false))
+                                        (apply glue-byte-arrays colls)
+
       :else (throw (ex-info "glue: colls must be all same type; found types=" (mapv type colls))))))
 
 (defn glue-rows   ; #todo :- tsk/List ; #todo necessary?
