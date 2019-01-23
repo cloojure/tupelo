@@ -27,9 +27,9 @@
       (.writeByte 42)
       (tio/write-string-bytes "hello")))
   (with-open [input-stream (io/input-stream dummy-file)]
-    (is= int32 (take-int32 input-stream))
-    (is= 42 (take-int8 input-stream))
-    (is= "hello" (take-str 5 input-stream))
+    (is= int32 (read-int32 input-stream))
+    (is= 42 (read-int8 input-stream))
+    (is= "hello" (read-str 5 input-stream))
 
     )
 
