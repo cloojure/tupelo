@@ -481,16 +481,13 @@
   [& colls]
   (let [string-or-char? #(or (string? %) (char? %))]
     (cond
-      (every? sequential? colls)        (reduce into [] colls) ; coerce to vector result
-      (every? map? colls)               (reduce into    colls) ; first item determines type of result
-      (every? set? colls)               (reduce into    colls) ; first item determines type of result
-      (every? string-or-char? colls)    (apply str colls)
+        (every? sequential? colls)                  (reduce into [] colls) ; coerce to vector result
+        (every? map? colls)                         (reduce into    colls) ; first item determines type of result
+        (every? set? colls)                         (reduce into    colls) ; first item determines type of result
+        (every? string-or-char? colls)              (apply str colls)
+#?(:clj (every? types/byte-array? colls))   #?(:clj (apply glue-byte-arrays colls))
 
-      (do #?(:clj (every? types/byte-array? colls))
-          #?(:cljs false))
-                                        (apply glue-byte-arrays colls)
-
-      :else (throw (ex-info "glue: colls must be all same type; found types=" (mapv type colls))))))
+        :else (throw (ex-info "glue: colls must be all same type; found types=" (mapv type colls))))))
 
 (defn glue-rows   ; #todo :- tsk/List ; #todo necessary?
   " Convert a vector of vectors (2-dimensional) into a single vector (1-dimensional).

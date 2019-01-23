@@ -27,7 +27,7 @@
 #?(:clj
    (do
 
-     (dotest-focus
+     (dotest
 
        (spyx (bigdec 5))
        (spyx (type (bigdec 5)))

@@ -10,14 +10,14 @@
     [tupelo.string :as ts]
     #?@(:clj [
               [tupelo.test :as ttst :refer [define-fixture deftest dotest is isnt is= isnt= set= nonblank= testing throws?]]
-              [tupelo.core :as t :refer [spy spyx spyxx] ]
-             ])
+              [tupelo.core :as t :refer [spy spyx spyxx]]
+              ])
     #?@(:cljs [
                [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= set= nonblank= testing throws?]]
                [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
                [tupelo.string :as ts :include-macros true]
-              ])
-  ))
+               ])
+    [tupelo.types :as types]))
 
 #?(:cljs (enable-console-print!))
 
@@ -696,6 +696,27 @@
   (throws? (t/glue   {:a 1}    nil    ))
   (throws? (t/glue   #{:a 1}   nil    ))
   (throws? (t/glue   "hello"   nil    )) )
+
+#?(:clj
+   (dotest
+     (let [zz (byte-array 0)
+           aa (byte-array 1 (byte 1))
+           bb (byte-array 2 (byte 2))
+           cc (byte-array 3 (byte 3))
+           dd (byte-array 4 (byte 4))]
+       (is= [] (vec (t/glue zz)))
+       (is= [1] (vec (t/glue aa)))
+       (is= [1] (vec (t/glue zz aa)))
+       (is= [1] (vec (t/glue aa zz)))
+       (is= [1 1] (vec (t/glue aa aa)))
+       (is= [1 1] (vec (t/glue aa zz aa)))
+       (is= [1 2 2] (vec (t/glue aa bb)))
+       (is= [1 2 2] (vec (t/glue zz aa bb zz)))
+       (is= [1 2 2 3 3 3] (vec (t/glue aa bb cc)))
+       (is= [1 2 2 3 3 3 4 4 4 4] (vec (t/glue aa bb cc dd)))
+       (is= [1 2 2 3 3 3 4 4 4 4] (vec (t/glue aa bb cc dd zz)))
+       (is= [1 2 2 3 3 3 4 4 4 4] (vec (t/glue zz aa bb zz cc dd)))
+       (is (types/byte-array? (t/glue aa bb cc dd))))))
 
 (dotest
   (let [data [[0 1 2]
