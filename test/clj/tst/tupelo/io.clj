@@ -7,6 +7,7 @@
 (ns tst.tupelo.io
   (:use tupelo.io tupelo.core tupelo.test)
   (:require
+    [tupelo.io :as tio]
     [tupelo.misc :as misc]
     [clojure.java.io :as io])
   (:import [java.nio ByteBuffer]
@@ -15,9 +16,8 @@
 (def int32  (long (+ 1e9 123456789)))
 (def uint32 (long (+ 3e9 123456789)))
 
-(def dummy-file-name  "tst.tupelo.io")
-(def dummy-file  (File/createTempFile dummy-file-name nil))
-(.deleteOnExit dummy-file)
+(def dummy-file-name "tst.tupelo.io")
+(def dummy-file (tio/create-temp-file dummy-file-name))
 
 (dotest-focus       ; #todo REMOVE focus
   (with-open [dos (DataOutputStream.
@@ -25,10 +25,11 @@
     (doto dos
       (.writeInt int32)
       (.writeByte 42)
-      (.writeUTF "hello")))
+      (tio/write-string-bytes "hello")))
   (with-open [input-stream (io/input-stream dummy-file)]
     (is= int32 (take-int32 input-stream))
     (is= 42 (take-int8 input-stream))
+    (is= "hello" (take-str 5 input-stream))
 
     )
 

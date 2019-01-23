@@ -8,9 +8,11 @@
   "Convert to/from traditional base64 encoding."
   (:use tupelo.core)
   (:require
-    [clojure.string :as str])
+    [clojure.string :as str]
+    [schema.core :as s])
   (:import [java.math BigInteger]
-           [java.nio ByteBuffer]))
+           [java.nio ByteBuffer]
+           [java.io File]))
 
 (defn byte-array-glue
   "Reads 4 bytes from the InputStream (big-endian) and parses them (unsigned) into a Long."
@@ -99,5 +101,50 @@
         buffer (ByteBuffer/wrap bytes8)
         result (.getLong buffer)]
     result))
+
+(defn write-string-bytes
+  "Writes the an ASCII string as bytes on output-stream"
+  [output-stream str-val]
+  (.writeBytes output-stream str-val))
+
+(s/defn create-temp-file :- java.io.File
+  "Given a unique ID string (e.g. 'my.dummy.file'), returns a java File object
+  for a temporary that will be deleted upon JVM exit."
+  [id-str :- s/Str]
+  (let [tmp-file (File/createTempFile id-str nil)]
+    (.deleteOnExit tmp-file)
+    tmp-file ))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
