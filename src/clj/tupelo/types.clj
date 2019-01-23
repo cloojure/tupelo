@@ -6,15 +6,11 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.types
   "Type conversion and detection."
-  #?@(:clj [
   (:refer-clojure :exclude [integer? float? double?])
-  (:require [clojure.string   :as str]
-            [schema.core      :as s] )
-  (:gen-class)
-])
-  )
+  (:require
+    [clojure.string :as str]
+    [schema.core :as s]))
 
-#?(:clj (do
 (def ^:const UTF-8-Charset-Name "UTF-8")
 
 ; An instance of the java.lang.Class<XXXX[]> (e.g. java.lang.Class<Byte[]>). 
@@ -133,4 +129,3 @@
    :post [ (string? %) ] }
   (String. arg UTF-8-Charset-Name))
 
-))
