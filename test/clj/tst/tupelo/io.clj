@@ -83,32 +83,102 @@
   (with-open [dos (DataOutputStream.
                     (FileOutputStream. dummy-file))]
     (doto dos
+      (write-string-bytes "hello")
+      (write-bytes (byte-array [1 2 3 4]))
+
       (write-byte  42)
       (write-byte -42)
+      (write-byte Byte/MIN_VALUE)
+      (write-byte Byte/MAX_VALUE)
+
       (write-byte-unsigned 142)
+      (write-byte-unsigned types/BYTE_UNSIGNED_MIN_VALUE)
+      (write-byte-unsigned types/BYTE_UNSIGNED_MAX_VALUE)
+
       (write-short  9999)
       (write-short -9999)
+      (write-short Short/MIN_VALUE)
+      (write-short Short/MAX_VALUE)
+
       (write-short-unsigned 55999)
+      (write-short-unsigned types/SHORT_UNSIGNED_MIN_VALUE)
+      (write-short-unsigned types/SHORT_UNSIGNED_MAX_VALUE)
+
       (write-integer int-val)
+      (write-integer Integer/MIN_VALUE)
+      (write-integer Integer/MAX_VALUE)
+
+      (write-integer-unsigned int-val)
+      (write-integer-unsigned types/INTEGER_UNSIGNED_MIN_VALUE)
       (write-integer-unsigned types/INTEGER_UNSIGNED_MAX_VALUE)
+
       (write-long long-val)
-      (write-string-bytes "hello")
-      (write-bytes (byte-array [1 2 3 4]))))
+      (write-long Long/MIN_VALUE)
+      (write-long Long/MAX_VALUE)
+
+      (write-long-unsigned long-val)
+      (write-long-unsigned types/LONG_UNSIGNED_MIN_VALUE)
+      (write-long-unsigned types/LONG_UNSIGNED_MAX_VALUE)))
 
   (with-open [dis (DataInputStream. (io/input-stream dummy-file))]
-    (is= (read-byte dis) 42)
-    (is= (read-byte dis) -42)
-    (is= (read-byte-unsigned dis) 142)
-    (is= (read-short dis) 9999)
-    (is= (read-short dis) -9999)
-    (is= (read-short-unsigned dis) 55999)
-    (is= (read-integer dis) int-val)
-    (is= (read-integer-unsigned dis) types/INTEGER_UNSIGNED_MAX_VALUE)
-    (is= (read-long dis) long-val)
     (is= (read-string-bytes 5 dis) "hello")
     (is= (vec (read-bytes 4 dis)) [1 2 3 4])
 
-    ) )
+    (is= (read-byte dis)  42)
+    (is= (read-byte dis) -42)
+    (is= (read-byte dis) Byte/MIN_VALUE)
+    (is= (read-byte dis) Byte/MAX_VALUE)
+
+    (is= (read-byte-unsigned dis) 142)
+    (is= (read-byte-unsigned dis) types/BYTE_UNSIGNED_MIN_VALUE)
+    (is= (read-byte-unsigned dis) types/BYTE_UNSIGNED_MAX_VALUE)
+
+    (is= (read-short dis)  9999)
+    (is= (read-short dis) -9999)
+    (is= (read-short dis) Short/MIN_VALUE)
+    (is= (read-short dis) Short/MAX_VALUE)
+
+    (is= (read-short-unsigned dis) 55999)
+    (is= (read-short-unsigned dis) types/SHORT_UNSIGNED_MIN_VALUE)
+    (is= (read-short-unsigned dis) types/SHORT_UNSIGNED_MAX_VALUE)
+
+    (is= (read-integer dis) int-val)
+    (is= (read-integer dis) Integer/MIN_VALUE)
+    (is= (read-integer dis) Integer/MAX_VALUE)
+
+    (is= (read-integer-unsigned dis) int-val)
+    (is= (read-integer-unsigned dis) types/INTEGER_UNSIGNED_MIN_VALUE)
+    (is= (read-integer-unsigned dis) types/INTEGER_UNSIGNED_MAX_VALUE)
+
+    (is= (read-long dis) long-val)
+    (is= (read-long dis) Long/MIN_VALUE)
+    (is= (read-long dis) Long/MAX_VALUE)
+
+    (is= (read-long-unsigned dis) long-val)
+    (is= (read-long-unsigned dis) types/LONG_UNSIGNED_MIN_VALUE)
+    (is= (read-long-unsigned dis) types/LONG_UNSIGNED_MAX_VALUE)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

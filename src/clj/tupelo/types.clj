@@ -149,6 +149,11 @@
                                   (long)
                                   (dec)))
 
+(def LONG_UNSIGNED_MIN_VALUE 0)
+(def LONG_UNSIGNED_MAX_VALUE (-> (biginteger 2)
+                               (.pow 64)
+                               (.subtract (biginteger 1))))
+
 (defrecord ^:no-doc IntervalClosed ; #todo report defrecord "resolve" to Cursive
   [lower-bound upper-bound]) ; #todo report to Cursive
 
@@ -165,6 +170,7 @@
 (def ^:no-doc interval-closed-integer            (->IntervalClosed Integer/MIN_VALUE Integer/MAX_VALUE))
 (def ^:no-doc interval-closed-integer-unsigned   (->IntervalClosed INTEGER_UNSIGNED_MIN_VALUE INTEGER_UNSIGNED_MAX_VALUE))
 (def ^:no-doc interval-closed-long               (->IntervalClosed Long/MIN_VALUE Long/MAX_VALUE))
+(def ^:no-doc interval-closed-long-unsigned     (->IntervalClosed LONG_UNSIGNED_MIN_VALUE LONG_UNSIGNED_MAX_VALUE))
 
 (s/defn within-bounds-byte? :- s/Bool
   "Returns true if val fits within legal range for a byte (signed)."
@@ -200,6 +206,11 @@
   "Returns true if val fits within legal range for a long (signed)."
   [val :- s/Int]
   (within-interval-closed? interval-closed-long val))
+
+(s/defn within-bounds-long-unsigned? :- s/Bool
+  "Returns true if val fits within legal range for a long (unsigned)."
+  [val :- s/Int]
+  (within-interval-closed? interval-closed-long-unsigned val))
 
 
 

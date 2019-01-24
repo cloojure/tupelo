@@ -13,6 +13,9 @@
     [tupelo.types :as types] )
   (:import [java.io File DataInputStream DataOutputStream InputStream OutputStream]))
 
+(def ^:no-doc zeros-4 (byte-array (repeat 4 0)))
+(def ^:no-doc zeros-8 (byte-array (repeat 8 0)))
+
 ;---------------------------------------------------------------------------------------------------
 (s/defn input-stream?
   "Returns true if arg implements java.io.InputStream"
@@ -55,6 +58,12 @@
   bytarr)
 
 ;---------------------------------------------------------------------------------------------------
+(s/defn read-string-bytes :- s/Str
+  "Reads nchars bytes from the DataInputStream and returns them as a String."
+  [nchars :- s/Int
+   dis :- DataInputStream]
+  (String. (read-bytes nchars (validate data-input-stream? dis))))
+
 (s/defn read-byte :- s/Int    ; #todo need test
   "Reads 1 byte (signed) from the data-input-stream."
   [dis :- DataInputStream]
@@ -80,27 +89,31 @@
   [dis :- DataInputStream]
   (long (.readInt (validate data-input-stream? dis))))
 
+(s/defn read-long :- s/Int    ; #todo need test
+  "Reads 8 bytes (signed) from the data-input-stream"
+  [dis :- DataInputStream]
+  (long (.readLong (validate data-input-stream? dis))))
 
-(def ^:no-doc zeros-4 (byte-array [0 0 0 0]))
 (s/defn read-integer-unsigned :- s/Int ; #todo need test
   "Reads 4 bytes (unsigned) from the data-input-stream"
   [dis :- DataInputStream]
   (long (BigInteger. ^bytes (glue zeros-4
                               (read-bytes 4 (validate data-input-stream? dis))))))
 
-
-(s/defn read-long :- s/Int    ; #todo need test
-  "Reads 8 bytes (signed) from the data-input-stream"
+(s/defn read-long-unsigned :- s/Int ; #todo need test
+  "Reads 8 bytes (unsigned) from the data-input-stream, returning a BigInteger"
   [dis :- DataInputStream]
-  (long (.readLong (validate data-input-stream? dis))))
-
-(s/defn read-string-bytes :- s/Str
-  "Reads nchars bytes from the DataInputStream and returns them as a String."
-  [nchars :- s/Int
-   dis :- DataInputStream]
-  (String. (read-bytes nchars (validate data-input-stream? dis))))
+  (BigInteger. ^bytes (glue zeros-4
+                        (read-bytes 8 (validate data-input-stream? dis)))))
 
 ;---------------------------------------------------------------------------------------------------
+(s/defn write-string-bytes :- s/Str
+  "Writes the an ASCII string as bytes to a DataInputStream."
+  [dos :- DataOutputStream
+   str-val :- s/Str]
+  (.writeBytes (validate data-output-stream? dos) str-val)
+  str-val)
+
 (s/defn write-byte :- s/Int    ; #todo need test
   "Writes 1 byte (signed) to a DataOutputStream."
   [dos :- DataOutputStream
@@ -157,12 +170,16 @@
     (validate types/within-bounds-long? val))
   val)
 
-(s/defn write-string-bytes :- s/Str
-  "Writes the an ASCII string as bytes to a DataInputStream."
+(s/defn write-long-unsigned :- s/Int ; #todo need test
+  "Writes 4 bytes (signed) to a DataOutputStream"
   [dos :- DataOutputStream
-   str-val :- s/Str]
-  (.writeBytes (validate data-output-stream? dos) str-val)
-  str-val)
+   val :- s/Int]
+  (validate types/within-bounds-long-unsigned? val)
+  (let [val-biginteger (biginteger val)
+        byte-vec       (take-last 8 (glue zeros-8 (.toByteArray ^BigInteger val-biginteger)))
+        bytarr         (byte-array byte-vec)]
+    (write-bytes dos bytarr))
+  val)
 
 
 
