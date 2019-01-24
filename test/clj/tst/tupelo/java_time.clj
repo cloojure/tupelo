@@ -4,8 +4,7 @@
   (:require
     [clj-time.core :as joda]
     [clojure.string :as str])
-  (:import (java.time ZonedDateTime ZoneId Duration)
-           [java.time.temporal ChronoUnit TemporalAdjuster TemporalAdjusters]))
+  (:import [ java.time Duration ZoneId ZoneId ZonedDateTime ZonedDateTime ]))
 
 (dotest
   (is (temporal? (ZonedDateTime/parse "2018-09-08T13:03:04.500Z")))
@@ -233,4 +232,34 @@
     (is (interval-contains? tst-interval-short now-zdt-2))
     (is (interval-contains? tst-interval-1-sec now-instant-millis))
     (is (interval-contains? tst-interval-1-sec now-instant-secs))))
+
+(dotest
+  ; note that instants are in DESCENDING order
+  (let [instants         ["2016-04-30T10:29:17.000-00:00"
+                          "2016-03-24T12:13:12.000-00:00"
+                          "2016-03-24T12:09:43.000-00:00"
+                          "2016-03-23T13:19:03.000-00:00"
+                          "2016-02-26T14:51:37.000-00:00"
+                          "2016-01-20T16:55:24.000-00:00"]
+
+        zoned-date-times (mapv #(ZonedDateTime/parse %) instants)
+        zdt-pairs        (partition 2 1 zoned-date-times)
+        durations        (vec (for [[interval-stop interval-start] zdt-pairs]
+                                (.toMinutes ; *** truncates ***
+                                  (Duration/between interval-start interval-stop))))]
+    (is= (spyx-pretty durations) [53176 3 1370 37347 53156])))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
