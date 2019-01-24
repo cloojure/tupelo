@@ -75,10 +75,19 @@
   [dis :- DataInputStream]
   (long (.readUnsignedShort (validate data-input-stream? dis))))
 
-(s/defn read-int :- s/Int    ; #todo need test
+(s/defn read-integer :- s/Int    ; #todo need test
   "Reads 4 bytes (signed) from the data-input-stream"
   [dis :- DataInputStream]
   (long (.readInt (validate data-input-stream? dis))))
+
+
+(def ^:no-doc zeros-4 (byte-array [0 0 0 0]))
+(s/defn read-integer-unsigned :- s/Int ; #todo need test
+  "Reads 4 bytes (unsigned) from the data-input-stream"
+  [dis :- DataInputStream]
+  (long (BigInteger. ^bytes (glue zeros-4
+                              (read-bytes 4 (validate data-input-stream? dis))))))
+
 
 (s/defn read-long :- s/Int    ; #todo need test
   "Reads 8 bytes (signed) from the data-input-stream"
@@ -124,12 +133,20 @@
     (validate types/within-bounds-short-unsigned? val))
   val)
 
-(s/defn write-int :- s/Int    ; #todo need test
+(s/defn write-integer :- s/Int    ; #todo need test
   "Writes 4 bytes (signed) to a DataOutputStream"
   [dos :- DataOutputStream
    val :- s/Int]
   (.writeInt (validate data-output-stream? dos)
     (validate types/within-bounds-integer? val))
+  val)
+
+(s/defn write-integer-unsigned :- s/Int    ; #todo need test
+  "Writes 4 bytes (signed) to a DataOutputStream"
+  [dos :- DataOutputStream
+   val :- s/Int]
+  (.writeInt (validate data-output-stream? dos)
+    (validate types/within-bounds-integer-unsigned? val))
   val)
 
 (s/defn write-long :- s/Int    ; #todo need test

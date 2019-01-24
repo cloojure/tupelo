@@ -39,15 +39,15 @@
 (dotest
   (with-open [dos (DataOutputStream.
                     (FileOutputStream. dummy-file))]
-
+    ;-----------------------------------------------------------------------------
     (throws? (write-byte dos (inc Byte/MAX_VALUE)))
     (throws? (write-byte dos (dec Byte/MIN_VALUE)))
 
     (throws? (write-short dos (inc Short/MAX_VALUE)))
     (throws? (write-short dos (dec Short/MIN_VALUE)))
 
-    (throws? (write-int dos (inc Integer/MAX_VALUE)))
-    (throws? (write-int dos (dec Integer/MIN_VALUE)))
+    (throws? (write-integer dos (inc Integer/MAX_VALUE)))
+    (throws? (write-integer dos (dec Integer/MIN_VALUE)))
 
     (throws? (write-long dos (* 2M (bigdec Long/MAX_VALUE))))
     (throws? (write-long dos (* -2M (bigdec Long/MIN_VALUE))))
@@ -58,14 +58,15 @@
     (throws? (write-short-unsigned dos (inc types/SHORT_UNSIGNED_MAX_VALUE)))
     (throws? (write-short-unsigned dos (dec types/SHORT_UNSIGNED_MIN_VALUE)))
 
+    ;-----------------------------------------------------------------------------
     (is= (write-byte dos Byte/MIN_VALUE)         Byte/MIN_VALUE)
     (is= (write-byte dos Byte/MAX_VALUE)         Byte/MAX_VALUE)
 
     (is= (write-short dos Short/MIN_VALUE)       Short/MIN_VALUE)
     (is= (write-short dos Short/MAX_VALUE)       Short/MAX_VALUE)
 
-    (is= (write-int dos Integer/MIN_VALUE)       Integer/MIN_VALUE)
-    (is= (write-int dos Integer/MAX_VALUE)       Integer/MAX_VALUE)
+    (is= (write-integer dos Integer/MIN_VALUE)       Integer/MIN_VALUE)
+    (is= (write-integer dos Integer/MAX_VALUE)       Integer/MAX_VALUE)
 
     (is= (write-long dos Long/MIN_VALUE)         Long/MIN_VALUE)
     (is= (write-long dos Long/MAX_VALUE)         Long/MAX_VALUE)
@@ -88,22 +89,26 @@
       (write-short  9999)
       (write-short -9999)
       (write-short-unsigned 55999)
-      (write-int int-val)
+      (write-integer int-val)
+      (write-integer-unsigned types/INTEGER_UNSIGNED_MAX_VALUE)
       (write-long long-val)
       (write-string-bytes "hello")
       (write-bytes (byte-array [1 2 3 4]))))
 
   (with-open [dis (DataInputStream. (io/input-stream dummy-file))]
-    (is=    42 (read-byte dis))
-    (is=   -42 (read-byte dis))
-    (is=   142 (read-byte-unsigned dis))
-    (is=  9999 (read-short dis))
-    (is= -9999 (read-short dis))
-    (is= 55999 (read-short-unsigned dis))
-    (is= int-val (read-int dis))
-    (is= long-val (read-long dis))
-    (is= "hello" (read-string-bytes 5 dis))
-    (is= [1 2 3 4] (vec (read-bytes 4 dis)))))
+    (is= (read-byte dis) 42)
+    (is= (read-byte dis) -42)
+    (is= (read-byte-unsigned dis) 142)
+    (is= (read-short dis) 9999)
+    (is= (read-short dis) -9999)
+    (is= (read-short-unsigned dis) 55999)
+    (is= (read-integer dis) int-val)
+    (is= (read-integer-unsigned dis) types/INTEGER_UNSIGNED_MAX_VALUE)
+    (is= (read-long dis) long-val)
+    (is= (read-string-bytes 5 dis) "hello")
+    (is= (vec (read-bytes 4 dis)) [1 2 3 4])
+
+    ) )
 
 
 
