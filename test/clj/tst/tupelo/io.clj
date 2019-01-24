@@ -6,31 +6,52 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.io
   (:use tupelo.io tupelo.core tupelo.test)
+  (:refer-clojure :exclude [read-string])
   (:require
-    [tupelo.io :as tio]
-    [tupelo.misc :as misc]
-    [clojure.java.io :as io])
-  (:import [java.nio ByteBuffer]
-           [java.io ByteArrayInputStream File FileOutputStream DataOutputStream]))
+    [clojure.java.io :as io] )
+  (:import [java.io
+              DataInputStream DataOutputStream
+              File FileOutputStream FileInputStream
+              InputStream OutputStream ]))
 
-(def int32  (long (+ 1e9 123456789)))
-(def uint32 (long (+ 3e9 123456789)))
+(def int-val  (long (+ 1e9 123456789)))
+(def long-val  (long 12345e9))
 
 (def dummy-file-name "tst.tupelo.io")
-(def dummy-file (tio/create-temp-file dummy-file-name))
+(def dummy-file (create-temp-file dummy-file-name))
 
-(dotest-focus       ; #todo REMOVE focus
+(dotest-focus       ; #todo FOCUS
+  (let [in-stream  (io/input-stream dummy-file)
+        out-stream (io/output-stream dummy-file)
+        dis        (DataInputStream. in-stream)
+        dos        (DataOutputStream. out-stream)]
+    (isnt (data-input-stream? in-stream))
+    (is (input-stream? in-stream))
+    (is (input-stream? dis))
+    (is (data-input-stream? dis))
+
+    (isnt (data-output-stream? out-stream))
+    (is (output-stream? out-stream))
+    (is (output-stream? dos))
+    (is (data-output-stream? dos))))
+
+(dotest-focus       ; #todo FOCUS
   (with-open [dos (DataOutputStream.
                     (FileOutputStream. dummy-file))]
     (doto dos
-      (.writeInt int32)
-      (.writeByte 42)
-      (tio/write-string-bytes "hello")))
-  (with-open [input-stream (io/input-stream dummy-file)]
-    (is= int32 (read-int32 input-stream))
-    (is= 42 (read-int8 input-stream))
-    (is= "hello" (read-str 5 input-stream))
+      (write-int int-val)
+      (write-long long-val)
+      (write-byte 42)
+      (write-byte-unsigned 255)
+      (write-byte -1)
+      (write-string-bytes "hello")))
+  (with-open [dis (DataInputStream. (io/input-stream dummy-file))]
+    (is= int-val (read-int dis))
+    (is= long-val (read-long dis))
+    (is= 42 (read-byte dis))
+    (is= 255 (read-byte-unsigned dis))
+    (is= -1 (read-byte dis))
+    (is= "hello" (read-string-bytes 5 dis))
 
     )
-
-  )
+)

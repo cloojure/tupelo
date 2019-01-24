@@ -7,17 +7,29 @@
 (ns tupelo.io
   "Convert to/from traditional base64 encoding."
   (:use tupelo.core)
+  (:refer-clojure :exclude [read-string])
   (:require
     [clojure.string :as str]
     [schema.core :as s])
-  (:import [java.math BigInteger]
-           [java.nio ByteBuffer]
-           [java.io File]))
+  (:import [java.nio ByteBuffer]
+           [java.io File DataInputStream DataOutputStream InputStream OutputStream]))
 
-(defn write-string-bytes
-  "Writes the an ASCII string as bytes on output-stream"
-  [output-stream str-val]
-  (.writeBytes output-stream str-val))
+(s/defn input-stream?
+  "Returns true if arg implements java.io.InputStream"
+  [arg] (instance? InputStream arg))
+
+(s/defn output-stream?
+  "Returns true if arg implements java.io.OutputStream"
+  [arg] (instance? OutputStream arg))
+
+(s/defn data-input-stream?
+  "Returns true if arg implements java.io.DataInputStream"
+  [arg] (instance? DataInputStream arg))
+
+(s/defn data-output-stream?
+  "Returns true if arg implements java.io.DataOutputStream"
+  [arg] (instance? DataOutputStream arg))
+
 
 (s/defn create-temp-file :- java.io.File
   "Given a unique ID string (e.g. 'my.dummy.file'), returns a java File object
@@ -28,103 +40,155 @@
     tmp-file ))
 
 
-;(defn byte-array-glue
-;  "Reads 4 bytes from the InputStream (big-endian) and parses them (unsigned) into a Long."
-;  [& byte-arrays]
-;  (let [total-len   (apply + (mapv count byte-arrays))
-;        byte-buffer (ByteBuffer/allocate total-len)]
-;    (doseq [byte-array-curr byte-arrays]
-;      (.put byte-buffer byte-array-curr))
-;    (.array byte-buffer)))
-
-(defn read-bytes
-  "Reads N bytes from the InputStream and returns them in a byte array."
-  [N input-stream]
+(s/defn read-bytes  ; #todo type?
+  "Reads N bytes from the DataInputStream and returns them in a byte array."
+  [N :- s/Int
+   input-stream :- InputStream]
   (let [bytarr (byte-array N)]
-    (.read input-stream bytarr)
+    (.read (validate input-stream? input-stream) bytarr)
     bytarr))
 
-(defn read-str
-  "Reads N bytes from the InputStream and returns them as a String."
-  [N input-stream]
-  (String. (read-bytes N input-stream)))
+(s/defn write-string-bytes
+  "Writes the an ASCII string as bytes to a DataInputStream."
+  [dos :- DataOutputStream
+   str-val :- s/Str]
+  (spyx (type dos))
+  (.writeBytes (validate data-output-stream? dos) str-val))
 
-(defn read-uint8   ; #todo need test
-  "Reads 1 byte from the InputStream (big-endian) and parses them (unsigned) into a Integer."
-  [input-stream]
-  (let [zeros3 (byte-array 3)
-        bytes1 (read-bytes 1 input-stream)
-        buffer (ByteBuffer/wrap (glue zeros3 bytes1))
-        result (.getInt buffer)]
-    result))
-
-(defn read-int8    ; #todo need test
-  "Reads 1 byte from the InputStream (big-endian) and parses them (signed) into an Byte."
-  [input-stream]
-  (let [bytes1 (read-bytes 1 input-stream)
-        result (Byte. (aget bytes1 0))]
-    result))
-
-(defn read-uint16   ; #todo need test
-  "Reads 2 bytes from the InputStream (big-endian) and parses them (unsigned) into a Integer."
-  [input-stream]
-  (let [zeros2 (byte-array 2)
-        bytes2 (read-bytes 2 input-stream)
-        buffer (ByteBuffer/wrap (glue zeros2 bytes2))
-        result (.getInt buffer)]
-    result))
-
-(defn read-int16    ; #todo need test
-  "Reads 2 bytes from the InputStream (big-endian) and parses them (signed) into an Short."
-  [input-stream]
-  (let [bytes2 (read-bytes 2 input-stream)
-        buffer (ByteBuffer/wrap bytes2)
-        result (.getShort buffer)]
-    result))
-
-(defn read-uint32   ; #todo need test
-  "Reads 4 bytes from the InputStream (big-endian) and parses them (unsigned) into a Long."
-  [input-stream]
-  (let [zeros4 (byte-array 4)
-        bytes4 (read-bytes 4 input-stream)
-        buffer (ByteBuffer/wrap (glue zeros4 bytes4))
-        result (.getLong buffer)]
-    result))
-
-(defn read-int32    ; #todo need test
-  "Reads 4 bytes from the InputStream (big-endian) and parses them (signed) into an Integer."
-  [input-stream]
-  (let [bytes4 (read-bytes 4 input-stream)
-        buffer (ByteBuffer/wrap bytes4)
-        result (.getInt buffer)]
-    result))
-
-(defn read-uint64   ; #todo need test
-  "Reads 8 bytes from the InputStream (big-endian) and parses them (unsigned) into a BigInteger."
-  [input-stream]
-  (let [zeros4 (byte-array 4)
-        bytes8 (read-bytes 8 input-stream)
-        buffer (ByteBuffer/wrap (glue zeros4 bytes8))
-        result (BigInteger. (.array buffer))]
-    result))
-
-(defn read-int64    ; #todo need test
-  "Reads 8 bytes from the InputStream (big-endian) and parses them (signed) into an Long."
-  [input-stream]
-  (let [bytes8 (read-bytes 8 input-stream)
-        buffer (ByteBuffer/wrap bytes8)
-        result (.getLong buffer)]
-    result))
+(s/defn read-string-bytes :- s/Str
+  "Reads nchars bytes from the DataInputStream and returns them as a String."
+  [nchars :- s/Int
+   dis :- DataInputStream]
+  (String. (read-bytes nchars (validate data-input-stream? dis))))
 
 
+(s/defn read-byte :- s/Int    ; #todo need test
+  "Reads 1 byte (signed) from the data-input-stream."
+  [dis :- DataInputStream]
+  (long (.readByte (validate data-input-stream? dis) )))
 
+(s/defn read-byte-unsigned :- s/Int   ; #todo need test
+  "Reads 1 byte (unsigned) from the data-input-stream"
+  [dis :- DataInputStream]
+  (long (.readUnsignedByte (validate data-input-stream? dis) )))
 
+(s/defn read-short :- s/Int    ; #todo need test
+  "Reads 2 bytes (signed) from the data-input-stream"
+  [dis :- DataInputStream]
+  (long (.readShort (validate data-input-stream? dis))))
 
+(s/defn read-short-unsigned :- s/Int    ; #todo need test
+  "Reads 2 bytes (unsigned) from the data-input-stream"
+  [dis :- DataInputStream]
+  (long (.readShort (validate data-input-stream? dis))))
 
+(s/defn read-int :- s/Int    ; #todo need test
+  "Reads 4 bytes (signed) from the data-input-stream"
+  [dis :- DataInputStream]
+  (long (.readInt (validate data-input-stream? dis))))
 
+(s/defn read-long :- s/Int    ; #todo need test
+  "Reads 8 bytes (signed) from the data-input-stream"
+  [dis :- DataInputStream]
+  (long (.readLong (validate data-input-stream? dis))))
 
+;---------------------------------------------------------------------------------------------------
+; #todo move interval stuff -> misc or math
 
+; "Defines a half-open interval"
+(defrecord Interval ; #todo report defrecord "resolve" to Cursive
+  [lower-bound upper-bound]) ; #todo report to Cursive
 
+(s/defn interval-contains? :- s/Bool
+  "Returns true if val fits within an Interval."
+  [itvl :- Interval
+   val :- s/Num]
+  (and (<= (:lower-bound itvl) val)
+    (<  val (:upper-bound itvl))))
+
+(def interval-byte               (->Interval Byte/MIN_VALUE Byte/MAX_VALUE)) ; #todo "resolve" report to Cursive
+(def interval-byte-unsigned      (->Interval 0 256))
+(def interval-short              (->Interval Short/MIN_VALUE Short/MAX_VALUE))
+(def interval-short-unsigned     (->Interval 0 65536))
+(def interval-integer            (->Interval Integer/MIN_VALUE Integer/MAX_VALUE))
+(def interval-long               (->Interval Long/MIN_VALUE Long/MAX_VALUE))
+
+(s/defn within-interval-byte? :- s/Bool
+  "Returns true if val fits within legal range for a byte (signed)."
+  [val :- s/Int]
+  (interval-contains? interval-byte val))
+
+(s/defn within-interval-byte-unsigned? :- s/Bool
+  "Returns true if val fits within legal range for a byte (unsigned)."
+  [val :- s/Int]
+  (interval-contains? interval-byte-unsigned val))
+
+(s/defn within-interval-short? :- s/Bool
+  "Returns true if val fits within legal range for a short (signed)."
+  [val :- s/Int]
+  (interval-contains? interval-short val))
+
+(s/defn within-interval-short-unsigned? :- s/Bool
+  "Returns true if val fits within legal range for a short (unsigned)."
+  [val :- s/Int]
+  (interval-contains? interval-short-unsigned val))
+
+(s/defn within-interval-integer? :- s/Bool
+  "Returns true if val fits within legal range for a integer (signed)."
+  [val :- s/Int]
+  (interval-contains? interval-integer val))
+
+(s/defn within-interval-long? :- s/Bool
+  "Returns true if val fits within legal range for a long (signed)."
+  [val :- s/Int]
+  (interval-contains? interval-long val))
+
+;---------------------------------------------------------------------------------------------------
+(s/defn write-byte :- s/Int    ; #todo need test
+  "Writes 1 byte (signed) to a DataOutputStream."
+  [dos :- DataOutputStream
+   val :- s/Int]
+  (.writeByte (validate data-output-stream? dos)
+    (validate within-interval-byte? val))
+  val)
+
+(s/defn write-byte-unsigned :- s/Int   ; #todo need test
+  "Writes 1 byte (unsigned) to a DataOutputStream"
+  [dos :- DataOutputStream
+   val :- s/Int]
+  (.writeByte (validate data-output-stream? dos)
+    (validate within-interval-byte-unsigned? val))
+  val)
+
+(s/defn write-short :- s/Int    ; #todo need test
+  "Writes 2 bytes (signed) to a DataOutputStream"
+  [dos :- DataOutputStream
+   val :- s/Int]
+  (.writeShort (validate data-output-stream? dos)
+    (validate within-interval-short? val)))
+
+(s/defn write-short-unsigned :- s/Int    ; #todo need test
+  "Writes 2 bytes (unsigned) to a DataOutputStream"
+  [dos :- DataOutputStream
+   val :- s/Int]
+  (.writeShort (validate data-output-stream? dos)
+    (validate within-interval-short-unsigned? val)))
+
+(s/defn write-int :- s/Int    ; #todo need test
+  "Writes 4 bytes (signed) to a DataOutputStream"
+  [dos :- DataOutputStream
+   val :- s/Int]
+  (.writeInt (validate data-output-stream? dos)
+    (validate within-interval-integer? val))
+  val)
+
+(s/defn write-long :- s/Int    ; #todo need test
+  "Writes 8 bytes (signed) to a DataOutputStream"
+  [dos :- DataOutputStream
+   val :- s/Int]
+  (.writeLong (validate data-output-stream? dos)
+    (validate within-interval-long? val))
+  val)
 
 
 
