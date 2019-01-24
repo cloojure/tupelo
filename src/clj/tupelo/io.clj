@@ -14,6 +14,69 @@
   (:import [java.nio ByteBuffer]
            [java.io File DataInputStream DataOutputStream InputStream OutputStream]))
 
+;---------------------------------------------------------------------------------------------------
+; #todo move interval stuff -> misc or math
+
+(def BYTE_UNSIGNED_MIN_VALUE  0)
+(def BYTE_UNSIGNED_MAX_VALUE (-> (biginteger 2)
+                               (.pow 8)
+                               (dec)
+                               (long)))
+
+(def SHORT_UNSIGNED_MIN_VALUE  0)
+(def SHORT_UNSIGNED_MAX_VALUE (-> (biginteger 2)
+                                (.pow 16)
+                                (dec)
+                                (long)))
+
+; "Defines a half-open interval"
+(defrecord IntervalClosed ; #todo report defrecord "resolve" to Cursive
+  [lower-bound upper-bound]) ; #todo report to Cursive
+
+(s/defn within-interval-closed? :- s/Bool
+  "Returns true if val fits within an IntervalClosed."
+  [ic :- IntervalClosed
+   val :- s/Num]
+  (<= (:lower-bound ic) val (:upper-bound ic)))
+
+(def interval-byte               (->IntervalClosed Byte/MIN_VALUE Byte/MAX_VALUE)) ; #todo "resolve" report to Cursive
+(def interval-byte-unsigned      (->IntervalClosed BYTE_UNSIGNED_MIN_VALUE BYTE_UNSIGNED_MAX_VALUE))
+(def interval-short              (->IntervalClosed Short/MIN_VALUE Short/MAX_VALUE))
+(def interval-short-unsigned     (->IntervalClosed SHORT_UNSIGNED_MIN_VALUE SHORT_UNSIGNED_MAX_VALUE))
+(def interval-integer            (->IntervalClosed Integer/MIN_VALUE Integer/MAX_VALUE))
+(def interval-long               (->IntervalClosed Long/MIN_VALUE Long/MAX_VALUE))
+
+(s/defn within-interval-byte? :- s/Bool
+  "Returns true if val fits within legal range for a byte (signed)."
+  [val :- s/Int]
+  (within-interval-closed? interval-byte val))
+
+(s/defn within-interval-byte-unsigned? :- s/Bool
+  "Returns true if val fits within legal range for a byte (unsigned)."
+  [val :- s/Int]
+  (within-interval-closed? interval-byte-unsigned val))
+
+(s/defn within-interval-short? :- s/Bool
+  "Returns true if val fits within legal range for a short (signed)."
+  [val :- s/Int]
+  (within-interval-closed? interval-short val))
+
+(s/defn within-interval-short-unsigned? :- s/Bool
+  "Returns true if val fits within legal range for a short (unsigned)."
+  [val :- s/Int]
+  (within-interval-closed? interval-short-unsigned val))
+
+(s/defn within-interval-integer? :- s/Bool
+  "Returns true if val fits within legal range for a integer (signed)."
+  [val :- s/Int]
+  (within-interval-closed? interval-integer val))
+
+(s/defn within-interval-long? :- s/Bool
+  "Returns true if val fits within legal range for a long (signed)."
+  [val :- s/Int]
+  (within-interval-closed? interval-long val))
+
+;---------------------------------------------------------------------------------------------------
 (s/defn input-stream?
   "Returns true if arg implements java.io.InputStream"
   [arg] (instance? InputStream arg))
@@ -30,7 +93,7 @@
   "Returns true if arg implements java.io.DataOutputStream"
   [arg] (instance? DataOutputStream arg))
 
-
+;---------------------------------------------------------------------------------------------------
 (s/defn create-temp-file :- java.io.File
   "Given a unique ID string (e.g. 'my.dummy.file'), returns a java File object
   for a temporary that will be deleted upon JVM exit."
@@ -48,20 +111,15 @@
     (.read (validate input-stream? input-stream) bytarr)
     bytarr))
 
-(s/defn write-string-bytes
-  "Writes the an ASCII string as bytes to a DataInputStream."
-  [dos :- DataOutputStream
-   str-val :- s/Str]
-  (spyx (type dos))
-  (.writeBytes (validate data-output-stream? dos) str-val))
+(s/defn write-bytes  ; #todo type?
+  "Writes a byte array to a DataInputStream."
+  [out-stream :- OutputStream
+   bytarr :- s/Any] ; #todo type
 
-(s/defn read-string-bytes :- s/Str
-  "Reads nchars bytes from the DataInputStream and returns them as a String."
-  [nchars :- s/Int
-   dis :- DataInputStream]
-  (String. (read-bytes nchars (validate data-input-stream? dis))))
+  (.write (validate output-stream? out-stream) bytarr)
+  bytarr)
 
-
+;---------------------------------------------------------------------------------------------------
 (s/defn read-byte :- s/Int    ; #todo need test
   "Reads 1 byte (signed) from the data-input-stream."
   [dis :- DataInputStream]
@@ -80,7 +138,7 @@
 (s/defn read-short-unsigned :- s/Int    ; #todo need test
   "Reads 2 bytes (unsigned) from the data-input-stream"
   [dis :- DataInputStream]
-  (long (.readShort (validate data-input-stream? dis))))
+  (long (.readUnsignedShort (validate data-input-stream? dis))))
 
 (s/defn read-int :- s/Int    ; #todo need test
   "Reads 4 bytes (signed) from the data-input-stream"
@@ -92,56 +150,11 @@
   [dis :- DataInputStream]
   (long (.readLong (validate data-input-stream? dis))))
 
-;---------------------------------------------------------------------------------------------------
-; #todo move interval stuff -> misc or math
-
-; "Defines a half-open interval"
-(defrecord Interval ; #todo report defrecord "resolve" to Cursive
-  [lower-bound upper-bound]) ; #todo report to Cursive
-
-(s/defn interval-contains? :- s/Bool
-  "Returns true if val fits within an Interval."
-  [itvl :- Interval
-   val :- s/Num]
-  (and (<= (:lower-bound itvl) val)
-    (<  val (:upper-bound itvl))))
-
-(def interval-byte               (->Interval Byte/MIN_VALUE Byte/MAX_VALUE)) ; #todo "resolve" report to Cursive
-(def interval-byte-unsigned      (->Interval 0 256))
-(def interval-short              (->Interval Short/MIN_VALUE Short/MAX_VALUE))
-(def interval-short-unsigned     (->Interval 0 65536))
-(def interval-integer            (->Interval Integer/MIN_VALUE Integer/MAX_VALUE))
-(def interval-long               (->Interval Long/MIN_VALUE Long/MAX_VALUE))
-
-(s/defn within-interval-byte? :- s/Bool
-  "Returns true if val fits within legal range for a byte (signed)."
-  [val :- s/Int]
-  (interval-contains? interval-byte val))
-
-(s/defn within-interval-byte-unsigned? :- s/Bool
-  "Returns true if val fits within legal range for a byte (unsigned)."
-  [val :- s/Int]
-  (interval-contains? interval-byte-unsigned val))
-
-(s/defn within-interval-short? :- s/Bool
-  "Returns true if val fits within legal range for a short (signed)."
-  [val :- s/Int]
-  (interval-contains? interval-short val))
-
-(s/defn within-interval-short-unsigned? :- s/Bool
-  "Returns true if val fits within legal range for a short (unsigned)."
-  [val :- s/Int]
-  (interval-contains? interval-short-unsigned val))
-
-(s/defn within-interval-integer? :- s/Bool
-  "Returns true if val fits within legal range for a integer (signed)."
-  [val :- s/Int]
-  (interval-contains? interval-integer val))
-
-(s/defn within-interval-long? :- s/Bool
-  "Returns true if val fits within legal range for a long (signed)."
-  [val :- s/Int]
-  (interval-contains? interval-long val))
+(s/defn read-string-bytes :- s/Str
+  "Reads nchars bytes from the DataInputStream and returns them as a String."
+  [nchars :- s/Int
+   dis :- DataInputStream]
+  (String. (read-bytes nchars (validate data-input-stream? dis))))
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn write-byte :- s/Int    ; #todo need test
@@ -165,14 +178,16 @@
   [dos :- DataOutputStream
    val :- s/Int]
   (.writeShort (validate data-output-stream? dos)
-    (validate within-interval-short? val)))
+    (validate within-interval-short? val))
+  val)
 
 (s/defn write-short-unsigned :- s/Int    ; #todo need test
   "Writes 2 bytes (unsigned) to a DataOutputStream"
   [dos :- DataOutputStream
    val :- s/Int]
   (.writeShort (validate data-output-stream? dos)
-    (validate within-interval-short-unsigned? val)))
+    (validate within-interval-short-unsigned? val))
+  val)
 
 (s/defn write-int :- s/Int    ; #todo need test
   "Writes 4 bytes (signed) to a DataOutputStream"
@@ -190,17 +205,12 @@
     (validate within-interval-long? val))
   val)
 
-
-
-
-
-
-
-
-
-
-
-
+(s/defn write-string-bytes :- s/Str
+  "Writes the an ASCII string as bytes to a DataInputStream."
+  [dos :- DataOutputStream
+   str-val :- s/Str]
+  (.writeBytes (validate data-output-stream? dos) str-val)
+  str-val)
 
 
 
