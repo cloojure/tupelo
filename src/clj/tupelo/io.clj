@@ -106,6 +106,18 @@
   (BigInteger. ^bytes (glue zeros-4
                         (read-bytes 8 (validate data-input-stream? dis)))))
 
+
+; #todo finish
+(s/defn read-float :- s/Num    ; #todo need test
+  "Reads a 4 byte single-precision floating-point value from the data-input-stream"
+  [dis :- DataInputStream]
+  (.readFloat (validate data-input-stream? dis)))
+
+(s/defn read-double :- s/Num    ; #todo need test
+  "Reads an 8 byte double-precision floating-point value from the data-input-stream"
+  [dis :- DataInputStream]
+  (.readDouble (validate data-input-stream? dis)))
+
 ;---------------------------------------------------------------------------------------------------
 (s/defn write-string-bytes :- s/Str
   "Writes the an ASCII string as bytes to a DataInputStream."
@@ -182,6 +194,20 @@
   val)
 
 
+
+(s/defn write-float :- s/Num    ; #todo need test
+  "Writes a 4 byte single-precision floating-point value to the data-output-stream"
+  [dos :- DataOutputStream
+   val :- s/Num]
+  (.writeFloat ^DataOutputStream (validate data-output-stream? dos) val)
+  val)
+
+(s/defn write-double :- s/Num    ; #todo need test
+  "Writes a 4 byte double-precision floating-point value to the data-output-stream"
+  [dos :- DataOutputStream
+   val :- s/Num]
+  (.writeDouble ^DataOutputStream  (validate data-output-stream? dos) val)
+  val)
 
 
 

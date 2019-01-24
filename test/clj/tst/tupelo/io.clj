@@ -12,8 +12,10 @@
     [tupelo.types :as types])
   (:import [java.io DataInputStream DataOutputStream FileOutputStream ]))
 
-(def int-val  (long (+ 1e9 123456789)))
-(def long-val  (long 12345e9))
+(def int-val (long (+ 1e9 123456789)))
+(def long-val (long 12345e9))
+(def pi-float (float Math/PI))
+(def pi-double (double Math/PI))
 
 (def dummy-file-name "tst.tupelo.io")
 (def dummy-file (create-temp-file dummy-file-name))
@@ -118,7 +120,18 @@
 
       (write-long-unsigned long-val)
       (write-long-unsigned types/LONG_UNSIGNED_MIN_VALUE)
-      (write-long-unsigned types/LONG_UNSIGNED_MAX_VALUE)))
+      (write-long-unsigned types/LONG_UNSIGNED_MAX_VALUE)
+
+      (write-float pi-float)
+      (write-float Float/MIN_VALUE)
+      (write-float Float/MAX_VALUE)
+
+      (write-double pi-double)
+      (write-double Double/MIN_VALUE)
+      (write-double Double/MAX_VALUE)
+
+
+      ))
 
   (with-open [dis (DataInputStream. (io/input-stream dummy-file))]
     (is= (read-string-bytes 5 dis) "hello")
@@ -156,7 +169,17 @@
 
     (is= (read-long-unsigned dis) long-val)
     (is= (read-long-unsigned dis) types/LONG_UNSIGNED_MIN_VALUE)
-    (is= (read-long-unsigned dis) types/LONG_UNSIGNED_MAX_VALUE)))
+    (is= (read-long-unsigned dis) types/LONG_UNSIGNED_MAX_VALUE)
+
+    (is= (read-float dis) pi-float)
+    (is= (read-float dis) Float/MIN_VALUE)
+    (is= (read-float dis) Float/MAX_VALUE)
+
+    (is= (read-double dis) pi-double)
+    (is= (read-double dis) Double/MIN_VALUE)
+    (is= (read-double dis) Double/MAX_VALUE))
+
+  )
 
 
 
