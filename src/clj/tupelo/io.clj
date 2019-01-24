@@ -9,69 +9,9 @@
   (:use tupelo.core)
   (:refer-clojure :exclude [read-string])
   (:require
-    [schema.core :as s])
+    [schema.core :as s]
+    [tupelo.types :as types] )
   (:import [java.io File DataInputStream DataOutputStream InputStream OutputStream]))
-
-;---------------------------------------------------------------------------------------------------
-; #todo move interval stuff -> tupelo.types
-
-(def BYTE_UNSIGNED_MIN_VALUE  0)
-(def BYTE_UNSIGNED_MAX_VALUE (-> (biginteger 2)
-                               (.pow 8)
-                               (dec)
-                               (long)))
-
-(def SHORT_UNSIGNED_MIN_VALUE  0)
-(def SHORT_UNSIGNED_MAX_VALUE (-> (biginteger 2)
-                                (.pow 16)
-                                (dec)
-                                (long)))
-
-(defrecord ^:no-doc IntervalClosed ; #todo report defrecord "resolve" to Cursive
-  [lower-bound upper-bound]) ; #todo report to Cursive
-
-(s/defn ^:no-doc within-interval-closed? :- s/Bool
-  "Returns true if val fits within an IntervalClosed."
-  [ic :- IntervalClosed
-   val :- s/Num]
-  (<= (:lower-bound ic) val (:upper-bound ic)))
-
-(def ^:no-doc interval-closed-byte               (->IntervalClosed Byte/MIN_VALUE Byte/MAX_VALUE)) ; #todo "resolve" report to Cursive
-(def ^:no-doc interval-closed-byte-unsigned      (->IntervalClosed BYTE_UNSIGNED_MIN_VALUE BYTE_UNSIGNED_MAX_VALUE))
-(def ^:no-doc interval-closed-short              (->IntervalClosed Short/MIN_VALUE Short/MAX_VALUE))
-(def ^:no-doc interval-closed-short-unsigned     (->IntervalClosed SHORT_UNSIGNED_MIN_VALUE SHORT_UNSIGNED_MAX_VALUE))
-(def ^:no-doc interval-closed-integer            (->IntervalClosed Integer/MIN_VALUE Integer/MAX_VALUE))
-(def ^:no-doc interval-closed-long               (->IntervalClosed Long/MIN_VALUE Long/MAX_VALUE))
-
-(s/defn within-bounds-byte? :- s/Bool
-  "Returns true if val fits within legal range for a byte (signed)."
-  [val :- s/Int]
-  (within-interval-closed? interval-closed-byte val))
-
-(s/defn within-bounds-byte-unsigned? :- s/Bool
-  "Returns true if val fits within legal range for a byte (unsigned)."
-  [val :- s/Int]
-  (within-interval-closed? interval-closed-byte-unsigned val))
-
-(s/defn within-bounds-short? :- s/Bool
-  "Returns true if val fits within legal range for a short (signed)."
-  [val :- s/Int]
-  (within-interval-closed? interval-closed-short val))
-
-(s/defn within-bounds-short-unsigned? :- s/Bool
-  "Returns true if val fits within legal range for a short (unsigned)."
-  [val :- s/Int]
-  (within-interval-closed? interval-closed-short-unsigned val))
-
-(s/defn within-bounds-integer? :- s/Bool
-  "Returns true if val fits within legal range for a integer (signed)."
-  [val :- s/Int]
-  (within-interval-closed? interval-closed-integer val))
-
-(s/defn within-bounds-long? :- s/Bool
-  "Returns true if val fits within legal range for a long (signed)."
-  [val :- s/Int]
-  (within-interval-closed? interval-closed-long val))
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn input-stream?
@@ -97,8 +37,7 @@
   [id-str :- s/Str]
   (let [tmp-file (File/createTempFile id-str nil)]
     (.deleteOnExit tmp-file)
-    tmp-file ))
-
+    tmp-file))
 
 (s/defn read-bytes  ; #todo type?
   "Reads N bytes from the DataInputStream and returns them in a byte array."
@@ -108,11 +47,10 @@
     (.read (validate input-stream? input-stream) bytarr)
     bytarr))
 
-(s/defn write-bytes  ; #todo type?
+(s/defn write-bytes ; #todo type?
   "Writes a byte array to a DataInputStream."
   [out-stream :- OutputStream
    bytarr :- s/Any] ; #todo type
-
   (.write (validate output-stream? out-stream) bytarr)
   bytarr)
 
@@ -159,7 +97,7 @@
   [dos :- DataOutputStream
    val :- s/Int]
   (.writeByte (validate data-output-stream? dos)
-    (validate within-bounds-byte? val))
+    (validate types/within-bounds-byte? val))
   val)
 
 (s/defn write-byte-unsigned :- s/Int   ; #todo need test
@@ -167,7 +105,7 @@
   [dos :- DataOutputStream
    val :- s/Int]
   (.writeByte (validate data-output-stream? dos)
-    (validate within-bounds-byte-unsigned? val))
+    (validate types/within-bounds-byte-unsigned? val))
   val)
 
 (s/defn write-short :- s/Int    ; #todo need test
@@ -175,7 +113,7 @@
   [dos :- DataOutputStream
    val :- s/Int]
   (.writeShort (validate data-output-stream? dos)
-    (validate within-bounds-short? val))
+    (validate types/within-bounds-short? val))
   val)
 
 (s/defn write-short-unsigned :- s/Int    ; #todo need test
@@ -183,7 +121,7 @@
   [dos :- DataOutputStream
    val :- s/Int]
   (.writeShort (validate data-output-stream? dos)
-    (validate within-bounds-short-unsigned? val))
+    (validate types/within-bounds-short-unsigned? val))
   val)
 
 (s/defn write-int :- s/Int    ; #todo need test
@@ -191,7 +129,7 @@
   [dos :- DataOutputStream
    val :- s/Int]
   (.writeInt (validate data-output-stream? dos)
-    (validate within-bounds-integer? val))
+    (validate types/within-bounds-integer? val))
   val)
 
 (s/defn write-long :- s/Int    ; #todo need test
@@ -199,7 +137,7 @@
   [dos :- DataOutputStream
    val :- s/Int]
   (.writeLong (validate data-output-stream? dos)
-    (validate within-bounds-long? val))
+    (validate types/within-bounds-long? val))
   val)
 
 (s/defn write-string-bytes :- s/Str
@@ -208,10 +146,6 @@
    str-val :- s/Str]
   (.writeBytes (validate data-output-stream? dos) str-val)
   str-val)
-
-
-
-
 
 
 

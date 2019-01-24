@@ -8,11 +8,9 @@
   (:use tupelo.io tupelo.core tupelo.test)
   (:refer-clojure :exclude [read-string])
   (:require
-    [clojure.java.io :as io] )
-  (:import [java.io
-              DataInputStream DataOutputStream
-              File FileOutputStream FileInputStream
-              InputStream OutputStream ]))
+    [clojure.java.io :as io]
+    [tupelo.types :as types])
+  (:import [java.io DataInputStream DataOutputStream FileOutputStream ]))
 
 (def int-val  (long (+ 1e9 123456789)))
 (def long-val  (long 12345e9))
@@ -21,8 +19,8 @@
 (def dummy-file (create-temp-file dummy-file-name))
 
 (dotest
-  (is= BYTE_UNSIGNED_MAX_VALUE 255)
-  (is= SHORT_UNSIGNED_MAX_VALUE 65535)
+  (is= types/BYTE_UNSIGNED_MAX_VALUE 255)
+  (is= types/SHORT_UNSIGNED_MAX_VALUE 65535)
 
   (let [in-stream  (io/input-stream dummy-file)
         out-stream (io/output-stream dummy-file)
@@ -54,11 +52,11 @@
     (throws? (write-long dos (* 2M (bigdec Long/MAX_VALUE))))
     (throws? (write-long dos (* -2M (bigdec Long/MIN_VALUE))))
 
-    (throws? (write-byte-unsigned dos (inc BYTE_UNSIGNED_MAX_VALUE)))
-    (throws? (write-byte-unsigned dos (dec BYTE_UNSIGNED_MIN_VALUE)))
+    (throws? (write-byte-unsigned dos (inc types/BYTE_UNSIGNED_MAX_VALUE)))
+    (throws? (write-byte-unsigned dos (dec types/BYTE_UNSIGNED_MIN_VALUE)))
 
-    (throws? (write-short-unsigned dos (inc SHORT_UNSIGNED_MAX_VALUE)))
-    (throws? (write-short-unsigned dos (dec SHORT_UNSIGNED_MIN_VALUE)))
+    (throws? (write-short-unsigned dos (inc types/SHORT_UNSIGNED_MAX_VALUE)))
+    (throws? (write-short-unsigned dos (dec types/SHORT_UNSIGNED_MIN_VALUE)))
 
     (is= (write-byte dos Byte/MIN_VALUE)         Byte/MIN_VALUE)
     (is= (write-byte dos Byte/MAX_VALUE)         Byte/MAX_VALUE)
@@ -72,11 +70,11 @@
     (is= (write-long dos Long/MIN_VALUE)         Long/MIN_VALUE)
     (is= (write-long dos Long/MAX_VALUE)         Long/MAX_VALUE)
 
-    (is= (write-byte-unsigned dos BYTE_UNSIGNED_MIN_VALUE)       BYTE_UNSIGNED_MIN_VALUE)
-    (is= (write-byte-unsigned dos BYTE_UNSIGNED_MAX_VALUE)       BYTE_UNSIGNED_MAX_VALUE)
+    (is= (write-byte-unsigned dos types/BYTE_UNSIGNED_MIN_VALUE)       types/BYTE_UNSIGNED_MIN_VALUE)
+    (is= (write-byte-unsigned dos types/BYTE_UNSIGNED_MAX_VALUE)       types/BYTE_UNSIGNED_MAX_VALUE)
 
-    (is= (write-short-unsigned dos SHORT_UNSIGNED_MIN_VALUE)     SHORT_UNSIGNED_MIN_VALUE)
-    (is= (write-short-unsigned dos SHORT_UNSIGNED_MAX_VALUE)     SHORT_UNSIGNED_MAX_VALUE)
+    (is= (write-short-unsigned dos types/SHORT_UNSIGNED_MIN_VALUE)     types/SHORT_UNSIGNED_MIN_VALUE)
+    (is= (write-short-unsigned dos types/SHORT_UNSIGNED_MAX_VALUE)     types/SHORT_UNSIGNED_MAX_VALUE)
 
     (is= (write-string-bytes dos "hello") "hello")))
 
@@ -106,21 +104,6 @@
     (is= long-val (read-long dis))
     (is= "hello" (read-string-bytes 5 dis))
     (is= [1 2 3 4] (vec (read-bytes 4 dis)))))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

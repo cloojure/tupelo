@@ -129,3 +129,65 @@
    :post [ (string? %) ] }
   (String. arg UTF-8-Charset-Name))
 
+;---------------------------------------------------------------------------------------------------
+
+(def BYTE_UNSIGNED_MIN_VALUE  0)
+(def BYTE_UNSIGNED_MAX_VALUE (-> (biginteger 2)
+                               (.pow 8)
+                               (dec)
+                               (long)))
+
+(def SHORT_UNSIGNED_MIN_VALUE  0)
+(def SHORT_UNSIGNED_MAX_VALUE (-> (biginteger 2)
+                                (.pow 16)
+                                (dec)
+                                (long)))
+
+(defrecord ^:no-doc IntervalClosed ; #todo report defrecord "resolve" to Cursive
+  [lower-bound upper-bound]) ; #todo report to Cursive
+
+(s/defn ^:no-doc within-interval-closed? :- s/Bool
+  "Returns true if val fits within an IntervalClosed."
+  [ic :- IntervalClosed
+   val :- s/Num]
+  (<= (:lower-bound ic) val (:upper-bound ic)))
+
+(def ^:no-doc interval-closed-byte               (->IntervalClosed Byte/MIN_VALUE Byte/MAX_VALUE)) ; #todo "resolve" report to Cursive
+(def ^:no-doc interval-closed-byte-unsigned      (->IntervalClosed BYTE_UNSIGNED_MIN_VALUE BYTE_UNSIGNED_MAX_VALUE))
+(def ^:no-doc interval-closed-short              (->IntervalClosed Short/MIN_VALUE Short/MAX_VALUE))
+(def ^:no-doc interval-closed-short-unsigned     (->IntervalClosed SHORT_UNSIGNED_MIN_VALUE SHORT_UNSIGNED_MAX_VALUE))
+(def ^:no-doc interval-closed-integer            (->IntervalClosed Integer/MIN_VALUE Integer/MAX_VALUE))
+(def ^:no-doc interval-closed-long               (->IntervalClosed Long/MIN_VALUE Long/MAX_VALUE))
+
+(s/defn within-bounds-byte? :- s/Bool
+  "Returns true if val fits within legal range for a byte (signed)."
+  [val :- s/Int]
+  (within-interval-closed? interval-closed-byte val))
+
+(s/defn within-bounds-byte-unsigned? :- s/Bool
+  "Returns true if val fits within legal range for a byte (unsigned)."
+  [val :- s/Int]
+  (within-interval-closed? interval-closed-byte-unsigned val))
+
+(s/defn within-bounds-short? :- s/Bool
+  "Returns true if val fits within legal range for a short (signed)."
+  [val :- s/Int]
+  (within-interval-closed? interval-closed-short val))
+
+(s/defn within-bounds-short-unsigned? :- s/Bool
+  "Returns true if val fits within legal range for a short (unsigned)."
+  [val :- s/Int]
+  (within-interval-closed? interval-closed-short-unsigned val))
+
+(s/defn within-bounds-integer? :- s/Bool
+  "Returns true if val fits within legal range for a integer (signed)."
+  [val :- s/Int]
+  (within-interval-closed? interval-closed-integer val))
+
+(s/defn within-bounds-long? :- s/Bool
+  "Returns true if val fits within legal range for a long (signed)."
+  [val :- s/Int]
+  (within-interval-closed? interval-closed-long val))
+
+
+
