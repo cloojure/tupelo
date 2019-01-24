@@ -5,14 +5,12 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.io
-  "Convert to/from traditional base64 encoding."
+  "Read/Write using DataInputStream/DataOutputStream & InputStream/OutputStream"
   (:use tupelo.core)
   (:refer-clojure :exclude [read-string])
   (:require
-    [clojure.string :as str]
     [schema.core :as s])
-  (:import [java.nio ByteBuffer]
-           [java.io File DataInputStream DataOutputStream InputStream OutputStream]))
+  (:import [java.io File DataInputStream DataOutputStream InputStream OutputStream]))
 
 ;---------------------------------------------------------------------------------------------------
 ; #todo move interval stuff -> misc or math
@@ -29,52 +27,51 @@
                                 (dec)
                                 (long)))
 
-; "Defines a half-open interval"
-(defrecord IntervalClosed ; #todo report defrecord "resolve" to Cursive
+(defrecord ^:no-doc IntervalClosed ; #todo report defrecord "resolve" to Cursive
   [lower-bound upper-bound]) ; #todo report to Cursive
 
-(s/defn within-interval-closed? :- s/Bool
+(s/defn ^:no-doc within-interval-closed? :- s/Bool
   "Returns true if val fits within an IntervalClosed."
   [ic :- IntervalClosed
    val :- s/Num]
   (<= (:lower-bound ic) val (:upper-bound ic)))
 
-(def interval-byte               (->IntervalClosed Byte/MIN_VALUE Byte/MAX_VALUE)) ; #todo "resolve" report to Cursive
-(def interval-byte-unsigned      (->IntervalClosed BYTE_UNSIGNED_MIN_VALUE BYTE_UNSIGNED_MAX_VALUE))
-(def interval-short              (->IntervalClosed Short/MIN_VALUE Short/MAX_VALUE))
-(def interval-short-unsigned     (->IntervalClosed SHORT_UNSIGNED_MIN_VALUE SHORT_UNSIGNED_MAX_VALUE))
-(def interval-integer            (->IntervalClosed Integer/MIN_VALUE Integer/MAX_VALUE))
-(def interval-long               (->IntervalClosed Long/MIN_VALUE Long/MAX_VALUE))
+(def ^:no-doc interval-closed-byte               (->IntervalClosed Byte/MIN_VALUE Byte/MAX_VALUE)) ; #todo "resolve" report to Cursive
+(def ^:no-doc interval-closed-byte-unsigned      (->IntervalClosed BYTE_UNSIGNED_MIN_VALUE BYTE_UNSIGNED_MAX_VALUE))
+(def ^:no-doc interval-closed-short              (->IntervalClosed Short/MIN_VALUE Short/MAX_VALUE))
+(def ^:no-doc interval-closed-short-unsigned     (->IntervalClosed SHORT_UNSIGNED_MIN_VALUE SHORT_UNSIGNED_MAX_VALUE))
+(def ^:no-doc interval-closed-integer            (->IntervalClosed Integer/MIN_VALUE Integer/MAX_VALUE))
+(def ^:no-doc interval-closed-long               (->IntervalClosed Long/MIN_VALUE Long/MAX_VALUE))
 
-(s/defn within-interval-byte? :- s/Bool
+(s/defn within-bounds-byte? :- s/Bool
   "Returns true if val fits within legal range for a byte (signed)."
   [val :- s/Int]
-  (within-interval-closed? interval-byte val))
+  (within-interval-closed? interval-closed-byte val))
 
-(s/defn within-interval-byte-unsigned? :- s/Bool
+(s/defn within-bounds-byte-unsigned? :- s/Bool
   "Returns true if val fits within legal range for a byte (unsigned)."
   [val :- s/Int]
-  (within-interval-closed? interval-byte-unsigned val))
+  (within-interval-closed? interval-closed-byte-unsigned val))
 
-(s/defn within-interval-short? :- s/Bool
+(s/defn within-bounds-short? :- s/Bool
   "Returns true if val fits within legal range for a short (signed)."
   [val :- s/Int]
-  (within-interval-closed? interval-short val))
+  (within-interval-closed? interval-closed-short val))
 
-(s/defn within-interval-short-unsigned? :- s/Bool
+(s/defn within-bounds-short-unsigned? :- s/Bool
   "Returns true if val fits within legal range for a short (unsigned)."
   [val :- s/Int]
-  (within-interval-closed? interval-short-unsigned val))
+  (within-interval-closed? interval-closed-short-unsigned val))
 
-(s/defn within-interval-integer? :- s/Bool
+(s/defn within-bounds-integer? :- s/Bool
   "Returns true if val fits within legal range for a integer (signed)."
   [val :- s/Int]
-  (within-interval-closed? interval-integer val))
+  (within-interval-closed? interval-closed-integer val))
 
-(s/defn within-interval-long? :- s/Bool
+(s/defn within-bounds-long? :- s/Bool
   "Returns true if val fits within legal range for a long (signed)."
   [val :- s/Int]
-  (within-interval-closed? interval-long val))
+  (within-interval-closed? interval-closed-long val))
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn input-stream?
@@ -162,7 +159,7 @@
   [dos :- DataOutputStream
    val :- s/Int]
   (.writeByte (validate data-output-stream? dos)
-    (validate within-interval-byte? val))
+    (validate within-bounds-byte? val))
   val)
 
 (s/defn write-byte-unsigned :- s/Int   ; #todo need test
@@ -170,7 +167,7 @@
   [dos :- DataOutputStream
    val :- s/Int]
   (.writeByte (validate data-output-stream? dos)
-    (validate within-interval-byte-unsigned? val))
+    (validate within-bounds-byte-unsigned? val))
   val)
 
 (s/defn write-short :- s/Int    ; #todo need test
@@ -178,7 +175,7 @@
   [dos :- DataOutputStream
    val :- s/Int]
   (.writeShort (validate data-output-stream? dos)
-    (validate within-interval-short? val))
+    (validate within-bounds-short? val))
   val)
 
 (s/defn write-short-unsigned :- s/Int    ; #todo need test
@@ -186,7 +183,7 @@
   [dos :- DataOutputStream
    val :- s/Int]
   (.writeShort (validate data-output-stream? dos)
-    (validate within-interval-short-unsigned? val))
+    (validate within-bounds-short-unsigned? val))
   val)
 
 (s/defn write-int :- s/Int    ; #todo need test
@@ -194,7 +191,7 @@
   [dos :- DataOutputStream
    val :- s/Int]
   (.writeInt (validate data-output-stream? dos)
-    (validate within-interval-integer? val))
+    (validate within-bounds-integer? val))
   val)
 
 (s/defn write-long :- s/Int    ; #todo need test
@@ -202,7 +199,7 @@
   [dos :- DataOutputStream
    val :- s/Int]
   (.writeLong (validate data-output-stream? dos)
-    (validate within-interval-long? val))
+    (validate within-bounds-long? val))
   val)
 
 (s/defn write-string-bytes :- s/Str
