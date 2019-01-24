@@ -20,9 +20,9 @@
 (def dummy-file-name "tst.tupelo.io")
 (def dummy-file (create-temp-file dummy-file-name))
 
-(dotest-focus       ; #todo FOCUS
-  (is= 255 (spyx BYTE_UNSIGNED_MAX_VALUE))
-  (is= 65535 (spyx SHORT_UNSIGNED_MAX_VALUE))
+(dotest
+  (is= BYTE_UNSIGNED_MAX_VALUE 255)
+  (is= SHORT_UNSIGNED_MAX_VALUE 65535)
 
   (let [in-stream  (io/input-stream dummy-file)
         out-stream (io/output-stream dummy-file)
@@ -36,8 +36,9 @@
     (isnt (data-output-stream? out-stream))
     (is (output-stream? out-stream))
     (is (output-stream? dos))
-    (is (data-output-stream? dos)))
+    (is (data-output-stream? dos))))
 
+(dotest
   (with-open [dos (DataOutputStream.
                     (FileOutputStream. dummy-file))]
 
@@ -77,8 +78,9 @@
     (is= (write-short-unsigned dos SHORT_UNSIGNED_MIN_VALUE)     SHORT_UNSIGNED_MIN_VALUE)
     (is= (write-short-unsigned dos SHORT_UNSIGNED_MAX_VALUE)     SHORT_UNSIGNED_MAX_VALUE)
 
-    (is= (write-string-bytes dos "hello")        "hello"))
+    (is= (write-string-bytes dos "hello") "hello")))
 
+(dotest
   (with-open [dos (DataOutputStream.
                     (FileOutputStream. dummy-file))]
     (doto dos
@@ -103,9 +105,7 @@
     (is= int-val (read-int dis))
     (is= long-val (read-long dis))
     (is= "hello" (read-string-bytes 5 dis))
-    (is= [1 2 3 4] (vec (read-bytes 4 dis))))
-
-  )
+    (is= [1 2 3 4] (vec (read-bytes 4 dis)))))
 
 
 
