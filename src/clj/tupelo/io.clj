@@ -13,7 +13,7 @@
   (:import [java.io File DataInputStream DataOutputStream InputStream OutputStream]))
 
 ;---------------------------------------------------------------------------------------------------
-; #todo move interval stuff -> misc or math
+; #todo move interval stuff -> tupelo.types
 
 (def BYTE_UNSIGNED_MIN_VALUE  0)
 (def BYTE_UNSIGNED_MAX_VALUE (-> (biginteger 2)
