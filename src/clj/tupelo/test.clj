@@ -157,6 +157,20 @@
   [& forms]
   (apply throws?-impl forms))
 
+; #todo => CLJS
+(defmacro throws-not?   ; #todo document in readme
+  "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
+
+     (throws? (/ 1 0))                      ; catches any Throwable
+     (throws? ArithmeticException (/ 1 0))  ; catches specified Throwable (or subclass) "
+  [& forms]
+  `(clojure.test/is
+     (try
+       ~@forms
+       true    ; succeed if no exception thrown
+       (catch Throwable thr#
+         false)))) ; if anything is thrown, test fails
+
 (defmacro deftest-focus ; #todo README & tests
   "Like `deftest`, but invokes lein-test-refresh focus mode; i.e. applies metadata {:test-refresh/focus true}"
   [& items]

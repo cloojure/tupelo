@@ -27,7 +27,10 @@
   (isnt= 1 2)
   (isnt= 1 2 1)
   (isnt= 1 2 1 1)
-  )
+
+  (throws?     (do (throw (Exception. "oh the misery!"))))
+  (throws-not? (do (+ 1 2)))
+)
 
 (dotest
   (throws? (set= [1]))
@@ -40,6 +43,5 @@
   (nonblank= "abc" "abc"  )
   (nonblank= "abc" " abc   "  )
   (nonblank= "a   b  c" "a b c"  "  a b   c  ")
-  )
-
+)
 

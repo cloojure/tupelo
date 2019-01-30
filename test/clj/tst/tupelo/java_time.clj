@@ -241,13 +241,17 @@
                           "2016-03-23T13:19:03.000-00:00"
                           "2016-02-26T14:51:37.000-00:00"
                           "2016-01-20T16:55:24.000-00:00"]
-
         zoned-date-times (mapv #(ZonedDateTime/parse %) instants)
         zdt-pairs        (partition 2 1 zoned-date-times)
         durations        (vec (for [[interval-stop interval-start] zdt-pairs]
                                 (.toMinutes ; *** truncates ***
                                   (Duration/between interval-start interval-stop))))]
-    (is= (spyx-pretty durations) [53176 3 1370 37347 53156])))
+    (is= durations [53176 3 1370 37347 53156]))
+
+  ; Can use Clojure #inst or string as input
+  (let [instant (.toInstant            #inst "2016-03-24T12:13:12.000-00:00")  ; java.util.Date
+        zdt     (ZonedDateTime/parse         "2016-03-24T12:13:12.000-00:00")] ; String
+    (is (zero? (.toMillis (Duration/between instant zdt))))))
 
 
 
