@@ -905,7 +905,7 @@
   `(binding [*spy-enabled* (get *spy-enabled-map* ~tag false)]
      ~@forms))
 
-(defonce ^:no-doc spy-indent-level (atom 0))
+(def ^:no-doc spy-indent-level (atom 0))
 
 (defn ^:no-doc spy-indent-spaces []
   (str/join (repeat (* 2 @spy-indent-level) \space)))
