@@ -905,15 +905,10 @@
   `(binding [*spy-enabled* (get *spy-enabled-map* ~tag false)]
      ~@forms))
 
-(def ^:no-doc spy-indent-level (atom 0))
+(defonce ^:no-doc spy-indent-level (atom 0))
 
 (defn ^:no-doc spy-indent-spaces []
   (str/join (repeat (* 2 @spy-indent-level) \space)))
-
-(defn ^:no-doc spy-indent-reset
-  "Reset the spy indent level to zero."
-  []
-  (reset! spy-indent-level 0))
 
 (defn ^:no-doc spy-indent-inc
   "Increase the spy indent level by one."
@@ -924,6 +919,11 @@
   "Decrease the spy indent level by one."
   []
   (swap! spy-indent-level dec))
+
+(defn spy-indent-reset
+  "Reset the spy indent level to zero."
+  []
+  (reset! spy-indent-level 0))
 
 ;-----------------------------------------------------------------------------
 ; #todo  Need it?-> like some-> that short-circuits on nil

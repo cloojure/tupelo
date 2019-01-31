@@ -1,6 +1,6 @@
 (ns tupelo.test-cljs ; this file defines macros
   (:require
-    [cljs.test :as ct]
+    #?(:cljs [cljs.test :as ct])
     [tupelo.string :as ts]
     ))
 
