@@ -1073,11 +1073,11 @@
 (defmacro with-spy-indent
   "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
   [& forms]
-  `(do
+  `(try
      (spy-indent-inc)
-     (let [result# (do ~@forms)]
-       (spy-indent-dec)
-       result#)))
+     (do ~@forms)
+     (finally ; ensure we un-do indentation in event of exception
+       (spy-indent-dec))))
 
 (defmacro let-spy
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
