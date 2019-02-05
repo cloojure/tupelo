@@ -43,7 +43,7 @@
     tmp-file))
 
 (s/defn read-bytes  ; #todo type?
-  "Reads N bytes from the DataInputStream and returns them in a byte array."
+  "Reads N bytes from a DataInputStream, returning a byte array."
   [N :- s/Int
    input-stream :- InputStream]
   (let [bytarr (byte-array N)]
@@ -59,49 +59,49 @@
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn read-string-bytes :- s/Str
-  "Reads nchars bytes from the DataInputStream and returns them as a String."
+  "Reads nchars bytes from a DataInputStream, returning a String."
   [nchars :- s/Int
    dis :- DataInputStream]
   (String. (read-bytes nchars (validate data-input-stream? dis))))
 
 (s/defn read-byte :- s/Int    ; #todo need test
-  "Reads 1 byte (signed) from the data-input-stream."
+  "Reads 1 byte (signed) from a DataInputStream"
   [dis :- DataInputStream]
   (long (.readByte (validate data-input-stream? dis) )))
 
 (s/defn read-byte-unsigned :- s/Int   ; #todo need test
-  "Reads 1 byte (unsigned) from the data-input-stream"
+  "Reads 1 byte (unsigned) from a DataInputStream"
   [dis :- DataInputStream]
   (long (.readUnsignedByte (validate data-input-stream? dis) )))
 
 (s/defn read-short :- s/Int    ; #todo need test
-  "Reads 2 bytes (signed) from the data-input-stream"
+  "Reads 2 bytes (signed) from a DataInputStream"
   [dis :- DataInputStream]
   (long (.readShort (validate data-input-stream? dis))))
 
 (s/defn read-short-unsigned :- s/Int    ; #todo need test
-  "Reads 2 bytes (unsigned) from the data-input-stream"
+  "Reads 2 bytes (unsigned) from a DataInputStream"
   [dis :- DataInputStream]
   (long (.readUnsignedShort (validate data-input-stream? dis))))
 
 (s/defn read-integer :- s/Int    ; #todo need test
-  "Reads 4 bytes (signed) from the data-input-stream"
+  "Reads 4 bytes (signed) from a DataInputStream"
   [dis :- DataInputStream]
   (long (.readInt (validate data-input-stream? dis))))
 
 (s/defn read-long :- s/Int    ; #todo need test
-  "Reads 8 bytes (signed) from the data-input-stream"
+  "Reads 8 bytes (signed) from a DataInputStream"
   [dis :- DataInputStream]
   (long (.readLong (validate data-input-stream? dis))))
 
 (s/defn read-integer-unsigned :- s/Int ; #todo need test
-  "Reads 4 bytes (unsigned) from the data-input-stream"
+  "Reads 4 bytes (unsigned) from a DataInputStream"
   [dis :- DataInputStream]
   (long (BigInteger. ^bytes (glue zeros-4
                               (read-bytes 4 (validate data-input-stream? dis))))))
 
 (s/defn read-long-unsigned :- s/Int ; #todo need test
-  "Reads 8 bytes (unsigned) from the data-input-stream, returning a BigInteger"
+  "Reads 8 bytes (unsigned) from a DataInputStream, returning a BigInteger"
   [dis :- DataInputStream]
   (BigInteger. ^bytes (glue zeros-4
                         (read-bytes 8 (validate data-input-stream? dis)))))
@@ -109,18 +109,18 @@
 
 ; #todo finish
 (s/defn read-float :- s/Num    ; #todo need test
-  "Reads a 4 byte single-precision floating-point value from the data-input-stream"
+  "Reads a 4 byte single-precision floating-point value from a DataInputStream"
   [dis :- DataInputStream]
   (.readFloat (validate data-input-stream? dis)))
 
 (s/defn read-double :- s/Num    ; #todo need test
-  "Reads an 8 byte double-precision floating-point value from the data-input-stream"
+  "Reads an 8 byte double-precision floating-point value from a DataInputStream"
   [dis :- DataInputStream]
   (.readDouble (validate data-input-stream? dis)))
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn write-string-bytes :- s/Str
-  "Writes the an ASCII string as bytes to a DataInputStream."
+  "Converts an ASCII String to bytes and writes them to a DataInputStream (w/o length header)."
   [dos :- DataOutputStream
    str-val :- s/Str]
   (.writeBytes (validate data-output-stream? dos) str-val)
@@ -183,7 +183,7 @@
   val)
 
 (s/defn write-long-unsigned :- s/Int ; #todo need test
-  "Writes 4 bytes (signed) to a DataOutputStream"
+  "Writes 8 bytes (unsigned) to a DataOutputStream"
   [dos :- DataOutputStream
    val :- s/Int]
   (validate types/within-bounds-long-unsigned? val)
@@ -194,22 +194,19 @@
   val)
 
 
-
 (s/defn write-float :- s/Num    ; #todo need test
-  "Writes a 4 byte single-precision floating-point value to the data-output-stream"
+  "Writes a 4 byte single-precision floating-point value to a DataInputStream"
   [dos :- DataOutputStream
    val :- s/Num]
   (.writeFloat ^DataOutputStream (validate data-output-stream? dos) val)
   val)
 
 (s/defn write-double :- s/Num    ; #todo need test
-  "Writes a 4 byte double-precision floating-point value to the data-output-stream"
+  "Writes an 8 byte double-precision floating-point value to a DataInputStream"
   [dos :- DataOutputStream
    val :- s/Num]
   (.writeDouble ^DataOutputStream  (validate data-output-stream? dos) val)
   val)
-
-
 
 
 
