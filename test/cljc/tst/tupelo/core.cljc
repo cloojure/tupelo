@@ -28,6 +28,16 @@
 ;--------------------------------------------------------------------------------------------------
 
 (dotest
+  (is (nil? (t/noop) ))
+  (is (nil? (t/noop 1) ))
+  (is (nil? (t/noop 1 2 3 4) ))
+  (let [the-answer (t/val->fn 42)]
+    (is= 42 (the-answer))
+    (is= 42 (the-answer 1))
+    (is= 42 (the-answer 1 2 3 4)))
+  )
+
+(dotest
   (is (t/truthy? true))
   (is (t/truthy? :never))
   (is (t/truthy? 5))
@@ -1725,7 +1735,7 @@
 
     (throws?
       (t/with-map-vals ctx [x y z]
-        (println "shouldn't ever get here")))))
+        (println "won't ever get here")))))
 
 (dotest
   (let [lazy-next-int (fn lazy-next-int [n]

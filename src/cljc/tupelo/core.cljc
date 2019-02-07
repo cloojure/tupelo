@@ -216,6 +216,12 @@
 
 
 ;-----------------------------------------------------------------------------
+(defn val->fn
+  "Returns a function that accepts any number of args and always returns the specified value
+  (synonym for `clojure.core/constantly`)."
+  [val]
+  (constantly val))
+
 (def noop
   "A function that accepts any number of args, does nothing, and returns `nil`."
   (constantly nil))
