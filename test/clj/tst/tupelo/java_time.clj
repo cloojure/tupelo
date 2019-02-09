@@ -4,8 +4,9 @@
   (:require
     [clj-time.core :as joda]
     [clojure.string :as str]
-    [tupelo.java-time :as tjt])
-  (:import [java.time Duration ZoneId ZoneId ZonedDateTime ZonedDateTime LocalDateTime]
+    [tupelo.string :as ts]
+    )
+  (:import [java.time Duration ZoneId ZoneId ZonedDateTime ZonedDateTime LocalDateTime Instant]
            [java.util Date]))
 
 (dotest
@@ -256,30 +257,41 @@
     (is (zero? (.toMillis (Duration/between instant zdt))))))
 
 (dotest
-  (let [jud         (Date.)
-        ldt         (LocalDateTime/parse "2019-02-01T00:00:00")
-        zdt         (.atZone ldt (ZoneId/of "UTC"))
-        instant     (.toInstant zdt)
+  (let [iso-str     "2019-02-03T04:05:06.789Z"
+        instant     (Instant/parse iso-str)
+        millis      (.toEpochMilli instant)
+        jud         (Date. millis)
+        zdt         (ZonedDateTime/ofInstant instant, zoneid-utc)
         instant-str (.toString instant)
-        now         (ZonedDateTime/now)
-        ]
-    (spyx jud)
+        zdt-str     (.toString instant)]
+    (is= 1549166706789 millis)
+    (let [result (ts/quotes->single (pr-str instant))]
+      (is (ts/contains-match? result #"#object\[java.time.Instant \p{Alnum}* '2019-02-03T04:05:06.789Z'\]"))
+      (is (ts/contains-str? result "#object[java.time.Instant"))
+      (is (ts/contains-str? result "2019-02-03T04:05:06.789Z")))
+    (let [result (ts/quotes->single (pr-str zdt))]
+      (is (ts/contains-str? result "#object[java.time.ZonedDateTime"))
+      (is (ts/contains-str? result "2019-02-03T04:05:06.789Z[UTC]")))
+    (is= instant-str     "2019-02-03T04:05:06.789Z")
+    (is= zdt-str         "2019-02-03T04:05:06.789Z")
+    (is= (.toString jud) "Sat Feb 02 20:05:06 PST 2019")
 
-    (spyxx ldt)
-    (spyx (.toString ldt))
-    (spyxx (.atZone ldt (ZoneId/of "UTC")))
+    (is= "2019-02-03T04:05:06.789Z" (string-date-time-iso zdt))
+    (is= "2019-02-03T04:05:06.789Z" (string-date-time-iso instant))
 
-    (spyx zdt)
-    (spyx (.toString zdt))
+    (is= millis
+      (iso-str->millis iso-str)
+      (iso-str->millis instant-str)
+      (iso-str->millis zdt-str))
 
-    (spyx instant)
-    (spyx instant-str)
-    (nl)
-    (spyx now)
-    ; (require [tupelo.java-time :as tjt])
-    (spyx (tjt/string-date-time-iso zdt))
-    )
-  )
+    (let [ts          (java.sql.Timestamp. millis)
+          ts-from-str (iso-str->timestamp iso-str)
+          ts-str      (.toString ts)
+          ts-str-gmt  (.toGMTString ts)]
+      (is= ts-str     "2019-02-02 20:05:06.789") ; uses default TZ (US/Pacific in this example)
+      (is= ts-str-gmt "3 Feb 2019 04:05:06 GMT") ; UGLY!
+      (is= ts ts-from-str))))
+
 
 
 
