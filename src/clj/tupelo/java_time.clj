@@ -287,6 +287,19 @@
     (.setCharAt sb 10 \space)
     (str sb)))
 
+(s/defn iso-str->millis
+  "Convert an ISO 8601 string to a java.sql.Date"
+  [iso-datetime-str :- s/Str]
+  (-> iso-datetime-str
+    (Instant/parse)
+    (.toEpochMilli)))
+
+(s/defn iso-str->timestamp
+  "Convert an ISO 8601 string to a java.sql.Date"
+  [iso-datetime-str :- s/Str]
+  (java.sql.Timestamp.
+    (iso-str->millis iso-datetime-str)))
+
 ;-----------------------------------------------------------------------------
 (defn ^:deprecated iso-date-str
   "DEPRECATED: use `date-str-iso`"

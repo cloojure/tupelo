@@ -1732,9 +1732,11 @@
     (t/with-map-vals ctx [b a d c e] ; order doesn't matter
       (is= [a b c d e] [1 2 3 4 5])
       (is= 15 (+ a b c d e)))
+    (t/with-map-vals ctx [b a d] ; can ignore stuff you don't care about
+      (is= [d a b] [4 1 2]))
 
     (throws?
-      (t/with-map-vals ctx [x y z]
+      (t/with-map-vals ctx [a b z] ; thows if key doesn't exist
         (println "won't ever get here")))))
 
 (dotest

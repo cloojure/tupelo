@@ -3,8 +3,10 @@
   (:use tupelo.java-time tupelo.core tupelo.test)
   (:require
     [clj-time.core :as joda]
-    [clojure.string :as str])
-  (:import [ java.time Duration ZoneId ZoneId ZonedDateTime ZonedDateTime ]))
+    [clojure.string :as str]
+    [tupelo.java-time :as tjt])
+  (:import [java.time Duration ZoneId ZoneId ZonedDateTime ZonedDateTime LocalDateTime]
+           [java.util Date]))
 
 (dotest
   (is (temporal? (ZonedDateTime/parse "2018-09-08T13:03:04.500Z")))
@@ -252,6 +254,32 @@
   (let [instant (.toInstant            #inst "2016-03-24T12:13:12.000-00:00")  ; java.util.Date
         zdt     (ZonedDateTime/parse         "2016-03-24T12:13:12.000-00:00")] ; String
     (is (zero? (.toMillis (Duration/between instant zdt))))))
+
+(dotest
+  (let [jud         (Date.)
+        ldt         (LocalDateTime/parse "2019-02-01T00:00:00")
+        zdt         (.atZone ldt (ZoneId/of "UTC"))
+        instant     (.toInstant zdt)
+        instant-str (.toString instant)
+        now         (ZonedDateTime/now)
+        ]
+    (spyx jud)
+
+    (spyxx ldt)
+    (spyx (.toString ldt))
+    (spyxx (.atZone ldt (ZoneId/of "UTC")))
+
+    (spyx zdt)
+    (spyx (.toString zdt))
+
+    (spyx instant)
+    (spyx instant-str)
+    (nl)
+    (spyx now)
+    ; (require [tupelo.java-time :as tjt])
+    (spyx (tjt/string-date-time-iso zdt))
+    )
+  )
 
 
 
