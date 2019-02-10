@@ -8,7 +8,7 @@
     [java.time DayOfWeek ZoneId ZonedDateTime Instant Period]
     [java.time.format DateTimeFormatter]
     [java.time.temporal TemporalAdjusters Temporal TemporalAmount]
-    [org.joda.time ReadableInstant] ))
+  ))
 
 (defn zoned-date-time?
   "Returns true iff arg is an instance of java.time.ZonedDateTime"
@@ -299,6 +299,26 @@
   [iso-datetime-str :- s/Str]
   (java.sql.Timestamp.
     (iso-str->millis iso-datetime-str)))
+
+(defn  java-sql-timestamp->java-time-instant
+  "Walks a tree-like data structure, converting any instances of java.sql.Timestamp => java.time.Instant"
+  [tree]
+  (walk/postwalk
+    (fn [item]
+      (if (= java.sql.Timestamp (type item))
+        (.toInstant item)
+        item))
+    tree))
+
+(defn stringify-instants
+  "Walks a tree-like data structure, calling `.toString` on any instances java.time.Instant"
+  [tree]
+  (walk/postwalk
+    (fn [item]
+      (if (= java.time.Instant (type item))
+        (.toString item)
+        item))
+    tree))
 
 ;-----------------------------------------------------------------------------
 (defn ^:deprecated iso-date-str
