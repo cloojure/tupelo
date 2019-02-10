@@ -300,7 +300,7 @@
   (java.sql.Timestamp.
     (iso-str->millis iso-datetime-str)))
 
-(defn  java-sql-timestamp->java-time-instant
+(defn  walk-timestamp->instant
   "Walks a tree-like data structure, converting any instances of java.sql.Timestamp => java.time.Instant"
   [tree]
   (walk/postwalk
@@ -310,7 +310,7 @@
         item))
     tree))
 
-(defn stringify-instants
+(defn walk-instant->str
   "Walks a tree-like data structure, calling `.toString` on any instances java.time.Instant"
   [tree]
   (walk/postwalk

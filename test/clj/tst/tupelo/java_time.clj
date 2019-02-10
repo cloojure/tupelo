@@ -292,9 +292,9 @@
       (is= ts-str     "2019-02-02 20:05:06.789") ; uses default TZ (US/Pacific in this example)
       (is= ts-str-gmt "3 Feb 2019 04:05:06 GMT") ; UGLY!
       (is= ts ts-from-str)
-      (is= (java-sql-timestamp->java-time-instant
+      (is= (walk-timestamp->instant
              [1 {:j-s-ts ts} 2 3]) [1 {:j-s-ts instant} 2 3])
-      (is= (stringify-instants [1 {:j-t-inst instant} 2 3]) [1 {:j-t-inst instant-str} 2 3]) )
+      (is= (walk-instant->str [1 {:j-t-inst instant} 2 3]) [1 {:j-t-inst instant-str} 2 3]))
 
       ) )
 
