@@ -7,20 +7,18 @@
 (ns tupelo.test
   "Testing functions."
   (:require
-     [clojure.test :as ct]
-     [clojure.test.check :as ctc]
      [tupelo.core :as t ]
      [tupelo.string :as tstr]
   ))
 
-(defn use-fixtures [& args] (apply ct/use-fixtures args))
-(defmacro testing [& forms] `(ct/testing ~@forms))
+(defn use-fixtures [& args] (apply clojure.test/use-fixtures args))
+(defmacro testing [& forms] `(clojure.test/testing ~@forms))
 
 (defn define-fixture-impl
   [ctx mode interceptor-map]
   (let [enter-fn (or (:enter interceptor-map) `identity)
         leave-fn (or (:leave interceptor-map) `identity) ]
-    `(ct/use-fixtures ~mode
+    `(clojure.test/use-fixtures ~mode
        (fn ~'fixture-fn [tgt-fn#] ; #todo
          (~enter-fn ~ctx)
          (tgt-fn#)
@@ -78,7 +76,7 @@
   (if (not= (count forms) 1)
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
       `(throw (ex-info (str "tupelo.test/is requires exactly 1 form " ~line-str))))
-    `(ct/is ~@forms)))
+    `(clojure.test/is ~@forms)))
 
 (defmacro isnt      ; #todo readme/test
   "Use (isnt ...) instead of (is (not ...)) for clojure.test"
@@ -86,7 +84,7 @@
   (if (not= (count forms) 1)
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
       `(throw (ex-info (str "tupelo.test/isnt requires exactly 1 form " ~line-str))))
-    `(ct/is (not ~@forms))))
+    `(clojure.test/is (not ~@forms))))
 
 (defmacro is=  ; #todo readme/test
   "Use (is= ...) instead of (is (= ...)) for clojure.test"
@@ -130,7 +128,7 @@
     ; symbol 1st arg => expected Throwable provided
     (do
       ; (println "symbol found")
-      `(ct/is
+      `(clojure.test/is
          (try
            ~@(rest forms)
            false    ; fail if no exception thrown
@@ -141,7 +139,7 @@
       )
     (do             ; expected Throwable not provided
       ; (println "symbol not found")
-      `(ct/is
+      `(clojure.test/is
          (try
            ~@forms
            false    ; fail if no exception thrown
@@ -207,10 +205,10 @@
     `(clojure.test.check.clojure-test/defspec ^:slow ~test-name-sym ~@body)))
 
 (defmacro check-is [& body] ; #todo README & tests
-  `(ct/is (t/grab :result (ctc/quick-check ~@body))))
+  `(clojure.test/is (t/grab :result (clojure.test.check/quick-check ~@body))))
 
 (defmacro check-isnt [& body] ; #todo README & tests
-  `(ct/is (not (t/grab :result (ctc/quick-check ~@body)))))
+  `(clojure.test/is (not (t/grab :result (clojure.test.check/quick-check ~@body)))))
 
 ; #todo: gen/elements -> clojure.check/rand-nth
 

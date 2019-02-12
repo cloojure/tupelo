@@ -1,6 +1,5 @@
 (ns tupelo.test-cljs ; this file defines macros
   (:require
-    #?(:cljs [cljs.test :as ct])
     [tupelo.string :as ts]
     ))
 
@@ -24,32 +23,32 @@
   (let [enter-fn (:enter interceptor-map) ; #todo grab
         leave-fn (:leave interceptor-map) ; #todo grab
         ctx      (meta &form)]
-    `(ct/use-fixtures ~mode
+    `(cljs.test/use-fixtures ~mode
        {:before #(~enter-fn ~ctx)
         :after  #(~leave-fn ~ctx)})))
 
-(defmacro deftest [& forms] `(ct/deftest ~@forms))
-(defmacro testing [& forms] `(ct/testing ~@forms))
-(defmacro is [& forms] `(ct/is ~@forms))
+(defmacro deftest [& forms] `(cljs.test/deftest ~@forms))
+(defmacro testing [& forms] `(cljs.test/testing ~@forms))
+(defmacro is [& forms] `(cljs.test/is ~@forms))
 
 (defmacro dotest [& body] ; #todo README & tests
   (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
-    `(ct/deftest ~test-name-sym ~@body)))
+    `(cljs.test/deftest ~test-name-sym ~@body)))
 
 (defmacro isnt      ; #todo readme/test
   "Use (isnt ...) instead of (is (not ...)) for clojure.test"
   [& body]
-  `(ct/is (not ~@body)))
+  `(cljs.test/is (not ~@body)))
 
 (defmacro is=       ; #todo readme/test
   "Use (is= ...) instead of (is (= ...)) for clojure.test"
   [& forms]
-  `(ct/is (= ~@forms)))
+  `(cljs.test/is (= ~@forms)))
 
 (defmacro isnt=     ; #todo readme/test
   "Use (isnt= ...) instead of (is (not= ...)) for clojure.test"
   [& body]
-  `(ct/is (not (= ~@body))))
+  `(cljs.test/is (not (= ~@body))))
 
 (defmacro set=  ; #todo readme/test
   "Converts each input collection to a set, then tests for equality."
@@ -80,7 +79,7 @@
       (throw (ex-info "Error - CLJS impl not allow specific exception type to be specified" (first forms))))
     (do             ; expected Throwable not provided
       ; (println "symbol not found")
-      `(ct/is
+      `(cljs.test/is
          (try
            ~@forms
            false    ; fail if no exception thrown

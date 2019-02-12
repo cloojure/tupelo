@@ -1,5 +1,7 @@
 (ns tupelo.data
-  (:use tupelo.core tupelo.test) )
+  #?(:clj
+     (:use tupelo.core tupelo.test))
+  )
 
 ; #todo be able to process this data & delete unwise users
 

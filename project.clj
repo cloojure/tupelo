@@ -21,8 +21,8 @@
     [org.clojure/spec.alpha "0.2.176"]
     [org.clojure/test.check "0.9.0"]
     [org.clojure/tools.reader "1.3.2"]
-    [prismatic/schema "1.1.9"]
-    [reagent-utils "0.3.1"]
+    [prismatic/schema "1.1.10"]
+    [reagent-utils "0.3.2"]
   ]
   :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]] 
             [lein-codox "0.10.5"]
@@ -31,9 +31,9 @@
             [com.jakemccrary/lein-test-refresh "0.23.0"]]
 
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
-                                       [org.clojure/clojurescript "1.10.439" :scope "provided"]]}
+                                       [org.clojure/clojurescript "1.10.516" :scope "provided"]]}
              :dev      {:dependencies [[binaryage/devtools "0.9.10"]
-                                       [binaryage/dirac "1.3.0"]
+                                       [binaryage/dirac "1.3.2"]
                                        [com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.4"]
                                        [org.clojure/clojure "1.10.0"] ]}

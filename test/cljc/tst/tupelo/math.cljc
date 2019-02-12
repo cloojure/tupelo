@@ -6,7 +6,6 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.math
   (:require
-    [clojure.string :as str]
     [tupelo.math :as math]
     #?@(:clj [[schema.core :as s]
               [tupelo.test :refer [define-fixture dotest dotest-focus is isnt is= isnt= set= nonblank= testing throws?]]
@@ -17,15 +16,15 @@
                [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
                ]))
   #?(:clj (:import [java.lang Byte Integer]))
-  )
+)
 
 #?(:cljs (enable-console-print!))
 
-(defn bigdec? [x] (decimal? x) )
-(defn bigint? [x] (= (type x)) )
-
 #?(:clj
    (do
+
+     (defn bigdec? [x] (decimal? x) )
+     (defn bigint? [x] (= (type x)) )
 
      (dotest
 

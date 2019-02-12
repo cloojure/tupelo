@@ -1,6 +1,7 @@
 (ns tupelo.math
-  (:use tupelo.core)
-  (:require [schema.core :as s]))
+  (:require
+    [tupelo.core :as t]
+    [schema.core :as s]))
 
 #?(:clj
    (do
