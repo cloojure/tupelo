@@ -1588,9 +1588,8 @@
   `(try-catchall ~@forms (catch e# ~default-val)))
 
 (defmacro with-result
-  "Evaluates body & returns its result.  In the event of an exception, default-val is returned
-   instead of the exception."
-  [result-val & forms] ; :default
+  "Evaluates `result-val`, then evaluates `forms` using `dorun` for their side-effects. Returns `result-val`."
+  [result-val & forms]
   `(let [result# ~result-val]
      (dorun ~@forms)
      result#))
