@@ -17,7 +17,6 @@
     [tupelo.core :as t :refer [grab thru kw->str validate it-> spyx spyxx vals->map]]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
-    [tupelo.types :as tt]
     #?@(:clj [[clj-uuid :as clj-uuid]
               [clojure.java.shell :as shell]])
     #?@(:cljs [[goog.crypt :as crypt]
@@ -26,9 +25,10 @@
   #?(:clj (:import
             [java.lang Byte Integer]
             [java.nio ByteBuffer]
+            [java.nio.file Paths]
             [java.security MessageDigest]
             [java.util UUID]
-            [java.nio.file Paths]))
+            ))
   )
 
 (s/defn factorial :- s/Int
