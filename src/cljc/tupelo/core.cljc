@@ -1587,6 +1587,14 @@
   [default-val & forms] ; :default
   `(try-catchall ~@forms (catch e# ~default-val)))
 
+(defmacro with-result
+  "Evaluates body & returns its result.  In the event of an exception, default-val is returned
+   instead of the exception."
+  [result-val & forms] ; :default
+  `(let [result# ~result-val]
+     (dorun ~@forms)
+     result#))
+
 (defn validate
   "(validate tst-fn tst-val)
   Used to validate intermediate results. Returns tst-val if the result of

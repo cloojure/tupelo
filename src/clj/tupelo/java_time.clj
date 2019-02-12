@@ -251,21 +251,22 @@
     trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/SATURDAY))))
 
-(defn string-date-iso
+(defn string-date-iso ; #todo maybe inst->iso-date
   "Returns a string like `2018-09-05`"
   [zdt]
   (.format zdt DateTimeFormatter/ISO_LOCAL_DATE))
 
-(defn string-date-time-iso
-  "Returns a ISO date-time string like `2018-09-05T23:05:19.123Z`"
-  [timestamp]
-  (str (->instant timestamp))) ; uses DateTimeFormatter/ISO_INSTANT
-
+; #todo rethink these and simplify/rename
 (defn string-date-compact
   "Returns a compact date-time string like `2018-09-05 23:05:19.123Z` => `20180905` "
   [timestamp]
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd")]
     (.format timestamp formatter)))
+
+(defn string-date-time-iso ; #todo maybe inst->iso-date-time
+  "Returns a ISO date-time string like `2018-09-05T23:05:19.123Z`"
+  [timestamp]
+  (str (->instant timestamp))) ; uses DateTimeFormatter/ISO_INSTANT
 
 (defn string-date-time-compact
   "Returns a compact date-time string like `2018-09-05 23:05:19.123Z` => `20180905-230519` "
@@ -307,6 +308,17 @@
     (fn [item]
       (if (= java.sql.Timestamp (type item))
         (.toInstant item)
+        item))
+    tree))
+
+(defn walk-instant->timestamp
+  "Walks a tree-like data structure, converting any instances of java.sql.Timestamp => java.time.Instant"
+  [tree]
+  (walk/postwalk
+    (fn [item]
+      (if (= java.time.Instant (type item))
+        (java.sql.Timestamp.
+          (.toEpochMilli item))
         item))
     tree))
 

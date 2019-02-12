@@ -273,8 +273,8 @@
     (let [result (ts/quotes->single (pr-str zdt))]
       (is (ts/contains-str? result "#object[java.time.ZonedDateTime"))
       (is (ts/contains-str? result "2019-02-03T04:05:06.789Z[UTC]")))
-    (is= instant-str     "2019-02-03T04:05:06.789Z")
-    (is= zdt-str         "2019-02-03T04:05:06.789Z")
+    (is= instant-str "2019-02-03T04:05:06.789Z")
+    (is= zdt-str "2019-02-03T04:05:06.789Z")
     (is= (.toString jud) "Sat Feb 02 20:05:06 PST 2019")
 
     (is= "2019-02-03T04:05:06.789Z" (string-date-time-iso zdt))
@@ -285,19 +285,17 @@
       (iso-str->millis instant-str)
       (iso-str->millis zdt-str))
 
-    (let [ts          (java.sql.Timestamp. millis)
-          ts-from-str (iso-str->timestamp iso-str)
-          ts-str      (.toString ts)
-          ts-str-gmt  (.toGMTString ts)]
-      (is= ts-str     "2019-02-02 20:05:06.789") ; uses default TZ (US/Pacific in this example)
-      (is= ts-str-gmt "3 Feb 2019 04:05:06 GMT") ; UGLY!
-      (is= ts ts-from-str)
-      (is= (walk-timestamp->instant
-             [1 {:j-s-ts ts} 2 3]) [1 {:j-s-ts instant} 2 3])
-      (is= (walk-instant->str [1 {:j-t-inst instant} 2 3]) [1 {:j-t-inst instant-str} 2 3]))
-
-      ) )
-
+    (let [timestamp          (java.sql.Timestamp. millis)
+          timestamp-from-str (iso-str->timestamp iso-str)
+          timestamp-str      (.toString timestamp)
+          timestamp-str-gmt  (.toGMTString timestamp)]
+      (is= timestamp-str "2019-02-02 20:05:06.789") ; uses default TZ (US/Pacific in this example)
+      (is= timestamp-str-gmt "3 Feb 2019 04:05:06 GMT") ; UGLY!
+      (is= timestamp timestamp-from-str)
+      (is= (walk-timestamp->instant [1 {:j-s-ts timestamp} 2 3]) [1 {:j-s-ts instant} 2 3])
+      (is= (walk-instant->str [1 {:j-t-inst instant} 2 3]) [1 {:j-t-inst instant-str} 2 3])
+      (is= (walk-instant->timestamp [1 {:j-s-ts instant} 2 3]) [1 {:j-s-ts timestamp} 2 3]))
+    ))
 
 
 

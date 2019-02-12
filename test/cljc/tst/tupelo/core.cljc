@@ -9,7 +9,7 @@
     [clojure.string :as str]
     [tupelo.string :as ts]
     #?@(:clj [
-              [tupelo.test :as ttst :refer [define-fixture deftest dotest is isnt is= isnt= set= nonblank= testing throws?]]
+              [tupelo.test :as ttst :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= set= nonblank= testing throws?]]
               [tupelo.core :as t :refer [spy spyx spyxx]]
               ])
     #?@(:cljs [
@@ -912,6 +912,12 @@
   (let [result (t/with-exception-default :some-val
             (throw (ex-info "some-big-error" {:answer 43})))]
     (is= result :some-val)))
+
+(dotest
+  (is= 42 (t/with-result 42
+            (with-out-str
+              (for [i (range 3)]
+                (println i))))))
 
 (dotest
   (let [map1  {:a 1 :b 2 :c 3 :d 4 :e 5}]
