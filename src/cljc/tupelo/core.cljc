@@ -1588,10 +1588,10 @@
   `(try-catchall ~@forms (catch e# ~default-val)))
 
 (defmacro with-result
-  "Evaluates `result-val`, then evaluates `forms` using `dorun` for their side-effects. Returns `result-val`."
-  [result-val & forms]
-  `(let [result# ~result-val]
-     (dorun ~@forms)
+  "Evaluates `result` and returns it; also evaluates `forms` for their side-effects."
+  [result & forms]
+  `(let [result# ~result]
+     (do ~@forms)
      result#))
 
 (defn validate
