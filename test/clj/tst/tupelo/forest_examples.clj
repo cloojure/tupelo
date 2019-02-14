@@ -1535,7 +1535,6 @@
       (is= before-value "676767; "))))
 
 ;-----------------------------------------------------------------------------
-
 (dotest
   (with-forest (new-forest)
     (let [data-hiccup      [:rpc
