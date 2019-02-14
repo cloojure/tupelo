@@ -1534,6 +1534,60 @@
       (is= before-node {:tupelo.forest/khids [], :tag :before_if, :value "676767; "})
       (is= before-value "676767; "))))
 
+;-----------------------------------------------------------------------------
+
+(dotest
+  (with-forest (new-forest)
+    (let [data-hiccup      [:rpc
+                            [:fn {:type :+}
+                             [:value 2]
+                             [:value 3]]]
+          root-hid         (add-tree-hiccup data-hiccup)
+
+          ;disp-interceptor {:leave (fn [path]
+          ;                           (let [curr-hid  (xlast path)
+          ;                                 curr-node (hid->node curr-hid)]
+          ;                             (spyx curr-node)))}
+          ;>>               (do
+          ;                   (nl) (println "-----------------------------------------------------------------------------")
+          ;                   (println "Display walk-tree processing:")
+          ;                   (walk-tree root-hid disp-interceptor))
+
+          op->fn           {:+ +
+                            :* *}
+          math-interceptor {:leave (fn [path]
+                                     (let [curr-hid  (xlast path)
+                                           curr-node (hid->node curr-hid)
+                                           curr-tag  (grab :tag curr-node)]
+                                       (when (= :fn curr-tag)
+                                         (let [curr-op    (grab :type curr-node)
+                                               curr-fn    (grab curr-op op->fn)
+                                               kid-hids   (hid->kids curr-hid)
+                                               kid-values (mapv #(grab :value (hid->node %))
+                                                            kid-hids)
+                                               result-val (apply curr-fn kid-values)]
+                                           (set-node curr-hid {:tag :value :value result-val} [])))))}]
+      (is= (hid->bush root-hid) [{:tag :rpc}
+                                 [{:type :+, :tag :fn}
+                                  [{:tag :value, :value 2}]
+                                  [{:tag :value, :value 3}]]])
+      (walk-tree root-hid math-interceptor)
+      (is= (hid->bush root-hid) [{:tag :rpc}
+                                 [{:tag :value, :value 5}]]))))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -24,6 +24,7 @@
 (def location                                     "Location")
 (def strict-transport-security                    "Strict-Transport-Security")
 (def text-html                                    "text/html")
+(def text-javascript                              "text/javascript")
 (def text-plain                                   "text/plain")
 (def x-content-type-options                       "X-Content-Type-Options")
 (def x-download-options                           "X-Download-Options")
