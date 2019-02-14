@@ -102,6 +102,7 @@
       `(throw (ex-info (str "tupelo.test/isnt= requires at least 2 forms " ~line-str))))
     `(isnt (= ~@forms))))
 
+; #todo => is-set=
 (defmacro set=  ; #todo readme/test
   "Converts each input collection to a set, then tests for equality."
   [& forms]
@@ -110,6 +111,7 @@
       `(throw (ex-info (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
     `(is= ~@(mapv #(list 'set %) forms))))
 
+; #todo => is-nonblank=
 ; #todo need test
 (defmacro nonblank=  ; #todo readme/test
   "Returns true if each input string is equal treating all whitespace as equivalent."
@@ -169,19 +171,20 @@
        (catch Throwable thr#
          false)))) ; if anything is thrown, test fails
 
-(defmacro deftest-focus ; #todo README & tests
-  "Like `deftest`, but invokes lein-test-refresh focus mode; i.e. applies metadata {:test-refresh/focus true}"
-  [& items]
-  (let [item-1 (clojure.core/first items)
-        suffix (str "-line-" (:line (meta &form)))
-        [label forms] (cond
-                        (symbol? item-1) [(symbol (str (clojure.core/name item-1) suffix)) (vec (clojure.core/rest items))]
-                        (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
-                        :else [(symbol (str "deftest-focus-block" suffix)) (vec items)])]
-    `(def ~(vary-meta label assoc
-             :test `(fn [] ~@forms)
-             :test-refresh/focus true)
-       (fn [] (clojure.test/test-var (var ~label))))))
+; #todo remove as unused
+;(defmacro deftest-focus ; #todo README & tests
+;  "Like `deftest`, but invokes lein-test-refresh focus mode; i.e. applies metadata {:test-refresh/focus true}"
+;  [& items]
+;  (let [item-1 (clojure.core/first items)
+;        suffix (str "-line-" (:line (meta &form)))
+;        [label forms] (cond
+;                        (symbol? item-1) [(symbol (str (clojure.core/name item-1) suffix)) (vec (clojure.core/rest items))]
+;                        (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
+;                        :else [(symbol (str "deftest-focus-block" suffix)) (vec items)])]
+;    `(def ~(vary-meta label assoc
+;             :test `(fn [] ~@forms)
+;             :test-refresh/focus true)
+;       (fn [] (clojure.test/test-var (var ~label))))))
 
 (defmacro dotest-focus ; #todo README & tests
   "Alias for tupelo.test/deftest-focus "

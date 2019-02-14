@@ -2124,6 +2124,24 @@
   [bindings & forms]
   (destruct-impl bindings forms))
 
+; #todo need a way to do
+;(let [ctx {:a {:b 2
+;               :c 3}}]
+;  (within-it ctx [:a :b]
+;    (inc it)))
+;
+;  => {:a {:b 3
+;          :c 3}}
+;
+;  (destruct [ctx {:a {:b it}}   ; long version
+;    (inc it)
+;    (restruct))
+;
+;  #todo automated restructuring (maybe simplest)
+;  (with-destruct [ctx {:a {:b ?}}
+;    (inc b))
+
+
 (defn restruct
   "within a `(destruct [<data> <shape>] ...) form, `(restruct)` or `(restruct <data>)` causes re-structuring
    & return of original data shape using current values."
