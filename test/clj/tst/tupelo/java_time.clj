@@ -125,6 +125,10 @@
   ))
 
 (dotest
+  (is (re-matches #"\d{4}-\d{2}-\d{2}T\d\d:\d\d:\d\d\.\d{6}Z" (now->iso-str)))
+  (is (re-matches #"\d{4}-\d{2}-\d{2} \d\d:\d\d:\d\dZ"        (now->iso-str-simple))))
+
+(dotest
   (is= [(zoned-date-time 2018 9 1)
         (zoned-date-time 2018 9 2)
         (zoned-date-time 2018 9 3)

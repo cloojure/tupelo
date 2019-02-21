@@ -3,11 +3,12 @@
   (:use tupelo.core)
   (:require
     [clojure.walk :as walk]
-    [schema.core :as s] )
+    [schema.core :as s]
+    [clojure.string :as str])
   (:import
     [java.time DayOfWeek ZoneId ZonedDateTime Instant Period]
     [java.time.format DateTimeFormatter]
-    [java.time.temporal TemporalAdjusters Temporal TemporalAmount]
+    [java.time.temporal TemporalAdjusters Temporal TemporalAmount ChronoUnit]
   ))
 
 (defn zoned-date-time?
@@ -255,6 +256,22 @@
   "Returns a string like `2018-09-05`"
   [zdt]
   (.format zdt DateTimeFormatter/ISO_LOCAL_DATE))
+
+(defn now->iso-str
+  "Returns an ISO string representation of the current time,
+  like '2019-02-19T18:44:01.123456Z' "
+  []
+  (-> (java.time.Instant/now)
+    (.toString)))
+
+(defn now->iso-str-simple
+  "Returns a canonical string representation of the current time truncated to the current second,
+  like '2019-02-19 18:44:01Z' "
+  []
+  (-> (java.time.Instant/now)
+    (.truncatedTo ChronoUnit/SECONDS)
+    (str/replace-first \T \space)
+    (.toString)))
 
 ; #todo rethink these and simplify/rename
 (defn string-date-compact
