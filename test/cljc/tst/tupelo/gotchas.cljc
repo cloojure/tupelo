@@ -206,6 +206,28 @@
   (is (every? odd? [])))
 
 #?(:clj
+   ; transducer surprises
+   (dotest
+     ; when use `comp` with normal functions, data flows leftward (result <-- fn <-- data)
+     (let [comp-fn        (comp #(mapv inc %) #(filter even? %))
+           result-comp-fn (comp-fn (range 10))]
+       (is= [1 3 5 7 9] result-comp-fn))
+
+     ; when use `comp` with transducers, data flows rightward (data --> txd --> result )
+     (let [xform            (comp (map inc) (filter even?))
+           result-comp-txd  (into [] xform (range 10))
+           result-transduce (transduce xform
+                              conj [] (range 10)) ; alternate syntax
+           ]
+       (is= [2 4 6 8 10] result-comp-txd result-transduce))
+
+     ; "dataflow" processing with thread-first macro is top->bottom (i.e. rightward)
+     (let [result-thread (->> (range 10)
+                           (map inc)
+                           (filter even?))]
+       (is= [2 4 6 8 10] result-thread))))
+
+#?(:clj
    (do              ; #todo make work for clj/cljs
 
      (t/when-clojure-1-9-plus

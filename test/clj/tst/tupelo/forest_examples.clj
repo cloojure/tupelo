@@ -1562,8 +1562,7 @@
                                          (let [curr-op    (grab :type curr-node)
                                                curr-fn    (grab curr-op op->fn)
                                                kid-hids   (hid->kids curr-hid)
-                                               kid-values (mapv #(grab :value (hid->node %))
-                                                            kid-hids)
+                                               kid-values (mapv hid->value kid-hids)
                                                result-val (apply curr-fn kid-values)]
                                            (set-node curr-hid {:tag :value :value result-val} [])))))}]
       (is= (hid->bush root-hid) [{:tag :rpc}

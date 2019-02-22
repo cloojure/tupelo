@@ -29,14 +29,14 @@
 ;--------------------------------------------------------------------------------------------------
 
 (dotest
-  (is (nil? (t/noop) ))
-  (is (nil? (t/noop 1) ))
-  (is (nil? (t/noop 1 2 3 4) ))
-  (let [the-answer (t/val->fn 42)]
-    (is= 42 (the-answer))
-    (is= 42 (the-answer 1))
-    (is= 42 (the-answer 1 2 3 4)))
-  )
+  (is (nil? (t/noop)))
+  (is (nil? (t/noop 1)))
+  (is (nil? (t/noop 1 2 3 4))))
+(dotest
+  (let [always-42-fn (t/const-fn 42)]
+    (is= 42 (always-42-fn))
+    (is= 42 (always-42-fn 1))
+    (is= 42 (always-42-fn 1 2 3 4))))
 
 (dotest
   (is (t/truthy? true))

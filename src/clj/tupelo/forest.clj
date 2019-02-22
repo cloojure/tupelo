@@ -389,6 +389,11 @@
    attr :- s/Keyword]
   (grab attr (hid->node hid)))
 
+(s/defn hid->value :- s/Any ; #todo remove OBE
+  "Given an HID, returns the :value attribute"
+  [hid :- HID]
+  (grab :value (hid->node hid)))
+
 (s/defn hid->kids :- [HID]
   "Returns the HIDs for a nodes children."
   [hid :- HID]

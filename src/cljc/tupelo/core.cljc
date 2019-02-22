@@ -216,8 +216,8 @@
 
 
 ;-----------------------------------------------------------------------------
-(defn val->fn
-  "Returns a function that accepts any number of args and always returns the specified value
+(defn const-fn       ; #todo or const-fn or always
+  "Returns a function that always returns the specified value, and accepts any number of args
   (synonym for `clojure.core/constantly`)."
   [val]
   (constantly val))
