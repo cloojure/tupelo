@@ -8,7 +8,8 @@
   (:require
     [clojure.string :as str]
     [tupelo.misc :as misc]
-    #?@(:clj [[schema.core :as s]
+    #?@(:clj [[clojure.test :as cljtst]
+              [schema.core :as s]
               [tupelo.test :refer [define-fixture dotest dotest-focus is isnt is= isnt= set= nonblank= testing throws?]]
               [tupelo.core :as t :refer [spy spyx spyxx it-> rel=]]
               [tupelo.string :as ts]
@@ -157,22 +158,32 @@
      (dotest
        (is (#{:windows :linux :mac} (misc/get-os))))
 
+     ;***************************************************************************************************
+     ; ***** WARNING!  These tests using BASH or ZSH will cause lein test-refresh to malfunction!
+     ; *****  we mark them as ^:slow to prevent test-refresh from attempting to run them
+     ;***************************************************************************************************
+     (cljtst/deftest ^:slow t-shell-cmd-165
+         (when (= :linux (misc/get-os))
+           (let [result (misc/shell-cmd "ls -ldF *")]
+             (when false ; set true -> debug print
+               (println "(:out result)")
+               (println (:out result)))
+             (is (= 0 (:exit result))))
+           (let [result (misc/shell-cmd "ls /bin/bash")]
+             (is (= 0 (:exit result)))
+             (is (= 1 (count (re-seq #"/bin/bash" (:out result))))))
+           (throws? RuntimeException (misc/shell-cmd "LLLls -ldF *"))))
+
      (dotest
        (when (= :linux (misc/get-os))
-         (let [result (misc/shell-cmd "ls -ldF *")]
-           (when false ; set true -> debug print
-             (println "(:out result)")
-             (println (:out result)))
-           (is (= 0 (:exit result))))
-         (let [result (misc/shell-cmd "ls /bin/bash")]
-           (is (= 0 (:exit result)))
-           (is (= 1 (count (re-seq #"/bin/bash" (:out result))))))
          (binding [misc/*os-shell* "/bin/sh"]
            (let [result (misc/shell-cmd "ls /bin/*sh")]
-             (is (= 0 (:exit result)))
-             (is (< 0 (count (re-seq #"/bin/bash" (:out result)))))))
-
-         (throws? RuntimeException (misc/shell-cmd "LLLls -ldF *"))))
+             (is= 0 (:exit result))
+             (is (pos? (count (re-seq #"/bin/bash" (:out result)))))))
+         (binding [misc/*os-shell* "/bin/tcsh"]
+           (let [result (misc/shell-cmd "ls /bin/*sh")]
+             (is= 0 (:exit result))
+             (is (pos? (count (re-seq #"/bin/bash" (:out result)))))))))
 
      (dotest
        (misc/dots-config! {:dots-per-row 10 :decimation 1})
