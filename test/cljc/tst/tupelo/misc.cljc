@@ -159,8 +159,8 @@
        (is (#{:windows :linux :mac} (misc/get-os))))
 
      ;***************************************************************************************************
-     ; ***** WARNING!  These tests using BASH or ZSH will cause lein test-refresh to malfunction!
-     ; *****  we mark them as ^:slow to prevent test-refresh from attempting to run them
+     ;***** WARNING!  These tests using BASH or ZSH will cause lein test-refresh to malfunction!
+     ;***** WARNING!  We mark them as ^:slow to prevent test-refresh from attempting to run them
      ;***************************************************************************************************
      (cljtst/deftest ^:slow t-shell-cmd-165
          (when (= :linux (misc/get-os))
