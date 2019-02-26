@@ -219,7 +219,7 @@
             leaf-hids-2  (keep-if leaf-hid? (all-hids))
             kw-leaf-hids (keep-if #(keyword? (grab :value (hid->node %))) leaf-hids-1) ; could keep only first one here
             leaves       (mapv hid->node kw-leaf-hids)]
-        (set= leaf-hids-1 leaf-hids-2)
+        (is-set= leaf-hids-1 leaf-hids-2)
         (is= leaves
           [{::tf/khids [], :tag :item, :value :a}
            {::tf/khids [], :tag :item, :value :b}])) )))
@@ -1091,7 +1091,7 @@
             [{:id "2.1", :tag :word, :value "beyond"}]
             [{:id "2.2", :tag :word, :value "all"}]
             [{:id "2.3", :tag :word, :value "recognition"}]]])
-        (set= sentences ["foo bar" "beyond all recognition"])))
+        (is-set= sentences ["foo bar" "beyond all recognition"])))
     (with-forest (new-forest)
       (let [enlive-tree-lazy (xml/parse (StringReader. xml-str))
             enlive-words     (filter-enlive-subtrees enlive-tree-lazy [:document :sentence :word])
@@ -1135,7 +1135,7 @@
              [{:id "2.1", :tag :word, :value "beyond"}]
              [{:id "2.2", :tag :word, :value "all"}]
              [{:id "2.3", :tag :word, :value "recognition"}]]]])
-        (set= result-sentences ["foo bar" "beyond all recognition"])))
+        (is-set= result-sentences ["foo bar" "beyond all recognition"])))
     (with-forest (new-forest)
       (let [enlive-tree-lazy (xml/parse (StringReader. xml-str))
             enlive-document  (only (filter-enlive-subtrees enlive-tree-lazy [:document]))

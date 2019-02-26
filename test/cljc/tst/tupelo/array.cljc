@@ -10,12 +10,12 @@
     [schema.test :as st]
     [tupelo.array :as tar]
     #?@(:clj [[schema.core :as s]
-              [tupelo.test :refer [define-fixture dotest dotest-focus is isnt is= isnt= set= nonblank= testing throws?]]
+              [tupelo.test :refer [define-fixture dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
               [tupelo.core :as t :refer [spy spyx spyxx forv]]
               [tupelo.string :as ts]
              ])
     #?@(:cljs [
-               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
                [tupelo.core :as t :refer [spy spyx spyxx forv] :include-macros true]
                [tupelo.string :as ts :include-macros true]
                [goog.crypt :as crypt]
@@ -88,7 +88,7 @@
             (swap! a34 tar/elem-set ii jj elem-val) ))))
     (let [arr-val @a34
           str-val (tar/array->str arr-val)]
-      (is (ts/equals-ignore-spacing? str-val
+      (is (ts/nonblank= str-val
             " 0    1    2    3    10   11   12   13    20   21   22   23")) )
 
     (is= (tar/row-get target 0) [00 01 02 03])

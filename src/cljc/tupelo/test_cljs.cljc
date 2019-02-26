@@ -50,7 +50,8 @@
   [& body]
   `(cljs.test/is (not (= ~@body))))
 
-(defmacro set=  ; #todo readme/test
+; #todo use t/set=
+(defmacro is-set=  ; #todo readme/test
   "Converts each input collection to a set, then tests for equality."
   [& forms]
   (if (<= (count forms) 1 )
@@ -58,14 +59,14 @@
       `(throw (ex-info  "tupelo.test-cljs/set= requires at least 2 forms " ~line-str)))
     `(is= ~@(mapv #(list 'set %) forms))))
 
-; #todo need test
-(defmacro nonblank= ; #todo readme/test
+; #todo use tstr/nonblank=
+(defmacro is-nonblank= ; #todo readme/test
   "Returns true if each input string is equal treating all whitespace as equivalent."
   [& forms]
   (if (<= (count forms) 1)
     (let [line-str (str "[source line=" (:line (meta &form)) "]")]
       `(throw (ex-info (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
-    `(is (ts/equals-ignore-spacing? ~@forms))))
+    `(is (ts/nonblank= ~@forms))))
 
 ; #?(:cljs (do ))
 

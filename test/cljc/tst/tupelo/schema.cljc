@@ -2,10 +2,10 @@
   (:require
     [schema.core :as s]
     [tupelo.schema :as tsk]
-    #?@(:clj [[tupelo.test :refer [define-fixture dotest dotest-focus is isnt is= isnt= set= nonblank= testing throws?]]
+    #?@(:clj [[tupelo.test :refer [define-fixture dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
               [tupelo.core :as t :refer [spy spyx spyxx]]
               ])
-    #?@(:cljs [[tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+    #?@(:cljs [[tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
                [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
                [tupelo.string :as ts :include-macros true]
                [goog.crypt :as crypt]

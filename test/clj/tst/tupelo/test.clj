@@ -33,15 +33,15 @@
 )
 
 (dotest
-  (throws? (set= [1]))
-  (set= [1] [1])
-  (set= [1 2] [2 1])
-  (set= [1 2 3 1 2 3] [2 1 3] [1 3 2] [3 2 1])
+  (throws? (is-set= [1]))
+  (is-set= [1] [1])
+  (is-set= [1 2] [2 1])
+  (is-set= [1 2 3 1 2 3] [2 1 3] [1 3 2] [3 2 1])
   ; (set= 1 2) ; must have colls as args ; (set 1) => exception
 
-  (throws? (nonblank= "abc")) ; must have at least 2 args
-  (nonblank= "abc" "abc"  )
-  (nonblank= "abc" " abc   "  )
-  (nonblank= "a   b  c" "a b c"  "  a b   c  ")
+  (throws? (is-nonblank= "abc")) ; must have at least 2 args
+  (is-nonblank= "abc" "abc"  )
+  (is-nonblank= "abc" " abc   "  )
+  (is-nonblank= "a   b  c" "a b c"  "  a b   c  ")
 )
 

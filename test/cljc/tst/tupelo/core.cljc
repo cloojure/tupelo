@@ -7,14 +7,14 @@
 (ns tst.tupelo.core
 
   #?(:clj (:require
-            [tupelo.test :as ttst :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= set= nonblank= testing throws?]]
+            [tupelo.test :as ttst :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
             [clojure.string :as str]
             [tupelo.core :as t :refer [spy spyx spyxx]]
             [tupelo.string :as ts]
             [tupelo.types :as types]
             ))
   #?(:cljs (:require
-             [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= set= nonblank= testing throws?]]
+             [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
              [clojure.string :as str]
              [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
              [tupelo.string :as ts :include-macros true]
@@ -197,7 +197,7 @@
                                   6 :six}]
                    :b #{1 2 3}
                    :c  [4 5 6]} " ]
-    (nonblank= result expected )))
+    (is-nonblank= result expected )))
 
 (dotest
   ; (spyx (s/check-fn t/truthy? ))
@@ -1642,6 +1642,13 @@
     (is (t/val= [1 2 3 #{1 2 sr1}] [1 2 3 #{1 2 {:a 1 :b 2}}])) ) )
 
 (dotest
+  (is (t/set= [1 2 3] [1 2 3]))
+  (is (t/set= [1 2 3] [3 2 1]))
+  (is-set= [1 2 3] [1 2 3])
+  (is-set= [1 2 3] [3 2 1])
+  )
+
+(dotest
   (testing "fibo stuff"
     (is= (take  0 (t/fibonacci-seq))  [] )
     (is= (take  5 (t/fibonacci-seq))  [0 1 1 2 3] )
@@ -1799,13 +1806,13 @@
     (set (t/unnest [:a :1 {[:b] 2 #{3} :c}]))
     (set (t/unnest [:a :1 {:b 2 :c 3}]))
     (set (t/unnest [:a :1 {:b {:c [2 3]}}])))
-  (set= #{ 1 2 3 4 5 6 } (t/unnest {1 {2 {3 {4 {5 6}}}}}))
+  (is-set= #{ 1 2 3 4 5 6 } (t/unnest {1 {2 {3 {4 {5 6}}}}}))
 
   (is= (set (range 10)) ; set
     (set (t/unnest #{0 1 2 3 4 5 6 7 8 9}))
     (set (t/unnest #{0 1 #{2 3 4 5 6 7 8} 9}))
     (set (t/unnest #{0 1 #{2 3 #{4 5 6} 7 8} 9})) )
-  (set= #{ 1 2 3 4 5 6 } (t/unnest #{1 #{2 #{3 #{4 #{5 #{6}}}}}})))
+  (is-set= #{ 1 2 3 4 5 6 } (t/unnest #{1 #{2 #{3 #{4 #{5 #{6}}}}}})))
 
 ;-----------------------------------------------------------------------------
 ; lazy-gen/yield tests

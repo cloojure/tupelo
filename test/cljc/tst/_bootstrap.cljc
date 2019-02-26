@@ -11,13 +11,13 @@
     [clojure.string :as str]
     #?@(:clj [
               [schema.core :as s]
-              [tupelo.test   :refer [define-fixture dotest is isnt is= isnt= nonblank= testing throws?]]
+              [tupelo.test   :refer [define-fixture dotest is isnt is= isnt= is-nonblank= testing throws?]]
               [tupelo.core :as i]
               [tupelo.string :as ts]
               ])
     #?@(:cljs [
                [schema.core :as s]
-               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= nonblank= testing throws?]]
+               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-nonblank= testing throws?]]
                [tupelo.core :as i :include-macros true]
                [tupelo.string :as ts :include-macros true]
                ])

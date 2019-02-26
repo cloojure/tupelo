@@ -11,11 +11,11 @@
     [clojure.string :as str]
     [tupelo.char :as char]
     #?@(:clj [[tupelo.core :as t :refer [spy spyx spyxx]]
-              [tupelo.test :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+              [tupelo.test :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
               [tupelo.string :as ts]
              ])
     #?@(:cljs [[tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
-               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
                [tupelo.string :as ts :include-macros true]
               ])))
 
@@ -73,7 +73,7 @@
                    ["one two three four five six seven eight nine ten"
                     "one two three four five six seven eight nine ten"
                     "one two three four five six seven eight nine ten"])]
-    (is (ts/equals-ignore-spacing? (ts/clip-text 30 text-blk)
+    (is (ts/nonblank= (ts/clip-text 30 text-blk)
           (str/join \newline ["one two three four five six se"
                               "one two three four five six se"
                               "one two three four five six se"])))))
@@ -155,11 +155,14 @@
         (ts/collapse-whitespace "  abc    def			g
                                      hij kl	 " ))))
 (dotest
-  (is (ts/equals-ignore-spacing? "a" ))
-  (is (ts/equals-ignore-spacing? "a" "  a "))
-  (is (ts/equals-ignore-spacing? "a" "  a  " "   a" "a   "))
+  (is (ts/nonblank= "a"))
+  (is (ts/nonblank= "a" "  a "))
+  (is (ts/nonblank= "a" "  a  " "   a" "a   "))
 
-  (is (ts/equals-ignore-spacing? "
+  (is-nonblank= "a" "  a ")
+  (is-nonblank= "a" "  a  " "   a" "a   ")
+
+  (is (ts/nonblank= "
         Whenever you find yourself on the side of the majority, it is time to pause and reflect.
         Don't go around saying the world owes you a living. The world owes you nothing. It was here first.
         I have never let my schooling interfere with my education.
@@ -331,14 +334,14 @@
   (let [search-str "Hello there, you.
                         How are you
                            doing today?"]
-    (is (ts/equals-ignore-spacing? (ts/grep #"hello" search-str) ""))
-    (is (ts/equals-ignore-spacing? (ts/grep #"Hello" search-str) "Hello there, you."))
-    (is (ts/equals-ignore-spacing? (ts/grep #"(?i)hello" search-str) "Hello there, you."))
-    (is (ts/equals-ignore-spacing? (ts/grep #"you" search-str)
+    (is (ts/nonblank= (ts/grep #"hello" search-str) ""))
+    (is (ts/nonblank= (ts/grep #"Hello" search-str) "Hello there, you."))
+    (is (ts/nonblank= (ts/grep #"(?i)hello" search-str) "Hello there, you."))
+    (is (ts/nonblank= (ts/grep #"you" search-str)
           "Hello there, you.
            How are you"))
-    (is (ts/equals-ignore-spacing? (ts/grep #"today." search-str) "doing today?"))
-    (is (ts/equals-ignore-spacing? (ts/fgrep "today." search-str) ""))))
+    (is (ts/nonblank= (ts/grep #"today." search-str) "doing today?"))
+    (is (ts/nonblank= (ts/fgrep "today." search-str) ""))))
 
 (dotest
   (is   (ts/alphanumeric? \a))

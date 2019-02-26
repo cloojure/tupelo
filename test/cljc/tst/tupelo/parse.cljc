@@ -12,14 +12,14 @@
             [tupelo.core :as t :refer [spy spyx spyxx]]
             [tupelo.parse :as tpar]
             [tupelo.string :as ts]
-            [tupelo.test :as ttst :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= set= nonblank= testing throws?]]) )
+            [tupelo.test :as ttst :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]) )
   #?(:cljs (:require
              [clojure.string :as str]
              [schema.core :as s]
              [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
              [tupelo.parse :as tpar]
              [tupelo.string :as ts :include-macros true]
-             [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= set= nonblank= testing throws?]]
+             [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
            ))
 )
 

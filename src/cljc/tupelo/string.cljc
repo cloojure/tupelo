@@ -91,12 +91,17 @@
   [it]
   (not (str/blank? it)))
 
-(s/defn equals-ignore-spacing? :- s/Bool  ; #todo readme & blog
+(s/defn nonblank= :- s/Bool  ; #todo readme & blog
   "Compares arguments for equality using tupelo.misc/collapse-whitespace.
    Equivalent to separating tokens by whitespace and comparing the resulting sequences."
   [& args :- [s/Str]]
   (let [ws-collapsed-args (mapv collapse-whitespace args)]
     (apply = ws-collapsed-args)))
+
+(defn ^:deprecated equals-ignore-spacing?
+  "Renamed => `nonblank=` "
+  [& args]
+  (apply nonblank= args))
 
 (comment ; #todo finish & use in Lumanu
   (s/defn equals-ignore-spacing-seq? :- s/Bool ; #todo readme & blog
@@ -270,7 +275,7 @@
    text :- s/Str]
   (let [lines  (str/split-lines text)
         result (t/keep-if #(contains-str? % tgt) lines)]
-    (str/join result)))
+    (str/join \newline result)))
 
 #?(:clj
    (s/defn string->stream :- InputStream

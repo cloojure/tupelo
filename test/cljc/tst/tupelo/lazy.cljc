@@ -11,13 +11,13 @@
     [tupelo.lazy :as lazy]
     #?@(:clj [
               [schema.core :as s]
-              [tupelo.test :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+              [tupelo.test :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
               [tupelo.core :as t :refer [spy spyx spyxx]]
               [tupelo.schema :as tsk]
               [tupelo.string :as ts] ])
     #?@(:cljs [
                [schema.core :as s]
-               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
                [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
                [tupelo.schema :as tsk]
                [tupelo.string :as ts :include-macros true] ])

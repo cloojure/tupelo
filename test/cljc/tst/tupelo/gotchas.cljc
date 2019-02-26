@@ -10,10 +10,10 @@
     [tupelo.string :as ts]
     #?@(:clj [[clojure.test.check.generators :as gen]
               [clojure.test.check.properties :as prop]
-              [tupelo.test :as tt :refer [define-fixture dotest dotest-focus is isnt is= isnt= set= nonblank= testing throws? ]]
+              [tupelo.test :as tt :refer [define-fixture dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws? ]]
               [tupelo.core :as t :refer [spy spyx spyxx]]
               ])
-    #?@(:cljs [[tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]]
+    #?@(:cljs [[tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
                [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
                [tupelo.string :as ts :include-macros true]
                ])))

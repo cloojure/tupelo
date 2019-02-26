@@ -9,7 +9,7 @@
   (:require
     [tupelo.cljs.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
-    [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= set= nonblank= testing throws?]] ))
+    [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]))
 
 (dotest
   (is= (misc/grouper #"[a-z0-9][A-Z]" "aTaTa")

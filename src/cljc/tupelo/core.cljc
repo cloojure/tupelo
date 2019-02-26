@@ -887,6 +887,17 @@
       (print \space)
       (pr it))))
 
+(s/defn indent-lines-with :- s/Str  ; #todo add readme ;  need test
+  "Splits out each line of txt using clojure.string/split-lines, then
+  indents each line by prepending it with the supplied string. Joins lines together into
+  a single string result, with each line terminated by a single \newline."
+  [indent-str :- s/Str
+   txt  :- s/Str]
+  (str/join
+    (interpose \newline
+      (for [line (str/split-lines txt)]
+        (str indent-str line)))))
+
 ;-----------------------------------------------------------------------------
 ; spy stuff
 
@@ -1084,6 +1095,17 @@
      (do ~@forms)
      (finally ; ensure we un-do indentation in event of exception
        (spy-indent-dec))))
+
+(defmacro with-debug-tag ; #todo => tupelo.core ???
+  [debug-tag & forms]
+  `(with-spy-indent
+     (let [tag-enter# ~(str debug-tag "-enter")
+           tag-leave# ~(str debug-tag "-leave")]
+       (try
+         (println (indent-lines-with (spy-indent-spaces) tag-enter#))
+         ~@forms
+         (finally
+           (println (indent-lines-with (spy-indent-spaces) tag-leave#)))))))
 
 (defmacro let-spy
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
@@ -1801,17 +1823,6 @@
     [elem]
     (drop (inc index) coll)))
 
-(s/defn indent-lines-with :- s/Str  ; #todo add readme ;  need test
-  "Splits out each line of txt using clojure.string/split-lines, then
-  indents each line by prepending it with the supplied string. Joins lines together into
-  a single string result, with each line terminated by a single \newline."
-  [indent-str :- s/Str
-   txt  :- s/Str]
-  (str/join
-    (interpose \newline
-      (for [line (str/split-lines txt)]
-        (str indent-str line)))))
-
 ; #todo use (idx    coll int-or-kw) as `get` replacement?
 ; #todo use (idx-in coll [kw's]) as `fetch-in` replacement?
 ; #todo allow (idx coll [low high]) like python xx( low:high )
@@ -1955,6 +1966,13 @@
         mapified (mapv #(walk/postwalk mapify %) vals)
         result   (apply = mapified)]
     result))
+
+
+(s/defn set= :- s/Bool
+  "Returns true if the collections are equal when converted to sets."
+  [& colls]
+  (apply = (mapv set colls)))
+
 
 (s/defn sequential->idx-map :- {s/Any s/Any} ; #todo move
   [data :- [s/Any]]
