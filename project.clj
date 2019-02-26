@@ -28,7 +28,7 @@
     [reagent-utils "0.3.2"]
   ]
   :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]] 
-            [lein-codox "0.10.5"]
+            [lein-codox "0.10.6"]
             [lein-doo "0.1.10"]
             [lein-figwheel "0.5.17"]
             [com.jakemccrary/lein-test-refresh "0.23.0"]]
