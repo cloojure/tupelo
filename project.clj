@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.131"
+(defproject tupelo "0.9.132"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
@@ -6,7 +6,7 @@
   :min-lein-version "2.7.1"
 
   :dependencies [
-    [binaryage/oops "0.6.4"]
+    [binaryage/oops "0.7.0"]
     [cheshire "5.8.1"]
     [clj-time "0.15.1"]
     [clojure-csv/clojure-csv "2.0.2"]
