@@ -8,9 +8,14 @@
   "Tupelo - Making Clojure even sweeter"
   (:require
     [clojure.set :as set]
+    [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t]
-    [tupelo.schema :as tsk] ))
+    [tupelo.schema :as tsk]
+    #?(:cljs
+       [goog.string :as gstring]
+      )
+    ))
 
 ;-----------------------------------------------------------------------------
 (def code-point-backspace 8)
@@ -79,4 +84,31 @@
 (defn alpha? [ch] (contains? alpha ch))
 (defn visible? [ch] (contains? visible ch))
 (defn text? [ch] (contains? text ch))
+
+#?(:cljs
+   (do
+
+     ;-----------------------------------------------------------------------------
+     (def char-nbsp (gstring/unescapeEntities "&nbsp;")) ; get a char we can use in hiccup
+     ;-----------------------------------------------------------------------------
+     (defn nbsp
+       "Return a string of N non-breaking-space (NBSP) chars (default=1)."
+       ([] (nbsp 1))
+       ([N] (str/join (repeat N char-nbsp))))
+
+     ))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

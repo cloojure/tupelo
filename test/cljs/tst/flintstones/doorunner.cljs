@@ -18,10 +18,12 @@
     [tst.flintstones.bambam]
 
     [tst.tupelo.array]
+;   [tst.tupelo.char]  ; #todo need tests
     [tst.tupelo.core]
     [tst.tupelo.gotchas]
     [tst.tupelo.lazy]
     [tst.tupelo.misc]
+    [tst.tupelo.parse]
     [tst.tupelo.schema]
     [tst.tupelo.set]
     [tst.tupelo.string]
@@ -44,10 +46,12 @@
   'tst.flintstones.bambam
 
   'tst.tupelo.array
+; 'tst.tupelo.char  ; #todo need tests
   'tst.tupelo.core
   'tst.tupelo.gotchas
   'tst.tupelo.lazy
   'tst.tupelo.misc
+  'tst.tupelo.parse
   'tst.tupelo.schema
   'tst.tupelo.set
   'tst.tupelo.string
