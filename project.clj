@@ -29,8 +29,8 @@
   ]
   :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]] 
             [lein-codox "0.10.6"]
-            [lein-doo "0.1.10"]
-            [lein-figwheel "0.5.17"]
+            [lein-doo "0.1.11"]
+            [lein-figwheel "0.5.18"]
             [com.jakemccrary/lein-test-refresh "0.23.0"]]
 
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
