@@ -96,6 +96,12 @@
        ([] (nbsp 1))
        ([N] (str/join (repeat N char-nbsp))))
 
+     ; #todo => tupelo.cljs.key-value-string ???
+     (def kvs-enter "Enter")
+     (def kvs-tab "Tab")
+     (def kvs-escape "Escape")
+
+
      ))
 
 

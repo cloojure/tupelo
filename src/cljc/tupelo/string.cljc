@@ -314,6 +314,30 @@
     base-str
     (t/glue base-str \s)))
 
+(defn str-keep-left ; #todo test
+  "Keeps the N left-most chars of a string"
+  [str-val n]
+  (str/join (take n (t/str->chars str-val))))
+
+(defn str-keep-right ; #todo test
+  "Keeps the N right-most chars of a string"
+  [str-val n]
+  (str/join (take-last n (t/str->chars str-val))))
+
+#?(:cljs
+   (do
+     (defn char->code-point ; #todo test
+       "REturns the code-point of a character (len=1 string)"
+       [char-val]
+       (t/validate #(= 1 (count %)) char-val)
+       (.codePointAt char-val 0))
+
+     (s/defn code-point->char ; #todo => test
+       "REturns the code-point of a character (len=1 string)"
+       [code-point :- s/Int]
+       (.fromCodePoint js/String code-point))
+
+     ))
 
 
 

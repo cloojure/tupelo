@@ -139,7 +139,8 @@
        (throws? (tpar/parse-int ""))
        (throws? (tpar/parse-int "05"))
        (throws? (tpar/parse-int "123xxx"))
-       (throws? (tpar/parse-int "12xxx3"))
+       (throws? (tpar/parse-int "12x3"))
+       (throws? (tpar/parse-int "12.3"))
        (throws? (tpar/parse-int "xxx123")))
 
      (dotest
@@ -154,7 +155,7 @@
        (throws? (tpar/parse-float ""))
        (throws? (tpar/parse-float "xxx1.23"))
        (throws? (tpar/parse-float "1.23xxx"))
-       (throws? (tpar/parse-float "1.2xxx3")))
+       (throws? (tpar/parse-float "1.2xx34")))
 
      ))
 

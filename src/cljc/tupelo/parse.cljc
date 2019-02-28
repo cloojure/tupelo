@@ -152,7 +152,6 @@
        "Nominal regex for signed/unsigned floating-point numbers (possibly in scientific notation)"
        #"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?")
 
-     ; #todo protect with a regex to make more like java
      (s/defn parse-int     :- s/Int ; #todo => tupelo.cljs.parse
        "( [str-val]
           [str-val :default default-val] )
@@ -160,30 +159,29 @@
         If the optional default-val is specified, it will be returned in the event of an
         Nan."
        ([str-val :- s/Str]
-         (let [str-trim (str/trim str-val)]
-           (when (re-matches regex-int str-trim)
-             (let [int-result (js/parseInt str-trim)]
-               (when (js/isNaN int-result) ;{:str-val str-val}
-                 (throw (ex-info "parse-int: could not parse input value" (t/vals->map str-val))))
-               int-result))))
+         (t/cond-it-> (str/trim str-val)
+           (not (re-matches regex-int it)) (throw (ex-info "parse-int: could not parse input value #1"
+                                                    (t/vals->map str-val)))
+           true (js/parseInt it)
+           (js/isNaN it) (throw (ex-info "parse-int: could not parse input value #2"
+                                  (t/vals->map str-val))) ))
        ([str-val default-val]
          (t/with-exception-default default-val
            (parse-int str-val))))
 
-     ; #todo protect with a regex to make more like java
-     (s/defn parse-float :- s/Num ; #todo => tupelo.cljs.parse
+     (s/defn parse-float :- s/Num
        "( [str-val]
           [str-val :default default-val] )
         A thin wrapper around js/parseFloat.  Parses the string str-val into a float.
         If the optional default-val is specified, it will be returned in the event of an
         NaN."
        ([str-val :- s/Str]
-         (let [str-trim (str/trim str-val)]
-           (when (re-matches regex-float str-trim)
-             (let [float-result (js/parseFloat str-trim)]
-               (when (js/isNaN float-result) ;{:str-val str-val}
-                 (throw (ex-info "parse-float: could not parse input value" (t/vals->map str-val))))
-               float-result))))
+         (t/cond-it-> (str/trim str-val)
+           (not (re-matches regex-float it)) (throw (ex-info "parse-float: could not parse input value #1"
+                                                      (t/vals->map str-val)))
+           true (js/parseFloat it)
+           (js/isNaN it) (throw (ex-info "parse-float: could not parse input value #2"
+                                  (t/vals->map str-val)))))
        ([str-val default-val]
          (t/with-exception-default default-val
            (parse-float str-val))))
