@@ -10,9 +10,9 @@
   (:use tupelo.core)
   (:require
     [clojure.core.async :as async]
+    [clojure.data.xml :as clj-xml]
     [clojure.set :as set]
     [net.cgrand.tagsoup :as enlive-tagsoup]
-    [net.cgrand.xml :as enlive-xml]
     [schema.core :as s]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts] ))
@@ -577,7 +577,7 @@
         bush-node (prepend (dissoc tree-node ::kids) bush-kids)]
      bush-node))
 
-(s/defn enlive->bush :- tsk/Vec ; #todo add test
+(s/defn enlive->bush :- tsk/Vec ; #todo add tes
   "Converts an Enlive-format data structure to a Bush. "
   [arg :- tsk/KeyMap]
   (-> arg enlive->tree tree->bush))
@@ -596,10 +596,8 @@
 
 (s/defn xml->enlive :- tsk/KeyMap ; #todo need tree->xml  ???
   [xml-str :- s/Str]
-  (->> xml-str
-    ts/string->stream
-    enlive-xml/parse
-    only))
+  (clj-xml/parse
+    (ts/string->stream xml-str)))
 
 (s/defn hiccup->tree :- tsk/KeyMap
   "Converts a Hiccup-format data structure to a Tree."

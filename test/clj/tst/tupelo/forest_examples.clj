@@ -7,6 +7,7 @@
 (ns tst.tupelo.forest-examples
   (:use tupelo.core tupelo.forest tupelo.test)
   (:require
+    [clojure.java.io :as io]
     [clojure.set :as cs]
     [clojure.string :as str]
     [schema.core :as s]
@@ -16,10 +17,9 @@
     [clojure.data.xml :as xml]
     [clojure.java.io :as io]
     [net.cgrand.tagsoup :as enlive-tagsoup]
-   ;[tupelo.misc :as tm :refer [HID]]
+   ;[net.cgrand.xml :as enlive-xml]
     [tupelo.core :as t])
   (:import [java.io StringReader]))
-
 
 (dotest
   (hid-count-reset)
@@ -475,12 +475,12 @@
           root-hid    (add-tree-enlive enlive-tree)
           leaf-hids   (keep-if leaf-hid? (find-hids root-hid [:** :*]))
           leaf-values (mapv #(grab :value (hid->node %)) leaf-hids)
-          result      (apply glue leaf-values)]
-      (is= enlive-tree
-        (quote {:tag   :p,
-                :attrs nil,
-                :content
-                       ("sample " {:tag :em, :attrs nil, :content ("text")} " with words.")}))
+          result      (apply glue leaf-values) ]
+      (is= enlive-tree {:tag   :p,
+                        :attrs {},
+                        :content
+                               ["sample " {:tag :em, :attrs {}, :content ["text"]} " with words."]})
+
       (is= (hid->tree root-hid)
         {:tag      :p,
          ::tf/kids [{:tag ::tf/raw, :value "sample " ::tf/kids []}
@@ -1572,6 +1572,8 @@
       (walk-tree root-hid math-interceptor)
       (is= (hid->bush root-hid) [{:tag :rpc}
                                  [{:tag :value, :value 5}]]))))
+
+;-----------------------------------------------------------------------------
 
 
 
