@@ -12,7 +12,7 @@
     [clojure.core.async :as async]
     [clojure.data.xml :as clj-xml]
     [clojure.set :as set]
-    [net.cgrand.tagsoup :as enlive-tagsoup]
+    [tupelo.forest.tagsoup :as tagsoup]
     [schema.core :as s]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts] ))
@@ -591,7 +591,7 @@
   [html-str :- s/Str]
   (->> html-str
     ts/string->stream
-    enlive-tagsoup/parser
+    tagsoup/parser
     only))
 
 (s/defn xml->enlive :- tsk/KeyMap ; #todo need tree->xml  ???

@@ -7,18 +7,17 @@
 (ns tst.tupelo.forest-examples
   (:use tupelo.core tupelo.forest tupelo.test)
   (:require
+    [clojure.data.xml :as xml]
+    [clojure.java.io :as io]
     [clojure.java.io :as io]
     [clojure.set :as cs]
     [clojure.string :as str]
     [schema.core :as s]
+    [tupelo.core :as t]
     [tupelo.forest :as tf]
-    [tupelo.string :as ts]
+    [tupelo.forest.tagsoup :as tagsoup]
     [tupelo.schema :as tsk]
-    [clojure.data.xml :as xml]
-    [clojure.java.io :as io]
-    [net.cgrand.tagsoup :as enlive-tagsoup]
-   ;[net.cgrand.xml :as enlive-xml]
-    [tupelo.core :as t])
+    [tupelo.string :as ts] )
   (:import [java.io StringReader]))
 
 (dotest
@@ -1158,7 +1157,7 @@
   (it-> "xkcd-sample.html"
     (io/resource it)
     (io/input-stream it)
-    (enlive-tagsoup/parser it)
+    (tagsoup/parser it)
     (drop-if #(= :dtd (:type %)) it)
     (only it)))
 

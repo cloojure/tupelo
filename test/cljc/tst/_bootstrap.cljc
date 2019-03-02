@@ -12,13 +12,13 @@
     #?@(:clj [
               [schema.core :as s]
               [tupelo.test   :refer [define-fixture dotest is isnt is= isnt= is-nonblank= testing throws?]]
-              [tupelo.core :as i]
+              [tupelo.core :as t]
               [tupelo.string :as ts]
               ])
     #?@(:cljs [
                [schema.core :as s]
                [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-nonblank= testing throws?]]
-               [tupelo.core :as i :include-macros true]
+               [tupelo.core :as t :include-macros true]
                [tupelo.string :as ts :include-macros true]
                ])
   ))
@@ -32,6 +32,6 @@
 ; (set! *warn-on-reflection* true)  ; #todo enable?
 
 (dotest
-  (i/print-versions)
+  (t/print-versions)
   ;(spyx (s/fn-validation?))
   )
