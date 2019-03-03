@@ -1,10 +1,19 @@
 ; adapted from:  net.cgrand.tagsoup
 ;   Copyright (c) Christophe Grand, 2009-2013. All rights reserved.
+;
+;   The use and distribution terms for this software are covered by the
+;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;   which can be found in the file epl-v10.html at the root of this distribution.
+;   By using this software in any fashion, you are agreeing to be bound by
+;   the terms of this license.
+;   You must not remove this notice, or any other, from this software.
+
 (ns tupelo.forest.tagsoup
   (:require
     [tupelo.forest.xml :as xml] ) )
 
-(defn- wrapped-tagsoup-parser [input-source content-handler]
+(defn- tagsoup-parser-invoker
+  [input-source content-handler]
   (doto (org.ccil.cowan.tagsoup.Parser.)
     (.setFeature "http://www.ccil.org/~cowan/tagsoup/features/default-attributes" false)
     (.setFeature "http://www.ccil.org/~cowan/tagsoup/features/cdata-elements" true)
@@ -24,4 +33,4 @@
     (throw (NullPointerException. "HTML resource not found.")))
   (filter map?
     (with-open [^java.io.Closeable stream stream]
-      (xml/parse (org.xml.sax.InputSource. stream) wrapped-tagsoup-parser))))
+      (xml/parse (org.xml.sax.InputSource. stream) tagsoup-parser-invoker))))

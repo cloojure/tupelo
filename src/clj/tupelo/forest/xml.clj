@@ -1,5 +1,13 @@
 ; adapted from:  net.cgrand.xml
 ;   Copyright (c) Christophe Grand, 2009-2013. All rights reserved.
+;
+;   The use and distribution terms for this software are covered by the
+;   Eclipse Public License 1.0 (http://opensource.org/licenses/eclipse-1.0.php)
+;   which can be found in the file epl-v10.html at the root of this distribution.
+;   By using this software in any fashion, you are agreeing to be bound by
+;   the terms of this license.
+;   You must not remove this notice, or any other, from this software.
+
 (ns tupelo.forest.xml
   (:use tupelo.core)
   (:require [clojure.zip :as z])
@@ -74,7 +82,7 @@
        (let [^DefaultHandler2 this this]
          (proxy-super resolveEntity publicId systemId))))))
 
-(defn parser-sax
+(defn sax-parser-invoker
   [input-source content-handler]
   (-> (SAXParserFactory/newInstance)
     (doto
@@ -97,7 +105,7 @@
   parser, a fn taking a source and a ContentHandler and returning
   a parser"
   ([input-source]
-    (parse input-source parser-sax))
+    (parse input-source sax-parser-invoker))
   ([input-source parser]
    (let [loc             (atom (-> {:type :document :content nil} xml-zip))
          metadata        (atom {})

@@ -2,14 +2,13 @@
   (:refer-clojure :exclude [range])
   (:use tupelo.core)
   (:require
+    [clojure.string :as str]
     [clojure.walk :as walk]
-    [schema.core :as s]
-    [clojure.string :as str])
+    [schema.core :as s] )
   (:import
     [java.time DayOfWeek ZoneId ZonedDateTime Instant Period]
     [java.time.format DateTimeFormatter]
-    [java.time.temporal TemporalAdjusters Temporal TemporalAmount ChronoUnit]
-  ))
+    [java.time.temporal TemporalAdjusters Temporal TemporalAmount ChronoUnit] ))
 
 (defn zoned-date-time?
   "Returns true iff arg is an instance of java.time.ZonedDateTime"
@@ -367,7 +366,6 @@
     #(if (fixed-time-point? %) (iso-date-time-str %) %)
     form))
 
-
 (defn range
   "Returns a vector of instants in the half-open interval [start stop) (both instants)
   with increment <step> (a period). Not lazy.  Example:
@@ -386,7 +384,6 @@
       (recur (conj result curr-inst)
         (.plus curr-inst step-dur))
       result)))
-
 
 (defn interval
   "Returns a map representing an interval in time. Usage:
@@ -418,4 +415,3 @@
       (= interval-type :open)           within-open-interval
       (= interval-type :half-open)  (or within-open-interval (.equals instant lb))
       (= interval-type :closed)     (or within-open-interval (.equals instant lb) (.equals instant ub)))))
-

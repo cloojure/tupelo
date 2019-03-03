@@ -1162,7 +1162,7 @@
     (only it)
     ))
 
-(dotest-focus
+(dotest             ; -focus
   (when false       ; manually enable to grab a new copy of the webpage
     (spit "xkcd-sample.html"
       (slurp "https://xkcd.com")))

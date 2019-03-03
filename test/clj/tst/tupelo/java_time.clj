@@ -6,9 +6,8 @@
     [clojure.string :as str]
     [tupelo.string :as ts]
     )
-  (:import [java.time Duration ZoneId ZoneId ZonedDateTime ZonedDateTime LocalDateTime Instant]
-           [java.util Date]
-           [java.sql Timestamp]))
+  (:import [java.time Duration ZoneId ZoneId ZonedDateTime ZonedDateTime LocalDateTime Instant Period]
+           [java.util Date] ))
 
 (dotest
   (is (temporal? (ZonedDateTime/parse "2018-09-08T13:03:04.500Z")))
@@ -19,27 +18,24 @@
   (is (fixed-time-point? (->instant (zoned-date-time 2018 9 1))))
   (is (fixed-time-point? (joda/date-time 2018 9 1)))
 
+  (is (period? (Period/ofDays 3)))
+  (is (period? (Period/ofWeeks 3)))
+  (is (period? (Period/ofMonths 3)))
+  (is (period? (Period/ofYears 3)))
+
   (is= {:zdt     "2018-09-01T00:00:00Z",
         :instant "2018-09-01T00:00:00Z",
         :joda-dt "2018-09-01T00:00:00Z"}
     (stringify-times
       {:zdt     (zoned-date-time 2018 9 1)
        :instant (->instant (zoned-date-time 2018 9 1))
-       :joda-dt (->instant (zoned-date-time 2018 9 1))}) )
-
-  ;(is (period? (time/days 3)))
-  ;(is (period? (time/weeks 3)))
-  ;(is (period? (time/months 3)))
-  ;(is (period? (time/years 3)))
-
-  )
-
+       :joda-dt (->instant (joda/date-time 2018 9 1))})))
 
 (dotest
-  (let [zone-ids (vec (sort (ZoneId/getAvailableZoneIds))) ; all ZoneId String values
-        zone-ids-america (vec (keep-if #(str/starts-with? % "America/" ) zone-ids))
-        zone-ids-europe (vec (keep-if #(str/starts-with? % "Europe/" ) zone-ids))
-        zone-ids-us (vec (keep-if #(str/starts-with? % "US/" ) zone-ids)) ]
+  (let [zone-ids          (vec (sort (ZoneId/getAvailableZoneIds))) ; all ZoneId String values
+        zone-ids-america  (vec (keep-if #(str/starts-with? % "America/" ) zone-ids))
+        zone-ids-europe   (vec (keep-if #(str/starts-with? % "Europe/" ) zone-ids))
+        zone-ids-us       (vec (keep-if #(str/starts-with? % "US/" ) zone-ids)) ]
     (is (< 590 (count zone-ids)))
     (is (< 160 (count zone-ids-america)))
     (is (<  60 (count zone-ids-europe)))
@@ -186,7 +182,6 @@
         (joda/date-time 2018 9 1)
         (->instant (->zoned-date-time (zoned-date-time 2018 9 1)))
         (->instant (->zoned-date-time (joda/date-time 2018 9 1))))) )
-
 
 (dotest
   (let [lb      (zoned-date-time 2018 9 1)
