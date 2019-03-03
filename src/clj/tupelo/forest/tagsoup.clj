@@ -4,18 +4,18 @@
   (:require
     [tupelo.forest.xml :as xml] ) )
 
-(defn- startparse-tagsoup [s ch]
+(defn- wrapped-tagsoup-parser [input-source content-handler]
   (doto (org.ccil.cowan.tagsoup.Parser.)
     (.setFeature "http://www.ccil.org/~cowan/tagsoup/features/default-attributes" false)
     (.setFeature "http://www.ccil.org/~cowan/tagsoup/features/cdata-elements" true)
     (.setFeature "http://www.ccil.org/~cowan/tagsoup/features/ignorable-whitespace" true)
-    (.setContentHandler ch)
+    (.setContentHandler content-handler)
     (.setProperty "http://www.ccil.org/~cowan/tagsoup/properties/auto-detector"
       (proxy [org.ccil.cowan.tagsoup.AutoDetector] []
         (autoDetectingReader [^java.io.InputStream is]
           (java.io.InputStreamReader. is "UTF-8"))))
-    (.setProperty "http://xml.org/sax/properties/lexical-handler" ch)
-    (.parse s)))
+    (.setProperty "http://xml.org/sax/properties/lexical-handler" content-handler)
+    (.parse input-source)))
 
 (defn parser
   "Loads and parse an HTML resource and closes the stream."
@@ -24,4 +24,4 @@
     (throw (NullPointerException. "HTML resource not found.")))
   (filter map?
     (with-open [^java.io.Closeable stream stream]
-      (xml/parse (org.xml.sax.InputSource. stream) startparse-tagsoup))))
+      (xml/parse (org.xml.sax.InputSource. stream) wrapped-tagsoup-parser))))

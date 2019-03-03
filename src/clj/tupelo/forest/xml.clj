@@ -1,8 +1,9 @@
 ; adapted from:  net.cgrand.xml
 ;   Copyright (c) Christophe Grand, 2009-2013. All rights reserved.
 (ns tupelo.forest.xml
+  (:use tupelo.core)
   (:require [clojure.zip :as z])
-  (:import (org.xml.sax Attributes )
+  (:import (org.xml.sax Attributes)
            (org.xml.sax.ext DefaultHandler2)
            (javax.xml.parsers SAXParserFactory)))
 
@@ -47,16 +48,22 @@
                   (reduce #(assoc %1 (keyword (.getQName atts %2)) (.getValue atts (int %2)))
                     {} (range (.getLength atts)))))]
         (swap! loc insert-element e)))
+
     (endElement [uri local-name q-name]
       (swap! loc z/up))
+
     (characters [ch start length]
       (swap! loc merge-text-left (String. ^chars ch (int start) (int length))))
+
     (ignorableWhitespace [ch start length]
       (swap! loc merge-text-left (String. ^chars ch (int start) (int length))))
+
     (comment [ch start length]
       (swap! loc z/append-child {:type :comment :data (String. ^chars ch (int start) (int length))}))
+
     (startDTD [name publicId systemId]
       (swap! loc z/append-child {:type :dtd :data [name publicId systemId]}))
+
     (resolveEntity
       ([name publicId baseURI systemId]
        (doto (org.xml.sax.InputSource.)
@@ -67,7 +74,8 @@
        (let [^DefaultHandler2 this this]
          (proxy-super resolveEntity publicId systemId))))))
 
-(defn startparse-sax [s ch]
+(defn parser-sax
+  [input-source content-handler]
   (-> (SAXParserFactory/newInstance)
     (doto
       (.setValidating false)
@@ -75,24 +83,47 @@
       (.setFeature "http://xml.org/sax/features/external-parameter-entities" false))
     .newSAXParser
     (doto
-      (.setProperty "http://xml.org/sax/properties/lexical-handler" ch))
+      (.setProperty "http://xml.org/sax/properties/lexical-handler" content-handler))
     (.parse
-      ^java.io.InputStream                s    ; actual type => java.io.BufferedInputStream
-      ^org.xml.sax.helpers.DefaultHandler ch   ; actual type => net.cgrand.xml.proxy$org.xml.sax.ext.DefaultHandler2
-      )))
+      ^java.io.InputStream                input-source     ; actual type => java.io.BufferedInputStream
+      ^org.xml.sax.helpers.DefaultHandler content-handler  ; actual type => net.cgrand.xml.proxy$org.xml.sax.ext.DefaultHandler2
+    )))
 
 (defn parse
-  "Parses and loads the source s, which can be a File, InputStream or
+  "Parses and loads the source input-source, which can be a File, InputStream or
   String naming a URI. Returns a seq of tree of the xml/element struct-map,
   which has the keys :tag, :attrs, and :content. and accessor fns tag,
   attrs, and content. Other parsers can be supplied by passing
-  startparse, a fn taking a source and a ContentHandler and returning
+  parser, a fn taking a source and a ContentHandler and returning
   a parser"
-  ([s] (parse s startparse-sax))
-  ([s startparse]
-   (let [loc (atom (-> {:type :document :content nil} xml-zip))
-         metadata (atom {})
+  ([input-source]
+    (parse input-source parser-sax))
+  ([input-source parser]
+   (let [loc             (atom (-> {:type :document :content nil} xml-zip))
+         metadata        (atom {})
          content-handler (handler loc metadata)]
-     (startparse s content-handler)
-     (map #(if (instance? clojure.lang.IObj %) (vary-meta % merge @metadata) %)
-       (-> @loc z/root :content)))))
+     (parser input-source content-handler)
+     (when false
+       (println "*****************************************************************************")
+       (spyx-pretty @metadata)
+       (println :xml/parse-1)
+       (println (clip-str 999 (pretty-str @loc))))
+     (let [parsed-data (-> @loc first :content)
+           result      (map #(if (instance? clojure.lang.IObj %)
+                               (vary-meta % merge @metadata)
+                               %)
+                         parsed-data)]
+       (with-result result
+         (when false
+           (println "*****************************************************************************")
+           (println :xml/parse-2)
+           (println (clip-str 999 (pretty-str result))))
+         )))))
+
+
+
+
+
+
+
+

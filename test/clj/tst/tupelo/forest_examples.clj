@@ -1159,14 +1159,16 @@
     (io/input-stream it)
     (tagsoup/parser it)
     (drop-if #(= :dtd (:type %)) it)
-    (only it)))
+    (only it)
+    ))
 
-(dotest
+(dotest-focus
   (when false       ; manually enable to grab a new copy of the webpage
     (spit "xkcd-sample.html"
       (slurp "https://xkcd.com")))
   (with-forest (new-forest)
-    (let [root-hid    (add-tree-enlive (get-xkcd-enlive))
+    (let [xkcd-enlive  (get-xkcd-enlive)
+          root-hid    (add-tree-enlive xkcd-enlive)
           hid-keep-fn (fn [hid]
                         (let [node       (hid->node hid)
                               value      (when (contains? node :value) (grab :value node))
@@ -1177,6 +1179,11 @@
           link-node   (hid->node (only found-hids)) ; assume there is only 1 link node
           value-str   (grab :value link-node)
           result      (re-find #"http.*$" value-str)]
+      (when false
+        (println :xkcd-enlive)
+        (println (clip-str 999 (pretty-str xkcd-enlive)))
+        (println :xkcd-bush)
+        (println (clip-str 999 (pretty-str (hid->bush root-hid)))))
       (is= value-str "\nPermanent link to this comic: https://xkcd.com/1988/")
       (is= "https://xkcd.com/1988/" result))))
 
