@@ -1157,7 +1157,7 @@
   (it-> "xkcd-sample.html"
     (io/resource it)
     (io/input-stream it)
-    (tagsoup/parser it)))
+    (tagsoup/parse it)))
 
 (dotest
   (when false       ; manually enable to grab a new copy of the webpage

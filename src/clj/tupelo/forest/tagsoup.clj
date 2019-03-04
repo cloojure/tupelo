@@ -11,10 +11,12 @@
 (ns tupelo.forest.tagsoup
   (:use tupelo.core)
   (:require
-    [tupelo.forest.xml :as xml] ) )
+    [schema.core :as s]
+    [tupelo.forest.xml :as xml] ))
 
-(defn- tagsoup-parser-invoker
-  [input-source content-handler]
+(s/defn ^:private tagsoup-parse-fn
+  [input-source :- org.xml.sax.InputSource
+   content-handler]
   (doto (org.ccil.cowan.tagsoup.Parser.)
     (.setFeature "http://www.ccil.org/~cowan/tagsoup/features/default-attributes" false)
     (.setFeature "http://www.ccil.org/~cowan/tagsoup/features/cdata-elements" true)
@@ -27,10 +29,14 @@
     (.setProperty "http://xml.org/sax/properties/lexical-handler" content-handler)
     (.parse input-source)))
 
-(defn parser
-  "Loads and parse an HTML resource and closes the stream."
-  [stream]
-  (when-not stream
+(s/defn parse
+  "Loads and parse an HTML resource and closes the input-stream."
+  [input-stream :- java.io.InputStream]
+  (when-not input-stream
     (throw (NullPointerException. "HTML resource not found.")))
-  (with-open [^java.io.Closeable stream stream]
-    (xml/parse (org.xml.sax.InputSource. stream) tagsoup-parser-invoker)))
+  (with-open [^java.io.Closeable input-stream input-stream]
+    (println "-----------------------------------------------------------------------------")
+    (with-debug-tag :tagsoup-parse
+      (xml/parse
+        (org.xml.sax.InputSource. input-stream)
+        tagsoup-parse-fn))))

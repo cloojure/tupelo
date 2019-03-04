@@ -589,7 +589,7 @@
 
 (s/defn html->enlive :- tsk/KeyMap ; #todo need tree->xml  ???
   [html-str :- s/Str]
-  (tagsoup/parser
+  (tagsoup/parse
     (ts/string->stream
       html-str)))
 

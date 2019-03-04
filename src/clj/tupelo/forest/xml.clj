@@ -10,67 +10,67 @@
 
 (ns tupelo.forest.xml
   (:use tupelo.core)
-  (:require [clojure.zip :as z])
-  (:import (org.xml.sax Attributes)
-           (org.xml.sax.ext DefaultHandler2)
-           (javax.xml.parsers SAXParserFactory)))
+  (:require [clojure.zip :as zip]
+            [schema.core :as s])
+  (:import
+    [javax.xml.parsers SAXParserFactory]
+    [org.xml.sax Attributes]
+    [org.xml.sax.ext DefaultHandler2]))
 
-(defstruct element :tag :attrs :content)
+(defstruct Element :tag :attrs :content)
 
-(def tag (accessor element :tag))
-(def attrs (accessor element :attrs))
-(def content (accessor element :content))
-
-(def tag? :tag)
+(def ^:private tag? :tag)
 (defn- document?
   "Document nodes are a parsing impelentation details and should never leak
    outside of it."
   [x] (= :document (:type x)))
 
-(defn comment? [x] (= :comment (:type x)))
-(defn dtd? [x] (= :dtd (:type x)))
+(defn- comment? [x] (= (:type x) :comment))
+(defn- dtd?     [x] (= (:type x) :dtd))
 
-(defn xml-zip
-  "Returns a zipper for xml elements (as from xml/parse),
-  given a root element"
+(defn- xml-zip
+  "Returns a zipper for xml elements (as from xml/parse), given a root element"
   [root]
-  (z/zipper #(or (tag? %) (document? %))
-    (comp seq :content) #(assoc %1 :content %2) root))
+  (zip/zipper
+    #(or (tag? %) (document? %))
+    (comp seq :content)
+    #(assoc %1 :content %2)
+    root))
 
-(defn- insert-element [loc e]
-  (-> loc (z/append-child e) z/down z/rightmost))
+(defn- insert-element [result-zipper elem]
+  (-> result-zipper (zip/append-child elem) zip/down zip/rightmost))
 
-(defn- merge-text-left [loc s]
+(defn- merge-text-left [result-zipper str-val]
   (or
-    (when-let [l (-> loc z/down z/rightmost)]
-      (when (-> l z/node string?)
-        (-> l (z/edit str s) z/up)))
-    (-> loc (z/append-child s))))
+    (when-let [item (-> result-zipper zip/down zip/rightmost)]
+      (when (-> item zip/node string?)
+        (-> item (zip/edit str str-val) zip/up)))
+    (-> result-zipper (zip/append-child str-val))))
 
-(defn- handler [loc ]
+(defn- handler [result-atom]
   (proxy [DefaultHandler2] []
     (startElement [uri local-name q-name ^Attributes atts]
-      (let [e (struct element
-                (keyword q-name)
-                (when (pos? (. atts (getLength)))
-                  (reduce #(assoc %1 (keyword (.getQName atts %2)) (.getValue atts (int %2)))
-                    {} (range (.getLength atts)))))]
-        (swap! loc insert-element e)))
+      (let [elem (struct Element
+                   (keyword q-name)
+                   (when (pos? (. atts (getLength)))
+                     (reduce #(assoc %1 (keyword (.getQName atts %2)) (.getValue atts (int %2)))
+                       {} (range (.getLength atts)))))]
+        (swap! result-atom insert-element elem)))
 
     (endElement [uri local-name q-name]
-      (swap! loc z/up))
+      (swap! result-atom zip/up))
 
     (characters [ch start length]
-      (swap! loc merge-text-left (String. ^chars ch (int start) (int length))))
+      (swap! result-atom merge-text-left (String. ^chars ch (int start) (int length))))
 
     (ignorableWhitespace [ch start length]
-      (swap! loc merge-text-left (String. ^chars ch (int start) (int length))))
+      (swap! result-atom merge-text-left (String. ^chars ch (int start) (int length))))
 
     (comment [ch start length]
-      (swap! loc z/append-child {:type :comment :data (String. ^chars ch (int start) (int length))}))
+      (swap! result-atom zip/append-child {:type :comment :data (String. ^chars ch (int start) (int length))}))
 
     (startDTD [name publicId systemId]
-      (swap! loc z/append-child {:type :dtd :data [name publicId systemId]}))
+      (swap! result-atom zip/append-child {:type :dtd :data [name publicId systemId]}))
 
     (resolveEntity
       ([name publicId baseURI systemId]
@@ -82,49 +82,52 @@
        (let [^DefaultHandler2 this this]
          (proxy-super resolveEntity publicId systemId))))))
 
-(defn sax-parser-invoker
-  [input-source content-handler]
-  (-> (SAXParserFactory/newInstance)
-    (doto
-      (.setValidating false)
-      (.setFeature "http://xml.org/sax/features/external-general-entities" false)
-      (.setFeature "http://xml.org/sax/features/external-parameter-entities" false))
-    .newSAXParser
-    (doto
-      (.setProperty "http://xml.org/sax/properties/lexical-handler" content-handler))
-    (.parse
-      ^java.io.InputStream                input-source     ; actual type => java.io.BufferedInputStream
-      ^org.xml.sax.helpers.DefaultHandler content-handler  ; actual type => net.cgrand.xml.proxy$org.xml.sax.ext.DefaultHandler2
-    )))
+(s/defn ^:private sax-parse-fn
+  [input-source :- java.io.InputStream
+   content-handler]
+  (with-debug-tag sax-parse-fn
+    (it-> (SAXParserFactory/newInstance)
+      (doto it
+        (.setValidating false)
+        (.setFeature "http://xml.org/sax/features/external-general-entities" false)
+        (.setFeature "http://xml.org/sax/features/external-parameter-entities" false))
+      (.newSAXParser it)
+      (doto it
+        (.setProperty "http://xml.org/sax/properties/lexical-handler" content-handler))
+      (with-result it
+        (nl)
+        (spyx :sax-parse-fn (type input-source))
+        (spyx :sax-parse-fn (type content-handler)))
+      (.parse it
+        ^java.io.InputStream input-source ; actual type => java.io.BufferedInputStream
+        ^org.xml.sax.helpers.DefaultHandler content-handler ; actual type => net.cgrand.xml.proxy$org.xml.sax.ext.DefaultHandler2
+      ))))
 
-(defn parse
-  "Parses and loads the source input-source, which can be a File, InputStream or
-  String naming a URI. Returns a seq of tree of the xml/element struct-map,
-  which has the keys :tag, :attrs, and :content. and accessor fns tag,
-  attrs, and content. Other parsers can be supplied by passing
-  parser, a fn taking a source and a ContentHandler and returning
-  a parser"
-  ([input-source]
-   (parse input-source sax-parser-invoker))
-  ([input-source parser]
-   (let [loc             (atom (-> {:type :document :content nil} xml-zip))
-         content-handler (handler loc)]
-     (parser input-source content-handler)
-     (when false
-       (println "*****************************************************************************")
-       (println :xml/parse-1)
-       (println (clip-str 999 (pretty-str @loc))))
-     (let [parsed-data (it-> @loc
-                         (first it)
-                         (:content it)
-                         (drop-if #(= :dtd (:type %)) it)
-                         (drop-if #(string? %) it)
-                         (only it)) ]
-       (with-result parsed-data
-         (when false
-           (println "*****************************************************************************")
-           (println :xml/parse-2)
-           (println (clip-str 999 (pretty-str parsed-data)))))))))
+; "Parses and loads the source input-source, which can be a File, InputStream or String
+;  naming a URI. Returns a seq of tree of the xml/element struct-map, which has the keys
+;  :tag, :attrs, and :content. and accessor fns tag, attrs, and content. Other parsers
+;  can be supplied by passing parse-fn, a fn taking a source and a
+;  ContentHandler and returning a parse-fn"
+(s/defn parse
+  ([input-source-or-stream] (parse input-source-or-stream sax-parse-fn))
+  ([input-source-or-stream parse-fn]
+    (with-debug-tag :xml-parse
+      (assert (or (instance? java.io.InputStream     input-source-or-stream)
+                  (instance? org.xml.sax.InputSource input-source-or-stream)))
+      (let [result-atom     (atom (xml-zip {:type :document :content nil}))
+            content-handler (handler result-atom)]
+        (nl)
+        (spyx :xml-parse (type input-source-or-stream))
+        (spyx :xml-parse (type content-handler))
+        (parse-fn input-source-or-stream content-handler)
+        ; #todo document logic vvv using xkcd & plain xml example
+        (let [parsed-data (it-> @result-atom
+                            (first it)
+                            (:content it)
+                            (drop-if #(= :dtd (:type %)) it)
+                            (drop-if #(string? %) it)
+                            (only it))]
+          parsed-data)))))
 
 
 
