@@ -35,8 +35,6 @@
   (when-not input-stream
     (throw (NullPointerException. "HTML resource not found.")))
   (with-open [^java.io.Closeable input-stream input-stream]
-    (println "-----------------------------------------------------------------------------")
-    (with-debug-tag :tagsoup-parse
-      (xml/parse
-        (org.xml.sax.InputSource. input-stream)
-        tagsoup-parse-fn))))
+    (xml/parse
+      (org.xml.sax.InputSource. input-stream)
+      tagsoup-parse-fn)))

@@ -214,7 +214,6 @@
   (with-system-err-str
     (.printStackTrace exception)))
 
-
 ;-----------------------------------------------------------------------------
 (defn const-fn       ; #todo or const-fn or always
   "Returns a function that always returns the specified value, and accepts any number of args

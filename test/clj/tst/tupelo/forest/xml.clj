@@ -2,9 +2,11 @@
   (:use tupelo.core tupelo.test)
   (:require
     [clojure.data.xml :as clj-xml]
+    [clojure.walk :as walk]
     [tupelo.forest.xml :as tf-xml]
     [tupelo.string :as ts]
-  ))
+    )
+  (:import [java.io StringReader]))
 
 (dotest
   (let [xml-str             "<foo>
@@ -88,11 +90,19 @@
 
         clj-xml-data        (clj-xml/parse (ts/string->stream xml-str))
         tf-xml-data         (tf-xml/parse (ts/string->stream xml-str))
-        input-source-result (tf-xml/parse (org.xml.sax.InputSource.
-                                            (ts/string->stream xml-str))) ]
-    (is (= clj-enlive-tree clj-xml-data))
-    (is (= tf-enlive-tree tf-xml-data))
-    (is (= input-source-result tf-xml-data))))
+        tf-xml-data-input-source (tf-xml/parse (org.xml.sax.InputSource.
+                                                 (ts/string->stream xml-str)))
+        tf-xml-data-reader (tf-xml/parse (StringReader. xml-str))
+        ]
+    (is= clj-enlive-tree clj-xml-data)
+    (is= tf-enlive-tree tf-xml-data)
+    (is= tf-xml-data tf-xml-data-input-source)
+    (is= tf-xml-data tf-xml-data-reader)
+
+    (let [result-empty (tf-xml/walk-nil->empty tf-xml-data)]
+      (is= result-empty clj-xml-data))
+
+    ))
 
 
 
