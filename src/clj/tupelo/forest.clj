@@ -15,7 +15,7 @@
     [tupelo.forest.tagsoup :as tagsoup]
     [schema.core :as s]
     [tupelo.schema :as tsk]
-    [tupelo.string :as ts] ))
+    [tupelo.string :as ts]))
 
 ; Benefits compared to nested maps like Enlive:
 ;   generalizes attrs/values; no special role for `tag` like enlive
@@ -78,7 +78,7 @@
 
 (defn validate-forest []
   (when (nil? *forest*)
-    (throw (ex-info "(nil? *forest*) => true;  Possibly you forgot `(with-forest ...)` " {:nil-forest true})) )
+    (throw (ex-info "(nil? *forest*) => true;  Possibly you forgot `(with-forest ...)` " {:nil-forest true})))
   (when-not (map? (deref *forest*))
     (throw (ex-info "validate-forest: failed forest=" {:forest (deref *forest*)}))))
 
@@ -86,7 +86,7 @@
   [forest-arg & forms]
   `(binding [*forest* (atom ~forest-arg)]
      (validate-forest)
-     ~@forms ))
+     ~@forms))
 
 (defmacro with-forest-result ; #todo swap names?
   [forest-arg & forms]
@@ -104,9 +104,9 @@
 (defn new-forest
   "Returns a new, empty forest."
   []
- ;{}
+  ;{}
   (sorted-map)
-)
+  )
 
 ; #todo need an attribute registry { :kw fn-validate }
 ; #todo need fn's to add/delete attributes; to delete verify no uses exist. Change = delete then re-add
@@ -143,7 +143,7 @@
 (s/defn forest-node? :- s/Bool
   "Returns true if the arg is a legal forest node"
   [arg :- tsk/KeyMap]
-  (and   (contains-key? arg ::khids)
+  (and (contains-key? arg ::khids)
     (not (contains-key? arg ::kids))))
 
 (s/defn forest-leaf? :- s/Bool
@@ -157,7 +157,7 @@
 (s/defn tree-node? :- s/Bool
   "Returns true if the arg is a legal tree node"
   [node :- tsk/KeyMap]
-  (and   (contains-key? node ::kids)
+  (and (contains-key? node ::kids)
     (not (contains-key? node ::khids))))
 
 ;---------------------------------------------------------------------------------------------------
@@ -175,8 +175,8 @@
       (map? data) {::tag   ::entity
                    ::index idx
                    ::kids  (forv [[child-key child-val] data]
-                             {::tag ::entry
-                              ::key child-key
+                             {::tag  ::entry
+                              ::key  child-key
                               ::kids [(edn->tree child-val)]})}
       :else {::value data ::index idx ::kids []})))
 
@@ -233,7 +233,7 @@
   [arg]
   (and
     (map? arg)
-    (set/superset? (set (keys arg)) #{:tag :attrs :content} )))
+    (set/superset? (set (keys arg)) #{:tag :attrs :content})))
 
 (defn enlive-node-strict?
   "Returns true for strictly valid Enlive nodes, else false"
@@ -248,7 +248,7 @@
   "Converts a data from Hiccup -> Enlive format"
   [node :- s/Any]
   (if-not (sequential? node)
-    node ; leaf - just return it
+    node            ; leaf - just return it
     (let [tag    (xfirst node) ; #todo error if not keyword?
           less-1 (xrest node)]
       (if (empty? less-1)
@@ -266,7 +266,7 @@
 (s/defn enlive->hiccup :- s/Any
   [node :- s/Any]
   (if-not (map? node)
-    node ; leaf - just return it
+    node            ; leaf - just return it
     (do
       (assert (enlive-node-lax? node))
       (with-map-vals node [tag attrs content] ; destructure values
@@ -276,7 +276,7 @@
               content-tx (forv [child content]
                            (enlive->hiccup child))
               result     (glue tag-attrs content-tx)]
-             result)))))
+          result)))))
 
 (s/defn raw-leaf-treenode? :- s/Bool
   "Returns true if a TreeNode is a leaf with {:tag ::raw}."
@@ -296,7 +296,7 @@
                    (and (string? value) (ts/whitespace? value))))]
     result))
 
-(s/defn ^:private ^:no-doc treenode-leaf?  :- s/Bool
+(s/defn ^:private ^:no-doc treenode-leaf? :- s/Bool
   "Returns true if a treenode is a leaf (no kids)."
   [node :- tsk/KeyMap]
   (empty? (grab ::kids node)))
@@ -317,8 +317,8 @@
   [tree-node :- tsk/KeyMap]
   (assert (tree-node? tree-node))
   (let [
-        enlive-attrs   (dissoc tree-node ::kids :tag :value)
-        enlive-base    (glue (submap-by-keys tree-node #{:tag}) {:attrs enlive-attrs})]
+        enlive-attrs (dissoc tree-node ::kids :tag :value)
+        enlive-base  (glue (submap-by-keys tree-node #{:tag}) {:attrs enlive-attrs})]
     (cond
       (treenode-has-all-raw-kids? tree-node)
       (let [enlive-leaf (glue enlive-base {:content (consolidate-raw-kids tree-node)})]
@@ -413,7 +413,7 @@
   "Returns a set of all HIDs in the forest"
   []
   (validate-forest)
-  (set (keys (deref *forest*))) )
+  (set (keys (deref *forest*))))
 
 (s/defn root-hids :- #{HID}
   "Return a vector of all root HID's"
@@ -467,7 +467,7 @@
 
 (s/defn validate-attrs :- tsk/KeyMap
   [attrs :- tsk/KeyMap]
-  (let [illegal-value?   (s/fn fn-illegal-value [arg] (or (= arg :*) (= arg :**))) ]
+  (let [illegal-value? (s/fn fn-illegal-value [arg] (or (= arg :*) (= arg :**)))]
     (when (has-some? illegal-value? (keyvals attrs))
       (throw (ex-info "validate-attrs: failed attrs=" attrs)))
     attrs))
@@ -542,7 +542,7 @@
 
 (s/defn add-tree :- HID
   "Adds a tree to the forest."
-  [tree-node  :- tsk/KeyMap]
+  [tree-node :- tsk/KeyMap]
   (validate-forest)
   (when-not (tree-node? tree-node)
     (throw (ex-info "add-tree: invalid element=" tree-node)))
@@ -550,7 +550,7 @@
         kids-to-add     (drop-if raw-whitespace-leaf-treenode? (grab ::kids tree-node)) ; #todo make optional?
         kid-hids        (forv [child kids-to-add]
                           (add-tree child))]
-       (add-node tree-node-attrs kid-hids)))
+    (add-node tree-node-attrs kid-hids)))
 
 (s/defn bush-node? :- s/Bool ; #todo add test
   [arg]
@@ -575,7 +575,7 @@
   (assert (tree-node? tree-node))
   (let [bush-kids (mapv tree->bush (grab ::kids tree-node))
         bush-node (prepend (dissoc tree-node ::kids) bush-kids)]
-     bush-node))
+    bush-node))
 
 (s/defn enlive->bush :- tsk/Vec ; #todo add tes
   "Converts an Enlive-format data structure to a Bush. "
@@ -589,10 +589,9 @@
 
 (s/defn html->enlive :- tsk/KeyMap ; #todo need tree->xml  ???
   [html-str :- s/Str]
-  (->> html-str
-    ts/string->stream
-    tagsoup/parser
-    only))
+  (tagsoup/parser
+    (ts/string->stream
+      html-str)))
 
 (s/defn xml->enlive :- tsk/KeyMap ; #todo need tree->xml  ???
   [xml-str :- s/Str]
@@ -617,7 +616,7 @@
 (s/defn tree->hiccup :- tsk/Vec
   "Converts a Tree to a Hiccup-format data structure."
   [arg :- tsk/KeyMap]
-  (-> arg tree->enlive enlive->hiccup ))
+  (-> arg tree->enlive enlive->hiccup))
 
 (s/defn hiccup->bush :- tsk/Vec
   "Converts a Hiccup-format data structure to a Bush."
@@ -627,7 +626,7 @@
 (s/defn bush->hiccup :- tsk/Vec
   "Converts a Bush to a Hiccup-format data structure."
   [arg :- tsk/Vec]
-  (-> arg bush->tree tree->hiccup ))
+  (-> arg bush->tree tree->hiccup))
 
 (s/defn add-bush :- HID
   "Adds a bush to the forest"
@@ -639,7 +638,7 @@
   [arg]
   (add-tree (enlive->tree arg)))
 
-(s/defn add-tree-hiccup :- HID  ; #todo maybe make (add-tree-edn ...) for simplicity?
+(s/defn add-tree-hiccup :- HID ; #todo maybe make (add-tree-edn ...) for simplicity?
   "Adds a Hiccup-format tree to the forest. Tag values are converted to nil attributes:
   [:a ...] -> {:a nil ...}..."
   [arg]
@@ -663,7 +662,7 @@
   (let [num-nodes (count nodes)]
     (cond
       (zero? num-nodes) (throw (ex-info "num-nodes must be positive" (vals->map num-nodes)))
-      (= 1 num-nodes)   (only nodes)
+      (= 1 num-nodes) (only nodes)
       :else (let [nodes-1           (xbutlast nodes)
                   nodes-2           (xbutlast nodes-1)
                   node-last         (xlast nodes)
@@ -698,7 +697,7 @@
 (defn filter-enlive-subtrees
   "Lazily read an enlive tree, retaining only rooted subtrees as specified by `subtree-path`"
   [enlive-tree-lazy subtree-path]
-  (let [output-chan (async/chan *enlive-subtree-buffer-size*) ]
+  (let [output-chan (async/chan *enlive-subtree-buffer-size*)]
     (async/go
       (filter-enlive-subtrees-helper {:output-chan       output-chan
                                       :enlive-nodes-lazy [enlive-tree-lazy]
@@ -728,11 +727,11 @@
   [hid :- HID
    attrs-new :- tsk/KeyMap]
   (validate-attrs attrs-new)
-  (let [node-curr  (hid->node hid)
-        node-new   (it-> node-curr
-                     (grab ::khids it)
-                     (->Node it)
-                     (glue it attrs-new))]
+  (let [node-curr (hid->node hid)
+        node-new  (it-> node-curr
+                    (grab ::khids it)
+                    (->Node it)
+                    (glue it attrs-new))]
     (set-node hid node-new)
     node-new))
 
@@ -750,19 +749,19 @@
 (s/defn attr-get :- tsk/KeyMap ; #todo test
   "Use the supplied function & arguments to update the attr value for a Node as in clojure.core/update"
   [hid :- HID
-   attr-name :- s/Keyword ]
-  (fetch (hid->node hid) attr-name ))
+   attr-name :- s/Keyword]
+  (fetch (hid->node hid) attr-name))
 
 (s/defn attr-update :- tsk/KeyMap
   "Use the supplied function & arguments to update the attr value for a Node as in clojure.core/update"
   [hid :- HID
    attr-name :- s/Keyword
-   fn-update-attr        ; signature: (fn-update-attr attr-curr x y z & more) -> attr-new
+   fn-update-attr   ; signature: (fn-update-attr attr-curr x y z & more) -> attr-new
    & fn-update-attr-args]
-  (let [node-curr      (hid->node hid)
-        attr-val-curr  (fetch node-curr attr-name )
-        attr-val-new   (apply fn-update-attr attr-val-curr fn-update-attr-args)
-        node-new       (assoc node-curr attr-name attr-val-new) ]
+  (let [node-curr     (hid->node hid)
+        attr-val-curr (fetch node-curr attr-name)
+        attr-val-new  (apply fn-update-attr attr-val-curr fn-update-attr-args)
+        node-new      (assoc node-curr attr-name attr-val-new)]
     (validate-attrs node-new)
     (set-node hid node-new)
     node-new))
@@ -781,8 +780,8 @@
   [hid :- HID
    attr-name :- s/Keyword
    attr-val :- s/Any]
-  (let [node-curr  (hid->node hid)
-        node-new   (glue node-curr {attr-name attr-val}) ]
+  (let [node-curr (hid->node hid)
+        node-new  (glue node-curr {attr-name attr-val})]
     (set-node hid node-new)
     node-new))
 
@@ -792,8 +791,8 @@
   "Resets the kids of a Node to the supplied list"
   [hid :- HID
    kids-new :- [HID]]
-  (let [node-curr  (hid->node hid)
-        node-new   (glue node-curr {::khids kids-new})]
+  (let [node-curr (hid->node hid)
+        node-new  (glue node-curr {::khids kids-new})]
     (set-node hid node-new)
     node-new))
 
@@ -821,7 +820,7 @@
         kids-curr (grab ::khids node-curr)
         kids-new  (glue kids-curr kids-new)
         node-new  (glue node-curr {::khids kids-new})]
-       (set-node hid node-new)
+    (set-node hid node-new)
     node-new))
 
 ; #todo avoid self-cycles
@@ -853,7 +852,7 @@
           kids-curr           (grab ::khids node-curr)
           missing-kids        (set/difference kids-leaving (into #{} kids-curr))
           _                   (when (and (not-empty? missing-kids) report-missing-kids)
-                                (throw (ex-info  "remove-kids: missing-kids found=" (vals->map missing-kids))))
+                                (throw (ex-info "remove-kids: missing-kids found=" (vals->map missing-kids))))
           kid-is-leaving?     (fn fn-kid-is-leaving? [kid] (contains-key? kids-leaving kid))
           kids-new            (drop-if kid-is-leaving? kids-curr)
           node-new            (glue node-curr {::khids kids-new})]
@@ -876,7 +875,7 @@
 
 (s/defn remove-path-subtree
   "Given an HID path, removes from the forest all nodes in the subtree rooted at the end of that path."
-  [path :- [HID] ]
+  [path :- [HID]]
   (let [parents  (butlast path)
         hid-root (xlast path)]
     (walk-tree hid-root {:leave (fn [path]
@@ -890,10 +889,10 @@
    pattern-in :- s/Any]
   (let [node    (hid->node hid)
         pattern (cond
-                  (map?         pattern-in)  pattern-in
-                  (sequential?  pattern-in)  (zipmap pattern-in (repeat nil))
-                  (keyword?     pattern-in)  {:tag pattern-in}
-                  :else (throw (ex-info  "hid-matches?: illegal pattern-in=" (vals->map pattern-in))))]
+                  (map? pattern-in) pattern-in
+                  (sequential? pattern-in) (zipmap pattern-in (repeat nil))
+                  (keyword? pattern-in) {:tag pattern-in}
+                  :else (throw (ex-info "hid-matches?: illegal pattern-in=" (vals->map pattern-in))))]
     (let [pattern-keys         (keys pattern)
           pattern-keys-set     (set pattern-keys)
           node-keys-set        (set (keys node))
@@ -904,8 +903,8 @@
               ; replace any nil values with wildcard :*
               pattern-wild (apply glue (for [[k v] pattern]
                                          {k (if (nil? v) :* v)}))]
-          (wild-match? {:pattern    pattern-wild
-                            :values [attrs-tst]}))))))
+          (wild-match? {:pattern pattern-wild
+                        :values  [attrs-tst]}))))))
 
 ; #todo list-roots
 ; #todo list-non-roots
@@ -940,7 +939,7 @@
             curr-part (dissoc node-part ::khids)
             kids-part (format-path hids-rest)
             result    [curr-part kids-part]]
-           result))))
+        result))))
 
 (s/defn format-paths
   "Format a list of HID paths for printing (bush format)"
@@ -952,12 +951,12 @@
   [result-atom
    parents :- [HID]
    hid :- HID
-   tgt-path :- [(s/either s/Keyword tsk/KeyMap)] ]
+   tgt-path :- [(s/either s/Keyword tsk/KeyMap)]]
   (validate-hid hid)
   (when (not-empty? tgt-path)
     (let [tgt           (xfirst tgt-path)
           tgt-path-rest (xrest tgt-path)
-          node          (hid->node hid) ]
+          node          (hid->node hid)]
       (let [parents-new (append parents hid)]
         (when (or (= tgt :*) (hid-matches? hid tgt))
           ;(println :200 (str "match node=" node ))
@@ -967,7 +966,7 @@
               (swap! result-atom append soln))
             (do
               ;(println :220 "NOT (empty? tgt-path-rest) parents-new=" (mapv #(hid->node %) parents-new))
-              (when-not (leaf-hid? hid)   ; #todo revisit this
+              (when-not (leaf-hid? hid) ; #todo revisit this
                 ;(println :221)
                 (doseq [kid (hid->kids hid)]
                   ;(println :230 "kid=" (hid->node kid))
@@ -979,7 +978,7 @@
             ;(println (str :330 "  recurse  parents:" (mapv #(hid->node %) parents)
             ;           "   hid:" (hid->node hid) "  tgt-path-rest:" tgt-path-rest))
             (find-paths-impl result-atom parents hid tgt-path-rest)
-            (when-not (leaf-hid? hid)   ; #todo revisit this
+            (when-not (leaf-hid? hid) ; #todo revisit this
               (doseq [kid (hid->kids hid)]
                 ;(println :340 ":** kid:" (hid->node kid))
                 ;(println (str :350 "    recurse  parents-new:" (mapv #(hid->node %) parents-new)
@@ -988,22 +987,22 @@
 
 ; #todo need a find-paths-pred that takes a predicate fn to choose
 ; #todo maybe a fn like postwalk to apply transformation fn to each node recursively
-(s/defn find-paths :- [[HID]]    ; #todo need update-tree & update-leaf fn's
+(s/defn find-paths :- [[HID]] ; #todo need update-tree & update-leaf fn's
   "Searches the forest for subtrees matching the `tgt-path` rooted at `root-spec`.
   Returns a vector of hid-paths."
   [root-spec :- HidRootSpec
-   tgt-path :- tsk/Vec ]
+   tgt-path :- tsk/Vec]
   (when (empty? tgt-path)
     (throw (ex-info "find-paths: tgt-path is empty" (vals->map tgt-path))))
   (when (= :** (last tgt-path))
     (throw (ex-info "find-paths: recursive-wildcard `:**` cannot terminate tgt-path" (vals->map tgt-path))))
 
   (let [result-atom (atom [])
-        roots (cond
-                (forest-hid? root-spec)     #{root-spec} ; scalar arg -> wrap in a set
-                (vector? root-spec)  (set root-spec) ; vec of root hids -> convert to set
-                (set? root-spec)     root-spec ; set of root hids -> use it as-is
-                :else (throw (ex-info  "find-paths: invalid root-spec=" (vals->map root-spec)))) ]
+        roots       (cond
+                      (forest-hid? root-spec) #{root-spec} ; scalar arg -> wrap in a set
+                      (vector? root-spec) (set root-spec) ; vec of root hids -> convert to set
+                      (set? root-spec) root-spec ; set of root hids -> use it as-is
+                      :else (throw (ex-info "find-paths: invalid root-spec=" (vals->map root-spec))))]
     (doseq [root roots]
       (find-paths-impl result-atom [] root tgt-path))
     @result-atom))
@@ -1035,8 +1034,8 @@
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec
    hid-pred :- s/Any] ; #todo how func spec?
-  (let [hids-found  (find-hids root-spec tgt-path)
-        hids-keep   (keep-if hid-pred hids-found)]
+  (let [hids-found (find-hids root-spec tgt-path)
+        hids-keep  (keep-if hid-pred hids-found)]
     hids-keep))
 
 (s/defn whitespace-leaf-hid? :- s/Bool
@@ -1060,7 +1059,7 @@
 (s/defn has-descendant? ; #todo RETHINK + doc + test
   "Returns true iff `root-hid` has at least one matching subtree"
   [root-hid :- HID
-   tgt-path :- tsk/Vec ]
+   tgt-path :- tsk/Vec]
   (pos? (count (find-paths root-hid tgt-path))))
 
 (s/defn has-descendant-with? ; #todo need test (RETHINK)

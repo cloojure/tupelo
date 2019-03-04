@@ -1157,12 +1157,9 @@
   (it-> "xkcd-sample.html"
     (io/resource it)
     (io/input-stream it)
-    (tagsoup/parser it)
-    (drop-if #(= :dtd (:type %)) it)
-    (only it)
-    ))
+    (tagsoup/parser it)))
 
-(dotest             ; -focus
+(dotest
   (when false       ; manually enable to grab a new copy of the webpage
     (spit "xkcd-sample.html"
       (slurp "https://xkcd.com")))

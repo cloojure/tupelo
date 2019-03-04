@@ -9,6 +9,7 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns tupelo.forest.tagsoup
+  (:use tupelo.core)
   (:require
     [tupelo.forest.xml :as xml] ) )
 
@@ -31,6 +32,5 @@
   [stream]
   (when-not stream
     (throw (NullPointerException. "HTML resource not found.")))
-  (filter map?
-    (with-open [^java.io.Closeable stream stream]
-      (xml/parse (org.xml.sax.InputSource. stream) tagsoup-parser-invoker))))
+  (with-open [^java.io.Closeable stream stream]
+    (xml/parse (org.xml.sax.InputSource. stream) tagsoup-parser-invoker)))

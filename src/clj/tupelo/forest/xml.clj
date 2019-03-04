@@ -47,7 +47,7 @@
         (-> l (z/edit str s) z/up)))
     (-> loc (z/append-child s))))
 
-(defn- handler [loc metadata]
+(defn- handler [loc ]
   (proxy [DefaultHandler2] []
     (startElement [uri local-name q-name ^Attributes atts]
       (let [e (struct element
@@ -105,28 +105,26 @@
   parser, a fn taking a source and a ContentHandler and returning
   a parser"
   ([input-source]
-    (parse input-source sax-parser-invoker))
+   (parse input-source sax-parser-invoker))
   ([input-source parser]
    (let [loc             (atom (-> {:type :document :content nil} xml-zip))
-         metadata        (atom {})
-         content-handler (handler loc metadata)]
+         content-handler (handler loc)]
      (parser input-source content-handler)
      (when false
        (println "*****************************************************************************")
-       (spyx-pretty @metadata)
        (println :xml/parse-1)
        (println (clip-str 999 (pretty-str @loc))))
-     (let [parsed-data (-> @loc first :content)
-           result      (map #(if (instance? clojure.lang.IObj %)
-                               (vary-meta % merge @metadata)
-                               %)
-                         parsed-data)]
-       (with-result result
+     (let [parsed-data (it-> @loc
+                         (first it)
+                         (:content it)
+                         (drop-if #(= :dtd (:type %)) it)
+                         (drop-if #(string? %) it)
+                         (only it)) ]
+       (with-result parsed-data
          (when false
            (println "*****************************************************************************")
            (println :xml/parse-2)
-           (println (clip-str 999 (pretty-str result))))
-         )))))
+           (println (clip-str 999 (pretty-str parsed-data)))))))))
 
 
 
