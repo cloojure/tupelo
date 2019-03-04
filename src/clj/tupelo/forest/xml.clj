@@ -15,7 +15,8 @@
   (:import
     [javax.xml.parsers SAXParserFactory]
     [org.xml.sax Attributes]
-    [org.xml.sax.ext DefaultHandler2]))
+    [org.xml.sax.ext DefaultHandler2]
+    [java.io Reader InputStream]))
 
 (defstruct Element :tag :attrs :content)
 
@@ -82,26 +83,31 @@
        (let [^DefaultHandler2 this this]
          (proxy-super resolveEntity publicId systemId))))))
 
-(s/defn ^:private sax-parse-fn
-  [input-source :- java.io.InputStream
-   content-handler]
+(defn ^:private sax-parse-fn
+  [xml-input content-handler]
   (with-debug-tag sax-parse-fn
-    (it-> (SAXParserFactory/newInstance)
-      (doto it
-        (.setValidating false)
-        (.setFeature "http://xml.org/sax/features/external-general-entities" false)
-        (.setFeature "http://xml.org/sax/features/external-parameter-entities" false))
-      (.newSAXParser it)
-      (doto it
-        (.setProperty "http://xml.org/sax/properties/lexical-handler" content-handler))
-      (with-result it
-        (nl)
-        (spyx :sax-parse-fn (type input-source))
-        (spyx :sax-parse-fn (type content-handler)))
-      (.parse it
-        ^java.io.InputStream input-source ; actual type => java.io.BufferedInputStream
-        ^org.xml.sax.helpers.DefaultHandler content-handler ; actual type => net.cgrand.xml.proxy$org.xml.sax.ext.DefaultHandler2
-      ))))
+    (let [input-source (cond
+                         (or (instance? InputStream xml-input)
+                             (instance? Reader xml-input))              (org.xml.sax.InputSource. xml-input)
+                         (instance? org.xml.sax.InputSource xml-input)  xml-input
+                         :else (throw (ex-info "sax-parse-fn: xml-input must be one of InputStream, Reader, or org.xml.sax.InputSource"
+                                        {:type  (type xml-input)
+                                         :class (class xml-input)})))]
+      (it-> (SAXParserFactory/newInstance)
+        (doto it
+          (.setValidating false)
+          (.setFeature "http://xml.org/sax/features/external-general-entities" false)
+          (.setFeature "http://xml.org/sax/features/external-parameter-entities" false))
+        (.newSAXParser it)
+        (doto it
+          (.setProperty "http://xml.org/sax/properties/lexical-handler" content-handler))
+        (with-result it
+          (nl)
+          (spyx :sax-parse-fn (type input-source))
+          (spyx :sax-parse-fn (type content-handler)))
+        (.parse it
+          ^org.xml.sax.InputSource             input-source
+          ^org.xml.sax.helpers.DefaultHandler  content-handler )))))
 
 ; "Parses and loads the source input-source, which can be a File, InputStream or String
 ;  naming a URI. Returns a seq of tree of the xml/element struct-map, which has the keys
