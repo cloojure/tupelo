@@ -1095,7 +1095,7 @@
      (finally ; ensure we un-do indentation in event of exception
        (spy-indent-dec))))
 
-(defmacro with-debug-tag ; #todo => tupelo.core ???
+(defmacro with-debug-tag
   [debug-tag & forms]
   `(with-spy-indent
      (let [tag-enter# ~(str debug-tag "-enter")
