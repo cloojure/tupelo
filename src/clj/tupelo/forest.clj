@@ -336,11 +336,12 @@
               enlive-node))))
 
 (s/defn enlive->tree :- tsk/KeyMap ; #todo add test
-  "Convert an Enlive-format data structure to a tree. "
+  "Convert an Enlive-format data structure to a tree.  Is tolerant of missing or nil values
+  for :attrs and :content keys."
   [enlive-tree :- tsk/KeyMap]
   (assert (enlive-node-lax? enlive-tree))
-  (let [attrs   (or (:attrs enlive-tree) {}) ; replace missing or nil values with valid value
-        content (or (:content enlive-tree) [])]
+  (let [attrs   (or (:attrs enlive-tree) {}) ; missing or nil :attrs => empty
+        content (or (:content enlive-tree) [])] ; missing or nil :content => empty
     (assert (not (contains-key? attrs :tag)))
     (let [attrs  (glue attrs (submap-by-keys enlive-tree #{:tag}))
           result (cond

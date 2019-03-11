@@ -29,6 +29,7 @@
     (.setProperty "http://xml.org/sax/properties/lexical-handler" content-handler)
     (.parse input-source)))
 
+; #todo add (walk-nil->empty ...) to all `parse` output; fix tests  ???
 (s/defn parse
   "Loads and parse an HTML resource and closes the input-stream."
   [input-stream :- java.io.InputStream]
