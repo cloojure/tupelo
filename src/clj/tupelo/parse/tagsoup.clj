@@ -8,11 +8,11 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns tupelo.forest.tagsoup
+(ns tupelo.parse.tagsoup
   (:use tupelo.core)
   (:require
     [schema.core :as s]
-    [tupelo.forest.xml :as xml] ))
+    [tupelo.parse.xml :as xml] ))
 
 (s/defn ^:private tagsoup-parse-fn
   [input-source :- org.xml.sax.InputSource

@@ -12,10 +12,11 @@
     [clojure.core.async :as async]
     [clojure.data.xml :as clj-xml]
     [clojure.set :as set]
-    [tupelo.forest.tagsoup :as tagsoup]
     [schema.core :as s]
+    [tupelo.parse.tagsoup :as tagsoup]
     [tupelo.schema :as tsk]
-    [tupelo.string :as ts]))
+    [tupelo.string :as ts]
+  ))
 
 ; Benefits compared to nested maps like Enlive:
 ;   generalizes attrs/values; no special role for `tag` like enlive

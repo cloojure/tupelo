@@ -1,12 +1,11 @@
-(ns tst.tupelo.forest.xml
+(ns tst.tupelo.parse.xml
   (:use tupelo.core tupelo.test)
   (:require
-    [clojure.data :as data]
+    [clojure.data :as data] ; #todo add clojure.data.xml example
     [clojure.data.xml :as clj-xml]
-    [tupelo.forest.tagsoup :as tf-tagsoup]
-    [tupelo.forest.xml :as tf-xml]
-    [tupelo.string :as ts]
-    [tupelo.forest.xml :as xml])
+    [tupelo.parse.tagsoup :as tf-tagsoup]
+    [tupelo.parse.xml :as tf-xml]
+    [tupelo.string :as ts])
   (:import [java.io StringReader]))
 
 (def xml-str "<foo>
@@ -105,7 +104,7 @@
                         {:tag :state, :attrs {}, :content ["Denial"]}]}]})
 
 
-(dotest-focus
+(dotest
   ; verify auto conversion does what we want
   (is= {} (into {} nil))
   (is= {:a 1 :b 2} (into {} {:a 1 :b 2}))
@@ -129,10 +128,6 @@
     (is= enlive-tree-normalized-nonblank tf-xml-data-input-source)
     (is= enlive-tree-normalized-nonblank tf-xml-data-reader)
     (is= enlive-tree-normalized-nonblank tf-tagsoup-data) ))
-
-
-
-
 
 
 
