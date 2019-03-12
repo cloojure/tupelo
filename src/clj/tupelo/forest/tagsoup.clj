@@ -29,13 +29,21 @@
     (.setProperty "http://xml.org/sax/properties/lexical-handler" content-handler)
     (.parse input-source)))
 
-; #todo add (walk-nil->empty ...) to all `parse` output; fix tests  ???
-(s/defn parse
+(s/defn parse-raw
   "Loads and parse an HTML resource and closes the input-stream."
   [input-stream :- java.io.InputStream]
   (when-not input-stream
     (throw (NullPointerException. "HTML resource not found.")))
   (with-open [^java.io.Closeable input-stream input-stream]
-    (xml/parse
+    (xml/parse-raw
       (org.xml.sax.InputSource. input-stream)
       tagsoup-parse-fn)))
+
+(s/defn parse
+  "Loads and parse an HTML resource and closes the input-stream."
+  [input-stream :- java.io.InputStream]
+  (xml/enlive-remove-whitespace
+    (xml/enlive-normalize
+      (parse-raw input-stream))))
+
+

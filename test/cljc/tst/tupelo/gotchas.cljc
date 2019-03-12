@@ -159,7 +159,8 @@
 
   ; nil same as {} (empty map)
   (is= {:a 1}      (assoc nil :a 1))
-  (is= {:a {:b 1}} (assoc-in nil [:a :b] 1)))
+  (is= {:a {:b 1}} (assoc-in nil [:a :b] 1))
+  (is= {} (into {} nil)))
 
 (dotest             ; conj inconsistencies
   (is= [1 2 nil] (conj [1 2] nil))
