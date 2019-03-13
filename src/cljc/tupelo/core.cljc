@@ -2349,6 +2349,25 @@
   (glue (sorted-map) map-in))
 
 
+; #todo add postwalk and change to all sorted-map, sorted-set
+; #todo rename to pp or pprint ?
+; #todo add test & README
+(defn pretty   ; #todo experimental
+  "Shortcut to clojure.pprint/pprint. Returns it (1st) argument."
+  ([arg]
+   (pprint/pprint arg)
+   arg)
+  ([arg writer]
+   (pprint/pprint arg writer)
+   arg))
+
+; #todo add test & README
+; #todo defer to tupelo.core/pretty
+(defn pretty-str
+  "Returns a string that is the result of clojure.pprint/pprint"
+  [arg]
+  (with-out-str (pprint/pprint arg)))
+
 
 ; bottom
 ;***************************************************************************************************
@@ -2378,25 +2397,6 @@
      ; #todo    (drop-last N coll)  (take-last N coll)
      ; #todo    subvec
      ; #todo    others???
-
-     ; #todo add postwalk and change to all sorted-map, sorted-set
-     ; #todo rename to pp or pprint ?
-     ; #todo add test & README
-     (defn pretty   ; #todo experimental
-       "Shortcut to clojure.pprint/pprint. Returns it (1st) argument."
-       ([arg]
-        (pprint/pprint arg)
-        arg)
-       ([arg writer]
-        (pprint/pprint arg writer)
-        arg))
-
-     ; #todo add test & README
-     ; #todo defer to tupelo.core/pretty
-     (defn pretty-str
-       "Returns a string that is the result of clojure.pprint/pprint"
-       [arg]
-       (with-out-str (pprint/pprint arg)))
 
      (comment
        (is= (merge-deep ; #todo need a merge-deep where
