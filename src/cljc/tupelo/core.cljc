@@ -1021,7 +1021,7 @@
   ([value] ; 1-arg arity uses a generic "spy" message
    (spy :spy value)))
 
-(defn spyx-proc
+(defn spyx-impl
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
                      (when *spy-enabled*
@@ -1042,9 +1042,9 @@
    expressions, printing both the expression and its value to stdout. Returns the value of the
    last expression."
   [& exprs]
-  (spyx-proc exprs))
+  (spyx-impl exprs))
 
-(defn ^:no-doc spy-pretty-proc ; #todo => core
+(defn ^:no-doc spy-pretty-impl ; #todo => core
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
                      `(when *spy-enabled* (println (spy-indent-spaces) (str ~expr))))
@@ -1063,9 +1063,9 @@
 (defmacro spy-pretty ; #todo => core
   "Like `spyx-pretty` but without printing the original form"
   [& exprs]
-  (spy-pretty-proc exprs)) ; #todo add in use of `prettify` for each value
+  (spy-pretty-impl exprs)) ; #todo add in use of `prettify` for each value
 
-(defn ^:no-doc spyx-pretty-proc
+(defn ^:no-doc spyx-pretty-impl
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
                      (if (keyword? expr)
@@ -1088,7 +1088,7 @@
 (defmacro spyx-pretty
   "Like `spyx` but with pretty printing (clojure.pprint/pprint)"
   [& exprs]
-  (spyx-pretty-proc exprs)) ; #todo add in use of `prettify` for each value
+  (spyx-pretty-impl exprs)) ; #todo add in use of `prettify` for each value
 
 (defmacro with-spy-indent
   "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
