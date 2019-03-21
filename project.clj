@@ -34,7 +34,9 @@
             [com.jakemccrary/lein-test-refresh "0.23.0"]]
 
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
-                                       [org.clojure/clojurescript "1.10.516" :scope "provided"]]}
+                                       [org.clojure/clojurescript "1.10.439" :scope "provided"]
+                                      ;[org.clojure/clojurescript "1.10.516" :scope "provided"]  ; ***** WARNING - FAILS IN COMPILE!!! *****
+                                      ]}
              :dev      {:dependencies [[binaryage/devtools "0.9.10"]
                                        [binaryage/dirac "1.3.2"]
                                        [com.cemerick/piggieback "0.2.2"]

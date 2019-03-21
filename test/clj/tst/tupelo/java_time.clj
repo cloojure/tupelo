@@ -121,8 +121,8 @@
   ))
 
 (dotest
-  (is (re-matches #"\d{4}-\d{2}-\d{2}T\d\d:\d\d:\d\d\.\d{6}Z" (now->iso-str)))
-  (is (re-matches #"\d{4}-\d{2}-\d{2} \d\d:\d\d:\d\dZ"        (now->iso-str-simple))))
+  (is (re-matches #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3,}Z" (now->iso-str)))  ; at least 3 decimal seconds
+  (is (re-matches #"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}Z"         (now->iso-str-simple))))
 
 (dotest
   (is= [(zoned-date-time 2018 9 1)
