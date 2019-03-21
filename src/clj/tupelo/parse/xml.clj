@@ -8,14 +8,14 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns tupelo.forest.xml
+(ns tupelo.parse.xml
   (:use tupelo.core)
   (:require
     [clojure.walk :as walk]
     [clojure.zip :as zip]
-    [schema.core :as s] )
+    [schema.core :as s]
+    [tupelo.string :as ts])
   (:import
-    [clojure.lang MapEntry]
     [java.io Reader InputStream]
     [javax.xml.parsers SAXParserFactory]
     [org.xml.sax Attributes]
@@ -87,31 +87,34 @@
        (let [^DefaultHandler2 this this]
          (proxy-super resolveEntity publicId systemId))))))
 
-(def ^:private mapentry-attrs-nil (MapEntry. :attrs nil))
-(def ^:private mapentry-attrs-empty (MapEntry. :attrs {}))
-(def ^:private mapentry-content-nil (MapEntry. :content nil))
-(def ^:private mapentry-content-empty (MapEntry. :content []))
+(defn enlive-normalize
+  "Normalize Enlive data replacing `nil` values for :attrs or :content with empty maps & vectors, respectively.
+  Also coerces all :content to vector. "
+  [item]
+  (if (and (map? item) ; Enlive data parsed from XML may has raw strings (esp. whitespace) embedded in it
+        (contains-key? item :tag)) ; when parsing html, may get non-enlive nodes like {:type :comment, :data "..."}
+    (it-> item
+      (update it :attrs (fn [attrs]
+                          (into {} attrs))) ; works for nil
+      (update it :content (fn [content]
+                            (if (or (nil? content) (empty? content))
+                              []
+                              (mapv enlive-normalize content)))))
+    item))
 
-(defn mapentry-attrs-nil?
-  "Returns true if arg is a clojure.lang.MapEntry like [:attrs nil]"
-  [arg] (= arg mapentry-attrs-nil))
-(defn mapentry-content-nil?
-  "Returns true if arg is a clojure.lang.MapEntry like [:content nil]"
-  [arg] (= arg mapentry-content-nil))
-
-(defn walk-nil->empty ; #todo apply to all `parse` output; fix tests
-  "Walk an enlive tree and convert MapEntry's like :
-        {:tag :foo  :attrs nil  :content nil }
-   to:
-        {:tag :foo  :attrs {}   :content []  }"
-  [enlive-data]
-  (walk/postwalk
-    (fn [x]
-      (cond
-        (mapentry-attrs-nil? x) mapentry-attrs-empty
-        (mapentry-content-nil? x) mapentry-content-empty
-        :else x))
-    enlive-data))
+(defn enlive-remove-whitespace
+  "Removes whilespace strings from Enlive data :content vectors."
+  [item]
+  (if (and (map? item) ; Enlive data parsed from XML may has raw strings (esp. whitespace) embedded in it
+        (contains-key? item :tag)) ; when parsing html, may get non-enlive nodes like {:type :comment, :data "..."}
+    (let [content-new (cond-it-> (:content item)
+                        (or (nil? it) (empty? it)) []
+                        :then (drop-if (fn [arg]
+                                         (and (string? arg)
+                                           (ts/whitespace? arg))) it)
+                        :then (mapv enlive-remove-whitespace it))]
+      (glue item {:content content-new}))
+    item))
 
 (defn ^:private sax-parse-fn
   [xml-input content-handler]
@@ -134,8 +137,8 @@
         ^org.xml.sax.InputSource             input-source
         ^org.xml.sax.helpers.DefaultHandler  content-handler))))
 
-(s/defn parse       ; #todo fix docstring
-  ([xml-input] (parse xml-input sax-parse-fn))
+(s/defn parse-raw       ; #todo fix docstring
+  ([xml-input] (parse-raw xml-input sax-parse-fn))
   ([xml-input parse-fn]
     (let [result-atom     (atom (xml-zip {:type :document :content nil}))
           content-handler (handler result-atom)]
@@ -146,9 +149,15 @@
                           (:content it)
                           (drop-if #(= :dtd (:type %)) it)
                           (drop-if #(string? %) it)
-                          (only it))]
+                          (only it) )]
         parsed-data))))
 
+(s/defn parse       ; #todo fix docstring
+  ([xml-input] (parse xml-input sax-parse-fn))
+  ([xml-input parse-fn]
+    (enlive-remove-whitespace
+      (enlive-normalize
+        (parse-raw xml-input parse-fn)))))
 
 ; "Parses and loads the source input-source, which can be a File, InputStream or String
 ;  naming a URI. Returns a seq of tree of the xml/element struct-map, which has the keys

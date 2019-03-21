@@ -168,52 +168,55 @@
   (or (= a b)
     (string-increasing? a b)))
 ;-----------------------------------------------------------------------------
+#?(:clj
+   (do
 
-(defmacro with-err-str
-  "Evaluates exprs in a context in which *err* is bound to a fresh
-  StringWriter.  Returns the string created by any nested printing
-  calls."
-  [& body]
-  `(let [s# (new java.io.StringWriter)]
-     (binding [*err* s#]
-       ~@body
-       (str s#))))
+   (defmacro with-err-str
+     "Evaluates exprs in a context in which *err* is bound to a fresh
+     StringWriter.  Returns the string created by any nested printing
+     calls."
+     [& body]
+     `(let [s# (new java.io.StringWriter)]
+        (binding [*err* s#]
+          ~@body
+          (str s#))))
 
-(defmacro with-system-err-str
-  "Evaluates exprs in a context in which JVM System/err is bound to a fresh
-  PrintStream.  Returns the string created by any nested printing calls."
-  [& body]
-  `(let [baos# (ByteArrayOutputStream.)
-         ps# (PrintStream. baos#) ]
-     (System/setErr ps#)
-     ~@body
-     (System/setErr System/err)
-     (.close ps#)
-     (.toString baos#)))
+   (defmacro with-system-err-str
+     "Evaluates exprs in a context in which JVM System/err is bound to a fresh
+     PrintStream.  Returns the string created by any nested printing calls."
+     [& body]
+     `(let [baos# (ByteArrayOutputStream.)
+            ps#   (PrintStream. baos#)]
+        (System/setErr ps#)
+        ~@body
+        (System/setErr System/err)
+        (.close ps#)
+        (.toString baos#)))
 
-(defmacro with-system-out-str
-  "Evaluates exprs in a context in which JVM System/out is bound to a fresh
-  PrintStream.  Returns the string created by any nested printing calls."
-  [& body]
-  `(let [baos# (ByteArrayOutputStream.)
-         ps# (PrintStream. baos#) ]
-     (System/setOut ps#)
-     ~@body
-     (System/setOut System/out)
-     (.close ps#)
-     (.toString baos#)))
+   (defmacro with-system-out-str
+     "Evaluates exprs in a context in which JVM System/out is bound to a fresh
+     PrintStream.  Returns the string created by any nested printing calls."
+     [& body]
+     `(let [baos# (ByteArrayOutputStream.)
+            ps#   (PrintStream. baos#)]
+        (System/setOut ps#)
+        ~@body
+        (System/setOut System/out)
+        (.close ps#)
+        (.toString baos#)))
 
-(defn ex-msg
-  "Returns the message from an exception => (.getMessage exception)"
-  [exception]
-  (.getMessage exception))
+   (defn exception-message
+     "Returns the message from an exception => (.getMessage exception)"
+     [exception]
+     (.getMessage exception))
 
-(defn ex-stacktrace
-  "Returns the stacktrace from an exception "
-  [exception]
-  (with-system-err-str
-    (.printStackTrace exception)))
+   (defn exception-stacktrace
+     "Returns the stacktrace from an exception "
+     [exception]
+     (with-system-err-str
+       (.printStackTrace exception)))
 
+))
 ;-----------------------------------------------------------------------------
 (defn const-fn       ; #todo or const-fn or always
   "Returns a function that always returns the specified value, and accepts any number of args
@@ -695,7 +698,8 @@
 
 
 ;-----------------------------------------------------------------------------
-(declare clip-str
+(declare
+  clip-str
   )
 
 ; #todo add not-neg? not-pos? not-zero?
@@ -1111,7 +1115,7 @@
      (finally ; ensure we un-do indentation in event of exception
        (spy-indent-dec))))
 
-(defmacro with-debug-tag ; #todo => tupelo.core ???
+(defmacro with-debug-tag
   [debug-tag & forms]
   `(with-spy-indent
      (let [tag-enter# ~(str debug-tag "-enter")
@@ -2365,6 +2369,25 @@
   (glue (sorted-map) map-in))
 
 
+; #todo add postwalk and change to all sorted-map, sorted-set
+; #todo rename to pp or pprint ?
+; #todo add test & README
+(defn pretty   ; #todo experimental
+  "Shortcut to clojure.pprint/pprint. Returns it (1st) argument."
+  ([arg]
+   (pprint/pprint arg)
+   arg)
+  ([arg writer]
+   (pprint/pprint arg writer)
+   arg))
+
+; #todo add test & README
+; #todo defer to tupelo.core/pretty
+(defn pretty-str
+  "Returns a string that is the result of clojure.pprint/pprint"
+  [arg]
+  (with-out-str (pprint/pprint arg)))
+
 
 ; bottom
 ;***************************************************************************************************
@@ -2394,25 +2417,6 @@
      ; #todo    (drop-last N coll)  (take-last N coll)
      ; #todo    subvec
      ; #todo    others???
-
-     ; #todo add postwalk and change to all sorted-map, sorted-set
-     ; #todo rename to pp or pprint ?
-     ; #todo add test & README
-     (defn pretty   ; #todo experimental
-       "Shortcut to clojure.pprint/pprint. Returns it (1st) argument."
-       ([arg]
-        (pprint/pprint arg)
-        arg)
-       ([arg writer]
-        (pprint/pprint arg writer)
-        arg))
-
-     ; #todo add test & README
-     ; #todo defer to tupelo.core/pretty
-     (defn pretty-str
-       "Returns a string that is the result of clojure.pprint/pprint"
-       [arg]
-       (with-out-str (pprint/pprint arg)))
 
      (comment
        (is= (merge-deep ; #todo need a merge-deep where

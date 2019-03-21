@@ -8,11 +8,11 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
-(ns tupelo.forest.tagsoup
+(ns tupelo.parse.tagsoup
   (:use tupelo.core)
   (:require
     [schema.core :as s]
-    [tupelo.forest.xml :as xml] ))
+    [tupelo.parse.xml :as xml] ))
 
 (s/defn ^:private tagsoup-parse-fn
   [input-source :- org.xml.sax.InputSource
@@ -29,12 +29,21 @@
     (.setProperty "http://xml.org/sax/properties/lexical-handler" content-handler)
     (.parse input-source)))
 
-(s/defn parse
+(s/defn parse-raw
   "Loads and parse an HTML resource and closes the input-stream."
   [input-stream :- java.io.InputStream]
   (when-not input-stream
     (throw (NullPointerException. "HTML resource not found.")))
   (with-open [^java.io.Closeable input-stream input-stream]
-    (xml/parse
+    (xml/parse-raw
       (org.xml.sax.InputSource. input-stream)
       tagsoup-parse-fn)))
+
+(s/defn parse
+  "Loads and parse an HTML resource and closes the input-stream."
+  [input-stream :- java.io.InputStream]
+  (xml/enlive-remove-whitespace
+    (xml/enlive-normalize
+      (parse-raw input-stream))))
+
+

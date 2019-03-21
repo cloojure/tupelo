@@ -5,7 +5,6 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.core
-
   #?(:clj (:require
             [tupelo.test :as ttst :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
             [clojure.string :as str]
@@ -709,6 +708,18 @@
   (throws? (t/glue   "hello"   nil    )) )
 
 #?(:clj
+
+   (dotest
+     (try
+       (throw (Exception. "Boom!"))
+       (catch Exception ex
+         (is= "Boom!" (spyx (t/exception-message ex)))
+         (let [strace (t/exception-stacktrace ex)]
+           (is (str/starts-with? strace "java.lang.Exception"))
+           (is (ts/contains-str? strace "Boom!"))
+           (is (ts/contains-str? strace "tst.tupelo.core"))))))
+
+
    (dotest
      (let [zz (byte-array 0)
            aa (byte-array 1 (byte 1))

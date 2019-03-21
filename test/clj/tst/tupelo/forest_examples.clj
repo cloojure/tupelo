@@ -15,7 +15,7 @@
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.forest :as tf]
-    [tupelo.forest.tagsoup :as tagsoup]
+    [tupelo.parse.tagsoup :as tagsoup]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts] )
   (:import [java.io StringReader]))
