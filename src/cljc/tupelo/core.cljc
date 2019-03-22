@@ -338,7 +338,7 @@
                         (instance? java.lang.Iterable item) (into [] item)  ; #todo need test
                      ])
                         :else item))
-        result    (walk/postwalk unlazy-item coll) ]
+        result    (walk/prewalk unlazy-item coll) ]
     result))
 
 (defn unlazy-1 ; #todo need tests & docs. Use for datomic Entity?

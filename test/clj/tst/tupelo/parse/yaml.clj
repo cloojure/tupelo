@@ -43,3 +43,46 @@
   (is= "[2, a, true]\n" (yaml/encode [2 "a" true]))
   (is= "{a: 1, b: 2, c: 3}\n" (yaml/encode {:a 1 :b 2 :c 3})))
 
+;----------------------------------------------------------------------------
+(def yaml-str
+"
+tupelo:
+  name: Tupelo
+  url: https://github.com/cloojure/tupelo
+  categories:
+    - Data Transformation
+    - Date and Time
+    - Datomic
+    - Misc. Functions
+    - Unit Testing
+    - HTML Parsers
+    - JSON Parsers
+    - YAML Parsers
+    - XML Parsers
+  platforms: [clj, cljs]
+" )
+
+(dotest-focus
+  (let [edn {:tupelo
+             {:name       "Tupelo"
+              :url        "https:// github.com / cloojure/tupelo"
+              :categories ["Data Transformation"
+                           "Date and Time"
+                           "Datomic"
+                           "Misc. Functions"
+                           "Unit Testing"
+                           "HTML Parsers"
+                           "JSON Parsers"
+                           "YAML Parsers"
+                           "XML Parsers"]
+              :platforms  ["clj"]}}
+        edn-parsed (yaml/parse yaml-str)
+        m1 (:tupelo edn-parsed)
+        ]
+    (spyxx edn-parsed)
+    (spyxx m1)
+    (spyx (instance? java.util.Map m1))
+    (spyx-pretty edn-parsed)
+    )
+
+  )
