@@ -24,6 +24,7 @@
     [org.clojure/spec.alpha "0.2.176"]
     [org.clojure/test.check "0.9.0"]
     [org.clojure/tools.reader "1.3.2"]
+    [org.snakeyaml/snakeyaml-engine "1.0"]
     [prismatic/schema "1.1.10"]
     [reagent-utils "0.3.2"]
   ]

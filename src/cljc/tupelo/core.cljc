@@ -331,6 +331,8 @@
                         (map? item) (into {} item)
                         (set? item) (into #{} item)
              #?@(:clj [ (instance? java.io.InputStream item) (slurp item) ])  ; #todo need test
+             #?@(:clj [ (instance? java.util.List item) (vec item) ])  ; #todo need test
+
                         :else item))
         result    (walk/postwalk unlazy-item coll) ]
     result ))
