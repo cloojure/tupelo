@@ -2,7 +2,6 @@
   (:use tupelo.parse.yaml tupelo.core tupelo.test)
   (:require [clojure.string :as str]))
 
-
 (dotest
   (let [document "\n- Hesperiidae\n- Papilionidae\n- Apatelodidae\n- Epiplemidae"]
     (is= (load-yaml-from-string document)
