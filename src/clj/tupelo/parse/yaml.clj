@@ -1,41 +1,53 @@
 (ns tupelo.parse.yaml
   (:use tupelo.core)
   (:require
-    [clojure.walk :as walk])
+    [clojure.walk :as walk]
+    [schema.core :as s]
+    [tupelo.schema :as tsk]
+    )
   (:import
     [org.snakeyaml.engine.v1.api LoadSettingsBuilder Load]
     [org.snakeyaml.engine.v1.api DumpSettingsBuilder Dump]
     ))
 
 ;-----------------------------------------------------------------------------
-(def load-settings (-> (LoadSettingsBuilder.)
-                     ;(.setLabel "Custom user configuration")
-                     (.build)))
+(def ^:private load-settings (-> (LoadSettingsBuilder.)
+                               ;(.setLabel "Custom user configuration")
+                               (.build)))
 
-(def yaml-load (Load. load-settings))
+(def ^:private yaml-load (Load. load-settings))
 
-(defn load-all-yaml-from-string-raw [str-in]
-  (unlazy (.loadAllFromString yaml-load str-in)))
+(s/defn parse-all-raw
+  "Parses a String containing multiple YAML objects, returning a vector of normalized Clojure data structure."
+  [str-in :- s/Str]
+  (unlazy (.loadAllFromString yaml-load (s/validate s/Str str-in))))
 
-(defn load-all-yaml-from-string [str-in]
+(s/defn parse-all
+  "Parses a String containing multiple YAML objects, returning a vector of normalized Clojure data structure (with keywordized map keys)."
+  [str-in :- s/Str]
   (walk/keywordize-keys
-    (load-all-yaml-from-string-raw  str-in)))
+    (parse-all-raw (s/validate s/Str str-in))))
 
-(defn load-yaml-from-string-raw [str-in]
-  (unlazy (.loadFromString yaml-load str-in)))
+(s/defn parse-raw
+  "Parses a String containing a single YAML object, returning a normalized Clojure data structure."
+  [str-in :- s/Str]
+  (unlazy (.loadFromString yaml-load (s/validate s/Str str-in))))
 
-(defn load-yaml-from-string [str-in]
+(s/defn parse
+  "Parses a String containing a single YAML object, returning a normalized Clojure data structure (with keywordized map keys)."
+  [str-in :- s/Str]
   (walk/keywordize-keys
-    (load-yaml-from-string-raw  str-in)))
+    (parse-raw (s/validate s/Str str-in))))
 
 ;-----------------------------------------------------------------------------
-(def dump-settings (it-> (DumpSettingsBuilder.)
-                     ;(.setDefaultScalarStyle it ScalarStyle.DOUBLE_QUOTED)
-                     (.build it)))
+(def ^:private dump-settings (it-> (DumpSettingsBuilder.)
+                               ;(.setDefaultScalarStyle it ScalarStyle.DOUBLE_QUOTED)
+                               (.build it)))
 
-(def yaml-dump (Dump. dump-settings))
+(def ^:private yaml-dump (Dump. dump-settings))
 
-(defn yaml-dump-to-string [it]
+(defn encode [it]
+  "Serializes a Clojure data structure into a YAML string."
   (.dumpToString yaml-dump
     (walk/stringify-keys it)))
 
