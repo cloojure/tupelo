@@ -40,7 +40,10 @@
 
 (def HidRootSpec
   "The Plumatic Schema type name for the values accepted as starting points (roots) for a subtree path search."
-  (s/either HID [HID] #{HID})) ; #todo why is this here?
+  (s/conditional ; #todo why is this here?
+    int? HID
+    set? #{HID}
+    :else [HID] ))
 
 (def Node
   "The Plumatic Schema description of a legal node in a forest of trees"
@@ -166,7 +169,7 @@
   "Creates a tree from an EDN data structure"
   ([data :- s/Any]
     (edn->tree nil data))
-  ([idx :- (s/either s/Int (s/eq nil))
+  ([idx :- (s/if int? s/Int (s/eq nil))
     data :- s/Any]
     (cond
       (sequential? data) {::tag   ::list
@@ -314,7 +317,7 @@
   [node :- tsk/KeyMap]
   (mapv #(grab :value %) (grab ::kids node)))
 
-(s/defn tree->enlive :- (s/either tsk/KeyMap tsk/Vec)
+(s/defn tree->enlive :- (s/if map? tsk/KeyMap tsk/Vec)
   [tree-node :- tsk/KeyMap]
   (assert (tree-node? tree-node))
   (let [
@@ -478,7 +481,7 @@
 ; #todo avoid descendant-cycles
 (s/defn add-node :- HID
   ([attrs-arg] (add-node attrs-arg [])) ; #todo need test ; => ctx (tag required)
-  ([attrs-arg :- (s/either tsk/KeyMap s/Keyword) ; #todo merge args
+  ([attrs-arg :- (s/if map? tsk/KeyMap s/Keyword) ; #todo merge args
     kid-hids :- [HID]]
     (doseq [kid kid-hids] (validate-hid kid))
     (let [attrs (if (map? attrs-arg)
@@ -843,10 +846,10 @@
 (s/defn remove-kids :- tsk/KeyMap
   "Removes a set of children from a Node (including any duplcates)."
   ([hid :- HID
-    kids-leaving :- (s/either [HID] #{HID})]
+    kids-leaving :- (s/if sequential? [HID] #{HID})]
     (remove-kids hid kids-leaving false))
   ([hid :- HID
-    kids-leaving :- (s/either [HID] #{HID})
+    kids-leaving :- (s/if sequential? [HID] #{HID} )
     missing-kids-ok? :- s/Bool]
     (let [kids-leaving        (set kids-leaving)
           report-missing-kids (not missing-kids-ok?)
@@ -953,7 +956,7 @@
   [result-atom
    parents :- [HID]
    hid :- HID
-   tgt-path :- [(s/either s/Keyword tsk/KeyMap)]]
+   tgt-path :- [(s/if keyword? s/Keyword tsk/KeyMap)]]
   (validate-hid hid)
   (when (not-empty? tgt-path)
     (let [tgt           (xfirst tgt-path)

@@ -1735,7 +1735,7 @@
       (submap-by-keys {:a 1 :b 2} #{:a :z} :missing-ok )  =>  {:a 1}
   "
   [map-arg :- tsk/Map
-   keep-keys :- (s/either tsk/Set tsk/List)
+   keep-keys :- (s/if set? tsk/Set tsk/List)
    & opts]
  ;(println :awt00 map-arg)
   (let [keep-keys (set keep-keys)]
@@ -1762,7 +1762,7 @@
       (submap-by-vals {:a 1 :b 2 :A 1} #{1  }             )  =>  {:a 1 :A 1}
       (submap-by-vals {:a 1 :b 2 :A 1} #{1 9} :missing-ok )  =>  {:a 1 :A 1} "
   [map-arg :- tsk/Map
-   keep-vals :- (s/either tsk/Set tsk/List)
+   keep-vals :- (s/if set? tsk/Set tsk/List)
    & opts]
   (let [keep-vals    (set keep-vals)
         found-map    (into {}
@@ -1910,7 +1910,7 @@
         map-out        (into {} tuple-seq-out) ]
     map-out))
 
-(def MapKeySpec (s/either [s/Any] #{s/Any}))
+(def MapKeySpec (s/if set? #{s/Any} [s/Any]))
 (s/defn validate-map-keys :- s/Any ; #todo docstring, README
   [tst-map :- tsk/Map
    valid-keys :- MapKeySpec]

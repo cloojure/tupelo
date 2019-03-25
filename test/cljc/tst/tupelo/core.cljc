@@ -707,8 +707,9 @@
   (throws? (t/glue   #{:a 1}   nil    ))
   (throws? (t/glue   "hello"   nil    )) )
 
+;-----------------------------------------------------------------------------
+; #todo get strange cljs compiler errors if combine these 2 into a single #?(:clj ...)
 #?(:clj
-
    (dotest
      (try
        (throw (Exception. "Boom!"))
@@ -717,9 +718,9 @@
          (let [strace (t/exception-stacktrace ex)]
            (is (str/starts-with? strace "java.lang.Exception"))
            (is (ts/contains-str? strace "Boom!"))
-           (is (ts/contains-str? strace "tst.tupelo.core"))))))
+           (is (ts/contains-str? strace "tst.tupelo.core")))))))
 
-
+#?(:clj   ; #todo get cljs compiler strange errors if `?` is missing in '#?(:clj ...)'
    (dotest
      (let [zz (byte-array 0)
            aa (byte-array 1 (byte 1))
@@ -739,6 +740,8 @@
        (is= [1 2 2 3 3 3 4 4 4 4] (vec (t/glue aa bb cc dd zz)))
        (is= [1 2 2 3 3 3 4 4 4 4] (vec (t/glue zz aa bb zz cc dd)))
        (is (types/byte-array? (t/glue aa bb cc dd))))))
+;-----------------------------------------------------------------------------
+
 
 (dotest
   (let [data [[0 1 2]

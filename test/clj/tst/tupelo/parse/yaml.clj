@@ -62,7 +62,7 @@ tupelo:
   platforms: [clj, cljs]
 " )
 
-(dotest-focus
+(dotest
   (let [edn {:tupelo
              {:name       "Tupelo"
               :url        "https:// github.com / cloojure/tupelo"
