@@ -172,14 +172,14 @@
   ([idx :- (s/if int? s/Int (s/eq nil))
     data :- s/Any]
     (cond
-      (sequential? data) {::tag   ::list
+      (sequential? data) {:tag   ::list
                           ::index idx
                           ::kids  (forv [[idx val] (indexed data)]
                                     (edn->tree idx val))}
-      (map? data) {::tag   ::entity
+      (map? data) {:tag   ::entity
                    ::index idx
                    ::kids  (forv [[child-key child-val] data]
-                             {::tag  ::entry
+                             {:tag  ::entry
                               ::key  child-key
                               ::kids [(edn->tree child-val)]})}
       :else {::value data ::index idx ::kids []})))
@@ -187,7 +187,7 @@
 (defn ^:private ^:no-doc validate-list-kids-idx
   "verify that a ::list node in a tree has a valid index for all kid nodes"
   [node]
-  (assert (= ::list (grab ::tag node)))
+  (assert (= ::list (grab :tag node)))
   (let [kids        (grab ::kids node)
         kids-sorted (vec (sort-by #(grab ::index %) kids))
         idx-vals    (mapv #(grab ::index %) kids-sorted)
@@ -197,13 +197,13 @@
 
 (s/defn ^:private ^:no-doc data-list-node?
   [node :- tsk/KeyMap]
-  (and (contains-key? node ::tag)
-    (= ::list (grab ::tag node))))
+  (and (contains-key? node :tag)
+    (= ::list (grab :tag node))))
 
 (s/defn ^:private ^:no-doc data-entity-node?
   [node :- tsk/KeyMap]
-  (and (contains-key? node ::tag)
-    (= ::entity (grab ::tag node))))
+  (and (contains-key? node :tag)
+    (= ::entity (grab :tag node))))
 
 (s/defn ^:private ^:no-doc data-leaf-node?
   [node :- tsk/KeyMap]
@@ -229,7 +229,7 @@
                                                 {(grab ::key entry) (tree->edn (only (grab ::kids entry)))}))]
                                map-data)
 
-    :else (throw (ex-info "tree->data: unrecognized node=" node))))
+    :else (throw (ex-info "tree->data: unrecognized node=" {:node node}))))
 
 ;---------------------------------------------------------------------------------------------------
 (defn enlive-node-lax?
@@ -1032,7 +1032,9 @@
   "Searches as with `find-hids`, expecting & returning a single HID result."
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec]
-  (only (find-hids root-spec tgt-path)))
+  (let [hids (find-hids root-spec tgt-path)]
+    (spyx :awt-find-hid--hids hids)
+    (only hids)))
 
 (s/defn find-hids-with ; #todo RETHINK
   "Searches for subtrees as for `find-hids`, discarding HIDs that fail the `hid-pred` function."

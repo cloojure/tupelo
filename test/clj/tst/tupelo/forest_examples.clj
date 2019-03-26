@@ -1577,24 +1577,27 @@
                                  [{:tag :value, :value 5}]]))))
 
 ;-----------------------------------------------------------------------------
+(dotest
+  (with-forest (new-forest)
+    (let [edn-orig          [1 [[2] 3]]
+          root-hid          (add-tree (edn->tree edn-orig))
+          hid               (find-hid root-hid [::tf/list ::tf/list])
+          subtree-edn-orig  (-> hid hid->tree tree->edn)
+          >>                (kids-update hid butlast)
+          subtree-edn-final (-> hid hid->tree tree->edn)
+          edn-final         (-> root-hid hid->tree tree->edn)]
 
+      (is= subtree-edn-orig      [[2] 3])
+      (is= subtree-edn-final     [[2]])
+      (is= edn-final          [1 [[2]]]  )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+      (is= (hid->bush root-hid)
+        [{:tag :tupelo.forest/list, :tupelo.forest/index nil}
+         [#:tupelo.forest{:value 1, :index 0}]
+         [{:tag :tupelo.forest/list, :tupelo.forest/index 1}
+          [{:tag :tupelo.forest/list, :tupelo.forest/index 0}
+           [#:tupelo.forest{:value 2, :index 0}]]]] )
+    )))
 
 
 

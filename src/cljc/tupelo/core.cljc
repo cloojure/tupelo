@@ -373,7 +373,7 @@
   Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
   [coll]
   (when-not (has-length? coll 1)
-    (throw (ex-info "only: num-items must=1" coll)))
+    (throw (ex-info "only: num-items must=1" {:coll coll})))
   (clojure.core/first coll))
 
 (defn onlies
