@@ -239,6 +239,18 @@
   [arg]
   (if arg false true))
 
+(defn bigint?
+  "Returns true if x is a clojure.lang.BigInt"
+  [x] (= (type x) clojure.lang.BigInt))
+
+(defn biginteger?
+  "Returns true if x is a java.math.BigInteger"
+  [x] (= (type x) java.math.BigInteger))
+
+(defn bigdecimal?
+  "Returns true if x is a java.math.BigDecimal"
+  [x] (= (type x) java.math.BigDecimal)) ;  or (decimal? x)
+
 (defn nl
   "Abbreviated name for `newline` "
   [] (newline))
@@ -1703,7 +1715,7 @@
 ; #todo add (->sorted-set <set>)        => (into (sorted-set) <set>)
 ; #todo add (->sorted-vec <sequential>) => (vec (sort <vec>))
 
-(s/defn lexical-compare :- s/Int
+(s/defn compare-lexical :- s/Int
   "Performs a lexical comparison of 2 sequences, sorting as follows:
       [1]
       [1 :a]
@@ -1721,7 +1733,7 @@
     :else (let [a0 (xfirst a)
                 b0 (xfirst b)]
             (if (= a0 b0)
-              (lexical-compare (xrest a) (xrest b))
+              (compare-lexical (xrest a) (xrest b))
               (compare a0 b0)))))
 
 ; #todo maybe submap-without-keys, submap-without-vals ?
