@@ -1017,8 +1017,11 @@
 
   (is= (vec (sorted-set-by t/compare-lexical [1 :a] [1] [2]))
     [[1] [1 :a] [2]])
-  (is= (vec (sorted-set-by t/compare-lexical [2 0] [2] [3] [3 :y] [1] [1 :a] [1 :b] [1 :b 3]))
+  (is= (vec (sorted-set-by t/compare-lexical [1 :a] [1 nil] [1] [2]))
+    [[1] [1 nil] [1 :a] [2]])
+  (is= (vec (sorted-set-by t/compare-lexical [2 0] [2] [3] [3 :y] [1] [1 :a] [1 nil] [1 :b] [1 :b 3]))
     [[1]
+     [1 nil]
      [1 :a]
      [1 :b]
      [1 :b 3]

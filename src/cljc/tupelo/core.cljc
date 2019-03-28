@@ -239,18 +239,6 @@
   [arg]
   (if arg false true))
 
-(defn bigint?
-  "Returns true if x is a clojure.lang.BigInt"
-  [x] (= (type x) clojure.lang.BigInt))
-
-(defn biginteger?
-  "Returns true if x is a java.math.BigInteger"
-  [x] (= (type x) java.math.BigInteger))
-
-(defn bigdecimal?
-  "Returns true if x is a java.math.BigDecimal"
-  [x] (= (type x) java.math.BigDecimal)) ;  or (decimal? x)
-
 (defn nl
   "Abbreviated name for `newline` "
   [] (newline))
@@ -726,8 +714,24 @@
          [tgt-atom swap-fn & args]
          (let [[old -new-] (apply swap-vals! tgt-atom swap-fn args)]
            old)))
-
    ))
+
+;-----------------------------------------------------------------------------
+#?(:clj   ; JVM type testing stuff
+   (do
+     (defn bigint?
+       "Returns true if x is a clojure.lang.BigInt"
+       [x] (= (type x) clojure.lang.BigInt))
+
+     (defn biginteger?
+       "Returns true if x is a java.math.BigInteger"
+       [x] (= (type x) java.math.BigInteger))
+
+     (defn bigdecimal?
+       "Returns true if x is a java.math.BigDecimal (synonym for `clojure.core/decimal?`)"
+       [x] (= (type x) java.math.BigDecimal))
+
+     ))
 
 
 ;-----------------------------------------------------------------------------
