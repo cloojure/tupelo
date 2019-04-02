@@ -1033,7 +1033,6 @@
   [root-spec :- HidRootSpec
    tgt-path :- tsk/Vec]
   (let [hids (find-hids root-spec tgt-path)]
-    (spyx :awt-find-hid--hids hids)
     (only hids)))
 
 (s/defn find-hids-with ; #todo RETHINK
