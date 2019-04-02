@@ -836,7 +836,7 @@
        (.stringify js/JSON (clj->js arg))) ))
 
 ; #todo:  make (map-ctx {:trunc false :eager true} <fn> <coll1> <coll2> ...) <- default ctx
-e #todo:  mapz, forz, filterz, ...?
+; #todo:  mapz, forz, filterz, ...?
 (defn keep-if
   "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
   [pred coll]
