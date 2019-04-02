@@ -21,36 +21,53 @@
 (def age-of-wisdom 30)
 
 (defprotocol DataNode
-  (content [this]))
+  (raw [this])
+  (edn [this]))
 
 (defrecord MapNode ;Represents ths content of a Clojure map.
   [content] ; #todo add parent
   DataNode
-  (content [this]
-    (validate map? (:content this))) )
+  (raw [this]
+    (validate map? content))
+  (edn [this]
+    (apply glue
+      (forv [[k v] content]
+        {k (edn v)}))))
 
 (defrecord VecNode ;Represents ths content of a Clojure vector (any sequential type coerced into a vector).
   [content] ; #todo add parent
   DataNode
-  (content [this]
-    (validate vector? (:content this))) )
+  (raw [this]
+    (validate vector? content))
+  (edn [this]
+    (forv [elem content]
+      (edn elem))))
 
 ; Represents a Clojure primitive (non-collection) type,
 ; (i.e. number, string, keyword, symbol, character, etc)
 (defrecord LeafNode
   [content] ; #todo add parent
   DataNode
-  (content [this]
-    (validate #(not (coll? %)) (:content this))) )
+  (raw [this]
+    (validate #(not (coll? %)) content))
+  (edn [this]
+    (validate #(not (coll? %)) content)) )
 
-(s/defn load ; :- DataNode
-  [arg :- s/Any]
+(defn edn->datatree ; :- DataNode #todo
+  [edn-val] ;  :- s/Any
   (cond
-    (map? arg) (->MapNode (apply glue
-                            (forv [[k v] arg]
-                              {k (load v)})))
-    (or (set? arg) ; coerce sets to vectors
-      (sequential? arg)) (->VecNode (into []
-                                      (forv [elem arg]
-                                        (load elem))))
-    :else (->LeafNode arg)))
+    (map? edn-val) (->MapNode (apply glue
+                            (forv [[k v] edn-val]
+                              {k (edn->datatree v)})))
+    (or (set? edn-val) ; coerce sets to vectors
+      (sequential? edn-val)) (->VecNode (into []
+                                      (forv [elem edn-val]
+                                        (edn->datatree elem))))
+    :else (->LeafNode edn-val)))
+
+(defn datatree->edn ;  :- s/Any  ; #todo
+  [datatree]   ; :- DataNode  ; #todo
+  (nl)
+  (println :datatree->edn datatree)
+  (edn datatree)
+  )
