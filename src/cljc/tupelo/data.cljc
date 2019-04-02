@@ -51,22 +51,22 @@
   (raw [this]
     (validate #(not (coll? %)) content))
   (edn [this]
-    (validate #(not (coll? %)) content)) )
+    (validate #(not (coll? %)) content)))
 
 (defn edn->datatree ; :- DataNode #todo
   [edn-val] ;  :- s/Any
   (cond
     (map? edn-val) (->MapNode (apply glue
-                            (forv [[k v] edn-val]
-                              {k (edn->datatree v)})))
+                                (forv [[k v] edn-val]
+                                  {k (edn->datatree v)})))
     (or (set? edn-val) ; coerce sets to vectors
       (sequential? edn-val)) (->VecNode (into []
-                                      (forv [elem edn-val]
-                                        (edn->datatree elem))))
+                                          (forv [elem edn-val]
+                                            (edn->datatree elem))))
     :else (->LeafNode edn-val)))
 
 (defn datatree->edn ;  :- s/Any  ; #todo
-  [datatree]   ; :- DataNode  ; #todo
+  [datatree] ; :- DataNode  ; #todo
   (nl)
   (println :datatree->edn datatree)
   (edn datatree)
