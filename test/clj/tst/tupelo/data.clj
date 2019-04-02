@@ -32,22 +32,21 @@
              :i 1}))
 
 (dotest-focus
+  (let [edn-0  {:a 1 :b 2}
+        node-0 (MapNode. {:a (LeafNode. 1)
+                          :b (LeafNode. 2)})
 
-  ;(let [map-0     {:a 1 :b 2}
-  ;      ; constructor just saves literal content
-  ;      node-1    (->MapNode {:a 1 :b 2})
-  ;      node-2    (MapNode. {:a 1 :b 2})
-  ;      ; edn->datatree converts to tree data structure
-  ;      data-tree-0 (MapNode. {:a (LeafNode. 1)
-  ;                           :b (LeafNode. 2)})
-  ;      data-tree-1 (edn->datatree map-0)
-  ;      edn-1   (datatree->edn datatree-1) ]
-  ;  (is= node-1 node-2)
-  ;  ; content just returns literal value
-  ;  (is= map-0 (content node-1) (content node-2))
-  ;  ; edn->datatree converts to tree data structure
-  ;  (is= data-tree-0 data-tree-1 )
-  ;  (is= map-0 map-1 ) )
+        node-1 (->MapNode edn-0)
+        node-2 (MapNode. edn-0)
+
+        node-9 (edn->datatree edn-0)
+        edn-9  (datatree->edn node-9)]
+
+    (is= node-1 node-2)
+
+    (is= edn-0 (raw node-1) (raw node-2))
+    (is= node-0 node-9)
+    (is= edn-0 edn-9))
 
   (let [edn-0  [1 2 3]
         node-0 (VecNode. [(LeafNode. 1)
@@ -63,13 +62,13 @@
     (is= node-0 node-9)
     (is= edn-0 edn-9))
 
-(let [edn-0  "hello"
-      node-1 (->LeafNode edn-0)
-      node-2 (LeafNode. edn-0)
-      node-3 (edn->datatree edn-0)
-      edn-9  (datatree->edn node-1)]
-  (is= node-1 node-2 node-3)
-  (is= edn-0 (edn node-1) (raw node-1))
-  (is= edn-0 edn-9))
+  (let [edn-0  "hello"
+        node-1 (->LeafNode edn-0)
+        node-2 (LeafNode. edn-0)
+        node-3 (edn->datatree edn-0)
+        edn-9  (datatree->edn node-1)]
+    (is= node-1 node-2 node-3)
+    (is= edn-0 (edn node-1) (raw node-1))
+    (is= edn-0 edn-9))
 
-)
+  )
