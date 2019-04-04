@@ -64,9 +64,9 @@
       (edn (hid->node elem-hid))))
   INavNode
   (nav [this key]
-    (if-not (= :* key)
-      (nth (validate vector? content) key)
-      (raw this))))
+    (if (= :* key)
+      (raw this)
+      (nth (validate vector? content) key))))
 
 ; Represents a Clojure primitive (non-collection) type,
 ; (i.e. number, string, keyword, symbol, character, etc)
@@ -149,16 +149,19 @@
   [hid :- HID]
   (edn (hid->node hid)))
 
-(s/defn hid-nav :- HID
+(s/defn hid-nav :- s/Any
   [hid :- HID
    path :- tsk/Vec]
-  (if (empty? path)
-    hid
-    (let [node      (hid->node hid)
-          key       (xfirst path)
-          path-rest (xrest path)]
-      (hid-nav (nav node key) path-rest))))
-
+  (let [node       (hid->node hid)
+        key        (xfirst path)
+        path-rest  (xrest path)
+        nav-result (nav node key)]
+    (if (empty? path-rest)
+      nav-result
+      (if (hid? nav-result)
+        (hid-nav nav-result path-rest)
+        (forv [hid nav-result]
+          (hid-nav hid path-rest))))))
 
 
 
