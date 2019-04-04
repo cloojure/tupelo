@@ -8,8 +8,7 @@
   (:use tupelo.data tupelo.core tupelo.test)
   (:refer-clojure :exclude [load ->VecNode])
   (:require
-    [tupelo.string :as ts]
-    )
+    [tupelo.string :as ts] )
   (:import [tupelo.data MapNode VecNode LeafNode]))
 
 (def data-1
@@ -21,54 +20,46 @@
    :h "hotel"
    :i 1})
 
-(def datatree-1
-  (MapNode. {:a (VecNode.
-                  (MapNode. {:b (LeafNode. 2)})
-                  (MapNode. {:c (LeafNode. 3)})
-                  (MapNode. {:d (LeafNode. 4)}))
-             :e (MapNode. {:f (LeafNode. 6)})
-             :g (LeafNode. :green)
-             :h (LeafNode. "hotel")
-             :i 1}))
 
 (dotest-focus
-  (let [edn-0  {:a 1 :b 2}
-        node-0 (MapNode. {:a (LeafNode. 1)
-                          :b (LeafNode. 2)})
+  (with-tdb (new-tdb)
+    (let [edn-0 {:a 1 :b 2}
+          root-hid (edn->db edn-0)
+          ]
+      (is= edn-0 (hid->edn root-hid)) ))
 
-        node-1 (->MapNode edn-0)
-        node-2 (MapNode. edn-0)
+  (with-tdb (new-tdb)
+    (let [edn-0  [1 2 3]
+          root-hid (edn->db edn-0)
+          ]
+      (is= edn-0 (hid->edn root-hid)) ))
 
-        node-9 (edn->datatree edn-0)
-        edn-9  (datatree->edn node-9)]
+  (with-tdb (new-tdb)
+    (let [edn-0  "hello"
+          root-hid (edn->db edn-0)
+          ]
+      (is= edn-0 (hid->edn root-hid)) ))
 
-    (is= node-1 node-2)
+  (with-tdb (new-tdb)
+    (let [data-1
+          {:a [{:b 2}
+               {:c 3}
+               {:d 4}]
+           :e {:f 6}
+           :g :green
+           :h "hotel"
+           :i 1}
+          root-hid (edn->db data-1)
+          ]
+      (is= data-1 (hid->edn root-hid)) ))
 
-    (is= edn-0 (raw node-1) (raw node-2))
-    (is= node-0 node-9)
-    (is= edn-0 edn-9))
+  (with-tdb (new-tdb)
+    (let [edn-0      #{1 2 3}
+          root-hid   (edn->db edn-0)
+          edn-result (hid->edn root-hid)]
+      (is (vector? edn-result))
+      (is-set= [1 2 3] edn-result)))
 
-  (let [edn-0  [1 2 3]
-        node-0 (VecNode. [(LeafNode. 1)
-                          (LeafNode. 2)
-                          (LeafNode. 3)])
-
-        node-1 (->VecNode edn-0)
-        node-2 (VecNode. edn-0)
-        node-9 (edn->datatree edn-0)
-        edn-9  (datatree->edn node-9)]
-    (is= node-1 node-2)
-    (is= edn-0 (raw node-1) (raw node-2))
-    (is= node-0 node-9)
-    (is= edn-0 edn-9))
-
-  (let [edn-0  "hello"
-        node-1 (->LeafNode edn-0)
-        node-2 (LeafNode. edn-0)
-        node-3 (edn->datatree edn-0)
-        edn-9  (datatree->edn node-1)]
-    (is= node-1 node-2 node-3)
-    (is= edn-0 (edn node-1) (raw node-1))
-    (is= edn-0 edn-9))
 
   )
+

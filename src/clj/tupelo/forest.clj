@@ -57,7 +57,7 @@
   "Reset the hid-count to its initial value"
   [] (reset! hid-counter hid-count-base))
 
-(defn ^:no-doc new-hid
+(defn ^:no-doc new-hid-int
   "Returns the next integer HID"
   [] (swap! hid-counter inc))
 
@@ -73,7 +73,7 @@
 
 ; WARNING: Don't abuse dynamic scope. See: https://stuartsierra.com/2013/03/29/perils-of-dynamic-scope
 (def ^:dynamic ^:no-doc *forest* nil)
-(def ^:dynamic ^:no-doc *new-hid-fn* new-hid)
+(def ^:dynamic ^:no-doc *new-hid-fn* new-hid-int)
 
 (s/defn new-hid :- HID
   "Returns a new HexID"
