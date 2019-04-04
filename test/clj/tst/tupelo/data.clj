@@ -9,7 +9,7 @@
   (:refer-clojure :exclude [load ->VecNode])
   (:require
     [tupelo.string :as ts] )
-  (:import [tupelo.data MapNode VecNode LeafNode]))
+  )
 
 (def data-1
   {:a [{:b 2}
@@ -51,7 +51,7 @@
            :i 1}
           root-hid (edn->db data-1)
           ]
-      (is= data-1 (hid->edn root-hid)) ))
+      (is= data-1 (spy-pretty (hid->edn root-hid))) ))
 
   (with-tdb (new-tdb)
     (let [edn-0      #{1 2 3}

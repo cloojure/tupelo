@@ -21,37 +21,64 @@
    {:customer-id 2}])
 (def age-of-wisdom 30)
 
-;(defn edn->datatree ; :- DataNode #todo
-;  [edn-val] ;  :- s/Any
-;  (cond
-;    (map? edn-val) (->MapNode (apply glue
-;                                (forv [[k v] edn-val]
-;                                  {k (edn->datatree v)})))
-;    (or (set? edn-val) ; coerce sets to vectors
-;      (sequential? edn-val)) (->VecNode (into []
-;                                          (forv [elem edn-val]
-;                                            (edn->datatree elem))))
-;    (not (coll? edn-val)) (->LeafNode edn-val)
-;
-;    :else (throw (ex-info "unknown value found" (vals->map edn-val)))))
-;
-;(defn datatree->edn ;  :- s/Any  ; #todo
-;  [datatree] ; :- DataNode  ; #todo
-;  (nl)
-;  (println :datatree->edn datatree)
-;  (edn datatree) )
-
 ;---------------------------------------------------------------------------------------------------
+(def ^:dynamic ^:no-doc *tdb* nil)
+
 (def HID
   "The Plumatic Schema type name for a pointer to a tdb node (abbrev. for Hex ID)"
   s/Int)
 
-;(def HidRootSpec
-;  "The Plumatic Schema type name for the values accepted as starting points (roots) for a subtree path search."
-;  (s/conditional ; #todo why is this here?
-;    int? HID
-;    set? #{HID}
-;    :else [HID] ))
+(s/defn hid->node ; :- Node
+  "Returns the node corresponding to an HID"
+  [hid :- HID]
+  (grab hid (deref *tdb*)))
+
+(defprotocol IDataNode
+  (raw [this])
+  (edn [this]))
+
+(s/defrecord MapNode ;Represents ths content of a Clojure map.
+  ; content is a map from key to hid
+  [content :- tsk/Map] ; #todo add parent
+  IDataNode
+  (raw [this]
+    (validate map? content))
+  (edn [this]
+    (apply glue
+      (forv [[k v-hid] (validate map? content)]
+        {k (edn (hid->node v-hid))}))))
+
+(s/defrecord VecNode ;Represents ths content of a Clojure vector (any sequential type coerced into a vector).
+  ; content is a vector of hids
+  [content :- tsk/Vec] ; #todo add parent
+  IDataNode
+  (raw [this]
+    (validate vector? content))
+  (edn [this]
+    (forv [elem-hid (validate vector? content)]
+      (edn (hid->node elem-hid)))))
+
+; Represents a Clojure primitive (non-collection) type,
+; (i.e. number, string, keyword, symbol, character, etc)
+(s/defrecord LeafNode
+  ; content is a simple (non-collection) value
+  [content :- s/Any] ; #todo add parent
+  IDataNode
+  (raw [this]
+    (validate #(not (coll? %)) content))
+  (edn [this]
+    (validate #(not (coll? %)) content)))
+
+(def DataNode
+  "The Plumatic Schema type name for a MapNode VecNode LeafNode."
+  (s/cond-pre MapNode VecNode LeafNode ))
+
+(def HidRootSpec
+  "The Plumatic Schema type name for the values accepted as starting points (roots) for a subtree path search."
+  (s/conditional ; #todo why is this here?
+    int? HID
+    set? #{HID}
+    :else [HID] ))
 
 (def ^:no-doc hid-count-base 1000)
 (def ^:no-doc hid-counter (atom hid-count-base))
@@ -60,15 +87,13 @@
   "Reset the hid-count to its initial value"
   [] (reset! hid-counter hid-count-base))
 
-(defn ^:no-doc new-hid
+(s/defn ^:no-doc new-hid :- HID
   "Returns the next integer HID"
   [] (swap! hid-counter inc))
 
-(defn hid?
+(s/defn hid? :- s/Bool
   "Returns true if the arg type is a legal HID value"
   [arg] (int? arg))
-
-(def ^:dynamic ^:no-doc *tdb* nil)
 
 ; HID & :hid are shorthand for Hash ID, the SHA-1 hash of a v1/UUID expressed as a hexadecimal keyword
 ; format { :hid Node }
@@ -85,53 +110,9 @@
 (s/defn set-node :- HID
   "Unconditionally sets the value of a node in the tdb"
   ([hid :- HID
-    node  ; :- DataNode  ; #todo
-    ]
+    node  :- DataNode ]
     (swap! *tdb* glue {hid node})
     hid))
-
-(s/defn hid->node ; :- Node
-  "Returns the node corresponding to an HID"
-  [hid :- HID]
-  (grab hid (deref *tdb*)))
-
-
-(defprotocol DataNode
-  (raw [this])
-  (edn [this]))
-
-(s/defrecord MapNode ;Represents ths content of a Clojure map.
-  ; content is a map from key to hid
-  [content :- tsk/Map] ; #todo add parent
-  DataNode
-  (raw [this]
-    (validate map? content))
-  (edn [this]
-    (apply glue
-      (forv [[k v-hid] content]
-        {k (edn (hid->node v-hid))}))))
-
-(s/defrecord VecNode ;Represents ths content of a Clojure vector (any sequential type coerced into a vector).
-  ; content is a vector of hids
-  [content :- tsk/Vec] ; #todo add parent
-  DataNode
-  (raw [this]
-    (validate vector? content))
-  (edn [this]
-    (forv [elem-hid content]
-      (edn (hid->node elem-hid)))))
-
-; Represents a Clojure primitive (non-collection) type,
-; (i.e. number, string, keyword, symbol, character, etc)
-(s/defrecord LeafNode
-  ; content is a simple (non-collection) value
-  [content :- s/Any] ; #todo add parent
-  DataNode
-  (raw [this]
-    (validate #(not (coll? %)) content))
-  (edn [this]
-    (validate #(not (coll? %)) content)))
-
 
 (s/defn edn->db :- HID
   [edn-val :- s/Any]
@@ -152,9 +133,9 @@
 
     :else (throw (ex-info "unknown value found" (vals->map edn-val)))))
 
-(defn hid->edn
+(s/defn hid->edn :- s/Any
   "Returns EDN data for the subtree rooted at hid"
-  [hid]
+  [hid :- HID]
   (edn (hid->node hid)))
 
 
