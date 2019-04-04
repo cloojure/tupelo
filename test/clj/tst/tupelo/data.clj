@@ -15,17 +15,17 @@
 (dotest
   (with-tdb (new-tdb)
     (let [edn-0 {:a 1 :b 2}
-          root-hid (edn->db edn-0) ]
+          root-hid (load-edn edn-0) ]
       (is= edn-0 (hid->edn root-hid)) ))
 
   (with-tdb (new-tdb)
     (let [edn-0  [1 2 3]
-          root-hid (edn->db edn-0) ]
+          root-hid (load-edn edn-0) ]
       (is= edn-0 (hid->edn root-hid)) ))
 
   (with-tdb (new-tdb)
     (let [edn-0  "hello"
-          root-hid (edn->db edn-0) ]
+          root-hid (load-edn edn-0) ]
       (is= edn-0 (hid->edn root-hid)) ))
 
   (with-tdb (new-tdb)
@@ -36,12 +36,12 @@
                     :g :green
                     :h "hotel"
                     :i 1}
-          root-hid (edn->db data-1)]
+          root-hid (load-edn data-1)]
       (is= data-1 (hid->edn root-hid))))
 
   (with-tdb (new-tdb)
     (let [edn-0      #{1 2 3}
-          root-hid   (edn->db edn-0)
+          root-hid   (load-edn edn-0)
           edn-result (hid->edn root-hid)]
       (is (vector? edn-result)) ; ***** Sets are coerced to vectors! *****
       (is-set= [1 2 3] edn-result))))
@@ -55,9 +55,9 @@
                     :g :green
                     :h "hotel"
                     :i 1}
-          root-hid (edn->db data)]
+          root-hid (load-edn data)]
       (is= (hid->edn (hid-nav root-hid [:a])) [{:b 2} {:c 3} {:d 4}])
-      (is= (hid->edn (spyx (hid-nav root-hid [:a 0]))) {:b 2})
+      (is= (hid->edn (hid-nav root-hid [:a 0])) {:b 2})
       (is= (hid->edn (hid-nav root-hid [:a 2])) {:d 4})
       (is= (hid->edn (hid-nav root-hid [:a 2 :d])) 4)
       (is= (hid->edn (hid-nav root-hid [:e])) {:f 6})

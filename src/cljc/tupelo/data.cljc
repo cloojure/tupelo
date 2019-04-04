@@ -125,20 +125,20 @@
     (swap! *tdb* glue {hid node})
     hid))
 
-(s/defn edn->db :- HID
+(s/defn load-edn :- HID
   [edn-val :- s/Any]
   (cond
     (map? edn-val) (set-node (new-hid)
                      (->MapNode
                        (apply glue
                          (forv [[k v] edn-val]
-                           {k (edn->db v)}))))
+                           {k (load-edn v)}))))
 
     (or (set? edn-val) ; coerce sets to vectors
       (sequential? edn-val)) (set-node (new-hid)
                                (->VecNode
                                  (forv [elem edn-val]
-                                   (edn->db elem))))
+                                   (load-edn elem))))
 
     (not (coll? edn-val)) (set-node (new-hid) (->LeafNode edn-val))
 
