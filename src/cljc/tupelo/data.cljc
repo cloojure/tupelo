@@ -36,6 +36,8 @@
 (defprotocol IDataNode
   (raw [this])
   (edn [this]))
+(defprotocol INavNode
+  (nav [this key]))
 
 (s/defrecord MapNode ;Represents ths content of a Clojure map.
   ; content is a map from key to hid
@@ -46,7 +48,10 @@
   (edn [this]
     (apply glue
       (forv [[k v-hid] (validate map? content)]
-        {k (edn (hid->node v-hid))}))))
+        {k (edn (hid->node v-hid))})))
+  INavNode
+  (nav [this key]
+    (grab key (validate map? content))))
 
 (s/defrecord VecNode ;Represents ths content of a Clojure vector (any sequential type coerced into a vector).
   ; content is a vector of hids
@@ -56,7 +61,12 @@
     (validate vector? content))
   (edn [this]
     (forv [elem-hid (validate vector? content)]
-      (edn (hid->node elem-hid)))))
+      (edn (hid->node elem-hid))))
+  INavNode
+  (nav [this key]
+    (if-not (= :* key)
+      (nth (validate vector? content) key)
+      (raw this))))
 
 ; Represents a Clojure primitive (non-collection) type,
 ; (i.e. number, string, keyword, symbol, character, etc)
@@ -67,7 +77,8 @@
   (raw [this]
     (validate #(not (coll? %)) content))
   (edn [this]
-    (validate #(not (coll? %)) content)))
+    (validate #(not (coll? %)) content))
+  )
 
 (def DataNode
   "The Plumatic Schema type name for a MapNode VecNode LeafNode."
@@ -138,7 +149,15 @@
   [hid :- HID]
   (edn (hid->node hid)))
 
-
+(s/defn hid-nav :- HID
+  [hid :- HID
+   path :- tsk/Vec]
+  (if (empty? path)
+    hid
+    (let [node      (hid->node hid)
+          key       (xfirst path)
+          path-rest (xrest path)]
+      (hid-nav (nav node key) path-rest))))
 
 
 
