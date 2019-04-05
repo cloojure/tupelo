@@ -45,9 +45,7 @@
   [ parent :- (s/maybe HID)
    content :- tsk/Map ]
   IDataNode
-  (parent [this]
-    ; (validate (s/maybe HID) parent)
-    parent)
+  (parent [this] (s/validate (s/maybe HID) parent))
   (raw [this]
     (validate map? content))
   (edn [this]
@@ -63,7 +61,7 @@
   [ parent :- (s/maybe HID)
    content :- tsk/Vec ]
   IDataNode
-  (parent [this] parent)
+  (parent [this] (s/validate (s/maybe HID) parent))
   (raw [this]
     (validate vector? content))
   (edn [this]
@@ -82,7 +80,7 @@
   [parent :- (s/maybe HID)
    content :- s/Any]
   IDataNode
-  (parent [this] parent)
+  (parent [this] (s/validate (s/maybe HID) parent))
   (raw [this]
     (validate #(not (coll? %)) content))
   (edn [this]
