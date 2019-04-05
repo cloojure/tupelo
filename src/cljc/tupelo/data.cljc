@@ -11,6 +11,8 @@
     [schema.core :as s]
     [tupelo.schema :as tsk]))
 
+; #todo Tupelo Data Language (TDL)
+
 (def customers ; #todo be able to process this data & delete unwise users
   [{:customer-id 1
     :plants      [{:plant-id  1
@@ -181,6 +183,11 @@
   "Returns the parent HID of the node at this HID"
   [hid :- HID]
   (parent (hid->node hid)))
+
+; #todo add indexes
+; #todo add sets (primative only or HID) => map with same key/value
+; #todo copy destruct syntax for search
+
 
 
 
