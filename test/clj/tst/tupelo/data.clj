@@ -47,6 +47,7 @@
       (is-set= [1 2 3] edn-result))))
 
 (dotest-focus
+  (nl) (println "===================================================================================================")
   (with-tdb (new-tdb)
     (let [data     {:a [{:b 2}
                         {:c 3}
@@ -64,12 +65,16 @@
       (is= (hid->edn (hid-nav root-hid [:e :f])) 6)
       (is= (hid->edn (hid-nav root-hid [:h])) "hotel")
       (is= (hid->edn (hid-nav root-hid [:i])) 1)
-
-      (nl) (println "===================================================================================================")
-      (is= (mapv hid->edn (spyx (hid-nav root-hid [:a :*])))
-        [{:b 2} {:c 3} {:d 4}])
-
-      )
+      (let [kid-hids     (hid-nav root-hid [:a :*])
+            parent-hids  (mapv hid->parent kid-hids)
+            parent-hid   (xfirst parent-hids)
+            parent-hid-2 (hid->parent parent-hid)]
+        (is= (mapv hid->edn kid-hids)
+          [{:b 2} {:c 3} {:d 4}])
+        (is (apply = parent-hids))
+        (is= (hid->edn parent-hid)
+          [{:b 2} {:c 3} {:d 4}])
+        (is= (hid->edn parent-hid-2) data)))
 
 
 

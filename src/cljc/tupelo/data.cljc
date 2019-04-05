@@ -34,15 +34,20 @@
   (grab hid (deref *tdb*)))
 
 (defprotocol IDataNode
+  (parent [this])
   (raw [this])
   (edn [this]))
 (defprotocol INavNode
   (nav [this key]))
 
-(s/defrecord MapNode ;Represents ths content of a Clojure map.
+(s/defrecord MapNode ; Represents ths content of a Clojure map.
   ; content is a map from key to hid
-  [content :- tsk/Map] ; #todo add parent
+  [ parent :- (s/maybe HID)
+   content :- tsk/Map ]
   IDataNode
+  (parent [this]
+    ; (validate (s/maybe HID) parent)
+    parent)
   (raw [this]
     (validate map? content))
   (edn [this]
@@ -53,10 +58,12 @@
   (nav [this key]
     (grab key (validate map? content))))
 
-(s/defrecord VecNode ;Represents ths content of a Clojure vector (any sequential type coerced into a vector).
+(s/defrecord VecNode ; Represents ths content of a Clojure vector (any sequential type coerced into a vector).
   ; content is a vector of hids
-  [content :- tsk/Vec] ; #todo add parent
+  [ parent :- (s/maybe HID)
+   content :- tsk/Vec ]
   IDataNode
+  (parent [this] parent)
   (raw [this]
     (validate vector? content))
   (edn [this]
@@ -72,8 +79,10 @@
 ; (i.e. number, string, keyword, symbol, character, etc)
 (s/defrecord LeafNode
   ; content is a simple (non-collection) value
-  [content :- s/Any] ; #todo add parent
+  [parent :- (s/maybe HID)
+   content :- s/Any]
   IDataNode
+  (parent [this] parent)
   (raw [this]
     (validate #(not (coll? %)) content))
   (edn [this]
@@ -89,7 +98,7 @@
   (s/conditional ; #todo why is this here?
     int? HID
     set? #{HID}
-    :else [HID] ))
+    :else [HID]))
 
 (def ^:no-doc hid-count-base 1000)
 (def ^:no-doc hid-counter (atom hid-count-base))
@@ -126,23 +135,30 @@
     hid))
 
 (s/defn load-edn :- HID
-  [edn-val :- s/Any]
-  (cond
-    (map? edn-val) (set-node (new-hid)
-                     (->MapNode
-                       (apply glue
-                         (forv [[k v] edn-val]
-                           {k (load-edn v)}))))
+  ([edn-val :- s/Any]
+    (load-edn nil edn-val))
+  ([hid-parent :- (s/maybe HID)
+    edn-val :- s/Any]
+    (let [hid-creating (new-hid)]
+      (cond
+        (map? edn-val) (set-node hid-creating
+                         (->MapNode
+                           hid-parent
+                           (apply glue
+                             (forv [[k v] edn-val]
+                               {k (load-edn hid-creating v)}))))
 
-    (or (set? edn-val) ; coerce sets to vectors
-      (sequential? edn-val)) (set-node (new-hid)
-                               (->VecNode
-                                 (forv [elem edn-val]
-                                   (load-edn elem))))
+        (or (set? edn-val) ; coerce sets to vectors
+          (sequential? edn-val)) (set-node hid-creating
+                                   (->VecNode
+                                     hid-parent
+                                     (forv [elem edn-val]
+                                       (load-edn hid-creating elem))))
 
-    (not (coll? edn-val)) (set-node (new-hid) (->LeafNode edn-val))
+        (not (coll? edn-val)) (set-node hid-creating
+                                (->LeafNode hid-parent edn-val))
 
-    :else (throw (ex-info "unknown value found" (vals->map edn-val)))))
+        :else (throw (ex-info "unknown value found" (vals->map edn-val)))))))
 
 (s/defn hid->edn :- s/Any
   "Returns EDN data for the subtree rooted at hid"
@@ -163,6 +179,10 @@
         (forv [hid nav-result]
           (hid-nav hid path-rest))))))
 
+(s/defn hid->parent :- (s/maybe HID)
+  "Returns the parent HID of the node at this HID"
+  [hid :- HID]
+  (parent (hid->node hid)))
 
 
 
