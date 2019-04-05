@@ -68,14 +68,21 @@
       (let [kid-hids     (hid-nav root-hid [:a :*])
             parent-hids  (mapv hid->parent kid-hids)
             parent-hid   (xfirst parent-hids)
-            parent-hid-2 (hid->parent parent-hid)]
+            parent-hid-2 (hid->parent parent-hid)
+            ]
         (is= (mapv hid->edn kid-hids)
           [{:b 2} {:c 3} {:d 4}])
         (is (apply = parent-hids))
         (is= (hid->edn parent-hid)
           [{:b 2} {:c 3} {:d 4}])
-        (is= (hid->edn parent-hid-2) data)))
-
+        (is= (hid->edn parent-hid-2) data))
+      (let [four-hid          (hid-nav root-hid [:a 2 :d])
+            four-hid-parent-3 (-> four-hid
+                                hid->parent
+                                hid->parent
+                                hid->parent)]
+        (is= 4 (spyx (hid->edn four-hid)))
+        (is= data (spyx (hid->edn four-hid-parent-3)))))
 
 
     (nl) (println "---------------------------------------------------------------------------------------------------")
