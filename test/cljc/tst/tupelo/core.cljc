@@ -6,14 +6,17 @@
 ;   software.
 (ns tst.tupelo.core
   #?(:clj (:require
-            [tupelo.test :as ttst :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
+            [tupelo.test :as ttst
+             :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]
+             ]
             [clojure.string :as str]
             [tupelo.core :as t :refer [spy spyx spyxx]]
             [tupelo.string :as ts]
             [tupelo.types :as types]
             ))
   #?(:cljs (:require
-             [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
+             [tupelo.test-cljs :include-macros true ; #todo #bug copy  :include-macros true everywhere!!!
+              :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
              [clojure.string :as str]
              [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
              [tupelo.string :as ts :include-macros true]

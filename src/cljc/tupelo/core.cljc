@@ -145,12 +145,12 @@
    Does not (yet) support finally, and does not need or want an exception class."
   [& body]
   (let [try-body (butlast body)
-        [catch sym & catch-body :as catch-form] (last body)]
-    (assert (= catch 'catch))
-    (assert (symbol? sym))
+        [catch-op ex-symbol & catch-body :as catch-form] (last body)]
+    (assert (= catch-op 'catch))
+    (assert (symbol? ex-symbol))
     `(if-cljs
-       (try ~@try-body (~'catch js/Object ~sym ~@catch-body))
-       (try ~@try-body (~'catch Throwable ~sym ~@catch-body)))))
+       (try ~@try-body (~'catch-op js/Object ~ex-symbol ~@catch-body))
+       (try ~@try-body (~'catch-op Throwable ~ex-symbol ~@catch-body)))))
 
 ;-----------------------------------------------------------------------------
 ; for tupelo.string
@@ -361,7 +361,7 @@
 (defn has-length?
   "Returns true if the collection has the indicated length. Does not hang for infinite sequences."
   [coll n]
-  (when (nil? coll) (throw (ex-info "has-length?: coll must not be nil" coll)))
+  (when (nil? coll) (throw (ex-info "has-length?: coll must not be nil" {:coll coll})))
   (let [take-items (cc/take n coll)
         rest-items (cc/drop n coll)]
     (and (= n (count take-items))

@@ -92,3 +92,61 @@
      (throws? (/ 1 0))  ; catches any Throwable "
   [& forms]
   (apply throws?-impl forms))
+
+;---------------------------------------------------------------------------------------------------
+; #todo incorporate this example & ritual for tupelo and enflame and cljs-template
+
+(comment
+
+  (ns minerva.core-test
+    (:require
+      [tupelo.core :include-macros true :as t :refer [spy spyx spyxx try-catchall]]
+      [tupelo.test-cljs :include-macros true :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
+      [tupelo.schema :as tsk]
+      ;-----------------------------------------------------------------------------
+      [clojure.string :as str]
+      [clojure.test :as ct]
+      [minerva.core :as core]
+      [schema.core :as s]
+      ))
+
+  (enable-console-print!)
+
+  (s/defn concat-str :- s/Str
+          [ctx :- tsk/KeyMap]
+          (let [{:keys [a b]} ctx]
+            (str
+              (s/validate s/Str a)
+              (s/validate s/Str b))))
+
+  (dotest
+    (println "-----------------------------------------------------------------------------")
+    (println "minerva.core-test enter")
+    (is= (s/validate s/Str "hello!") "hello!")
+    (is= (s/validate s/Int (* 2 3 7)) 42)
+    (is= 5 (+ 2 3))
+    (is= 11 (+ 5 6))
+    (is= "aabbb" (concat-str {:a "aa" :b "bbb"}))
+    (throws? (throw (ex-info "Some Exception" {:data 42})))
+
+    (try
+      (throw (ex-info "Thrower!" {:waste 86}))
+      (catch js/Object ex
+        (println "Exception=" ex)))
+
+    (try-catchall
+      (throw (ex-info "Tosser!" {:bad 666}))
+      (catch problem
+             (println "Exception=" problem)))
+
+    (isnt false)
+    (isnt= 3 4)
+
+    ;(throw (ex-info "Failer!" {:result false}))   ; works
+
+    (println "minerva.core-test leave")
+    (println "-----------------------------------------------------------------------------")
+
+    )
+
+  )
