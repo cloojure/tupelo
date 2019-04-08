@@ -710,8 +710,9 @@
   (throws? (t/glue   #{:a 1}   nil    ))
   (throws? (t/glue   "hello"   nil    )) )
 
+;-----------------------------------------------------------------------------
+; #todo get strange cljs compiler errors if combine these 2 into a single #?(:clj ...)
 #?(:clj
-
    (dotest
      (try
        (throw (Exception. "Boom!"))
@@ -720,9 +721,9 @@
          (let [strace (t/exception-stacktrace ex)]
            (is (str/starts-with? strace "java.lang.Exception"))
            (is (ts/contains-str? strace "Boom!"))
-           (is (ts/contains-str? strace "tst.tupelo.core"))))))
+           (is (ts/contains-str? strace "tst.tupelo.core")))))))
 
-
+#?(:clj   ; #todo get cljs compiler strange errors if `?` is missing in '#?(:clj ...)'
    (dotest
      (let [zz (byte-array 0)
            aa (byte-array 1 (byte 1))
@@ -742,6 +743,8 @@
        (is= [1 2 2 3 3 3 4 4 4 4] (vec (t/glue aa bb cc dd zz)))
        (is= [1 2 2 3 3 3 4 4 4 4] (vec (t/glue zz aa bb zz cc dd)))
        (is (types/byte-array? (t/glue aa bb cc dd))))))
+;-----------------------------------------------------------------------------
+
 
 (dotest
   (let [data [[0 1 2]
@@ -976,49 +979,52 @@
 
 (dotest             ; -1 implies "in order"
   ; empty list is smaller than any non-empty list
-  (is (neg? (t/lexical-compare [] [2])))
-  (is (neg? (t/lexical-compare [] [\b])))
-  (is (neg? (t/lexical-compare [] ["b"])))
-  (is (neg? (t/lexical-compare [] [:b])))
-  (is (neg? (t/lexical-compare [] ['b])))
+  (is (neg? (t/compare-lexical [] [2])))
+  (is (neg? (t/compare-lexical [] [\b])))
+  (is (neg? (t/compare-lexical [] ["b"])))
+  (is (neg? (t/compare-lexical [] [:b])))
+  (is (neg? (t/compare-lexical [] ['b])))
 
   ; nil is smaller than any non-nil item
-  (is (neg? (t/lexical-compare [nil] [2])))
-  (is (neg? (t/lexical-compare [nil] [\b])))
-  (is (neg? (t/lexical-compare [nil] ["b"])))
-  (is (neg? (t/lexical-compare [nil] [:b])))
-  (is (neg? (t/lexical-compare [nil] ['b])))
+  (is (neg? (t/compare-lexical [nil] [2])))
+  (is (neg? (t/compare-lexical [nil] [\b])))
+  (is (neg? (t/compare-lexical [nil] ["b"])))
+  (is (neg? (t/compare-lexical [nil] [:b])))
+  (is (neg? (t/compare-lexical [nil] ['b])))
 
   ; Cannot compare items from different classes:  number, char, string, keyword, symbol
-  (throws? (t/lexical-compare [1] [\b]))
-  (throws? (t/lexical-compare [1] ["b"]))
-  (throws? (t/lexical-compare [1] [:b]))
-  (throws? (t/lexical-compare [1] ['b]))
-
- #?(:clj (throws? (t/lexical-compare [\b] ["b"])))
-
-  (throws? (t/lexical-compare [\b] [:b]))
-  (throws? (t/lexical-compare [\b] ['b]))
-  (throws? (t/lexical-compare ["b"] [:b]))
-  (throws? (t/lexical-compare ["b"] ['b]))
-  (throws? (t/lexical-compare [:b] ['b]))
+  (throws? (t/compare-lexical [1] ["b"]))
+  (throws? (t/compare-lexical [1] [:b]))
+  (throws? (t/compare-lexical [1] ['b]))
+  (throws? (t/compare-lexical ["b"] [:b]))
+  (throws? (t/compare-lexical ["b"] ['b]))
+  (throws? (t/compare-lexical [:b] ['b]))
+ #?(:clj
+    (do
+      (throws? (t/compare-lexical [1] [\b]))
+      (throws? (t/compare-lexical [\b] ["b"]))
+      (throws? (t/compare-lexical [\b] [:b]))
+      (throws? (t/compare-lexical [\b] ['b]))))
 
   ; different positions in list can be of different class
-  (is (neg? (t/lexical-compare [:a] [:b])))
-  (is (neg? (t/lexical-compare [:a] [:a 1])))
-  (is (neg? (t/lexical-compare [1 :a] [2])))
-  (is (neg? (t/lexical-compare [:a] [:a 1])))
-  (is (neg? (t/lexical-compare [1] [1 :a])))
-  (is (neg? (t/lexical-compare [1 :a] [2])))
+  (is (neg? (t/compare-lexical [:a] [:b])))
+  (is (neg? (t/compare-lexical [:a] [:a 1])))
+  (is (neg? (t/compare-lexical [1 :a] [2])))
+  (is (neg? (t/compare-lexical [:a] [:a 1])))
+  (is (neg? (t/compare-lexical [1] [1 :a])))
+  (is (neg? (t/compare-lexical [1 :a] [2])))
 
   ; same position in list can be of different class if sorted by previous positions
-  (is (neg? (t/lexical-compare [1 :z] [2 9]))) ; OK since prefix lists [1] & [2] define order
-  (throws?  (t/lexical-compare [1 :z] [1 2])) ; not OK since have same prefix list: [1]
+  (is (neg? (t/compare-lexical [1 :z] [2 9]))) ; OK since prefix lists [1] & [2] define order
+  (throws?  (t/compare-lexical [1 :z] [1 2])) ; not OK since have same prefix list: [1]
 
-  (is= (vec (sorted-set-by t/lexical-compare [1 :a] [1] [2]))
+  (is= (vec (sorted-set-by t/compare-lexical [1 :a] [1] [2]))
     [[1] [1 :a] [2]])
-  (is= (vec (sorted-set-by t/lexical-compare [2 0] [2] [3] [3 :y] [1] [1 :a] [1 :b] [1 :b 3]))
+  (is= (vec (sorted-set-by t/compare-lexical [1 :a] [1 nil] [1] [2]))
+    [[1] [1 nil] [1 :a] [2]])
+  (is= (vec (sorted-set-by t/compare-lexical [2 0] [2] [3] [3 :y] [1] [1 :a] [1 nil] [1 :b] [1 :b 3]))
     [[1]
+     [1 nil]
      [1 :a]
      [1 :b]
      [1 :b 3]

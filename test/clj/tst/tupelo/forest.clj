@@ -1057,13 +1057,13 @@
       ;-------------------------------------------------------
       ; Note 2 different map formats re namespaced keys
       (is= tree-1
-        {::tf/tag   ::tf/list,
+        {:tag   ::tf/list,
          ::tf/index nil,
          ::tf/kids  [{::tf/value 1, ::tf/index 0, ::tf/kids []}
                      {::tf/value 2, ::tf/index 1, ::tf/kids []}
                      {::tf/value 3, ::tf/index 2, ::tf/kids []}]})
       (is= bush-1
-        [{::tf/tag :tupelo.forest/list, ::tf/index nil}
+        [{:tag :tupelo.forest/list, ::tf/index nil}
          [{::tf/value 1, ::tf/index 0}]
          [{::tf/value 2, ::tf/index 1}]
          [{::tf/value 3, ::tf/index 2}]])
@@ -1384,5 +1384,4 @@
             [{:tag     :b,
               :attrs   {:b 2},
               :content [{:tag :c, :attrs {:c 3}, :content [3 3 3]}]}]}))
-
 

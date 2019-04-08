@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.137"
+(defproject tupelo "0.9.138"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
@@ -42,7 +42,7 @@
                                        [binaryage/dirac "1.3.2"]
                                        [com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.4"]
-                                       [org.clojure/clojure "1.10.0"] ]}
+                                       [org.clojure/clojure "1.10.1-beta1"] ]}
              :1.8      {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9      {:dependencies [[org.clojure/clojure "1.9.0"]]}
              }

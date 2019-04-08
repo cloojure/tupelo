@@ -10,8 +10,8 @@
 
 (def Set
   "Either a Clojure hash-set or a java.util.HashSet"
-  (s/either #{s/Any}
-    #?(:clj java.util.HashSet)))
+  #?(:clj  (s/if set? #{s/Any} java.util.HashSet)
+     :cljs #{s/Any}))
 
 (def List
   "An ordered sequence of items of indeterminate length."
@@ -77,7 +77,7 @@
      (def EntitySpec
        "An EntitySpec is used to uniquely specify an entity in the DB. It consists of
         either an EID or a LookupRef."
-       (s/either Eid LookupRef))
+       (s/if int? Eid LookupRef))
 
      (def DatomMap
        "The Clojure map representation of a Datom."

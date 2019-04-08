@@ -373,7 +373,7 @@
   Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
   [coll]
   (when-not (has-length? coll 1)
-    (throw (ex-info "only: num-items must=1" coll)))
+    (throw (ex-info "only: num-items must=1" {:coll coll})))
   (clojure.core/first coll))
 
 (defn onlies
@@ -714,8 +714,24 @@
          [tgt-atom swap-fn & args]
          (let [[old -new-] (apply swap-vals! tgt-atom swap-fn args)]
            old)))
-
    ))
+
+;-----------------------------------------------------------------------------
+#?(:clj   ; JVM type testing stuff
+   (do
+     (defn bigint?
+       "Returns true if x is a clojure.lang.BigInt"
+       [x] (= (type x) clojure.lang.BigInt))
+
+     (defn biginteger?
+       "Returns true if x is a java.math.BigInteger"
+       [x] (= (type x) java.math.BigInteger))
+
+     (defn bigdecimal?
+       "Returns true if x is a java.math.BigDecimal (synonym for `clojure.core/decimal?`)"
+       [x] (= (type x) java.math.BigDecimal))
+
+     ))
 
 
 ;-----------------------------------------------------------------------------
@@ -1703,7 +1719,7 @@
 ; #todo add (->sorted-set <set>)        => (into (sorted-set) <set>)
 ; #todo add (->sorted-vec <sequential>) => (vec (sort <vec>))
 
-(s/defn lexical-compare :- s/Int
+(s/defn compare-lexical :- s/Int
   "Performs a lexical comparison of 2 sequences, sorting as follows:
       [1]
       [1 :a]
@@ -1721,7 +1737,7 @@
     :else (let [a0 (xfirst a)
                 b0 (xfirst b)]
             (if (= a0 b0)
-              (lexical-compare (xrest a) (xrest b))
+              (compare-lexical (xrest a) (xrest b))
               (compare a0 b0)))))
 
 ; #todo maybe submap-without-keys, submap-without-vals ?
@@ -1735,7 +1751,7 @@
       (submap-by-keys {:a 1 :b 2} #{:a :z} :missing-ok )  =>  {:a 1}
   "
   [map-arg :- tsk/Map
-   keep-keys :- (s/either tsk/Set tsk/List)
+   keep-keys :- (s/if set? tsk/Set tsk/List)
    & opts]
  ;(println :awt00 map-arg)
   (let [keep-keys (set keep-keys)]
@@ -1762,7 +1778,7 @@
       (submap-by-vals {:a 1 :b 2 :A 1} #{1  }             )  =>  {:a 1 :A 1}
       (submap-by-vals {:a 1 :b 2 :A 1} #{1 9} :missing-ok )  =>  {:a 1 :A 1} "
   [map-arg :- tsk/Map
-   keep-vals :- (s/either tsk/Set tsk/List)
+   keep-vals :- (s/if set? tsk/Set tsk/List)
    & opts]
   (let [keep-vals    (set keep-vals)
         found-map    (into {}
@@ -1910,7 +1926,7 @@
         map-out        (into {} tuple-seq-out) ]
     map-out))
 
-(def MapKeySpec (s/either [s/Any] #{s/Any}))
+(def MapKeySpec (s/if set? #{s/Any} [s/Any]))
 (s/defn validate-map-keys :- s/Any ; #todo docstring, README
   [tst-map :- tsk/Map
    valid-keys :- MapKeySpec]

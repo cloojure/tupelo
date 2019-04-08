@@ -157,7 +157,9 @@
     :else (let [instants (mapv ->instant (prepend this others))]
             (apply same-instant? instants))))
 
-(def DateTimeStamp (s/either ZonedDateTime Instant))
+(def DateTimeStamp (s/conditional
+                     #(instance? ZonedDateTime %) ZonedDateTime
+                     #(instance? Instant %)  Instant))
 
 ; #todo need version of < and <= (N-arity) for both ZDT/Instant
 

@@ -1,6 +1,7 @@
 (ns tst.tupelo.parse.yaml
   (:use  tupelo.core tupelo.test)
   (:require
+    [clojure.data :as data]
     [clojure.string :as str]
     [tupelo.parse.yaml :as yaml]
     ))
@@ -62,27 +63,22 @@ tupelo:
   platforms: [clj, cljs]
 " )
 
-(dotest-focus
-  (let [edn {:tupelo
-             {:name       "Tupelo"
-              :url        "https:// github.com / cloojure/tupelo"
-              :categories ["Data Transformation"
-                           "Date and Time"
-                           "Datomic"
-                           "Misc. Functions"
-                           "Unit Testing"
-                           "HTML Parsers"
-                           "JSON Parsers"
-                           "YAML Parsers"
-                           "XML Parsers"]
-              :platforms  ["clj"]}}
+(dotest
+  (let [edn-data   {:tupelo
+                    {:name       "Tupelo"
+                     :url        "https://github.com/cloojure/tupelo"
+                     :categories ["Data Transformation"
+                                  "Date and Time"
+                                  "Datomic"
+                                  "Misc. Functions"
+                                  "Unit Testing"
+                                  "HTML Parsers"
+                                  "JSON Parsers"
+                                  "YAML Parsers"
+                                  "XML Parsers"]
+                     :platforms  ["clj" "cljs"]}}
         edn-parsed (yaml/parse yaml-str)
-        m1 (:tupelo edn-parsed)
-        ]
-    (spyxx edn-parsed)
-    (spyxx m1)
-    (spyx (instance? java.util.Map m1))
-    (spyx-pretty edn-parsed)
-    )
-
-  )
+        m1         (:tupelo edn-parsed)]
+    (is (map? edn-parsed))
+    (is (map? m1))
+    (is= edn-parsed edn-data)))
