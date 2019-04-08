@@ -149,8 +149,8 @@
     (assert (= catch-op 'catch))
     (assert (symbol? ex-symbol))
     `(if-cljs
-       (try ~@try-body (~'catch-op js/Object ~ex-symbol ~@catch-body))
-       (try ~@try-body (~'catch-op Throwable ~ex-symbol ~@catch-body)))))
+       (try ~@try-body (catch js/Object ~ex-symbol ~@catch-body))
+       (try ~@try-body (catch Throwable ~ex-symbol ~@catch-body)))))
 
 ;-----------------------------------------------------------------------------
 ; for tupelo.string
