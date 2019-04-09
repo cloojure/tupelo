@@ -12,6 +12,7 @@
             [tupelo.lexical :as lex]
             [tupelo.string :as ts]
             [clojure.data.avl :as avl]
+            [schema.core :as s]
           ))
   #?(:cljs (:require
              [tupelo.test-cljs :include-macros true :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
@@ -19,6 +20,7 @@
              [tupelo.lexical :as lex]
              [tupelo.string  :as ts]
              [clojure.data.avl :as avl]
+             [schema.core :as s]
            )))
 
 (dotest ; -1 => "in order",  0 => "same", +1 => "out of order"
@@ -79,24 +81,85 @@
     [[1] [1 :a] [2]])
   (is= (vec (avl/sorted-set-by lex/compare [1 :a] [1 nil] [1] [2]))
     [[1] [1 nil] [1 :a] [2]])
-  (let [got      (vec (avl/sorted-set-by lex/compare [2 0] [2] [3] [3 :y] [1] [1 :a] [1 nil] [1 :b nil 9] [1 :b nil] [1 :b] [1 :b 3] ))
-        expected [[1]
-                  [1 nil]
-                  [1 :a]
-                  [1 :b]
-                  [1 :b nil]
-                  [1 :b nil 9]
-                  [1 :b 3]
-                  [2]
-                  [2 0]
-                  [3]
-                  [3 :y]] ]
-    (is= got expected ) ))
+  (let [got-set      (avl/sorted-set-by lex/compare [2 0] [2] [3] [3 :y] [1] [1 :a] [1 nil] [1 :b nil 9] [1 :b nil] [1 :b] [1 :b 3])
+        got-vec      (vec got-set)
+        expected-vec [[1]
+                      [1 nil]
+                      [1 :a]
+                      [1 :b]
+                      [1 :b nil]
+                      [1 :b nil 9]
+                      [1 :b 3]
+                      [2]
+                      [2 0]
+                      [3]
+                      [3 :y]]
+        expected-set (lex/->sorted-set expected-vec)]
+    (is= got-vec expected-vec)
+    (is= got-set expected-set)
+    ))
 
 
-(dotest
-  (spyx lex/Set)
-  (spyx lex/Map)
-  (is=  #{1 2 3}  (avl/sorted-set 1 2 3))
-  (is= {:a 1 :b 2 :c 3} (avl/sorted-map :a 1 :b 2 :c 3) )
+(dotest-focus
+  (let [lex-set (avl/sorted-set 1 2 3)
+        lex-map (avl/sorted-map :a 1 :b 2 :c 3)]
+    (s/validate lex/Set lex-set)
+    (s/validate lex/Map lex-map)
+    (is= #{1 2 3} lex-set)
+    (is= {:a 1 :b 2 :c 3} lex-map))
+
+  (let [data-raw (lex/->sorted-set #{[:b 1] [:b 2] [:b 3]
+                                     [:f 1] [:f 2] [:f 3]
+                                     [:h 1] [:h 2]})]
+    (is= (lex/split-key (lex/bound-lower [:a 2]) data-raw)
+      {:smaller #{},
+       :matches #{},
+       :larger  #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
+    (is= (lex/split-key (lex/bound-lower [:b 2]) data-raw)
+      {:smaller #{}
+       :matches #{[:b 1] [:b 2] [:b 3]},
+       :larger  #{[:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
+    (is= (lex/split-key (lex/bound-lower [:c 2]) data-raw)
+      {:smaller #{[:b 1] [:b 2] [:b 3]},
+       :matches #{}
+       :larger  #{[:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
+    (is= (lex/split-key (lex/bound-lower [:f 2]) data-raw)
+      {:smaller #{[:b 1] [:b 2] [:b 3]},
+       :matches #{[:f 1] [:f 2] [:f 3]},
+       :larger  #{[:h 1] [:h 2]}})
+    (is= (lex/split-key (lex/bound-lower [:g 2]) data-raw)
+      {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3]},
+       :matches #{},
+       :larger  #{[:h 1] [:h 2]}})
+    (is= (lex/split-key (lex/bound-lower [:h 2]) data-raw)
+      {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3]},
+       :matches #{[:h 1] [:h 2]}
+       :larger  #{}})
+    (is= (lex/split-key (lex/bound-lower [:joker 2]) data-raw)
+      {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]},
+       :matches #{}
+       :larger  #{}}))
+
   )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

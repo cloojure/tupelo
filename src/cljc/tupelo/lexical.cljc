@@ -42,9 +42,9 @@
               (compare (t/xrest a) (t/xrest b))
               (core/compare a0 b0)))))
 
-(s/defn ->sorted-set :- tsk/Map
+(s/defn ->sorted-set :- tsk/Set
   "Converts a set into a lexically-sorted set"
-  [some-set :- tsk/Set ]
+  [some-set :- (s/cond-pre tsk/Set tsk/Vec)]
   (into (avl/sorted-set-by compare) some-set))
 ; #todo add (->sorted-map <map>)        => (into (sorted-map) <map>)
 ; #todo add (->sorted-vec <sequential>) => (vec (sort <vec>))
@@ -82,13 +82,11 @@
    :larger  #{[:c 1]
               [:c 2]} ]
       "
-  [tgt-val :- val
-   lexical-set :- Set]
-  (let [
-        match-val (bound-lower tgt-val)
-        [smaller-set -nil- data] (avl/split-key match-val)
-        >>        (assert nil? -nil-)
-        [matches-seq larger-seq] (split-with prefix-match? data)
+  [match-val :- Val
+   lex-set :- Set]
+  (let [[smaller-set nillie data] (avl/split-key match-val lex-set)
+        >>        (assert nil? nillie)
+        [matches-seq larger-seq] (split-with #(prefix-match? match-val %) data)
         result    {:smaller smaller-set
                    :matches (->sorted-set matches-seq)
                    :larger  (->sorted-set larger-seq)}]
