@@ -1715,31 +1715,6 @@
   (verify (not-nil? coll))
   (rand-nth (vec coll)))
 
-; #todo add (->sorted-map <map>)        => (into (sorted-map) <map>)
-; #todo add (->sorted-set <set>)        => (into (sorted-set) <set>)
-; #todo add (->sorted-vec <sequential>) => (vec (sort <vec>))
-
-(s/defn compare-lexical :- s/Int
-  "Performs a lexical comparison of 2 sequences, sorting as follows:
-      [1]
-      [1 :a]
-      [1 :b]
-      [1 :b 3]
-      [2]
-      [3]
-      [3 :y] "
-  [a :- tsk/List
-   b :- tsk/List]
-  (cond
-    (= a b) 0
-    (empty? a) -1
-    (empty? b) 1
-    :else (let [a0 (xfirst a)
-                b0 (xfirst b)]
-            (if (= a0 b0)
-              (compare-lexical (xrest a) (xrest b))
-              (compare a0 b0)))))
-
 ; #todo maybe submap-without-keys, submap-without-vals ?
 ; #todo filter by pred in addition to set/list?
 ; #todo -> README

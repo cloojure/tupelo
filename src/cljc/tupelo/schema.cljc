@@ -13,9 +13,12 @@
   #?(:clj  (s/if set? #{s/Any} java.util.HashSet)
      :cljs #{s/Any}))
 
+(def Vec
+  "An ordered sequence of items of indeterminate length (synonymous for List)."
+  [s/Any])
 (def List
-  "An ordered sequence of items of indeterminate length."
-  [s/Any] )
+  "An ordered sequence of items of indeterminate length (synonymous for Vec)."
+  [s/Any])
 
 #?(:clj             ; #todo cljs?
    (def CharVec
@@ -26,7 +29,6 @@
 (def Pair [(s/one s/Any "x1") (s/one s/Any "x2")]) ; length-2 vector
 (def Triple [(s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3")]) ; length-3 vector
 (def Quad [(s/one s/Any "x1") (s/one s/Any "x2") (s/one s/Any "x3") (s/one s/Any "x4")]) ; length-4 vector
-(def Vec [s/Any]) ; arbitrary length vector (or any sequence)
 
 (def EnliveNode
   "An Enlive tree node"

@@ -976,54 +976,69 @@
 
 (dotest             ; -1 implies "in order"
   ; empty list is smaller than any non-empty list
-  (is (neg? (t/compare-lexical [] [2])))
-  (is (neg? (t/compare-lexical [] [\b])))
-  (is (neg? (t/compare-lexical [] ["b"])))
-  (is (neg? (t/compare-lexical [] [:b])))
-  (is (neg? (t/compare-lexical [] ['b])))
+  (is (neg? (t/lexical-compare [] [2])))
+  (is (neg? (t/lexical-compare [] [\b])))
+  (is (neg? (t/lexical-compare [] ["b"])))
+  (is (neg? (t/lexical-compare [] [:b])))
+  (is (neg? (t/lexical-compare [] ['b])))
+  (is (neg? (t/lexical-compare [] [nil])))
 
   ; nil is smaller than any non-nil item
-  (is (neg? (t/compare-lexical [nil] [2])))
-  (is (neg? (t/compare-lexical [nil] [\b])))
-  (is (neg? (t/compare-lexical [nil] ["b"])))
-  (is (neg? (t/compare-lexical [nil] [:b])))
-  (is (neg? (t/compare-lexical [nil] ['b])))
+  (is (neg? (t/lexical-compare [nil] [2])))
+  (is (neg? (t/lexical-compare [nil] [\b])))
+  (is (neg? (t/lexical-compare [nil] ["b"])))
+  (is (neg? (t/lexical-compare [nil] [:b])))
+  (is (neg? (t/lexical-compare [nil] ['b])))
+  (is (neg? (t/lexical-compare [nil] [:b nil])))
+  (is (neg? (t/lexical-compare [nil] [nil nil])))
 
   ; Cannot compare items from different classes:  number, char, string, keyword, symbol
-  (throws? (t/compare-lexical [1] ["b"]))
-  (throws? (t/compare-lexical [1] [:b]))
-  (throws? (t/compare-lexical [1] ['b]))
-  (throws? (t/compare-lexical ["b"] [:b]))
-  (throws? (t/compare-lexical ["b"] ['b]))
-  (throws? (t/compare-lexical [:b] ['b]))
+  (throws? (t/lexical-compare [1] ["b"]))
+  (throws? (t/lexical-compare [1] [:b]))
+  (throws? (t/lexical-compare [1] ['b]))
+  (throws? (t/lexical-compare ["b"] [:b]))
+  (throws? (t/lexical-compare ["b"] ['b]))
+  (throws? (t/lexical-compare [:b] ['b]))
  #?(:clj
     (do
-      (throws? (t/compare-lexical [1] [\b]))
-      (throws? (t/compare-lexical [\b] ["b"]))
-      (throws? (t/compare-lexical [\b] [:b]))
-      (throws? (t/compare-lexical [\b] ['b]))))
+      (throws? (t/lexical-compare [1] [\b]))
+      (throws? (t/lexical-compare [\b] ["b"]))
+      (throws? (t/lexical-compare [\b] [:b]))
+      (throws? (t/lexical-compare [\b] ['b]))))
+
+  (is (zero? (t/lexical-compare [66] [66])))
+  (is (zero? (t/lexical-compare [:a] [:a])))
+  (is (zero? (t/lexical-compare ["abc"] ["abc"])))
+  (is (zero? (t/lexical-compare [nil] [nil])))
+  (is (zero? (t/lexical-compare [\a] [\a])))
+  (is (zero? (t/lexical-compare [1 2] [1 2])))
 
   ; different positions in list can be of different class
-  (is (neg? (t/compare-lexical [:a] [:b])))
-  (is (neg? (t/compare-lexical [:a] [:a 1])))
-  (is (neg? (t/compare-lexical [1 :a] [2])))
-  (is (neg? (t/compare-lexical [:a] [:a 1])))
-  (is (neg? (t/compare-lexical [1] [1 :a])))
-  (is (neg? (t/compare-lexical [1 :a] [2])))
+  (is (neg? (t/lexical-compare [:a] [:b])))
+  (is (neg? (t/lexical-compare [:a] [:a 1])))
+  (is (neg? (t/lexical-compare [1 :a] [2])))
+  (is (neg? (t/lexical-compare [:a] [:a 1])))
+  (is (neg? (t/lexical-compare [1] [1 :a])))
+  (is (neg? (t/lexical-compare [1 :a] [2])))
+  (is (neg? (t/lexical-compare [1 nil] [1 2])))
+  (is (neg? (t/lexical-compare [1 nil nil] [1 2])))
+  (is (neg? (t/lexical-compare [1 2] [1 2 nil])))
 
   ; same position in list can be of different class if sorted by previous positions
-  (is (neg? (t/compare-lexical [1 :z] [2 9]))) ; OK since prefix lists [1] & [2] define order
-  (throws?  (t/compare-lexical [1 :z] [1 2])) ; not OK since have same prefix list: [1]
+  (is (neg? (t/lexical-compare [1 :z] [2 9]))) ; OK since prefix lists [1] & [2] define order
+  (throws?  (t/lexical-compare [1 :z] [1 2])) ; not OK since have same prefix list: [1]
 
-  (is= (vec (sorted-set-by t/compare-lexical [1 :a] [1] [2]))
+  (is= (vec (sorted-set-by t/lexical-compare [1 :a] [1] [2]))
     [[1] [1 :a] [2]])
-  (is= (vec (sorted-set-by t/compare-lexical [1 :a] [1 nil] [1] [2]))
+  (is= (vec (sorted-set-by t/lexical-compare [1 :a] [1 nil] [1] [2]))
     [[1] [1 nil] [1 :a] [2]])
-  (is= (vec (sorted-set-by t/compare-lexical [2 0] [2] [3] [3 :y] [1] [1 :a] [1 nil] [1 :b] [1 :b 3]))
+  (is= (vec (sorted-set-by t/lexical-compare [2 0] [2] [3] [3 :y] [1] [1 :a] [1 nil] [1 :b] [1 :b 3]))
     [[1]
      [1 nil]
      [1 :a]
      [1 :b]
+     [1 :b nil]
+     [1 :b nil 9]
      [1 :b 3]
      [2]
      [2 0]
