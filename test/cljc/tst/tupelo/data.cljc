@@ -58,7 +58,7 @@
           root-hid   (data/load-edn edn-0)
           edn-result (data/hid->edn root-hid)]
       (is (vector? edn-result)) ; ***** Sets are coerced to vectors! *****
-      (is-set= [1 2 3] edn-result))))
+      (is-set= [9 1 2 3] edn-result))))
 
 (dotest-focus
   (newline) (println "===================================================================================================")

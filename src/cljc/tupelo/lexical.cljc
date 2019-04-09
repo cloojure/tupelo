@@ -6,7 +6,7 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.lexical
   "Utils for lexical sorting and searching"
-  (:refer-clojure :exclude [compare])
+  (:refer-clojure :exclude [compare])  ; #todo
   #?(:clj (:require
             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
             [tupelo.schema :as tsk]
@@ -21,12 +21,14 @@
              ))
   )
 
+(enable-console-print!)
+
 (def Val tsk/Vec)
 (def Set (class (avl/sorted-set 1 2 3)))
 (def Map (class (avl/sorted-map :a 1 :b 2 :c 3)))
 
 ; #todo generalize to allow `nil` as an ultimate lower bound?
-(s/defn compare :- s/Int
+(defn compare-lex      ; :- s/Int  ; #todo schema
   "Performs a lexical comparison of 2 sequences, sorting as follows:
       [1]
       [1 :a]
@@ -35,22 +37,34 @@
       [2]
       [3]
       [3 :y] "
-  [a :- tsk/Vec
-   b :- tsk/Vec]
+  [a      ; :- tsk/Vec  ; #todo schema
+   b      ; :- tsk/Vec  ; #todo schema
+   ]
+  (println :awt-001)
+  (s/validate tsk/Vec a)
+  (println :awt-002)
+  (s/validate tsk/Vec b)
+  (println :awt-003)
   (cond
     (= a b) 0
     (empty? a) -1
     (empty? b) 1
     :else (let [a0 (t/xfirst a)
+                >> (println :awt-004)
                 b0 (t/xfirst b)]
+            (println :awt-005)
             (if (= a0 b0)
-              (compare (t/xrest a) (t/xrest b))
-              (clojure.core/compare a0 b0)))))
+              (do
+                (println :awt-006)
+                (compare-lex (t/xrest a) (t/xrest b)))
+              (do
+                (println :awt-001)
+                (clojure.core/compare a0 b0))))))
 
 (s/defn ->sorted-set :- tsk/Set
   "Converts a set into a lexically-sorted set"
   [some-set :- (s/cond-pre tsk/Set tsk/Vec)]
-  (into (avl/sorted-set-by compare) some-set))
+  (into (avl/sorted-set-by compare-lex) some-set))
 ; #todo add (->sorted-map <map>)        => (into (sorted-map) <map>)
 ; #todo add (->sorted-vec <sequential>) => (vec (sort <vec>))
 

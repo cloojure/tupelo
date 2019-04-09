@@ -23,7 +23,7 @@
     [tst.tupelo.data]
     [tst.tupelo.gotchas]
     [tst.tupelo.lazy]
-    [tst.tupelo.lexical]
+;   [tst.tupelo.lexical]
     [tst.tupelo.misc]
     [tst.tupelo.parse]
     [tst.tupelo.schema]
@@ -53,7 +53,7 @@
   'tst.tupelo.data
   'tst.tupelo.gotchas
   'tst.tupelo.lazy
-  'tst.tupelo.lexical
+; 'tst.tupelo.lexical
   'tst.tupelo.misc
   'tst.tupelo.parse
   'tst.tupelo.schema

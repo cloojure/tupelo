@@ -8,96 +8,99 @@
   #?(:clj (:require
             [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
             [tupelo.core :as t :refer [spy spyx spyxx]]
-            [tupelo.lexical :as lex]
-            [clojure.data.avl :as avl]
             [schema.core :as s]
+            [clojure.data.avl :as avl]
+            [tupelo.lexical :as lex]
             ))
   #?(:cljs (:require
-             [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]
-              :include-macros true]
+             [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?] :include-macros true]
              [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true ]
-             [tupelo.lexical :as lex]
+             [schema.core :as s :include-macros true ]
              [clojure.data.avl :as avl]
-             [schema.core :as s]
+             [tupelo.lexical :as lex]
              ))
 )
 
 (dotest ; -1 => "in order",  0 => "same", +1 => "out of order"
   ; empty list is smaller than any non-empty list
-  (is (neg? (lex/compare [] [2])))
-  (is (neg? (lex/compare [] [\b])))
-  (is (neg? (lex/compare [] ["b"])))
-  (is (neg? (lex/compare [:99] [:b])))
-  (is (neg? (lex/compare [] ['b])))
-  (is (neg? (lex/compare [] [nil])))
+  (is (neg? -99))
+  (is (neg? (lex/compare-lex [] [2])))
+  (is (neg? (lex/compare-lex [] [\b])))
+  (is (neg? (lex/compare-lex [] ["b"])))
+; (is (neg? (lex/compare-lex [:xx] [:b])))
+; (is (neg? (lex/compare-lex [] ['b])))
+; (is (neg? (lex/compare-lex [] [nil])))
 
-  ; nil is smaller than any non-nil item
-  (is (neg? (lex/compare [nil] [2])))
-  (is (neg? (lex/compare [nil] [\b])))
-  (is (neg? (lex/compare [nil] ["b"])))
-  (is (neg? (lex/compare [nil] [:b])))
-  (is (neg? (lex/compare [nil] ['b])))
-  (is (neg? (lex/compare [nil] [:b nil])))
-  (is (neg? (lex/compare [nil] [nil nil])))
+; ; nil is smaller than any non-nil item
+; (is (neg? (lex/compare-lex [nil] [2])))
+; (is (neg? (lex/compare-lex [nil] [\b])))
+; (is (neg? (lex/compare-lex [nil] ["b"])))
+; (is (neg? (lex/compare-lex [nil] [:b])))
+; (is (neg? (lex/compare-lex [nil] ['b])))
+; (is (neg? (lex/compare-lex [nil] [:b nil])))
+; (is (neg? (lex/compare-lex [nil] [nil nil])))
 
-  ; Cannot compare items from different classes:  number, char, string, keyword, symbol
-  (throws? (lex/compare [1] ["b"]))
-  (throws? (lex/compare [1] [:b]))
-  (throws? (lex/compare [1] ['b]))
-  (throws? (lex/compare ["b"] [:b]))
-  (throws? (lex/compare ["b"] ['b]))
-  (throws? (lex/compare [:b] ['b]))
-  #?(:clj
-     (do
-       (throws? (lex/compare [1] [\b]))
-       (throws? (lex/compare [\b] ["b"]))
-       (throws? (lex/compare [\b] [:b]))
-       (throws? (lex/compare [\b] ['b]))))
+; ; Cannot compare items from different classes:  number, char, string, keyword, symbol
+; (throws? (lex/compare-lex [1] ["b"]))
+; (throws? (lex/compare-lex [1] [:b]))
+; (throws? (lex/compare-lex [1] ['b]))
+; (throws? (lex/compare-lex ["b"] [:b]))
+; (throws? (lex/compare-lex ["b"] ['b]))
+; (throws? (lex/compare-lex [:b] ['b]))
+; #?(:clj
+;    (do
+;      (throws? (lex/compare-lex [1] [\b]))
+;      (throws? (lex/compare-lex [\b] ["b"]))
+;      (throws? (lex/compare-lex [\b] [:b]))
+;      (throws? (lex/compare-lex [\b] ['b]))))
 
-  (is (zero? (lex/compare [66] [66])))
-  (is (zero? (lex/compare [:a] [:a])))
-  (is (zero? (lex/compare ["abc"] ["abc"])))
-  (is (zero? (lex/compare [nil] [nil])))
-  (is (zero? (lex/compare [\a] [\a])))
-  (is (zero? (lex/compare [1 2] [1 2])))
+; (is (zero? (lex/compare-lex [66] [66])))
+; (is (zero? (lex/compare-lex [:a] [:a])))
+; (is (zero? (lex/compare-lex ["abc"] ["abc"])))
+; (is (zero? (lex/compare-lex [nil] [nil])))
+; (is (zero? (lex/compare-lex [\a] [\a])))
+; (is (zero? (lex/compare-lex [1 2] [1 2])))
 
-  ; different positions in list can be of different class
-  (is (neg? (lex/compare [:a] [:b])))
-  (is (neg? (lex/compare [:a] [:a 1])))
-  (is (neg? (lex/compare [1 :a] [2])))
-  (is (neg? (lex/compare [:a] [:a 1])))
-  (is (neg? (lex/compare [1] [1 :a])))
-  (is (neg? (lex/compare [1 :a] [2])))
-  (is (neg? (lex/compare [1 nil] [1 2])))
-  (is (neg? (lex/compare [1 nil nil] [1 2])))
-  (is (neg? (lex/compare [1 2] [1 2 nil])))
+; ; different positions in list can be of different class
+; (is (neg? (lex/compare-lex [:a] [:b])))
+; (is (neg? (lex/compare-lex [:a] [:a 1])))
+; (is (neg? (lex/compare-lex [1 :a] [2])))
+; (is (neg? (lex/compare-lex [:a] [:a 1])))
+; (is (neg? (lex/compare-lex [1] [1 :a])))
+; (is (neg? (lex/compare-lex [1 :a] [2])))
+; (is (neg? (lex/compare-lex [1 nil] [1 2])))
+; (is (neg? (lex/compare-lex [1 nil nil] [1 2])))
+; (is (neg? (lex/compare-lex [1 2] [1 2 nil])))
 
-  ; same position in list can be of different class if sorted by previous positions
-  (is (neg? (lex/compare [1 :z] [2 9]))) ; OK since prefix lists [1] & [2] define order
-  (throws?  (lex/compare [1 :z] [1 2])) ; not OK since have same prefix list: [1]
+; ; same position in list can be of different class if sorted by previous positions
+; (is (neg? (lex/compare-lex [1 :z] [2 9]))) ; OK since prefix lists [1] & [2] define order
+; (throws?  (lex/compare-lex [1 :z] [1 2])) ; not OK since have same prefix list: [1]
 
-  (is= (vec (avl/sorted-set-by lex/compare [1 :a] [1] [2]))
-    [[1] [1 :a] [2]])
-  (is= (vec (avl/sorted-set-by lex/compare [1 :a] [1 nil] [1] [2]))
-    [[1] [1 nil] [1 :a] [2]])
-  (let [got-set      (avl/sorted-set-by lex/compare [2 0] [2] [3] [3 :y] [1] [1 :a] [1 nil] [1 :b nil 9] [1 :b nil] [1 :b] [1 :b 3])
-        got-vec      (vec got-set)
-        expected-vec [[1]
-                      [1 nil]
-                      [1 :a]
-                      [1 :b]
-                      [1 :b nil]
-                      [1 :b nil 9]
-                      [1 :b 3]
-                      [2]
-                      [2 0]
-                      [3]
-                      [3 :y]]
-        expected-set (lex/->sorted-set expected-vec)]
-    (is= got-vec expected-vec)
-    (is= got-set expected-set)
-    ))
+; (is= (vec (avl/sorted-set-by lex/compare-lex [1 :a] [1] [2]))
+;   [[1] [1 :a] [2]])
+; (is= (vec (avl/sorted-set-by lex/compare-lex [1 :a] [1 nil] [1] [2]))
+;   [[1] [1 nil] [1 :a] [2]])
+; (let [got-set      (avl/sorted-set-by lex/compare-lex [2 0] [2] [3] [3 :y] [1] [1 :a] [1 nil] [1 :b nil 9] [1 :b nil] [1 :b] [1 :b 3])
+;       got-vec      (vec got-set)
+;       expected-vec [[1]
+;                     [1 nil]
+;                     [1 :a]
+;                     [1 :b]
+;                     [1 :b nil]
+;                     [1 :b nil 9]
+;                     [1 :b 3]
+;                     [2]
+;                     [2 0]
+;                     [3]
+;                     [3 :y]]
+;       expected-set (lex/->sorted-set expected-vec)]
+;   (is= got-vec expected-vec)
+;   (is= got-set expected-set)
+;   )
+;
+  )
 
+(comment
 
 (dotest
   (let [lex-set (avl/sorted-set 1 2 3)
@@ -175,6 +178,7 @@
 
   )
 
+  )
 
 
 
