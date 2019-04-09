@@ -9,6 +9,9 @@
              org.clojure/clojurescript]
 
   :dependencies [
+    [org.clojure/clojure "1.10.0"]
+    [org.clojure/clojurescript "1.10.439"]
+
     [binaryage/oops "0.7.0"]
     [cheshire "5.8.1"]
     [clj-time "0.15.1"]
@@ -52,7 +55,9 @@
                                        [criterium "0.4.4"]
                                        [org.clojure/clojure "1.10.0"]
                                       ;[org.clojure/clojure "1.10.1-beta1"]
-                                       ]
+                                      ;[org.clojure/clojurescript "1.10.339"]
+                                       [org.clojure/clojurescript "1.10.439"]
+                                      ]
                         }
              :1.8      {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9      {:dependencies [[org.clojure/clojure "1.9.0"]]}

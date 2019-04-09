@@ -9,15 +9,17 @@
   (:refer-clojure :exclude [compare])
   #?(:clj (:require
             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
+            [tupelo.schema :as tsk]
+            [clojure.data.avl :as avl]
+            [schema.core :as s]
             ))
   #?(:cljs (:require
-             [tupelo.core :include-macros true :as t :refer [spy spyx spyxx spyx-pretty grab]]
+             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab] ] ; #todo :include-macros true
+             [tupelo.schema :as tsk]
+             [clojure.data.avl :as avl]
+             [schema.core :as s]
              ))
-  (:require
-    [tupelo.schema :as tsk]
-    [clojure.core :as core]
-    [clojure.data.avl :as avl]
-    [schema.core :as s]))
+  )
 
 (def Val tsk/Vec)
 (def Set (class (avl/sorted-set 1 2 3)))
