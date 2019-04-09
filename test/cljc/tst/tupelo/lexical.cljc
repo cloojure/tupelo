@@ -5,7 +5,6 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.lexical
-  ; (:refer-clojure :exclude [compare load ->VecNode])
   #?(:clj (:require
             [tupelo.test :as ttst :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
             [tupelo.core :as t :refer [spy spyx spyxx]]
@@ -111,6 +110,7 @@
   (let [data-raw (lex/->sorted-set #{[:b 1] [:b 2] [:b 3]
                                      [:f 1] [:f 2] [:f 3]
                                      [:h 1] [:h 2]})]
+    ; test with prefix-key
     (is= (lex/split-key (lex/bound-lower [:a 2]) data-raw)
       {:smaller #{},
        :matches #{},
@@ -136,6 +136,39 @@
        :matches #{[:h 1] [:h 2]}
        :larger  #{}})
     (is= (lex/split-key (lex/bound-lower [:joker 2]) data-raw)
+      {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]},
+       :matches #{}
+       :larger  #{}}))
+
+  ; test with full-key
+  (let [data-raw (lex/->sorted-set #{[:b 1] [:b 2] [:b 3]
+                                     [:f 1] [:f 2] [:f 3]
+                                     [:h 1] [:h 2]})]
+    (is= (lex/split-key [:a 2] data-raw)
+      {:smaller #{},
+       :matches #{},
+       :larger  #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
+    (is= (lex/split-key [:b 2] data-raw)
+      {:smaller #{[:b 1]}
+       :matches #{ [:b 2] },
+       :larger  #{[:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
+    (is= (lex/split-key [:c 2] data-raw)
+      {:smaller #{[:b 1] [:b 2] [:b 3]},
+       :matches #{}
+       :larger  #{[:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
+    (is= (lex/split-key [:f 2] data-raw)
+      {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1]},
+       :matches #{[:f 2]},
+       :larger  #{[:f 3] [:h 1] [:h 2]}})
+    (is= (lex/split-key [:g 2] data-raw)
+      {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3]},
+       :matches #{},
+       :larger  #{[:h 1] [:h 2]}})
+    (is= (lex/split-key [:h 2] data-raw)
+      {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1]},
+       :matches #{ [:h 2]}
+       :larger  #{}})
+    (is= (lex/split-key [:joker 2] data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]},
        :matches #{}
        :larger  #{}}))

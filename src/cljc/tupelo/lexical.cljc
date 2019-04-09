@@ -7,14 +7,22 @@
 (ns tupelo.lexical
   "Utils for lexical sorting and searching"
   (:refer-clojure :exclude [compare])
-  (:require
-    [clojure.core :as core]
-    [clojure.set :as set]
-    [clojure.data.avl :as avl]
-    [schema.core :as s]
-    [tupelo.core :as t]
-    [tupelo.schema :as tsk]
-    ))
+#?(:clj (:require
+          [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
+          [tupelo.schema :as tsk]
+          [clojure.core :as core]
+          [clojure.set :as set]
+          [clojure.data.avl :as avl]
+          [schema.core :as s]
+          ))
+#?(:cljs (:require
+           [tupelo.core :include-macros true :as t :refer  [spy spyx spyxx spyx-pretty grab]]
+           [tupelo.schema :as tsk]
+           [clojure.core :as core]
+           [clojure.set :as set]
+           [clojure.data.avl :as avl]
+           [schema.core :as s]
+         )))
 
 (def Val tsk/Vec)
 (def Set (class (avl/sorted-set 1 2 3)))
@@ -62,7 +70,7 @@
    sample :- Val]
   (= pattern (t/xtake (count pattern) sample)))
 
-(s/defn split-key
+(s/defn split-key :- tsk/KeyMap
   "Given a lexically sorted set with like
     #{[:a 1]
       [:a 2]
@@ -84,12 +92,18 @@
       "
   [match-val :- Val
    lex-set :- Set]
-  (let [[smaller-set nillie data] (avl/split-key match-val lex-set)
-        >>        (assert nil? nillie)
-        [matches-seq larger-seq] (split-with #(prefix-match? match-val %) data)
-        result    {:smaller smaller-set
-                   :matches (->sorted-set matches-seq)
-                   :larger  (->sorted-set larger-seq)}]
+  (let [[smaller-set found-val larger-set] (avl/split-key match-val lex-set)
+        result (if (nil? found-val)
+                 (let [[matches-seq larger-seq] (split-with #(prefix-match? match-val %) larger-set)]
+                   {:smaller smaller-set
+                    :matches (->sorted-set matches-seq)
+                    :larger  (->sorted-set larger-seq)})
+                 {:smaller smaller-set
+                  :matches (avl/sorted-set found-val)
+                  :larger  larger-set})]
+    (s/validate Set (grab :smaller result))
+    (s/validate Set (grab :matches result))
+    (s/validate Set (grab :larger result))
     result))
 
 
