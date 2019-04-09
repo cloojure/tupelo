@@ -6,21 +6,19 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.lexical
   "Utils for lexical sorting and searching"
-  (:use tupelo.core)
-  (:refer-clojure :excludes [compare])
+  (:refer-clojure :exclude [compare])
   (:require
+    [clojure.core :as core]
     [clojure.set :as set]
     [clojure.data.avl :as avl]
     [schema.core :as s]
+    [tupelo.core :as t]
     [tupelo.schema :as tsk]
     ))
 
 (def Val tsk/Vec)
 (def Set (class (avl/sorted-set 1 2 3)))
 (def Map (class (avl/sorted-map :a 1 :b 2 :c 3)))
-
-(def lexical-val tsk/Vec)
-(def lexical-val tsk/Vec)
 
 ; #todo generalize to allow `nil` as an ultimate lower bound?
 (s/defn compare :- s/Int
@@ -38,13 +36,13 @@
     (= a b) 0
     (empty? a) -1
     (empty? b) 1
-    :else (let [a0 (xfirst a)
-                b0 (xfirst b)]
+    :else (let [a0 (t/xfirst a)
+                b0 (t/xfirst b)]
             (if (= a0 b0)
-              (compare (xrest a) (xrest b))
-              (compare a0 b0)))))
+              (compare (t/xrest a) (t/xrest b))
+              (core/compare a0 b0)))))
 
-(defn ->sorted-set :- tsk/Map
+(s/defn ->sorted-set :- tsk/Map
   "Converts a set into a lexically-sorted set"
   [some-set :- tsk/Set ]
   (into (avl/sorted-set-by compare) some-set))
@@ -56,13 +54,13 @@
   [val :- tsk/Vec]
   (when (zero? (count val))
     (throw (ex-info "Cannot find lower bound for empty vec" {:val val})))
-  (xbutlast val))
+  (t/xbutlast val))
 
-(s/defn prefix-match? s/Bool
+(s/defn prefix-match? :- s/Bool
   "Returns true if the sample value equals the pattern when truncated to the same length"
   [pattern :- Val
    sample :- Val]
-  (= pattern (xtake (count pattern) sample)))
+  (= pattern (t/xtake (count pattern) sample)))
 
 (s/defn split-key
   "Given a lexically sorted set with like

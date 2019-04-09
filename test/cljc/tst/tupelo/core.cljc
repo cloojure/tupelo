@@ -6,17 +6,17 @@
 ;   software.
 (ns tst.tupelo.core
   #?(:clj (:require
-            [tupelo.test :as ttst :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-            [clojure.string :as str]
             [tupelo.core :as t :refer [spy spyx spyxx]]
             [tupelo.string :as ts]
+            [tupelo.test :as ttst :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
             [tupelo.types :as types]
+            [clojure.string :as str]
             ))
   #?(:cljs (:require
-             [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
+             [tupelo.core :include-macros true :as t :refer [spy spyx spyxx]]
+             [tupelo.string  :include-macros true :as ts]
+             [tupelo.test-cljs :include-macros true :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
              [clojure.string :as str]
-             [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
-             [tupelo.string :as ts :include-macros true]
              )))
 
 #?(:cljs (enable-console-print!))
@@ -973,77 +973,6 @@
     (is= { 0 :even 2 :even } (t/submap-by-vals
                                { 0 :even 1 :odd 2 :even 3 :odd }
                                 #{ :even :prime } :missing-ok ))) )
-
-(dotest             ; -1 implies "in order"
-  ; empty list is smaller than any non-empty list
-  (is (neg? (t/lexical-compare [] [2])))
-  (is (neg? (t/lexical-compare [] [\b])))
-  (is (neg? (t/lexical-compare [] ["b"])))
-  (is (neg? (t/lexical-compare [] [:b])))
-  (is (neg? (t/lexical-compare [] ['b])))
-  (is (neg? (t/lexical-compare [] [nil])))
-
-  ; nil is smaller than any non-nil item
-  (is (neg? (t/lexical-compare [nil] [2])))
-  (is (neg? (t/lexical-compare [nil] [\b])))
-  (is (neg? (t/lexical-compare [nil] ["b"])))
-  (is (neg? (t/lexical-compare [nil] [:b])))
-  (is (neg? (t/lexical-compare [nil] ['b])))
-  (is (neg? (t/lexical-compare [nil] [:b nil])))
-  (is (neg? (t/lexical-compare [nil] [nil nil])))
-
-  ; Cannot compare items from different classes:  number, char, string, keyword, symbol
-  (throws? (t/lexical-compare [1] ["b"]))
-  (throws? (t/lexical-compare [1] [:b]))
-  (throws? (t/lexical-compare [1] ['b]))
-  (throws? (t/lexical-compare ["b"] [:b]))
-  (throws? (t/lexical-compare ["b"] ['b]))
-  (throws? (t/lexical-compare [:b] ['b]))
- #?(:clj
-    (do
-      (throws? (t/lexical-compare [1] [\b]))
-      (throws? (t/lexical-compare [\b] ["b"]))
-      (throws? (t/lexical-compare [\b] [:b]))
-      (throws? (t/lexical-compare [\b] ['b]))))
-
-  (is (zero? (t/lexical-compare [66] [66])))
-  (is (zero? (t/lexical-compare [:a] [:a])))
-  (is (zero? (t/lexical-compare ["abc"] ["abc"])))
-  (is (zero? (t/lexical-compare [nil] [nil])))
-  (is (zero? (t/lexical-compare [\a] [\a])))
-  (is (zero? (t/lexical-compare [1 2] [1 2])))
-
-  ; different positions in list can be of different class
-  (is (neg? (t/lexical-compare [:a] [:b])))
-  (is (neg? (t/lexical-compare [:a] [:a 1])))
-  (is (neg? (t/lexical-compare [1 :a] [2])))
-  (is (neg? (t/lexical-compare [:a] [:a 1])))
-  (is (neg? (t/lexical-compare [1] [1 :a])))
-  (is (neg? (t/lexical-compare [1 :a] [2])))
-  (is (neg? (t/lexical-compare [1 nil] [1 2])))
-  (is (neg? (t/lexical-compare [1 nil nil] [1 2])))
-  (is (neg? (t/lexical-compare [1 2] [1 2 nil])))
-
-  ; same position in list can be of different class if sorted by previous positions
-  (is (neg? (t/lexical-compare [1 :z] [2 9]))) ; OK since prefix lists [1] & [2] define order
-  (throws?  (t/lexical-compare [1 :z] [1 2])) ; not OK since have same prefix list: [1]
-
-  (is= (vec (sorted-set-by t/lexical-compare [1 :a] [1] [2]))
-    [[1] [1 :a] [2]])
-  (is= (vec (sorted-set-by t/lexical-compare [1 :a] [1 nil] [1] [2]))
-    [[1] [1 nil] [1 :a] [2]])
-  (is= (vec (sorted-set-by t/lexical-compare [2 0] [2] [3] [3 :y] [1] [1 :a] [1 nil] [1 :b] [1 :b 3]))
-    [[1]
-     [1 nil]
-     [1 :a]
-     [1 :b]
-     [1 :b nil]
-     [1 :b nil 9]
-     [1 :b 3]
-     [2]
-     [2 0]
-     [3]
-     [3 :y]]))
 
 (dotest
   (is= 3 (t/validate pos? 3))

@@ -5,12 +5,14 @@
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :min-lein-version "2.7.1"
 
+  :excludes [org.clojure/clojure
+             org.clojure/clojurescript]
+
   :dependencies [
     [binaryage/oops "0.7.0"]
     [cheshire "5.8.1"]
     [clj-time "0.15.1"]
     [clojure-csv/clojure-csv "2.0.2"]
-                 [clojure-csv/clojure-csv "2.0.2"]
     [com.climate/claypoole "1.1.4"]
     [danlentz/clj-uuid "0.1.7"]
     [io.pedestal/pedestal.jetty "0.5.5"]
@@ -30,7 +32,7 @@
     [prismatic/schema "1.1.10"]
     [reagent-utils "0.3.2"]
   ]
-  :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]] 
+  :plugins [[lein-cljsbuild "1.1.7"]
             [lein-codox "0.10.6"]
             [lein-doo "0.1.11"]
             [lein-figwheel "0.5.18"]
@@ -40,14 +42,18 @@
                  }
 
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
-                                       [org.clojure/clojurescript "1.10.439" :scope "provided"]
+                                       [org.clojure/clojurescript "1.10.339" :scope "provided"]
+                                      ;[org.clojure/clojurescript "1.10.439" :scope "provided"]
                                       ;[org.clojure/clojurescript "1.10.516" :scope "provided"]  ; ***** WARNING - FAILS IN COMPILE!!! *****
                                       ]}
              :dev      {:dependencies [[binaryage/devtools "0.9.10"]
                                        [binaryage/dirac "1.3.2"]
                                        [com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.4"]
-                                       [org.clojure/clojure "1.10.1-beta1"] ]}
+                                       [org.clojure/clojure "1.10.0"]
+                                      ;[org.clojure/clojure "1.10.1-beta1"]
+                                       ]
+                        }
              :1.8      {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9      {:dependencies [[org.clojure/clojure "1.9.0"]]}
              }
@@ -66,7 +72,8 @@
                          "reporters"     ["progress" "junit"]
                          "junitReporter" {"outputDir" "target/test-results"}}}
         :paths {:karma   "node_modules/karma/bin/karma"
-                :phantom "node_modules/phantomjs/bin/phantomjs"}}
+               ;:phantom "node_modules/phantomjs/bin/phantomjs"
+               }}
 
   :global-vars {*warn-on-reflection*      false }
 
