@@ -20,7 +20,7 @@
     [tst.tupelo.array]
 ;   [tst.tupelo.char]  ; #todo need tests
     [tst.tupelo.core]
-    [tst.tupelo.data]
+;   [tst.tupelo.data]
     [tst.tupelo.gotchas]
     [tst.tupelo.lazy]
 ;   [tst.tupelo.lexical]
@@ -50,7 +50,7 @@
   'tst.tupelo.array
 ; 'tst.tupelo.char  ; #todo need tests
   'tst.tupelo.core
-  'tst.tupelo.data
+; 'tst.tupelo.data
   'tst.tupelo.gotchas
   'tst.tupelo.lazy
 ; 'tst.tupelo.lexical
