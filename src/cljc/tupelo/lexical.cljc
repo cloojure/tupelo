@@ -21,7 +21,7 @@
              ))
   )
 
-(enable-console-print!)
+#?(:cljs (enable-console-print!))
 
 (def Val tsk/Vec)
 (def Set (class (avl/sorted-set 1 2 3)))
@@ -40,25 +40,25 @@
   [a      ; :- tsk/Vec  ; #todo schema
    b      ; :- tsk/Vec  ; #todo schema
    ]
-  (println :awt-001)
+ ;(println :awt-001)
   (s/validate tsk/Vec a)
-  (println :awt-002)
+ ;(println :awt-002)
   (s/validate tsk/Vec b)
-  (println :awt-003)
+ ;(println :awt-003)
   (cond
     (= a b) 0
     (empty? a) -1
     (empty? b) 1
     :else (let [a0 (t/xfirst a)
-                >> (println :awt-004)
+               ;>> (println :awt-004)
                 b0 (t/xfirst b)]
-            (println :awt-005)
+            ;(println :awt-005)
             (if (= a0 b0)
               (do
-                (println :awt-006)
+               ;(println :awt-006)
                 (compare-lex (t/xrest a) (t/xrest b)))
               (do
-                (println :awt-001)
+               ;(println :awt-007)
                 (clojure.core/compare a0 b0))))))
 
 (s/defn ->sorted-set :- tsk/Set

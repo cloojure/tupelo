@@ -21,6 +21,8 @@
 
   )
 
+#?(:cljs (enable-console-print!))
+
 ; #todo Tupelo Data Language (TDL)
 
 (def customers ; #todo be able to process this data & delete unwise users

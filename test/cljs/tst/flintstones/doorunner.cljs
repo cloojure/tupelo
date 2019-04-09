@@ -20,10 +20,10 @@
     [tst.tupelo.array]
 ;   [tst.tupelo.char]  ; #todo need tests
     [tst.tupelo.core]
-;   [tst.tupelo.data]
+;   [tst.tupelo.data]  ; #todo fix for cljs
     [tst.tupelo.gotchas]
     [tst.tupelo.lazy]
-;   [tst.tupelo.lexical]
+;   [tst.tupelo.lexical]  ; #todo fix for cljs
     [tst.tupelo.misc]
     [tst.tupelo.parse]
     [tst.tupelo.schema]
@@ -50,10 +50,10 @@
   'tst.tupelo.array
 ; 'tst.tupelo.char  ; #todo need tests
   'tst.tupelo.core
-; 'tst.tupelo.data
+; 'tst.tupelo.data  ; #todo fix for cljs
   'tst.tupelo.gotchas
   'tst.tupelo.lazy
-; 'tst.tupelo.lexical
+; 'tst.tupelo.lexical  ; #todo fix for cljs
   'tst.tupelo.misc
   'tst.tupelo.parse
   'tst.tupelo.schema
