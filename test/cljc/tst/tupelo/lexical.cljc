@@ -99,7 +99,7 @@
     ))
 
 
-(dotest-focus
+(dotest
   (let [lex-set (avl/sorted-set 1 2 3)
         lex-map (avl/sorted-map :a 1 :b 2 :c 3)]
     (s/validate lex/Set lex-set)
@@ -111,31 +111,31 @@
                                      [:f 1] [:f 2] [:f 3]
                                      [:h 1] [:h 2]})]
     ; test with prefix-key
-    (is= (lex/split-key (lex/bound-lower [:a 2]) data-raw)
+    (is= (lex/split-key-prefix (lex/bound-lower [:a 2]) data-raw)
       {:smaller #{},
        :matches #{},
        :larger  #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
-    (is= (lex/split-key (lex/bound-lower [:b 2]) data-raw)
+    (is= (lex/split-key-prefix (lex/bound-lower [:b 2]) data-raw)
       {:smaller #{}
        :matches #{[:b 1] [:b 2] [:b 3]},
        :larger  #{[:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
-    (is= (lex/split-key (lex/bound-lower [:c 2]) data-raw)
+    (is= (lex/split-key-prefix (lex/bound-lower [:c 2]) data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3]},
        :matches #{}
        :larger  #{[:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
-    (is= (lex/split-key (lex/bound-lower [:f 2]) data-raw)
+    (is= (lex/split-key-prefix (lex/bound-lower [:f 2]) data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3]},
        :matches #{[:f 1] [:f 2] [:f 3]},
        :larger  #{[:h 1] [:h 2]}})
-    (is= (lex/split-key (lex/bound-lower [:g 2]) data-raw)
+    (is= (lex/split-key-prefix (lex/bound-lower [:g 2]) data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3]},
        :matches #{},
        :larger  #{[:h 1] [:h 2]}})
-    (is= (lex/split-key (lex/bound-lower [:h 2]) data-raw)
+    (is= (lex/split-key-prefix (lex/bound-lower [:h 2]) data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3]},
        :matches #{[:h 1] [:h 2]}
        :larger  #{}})
-    (is= (lex/split-key (lex/bound-lower [:joker 2]) data-raw)
+    (is= (lex/split-key-prefix (lex/bound-lower [:joker 2]) data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]},
        :matches #{}
        :larger  #{}}))
@@ -144,31 +144,31 @@
   (let [data-raw (lex/->sorted-set #{[:b 1] [:b 2] [:b 3]
                                      [:f 1] [:f 2] [:f 3]
                                      [:h 1] [:h 2]})]
-    (is= (lex/split-key [:a 2] data-raw)
+    (is= (lex/split-key-prefix [:a 2] data-raw)
       {:smaller #{},
        :matches #{},
        :larger  #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
-    (is= (lex/split-key [:b 2] data-raw)
+    (is= (lex/split-key-prefix [:b 2] data-raw)
       {:smaller #{[:b 1]}
        :matches #{ [:b 2] },
        :larger  #{[:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
-    (is= (lex/split-key [:c 2] data-raw)
+    (is= (lex/split-key-prefix [:c 2] data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3]},
        :matches #{}
        :larger  #{[:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
-    (is= (lex/split-key [:f 2] data-raw)
+    (is= (lex/split-key-prefix [:f 2] data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1]},
        :matches #{[:f 2]},
        :larger  #{[:f 3] [:h 1] [:h 2]}})
-    (is= (lex/split-key [:g 2] data-raw)
+    (is= (lex/split-key-prefix [:g 2] data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3]},
        :matches #{},
        :larger  #{[:h 1] [:h 2]}})
-    (is= (lex/split-key [:h 2] data-raw)
+    (is= (lex/split-key-prefix [:h 2] data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1]},
        :matches #{ [:h 2]}
        :larger  #{}})
-    (is= (lex/split-key [:joker 2] data-raw)
+    (is= (lex/split-key-prefix [:joker 2] data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]},
        :matches #{}
        :larger  #{}}))

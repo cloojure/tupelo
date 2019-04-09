@@ -70,8 +70,8 @@
    sample :- Val]
   (= pattern (t/xtake (count pattern) sample)))
 
-(s/defn split-key :- tsk/KeyMap
-  "Given a lexically sorted set with like
+(s/defn split-key-prefix :- {s/Keyword Set}
+  "Like clojure.data.avl/split-key, but allows prefix matches. Given a lexically sorted set like:
     #{[:a 1]
       [:a 2]
       [:a 3]
@@ -80,7 +80,7 @@
       [:b 3]
       [:c 1]
       [:c 2]}
-   split by partial matche for patterns like [:b] returning a map of 3 sorted sets like:
+   splits data by prefix match for patterns like [:b], returning a map of 3 sorted sets like:
   {:smaller #{[:a 1]
               [:a 2]
               [:a 3]}
