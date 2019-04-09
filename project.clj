@@ -9,9 +9,6 @@
              org.clojure/clojurescript]
 
   :dependencies [
-    [org.clojure/clojure "1.10.0"]
-    [org.clojure/clojurescript "1.10.439"]
-
     [binaryage/oops "0.7.0"]
     [cheshire "5.8.1"]
     [clj-time "0.15.1"]
@@ -25,7 +22,7 @@
     [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
     [org.clojure/core.async "0.4.490"]
     [org.clojure/core.match "0.3.0-alpha4"]
-    [org.clojure/data.avl "0.0.17"]
+    [org.clojure/data.avl "0.0.18"]
     [org.clojure/data.xml "0.2.0-alpha5"]
     [org.clojure/math.combinatorics "0.1.4"]
     [org.clojure/spec.alpha "0.2.176"]
@@ -53,9 +50,8 @@
                                        [binaryage/dirac "1.3.2"]
                                        [com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.4"]
-                                       [org.clojure/clojure "1.10.0"]
-                                      ;[org.clojure/clojure "1.10.1-beta1"]
-                                      ;[org.clojure/clojurescript "1.10.339"]
+                                      ;[org.clojure/clojure "1.10.0"]
+                                       [org.clojure/clojure "1.10.1-beta1"]
                                        [org.clojure/clojurescript "1.10.439"]
                                       ]
                         }
