@@ -10,8 +10,6 @@
 #?(:clj (:require
           [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
           [tupelo.schema :as tsk]
-          [clojure.core :as core]
-          [clojure.set :as set]
           [clojure.data.avl :as avl]
           [schema.core :as s]
           ))
@@ -19,7 +17,6 @@
            [tupelo.core :include-macros true :as t :refer  [spy spyx spyxx spyx-pretty grab]]
            [tupelo.schema :as tsk]
            [clojure.core :as core]
-           [clojure.set :as set]
            [clojure.data.avl :as avl]
            [schema.core :as s]
          )))
@@ -48,7 +45,7 @@
                 b0 (t/xfirst b)]
             (if (= a0 b0)
               (compare (t/xrest a) (t/xrest b))
-              (core/compare a0 b0)))))
+              (clojure.core/compare a0 b0)))))
 
 (s/defn ->sorted-set :- tsk/Set
   "Converts a set into a lexically-sorted set"
