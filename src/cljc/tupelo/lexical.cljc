@@ -101,9 +101,9 @@
                  {:smaller smaller-set
                   :matches (avl/sorted-set found-val)
                   :larger  larger-set})]
-    (s/validate Set (grab :smaller result))
-    (s/validate Set (grab :matches result))
-    (s/validate Set (grab :larger result))
+   ;(s/validate Set (grab :smaller result))
+   ;(s/validate Set (grab :matches result))
+   ;(s/validate Set (grab :larger result))
     result))
 
 
