@@ -5,11 +5,21 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tupelo.data
-  (:use tupelo.core)
   (:refer-clojure :exclude [load ->VecNode])
-  (:require
-    [schema.core :as s]
-    [tupelo.schema :as tsk]))
+  #?(:clj (:require
+            [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
+            [tupelo.schema :as tsk]
+            [clojure.data.avl :as avl]
+            [schema.core :as s]
+            ))
+  #?(:cljs (:require
+             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab] ] ; #todo :include-macros true
+             [tupelo.schema :as tsk]
+             [clojure.data.avl :as avl]
+             [schema.core :as s]
+             ))
+
+  )
 
 ; #todo Tupelo Data Language (TDL)
 
@@ -33,7 +43,7 @@
 (s/defn hid->node ; :- Node
   "Returns the node corresponding to an HID"
   [hid :- HID]
-  (grab hid (deref *tdb*)))
+  (t/grab hid (deref *tdb*)))
 
 (defprotocol IDataNode
   (parent [this])
@@ -49,14 +59,14 @@
   IDataNode
   (parent [this] (s/validate (s/maybe HID) parent))
   (raw [this]
-    (validate map? content))
+    (t/validate map? content))
   (edn [this]
-    (apply glue
-      (forv [[k v-hid] (validate map? content)]
+    (apply t/glue
+      (t/forv [[k v-hid] (t/validate map? content)]
         {k (edn (hid->node v-hid))})))
   INavNode
   (nav [this key]
-    (grab key (validate map? content))))
+    (t/grab key (t/validate map? content))))
 
 (s/defrecord VecNode ; Represents ths content of a Clojure vector (any sequential type coerced into a vector).
   ; content is a vector of hids
@@ -65,15 +75,15 @@
   IDataNode
   (parent [this] (s/validate (s/maybe HID) parent))
   (raw [this]
-    (validate vector? content))
+    (t/validate vector? content))
   (edn [this]
-    (forv [elem-hid (validate vector? content)]
+    (t/forv [elem-hid (t/validate vector? content)]
       (edn (hid->node elem-hid))))
   INavNode
   (nav [this key]
     (if (= :* key)
       (raw this)
-      (nth (validate vector? content) key))))
+      (nth (t/validate vector? content) key))))
 
 ; Represents a Clojure primitive (non-collection) type,
 ; (i.e. number, string, keyword, symbol, character, etc)
@@ -84,9 +94,9 @@
   IDataNode
   (parent [this] (s/validate (s/maybe HID) parent))
   (raw [this]
-    (validate #(not (coll? %)) content))
+    (t/validate #(not (coll? %)) content))
   (edn [this]
-    (validate #(not (coll? %)) content))
+    (t/validate #(not (coll? %)) content))
   )
 
 (def DataNode
@@ -131,7 +141,7 @@
   "Unconditionally sets the value of a node in the tdb"
   ([hid :- HID
     node  :- DataNode ]
-    (swap! *tdb* glue {hid node})
+    (swap! *tdb* t/glue {hid node})
     hid))
 
 (s/defn load-edn :- HID
@@ -144,21 +154,21 @@
         (map? edn-val) (set-node hid-creating
                          (->MapNode
                            hid-parent
-                           (apply glue
-                             (forv [[k v] edn-val]
+                           (apply t/glue
+                             (t/forv [[k v] edn-val]
                                {k (load-edn hid-creating v)}))))
 
         (or (set? edn-val) ; coerce sets to vectors
           (sequential? edn-val)) (set-node hid-creating
                                    (->VecNode
                                      hid-parent
-                                     (forv [elem edn-val]
+                                     (t/forv [elem edn-val]
                                        (load-edn hid-creating elem))))
 
         (not (coll? edn-val)) (set-node hid-creating
                                 (->LeafNode hid-parent edn-val))
 
-        :else (throw (ex-info "unknown value found" (vals->map edn-val)))))))
+        :else (throw (ex-info "unknown value found" (t/vals->map edn-val)))))))
 
 (s/defn hid->edn :- s/Any
   "Returns EDN data for the subtree rooted at hid"
@@ -169,14 +179,14 @@
   [hid :- HID
    path :- tsk/Vec]
   (let [node       (hid->node hid)
-        key        (xfirst path)
-        path-rest  (xrest path)
+        key        (t/xfirst path)
+        path-rest  (t/xrest path)
         nav-result (nav node key)]
     (if (empty? path-rest)
       nav-result
       (if (hid? nav-result)
         (hid-nav nav-result path-rest)
-        (forv [hid nav-result]
+        (t/forv [hid nav-result]
           (hid-nav hid path-rest))))))
 
 (s/defn hid->parent :- (s/maybe HID)

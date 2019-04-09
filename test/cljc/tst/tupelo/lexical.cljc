@@ -6,22 +6,28 @@
 ;   software.
 (ns tst.tupelo.lexical
   #?(:clj (:require
-            [tupelo.test :as ttst :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-            [tupelo.core :as t :refer [spy spyx spyxx]]))
+            [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
+            [tupelo.core :as t :refer [spy spyx spyxx]]
+            [tupelo.lexical :as lex]
+            [clojure.data.avl :as avl]
+            [schema.core :as s]
+            ))
   #?(:cljs (:require
-             [tupelo.test-cljs :include-macros true :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-             [tupelo.core :include-macros true :as t :refer [spy spyx spyxx]]))
-  (:require
-    [clojure.data.avl :as avl]
-    [schema.core :as s]
-    [tupelo.lexical :as lex]))
+             [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]
+              :include-macros true]
+             [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true ]
+             [tupelo.lexical :as lex]
+             [clojure.data.avl :as avl]
+             [schema.core :as s]
+             ))
+)
 
 (dotest ; -1 => "in order",  0 => "same", +1 => "out of order"
   ; empty list is smaller than any non-empty list
   (is (neg? (lex/compare [] [2])))
   (is (neg? (lex/compare [] [\b])))
   (is (neg? (lex/compare [] ["b"])))
-  (is (neg? (lex/compare [] [:b])))
+  (is (neg? (lex/compare [:99] [:b])))
   (is (neg? (lex/compare [] ['b])))
   (is (neg? (lex/compare [] [nil])))
 
