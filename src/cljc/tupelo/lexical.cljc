@@ -1,4 +1,4 @@
-;   Copyright (c) Alan Thompson. All rights reserved.  
+;   Copyright (c) Alan Thompson. All rights reserved.
 ;   The use and distribution terms for this software are covered by the Eclipse Public
 ;   License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
@@ -7,19 +7,17 @@
 (ns tupelo.lexical
   "Utils for lexical sorting and searching"
   (:refer-clojure :exclude [compare])
-#?(:clj (:require
-          [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
-          [tupelo.schema :as tsk]
-          [clojure.data.avl :as avl]
-          [schema.core :as s]
-          ))
-#?(:cljs (:require
-           [tupelo.core :include-macros true :as t :refer  [spy spyx spyxx spyx-pretty grab]]
-           [tupelo.schema :as tsk]
-           [clojure.core :as core]
-           [clojure.data.avl :as avl]
-           [schema.core :as s]
-         )))
+  #?(:clj (:require
+            [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
+            ))
+  #?(:cljs (:require
+             [tupelo.core :include-macros true :as t :refer [spy spyx spyxx spyx-pretty grab]]
+             ))
+  (:require
+    [tupelo.schema :as tsk]
+    [clojure.core :as core]
+    [clojure.data.avl :as avl]
+    [schema.core :as s]))
 
 (def Val tsk/Vec)
 (def Set (class (avl/sorted-set 1 2 3)))

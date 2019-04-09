@@ -7,20 +7,14 @@
 (ns tst.tupelo.lexical
   #?(:clj (:require
             [tupelo.test :as ttst :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-            [tupelo.core :as t :refer [spy spyx spyxx]]
-            [tupelo.lexical :as lex]
-            [tupelo.string :as ts]
-            [clojure.data.avl :as avl]
-            [schema.core :as s]
-          ))
+            [tupelo.core :as t :refer [spy spyx spyxx]]))
   #?(:cljs (:require
              [tupelo.test-cljs :include-macros true :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-             [tupelo.core :include-macros true :as t :refer [spy spyx spyxx]]
-             [tupelo.lexical :as lex]
-             [tupelo.string  :as ts]
-             [clojure.data.avl :as avl]
-             [schema.core :as s]
-           )))
+             [tupelo.core :include-macros true :as t :refer [spy spyx spyxx]]))
+  (:require
+    [clojure.data.avl :as avl]
+    [schema.core :as s]
+    [tupelo.lexical :as lex]))
 
 (dotest ; -1 => "in order",  0 => "same", +1 => "out of order"
   ; empty list is smaller than any non-empty list
