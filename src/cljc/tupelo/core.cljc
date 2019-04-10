@@ -1854,6 +1854,13 @@
     [elem]
     (drop (inc index) coll)))
 
+(s/defn sublist :- tsk/List
+  "Synonym for java.util.List/subList()"
+  [listy :- tsk/List
+   idx-low :- s/Int
+   idx-bound :- s/Int]
+  (.subList listy idx-low idx-bound))
+
 ; #todo use (idx    coll int-or-kw) as `get` replacement?
 ; #todo use (idx-in coll [kw's]) as `fetch-in` replacement?
 ; #todo allow (idx coll [low high]) like python xx( low:high )

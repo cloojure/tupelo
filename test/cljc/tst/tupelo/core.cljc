@@ -1516,6 +1516,14 @@
   (throws? (t/replace-at (range 3) -1 9))
   (throws? (t/replace-at (range 3)  3 9)))
 
+(dotest
+  (let [values (vec (range 10))]
+    (is= [] (t/sublist values 1 1))
+    (is= [2] (t/sublist values 2 3))
+    (is= [2 3 4] (t/sublist values 2 5))
+    (is= values (t/sublist values 0 10))
+    (throws? (t/sublist values 5 13))))
+
 (dotest             ; #todo need more tests
   (is= (mapv #(mod % 3) (t/thru -6 6)) [0 1 2 0 1 2 0 1 2 0 1 2 0])
   (is= (mapv #(t/idx [0 1 2] %) (t/thru -3 3)) [0 1 2 0 1 2 0 ]))
