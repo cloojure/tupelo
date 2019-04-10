@@ -1517,12 +1517,31 @@
   (throws? (t/replace-at (range 3)  3 9)))
 
 (dotest
-  (let [values (range 10)]
-    (is= [] (t/sublist values 1 1))
-    (is= [2] (t/sublist values 2 3))
-    (is= [2 3 4] (t/sublist values 2 5))
-    (is= values (t/sublist values 0 10))
-    (throws? (t/sublist values 5 13))))
+  (let [tst-fn (fn [vals5]
+                 (is= 5 (count vals5))
+                 ; w/o endpoint
+                 (spyx vals5)
+                 (is= vals5 (t/sublist vals5 0))
+                 (is= [2 3 4] (t/sublist vals5 2))
+                 (is= [4] (t/sublist vals5 4))
+                 (is= [] (t/sublist vals5 5))
+                 (throws? (t/sublist vals5 13))
+                 ;  with endpoint
+                 (is= [] (t/sublist vals5 1 1))
+                 (is= [2] (t/sublist vals5 2 3))
+                 (is= [2 3 4] (t/sublist vals5 2 5))
+                 (is= vals5 (t/sublist vals5 0 5))
+                 (throws? (t/sublist vals5 5 13)))]
+    (tst-fn (range 5))
+    (tst-fn (list 0 1 2 3 4))
+    (tst-fn (vector 0 1 2 3 4))
+    (tst-fn (seq (range 5)))
+    (tst-fn (seq (list 0 1 2 3 4)))
+    (tst-fn (seq (vector 0 1 2 3 4))))
+
+
+  (is= [2 3] (t/sublist (seq (range 5)) 2 4))
+  (is= [2 3] (t/sublist (seq (vec (range 5))) 2 4)))
 
 (dotest             ; #todo need more tests
   (is= (mapv #(mod % 3) (t/thru -6 6)) [0 1 2 0 1 2 0 1 2 0 1 2 0])
