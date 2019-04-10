@@ -1829,7 +1829,7 @@
   "Inserts an element into a collection at the specified index."
   [coll :- tsk/List
    index :- s/Int
-   elem :- s/Any]
+   elem :- s/Any ]
   (when (neg? index)
     (throw (ex-info "Index cannot be negative " index)))
   (when (< (count coll) index)

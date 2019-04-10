@@ -1517,7 +1517,7 @@
   (throws? (t/replace-at (range 3)  3 9)))
 
 (dotest
-  (let [values (vec (range 10))]
+  (let [values (range 10)]
     (is= [] (t/sublist values 1 1))
     (is= [2] (t/sublist values 2 3))
     (is= [2 3 4] (t/sublist values 2 5))
