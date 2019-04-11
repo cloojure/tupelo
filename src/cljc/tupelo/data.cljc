@@ -217,9 +217,11 @@
                                 (set-node! hid-new node-new)
                                 ; add edn-val to appropriate index
                                 (cond
-                                  (string? edn-val) ()
-                                  )
-                                )
+                                  (number? edn-val) (update-index! :num-idx [edn-val hid-new])
+                                  (string? edn-val) (update-index! :str-idx [edn-val hid-new])
+                                  (keyword? edn-val) (update-index! :kw-idx [edn-val hid-new])
+                                  :else (throw (ex-info "unknown LeafNode type found" (t/vals->map edn-val node-new))))
+                                hid-new)
 
         :else (throw (ex-info "unknown value found" (t/vals->map edn-val)))))))
 
