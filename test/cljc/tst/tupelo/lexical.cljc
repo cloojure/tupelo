@@ -25,6 +25,25 @@
 
 ; #todo fix for cljs
 
+(dotest
+  (let [ss123 (t/it-> (avl/sorted-set)
+                (conj it 1)
+                (conj it 3)
+                (conj it 2))
+        ss13  (disj ss123 2) ]
+    (is= #{1 2 3} ss123)
+    (is= [1 2 3] (vec ss123))
+    (is= #{1 3} ss13))
+
+  (let [ss123 (t/it-> (lex/->sorted-set)
+                (conj it [1 :a])
+                (conj it [3 :a])
+                (conj it [2 :a]))
+        ss13  (disj ss123 [2 :a])]
+    (is= #{[1 :a] [2 :a] [3 :a]} ss123)
+    (is= [[1 :a] [2 :a] [3 :a]] (vec ss123))
+    (is= #{[1 :a] [3 :a]} ss13)))
+
 (dotest ; -1 => "in order",  0 => "same", +1 => "out of order"
   ; empty list is smaller than any non-empty list
   (is (neg? -99))

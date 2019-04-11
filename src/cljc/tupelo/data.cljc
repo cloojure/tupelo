@@ -38,6 +38,8 @@
 (def age-of-wisdom 30)
 
 ;---------------------------------------------------------------------------------------------------
+; HID & :hid are shorthand for Hash ID, the SHA-1 hash of a v1/UUID expressed as a hexadecimal keyword
+; format { :hid Node }
 (def HID
   "The Plumatic Schema type name for a pointer to a tdb node (abbrev. for Hex ID)"
   s/Int)
@@ -135,17 +137,40 @@
   `(binding [*tdb* (atom ~tdb-arg)]
      ~@forms))
 
+(defn new-tdb
+  "Returns a new, empty db."
+  []
+  {:hid-idx (sorted-map)
+   :num-idx (lex/->sorted-set)
+   :str-idx (lex/->sorted-set)
+   :kw-idx  (lex/->sorted-set)
+   ;:sym-idx (lex/->sorted-set)
+   ;:char-idx (lex/->sorted-set)
+   })
+
+(def IndexId (s/enum :num-idx :str-idx :kw-idx))
+
 (s/defn hid->node :- DataNode
   "Returns the node corresponding to an HID"
   [hid :- HID]
   (t/grab hid (grab :hid-idx (deref *tdb*))))
 
-(s/defn set-node :- HID
+(s/defn set-node! :- HID
   "Unconditionally sets the value of a node in the tdb"
   ([hid :- HID
     node :- DataNode]
     (swap! *tdb* assoc-in [:hid-idx hid] node)
     hid))
+
+(s/defn update-index!
+  "Unconditionally sets the value of a node in the tdb"
+  ([idx-id :- IndexId
+    pair :- tsk/Pair]
+    (swap! *tdb* (fn [tdb-map]
+                   (update-in tdb-map [idx-id]
+                     (fn [sorted-set-idx]
+                       (conj sorted-set-idx pair)))))
+    nil))
 
 (def ^:no-doc hid-count-base 1000)
 (def ^:no-doc hid-counter (atom hid-count-base))
@@ -162,48 +187,39 @@
   "Returns true if the arg type is a legal HID value"
   [arg] (int? arg))
 
-; HID & :hid are shorthand for Hash ID, the SHA-1 hash of a v1/UUID expressed as a hexadecimal keyword
-; format { :hid Node }
-(defn new-tdb
-  "Returns a new, empty db."
-  []
-  {:hid-idx (sorted-map)
-   :num-idx (lex/->sorted-set)
-   :str-idx (lex/->sorted-set)
-   :kw-idx  (lex/->sorted-set)
-   ;:sym-idx (lex/->sorted-set)
-   ;:char-idx (lex/->sorted-set)
-   })
-
 (s/defn load-edn :- HID ; #todo maybe rename:  load-edn->hid  ???
   ([edn-val :- s/Any]
     (load-edn nil edn-val))
   ([hid-parent :- (s/maybe HID)
     edn-val :- s/Any]
-    (let [hid-creating (new-hid)]
+    (let [hid-new (new-hid)]
       (cond
-        (map? edn-val) (set-node hid-creating
+        (map? edn-val) (set-node! hid-new
                          (->MapNode
                            hid-parent
                            (apply t/glue
                              (t/forv [[k v] edn-val]
-                               {k (load-edn hid-creating v)}))))
+                               {k (load-edn hid-new v)}))))
 
-        (set? edn-val) (set-node hid-creating
+        (set? edn-val) (set-node! hid-new
                          (->SetNode
                            hid-parent
                            (set (t/forv [elem edn-val]
-                                  (load-edn hid-creating elem)))))
+                                  (load-edn hid-new elem)))))
 
-        (or (set? edn-val) ; coerce sets to vectors
-          (sequential? edn-val)) (set-node hid-creating
-                                   (->VecNode
-                                     hid-parent
-                                     (t/forv [elem edn-val]
-                                       (load-edn hid-creating elem))))
+        (sequential? edn-val) (set-node! hid-new
+                                (->VecNode
+                                  hid-parent
+                                  (t/forv [elem edn-val]
+                                    (load-edn hid-new elem))))
 
-        (not (coll? edn-val)) (set-node hid-creating
-                                (->LeafNode hid-parent edn-val))
+        (not (coll? edn-val)) (let [node-new (->LeafNode hid-parent edn-val)]
+                                (set-node! hid-new node-new)
+                                ; add edn-val to appropriate index
+                                (cond
+                                  (string? edn-val) ()
+                                  )
+                                )
 
         :else (throw (ex-info "unknown value found" (t/vals->map edn-val)))))))
 
