@@ -84,9 +84,7 @@
     [[1] [1 :a] [2]])
   (is= (vec (avl/sorted-set-by lex/compare-lex [1 :a] [1 nil] [1] [2]))
     [[1] [1 nil] [1 :a] [2]])
-  (let [got-set      (avl/sorted-set-by lex/compare-lex [2 0] [2] [3] [3 :y] [1] [1 :a] [1 nil] [1 :b nil 9] [1 :b nil] [1 :b] [1 :b 3])
-        got-vec      (vec got-set)
-        expected-vec [[1]
+  (let [expected-vec [[1]
                       [1 nil]
                       [1 :a]
                       [1 :b]
@@ -97,9 +95,12 @@
                       [2 0]
                       [3]
                       [3 :y]]
-        expected-set (lex/->sorted-set expected-vec)]
-    (is= got-vec expected-vec)
-    (is= got-set expected-set) )
+        expected-set (lex/->sorted-set expected-vec)
+        data         (reverse expected-vec)
+        result-set   (apply avl/sorted-set-by lex/compare-lex data)
+        result-vec   (vec result-set)]
+    (is= result-vec expected-vec)
+    (is= result-set expected-set) )
   (let [expected   [[1]
                     [1 nil]
                     [1 nil nil]
