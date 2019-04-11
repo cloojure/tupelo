@@ -8,12 +8,14 @@
   (:refer-clojure :exclude [load ->VecNode])
   #?(:clj (:require
             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
+            [tupelo.lexical :as lex]
             [tupelo.schema :as tsk]
             [clojure.data.avl :as avl]
             [schema.core :as s]
             ))
   #?(:cljs (:require
              [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab] ] ; #todo :include-macros true
+             [tupelo.lexical :as lex]
              [tupelo.schema :as tsk]
              [clojure.data.avl :as avl]
              [schema.core :as s]
@@ -36,21 +38,17 @@
 (def age-of-wisdom 30)
 
 ;---------------------------------------------------------------------------------------------------
-(def ^:dynamic ^:no-doc *tdb* nil)
-
 (def HID
   "The Plumatic Schema type name for a pointer to a tdb node (abbrev. for Hex ID)"
   s/Int)
 
-(s/defn hid->node ; :- Node
-  "Returns the node corresponding to an HID"
-  [hid :- HID]
-  (t/grab hid (deref *tdb*)))
+(declare hid->node)
 
 (defprotocol IDataNode
   (parent [this])
   (content [this])
   (edn [this]))
+
 (defprotocol INavNode
   (nav [this key]))
 
@@ -130,6 +128,25 @@
     set? #{HID}
     :else [HID]))
 
+(def ^:dynamic ^:no-doc *tdb* nil)
+
+(defmacro with-tdb ; #todo swap names?
+  [tdb-arg & forms]
+  `(binding [*tdb* (atom ~tdb-arg)]
+     ~@forms))
+
+(s/defn hid->node :- DataNode
+  "Returns the node corresponding to an HID"
+  [hid :- HID]
+  (t/grab hid (grab :hid-idx (deref *tdb*))))
+
+(s/defn set-node :- HID
+  "Unconditionally sets the value of a node in the tdb"
+  ([hid :- HID
+    node :- DataNode]
+    (swap! *tdb* assoc-in [:hid-idx hid] node)
+    hid))
+
 (def ^:no-doc hid-count-base 1000)
 (def ^:no-doc hid-counter (atom hid-count-base))
 
@@ -150,19 +167,13 @@
 (defn new-tdb
   "Returns a new, empty db."
   []
-  (sorted-map))
-
-(defmacro with-tdb ; #todo swap names?
-  [tdb-arg & forms]
-  `(binding [*tdb* (atom ~tdb-arg)]
-     ~@forms))
-
-(s/defn set-node :- HID
-  "Unconditionally sets the value of a node in the tdb"
-  ([hid :- HID
-    node  :- DataNode ]
-    (swap! *tdb* t/glue {hid node})
-    hid))
+  {:hid-idx (sorted-map)
+   :num-idx (lex/->sorted-set)
+   :str-idx (lex/->sorted-set)
+   :kw-idx  (lex/->sorted-set)
+   ;:sym-idx (lex/->sorted-set)
+   ;:char-idx (lex/->sorted-set)
+   })
 
 (s/defn load-edn :- HID ; #todo maybe rename:  load-edn->hid  ???
   ([edn-val :- s/Any]

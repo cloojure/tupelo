@@ -61,10 +61,11 @@
                ;(println :awt-007)
                 (clojure.core/compare a0 b0))))))
 
-(s/defn ->sorted-set :- tsk/Set
+(s/defn ->sorted-set :- Set
   "Converts a set into a lexically-sorted set"
-  [some-set :- (s/cond-pre tsk/Set tsk/Vec)]
-  (into (avl/sorted-set-by compare-lex) some-set))
+  ([] (->sorted-set #{}))
+  ([some-set :- (s/cond-pre tsk/Set tsk/Vec)]
+    (into (avl/sorted-set-by compare-lex) some-set)))
 ; #todo add (->sorted-map <map>)        => (into (sorted-map) <map>)
 ; #todo add (->sorted-vec <sequential>) => (vec (sort <vec>))
 

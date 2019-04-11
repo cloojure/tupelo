@@ -71,7 +71,6 @@
       (is= edn-0 (data/hid->edn root-hid)))))
 
 (dotest
-  (newline) (println "===================================================================================================")
   (data/with-tdb (data/new-tdb)
     (let [data     {:a [{:b 2}
                         {:c 3}
@@ -106,12 +105,23 @@
                                 data/hid->parent
                                 data/hid->parent)]
         (is= 4 (data/hid->edn four-hid))
-        (is= data (data/hid->edn four-hid-parent-3))))
+        (is= data (data/hid->edn four-hid-parent-3)))) ))
 
+(dotest
+  (newline) (println "===================================================================================================")
+  (data/with-tdb (data/new-tdb)
+    (let [data     [{:a 1
+                     :b :first}
+                    {:a 2
+                     :b :second}
+                    {:a 3
+                     :b :third}]
+          root-hid (data/load-edn data)]
 
-    (newline) (println "---------------------------------------------------------------------------------------------------")
-    ))
-
+      (newline) (println "---------------------------------------------------------------------------------------------------")
+      )
+    )
+  )
 
 
 
