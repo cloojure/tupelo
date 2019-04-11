@@ -61,7 +61,7 @@
       (is (vector? edn-result)) ; ***** Sets are coerced to vectors! *****
       (is-set= [1 2 3] edn-result))))
 
-(dotest-focus
+(dotest
   (newline) (println "===================================================================================================")
   (data/with-tdb (data/new-tdb)
     (let [data     {:a [{:b 2}
@@ -102,4 +102,5 @@
 
     (newline) (println "---------------------------------------------------------------------------------------------------")
     ))
+
 

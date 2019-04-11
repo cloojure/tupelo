@@ -49,57 +49,56 @@
 
 (defprotocol IDataNode
   (parent [this])
-  (raw [this])
+  (content [this])
   (edn [this]))
 (defprotocol INavNode
   (nav [this key]))
 
 (s/defrecord MapNode ; Represents ths content of a Clojure map.
-  ; content is a map from key to hid
+  ; a map from key to hid
   [ parent :- (s/maybe HID)
-   content :- tsk/Map ]
+   node-val :- tsk/Map ]
   IDataNode
   (parent [this] (s/validate (s/maybe HID) parent))
-  (raw [this]
-    (t/validate map? content))
+  (content [this]
+    (t/validate map? node-val))
   (edn [this]
     (apply t/glue
-      (t/forv [[k v-hid] (t/validate map? content)]
+      (t/forv [[k v-hid] (t/validate map? node-val)]
         {k (edn (hid->node v-hid))})))
   INavNode
   (nav [this key]
-    (t/grab key (t/validate map? content))))
+    (t/grab key (t/validate map? node-val))))
 
 (s/defrecord VecNode ; Represents ths content of a Clojure vector (any sequential type coerced into a vector).
-  ; content is a vector of hids
+  ; stored is a vector of hids
   [ parent :- (s/maybe HID)
-   content :- tsk/Vec ]
+   node-val :- tsk/Vec ]
   IDataNode
   (parent [this] (s/validate (s/maybe HID) parent))
-  (raw [this]
-    (t/validate vector? content))
+  (content [this]
+    (t/validate vector? node-val))
   (edn [this]
-    (t/forv [elem-hid (t/validate vector? content)]
+    (t/forv [elem-hid (t/validate vector? node-val)]
       (edn (hid->node elem-hid))))
   INavNode
   (nav [this key]
     (if (= :* key)
-      (raw this)
-      (nth (t/validate vector? content) key))))
+      (content this)
+      (nth (t/validate vector? node-val) key))))
 
 ; Represents a Clojure primitive (non-collection) type,
 ; (i.e. number, string, keyword, symbol, character, etc)
 (s/defrecord LeafNode
-  ; content is a simple (non-collection) value
+  ; stored is a simple (non-collection) value
   [parent :- (s/maybe HID)
-   content :- s/Any]
+   node-val :- s/Any]
   IDataNode
   (parent [this] (s/validate (s/maybe HID) parent))
-  (raw [this]
-    (t/validate #(not (coll? %)) content))
+  (content [this]
+    (t/validate #(not (coll? %)) node-val))
   (edn [this]
-    (t/validate #(not (coll? %)) content))
-  )
+    (t/validate #(not (coll? %)) node-val)) )
 
 (def DataNode
   "The Plumatic Schema type name for a MapNode VecNode LeafNode."

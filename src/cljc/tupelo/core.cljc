@@ -808,6 +808,8 @@
    (defn kw->int [arg]
      (js/parseInt (kw->str arg) 10)))
 
+; #todo add edn->js
+; #todo add js->edn (:keywordize-keys true)
 #?(:clj
    (do
      ; #todo add test & README
