@@ -70,6 +70,25 @@
   (nav [this key]
     (t/grab key (t/validate map? node-val))))
 
+; #todo need to enforce set uniqueness under mutation
+(s/defrecord SetNode ; Represents ths content of a Clojure set
+  ; a map from key to hid
+  [parent :- (s/maybe HID)
+   node-val :- tsk/Set]
+  IDataNode
+  (parent [this] (s/validate (s/maybe HID) parent))
+  (content [this]
+    (t/validate set? node-val))
+  (edn [this]
+    (let [result-vec (t/forv [v-hid (t/validate set? node-val)]
+                       (edn (hid->node v-hid)))]
+      (when-not (apply distinct? result-vec)
+        (throw (ex-info "SetNode: non-distinct entries found!" (t/vals->map node-val result-vec))))
+      (set result-vec)))
+  INavNode
+  (nav [this key]
+    (t/grab key (t/validate set? node-val))))
+
 (s/defrecord VecNode ; Represents ths content of a Clojure vector (any sequential type coerced into a vector).
   ; stored is a vector of hids
   [ parent :- (s/maybe HID)
@@ -102,7 +121,7 @@
 
 (def DataNode
   "The Plumatic Schema type name for a MapNode VecNode LeafNode."
-  (s/cond-pre MapNode VecNode LeafNode ))
+  (s/cond-pre MapNode SetNode VecNode LeafNode ))
 
 (def HidRootSpec
   "The Plumatic Schema type name for the values accepted as starting points (roots) for a subtree path search."
@@ -145,7 +164,7 @@
     (swap! *tdb* t/glue {hid node})
     hid))
 
-(s/defn load-edn :- HID
+(s/defn load-edn :- HID ; #todo maybe rename:  load-edn->hid  ???
   ([edn-val :- s/Any]
     (load-edn nil edn-val))
   ([hid-parent :- (s/maybe HID)
@@ -158,6 +177,12 @@
                            (apply t/glue
                              (t/forv [[k v] edn-val]
                                {k (load-edn hid-creating v)}))))
+
+        (set? edn-val) (set-node hid-creating
+                         (->SetNode
+                           hid-parent
+                           (set (t/forv [elem edn-val]
+                                  (load-edn hid-creating elem)))))
 
         (or (set? edn-val) ; coerce sets to vectors
           (sequential? edn-val)) (set-node hid-creating

@@ -52,14 +52,23 @@
                     :h "hotel"
                     :i 1}
           root-hid (data/load-edn data-1)]
-      (is= data-1 (data/hid->edn root-hid))))
+      (is= data-1 (data/hid->edn root-hid)))) )
 
+(dotest
   (data/with-tdb (data/new-tdb)
     (let [edn-0      #{1 2 3}
           root-hid   (data/load-edn edn-0)
           edn-result (data/hid->edn root-hid)]
-      (is (vector? edn-result)) ; ***** Sets are coerced to vectors! *****
-      (is-set= [1 2 3] edn-result))))
+      (is (set? edn-result)) ; ***** Sets are coerced to vectors! *****
+      (is-set= [1 2 3] edn-result)))
+  (data/with-tdb (data/new-tdb)
+    (let [edn-0    #{:a 1 :b 2}
+          root-hid (data/load-edn edn-0)]
+      (is= edn-0 (data/hid->edn root-hid))))
+  (data/with-tdb (data/new-tdb)
+    (let [edn-0    {:a 1 :b #{1 2 3}}
+          root-hid (data/load-edn edn-0)]
+      (is= edn-0 (data/hid->edn root-hid)))))
 
 (dotest
   (newline) (println "===================================================================================================")
@@ -96,11 +105,20 @@
                                 data/hid->parent
                                 data/hid->parent
                                 data/hid->parent)]
-        (is= 4 (spyx (data/hid->edn four-hid)))
-        (is= data (spyx (data/hid->edn four-hid-parent-3)))))
+        (is= 4 (data/hid->edn four-hid))
+        (is= data (data/hid->edn four-hid-parent-3))))
 
 
     (newline) (println "---------------------------------------------------------------------------------------------------")
     ))
+
+
+
+
+
+
+
+
+
 
 
