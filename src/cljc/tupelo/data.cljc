@@ -167,10 +167,18 @@
   ([idx-id :- IndexId
     pair :- tsk/Pair]
     (swap! *tdb* (fn [tdb-map]
-                   (update-in tdb-map [idx-id]
+                   (update-in tdb-map [idx-id] ; #todo make verify like fetch-in
                      (fn [sorted-set-idx]
                        (conj sorted-set-idx pair)))))
     nil))
+
+(s/defn index-find-match
+  [idx-id :- IndexId
+   target :- tsk/Vec]
+  (let [idx-sorted-set   (t/validate set? (grab idx-id (deref *tdb*)))
+        matching-entries (grab :matches
+                           (lex/split-key-prefix target idx-sorted-set)) ]
+    matching-entries))
 
 (def ^:no-doc hid-count-base 1000)
 (def ^:no-doc hid-counter (atom hid-count-base))
