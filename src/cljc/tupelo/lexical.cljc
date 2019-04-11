@@ -28,7 +28,7 @@
 (def Map (class (avl/sorted-map :a 1 :b 2 :c 3)))
 
 ; #todo generalize to allow `nil` as an ultimate lower bound?
-(defn compare-lex      ; :- s/Int  ; #todo schema
+(s/defn compare-lex :- s/Int
   "Performs a lexical comparison of 2 sequences, sorting as follows:
       [1]
       [1 :a]
@@ -37,29 +37,19 @@
       [2]
       [3]
       [3 :y] "
-  [a      ; :- tsk/Vec  ; #todo schema
-   b      ; :- tsk/Vec  ; #todo schema
-   ]
- ;(println :awt-001)
-  (s/validate tsk/Vec a)
- ;(println :awt-002)
-  (s/validate tsk/Vec b)
- ;(println :awt-003)
+  [a :- tsk/Vec
+   b :- tsk/Vec ]
+ ;(s/validate tsk/Vec a)
+ ;(s/validate tsk/Vec b)
   (cond
     (= a b) 0
     (empty? a) -1
     (empty? b) 1
     :else (let [a0 (t/xfirst a)
-               ;>> (println :awt-004)
                 b0 (t/xfirst b)]
-            ;(println :awt-005)
             (if (= a0 b0)
-              (do
-               ;(println :awt-006)
-                (compare-lex (t/xrest a) (t/xrest b)))
-              (do
-               ;(println :awt-007)
-                (clojure.core/compare a0 b0))))))
+              (do (compare-lex (t/xrest a) (t/xrest b)))
+              (do (clojure.core/compare a0 b0))))))
 
 (s/defn ->sorted-set :- Set
   "Converts a set into a lexically-sorted set"
