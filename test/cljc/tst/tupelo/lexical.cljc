@@ -99,11 +99,17 @@
                       [3 :y]]
         expected-set (lex/->sorted-set expected-vec)]
     (is= got-vec expected-vec)
-    (is= got-set expected-set)
-    )
-
-  )
-
+    (is= got-set expected-set) )
+  (let [expected   [[1]
+                    [1 nil]
+                    [1 nil nil]
+                    [1 nil 9]
+                    [1 2]
+                    [1 2 nil]
+                    [1 2 3]]
+        data       (reverse expected)
+        result-vec (vec (lex/->sorted-set data))]
+    (is= result-vec expected)))
 
 (dotest
   (let [lex-set (avl/sorted-set 1 2 3)
