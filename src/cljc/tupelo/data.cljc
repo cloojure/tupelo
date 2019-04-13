@@ -299,7 +299,8 @@
                                (hid->node-val it)
                                (t/submap-by-vals it #{hid-tgt})
                                (let [key-found (t/xfirst (solomap->kv it))]
-                                 (when (= tgt-key key-found) hid-parent)))))]
+                                 (when (= tgt-key key-found)
+                                   hid-parent)))))]
     parent-hids-keep))
 
 
