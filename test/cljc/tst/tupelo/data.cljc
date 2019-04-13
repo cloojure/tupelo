@@ -112,31 +112,31 @@
 (dotest
   (newline) (println "===================================================================================================")
   (data/with-tdb (data/new-tdb)
-    (let [data     [{:a 1 :b :first}
-                    {:a 2 :b :second}
-                    {:a 3 :b :third}
-                    {:a 4 :b "fourth"}
-                    {:a 5 :b "fifth"}
-                    {:a 1 :b 101}
-                    {:a 1 :b 102}
-                    ]
-          root-hid (data/load-edn data)
-          ones-matces-set  (data/index-find-match :num-idx [1])
-          ones-parent-hids-v1 (mapv t/xsecond ones-matces-set)
-          ones-parent-hids-v2 (mapv data/hid->parent ones-parent-hids-v1)
+    (let [data                 [{:a 1 :b :first}
+                                {:a 2 :b :second}
+                                {:a 3 :b :third}
+                                {:a 4 :b "fourth"}
+                                {:a 5 :b "fifth"}
+                                {:a 1 :b 101}
+                                {:a 1 :b 102}
+                                ]
+          root-hid             (data/load-edn data)
+          ones-matces-set      (data/index-find-match :num-idx [1])
+          ones-parent-hids-v1  (mapv t/xsecond ones-matces-set)
+          ones-parent-hids-v2  (mapv data/hid->parent ones-parent-hids-v1)
           ones-parent-nodes-v1 (mapv data/hid->edn ones-parent-hids-v1)
           ones-parent-nodes-v2 (mapv data/hid->edn ones-parent-hids-v2)
           ]
-     ;(t/spyx-pretty (deref data/*tdb*))
-     ;(t/spyx ones-matces-set)
-     ;(t/spyx ones-parent-hids-v1)
-     ;(t/spyx ones-parent-hids-v2)
-     (is= ones-parent-nodes-v1 [1 1 1] )
-     (is= ones-parent-nodes-v2 [{:a 1, :b :first}
-                                {:a 1, :b 101}
-                                {:a 1, :b 102}])
+      ;(t/spyx-pretty (deref data/*tdb*))
+      ;(t/spyx ones-matces-set)
+      ;(t/spyx ones-parent-hids-v1)
+      ;(t/spyx ones-parent-hids-v2)
+      (is= ones-parent-nodes-v1 [1 1 1])
+      (is= ones-parent-nodes-v2 [{:a 1, :b :first}
+                                 {:a 1, :b 101}
+                                 {:a 1, :b 102}])
 
-     (newline) (println "---------------------------------------------------------------------------------------------------")
+      (newline) (println "---------------------------------------------------------------------------------------------------")
       )
     )
   )
