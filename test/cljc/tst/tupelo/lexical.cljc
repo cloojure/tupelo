@@ -132,6 +132,7 @@
     (is= result-vec expected)))
 
 (dotest
+  (println "********* running tupelo.lexical tests ********* ")
   (let [lex-set (avl/sorted-set 1 2 3)
         lex-map (avl/sorted-map :a 1 :b 2 :c 3)]
     (s/validate lex/Set lex-set)

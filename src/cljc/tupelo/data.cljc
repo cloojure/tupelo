@@ -23,6 +23,10 @@
 
   )
 
+; #todo add indexes
+; #todo add sets (primative only or HID) => map with same key/value
+; #todo copy destruct syntax for search
+
 #?(:cljs (enable-console-print!))
 
 ; #todo Tupelo Data Language (TDL)
@@ -47,7 +51,7 @@
 (declare hid->node)
 
 (defprotocol IDataNode
-  (parent [this])
+  (parent-hid [this])
   (content [this])
   (edn [this]))
 
@@ -59,7 +63,7 @@
   [ parent :- (s/maybe HID)
    node-val :- tsk/Map ]
   IDataNode
-  (parent [this] (s/validate (s/maybe HID) parent))
+  (parent-hid [this] (s/validate (s/maybe HID) parent))
   (content [this]
     (t/validate map? node-val))
   (edn [this]
@@ -76,7 +80,7 @@
   [parent :- (s/maybe HID)
    node-val :- tsk/Set]
   IDataNode
-  (parent [this] (s/validate (s/maybe HID) parent))
+  (parent-hid [this] (s/validate (s/maybe HID) parent))
   (content [this]
     (t/validate set? node-val))
   (edn [this]
@@ -94,7 +98,7 @@
   [ parent :- (s/maybe HID)
    node-val :- tsk/Vec ]
   IDataNode
-  (parent [this] (s/validate (s/maybe HID) parent))
+  (parent-hid [this] (s/validate (s/maybe HID) parent))
   (content [this]
     (t/validate vector? node-val))
   (edn [this]
@@ -113,7 +117,7 @@
   [parent :- (s/maybe HID)
    node-val :- s/Any]
   IDataNode
-  (parent [this] (s/validate (s/maybe HID) parent))
+  (parent-hid [this] (s/validate (s/maybe HID) parent))
   (content [this]
     (t/validate #(not (coll? %)) node-val))
   (edn [this]
@@ -140,30 +144,33 @@
 (defn new-tdb
   "Returns a new, empty db."
   []
-  {:hid-idx (sorted-map)
-   :num-idx (lex/->sorted-set)
-   :str-idx (lex/->sorted-set)
-   :kw-idx  (lex/->sorted-set)
-   ;:sym-idx (lex/->sorted-set)
-   ;:char-idx (lex/->sorted-set)
+  {:idx-hid (sorted-map)
+   :idx-num (lex/->sorted-set)
+   :idx-str (lex/->sorted-set)
+   :idx-kw  (lex/->sorted-set)
+   ;:idx-sym (lex/->sorted-set)
+   ;:idx-char (lex/->sorted-set)
    })
-
-(def IndexId (s/enum :num-idx :str-idx :kw-idx))
 
 (s/defn hid->node :- DataNode
   "Returns the node corresponding to an HID"
   [hid :- HID]
-  (t/grab hid (grab :hid-idx (deref *tdb*))))
+  (t/grab hid (grab :idx-hid (deref *tdb*))))
+
+(s/defn hid->node-val :- tsk/Map
+  "Returns the node corresponding to an HID"
+  [hid :- HID]
+  (t/grab :node-val (hid->node hid)))
 
 (s/defn set-node! :- HID
   "Unconditionally sets the value of a node in the tdb"
   ([hid :- HID
     node :- DataNode]
-    (swap! *tdb* assoc-in [:hid-idx hid] node)
+    (swap! *tdb* assoc-in [:idx-hid hid] node)
     hid))
 
+(def IndexId (s/enum :idx-num :idx-str :idx-kw))
 (s/defn update-index!
-  "Unconditionally sets the value of a node in the tdb"
   ([idx-id :- IndexId
     pair :- tsk/Pair]
     (swap! *tdb* (fn [tdb-map]
@@ -171,14 +178,6 @@
                      (fn [sorted-set-idx]
                        (conj sorted-set-idx pair)))))
     nil))
-
-(s/defn index-find-match
-  [idx-id :- IndexId
-   target :- tsk/Vec]
-  (let [idx-sorted-set   (t/validate set? (grab idx-id (deref *tdb*)))
-        matching-entries (grab :matches
-                           (lex/split-key-prefix target idx-sorted-set)) ]
-    matching-entries))
 
 (def ^:no-doc hid-count-base 1000)
 (def ^:no-doc hid-counter (atom hid-count-base))
@@ -195,9 +194,9 @@
   "Returns true if the arg type is a legal HID value"
   [arg] (int? arg))
 
-(s/defn load-edn :- HID ; #todo maybe rename:  load-edn->hid  ???
+(s/defn add-edn :- HID ; #todo maybe rename:  load-edn->hid  ???
   ([edn-val :- s/Any]
-    (load-edn nil edn-val))
+    (add-edn nil edn-val))
   ([hid-parent :- (s/maybe HID)
     edn-val :- s/Any]
     (let [hid-new (new-hid)]
@@ -207,27 +206,27 @@
                            hid-parent
                            (apply t/glue
                              (t/forv [[k v] edn-val]
-                               {k (load-edn hid-new v)}))))
+                               {k (add-edn hid-new v)}))))
 
         (set? edn-val) (set-node! hid-new
                          (->SetNode
                            hid-parent
                            (set (t/forv [elem edn-val]
-                                  (load-edn hid-new elem)))))
+                                  (add-edn hid-new elem)))))
 
         (sequential? edn-val) (set-node! hid-new
                                 (->VecNode
                                   hid-parent
                                   (t/forv [elem edn-val]
-                                    (load-edn hid-new elem))))
+                                    (add-edn hid-new elem))))
 
         (not (coll? edn-val)) (let [node-new (->LeafNode hid-parent edn-val)]
                                 (set-node! hid-new node-new)
                                 ; add edn-val to appropriate index
                                 (cond
-                                  (number? edn-val) (update-index! :num-idx [edn-val hid-new])
-                                  (string? edn-val) (update-index! :str-idx [edn-val hid-new])
-                                  (keyword? edn-val) (update-index! :kw-idx [edn-val hid-new])
+                                  (number? edn-val) (update-index! :idx-num [edn-val hid-new])
+                                  (string? edn-val) (update-index! :idx-str [edn-val hid-new])
+                                  (keyword? edn-val) (update-index! :idx-kw [edn-val hid-new])
                                   :else (throw (ex-info "unknown LeafNode type found" (t/vals->map edn-val node-new))))
                                 hid-new)
 
@@ -252,14 +251,56 @@
         (t/forv [hid nav-result]
           (hid-nav hid path-rest))))))
 
-(s/defn hid->parent :- (s/maybe HID)
+(s/defn hid->parent-hid :- (s/maybe HID)
   "Returns the parent HID of the node at this HID"
   [hid :- HID]
-  (parent (hid->node hid)))
+  (parent-hid (hid->node hid)))
 
-; #todo add indexes
-; #todo add sets (primative only or HID) => map with same key/value
-; #todo copy destruct syntax for search
+(s/defn ^:private  ^:no-doc index-find-val-impl
+  [idx-id :- IndexId
+   target :- tsk/Vec]
+  (let [idx-sorted-set   (t/validate set? (grab idx-id (deref *tdb*)))
+        matching-entries (grab :matches
+                           (lex/split-key-prefix target idx-sorted-set)) ]
+    matching-entries))
+
+(def IdxVal (s/cond-pre s/Num s/Str s/Keyword ))
+(s/defn index-find-val
+  [target :- IdxVal]
+  (let [idx-id      (cond
+                      (number? target) :idx-num
+                      (string? target) :idx-str
+                      (keyword? target) :idx-kw
+                      :else (throw (ex-info "invalid index target" (t/vals->map target))))
+        idx-entries (index-find-val-impl idx-id [target])
+        result      (mapv t/xsecond idx-entries)]
+    result))
+
+(s/defn solomap->kv :- tsk/Pair ; #todo need test
+  [solo-map :- tsk/Map]
+  (let [map-seq  (seq solo-map)
+        >>       (when-not #(= 1 (count map-seq))
+                   (throw (ex-info "solo-map must be of length=1 " (t/vals->map solo-map))))
+        mapentry (t/only map-seq)
+        result   [(key mapentry) (val mapentry)]]
+                    ; or [ (only (keys solo-map))
+                    ;      (only (vals solo-map)) ]
+    result))
+
+(s/defn index-find-mapentry
+  [target :- {s/Keyword IdxVal}]
+  (let [[tgt-key tgt-val] (solomap->kv target)
+        tgt-hids         (index-find-val tgt-val)
+        parent-hids      (mapv hid->parent-hid tgt-hids)
+        parent-hids-keep (t/drop-if nil?
+                           (t/map-let [hid-tgt    tgt-hids
+                                       hid-parent parent-hids]
+                             (t/it-> hid-parent
+                               (hid->node-val it)
+                               (t/submap-by-vals it #{hid-tgt})
+                               (let [key-found (t/xfirst (solomap->kv it))]
+                                 (when (= tgt-key key-found) hid-parent)))))]
+    parent-hids-keep))
 
 
 

@@ -38,8 +38,9 @@
             [lein-figwheel "0.5.18"]
             [com.jakemccrary/lein-test-refresh "0.24.1"]]
 
-  :test-refresh {:quiet false ; true ; true => suppress printing namespaces when testing
-                 }
+  :test-refresh {:quiet      true ; true => suppress printing namespaces when testing
+                ;:focus-flag :focus
+                }
 
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
                                        [org.clojure/clojurescript "1.10.339" :scope "provided"]
