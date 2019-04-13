@@ -128,14 +128,12 @@
             root-hid     (td/add-edn data)
             hids-match   (td/index-find-val 1)
             hids-parents (mapv td/hid->parent-hid hids-match)
-            match-edn    (mapv td/hid->edn hids-match)
-            parent-edn   (mapv td/hid->edn hids-parents)]
-        (is= match-edn [1 1 1])
-        (is= parent-edn [{:a 1, :b :first}
+            edn-match    (mapv td/hid->edn hids-match)
+            edn-parent   (mapv td/hid->edn hids-parents)]
+        (is= edn-match [1 1 1])
+        (is= edn-parent [{:a 1, :b :first}
                          {:a 1, :b 101}
                          {:a 1, :b 102}])))
-
-    (newline) (println "===================================================================================================")
     (td/with-tdb (td/new-tdb)
       (let [data         [{:a 1 :x :first}
                           {:a 2 :x :second}
@@ -145,10 +143,31 @@
                           {:c 1 :x 301}
                           {:c 2 :x 302} ]
             root-hid     (td/add-edn data)
-            mapentry-hid (t/only (td/index-find-mapentry {:a 1}))
-            mapentry-edn (td/hid->edn mapentry-hid) ]
-        (is= mapentry-edn {:a 1 :x :first} ) ))
-    (newline) (println "---------------------------------------------------------------------------------------------------")
+            hid-match (t/only (td/index-find-solomap {:a 1}))
+            edn-match (td/hid->edn hid-match) ]
+        (is= edn-match {:a 1 :x :first} ) ))
+
+    (newline) (println "===================================================================================================")
+    (td/with-tdb (td/new-tdb)
+      (let [data      [{:a 1 :b 1 :c 1}
+                       {:a 1 :b 2 :c 2}
+                       {:a 1 :b 1 :c 3}
+                       {:a 2 :b 2 :c 4}
+                       {:a 2 :b 1 :c 5}
+                       {:a 2 :b 2 :c 6}]
+            root-hid  (td/add-edn data)
+            hid-match (t/only (td/index-find-submap {:a 1 :b 2}))
+            edn-match (td/hid->edn hid-match)]
+        (is= edn-match {:a 1 :b 2 :c 2})
+       ;(t/spy-pretty (deref td/*tdb*))
+        (let [tgt        {:a 1 :b 1}
+              match-hids (td/index-find-submap tgt)
+              match-edns (mapv td/hid->edn match-hids)]
+          (is-set= match-edns
+            [{:a 1, :b 1, :c 1}
+             {:a 1, :b 1, :c 3}]))))
+    (newline)
+    (println "---------------------------------------------------------------------------------------------------")
     )
 
 

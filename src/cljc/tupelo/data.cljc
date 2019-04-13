@@ -11,6 +11,7 @@
             [tupelo.lexical :as lex]
             [tupelo.schema :as tsk]
             [clojure.data.avl :as avl]
+            [clojure.set :as set]
             [schema.core :as s]
             ))
   #?(:cljs (:require
@@ -18,6 +19,7 @@
              [tupelo.lexical :as lex]
              [tupelo.schema :as tsk]
              [clojure.data.avl :as avl]
+             [clojure.set :as set]
              [schema.core :as s]
              ))
 
@@ -287,12 +289,12 @@
                     ;      (only (vals solo-map)) ]
     result))
 
-(s/defn index-find-mapentry
+(s/defn index-find-solomap
   [target :- {s/Keyword IdxVal}]
   (let [[tgt-key tgt-val] (solomap->kv target)
         tgt-hids         (index-find-val tgt-val)
         parent-hids      (mapv hid->parent-hid tgt-hids)
-        parent-hids-keep (t/drop-if #(= ::not-match %) ; #todo fails with t/lazy-gen & t/yield.  Why?
+        parent-hids-keep (t/drop-if #(= ::not-match %) ; #todo fails with lazy-gen/yield.  Why?
                            (t/map-let [hid-tgt    tgt-hids
                                        hid-parent parent-hids]
                              (t/it-> hid-parent
@@ -304,18 +306,23 @@
                                    ::not-match)))))]
     parent-hids-keep))
 
-
-
-
-
-
-
-
-
-
-
-
-
+(s/defn index-find-submap
+  [target-submap :- tsk/KeyMap]
+  (let [mapentry->tgt-hids    (apply t/glue
+                                (t/forv [mapentry (vec target-submap)]
+                                  (let [[tgt-key tgt-val] mapentry]
+                                    {mapentry (index-find-val tgt-val)})))
+        mapentry->parent-hids (apply t/glue
+                                (t/forv [[mapentry tgt-hids] mapentry->tgt-hids]
+                                  {mapentry (set (mapv hid->parent-hid tgt-hids))}))
+        possible-parent-hids  (apply set/intersection (vals mapentry->parent-hids))
+        parent-hids-keep      (t/drop-if #(= ::not-match %)
+                                (t/forv [hid-parent possible-parent-hids]
+                                  (let [parent-edn (hid->edn hid-parent)]
+                                    (if (t/submap? target-submap parent-edn)
+                                      hid-parent
+                                      ::not-match))))]
+    parent-hids-keep))
 
 
 
