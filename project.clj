@@ -39,7 +39,6 @@
             [com.jakemccrary/lein-test-refresh "0.24.1"]]
 
   :test-refresh {:quiet      true ; true => suppress printing namespaces when testing
-                ;:focus-flag :focus
                 }
 
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
