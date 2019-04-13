@@ -256,7 +256,7 @@
   [hid :- HID]
   (parent-hid (hid->node hid)))
 
-(s/defn ^:private  ^:no-doc index-find-val-impl
+(s/defn ^:private  ^:no-doc index-find-val-impl ; #todo inline below
   [idx-id :- IndexId
    target :- tsk/Vec]
   (let [idx-sorted-set   (t/validate set? (grab idx-id (deref *tdb*)))
@@ -273,8 +273,8 @@
                       (keyword? target) :idx-kw
                       :else (throw (ex-info "invalid index target" (t/vals->map target))))
         idx-entries (index-find-val-impl idx-id [target])
-        result      (mapv t/xsecond idx-entries)]
-    result))
+        hids        (mapv t/xsecond idx-entries)]
+    hids))
 
 (s/defn solomap->kv :- tsk/Pair ; #todo need test
   [solo-map :- tsk/Map]
@@ -292,7 +292,7 @@
   (let [[tgt-key tgt-val] (solomap->kv target)
         tgt-hids         (index-find-val tgt-val)
         parent-hids      (mapv hid->parent-hid tgt-hids)
-        parent-hids-keep (t/drop-if #(= ::not-match %)
+        parent-hids-keep (t/drop-if #(= ::not-match %) ; #todo fails with t/lazy-gen & t/yield.  Why?
                            (t/map-let [hid-tgt    tgt-hids
                                        hid-parent parent-hids]
                              (t/it-> hid-parent
