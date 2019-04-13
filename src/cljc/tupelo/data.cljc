@@ -292,15 +292,16 @@
   (let [[tgt-key tgt-val] (solomap->kv target)
         tgt-hids         (index-find-val tgt-val)
         parent-hids      (mapv hid->parent-hid tgt-hids)
-        parent-hids-keep (t/drop-if nil?
+        parent-hids-keep (t/drop-if #(= ::not-match %)
                            (t/map-let [hid-tgt    tgt-hids
                                        hid-parent parent-hids]
                              (t/it-> hid-parent
                                (hid->node-val it)
                                (t/submap-by-vals it #{hid-tgt})
                                (let [key-found (t/xfirst (solomap->kv it))]
-                                 (when (= tgt-key key-found)
-                                   hid-parent)))))]
+                                 (if (= tgt-key key-found)
+                                   hid-parent
+                                   ::not-match)))))]
     parent-hids-keep))
 
 
