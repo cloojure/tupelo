@@ -5,6 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tupelo.data
+  (:use tupelo.core) ; #todo remove for cljs
   (:refer-clojure :exclude [load ->VecNode])
   #?(:clj (:require
             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
@@ -50,6 +51,16 @@
   "The Plumatic Schema type name for a pointer to a tdb node (abbrev. for Hex ID)"
   s/Int)
 
+(def IndexId (s/enum :idx-num :idx-str :idx-kw))
+
+(def HidRootSpec
+  "The Plumatic Schema type name for the values accepted as starting points (roots) for a subtree path search."
+  (s/conditional ; #todo why is this here?
+    int? HID
+    set? #{HID}
+    :else [HID]))
+
+;-----------------------------------------------------------------------------
 (declare hid->node)
 
 (defprotocol IDataNode
@@ -129,13 +140,7 @@
   "The Plumatic Schema type name for a MapNode VecNode LeafNode."
   (s/cond-pre MapNode SetNode VecNode LeafNode ))
 
-(def HidRootSpec
-  "The Plumatic Schema type name for the values accepted as starting points (roots) for a subtree path search."
-  (s/conditional ; #todo why is this here?
-    int? HID
-    set? #{HID}
-    :else [HID]))
-
+;-----------------------------------------------------------------------------
 (def ^:dynamic ^:no-doc *tdb* nil)
 
 (defmacro with-tdb ; #todo swap names?
@@ -152,7 +157,16 @@
    :idx-kw  (lex/->sorted-set)
    ;:idx-sym (lex/->sorted-set)
    ;:idx-char (lex/->sorted-set)
-   })
+   :idxs-me {; auto-generate these?
+             :me-kw-kw   (lex/->sorted-set)
+             :me-kw-num  (lex/->sorted-set)
+             :me-kw-str  (lex/->sorted-set)
+             :me-num-kw  (lex/->sorted-set)
+             :me-num-num (lex/->sorted-set)
+             :me-num-str (lex/->sorted-set)
+             :me-str-kw  (lex/->sorted-set)
+             :me-str-num (lex/->sorted-set)
+             :me-str-str (lex/->sorted-set)}})
 
 (s/defn hid->node :- DataNode
   "Returns the node corresponding to an HID"
@@ -171,15 +185,63 @@
     (swap! *tdb* assoc-in [:idx-hid hid] node)
     hid))
 
-(def IndexId (s/enum :idx-num :idx-str :idx-kw))
-(s/defn update-index!
-  ([idx-id :- IndexId
-    pair :- tsk/Pair]
+; #todo => tupelo.core
+(s/defn mapentry->kv :- tsk/Pair ; #todo need test
+  [mapentry :- tsk/MapEntry]
+  [(key mapentry) (val mapentry)])
+
+; #todo => tupelo.core
+(s/defn solomap->kv :- tsk/Pair ; #todo need test
+  [solo-map :- tsk/Map]
+  (let [map-seq (seq solo-map)
+        >>      (when-not #(= 1 (count map-seq))
+                  (throw (ex-info "solo-map must be of length=1 " (t/vals->map solo-map))))]
+    (mapentry->kv (t/only map-seq))))
+
+(def LeafType (s/cond-pre s/Num s/Str s/Keyword))
+
+(s/defn ^:no-doc type-short
+  [arg]
+  (cond
+    (number? arg) "num"
+    (string? arg) "str"
+    (keyword? arg) "kw"
+    ;(symbol? arg) "sym"  ; #todo allow this?
+    :else (throw (ex-info "invalid type found" (t/vals->map arg)))))
+
+(s/defn ^:no-doc val->idx-type-kw
+  [leaf-val :- LeafType]
+  (keyword (str "idx-" (type-short leaf-val))))
+
+(s/defn ^:no-doc mapentry->idx-type-kw
+  [me :- tsk/MapEntry]
+  (let [me-key-type (type-short (key me))
+        me-val-type (type-short (val me))]
+    (keyword (str "me-" me-key-type \- me-val-type))))
+
+(s/defn update-index-val!
+  [leaf-val :- LeafType
+   hid-val :- HID]
+  (let [idx-id (val->idx-type-kw leaf-val)]
     (swap! *tdb* (fn [tdb-map]
                    (update-in tdb-map [idx-id] ; #todo make verify like fetch-in
                      (fn [sorted-set-idx]
-                       (conj sorted-set-idx pair)))))
+                       (conj sorted-set-idx [leaf-val hid-val]))))))
+  nil)
+
+(s/defn update-index-mapentry!
+  ([ me :- tsk/MapEntry
+    hid-val :- HID ]
+    (swap! *tdb* (fn [tdb-map]
+                   (let [[me-key me-val] (mapentry->kv me)
+                         me-type-kw (mapentry->idx-type-kw me)
+                         idx-entry [me-val me-key hid-val] ]
+                     (update-in tdb-map [:idxs-me me-type-kw] ; #todo make verify like fetch-in
+                       (fn [index-avl-set]
+                         (conj index-avl-set idx-entry))))))
     nil))
+
+
 
 (def ^:no-doc hid-count-base 1000)
 (def ^:no-doc hid-counter (atom hid-count-base))
@@ -226,9 +288,9 @@
                                 (set-node! hid-new node-new)
                                 ; add edn-val to appropriate index
                                 (cond
-                                  (number? edn-val) (update-index! :idx-num [edn-val hid-new])
-                                  (string? edn-val) (update-index! :idx-str [edn-val hid-new])
-                                  (keyword? edn-val) (update-index! :idx-kw [edn-val hid-new])
+                                  (number? edn-val) (update-index-val! edn-val hid-new)
+                                  (string? edn-val) (update-index-val! edn-val hid-new)
+                                  (keyword? edn-val) (update-index-val! edn-val hid-new)
                                   :else (throw (ex-info "unknown LeafNode type found" (t/vals->map edn-val node-new))))
                                 hid-new)
 
@@ -278,16 +340,6 @@
         hids        (mapv t/xsecond idx-entries)]
     hids))
 
-(s/defn solomap->kv :- tsk/Pair ; #todo need test
-  [solo-map :- tsk/Map]
-  (let [map-seq  (seq solo-map)
-        >>       (when-not #(= 1 (count map-seq))
-                   (throw (ex-info "solo-map must be of length=1 " (t/vals->map solo-map))))
-        mapentry (t/only map-seq)
-        result   [(key mapentry) (val mapentry)]]
-                    ; or [ (only (keys solo-map))
-                    ;      (only (vals solo-map)) ]
-    result))
 
 (s/defn index-find-solomap
   [target :- {s/Keyword IdxVal}]

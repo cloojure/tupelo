@@ -113,9 +113,24 @@
         (is= 4 (td/hid->edn four-hid))
         (is= data (td/hid->edn four-hid-parent-3))))))
 
+(dotest
+  (is= (td/val->idx-type-kw :a) :idx-kw)
+  (is= (td/val->idx-type-kw 99) :idx-num)
+  (is= (td/val->idx-type-kw "hi") :idx-str)
+
+  (is= (td/mapentry->idx-type-kw (t/map-entry 9 1)) :me-num-num)
+  (is= (td/mapentry->idx-type-kw (t/map-entry 9 :b)) :me-num-kw)
+  (is= (td/mapentry->idx-type-kw (t/map-entry 9 "hi")) :me-num-str)
+  (is= (td/mapentry->idx-type-kw (t/map-entry :a 1)) :me-kw-num)
+  (is= (td/mapentry->idx-type-kw (t/map-entry :a :b)) :me-kw-kw)
+  (is= (td/mapentry->idx-type-kw (t/map-entry :a "hi")) :me-kw-str)
+  (is= (td/mapentry->idx-type-kw (t/map-entry "bye" 1)) :me-str-num)
+  (is= (td/mapentry->idx-type-kw (t/map-entry "bye" :b)) :me-str-kw)
+  (is= (td/mapentry->idx-type-kw (t/map-entry "bye" "hi")) :me-str-str) )
+
 ; (deftest ^:test-refresh/focus t-113
 ; (deftest ^:focus t-113
-  (dotest-focus
+  (dotest
     (println "********* running tupelo.data #4 tests ********* ")
     (td/with-tdb (td/new-tdb)
       (let [data         [{:a 1 :b :first}
@@ -168,9 +183,8 @@
              {:a 1, :b 1, :c 3}]))))
     (newline)
     (println "---------------------------------------------------------------------------------------------------")
+
     )
-
-
 
 
 

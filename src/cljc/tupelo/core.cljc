@@ -318,6 +318,10 @@
       (= 1 num-keys) (dissoc the-map key-to-clear)
       :else (update-in the-map parent-keys dissoc key-to-clear))))
 
+(s/defn map-entry :- tsk/MapEntry
+  "Returns a clojure.lang.MapEntry constructed from the given key and val"
+  [key val] (clojure.lang.MapEntry/create key val) )
+
 ;(defn case
 ;  [& args]
 ;  (throw (ex-info "`case` is evil, use `cond` instead" {:args args} )))

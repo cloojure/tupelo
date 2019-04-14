@@ -7,6 +7,8 @@
 
 (def Map      {s/Any      s/Any} )
 (def KeyMap   {s/Keyword  s/Any} )
+(def MapEntry #?(:clj  clojure.lang.MapEntry
+                 :cljs cljs.core.MapEntry))
 
 (def Set
   "Either a Clojure hash-set or a java.util.HashSet"
@@ -57,6 +59,7 @@
 (def TupleMaps [TupleMap]) ; a list of results returned by Datomic pull api
 
 (def Fn (s/make-fn-schema s/Any s/Any))
+
 
 #?(:clj
    (do
