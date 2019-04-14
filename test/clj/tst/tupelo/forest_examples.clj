@@ -316,17 +316,15 @@
 
 (s/defn wrap-adjacent-kw-kids [hid]
   (let [kid-hids            (hid->kids hid)
-        kid-elems           (mapv hid->node kid-hids)
         kid-partitions      (partition-by leaf-kw-hid? kid-hids)
         kid-partitions-flgs (mapv kw-partition? kid-partitions)
-        kid-partitions-new  (map-let [partition kid-partitions
+        kid-partitions-new  (map-let [partition    kid-partitions
                                       kw-part-flag kid-partitions-flgs]
                               (if kw-part-flag
                                 [(add-node :item partition)]
-                                partition))
-        kids-new            (apply glue kid-partitions-new)
-        ]
-       (kids-set hid kids-new)))
+                                partition))]
+    (if (not-empty? kid-partitions-new)
+      (kids-set hid (apply glue kid-partitions-new)))))
 
 (dotest
   (with-forest (new-forest)
@@ -355,7 +353,8 @@
            [:item :d]]
           [:item 5]]
          [:item
-          [:item :e]]]))))
+          [:item :e]]])
+       )))
 
 ;-----------------------------------------------------------------------------
 (def z3-hiccup

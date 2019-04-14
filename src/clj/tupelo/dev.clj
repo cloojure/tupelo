@@ -6,48 +6,50 @@
 ;   You must not remove this notice, or any other, from this software.
 
 (ns tupelo.dev
+  (:use tupelo.core)
   (:require
     [clojure.string :as str]
     [clojure.math.combinatorics :as combo]
-    [schema.core :as s]
-    [tupelo.core :as i] ))
+    [schema.core :as s] ))
 
-  (defn find-idxs-impl
-    [idxs data pred-fn]
-    (apply i/glue
-      (i/forv [[idx val] (i/indexed data)]
-        (let [idxs-curr (i/append idxs idx)]
-             (if (sequential? val) ; #todo does not work for vector pred-fn
-               (find-idxs-impl idxs-curr val pred-fn)
-               (if (pred-fn val)
-                 [{:idxs idxs-curr :val val}]
-                 []))))))
+(defn find-idxs-impl
+  [idxs data pred-fn]
+  (if (empty? data)
+    []
+    (apply glue
+      (forv [[idx val] (indexed data)]
+        (let [idxs-curr (append idxs idx)]
+          (if (sequential? val) ; #todo does not work for vector pred-fn
+            (find-idxs-impl idxs-curr val pred-fn)
+            (if (pred-fn val)
+              [{:idxs idxs-curr :val val}]
+              []))))))) ; #todo convert to lazy-gen/yield
 
-  (s/defn find-idxs
-    "Given an N-dim data structure (nested vectors/lists) & a target value, returns
-    a list of maps detailing where index values where the target value is found.
+(s/defn find-idxs
+  "Given an N-dim data structure (nested vectors/lists) & a target value, returns
+  a list of maps detailing where index values where the target value is found.
 
-      (is= (find-idxs  [[ 1  2 3]
-                        [10 11  ]
-                        [ 9  2 8]]  2)
-        [{:idxs [0 1], :val 2}
-         {:idxs [2 1], :val 2}]) "
-    [data  :- [s/Any]
-     tgt :- s/Any]
-    (let [pred-fn (if (fn? tgt)
-                    tgt
-                    #(= % tgt))]
-      (find-idxs-impl [] data pred-fn)))
+    (is= (find-idxs  [[ 1  2 3]
+                      [10 11  ]
+                      [ 9  2 8]]  2)
+      [{:idxs [0 1], :val 2}
+       {:idxs [2 1], :val 2}]) "
+  [data :- [s/Any]
+   tgt :- s/Any]
+  (let [pred-fn (if (fn? tgt)
+                  tgt
+                  (fn [arg] (= tgt arg)))]
+    (find-idxs-impl [] data pred-fn)))
 
-  (defn combinations-duplicate [coll n]
-    "Returns all combinations of elements from the input collection, presevering duplicates."
-    (let [values     (vec coll)
-          idxs       (range (count values))
-          idx-combos (combo/combinations idxs n)
-          combos     (i/forv [idx-combo idx-combos]
-                       (mapv #(nth values %) idx-combo))]
-      combos))
+(defn combinations-duplicate [coll n]
+  "Returns all combinations of elements from the input collection, presevering duplicates."
+  (let [values     (vec coll)
+        idxs       (range (count values))
+        idx-combos (combo/combinations idxs n)
+        combos     (forv [idx-combo idx-combos]
+                     (mapv #(nth values %) idx-combo))]
+    combos))
 
-  (defn parse-string [line]
-    (mapv read-string (str/split line #" ")))
+(defn parse-string [line]
+  (mapv read-string (str/split line #" ")))
 

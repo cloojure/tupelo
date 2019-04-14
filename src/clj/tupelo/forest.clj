@@ -681,7 +681,6 @@
     (let [curr-tag (xfirst path-target)]
       (doseq [curr-node enlive-nodes-lazy]
         (when (map? curr-node) ; discard any embedded string content (esp. blanks)
-          ;(spyx-pretty curr-node)
           (when (= curr-tag (grab :tag curr-node))
             (let [next-path-target (xrest path-target)]
               (if (not-empty? next-path-target)
@@ -906,8 +905,9 @@
         false
         (let [attrs-tst    (submap-by-keys node pattern-keys-set)
               ; replace any nil values with wildcard :*
-              pattern-wild (apply glue (for [[k v] pattern]
-                                         {k (if (nil? v) :* v)}))]
+              pattern-wild (apply glue {}
+                             (for [[k v] pattern]
+                               {k (if (nil? v) :* v)}))]
           (wild-match? {:pattern pattern-wild
                         :values  [attrs-tst]}))))))
 

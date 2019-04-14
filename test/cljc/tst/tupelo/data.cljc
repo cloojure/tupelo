@@ -5,6 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.data
+  #?(:clj (:use tupelo.core))
   #?(:clj (:refer-clojure :exclude [load ->VecNode]))
   #?(:clj (:require
             [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
@@ -31,7 +32,6 @@
 #?(:cljs (enable-console-print!))
 
 (dotest
-  (println "********* running tupelo.data #1 tests ********* ")
   (td/with-tdb (td/new-tdb)
     (let [edn-0    {:a 1 :b 2}
           root-hid (td/add-edn edn-0)]
@@ -59,7 +59,6 @@
       (is= data-1 (td/hid->edn root-hid)))))
 
 (dotest
-  (println "********* running tupelo.data #2 tests ********* ")
   (td/with-tdb (td/new-tdb)
     (let [edn-0      #{1 2 3}
           root-hid   (td/add-edn edn-0)
@@ -76,7 +75,6 @@
       (is= edn-0 (td/hid->edn root-hid)))))
 
 (dotest
-  (println "********* running tupelo.data #3 tests ********* ")
   (td/with-tdb (td/new-tdb)
     (let [data     {:a [{:b 2}
                         {:c 3}
@@ -128,63 +126,90 @@
   (is= (td/mapentry->idx-type-kw (t/map-entry "bye" :b)) :me-str-kw)
   (is= (td/mapentry->idx-type-kw (t/map-entry "bye" "hi")) :me-str-str) )
 
-; (deftest ^:test-refresh/focus t-113
-; (deftest ^:focus t-113
-  (dotest
-    (println "********* running tupelo.data #4 tests ********* ")
-    (td/with-tdb (td/new-tdb)
-      (let [data         [{:a 1 :b :first}
-                          {:a 2 :b :second}
-                          {:a 3 :b :third}
-                          {:a 4 :b "fourth"}
-                          {:a 5 :b "fifth"}
-                          {:a 1 :b 101}
-                          {:a 1 :b 102} ]
-            root-hid     (td/add-edn data)
-            hids-match   (td/index-find-val 1)
-            hids-parents (mapv td/hid->parent-hid hids-match)
-            edn-match    (mapv td/hid->edn hids-match)
-            edn-parent   (mapv td/hid->edn hids-parents)]
-        (is= edn-match [1 1 1])
-        (is= edn-parent [{:a 1, :b :first}
-                         {:a 1, :b 101}
-                         {:a 1, :b 102}])))
-    (td/with-tdb (td/new-tdb)
-      (let [data         [{:a 1 :x :first}
-                          {:a 2 :x :second}
-                          {:a 3 :x :third}
-                          {:b 1 :x 101}
-                          {:b 2 :x 102}
-                          {:c 1 :x 301}
-                          {:c 2 :x 302} ]
-            root-hid     (td/add-edn data)
-            hid-match (t/only (td/index-find-solomap {:a 1}))
-            edn-match (td/hid->edn hid-match) ]
-        (is= edn-match {:a 1 :x :first} ) ))
+(dotest
+  (td/with-tdb (td/new-tdb)
+    (let [data         [{:a 1 :b :first}
+                        {:a 2 :b :second}
+                        {:a 3 :b :third}
+                        {:a 4 :b "fourth"}
+                        {:a 5 :b "fifth"}
+                        {:a 1 :b 101}
+                        {:a 1 :b 102}]
+          root-hid     (td/add-edn data)
+          hids-match   (td/index-find-val 1)
+          hids-parents (mapv td/hid->parent-hid hids-match)
+          edn-match    (mapv td/hid->edn hids-match)
+          edn-parent   (mapv td/hid->edn hids-parents)]
+      (is= edn-match [1 1 1])
+      (is= edn-parent [{:a 1, :b :first}
+                       {:a 1, :b 101}
+                       {:a 1, :b 102}])))
+  (td/with-tdb (td/new-tdb)
+    (let [data      [{:a 1 :x :first}
+                     {:a 2 :x :second}
+                     {:a 3 :x :third}
+                     {:b 1 :x 101}
+                     {:b 2 :x 102}
+                     {:c 1 :x 301}
+                     {:c 2 :x 302}]
+          root-hid  (td/add-edn data)
+          hid-match (t/only (td/index-find-mapentry
+                              (->map-entry {:a 1})))
+          edn-match (td/hid->edn hid-match)]
+      (is= edn-match {:a 1 :x :first})))
 
-    (newline) (println "===================================================================================================")
-    (td/with-tdb (td/new-tdb)
-      (let [data      [{:a 1 :b 1 :c 1}
-                       {:a 1 :b 2 :c 2}
-                       {:a 1 :b 1 :c 3}
-                       {:a 2 :b 2 :c 4}
-                       {:a 2 :b 1 :c 5}
-                       {:a 2 :b 2 :c 6}]
-            root-hid  (td/add-edn data)
-            hid-match (t/only (td/index-find-submap {:a 1 :b 2}))
-            edn-match (td/hid->edn hid-match)]
-        (is= edn-match {:a 1 :b 2 :c 2})
-       ;(t/spy-pretty (deref td/*tdb*))
-        (let [tgt        {:a 1 :b 1}
-              match-hids (td/index-find-submap tgt)
-              match-edns (mapv td/hid->edn match-hids)]
-          (is-set= match-edns
-            [{:a 1, :b 1, :c 1}
-             {:a 1, :b 1, :c 3}]))))
-    (newline)
-    (println "---------------------------------------------------------------------------------------------------")
+  (td/with-tdb (td/new-tdb)
+    (let [data     [{:a 1 :b 1 :c 1}
+                    {:a 1 :b 2 :c 2}
+                    {:a 1 :b 1 :c 3}
+                    {:a 2 :b 2 :c 4}
+                    {:a 2 :b 1 :c 5}
+                    {:a 2 :b 2 :c 6}]
+          root-hid (td/add-edn data)]
+      (let [hid (t/only (td/index-find-submap {:a 1 :b 2}))
+            edn (td/hid->edn hid)]
+        (is= edn {:a 1 :b 2 :c 2}))
+      (let [hids (td/index-find-submap {:a 1 :b 1})
+            edns (mapv td/hid->edn hids)]
+        (is-set= edns [{:a 1, :b 1, :c 1}
+                       {:a 1, :b 1, :c 3}]))))
+  (newline) (println "===================================================================================================")
+  (td/with-tdb (td/new-tdb)
+    (let [data     [{:a 1 :b 1 :c 1}
+                    {:a 1 :b 2 :c 2}
+                    {:a 1 :b 1 :c 3}
+                    {:a 2 :b 2 :c 4}
+                    {:a 2 :b 1 :c 5}
+                    {:a 2 :b 2 :c 6}]
+          root-hid (td/add-edn data)]
+      ;(t/spy-pretty (deref td/*tdb*))
+      (let [edns (mapv td/hid->edn
+                   (td/index-find-mapentry (map-entry :a 1)))]
+        (is= edns
+          [{:a 1, :b 1, :c 1}
+           {:a 1, :b 2, :c 2}
+           {:a 1, :b 1, :c 3}]))
+      (let [edns (mapv td/hid->edn
+                   (td/index-find-mapentry (map-entry :a 2)))]
+        (is= edns
+          [{:a 2, :b 2, :c 4}
+           {:a 2, :b 1, :c 5}
+           {:a 2, :b 2, :c 6}]))
+      (let [edns (mapv td/hid->edn
+                   (td/index-find-mapentry (map-entry :b 1)))]
+        (is= edns
+          [{:a 1, :b 1, :c 1}
+           {:a 1, :b 1, :c 3}
+           {:a 2, :b 1, :c 5}]))
+      (let [edns (mapv td/hid->edn
+                   (td/index-find-mapentry (map-entry :c 6)))]
+        (is= edns
+          [{:a 2, :b 2, :c 6}]))))
+  (newline)
+  (println "---------------------------------------------------------------------------------------------------")
 
-    )
+  )
+
 
 
 

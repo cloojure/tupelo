@@ -16,7 +16,7 @@
             [schema.core :as s]
             ))
   #?(:cljs (:require
-             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab] ] ; #todo :include-macros true
+             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]] ; #todo :include-macros true
              [tupelo.lexical :as lex]
              [tupelo.schema :as tsk]
              [clojure.data.avl :as avl]
@@ -73,8 +73,8 @@
 
 (s/defrecord MapNode ; Represents ths content of a Clojure map.
   ; a map from key to hid
-  [ parent :- (s/maybe HID)
-   node-val :- tsk/Map ]
+  [parent :- (s/maybe HID)
+   node-val :- tsk/Map]
   IDataNode
   (parent-hid [this] (s/validate (s/maybe HID) parent))
   (content [this]
@@ -108,8 +108,8 @@
 
 (s/defrecord VecNode ; Represents ths content of a Clojure vector (any sequential type coerced into a vector).
   ; stored is a vector of hids
-  [ parent :- (s/maybe HID)
-   node-val :- tsk/Vec ]
+  [parent :- (s/maybe HID)
+   node-val :- tsk/Vec]
   IDataNode
   (parent-hid [this] (s/validate (s/maybe HID) parent))
   (content [this]
@@ -134,11 +134,11 @@
   (content [this]
     (t/validate #(not (coll? %)) node-val))
   (edn [this]
-    (t/validate #(not (coll? %)) node-val)) )
+    (t/validate #(not (coll? %)) node-val)))
 
 (def DataNode
   "The Plumatic Schema type name for a MapNode VecNode LeafNode."
-  (s/cond-pre MapNode SetNode VecNode LeafNode ))
+  (s/cond-pre MapNode SetNode VecNode LeafNode))
 
 ;-----------------------------------------------------------------------------
 (def ^:dynamic ^:no-doc *tdb* nil)
@@ -198,7 +198,11 @@
                   (throw (ex-info "solo-map must be of length=1 " (t/vals->map solo-map))))]
     (mapentry->kv (t/only map-seq))))
 
-(def LeafType (s/cond-pre s/Num s/Str s/Keyword))
+(do ; keep these two in sync
+  (s/defn leaf-val? :- s/Bool
+    "Returns true iff a value is of leaf type (number, string, keyword)"
+    [arg :- s/Any] (or (number? arg) (string? arg) (keyword? arg)))
+  (def LeafType (s/cond-pre s/Num s/Str s/Keyword)))
 
 (s/defn ^:no-doc type-short
   [arg]
@@ -230,18 +234,16 @@
   nil)
 
 (s/defn update-index-mapentry!
-  ([ me :- tsk/MapEntry
-    hid-val :- HID ]
+  ([me :- tsk/MapEntry
+    hid-val :- HID]
     (swap! *tdb* (fn [tdb-map]
-                   (let [[me-key me-val] (mapentry->kv me)
-                         me-type-kw (mapentry->idx-type-kw me)
-                         idx-entry [me-val me-key hid-val] ]
+                   (let [me-type-kw (mapentry->idx-type-kw me)
+                         [me-key me-val] (mapentry->kv me)
+                         idx-entry  [me-val me-key hid-val]]
                      (update-in tdb-map [:idxs-me me-type-kw] ; #todo make verify like fetch-in
                        (fn [index-avl-set]
                          (conj index-avl-set idx-entry))))))
     nil))
-
-
 
 (def ^:no-doc hid-count-base 1000)
 (def ^:no-doc hid-counter (atom hid-count-base))
@@ -268,9 +270,12 @@
         (map? edn-val) (set-node! hid-new
                          (->MapNode
                            hid-parent
-                           (apply t/glue
-                             (t/forv [[k v] edn-val]
-                               {k (add-edn hid-new v)}))))
+                           (apply glue
+                             (for [[k v] edn-val]
+                               (do
+                                 (when (leaf-val? v)
+                                   (update-index-mapentry! (map-entry k v) hid-new))
+                                 (map-entry k (add-edn hid-new v)))))))
 
         (set? edn-val) (set-node! hid-new
                          (->SetNode
@@ -284,15 +289,10 @@
                                   (t/forv [elem edn-val]
                                     (add-edn hid-new elem))))
 
-        (not (coll? edn-val)) (let [node-new (->LeafNode hid-parent edn-val)]
-                                (set-node! hid-new node-new)
-                                ; add edn-val to appropriate index
-                                (cond
-                                  (number? edn-val) (update-index-val! edn-val hid-new)
-                                  (string? edn-val) (update-index-val! edn-val hid-new)
-                                  (keyword? edn-val) (update-index-val! edn-val hid-new)
-                                  :else (throw (ex-info "unknown LeafNode type found" (t/vals->map edn-val node-new))))
-                                hid-new)
+        (leaf-val? edn-val) (let [node-new (->LeafNode hid-parent edn-val)]
+                              (set-node! hid-new node-new)
+                              (update-index-val! edn-val hid-new)
+                              hid-new)
 
         :else (throw (ex-info "unknown value found" (t/vals->map edn-val)))))))
 
@@ -320,17 +320,16 @@
   [hid :- HID]
   (parent-hid (hid->node hid)))
 
-(s/defn ^:private  ^:no-doc index-find-val-impl ; #todo inline below
+(s/defn ^:private ^:no-doc index-find-val-impl ; #todo inline below
   [idx-id :- IndexId
    target :- tsk/Vec]
-  (let [idx-sorted-set   (t/validate set? (grab idx-id (deref *tdb*)))
+  (let [idx-avl-set      (t/validate set? (grab idx-id (deref *tdb*)))
         matching-entries (grab :matches
-                           (lex/split-key-prefix target idx-sorted-set)) ]
+                           (lex/split-key-prefix target idx-avl-set))]
     matching-entries))
 
-(def IdxVal (s/cond-pre s/Num s/Str s/Keyword ))
 (s/defn index-find-val
-  [target :- IdxVal]
+  [target :- LeafType]
   (let [idx-id      (cond
                       (number? target) :idx-num
                       (string? target) :idx-str
@@ -340,43 +339,23 @@
         hids        (mapv t/xsecond idx-entries)]
     hids))
 
-
-(s/defn index-find-solomap
-  [target :- {s/Keyword IdxVal}]
-  (let [[tgt-key tgt-val] (solomap->kv target)
-        tgt-hids         (index-find-val tgt-val)
-        parent-hids      (mapv hid->parent-hid tgt-hids)
-        parent-hids-keep (t/drop-if #(= ::not-match %) ; #todo fails with lazy-gen/yield.  Why?
-                           (t/map-let [hid-tgt    tgt-hids
-                                       hid-parent parent-hids]
-                             (t/it-> hid-parent
-                               (hid->node-val it)
-                               (t/submap-by-vals it #{hid-tgt})
-                               (let [key-found (t/xfirst (solomap->kv it))]
-                                 (if (= tgt-key key-found)
-                                   hid-parent
-                                   ::not-match)))))]
-    parent-hids-keep))
+(s/defn index-find-mapentry
+  [tgt-me :- tsk/MapEntry]
+  (let [me-type-kw       (mapentry->idx-type-kw tgt-me)
+        [me-key me-val] (mapentry->kv tgt-me)
+        tgt-prefix       [me-val me-key]
+        idx-avl-set      (t/validate set? (fetch-in (deref *tdb*) [:idxs-me me-type-kw]))
+        matching-entries (grab :matches
+                           (lex/split-key-prefix tgt-prefix idx-avl-set))
+        hids             (mapv last matching-entries)]
+    hids))
 
 (s/defn index-find-submap
   [target-submap :- tsk/KeyMap]
-  (let [mapentry->tgt-hids    (apply t/glue
-                                (t/forv [mapentry (vec target-submap)]
-                                  (let [[tgt-key tgt-val] mapentry]
-                                    {mapentry (index-find-val tgt-val)})))
-        mapentry->parent-hids (apply t/glue
-                                (t/forv [[mapentry tgt-hids] mapentry->tgt-hids]
-                                  {mapentry (set (mapv hid->parent-hid tgt-hids))}))
-        possible-parent-hids  (apply set/intersection (vals mapentry->parent-hids))
-        parent-hids-keep      (t/drop-if #(= ::not-match %)
-                                (t/forv [hid-parent possible-parent-hids]
-                                  (let [parent-edn (hid->edn hid-parent)]
-                                    (if (t/submap? target-submap parent-edn)
-                                      hid-parent
-                                      ::not-match))))]
-    parent-hids-keep))
-
-
+  (let [map-hids (apply set/intersection
+                   (t/forv [tgt-me target-submap]
+                     (set (index-find-mapentry tgt-me))))]
+    map-hids))
 
 
 
