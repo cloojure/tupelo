@@ -126,7 +126,7 @@
   (is= (td/mapentry->idx-type-kw (t/map-entry "bye" :b)) :me-str-kw)
   (is= (td/mapentry->idx-type-kw (t/map-entry "bye" "hi")) :me-str-str) )
 
-(dotest
+(dotest-focus
   (td/with-tdb (td/new-tdb)
     (let [data         [{:a 1 :b :first}
                         {:a 2 :b :second}
@@ -143,7 +143,10 @@
       (is= edn-match [1 1 1])
       (is= edn-parent [{:a 1, :b :first}
                        {:a 1, :b 101}
-                       {:a 1, :b 102}])))
+                       {:a 1, :b 102}])
+      (is= {:a 1 :b 101} (td/hid->edn (only (td/index-find-mapentry (map-entry :b 101)))))
+      (is= {:a 2 :b :second} (td/hid->edn (only (td/index-find-mapentry (map-entry :b :second)))))
+      (is= {:a 3 :b :third} (td/hid->edn (only (td/index-find-mapentry (map-entry :a 3)))))))
   (td/with-tdb (td/new-tdb)
     (let [data      [{:a 1 :x :first}
                      {:a 2 :x :second}
@@ -209,9 +212,6 @@
   (println "---------------------------------------------------------------------------------------------------")
 
   )
-
-
-
 
 
 
