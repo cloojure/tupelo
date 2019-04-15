@@ -63,8 +63,10 @@
 ;-----------------------------------------------------------------------------
 (declare hid->node)
 
+(defprotocol IParentable
+  (parent-hid [this]))
+
 (defprotocol IDataNode
-  (parent-hid [this])
   (content [this])
   (edn [this]))
 
@@ -75,8 +77,9 @@
   ; a map from key to hid
   [parent :- (s/maybe HID)
    node-val :- tsk/Map]
-  IDataNode
+  IParentable
   (parent-hid [this] (s/validate (s/maybe HID) parent))
+  IDataNode
   (content [this]
     (t/validate map? node-val))
   (edn [this]
@@ -92,8 +95,9 @@
   ; a map from key to hid
   [parent :- (s/maybe HID)
    node-val :- tsk/Set]
-  IDataNode
+  IParentable
   (parent-hid [this] (s/validate (s/maybe HID) parent))
+  IDataNode
   (content [this]
     (t/validate set? node-val))
   (edn [this]
@@ -110,8 +114,9 @@
   ; stored is a vector of hids
   [parent :- (s/maybe HID)
    node-val :- tsk/Vec]
-  IDataNode
+  IParentable
   (parent-hid [this] (s/validate (s/maybe HID) parent))
+  IDataNode
   (content [this]
     (t/validate vector? node-val))
   (edn [this]
@@ -123,14 +128,41 @@
       (content this)
       (nth (t/validate vector? node-val) key))))
 
+(defprotocol IMapEntryNode
+  (rec-key [this])
+  (rec-val [this]))
+(s/defrecord MapEntryNode
+  [parent :- HID
+   -key :- s/Any
+   -val :- s/Any]
+  IParentable
+  (parent-hid [this] (s/validate HID parent))
+  IMapEntryNode
+  (rec-key [this]  -key)
+  (rec-val [this]  -val) )
+
+(defprotocol IArrayEntryNode
+  (rec-idx [this])
+  (rec-val [this]))
+(s/defrecord ArrayEntryNode
+  [parent :- HID
+   -idx :- s/Any
+   -val :- s/Any]
+  IParentable
+  (parent-hid [this] (s/validate HID parent))
+  IArrayEntryNode
+  (rec-idx [this]  -idx)
+  (rec-val [this]  -val) ) ; #todo #working
+
 ; Represents a Clojure primitive (non-collection) type,
 ; (i.e. number, string, keyword, symbol, character, etc)
 (s/defrecord LeafNode
   ; stored is a simple (non-collection) value
   [parent :- (s/maybe HID)
    node-val :- s/Any]
-  IDataNode
+  IParentable
   (parent-hid [this] (s/validate (s/maybe HID) parent))
+  IDataNode
   (content [this]
     (t/validate #(not (coll? %)) node-val))
   (edn [this]
