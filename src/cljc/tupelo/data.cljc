@@ -73,6 +73,15 @@
 (defprotocol INavNode
   (nav [this key]))
 
+(defprotocol IMapEntryNode
+  (rec-key [this])
+  (rec-val [this]))
+
+(defprotocol IArrayEntryNode
+  (rec-idx [this])
+  (rec-val [this]))
+
+;-----------------------------------------------------------------------------
 (s/defrecord MapNode ; Represents ths content of a Clojure map.
   ; a map from key to hid
   [parent :- (s/maybe HID)
@@ -128,9 +137,6 @@
       (content this)
       (nth (t/validate vector? node-val) key))))
 
-(defprotocol IMapEntryNode
-  (rec-key [this])
-  (rec-val [this]))
 (s/defrecord MapEntryNode
   [parent :- HID
    -key :- s/Any
@@ -141,9 +147,6 @@
   (rec-key [this]  -key)
   (rec-val [this]  -val) )
 
-(defprotocol IArrayEntryNode
-  (rec-idx [this])
-  (rec-val [this]))
 (s/defrecord ArrayEntryNode
   [parent :- HID
    -idx :- s/Any
