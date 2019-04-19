@@ -5,10 +5,12 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tupelo.data
-  (:use tupelo.core) ; #todo remove for cljs
   (:refer-clojure :exclude [load ->VecNode])
+  (:use tupelo.core) ; #todo remove for cljs
   #?(:clj (:require
-            [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
+            [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab glue map-entry mapentry->kv indexed
+                                       forv vals->map fetch-in
+                                       ]]
             [tupelo.lexical :as lex]
             [tupelo.schema :as tsk]
             [clojure.data.avl :as avl]
@@ -74,68 +76,30 @@
   (nav [this key]))
 
 (defprotocol IMapEntryNode
-  (rec-key [this])
-  (rec-val [this]))
+  (key-get [this])
+  (val-get [this]))
 
 (defprotocol IArrayEntryNode
-  (rec-idx [this])
-  (rec-val [this]))
+  (idx-get [this])
+  (val-get [this]))
 
 ;-----------------------------------------------------------------------------
 (s/defrecord MapNode ; Represents ths content of a Clojure map.
   ; a map from key to hid
   [parent :- (s/maybe HID)
-   node-val :- tsk/Map]
+   -content :- tsk/Map]
   IParentable
   (parent-hid [this] (s/validate (s/maybe HID) parent))
   IDataNode
   (content [this]
-    (t/validate map? node-val))
+    (t/validate map? -content))
   (edn [this]
     (apply t/glue
-      (t/forv [[k v-hid] (t/validate map? node-val)]
+      (t/forv [[k v-hid] (t/validate map? -content)]
         {k (edn (hid->node v-hid))})))
   INavNode
   (nav [this key]
-    (t/grab key (t/validate map? node-val))))
-
-; #todo need to enforce set uniqueness under mutation
-(s/defrecord SetNode ; Represents ths content of a Clojure set
-  ; a map from key to hid
-  [parent :- (s/maybe HID)
-   node-val :- tsk/Set]
-  IParentable
-  (parent-hid [this] (s/validate (s/maybe HID) parent))
-  IDataNode
-  (content [this]
-    (t/validate set? node-val))
-  (edn [this]
-    (let [result-vec (t/forv [v-hid (t/validate set? node-val)]
-                       (edn (hid->node v-hid)))]
-      (when-not (apply distinct? result-vec)
-        (throw (ex-info "SetNode: non-distinct entries found!" (t/vals->map node-val result-vec))))
-      (set result-vec)))
-  INavNode
-  (nav [this key]
-    (t/grab key (t/validate set? node-val))))
-
-(s/defrecord VecNode ; Represents ths content of a Clojure vector (any sequential type coerced into a vector).
-  ; stored is a vector of hids
-  [parent :- (s/maybe HID)
-   node-val :- tsk/Vec]
-  IParentable
-  (parent-hid [this] (s/validate (s/maybe HID) parent))
-  IDataNode
-  (content [this]
-    (t/validate vector? node-val))
-  (edn [this]
-    (t/forv [elem-hid (t/validate vector? node-val)]
-      (edn (hid->node elem-hid))))
-  INavNode
-  (nav [this key]
-    (if (= :* key)
-      (content this)
-      (nth (t/validate vector? node-val) key))))
+    (t/grab key (t/validate map? -content))))
 
 (s/defrecord MapEntryNode
   [parent :- HID
@@ -144,8 +108,46 @@
   IParentable
   (parent-hid [this] (s/validate HID parent))
   IMapEntryNode
-  (rec-key [this]  -key)
-  (rec-val [this]  -val) )
+  (key-get [this]  -key)
+  (val-get [this]  -val) )
+
+; #todo need to enforce set uniqueness under mutation
+(s/defrecord SetNode ; Represents ths content of a Clojure set
+  ; a map from key to hid
+  [parent :- (s/maybe HID)
+   -content :- tsk/Set]
+  IParentable
+  (parent-hid [this] (s/validate (s/maybe HID) parent))
+  IDataNode
+  (content [this]
+    (t/validate set? -content))
+  (edn [this]
+    (let [result-vec (t/forv [v-hid (t/validate set? -content)]
+                       (edn (hid->node v-hid)))]
+      (when-not (apply distinct? result-vec)
+        (throw (ex-info "SetNode: non-distinct entries found!" (t/vals->map -content result-vec))))
+      (set result-vec)))
+  INavNode
+  (nav [this key]
+    (t/grab key (t/validate set? -content))))
+
+(s/defrecord ArrayNode ; Represents ths content of a Clojure vector (any sequential type coerced into a vector).
+  ; stored is a vector of hids
+  [parent :- (s/maybe HID)
+   -content :- tsk/Vec]
+  IParentable
+  (parent-hid [this] (s/validate (s/maybe HID) parent))
+  IDataNode
+  (content [this]
+    (t/validate vector? -content))
+  (edn [this]
+    (t/forv [elem-hid (t/validate vector? -content)]
+      (edn (hid->node elem-hid))))
+  INavNode
+  (nav [this key]
+    (if (= :* key)
+      (content this)
+      (nth (t/validate vector? -content) key))))
 
 (s/defrecord ArrayEntryNode
   [parent :- HID
@@ -154,26 +156,26 @@
   IParentable
   (parent-hid [this] (s/validate HID parent))
   IArrayEntryNode
-  (rec-idx [this]  -idx)
-  (rec-val [this]  -val) ) ; #todo #working
+  (idx-get [this]  -idx)
+  (val-get [this]  -val))
 
 ; Represents a Clojure primitive (non-collection) type,
 ; (i.e. number, string, keyword, symbol, character, etc)
 (s/defrecord LeafNode
   ; stored is a simple (non-collection) value
   [parent :- (s/maybe HID)
-   node-val :- s/Any]
+   -content :- s/Any]
   IParentable
   (parent-hid [this] (s/validate (s/maybe HID) parent))
   IDataNode
   (content [this]
-    (t/validate #(not (coll? %)) node-val))
+    (t/validate #(not (coll? %)) -content))
   (edn [this]
-    (t/validate #(not (coll? %)) node-val)))
+    (t/validate #(not (coll? %)) -content)))
 
 (def DataNode
-  "The Plumatic Schema type name for a MapNode VecNode LeafNode."
-  (s/cond-pre MapNode SetNode VecNode LeafNode))
+  "The Plumatic Schema type name for a MapNode ArrayNode LeafNode."
+  (s/cond-pre MapNode SetNode ArrayNode LeafNode))
 
 ;-----------------------------------------------------------------------------
 (def ^:dynamic ^:no-doc *tdb* nil)
@@ -206,12 +208,7 @@
 (s/defn hid->node :- DataNode
   "Returns the node corresponding to an HID"
   [hid :- HID]
-  (t/grab hid (grab :idx-hid (deref *tdb*))))
-
-(s/defn hid->node-val :- tsk/Map
-  "Returns the node corresponding to an HID"
-  [hid :- HID]
-  (t/grab :node-val (hid->node hid)))
+  (grab hid (grab :idx-hid (deref *tdb*))))
 
 (s/defn set-node! :- HID
   "Unconditionally sets the value of a node in the tdb"
@@ -231,13 +228,13 @@
   (let [map-seq (seq solo-map)
         >>      (when-not #(= 1 (count map-seq))
                   (throw (ex-info "solo-map must be of length=1 " (t/vals->map solo-map))))]
-    (mapentry->kv (t/only map-seq))))
+    (mapentry->kv (only map-seq))))
 
 (do ; keep these two in sync
   (s/defn leaf-val? :- s/Bool
     "Returns true iff a value is of leaf type (number, string, keyword)"
     [arg :- s/Any] (or (number? arg) (string? arg) (keyword? arg)))
-  (def LeafType (s/cond-pre s/Num s/Str s/Keyword)))
+  (def LeafType (s/cond-pre s/Num s/Str s/Keyword))) ; instant, uuid, Time ID (TID) (as strings?)
 
 (s/defn ^:no-doc type-short
   [arg]
@@ -292,44 +289,67 @@
   [] (swap! hid-counter inc))
 
 (s/defn hid? :- s/Bool
-  "Returns true if the arg type is a legal HID value"
+  "Returns true iff the arg type is a legal HID value"
   [arg] (int? arg))
+
+(s/defn array-like? :- s/Bool
+  "Returns true for vectors, lists, and seq's."
+  [arg] (or (vector? arg) (list? arg) (seq? arg)))
+
+(declare add-edn)
+
+(s/defn add-map-entry :- HID
+  [hid-parent :- HID
+   me-arg :- tsk/MapEntry]
+  (let [hid-this (new-hid)
+        [the-key the-val] (mapentry->kv me-arg)]
+    (when (leaf-val? the-val)
+      (update-index-mapentry! me-arg hid-this))
+    (set-node! hid-this
+      (->MapEntryNode hid-parent the-key (add-edn hid-this the-val)))))
+
+(s/defn add-array-entry :- HID
+  [hid-parent :- HID
+   ae-arg :- tsk/Pair] ; #todo fix to local record type
+  (let [hid-this (new-hid)
+        [the-idx val
+
+         ] ae-arg]
+    ;(when (leaf-val? val)  ; #todo finish indexing for ArrayEntryNode
+    ;  (update-index-mapentry! ae-arg hid-this))
+    (set-node! hid-this
+      (->ArrayEntryNode hid-parent the-idx (add-edn hid-this val)))))
 
 (s/defn add-edn :- HID ; #todo maybe rename:  load-edn->hid  ???
   ([edn-val :- s/Any]
     (add-edn nil edn-val))
   ([hid-parent :- (s/maybe HID)
     edn-val :- s/Any]
-    (let [hid-new (new-hid)]
+    (let [hid-this (new-hid)]
       (cond
-        (map? edn-val) (set-node! hid-new
-                         (->MapNode
-                           hid-parent
+        (map? edn-val) (set-node! hid-this
+                         (->MapNode hid-parent
                            (apply glue
-                             (for [[k v] edn-val]
-                               (do
-                                 (when (leaf-val? v)
-                                   (update-index-mapentry! (map-entry k v) hid-new))
-                                 (map-entry k (add-edn hid-new v)))))))
+                             (forv [[k v] edn-val]
+                               (map-entry k (add-edn hid-this (map-entry k v)))))))
 
-        (set? edn-val) (set-node! hid-new
+        (array-like? edn-val) (set-node! hid-this          ; #todo make a map from idx -> value
+                                (->ArrayNode hid-parent
+                                  (forv [[idx elem] (indexed edn-val)]
+                                    (add-edn hid-this elem))))
+
+
+        (set? edn-val) (set-node! hid-this
                          (->SetNode
                            hid-parent
-                           (set (t/forv [elem edn-val]
-                                  (add-edn hid-new elem)))))
-
-        (sequential? edn-val) (set-node! hid-new
-                                (->VecNode
-                                  hid-parent
-                                  (t/forv [elem edn-val]
-                                    (add-edn hid-new elem))))
+                           (set (forv [elem edn-val]
+                                  (add-edn hid-this elem)))))
 
         (leaf-val? edn-val) (let [node-new (->LeafNode hid-parent edn-val)]
-                              (set-node! hid-new node-new)
-                              (update-index-val! edn-val hid-new)
-                              hid-new)
+                              (update-index-val! edn-val hid-this)
+                              (set-node! hid-this node-new))
 
-        :else (throw (ex-info "unknown value found" (t/vals->map edn-val)))))))
+        :else (throw (ex-info "unknown value found" (vals->map edn-val)))))))
 
 (s/defn hid->edn :- s/Any
   "Returns EDN data for the subtree rooted at hid"
@@ -347,7 +367,7 @@
       nav-result
       (if (hid? nav-result)
         (hid-nav nav-result path-rest)
-        (t/forv [hid nav-result]
+        (forv [hid nav-result]
           (hid-nav hid path-rest))))))
 
 (s/defn hid->parent-hid :- (s/maybe HID)
@@ -369,7 +389,7 @@
                       (number? target) :idx-num
                       (string? target) :idx-str
                       (keyword? target) :idx-kw
-                      :else (throw (ex-info "invalid index target" (t/vals->map target))))
+                      :else (throw (ex-info "invalid index target" (vals->map target))))
         idx-entries (index-find-val-impl idx-id [target])
         hids        (mapv t/xsecond idx-entries)]
     hids))
