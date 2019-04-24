@@ -11,6 +11,7 @@
     [schema.core :as s]
     [clojure.core :as cc]
     [clojure.string :as str]
+    [clojure.walk :as walk]
     [tupelo.core :as t :refer [spy spyx spyx-pretty let-spy forv]]
     [tupelo.char :as char]
     #?(:clj [clojure.java.io :as io]))
@@ -186,6 +187,8 @@
     (kabob->snake)
     (t/str->kw)))
 
+; #todo need conversions for camel<->snake<->kabob (for both kw & str) (dynamic or case)
+
 ; #todo ch->ascii
 ; #todo ascii->ch
 ; #todo ch->str
@@ -194,6 +197,24 @@
 ; #todo tupelo.ascii
 ; #todo (def return 13)
 ; #todo (def escape 27)
+
+;-----------------------------------------------------------------------------
+(defn walk-strings->keywords
+  "Recursively walks form, converting all strings to keywords. "
+  [form]
+  (walk/postwalk (fn [item]
+                   (if (string? item)
+                     (t/str->kw item)
+                     item))
+    form))
+(defn walk-keywords->strings
+  "Recursively walks form, converting all keywords to strings. "
+  [form]
+  (walk/postwalk (fn [item]
+                   (if (keyword? item)
+                     (t/kw->str item)
+                     item))
+    form))
 
 ;-----------------------------------------------------------------------------
 

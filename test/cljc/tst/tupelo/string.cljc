@@ -11,11 +11,11 @@
     [clojure.string :as str]
     [tupelo.char :as char]
     #?@(:clj [[tupelo.core :as t :refer [spy spyx spyxx]]
-              [tupelo.test :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
+              [tupelo.test :refer [define-fixture dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
               [tupelo.string :as ts]
              ])
     #?@(:cljs [[tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
-               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
+               [tupelo.test-cljs :refer [define-fixture dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
                [tupelo.string :as ts :include-macros true]
               ])))
 
@@ -229,6 +229,10 @@
   (is   (ts/increasing-or-equal? "abc" "ad"))
   (is   (ts/increasing-or-equal? "abc" "b"))
   )
+
+(dotest
+  (is= (ts/walk-strings->keywords {"aa" ["bb" 33 "dd"]}) {:aa [:bb 33 :dd]} )
+  (is= (ts/walk-keywords->strings {:aa [:bb 33 :dd]}) {"aa" ["bb" 33 "dd"]} ) )
 
 (dotest
   (is (= ""    (ts/take 0 "abc")))

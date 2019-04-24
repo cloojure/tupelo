@@ -51,3 +51,34 @@
   (defn parse-string [line]
     (mapv read-string (str/split line #" ")))
 
+(comment
+
+  ; #todo add this function???
+  (ns tst.demo.core
+    (:use demo.core tupelo.core tupelo.test)
+    (:require [clojure.string :as str]))
+
+  (defmacro fn+ [& args]
+    (println :args args)
+    (let [arg-1        (first args)
+          ns-str-nice  (str/replace (ns-name *ns*) "." "-")
+          fn-name-auto (symbol
+                         (str "fn-plus--" ns-str-nice
+                              "--line-" (:line (meta &form))))
+          ctx          (if (symbol? arg-1)
+                         {:fn-name (str fn-name-auto arg-1)
+                          :forms   (rest args)}
+                         {:fn-name fn-name-auto
+                          :forms   args})]
+      `(fn ~(grab :fn-name ctx)
+         ~@(grab :forms ctx))))
+
+
+  (dotest
+    (let [f1 (fn+ [x y] (/ x y))
+          f2 (fn something [x y] (/ x y))]
+      (println :call (f1 6 3))
+      (println :boom (f1 9 0))
+      )
+    )
+  )
