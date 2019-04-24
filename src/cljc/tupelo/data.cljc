@@ -8,7 +8,7 @@
   (:refer-clojure :exclude [load ->VecNode])
   (:use tupelo.core) ; #todo remove for cljs
   #?(:clj (:require
-            [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab glue map-entry mapentry->kv indexed
+            [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab glue map-entry indexed
                                        forv vals->map fetch-in
                                        ]]
             [tupelo.lexical :as lex]

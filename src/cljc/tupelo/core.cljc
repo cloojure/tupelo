@@ -649,10 +649,10 @@
   [& exprs]
   (spyx-impl exprs))
 
-(defn ^:no-doc spy-pretty-impl ; #todo => core
+(defn ^:no-doc spy-pretty-impl
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
-                     `(when *spy-enabled* (println (spy-indent-spaces) (str ~expr))))
+                     `(when *spy-enabled* (println (spy-indent-spaces) (str ~expr " => "))))
         r2         (let [expr (xlast exprs)]
                      `(let [spy-val# ~expr]
                         (when *spy-enabled*

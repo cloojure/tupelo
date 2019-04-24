@@ -332,7 +332,6 @@
                     b (+ 2 3)]
                    (-> b (* (inc a)) (+ 7))))))))
 
-
 (dotest
   (testing "basic usage"
     (let [side-effect-cum-sum (atom 0)  ; side-effect running total
