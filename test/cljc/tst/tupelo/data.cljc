@@ -31,6 +31,8 @@
 
 #?(:cljs (enable-console-print!))
 
+(comment
+
 (dotest
   (td/with-tdb (td/new-tdb)
     (let [edn-0    {:a 1 :b 2}
@@ -223,3 +225,4 @@
 
 
 
+  )

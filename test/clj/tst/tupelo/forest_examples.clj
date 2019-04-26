@@ -1595,11 +1595,46 @@
          [#:tupelo.forest{:value 1, :index 0}]
          [{:tag :tupelo.forest/list, :tupelo.forest/index 1}
           [{:tag :tupelo.forest/list, :tupelo.forest/index 0}
-           [#:tupelo.forest{:value 2, :index 0}]]]] )
-    )))
+           [#:tupelo.forest{:value 2, :index 0}]]]] ) )))
 
-
-
+;-----------------------------------------------------------------------------
+(dotest ; #todo can we run this as hiccup even without :tag entries???
+  (with-forest (new-forest)
+    (let [data          {:tag      "program"
+                         :state    "here"
+                         ::tf/kids [{:topic    "Books"
+                                     :expanded true
+                                     ::tf/kids [{:topic "Titles" ::tf/kids []}
+                                                {:topic    "Authors"
+                                                 :expanded true
+                                                 ::tf/kids [{:topic "Alice" ::tf/kids []}
+                                                            {:topic "Bob" ::tf/kids []}
+                                                            {:topic "Carol" ::tf/kids []}]}
+                                                {:topic "Genres" ::tf/kids []}]}
+                                    {:topic    "CDs"
+                                     ::tf/kids [{:topic "Genres" ::tf/kids []}
+                                                {:topic "Albums" ::tf/kids []}
+                                                {:topic "Artists" ::tf/kids []}]}
+                                    {:topic    "To Do"
+                                     :expanded true
+                                     ::tf/kids [{:topic    "Spouse Birthday"
+                                                 :expanded nil
+                                                 :due-date "07/31/2025"
+                                                 ::tf/kids [{:topic "Buy Card" ::tf/kids []}
+                                                            {:topic "Buy Jewelry" ::tf/kids []}
+                                                            {:topic "Buy Cake" ::tf/kids []}]}]}]}
+          root-hid      (add-tree data)
+          expanded-hids (find-hids root-hid [:** {:expanded true}])
+          ]
+      ;(spy-pretty (hid->bush root-hid))
+      ;(doseq [hid expanded-hids]
+      ;  (newline)
+      ;  (println "-----------------------------------------------------------------------------")
+      ;  (spy-pretty :node (hid->node hid))
+      ;  (spy-pretty :bush (hid->bush hid)))
+      )
+    )
+  )
 
 
 

@@ -80,6 +80,7 @@
 (defrecord VecEntity    [content])
 (defrecord Value        [content])
 
+(comment
 ;-----------------------------------------------------------------------------
 (defprotocol Edn->Fracture ; shatter, shard, sharder, destruct, destructure
   (edn->fracture [data]))
@@ -221,3 +222,4 @@
 
   )))
 
+  )
