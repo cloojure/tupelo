@@ -63,19 +63,25 @@
   (is (neg? (lex/compare-lex [nil] [:b nil])))
   (is (neg? (lex/compare-lex [nil] [nil nil])))
 
-  ; Cannot compare items from different classes:  number, char, string, keyword, symbol
-  (throws? (lex/compare-lex [1] ["b"]))
-  (throws? (lex/compare-lex [1] [:b]))
-  (throws? (lex/compare-lex [1] ['b]))
-  (throws? (lex/compare-lex ["b"] [:b]))
-  (throws? (lex/compare-lex ["b"] ['b]))
-  (throws? (lex/compare-lex [:b] ['b]))
-  #?(:clj
+  ; Can compare items from different classes:  number, char, string, keyword, symbol
+  (is (neg? (lex/compare-lex [1] ["b"])))
+  (is (neg? (lex/compare-lex [:b] [1])))
+  (is (neg? (lex/compare-lex ['b] [1])))
+  (is (neg? (lex/compare-lex [:b] ["b"])))
+  (is (neg? (lex/compare-lex ['b] ["b"])))
+  (is (neg? (lex/compare-lex [:b] ['b])))
+  #?(:clj  ; char is only allowed in CLJ.
      (do
-       (throws? (lex/compare-lex [1] [\b]))
-       (throws? (lex/compare-lex [\b] ["b"]))
-       (throws? (lex/compare-lex [\b] [:b]))
-       (throws? (lex/compare-lex [\b] ['b]))))
+       (is (neg? (lex/compare-lex [\b] [1])))
+       (is (neg? (lex/compare-lex [\b] ["b"])))
+       (is (neg? (lex/compare-lex [:b] [\b])))
+       (is (neg? (lex/compare-lex ['b] [\b])))))
+
+  ; numeric types all compare as equal as with clojure.core/compare
+  (spyx (lex/compare-lex [1] [1]))
+  (spyx (lex/compare-lex [1] [1N]))
+  (spyx (lex/compare-lex [1] [1.0]))
+  (spyx (lex/compare-lex [1] [1.0M]))
 
   (is (zero? (lex/compare-lex [66] [66])))
   (is (zero? (lex/compare-lex [:a] [:a])))
@@ -95,9 +101,8 @@
   (is (neg? (lex/compare-lex [1 nil nil] [1 2])))
   (is (neg? (lex/compare-lex [1 2] [1 2 nil])))
 
-  ; same position in list can be of different class if sorted by previous positions
-  (is (neg? (lex/compare-lex [1 :z] [2 9]))) ; OK since prefix lists [1] & [2] define order
-  (throws?  (lex/compare-lex [1 :z] [1 2])) ; not OK since have same prefix list: [1]
+  (is (neg? (lex/compare-lex [1 :z] [2 9])))
+  (is (neg? (lex/compare-lex [1 :z] [1 2])))
 
   (is= (vec (avl/sorted-set-by lex/compare-lex [1 :a] [1] [2]))
     [[1] [1 :a] [2]])

@@ -89,27 +89,55 @@
   [parent :- (s/maybe HID)
    -content :- tsk/Map]
   IParentable
-  (parent-hid [this] (s/validate (s/maybe HID) parent))
+    (parent-hid [this] (s/validate (s/maybe HID) parent))
   IDataNode
-  (content [this]
-    (t/validate map? -content))
-  (edn [this]
-    (apply t/glue
-      (t/forv [[k v-hid] (t/validate map? -content)]
-        {k (edn (hid->node v-hid))})))
+    (content [this]
+      (t/validate map? -content))
+    (edn [this]
+      (apply t/glue
+        (t/forv [[k v-hid] (t/validate map? -content)]
+          {k (edn (hid->node v-hid))})))
   INavNode
-  (nav [this key]
-    (t/grab key (t/validate map? -content))))
+    (nav [this key]
+      (t/grab key (t/validate map? -content))))
 
 (s/defrecord MapEntryNode
   [parent :- HID
    -key :- s/Any
    -val :- s/Any]
   IParentable
-  (parent-hid [this] (s/validate HID parent))
+    (parent-hid [this] (s/validate HID parent))
   IMapEntryNode
-  (key-get [this]  -key)
-  (val-get [this]  -val) )
+    (key-get [this]  -key)
+    (val-get [this]  -val) )
+
+(s/defrecord ArrayNode ; Represents ths content of a Clojure vector (any sequential type coerced into a vector).
+  ; stored is a vector of hids
+  [parent :- (s/maybe HID)
+   -content :- tsk/Vec]
+  IParentable
+    (parent-hid [this] (s/validate (s/maybe HID) parent))
+  IDataNode
+    (content [this]
+      (t/validate vector? -content))
+    (edn [this]
+      (t/forv [elem-hid (t/validate vector? -content)]
+        (edn (hid->node elem-hid))))
+  INavNode
+    (nav [this key]
+      (if (= :* key)
+        (content this)
+        (nth (t/validate vector? -content) key))))
+
+(s/defrecord ArrayEntryNode
+  [parent :- HID
+   -idx :- s/Any
+   -val :- s/Any]
+  IParentable
+    (parent-hid [this] (s/validate HID parent))
+  IArrayEntryNode
+    (idx-get [this]  -idx)
+    (val-get [this]  -val))
 
 ; #todo need to enforce set uniqueness under mutation
 (s/defrecord SetNode ; Represents ths content of a Clojure set
@@ -117,47 +145,19 @@
   [parent :- (s/maybe HID)
    -content :- tsk/Set]
   IParentable
-  (parent-hid [this] (s/validate (s/maybe HID) parent))
+    (parent-hid [this] (s/validate (s/maybe HID) parent))
   IDataNode
-  (content [this]
-    (t/validate set? -content))
-  (edn [this]
-    (let [result-vec (t/forv [v-hid (t/validate set? -content)]
-                       (edn (hid->node v-hid)))]
-      (when-not (apply distinct? result-vec)
-        (throw (ex-info "SetNode: non-distinct entries found!" (t/vals->map -content result-vec))))
-      (set result-vec)))
+    (content [this]
+      (t/validate set? -content))
+    (edn [this]
+      (let [result-vec (t/forv [v-hid (t/validate set? -content)]
+                         (edn (hid->node v-hid)))]
+        (when-not (apply distinct? result-vec)
+          (throw (ex-info "SetNode: non-distinct entries found!" (t/vals->map -content result-vec))))
+        (set result-vec)))
   INavNode
-  (nav [this key]
-    (t/grab key (t/validate set? -content))))
-
-(s/defrecord ArrayNode ; Represents ths content of a Clojure vector (any sequential type coerced into a vector).
-  ; stored is a vector of hids
-  [parent :- (s/maybe HID)
-   -content :- tsk/Vec]
-  IParentable
-  (parent-hid [this] (s/validate (s/maybe HID) parent))
-  IDataNode
-  (content [this]
-    (t/validate vector? -content))
-  (edn [this]
-    (t/forv [elem-hid (t/validate vector? -content)]
-      (edn (hid->node elem-hid))))
-  INavNode
-  (nav [this key]
-    (if (= :* key)
-      (content this)
-      (nth (t/validate vector? -content) key))))
-
-(s/defrecord ArrayEntryNode
-  [parent :- HID
-   -idx :- s/Any
-   -val :- s/Any]
-  IParentable
-  (parent-hid [this] (s/validate HID parent))
-  IArrayEntryNode
-  (idx-get [this]  -idx)
-  (val-get [this]  -val))
+    (nav [this key]
+      (t/grab key (t/validate set? -content))))
 
 ; Represents a Clojure primitive (non-collection) type,
 ; (i.e. number, string, keyword, symbol, character, etc)
@@ -166,12 +166,12 @@
   [parent :- (s/maybe HID)
    -content :- s/Any]
   IParentable
-  (parent-hid [this] (s/validate (s/maybe HID) parent))
+    (parent-hid [this] (s/validate (s/maybe HID) parent))
   IDataNode
-  (content [this]
-    (t/validate #(not (coll? %)) -content))
-  (edn [this]
-    (t/validate #(not (coll? %)) -content)))
+    (content [this]
+      (t/validate #(not (coll? %)) -content))
+    (edn [this]
+      (t/validate #(not (coll? %)) -content)))
 
 (def DataNode
   "The Plumatic Schema type name for a MapNode ArrayNode LeafNode."
