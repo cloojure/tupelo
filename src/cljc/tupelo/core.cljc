@@ -28,6 +28,7 @@
     [clojure.test]
     [clojure.walk :as walk]
     [schema.core :as s]
+    [tupelo.lexical :as lex]
     [tupelo.schema :as tsk]
 
     #?@(:clj [[cheshire.core :as cheshire]
@@ -326,6 +327,20 @@
 ;  [& args]
 ;  (throw (ex-info "`case` is evil, use `cond` instead" {:args args} )))
 
+(declare glue)
+
+(s/defn ->sorted-map :- tsk/Map
+  "Coerces a map into a sorted-map"
+  [map-in :- tsk/Map] (glue (sorted-map) map-in))
+
+(defn sorted-map-generic
+  "Returns a generic sorted map, able to accept keys of different classes"
+  [] (sorted-map-by lex/compare-generic))
+
+(s/defn ->sorted-map-generic :- tsk/Map
+  "Coerces a map into a sorted-map"
+  [map-in :- tsk/Map] (glue (sorted-map-generic) map-in))
+
 
 (defn unlazy ; #todo need tests & docs. Use for datomic Entity?
   "Converts a lazy collection to a concrete (eager) collection of the same type."
@@ -333,7 +348,7 @@
   (let [unlazy-item (fn [item]
                       (cond
                         (sequential? item) (vec item)
-                        (map? item) (into {} item)
+                        (map? item) (into (sorted-map-generic) item)
                         (set? item) (into #{} item)
             #?@(:clj [
                         (instance? java.io.InputStream item) (slurp item)  ; #todo need test
@@ -2414,11 +2429,6 @@
   (every? truthy?
     (for [value values]
       (set-match-impl {} pattern value))))
-
-(s/defn ->sorted-map :- tsk/Map
-  "Coerces a map into a sorted-map"
-  [map-in :- tsk/Map]
-  (glue (sorted-map) map-in))
 
 
 ; #todo add postwalk and change to all sorted-map, sorted-set

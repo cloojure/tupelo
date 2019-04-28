@@ -5,7 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.data
-  #?(:clj (:use tupelo.core))
+  (:use tupelo.core)
   #?(:clj (:refer-clojure :exclude [load ->VecNode]))
   #?(:clj (:require
             [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
@@ -14,7 +14,7 @@
             [tupelo.lexical :as lex]
             [clojure.data.avl :as avl]
             [schema.core :as s]
-            ))
+            [clojure.walk :as walk]))
   #?(:cljs (:require
              [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]
               :include-macros true]
@@ -30,6 +30,63 @@
 ; #todo fix dotest-focus so it works again!
 
 #?(:cljs (enable-console-print!))
+
+(defn walk-maps->sorted
+  [coll]
+  (walk/postwalk
+    (fn [item]
+      (if (map? item)
+        (into (sorted-map-by lex/compare-generic) item)
+        item))
+    coll))
+
+
+(dotest-focus
+  (let [ss123 (t/it-> (td/->sorted-set-avl)
+                (conj it [1 :a])
+                (conj it [3 :a])
+                (conj it [2 :a]))
+        ss13  (disj ss123 [2 :a])]
+    (is= #{[1 :a] [2 :a] [3 :a]} ss123)
+    (is= [[1 :a] [2 :a] [3 :a]] (vec ss123))
+    (is= #{[1 :a] [3 :a]} ss13))
+
+  (td/with-tdb (td/new-tdb)
+    (td/hid-count-reset)
+    (is= @td/*tdb* {:idx-hid {}, :idx-leaf #{}, :idx-me #{}})
+    (let [edn-val  5
+          root-hid (td/add-edn edn-val)]
+      (is= (unlazy @td/*tdb*)
+        {:idx-hid  {1001 {:parent nil :-content 5}}
+         :idx-leaf #{[5 1001]}, :idx-me #{}}))
+    (let [edn-val  {:a 1}
+          root-hid (td/add-edn edn-val)]
+      (is= (unlazy @td/*tdb*) ; coerce all from record to plain map for comparison
+        {:idx-hid  {1001 {:parent nil, :-content 5},
+                    1002 {:parent nil, :-content {:a 1003}},
+                    1003 {:parent 1002, :-me-key :a, :-me-hid 1004},
+                    1004 {:parent 1003, :-content 1}},
+         :idx-leaf #{[1 1004] [5 1001]},
+         :idx-me   #{[1 :a 1003]}}))
+    (let [edn-val  [7 8]
+          root-hid (td/add-edn edn-val)]
+      (is= (spyx-pretty (walk-maps->sorted (unlazy @td/*tdb*))) ; coerce all from record to plain map for comparison
+        {:idx-hid  {1001 {:-content 5, :parent nil},
+                    1002 {:-content {:a 1003}, :parent nil},
+                    1003 {:-me-hid 1004, :-me-key :a, :parent 1002},
+                    1004 {:-content 1, :parent 1003},
+                    1005 {:-content {0 1006, 1 1008}, :parent nil},
+                    1006 {:-ae-hid 1007, :-ae-idx 0, :parent 1005},
+                    1007 {:-content 7, :parent 1006},
+                    1008 {:-ae-hid 1009, :-ae-idx 1, :parent 1005},
+                    1009 {:-content 8, :parent 1008}},
+         :idx-leaf #{[8 1009] [5 1001] [7 1007] [1 1004]},
+         :idx-me   #{[1 :a 1003]}}
+
+        ))
+
+    )
+  )
 
 (comment
 

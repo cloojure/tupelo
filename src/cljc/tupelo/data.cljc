@@ -76,18 +76,18 @@
   (nav [this key]))
 
 (defprotocol IMapEntryNode
-  (key-get [this])
-  (val-get [this]))
+  (me-key [this])
+  (me-val-hid [this]))
 
 (defprotocol IArrayEntryNode
-  (idx-get [this])
-  (val-get [this]))
+  (ae-idx [this])
+  (ae-elem-hid [this]))
 
 ;-----------------------------------------------------------------------------
 (s/defrecord MapNode ; Represents ths content of a Clojure map.
   ; a map from key to hid
   [parent :- (s/maybe HID)
-   -content :- tsk/Map]
+   -content :- tsk/Map] ; a map from key to hid
   IParentable
     (parent-hid [this] (s/validate (s/maybe HID) parent))
   IDataNode
@@ -103,18 +103,18 @@
 
 (s/defrecord MapEntryNode
   [parent :- HID
-   -key :- s/Any
-   -val :- s/Any]
+   -me-key :- s/Any
+   -me-hid :- s/Any]
   IParentable
     (parent-hid [this] (s/validate HID parent))
   IMapEntryNode
-    (key-get [this]  -key)
-    (val-get [this]  -val) )
+    (me-key [this]  -me-key)
+    (me-val-hid [this]  -me-hid) )
 
 (s/defrecord ArrayNode ; Represents ths content of a Clojure vector (any sequential type coerced into a vector).
   ; stored is a vector of hids
   [parent :- (s/maybe HID)
-   -content :- tsk/Vec]
+   -content :- tsk/Map] ; a map from index to hid
   IParentable
     (parent-hid [this] (s/validate (s/maybe HID) parent))
   IDataNode
@@ -131,13 +131,13 @@
 
 (s/defrecord ArrayEntryNode
   [parent :- HID
-   -idx :- s/Any
-   -val :- s/Any]
+   -ae-idx :- s/Any
+   -ae-hid :- s/Any]
   IParentable
     (parent-hid [this] (s/validate HID parent))
   IArrayEntryNode
-    (idx-get [this]  -idx)
-    (val-get [this]  -val))
+    (ae-idx [this]  -ae-idx)
+    (ae-elem-hid [this]  -ae-hid))
 
 ; #todo need to enforce set uniqueness under mutation
 (s/defrecord SetNode ; Represents ths content of a Clojure set
@@ -175,7 +175,7 @@
 
 (def DataNode
   "The Plumatic Schema type name for a MapNode ArrayNode LeafNode."
-  (s/cond-pre MapNode SetNode ArrayNode LeafNode))
+  (s/cond-pre MapNode MapEntryNode ArrayNode ArrayEntryNode SetNode LeafNode))
 
 ;-----------------------------------------------------------------------------
 (def ^:dynamic ^:no-doc *tdb* nil)
@@ -189,21 +189,8 @@
   "Returns a new, empty db."
   []
   {:idx-hid (sorted-map)
-   :idx-num (lex/->sorted-set)
-   :idx-str (lex/->sorted-set)
-   :idx-kw  (lex/->sorted-set)
-   ;:idx-sym (lex/->sorted-set)
-   ;:idx-char (lex/->sorted-set)
-   :idxs-me {; auto-generate these?
-             :me-kw-kw   (lex/->sorted-set)
-             :me-kw-num  (lex/->sorted-set)
-             :me-kw-str  (lex/->sorted-set)
-             :me-num-kw  (lex/->sorted-set)
-             :me-num-num (lex/->sorted-set)
-             :me-num-str (lex/->sorted-set)
-             :me-str-kw  (lex/->sorted-set)
-             :me-str-num (lex/->sorted-set)
-             :me-str-str (lex/->sorted-set)}})
+   :idx-leaf (->sorted-set-avl)
+   :idx-me (->sorted-set-avl) })
 
 (s/defn hid->node :- DataNode
   "Returns the node corresponding to an HID"
@@ -236,46 +223,45 @@
     [arg :- s/Any] (or (number? arg) (string? arg) (keyword? arg)))
   (def LeafType (s/cond-pre s/Num s/Str s/Keyword))) ; instant, uuid, Time ID (TID) (as strings?)
 
-(s/defn ^:no-doc type-short
-  [arg]
-  (cond
-    (number? arg) "num"
-    (string? arg) "str"
-    (keyword? arg) "kw"
-    ;(symbol? arg) "sym"  ; #todo allow this?
-    :else (throw (ex-info "invalid type found" (t/vals->map arg)))))
+(comment  ; unused since added cc-cmp
+  (s/defn ^:no-doc type-short
+    [arg]
+    (cond
+      (number? arg) "num"
+      (string? arg) "str"
+      (keyword? arg) "kw"
+      ;(symbol? arg) "sym"  ; #todo allow this?
+      :else (throw (ex-info "invalid type found" (t/vals->map arg)))))
 
-(s/defn ^:no-doc val->idx-type-kw
-  [leaf-val :- LeafType]
-  (keyword (str "idx-" (type-short leaf-val))))
+  (s/defn ^:no-doc val->idx-type-kw
+    [leaf-val :- LeafType]
+    (keyword (str "idx-" (type-short leaf-val))))
 
-(s/defn ^:no-doc mapentry->idx-type-kw
-  [me :- tsk/MapEntry]
-  (let [me-key-type (type-short (key me))
-        me-val-type (type-short (val me))]
-    (keyword (str "me-" me-key-type \- me-val-type))))
+  (s/defn ^:no-doc mapentry->idx-type-kw
+    [me :- tsk/MapEntry]
+    (let [me-key-type (type-short (key me))
+          me-val-type (type-short (val me))]
+      (keyword (str "me-" me-key-type \- me-val-type))))
+)
 
-(s/defn update-index-val!
+(s/defn update-index-leaf!
   [leaf-val :- LeafType
    hid-val :- HID]
-  (let [idx-id (val->idx-type-kw leaf-val)]
-    (swap! *tdb* (fn [tdb-map]
-                   (update-in tdb-map [idx-id] ; #todo make verify like fetch-in
-                     (fn [sorted-set-idx]
-                       (conj sorted-set-idx [leaf-val hid-val]))))))
+  (swap! *tdb* (fn [tdb-map]
+                 (update tdb-map :idx-leaf ; #todo make verify like fetch-in
+                   (fn [index-avl-set]
+                     (conj index-avl-set [leaf-val hid-val])))))
   nil)
 
 (s/defn update-index-mapentry!
-  ([me :- tsk/MapEntry
-    hid-val :- HID]
-    (swap! *tdb* (fn [tdb-map]
-                   (let [me-type-kw (mapentry->idx-type-kw me)
-                         [me-key me-val] (mapentry->kv me)
-                         idx-entry  [me-val me-key hid-val]]
-                     (update-in tdb-map [:idxs-me me-type-kw] ; #todo make verify like fetch-in
-                       (fn [index-avl-set]
-                         (conj index-avl-set idx-entry))))))
-    nil))
+  [me-val :- LeafType
+   me-key
+   me-hid :- HID]
+  (swap! *tdb* (fn [tdb-map]
+                 (update tdb-map :idx-me ; #todo make verify like fetch-in
+                   (fn [index-avl-set]
+                     (conj index-avl-set [me-val me-key me-hid])))))
+  nil)
 
 (def ^:no-doc hid-count-base 1000)
 (def ^:no-doc hid-counter (atom hid-count-base))
@@ -296,60 +282,49 @@
   "Returns true for vectors, lists, and seq's."
   [arg] (or (vector? arg) (list? arg) (seq? arg)))
 
-(declare add-edn)
-
-(s/defn add-map-entry :- HID
-  [hid-parent :- HID
-   me-arg :- tsk/MapEntry]
-  (let [hid-this (new-hid)
-        [the-key the-val] (mapentry->kv me-arg)]
-    (when (leaf-val? the-val)
-      (update-index-mapentry! me-arg hid-this))
-    (set-node! hid-this
-      (->MapEntryNode hid-parent the-key (add-edn hid-this the-val)))))
-
-(s/defn add-array-entry :- HID
-  [hid-parent :- HID
-   ae-arg :- tsk/Pair] ; #todo fix to local record type
-  (let [hid-this (new-hid)
-        [the-idx val
-
-         ] ae-arg]
-    ;(when (leaf-val? val)  ; #todo finish indexing for ArrayEntryNode
-    ;  (update-index-mapentry! ae-arg hid-this))
-    (set-node! hid-this
-      (->ArrayEntryNode hid-parent the-idx (add-edn hid-this val)))))
-
 (s/defn add-edn :- HID ; #todo maybe rename:  load-edn->hid  ???
-  ([edn-val :- s/Any]
-    (add-edn nil edn-val))
+  ([edn-val :- s/Any] (add-edn nil edn-val))
   ([hid-parent :- (s/maybe HID)
     edn-val :- s/Any]
-    (let [hid-this (new-hid)]
-      (cond
-        (map? edn-val) (set-node! hid-this
-                         (->MapNode hid-parent
-                           (apply glue
-                             (forv [[k v] edn-val]
-                               (map-entry k (add-edn hid-this (map-entry k v)))))))
+   (cond
+     (map? edn-val) (let [hid-map-node (new-hid)]
+                      (set-node! hid-map-node
+                        (->MapNode hid-parent
+                          (apply glue
+                            (forv [[k v] edn-val]
+                              (let [hid-me-node (new-hid)
+                                    hid-leaf    (add-edn hid-me-node v)]
+                                (when (leaf-val? v)
+                                  (update-index-mapentry! v k hid-me-node))
+                                (set-node! hid-me-node (->MapEntryNode hid-map-node k hid-leaf))
+                                (map-entry k hid-me-node))))))
+                      hid-map-node)
 
-        (array-like? edn-val) (set-node! hid-this          ; #todo make a map from idx -> value
-                                (->ArrayNode hid-parent
-                                  (forv [[idx elem] (indexed edn-val)]
-                                    (add-edn hid-this elem))))
+     (array-like? edn-val) (let [hid-array-node (new-hid)]
+                             (set-node! hid-array-node
+                               (->ArrayNode hid-parent
+                                 (apply glue
+                                   (forv [[idx elem] (indexed edn-val)]
+                                     (let [hid-ae-node (new-hid)
+                                           hid-leaf    (add-edn hid-ae-node elem)]
+                                       (set-node! hid-ae-node (->ArrayEntryNode hid-array-node idx hid-leaf))
+                                       (map-entry idx hid-ae-node))))))
+                             hid-array-node)
 
+     ;(set? edn-val) (let [hid-mapnode (new-hid)]
+     ;                 (set-node! hid-this
+     ;                   (->SetNode
+     ;                     hid-parent
+     ;                     (set (forv [elem edn-val]
+     ;                            (add-edn hid-this elem)))))
+     ;                 hid-mapnode)
 
-        (set? edn-val) (set-node! hid-this
-                         (->SetNode
-                           hid-parent
-                           (set (forv [elem edn-val]
-                                  (add-edn hid-this elem)))))
+     (leaf-val? edn-val) (let [hid-leafnode (new-hid)]
+                           (update-index-leaf! edn-val hid-leafnode)
+                           (set-node! hid-leafnode (->LeafNode hid-parent edn-val))
+                           hid-leafnode)
 
-        (leaf-val? edn-val) (let [node-new (->LeafNode hid-parent edn-val)]
-                              (update-index-val! edn-val hid-this)
-                              (set-node! hid-this node-new))
-
-        :else (throw (ex-info "unknown value found" (vals->map edn-val)))))))
+     :else (throw (ex-info "unknown value found" (vals->map edn-val))))))
 
 (s/defn hid->edn :- s/Any
   "Returns EDN data for the subtree rooted at hid"
@@ -380,7 +355,7 @@
    target :- tsk/Vec]
   (let [idx-avl-set      (t/validate set? (grab idx-id (deref *tdb*)))
         matching-entries (grab :matches
-                           (lex/split-key-prefix target idx-avl-set))]
+                           (split-key-prefix target idx-avl-set))]
     matching-entries))
 
 (s/defn index-find-val
@@ -396,14 +371,15 @@
 
 (s/defn index-find-mapentry
   [tgt-me :- tsk/MapEntry]
-  (let [me-type-kw       (mapentry->idx-type-kw tgt-me)
+  (let [  ; me-type-kw       (mapentry->idx-type-kw tgt-me)
         [me-key me-val] (mapentry->kv tgt-me)
         tgt-prefix       [me-val me-key]
-        idx-avl-set      (t/validate set? (fetch-in (deref *tdb*) [:idxs-me me-type-kw]))
+        idx-avl-set      (t/validate set? (fetch-in (deref *tdb*) [:idx-me]))
         matching-entries (grab :matches
-                           (lex/split-key-prefix tgt-prefix idx-avl-set))
+                           (split-key-prefix tgt-prefix idx-avl-set))
         hids             (mapv last matching-entries)]
-    hids))
+    hids)
+  )
 
 (s/defn index-find-submap
   [target-submap :- tsk/KeyMap]

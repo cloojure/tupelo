@@ -8,13 +8,13 @@
   "Utils for lexical sorting and searching"
   (:refer-clojure :exclude [compare])  ; #todo
   #?(:clj (:require
-            [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
+           ;[tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
             [tupelo.schema :as tsk]
             [clojure.data.avl :as avl]
             [schema.core :as s]
             ))
   #?(:cljs (:require
-             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab] ] ; #todo :include-macros true
+           ; [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab] ] ; #todo :include-macros true
              [tupelo.schema :as tsk]
              [clojure.data.avl :as avl]
              [schema.core :as s]
@@ -23,9 +23,9 @@
 
 #?(:cljs (enable-console-print!))
 
-(def Val tsk/Vec)
-(def Set (class (avl/sorted-set 1 2 3)))
-(def Map (class (avl/sorted-map :a 1 :b 2 :c 3)))
+(def LexicalValType tsk/Vec)
+(def SortedSetType (class (avl/sorted-set 1 2 3)))
+(def SortedMapType (class (avl/sorted-map :a 1 :b 2 :c 3)))
 
 ;---------------------------------------------------------------------------------------------------
 ;; comparison-class throws exceptions for some types that might be
@@ -110,7 +110,7 @@
             c))))))
 
 
-(defn cc-cmp
+(defn compare-generic
   [x y]
   (let [x-cls (comparison-class x)
         y-cls (comparison-class y)
@@ -120,17 +120,17 @@
           ;; Compare sets to each other as sequences, with elements in
           ;; sorted order.
           (= x-cls "clojure.lang.IPersistentSet")
-          (cmp-seq-lexi cc-cmp (sort cc-cmp x) (sort cc-cmp y))
+          (cmp-seq-lexi compare-generic (sort compare-generic x) (sort compare-generic y))
 
           ;; Compare maps to each other as sequences of [key val]
           ;; pairs, with pairs in order sorted by key.
           (= x-cls "clojure.lang.IPersistentMap")
-          (cmp-seq-lexi cc-cmp
-                        (sort-by key cc-cmp (seq x))
-                        (sort-by key cc-cmp (seq y)))
+          (cmp-seq-lexi compare-generic
+                        (sort-by key compare-generic (seq x))
+                        (sort-by key compare-generic (seq y)))
 
           (= x-cls "java.util.Arrays")
-          (cmp-array-lexi cc-cmp x y)
+          (cmp-array-lexi compare-generic x y)
 
           ;; Make a special check for two vectors, since cmp-vec-lexi
           ;; should allocate less memory comparing them than
@@ -138,12 +138,12 @@
           ;; must use cc-cmp recursively on the elements, because if
           ;; we used compare we would lose the ability to compare
           ;; elements with different types.
-          (and (vector? x) (vector? y)) (cmp-vec-lexi cc-cmp x y)
+          (and (vector? x) (vector? y)) (cmp-vec-lexi compare-generic x y)
 
           ;; This will compare any two sequences, if they are not both
           ;; vectors, e.g. a vector and a list will be compared here.
           (= x-cls "clojure.lang.Sequential")
-          (cmp-seq-lexi cc-cmp x y)
+          (cmp-seq-lexi compare-generic x y)
 
           :else (clojure.core/compare x y))))
 
@@ -151,72 +151,6 @@
 (s/defn compare-lex :- s/Int
   [a :- tsk/Vec
    b :- tsk/Vec ]
-  (cc-cmp a b))
-;---------------------------------------------------------------------------------------------------
-
-
-(s/defn ->sorted-set :- Set
-  "Converts a set into a lexically-sorted set"
-  ([] (->sorted-set #{}))
-  ([some-set :- (s/cond-pre tsk/Set tsk/Vec)]
-    (into (avl/sorted-set-by compare-lex) some-set)))
-; #todo add (->sorted-map <map>)        => (into (sorted-map) <map>)
-; #todo add (->sorted-vec <sequential>) => (vec (sort <vec>))
-
-(s/defn bound-lower :- tsk/Vec
-  "Given a lexical value as a vector such as [1 :a], returns a lower bound like [1]"
-  [val :- tsk/Vec]
-  (when (zero? (count val))
-    (throw (ex-info "Cannot find lower bound for empty vec" {:val val})))
-  (t/xbutlast val))
-
-(s/defn prefix-match? :- s/Bool
-  "Returns true if the sample value equals the pattern when truncated to the same length"
-  [pattern :- Val
-   sample :- Val]
-  (= pattern (t/xtake (count pattern) sample)))
-
-(s/defn split-key-prefix :- {s/Keyword Set}
-  "Like clojure.data.avl/split-key, but allows prefix matches. Given a lexically sorted set like:
-    #{[:a 1]
-      [:a 2]
-      [:a 3]
-      [:b 1]
-      [:b 2]
-      [:b 3]
-      [:c 1]
-      [:c 2]}
-   splits data by prefix match for patterns like [:b], returning a map of 3 sorted sets like:
-  {:smaller #{[:a 1]
-              [:a 2]
-              [:a 3]}
-   :matches #{[:b 1]
-              [:b 2]
-              [:b 3]}
-   :larger  #{[:c 1]
-              [:c 2]} ]
-      "
-  [match-val :- Val
-   lex-set :- Set]
-  (let [[smaller-set found-val larger-set] (avl/split-key match-val lex-set)
-        result (if (nil? found-val)
-                 (let [[matches-seq larger-seq] (split-with #(prefix-match? match-val %) larger-set)]
-                   {:smaller smaller-set
-                    :matches (->sorted-set matches-seq)
-                    :larger  (->sorted-set larger-seq)})
-                 {:smaller smaller-set
-                  :matches (avl/sorted-set found-val)
-                  :larger  larger-set})]
-   ;(s/validate Set (grab :smaller result))
-   ;(s/validate Set (grab :matches result))
-   ;(s/validate Set (grab :larger result))
-    result))
-
-
-
-
-
-
-
+  (compare-generic a b))
 
 
