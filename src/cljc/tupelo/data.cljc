@@ -150,18 +150,16 @@
 (s/defrecord SetNode ; Represents ths content of a Clojure set
   ; a map from key to hid
   [-parent-hid :- (s/maybe HID)
-   -sn-data :- tsk/Set]
+   -sn-data :- tsk/Map]
   IParentable
     (parent-hid [this] (s/validate (s/maybe HID) -parent-hid))
   IDataNode
     (content [this]
-      (t/validate set? -sn-data))
+      (t/validate map? -sn-data))
     (edn [this]
-      (let [result-vec (t/forv [v-hid (t/validate set? -sn-data)]
-                         (edn (hid->node v-hid)))]
-        (when-not (apply distinct? result-vec)
-          (throw (ex-info "SetNode: non-distinct entries found!" (t/vals->map -sn-data result-vec))))
-        (set result-vec)))
+      (set
+        (t/forv [[-key- elem-hid] (t/validate map? -sn-data)]
+          (edn (hid->node elem-hid)))))
   INavNode
     (nav [this key]
       (t/grab key (t/validate set? -sn-data))))
@@ -329,13 +327,13 @@
                                        (set-node! hid-ae-node (->ArrayEntryNode hid-array-node idx hid-leaf))
                                        (map-entry idx hid-ae-node)))))))
 
-     ;(set? edn-val) (let [hid-mapnode (new-hid)]
-     ;                 (set-node! hid-this
-     ;                   (->SetNode
-     ;                     hid-parent
-     ;                     (set (forv [elem edn-val]
-     ;                            (add-edn hid-this elem)))))
-     ;                 hid-mapnode)
+     (set? edn-val) (let [hid-setnode (new-hid)]
+                      (set-node! hid-setnode
+                        (->SetNode
+                          hid-parent
+                          (apply glue
+                            (forv [set-elem edn-val]
+                              (t/map-entry set-elem (add-edn hid-setnode set-elem)))))) )
 
      (leaf-val? edn-val) (let [hid-leafnode (new-hid)]
                            (update-index-leaf! edn-val hid-leafnode)

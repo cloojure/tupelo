@@ -79,13 +79,36 @@
          :idx-leaf        #{[1 1004] [5 1001] [7 1007] [8 1009]},
          :idx-map-entry   #{[1 :a 1003]}
          :idx-array-entry #{[7 0 1006] [8 1 1008]}})
-      (is= edn-val (td/hid->edn root-hid)))
+      (is= edn-val (td/hid->edn root-hid))) )
 
-    ))
+  (td/with-tdb (td/new-tdb)
+    (td/hid-count-reset)
+    (is= @td/*tdb* {:idx-hid {}, :idx-leaf #{}, :idx-map-entry #{} :idx-array-entry #{}})
+    (let [edn-val  #{3 4}
+          root-hid (td/add-edn edn-val)]
+      (is= (unlazy @td/*tdb*) ; coerce all from record to plain map for comparison
+        {:idx-array-entry #{},
+         :idx-hid         {1001 {:-parent-hid nil, :-sn-data {3 1003, 4 1002}},
+                           1002 {:-leaf-val 4, :-parent-hid 1001},
+                           1003 {:-leaf-val 3, :-parent-hid 1001}},
+         :idx-leaf        #{[3 1003] [4 1002]},
+         :idx-map-entry   #{}} )
+      (is= edn-val (td/hid->edn root-hid)) ) )
 
-(comment
+  (td/with-tdb (td/new-tdb)
+    (td/hid-count-reset)
+    (let [edn-val  {:num 5
+                    :map {:a 1 :b 2}
+                    :vec [5 6 7]
+                    :set #{3 4}
+                    :str "hello"
+                    :kw  :nothing }
+          root-hid (td/add-edn edn-val)]
+     ;(spyx-pretty (unlazy @td/*tdb*))
+      (is= edn-val (td/hid->edn root-hid)) ) ) )
 
-(dotest
+
+(dotest-focus
   (td/with-tdb (td/new-tdb)
     (let [edn-0    {:a 1 :b 2}
           root-hid (td/add-edn edn-0)]
@@ -112,7 +135,7 @@
           root-hid (td/add-edn data-1)]
       (is= data-1 (td/hid->edn root-hid)))))
 
-(dotest
+(dotest-focus
   (td/with-tdb (td/new-tdb)
     (let [edn-0      #{1 2 3}
           root-hid   (td/add-edn edn-0)
@@ -128,7 +151,9 @@
           root-hid (td/add-edn edn-0)]
       (is= edn-0 (td/hid->edn root-hid)))))
 
-(dotest
+(comment  ; #todo wip
+
+(dotest-focus
   (td/with-tdb (td/new-tdb)
     (let [data     {:a [{:b 2}
                         {:c 3}
@@ -165,7 +190,7 @@
         (is= 4 (td/hid->edn four-hid))
         (is= data (td/hid->edn four-hid-parent-3))))))
 
-(dotest
+(dotest-focus
   (is= (td/val->idx-type-kw :a) :idx-kw)
   (is= (td/val->idx-type-kw 99) :idx-num)
   (is= (td/val->idx-type-kw "hi") :idx-str)
