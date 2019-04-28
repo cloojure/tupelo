@@ -11,6 +11,7 @@
             [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
             [tupelo.core :as t :refer [spy spyx spyxx]]
             [tupelo.data :as td]
+            [tupelo.data.index :as tdi]
             [tupelo.lexical :as lex]
             [clojure.data.avl :as avl]
             [schema.core :as s]
@@ -42,7 +43,7 @@
 
 
 (dotest-focus
-  (let [ss123 (t/it-> (td/->sorted-set-avl)
+  (let [ss123 (t/it-> (tdi/->sorted-set-avl)
                 (conj it [1 :a])
                 (conj it [3 :a])
                 (conj it [2 :a]))

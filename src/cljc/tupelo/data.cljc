@@ -11,21 +11,18 @@
             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab glue map-entry indexed
                                        forv vals->map fetch-in
                                        ]]
-            [tupelo.lexical :as lex]
             [tupelo.schema :as tsk]
-            [clojure.data.avl :as avl]
+            [tupelo.data.index :as tdi]
             [clojure.set :as set]
             [schema.core :as s]
             ))
   #?(:cljs (:require
              [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]] ; #todo :include-macros true
-             [tupelo.lexical :as lex]
              [tupelo.schema :as tsk]
-             [clojure.data.avl :as avl]
+             [tupelo.data.index :as tdi]
              [clojure.set :as set]
              [schema.core :as s]
              ))
-
   )
 
 ; #todo add indexes
@@ -189,8 +186,8 @@
   "Returns a new, empty db."
   []
   {:idx-hid (sorted-map)
-   :idx-leaf (->sorted-set-avl)
-   :idx-me (->sorted-set-avl) })
+   :idx-leaf (tdi/->sorted-set-avl)
+   :idx-me (tdi/->sorted-set-avl) })
 
 (s/defn hid->node :- DataNode
   "Returns the node corresponding to an HID"
@@ -355,7 +352,7 @@
    target :- tsk/Vec]
   (let [idx-avl-set      (t/validate set? (grab idx-id (deref *tdb*)))
         matching-entries (grab :matches
-                           (split-key-prefix target idx-avl-set))]
+                           (tdi/split-key-prefix target idx-avl-set))]
     matching-entries))
 
 (s/defn index-find-val
@@ -376,7 +373,7 @@
         tgt-prefix       [me-val me-key]
         idx-avl-set      (t/validate set? (fetch-in (deref *tdb*) [:idx-me]))
         matching-entries (grab :matches
-                           (split-key-prefix tgt-prefix idx-avl-set))
+                           (tdi/split-key-prefix tgt-prefix idx-avl-set))
         hids             (mapv last matching-entries)]
     hids)
   )

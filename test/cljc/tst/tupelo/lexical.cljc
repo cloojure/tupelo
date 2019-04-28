@@ -95,3 +95,5 @@
   (is (neg? (lex/compare-lex [1 :z] [2 9])))
   (is (neg? (lex/compare-lex [1 :z] [1 2])))
 
+)
+

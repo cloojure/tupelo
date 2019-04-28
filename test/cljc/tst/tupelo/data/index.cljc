@@ -74,8 +74,8 @@
     (is= {:a 1 :b 2 :c 3} lex-map))
 
   (let [data-raw (tdi/->sorted-set-avl #{[:b 1] [:b 2] [:b 3]
-                                     [:f 1] [:f 2] [:f 3]
-                                     [:h 1] [:h 2]})]
+                                         [:f 1] [:f 2] [:f 3]
+                                         [:h 1] [:h 2]})]
     ; test with prefix-key
     (is= (tdi/split-key-prefix (tdi/bound-lower [:a 2]) data-raw)
       {:smaller #{},
@@ -101,15 +101,15 @@
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3]},
        :matches #{[:h 1] [:h 2]}
        :larger  #{}})
-    (tdi (tdi/split-key-prefix (tdi/bound-lower [:joker 2]) data-raw)
+    (is= (tdi/split-key-prefix (tdi/bound-lower [:joker 2]) data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]},
        :matches #{}
        :larger  #{}}))
 
   ; test with full-key
   (let [data-raw (tdi/->sorted-set-avl #{[:b 1] [:b 2] [:b 3]
-                                     [:f 1] [:f 2] [:f 3]
-                                     [:h 1] [:h 2]})]
+                                         [:f 1] [:f 2] [:f 3]
+                                         [:h 1] [:h 2]})]
     (is= (tdi/split-key-prefix [:a 2] data-raw)
       {:smaller #{},
        :matches #{},
