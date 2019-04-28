@@ -341,6 +341,14 @@
   "Coerces a map into a sorted-map"
   [map-in :- tsk/Map] (glue (sorted-map-generic) map-in))
 
+(defn sorted-set-generic
+  "Returns a generic sorted set, able to accept keys of different classes"
+  [] (sorted-set-by lex/compare-generic))
+
+(s/defn ->sorted-set-generic :- tsk/Set
+  "Coerces a set into a sorted-set-generic"
+  [set-in :- tsk/Set] (glue (sorted-set-generic) set-in))
+
 
 (defn unlazy ; #todo need tests & docs. Use for datomic Entity?
   "Converts a lazy collection to a concrete (eager) collection of the same type."
@@ -349,7 +357,7 @@
                       (cond
                         (sequential? item) (vec item)
                         (map? item) (into (sorted-map-generic) item)
-                        (set? item) (into #{} item)
+                        (set? item) (into (sorted-set-generic) item)
             #?@(:clj [
                         (instance? java.io.InputStream item) (slurp item)  ; #todo need test
                         (instance? java.util.List item) (vec item)  ; #todo need test

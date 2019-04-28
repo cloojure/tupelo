@@ -32,16 +32,6 @@
 
 #?(:cljs (enable-console-print!))
 
-(defn walk-maps->sorted
-  [coll]
-  (walk/postwalk
-    (fn [item]
-      (if (map? item)
-        (into (sorted-map-by lex/compare-generic) item)
-        item))
-    coll))
-
-
 (dotest-focus
   (let [ss123 (t/it-> (tdi/->sorted-set-avl)
                 (conj it [1 :a])
@@ -71,7 +61,7 @@
          :idx-me   #{[1 :a 1003]}}))
     (let [edn-val  [7 8]
           root-hid (td/add-edn edn-val)]
-      (is= (spyx-pretty (walk-maps->sorted (unlazy @td/*tdb*))) ; coerce all from record to plain map for comparison
+      (is= (unlazy @td/*tdb*) ; coerce all from record to plain map for comparison
         {:idx-hid  {1001 {:-content 5, :parent nil},
                     1002 {:-content {:a 1003}, :parent nil},
                     1003 {:-me-hid 1004, :-me-key :a, :parent 1002},
@@ -81,10 +71,8 @@
                     1007 {:-content 7, :parent 1006},
                     1008 {:-ae-hid 1009, :-ae-idx 1, :parent 1005},
                     1009 {:-content 8, :parent 1008}},
-         :idx-leaf #{[8 1009] [5 1001] [7 1007] [1 1004]},
-         :idx-me   #{[1 :a 1003]}}
-
-        ))
+         :idx-leaf #{[1 1004] [5 1001] [7 1007] [8 1009]},
+         :idx-me   #{[1 :a 1003]}}))
 
     )
   )
