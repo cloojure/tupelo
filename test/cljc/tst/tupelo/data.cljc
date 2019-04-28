@@ -9,7 +9,7 @@
   #?(:clj (:refer-clojure :exclude [load ->VecNode]))
   #?(:clj (:require
             [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-            [tupelo.core :as t :refer [spy spyx spyxx]]
+            [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty unlazy]]
             [tupelo.data :as td]
             [tupelo.data.index :as tdi]
             [tupelo.lexical :as lex]
@@ -48,29 +48,30 @@
     (let [edn-val  5
           root-hid (td/add-edn edn-val)]
       (is= (unlazy @td/*tdb*)
-        {:idx-hid  {1001 {:parent nil :-content 5}}
-         :idx-leaf #{[5 1001]}, :idx-me #{}}))
+        {:idx-hid  {1001 {:-leaf-val 5, :-parent-hid nil}},
+         :idx-leaf #{[5 1001]},
+         :idx-me   #{}} ))
     (let [edn-val  {:a 1}
           root-hid (td/add-edn edn-val)]
       (is= (unlazy @td/*tdb*) ; coerce all from record to plain map for comparison
-        {:idx-hid  {1001 {:parent nil, :-content 5},
-                    1002 {:parent nil, :-content {:a 1003}},
-                    1003 {:parent 1002, :-me-key :a, :-me-hid 1004},
-                    1004 {:parent 1003, :-content 1}},
+        {:idx-hid  {1001 {:-leaf-val 5, :-parent-hid nil},
+                    1002 {:-mn-data {:a 1003}, :-parent-hid nil},
+                    1003 {:-me-hid 1004, :-me-key :a, :-parent-hid 1002},
+                    1004 {:-leaf-val 1, :-parent-hid 1003}},
          :idx-leaf #{[1 1004] [5 1001]},
-         :idx-me   #{[1 :a 1003]}}))
+         :idx-me   #{[1 :a 1003]}} ))
     (let [edn-val  [7 8]
           root-hid (td/add-edn edn-val)]
       (is= (unlazy @td/*tdb*) ; coerce all from record to plain map for comparison
-        {:idx-hid  {1001 {:-content 5, :parent nil},
-                    1002 {:-content {:a 1003}, :parent nil},
-                    1003 {:-me-hid 1004, :-me-key :a, :parent 1002},
-                    1004 {:-content 1, :parent 1003},
-                    1005 {:-content {0 1006, 1 1008}, :parent nil},
-                    1006 {:-ae-hid 1007, :-ae-idx 0, :parent 1005},
-                    1007 {:-content 7, :parent 1006},
-                    1008 {:-ae-hid 1009, :-ae-idx 1, :parent 1005},
-                    1009 {:-content 8, :parent 1008}},
+        {:idx-hid  {1001 {:-leaf-val 5, :-parent-hid nil},
+                    1002 {:-mn-data {:a 1003}, :-parent-hid nil},
+                    1003 {:-me-hid 1004, :-me-key :a, :-parent-hid 1002},
+                    1004 {:-leaf-val 1, :-parent-hid 1003},
+                    1005 {:-an-data {0 1006, 1 1008}, :-parent-hid nil},
+                    1006 {:-ae-hid 1007, :-ae-idx 0, :-parent-hid 1005},
+                    1007 {:-leaf-val 7, :-parent-hid 1006},
+                    1008 {:-ae-hid 1009, :-ae-idx 1, :-parent-hid 1005},
+                    1009 {:-leaf-val 8, :-parent-hid 1008}},
          :idx-leaf #{[1 1004] [5 1001] [7 1007] [8 1009]},
          :idx-me   #{[1 :a 1003]}}))
 

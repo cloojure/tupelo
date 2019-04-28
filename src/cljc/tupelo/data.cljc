@@ -83,55 +83,53 @@
 ;-----------------------------------------------------------------------------
 (s/defrecord MapNode ; Represents ths content of a Clojure map.
   ; a map from key to hid
-  [parent :- (s/maybe HID)
-   -content :- tsk/Map] ; a map from key to hid
+  [-parent-hid :- (s/maybe HID)
+   -mn-data :- tsk/Map] ; a map from key to hid
   IParentable
-    (parent-hid [this] (s/validate (s/maybe HID) parent))
+    (parent-hid [this] (s/validate (s/maybe HID) -parent-hid))
   IDataNode
-    (content [this]
-      (t/validate map? -content))
+    (content [this] (t/validate map? -mn-data))
     (edn [this]
       (apply t/glue
-        (t/forv [[k v-hid] (t/validate map? -content)]
+        (t/forv [[k v-hid] (t/validate map? -mn-data)]
           {k (edn (hid->node v-hid))})))
   INavNode
     (nav [this key]
-      (t/grab key (t/validate map? -content))))
+      (t/grab key (t/validate map? -mn-data))))
 
 (s/defrecord MapEntryNode
-  [parent :- HID
+  [-parent-hid :- HID
    -me-key :- s/Any
-   -me-hid :- s/Any]
+   -me-hid :- HID]
   IParentable
-    (parent-hid [this] (s/validate HID parent))
+    (parent-hid [this] (s/validate HID -parent-hid))
   IMapEntryNode
     (me-key [this]  -me-key)
     (me-val-hid [this]  -me-hid) )
 
 (s/defrecord ArrayNode ; Represents ths content of a Clojure vector (any sequential type coerced into a vector).
   ; stored is a vector of hids
-  [parent :- (s/maybe HID)
-   -content :- tsk/Map] ; a map from index to hid
+  [-parent-hid :- (s/maybe HID)
+   -an-data :- tsk/Map] ; a map from index to hid
   IParentable
-    (parent-hid [this] (s/validate (s/maybe HID) parent))
+    (parent-hid [this] (s/validate (s/maybe HID) -parent-hid))
   IDataNode
-    (content [this]
-      (t/validate vector? -content))
+    (content [this] (t/validate map? -an-data))
     (edn [this]
-      (t/forv [elem-hid (t/validate vector? -content)]
+      (t/forv [elem-hid (t/validate vector? -an-data)]
         (edn (hid->node elem-hid))))
   INavNode
     (nav [this key]
       (if (= :* key)
         (content this)
-        (nth (t/validate vector? -content) key))))
+        (get (t/validate map? -an-data) key))))
 
 (s/defrecord ArrayEntryNode
-  [parent :- HID
+  [-parent-hid :- HID
    -ae-idx :- s/Any
-   -ae-hid :- s/Any]
+   -ae-hid :- HID]
   IParentable
-    (parent-hid [this] (s/validate HID parent))
+    (parent-hid [this] (s/validate HID -parent-hid))
   IArrayEntryNode
     (ae-idx [this]  -ae-idx)
     (ae-elem-hid [this]  -ae-hid))
@@ -139,36 +137,36 @@
 ; #todo need to enforce set uniqueness under mutation
 (s/defrecord SetNode ; Represents ths content of a Clojure set
   ; a map from key to hid
-  [parent :- (s/maybe HID)
-   -content :- tsk/Set]
+  [-parent-hid :- (s/maybe HID)
+   -sn-data :- tsk/Set]
   IParentable
-    (parent-hid [this] (s/validate (s/maybe HID) parent))
+    (parent-hid [this] (s/validate (s/maybe HID) -parent-hid))
   IDataNode
     (content [this]
-      (t/validate set? -content))
+      (t/validate set? -sn-data))
     (edn [this]
-      (let [result-vec (t/forv [v-hid (t/validate set? -content)]
+      (let [result-vec (t/forv [v-hid (t/validate set? -sn-data)]
                          (edn (hid->node v-hid)))]
         (when-not (apply distinct? result-vec)
-          (throw (ex-info "SetNode: non-distinct entries found!" (t/vals->map -content result-vec))))
+          (throw (ex-info "SetNode: non-distinct entries found!" (t/vals->map -sn-data result-vec))))
         (set result-vec)))
   INavNode
     (nav [this key]
-      (t/grab key (t/validate set? -content))))
+      (t/grab key (t/validate set? -sn-data))))
 
 ; Represents a Clojure primitive (non-collection) type,
 ; (i.e. number, string, keyword, symbol, character, etc)
 (s/defrecord LeafNode
   ; stored is a simple (non-collection) value
-  [parent :- (s/maybe HID)
-   -content :- s/Any]
+  [-parent-hid :- (s/maybe HID)
+   -leaf-val :- s/Any]
   IParentable
-    (parent-hid [this] (s/validate (s/maybe HID) parent))
+    (parent-hid [this] (s/validate (s/maybe HID) -parent-hid))
   IDataNode
     (content [this]
-      (t/validate #(not (coll? %)) -content))
+      (t/validate #(not (coll? %)) -leaf-val))
     (edn [this]
-      (t/validate #(not (coll? %)) -content)))
+      (t/validate #(not (coll? %)) -leaf-val)))
 
 (def DataNode
   "The Plumatic Schema type name for a MapNode ArrayNode LeafNode."
