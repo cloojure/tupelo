@@ -1690,6 +1690,13 @@
                                ~'it)) ]
     `(it-> ~expr ~@cond-action-forms)))
 
+; #todo make look like this?
+;(t/cond-it-> (parent-hid (hid->node hid))
+;  {:when (or
+;           (instance? MapEntryNode (hid->node it))
+;           (instance? ArrayEntryNode (hid->node it)))
+;   :then (parent-hid (hid->node it))})
+
 (defmacro cond-it->
   "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
 

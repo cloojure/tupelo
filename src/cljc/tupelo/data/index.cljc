@@ -42,6 +42,9 @@
 (def SortedSetType (class (avl/sorted-set 1 2 3)))
 (def SortedMapType (class (avl/sorted-map :a 1 :b 2 :c 3)))
 
+(def IndexType  SortedSetType )
+(def IndexEntryType  tsk/Vec )
+
 (s/defn ->sorted-set-avl :- SortedSetType
   "Converts a set into a lexically-sorted set"
   ([] (->sorted-set-avl #{}))
@@ -49,6 +52,10 @@
    (into (avl/sorted-set-by lex/compare-lex) some-set)))
 ; #todo add (->sorted-map <map>)        => (into (sorted-map) <map>)
 ; #todo add (->sorted-vec <sequential>) => (vec (sort <vec>))
+
+(s/defn empty-index
+  "Returns a new, empty index"
+  [] (->sorted-set-avl))
 
 (s/defn bound-lower :- tsk/Vec
   "Given a lexical value as a vector such as [1 :a], returns a lower bound like [1]"
@@ -98,5 +105,24 @@
     ;(s/validate SortedSetType (grab :matches result))
     ;(s/validate SortedSetType (grab :larger result))
     result))
+
+; #todo add-entry & remove-entry instead of conj/disj  ???
+(s/defn add-entry
+  "Add an entry to the index, returning the modified index"
+  [index :- SortedSetType
+   entry :- tsk/Vec ]
+  (conj index entry))
+
+(s/defn remove-entry
+  "Remove an entry to the index, returning the modified index. Throws if entry not found in index."
+  [index :- SortedSetType
+   entry :- tsk/Vec ]
+  (when-not (contains? index entry)
+    (throw (ex-info "entry not found in index" (vals->map entry))) )
+  (disj index entry))
+
+
+
+
 
 

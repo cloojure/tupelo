@@ -9,7 +9,7 @@
   #?(:clj (:refer-clojure :exclude [load ->VecNode]))
   #?(:clj (:require
             [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-            [tupelo.core :as t :refer [spy spyx spyxx]]
+            [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty ]]
             [tupelo.data :as td]
             [tupelo.data.index :as tdi]
             [tupelo.lexical :as lex]
@@ -31,6 +31,19 @@
 ; #todo fix dotest-focus so it works again!
 
 #?(:cljs (enable-console-print!))
+
+(dotest
+  (let [index   (it-> (tdi/->sorted-set-avl)
+                  (tdi/add-entry it [2 :b])
+                  (tdi/add-entry it [2 :c])
+                  (tdi/add-entry it [2 :a])
+                  (tdi/add-entry it [1]))
+        index-2 (it-> index
+                  (tdi/remove-entry it [2 :c])
+                  (tdi/remove-entry it [1]))]
+    (is= (vec index) [[1] [2 :a] [2 :b] [2 :c]])
+    (is= (vec index-2) [[2 :a] [2 :b]])
+    (throws? (tdi/remove-entry index-2 [2 :c]))))
 
 (dotest
   (is= (vec (avl/sorted-set-by lex/compare-lex [1 :a] [1] [2]))

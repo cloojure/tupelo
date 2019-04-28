@@ -43,30 +43,30 @@
 
   (td/with-tdb (td/new-tdb)
     (td/hid-count-reset)
-    (is= @td/*tdb* {:idx-hid {}, :idx-leaf #{}, :idx-map-entry #{} :idx-array-entry #{}})
+    (is= @td/*tdb* {:idx-hid {}, :idx-leaf #{}, :idx-map-entry-vk #{} :idx-array-entry #{}})
     (let [edn-val  5
           root-hid (td/add-edn edn-val)]
       (is= (unlazy @td/*tdb*)
-        {:idx-hid         {1001 {:-leaf-val 5, :-parent-hid nil}},
-         :idx-leaf        #{[5 1001]},
-         :idx-map-entry   #{}
-         :idx-array-entry #{}})
+        {:idx-hid          {1001 {:-leaf-val 5, :-parent-hid nil}},
+         :idx-leaf         #{[5 1001]},
+         :idx-map-entry-vk #{}
+         :idx-array-entry  #{}})
       (is= edn-val (td/hid->edn root-hid)))
     (let [edn-val  {:a 1}
           root-hid (td/add-edn edn-val)]
       (is= (unlazy @td/*tdb*) ; coerce all from record to plain map for comparison
-        {:idx-hid         {1001 {:-leaf-val 5, :-parent-hid nil},
+        {:idx-hid          {1001 {:-leaf-val 5, :-parent-hid nil},
                            1002 {:-mn-data {:a 1003}, :-parent-hid nil},
                            1003 {:-me-val-hid 1004, :-me-key :a, :-parent-hid 1002},
                            1004 {:-leaf-val 1, :-parent-hid 1003}},
-         :idx-leaf        #{[1 1004] [5 1001]},
-         :idx-map-entry   #{[1 :a 1003]}
-         :idx-array-entry #{}})
+         :idx-leaf         #{[1 1004] [5 1001]},
+         :idx-map-entry-vk #{[1 :a 1003]}
+         :idx-array-entry  #{}})
       (is= edn-val (td/hid->edn root-hid)))
     (let [edn-val  [7 8]
           root-hid (td/add-edn edn-val)]
       (is= (unlazy @td/*tdb*) ; coerce all from record to plain map for comparison
-        {:idx-hid         {1001 {:-leaf-val 5, :-parent-hid nil},
+        {:idx-hid          {1001 {:-leaf-val 5, :-parent-hid nil},
                            1002 {:-mn-data {:a 1003}, :-parent-hid nil},
                            1003 {:-me-val-hid 1004, :-me-key :a, :-parent-hid 1002},
                            1004 {:-leaf-val 1, :-parent-hid 1003},
@@ -75,23 +75,23 @@
                            1007 {:-leaf-val 7, :-parent-hid 1006},
                            1008 {:-ae-elem-hid 1009, :-ae-idx 1, :-parent-hid 1005},
                            1009 {:-leaf-val 8, :-parent-hid 1008}},
-         :idx-leaf        #{[1 1004] [5 1001] [7 1007] [8 1009]},
-         :idx-map-entry   #{[1 :a 1003]}
-         :idx-array-entry #{[7 0 1006] [8 1 1008]}})
+         :idx-leaf         #{[1 1004] [5 1001] [7 1007] [8 1009]},
+         :idx-map-entry-vk #{[1 :a 1003]}
+         :idx-array-entry  #{[7 0 1006] [8 1 1008]}})
       (is= edn-val (td/hid->edn root-hid))) )
 
   (td/with-tdb (td/new-tdb)
     (td/hid-count-reset)
-    (is= @td/*tdb* {:idx-hid {}, :idx-leaf #{}, :idx-map-entry #{} :idx-array-entry #{}})
+    (is= @td/*tdb* {:idx-hid {}, :idx-leaf #{}, :idx-map-entry-vk #{} :idx-array-entry #{}})
     (let [edn-val  #{3 4}
           root-hid (td/add-edn edn-val)]
       (is= (unlazy @td/*tdb*) ; coerce all from record to plain map for comparison
-        {:idx-array-entry #{},
-         :idx-hid         {1001 {:-parent-hid nil, :-sn-data {3 1003, 4 1002}},
+        {:idx-array-entry  #{},
+         :idx-hid          {1001 {:-parent-hid nil, :-sn-data {3 1003, 4 1002}},
                            1002 {:-leaf-val 4, :-parent-hid 1001},
                            1003 {:-leaf-val 3, :-parent-hid 1001}},
-         :idx-leaf        #{[3 1003] [4 1002]},
-         :idx-map-entry   #{}} )
+         :idx-leaf         #{[3 1003] [4 1002]},
+         :idx-map-entry-vk #{}} )
       (is= edn-val (td/hid->edn root-hid)) ) )
 
   (td/with-tdb (td/new-tdb)
@@ -153,6 +153,7 @@
 
 (dotest
   (td/with-tdb (td/new-tdb)
+    (td/hid-count-reset)
     (let [data     {:a [{:b 2}
                         {:c 3}
                         {:d 4}]
@@ -190,6 +191,7 @@
 
 (dotest
   (td/with-tdb (td/new-tdb)
+    (td/hid-count-reset)
     (let [data         [{:a 1 :b :first}
                         {:a 2 :b :second}
                         {:a 3 :b :third}
@@ -212,6 +214,7 @@
       (is= {:a 1 :b 101} (td/hid->edn (only (td/index-find-mapentry (map-entry :b 101)))))
       (is= {:a 2 :b :second} (td/hid->edn (only (td/index-find-mapentry (map-entry :b :second)))))
       (is= {:a 3 :b :third} (td/hid->edn (only (td/index-find-mapentry (map-entry :a 3)))))) )
+
   (td/with-tdb (td/new-tdb)
     (let [data      [{:a 1 :x :first}
                      {:a 2 :x :second}
@@ -226,24 +229,6 @@
           edn-match (td/hid->edn hid-match)]
       (is= edn-match {:a 1 :x :first})))
 
-  (td/with-tdb (td/new-tdb)
-    (let [data     [{:a 1 :b 1 :c 1}
-                    {:a 1 :b 2 :c 2}
-                    {:a 1 :b 1 :c 3}
-                    {:a 2 :b 2 :c 4}
-                    {:a 2 :b 1 :c 5}
-                    {:a 2 :b 2 :c 6}]
-          root-hid (td/add-edn data)]
-      (let [hid (t/only (td/index-find-submap {:a 1 :b 2}))
-            edn (td/hid->edn hid)]
-        (is= edn {:a 1 :b 2 :c 2}))
-      (let [hids (td/index-find-submap {:a 1 :b 1})
-            edns (mapv td/hid->edn hids)]
-        (is-set= edns [{:a 1, :b 1, :c 1}
-                       {:a 1, :b 1, :c 3}]))))
-
-
-  (newline) (println "===================================================================================================")
   (td/with-tdb (td/new-tdb)
     (let [data     [{:a 1 :b 1 :c 1}
                     {:a 1 :b 2 :c 2}
@@ -274,9 +259,43 @@
       (let [edns (mapv td/hid->edn
                    (td/index-find-mapentry (map-entry :c 6)))]
         (is= edns [{:a 2, :b 2, :c 6}]))))
-  (newline)
-  (println "---------------------------------------------------------------------------------------------------")
 
+  (td/with-tdb (td/new-tdb)
+    (let [data     [{:a 1 :b 1 :c 1}
+                    {:a 1 :b 2 :c 2}
+                    {:a 1 :b 1 :c 3}
+                    {:a 2 :b 2 :c 4}
+                    {:a 2 :b 1 :c 5}
+                    {:a 2 :b 2 :c 6}]
+          root-hid (td/add-edn data)]
+      (let [hid (t/only (td/index-find-submap {:a 1 :b 2}))
+            edn (td/hid->edn hid)]
+        (is= edn {:a 1 :b 2 :c 2}))
+      (let [hids (td/index-find-submap {:a 1 :b 1})
+            edns (mapv td/hid->edn hids)]
+        (is-set= edns [{:a 1, :b 1, :c 1}
+                       {:a 1, :b 1, :c 3}])))) )
+
+
+(dotest   ; -focus
+  (newline) (println "===================================================================================================")
+  (td/with-tdb (td/new-tdb)
+    (td/hid-count-reset)
+    (let [data     {:a [{:id 2 :color :red}
+                        {:id 3 :color :yellow}
+                        {:id 4 :color :blue}]
+                    :e [{:id 2 :flower :rose}
+                        {:id 3 :flower :daisy}
+                        {:id 4 :flower :tulip}]
+                    }
+          root-hid (td/add-edn data)
+          hid-2    (td/index-find-leaf 2)
+          ]
+      (spyx-pretty (unlazy @td/*tdb*))
+      )
+    )
+
+  (newline) (println "---------------------------------------------------------------------------------------------------")
   )
 
 

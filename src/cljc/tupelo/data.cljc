@@ -12,14 +12,14 @@
                                        forv vals->map fetch-in let-spy
                                        ]]
             [tupelo.schema :as tsk]
-            [tupelo.data.index :as tdi]
+            [tupelo.data.index :as index]
             [clojure.set :as set]
             [schema.core :as s]
             ))
   #?(:cljs (:require
              [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]] ; #todo :include-macros true
              [tupelo.schema :as tsk]
-             [tupelo.data.index :as tdi]
+             [tupelo.data.index :as index]
              [clojure.set :as set]
              [schema.core :as s]
              ))
@@ -195,10 +195,11 @@
 (defn new-tdb
   "Returns a new, empty db."
   []
-  {:idx-hid (sorted-map)
-   :idx-leaf (tdi/->sorted-set-avl)
-   :idx-map-entry (tdi/->sorted-set-avl)
-   :idx-array-entry (tdi/->sorted-set-avl) })
+  {:idx-hid          (sorted-map)
+   :idx-leaf         (index/empty-index)
+   :idx-map-entry-vk (index/empty-index)
+   :idx-array-entry  (index/empty-index)
+   })
 
 (s/defn hid->node :- DataNode
   "Returns the node corresponding to an HID"
@@ -258,7 +259,7 @@
   (swap! *tdb* (fn [tdb-map]
                  (update tdb-map :idx-leaf ; #todo make verify like fetch-in
                    (fn [index-avl-set]
-                     (conj index-avl-set [leaf-val hid-val])))))
+                     (index/add-entry index-avl-set [leaf-val hid-val])))))
   nil)
 
 (s/defn update-index-mapentry!
@@ -266,9 +267,9 @@
    me-key
    me-hid :- HID]
   (swap! *tdb* (fn [tdb-map]
-                 (update tdb-map :idx-map-entry ; #todo make verify like fetch-in
+                 (update tdb-map :idx-map-entry-vk ; #todo make verify like fetch-in
                    (fn [index-avl-set]
-                     (conj index-avl-set [me-val me-key me-hid])))))
+                     (index/add-entry index-avl-set [me-val me-key me-hid])))))
   nil)
 
 (s/defn update-index-arrayentry!
@@ -278,7 +279,7 @@
   (swap! *tdb* (fn [tdb-map]
                  (update tdb-map :idx-array-entry ; #todo make verify like fetch-in
                    (fn [index-avl-set]
-                     (conj index-avl-set [ae-elem ae-idx ae-hid])))))
+                     (index/add-entry index-avl-set [ae-elem ae-idx ae-hid])))))
   nil)
 
 (def ^:no-doc hid-count-base 1000)
@@ -368,14 +369,15 @@
   "Returns the parent HID of the node at this HID"
   [hid :- HID]
   (t/cond-it-> (parent-hid (hid->node hid))
-    (or (instance? MapEntryNode (hid->node it))
+    (or
+      (instance? MapEntryNode (hid->node it))
       (instance? ArrayEntryNode (hid->node it))) (parent-hid (hid->node it))))
 
 (s/defn ^:private ^:no-doc index-find-val-impl ; #todo inline below
   [target :- tsk/Vec]
   (let [idx-avl-set      (t/validate set? (grab :idx-leaf (deref *tdb*)))
         matching-entries (grab :matches
-                           (tdi/split-key-prefix target idx-avl-set))]
+                           (index/split-key-prefix target idx-avl-set))]
     matching-entries))
 
 (s/defn index-find-leaf
@@ -384,21 +386,21 @@
         hids        (mapv t/xsecond idx-entries)]
     hids))
 
-(s/defn index-find-mapentry
+(s/defn index-find-mapentry :- [HID]
   [tgt-me :- tsk/MapEntry]
   (let [[me-key me-val] (mapentry->kv tgt-me)
         tgt-prefix       [me-val me-key]
-        idx-avl-set      (t/validate set? (fetch-in (deref *tdb*) [:idx-map-entry]))
+        idx-avl-set      (t/validate set? (fetch-in (deref *tdb*) [:idx-map-entry-vk]))
         matching-entries (grab :matches
-                           (tdi/split-key-prefix tgt-prefix idx-avl-set))
-        aen-hids         (mapv last matching-entries)
-        an-hids          (mapv hid->parent-hid aen-hids)]
-    an-hids))
+                           (index/split-key-prefix tgt-prefix idx-avl-set))
+        men-hids         (mapv last matching-entries)
+        mn-hids          (mapv hid->parent-hid men-hids)]
+    mn-hids))
 
 (s/defn index-find-submap
   [target-submap :- tsk/KeyMap]
   (let [map-hids (apply set/intersection
-                   (t/forv [tgt-me target-submap]
+                   (forv [tgt-me target-submap]
                      (set (index-find-mapentry tgt-me))))]
     map-hids))
 
