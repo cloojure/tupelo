@@ -9,7 +9,7 @@
   (:use tupelo.core) ; #todo remove for cljs
   #?(:clj (:require
             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab glue map-entry indexed
-                                       forv vals->map fetch-in
+                                       forv vals->map fetch-in let-spy
                                        ]]
             [tupelo.schema :as tsk]
             [tupelo.data.index :as tdi]
@@ -49,8 +49,6 @@
 (def HID
   "The Plumatic Schema type name for a pointer to a tdb node (abbrev. for Hex ID)"
   s/Int)
-
-(def IndexId (s/enum :idx-num :idx-str :idx-kw))
 
 (def HidRootSpec
   "The Plumatic Schema type name for the values accepted as starting points (roots) for a subtree path search."
@@ -95,8 +93,10 @@
         (t/forv [[-key- men-hid] (t/validate map? -mn-data)]
           (edn (hid->node men-hid)))))
   INavNode
-    (nav [this key]
-      (t/grab key (t/validate map? -mn-data))))
+    (nav [this key-arg]
+      (let [hid-men (t/grab key-arg -mn-data)
+            hid-val (grab :-me-val-hid (hid->node hid-men))]
+        hid-val)))
 
 (s/defrecord MapEntryNode
   [-parent-hid :- HID
@@ -126,10 +126,12 @@
       (t/forv [[-idx- aen-hid] (t/validate map? -an-data)]
         (edn (hid->node aen-hid))))
   INavNode
-    (nav [this key]
-      (if (= :* key)
-        (content this)
-        (get (t/validate map? -an-data) key))))
+    (nav [this key-arg]
+      (if (= :* key-arg)
+        (vals (t/->sorted-map -an-data))
+        (let [hid-aen (t/grab key-arg -an-data)
+              hid-val (grab :-ae-elem-hid (hid->node hid-aen))]
+          hid-val) )))
 
 (s/defrecord ArrayEntryNode
   [-parent-hid :- HID
@@ -201,7 +203,7 @@
 (s/defn hid->node :- DataNode
   "Returns the node corresponding to an HID"
   [hid :- HID]
-  (grab hid (grab :idx-hid (deref *tdb*))))
+  (fetch-in (deref *tdb*) [:idx-hid hid]))
 
 (s/defn set-node! :- HID
   "Unconditionally sets the value of a node in the tdb"
@@ -357,44 +359,41 @@
       nav-result
       (if (hid? nav-result)
         (hid-nav nav-result path-rest)
-        (forv [hid nav-result]
-          (hid-nav hid path-rest))))))
+        (do
+          (spy :hid-nav--else-361)
+          (forv [hid nav-result]
+            (hid-nav hid path-rest)))))))
 
 (s/defn hid->parent-hid :- (s/maybe HID)
   "Returns the parent HID of the node at this HID"
   [hid :- HID]
-  (parent-hid (hid->node hid)))
+  (t/cond-it-> (parent-hid (hid->node hid))
+    (or (instance? MapEntryNode (hid->node it))
+      (instance? ArrayEntryNode (hid->node it))) (parent-hid (hid->node it))))
 
 (s/defn ^:private ^:no-doc index-find-val-impl ; #todo inline below
-  [idx-id :- IndexId
-   target :- tsk/Vec]
-  (let [idx-avl-set      (t/validate set? (grab idx-id (deref *tdb*)))
+  [target :- tsk/Vec]
+  (let [idx-avl-set      (t/validate set? (grab :idx-leaf (deref *tdb*)))
         matching-entries (grab :matches
                            (tdi/split-key-prefix target idx-avl-set))]
     matching-entries))
 
-(s/defn index-find-val
+(s/defn index-find-leaf
   [target :- LeafType]
-  (let [idx-id      (cond
-                      (number? target) :idx-num
-                      (string? target) :idx-str
-                      (keyword? target) :idx-kw
-                      :else (throw (ex-info "invalid index target" (vals->map target))))
-        idx-entries (index-find-val-impl idx-id [target])
+  (let [idx-entries (index-find-val-impl [target])
         hids        (mapv t/xsecond idx-entries)]
     hids))
 
 (s/defn index-find-mapentry
   [tgt-me :- tsk/MapEntry]
-  (let [  ; me-type-kw       (mapentry->idx-type-kw tgt-me)
-        [me-key me-val] (mapentry->kv tgt-me)
+  (let [[me-key me-val] (mapentry->kv tgt-me)
         tgt-prefix       [me-val me-key]
         idx-avl-set      (t/validate set? (fetch-in (deref *tdb*) [:idx-map-entry]))
         matching-entries (grab :matches
                            (tdi/split-key-prefix tgt-prefix idx-avl-set))
-        hids             (mapv last matching-entries)]
-    hids)
-  )
+        aen-hids         (mapv last matching-entries)
+        an-hids          (mapv hid->parent-hid aen-hids)]
+    an-hids))
 
 (s/defn index-find-submap
   [target-submap :- tsk/KeyMap]
