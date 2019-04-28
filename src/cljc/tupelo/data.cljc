@@ -81,6 +81,7 @@
   (ae-elem-hid [this]))
 
 ;-----------------------------------------------------------------------------
+; #todo add validation check that MapNode keys match all MapEntryNode keys
 (s/defrecord MapNode ; Represents ths content of a Clojure map.
   ; a map from key to hid
   [-parent-hid :- (s/maybe HID)
@@ -91,22 +92,28 @@
     (content [this] (t/validate map? -mn-data))
     (edn [this]
       (apply t/glue
-        (t/forv [[k v-hid] (t/validate map? -mn-data)]
-          {k (edn (hid->node v-hid))})))
+        (t/forv [[-key- men-hid] (t/validate map? -mn-data)]
+          (edn (hid->node men-hid)))))
   INavNode
     (nav [this key]
       (t/grab key (t/validate map? -mn-data))))
 
 (s/defrecord MapEntryNode
   [-parent-hid :- HID
-   -me-key :- s/Any
-   -me-hid :- HID]
+   -me-key     :- s/Any
+   -me-val-hid :- HID]
   IParentable
     (parent-hid [this] (s/validate HID -parent-hid))
+  IDataNode
+  (content [this]
+    (t/vals->map -parent-hid -me-key -me-val-hid)) ; #todo remove this?
+  (edn [this]
+    (t/map-entry -me-key (edn (hid->node -me-val-hid))))
   IMapEntryNode
     (me-key [this]  -me-key)
-    (me-val-hid [this]  -me-hid) )
+    (me-val-hid [this]  -me-val-hid) )
 
+; #todo add validation check that ArrayNode keys match all ArrayEntryNode keys
 (s/defrecord ArrayNode ; Represents ths content of a Clojure vector (any sequential type coerced into a vector).
   ; stored is a vector of hids
   [-parent-hid :- (s/maybe HID)
@@ -116,8 +123,8 @@
   IDataNode
     (content [this] (t/validate map? -an-data))
     (edn [this]
-      (t/forv [elem-hid (t/validate vector? -an-data)]
-        (edn (hid->node elem-hid))))
+      (t/forv [[-idx- aen-hid] (t/validate map? -an-data)]
+        (edn (hid->node aen-hid))))
   INavNode
     (nav [this key]
       (if (= :* key)
@@ -127,12 +134,17 @@
 (s/defrecord ArrayEntryNode
   [-parent-hid :- HID
    -ae-idx :- s/Any
-   -ae-hid :- HID]
+   -ae-elem-hid :- HID]
   IParentable
     (parent-hid [this] (s/validate HID -parent-hid))
+  IDataNode
+  (content [this]
+    (t/vals->map -parent-hid -ae-idx -ae-elem-hid)) ; #todo remove this?
+  (edn [this]
+     (edn (hid->node -ae-elem-hid)))
   IArrayEntryNode
     (ae-idx [this]  -ae-idx)
-    (ae-elem-hid [this]  -ae-hid))
+    (ae-elem-hid [this]  -ae-elem-hid))
 
 ; #todo need to enforce set uniqueness under mutation
 (s/defrecord SetNode ; Represents ths content of a Clojure set
@@ -185,7 +197,8 @@
   []
   {:idx-hid (sorted-map)
    :idx-leaf (tdi/->sorted-set-avl)
-   :idx-me (tdi/->sorted-set-avl) })
+   :idx-map-entry (tdi/->sorted-set-avl)
+   :idx-array-entry (tdi/->sorted-set-avl) })
 
 (s/defn hid->node :- DataNode
   "Returns the node corresponding to an HID"
@@ -253,9 +266,19 @@
    me-key
    me-hid :- HID]
   (swap! *tdb* (fn [tdb-map]
-                 (update tdb-map :idx-me ; #todo make verify like fetch-in
+                 (update tdb-map :idx-map-entry ; #todo make verify like fetch-in
                    (fn [index-avl-set]
                      (conj index-avl-set [me-val me-key me-hid])))))
+  nil)
+
+(s/defn update-index-arrayentry!
+  [ae-elem :- LeafType
+   ae-idx
+   ae-hid :- HID]
+  (swap! *tdb* (fn [tdb-map]
+                 (update tdb-map :idx-array-entry ; #todo make verify like fetch-in
+                   (fn [index-avl-set]
+                     (conj index-avl-set [ae-elem ae-idx ae-hid])))))
   nil)
 
 (def ^:no-doc hid-count-base 1000)
@@ -286,14 +309,13 @@
                       (set-node! hid-map-node
                         (->MapNode hid-parent
                           (apply glue
-                            (forv [[k v] edn-val]
+                            (forv [[<key> <val>] edn-val]
                               (let [hid-me-node (new-hid)
-                                    hid-leaf    (add-edn hid-me-node v)]
-                                (when (leaf-val? v)
-                                  (update-index-mapentry! v k hid-me-node))
-                                (set-node! hid-me-node (->MapEntryNode hid-map-node k hid-leaf))
-                                (map-entry k hid-me-node))))))
-                      hid-map-node)
+                                    hid-leaf    (add-edn hid-me-node <val>)]
+                                (when (leaf-val? <val>)
+                                  (update-index-mapentry! <val> <key> hid-me-node))
+                                (set-node! hid-me-node (->MapEntryNode hid-map-node <key> hid-leaf))
+                                (map-entry <key> hid-me-node)))))))
 
      (array-like? edn-val) (let [hid-array-node (new-hid)]
                              (set-node! hid-array-node
@@ -302,9 +324,10 @@
                                    (forv [[idx elem] (indexed edn-val)]
                                      (let [hid-ae-node (new-hid)
                                            hid-leaf    (add-edn hid-ae-node elem)]
+                                       (when (leaf-val? elem)
+                                         (update-index-arrayentry! elem idx hid-ae-node))
                                        (set-node! hid-ae-node (->ArrayEntryNode hid-array-node idx hid-leaf))
-                                       (map-entry idx hid-ae-node))))))
-                             hid-array-node)
+                                       (map-entry idx hid-ae-node)))))))
 
      ;(set? edn-val) (let [hid-mapnode (new-hid)]
      ;                 (set-node! hid-this
@@ -316,8 +339,7 @@
 
      (leaf-val? edn-val) (let [hid-leafnode (new-hid)]
                            (update-index-leaf! edn-val hid-leafnode)
-                           (set-node! hid-leafnode (->LeafNode hid-parent edn-val))
-                           hid-leafnode)
+                           (set-node! hid-leafnode (->LeafNode hid-parent edn-val)))
 
      :else (throw (ex-info "unknown value found" (vals->map edn-val))))))
 
@@ -369,7 +391,7 @@
   (let [  ; me-type-kw       (mapentry->idx-type-kw tgt-me)
         [me-key me-val] (mapentry->kv tgt-me)
         tgt-prefix       [me-val me-key]
-        idx-avl-set      (t/validate set? (fetch-in (deref *tdb*) [:idx-me]))
+        idx-avl-set      (t/validate set? (fetch-in (deref *tdb*) [:idx-map-entry]))
         matching-entries (grab :matches
                            (tdi/split-key-prefix tgt-prefix idx-avl-set))
         hids             (mapv last matching-entries)]
