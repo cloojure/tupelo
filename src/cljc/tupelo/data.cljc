@@ -195,10 +195,10 @@
 (defn new-tdb
   "Returns a new, empty db."
   []
-  {:idx-hid          (sorted-map)
-   :idx-leaf         (index/empty-index)
-   :idx-map-entry-vk (index/empty-index)
-   :idx-array-entry  (index/empty-index)
+  {:idx-hid            (sorted-map)
+   :idx-leaf           (index/empty-index)
+   :idx-map-entry-vk   (index/empty-index)
+   :idx-array-entry-ei (index/empty-index)
    })
 
 (s/defn hid->node :- DataNode
@@ -277,7 +277,7 @@
    ae-idx
    ae-hid :- HID]
   (swap! *tdb* (fn [tdb-map]
-                 (update tdb-map :idx-array-entry ; #todo make verify like fetch-in
+                 (update tdb-map :idx-array-entry-ei ; #todo make verify like fetch-in
                    (fn [index-avl-set]
                      (index/add-entry index-avl-set [ae-elem ae-idx ae-hid])))))
   nil)
