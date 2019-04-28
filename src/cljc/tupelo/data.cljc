@@ -127,11 +127,11 @@
         (edn (hid->node aen-hid))))
   INavNode
     (nav [this key-arg]
-      (if (= :* key-arg)
-        (vals (t/->sorted-map -an-data))
-        (let [hid-aen (t/grab key-arg -an-data)
-              hid-val (grab :-ae-elem-hid (hid->node hid-aen))]
-          hid-val) )))
+      (let [aen-hids  (if (= :* key-arg)
+                        (vals (t/->sorted-map -an-data))
+                        (vector (t/grab key-arg -an-data)))
+            elem-hids (mapv :-ae-elem-hid (mapv hid->node aen-hids))]
+        elem-hids)))
 
 (s/defrecord ArrayEntryNode
   [-parent-hid :- HID
@@ -140,10 +140,10 @@
   IParentable
     (parent-hid [this] (s/validate HID -parent-hid))
   IDataNode
-  (content [this]
-    (t/vals->map -parent-hid -ae-idx -ae-elem-hid)) ; #todo remove this?
-  (edn [this]
-     (edn (hid->node -ae-elem-hid)))
+    (content [this]
+      (t/vals->map -parent-hid -ae-idx -ae-elem-hid)) ; #todo remove this?
+    (edn [this]
+       (edn (hid->node -ae-elem-hid)))
   IArrayEntryNode
     (ae-idx [this]  -ae-idx)
     (ae-elem-hid [this]  -ae-elem-hid))
@@ -362,16 +362,15 @@
 (s/defn hid-nav :- s/Any
   [hid :- HID
    path :- tsk/Vec]
-  (let [node       (hid->node hid)
+  (let-spy [node       (hid->node hid)
         key        (t/xfirst path)
         path-rest  (t/xrest path)
         nav-result (nav node key)]
     (if (empty? path-rest)
       nav-result
-      (if (hid? nav-result)
-        (hid-nav nav-result path-rest)
-        (do
-          (spy :hid-nav--else-361)
+      (do
+        (spy :hid-nav--else-361)
+        (apply glue
           (forv [hid nav-result]
             (hid-nav hid path-rest)))))))
 

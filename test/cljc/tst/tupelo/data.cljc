@@ -168,7 +168,7 @@
           {:-an-data {0 1012, 1 1014, 2 1016}, :-parent-hid 1010})
         (is= (td/hid->edn hid-2) [5 6 7] )) )))
 
-(dotest-focus
+(dotest
   (td/with-tdb (td/new-tdb)
     (td/hid-count-reset)
     (let [edn-val  {:aa [1 2 3]
@@ -278,7 +278,7 @@
       (is= edn-0 (td/hid->edn root-hid)))))
 
 
-(dotest
+(dotest-focus
   (td/with-tdb (td/new-tdb)
     (td/hid-count-reset)
     (let [data     {:a [{:b 2}
@@ -289,6 +289,8 @@
                     :h "hotel"
                     :i 1}
           root-hid (td/add-edn data)]
+      (spyx-pretty (td/hid-nav root-hid [:a])) ; #todo #wip
+
       (is= (td/hid->edn (td/hid-nav root-hid [:a])) [{:b 2} {:c 3} {:d 4}])
       (is= (td/hid->edn (td/hid-nav root-hid [:a 0])) {:b 2})
       (is= (td/hid->edn (td/hid-nav root-hid [:a 2])) {:d 4})
@@ -403,22 +405,67 @@
         (is-set= edns [{:a 1, :b 1, :c 1}
                        {:a 1, :b 1, :c 3}])))) )
 
-
-(dotest   ; -focus
-  (newline) (println "===================================================================================================")
+(dotest
   (td/with-tdb (td/new-tdb)
     (td/hid-count-reset)
     (let [data     {:a [{:id 2 :color :red}
                         {:id 3 :color :yellow}
-                        {:id 4 :color :blue}]
-                    :e [{:id 2 :flower :rose}
-                        {:id 3 :flower :daisy}
-                        {:id 4 :flower :tulip}]
+                        {:id 4 :color :blue}] }
+          root-hid (td/add-edn data) ]
+      (is= (unlazy @td/*tdb*)
+        {:idx-array-entry-ei #{},
+         :idx-array-entry-ie #{},
+         :idx-hid            {1001 {:-mn-data {:a 1002}, :-parent-hid nil},
+                              1002 {:-me-key :a, :-me-val-hid 1003, :-parent-hid 1001},
+                              1003 {:-an-data {0 1004, 1 1010, 2 1016}, :-parent-hid 1002},
+                              1004 {:-ae-elem-hid 1005, :-ae-idx 0, :-parent-hid 1003},
+                              1005 {:-mn-data {:color 1008, :id 1006}, :-parent-hid 1004},
+                              1006 {:-me-key :id, :-me-val-hid 1007, :-parent-hid 1005},
+                              1007 {:-leaf-val 2, :-parent-hid 1006},
+                              1008 {:-me-key :color, :-me-val-hid 1009, :-parent-hid 1005},
+                              1009 {:-leaf-val :red, :-parent-hid 1008},
+                              1010 {:-ae-elem-hid 1011, :-ae-idx 1, :-parent-hid 1003},
+                              1011 {:-mn-data {:color 1014, :id 1012}, :-parent-hid 1010},
+                              1012 {:-me-key :id, :-me-val-hid 1013, :-parent-hid 1011},
+                              1013 {:-leaf-val 3, :-parent-hid 1012},
+                              1014 {:-me-key :color, :-me-val-hid 1015, :-parent-hid 1011},
+                              1015 {:-leaf-val :yellow, :-parent-hid 1014},
+                              1016 {:-ae-elem-hid 1017, :-ae-idx 2, :-parent-hid 1003},
+                              1017 {:-mn-data {:color 1020, :id 1018}, :-parent-hid 1016},
+                              1018 {:-me-key :id, :-me-val-hid 1019, :-parent-hid 1017},
+                              1019 {:-leaf-val 4, :-parent-hid 1018},
+                              1020 {:-me-key :color, :-me-val-hid 1021, :-parent-hid 1017},
+                              1021 {:-leaf-val :blue, :-parent-hid 1020}},
+         :idx-leaf           #{[:blue 1021] [:red 1009] [:yellow 1015] [2 1007] [3 1013] [4 1019]},
+         :idx-map-entry-kv   #{[:color :blue 1020] [:color :red 1008] [:color :yellow 1014]
+                               [:id 2 1006] [:id 3 1012] [:id 4 1018]},
+         :idx-map-entry-vk   #{[:blue :color 1020] [:red :color 1008] [:yellow :color 1014]
+                               [2 :id 1006] [3 :id 1012] [4 :id 1018]}})
+      (is= (mapv td/hid->edn (td/hid-nav root-hid [:a :*]))
+        [{:id 2, :color :red}
+         {:id 3, :color :yellow}
+         {:id 4, :color :blue}] )
+      (is= (mapv td/hid->edn (td/hid-nav root-hid [:a :* :id])) [2 3 4] ) ) ) )
+
+(dotest-focus
+  (newline) (println "===================================================================================================")
+  (td/with-tdb (td/new-tdb)
+    (td/hid-count-reset)
+    (let [data     {:a [{:id [2 22] :color :red}
+                        {:id [3 33] :color :yellow}
+                        {:id [4 44] :color :blue}]
+                    ;:e [{:id 2 :flower :rose}
+                    ;    {:id 3 :flower :daisy}
+                    ;    {:id 4 :flower :tulip}]
                     }
-          root-hid (td/add-edn data)
-          hid-2    (td/index-find-leaf 2)
-          ]
-     ;(spyx-pretty (unlazy @td/*tdb*))
+          root-hid (td/add-edn data) ]
+      (newline)
+       (spyx-pretty (mapv td/hid->edn (td/hid-nav root-hid [:a :*])))
+      (newline)
+      (spyx-pretty (mapv td/hid->edn (td/hid-nav root-hid [:a :* :id])))
+      (newline)
+      (spyx-pretty (mapv td/hid->edn (td/hid-nav root-hid [:a :* :id 1])))
+
       )
     )
 
