@@ -9,7 +9,7 @@
   (:use tupelo.core) ; #todo remove for cljs
   #?(:clj (:require
             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab glue map-entry indexed
-                                       forv vals->map fetch-in let-spy
+                                       forv vals->map fetch-in let-spy xlast xfirst
                                        ]]
             [tupelo.schema :as tsk]
             [tupelo.data.index :as index]
@@ -198,8 +198,10 @@
   {:idx-hid            (sorted-map)
    :idx-leaf           (index/empty-index)
    :idx-map-entry-vk   (index/empty-index)
+   :idx-map-entry-kv   (index/empty-index)
    :idx-array-entry-ei (index/empty-index)
-   })
+   :idx-array-entry-ie (index/empty-index) ; #todo #wip
+  })
 
 (s/defn hid->node :- DataNode
   "Returns the node corresponding to an HID"
@@ -264,22 +266,30 @@
 
 (s/defn update-index-mapentry!
   [me-val :- LeafType
-   me-key
+   me-key :- LeafType
    me-hid :- HID]
   (swap! *tdb* (fn [tdb-map]
-                 (update tdb-map :idx-map-entry-vk ; #todo make verify like fetch-in
-                   (fn [index-avl-set]
-                     (index/add-entry index-avl-set [me-val me-key me-hid])))))
+                 (it-> tdb-map
+                   (update it :idx-map-entry-vk ; #todo make verify like fetch-in
+                     (fn [index-avl-set]
+                       (index/add-entry index-avl-set [me-val me-key me-hid])))
+                   (update it :idx-map-entry-kv ; #todo make verify like fetch-in
+                     (fn [index-avl-set]
+                       (index/add-entry index-avl-set [me-key me-val me-hid]))))))
   nil)
 
 (s/defn update-index-arrayentry!
   [ae-elem :- LeafType
-   ae-idx
+   ae-idx :- s/Int
    ae-hid :- HID]
   (swap! *tdb* (fn [tdb-map]
-                 (update tdb-map :idx-array-entry-ei ; #todo make verify like fetch-in
-                   (fn [index-avl-set]
-                     (index/add-entry index-avl-set [ae-elem ae-idx ae-hid])))))
+                 (it-> tdb-map
+                   (update it :idx-array-entry-ei ; #todo make verify like fetch-in
+                     (fn [index-avl-set]
+                       (index/add-entry index-avl-set [ae-elem ae-idx ae-hid])))
+                   (update it :idx-array-entry-ie ; #todo make verify like fetch-in
+                     (fn [index-avl-set]
+                       (index/add-entry index-avl-set [ae-idx ae-elem ae-hid]))))))
   nil)
 
 (def ^:no-doc hid-count-base 1000)
@@ -388,12 +398,12 @@
 
 (s/defn index-find-mapentry :- [HID]
   [tgt-me :- tsk/MapEntry]
-  (let [[me-key me-val] (mapentry->kv tgt-me)
-        tgt-prefix       [me-val me-key]
+  (let [[tgt-key tgt-val] (mapentry->kv tgt-me)
+        tgt-prefix       [tgt-val tgt-key]
         idx-avl-set      (t/validate set? (fetch-in (deref *tdb*) [:idx-map-entry-vk]))
         matching-entries (grab :matches
                            (index/split-key-prefix tgt-prefix idx-avl-set))
-        men-hids         (mapv last matching-entries)
+        men-hids         (mapv xlast matching-entries)
         mn-hids          (mapv hid->parent-hid men-hids)]
     mn-hids))
 
@@ -403,6 +413,37 @@
                    (forv [tgt-me target-submap]
                      (set (index-find-mapentry tgt-me))))]
     map-hids))
+
+(s/defn index-find-mapentry-key :- [HID]
+  [tgt-key :- LeafType]
+  (let [tgt-prefix       [tgt-key]
+        index            (t/validate set? (fetch-in (deref *tdb*) [:idx-map-entry-kv]))
+        matching-entries (grab :matches
+                           (index/split-key-prefix tgt-prefix index))
+        men-hids         (mapv xlast matching-entries)
+        mn-hids          (mapv hid->parent-hid men-hids)]
+    mn-hids))
+
+(s/defn index-find-arrayentry :- [HID]
+  [tgt-ae :- tsk/MapEntry] ; {idx elem} as a MapEntry
+  (let [[tgt-idx tgt-elem] (mapentry->kv tgt-ae)
+        tgt-prefix       [tgt-elem tgt-idx]
+        index            (t/validate set? (fetch-in (deref *tdb*) [:idx-array-entry-ei]))
+        matching-entries (grab :matches
+                           (index/split-key-prefix tgt-prefix index))
+        aen-hids         (mapv xlast matching-entries)
+        an-hids          (mapv hid->parent-hid aen-hids)]
+    an-hids))
+
+(s/defn index-find-arrayentry-idx :- [HID]
+  [tgt-idx :- LeafType]
+  (let [tgt-prefix       [tgt-idx]
+        index            (t/validate set? (fetch-in (deref *tdb*) [:idx-array-entry-ie]))
+        matching-entries (grab :matches
+                           (index/split-key-prefix tgt-prefix index))
+        aen-hids         (mapv xlast matching-entries)
+        an-hids          (mapv hid->parent-hid aen-hids)]
+    an-hids))
 
 
 

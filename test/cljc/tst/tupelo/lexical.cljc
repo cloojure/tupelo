@@ -69,10 +69,10 @@
        (is (neg? (lex/compare-lex ['b] [\b])))))
 
   ; numeric types all compare as equal as with clojure.core/compare
-  (spyx (lex/compare-lex [1] [1]))
-  (spyx (lex/compare-lex [1] [1N]))
-  (spyx (lex/compare-lex [1] [1.0]))
-  (spyx (lex/compare-lex [1] [1.0M]))
+  (is (zero? (lex/compare-lex [1] [1])))
+  (is (zero? (lex/compare-lex [1] [1N])))
+  (is (zero? (lex/compare-lex [1] [1.0])))
+  (is (zero? (lex/compare-lex [1] [1.0M])))
 
   (is (zero? (lex/compare-lex [66] [66])))
   (is (zero? (lex/compare-lex [:a] [:a])))
