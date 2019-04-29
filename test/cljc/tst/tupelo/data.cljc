@@ -156,19 +156,18 @@
                                ["hello" :str 1022]}})
       (is= edn-val (td/hid->edn root-hid))
       (let [hid-num (only (td/index-find-mapentry-key :num))]
-        (is= 1001 hid-num)
-        (is= (unlazy (td/hid->node hid-num)) {:-parent-hid nil,
-                                              :-mn-data    {:num 1002, :map 1004, :vec 1010, :set 1018, :str 1022, :kw 1024}})
-        (is= edn-val (td/hid->edn hid-num)))
+        (is= 1002 hid-num)
+        (is= (unlazy (td/hid->node hid-num)) {:-me-key :num, :-me-val-hid 1003, :-parent-hid 1001} )
+        (is= (t/map-entry :num 5) (td/hid->edn hid-num)))
       (let [hid-b (only (td/index-find-mapentry-key :b))]
-        (is= 1005 hid-b)
-        (is= (unlazy (td/hid->node hid-b)) {:-parent-hid 1004, :-mn-data {:a 1006, :b 1008}})
-        (is= (td/hid->edn hid-b) {:a 1, :b 2}))
+        (is= 1008 hid-b)
+        (is= (unlazy (td/hid->node hid-b)) {:-me-key :b, :-me-val-hid 1009, :-parent-hid 1005})
+        (is= (td/hid->edn hid-b) (t/map-entry :b 2)))
       (let [hid-2 (only (td/index-find-arrayentry-idx 2))]
-        (is= 1011 hid-2)
+        (is= 1016 hid-2)
         (is= (unlazy (td/hid->node hid-2))
-          {:-an-data {0 1012, 1 1014, 2 1016}, :-parent-hid 1010})
-        (is= (td/hid->edn hid-2) [5 6 7] )) )))
+          {:-ae-elem-hid 1017, :-ae-idx 2, :-parent-hid 1011} )
+        (is= (td/hid->edn hid-2) 7 )) )))
 
 (dotest
   (td/with-tdb (td/new-tdb)
@@ -214,26 +213,29 @@
          :idx-map-entry-kv   #{},
          :idx-map-entry-vk   #{}})
       (let [hid-1-2 (only (td/index-find-arrayentry (t/map-entry 1 2)))]
-        (is= 1003 hid-1-2)
+        (is= 1006 hid-1-2)
         (is= (unlazy (td/hid->node hid-1-2))
-          {:-an-data {0 1004, 1 1006, 2 1008}, :-parent-hid 1002})
-        (is= (td/hid->edn hid-1-2) [1 2 3]))
+          {:-ae-elem-hid 1007, :-ae-idx 1, :-parent-hid 1003} )
+        (is= (td/hid->edn (td/hid->parent-hid hid-1-2)) [1 2 3]))
       (let [hid-0-2 (only (td/index-find-arrayentry (t/map-entry 0 2)))]
-        (is= (td/hid->edn hid-0-2) [2 3 4]))
+        (is= (td/hid->edn (td/hid->parent-hid hid-0-2)) [2 3 4]))
       (is= [1 2 3] (it-> 2
                      (t/map-entry it 3)
                      (td/index-find-arrayentry it)
                      (only it)
+                     (td/hid->parent-hid it)
                      (td/hid->edn it)))
       (is= [2 3 4] (it-> 1
                      (t/map-entry it 3)
                      (td/index-find-arrayentry it)
                      (only it)
+                     (td/hid->parent-hid it)
                      (td/hid->edn it)))
       (is= [3 4 5 6] (it-> 0
                        (t/map-entry it 3)
                        (td/index-find-arrayentry it)
                        (only it)
+                       (td/hid->parent-hid it)
                        (td/hid->edn it))))))
 
 (dotest
@@ -343,9 +345,10 @@
          {:a 1, :b 101}
          {:a 1, :b 102}])
 
-      (is= {:a 1 :b 101} (td/hid->edn (only (td/index-find-mapentry (map-entry :b 101)))))
-      (is= {:a 2 :b :second} (td/hid->edn (only (td/index-find-mapentry (map-entry :b :second)))))
-      (is= {:a 3 :b :third} (td/hid->edn (only (td/index-find-mapentry (map-entry :a 3)))))) )
+      (is= (t/map-entry :b 101) (td/hid->edn (only (td/index-find-mapentry (t/map-entry :b 101)))))
+      (is= {:a 1 :b 101} (td/hid->edn (td/hid->parent-hid (only (td/index-find-mapentry (map-entry :b 101))))))
+      (is= {:a 2 :b :second} (td/hid->edn (td/hid->parent-hid (only (td/index-find-mapentry (map-entry :b :second))))))
+      (is= {:a 3 :b :third} (td/hid->edn (td/hid->parent-hid (only (td/index-find-mapentry (map-entry :a 3))))))) )
 
   (td/with-tdb (td/new-tdb)
     (let [data      [{:a 1 :x :first}
@@ -358,7 +361,7 @@
           root-hid  (td/add-edn data)
           hid-match (only (td/index-find-mapentry
                               (->map-entry {:a 1})))
-          edn-match (td/hid->edn hid-match)]
+          edn-match (td/hid->edn (td/hid->parent-hid hid-match))]
       (is= edn-match {:a 1 :x :first})))
 
   (td/with-tdb (td/new-tdb)
@@ -370,25 +373,25 @@
                     {:a 2 :b 2 :c 6}]
           root-hid (td/add-edn data)]
       ;(t/spy-pretty (deref td/*tdb*))
-      (let [edns (mapv td/hid->edn
+      (let [edns (mapv #(td/hid->edn (td/hid->parent-hid %))
                    (td/index-find-mapentry (map-entry :a 1)))]
         (is= edns
           [{:a 1, :b 1, :c 1}
            {:a 1, :b 2, :c 2}
            {:a 1, :b 1, :c 3}]))
-      (let [edns (mapv td/hid->edn
+      (let [edns (mapv #(td/hid->edn (td/hid->parent-hid %))
                    (td/index-find-mapentry (map-entry :a 2)))]
         (is= edns
           [{:a 2, :b 2, :c 4}
            {:a 2, :b 1, :c 5}
            {:a 2, :b 2, :c 6}]))
-      (let [edns (mapv td/hid->edn
+      (let [edns (mapv #(td/hid->edn (td/hid->parent-hid %))
                    (td/index-find-mapentry (map-entry :b 1)))]
         (is= edns
           [{:a 1, :b 1, :c 1}
            {:a 1, :b 1, :c 3}
            {:a 2, :b 1, :c 5}]))
-      (let [edns (mapv td/hid->edn
+      (let [edns (mapv #(td/hid->edn (td/hid->parent-hid %))
                    (td/index-find-mapentry (map-entry :c 6)))]
         (is= edns [{:a 2, :b 2, :c 6}]))))
 
@@ -499,8 +502,8 @@
             id-vals        (mapv td/hid->edn id-hids)
             id-vals-unique (distinct id-vals)
             merged-recs    (forv [id id-vals-unique]
-                             (let [rec-hids (td/index-find-mapentry (t/map-entry :id id))]
-                               (apply glue (mapv td/hid->edn rec-hids))))]
+                             (let [men-hids (td/index-find-mapentry (t/map-entry :id id))]
+                               (apply glue (mapv #(td/hid->edn (td/hid->parent-hid %)) men-hids))))]
         (is= id-vals [2 3 4 2 3 4])
         (is-set= id-vals-unique [2 3 4])
         (is-set= merged-recs
@@ -537,7 +540,7 @@
 
             recs-id-cmn       (forv [id id-cmn]
                                 (let [rec-hids (td/index-find-mapentry (t/map-entry :id id))]
-                                  (apply glue (mapv td/hid->edn rec-hids))))
+                                  (apply glue (mapv #(td/edn (td/hid->node %)) rec-hids))))
             recs-ident-cmn    (forv [ident id-cmn]
                                 (let [rec-hids (td/index-find-mapentry (t/map-entry :ident ident))]
                                   (apply glue (mapv td/hid->edn rec-hids))))
@@ -550,13 +553,13 @@
         (is-set= id-cmn [2 3 4])
 
         (is-set= recs-id-cmn
-          [{:id 2, :color :red}
-           {:id 3, :color :yellow}
-           {:id 4, :color :blue}])
+          [{:id 2}
+           {:id 3}
+           {:id 4} ])
         (is-set= recs-ident-cmn
-          [{:ident 4, :flower :tulip}
-           {:ident 3, :flower :daisy}
-           {:ident 2, :flower :rose}]) ))) )
+          [{:ident 4}
+           {:ident 3}
+           {:ident 2}]) ))) )
 
 (dotest
   (td/with-tdb (td/new-tdb)
@@ -565,7 +568,7 @@
                         {:id 3 :color :yellow}
                         {:id 4 :color :blue}]}
           root-hid (td/add-edn data)
-          hid-red  (td/index-find-leaf :red) ]
+          hid-red  (only (td/index-find-leaf :red))]
       (is= (unlazy @td/*tdb*)
         {:idx-array-entry-ei #{},
          :idx-array-entry-ie #{},
@@ -595,12 +598,12 @@
                                [:id 2 1006] [:id 3 1012] [:id 4 1018]},
          :idx-map-entry-vk   #{[:blue :color 1020] [:red :color 1008] [:yellow :color 1014]
                                [2 :id 1006] [3 :id 1012] [4 :id 1018]}})
-      (is= [1002 1004 1008 ] (td/parent-path-hid (only hid-red)) )
-      (is= [:a 0 :color ] (td/parent-path-vals (only hid-red)))
-      (is= [:a 2 :color ] (td/parent-path-vals (only (td/index-find-leaf :blue))))
-      (is= [:a 1 :id ] (td/parent-path-vals (only (td/index-find-leaf 3)))) )))
+      (is= [1002 1004 1008 1009] (td/parent-path-hid  hid-red) )
+      (is= [:a 0 :color :red ] (td/parent-path-vals  hid-red))
+      (is= [:a 2 :color :blue] (td/parent-path-vals (only (td/index-find-leaf :blue))))
+      (is= [:a 1 :id 3] (td/parent-path-vals (only (td/index-find-leaf 3)))) )))
 
-(dotest-focus
+(dotest
   (td/with-tdb (td/new-tdb)
     (td/hid-count-reset)
     (let [data     {:a [{:id 2 :color :red}
@@ -613,13 +616,13 @@
                             {:ident 4 :flower :tulip}
                             ]}}
           root-hid (td/add-edn data)]
-      (is= {:id 2, :color :red} (td/hid->edn (only (td/index-find-mapentry (t/map-entry :id 2)))))
-      (is= {:ident 2, :flower :rose} (td/hid->edn (only (td/index-find-mapentry (t/map-entry :ident 2)))))
-      (is= [:a 0] (td/parent-path-vals (only (td/index-find-mapentry (t/map-entry :id 2)))))
-      (is= [:a 1] (td/parent-path-vals (only (td/index-find-mapentry (t/map-entry :color :yellow)))))
-      (is= [:a 3] (td/parent-path-vals (only (td/index-find-mapentry (t/map-entry :color :pink)))))
-      (is= [:b :c 0] (td/parent-path-vals (only (td/index-find-mapentry (t/map-entry :flower :rose)))))
-      (is= [:b :c 2] (td/parent-path-vals (only (td/index-find-mapentry (t/map-entry :ident 4)))))
+      (is= (t/map-entry :id 2) (td/hid->edn (only (td/index-find-mapentry (t/map-entry :id 2)))))
+      (is= (t/map-entry :ident 2) (td/hid->edn (only (td/index-find-mapentry (t/map-entry :ident 2)))))
+      (is= [:a 0 :id 2] (td/parent-path-vals (only (td/index-find-mapentry (t/map-entry :id 2)))))
+      (is= [:a 1 :color :yellow] (td/parent-path-vals (only (td/index-find-mapentry (t/map-entry :color :yellow)))))
+      (is= [:a 3 :color :pink] (td/parent-path-vals (only (td/index-find-mapentry (t/map-entry :color :pink)))))
+      (is= [:b :c 0 :flower :rose] (td/parent-path-vals (only (td/index-find-mapentry (t/map-entry :flower :rose)))))
+      (is= [:b :c 2 :ident 4] (td/parent-path-vals (only (td/index-find-mapentry (t/map-entry :ident 4)))))
       )))
 
 

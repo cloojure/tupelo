@@ -403,14 +403,16 @@
         matching-entries (grab :matches
                            (index/split-key-prefix tgt-prefix idx-avl-set))
         men-hids         (mapv xlast matching-entries)
-        mn-hids          (mapv hid->parent-hid men-hids)]
-    mn-hids))
+       ;mn-hids          (mapv hid->parent-hid men-hids)
+        ]
+    men-hids))
 
 (s/defn index-find-submap
   [target-submap :- tsk/KeyMap]
   (let [map-hids (apply set/intersection
                    (forv [tgt-me target-submap]
-                     (set (index-find-mapentry tgt-me))))]
+                     (set (mapv hid->parent-hid
+                            (index-find-mapentry tgt-me)))))]
     map-hids))
 
 (s/defn index-find-mapentry-key :- [HID]
@@ -420,8 +422,9 @@
         matching-entries (grab :matches
                            (index/split-key-prefix tgt-prefix index))
         men-hids         (mapv xlast matching-entries)
-        mn-hids          (mapv hid->parent-hid men-hids)]
-    mn-hids))
+       ;mn-hids          (mapv hid->parent-hid men-hids)
+        ]
+    men-hids))
 
 (s/defn index-find-arrayentry :- [HID]
   [tgt-ae :- tsk/MapEntry] ; {idx elem} as a MapEntry
@@ -431,8 +434,9 @@
         matching-entries (grab :matches
                            (index/split-key-prefix tgt-prefix index))
         aen-hids         (mapv xlast matching-entries)
-        an-hids          (mapv hid->parent-hid aen-hids)]
-    an-hids))
+       ;an-hids          (mapv hid->parent-hid aen-hids)
+        ]
+    aen-hids))
 
 (s/defn index-find-arrayentry-idx :- [HID]
   [tgt-idx :- LeafType]
@@ -441,35 +445,38 @@
         matching-entries (grab :matches
                            (index/split-key-prefix tgt-prefix index))
         aen-hids         (mapv xlast matching-entries)
-        an-hids          (mapv hid->parent-hid aen-hids)]
-    an-hids))
+       ;an-hids          (mapv hid->parent-hid aen-hids)
+        ]
+    aen-hids))
 
 (s/defn parent-path-hid :- [HID]
   [hid-in :- HID]
   (let [node-in (hid->node hid-in)]
     (loop [result   (cond
-                      (instance? MapEntryNode node-in) [hid-in]
-                      (instance? ArrayEntryNode node-in) [hid-in]
-                      :else [])
+                      (instance? MapEntryNode node-in) [hid-in (me-val-hid node-in)]
+                      (instance? ArrayEntryNode node-in) [hid-in (ae-elem-hid node-in)]
+                      (instance? LeafNode node-in) [hid-in]
+                      :else (throw (ex-info "unrecognized node type" (vals->map hid-in node-in))))
            hid-curr hid-in]
-      (let [hid-parent (parent-hid (hid->node hid-curr))]
-        (if (nil? hid-parent)
+      (let [hid-par (parent-hid (hid->node hid-curr))]
+        (if (nil? hid-par)
           result
           (if (or
-                (instance? MapEntryNode (hid->node hid-parent))
-                (instance? ArrayEntryNode (hid->node hid-parent)))
-            (recur (t/prepend hid-parent result) hid-parent)
-            (recur result hid-parent)))))))
+                (instance? MapEntryNode (hid->node hid-par))
+                (instance? ArrayEntryNode (hid->node hid-par)))
+            (recur (t/prepend hid-par result) hid-par)
+            (recur result hid-par)))))))
 
 (s/defn parent-path-vals
   [hid-in :- HID]
   (let [path-hids        (parent-path-hid hid-in)
-        parent-selectors (forv [parent-hid path-hids]
-                           (let [parent-node (hid->node parent-hid)]
+        parent-selectors (forv [path-hid path-hids]
+                           (let [path-node (hid->node path-hid)]
                              (cond
-                               (instance? MapEntryNode parent-node) (me-key parent-node)
-                               (instance? ArrayEntryNode parent-node) (ae-idx parent-node)
-                               :else (throw (ex-info "invalid parent node" (vals->map parent-node))))))]
+                               (instance? MapEntryNode path-node) (me-key path-node)
+                               (instance? ArrayEntryNode path-node) (ae-idx path-node)
+                               (instance? LeafNode path-node) (edn path-node)
+                               :else (throw (ex-info "invalid parent node" (vals->map path-node))))))]
     parent-selectors))
 
 
