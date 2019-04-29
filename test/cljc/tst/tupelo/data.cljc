@@ -558,7 +558,7 @@
            {:ident 3, :flower :daisy}
            {:ident 2, :flower :rose}]) ))) )
 
-(dotest-focus
+(dotest
   (td/with-tdb (td/new-tdb)
     (td/hid-count-reset)
     (let [data     {:a [{:id 2 :color :red}
@@ -595,11 +595,31 @@
                                [:id 2 1006] [:id 3 1012] [:id 4 1018]},
          :idx-map-entry-vk   #{[:blue :color 1020] [:red :color 1008] [:yellow :color 1014]
                                [2 :id 1006] [3 :id 1012] [4 :id 1018]}})
-      (is= [1002 1004 1008 1009] (td/parent-path-leaf-hid (only hid-red)) )
-      (is= [:a 0 :color] (td/parent-path-leaf-vals (only hid-red)))
-      (is= [:a 2 :color] (td/parent-path-leaf-vals (only (td/index-find-leaf :blue))))
-      (is= [:a 1 :id] (td/parent-path-leaf-vals (only (td/index-find-leaf 3))))
+      (is= [1002 1004 1008 ] (td/parent-path-hid (only hid-red)) )
+      (is= [:a 0 :color ] (td/parent-path-vals (only hid-red)))
+      (is= [:a 2 :color ] (td/parent-path-vals (only (td/index-find-leaf :blue))))
+      (is= [:a 1 :id ] (td/parent-path-vals (only (td/index-find-leaf 3)))) )))
 
+(dotest-focus
+  (td/with-tdb (td/new-tdb)
+    (td/hid-count-reset)
+    (let [data     {:a [{:id 2 :color :red}
+                        {:id 3 :color :yellow}
+                        {:id 4 :color :blue}
+                        {:id 5 :color :pink}
+                        {:id 6 :color :white}]
+                    :b {:c [{:ident 2 :flower :rose}
+                            {:ident 3 :flower :daisy}
+                            {:ident 4 :flower :tulip}
+                            ]}}
+          root-hid (td/add-edn data)]
+      (is= {:id 2, :color :red} (td/hid->edn (only (td/index-find-mapentry (t/map-entry :id 2)))))
+      (is= {:ident 2, :flower :rose} (td/hid->edn (only (td/index-find-mapentry (t/map-entry :ident 2)))))
+      (is= [:a 0] (td/parent-path-vals (only (td/index-find-mapentry (t/map-entry :id 2)))))
+      (is= [:a 1] (td/parent-path-vals (only (td/index-find-mapentry (t/map-entry :color :yellow)))))
+      (is= [:a 3] (td/parent-path-vals (only (td/index-find-mapentry (t/map-entry :color :pink)))))
+      (is= [:b :c 0] (td/parent-path-vals (only (td/index-find-mapentry (t/map-entry :flower :rose)))))
+      (is= [:b :c 2] (td/parent-path-vals (only (td/index-find-mapentry (t/map-entry :ident 4)))))
       )))
 
 
