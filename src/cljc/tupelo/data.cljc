@@ -403,7 +403,6 @@
         matching-entries (grab :matches
                            (index/split-key-prefix tgt-prefix idx-avl-set))
         men-hids         (mapv xlast matching-entries)
-       ;mn-hids          (mapv hid->parent-hid men-hids)
         ]
     men-hids))
 
@@ -422,7 +421,6 @@
         matching-entries (grab :matches
                            (index/split-key-prefix tgt-prefix index))
         men-hids         (mapv xlast matching-entries)
-       ;mn-hids          (mapv hid->parent-hid men-hids)
         ]
     men-hids))
 
@@ -434,7 +432,6 @@
         matching-entries (grab :matches
                            (index/split-key-prefix tgt-prefix index))
         aen-hids         (mapv xlast matching-entries)
-       ;an-hids          (mapv hid->parent-hid aen-hids)
         ]
     aen-hids))
 
@@ -445,7 +442,6 @@
         matching-entries (grab :matches
                            (index/split-key-prefix tgt-prefix index))
         aen-hids         (mapv xlast matching-entries)
-       ;an-hids          (mapv hid->parent-hid aen-hids)
         ]
     aen-hids))
 
