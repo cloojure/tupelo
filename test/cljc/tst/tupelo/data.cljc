@@ -469,7 +469,7 @@
       (is= (mapv td/hid->edn (td/hid-nav root-hid [:a :* :id 1]))
         [22 33 44]) ) ) )
 
-(dotest-focus
+(dotest
   (newline) (println "===================================================================================================")
   (td/with-tdb (td/new-tdb)
     (td/hid-count-reset)
@@ -496,20 +496,21 @@
          {:id 4, :flower :tulip}])
       (let [id-hids        (td/hid-nav root-hid [:* :* :id])
             id-vals        (mapv td/hid->edn id-hids)
-            id-vals-unique (set id-vals)
+            id-vals-unique (distinct id-vals)
             merged-recs    (forv [id id-vals-unique]
                              (let [rec-hids (td/index-find-mapentry (t/map-entry :id id))]
-                               (apply glue (mapv td/hid->edn rec-hids)) ) ) ]
+                               (apply glue (mapv td/hid->edn rec-hids))))]
         (is= id-vals [2 3 4 2 3 4])
         (is-set= id-vals-unique [2 3 4])
-        (is= merged-recs
+        (is-set= merged-recs
           [{:id 4, :color :blue, :flower :tulip}
            {:id 3, :color :yellow, :flower :daisy}
-           {:id 2, :color :red, :flower :rose}])
-        ))
-
-
-      )
+           {:id 2, :color :red, :flower :rose}]))
+      (let [id-hids        (td/hid-nav root-hid [:* :* :*])
+            id-vals        (mapv td/hid->edn id-hids)
+            id-vals-unique (distinct id-vals)]
+        (is-set= id-vals-unique
+          [2 :red 3 :yellow 4 :blue :rose :daisy :tulip]))))
   (newline) (println "---------------------------------------------------------------------------------------------------")
   )
 
