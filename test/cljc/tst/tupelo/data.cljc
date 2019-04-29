@@ -531,17 +531,18 @@
                                          :widget-type-code "c40"}]
                          :widget-types [{:widget-type-code "c40"
                                          :description      "Boom!"}]}]
-        normalized     (["Cyberdyne" "Model-101" "Resistance Infiltrator"]
+        normalized     [["Cyberdyne" "Model-101" "Resistance Infiltrator"]
                         ["Cyberdyne" "Model-102" "Resistance Infiltrator"]
                         ["Cyberdyne" "Model-201" "Mimetic polyalloy"]
-                        ["ACME" "Dynamite" "Boom!"])
+                        ["ACME" "Dynamite" "Boom!"]]
 
-        query-edn     '{:find   [{:basic-info   {:producer-code ?}
-                                  :widgets      [{:widget-code      "Model-101"
-                                                  :widget-type-code ?}]
-                                  :widget-types [{:widget-type-code ?
-                                                  :description      ?}]}]
-                        :return [producer-code widget-code description]}
+        query-edn      (quote (find {:where  [{:basic-info   {:producer-code ?}
+                                               :widgets      [{:widget-code      ?
+                                                               :widget-type-code ?}]
+                                               :widget-types [{:widget-type-code ?
+                                                               :description      ?}]}]
+                                     :return [producer-code widget-code description] ; #todo output using vals->map
+                                     }))
         ]
     ))
 
