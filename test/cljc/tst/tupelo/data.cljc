@@ -9,13 +9,14 @@
   #?(:clj (:refer-clojure :exclude [load ->VecNode]))
   #?(:clj (:require
             [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-            [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty unlazy  let-spy only forv ]]
+            [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty unlazy let-spy only forv]]
             [tupelo.data :as td]
             [tupelo.data.index :as tdi]
             [tupelo.lexical :as lex]
             [clojure.data.avl :as avl]
             [schema.core :as s]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [clojure.set :as set]))
   #?(:cljs (:require
              [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]
               :include-macros true]
@@ -470,7 +471,6 @@
         [22 33 44]) ) ) )
 
 (dotest
-  (newline) (println "===================================================================================================")
   (td/with-tdb (td/new-tdb)
     (td/hid-count-reset)
     (let [data     {:a [{:id 2 :color :red}
@@ -510,7 +510,54 @@
             id-vals        (mapv td/hid->edn id-hids)
             id-vals-unique (distinct id-vals)]
         (is-set= id-vals-unique
-          [2 :red 3 :yellow 4 :blue :rose :daisy :tulip]))))
+          [2 :red 3 :yellow 4 :blue :rose :daisy :tulip])))) )
+
+(dotest-focus
+  (newline) (println "===================================================================================================")
+  (td/with-tdb (td/new-tdb)
+    (td/hid-count-reset)
+    (let [data     {:a [{:id 2 :color :red}
+                        {:id 3 :color :yellow}
+                        {:id 4 :color :blue}
+                        {:id 5 :color :pink}
+                        {:id 6 :color :white}]
+                    :b {:c [{:ident 2 :flower :rose}
+                            {:ident 3 :flower :daisy}
+                            {:ident 4 :flower :tulip}
+                            ]}}
+          root-hid (td/add-edn data)]
+      (let [id-hids           (td/hid-nav root-hid [:a :* :id])
+            id-vals           (mapv td/hid->edn id-hids)
+            id-vals-unique    (distinct id-vals)
+            ident-hids        (td/hid-nav root-hid [:b :c :* :ident])
+            ident-vals        (mapv td/hid->edn ident-hids)
+            ident-vals-unique (distinct ident-vals)
+
+            id-cmn            (set/intersection (set id-vals-unique) (set ident-vals-unique))
+
+            recs-id-cmn       (forv [id id-cmn]
+                                (let [rec-hids (td/index-find-mapentry (t/map-entry :id id))]
+                                  (apply glue (mapv td/hid->edn rec-hids))))
+            recs-ident-cmn    (forv [ident id-cmn]
+                                (let [rec-hids (td/index-find-mapentry (t/map-entry :ident ident))]
+                                  (apply glue (mapv td/hid->edn rec-hids))))
+            ]
+        (is= id-vals [2 3 4 5 6])
+        (is-set= id-vals-unique [2 3 4 5 6])
+
+        (is= ident-vals [2 3 4])
+        (is-set= ident-vals-unique [2 3 4])
+        (is-set= id-cmn [2 3 4])
+
+        (is-set= recs-id-cmn
+          [{:id 2, :color :red}
+           {:id 3, :color :yellow}
+           {:id 4, :color :blue}])
+        (is-set= recs-ident-cmn
+          [{:ident 4, :flower :tulip}
+           {:ident 3, :flower :daisy}
+           {:ident 2, :flower :rose}])
+        )))
   (newline) (println "---------------------------------------------------------------------------------------------------")
   )
 
@@ -542,7 +589,7 @@
                                                :widget-types [{:widget-type-code ?
                                                                :description      ?}]}]
                                      :return [producer-code widget-code description] ; #todo output using vals->map
-                                     }))
+                                    }))
         ]
     ))
 
