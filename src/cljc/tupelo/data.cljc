@@ -444,6 +444,34 @@
         an-hids          (mapv hid->parent-hid aen-hids)]
     an-hids))
 
+(s/defn parent-path-leaf-hid :- [HID]
+  [leaf-hid :- HID]
+  (s/validate LeafType (hid->edn leaf-hid))
+  (loop [result   [leaf-hid]
+         hid-curr leaf-hid]
+    (let [hid-parent (parent-hid (hid->node hid-curr))]
+      (if (nil? hid-parent)
+        result
+        (if (or
+              (instance? MapEntryNode (hid->node hid-parent))
+              (instance? ArrayEntryNode (hid->node hid-parent)))
+          (recur (t/prepend hid-parent result) hid-parent)
+          (recur result hid-parent))))))
+
+(s/defn parent-path-leaf-vals
+  [leaf-hid :- HID]
+  (s/validate LeafType (hid->edn leaf-hid))
+  (let [path-hids        (parent-path-leaf-hid leaf-hid)
+        leaf-edn         (hid->edn (t/validate #(= leaf-hid %)
+                                     (xlast path-hids)))
+        parent-hids      (t/xbutlast path-hids)
+        parent-selectors (forv [parent-hid parent-hids]
+                           (let [parent-node (hid->node parent-hid)]
+                             (cond
+                               (instance? MapEntryNode parent-node) (me-key parent-node)
+                               (instance? ArrayEntryNode parent-node) (ae-idx parent-node)
+                               :else (throw (ex-info "invalid parent node" (vals->map parent-node))))))]
+    parent-selectors))
 
 
 

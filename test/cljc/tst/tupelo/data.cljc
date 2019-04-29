@@ -9,7 +9,8 @@
   #?(:clj (:refer-clojure :exclude [load ->VecNode]))
   #?(:clj (:require
             [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-            [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty unlazy let-spy only forv]]
+            [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty unlazy let-spy only forv glue
+                                       ]]
             [tupelo.data :as td]
             [tupelo.data.index :as tdi]
             [tupelo.lexical :as lex]
@@ -512,8 +513,7 @@
         (is-set= id-vals-unique
           [2 :red 3 :yellow 4 :blue :rose :daisy :tulip])))) )
 
-(dotest-focus
-  (newline) (println "===================================================================================================")
+(dotest
   (td/with-tdb (td/new-tdb)
     (td/hid-count-reset)
     (let [data     {:a [{:id 2 :color :red}
@@ -556,10 +556,52 @@
         (is-set= recs-ident-cmn
           [{:ident 4, :flower :tulip}
            {:ident 3, :flower :daisy}
-           {:ident 2, :flower :rose}])
-        )))
-  (newline) (println "---------------------------------------------------------------------------------------------------")
-  )
+           {:ident 2, :flower :rose}]) ))) )
+
+(dotest-focus
+  (td/with-tdb (td/new-tdb)
+    (td/hid-count-reset)
+    (let [data     {:a [{:id 2 :color :red}
+                        {:id 3 :color :yellow}
+                        {:id 4 :color :blue}]}
+          root-hid (td/add-edn data)
+          hid-red  (td/index-find-leaf :red) ]
+      (is= (unlazy @td/*tdb*)
+        {:idx-array-entry-ei #{},
+         :idx-array-entry-ie #{},
+         :idx-hid            {1001 {:-mn-data {:a 1002}, :-parent-hid nil},
+                              1002 {:-me-key :a, :-me-val-hid 1003, :-parent-hid 1001},
+                              1003 {:-an-data {0 1004, 1 1010, 2 1016}, :-parent-hid 1002},
+                              1004 {:-ae-elem-hid 1005, :-ae-idx 0, :-parent-hid 1003},
+                              1005 {:-mn-data {:color 1008, :id 1006}, :-parent-hid 1004},
+                              1006 {:-me-key :id, :-me-val-hid 1007, :-parent-hid 1005},
+                              1007 {:-leaf-val 2, :-parent-hid 1006},
+                              1008 {:-me-key :color, :-me-val-hid 1009, :-parent-hid 1005},
+                              1009 {:-leaf-val :red, :-parent-hid 1008},
+                              1010 {:-ae-elem-hid 1011, :-ae-idx 1, :-parent-hid 1003},
+                              1011 {:-mn-data {:color 1014, :id 1012}, :-parent-hid 1010},
+                              1012 {:-me-key :id, :-me-val-hid 1013, :-parent-hid 1011},
+                              1013 {:-leaf-val 3, :-parent-hid 1012},
+                              1014 {:-me-key :color, :-me-val-hid 1015, :-parent-hid 1011},
+                              1015 {:-leaf-val :yellow, :-parent-hid 1014},
+                              1016 {:-ae-elem-hid 1017, :-ae-idx 2, :-parent-hid 1003},
+                              1017 {:-mn-data {:color 1020, :id 1018}, :-parent-hid 1016},
+                              1018 {:-me-key :id, :-me-val-hid 1019, :-parent-hid 1017},
+                              1019 {:-leaf-val 4, :-parent-hid 1018},
+                              1020 {:-me-key :color, :-me-val-hid 1021, :-parent-hid 1017},
+                              1021 {:-leaf-val :blue, :-parent-hid 1020}},
+         :idx-leaf           #{[:blue 1021] [:red 1009] [:yellow 1015] [2 1007] [3 1013] [4 1019]},
+         :idx-map-entry-kv   #{[:color :blue 1020] [:color :red 1008] [:color :yellow 1014]
+                               [:id 2 1006] [:id 3 1012] [:id 4 1018]},
+         :idx-map-entry-vk   #{[:blue :color 1020] [:red :color 1008] [:yellow :color 1014]
+                               [2 :id 1006] [3 :id 1012] [4 :id 1018]}})
+      (is= [1002 1004 1008 1009] (td/parent-path-leaf-hid (only hid-red)) )
+      (is= [:a 0 :color] (td/parent-path-leaf-vals (only hid-red)))
+      (is= [:a 2 :color] (td/parent-path-leaf-vals (only (td/index-find-leaf :blue))))
+      (is= [:a 1 :id] (td/parent-path-leaf-vals (only (td/index-find-leaf 3))))
+
+      )))
+
 
 (dotest
   (let [skynet-widgets [{:basic-info   {:producer-code "Cyberdyne"}
