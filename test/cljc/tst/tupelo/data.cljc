@@ -9,7 +9,7 @@
   #?(:clj (:refer-clojure :exclude [load ->VecNode]))
   #?(:clj (:require
             [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-            [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty unlazy  let-spy only]]
+            [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty unlazy  let-spy only forv ]]
             [tupelo.data :as td]
             [tupelo.data.index :as tdi]
             [tupelo.lexical :as lex]
@@ -278,7 +278,7 @@
       (is= edn-0 (td/hid->edn root-hid)))))
 
 
-(dotest-focus
+(dotest
   (td/with-tdb (td/new-tdb)
     (td/hid-count-reset)
     (let [data     {:a [{:b 2}
@@ -289,16 +289,17 @@
                     :h "hotel"
                     :i 1}
           root-hid (td/add-edn data)]
-      (spyx-pretty (td/hid-nav root-hid [:a])) ; #todo #wip
 
-      (is= (td/hid->edn (td/hid-nav root-hid [:a])) [{:b 2} {:c 3} {:d 4}])
-      (is= (td/hid->edn (td/hid-nav root-hid [:a 0])) {:b 2})
-      (is= (td/hid->edn (td/hid-nav root-hid [:a 2])) {:d 4})
-      (is= (td/hid->edn (td/hid-nav root-hid [:a 2 :d])) 4)
-      (is= (td/hid->edn (td/hid-nav root-hid [:e])) {:f 6})
-      (is= (td/hid->edn (td/hid-nav root-hid [:e :f])) 6)
-      (is= (td/hid->edn (td/hid-nav root-hid [:h])) "hotel")
-      (is= (td/hid->edn (td/hid-nav root-hid [:i])) 1)
+      (is= (td/hid->edn (only (td/hid-nav root-hid [:a])))
+        [{:b 2} {:c 3} {:d 4}])
+
+      (is= (td/hid->edn (only (td/hid-nav root-hid [:a 0]))) {:b 2})
+      (is= (td/hid->edn (only (td/hid-nav root-hid [:a 2]))) {:d 4})
+      (is= (td/hid->edn (only (td/hid-nav root-hid [:a 2 :d]))) 4)
+      (is= (td/hid->edn (only (td/hid-nav root-hid [:e]))) {:f 6})
+      (is= (td/hid->edn (only (td/hid-nav root-hid [:e :f]))) 6)
+      (is= (td/hid->edn (only (td/hid-nav root-hid [:h]))) "hotel")
+      (is= (td/hid->edn (only (td/hid-nav root-hid [:i]))) 1)
       (let [kid-hids     (td/hid-nav root-hid [:a :*])
             parent-hids  (mapv td/hid->parent-hid kid-hids)
             parent-hid   (t/xfirst parent-hids)
@@ -310,7 +311,7 @@
         (is= (td/hid->edn parent-hid)
           [{:b 2} {:c 3} {:d 4}])
         (is= (td/hid->edn parent-hid-2) data))
-      (let [four-hid          (td/hid-nav root-hid [:a 2 :d])
+      (let [four-hid          (only (td/hid-nav root-hid [:a 2 :d]))
             four-hid-parent-3 (-> four-hid
                                 td/hid->parent-hid
                                 td/hid->parent-hid
@@ -447,28 +448,68 @@
          {:id 4, :color :blue}] )
       (is= (mapv td/hid->edn (td/hid-nav root-hid [:a :* :id])) [2 3 4] ) ) ) )
 
-(dotest-focus
-  (newline) (println "===================================================================================================")
+(dotest
   (td/with-tdb (td/new-tdb)
     (td/hid-count-reset)
     (let [data     {:a [{:id [2 22] :color :red}
                         {:id [3 33] :color :yellow}
-                        {:id [4 44] :color :blue}]
-                    ;:e [{:id 2 :flower :rose}
-                    ;    {:id 3 :flower :daisy}
-                    ;    {:id 4 :flower :tulip}]
-                    }
+                        {:id [4 44] :color :blue}] }
           root-hid (td/add-edn data) ]
+      (is= (mapv td/hid->edn (td/hid-nav root-hid [:a :*]))
+        [{:id [2 22], :color :red}
+         {:id [3 33], :color :yellow}
+         {:id [4 44], :color :blue}])
+      (is= (mapv td/hid->edn (td/hid-nav root-hid [:a :* :id]))
+        [[2 22] [3 33] [4 44]] )
       (newline)
-       (spyx-pretty (mapv td/hid->edn (td/hid-nav root-hid [:a :*])))
-      (newline)
-      (spyx-pretty (mapv td/hid->edn (td/hid-nav root-hid [:a :* :id])))
-      (newline)
-      (spyx-pretty (mapv td/hid->edn (td/hid-nav root-hid [:a :* :id 1])))
+      (is= (mapv td/hid->edn (td/hid-nav root-hid [:a :* :id :*]))
+        [2 22 3 33 4 44])
+      (is= (mapv td/hid->edn (td/hid-nav root-hid [:a :* :id 0]))
+        [2 3 4])
+      (is= (mapv td/hid->edn (td/hid-nav root-hid [:a :* :id 1]))
+        [22 33 44]) ) ) )
+
+(dotest-focus
+  (newline) (println "===================================================================================================")
+  (td/with-tdb (td/new-tdb)
+    (td/hid-count-reset)
+    (let [data     {:a [{:id 2 :color :red}
+                        {:id 3 :color :yellow}
+                        {:id 4 :color :blue}]
+                    :e [{:id 2 :flower :rose}
+                        {:id 3 :flower :daisy}
+                        {:id 4 :flower :tulip}]}
+          root-hid (td/add-edn data)]
+      (is= (mapv td/hid->edn (td/hid-nav root-hid [:*]))
+        [[{:id 2, :color :red}
+          {:id 3, :color :yellow}
+          {:id 4, :color :blue}]
+         [{:id 2, :flower :rose}
+          {:id 3, :flower :daisy}
+          {:id 4, :flower :tulip}]])
+      (is= (mapv td/hid->edn (td/hid-nav root-hid [:* :*]))
+        [{:id 2, :color :red}
+         {:id 3, :color :yellow}
+         {:id 4, :color :blue}
+         {:id 2, :flower :rose}
+         {:id 3, :flower :daisy}
+         {:id 4, :flower :tulip}])
+      (let [id-hids        (td/hid-nav root-hid [:* :* :id])
+            id-vals        (mapv td/hid->edn id-hids)
+            id-vals-unique (set id-vals)
+            merged-recs    (forv [id id-vals-unique]
+                             (let [rec-hids (td/index-find-mapentry (t/map-entry :id id))]
+                               (apply glue (mapv td/hid->edn rec-hids)) ) ) ]
+        (is= id-vals [2 3 4 2 3 4])
+        (is-set= id-vals-unique [2 3 4])
+        (is= merged-recs
+          [{:id 4, :color :blue, :flower :tulip}
+           {:id 3, :color :yellow, :flower :daisy}
+           {:id 2, :color :red, :flower :rose}])
+        ))
+
 
       )
-    )
-
   (newline) (println "---------------------------------------------------------------------------------------------------")
   )
 

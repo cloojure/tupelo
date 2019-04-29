@@ -94,9 +94,11 @@
           (edn (hid->node men-hid)))))
   INavNode
     (nav [this key-arg]
-      (let [hid-men (t/grab key-arg -mn-data)
-            hid-val (grab :-me-val-hid (hid->node hid-men))]
-        hid-val)))
+      (let [men-hids (if (= :* key-arg)
+                       (vals -mn-data)
+                       (vector (t/grab key-arg -mn-data)))
+            val-hids (mapv :-me-val-hid (mapv hid->node men-hids))]
+        val-hids)))
 
 (s/defrecord MapEntryNode
   [-parent-hid :- HID
@@ -126,10 +128,10 @@
       (t/forv [[-idx- aen-hid] (t/validate map? -an-data)]
         (edn (hid->node aen-hid))))
   INavNode
-    (nav [this key-arg]
-      (let [aen-hids  (if (= :* key-arg)
+    (nav [this idx-arg]
+      (let [aen-hids  (if (= :* idx-arg)
                         (vals (t/->sorted-map -an-data))
-                        (vector (t/grab key-arg -an-data)))
+                        (vector (t/grab idx-arg -an-data)))
             elem-hids (mapv :-ae-elem-hid (mapv hid->node aen-hids))]
         elem-hids)))
 
@@ -359,20 +361,18 @@
   [hid :- HID]
   (edn (hid->node hid)))
 
-(s/defn hid-nav :- s/Any
+(s/defn hid-nav :- [HID]
   [hid :- HID
    path :- tsk/Vec]
-  (let-spy [node       (hid->node hid)
+  (let [node       (hid->node hid)
         key        (t/xfirst path)
         path-rest  (t/xrest path)
         nav-result (nav node key)]
     (if (empty? path-rest)
       nav-result
-      (do
-        (spy :hid-nav--else-361)
-        (apply glue
-          (forv [hid nav-result]
-            (hid-nav hid path-rest)))))))
+      (apply glue
+        (forv [hid nav-result]
+          (hid-nav hid path-rest))))))
 
 (s/defn hid->parent-hid :- (s/maybe HID)
   "Returns the parent HID of the node at this HID"
