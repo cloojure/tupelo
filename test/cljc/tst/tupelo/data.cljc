@@ -514,6 +514,37 @@
   (newline) (println "---------------------------------------------------------------------------------------------------")
   )
 
+(dotest
+  (let [skynet-widgets [{:basic-info   {:producer-code "Cyberdyne"}
+                         :widgets      [{:widget-code      "Model-101"
+                                         :widget-type-code "t800"}
+                                        {:widget-code      "Model-102"
+                                         :widget-type-code "t800"}
+                                        {:widget-code      "Model-201"
+                                         :widget-type-code "t1000"}]
+                         :widget-types [{:widget-type-code "t800"
+                                         :description      "Resistance Infiltrator"}
+                                        {:widget-type-code "t1000"
+                                         :description      "Mimetic polyalloy"}]}
+                        {:basic-info   {:producer-code "ACME"}
+                         :widgets      [{:widget-code      "Dynamite"
+                                         :widget-type-code "c40"}]
+                         :widget-types [{:widget-type-code "c40"
+                                         :description      "Boom!"}]}]
+        normalized     (["Cyberdyne" "Model-101" "Resistance Infiltrator"]
+                        ["Cyberdyne" "Model-102" "Resistance Infiltrator"]
+                        ["Cyberdyne" "Model-201" "Mimetic polyalloy"]
+                        ["ACME" "Dynamite" "Boom!"])
+
+        query-edn     '{:find   [{:basic-info   {:producer-code ?}
+                                  :widgets      [{:widget-code      "Model-101"
+                                                  :widget-type-code ?}]
+                                  :widget-types [{:widget-type-code ?
+                                                  :description      ?}]}]
+                        :return [producer-code widget-code description]}
+        ]
+    ))
+
 
 (comment  ; old way
   (dotest
