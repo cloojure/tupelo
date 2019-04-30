@@ -106,6 +106,12 @@
     ;(s/validate SortedSetType (grab :larger result))
     result))
 
+(s/defn split-key-prefix-matches :- SortedSetType
+  "Return the `:matches` values found via `split-key-prefix`."
+  [match-val :- LexicalValType
+   lex-set :- SortedSetType]
+  (t/grab :matches (split-key-prefix match-val lex-set )))
+
 ; #todo add-entry & remove-entry instead of conj/disj  ???
 (s/defn add-entry
   "Add an entry to the index, returning the modified index"

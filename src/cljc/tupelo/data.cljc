@@ -68,14 +68,14 @@
   (raw [this]))
 
 (s/defrecord Eid ; wraps an Entity Id (EID)
-  [raw :- (s/maybe EidType)]
+  [eid :- (s/maybe EidType)]
   IRaw
-  (raw [this] raw))
+  (raw [this] eid))
 
 (s/defrecord Leaf ; wraps a primitive leaf value
-  [raw :- (s/maybe LeafType)]
+  [leaf :- (s/maybe LeafType)]
   IRaw
-  (raw [this] raw))
+  (raw [this] leaf))
 
 (s/defn eid :- Eid
   "Wraps an eid value into an Eid record"
@@ -98,12 +98,12 @@
 (defn new-tdb
   "Returns a new, empty db."
   []
-  {:map-eids    (sorted-set) ; holds eids of all map input collections
-   :array-eids  (sorted-set) ; holds eids of all array input collections
-   :eid-parent  (sorted-map) ; map from eid to parent-eid
+  {:eids-map    (sorted-set) ; holds eids of all map input collections
+   :eids-array  (sorted-set) ; holds eids of all array input collections
+   :eid->parent (sorted-map) ; map from eid to parent-eid
    :idx-eav     (index/empty-index)
    :idx-vae     (index/empty-index)
-   :idx-ave     (index/empty-index) })
+   :idx-ave     (index/empty-index)})
 
 ; (s/defn eid->node
 
@@ -149,44 +149,45 @@
   ([edn-in :- s/Any] (add-edn nil edn-in))
   ([parent-eid :- (s/maybe EidType)
     edn-in :- s/Any]
-   (let [eid-curr (new-eid)
+   (let [eid-fresh       (new-eid)
          entity-type-key (cond
-                           (map? edn-in) :map-eids
-                           (array-like? edn-in) :array-eids
-                           :else (throw (ex-info "unknown value found" (vals->map edn-in)))) ]
+                           (map? edn-in) :eids-map
+                           (array-like? edn-in) :eids-array
+                           :else (throw (ex-info "unknown value found" (vals->map edn-in))))]
      (swap! *tdb* (fn [tdb-map]
                     (it-> tdb-map
-                      (update it entity-type-key set-add-eid eid-curr)
-                      (update it :eid-parent assoc eid-curr parent-eid)
+                      (update it entity-type-key set-add-eid eid-fresh)
+                      (update it :eid->parent assoc eid-fresh parent-eid)
 
                       (reduce
                         (fn [cum-result [attr-edn val-edn]]
                           (let [val-add (if (leaf-val? val-edn)
                                           (->Leaf val-edn)
-                                          (->Eid (add-edn eid-curr val-edn)))]
+                                          (->Eid (add-edn eid-fresh val-edn)))]
                             (it-> cum-result
-                              (update it :idx-eav index/add-entry [eid-curr attr-edn val-add])
-                              (update it :idx-vae index/add-entry [val-add attr-edn eid-curr])
-                              (update it :idx-ave index/add-entry [attr-edn val-add eid-curr]))))
+                              (update it :idx-eav index/add-entry [eid-fresh attr-edn val-add])
+                              (update it :idx-vae index/add-entry [val-add attr-edn eid-fresh])
+                              (update it :idx-ave index/add-entry [attr-edn val-add eid-fresh]))))
                         it
                         edn-in)
+                      )))
+     eid-fresh)))
 
-                      ))))))
-
-       ;(set-node! eid-this
-       ;  (->MapNode eid-parent
-       ;    (apply glue
-       ;      (forv [[<key> <val>] edn-in]
-       ;        (let [eid-me-node (new-eid)
-       ;              eid-leaf    (add-edn eid-me-node <val>)]
-       ;          (when (leaf-val? <val>)
-       ;            (update-index-mapentry! <val> <key> eid-me-node))
-       ;          (set-node! eid-me-node (->MapEntryNode eid-this <key> eid-leaf))
-       ;          (map-entry <key> eid-me-node)))))))
-
-
-
-; (s/defn eid->edn :- s/Any
+(s/defn eid->edn :- s/Any
+  "Returns the EDN subtree rooted at a eid."
+  [eid-in :- EidType]
+  (spy :edn-result
+    (let-spy [
+              eav-matches (index/split-key-prefix-matches [eid-in] (grab :idx-eav @*tdb*))]
+             (apply glue (sorted-map)
+               (forv [[eid-row attr-row val-row] eav-matches]
+                 (do
+                   (spyx [eid-row attr-row val-row])
+                   (assert (= eid-in eid-row))
+                   (let [val-edn (if (instance? Leaf val-row)
+                                   (raw val-row) ; Leaf rec
+                                   (eid->edn (raw val-row)))] ; Eid rec
+                     (t/map-entry attr-row val-edn))))))))
 
 ; (s/defn eid-nav :- [EidType]
 
