@@ -149,39 +149,61 @@
   ([edn-in :- s/Any] (add-edn nil edn-in))
   ([parent-eid :- (s/maybe EidType)
     edn-in :- s/Any]
-   (let [eid-this        (new-eid)
-         entity-type-key (cond
-                           (map? edn-in) :eids-map
-                           (array-like? edn-in) :eids-array
-                           :else (throw (ex-info "unknown value found" (vals->map edn-in))))]
-     (swap! *tdb* update entity-type-key set-add-eid eid-this)
-     (swap! *tdb* update :eid->parent assoc eid-this parent-eid)
-     (doseq [[attr-edn val-edn] edn-in]
-       (let [val-add (if (leaf-val? val-edn)
-                       (->Leaf val-edn)
-                       (->Eid (add-edn eid-this val-edn)))]
-         (swap! *tdb* update :idx-eav index/add-entry [eid-this attr-edn val-add])
-         (swap! *tdb* update :idx-vae index/add-entry [val-add attr-edn eid-this])
-         (swap! *tdb* update :idx-ave index/add-entry [attr-edn val-add eid-this])))
-
-
+   (let [eid-this (new-eid)
+         ctx      (cond
+                    (map? edn-in) {:entity-type-key :eids-map
+                                   :edn-use         edn-in}
+                    (array-like? edn-in) {:entity-type-key :eids-array
+                                          :edn-use         (indexed edn-in)}
+                    :else (throw (ex-info "unknown value found" (vals->map edn-in))))]
+     (t/with-map-vals ctx [entity-type-key edn-use]
+       (swap! *tdb* update entity-type-key set-add-eid eid-this)
+       (swap! *tdb* update :eid->parent assoc eid-this parent-eid)
+       (doseq [[attr-edn val-edn] edn-use]
+         (let [val-add (if (leaf-val? val-edn)
+                         (->Leaf val-edn)
+                         (->Eid (add-edn eid-this val-edn)))]
+           (swap! *tdb* update :idx-eav index/add-entry [eid-this attr-edn val-add])
+           (swap! *tdb* update :idx-vae index/add-entry [val-add attr-edn eid-this])
+           (swap! *tdb* update :idx-ave index/add-entry [attr-edn val-add eid-this]))))
      eid-this)))
+
+(defn eid-flgs [eid-in]
+  (let [map-flg (contains? (grab :eids-map @*tdb*) eid-in)
+        array-flg (contains? (grab :eids-array @*tdb*) eid-in)]
+    (assert (not= map-flg array-flg))
+    [map-flg array-flg] ))
+
+(s/defn map-eid? :- s/Bool
+  "Returns true iff eid is from a map entity"
+  [eid-in :- EidType]
+  (= [true false] (eid-flgs eid-in)))
+
+(s/defn array-eid? :- s/Bool
+  "Returns true iff eid is from an array entity"
+  [eid-in :- EidType]
+  (= [false true] (eid-flgs eid-in)))
 
 (s/defn eid->edn :- s/Any
   "Returns the EDN subtree rooted at a eid."
   [eid-in :- EidType]
-  (spy :edn-result
-    (let-spy [
-              eav-matches (index/split-key-prefix-matches [eid-in] (grab :idx-eav @*tdb*))]
-             (apply glue (sorted-map)
-               (forv [[eid-row attr-row val-row] eav-matches]
-                 (do
-                   (spyx [eid-row attr-row val-row])
-                   (assert (= eid-in eid-row))
-                   (let [val-edn (if (instance? Leaf val-row)
-                                   (raw val-row) ; Leaf rec
-                                   (eid->edn (raw val-row)))] ; Eid rec
-                     (t/map-entry attr-row val-edn))))))))
+  (let [eav-matches (index/split-key-prefix-matches [eid-in] (grab :idx-eav @*tdb*))
+        result-map  (apply glue (sorted-map)
+                      (forv [[eid-row attr-row val-row] eav-matches]
+                        (do
+                         ;(spyx [eid-row attr-row val-row])
+                          (assert (= eid-in eid-row))
+                          (let [val-edn (if (instance? Leaf val-row)
+                                          (raw val-row) ; Leaf rec
+                                          (eid->edn (raw val-row)))] ; Eid rec
+                            (t/map-entry attr-row val-edn)))))
+        result-out  (if (map-eid? eid-in)
+                      result-map
+                      (let [result-keys (keys result-map)
+                            result-vals (vec (vals result-map))]
+                        (assert (= result-keys (range (count result-keys))))
+                        result-vals)) ]
+    result-out))
 
 ; (s/defn eid-nav :- [EidType]
 
