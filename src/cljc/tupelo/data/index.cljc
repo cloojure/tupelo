@@ -106,7 +106,7 @@
     ;(s/validate SortedSetType (grab :larger result))
     result))
 
-(s/defn split-key-prefix-matches :- SortedSetType
+(s/defn prefix-matches :- SortedSetType
   "Return the `:matches` values found via `split-key-prefix`."
   [match-val :- LexicalValType
    lex-set :- SortedSetType]

@@ -173,41 +173,6 @@
 ;                    :str "hello"
 ;                    :kw  :nothing}
 ;          root-hid (td/add-edn edn-val)]
-;      (is= (unlazy @td/*tdb*)
-;        {:idx-array-entry-ei #{[5 0 1012] [6 1 1014] [7 2 1016]},
-;         :idx-array-entry-ie #{[0 5 1012] [1 6 1014] [2 7 1016]},
-;         :idx-hid            {1001 {:-mn-data    {:kw 1024, :map 1004, :num 1002, :set 1018, :str 1022, :vec 1010},
-;                                    :-parent-hid nil},
-;                              1002 {:-me-key :num, :-me-val-hid 1003, :-parent-hid 1001},
-;                              1003 {:-leaf-val 5, :-parent-hid 1002},
-;                              1004 {:-me-key :map, :-me-val-hid 1005, :-parent-hid 1001},
-;                              1005 {:-mn-data {:a 1006, :b 1008}, :-parent-hid 1004},
-;                              1006 {:-me-key :a, :-me-val-hid 1007, :-parent-hid 1005},
-;                              1007 {:-leaf-val 1, :-parent-hid 1006},
-;                              1008 {:-me-key :b, :-me-val-hid 1009, :-parent-hid 1005},
-;                              1009 {:-leaf-val 2, :-parent-hid 1008},
-;                              1010 {:-me-key :vec, :-me-val-hid 1011, :-parent-hid 1001},
-;                              1011 {:-an-data {0 1012, 1 1014, 2 1016}, :-parent-hid 1010},
-;                              1012 {:-ae-elem-hid 1013, :-ae-idx 0, :-parent-hid 1011},
-;                              1013 {:-leaf-val 5, :-parent-hid 1012},
-;                              1014 {:-ae-elem-hid 1015, :-ae-idx 1, :-parent-hid 1011},
-;                              1015 {:-leaf-val 6, :-parent-hid 1014},
-;                              1016 {:-ae-elem-hid 1017, :-ae-idx 2, :-parent-hid 1011},
-;                              1017 {:-leaf-val 7, :-parent-hid 1016},
-;                              1018 {:-me-key :set, :-me-val-hid 1019, :-parent-hid 1001},
-;                              1019 {:-parent-hid 1018, :-sn-data {3 1021, 4 1020}},
-;                              1020 {:-leaf-val 4, :-parent-hid 1019},
-;                              1021 {:-leaf-val 3, :-parent-hid 1019},
-;                              1022 {:-me-key :str, :-me-val-hid 1023, :-parent-hid 1001},
-;                              1023 {:-leaf-val "hello", :-parent-hid 1022},
-;                              1024 {:-me-key :kw, :-me-val-hid 1025, :-parent-hid 1001},
-;                              1025 {:-leaf-val :nothing, :-parent-hid 1024}},
-;         :idx-leaf           #{[:nothing 1025] [1 1007] [2 1009] [3 1021] [4 1020] [5 1003]
-;                               [5 1013] [6 1015] [7 1017] ["hello" 1023]},
-;         :idx-map-entry-kv   #{[:a 1 1006] [:b 2 1008] [:kw :nothing 1024] [:num 5 1002]
-;                               [:str "hello" 1022]},
-;         :idx-map-entry-vk   #{[:nothing :kw 1024] [1 :a 1006] [2 :b 1008] [5 :num 1002]
-;                               ["hello" :str 1022]}})
 ;      (is= edn-val (td/hid->edn root-hid))
 ;      (let [hid-num (only (td/index-find-mapentry-key :num))]
 ;        (is= 1002 hid-num)

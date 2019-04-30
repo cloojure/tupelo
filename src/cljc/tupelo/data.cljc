@@ -98,8 +98,11 @@
 (defn new-tdb
   "Returns a new, empty db."
   []
-  {:eids-map    (sorted-set) ; holds eids of all map input collections
+  {
+   ; #todo convert to eid->src-type  (:map :array :set)
+   :eids-map    (sorted-set) ; holds eids of all map input collections
    :eids-array  (sorted-set) ; holds eids of all array input collections
+
    :eid->parent (sorted-map) ; map from eid to parent-eid
    :idx-eav     (index/empty-index)
    :idx-vae     (index/empty-index)
@@ -188,7 +191,7 @@
 (s/defn eid->edn :- s/Any
   "Returns the EDN subtree rooted at a eid."
   [eid-in :- EidType]
-  (let [eav-matches (index/split-key-prefix-matches [eid-in] (grab :idx-eav @*tdb*))
+  (let [eav-matches (index/prefix-matches [eid-in] (grab :idx-eav @*tdb*))
         result-map  (apply glue (sorted-map)
                       (forv [[eid-row attr-row val-row] eav-matches]
                         (do
