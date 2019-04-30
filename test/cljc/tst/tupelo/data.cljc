@@ -86,27 +86,42 @@
   (with-tdb (new-tdb)
     (eid-count-reset)
     (is= (deref *tdb*)
-      {:eids-map #{} :eids-array #{} :eid->parent {} :idx-eav #{} :idx-vae #{} :idx-ave #{}} )
+      {:eids-map #{} :eids-array #{} :eid->parent {} :idx-eav #{} :idx-vae #{} :idx-ave #{}})
+    (let [edn-val  {:a 1}
+          root-eid (td/add-edn edn-val)]
+      (is= 1001 root-eid)
+      (is= (unlazy (deref *tdb*))
+        {:eids-map    #{1001},
+         :eids-array  #{},
+         :eid->parent {1001 nil},
+         :idx-eav     #{[1001 :a {:leaf 1}]},
+         :idx-vae     #{[{:leaf 1} :a 1001]},
+         :idx-ave     #{[:a {:leaf 1} 1001]}})
+      (is= edn-val (td/eid->edn root-eid))) )
+  (with-tdb (new-tdb)
+    (eid-count-reset)
+    (let [edn-val  {:a 1 :b 2}
+          root-eid (td/add-edn edn-val)]
+      (is= 1001 root-eid)
+      (is= (spyx-pretty (unlazy (deref *tdb*)))
+        {:eid->parent {1001 nil},
+         :eids-array  #{},
+         :eids-map    #{1001},
+         :idx-eav     #{[1001 :a {:leaf 1}] [1001 :b {:leaf 2}]}
+         :idx-vae     #{[{:leaf 1} :a 1001] [{:leaf 2} :b 1001]}
+         :idx-ave     #{[:a {:leaf 1} 1001] [:b {:leaf 2} 1001]}})
+      (is= edn-val (td/eid->edn root-eid))) )
 
-
-      (let [edn-val  {:a 1}
-            root-eid (td/add-edn edn-val)]
-        (is= 1001 root-eid)
-        (is= (unlazy (deref *tdb*))
-          {:eids-map    #{1001},
-           :eids-array  #{},
-           :eid->parent {1001 nil},
-           :idx-eav     #{[1001 :a {:leaf 1}]},
-           :idx-vae     #{[{:leaf 1} :a 1001]},
-           :idx-ave     #{[:a {:leaf 1} 1001]}})
-
-        (is= edn-val (td/eid->edn root-eid))
-
-
-
-
-        )
-    ))
+  ;(with-tdb (new-tdb)
+  ;  (eid-count-reset)
+  ;  (let [edn-val  {:a 1 :b 2 :c {:d 4}}
+  ;        root-eid (td/add-edn edn-val)]
+  ;    (is= 1001 root-eid)
+  ;    (is= (spyx-pretty (unlazy (deref *tdb*)))
+  ;      9
+  ;      )
+  ;    (is= edn-val (td/eid->edn root-eid))) )
+  )
 
   ;  (let [edn-val  {:a 1}
   ;        root-hid (td/add-edn edn-val)]

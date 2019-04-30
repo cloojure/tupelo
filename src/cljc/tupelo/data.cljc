@@ -149,29 +149,23 @@
   ([edn-in :- s/Any] (add-edn nil edn-in))
   ([parent-eid :- (s/maybe EidType)
     edn-in :- s/Any]
-   (let [eid-fresh       (new-eid)
+   (let [eid-this        (new-eid)
          entity-type-key (cond
                            (map? edn-in) :eids-map
                            (array-like? edn-in) :eids-array
                            :else (throw (ex-info "unknown value found" (vals->map edn-in))))]
-     (swap! *tdb* (fn [tdb-map]
-                    (it-> tdb-map
-                      (update it entity-type-key set-add-eid eid-fresh)
-                      (update it :eid->parent assoc eid-fresh parent-eid)
+     (swap! *tdb* update entity-type-key set-add-eid eid-this)
+     (swap! *tdb* update :eid->parent assoc eid-this parent-eid)
+     (doseq [[attr-edn val-edn] edn-in]
+       (let [val-add (if (leaf-val? val-edn)
+                       (->Leaf val-edn)
+                       (->Eid (add-edn eid-this val-edn)))]
+         (swap! *tdb* update :idx-eav index/add-entry [eid-this attr-edn val-add])
+         (swap! *tdb* update :idx-vae index/add-entry [val-add attr-edn eid-this])
+         (swap! *tdb* update :idx-ave index/add-entry [attr-edn val-add eid-this])))
 
-                      (reduce
-                        (fn [cum-result [attr-edn val-edn]]
-                          (let [val-add (if (leaf-val? val-edn)
-                                          (->Leaf val-edn)
-                                          (->Eid (add-edn eid-fresh val-edn)))]
-                            (it-> cum-result
-                              (update it :idx-eav index/add-entry [eid-fresh attr-edn val-add])
-                              (update it :idx-vae index/add-entry [val-add attr-edn eid-fresh])
-                              (update it :idx-ave index/add-entry [attr-edn val-add eid-fresh]))))
-                        it
-                        edn-in)
-                      )))
-     eid-fresh)))
+
+     eid-this)))
 
 (s/defn eid->edn :- s/Any
   "Returns the EDN subtree rooted at a eid."
