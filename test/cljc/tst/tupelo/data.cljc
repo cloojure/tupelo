@@ -34,7 +34,7 @@
 
 #?(:cljs (enable-console-print!))
 
-(dotest-focus
+(dotest
   (let [ss123 (t/it-> (index/empty-index)
                 (conj it [1 :a])
                 (conj it [3 :a])
@@ -80,21 +80,23 @@
                   [1 #tupelo.data.Leaf{:raw 1}]
                   [1 #tupelo.data.Leaf{:raw 2}]
                   [1 #tupelo.data.Leaf{:raw 3}]]]
-    (is= (vec idx) expected))
+    (is= (vec idx) expected)) )
 
-
+(dotest-focus
   (with-tdb (new-tdb)
     (eid-count-reset)
-    (is= (deref *tdb*) {:map-eids #{}, :array-eids #{}, :idx-ekv {}, :idx-vke #{}, :idx-kve #{}} )
+    (is= (deref *tdb*)
+      {:map-eids #{} :array-eids #{} :eid-parent {} :idx-eav #{} :idx-vae #{} :idx-ave #{}} )
 
-))
 
-  ;  (let [edn-val  5
-  ;        root-hid (td/add-edn edn-val)]
-  ;    (is= (unlazy @td/*tdb*)
-  ;      9 )
-  ;    (is= edn-val (td/hid->edn root-hid)))
-  ;
+      ;(let [edn-val  5
+      ;      root-hid (td/add-edn edn-val)]
+      ;
+      ; ;(is= edn-val (td/hid->edn root-hid))
+      ;
+      ;  )
+    ))
+
   ;  (let [edn-val  {:a 1}
   ;        root-hid (td/add-edn edn-val)]
   ;    (is= (unlazy @td/*tdb*) ; coerce all from record to plain map for comparison

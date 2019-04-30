@@ -98,26 +98,12 @@
 (defn new-tdb
   "Returns a new, empty db."
   []
-  {:map-eids   (sorted-set)
-   :array-eids (sorted-set)
-   :idx-ekv    (sorted-map)
-   :idx-vke    (index/empty-index)
-   :idx-kve    (index/empty-index)
-   })
-
-(s/defn update-index-mapentry!
-  [me-val :- LeafType
-   me-key :- LeafType
-   me-eid :- EidType]
-  (swap! *tdb* (fn [tdb-map]
-                 (it-> tdb-map
-                   (update it :idx-map-entry-vk ; #todo make verify like fetch-in
-                     (fn [index-avl-set]
-                       (index/add-entry index-avl-set [me-val me-key me-eid])))
-                   (update it :idx-map-entry-kv ; #todo make verify like fetch-in
-                     (fn [index-avl-set]
-                       (index/add-entry index-avl-set [me-key me-val me-eid]))))))
-  nil)
+  {:map-eids    (sorted-set) ; holds eids of all map input collections
+   :array-eids  (sorted-set) ; holds eids of all array input collections
+   :eid-parent  (sorted-map) ; map from eid to parent-eid
+   :idx-eav     (index/empty-index)
+   :idx-vae     (index/empty-index)
+   :idx-ave     (index/empty-index) })
 
 ; (s/defn eid->node
 
@@ -132,28 +118,72 @@
   "Returns the next integer EID"
   [] (swap! eid-counter inc))
 
-;(s/defn add-edn :- EidType ; #todo maybe rename:  load-edn->eid  ???
-;  ([edn-val :- s/Any] (add-edn nil edn-val))
-;  ([eid-parent :- (s/maybe EidType)
-;    edn-val :- s/Any]
-;   (cond
-;     (map? edn-val) (let [eid-map-node (new-eid)]
-;                      (set-node! eid-map-node
-;                        (->MapNode eid-parent
-;                          (apply glue
-;                            (forv [[<key> <val>] edn-val]
-;                              (let [eid-me-node (new-eid)
-;                                    eid-leaf    (add-edn eid-me-node <val>)]
-;                                (when (leaf-val? <val>)
-;                                  (update-index-mapentry! <val> <key> eid-me-node))
-;                                (set-node! eid-me-node (->MapEntryNode eid-map-node <key> eid-leaf))
-;                                (map-entry <key> eid-me-node)))))))
-;
-;     (leaf-val? edn-val) (let [eid-leafnode (new-eid)]
-;                           (update-index-leaf! edn-val eid-leafnode)
-;                           (set-node! eid-leafnode (->LeafNode eid-parent edn-val)))
-;
-;     :else (throw (ex-info "unknown value found" (vals->map edn-val))))))
+(s/defn update-idxs!
+  [me-eid :- EidType
+   me-key :- LeafType
+   me-val :- LeafType]
+  (swap! *tdb* (fn [tdb-map]
+                 (it-> tdb-map
+
+                   (update it :idx-map-entry-vk ; #todo make verify like fetch-in
+                     (fn [index-avl-set]
+                       (index/add-entry index-avl-set [me-val me-key me-eid])))
+
+                   (update it :idx-map-entry-kv ; #todo make verify like fetch-in
+                     (fn [index-avl-set]
+                       (index/add-entry index-avl-set [me-key me-val me-eid])))
+                   )))
+  nil)
+
+(s/defn set-add-eid :- tsk/Set
+  [set-in :- tsk/Set
+   eid-in :- EidType]
+  (conj set-in eid-in))
+
+(s/defn set-remove-eid :- tsk/Set
+  [set-in :- tsk/Set
+   eid-in :- EidType]
+  (disj set-in eid-in))
+
+(s/defn add-edn :- EidType ; #todo maybe rename:  load-edn->eid  ???
+  ([edn-in :- s/Any] (add-edn nil edn-in))
+  ([parent-eid :- (s/maybe EidType)
+    edn-in :- s/Any]
+   (let [eid-curr (new-eid)
+         entity-type-key (cond
+                           (map? edn-in) :map-eids
+                           (array-like? edn-in) :array-eids
+                           :else (throw (ex-info "unknown value found" (vals->map edn-in)))) ]
+     (swap! *tdb* (fn [tdb-map]
+                    (it-> tdb-map
+                      (update it entity-type-key set-add-eid eid-curr)
+                      (update it :eid-parent assoc eid-curr parent-eid)
+
+                      (reduce
+                        (fn [cum-result [attr-edn val-edn]]
+                          (let [val-add (if (leaf-val? val-edn)
+                                          (->Leaf val-edn)
+                                          (->Eid (add-edn eid-curr val-edn)))]
+                            (it-> cum-result
+                              (update it :idx-eav index/add-entry [eid-curr attr-edn val-add])
+                              (update it :idx-vae index/add-entry [val-add attr-edn eid-curr])
+                              (update it :idx-ave index/add-entry [attr-edn val-add eid-curr]))))
+                        it
+                        edn-in)
+
+                      ))))))
+
+       ;(set-node! eid-this
+       ;  (->MapNode eid-parent
+       ;    (apply glue
+       ;      (forv [[<key> <val>] edn-in]
+       ;        (let [eid-me-node (new-eid)
+       ;              eid-leaf    (add-edn eid-me-node <val>)]
+       ;          (when (leaf-val? <val>)
+       ;            (update-index-mapentry! <val> <key> eid-me-node))
+       ;          (set-node! eid-me-node (->MapEntryNode eid-this <key> eid-leaf))
+       ;          (map-entry <key> eid-me-node)))))))
+
 
 
 ; (s/defn eid->edn :- s/Any
