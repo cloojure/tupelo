@@ -68,18 +68,18 @@
                    (index/add-entry [0 (->Leaf 2)])
                    (index/add-entry [0 (->Eid 2)]))
 
-        expected [[0 #tupelo.data.Eid{:raw 1}] ; tagged record literal
-                  [0 #tupelo.data.Eid{:raw 2}]
-                  [0 #tupelo.data.Eid{:raw 3}]
+        expected [[0 #tupelo.data.Eid{:eid 1}] ; tagged record literal
+                  [0 #tupelo.data.Eid{:eid 2}]
+                  [0 #tupelo.data.Eid{:eid 3}]
                   [0 (leaf 1)]
                   [0 (leaf 2)]
                   [0 (leaf 3)]
                   [1 (eid 1)]
                   [1 (eid 2)]
                   [1 (eid 3)]
-                  [1 #tupelo.data.Leaf{:raw 1}]
-                  [1 #tupelo.data.Leaf{:raw 2}]
-                  [1 #tupelo.data.Leaf{:raw 3}]]]
+                  [1 #tupelo.data.Leaf{:leaf 1}]
+                  [1 #tupelo.data.Leaf{:leaf 2}]
+                  [1 #tupelo.data.Leaf{:leaf 3}]]]
     (is= (vec idx) expected)) )
 
 (dotest-focus
