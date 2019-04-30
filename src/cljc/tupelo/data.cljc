@@ -77,6 +77,16 @@
   IContent
   (content [this] leaf))
 
+(s/defn eid :- Eid
+  "Wraps an eid value into an Eid record"
+  [arg :- EidType ]
+  (->Eid arg))
+
+(s/defn leaf :- Leaf
+  "Wraps a primitive value into a Leaf record"
+  [arg :- LeafType ]
+  (->Leaf arg))
+
 ;-----------------------------------------------------------------------------
 (def ^:dynamic ^:no-doc *tdb* nil)
 

@@ -43,14 +43,18 @@
     (is= #{[1 :a] [2 :a] [3 :a]} ss123)
     (is= [[1 :a] [2 :a] [3 :a]] (vec ss123))
     (is= #{[1 :a] [3 :a]} ss13))
-  (let [idx (-> (index/empty-index)
-              (index/add-entry [1 (->Leaf 3)])
-              (index/add-entry [1 (->Eid 3)])
-              (index/add-entry [1 (->Leaf 1)])
-              (index/add-entry [1 (->Eid 1)])
-              (index/add-entry [1 (->Leaf 2)])
-              (index/add-entry [1 (->Eid 2)])
 
+  ; Leaf and Hid records sort separately in the index
+  (let [idx (-> (index/empty-index)
+              ; using shortcut constructors
+              (index/add-entry [1 (leaf 3)])
+              (index/add-entry [1 (eid 3)])
+              (index/add-entry [1 (leaf 1)])
+              (index/add-entry [1 (eid 1)])
+              (index/add-entry [1 (leaf 2)])
+              (index/add-entry [1 (eid 2)])
+
+              ; using Clojure record constructors
               (index/add-entry [0 (->Leaf 3)])
               (index/add-entry [0 (->Eid 3)])
               (index/add-entry [0 (->Leaf 1)])
