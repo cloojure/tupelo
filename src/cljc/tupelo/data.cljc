@@ -184,6 +184,7 @@
   [eid-in :- EidType]
   (= [false true] (eid-flgs eid-in)))
 
+; #todo need to handle sets
 (s/defn eid->edn :- s/Any
   "Returns the EDN subtree rooted at a eid."
   [eid-in :- EidType]
