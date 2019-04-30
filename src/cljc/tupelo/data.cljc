@@ -64,18 +64,18 @@
 
 ;-----------------------------------------------------------------------------
 
-(defprotocol IContent
-  (content [this]))
+(defprotocol IRaw
+  (raw [this]))
 
 (s/defrecord Eid ; wraps an Entity Id (EID)
-  [eid :- (s/maybe EidType)]
-  IContent
-  (content [this] eid))
+  [raw :- (s/maybe EidType)]
+  IRaw
+  (raw [this] raw))
 
 (s/defrecord Leaf ; wraps a primitive leaf value
-  [leaf :- (s/maybe LeafType)]
-  IContent
-  (content [this] leaf))
+  [raw :- (s/maybe LeafType)]
+  IRaw
+  (raw [this] raw))
 
 (s/defn eid :- Eid
   "Wraps an eid value into an Eid record"

@@ -44,36 +44,43 @@
     (is= [[1 :a] [2 :a] [3 :a]] (vec ss123))
     (is= #{[1 :a] [3 :a]} ss13))
 
-  ; Leaf and Hid records sort separately in the index
-  (let [idx (-> (index/empty-index)
-              ; using shortcut constructors
-              (index/add-entry [1 (leaf 3)])
-              (index/add-entry [1 (eid 3)])
-              (index/add-entry [1 (leaf 1)])
-              (index/add-entry [1 (eid 1)])
-              (index/add-entry [1 (leaf 2)])
-              (index/add-entry [1 (eid 2)])
+  (is   (map? (leaf 3)))
+  (is   (map? {:a 1}))
+  (is   (record? (leaf 3)))
+  (isnt (record? {:a 1}))
 
-              ; using Clojure record constructors
-              (index/add-entry [0 (->Leaf 3)])
-              (index/add-entry [0 (->Eid 3)])
-              (index/add-entry [0 (->Leaf 1)])
-              (index/add-entry [0 (->Eid 1)])
-              (index/add-entry [0 (->Leaf 2)])
-              (index/add-entry [0 (->Eid 2)]))]
-    (is= (vec idx)
-      [[0 #tupelo.data.Eid{:eid 1}]
-       [0 #tupelo.data.Eid{:eid 2}]
-       [0 #tupelo.data.Eid{:eid 3}]
-       [0 #tupelo.data.Leaf{:leaf 1}]
-       [0 #tupelo.data.Leaf{:leaf 2}]
-       [0 #tupelo.data.Leaf{:leaf 3}]
-       [1 #tupelo.data.Eid{:eid 1}]
-       [1 #tupelo.data.Eid{:eid 2}]
-       [1 #tupelo.data.Eid{:eid 3}]
-       [1 #tupelo.data.Leaf{:leaf 1}]
-       [1 #tupelo.data.Leaf{:leaf 2}]
-       [1 #tupelo.data.Leaf{:leaf 3}]]))
+  ; Leaf and Hid records sort separately in the index. Eid sorts first since the type name
+  ; `tupelo.data.Eid` sorts before `tupelo.data.Leaf`
+  (let [idx      (-> (index/empty-index)
+                   ; using shortcut constructors
+                   (index/add-entry [1 (leaf 3)])
+                   (index/add-entry [1 (eid 3)])
+                   (index/add-entry [1 (leaf 1)])
+                   (index/add-entry [1 (eid 1)])
+                   (index/add-entry [1 (leaf 2)])
+                   (index/add-entry [1 (eid 2)])
+
+                   ; using Clojure record constructors
+                   (index/add-entry [0 (->Leaf 3)])
+                   (index/add-entry [0 (->Eid 3)])
+                   (index/add-entry [0 (->Leaf 1)])
+                   (index/add-entry [0 (->Eid 1)])
+                   (index/add-entry [0 (->Leaf 2)])
+                   (index/add-entry [0 (->Eid 2)]))
+
+        expected [[0 #tupelo.data.Eid{:raw 1}] ; tagged record literal
+                  [0 #tupelo.data.Eid{:raw 2}]
+                  [0 #tupelo.data.Eid{:raw 3}]
+                  [0 (leaf 1)]
+                  [0 (leaf 2)]
+                  [0 (leaf 3)]
+                  [1 (eid 1)]
+                  [1 (eid 2)]
+                  [1 (eid 3)]
+                  [1 #tupelo.data.Leaf{:raw 1}]
+                  [1 #tupelo.data.Leaf{:raw 2}]
+                  [1 #tupelo.data.Leaf{:raw 3}]]]
+    (is= (vec idx) expected))
 
 
   (with-tdb (new-tdb)

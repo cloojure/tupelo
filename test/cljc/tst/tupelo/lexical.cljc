@@ -26,6 +26,27 @@
 ; #todo fix for cljs
 
 (dotest
+  (defrecord Leaf [raw])
+  (defrecord Eid [raw])
+  (let [eid-0  (->Eid 0) ; "Eid" sorts before "Leaf"
+        eid-1  (->Eid 1)
+        leaf-0 (->Leaf 0)
+        leaf-1 (->Leaf 1)]
+    (is= "tst.tupelo.lexical.Eid" (lex/comparison-class eid-0))
+    (is= "tst.tupelo.lexical.Leaf" (lex/comparison-class leaf-0))
+    (is= [[:raw 0]] (spyx (seq eid-0)))
+    (is= [[:raw 1]] (spyx (seq leaf-1)))
+
+    (is (neg? (lex/compare-lex [eid-0] [eid-1])))
+    (is (zero? (lex/compare-lex [eid-0] [eid-0])))
+    (is (pos? (lex/compare-lex [eid-1] [eid-0])))
+
+    (is (neg? (lex/compare-lex [eid-0] [leaf-0])))
+    (is (neg? (lex/compare-lex [eid-0] [leaf-1])))
+    (is (neg? (lex/compare-lex [eid-1] [leaf-0])))
+    (is (neg? (lex/compare-lex [eid-1] [leaf-1]))) ))
+
+(dotest
   (let [ss123 (t/it-> (avl/sorted-set)
                 (conj it 1)
                 (conj it 3)
