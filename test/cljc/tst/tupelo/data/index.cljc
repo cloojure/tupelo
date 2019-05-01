@@ -33,7 +33,7 @@
 #?(:cljs (enable-console-print!))
 
 (dotest
-  (let [index   (it-> (tdi/->sorted-set-avl)
+  (let [index   (it-> (tdi/->index)
                   (tdi/add-entry it [2 :b])
                   (tdi/add-entry it [2 :c])
                   (tdi/add-entry it [2 :a])
@@ -61,7 +61,7 @@
                       [2 0]
                       [3]
                       [3 :y]]
-        expected-set (tdi/->sorted-set-avl expected-vec)
+        expected-set (tdi/->index expected-vec)
         data         (reverse expected-vec)
         result-set   (apply avl/sorted-set-by lex/compare-lex data)
         result-vec   (vec result-set)]
@@ -75,7 +75,7 @@
                     [1 2 nil]
                     [1 2 3]]
         data       (reverse expected)
-        result-vec (vec (tdi/->sorted-set-avl data))]
+        result-vec (vec (tdi/->index data))]
     (is= result-vec expected)))
 
 (dotest
@@ -86,7 +86,7 @@
     (is= #{1 2 3} lex-set)
     (is= {:a 1 :b 2 :c 3} lex-map))
 
-  (let [data-raw (tdi/->sorted-set-avl #{[:b 1] [:b 2] [:b 3]
+  (let [data-raw (tdi/->index #{[:b 1] [:b 2] [:b 3]
                                          [:f 1] [:f 2] [:f 3]
                                          [:h 1] [:h 2]})]
     ; test with prefix-key
@@ -120,7 +120,7 @@
        :larger  #{}}))
 
   ; test with full-key
-  (let [data-raw (tdi/->sorted-set-avl #{[:b 1] [:b 2] [:b 3]
+  (let [data-raw (tdi/->index #{[:b 1] [:b 2] [:b 3]
                                          [:f 1] [:f 2] [:f 3]
                                          [:h 1] [:h 2]})]
     (is= (tdi/split-key-prefix [:a 2] data-raw)

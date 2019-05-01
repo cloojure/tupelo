@@ -82,7 +82,7 @@
                   [1 #tupelo.data.Leaf{:leaf 3}]]]
     (is= (vec idx) expected)) )
 
-(dotest-focus
+(dotest
   (with-tdb (new-tdb)
     (eid-count-reset)
     (is= (deref *tdb*)
@@ -148,10 +148,49 @@
                      [{:leaf 10} 0 1002] [{:leaf 11} 1 1002] [{:leaf 12} 2 1002]}
          :idx-ave  #{[:a {:leaf 1} 1001] [:b {:leaf 2} 1001] [:c {:eid 1002} 1001]
                      [0 {:leaf 10} 1002] [1 {:leaf 11} 1002] [2 {:leaf 12} 1002]},})
-      (is= edn-val (td/eid->edn root-eid))))
+      (is= edn-val (td/eid->edn root-eid)))) )
 
+(dotest-focus
+  (with-tdb (new-tdb)
+    (eid-count-reset)
+    (let [data [{:a 1}
+                {:a 2}
+                {:a 3}
+                {:b 1}
+                {:b 2}
+                {:b 3}
+                {:c 1}
+                {:c 2}
+                {:c 3}]]
+      (doseq [m data]
+        (td/add-edn m))
+      (is= (unlazy @*tdb*)
+        {:eid-type {1001 :map, 1002 :map, 1003 :map, 1004 :map, 1005 :map, 1006 :map, 1007 :map, 1008 :map, 1009 :map},
+         :idx-ave  #{[:a {:leaf 1} 1001] [:a {:leaf 2} 1002] [:a {:leaf 3} 1003]
+                     [:b {:leaf 1} 1004] [:b {:leaf 2} 1005] [:b {:leaf 3} 1006]
+                     [:c {:leaf 1} 1007] [:c {:leaf 2} 1008] [:c {:leaf 3} 1009]},
+         :idx-eav  #{[1001 :a {:leaf 1}] [1002 :a {:leaf 2}] [1003 :a {:leaf 3}]
+                     [1004 :b {:leaf 1}] [1005 :b {:leaf 2}] [1006 :b {:leaf 3}]
+                     [1007 :c {:leaf 1}] [1008 :c {:leaf 2}] [1009 :c {:leaf 3}]},
+         :idx-vae  #{[{:leaf 1} :a 1001] [{:leaf 1} :b 1004] [{:leaf 1} :c 1007]
+                     [{:leaf 2} :a 1002] [{:leaf 2} :b 1005] [{:leaf 2} :c 1008]
+                     [{:leaf 3} :a 1003] [{:leaf 3} :b 1006] [{:leaf 3} :c 1009]}})
+      ;---------------------------------------------------------------------------------------------------
+      (is= (unlazy (lookup [1003 nil nil])) #{[1003 :a {:leaf 3}]})
+      (is= (unlazy (lookup [nil :b nil]))
+        #{[1004 :b {:leaf 1}]
+          [1005 :b {:leaf 2}]
+          [1006 :b {:leaf 3}]})
+      (is= (unlazy (lookup [nil nil (leaf 3)]))
+        #{[1003 :a {:leaf 3}]
+          [1006 :b {:leaf 3}]
+          [1009 :c {:leaf 3}]})
+      ;---------------------------------------------------------------------------------------------------
+      (is= (unlazy (lookup [nil :a (leaf 3)])) #{[1003 :a {:leaf 3}]})
+      (is= (unlazy (lookup [1009 nil (leaf 3)])) #{[1009 :c {:leaf 3}]})
+      (is= (unlazy (lookup [1005 :b nil])) #{[1005 :b {:leaf 2}]})))
 
-)
+  )
 
 ;(dotest
 ;  (td/with-tdb (td/new-tdb)

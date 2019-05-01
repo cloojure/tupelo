@@ -9,7 +9,8 @@
   (:use tupelo.core) ; #todo remove for cljs
   #?(:clj (:require
             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab glue map-entry indexed
-                                       forv vals->map fetch-in let-spy xlast xfirst
+                                       forv vals->map fetch-in let-spy xlast xfirst keep-if drop-if
+                                       xfirst xsecond xthird xlast
                                        ]]
             [tupelo.schema :as tsk]
             [tupelo.data.index :as index]
@@ -54,9 +55,9 @@
 
 (do       ; keep these in sync
   (s/defn leaf-val? :- s/Bool
-    "Returns true iff a value is of leaf type (number, string, keyword)"
-    [arg :- s/Any] (or (number? arg) (string? arg) (keyword? arg)))
-  (def LeafType (s/cond-pre s/Num s/Str s/Keyword))) ; instant, uuid, Time ID (TID) (as strings?)
+    "Returns true iff a value is of leaf type (number, string, keyword, nil)"
+    [arg :- s/Any] (or (nil? arg) (number? arg) (string? arg) (keyword? arg)))
+  (def LeafType (s/maybe (s/cond-pre s/Num s/Str s/Keyword)))) ; instant, uuid, Time ID (TID) (as strings?)
 
 (s/defn array-like? :- s/Bool
   "Returns true for vectors, lists, and seq's."
@@ -66,6 +67,8 @@
 (do       ; keep these in sync
   (def EntityType (s/cond-pre tsk/Map tsk/Vec))
   (s/defn entity-like? [arg] (or (map? arg) (array-like? arg))) )
+
+(def TripleIndex #{tsk/Triple})
 ;-----------------------------------------------------------------------------
 
 (defprotocol IRaw
@@ -107,8 +110,6 @@
    :idx-vae     (index/empty-index)
    :idx-ave     (index/empty-index)
    })
-
-; (s/defn eid->node
 
 (def ^:no-doc eid-count-base 1000)
 (def ^:no-doc eid-counter (atom eid-count-base))
@@ -167,6 +168,59 @@
                                                  result-vals)
                         :else (throw (ex-info "invalid entity type found" (vals->map entity-type)))))]
     result-out))
+
+(s/defn lookup :- TripleIndex ; #todo maybe use :unk or :* for unknown?
+  "Given a triple of [e a v] values, use the best index to find a matching subset, where
+  'nil' represents unknown values. Returns an index in [e a v] format."
+  [triple :- tsk/Triple]
+ ;(spyx triple)
+  (let [[e a v] triple]
+   ;(spyx [e a v])
+    (let [not-nil-flg          (fn [arg] (if (nil? arg) 0 1))
+          known-flgs           (mapv not-nil-flg triple)
+          found-entries        (cond
+                                 (= known-flgs [1 0 0]) (let [entries (index/prefix-matches [e] (grab :idx-eav @*tdb*))
+                                                              result  {:e-vals (mapv xfirst entries)
+                                                                       :a-vals (mapv xsecond entries)
+                                                                       :v-vals (mapv xthird entries)}]
+                                                          result)
+                                 (= known-flgs [0 1 0]) (let [entries (index/prefix-matches [a] (grab :idx-ave @*tdb*))
+                                                              result  {:a-vals (mapv xfirst entries)
+                                                                       :v-vals (mapv xsecond entries)
+                                                                       :e-vals (mapv xthird entries)}]
+                                                          result)
+
+                                 (= known-flgs [0 0 1]) (let [entries (index/prefix-matches [v] (grab :idx-vae @*tdb*))
+                                                              result  {:v-vals (mapv xfirst entries)
+                                                                       :a-vals (mapv xsecond entries)
+                                                                       :e-vals (mapv xthird entries)}]
+                                                          result)
+
+                                 (= known-flgs [1 1 0]) (let [entries (index/prefix-matches [e a] (grab :idx-eav @*tdb*))
+                                                              result  {:e-vals (mapv xfirst entries)
+                                                                       :a-vals (mapv xsecond entries)
+                                                                       :v-vals (mapv xthird entries)}]
+                                                          result)
+
+                                 (= known-flgs [0 1 1]) (let [entries (index/prefix-matches [a v] (grab :idx-ave @*tdb*))
+                                                              result  {:a-vals (mapv xfirst entries)
+                                                                       :v-vals (mapv xsecond entries)
+                                                                       :e-vals (mapv xthird entries)}]
+                                                          result)
+
+                                 (= known-flgs [1 0 1]) (let [entries-e  (index/prefix-matches [e] (grab :idx-eav @*tdb*))
+                                                              entries-ev (keep-if #(= v (xlast %)) entries-e)
+                                                              result     {:e-vals (mapv xfirst entries-ev)
+                                                                          :a-vals (mapv xsecond entries-ev)
+                                                                          :v-vals (mapv xthird entries-ev)}]
+                                                          result)
+                                 :else (throw (ex-info "invalid known-flags" (vals->map triple known-flgs))))
+          result-map->index-fn (fn [result-map]
+                                 (t/with-map-vals result-map [e-vals a-vals v-vals]
+                                   (index/->index (map vector e-vals a-vals v-vals))))
+          result-index         (result-map->index-fn found-entries)]
+      result-index)))
+
 
 ; (s/defn eid-nav :- [EidType]
 
@@ -258,6 +312,11 @@
 ;                               :else (throw (ex-info "invalid parent node" (vals->map path-node))))))]
 ;    parent-selectors))
 
+
+;(def idx-prefix-lookup
+;  (index/->index [[:e :a :v :idx-eav]
+;                  [:v :a :e :idx-vae]
+;                  [:a :v :e :idx-ave]]))
 
 
 

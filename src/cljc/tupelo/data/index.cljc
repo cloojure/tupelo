@@ -45,17 +45,16 @@
 (def IndexType  SortedSetType )
 (def IndexEntryType  tsk/Vec )
 
-(s/defn ->sorted-set-avl :- SortedSetType
-  "Converts a set into a lexically-sorted set"
-  ([] (->sorted-set-avl #{}))
-  ([some-set :- (s/cond-pre tsk/Set tsk/Vec)]
-   (into (avl/sorted-set-by lex/compare-lex) some-set)))
+(s/defn empty-index
+  "Returns an empty lexically-sorted index"
+  [] (avl/sorted-set-by lex/compare-lex))
+
+(s/defn ->index :- SortedSetType ; #todo enforce tupele element type?
+  "Converts a sequence (vec or set) into a lexically-sorted index"
+  [some-set :- (s/cond-pre tsk/Set tsk/Vec)]
+  (into (empty-index) some-set))
 ; #todo add (->sorted-map <map>)        => (into (sorted-map) <map>)
 ; #todo add (->sorted-vec <sequential>) => (vec (sort <vec>))
-
-(s/defn empty-index
-  "Returns a new, empty index"
-  [] (->sorted-set-avl))
 
 (s/defn bound-lower :- tsk/Vec
   "Given a lexical value as a vector such as [1 :a], returns a lower bound like [1]"
@@ -96,8 +95,8 @@
         result (if (nil? found-val)
                  (let [[matches-seq larger-seq] (split-with #(prefix-match? match-val %) larger-set)]
                    {:smaller smaller-set
-                    :matches (->sorted-set-avl matches-seq)
-                    :larger  (->sorted-set-avl larger-seq)})
+                    :matches (->index matches-seq)
+                    :larger  (->index larger-seq)})
                  {:smaller smaller-set
                   :matches (avl/sorted-set found-val)
                   :larger  larger-set})]
