@@ -530,12 +530,18 @@
   (throws? (t/contains-val?  [:a 1 :b 2] 1))
   (throws? (t/contains-val? #{:a 1 :b 2} 1)))
 
-(dotest
-  (is= (t/forv [x (range 4)] (* x x))
+(dotest-focus
+  (is=
+    (t/forv [x (range 4)] (* x x))
+    (t/for-list [x (range 4)] (* x x))
     [0 1 4 9] )
-  (is= (t/forv [x (range 23)] (* x x))
+  (is=
+    (t/forv [x (range 23)] (* x x))
+    (t/for-list [x (range 23)] (* x x))
     (for  [x (range 23)] (* x x)))
-  (is= (t/forv [x (range 5)  y (range 2 9)] (str x y))
+  (is=
+    (t/forv [x (range 5)  y (range 2 9)] (str x y))
+    (t/for-list [x (range 5)  y (range 2 9)] (str x y))
     (for  [x (range 5)  y (range 2 9)] (str x y))))
 
 (dotest
