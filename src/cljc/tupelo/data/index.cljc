@@ -127,6 +127,18 @@
     (throw (ex-info "entry not found in index" (vals->map entry))) )
   (disj index entry))
 
+;-----------------------------------------------------------------------------
+; #todo keep these?  tupelo.set/add  tupelo.set/remove
+;(s/defn set-add-eid :- tsk/Set
+;  [set-in :- tsk/Set
+;   eid-in :- EidType]
+;  (conj set-in eid-in))
+;
+;(s/defn set-remove-eid :- tsk/Set
+;  [set-in :- tsk/Set
+;   eid-in :- EidType]
+;  (disj set-in eid-in))
+
 
 
 

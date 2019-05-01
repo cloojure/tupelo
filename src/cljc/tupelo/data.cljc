@@ -52,7 +52,7 @@
     "Returns true iff the arg type is a legal EID value"
     [arg] (int? arg)))
 
-(do       ; keep these two in sync
+(do       ; keep these in sync
   (s/defn leaf-val? :- s/Bool
     "Returns true iff a value is of leaf type (number, string, keyword)"
     [arg :- s/Any] (or (number? arg) (string? arg) (keyword? arg)))
@@ -62,6 +62,10 @@
   "Returns true for vectors, lists, and seq's."
   [arg] (or (vector? arg) (list? arg) (seq? arg)))
 
+ ; #todo add tsk/Set
+(do       ; keep these in sync
+  (def EntityType (s/cond-pre tsk/Map tsk/Vec))
+  (s/defn entity-like? [arg] (or (map? arg) (array-like? arg))) )
 ;-----------------------------------------------------------------------------
 
 (defprotocol IRaw
@@ -98,15 +102,11 @@
 (defn new-tdb
   "Returns a new, empty db."
   []
-  {
-   ; #todo convert to eid->src-type  (:map :array :set)
-   :eids-map    (sorted-set) ; holds eids of all map input collections
-   :eids-array  (sorted-set) ; holds eids of all array input collections
-
-   :eid->parent (sorted-map) ; map from eid to parent-eid
+  {:eid-type    (sorted-map) ; source type of entity (:map :array :set)
    :idx-eav     (index/empty-index)
    :idx-vae     (index/empty-index)
-   :idx-ave     (index/empty-index)})
+   :idx-ave     (index/empty-index)
+   })
 
 ; (s/defn eid->node
 
@@ -121,71 +121,27 @@
   "Returns the next integer EID"
   [] (swap! eid-counter inc))
 
-(s/defn update-idxs!
-  [me-eid :- EidType
-   me-key :- LeafType
-   me-val :- LeafType]
-  (swap! *tdb* (fn [tdb-map]
-                 (it-> tdb-map
-
-                   (update it :idx-map-entry-vk ; #todo make verify like fetch-in
-                     (fn [index-avl-set]
-                       (index/add-entry index-avl-set [me-val me-key me-eid])))
-
-                   (update it :idx-map-entry-kv ; #todo make verify like fetch-in
-                     (fn [index-avl-set]
-                       (index/add-entry index-avl-set [me-key me-val me-eid])))
-                   )))
-  nil)
-
-(s/defn set-add-eid :- tsk/Set
-  [set-in :- tsk/Set
-   eid-in :- EidType]
-  (conj set-in eid-in))
-
-(s/defn set-remove-eid :- tsk/Set
-  [set-in :- tsk/Set
-   eid-in :- EidType]
-  (disj set-in eid-in))
-
 (s/defn add-edn :- EidType ; #todo maybe rename:  load-edn->eid  ???
-  ([edn-in :- s/Any] (add-edn nil edn-in))
-  ([parent-eid :- (s/maybe EidType)
-    edn-in :- s/Any]
+  "Add the EDN arg to the indexes, returning the EID"
+  ([edn-in :- s/Any]
+   (when-not (entity-like? edn-in)
+     (throw (ex-info "invalid edn-in" (vals->map edn-in))))
    (let [eid-this (new-eid)
          ctx      (cond
-                    (map? edn-in) {:entity-type-key :eids-map
-                                   :edn-use         edn-in}
-                    (array-like? edn-in) {:entity-type-key :eids-array
-                                          :edn-use         (indexed edn-in)}
+                    (map? edn-in)        {:entity-type :map   :edn-use edn-in}
+                    (array-like? edn-in) {:entity-type :array :edn-use (indexed edn-in)}
                     :else (throw (ex-info "unknown value found" (vals->map edn-in))))]
-     (t/with-map-vals ctx [entity-type-key edn-use]
-       (swap! *tdb* update entity-type-key set-add-eid eid-this)
-       (swap! *tdb* update :eid->parent assoc eid-this parent-eid)
+     (t/with-map-vals ctx [entity-type edn-use]
+       ; #todo could switch to transients & reduce here in a single swap
+       (swap! *tdb* update :eid-type assoc eid-this entity-type )
        (doseq [[attr-edn val-edn] edn-use]
          (let [val-add (if (leaf-val? val-edn)
                          (->Leaf val-edn)
-                         (->Eid (add-edn eid-this val-edn)))]
+                         (->Eid (add-edn val-edn)))]
            (swap! *tdb* update :idx-eav index/add-entry [eid-this attr-edn val-add])
            (swap! *tdb* update :idx-vae index/add-entry [val-add attr-edn eid-this])
            (swap! *tdb* update :idx-ave index/add-entry [attr-edn val-add eid-this]))))
      eid-this)))
-
-(defn eid-flgs [eid-in]
-  (let [map-flg (contains? (grab :eids-map @*tdb*) eid-in)
-        array-flg (contains? (grab :eids-array @*tdb*) eid-in)]
-    (assert (not= map-flg array-flg))
-    [map-flg array-flg] ))
-
-(s/defn map-eid? :- s/Bool
-  "Returns true iff eid is from a map entity"
-  [eid-in :- EidType]
-  (= [true false] (eid-flgs eid-in)))
-
-(s/defn array-eid? :- s/Bool
-  "Returns true iff eid is from an array entity"
-  [eid-in :- EidType]
-  (= [false true] (eid-flgs eid-in)))
 
 ; #todo need to handle sets
 (s/defn eid->edn :- s/Any
@@ -194,24 +150,25 @@
   (let [eav-matches (index/prefix-matches [eid-in] (grab :idx-eav @*tdb*))
         result-map  (apply glue (sorted-map)
                       (forv [[eid-row attr-row val-row] eav-matches]
-                        (do
-                         ;(spyx [eid-row attr-row val-row])
-                          (assert (= eid-in eid-row))
-                          (let [val-edn (if (instance? Leaf val-row)
-                                          (raw val-row) ; Leaf rec
-                                          (eid->edn (raw val-row)))] ; Eid rec
-                            (t/map-entry attr-row val-edn)))))
-        result-out  (if (map-eid? eid-in)
-                      result-map
-                      (let [result-keys (keys result-map)
-                            result-vals (vec (vals result-map))]
-                        (assert (= result-keys (range (count result-keys))))
-                        result-vals)) ]
+                        ;(spyx [eid-row attr-row val-row])
+                        (assert (= eid-in eid-row)) ; verify is a prefix match
+                        (let [val-edn (if (instance? Leaf val-row)
+                                        (raw val-row) ; Leaf rec
+                                        (eid->edn (raw val-row)))] ; Eid rec
+                          (t/map-entry attr-row val-edn))))
+        result-out  (let [entity-type (fetch-in @*tdb* [:eid-type eid-in])]
+                      (cond
+                        (= entity-type :map) result-map
+
+                        (= entity-type :array) (let [result-keys (keys result-map)
+                                                     result-vals (vec (vals result-map))]
+                                                 ; if array entity, keys should be in 0..N-1
+                                                 (assert (= result-keys (range (count result-keys))))
+                                                 result-vals)
+                        :else (throw (ex-info "invalid entity type found" (vals->map entity-type)))))]
     result-out))
 
 ; (s/defn eid-nav :- [EidType]
-
-;(s/defn eid->parent-eid :- (s/maybe EidType)
 
 ;(s/defn ^:private ^:no-doc index-find-val-impl ; #todo inline below
 

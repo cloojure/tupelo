@@ -86,17 +86,15 @@
   (with-tdb (new-tdb)
     (eid-count-reset)
     (is= (deref *tdb*)
-      {:eids-map #{} :eids-array #{} :eid->parent {} :idx-eav #{} :idx-vae #{} :idx-ave #{}})
+      {:eid-type {} :idx-eav #{} :idx-vae #{} :idx-ave #{}})
     (let [edn-val  {:a 1}
           root-eid (td/add-edn edn-val)]
       (is= 1001 root-eid)
       (is= (unlazy (deref *tdb*))
-        {:eids-map    #{1001},
-         :eids-array  #{},
-         :eid->parent {1001 nil},
-         :idx-eav     #{[1001 :a {:leaf 1}]},
-         :idx-vae     #{[{:leaf 1} :a 1001]},
-         :idx-ave     #{[:a {:leaf 1} 1001]}})
+        {:eid-type {1001 :map},
+         :idx-eav  #{[1001 :a {:leaf 1}]},
+         :idx-vae  #{[{:leaf 1} :a 1001]},
+         :idx-ave  #{[:a {:leaf 1} 1001]}})
       (is= edn-val (td/eid->edn root-eid))))
   (with-tdb (new-tdb)
     (eid-count-reset)
@@ -104,12 +102,10 @@
           root-eid (td/add-edn edn-val)]
       (is= 1001 root-eid)
       (is= (unlazy (deref *tdb*))
-        {:eid->parent {1001 nil},
-         :eids-array  #{},
-         :eids-map    #{1001},
-         :idx-eav     #{[1001 :a {:leaf 1}] [1001 :b {:leaf 2}]}
-         :idx-vae     #{[{:leaf 1} :a 1001] [{:leaf 2} :b 1001]}
-         :idx-ave     #{[:a {:leaf 1} 1001] [:b {:leaf 2} 1001]}})
+        {:eid-type {1001 :map},
+         :idx-eav  #{[1001 :a {:leaf 1}] [1001 :b {:leaf 2}]}
+         :idx-vae  #{[{:leaf 1} :a 1001] [{:leaf 2} :b 1001]}
+         :idx-ave  #{[:a {:leaf 1} 1001] [:b {:leaf 2} 1001]}})
       (is= edn-val (td/eid->edn root-eid))))
 
   (with-tdb (new-tdb)
@@ -118,15 +114,13 @@
           root-eid (td/add-edn edn-val)]
       (is= 1001 root-eid)
       (is= (unlazy (deref *tdb*))
-        {:eid->parent {1001 nil, 1002 1001},
-         :eids-array  #{},
-         :eids-map    #{1001 1002},
-         :idx-eav     #{[1001 :a {:leaf 1}] [1001 :b {:leaf 2}] [1001 :c {:eid 1002}]
-                        [1002 :d {:leaf 4}]},
-         :idx-ave     #{[:a {:leaf 1} 1001] [:b {:leaf 2} 1001] [:c {:eid 1002} 1001]
-                        [:d {:leaf 4} 1002]},
-         :idx-vae     #{[{:eid 1002} :c 1001] [{:leaf 1} :a 1001] [{:leaf 2} :b 1001]
-                        [{:leaf 4} :d 1002]}})
+        {:eid-type {1001 :map 1002 :map},
+         :idx-eav  #{[1001 :a {:leaf 1}] [1001 :b {:leaf 2}] [1001 :c {:eid 1002}]
+                     [1002 :d {:leaf 4}]},
+         :idx-ave  #{[:a {:leaf 1} 1001] [:b {:leaf 2} 1001] [:c {:eid 1002} 1001]
+                     [:d {:leaf 4} 1002]},
+         :idx-vae  #{[{:eid 1002} :c 1001] [{:leaf 1} :a 1001] [{:leaf 2} :b 1001]
+                     [{:leaf 4} :d 1002]}})
       (is= edn-val (td/eid->edn root-eid))))
 
   (with-tdb (new-tdb)
@@ -135,12 +129,10 @@
           root-eid (td/add-edn edn-val)]
       (is= 1001 root-eid)
       (is= (unlazy (deref *tdb*))
-        {:eid->parent {1001 nil},
-         :eids-array  #{1001},
-         :eids-map    #{},
-         :idx-eav     #{[1001 0 {:leaf 1}] [1001 1 {:leaf 2}] [1001 2 {:leaf 3}]},
-         :idx-vae     #{[{:leaf 1} 0 1001] [{:leaf 2} 1 1001] [{:leaf 3} 2 1001]}
-         :idx-ave     #{[0 {:leaf 1} 1001] [1 {:leaf 2} 1001] [2 {:leaf 3} 1001]},})
+        {:eid-type {1001 :array},
+         :idx-eav  #{[1001 0 {:leaf 1}] [1001 1 {:leaf 2}] [1001 2 {:leaf 3}]},
+         :idx-vae  #{[{:leaf 1} 0 1001] [{:leaf 2} 1 1001] [{:leaf 3} 2 1001]}
+         :idx-ave  #{[0 {:leaf 1} 1001] [1 {:leaf 2} 1001] [2 {:leaf 3} 1001]},})
       (is= edn-val (td/eid->edn root-eid))))
 
   (with-tdb (new-tdb)
@@ -149,19 +141,17 @@
           root-eid (td/add-edn edn-val)]
       (is= 1001 root-eid)
       (is= (unlazy (deref *tdb*))
-        {:eid->parent {1001 nil, 1002 1001},
-         :eids-array  #{1002},
-         :eids-map    #{1001},
-         :idx-eav     #{[1001 :a {:leaf 1}] [1001 :b {:leaf 2}] [1001 :c {:eid 1002}]
-                        [1002 0 {:leaf 10}] [1002 1 {:leaf 11}] [1002 2 {:leaf 12}]},
-         :idx-vae     #{[{:eid 1002} :c 1001] [{:leaf 1} :a 1001] [{:leaf 2} :b 1001]
-                        [{:leaf 10} 0 1002] [{:leaf 11} 1 1002] [{:leaf 12} 2 1002]}
-         :idx-ave     #{[:a {:leaf 1} 1001] [:b {:leaf 2} 1001] [:c {:eid 1002} 1001]
-                        [0 {:leaf 10} 1002] [1 {:leaf 11} 1002] [2 {:leaf 12} 1002]},})
+        {:eid-type {1002 :array 1001 :map},
+         :idx-eav  #{[1001 :a {:leaf 1}] [1001 :b {:leaf 2}] [1001 :c {:eid 1002}]
+                     [1002 0 {:leaf 10}] [1002 1 {:leaf 11}] [1002 2 {:leaf 12}]},
+         :idx-vae  #{[{:eid 1002} :c 1001] [{:leaf 1} :a 1001] [{:leaf 2} :b 1001]
+                     [{:leaf 10} 0 1002] [{:leaf 11} 1 1002] [{:leaf 12} 2 1002]}
+         :idx-ave  #{[:a {:leaf 1} 1001] [:b {:leaf 2} 1001] [:c {:eid 1002} 1001]
+                     [0 {:leaf 10} 1002] [1 {:leaf 11} 1002] [2 {:leaf 12} 1002]},})
       (is= edn-val (td/eid->edn root-eid))))
 
 
-  )
+)
 
 ;(dotest
 ;  (td/with-tdb (td/new-tdb)
