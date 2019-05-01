@@ -11,7 +11,7 @@
             [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
             [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty ]]
             [tupelo.data :as td]
-            [tupelo.data.index :as tdi]
+            [tupelo.data.index :as index]
             [tupelo.lexical :as lex]
             [clojure.data.avl :as avl]
             [schema.core :as s]
@@ -33,17 +33,17 @@
 #?(:cljs (enable-console-print!))
 
 (dotest
-  (let [index   (it-> (tdi/->index)
-                  (tdi/add-entry it [2 :b])
-                  (tdi/add-entry it [2 :c])
-                  (tdi/add-entry it [2 :a])
-                  (tdi/add-entry it [1]))
+  (let [index   (it-> (index/empty-index)
+                  (index/add-entry it [2 :b])
+                  (index/add-entry it [2 :c])
+                  (index/add-entry it [2 :a])
+                  (index/add-entry it [1]))
         index-2 (it-> index
-                  (tdi/remove-entry it [2 :c])
-                  (tdi/remove-entry it [1]))]
+                  (index/remove-entry it [2 :c])
+                  (index/remove-entry it [1]))]
     (is= (vec index) [[1] [2 :a] [2 :b] [2 :c]])
     (is= (vec index-2) [[2 :a] [2 :b]])
-    (throws? (tdi/remove-entry index-2 [2 :c]))))
+    (throws? (index/remove-entry index-2 [2 :c]))))
 
 (dotest
   (is= (vec (avl/sorted-set-by lex/compare-lex [1 :a] [1] [2]))
@@ -61,7 +61,7 @@
                       [2 0]
                       [3]
                       [3 :y]]
-        expected-set (tdi/->index expected-vec)
+        expected-set (index/->index expected-vec)
         data         (reverse expected-vec)
         result-set   (apply avl/sorted-set-by lex/compare-lex data)
         result-vec   (vec result-set)]
@@ -75,7 +75,7 @@
                     [1 2 nil]
                     [1 2 3]]
         data       (reverse expected)
-        result-vec (vec (tdi/->index data))]
+        result-vec (vec (index/->index data))]
     (is= result-vec expected)))
 
 (dotest
@@ -86,68 +86,68 @@
     (is= #{1 2 3} lex-set)
     (is= {:a 1 :b 2 :c 3} lex-map))
 
-  (let [data-raw (tdi/->index #{[:b 1] [:b 2] [:b 3]
+  (let [data-raw (index/->index #{[:b 1] [:b 2] [:b 3]
                                          [:f 1] [:f 2] [:f 3]
                                          [:h 1] [:h 2]})]
     ; test with prefix-key
-    (is= (tdi/split-key-prefix (tdi/bound-lower [:a 2]) data-raw)
+    (is= (index/split-key-prefix (index/bound-lower [:a 2]) data-raw)
       {:smaller #{},
        :matches #{},
        :larger  #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
-    (is= (tdi/split-key-prefix (tdi/bound-lower [:b 2]) data-raw)
+    (is= (index/split-key-prefix (index/bound-lower [:b 2]) data-raw)
       {:smaller #{}
        :matches #{[:b 1] [:b 2] [:b 3]},
        :larger  #{[:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
-    (is= (tdi/split-key-prefix (tdi/bound-lower [:c 2]) data-raw)
+    (is= (index/split-key-prefix (index/bound-lower [:c 2]) data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3]},
        :matches #{}
        :larger  #{[:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
-    (is= (tdi/split-key-prefix (tdi/bound-lower [:f 2]) data-raw)
+    (is= (index/split-key-prefix (index/bound-lower [:f 2]) data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3]},
        :matches #{[:f 1] [:f 2] [:f 3]},
        :larger  #{[:h 1] [:h 2]}})
-    (is= (tdi/split-key-prefix (tdi/bound-lower [:g 2]) data-raw)
+    (is= (index/split-key-prefix (index/bound-lower [:g 2]) data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3]},
        :matches #{},
        :larger  #{[:h 1] [:h 2]}})
-    (is= (tdi/split-key-prefix (tdi/bound-lower [:h 2]) data-raw)
+    (is= (index/split-key-prefix (index/bound-lower [:h 2]) data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3]},
        :matches #{[:h 1] [:h 2]}
        :larger  #{}})
-    (is= (tdi/split-key-prefix (tdi/bound-lower [:joker 2]) data-raw)
+    (is= (index/split-key-prefix (index/bound-lower [:joker 2]) data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]},
        :matches #{}
        :larger  #{}}))
 
   ; test with full-key
-  (let [data-raw (tdi/->index #{[:b 1] [:b 2] [:b 3]
+  (let [data-raw (index/->index #{[:b 1] [:b 2] [:b 3]
                                          [:f 1] [:f 2] [:f 3]
                                          [:h 1] [:h 2]})]
-    (is= (tdi/split-key-prefix [:a 2] data-raw)
+    (is= (index/split-key-prefix [:a 2] data-raw)
       {:smaller #{},
        :matches #{},
        :larger  #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
-    (is= (tdi/split-key-prefix [:b 2] data-raw)
+    (is= (index/split-key-prefix [:b 2] data-raw)
       {:smaller #{[:b 1]}
        :matches #{ [:b 2] },
        :larger  #{[:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
-    (is= (tdi/split-key-prefix [:c 2] data-raw)
+    (is= (index/split-key-prefix [:c 2] data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3]},
        :matches #{}
        :larger  #{[:f 1] [:f 2] [:f 3] [:h 1] [:h 2]}})
-    (is= (tdi/split-key-prefix [:f 2] data-raw)
+    (is= (index/split-key-prefix [:f 2] data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1]},
        :matches #{[:f 2]},
        :larger  #{[:f 3] [:h 1] [:h 2]}})
-    (is= (tdi/split-key-prefix [:g 2] data-raw)
+    (is= (index/split-key-prefix [:g 2] data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3]},
        :matches #{},
        :larger  #{[:h 1] [:h 2]}})
-    (is= (tdi/split-key-prefix [:h 2] data-raw)
+    (is= (index/split-key-prefix [:h 2] data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1]},
        :matches #{ [:h 2]}
        :larger  #{}})
-    (is= (tdi/split-key-prefix [:joker 2] data-raw)
+    (is= (index/split-key-prefix [:joker 2] data-raw)
       {:smaller #{[:b 1] [:b 2] [:b 3] [:f 1] [:f 2] [:f 3] [:h 1] [:h 2]},
        :matches #{}
        :larger  #{}}))
