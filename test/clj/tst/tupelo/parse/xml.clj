@@ -1,7 +1,6 @@
 (ns tst.tupelo.parse.xml
   (:use tupelo.core tupelo.test)
   (:require
-    [clojure.data :as data] ; #todo add clojure.data.xml example
     [clojure.data.xml :as clj-xml]
     [tupelo.parse.tagsoup :as tf-tagsoup]
     [tupelo.parse.xml :as tf-xml]
@@ -13,7 +12,7 @@
                 <address>1 hacker way</address>
                 <phone></phone>
                 <school>
-                    <name>Joe</name>
+                    <name>Hard Knocks</name>
                     <state>CA</state>
                     <type>FOOBAR</type>
                 </school>
@@ -37,7 +36,7 @@
                                  {:tag     :school,
                                   :attrs   nil,
                                   :content ["\n                    "
-                                            {:tag :name, :attrs nil, :content ["Joe"]}
+                                            {:tag :name, :attrs nil, :content ["Hard Knocks"]}
                                             "\n                    "
                                             {:tag :state, :attrs nil, :content ["CA"]}
                                             "\n                    "
@@ -68,7 +67,7 @@
                                        {:tag     :school,
                                         :attrs   {},
                                         :content ["\n                    "
-                                                  {:tag :name, :attrs {}, :content ["Joe"]}
+                                                  {:tag :name, :attrs {}, :content ["Hard Knocks"]}
                                                   "\n                    "
                                                   {:tag :state, :attrs {}, :content ["CA"]}
                                                   "\n                    "
@@ -94,7 +93,7 @@
              {:tag :phone, :attrs {}, :content []}
              {:tag     :school,
               :attrs   {},
-              :content [{:tag :name, :attrs {}, :content ["Joe"]}
+              :content [{:tag :name, :attrs {}, :content ["Hard Knocks"]}
                         {:tag :state, :attrs {}, :content ["CA"]}
                         {:tag :type, :attrs {}, :content ["FOOBAR"]}]}
              {:tag     :college,
@@ -129,7 +128,26 @@
     (is= enlive-tree-normalized-nonblank tf-xml-data-reader)
     (is= enlive-tree-normalized-nonblank tf-tagsoup-data) ))
 
-
+(dotest
+  (let [xml-str-out (clj-xml/indent-str enlive-tree-normalized-nonblank)]
+    (is-nonblank= xml-str-out
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+      <foo>
+        <name>John</name>
+        <address>1 hacker way</address>
+        <phone/>
+        <school>
+          <name>Hard Knocks</name>
+          <state>CA</state>
+          <type>FOOBAR</type>
+        </school>
+        <college>
+          <name>mit</name>
+          <address/>
+          <state>Denial</state>
+        </college>
+      </foo> "
+      )))
 
 
 

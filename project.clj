@@ -48,6 +48,8 @@
              }
                ; :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
+  :test-refresh {:quiet true }
+
   :codox {:src-dir-uri               "http://github.com/cloojure/tupelo/blob/master/"
           :src-linenum-anchor-prefix "L"
           :source-paths               ["src/clj" "src/cljc"]
