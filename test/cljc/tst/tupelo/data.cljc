@@ -44,21 +44,21 @@
     (is= [[1 :a] [2 :a] [3 :a]] (vec ss123))
     (is= #{[1 :a] [3 :a]} ss13))
 
-  (is   (map? (leaf 3)))
+  (is   (map? (->Leaf 3)))
   (is   (map? {:a 1}))
-  (is   (record? (leaf 3)))
+  (is   (record? (->Leaf 3)))
   (isnt (record? {:a 1}))
 
   ; Leaf and Hid records sort separately in the index. Eid sorts first since the type name
   ; `tupelo.data.Eid` sorts before `tupelo.data.Leaf`
   (let [idx      (-> (index/empty-index)
                    ; using shortcut constructors
-                   (index/add-entry [1 (leaf 3)])
-                   (index/add-entry [1 (eid 3)])
-                   (index/add-entry [1 (leaf 1)])
-                   (index/add-entry [1 (eid 1)])
-                   (index/add-entry [1 (leaf 2)])
-                   (index/add-entry [1 (eid 2)])
+                   (index/add-entry [1 (->Leaf 3)])
+                   (index/add-entry [1 (->Eid 3)])
+                   (index/add-entry [1 (->Leaf 1)])
+                   (index/add-entry [1 (->Eid 1)])
+                   (index/add-entry [1 (->Leaf 2)])
+                   (index/add-entry [1 (->Eid 2)])
 
                    ; using Clojure record constructors
                    (index/add-entry [0 (->Leaf 3)])
@@ -71,12 +71,12 @@
         expected [[0 #tupelo.data.Eid{:eid 1}] ; tagged record literal
                   [0 #tupelo.data.Eid{:eid 2}]
                   [0 #tupelo.data.Eid{:eid 3}]
-                  [0 (leaf 1)]
-                  [0 (leaf 2)]
-                  [0 (leaf 3)]
-                  [1 (eid 1)]
-                  [1 (eid 2)]
-                  [1 (eid 3)]
+                  [0 (->Leaf 1)]
+                  [0 (->Leaf 2)]
+                  [0 (->Leaf 3)]
+                  [1 (->Eid 1)]
+                  [1 (->Eid 2)]
+                  [1 (->Eid 3)]
                   [1 #tupelo.data.Leaf{:leaf 1}]
                   [1 #tupelo.data.Leaf{:leaf 2}]
                   [1 #tupelo.data.Leaf{:leaf 3}]]]
@@ -89,68 +89,89 @@
       {:eid-type {} :idx-eav #{} :idx-vae #{} :idx-ave #{}})
     (let [edn-val  {:a 1}
           root-eid (td/add-edn edn-val)]
-      (is= 1001 root-eid)
+      (is= (->Eid 1001) root-eid)
       (is= (unlazy (deref *tdb*))
-        {:eid-type {1001 :map},
-         :idx-eav  #{[1001 :a {:leaf 1}]},
-         :idx-vae  #{[{:leaf 1} :a 1001]},
-         :idx-ave  #{[:a {:leaf 1} 1001]}})
+        {:eid-type {{:eid 1001} :map},
+         :idx-ave #{[{:attr :a} {:leaf 1} {:eid 1001}]},
+         :idx-eav #{[{:eid 1001} {:attr :a} {:leaf 1}]},
+         :idx-vae #{[{:leaf 1} {:attr :a} {:eid 1001}]}} )
       (is= edn-val (td/eid->edn root-eid))))
   (with-tdb (new-tdb)
     (eid-count-reset)
     (let [edn-val  {:a 1 :b 2}
           root-eid (td/add-edn edn-val)]
-      (is= 1001 root-eid)
+      (is= (->Eid 1001) root-eid)
       (is= (unlazy (deref *tdb*))
-        {:eid-type {1001 :map},
-         :idx-eav  #{[1001 :a {:leaf 1}] [1001 :b {:leaf 2}]}
-         :idx-vae  #{[{:leaf 1} :a 1001] [{:leaf 2} :b 1001]}
-         :idx-ave  #{[:a {:leaf 1} 1001] [:b {:leaf 2} 1001]}})
+        {:eid-type {{:eid 1001} :map},
+         :idx-ave #{[{:attr :a} {:leaf 1} {:eid 1001}] [{:attr :b} {:leaf 2} {:eid 1001}]},
+         :idx-eav #{[{:eid 1001} {:attr :a} {:leaf 1}] [{:eid 1001} {:attr :b} {:leaf 2}]},
+         :idx-vae #{[{:leaf 1} {:attr :a} {:eid 1001}] [{:leaf 2} {:attr :b} {:eid 1001}]}})
       (is= edn-val (td/eid->edn root-eid))))
-
   (with-tdb (new-tdb)
     (eid-count-reset)
     (let [edn-val  {:a 1 :b 2 :c {:d 4}}
           root-eid (td/add-edn edn-val)]
-      (is= 1001 root-eid)
+      (is= (->Eid 1001) root-eid)
       (is= (unlazy (deref *tdb*))
-        {:eid-type {1001 :map 1002 :map},
-         :idx-eav  #{[1001 :a {:leaf 1}] [1001 :b {:leaf 2}] [1001 :c {:eid 1002}]
-                     [1002 :d {:leaf 4}]},
-         :idx-ave  #{[:a {:leaf 1} 1001] [:b {:leaf 2} 1001] [:c {:eid 1002} 1001]
-                     [:d {:leaf 4} 1002]},
-         :idx-vae  #{[{:eid 1002} :c 1001] [{:leaf 1} :a 1001] [{:leaf 2} :b 1001]
-                     [{:leaf 4} :d 1002]}})
+        {:eid-type {{:eid 1001} :map, {:eid 1002} :map},
+         :idx-ave  #{[{:attr :a} {:leaf 1} {:eid 1001}]
+                     [{:attr :b} {:leaf 2} {:eid 1001}]
+                     [{:attr :c} {:eid 1002} {:eid 1001}]
+                     [{:attr :d} {:leaf 4} {:eid 1002}]},
+         :idx-eav  #{[{:eid 1001} {:attr :a} {:leaf 1}]
+                     [{:eid 1001} {:attr :b} {:leaf 2}]
+                     [{:eid 1001} {:attr :c} {:eid 1002}]
+                     [{:eid 1002} {:attr :d} {:leaf 4}]},
+         :idx-vae  #{[{:eid 1002} {:attr :c} {:eid 1001}]
+                     [{:leaf 1} {:attr :a} {:eid 1001}]
+                     [{:leaf 2} {:attr :b} {:eid 1001}]
+                     [{:leaf 4} {:attr :d} {:eid 1002}]}})
       (is= edn-val (td/eid->edn root-eid))))
 
   (with-tdb (new-tdb)
     (eid-count-reset)
     (let [edn-val  [1 2 3]
           root-eid (td/add-edn edn-val)]
-      (is= 1001 root-eid)
       (is= (unlazy (deref *tdb*))
-        {:eid-type {1001 :array},
-         :idx-eav  #{[1001 0 {:leaf 1}] [1001 1 {:leaf 2}] [1001 2 {:leaf 3}]},
-         :idx-vae  #{[{:leaf 1} 0 1001] [{:leaf 2} 1 1001] [{:leaf 3} 2 1001]}
-         :idx-ave  #{[0 {:leaf 1} 1001] [1 {:leaf 2} 1001] [2 {:leaf 3} 1001]},})
+        {:eid-type {{:eid 1001} :array},
+         :idx-ave  #{[{:attr 0} {:leaf 1} {:eid 1001}]
+                     [{:attr 1} {:leaf 2} {:eid 1001}]
+                     [{:attr 2} {:leaf 3} {:eid 1001}]},
+         :idx-eav  #{[{:eid 1001} {:attr 0} {:leaf 1}]
+                     [{:eid 1001} {:attr 1} {:leaf 2}]
+                     [{:eid 1001} {:attr 2} {:leaf 3}]},
+         :idx-vae  #{[{:leaf 1} {:attr 0} {:eid 1001}]
+                     [{:leaf 2} {:attr 1} {:eid 1001}]
+                     [{:leaf 3} {:attr 2} {:eid 1001}]}})
       (is= edn-val (td/eid->edn root-eid))))
 
   (with-tdb (new-tdb)
     (eid-count-reset)
     (let [edn-val  {:a 1 :b 2 :c [10 11 12]}
           root-eid (td/add-edn edn-val)]
-      (is= 1001 root-eid)
       (is= (unlazy (deref *tdb*))
-        {:eid-type {1002 :array 1001 :map},
-         :idx-eav  #{[1001 :a {:leaf 1}] [1001 :b {:leaf 2}] [1001 :c {:eid 1002}]
-                     [1002 0 {:leaf 10}] [1002 1 {:leaf 11}] [1002 2 {:leaf 12}]},
-         :idx-vae  #{[{:eid 1002} :c 1001] [{:leaf 1} :a 1001] [{:leaf 2} :b 1001]
-                     [{:leaf 10} 0 1002] [{:leaf 11} 1 1002] [{:leaf 12} 2 1002]}
-         :idx-ave  #{[:a {:leaf 1} 1001] [:b {:leaf 2} 1001] [:c {:eid 1002} 1001]
-                     [0 {:leaf 10} 1002] [1 {:leaf 11} 1002] [2 {:leaf 12} 1002]},})
+        {:eid-type {{:eid 1001} :map, {:eid 1002} :array},
+         :idx-ave  #{[{:attr :a} {:leaf 1} {:eid 1001}]
+                     [{:attr :b} {:leaf 2} {:eid 1001}]
+                     [{:attr :c} {:eid 1002} {:eid 1001}]
+                     [{:attr 0} {:leaf 10} {:eid 1002}]
+                     [{:attr 1} {:leaf 11} {:eid 1002}]
+                     [{:attr 2} {:leaf 12} {:eid 1002}]},
+         :idx-eav  #{[{:eid 1001} {:attr :a} {:leaf 1}]
+                     [{:eid 1001} {:attr :b} {:leaf 2}]
+                     [{:eid 1001} {:attr :c} {:eid 1002}]
+                     [{:eid 1002} {:attr 0} {:leaf 10}]
+                     [{:eid 1002} {:attr 1} {:leaf 11}]
+                     [{:eid 1002} {:attr 2} {:leaf 12}]},
+         :idx-vae  #{[{:eid 1002} {:attr :c} {:eid 1001}]
+                     [{:leaf 1} {:attr :a} {:eid 1001}]
+                     [{:leaf 2} {:attr :b} {:eid 1001}]
+                     [{:leaf 10} {:attr 0} {:eid 1002}]
+                     [{:leaf 11} {:attr 1} {:eid 1002}]
+                     [{:leaf 12} {:attr 2} {:eid 1002}]}} )
       (is= edn-val (td/eid->edn root-eid)))) )
 
-(dotest-focus
+(dotest
   (with-tdb (new-tdb)
     (eid-count-reset)
     (let [data [{:a 1}
@@ -165,30 +186,60 @@
       (doseq [m data]
         (td/add-edn m))
       (is= (unlazy @*tdb*)
-        {:eid-type {1001 :map, 1002 :map, 1003 :map, 1004 :map, 1005 :map, 1006 :map, 1007 :map, 1008 :map, 1009 :map},
-         :idx-ave  #{[:a {:leaf 1} 1001] [:a {:leaf 2} 1002] [:a {:leaf 3} 1003]
-                     [:b {:leaf 1} 1004] [:b {:leaf 2} 1005] [:b {:leaf 3} 1006]
-                     [:c {:leaf 1} 1007] [:c {:leaf 2} 1008] [:c {:leaf 3} 1009]},
-         :idx-eav  #{[1001 :a {:leaf 1}] [1002 :a {:leaf 2}] [1003 :a {:leaf 3}]
-                     [1004 :b {:leaf 1}] [1005 :b {:leaf 2}] [1006 :b {:leaf 3}]
-                     [1007 :c {:leaf 1}] [1008 :c {:leaf 2}] [1009 :c {:leaf 3}]},
-         :idx-vae  #{[{:leaf 1} :a 1001] [{:leaf 1} :b 1004] [{:leaf 1} :c 1007]
-                     [{:leaf 2} :a 1002] [{:leaf 2} :b 1005] [{:leaf 2} :c 1008]
-                     [{:leaf 3} :a 1003] [{:leaf 3} :b 1006] [{:leaf 3} :c 1009]}})
+        {:eid-type {{:eid 1001} :map,
+                    {:eid 1002} :map,
+                    {:eid 1003} :map,
+                    {:eid 1004} :map,
+                    {:eid 1005} :map,
+                    {:eid 1006} :map,
+                    {:eid 1007} :map,
+                    {:eid 1008} :map,
+                    {:eid 1009} :map},
+         :idx-ave  #{[{:attr :a} {:leaf 1} {:eid 1001}]
+                     [{:attr :a} {:leaf 2} {:eid 1002}]
+                     [{:attr :a} {:leaf 3} {:eid 1003}]
+                     [{:attr :b} {:leaf 1} {:eid 1004}]
+                     [{:attr :b} {:leaf 2} {:eid 1005}]
+                     [{:attr :b} {:leaf 3} {:eid 1006}]
+                     [{:attr :c} {:leaf 1} {:eid 1007}]
+                     [{:attr :c} {:leaf 2} {:eid 1008}]
+                     [{:attr :c} {:leaf 3} {:eid 1009}]},
+         :idx-eav  #{[{:eid 1001} {:attr :a} {:leaf 1}]
+                     [{:eid 1002} {:attr :a} {:leaf 2}]
+                     [{:eid 1003} {:attr :a} {:leaf 3}]
+                     [{:eid 1004} {:attr :b} {:leaf 1}]
+                     [{:eid 1005} {:attr :b} {:leaf 2}]
+                     [{:eid 1006} {:attr :b} {:leaf 3}]
+                     [{:eid 1007} {:attr :c} {:leaf 1}]
+                     [{:eid 1008} {:attr :c} {:leaf 2}]
+                     [{:eid 1009} {:attr :c} {:leaf 3}]},
+         :idx-vae  #{[{:leaf 1} {:attr :a} {:eid 1001}]
+                     [{:leaf 1} {:attr :b} {:eid 1004}]
+                     [{:leaf 1} {:attr :c} {:eid 1007}]
+                     [{:leaf 2} {:attr :a} {:eid 1002}]
+                     [{:leaf 2} {:attr :b} {:eid 1005}]
+                     [{:leaf 2} {:attr :c} {:eid 1008}]
+                     [{:leaf 3} {:attr :a} {:eid 1003}]
+                     [{:leaf 3} {:attr :b} {:eid 1006}]
+                     [{:leaf 3} {:attr :c} {:eid 1009}]}} )
       ;---------------------------------------------------------------------------------------------------
-      (is= (unlazy (lookup [1003 nil nil])) #{[1003 :a {:leaf 3}]})
-      (is= (unlazy (lookup [nil :b nil]))
-        #{[1004 :b {:leaf 1}]
-          [1005 :b {:leaf 2}]
-          [1006 :b {:leaf 3}]})
-      (is= (unlazy (lookup [nil nil (leaf 3)]))
-        #{[1003 :a {:leaf 3}]
-          [1006 :b {:leaf 3}]
-          [1009 :c {:leaf 3}]})
+      (is= (unlazy (lookup [(->Eid 1003) nil nil]))
+        #{[{:eid 1003} {:attr :a} {:leaf 3}]})
+      (is= (unlazy (lookup [nil (->Attr :b) nil]))
+        #{[{:eid 1004} {:attr :b} {:leaf 1}]
+          [{:eid 1005} {:attr :b} {:leaf 2}]
+          [{:eid 1006} {:attr :b} {:leaf 3}]} )
+      (is= (unlazy (lookup [nil nil (->Leaf 3)]))
+        #{[{:eid 1003} {:attr :a} {:leaf 3}]
+          [{:eid 1006} {:attr :b} {:leaf 3}]
+          [{:eid 1009} {:attr :c} {:leaf 3}]} )
       ;---------------------------------------------------------------------------------------------------
-      (is= (unlazy (lookup [nil :a (leaf 3)])) #{[1003 :a {:leaf 3}]})
-      (is= (unlazy (lookup [1009 nil (leaf 3)])) #{[1009 :c {:leaf 3}]})
-      (is= (unlazy (lookup [1005 :b nil])) #{[1005 :b {:leaf 2}]})))
+      (is= (unlazy (lookup [nil (->Attr :a) (->Leaf 3)]))
+        #{[{:eid 1003} {:attr :a} {:leaf 3}]})
+      (is= (unlazy (lookup [(->Eid 1009) nil (->Leaf 3)]))
+        #{[{:eid 1009} {:attr :c} {:leaf 3}]} )
+      (is= (unlazy (lookup [(->Eid 1005) (->Attr :b) nil]))
+        #{[{:eid 1005} {:attr :b} {:leaf 2}]} )))
 
   )
 

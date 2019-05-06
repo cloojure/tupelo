@@ -530,7 +530,7 @@
   (throws? (t/contains-val?  [:a 1 :b 2] 1))
   (throws? (t/contains-val? #{:a 1 :b 2} 1)))
 
-(dotest-focus
+(dotest
   (is=
     (t/forv [x (range 4)] (* x x))
     (t/for-list [x (range 4)] (* x x))

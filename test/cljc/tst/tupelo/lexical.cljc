@@ -34,8 +34,8 @@
         leaf-1 (->Leaf 1)]
     (is= "tst.tupelo.lexical.Eid" (lex/comparison-class eid-0))
     (is= "tst.tupelo.lexical.Leaf" (lex/comparison-class leaf-0))
-    (is= [[:raw 0]] (spyx (seq eid-0)))
-    (is= [[:raw 1]] (spyx (seq leaf-1)))
+    (is= [[:raw 0]] (seq eid-0))
+    (is= [[:raw 1]] (seq leaf-1))
 
     (is (neg? (lex/compare-lex [eid-0] [eid-1])))
     (is (zero? (lex/compare-lex [eid-0] [eid-0])))

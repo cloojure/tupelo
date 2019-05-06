@@ -45,13 +45,21 @@
 (def age-of-wisdom 30)
 
 ;---------------------------------------------------------------------------------------------------
-(do       ; keep these two in sync
+(do       ; keep these in sync
   (def EidType
     "The Plumatic Schema type name for a pointer to a tdb node (abbrev. for Hex ID)"
     s/Int)
   (s/defn eid? :- s/Bool
     "Returns true iff the arg type is a legal EID value"
     [arg] (int? arg)))
+
+(do       ; keep these in sync
+  (def AttrType
+    "The Plumatic Schema type name for an attribute"
+    (s/cond-pre s/Keyword s/Int))
+  (s/defn attr? :- s/Bool
+    "Returns true iff the arg type is a legal attribute value"
+    [arg] (or (keyword? arg) (int? arg))))
 
 (do       ; keep these in sync
   (s/defn leaf-val? :- s/Bool
@@ -79,20 +87,25 @@
   IRaw
   (raw [this] eid))
 
+(s/defrecord Attr ; wraps an attribute
+  [attr :- AttrType]
+  IRaw
+  (raw [this] attr))
+
 (s/defrecord Leaf ; wraps a primitive leaf value
   [leaf :- (s/maybe LeafType)]
   IRaw
   (raw [this] leaf))
 
-(s/defn eid :- Eid
-  "Wraps an eid value into an Eid record"
-  [arg :- EidType ]
-  (->Eid arg))
-
-(s/defn leaf :- Leaf
-  "Wraps a primitive value into a Leaf record"
-  [arg :- LeafType ]
-  (->Leaf arg))
+;(s/defn eid :- Eid
+;  "Wraps an eid value into an Eid record"
+;  [arg :- EidType ]
+;  (->Eid arg))
+;
+;(s/defn leaf :- Leaf
+;  "Wraps a primitive value into a Leaf record"
+;  [arg :- LeafType ]
+;  (->Leaf arg))
 
 ;-----------------------------------------------------------------------------
 (def ^:dynamic ^:no-doc *tdb* nil)
@@ -105,11 +118,12 @@
 (defn new-tdb
   "Returns a new, empty db."
   []
-  {:eid-type    (sorted-map) ; source type of entity (:map :array :set)
-   :idx-eav     (index/empty-index)
-   :idx-vae     (index/empty-index)
-   :idx-ave     (index/empty-index)
-   })
+  (into (sorted-map)
+    {:eid-type {} ;(sorted-map) ; source type of entity (:map :array :set)
+     :idx-eav  (index/empty-index)
+     :idx-vae  (index/empty-index)
+     :idx-ave  (index/empty-index)
+     }))
 
 (def ^:no-doc eid-count-base 1000)
 (def ^:no-doc eid-counter (atom eid-count-base))
@@ -122,12 +136,12 @@
   "Returns the next integer EID"
   [] (swap! eid-counter inc))
 
-(s/defn add-edn :- EidType ; #todo maybe rename:  load-edn->eid  ???
+(s/defn add-edn :- Eid ; EidType ; #todo maybe rename:  load-edn->eid  ???
   "Add the EDN arg to the indexes, returning the EID"
   ([edn-in :- s/Any]
    (when-not (entity-like? edn-in)
      (throw (ex-info "invalid edn-in" (vals->map edn-in))))
-   (let [eid-this (new-eid)
+   (let [eid-this (->Eid (new-eid))
          ctx      (cond
                     (map? edn-in)        {:entity-type :map   :edn-use edn-in}
                     (array-like? edn-in) {:entity-type :array :edn-use (indexed edn-in)}
@@ -136,27 +150,29 @@
        ; #todo could switch to transients & reduce here in a single swap
        (swap! *tdb* update :eid-type assoc eid-this entity-type )
        (doseq [[attr-edn val-edn] edn-use]
-         (let [val-add (if (leaf-val? val-edn)
+         (let [attr-rec (->Attr attr-edn)
+               val-rec (if (leaf-val? val-edn)
                          (->Leaf val-edn)
-                         (->Eid (add-edn val-edn)))]
-           (swap! *tdb* update :idx-eav index/add-entry [eid-this attr-edn val-add])
-           (swap! *tdb* update :idx-vae index/add-entry [val-add attr-edn eid-this])
-           (swap! *tdb* update :idx-ave index/add-entry [attr-edn val-add eid-this]))))
+                         (add-edn val-edn))]
+           (swap! *tdb* update :idx-eav index/add-entry [eid-this attr-rec val-rec])
+           (swap! *tdb* update :idx-vae index/add-entry [val-rec attr-rec eid-this])
+           (swap! *tdb* update :idx-ave index/add-entry [attr-rec val-rec eid-this]))))
      eid-this)))
 
 ; #todo need to handle sets
 (s/defn eid->edn :- s/Any
   "Returns the EDN subtree rooted at a eid."
-  [eid-in :- EidType]
+  [eid-in :- Eid]
   (let [eav-matches (index/prefix-matches [eid-in] (grab :idx-eav @*tdb*))
-        result-map  (apply glue (sorted-map)
+        result-map  (apply glue
                       (forv [[eid-row attr-row val-row] eav-matches]
-                        ;(spyx [eid-row attr-row val-row])
+                       ;(spyx [eid-row attr-row val-row])
                         (assert (= eid-in eid-row)) ; verify is a prefix match
-                        (let [val-edn (if (instance? Leaf val-row)
-                                        (raw val-row) ; Leaf rec
-                                        (eid->edn (raw val-row)))] ; Eid rec
-                          (t/map-entry attr-row val-edn))))
+                        (let [attr-edn (raw attr-row) ; (if (instance? Attr attr-row)
+                              val-edn  (if (instance? Leaf val-row)
+                                         (raw val-row) ; Leaf rec
+                                         (eid->edn val-row))] ; Eid rec
+                          (t/map-entry attr-edn val-edn))))
         result-out  (let [entity-type (fetch-in @*tdb* [:eid-type eid-in])]
                       (cond
                         (= entity-type :map) result-map
