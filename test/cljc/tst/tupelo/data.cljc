@@ -145,7 +145,7 @@
                      [{:leaf 3} {:attr 2} {:eid 1001}]}})
       (is= edn-val (td/eid->edn root-eid))))
 
-  (with-tdb (new-tdb)
+  (with-tdb (new-tdb)keyword?
     (eid-count-reset)
     (let [edn-val  {:a 1 :b 2 :c [10 11 12]}
           root-eid (td/add-edn edn-val)]
@@ -239,8 +239,28 @@
       (is= (unlazy (lookup [(->Eid 1009) nil (->Leaf 3)]))
         #{[{:eid 1009} {:attr :c} {:leaf 3}]} )
       (is= (unlazy (lookup [(->Eid 1005) (->Attr :b) nil]))
-        #{[{:eid 1005} {:attr :b} {:leaf 2}]} )))
+        #{[{:eid 1005} {:attr :b} {:leaf 2}]} ))))
 
+(defn param [x] (->Param (symbol x)))
+
+(dotest   ; -focus
+  (with-tdb (new-tdb)
+    (eid-count-reset)
+    (let [edn-val  {:a {:b 2}}
+          root-eid (td/add-edn edn-val)
+          search-spec [[(param "x") (->Attr :a) (param "y")]
+                       [(param "y") (->Attr :b) (->Leaf 2)]]]
+      (is= (spyx-pretty (unlazy (deref *tdb*)))
+        {:eid-type {{:eid 1001} :map, {:eid 1002} :map},
+         :idx-ave  #{[{:attr :a} {:eid 1002} {:eid 1001}]
+                     [{:attr :b} {:leaf 2} {:eid 1002}]},
+         :idx-eav  #{[{:eid 1001} {:attr :a} {:eid 1002}]
+                     [{:eid 1002} {:attr :b} {:leaf 2}]},
+         :idx-vae  #{[{:eid 1002} {:attr :a} {:eid 1001}]
+                     [{:leaf 2} {:attr :b} {:eid 1002}]}})
+      (query search-spec)
+
+      ))
   )
 
 ;(dotest

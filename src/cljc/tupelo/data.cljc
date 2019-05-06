@@ -97,15 +97,10 @@
   IRaw
   (raw [this] leaf))
 
-;(s/defn eid :- Eid
-;  "Wraps an eid value into an Eid record"
-;  [arg :- EidType ]
-;  (->Eid arg))
-;
-;(s/defn leaf :- Leaf
-;  "Wraps a primitive value into a Leaf record"
-;  [arg :- LeafType ]
-;  (->Leaf arg))
+(s/defrecord Param ; wraps a search variable
+  [param :- s/Symbol]
+  IRaw
+  (raw [this] param))
 
 ;-----------------------------------------------------------------------------
 (def ^:dynamic ^:no-doc *tdb* nil)
@@ -233,10 +228,31 @@
                                (index/->index (map vector e-vals a-vals v-vals)))]
     result-index))
 
+(defn param? [x] (instance? Param x))
+(s/defn params->nil
+  [listy :- tsk/List]
+  (mapv #(if (param? %) nil %) listy))
 
-; (s/defn eid-nav :- [EidType]
+(s/defn query-impl
+  [ctx  :- tsk/KeyMap ]
+  (let-spy-pretty [
+        env          (grab :env ctx)
+        qspec-list   (grab :qspec-list ctx)
+        qspec-curr   (xfirst qspec-list)
+        qspec-rest   (rest qspec-list)
+        params       (filterv param? qspec-curr)
+        qspec-lookup (params->nil qspec-curr)
+        ]
+    )
+  )
 
-;(s/defn ^:private ^:no-doc index-find-val-impl ; #todo inline below
+(s/defn query
+  [qspec-list  :- [tsk/Triple] ]
+  (query-impl {:qspec-list qspec-list
+               :env {}
+               })
+  )
+
 
 ;(s/defn index-find-leaf
 ;  [target :- LeafType]

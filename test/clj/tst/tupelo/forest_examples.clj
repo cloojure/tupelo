@@ -1632,9 +1632,56 @@
       ;  (println "-----------------------------------------------------------------------------")
       ;  (spy-pretty :node (hid->node hid))
       ;  (spy-pretty :bush (hid->bush hid)))
-      )
-    )
+      ) ) )
+
+;-----------------------------------------------------------------------------
+(dotest-focus
+  (hid-count-reset)
+  (with-forest (new-forest)
+    (let [data-orig     (quote (def a (do (+ 1 2) 3)))
+          data-vec      (unlazy data-orig)
+          root-hid      (add-tree-hiccup data-vec)
+          all-paths     (find-paths root-hid [:** :*])
+          max-len       (apply max (mapv #(count %) all-paths))
+          paths-max-len (keep-if #(= max-len (count %)) all-paths) ]
+      (is= data-vec (quote [def a [do [+ 1 2] 3]]))
+      (is= (hid->bush root-hid)
+        (quote
+          [{:tag def}
+           [{:tag :tupelo.forest/raw, :value a}]
+           [{:tag do}
+            [{:tag +}
+             [{:tag :tupelo.forest/raw, :value 1}]
+             [{:tag :tupelo.forest/raw, :value 2}]]
+            [{:tag :tupelo.forest/raw, :value 3}]]]))
+      (is= all-paths
+        [[1007]
+         [1007 1001]
+         [1007 1006]
+         [1007 1006 1004]
+         [1007 1006 1004 1002]
+         [1007 1006 1004 1003]
+         [1007 1006 1005]])
+      (is= paths-max-len
+        [[1007 1006 1004 1002]
+         [1007 1006 1004 1003]])
+      (nl)
+      (is= (format-paths paths-max-len)
+        (quote [[{:tag def}
+                 [{:tag do} [{:tag +} [{:tag :tupelo.forest/raw, :value 1}]]]]
+                [{:tag def}
+                 [{:tag do} [{:tag +} [{:tag :tupelo.forest/raw, :value 2}]]]]]))
+
+      ))
   )
+
+
+
+
+
+
+
+
 
 
 
