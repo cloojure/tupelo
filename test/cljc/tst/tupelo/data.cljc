@@ -242,21 +242,31 @@
         #{[{:eid 1005} {:attr :b} {:leaf 2}]} ))))
 
 (dotest-focus
-  (is= [2 1 0] (validate-indexes-complete [2 1 0]) )
-  (throws? (validate-indexes-complete [2 1 3]) )
+  (is= [2 1 0] (validate-indexes-complete [2 1 0]))
+  (throws? (validate-indexes-complete [2 1 3]))
   (is= [3 2 1] (validate-unique [3 2 1]))
-  (throws?  (validate-unique [3 2 3]))
+  (throws? (validate-unique [3 2 3]))
   (is= 0 (assert-index-bound 0 6))
   (is= 5 (assert-index-bound 5 6))
   (throws? (assert-index-bound -1 6))
   (throws? (assert-index-bound 3 3))
   (throws? (assert-index-bound 0 0))
 
-  (is= [2 4 5] (list-get-idx (range 9) [2 4 5]))
+  (is= [2 4 5] (vec-get-idxs (range 9) [2 4 5]))
 
-  (is= (pred-index #(zero? (rem % 3)) [0 10 20 30 40 50 60 70 80])
-    {true  [0 3 6]
-     false [1 2 4 5 7 8]})
+  (let [decades  [0 10 20 30 40 50 60 70 80]
+        result   (pred-index #(zero? (rem % 3)) decades)
+        expected {:idxs-true  [0 3 6]
+                  :idxs-false [1 2 4 5 7 8]}]
+    (is= result expected)
+    (t/with-map-vals result [idxs-true idxs-false] ; easy usage
+      (is= idxs-true [0 3 6])
+      (is= idxs-false [1 2 4 5 7 8])
+      (is= [:div3 10 20 :div3 40 50 :div3 70 80]
+        (vec-put-idxs decades idxs-true (repeat 3 :div3)))
+      (is= [0 :not :not 30 :not :not 60 :not :not]
+        (vec-put-idxs decades idxs-false (repeat 6 :not)))
+      (throws? (vec-put-idxs decades idxs-false (repeat 5 :not)))))
 
   )
 

@@ -250,35 +250,52 @@
   (assert (and (<= 0 idx) (< idx bound)))
   idx)
 
-(s/defn list-get-idx ;- tsk/List
-  "Given a list L and a list of index values `idx`, returns a vector: [ L(idx-1) L(idx-2) ...]"
-  [listy :- tsk/List
+(s/defn vec-get-idxs ;- tsk/List
+  "Given a source vector V and a list of index values `idx`, returns a vector: [ V(idx-1) V(idx-2) ...]"
+  [src :- tsk/Vec
    idxs :- [s/Int]]
-  (let [bound (count listy)]
+  (let [bound-src (count src)]
     (doseq [idx (validate-unique idxs)]
-      (assert-index-bound idx bound))
+      (assert-index-bound idx bound-src))
     (forv [idx idxs]
-      (nth listy idx))))
+      (nth src idx))))
+
+(s/defn vec-put-idxs ;- tsk/List
+  "Given a dest vector V, a list of index values `idx`, and a conforming src vector,
+  returns a modified V such that V(idx-j) = src[j] for j in [0..len(idx)] "
+  [dest :- tsk/Vec
+   idxs :- [s/Int]
+   src :- tsk/Vec]
+  (let [bound-dest (count dest)]
+    (doseq [idx (validate-unique idxs)]
+      (assert-index-bound idx bound-dest))
+    (reduce
+      (fn [cum [idx src-val]]
+        (assoc cum idx src-val))
+      (vec dest)
+      (t/zip idxs src))))
 
 (defn pred-index
   "Given a predicate fn and a collection of values, returns the index values for which the
   predicate is true & false like:
     (pred-index #(zero? (rem % 3)) [0 10 20 30 40 50 60 70 80])
-      => {true  [0 3 6]
-          false [1 2 4 5 7 8] } "
+      => {:idxs-true   [0 3 6]
+          :idxs-false  [1 2 4 5 7 8] } "
   [pred coll]
   (reduce
     (fn [cum [index item]]
-      (let [bool-key (t/truthy? (pred item))]
-        (update cum bool-key t/append index)))
-    {true  []
-     false []}
+      (if (t/truthy? (pred item))
+        (update cum :idxs-true t/append index)
+        (update cum :idxs-false t/append index)))
+    {:idxs-true  []
+     :idxs-false []}
     (indexed coll)))
 
 (defn param? [x] (instance? Param x))
 (s/defn params->nil
   [listy :- tsk/List]
-  (mapv #(if (param? %) nil %) listy))
+  (mapv #(if (param? %) nil %) listy)
+  )
 
 (s/defn query-impl
   [ctx  :- tsk/KeyMap ]
