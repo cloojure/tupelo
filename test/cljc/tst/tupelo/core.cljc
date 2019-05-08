@@ -22,8 +22,12 @@
 #?(:cljs (enable-console-print!))
 
 (define-fixture :once
-  {:enter (fn [ctx] (println "*** TEST ONCE *** - enter "))
-   :leave (fn [ctx] (println "*** TEST ONCE *** - leave "))})
+  {:enter (fn [ctx]
+           ;(println "*** TEST ONCE *** - enter ")
+            )
+   :leave (fn [ctx]
+           ;(println "*** TEST ONCE *** - leave ")
+            )})
 
 ;--------------------------------------------------------------------------------------------------
 
@@ -1525,7 +1529,7 @@
   (let [tst-fn (fn [vals5]
                  (is= 5 (count vals5))
                  ; w/o endpoint
-                 (spyx vals5)
+                ;(spyx vals5)
                  (is= vals5 (t/sublist vals5 0))
                  (is= [2 3 4] (t/sublist vals5 2))
                  (is= [4] (t/sublist vals5 4))

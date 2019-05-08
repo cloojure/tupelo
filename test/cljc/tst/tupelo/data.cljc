@@ -241,16 +241,35 @@
       (is= (unlazy (lookup [(->Eid 1005) (->Attr :b) nil]))
         #{[{:eid 1005} {:attr :b} {:leaf 2}]} ))))
 
-(defn param [x] (->Param (symbol x)))
+(dotest-focus
+  (is= [2 1 0] (validate-indexes-complete [2 1 0]) )
+  (throws? (validate-indexes-complete [2 1 3]) )
+  (is= [3 2 1] (validate-unique [3 2 1]))
+  (throws?  (validate-unique [3 2 3]))
+  (is= 0 (assert-index-bound 0 6))
+  (is= 5 (assert-index-bound 5 6))
+  (throws? (assert-index-bound -1 6))
+  (throws? (assert-index-bound 3 3))
+  (throws? (assert-index-bound 0 0))
 
-(dotest   ; -focus
+  (is= [2 4 5] (list-get-idx (range 9) [2 4 5]))
+
+  (is= (pred-index #(zero? (rem % 3)) [0 10 20 30 40 50 60 70 80])
+    {true  [0 3 6]
+     false [1 2 4 5 7 8]})
+
+  )
+
+; (defn param [x] (->Param (symbol x)))
+(dotest-focus
+  (nl)
   (with-tdb (new-tdb)
     (eid-count-reset)
-    (let [edn-val  {:a {:b 2}}
-          root-eid (td/add-edn edn-val)
-          search-spec [[(param "x") (->Attr :a) (param "y")]
-                       [(param "y") (->Attr :b) (->Leaf 2)]]]
-      (is= (spyx-pretty (unlazy (deref *tdb*)))
+    (let [edn-val     {:a {:b 2}}
+          root-eid    (td/add-edn edn-val)
+          search-spec [[(->Param :x) (->Attr :a) (->Param :y)]
+                       [(->Param :y) (->Attr :b) (->Leaf 2)]]]
+      (is= (unlazy (deref *tdb*))
         {:eid-type {{:eid 1001} :map, {:eid 1002} :map},
          :idx-ave  #{[{:attr :a} {:eid 1002} {:eid 1001}]
                      [{:attr :b} {:leaf 2} {:eid 1002}]},
@@ -261,6 +280,7 @@
       (query search-spec)
 
       ))
+  (nl)
   )
 
 ;(dotest

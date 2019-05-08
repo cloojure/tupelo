@@ -228,6 +228,53 @@
                                (index/->index (map vector e-vals a-vals v-vals)))]
     result-index))
 
+(s/defn validate-indexes-complete :- s/Any ; #todo maybe => tupelo.data.indexing
+  "Validates that a collection of N index values includes all values in [0..N)."
+  [idxs]
+  (let [expected-set (set (range (count idxs)))
+        actual-set   (set idxs)]
+    (assert (= expected-set actual-set)))
+  idxs)
+
+(s/defn validate-unique  :- s/Any
+  "Validates that a collection has unique items"
+  [coll]
+  (assert (apply distinct? coll))
+  coll)
+
+(s/defn assert-index-bound
+  "Assets that an integer index is non-negative and less than a bound"
+  [idx :- s/Int
+   bound :- s/Int]
+  (assert (pos? bound))
+  (assert (and (<= 0 idx) (< idx bound)))
+  idx)
+
+(s/defn list-get-idx ;- tsk/List
+  "Given a list L and a list of index values `idx`, returns a vector: [ L(idx-1) L(idx-2) ...]"
+  [listy :- tsk/List
+   idxs :- [s/Int]]
+  (let [bound (count listy)]
+    (doseq [idx (validate-unique idxs)]
+      (assert-index-bound idx bound))
+    (forv [idx idxs]
+      (nth listy idx))))
+
+(defn pred-index
+  "Given a predicate fn and a collection of values, returns the index values for which the
+  predicate is true & false like:
+    (pred-index #(zero? (rem % 3)) [0 10 20 30 40 50 60 70 80])
+      => {true  [0 3 6]
+          false [1 2 4 5 7 8] } "
+  [pred coll]
+  (reduce
+    (fn [cum [index item]]
+      (let [bool-key (t/truthy? (pred item))]
+        (update cum bool-key t/append index)))
+    {true  []
+     false []}
+    (indexed coll)))
+
 (defn param? [x] (instance? Param x))
 (s/defn params->nil
   [listy :- tsk/List]
@@ -235,14 +282,17 @@
 
 (s/defn query-impl
   [ctx  :- tsk/KeyMap ]
+  (nl)
   (let-spy-pretty [
         env          (grab :env ctx)
         qspec-list   (grab :qspec-list ctx)
         qspec-curr   (xfirst qspec-list)
-        qspec-rest   (rest qspec-list)
+        qspec-rest   (xrest qspec-list)
         params       (filterv param? qspec-curr)
         qspec-lookup (params->nil qspec-curr)
         ]
+    (spyx params)
+    (spyx qspec-lookup)
     )
   )
 
