@@ -261,7 +261,7 @@
     (forv [idx idxs]
       (nth src idx))))
 
-(s/defn vec-put-idxs ;- tsk/List
+(s/defn vec-set-idxs ;- tsk/List
   "Given a dest vector V, a list of index values `idx`, and a conforming src vector,
   returns a modified V such that V(idx-j) = src[j] for j in [0..len(idx)] "
   [dest :- tsk/Vec
@@ -277,7 +277,7 @@
       (vec dest)
       (t/zip idxs src))))
 
-(s/defn vec-put-idxs-lax ;- tsk/List
+(s/defn vec-set-idxs-lax ;- tsk/List
   "Like vec-put-idxs, but is lax in accepting the src vector. If a scalar is supplied,
   it is replaced with `(repeat <src>)`. If the src vector is longer than the idxs, it is truncated
   to conform."
@@ -289,7 +289,7 @@
                    (not (sequential? src)) (repeat idxs-len src)
                    (< idxs-len (count src)) (t/xtake idxs-len src)
                    :else src)]
-    (vec-put-idxs dest idxs src-use)))
+    (vec-set-idxs dest idxs src-use)))
 
 (defn pred-index
   "Given a predicate fn and a collection of values, returns the index values for which the
@@ -318,24 +318,24 @@
 (s/defn query-impl
   [ctx :- tsk/KeyMap]
   (nl)
-  (let-spy-pretty [
-                   env (grab :env ctx)
-                   qspec-list (grab :qspec-list ctx)
-                   qspec-curr (xfirst qspec-list)
-                   qspec-rest (xrest qspec-list)
+  (let [env           (grab :env ctx)
+        qspec-list    (grab :qspec-list ctx)
+        qspec-curr    (xfirst qspec-list)
+        qspec-rest    (xrest qspec-list)
 
-                   {idxs-param :idxs-true
-                    idxs-other :idxs-false} (pred-index param? qspec-curr)
+        {idxs-param :idxs-true
+         idxs-other :idxs-false} (pred-index param? qspec-curr)
 
-                   qspec-lookup (vec-put-idxs-lax qspec-curr idxs-param nil)
-                   params (vec-get-idxs qspec-curr idxs-param)
-                   found-triples (lookup qspec-lookup)
-                   param-frames (mapv #(vec-get-idxs % idxs-param) found-triples)
-                   env-frames (mapv #(zipmap params %) param-frames)
-                   qspec-found (apply-env (only env-frames) qspec-curr)
-                   ]
+        qspec-lookup  (vec-set-idxs-lax qspec-curr idxs-param nil)
+        params        (vec-get-idxs qspec-curr idxs-param)
+        found-triples (lookup qspec-lookup)
+        param-frames-found  (mapv #(vec-get-idxs % idxs-param) found-triples)
+        env-frames-found    (mapv #(zipmap params %) param-frames-found)
+        qspec-found (mapv #(apply-env (glue env % ) qspec-curr)
+                      env-frames-found )]
     (spyx idxs-param)
     (spyx idxs-other)
+    (spyx qspec-found)
     )
   )
 

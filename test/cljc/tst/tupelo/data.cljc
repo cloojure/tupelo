@@ -263,12 +263,12 @@
       (is= idxs-true [0 3 6])
       (is= idxs-false [1 2 4 5 7 8])
       (is= [:div3 10 20 :div3 40 50 :div3 70 80]
-        (vec-put-idxs decades idxs-true (repeat 3 :div3))
-        (vec-put-idxs-lax decades idxs-true :div3))
+        (vec-set-idxs decades idxs-true (repeat 3 :div3))
+        (vec-set-idxs-lax decades idxs-true :div3))
       (is= [0 :not :not 30 :not :not 60 :not :not]
-        (vec-put-idxs decades idxs-false (repeat 6 :not))
-        (vec-put-idxs-lax decades idxs-false (repeat 99 :not)) )
-      (throws? (vec-put-idxs decades idxs-false (repeat 5 :not)))))
+        (vec-set-idxs decades idxs-false (repeat 6 :not))
+        (vec-set-idxs-lax decades idxs-false (repeat 99 :not)) )
+      (throws? (vec-set-idxs decades idxs-false (repeat 5 :not)))))
 
   )
 
