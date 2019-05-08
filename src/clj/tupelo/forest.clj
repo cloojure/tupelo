@@ -144,25 +144,25 @@
 ; #todo rename :tupelo.forest/khids -> :kid-hids ?
 ; keep in mind that a Node is a "fragment" of a tree, and only contains "pointers" (HIDs) to the :tupelo.forest/khids
 
-(s/defn forest-node? :- s/Bool
+(s/defn valid-forest-node? :- s/Bool
   "Returns true if the arg is a legal forest node"
   [arg :- tsk/KeyMap]
   (and (contains-key? arg ::khids)
     (not (contains-key? arg ::kids))))
 
-(s/defn forest-leaf? :- s/Bool
+(s/defn valid-forest-leaf? :- s/Bool
   "Returns true if the arg is a forest leaf node (empty :tupelo.forest/khids). "
   [node :- tsk/KeyMap]
-  (and (forest-node? node)
+  (and (valid-forest-node? node)
     (empty? (grab ::khids node))))
 
 ;-----------------------------------------------------------------------------
-; #todo need to delete these???  Concentrate on forest nodes
 (s/defn tree-node? :- s/Bool
   "Returns true if the arg is a legal tree node"
   [node :- tsk/KeyMap]
   (and (contains-key? node ::kids)
     (not (contains-key? node ::khids))))
+; #todo need to delete these???  Concentrate on forest nodes
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn edn->tree
@@ -381,7 +381,7 @@
 (s/defn hid->leaf :- Node
   "Returns the leaf node corresponding to an HID"
   [hid :- HID]
-  (validate forest-leaf? (hid->node hid)))
+  (validate valid-forest-leaf? (hid->node hid)))
 
 (s/defn hid->attrs :- tsk/KeyMap ; #todo remove OBE
   "Given an HID, returns all node attributes as a map"
@@ -407,7 +407,7 @@
 (s/defn leaf-hid?
   "Returns true iff an HID is a leaf"
   [hid :- HID]
-  (forest-leaf? (hid->node hid)))
+  (valid-forest-leaf? (hid->node hid)))
 
 (s/defn leaf-path? :- s/Bool
   "Returns true if an HID path ends in a leaf"
@@ -440,7 +440,7 @@
         base-result (it-> node
                       (into {} it)
                       (dissoc it ::khids))]
-    (if (forest-leaf? node)
+    (if (valid-forest-leaf? node)
       ; leaf: nothing else to do
       (glue {::kids []} base-result) ; #todo can clean up more?
       ; Node: need to recursively resolve children
@@ -459,7 +459,7 @@
   "Unconditionally sets the value of a Node in the forest"
   ([hid :- HID
     node :- Node]
-    (when-not (forest-node? node)
+    (when-not (valid-forest-node? node)
       (throw (ex-info "set-node: non forest node detected" (vals->map hid node))))
     (swap! *forest* glue {hid node})
     node)

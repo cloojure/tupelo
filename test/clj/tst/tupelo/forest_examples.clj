@@ -1688,25 +1688,24 @@
                          ["level_a_node1" ["leaf"]]
                          ["leaf"]]
           root-hid      (add-tree-hiccup data)
-          is-leaf-path? (fn [path]
-                          (let [hid-last (xlast path)]
-                            (forest-leaf? (hid->node hid-last))))
-          leaf-paths    (find-paths-with root-hid [:** :*] is-leaf-path?)]
+          leaf-paths    (find-paths-with root-hid [:** :*] leaf-path?)]
       (is= (hid->bush root-hid)
         [{:tag "root"}
-         [{:tag "level_a_node3"} [{:tag "leaf"}]]
+         [{:tag "level_a_node3"}
+          [{:tag "leaf"}]]
          [{:tag "level_a_node2"}
-          [{:tag "level_b_node2"} [{:tag "level_c_node1"} [{:tag "leaf"}]]]
-          [{:tag "level_b_node1"} [{:tag "leaf"}]]]
-         [{:tag "level_a_node1"} [{:tag "leaf"}]]
+          [{:tag "level_b_node2"}
+           [{:tag "level_c_node1"}
+            [{:tag "leaf"}]]]
+          [{:tag "level_b_node1"}
+           [{:tag "leaf"}]]]
+         [{:tag "level_a_node1"}
+          [{:tag "leaf"}]]
          [{:tag "leaf"}]])
       (is= (format-paths leaf-paths)
         [[{:tag "root"} [{:tag "level_a_node3"} [{:tag "leaf"}]]]
-         [{:tag "root"}
-          [{:tag "level_a_node2"}
-           [{:tag "level_b_node2"} [{:tag "level_c_node1"} [{:tag "leaf"}]]]]]
-         [{:tag "root"}
-          [{:tag "level_a_node2"} [{:tag "level_b_node1"} [{:tag "leaf"}]]]]
+         [{:tag "root"} [{:tag "level_a_node2"} [{:tag "level_b_node2"} [{:tag "level_c_node1"} [{:tag "leaf"}]]]]]
+         [{:tag "root"} [{:tag "level_a_node2"} [{:tag "level_b_node1"} [{:tag "leaf"}]]]]
          [{:tag "root"} [{:tag "level_a_node1"} [{:tag "leaf"}]]]
          [{:tag "root"} [{:tag "leaf"}]]]))))
 
