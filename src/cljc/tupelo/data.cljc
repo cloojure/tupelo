@@ -269,11 +269,26 @@
   (let [bound-dest (count dest)]
     (doseq [idx (validate-unique idxs)]
       (assert-index-bound idx bound-dest))
+    (assert (= (count idxs) (count src)))
     (reduce
       (fn [cum [idx src-val]]
         (assoc cum idx src-val))
       (vec dest)
       (t/zip idxs src))))
+
+(s/defn vec-put-idxs-lax ;- tsk/List
+  "Like vec-put-idxs, but is lax in accepting the src vector. If a scalar is supplied,
+  it is replaced with `(repeat <src>)`. If the src vector is longer than the idxs, it is truncated
+  to conform."
+  [dest :- tsk/Vec
+   idxs :- [s/Int]
+   src :- s/Any]
+  (let [idxs-len (count idxs)
+        src-use  (cond
+                   (not (sequential? src)) (repeat idxs-len src)
+                   (< idxs-len (count src)) (t/xtake idxs-len src)
+                   :else src)]
+    (vec-put-idxs dest idxs src-use)))
 
 (defn pred-index
   "Given a predicate fn and a collection of values, returns the index values for which the
