@@ -101,6 +101,7 @@
   [param :- s/Symbol]
   IRaw
   (raw [this] param))
+(defn param? [x] (instance? Param x))
 
 ;-----------------------------------------------------------------------------
 (def ^:dynamic ^:no-doc *tdb* nil)
@@ -306,25 +307,25 @@
      :idxs-false []}
     (indexed coll)))
 
-(defn param? [x] (instance? Param x))
-(s/defn params->nil
-  [listy :- tsk/List]
-  (mapv #(if (param? %) nil %) listy)
-  )
-
 (s/defn query-impl
   [ctx  :- tsk/KeyMap ]
   (nl)
   (let-spy-pretty [
-        env          (grab :env ctx)
-        qspec-list   (grab :qspec-list ctx)
-        qspec-curr   (xfirst qspec-list)
-        qspec-rest   (xrest qspec-list)
-        params       (filterv param? qspec-curr)
-        qspec-lookup (params->nil qspec-curr)
-        ]
-    (spyx params)
-    (spyx qspec-lookup)
+                   env (grab :env ctx)
+                   qspec-list (grab :qspec-list ctx)
+                   qspec-curr (xfirst qspec-list)
+                   qspec-rest (xrest qspec-list)
+
+
+                   {idxs-param :idxs-true
+                    idxs-other :idxs-false} (pred-index param? qspec-curr)
+
+                   qspec-lookup (vec-put-idxs-lax qspec-curr idxs-param nil)
+                   params (vec-get-idxs qspec-curr idxs-other )
+
+                   ]
+    (spyx (unlazy qspec-lookup))
+    (spyx (unlazy params))
     )
   )
 
