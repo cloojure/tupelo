@@ -307,8 +307,16 @@
      :idxs-false []}
     (indexed coll)))
 
+(s/defn apply-env
+  [env :- tsk/Map
+   listy :- tsk/Vec]
+  (forv [elem listy]
+    (if (contains? env elem) ; #todo make sure works witn `nil` value
+      (get env elem)
+      elem)))
+
 (s/defn query-impl
-  [ctx  :- tsk/KeyMap ]
+  [ctx :- tsk/KeyMap]
   (nl)
   (let-spy-pretty [
                    env (grab :env ctx)
@@ -316,16 +324,18 @@
                    qspec-curr (xfirst qspec-list)
                    qspec-rest (xrest qspec-list)
 
-
                    {idxs-param :idxs-true
                     idxs-other :idxs-false} (pred-index param? qspec-curr)
 
                    qspec-lookup (vec-put-idxs-lax qspec-curr idxs-param nil)
-                   params (vec-get-idxs qspec-curr idxs-other )
-
+                   params (vec-get-idxs qspec-curr idxs-param)
+                   found-triples (lookup qspec-lookup)
+                   param-frames (mapv #(vec-get-idxs % idxs-param) found-triples)
+                   env-frames (mapv #(zipmap params %) param-frames)
+                   qspec-found (apply-env (only env-frames) qspec-curr)
                    ]
-    (spyx (unlazy qspec-lookup))
-    (spyx (unlazy params))
+    (spyx idxs-param)
+    (spyx idxs-other)
     )
   )
 
