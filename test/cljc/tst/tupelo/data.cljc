@@ -241,6 +241,62 @@
       (is= (unlazy (lookup [(->Eid 1005) (->Attr :b) nil]))
         #{[{:eid 1005} {:attr :b} {:leaf 2}]} ))))
 
+(dotest
+  (with-tdb (new-tdb)
+    (eid-count-reset)
+    (let [edn-val    {:a 1
+                      :b 2}
+          root-eid   (td/add-edn edn-val)
+          edn-result (td/eid->edn root-eid)]
+      (is= edn-val edn-result)
+      (is= (unlazy (deref *tdb*))
+        {:eid-type {{:eid 1001} :map},
+         :idx-ave  #{[{:attr :a} {:leaf 1} {:eid 1001}]
+                     [{:attr :b} {:leaf 2} {:eid 1001}]},
+         :idx-eav  #{[{:eid 1001} {:attr :a} {:leaf 1}]
+                     [{:eid 1001} {:attr :b} {:leaf 2}]},
+         :idx-vae  #{[{:leaf 1} {:attr :a} {:eid 1001}]
+                     [{:leaf 2} {:attr :b} {:eid 1001}]}}))
+    (let [search-spec [[(->Param :x) (->Attr :a) (->Leaf 1)]]]
+      (is= (unlazy (query search-spec))
+        [{{:param :x} {:eid 1001}}]))
+    (let [search-spec [[(->Param :x) (->Attr :a) (->Param :y)]]]
+      (is= (unlazy (query search-spec))
+        [{{:param :x} {:eid 1001}, {:param :y} {:leaf 1}}]))
+    (let [search-spec [[(->Param :x) (->Param :y) (->Leaf 1)]]]
+      (is= (unlazy (query search-spec))
+        [{{:param :x} {:eid 1001}, {:param :y} {:attr :a}}]))))
+
+(dotest
+  (with-tdb (new-tdb)
+    (eid-count-reset)
+    (let [edn-val    {:a 1
+                      :b 1}
+          root-eid   (td/add-edn edn-val)
+          edn-result (td/eid->edn root-eid)]
+      (is= edn-val edn-result)
+      (is= (unlazy (deref *tdb*))
+        {:eid-type {{:eid 1001} :map},
+         :idx-ave
+                   #{[{:attr :a} {:leaf 1} {:eid 1001}]
+                     [{:attr :b} {:leaf 1} {:eid 1001}]},
+         :idx-eav
+                   #{[{:eid 1001} {:attr :a} {:leaf 1}]
+                     [{:eid 1001} {:attr :b} {:leaf 1}]},
+         :idx-vae
+                   #{[{:leaf 1} {:attr :a} {:eid 1001}]
+                     [{:leaf 1} {:attr :b} {:eid 1001}]}}))
+    (let [search-spec [[(->Param :x) (->Attr :a) (->Leaf 1)]]]
+      (is= (unlazy (query search-spec))
+        [{{:param :x} {:eid 1001}}]))
+    (let [search-spec [[(->Param :x) (->Attr :b) (->Leaf 1)]]]
+      (is= (unlazy (query search-spec))
+        [{{:param :x} {:eid 1001}}]))
+    (let [search-spec [[(->Param :x) (->Param :y) (->Leaf 1)]]]
+      (is= (unlazy (query search-spec))
+        [{{:param :x} {:eid 1001}, {:param :y} {:attr :a}}
+         {{:param :x} {:eid 1001}, {:param :y} {:attr :b}}])) ))
+
 (dotest-focus
   (nl)
   (with-tdb (new-tdb)
@@ -260,7 +316,6 @@
       (query search-spec)
 
       ))
-  (nl)
   )
 
 ;(dotest

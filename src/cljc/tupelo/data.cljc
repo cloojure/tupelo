@@ -9,8 +9,8 @@
   (:use tupelo.core) ; #todo remove for cljs
   #?(:clj (:require
             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab glue map-entry indexed
-                                       forv vals->map fetch-in let-spy xlast xfirst keep-if drop-if
-                                       xfirst xsecond xthird xlast
+                                       forv vals->map fetch-in let-spy xfirst xsecond xthird xlast xrest
+                                       keep-if drop-if
                                        ]]
             [tupelo.data.index :as index]
             [tupelo.schema :as tsk]
@@ -238,36 +238,46 @@
       (get env elem)
       elem)))
 
-(s/defn query-impl
+(def ^:dynamic ^:no-doc query-result)
+
+(s/defn query-impl :- s/Any
   [ctx :- tsk/KeyMap]
   (nl)
-  (let [env           (grab :env ctx)
-        qspec-list    (grab :qspec-list ctx)
-        qspec-curr    (xfirst qspec-list)
-        qspec-rest    (xrest qspec-list)
+  (let [env        (grab :env ctx)
+        qspec-list (grab :qspec-list ctx)]
+    (if (empty? qspec-list)
+      (swap! query-result t/append env)
+      (let [qspec-curr         (xfirst qspec-list)
+            qspec-rest         (xrest qspec-list)
+            qspec-curr-env     (apply-env env qspec-curr)
+            >>                 (spyx qspec-curr)
+            >>                 (spyx qspec-curr-env)
 
-        {idxs-param :idxs-true
-         idxs-other :idxs-false} (tv/pred-index param? qspec-curr)
+            {idxs-param :idxs-true
+             idxs-other :idxs-false} (tv/pred-index param? qspec-curr-env)
 
-        qspec-lookup  (tv/set-lax qspec-curr idxs-param nil)
-        params        (tv/get qspec-curr idxs-param)
-        found-triples (lookup qspec-lookup)
-        param-frames-found  (mapv #(tv/get % idxs-param) found-triples)
-        env-frames-found    (mapv #(zipmap params %) param-frames-found)
-        qspec-found (mapv #(apply-env (glue env % ) qspec-curr)
-                      env-frames-found )]
-    (spyx idxs-param)
-    (spyx idxs-other)
-    (spyx qspec-found)
-    )
-  )
+            qspec-lookup       (tv/set-lax qspec-curr-env idxs-param nil)
+            >>                 (spyx qspec-lookup)
+            params             (tv/get qspec-curr idxs-param)
+            found-triples      (lookup qspec-lookup)
+            param-frames-found (mapv #(tv/get % idxs-param) found-triples)
+            env-frames-found   (mapv #(zipmap params %) param-frames-found)]
+        (spyx idxs-param)
+        (spyx idxs-other)
+        (spyx-pretty found-triples)
+        (spyx-pretty param-frames-found)
+        (spyx-pretty env-frames-found)
+        (forv [env-frame env-frames-found]
+          (let [env-next (glue env env-frame)]
+            (query-impl (t/glue ctx {:qspec-list qspec-rest
+                                     :env        env-next}))))))))
 
 (s/defn query
-  [qspec-list  :- [tsk/Triple] ]
-  (query-impl {:qspec-list qspec-list
-               :env {}
-               })
-  )
+  [qspec-list :- [tsk/Triple]]
+  (binding [query-result (atom [])]
+    (query-impl {:qspec-list qspec-list
+                 :env        {}})
+    @query-result))
 
 
 ;(s/defn index-find-leaf

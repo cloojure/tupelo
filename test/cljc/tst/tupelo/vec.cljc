@@ -42,7 +42,7 @@
   coll)
 
 
-(dotest-focus
+(dotest
   (is= [2 1 0] (tv/validate-indexes-complete [2 1 0]))
   (throws? (tv/validate-indexes-complete [2 1 3]))
   (is= [3 2 1] (validate-unique [3 2 1]))
@@ -64,7 +64,7 @@
     (is= [0 1 9 3 4] (tv/set r5 [2] [9]))
     (is= [0 1 12 13 4] (tv/set r5 [2 3] [12 13]))
 
-    (is= [1 3] (spyx (tv/del r5 [0 2 4])))
+    (is= [1 3] (tv/del r5 [0 2 4]))
     ))
 
  (dotest
