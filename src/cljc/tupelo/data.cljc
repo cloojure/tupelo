@@ -238,15 +238,15 @@
       (get env elem)
       elem)))
 
-(def ^:dynamic ^:no-doc query-result)
-
 (s/defn query-impl :- s/Any
   [ctx :- tsk/KeyMap]
   (nl)
-  (let [env        (grab :env ctx)
-        qspec-list (grab :qspec-list ctx)]
+  (let [  ; #todo => with-map-vals
+        env        (grab :env ctx)
+        qspec-list (grab :qspec-list ctx)
+        query-result (grab :query-result ctx)]
     (if (empty? qspec-list)
-      (swap! query-result t/append env)
+      (swap!  t/append env)
       (let [qspec-curr         (xfirst qspec-list)
             qspec-rest         (xrest qspec-list)
             qspec-curr-env     (apply-env env qspec-curr)
@@ -274,9 +274,10 @@
 
 (s/defn query
   [qspec-list :- [tsk/Triple]]
-  (binding [query-result (atom [])]
-    (query-impl {:qspec-list qspec-list
-                 :env        {}})
+  (let [query-result (atom [])]
+    (query-impl {:query-result query-result
+                 :qspec-list   qspec-list
+                 :env          {}})
     @query-result))
 
 
