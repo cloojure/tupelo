@@ -319,25 +319,6 @@
       (= 1 num-keys) (dissoc the-map key-to-clear)
       :else (update-in the-map parent-keys dissoc key-to-clear))))
 
-(s/defn map-entry :- tsk/MapEntry
-  "Returns a clojure.lang.MapEntry constructed from the given key and val"
-  [key val] (clojure.lang.MapEntry/create key val) )
-
-(comment
-  ; #todo => tupelo.core
-  (s/defn mapentry->kv :- tsk/Pair ; #todo need test
-    [mapentry :- tsk/MapEntry]
-    [(key mapentry) (val mapentry)])
-
-  ; #todo => tupelo.core
-  (s/defn solomap->kv :- tsk/Pair ; #todo need test
-    [solo-map :- tsk/Map]
-    (let [map-seq (seq solo-map)
-          >>      (when-not #(= 1 (count map-seq))
-                    (throw (ex-info "solo-map must be of length=1 " (t/vals->map solo-map))))]
-      (mapentry->kv (only map-seq))))
-)
-
 ;(defn case
 ;  [& args]
 ;  (throw (ex-info "`case` is evil, use `cond` instead" {:args args} )))
@@ -827,6 +808,25 @@
   (deep-merge {:a 1} nil)
   ; => {:a 1}
 )
+
+(s/defn map-entry :- tsk/MapEntry
+  "Returns a clojure.lang.MapEntry constructed from the given key and val"
+  [key val] (clojure.lang.MapEntry/create key val) )
+
+(comment
+  ; #todo => tupelo.core
+  (s/defn mapentry->kv :- tsk/Pair ; #todo need test
+    [mapentry :- tsk/MapEntry]
+    [(key mapentry) (val mapentry)])
+
+  ; #todo => tupelo.core
+  (s/defn solomap->kv :- tsk/Pair ; #todo need test
+    [solo-map :- tsk/Map]
+    (let [map-seq (seq solo-map)
+          >>      (when-not #(= 1 (count map-seq))
+                    (throw (ex-info "solo-map must be of length=1 " (t/vals->map solo-map))))]
+      (mapentry->kv (only map-seq))))
+  )
 
 (s/defn ->map-entry :- tsk/MapEntry ; #todo need test
   "Coerce arg into a clojure.lang.MapEntry"

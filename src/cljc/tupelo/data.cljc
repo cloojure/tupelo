@@ -12,8 +12,9 @@
                                        forv vals->map fetch-in let-spy xlast xfirst keep-if drop-if
                                        xfirst xsecond xthird xlast
                                        ]]
-            [tupelo.schema :as tsk]
             [tupelo.data.index :as index]
+            [tupelo.schema :as tsk]
+            [tupelo.vec :as tv]
             [clojure.set :as set]
             [schema.core :as s]
             ))
@@ -229,84 +230,6 @@
                                (index/->index (map vector e-vals a-vals v-vals)))]
     result-index))
 
-(s/defn validate-indexes-complete :- s/Any ; #todo maybe => tupelo.data.indexing
-  "Validates that a collection of N index values includes all values in [0..N)."
-  [idxs]
-  (let [expected-set (set (range (count idxs)))
-        actual-set   (set idxs)]
-    (assert (= expected-set actual-set)))
-  idxs)
-
-(s/defn validate-unique  :- s/Any
-  "Validates that a collection has unique items"
-  [coll]
-  (assert (apply distinct? coll))
-  coll)
-
-(s/defn assert-index-bound
-  "Assets that an integer index is non-negative and less than a bound"
-  [idx :- s/Int
-   bound :- s/Int]
-  (assert (pos? bound))
-  (assert (and (<= 0 idx) (< idx bound)))
-  idx)
-
-(s/defn vec-get-idxs ;- tsk/List
-  "Given a source vector V and a list of index values `idx`, returns a vector: [ V(idx-1) V(idx-2) ...]"
-  [src :- tsk/Vec
-   idxs :- [s/Int]]
-  (let [bound-src (count src)]
-    (doseq [idx (validate-unique idxs)]
-      (assert-index-bound idx bound-src))
-    (forv [idx idxs]
-      (nth src idx))))
-
-(s/defn vec-set-idxs ;- tsk/List
-  "Given a dest vector V, a list of index values `idx`, and a conforming src vector,
-  returns a modified V such that V(idx-j) = src[j] for j in [0..len(idx)] "
-  [dest :- tsk/Vec
-   idxs :- [s/Int]
-   src :- tsk/Vec]
-  (let [bound-dest (count dest)]
-    (doseq [idx (validate-unique idxs)]
-      (assert-index-bound idx bound-dest))
-    (assert (= (count idxs) (count src)))
-    (reduce
-      (fn [cum [idx src-val]]
-        (assoc cum idx src-val))
-      (vec dest)
-      (t/zip idxs src))))
-
-(s/defn vec-set-idxs-lax ;- tsk/List
-  "Like vec-put-idxs, but is lax in accepting the src vector. If a scalar is supplied,
-  it is replaced with `(repeat <src>)`. If the src vector is longer than the idxs, it is truncated
-  to conform."
-  [dest :- tsk/Vec
-   idxs :- [s/Int]
-   src :- s/Any]
-  (let [idxs-len (count idxs)
-        src-use  (cond
-                   (not (sequential? src)) (repeat idxs-len src)
-                   (< idxs-len (count src)) (t/xtake idxs-len src)
-                   :else src)]
-    (vec-set-idxs dest idxs src-use)))
-
-(defn pred-index
-  "Given a predicate fn and a collection of values, returns the index values for which the
-  predicate is true & false like:
-    (pred-index #(zero? (rem % 3)) [0 10 20 30 40 50 60 70 80])
-      => {:idxs-true   [0 3 6]
-          :idxs-false  [1 2 4 5 7 8] } "
-  [pred coll]
-  (reduce
-    (fn [cum [index item]]
-      (if (t/truthy? (pred item))
-        (update cum :idxs-true t/append index)
-        (update cum :idxs-false t/append index)))
-    {:idxs-true  []
-     :idxs-false []}
-    (indexed coll)))
-
 (s/defn apply-env
   [env :- tsk/Map
    listy :- tsk/Vec]
@@ -324,12 +247,12 @@
         qspec-rest    (xrest qspec-list)
 
         {idxs-param :idxs-true
-         idxs-other :idxs-false} (pred-index param? qspec-curr)
+         idxs-other :idxs-false} (tv/pred-index param? qspec-curr)
 
-        qspec-lookup  (vec-set-idxs-lax qspec-curr idxs-param nil)
-        params        (vec-get-idxs qspec-curr idxs-param)
+        qspec-lookup  (tv/set-lax qspec-curr idxs-param nil)
+        params        (tv/get qspec-curr idxs-param)
         found-triples (lookup qspec-lookup)
-        param-frames-found  (mapv #(vec-get-idxs % idxs-param) found-triples)
+        param-frames-found  (mapv #(tv/get % idxs-param) found-triples)
         env-frames-found    (mapv #(zipmap params %) param-frames-found)
         qspec-found (mapv #(apply-env (glue env % ) qspec-curr)
                       env-frames-found )]
