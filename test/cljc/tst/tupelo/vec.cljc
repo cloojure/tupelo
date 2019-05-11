@@ -67,7 +67,7 @@
     (is= [1 3] (spyx (tv/del r5 [0 2 4])))
     ))
 
- (dotest-focus
+ (dotest
   (let [decades  [0 10 20 30 40 50 60 70 80]
         result   (tv/pred-index #(zero? (rem % 3)) decades)
         expected {:idxs-true  [0 3 6]
