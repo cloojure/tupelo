@@ -246,7 +246,7 @@
         qspec-list (grab :qspec-list ctx)
         query-result (grab :query-result ctx)]
     (if (empty? qspec-list)
-      (swap!  t/append env)
+      (swap! query-result  t/append env)
       (let [qspec-curr         (xfirst qspec-list)
             qspec-rest         (xrest qspec-list)
             qspec-curr-env     (apply-env env qspec-curr)

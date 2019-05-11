@@ -267,7 +267,7 @@
       (is= (unlazy (query search-spec))
         [{{:param :x} {:eid 1001}, {:param :y} {:attr :a}}]))))
 
-(dotest
+(dotest-focus
   (with-tdb (new-tdb)
     (eid-count-reset)
     (let [edn-val    {:a 1
