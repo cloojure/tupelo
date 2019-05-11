@@ -128,9 +128,10 @@
   "Delete elements at the specified indexes."
   [src :- tsk/Vec
    idxs :- IndexSpec]
-  (let [idxs (coerce->vec idxs) ]
+  (let [drop-idx? (->set (coerce->vec idxs))
+        idxs-keep (drop-if drop-idx? (range (count src)))]
     (verify-idxs src idxs)
-    (forv [idx idxs]
+    (forv [idx idxs-keep]
       (nth src idx))))
 
 

@@ -325,6 +325,10 @@
 
 (declare glue)
 
+(s/defn ->set :- tsk/Set
+  "Converts arg to a set."
+  [arg] (cc/set arg) )
+
 (s/defn ->sorted-map :- tsk/Map
   "Coerces a map into a sorted-map"
   [map-in :- tsk/Map] (glue (sorted-map) map-in))
