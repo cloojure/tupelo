@@ -428,7 +428,22 @@
            (uncaughtException [_ thread ex]
              (println ex "Uncaught exception on" (.getName thread)))))) ; or (log/error ...)
 
-     ))
+
+     (defn caller-ns-func ; #todo test
+       "Returns a map with the caller's namespace and function names as strings, like:
+           {:ns-name 'tst.demo.core' :fn-name 'funky'} "
+       []
+       (let [ex                (RuntimeException. "dummy")
+             st                (.getStackTrace ex)
+             class-names       (mapv #(.getClassName %) st)
+             class-name-this   (first class-names)
+             class-name-caller (first
+                                 (drop-while #(= class-name-this %)
+                                   class-names))
+
+             ; class-name-caller is like "tst.demo.core$funky"
+             [ns-name fn-name] (str/split class-name-caller #"\$")]
+         (vals->map ns-name fn-name)))))
 
 
 ; #todo move to tupelo

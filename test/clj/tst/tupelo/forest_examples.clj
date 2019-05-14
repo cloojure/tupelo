@@ -1675,7 +1675,7 @@
       )))
 
 ;-----------------------------------------------------------------------------
-(dotest
+(dotest   ; find all the leaf paths
   (hid-count-reset)
   (with-forest (new-forest)
     (let [data          ["root"
@@ -1708,6 +1708,37 @@
          [{:tag "root"} [{:tag "level_a_node2"} [{:tag "level_b_node1"} [{:tag "leaf"}]]]]
          [{:tag "root"} [{:tag "level_a_node1"} [{:tag "leaf"}]]]
          [{:tag "root"} [{:tag "leaf"}]]]))))
+
+;-----------------------------------------------------------------------------
+(dotest ; find the grandparent of each leaf
+  (hid-count-reset)
+  (with-forest (new-forest)
+    (let [data              [:root
+                             [:a
+                              [:x
+                               [:y [:t [:l2]]]
+                               [:z [:l3]]]]
+                             [:b [:c
+                                  [:d [:l4]]
+                                  [:e [:l5]]]]]
+          root-hid          (add-tree-hiccup data)
+          leaf-paths        (find-paths-with root-hid [:** :*] leaf-path?)
+          grandparent-paths (mapv #(drop-last 2 %) leaf-paths)
+          grandparent-tags  (set
+                              (forv [path grandparent-paths]
+                                (let [path-tags (it-> path
+                                                  (mapv #(hid->node %) it)
+                                                  (mapv #(grab :tag %) it))]
+                                  path-tags)))]
+      (is= (format-paths leaf-paths)
+        [[{:tag :root} [{:tag :a} [{:tag :x} [{:tag :y} [{:tag :t} [{:tag :l2}]]]]]]
+         [{:tag :root} [{:tag :a} [{:tag :x} [{:tag :z} [{:tag :l3}]]]]]
+         [{:tag :root} [{:tag :b} [{:tag :c} [{:tag :d} [{:tag :l4}]]]]]
+         [{:tag :root} [{:tag :b} [{:tag :c} [{:tag :e} [{:tag :l5}]]]]]])
+      (is= grandparent-tags
+          #{[:root :a :x] [:root :a :x :y] [:root :b :c]} ))))
+
+
 
 
 
