@@ -3,7 +3,7 @@
 
 == Overview
 
-Have you ever wanted to do manipulate tree-like datastructures such as hiccup/HTML?
+Have you ever wanted to manipulate tree-like data structures such as hiccup or HTML?
 If so, then the `tupelo.forest` library is for you!  Forest allows you to:
 
 - Easily search for tree nodes based on the path from the tree root
