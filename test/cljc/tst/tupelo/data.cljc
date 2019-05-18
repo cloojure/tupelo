@@ -257,13 +257,13 @@
                      [{:eid 1001} {:attr :b} {:leaf 2}]},
          :idx-vae  #{[{:leaf 1} {:attr :a} {:eid 1001}]
                      [{:leaf 2} {:attr :b} {:eid 1001}]}}))
-    (let [search-spec [[(->Param :x) (->Attr :a) (->Leaf 1)]]]
+    (let [search-spec [[(->SearchParam :x) (->Attr :a) (->Leaf 1)]]]
       (is= (unlazy (query search-spec))
         [{{:param :x} {:eid 1001}}]))
-    (let [search-spec [[(->Param :x) (->Attr :a) (->Param :y)]]]
+    (let [search-spec [[(->SearchParam :x) (->Attr :a) (->SearchParam :y)]]]
       (is= (unlazy (query search-spec))
         [{{:param :x} {:eid 1001}, {:param :y} {:leaf 1}}]))
-    (let [search-spec [[(->Param :x) (->Param :y) (->Leaf 1)]]]
+    (let [search-spec [[(->SearchParam :x) (->SearchParam :y) (->Leaf 1)]]]
       (is= (unlazy (query search-spec))
         [{{:param :x} {:eid 1001}, {:param :y} {:attr :a}}]))))
 
@@ -286,13 +286,13 @@
          :idx-vae
                    #{[{:leaf 1} {:attr :a} {:eid 1001}]
                      [{:leaf 1} {:attr :b} {:eid 1001}]}}))
-    (let [search-spec [[(->Param :x) (->Attr :a) (->Leaf 1)]]]
+    (let [search-spec [[(->SearchParam :x) (->Attr :a) (->Leaf 1)]]]
       (is= (unlazy (query search-spec))
         [{{:param :x} {:eid 1001}}]))
-    (let [search-spec [[(->Param :x) (->Attr :b) (->Leaf 1)]]]
+    (let [search-spec [[(->SearchParam :x) (->Attr :b) (->Leaf 1)]]]
       (is= (unlazy (query search-spec))
         [{{:param :x} {:eid 1001}}]))
-    (let [search-spec [[(->Param :x) (->Param :y) (->Leaf 1)]]]
+    (let [search-spec [[(->SearchParam :x) (->SearchParam :y) (->Leaf 1)]]]
       (is= (unlazy (query search-spec))
         [{{:param :x} {:eid 1001}, {:param :y} {:attr :a}}
          {{:param :x} {:eid 1001}, {:param :y} {:attr :b}}])) ))
@@ -302,11 +302,11 @@
     (eid-count-reset)
     (let [edn-val          {:a {:b 2}}
           root-eid         (td/add-edn edn-val)
-          search-spec      [[(->Param :x) (->Attr :a) (->Param :y)]
-                            [(->Param :y) (->Attr :b) (->Leaf 2)]]
-          search-spec-fail [[(->Param :x) (->Attr :a) (->Param :y)]
-                            [(->Param :y) (->Attr :b) (->Leaf 99)]]
-          search-spec-all  [[(->Param :x) (->Param :y) (->Param :z)]]]
+          search-spec      [[(->SearchParam :x) (->Attr :a) (->SearchParam :y)]
+                            [(->SearchParam :y) (->Attr :b) (->Leaf 2)]]
+          search-spec-fail [[(->SearchParam :x) (->Attr :a) (->SearchParam :y)]
+                            [(->SearchParam :y) (->Attr :b) (->Leaf 99)]]
+          search-spec-all  [[(->SearchParam :x) (->SearchParam :y) (->SearchParam :z)]]]
       (is= (unlazy (deref *tdb*))
         {:eid-type {{:eid 1001} :map, {:eid 1002} :map},
          :idx-ave  #{[{:attr :a} {:eid 1002} {:eid 1001}]
@@ -333,8 +333,12 @@
   (throws? (boolean->binary ))
   (throws? (boolean->binary 234)) )
 
-(dotest-focus
-  (is= 2 3)
+(dotest   ; -focus
+  (is= [ (->SearchParam 'x) (->SearchParam 'y) (->SearchParam 'z) ]
+    (td/search-triple x y z))
+  (is= [ (->SearchValue "abc") (->SearchValue 123) (->SearchValue :hi) ]
+    (td/search-triple "abc" 123 :hi)
+    )
   )
 
 

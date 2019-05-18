@@ -66,14 +66,16 @@
       => {:idxs-true   [0 3 6]
           :idxs-false  [1 2 4 5 7 8] } "
   [pred coll]
-  (reduce
-    (fn [cum [index item]]
-      (if (t/truthy? (pred item))
-        (update cum :idxs-true t/append index)
-        (update cum :idxs-false t/append index)))
-    {:idxs-true  []
-     :idxs-false []}
-    (indexed coll)))
+  (let [pred-indexed (indexed (mapv pred coll))
+        grouped      (glue {true [] false []} ; ensure both t/f are present
+                       (group-by xsecond pred-indexed))
+        result       {:idxs-true  (it-> grouped
+                                    (grab true it)
+                                    (mapv xfirst it))
+                      :idxs-false (it-> grouped
+                                    (grab false it)
+                                    (mapv xfirst it))}]
+    result))
 
 ;  #todo maybe (set-idx dst idxs src)  ?   (<dest> <bridge> <src>)
 

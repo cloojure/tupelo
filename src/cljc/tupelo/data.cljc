@@ -31,6 +31,8 @@
 ; #todo add sets (primative only or EID) => map with same key/value
 ; #todo copy destruct syntax for search
 
+; #todo gui testing: add repl fn (record-start/stop) (datapig-save <name>) so can recording events & result db state
+
 #?(:cljs (enable-console-print!))
 
 ; #todo Tupelo Data Language (TDL)
@@ -83,6 +85,7 @@
 (defprotocol IRaw
   (raw [this]))
 
+;-----------------------------------------------------------------------------
 (s/defrecord Eid ; wraps an Entity Id (EID)
   [eid :- (s/maybe EidType)]
   IRaw
@@ -98,11 +101,17 @@
   IRaw
   (raw [this] leaf))
 
-(s/defrecord Param ; wraps a search variable
+;-----------------------------------------------------------------------------
+(s/defrecord SearchParam ; wraps a search variable
   [param :- s/Symbol]
   IRaw
   (raw [this] param))
-(defn param? [x] (instance? Param x))
+(s/defrecord SearchValue ; wraps a search value (kw, str, num, ?)
+  [value :- s/Any]
+  IRaw
+  (raw [this] value))
+(defn search-param? [x] (instance? SearchParam x)) ; #todo maybe inline these?
+(defn search-value? [x] (instance? SearchValue x))
 
 ;-----------------------------------------------------------------------------
 (def ^:dynamic ^:no-doc *tdb* nil)
@@ -191,7 +200,6 @@
   'nil' represents unknown values. Returns an index in [e a v] format."
   [triple :- tsk/Triple]
   (let [[e a v] triple
-        not-nil-flg (fn [arg] (if (nil? arg) 0 1))
         known-flgs  (mapv #(boolean->binary (t/not-nil? %)) triple) ]
     (cond
       (= known-flgs [0 0 0]) (grab :idx-eav @*tdb*)
@@ -267,7 +275,7 @@
             >>                 (spyx qspec-curr-env)
 
             {idxs-param :idxs-true
-             idxs-other :idxs-false} (tv/pred-index param? qspec-curr-env)
+             idxs-other :idxs-false} (spyx-pretty (tv/pred-index search-param? qspec-curr-env))
 
             qspec-lookup       (tv/set-lax qspec-curr-env idxs-param nil)
             >>                 (spyx qspec-lookup)
@@ -293,12 +301,12 @@
                  :env          {}})
     @query-result))
 
+(defn ^:no-doc par-val-fn [arg] (if (symbol? arg)
+                                  (->SearchParam arg)
+                                  (->SearchValue arg)))
 (defmacro search-triple
   [e a v]
-  (let [e-out (if (symbol? e) (->Param e)
-                )
-        ])
-  )
+  (mapv par-val-fn [e a v]))
 
 
 ;(s/defn index-find-leaf
