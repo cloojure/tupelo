@@ -297,7 +297,7 @@
         [{{:param :x} {:eid 1001}, {:param :y} {:attr :a}}
          {{:param :x} {:eid 1001}, {:param :y} {:attr :b}}])) ))
 
-(dotest-focus
+(dotest
   (with-tdb (new-tdb)
     (eid-count-reset)
     (let [edn-val          {:a {:b 2}}
@@ -326,6 +326,10 @@
          {{:param :x} {:eid 1002},
           {:param :y} {:attr :b},
           {:param :z} {:leaf 2}}]))))
+
+(dotest-focus
+  (is= 2 3)
+  )
 
 
 ;(dotest

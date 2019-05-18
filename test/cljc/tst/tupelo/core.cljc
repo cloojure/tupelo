@@ -189,6 +189,25 @@
   (is= "abc" (t/sym->str 'abc)))
 
 (dotest
+  (do
+    (is= :abc (t/->kw (quote abc)))
+    (is= :abc (t/->kw :abc))
+    (is= :abc (t/->kw "abc"))
+    (is= :123 (t/->kw 123))
+    (is= :12.3 (t/->kw 12.3)))
+  (do
+    (is= "abc" (t/->str (quote abc)))
+    (is= "abc" (t/->str :abc))
+    (is= "abc" (t/->str "abc"))
+    (is= "123" (t/->str 123))
+    (is= "12.3" (t/->str 12.3)))
+
+  (do
+    (is= (t/str->sym "abc") (t/->sym (quote abc)))
+    (is= (t/str->sym "abc") (t/->sym :abc))
+    (is= (t/str->sym "abc") (t/->sym "abc"))))
+
+(dotest
   (let [orig  {:b #{3 2 1}
                :a [1 2 3 { 5 :five 6 :six 4 :four }]
                :c (list 4 5 6)}

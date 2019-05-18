@@ -1127,6 +1127,37 @@
 (defn int->kw [arg]
   (keyword (str arg)))
 
+
+(s/defn ->kw :- s/Keyword
+  "Coerce arg to a keyword"
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol s/Num)]
+  (cond
+    (keyword? arg) arg
+    (symbol? arg) (sym->kw arg)
+    (string? arg) (str->kw arg)
+    (number? arg) (str->kw (str arg))
+    :else (throw (ex-info "bad arg" {:arg arg})) ))
+
+(s/defn ->str :- s/Str
+  "Coerce arg to a string"
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol s/Num)]
+  (cond
+    (string? arg) arg
+    (symbol? arg) (sym->str arg)
+    (keyword? arg) (kw->str arg)
+    (number? arg) (str arg)
+    :else (throw (ex-info "bad arg" {:arg arg})) ))
+
+(s/defn ->sym :- s/Symbol
+  "Coerce arg to a symbol"
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol)]
+  (cond
+    (symbol? arg) arg
+    (keyword? arg) (kw->sym arg)
+    (string? arg) (str->sym arg)
+    :else (throw (ex-info "bad arg" {:arg arg}))))
+
+
 (s/defn codepoint->char :- s/Any    ; #todo need clj/cljs char? test
   "Convert a unicode int to a char"
   [arg :- s/Int]

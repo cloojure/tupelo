@@ -289,6 +289,13 @@
                  :env          {}})
     @query-result))
 
+(defmacro search-triple
+  [e a v]
+  (let [e-out (if (symbol? e) (->Param e)
+                )
+        ])
+  )
+
 
 ;(s/defn index-find-leaf
 ;  [target :- LeafType]
