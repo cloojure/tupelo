@@ -327,6 +327,12 @@
           {:param :y} {:attr :b},
           {:param :z} {:leaf 2}}]))))
 
+(dotest
+  (is= 1 (boolean->binary true))
+  (is= 0 (boolean->binary false))
+  (throws? (boolean->binary ))
+  (throws? (boolean->binary 234)) )
+
 (dotest-focus
   (is= 2 3)
   )

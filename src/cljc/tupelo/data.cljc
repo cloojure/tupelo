@@ -182,13 +182,17 @@
                         :else (throw (ex-info "invalid entity type found" (vals->map entity-type)))))]
     result-out))
 
+(s/defn boolean->binary :- s/Int ; #todo => misc
+  "Convert true => 1, false => 0"
+  [arg :- s/Bool] (if arg 1 0))
+
 (s/defn lookup :- TripleIndex ; #todo maybe use :unk or :* for unknown?
   "Given a triple of [e a v] values, use the best index to find a matching subset, where
   'nil' represents unknown values. Returns an index in [e a v] format."
   [triple :- tsk/Triple]
   (let [[e a v] triple
         not-nil-flg (fn [arg] (if (nil? arg) 0 1))
-        known-flgs  (mapv not-nil-flg triple)]
+        known-flgs  (mapv #(boolean->binary (t/not-nil? %)) triple) ]
     (cond
       (= known-flgs [0 0 0]) (grab :idx-eav @*tdb*)
       :else (let [found-entries (cond
