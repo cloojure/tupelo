@@ -275,7 +275,7 @@
             >>                 (spyx qspec-curr-env)
 
             {idxs-param :idxs-true
-             idxs-other :idxs-false} (spyx-pretty (tv/pred-index search-param? qspec-curr-env))
+             idxs-other :idxs-false} (tv/pred-index search-param? qspec-curr-env)
 
             qspec-lookup       (tv/set-lax qspec-curr-env idxs-param nil)
             >>                 (spyx qspec-lookup)
@@ -293,7 +293,7 @@
             (query-impl (t/glue ctx {:qspec-list qspec-rest
                                      :env        env-next}))))))))
 
-(s/defn query
+(s/defn query-triples
   [qspec-list :- [tsk/Triple]]
   (let [query-result (atom [])]
     (query-impl {:query-result query-result
@@ -301,12 +301,17 @@
                  :env          {}})
     @query-result))
 
-(defn ^:no-doc par-val-fn [arg] (if (symbol? arg)
-                                  (->SearchParam arg)
-                                  (->SearchValue arg)))
+;(defn ^:no-doc par-val-fn [arg] (if (symbol? arg) (->SearchParam arg) (->SearchValue arg)))
+;(defmacro search-triple
+;  [e a v]
+;  (mapv par-val-fn [e a v]))
+
 (defmacro search-triple
   [e a v]
-  (mapv par-val-fn [e a v]))
+  (let [e-out (if (symbol? e) (->SearchParam e) (->Eid e))
+        a-out (if (symbol? a) (->SearchParam a) (->Attr a))
+        v-out (if (symbol? v) (->SearchParam v) (->Leaf v))]
+    [e-out a-out v-out]))
 
 
 ;(s/defn index-find-leaf
