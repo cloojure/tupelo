@@ -36,6 +36,7 @@
             [lein-codox "0.10.6"]
             [lein-doo "0.1.11"]
             [lein-figwheel "0.5.18"]
+            [lein-nomis-ns-graph "0.14.2"]
             [com.jakemccrary/lein-test-refresh "0.24.1"]]
 
   :test-refresh {:quiet      true ; true => suppress printing namespaces when testing

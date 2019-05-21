@@ -2288,6 +2288,7 @@
         ; (do (nl) (spyx-pretty res-only))
         res-only ))))
 
+; #todo maybe (with-destruct ...) implies automatic (restruct) upon exit
 (defmacro destruct
   "Natural destructuring:
      (let [data {:a 1
