@@ -1548,33 +1548,6 @@
   (throws? (t/replace-at (range 3) -1 9))
   (throws? (t/replace-at (range 3)  3 9)))
 
-(dotest
-  (let [tst-fn (fn [vals5]
-                 (is= 5 (count vals5))
-                 ; w/o endpoint
-                ;(spyx vals5)
-                 (is= vals5 (t/sublist vals5 0))
-                 (is= [2 3 4] (t/sublist vals5 2))
-                 (is= [4] (t/sublist vals5 4))
-                 (is= [] (t/sublist vals5 5))
-                 (throws? (t/sublist vals5 13))
-                 ;  with endpoint
-                 (is= [] (t/sublist vals5 1 1))
-                 (is= [2] (t/sublist vals5 2 3))
-                 (is= [2 3 4] (t/sublist vals5 2 5))
-                 (is= vals5 (t/sublist vals5 0 5))
-                 (throws? (t/sublist vals5 5 13)))]
-    (tst-fn (range 5))
-    (tst-fn (list 0 1 2 3 4))
-    (tst-fn (vector 0 1 2 3 4))
-    (tst-fn (seq (range 5)))
-    (tst-fn (seq (list 0 1 2 3 4)))
-    (tst-fn (seq (vector 0 1 2 3 4))))
-
-
-  (is= [2 3] (t/sublist (seq (range 5)) 2 4))
-  (is= [2 3] (t/sublist (seq (vec (range 5))) 2 4)))
-
 (dotest             ; #todo need more tests
   (is= (mapv #(mod % 3) (t/thru -6 6)) [0 1 2 0 1 2 0 1 2 0 1 2 0])
   (is= (mapv #(t/idx [0 1 2] %) (t/thru -3 3)) [0 1 2 0 1 2 0 ]))
@@ -2521,6 +2494,35 @@
               (is   (t/is-java-1-8?))
               (is   (t/is-java-1-8-plus?)) ) )
 
+
+          (dotest
+            (let [tst-fn (fn [vals5]
+                           (is= 5 (count vals5))
+                           ; w/o endpoint
+                           ;(spyx vals5)
+                           (is= vals5 (t/sublist vals5 0))
+                           (is= [2 3 4] (t/sublist vals5 2))
+                           (is= [4] (t/sublist vals5 4))
+                           (is= [] (t/sublist vals5 5))
+                           (throws? (t/sublist vals5 13))
+                           ;  with endpoint
+                           (is= [] (t/sublist vals5 1 1))
+                           (is= [2] (t/sublist vals5 2 3))
+                           (is= [2 3 4] (t/sublist vals5 2 5))
+                           (is= vals5 (t/sublist vals5 0 5))
+                           (throws? (t/sublist vals5 5 13)))]
+              (tst-fn (range 5))
+              (tst-fn (list 0 1 2 3 4))
+              (tst-fn (vector 0 1 2 3 4))
+              (tst-fn (seq (range 5)))
+              (tst-fn (seq (list 0 1 2 3 4)))
+              (tst-fn (seq (vector 0 1 2 3 4))))
+
+
+            (is= [2 3] (t/sublist (seq (range 5)) 2 4))
+            (is= [2 3] (t/sublist (seq (vec (range 5))) 2 4)))
+
+
           (dotest
             (let [val1 (into (sorted-map) {:a 1 :b 2})]
               (is= "val1 => <#clojure.lang.PersistentTreeMap {:a 1, :b 2}>"
@@ -2649,13 +2651,6 @@
 
 
           ))
-
-
-
-
-
-
-
 
 
 

@@ -35,6 +35,8 @@
 
 #?(:cljs (enable-console-print!))
 
+#?(:clj (do
+
 (dotest
   (let [ss123 (t/it-> (index/empty-index)
                 (conj it [1 :a])
@@ -884,10 +886,5 @@
 ;    (is= (td/mapentry->idx-type-kw (t/map-entry "bye" 1)) :me-str-num)
 ;    (is= (td/mapentry->idx-type-kw (t/map-entry "bye" :b)) :me-str-kw)
 ;    (is= (td/mapentry->idx-type-kw (t/map-entry "bye" "hi")) :me-str-str) ) )
-;
-;
-;
-;
-;
-;
 
+))

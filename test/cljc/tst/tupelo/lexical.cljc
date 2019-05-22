@@ -24,6 +24,7 @@
 #?(:cljs (enable-console-print!))
 
 ; #todo fix for cljs
+#?(:clj (do
 
 (dotest
   (defrecord Leaf [raw])
@@ -118,3 +119,4 @@
 
 )
 
+))

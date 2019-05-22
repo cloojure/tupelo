@@ -23,6 +23,9 @@
 
 #?(:cljs (enable-console-print!))
 
+
+#?(:clj (do
+
 (def LexicalValType tsk/Vec)
 (def SortedSetType (class (avl/sorted-set 1 2 3)))
 (def SortedMapType (class (avl/sorted-map :a 1 :b 2 :c 3)))
@@ -164,3 +167,4 @@
   (compare-generic a b))
 
 
+))

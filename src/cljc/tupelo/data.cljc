@@ -35,6 +35,9 @@
 
 #?(:cljs (enable-console-print!))
 
+
+#?(:clj (do
+
 ; #todo Tupelo Data Language (TDL)
 
 (def customers ; #todo be able to process this data & delete unwise users
@@ -411,23 +414,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+))
 
 

@@ -31,6 +31,8 @@
 
 #?(:cljs (enable-console-print!))
 
+#?(:clj (do
+
 (dotest
   (let [index   (t/it-> (index/empty-index)
                   (index/add-entry it [2 :b])
@@ -153,6 +155,7 @@
 
   )
 
+))
 
 
 

@@ -36,6 +36,8 @@
 
 ; #todo Tupelo Data Language (TDL)
 
+#?(:clj (do
+
 ;---------------------------------------------------------------------------------------------------
 ; index stuff
 (def LexicalValType tsk/Vec)
@@ -139,7 +141,6 @@
 ;  (disj set-in eid-in))
 
 
-
-
+))
 
 

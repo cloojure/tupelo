@@ -15,7 +15,7 @@
               [tupelo.string :as ts]
              ])
     #?@(:cljs [[tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
-               [tupelo.test-cljs :refer [define-fixture dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
+               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
                [tupelo.string :as ts :include-macros true]
               ])))
 
