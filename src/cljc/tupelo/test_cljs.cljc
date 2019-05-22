@@ -72,14 +72,14 @@
 
 (defn throws?-impl
   [& forms]
-  (if (= clojure.lang.Symbol (class (first forms)))
+  (if (symbol? (first forms))
     ; symbol 1st arg => expected Throwable provided
     (do
       (println "symbol found")
       (println "Error - CLJS impl not allow specific exception type to be specified" (first forms))
       (throw (ex-info "Error - CLJS impl not allow specific exception type to be specified" (first forms))))
     (do             ; expected Throwable not provided
-      ; (println "symbol not found")
+      (println "symbol not found")
       `(cljs.test/is
          (try
            ~@forms

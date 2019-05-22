@@ -333,22 +333,24 @@
   "Coerces a map into a sorted-map"
   [map-in :- tsk/Map] (glue (sorted-map) map-in))
 
-(defn sorted-map-generic
-  "Returns a generic sorted map, able to accept keys of different classes"
-  [] (sorted-map-by lex/compare-generic))
+#?(:clj
+   (do
+     (defn sorted-map-generic
+       "Returns a generic sorted map, able to accept keys of different classes"
+       [] (sorted-map-by lex/compare-generic))
 
-(s/defn ->sorted-map-generic :- tsk/Map
-  "Coerces a map into a sorted-map"
-  [map-in :- tsk/Map] (glue (sorted-map-generic) map-in))
+     (s/defn ->sorted-map-generic :- tsk/Map
+       "Coerces a map into a sorted-map"
+       [map-in :- tsk/Map] (glue (sorted-map-generic) map-in))
 
-(defn sorted-set-generic
-  "Returns a generic sorted set, able to accept keys of different classes"
-  [] (sorted-set-by lex/compare-generic))
+     (defn sorted-set-generic
+       "Returns a generic sorted set, able to accept keys of different classes"
+       [] (sorted-set-by lex/compare-generic))
 
-(s/defn ->sorted-set-generic :- tsk/Set
-  "Coerces a set into a sorted-set-generic"
-  [set-in :- tsk/Set] (glue (sorted-set-generic) set-in))
-
+     (s/defn ->sorted-set-generic :- tsk/Set
+       "Coerces a set into a sorted-set-generic"
+       [set-in :- tsk/Set] (glue (sorted-set-generic) set-in))
+     ))
 
 (defn unlazy ; #todo need tests & docs. Use for datomic Entity?
   "Converts a lazy collection to a concrete (eager) collection of the same type."
@@ -356,8 +358,8 @@
   (let [unlazy-item (fn [item]
                       (cond
                         (sequential? item) (vec item)
-                        (map? item) (into (sorted-map-generic) item)
-                        (set? item) (into (sorted-set-generic) item)
+                        (map? item) (into (sorted-map) item) ; #todo => (sorted-map-generic)
+                        (set? item) (into (sorted-set) item) ; #todo => (sorted-map-generic)
             #?@(:clj [
                         (instance? java.io.InputStream item) (slurp item)  ; #todo need test
                         (instance? java.util.List item) (vec item)  ; #todo need test
@@ -815,7 +817,9 @@
 
 (s/defn map-entry :- tsk/MapEntry
   "Returns a clojure.lang.MapEntry constructed from the given key and val"
-  [key val] (clojure.lang.MapEntry/create key val) )
+  [key val]
+  #?(:clj  (clojure.lang.MapEntry/create key val)
+     :cljs (cljs.core.MapEntry. key val)))
 
 (comment
   ; #todo => tupelo.core

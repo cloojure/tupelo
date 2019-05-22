@@ -1,6 +1,6 @@
 (ns tupelo.schema
   "Prismatic Schema type definitions"
-  (:refer-clojure :exclude [Fn List Single])
+  (:refer-clojure :exclude [Fn List Single MapEntry])
   (:require [schema.core :as s])
   #?(:clj
      (:import [java.util HashSet])))
