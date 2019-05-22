@@ -2,6 +2,7 @@
 = Making Clojure Even Sweeter
 
 Leiningen coordinates:
+
 image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 
 === The Tupelo API Docs link:http://cloojure.github.io/doc/tupelo/[are posted on GitHub Pages]
