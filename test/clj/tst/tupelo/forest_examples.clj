@@ -316,17 +316,15 @@
 
 (s/defn wrap-adjacent-kw-kids [hid]
   (let [kid-hids            (hid->kids hid)
-        kid-elems           (mapv hid->node kid-hids)
         kid-partitions      (partition-by leaf-kw-hid? kid-hids)
         kid-partitions-flgs (mapv kw-partition? kid-partitions)
-        kid-partitions-new  (map-let [partition kid-partitions
+        kid-partitions-new  (map-let [partition    kid-partitions
                                       kw-part-flag kid-partitions-flgs]
                               (if kw-part-flag
                                 [(add-node :item partition)]
-                                partition))
-        kids-new            (apply glue kid-partitions-new)
-        ]
-       (kids-set hid kids-new)))
+                                partition))]
+    (if (not-empty? kid-partitions-new)
+      (kids-set hid (apply glue kid-partitions-new)))))
 
 (dotest
   (with-forest (new-forest)
@@ -355,7 +353,8 @@
            [:item :d]]
           [:item 5]]
          [:item
-          [:item :e]]]))))
+          [:item :e]]])
+       )))
 
 ;-----------------------------------------------------------------------------
 (def z3-hiccup
@@ -1596,8 +1595,154 @@
          [#:tupelo.forest{:value 1, :index 0}]
          [{:tag :tupelo.forest/list, :tupelo.forest/index 1}
           [{:tag :tupelo.forest/list, :tupelo.forest/index 0}
-           [#:tupelo.forest{:value 2, :index 0}]]]] )
-    )))
+           [#:tupelo.forest{:value 2, :index 0}]]]] ) )))
+
+;-----------------------------------------------------------------------------
+(dotest ; #todo can we run this as hiccup even without :tag entries???
+  (with-forest (new-forest)
+    (let [data          {:tag      "program"
+                         :state    "here"
+                         ::tf/kids [{:topic    "Books"
+                                     :expanded true
+                                     ::tf/kids [{:topic "Titles" ::tf/kids []}
+                                                {:topic    "Authors"
+                                                 :expanded true
+                                                 ::tf/kids [{:topic "Alice" ::tf/kids []}
+                                                            {:topic "Bob" ::tf/kids []}
+                                                            {:topic "Carol" ::tf/kids []}]}
+                                                {:topic "Genres" ::tf/kids []}]}
+                                    {:topic    "CDs"
+                                     ::tf/kids [{:topic "Genres" ::tf/kids []}
+                                                {:topic "Albums" ::tf/kids []}
+                                                {:topic "Artists" ::tf/kids []}]}
+                                    {:topic    "To Do"
+                                     :expanded true
+                                     ::tf/kids [{:topic    "Spouse Birthday"
+                                                 :expanded nil
+                                                 :due-date "07/31/2025"
+                                                 ::tf/kids [{:topic "Buy Card" ::tf/kids []}
+                                                            {:topic "Buy Jewelry" ::tf/kids []}
+                                                            {:topic "Buy Cake" ::tf/kids []}]}]}]}
+          root-hid      (add-tree data)
+          expanded-hids (find-hids root-hid [:** {:expanded true}])
+          ]
+      ;(spy-pretty (hid->bush root-hid))
+      ;(doseq [hid expanded-hids]
+      ;  (newline)
+      ;  (println "-----------------------------------------------------------------------------")
+      ;  (spy-pretty :node (hid->node hid))
+      ;  (spy-pretty :bush (hid->bush hid)))
+      ) ) )
+
+;-----------------------------------------------------------------------------
+(dotest
+  (hid-count-reset)
+  (with-forest (new-forest)
+    (let [data-orig     (quote (def a (do (+ 1 2) 3)))
+          data-vec      (unlazy data-orig)
+          root-hid      (add-tree-hiccup data-vec)
+          all-paths     (find-paths root-hid [:** :*])
+          max-len       (apply max (mapv #(count %) all-paths))
+          paths-max-len (keep-if #(= max-len (count %)) all-paths)]
+      (is= data-vec (quote [def a [do [+ 1 2] 3]]))
+      (is= (hid->bush root-hid)
+        (quote
+          [{:tag def}
+           [{:tag :tupelo.forest/raw, :value a}]
+           [{:tag do}
+            [{:tag +}
+             [{:tag :tupelo.forest/raw, :value 1}]
+             [{:tag :tupelo.forest/raw, :value 2}]]
+            [{:tag :tupelo.forest/raw, :value 3}]]]))
+      (is= all-paths
+        [[1007]
+         [1007 1001]
+         [1007 1006]
+         [1007 1006 1004]
+         [1007 1006 1004 1002]
+         [1007 1006 1004 1003]
+         [1007 1006 1005]])
+      (is= paths-max-len
+        [[1007 1006 1004 1002]
+         [1007 1006 1004 1003]])
+      (nl)
+      (is= (format-paths paths-max-len)
+        (quote [[{:tag def}
+                 [{:tag do} [{:tag +} [{:tag :tupelo.forest/raw, :value 1}]]]]
+                [{:tag def}
+                 [{:tag do} [{:tag +} [{:tag :tupelo.forest/raw, :value 2}]]]]]))
+
+      )))
+
+;-----------------------------------------------------------------------------
+(dotest   ; find all the leaf paths
+  (hid-count-reset)
+  (with-forest (new-forest)
+    (let [data          ["root"
+                         ["level_a_node3" ["leaf"]]
+                         ["level_a_node2"
+                          ["level_b_node2"
+                           ["level_c_node1"
+                            ["leaf"]]]
+                          ["level_b_node1" ["leaf"]]]
+                         ["level_a_node1" ["leaf"]]
+                         ["leaf"]]
+          root-hid      (add-tree-hiccup data)
+          leaf-paths    (find-paths-with root-hid [:** :*] leaf-path?)]
+      (is= (hid->bush root-hid)
+        [{:tag "root"}
+         [{:tag "level_a_node3"}
+          [{:tag "leaf"}]]
+         [{:tag "level_a_node2"}
+          [{:tag "level_b_node2"}
+           [{:tag "level_c_node1"}
+            [{:tag "leaf"}]]]
+          [{:tag "level_b_node1"}
+           [{:tag "leaf"}]]]
+         [{:tag "level_a_node1"}
+          [{:tag "leaf"}]]
+         [{:tag "leaf"}]])
+      (is= (format-paths leaf-paths)
+        [[{:tag "root"} [{:tag "level_a_node3"} [{:tag "leaf"}]]]
+         [{:tag "root"} [{:tag "level_a_node2"} [{:tag "level_b_node2"} [{:tag "level_c_node1"} [{:tag "leaf"}]]]]]
+         [{:tag "root"} [{:tag "level_a_node2"} [{:tag "level_b_node1"} [{:tag "leaf"}]]]]
+         [{:tag "root"} [{:tag "level_a_node1"} [{:tag "leaf"}]]]
+         [{:tag "root"} [{:tag "leaf"}]]]))))
+
+;-----------------------------------------------------------------------------
+(dotest ; find the grandparent of each leaf
+  (hid-count-reset)
+  (with-forest (new-forest)
+    (let [data              [:root
+                             [:a
+                              [:x
+                               [:y [:t [:l2]]]
+                               [:z [:l3]]]]
+                             [:b [:c
+                                  [:d [:l4]]
+                                  [:e [:l5]]]]]
+          root-hid          (add-tree-hiccup data)
+          leaf-paths        (find-paths-with root-hid [:** :*] leaf-path?)
+          grandparent-paths (mapv #(drop-last 2 %) leaf-paths)
+          grandparent-tags  (set
+                              (forv [path grandparent-paths]
+                                (let [path-tags (it-> path
+                                                  (mapv #(hid->node %) it)
+                                                  (mapv #(grab :tag %) it))]
+                                  path-tags)))]
+      (is= (format-paths leaf-paths)
+        [[{:tag :root} [{:tag :a} [{:tag :x} [{:tag :y} [{:tag :t} [{:tag :l2}]]]]]]
+         [{:tag :root} [{:tag :a} [{:tag :x} [{:tag :z} [{:tag :l3}]]]]]
+         [{:tag :root} [{:tag :b} [{:tag :c} [{:tag :d} [{:tag :l4}]]]]]
+         [{:tag :root} [{:tag :b} [{:tag :c} [{:tag :e} [{:tag :l5}]]]]]])
+      (is= grandparent-tags
+          #{[:root :a :x] [:root :a :x :y] [:root :b :c]} ))))
+
+
+
+
+
+
 
 
 

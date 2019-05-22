@@ -158,11 +158,12 @@
      (dotest
        (is (#{:windows :linux :mac} (misc/get-os))))
 
+     ; #todo fixed 2019-4-13  #remove if keeps working
      ;***************************************************************************************************
-     ;***** WARNING!  These tests using BASH or ZSH will cause lein test-refresh to malfunction!
-     ;***** WARNING!  We mark them as ^:slow to prevent test-refresh from attempting to run them
+     ;***** WARNING!  (OBE) These tests using BASH or ZSH will cause lein test-refresh to malfunction!
+     ;***** WARNING!  (OBE) We mark them as ^:slow to prevent test-refresh from attempting to run them
      ;***************************************************************************************************
-     (cljtst/deftest ^:slow t-shell-cmd-165
+     (dotest ; was:   cljtst/deftest ^:slow t-shell-cmd-165
          (when (= :linux (misc/get-os))
            (let [result (misc/shell-cmd "ls -ldF *")]
              (when false ; set true -> debug print
@@ -208,3 +209,4 @@
              99 total")))
 
 ))
+

@@ -5,6 +5,9 @@
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :min-lein-version "2.7.1"
 
+  :excludes [org.clojure/clojure
+             org.clojure/clojurescript]
+
   :dependencies [
     [binaryage/oops "0.7.0"]
     [cheshire "5.8.1"]
@@ -18,9 +21,10 @@
     [joda-time/joda-time "2.10.1"]
     [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
     [org.clojure/core.async "0.4.490"]
-    [org.clojure/core.match "0.3.0-alpha4"]
+    [org.clojure/core.match "0.3.0"]
+    [org.clojure/data.avl "0.0.18"]
     [org.clojure/data.xml "0.2.0-alpha5"]
-    [org.clojure/math.combinatorics "0.1.4"]
+    [org.clojure/math.combinatorics "0.1.5"]
     [org.clojure/spec.alpha "0.2.176"]
     [org.clojure/test.check "0.9.0"]
     [org.clojure/tools.reader "1.3.2"]
@@ -28,27 +32,34 @@
     [prismatic/schema "1.1.10"]
     [reagent-utils "0.3.2"]
   ]
-  :plugins [[lein-cljsbuild "1.1.7" :exclusions [[org.clojure/clojure]]] 
+  :plugins [[lein-cljsbuild "1.1.7"]
             [lein-codox "0.10.6"]
             [lein-doo "0.1.11"]
             [lein-figwheel "0.5.18"]
-            [com.jakemccrary/lein-test-refresh "0.23.0"]]
+           ;[lein-nomis-ns-graph "0.14.2"]
+            [com.jakemccrary/lein-test-refresh "0.24.1"]]
+
+  :test-refresh {:quiet      true ; true => suppress printing namespaces when testing
+                }
 
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
-                                       [org.clojure/clojurescript "1.10.439" :scope "provided"]
+                                       [org.clojure/clojurescript "1.10.339" :scope "provided"]
+                                      ;[org.clojure/clojurescript "1.10.439" :scope "provided"]
                                       ;[org.clojure/clojurescript "1.10.516" :scope "provided"]  ; ***** WARNING - FAILS IN COMPILE!!! *****
                                       ]}
              :dev      {:dependencies [[binaryage/devtools "0.9.10"]
-                                       [binaryage/dirac "1.3.2"]
+                                       [binaryage/dirac "1.3.5"]
                                        [com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.4"]
-                                       [org.clojure/clojure "1.10.1-beta1"] ]}
+                                      ;[org.clojure/clojure "1.10.0"]
+                                       [org.clojure/clojure "1.10.1-beta1"]
+                                       [org.clojure/clojurescript "1.10.439"]
+                                      ]
+                        }
              :1.8      {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9      {:dependencies [[org.clojure/clojure "1.9.0"]]}
              }
                ; :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
-
-  :test-refresh {:quiet true }
 
   :codox {:src-dir-uri               "http://github.com/cloojure/tupelo/blob/master/"
           :src-linenum-anchor-prefix "L"
@@ -63,7 +74,8 @@
                          "reporters"     ["progress" "junit"]
                          "junitReporter" {"outputDir" "target/test-results"}}}
         :paths {:karma   "node_modules/karma/bin/karma"
-                :phantom "node_modules/phantomjs/bin/phantomjs"}}
+               ;:phantom "node_modules/phantomjs/bin/phantomjs"
+               }}
 
   :global-vars {*warn-on-reflection*      false }
 

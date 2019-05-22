@@ -302,11 +302,11 @@
       (is (and (forest-hid? x-hid) (forest-hid? y-hid) (forest-hid? z-hid) (forest-hid? r-hid)))
 
       (is (and (leaf-hid? x-hid) (leaf-hid? y-hid) (leaf-hid? z-hid)))
-      (is (and (forest-leaf? x-node) (forest-leaf? y-node) (forest-leaf? z-node)))
+      (is (and (valid-forest-leaf? x-node) (valid-forest-leaf? y-node) (valid-forest-leaf? z-node)))
 
       (is (forest-hid? r-hid))
       (is (tree-node? r-tree))
-      (is (forest-node? r-node))
+      (is (valid-forest-node? r-node))
 
       (is= #{r-hid} roots)
       (isnt= #{x-hid} roots)

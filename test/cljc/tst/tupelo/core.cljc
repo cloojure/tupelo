@@ -7,8 +7,8 @@
 (ns tst.tupelo.core
   #?(:clj (:require
             [tupelo.test :as ttst
-             :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]
-             ]
+               :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
+
             [clojure.string :as str]
             [tupelo.core :as t :refer [spy spyx spyxx]]
             [tupelo.string :as ts]
@@ -16,17 +16,22 @@
             ))
   #?(:cljs (:require
              [tupelo.test-cljs :include-macros true ; #todo #bug copy  :include-macros true everywhere!!!
-              :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
+                :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
+
              [clojure.string :as str]
-             [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
-             [tupelo.string :as ts :include-macros true]
+             [tupelo.core :include-macros true :as t :refer [spy spyx spyxx]]
+             [tupelo.string  :include-macros true :as ts]
              )))
 
 #?(:cljs (enable-console-print!))
 
 (define-fixture :once
-  {:enter (fn [ctx] (println "*** TEST ONCE *** - enter "))
-   :leave (fn [ctx] (println "*** TEST ONCE *** - leave "))})
+  {:enter (fn [ctx]
+           ;(println "*** TEST ONCE *** - enter ")
+            )
+   :leave (fn [ctx]
+           ;(println "*** TEST ONCE *** - leave ")
+            )})
 
 ;--------------------------------------------------------------------------------------------------
 
@@ -188,6 +193,25 @@
   (is= "abc" (t/sym->str 'abc)))
 
 (dotest
+  (do
+    (is= :abc (t/->kw (quote abc)))
+    (is= :abc (t/->kw :abc))
+    (is= :abc (t/->kw "abc"))
+    (is= :123 (t/->kw 123))
+    (is= :12.3 (t/->kw 12.3)))
+  (do
+    (is= "abc" (t/->str (quote abc)))
+    (is= "abc" (t/->str :abc))
+    (is= "abc" (t/->str "abc"))
+    (is= "123" (t/->str 123))
+    (is= "12.3" (t/->str 12.3)))
+
+  (do
+    (is= (t/str->sym "abc") (t/->sym (quote abc)))
+    (is= (t/str->sym "abc") (t/->sym :abc))
+    (is= (t/str->sym "abc") (t/->sym "abc"))))
+
+(dotest
   (let [orig  {:b #{3 2 1}
                :a [1 2 3 { 5 :five 6 :six 4 :four }]
                :c (list 4 5 6)}
@@ -334,7 +358,6 @@
           (t/let-spy [a (inc 0)
                     b (+ 2 3)]
                    (-> b (* (inc a)) (+ 7))))))))
-
 
 (dotest
   (testing "basic usage"
@@ -535,11 +558,17 @@
   (throws? (t/contains-val? #{:a 1 :b 2} 1)))
 
 (dotest
-  (is= (t/forv [x (range 4)] (* x x))
+  (is=
+    (t/forv [x (range 4)] (* x x))
+    (t/for-list [x (range 4)] (* x x))
     [0 1 4 9] )
-  (is= (t/forv [x (range 23)] (* x x))
+  (is=
+    (t/forv [x (range 23)] (* x x))
+    (t/for-list [x (range 23)] (* x x))
     (for  [x (range 23)] (* x x)))
-  (is= (t/forv [x (range 5)  y (range 2 9)] (str x y))
+  (is=
+    (t/forv [x (range 5)  y (range 2 9)] (str x y))
+    (t/for-list [x (range 5)  y (range 2 9)] (str x y))
     (for  [x (range 5)  y (range 2 9)] (str x y))))
 
 (dotest
@@ -976,62 +1005,6 @@
     (is= { 0 :even 2 :even } (t/submap-by-vals
                                { 0 :even 1 :odd 2 :even 3 :odd }
                                 #{ :even :prime } :missing-ok ))) )
-
-(dotest             ; -1 implies "in order"
-  ; empty list is smaller than any non-empty list
-  (is (neg? (t/compare-lexical [] [2])))
-  (is (neg? (t/compare-lexical [] [\b])))
-  (is (neg? (t/compare-lexical [] ["b"])))
-  (is (neg? (t/compare-lexical [] [:b])))
-  (is (neg? (t/compare-lexical [] ['b])))
-
-  ; nil is smaller than any non-nil item
-  (is (neg? (t/compare-lexical [nil] [2])))
-  (is (neg? (t/compare-lexical [nil] [\b])))
-  (is (neg? (t/compare-lexical [nil] ["b"])))
-  (is (neg? (t/compare-lexical [nil] [:b])))
-  (is (neg? (t/compare-lexical [nil] ['b])))
-
-  ; Cannot compare items from different classes:  number, char, string, keyword, symbol
-  (throws? (t/compare-lexical [1] ["b"]))
-  (throws? (t/compare-lexical [1] [:b]))
-  (throws? (t/compare-lexical [1] ['b]))
-  (throws? (t/compare-lexical ["b"] [:b]))
-  (throws? (t/compare-lexical ["b"] ['b]))
-  (throws? (t/compare-lexical [:b] ['b]))
- #?(:clj
-    (do
-      (throws? (t/compare-lexical [1] [\b]))
-      (throws? (t/compare-lexical [\b] ["b"]))
-      (throws? (t/compare-lexical [\b] [:b]))
-      (throws? (t/compare-lexical [\b] ['b]))))
-
-  ; different positions in list can be of different class
-  (is (neg? (t/compare-lexical [:a] [:b])))
-  (is (neg? (t/compare-lexical [:a] [:a 1])))
-  (is (neg? (t/compare-lexical [1 :a] [2])))
-  (is (neg? (t/compare-lexical [:a] [:a 1])))
-  (is (neg? (t/compare-lexical [1] [1 :a])))
-  (is (neg? (t/compare-lexical [1 :a] [2])))
-
-  ; same position in list can be of different class if sorted by previous positions
-  (is (neg? (t/compare-lexical [1 :z] [2 9]))) ; OK since prefix lists [1] & [2] define order
-  (throws?  (t/compare-lexical [1 :z] [1 2])) ; not OK since have same prefix list: [1]
-
-  (is= (vec (sorted-set-by t/compare-lexical [1 :a] [1] [2]))
-    [[1] [1 :a] [2]])
-  (is= (vec (sorted-set-by t/compare-lexical [1 :a] [1 nil] [1] [2]))
-    [[1] [1 nil] [1 :a] [2]])
-  (is= (vec (sorted-set-by t/compare-lexical [2 0] [2] [3] [3 :y] [1] [1 :a] [1 nil] [1 :b] [1 :b 3]))
-    [[1]
-     [1 nil]
-     [1 :a]
-     [1 :b]
-     [1 :b 3]
-     [2]
-     [2 0]
-     [3]
-     [3 :y]]))
 
 (dotest
   (is= 3 (t/validate pos? 3))
@@ -1574,6 +1547,33 @@
   (throws? (t/replace-at []         0 9))
   (throws? (t/replace-at (range 3) -1 9))
   (throws? (t/replace-at (range 3)  3 9)))
+
+(dotest
+  (let [tst-fn (fn [vals5]
+                 (is= 5 (count vals5))
+                 ; w/o endpoint
+                ;(spyx vals5)
+                 (is= vals5 (t/sublist vals5 0))
+                 (is= [2 3 4] (t/sublist vals5 2))
+                 (is= [4] (t/sublist vals5 4))
+                 (is= [] (t/sublist vals5 5))
+                 (throws? (t/sublist vals5 13))
+                 ;  with endpoint
+                 (is= [] (t/sublist vals5 1 1))
+                 (is= [2] (t/sublist vals5 2 3))
+                 (is= [2 3 4] (t/sublist vals5 2 5))
+                 (is= vals5 (t/sublist vals5 0 5))
+                 (throws? (t/sublist vals5 5 13)))]
+    (tst-fn (range 5))
+    (tst-fn (list 0 1 2 3 4))
+    (tst-fn (vector 0 1 2 3 4))
+    (tst-fn (seq (range 5)))
+    (tst-fn (seq (list 0 1 2 3 4)))
+    (tst-fn (seq (vector 0 1 2 3 4))))
+
+
+  (is= [2 3] (t/sublist (seq (range 5)) 2 4))
+  (is= [2 3] (t/sublist (seq (vec (range 5))) 2 4)))
 
 (dotest             ; #todo need more tests
   (is= (mapv #(mod % 3) (t/thru -6 6)) [0 1 2 0 1 2 0 1 2 0 1 2 0])

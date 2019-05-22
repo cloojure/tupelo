@@ -50,6 +50,7 @@
     (is= (find-idxs data-1 2) [{:idxs [1], :val 2}])
 
     (is= (find-idxs data-2 10) [{:idxs [1 0], :val 10}])
+
     (is= (find-idxs data-2 odd?) [{:idxs [0 0], :val 1}
                                   {:idxs [0 2], :val 3}
                                   {:idxs [1 1], :val 11} ])

@@ -2,8 +2,8 @@
   (:use tupelo.core tupelo.test)
   (:require
     [clojure.data.xml :as clj-xml]
-    [tupelo.parse.tagsoup :as tf-tagsoup]
-    [tupelo.parse.xml :as tf-xml]
+    [tupelo.parse.tagsoup :as parse-tagsoup]
+    [tupelo.parse.xml :as parse-xml]
     [tupelo.string :as ts])
   (:import [java.io StringReader]))
 
@@ -111,18 +111,18 @@
   (is= [1 2 3] (vec [1 2 3]))
   (is= [1 2 3] (vec (list 1 2 3)))
 
-  (is= enlive-tree-normalized (tf-xml/enlive-normalize enlive-tree-nils))
+  (is= enlive-tree-normalized (parse-xml/enlive-normalize enlive-tree-nils))
 
   ; verify parsing
   (let [clj-xml-data             (clj-xml/parse (ts/string->stream xml-str))
-        tf-xml-data              (tf-xml/parse (ts/string->stream xml-str))
-        tf-xml-data-input-source (tf-xml/parse (org.xml.sax.InputSource.
+        tf-xml-data              (parse-xml/parse (ts/string->stream xml-str))
+        tf-xml-data-input-source (parse-xml/parse (org.xml.sax.InputSource.
                                                  (ts/string->stream xml-str)))
-        tf-xml-data-reader       (tf-xml/parse (StringReader. xml-str))
-        tf-tagsoup-data          (tf-tagsoup/parse (ts/string->stream xml-str))]
+        tf-xml-data-reader       (parse-xml/parse (StringReader. xml-str))
+        tf-tagsoup-data          (parse-tagsoup/parse (ts/string->stream xml-str))]
     (is= enlive-tree-normalized clj-xml-data)
 
-    (is= enlive-tree-normalized-nonblank (tf-xml/enlive-remove-whitespace clj-xml-data))
+    (is= enlive-tree-normalized-nonblank (parse-xml/enlive-remove-whitespace clj-xml-data))
     (is= enlive-tree-normalized-nonblank tf-xml-data)
     (is= enlive-tree-normalized-nonblank tf-xml-data-input-source)
     (is= enlive-tree-normalized-nonblank tf-xml-data-reader)

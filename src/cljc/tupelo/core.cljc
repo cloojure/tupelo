@@ -28,6 +28,7 @@
     [clojure.test]
     [clojure.walk :as walk]
     [schema.core :as s]
+    [tupelo.lexical :as lex]
     [tupelo.schema :as tsk]
 
     #?@(:clj [[cheshire.core :as cheshire]
@@ -322,6 +323,32 @@
 ;  [& args]
 ;  (throw (ex-info "`case` is evil, use `cond` instead" {:args args} )))
 
+(declare glue)
+
+(s/defn ->set :- tsk/Set
+  "Converts arg to a set."
+  [arg] (cc/set arg) )
+
+(s/defn ->sorted-map :- tsk/Map
+  "Coerces a map into a sorted-map"
+  [map-in :- tsk/Map] (glue (sorted-map) map-in))
+
+(defn sorted-map-generic
+  "Returns a generic sorted map, able to accept keys of different classes"
+  [] (sorted-map-by lex/compare-generic))
+
+(s/defn ->sorted-map-generic :- tsk/Map
+  "Coerces a map into a sorted-map"
+  [map-in :- tsk/Map] (glue (sorted-map-generic) map-in))
+
+(defn sorted-set-generic
+  "Returns a generic sorted set, able to accept keys of different classes"
+  [] (sorted-set-by lex/compare-generic))
+
+(s/defn ->sorted-set-generic :- tsk/Set
+  "Coerces a set into a sorted-set-generic"
+  [set-in :- tsk/Set] (glue (sorted-set-generic) set-in))
+
 
 (defn unlazy ; #todo need tests & docs. Use for datomic Entity?
   "Converts a lazy collection to a concrete (eager) collection of the same type."
@@ -329,8 +356,8 @@
   (let [unlazy-item (fn [item]
                       (cond
                         (sequential? item) (vec item)
-                        (map? item) (into {} item)
-                        (set? item) (into #{} item)
+                        (map? item) (into (sorted-map-generic) item)
+                        (set? item) (into (sorted-set-generic) item)
             #?@(:clj [
                         (instance? java.io.InputStream item) (slurp item)  ; #todo need test
                         (instance? java.util.List item) (vec item)  ; #todo need test
@@ -408,7 +435,7 @@
   Throws if empty."
   [n coll]
   (when (or (nil? coll) (empty? coll))
-    (throw (ex-info "xtake: invalid coll: " coll)))
+    (throw (ex-info "xtake: invalid coll: " {:coll coll})))
   (let [items (cc/take n coll)
         actual (count items)]
     (when (<  actual n)
@@ -421,7 +448,7 @@
   "Returns the first value in a list or vector. Throws if empty."
   [coll]
   (when (or (nil? coll) (empty? coll))
-    (throw (ex-info "xfirst: invalid coll: " coll)))
+    (throw (ex-info "xfirst: invalid coll: " {:coll coll})))
   (nth coll 0))
 
 ; #todo fix up for maps
@@ -430,56 +457,335 @@
   "Returns the second value in a list or vector. Throws if (< len 2)."
   [coll]
   (when (or (nil? coll) (empty? coll))
-    (throw (ex-info "xsecond: invalid coll: " coll)))
+    (throw (ex-info "xsecond: invalid coll: " {:coll coll})))
   (nth coll 1))
 
 ; #todo fix up for maps
 (defn xthird  ; #todo -> tests
   "Returns the third value in a list or vector. Throws if (< len 3)."
   [coll ]
-  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xthird: invalid coll: " coll)))
+  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xthird: invalid coll: " {:coll coll})))
   (nth coll 2))
 
 ; #todo fix up for maps
 (defn xfourth  ; #todo -> tests
   "Returns the fourth value in a list or vector. Throws if (< len 4)."
   [coll]
-  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xfourth: invalid coll: " coll)))
+  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xfourth: invalid coll: " {:coll coll})))
   (nth coll 3))
 
 ; #todo fix up for maps
 (s/defn xlast :- s/Any ; #todo -> tests
   "Returns the last value in a list or vector. Throws if empty."
   [coll :- [s/Any]]
-  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xlast: invalid coll: " coll)))
+  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xlast: invalid coll: " {:coll coll})))
   (clojure.core/last coll))
 
 ; #todo fix up for maps
 (s/defn xbutlast :- s/Any ; #todo -> tests
   "Returns a vector of all but the last value in a list or vector. Throws if empty."
   [coll :- [s/Any]]
-  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xbutlast: invalid coll: " coll)))
+  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xbutlast: invalid coll: " {:coll coll})))
   (vec (clojure.core/butlast coll)))
 
 ; #todo fix up for maps
 (defn xrest ; #todo -> tests
   "Returns the last value in a list or vector. Throws if empty."
   [coll]
-  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xrest: invalid coll: " coll)))
+  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xrest: invalid coll: " {:coll coll})))
   (clojure.core/rest coll))
 
 (defn xreverse ; #todo -> tests & doc
   "Returns a vector containing a sequence in reversed order. Throws if nil."
   [coll]
-  (when (nil? coll) (throw (ex-info "xreverse: invalid coll: " coll)))
+  (when (nil? coll) (throw (ex-info "xreverse: invalid coll: " {:coll coll})))
   (vec (clojure.core/reverse coll)))
 
 (s/defn xvec :- [s/Any]
   "Converts a collection into a vector. Throws if given nil."
   [coll :- [s/Any]]
-  (when (nil? coll) (throw (ex-info "xvec: invalid coll: " coll)))
+  (when (nil? coll) (throw (ex-info "xvec: invalid coll: " {:coll coll})))
   (clojure.core/vec coll))
 
+; #todo:  make (map-ctx {:trunc false :eager true} <fn> <coll1> <coll2> ...) <- default ctx
+; #todo:  mapz, forz, filterz, ...?
+(defn keep-if
+  "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
+  [pred coll]
+  (cond
+    (sequential? coll) (vec (clojure.core/filter pred coll))
+    (map? coll) (reduce-kv (fn [cum-map k v]
+                             (if (pred k v)
+                               (assoc cum-map k v)
+                               cum-map))
+                  {}
+                  coll)
+    (set? coll) (reduce (fn [cum-set elem]
+                          (if (pred elem)
+                            (conj cum-set elem)
+                            cum-set))
+                  #{}
+                  (seq coll))
+    :else (throw (ex-info "keep-if: coll must be sequential, map, or set." {:coll coll}))))
+
+(defn drop-if
+  "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
+  [pred coll]
+  (keep-if (complement pred) coll))
+
+(s/defn append :- tsk/List
+  "Given a sequential object (vector or list), add one or more elements to the end."
+  [listy       :- tsk/List
+   & elems     :- [s/Any] ]
+  (when-not (sequential? listy)
+    (throw (ex-info  "Sequential collection required, found=" {:listy listy})))
+  (when (empty? elems)
+    (throw (ex-info "Nothing to append! elems=" {:elems elems})))
+  (vec (concat listy elems)))
+
+(s/defn prepend :- tsk/List
+  "Given a sequential object (vector or list), add one or more elements to the beginning"
+  [& args]
+  (let [elems (butlast args)
+        listy (xlast args)]
+    (when-not (sequential? listy)
+      (throw (ex-info  "Sequential collection required, found=" {:listy listy})))
+    (when (empty? elems)
+      (throw (ex-info "Nothing to prepend! elems=" {:elems elems})))
+    (vec (concat elems listy))))
+
+;-----------------------------------------------------------------------------
+; spy stuff
+
+; #todo defn-spy  saves fn name to locals for spy printout
+; #todo spyxl  adds line # to spy printout
+
+; (def ^:dynamic *spy-enabled* false)
+(def ^:dynamic *spy-enabled* true) ; #TODO fix before commit!!!
+
+(def ^:dynamic *spy-enabled-map* {})
+
+
+(defmacro with-spy-enabled ; #todo README & test
+  [tag ; :- s/Keyword #todo schema for macros?
+   & forms ]
+  `(binding [*spy-enabled-map* (assoc *spy-enabled-map* ~tag true)]
+     ~@forms))
+
+(defmacro check-spy-enabled ; #todo README & test
+  [tag ; :- s/Keyword #todo schema for macros?
+   & forms]
+  `(binding [*spy-enabled* (get *spy-enabled-map* ~tag false)]
+     ~@forms))
+
+(def ^:no-doc spy-indent-level (atom 0))
+
+(defn ^:no-doc spy-indent-spaces []
+  (str/join (repeat (* 2 @spy-indent-level) \space)))
+
+(defn ^:no-doc spy-indent-inc
+  "Increase the spy indent level by one."
+  []
+  (swap! spy-indent-level inc))
+
+(defn ^:no-doc spy-indent-dec
+  "Decrease the spy indent level by one."
+  []
+  (swap! spy-indent-level dec))
+
+(defn spy-indent-reset
+  "Reset the spy indent level to zero."
+  []
+  (reset! spy-indent-level 0))
+
+;-----------------------------------------------------------------------------
+(defn spy
+  "A form of (println ...) to ease debugging display of either intermediate values in threading
+   forms or function return values. There are three variants.  Usage:
+
+    (spy :msg <msg-string>)
+        This variant is intended for use in either thread-first (->) or thread-last (->>)
+        forms.  The keyword :msg is used to identify the message string and works equally
+        well for both the -> and ->> operators. Spy prints both <msg-string>  and the
+        threading value to stdout, then returns the value for further propogation in the
+        threading form. For example, both of the following:
+            (->   2
+                  (+ 3)
+                  (spy :msg \"sum\" )
+                  (* 4))
+            (->>  2
+                  (+ 3)
+                  (spy :msg \"sum\" )
+                  (* 4))
+        will print 'sum => 5' to stdout.
+
+    (spy <msg-string> <value>)
+        This variant is intended for simpler use cases such as function return values.
+        Function return value expressions often invoke other functions and cannot be
+        easily displayed since (println ...) swallows the return value and returns nil
+        itself.  Spy will output both <msg-string> and the value, then return the value
+        for use by further processing.  For example, the following:
+            (println (* 2
+                       (spy \"sum\" (+ 3 4))))
+      will print:
+            sum => 7
+            14
+      to stdout.
+
+    (spy <value>)
+        This variant is intended for use in very simple situations and is the same as the
+        2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
+        prints 'spy => 5' to stdout.  "
+  ([arg1 arg2]
+   (let [[tag value] (cond
+                       (keyword? arg1) [arg1 arg2]
+                       (keyword? arg2) [arg2 arg1]
+                       :else (throw (ex-info "spy: either first or 2nd arg must be a keyword tag \n   args:"
+                                      {:arg1 arg1
+                                       :arg2 arg2} )))]
+     (when *spy-enabled*
+       (println (str (spy-indent-spaces) tag " => " (pr-str value))))
+     value ))
+  ([value] ; 1-arg arity uses a generic "spy" message
+   (spy :spy value)))
+
+(defn spyx-impl
+  [exprs]
+  (let [r1         (for [expr (butlast exprs)]
+                     (when *spy-enabled*
+                       (if (keyword? expr)
+                         `(when *spy-enabled* (print (str (spy-indent-spaces) ~expr \space)))
+                         `(when *spy-enabled* (println (str (spy-indent-spaces) '~expr " => " ~expr))))))
+        r2         (let [expr (xlast exprs)]
+                     `(let [spy-val# ~expr]
+                        (when *spy-enabled*
+                          (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val#))))
+                        spy-val#))
+        final-code `(do ~@r1 ~r2) ]
+    final-code))
+
+; #todo allow spyx to have labels like (spyx :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
+(defmacro spyx
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expressions, printing both the expression and its value to stdout. Returns the value of the
+   last expression."
+  [& exprs]
+  (spyx-impl exprs))
+
+(defn ^:no-doc spy-pretty-impl
+  [exprs]
+  (let [r1         (for [expr (butlast exprs)]
+                     `(when *spy-enabled* (println (spy-indent-spaces) (str ~expr " => "))))
+        r2         (let [expr (xlast exprs)]
+                     `(let [spy-val# ~expr]
+                        (when *spy-enabled*
+                          (println (indent-lines-with (spy-indent-spaces)
+                                     (pretty-str spy-val#))))
+                        spy-val#))
+        final-code `(do
+                      ~@r1
+                      ~r2)]
+    final-code))
+
+; #todo only allow 1 arg + optional kw-label
+(defmacro spy-pretty ; #todo => core
+  "Like `spyx-pretty` but without printing the original form"
+  [& exprs]
+  (spy-pretty-impl exprs)) ; #todo add in use of `prettify` for each value
+
+(defn ^:no-doc spyx-pretty-impl
+  [exprs]
+  (let [r1         (for [expr (butlast exprs)]
+                     (if (keyword? expr)
+                       `(when *spy-enabled* (println (spy-indent-spaces) (str ~expr)))
+                       `(when *spy-enabled* (println (spy-indent-spaces) (str '~expr " => " ~expr)))))
+        r2         (let [expr (xlast exprs)]
+                     `(let [spy-val# ~expr]
+                        (when *spy-enabled*
+                          (println (str (spy-indent-spaces) '~expr " => "))
+                          (println (indent-lines-with (spy-indent-spaces)
+                                     (pretty-str spy-val#))))
+                        spy-val#))
+        final-code `(do
+                      ~@r1
+                      ~r2)]
+    final-code))
+; #todo only allow 1 arg + optional kw-label
+; #todo On all spy* make print file & line number
+; #todo allow spyx-pretty to have labels like (spyx-pretty :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
+(defmacro spyx-pretty
+  "Like `spyx` but with pretty printing (clojure.pprint/pprint)"
+  [& exprs]
+  (spyx-pretty-impl exprs)) ; #todo add in use of `prettify` for each value
+
+(defmacro with-spy-indent
+  "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
+  [& forms]
+  `(try
+     (spy-indent-inc)
+     (do ~@forms)
+     (finally ; ensure we un-do indentation in event of exception
+       (spy-indent-dec))))
+
+(defmacro with-debug-tag
+  [debug-tag & forms]
+  `(with-spy-indent
+     (let [tag-enter# ~(str debug-tag "-enter")
+           tag-leave# ~(str debug-tag "-leave")]
+       (try
+         (println (indent-lines-with (spy-indent-spaces) tag-enter#))
+         ~@forms
+         (finally
+           (println (indent-lines-with (spy-indent-spaces) tag-leave#)))))))
+
+(defmacro let-spy
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expressions, printing both the expression and its value to stdout. Returns the value of the
+   last expression."
+  [& exprs]
+  (let [decls      (xfirst exprs)
+        _          (when (not (even? (count decls)))
+                     (throw (ex-info "spy-let-proc: uneven number of decls:" {:decls decls})))
+        forms      (xrest exprs)
+        fmt-pair   (fn [[dest src]]
+                     [dest src
+                      '_ (list `spyx dest)]) ; #todo gensym instead of underscore?
+        pairs      (vec (partition 2 decls))
+        r1         (vec (mapcat fmt-pair pairs))
+        final-code `(let ~r1 ~@forms)]
+    final-code))
+
+(defmacro let-spy-pretty   ; #todo -> deprecated
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expressions, printing both the expression and its value to stdout. Returns the value of the
+   last expression."
+  [& exprs]
+  (let [decls (xfirst exprs)
+        _     (when (not (even? (count decls)))
+                (throw (ex-info "spy-let-pretty-impl: uneven number of decls:" {:decls decls})))
+        forms (xrest exprs)
+        fmt-pair (fn [[dest src]]
+                   [dest src
+                    '_ (list `spyx-pretty dest)] ) ; #todo gensym instead of underscore?
+        pairs (vec (partition 2 decls))
+        r1    (vec (mapcat  fmt-pair pairs ))
+        final-code  `(let ~r1 ~@forms ) ]
+    final-code ))
+
+(defmacro spyxx
+  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
+   expression, printing both the expression, its type, and its value to stdout, then returns the value."
+  [expr]
+  `(let [spy-val#    ~expr
+         type-name# (if-cljs
+                      (type spy-val#)
+                      (.getName (class spy-val#)))]
+     (when *spy-enabled*
+       (println (str (spy-indent-spaces) '~expr " => <#" type-name# " " (pr-str spy-val#) ">")))
+     spy-val#))
+
+
+;-----------------------------------------------------------------------------
 (defn ^:no-doc glue-byte-arrays
   "Glues together N byte arrays."
   [& byte-arrays]
@@ -507,6 +813,40 @@
   ; => {:a 1}
 )
 
+(s/defn map-entry :- tsk/MapEntry
+  "Returns a clojure.lang.MapEntry constructed from the given key and val"
+  [key val] (clojure.lang.MapEntry/create key val) )
+
+(comment
+  ; #todo => tupelo.core
+  (s/defn mapentry->kv :- tsk/Pair ; #todo need test
+    [mapentry :- tsk/MapEntry]
+    [(key mapentry) (val mapentry)])
+
+  ; #todo => tupelo.core
+  (s/defn solomap->kv :- tsk/Pair ; #todo need test
+    [solo-map :- tsk/Map]
+    (let [map-seq (seq solo-map)
+          >>      (when-not #(= 1 (count map-seq))
+                    (throw (ex-info "solo-map must be of length=1 " (t/vals->map solo-map))))]
+      (mapentry->kv (only map-seq))))
+  )
+
+(s/defn ->map-entry :- tsk/MapEntry ; #todo need test
+  "Coerce arg into a clojure.lang.MapEntry"
+  [arg]
+  (cond
+    (map-entry? arg) arg
+    (or (list? arg)
+      (vector? arg)) (do
+                       (when-not #(= 2 (count arg))
+                         (throw (ex-info "map-entry must be of len=2" {:arg arg})))
+                       (map-entry (xfirst arg) (xsecond arg)))
+    (map? arg) (let [arg-seq (seq arg)]
+                 (when-not #(= 1 (count arg-seq))
+                         (throw (ex-info "map must be of len=1" {:arg arg})))
+                 (xfirst arg-seq))))
+
 (defn glue
   "Glues together like collections:
 
@@ -523,16 +863,21 @@
    If there are duplicate keys when using glue for maps or sets, then \"the last one wins\":
 
      (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
-  [& colls]
+  [& colls] ; #todo maybe return nil if no colls?  would allow some-> for users
   (let [string-or-char? #(or (string? %) (char? %))]
     (cond
-        (every? sequential? colls)                  (reduce into [] colls) ; coerce to vector result
-        (every? map? colls)                         (reduce into    colls) ; first item determines type of result
-        (every? set? colls)                         (reduce into    colls) ; first item determines type of result
-        (every? string-or-char? colls)              (apply str colls)
-#?(:clj (every? types/byte-array? colls))   #?(:clj (apply glue-byte-arrays colls))
+      (every? #(or (map? %) ; NOTE: this must come first as MapEntry's pass `sequential?`
+                 (map-entry? %)) colls) (let [mapentries (drop-if map? colls)
+                                              maps       (keep-if map? colls)
+                                              me-result  (reduce conj {} mapentries)
+                                              result     (reduce into (append maps me-result))]
+                                          result)
+      (every? sequential? colls) (reduce into [] colls) ; coerce to vector result
+      (every? set? colls) (reduce into colls) ; first item determines type of result
+      (every? string-or-char? colls) (apply str colls)
+      #?(:clj (every? types/byte-array? colls)) #?(:clj (apply glue-byte-arrays colls))
 
-        :else (throw (ex-info "glue: colls must be all same type; found types=" (mapv type colls))))))
+      :else (throw (ex-info "glue: colls must be all same type; found types=" (mapv type colls))))))
 
 (defn glue-rows   ; #todo :- tsk/List ; #todo necessary?
   " Convert a vector of vectors (2-dimensional) into a single vector (1-dimensional).
@@ -782,6 +1127,37 @@
 (defn int->kw [arg]
   (keyword (str arg)))
 
+
+(s/defn ->kw :- s/Keyword
+  "Coerce arg to a keyword"
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol s/Num)]
+  (cond
+    (keyword? arg) arg
+    (symbol? arg) (sym->kw arg)
+    (string? arg) (str->kw arg)
+    (number? arg) (str->kw (str arg))
+    :else (throw (ex-info "bad arg" {:arg arg})) ))
+
+(s/defn ->str :- s/Str
+  "Coerce arg to a string"
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol s/Num)]
+  (cond
+    (string? arg) arg
+    (symbol? arg) (sym->str arg)
+    (keyword? arg) (kw->str arg)
+    (number? arg) (str arg)
+    :else (throw (ex-info "bad arg" {:arg arg})) ))
+
+(s/defn ->sym :- s/Symbol
+  "Coerce arg to a symbol"
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol)]
+  (cond
+    (symbol? arg) arg
+    (keyword? arg) (kw->sym arg)
+    (string? arg) (str->sym arg)
+    :else (throw (ex-info "bad arg" {:arg arg}))))
+
+
 (s/defn codepoint->char :- s/Any    ; #todo need clj/cljs char? test
   "Convert a unicode int to a char"
   [arg :- s/Int]
@@ -808,6 +1184,8 @@
    (defn kw->int [arg]
      (js/parseInt (kw->str arg) 10)))
 
+; #todo add edn->js
+; #todo add js->edn (:keywordize-keys true)
 #?(:clj
    (do
      ; #todo add test & README
@@ -834,32 +1212,6 @@
        "Convert from edn -> json "
        [arg]
        (.stringify js/JSON (clj->js arg))) ))
-
-; #todo:  make (map-ctx {:trunc false :eager true} <fn> <coll1> <coll2> ...) <- default ctx
-; #todo:  mapz, forz, filterz, ...?
-(defn keep-if
-  "Returns a vector of items in coll for which (pred item) is true (alias for clojure.core/filter)"
-  [pred coll]
-  (cond
-    (sequential? coll) (vec (clojure.core/filter pred coll))
-    (map? coll) (reduce-kv (fn [cum-map k v]
-                             (if (pred k v)
-                               (assoc cum-map k v)
-                               cum-map))
-                  {}
-                  coll)
-    (set? coll) (reduce (fn [cum-set elem]
-                          (if (pred elem)
-                            (conj cum-set elem)
-                            cum-set))
-                  #{}
-                  (seq coll))
-    :else (throw (ex-info "keep-if: coll must be sequential, map, or set." coll))))
-
-(defn drop-if
-  "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
-  [pred coll]
-  (keep-if (complement pred) coll))
 
 ;-----------------------------------------------------------------------------
 (defn prettify
@@ -955,50 +1307,6 @@
         (str indent-str line)))))
 
 ;-----------------------------------------------------------------------------
-; spy stuff
-
-; #todo defn-spy  saves fn name to locals for spy printout
-; #todo spyxl  adds line # to spy printout
-
-; (def ^:dynamic *spy-enabled* false)
-(def ^:dynamic *spy-enabled* true) ; #TODO fix before commit!!!
-
-(def ^:dynamic *spy-enabled-map* {})
-
-
-(defmacro with-spy-enabled ; #todo README & test
-  [tag ; :- s/Keyword #todo schema for macros?
-   & forms ]
-  `(binding [*spy-enabled-map* (assoc *spy-enabled-map* ~tag true)]
-     ~@forms))
-
-(defmacro check-spy-enabled ; #todo README & test
-  [tag ; :- s/Keyword #todo schema for macros?
-   & forms]
-  `(binding [*spy-enabled* (get *spy-enabled-map* ~tag false)]
-     ~@forms))
-
-(def ^:no-doc spy-indent-level (atom 0))
-
-(defn ^:no-doc spy-indent-spaces []
-  (str/join (repeat (* 2 @spy-indent-level) \space)))
-
-(defn ^:no-doc spy-indent-inc
-  "Increase the spy indent level by one."
-  []
-  (swap! spy-indent-level inc))
-
-(defn ^:no-doc spy-indent-dec
-  "Decrease the spy indent level by one."
-  []
-  (swap! spy-indent-level dec))
-
-(defn spy-indent-reset
-  "Reset the spy indent level to zero."
-  []
-  (reset! spy-indent-level 0))
-
-;-----------------------------------------------------------------------------
 ; #todo  Need it?-> like some-> that short-circuits on nil
 (defmacro it->
   "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
@@ -1020,194 +1328,24 @@
     (take nchars it)
     (apply str it)))
 
-(defmacro forv ; #todo wrap body in implicit do
-  "Like clojure.core/for but returns results in a vector.   Not lazy."
+(defmacro forv
+  "Like clojure.core/for but returns results in a vector.
+  Wraps the loop body in a `do` as with `doseq`. Not lazy."
   [& forms]
-  `(vec (for ~@forms)))
+  (let [bindings-vec (xfirst forms)
+        body-forms   (xrest forms)]
+    `(vec (for ~bindings-vec
+            (do ~@body-forms)))))
 
-;-----------------------------------------------------------------------------
-(defn spy
-  "A form of (println ...) to ease debugging display of either intermediate values in threading
-   forms or function return values. There are three variants.  Usage:
-
-    (spy :msg <msg-string>)
-        This variant is intended for use in either thread-first (->) or thread-last (->>)
-        forms.  The keyword :msg is used to identify the message string and works equally
-        well for both the -> and ->> operators. Spy prints both <msg-string>  and the
-        threading value to stdout, then returns the value for further propogation in the
-        threading form. For example, both of the following:
-            (->   2
-                  (+ 3)
-                  (spy :msg \"sum\" )
-                  (* 4))
-            (->>  2
-                  (+ 3)
-                  (spy :msg \"sum\" )
-                  (* 4))
-        will print 'sum => 5' to stdout.
-
-    (spy <msg-string> <value>)
-        This variant is intended for simpler use cases such as function return values.
-        Function return value expressions often invoke other functions and cannot be
-        easily displayed since (println ...) swallows the return value and returns nil
-        itself.  Spy will output both <msg-string> and the value, then return the value
-        for use by further processing.  For example, the following:
-            (println (* 2
-                       (spy \"sum\" (+ 3 4))))
-      will print:
-            sum => 7
-            14
-      to stdout.
-
-    (spy <value>)
-        This variant is intended for use in very simple situations and is the same as the
-        2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
-        prints 'spy => 5' to stdout.  "
-  ([arg1 arg2]
-   (let [[tag value] (cond
-                       (keyword? arg1) [arg1 arg2]
-                       (keyword? arg2) [arg2 arg1]
-                       :else (throw (ex-info "spy: either first or 2nd arg must be a keyword tag \n   args:" [arg1 arg2])))]
-     (when *spy-enabled*
-       (println (str (spy-indent-spaces) tag " => " (pr-str value))))
-     value ))
-  ([value] ; 1-arg arity uses a generic "spy" message
-   (spy :spy value)))
-
-(defn spyx-impl
-  [exprs]
-  (let [r1         (for [expr (butlast exprs)]
-                     (when *spy-enabled*
-                       (if (keyword? expr)
-                         `(when *spy-enabled* (print (str (spy-indent-spaces) ~expr \space)))
-                         `(when *spy-enabled* (println (str (spy-indent-spaces) '~expr " => " ~expr))))))
-        r2         (let [expr (xlast exprs)]
-                     `(let [spy-val# ~expr]
-                        (when *spy-enabled*
-                          (println (str (spy-indent-spaces) '~expr " => " (pr-str spy-val#))))
-                        spy-val#))
-        final-code `(do ~@r1 ~r2) ]
-    final-code))
-
-; #todo allow spyx to have labels like (spyx :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
-(defmacro spyx
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expressions, printing both the expression and its value to stdout. Returns the value of the
-   last expression."
-  [& exprs]
-  (spyx-impl exprs))
-
-(defn ^:no-doc spy-pretty-impl ; #todo => core
-  [exprs]
-  (let [r1         (for [expr (butlast exprs)]
-                     `(when *spy-enabled* (println (spy-indent-spaces) (str ~expr))))
-        r2         (let [expr (xlast exprs)]
-                     `(let [spy-val# ~expr]
-                        (when *spy-enabled*
-                          (println (indent-lines-with (spy-indent-spaces)
-                                     (pretty-str spy-val#))))
-                        spy-val#))
-        final-code `(do
-                      ~@r1
-                      ~r2)]
-    final-code))
-
-; #todo only allow 1 arg + optional kw-label
-(defmacro spy-pretty ; #todo => core
-  "Like `spyx-pretty` but without printing the original form"
-  [& exprs]
-  (spy-pretty-impl exprs)) ; #todo add in use of `prettify` for each value
-
-(defn ^:no-doc spyx-pretty-impl
-  [exprs]
-  (let [r1         (for [expr (butlast exprs)]
-                     (if (keyword? expr)
-                       `(when *spy-enabled* (println (spy-indent-spaces) (str ~expr)))
-                       `(when *spy-enabled* (println (spy-indent-spaces) (str '~expr " => " ~expr)))))
-        r2         (let [expr (xlast exprs)]
-                     `(let [spy-val# ~expr]
-                        (when *spy-enabled*
-                          (println (str (spy-indent-spaces) '~expr " => "))
-                          (println (indent-lines-with (spy-indent-spaces)
-                                     (pretty-str spy-val#))))
-                        spy-val#))
-        final-code `(do
-                      ~@r1
-                      ~r2)]
-    final-code))
-; #todo only allow 1 arg + optional kw-label
-; #todo On all spy* make print file & line number
-; #todo allow spyx-pretty to have labels like (spyx-pretty :dbg-120 (+ 1 2)):  ":dbg-120 (+ 1 2) => 3"
-(defmacro spyx-pretty
-  "Like `spyx` but with pretty printing (clojure.pprint/pprint)"
-  [& exprs]
-  (spyx-pretty-impl exprs)) ; #todo add in use of `prettify` for each value
-
-(defmacro with-spy-indent
-  "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
+(defmacro for-list
+  "Like clojure.core/for but returns results in a list.
+  Wraps the loop body in a `do` as with `doseq`. Not lazy."
   [& forms]
-  `(try
-     (spy-indent-inc)
-     (do ~@forms)
-     (finally ; ensure we un-do indentation in event of exception
-       (spy-indent-dec))))
-
-(defmacro with-debug-tag
-  [debug-tag & forms]
-  `(with-spy-indent
-     (let [tag-enter# ~(str debug-tag "-enter")
-           tag-leave# ~(str debug-tag "-leave")]
-       (try
-         (println (indent-lines-with (spy-indent-spaces) tag-enter#))
-         ~@forms
-         (finally
-           (println (indent-lines-with (spy-indent-spaces) tag-leave#)))))))
-
-(defmacro let-spy
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expressions, printing both the expression and its value to stdout. Returns the value of the
-   last expression."
-  [& exprs]
-  (let [decls      (xfirst exprs)
-        _          (when (not (even? (count decls)))
-                     (throw (ex-info "spy-let-proc: uneven number of decls:" decls)))
-        forms      (xrest exprs)
-        fmt-pair   (fn [[dest src]]
-                     [dest src
-                      '_ (list `spyx dest)]) ; #todo gensym instead of underscore?
-        pairs      (vec (partition 2 decls))
-        r1         (vec (mapcat fmt-pair pairs))
-        final-code `(let ~r1 ~@forms)]
-    final-code))
-
-(defmacro let-spy-pretty   ; #todo -> deprecated
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expressions, printing both the expression and its value to stdout. Returns the value of the
-   last expression."
-  [& exprs]
-  (let [decls (xfirst exprs)
-        _     (when (not (even? (count decls)))
-                (throw (ex-info "spy-let-pretty-impl: uneven number of decls:" decls)))
-        forms (xrest exprs)
-        fmt-pair (fn [[dest src]]
-                   [dest src
-                    '_ (list `spyx-pretty dest)] ) ; #todo gensym instead of underscore?
-        pairs (vec (partition 2 decls))
-        r1    (vec (mapcat  fmt-pair pairs ))
-        final-code  `(let ~r1 ~@forms ) ]
-    final-code ))
-
-(defmacro spyxx
-  "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
-   expression, printing both the expression, its type, and its value to stdout, then returns the value."
-  [expr]
-  `(let [spy-val#    ~expr
-         type-name# (if-cljs
-                      (type spy-val#)
-                      (.getName (class spy-val#)))]
-     (when *spy-enabled*
-       (println (str (spy-indent-spaces) '~expr " => <#" type-name# " " (pr-str spy-val#) ">")))
-     spy-val#))
+  (let [bindings-vec (xfirst forms)
+        body-forms   (xrest forms)]
+    `(apply list
+       (for ~bindings-vec
+         (do ~@body-forms)))))
 
 ;-----------------------------------------------------------------------------
 (defmacro with-timer
@@ -1292,27 +1430,6 @@
   `(map-let* {:strict true
               :lazy   false}
      ~bindings ~@forms))
-
-(s/defn append :- tsk/List
-  "Given a sequential object (vector or list), add one or more elements to the end."
-  [listy       :- tsk/List
-   & elems     :- [s/Any] ]
-  (when-not (sequential? listy)
-    (throw (ex-info  "Sequential collection required, found=" listy)))
-  (when (empty? elems)
-    (throw (ex-info "Nothing to append! elems=" elems)))
-  (vec (concat listy elems)))
-
-(s/defn prepend :- tsk/List
-  "Given a sequential object (vector or list), add one or more elements to the beginning"
-  [& args]
-  (let [elems (butlast args)
-        listy (xlast args)]
-    (when-not (sequential? listy)
-      (throw (ex-info  "Sequential collection required, found=" listy)))
-    (when (empty? elems)
-      (throw (ex-info "Nothing to prepend! elems=" elems)))
-    (vec (concat elems listy))))
 
 ; #todo rename :strict -> :trunc
 (defn zip-1*
@@ -1637,6 +1754,13 @@
                                ~'it)) ]
     `(it-> ~expr ~@cond-action-forms)))
 
+; #todo make look like this?
+;(t/cond-it-> (parent-hid (hid->node hid))
+;  {:when (or
+;           (instance? MapEntryNode (hid->node it))
+;           (instance? ArrayEntryNode (hid->node it)))
+;   :then (parent-hid (hid->node it))})
+
 (defmacro cond-it->
   "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
 
@@ -1714,31 +1838,6 @@
   [coll]
   (verify (not-nil? coll))
   (rand-nth (vec coll)))
-
-; #todo add (->sorted-map <map>)        => (into (sorted-map) <map>)
-; #todo add (->sorted-set <set>)        => (into (sorted-set) <set>)
-; #todo add (->sorted-vec <sequential>) => (vec (sort <vec>))
-
-(s/defn compare-lexical :- s/Int
-  "Performs a lexical comparison of 2 sequences, sorting as follows:
-      [1]
-      [1 :a]
-      [1 :b]
-      [1 :b 3]
-      [2]
-      [3]
-      [3 :y] "
-  [a :- tsk/List
-   b :- tsk/List]
-  (cond
-    (= a b) 0
-    (empty? a) -1
-    (empty? b) 1
-    :else (let [a0 (xfirst a)
-                b0 (xfirst b)]
-            (if (= a0 b0)
-              (compare-lexical (xrest a) (xrest b))
-              (compare a0 b0)))))
 
 ; #todo maybe submap-without-keys, submap-without-vals ?
 ; #todo filter by pred in addition to set/list?
@@ -1854,7 +1953,7 @@
   "Inserts an element into a collection at the specified index."
   [coll :- tsk/List
    index :- s/Int
-   elem :- s/Any]
+   elem :- s/Any ]
   (when (neg? index)
     (throw (ex-info "Index cannot be negative " index)))
   (when (< (count coll) index)
@@ -1878,6 +1977,16 @@
     (take index coll)
     [elem]
     (drop (inc index) coll)))
+
+(s/defn sublist :- tsk/List
+  "Like clojure.core/subvec, but works for any sequence (remniscent of java.util.List/subList)"
+  ([listy :- tsk/List
+    idx-low :- s/Int]
+    (sublist listy idx-low (count listy)))
+  ([listy :- tsk/List
+    idx-low :- s/Int
+    idx-bound :- s/Int]
+    (.subList listy idx-low idx-bound)))
 
 ; #todo use (idx    coll int-or-kw) as `get` replacement?
 ; #todo use (idx-in coll [kw's]) as `fetch-in` replacement?
@@ -2179,6 +2288,7 @@
         ; (do (nl) (spyx-pretty res-only))
         res-only ))))
 
+; #todo maybe (with-destruct ...) implies automatic (restruct) upon exit
 (defmacro destruct
   "Natural destructuring:
      (let [data {:a 1
@@ -2399,11 +2509,6 @@
   (every? truthy?
     (for [value values]
       (set-match-impl {} pattern value))))
-
-(s/defn ->sorted-map :- tsk/Map
-  "Coerces a map into a sorted-map"
-  [map-in :- tsk/Map]
-  (glue (sorted-map) map-in))
 
 
 ; #todo add postwalk and change to all sorted-map, sorted-set

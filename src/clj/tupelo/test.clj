@@ -75,7 +75,7 @@
   [& forms]
   (if (not= (count forms) 1)
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-      `(throw (ex-info (str "tupelo.test/is requires exactly 1 form " ~line-str))))
+      `(throw (ex-info "tupelo.test/is requires exactly 1 form " {:line-str ~line-str })))
     `(clojure.test/is ~@forms)))
 
 (defmacro isnt      ; #todo readme/test
@@ -83,7 +83,7 @@
   [& forms]
   (if (not= (count forms) 1)
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-      `(throw (ex-info (str "tupelo.test/isnt requires exactly 1 form " ~line-str))))
+      `(throw (ex-info "tupelo.test/isnt requires exactly 1 form " {:line-str ~line-str })))
     `(clojure.test/is (not ~@forms))))
 
 (defmacro is=  ; #todo readme/test
@@ -91,7 +91,7 @@
   [& forms]
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-     `(throw (ex-info (str "tupelo.test/is= requires at least 2 forms " ~line-str))))
+     `(throw (ex-info "tupelo.test/is= requires at least 2 forms " {:line-str ~line-str })))
      `(is (= ~@forms))))
 
 (defmacro isnt=         ; #todo readme/test
@@ -99,7 +99,7 @@
   [& forms]
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-      `(throw (ex-info (str "tupelo.test/isnt= requires at least 2 forms " ~line-str))))
+      `(throw (ex-info "tupelo.test/isnt= requires at least 2 forms " {:line-str ~line-str })))
     `(isnt (= ~@forms))))
 
 ; #todo use t/set=
@@ -108,7 +108,7 @@
   [& forms]
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-      `(throw (ex-info (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
+      `(throw (ex-info "tupelo.test/set= requires at least 2 forms " {:line-str ~line-str })))
     `(is= ~@(mapv #(list 'set %) forms))))
 
 ; #todo use tstr/nonblank=
@@ -117,7 +117,7 @@
   [& forms]
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-      `(throw (ex-info (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
+      `(throw (ex-info "tupelo.test/set= requires at least 2 forms " {:line-str ~line-str })))
     `(is (tstr/nonblank= ~@forms) )))
 
 ;---------------------------------------------------------------------------------------------------
