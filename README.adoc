@@ -1,8 +1,8 @@
 
 = Making Clojure Even Sweeter
 
-Current Version: 
 image:https://img.shields.io/clojars/v/tupelo.svg[link="http://clojars.org/tupelo"]
+nbsp; nbsp; nbsp; Current Version
 
 === The Tupelo API Docs link:http://cloojure.github.io/doc/tupelo/[are posted on GitHub Pages]
 
