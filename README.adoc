@@ -1,7 +1,8 @@
 
 = Making Clojure Even Sweeter
 
-[![Clojars Project](https://img.shields.io/clojars/v/tupelo.svg)](https://clojars.org/tupelo)
+Leiningen coordinates:
+image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 
 === The Tupelo API Docs link:http://cloojure.github.io/doc/tupelo/[are posted on GitHub Pages]
 
@@ -1319,8 +1320,5 @@ image:https://www.yourkit.com/images/yklogo.png[YourKit,400,400]
   add spy-let, spy-defn, spy-validate, etc
   blog posts
 
-
-Leiningen coordinates:
-image:http://clojars.org/tupelo/latest-version.svg[ http://clojars.org/tupelo ]
 
 
