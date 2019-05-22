@@ -1,7 +1,7 @@
 
 = Making Clojure Even Sweeter
 
-Current Version:
+=== Current Version
 
 image:https://img.shields.io/clojars/v/tupelo.svg[link="http://clojars.org/tupelo"]
 
