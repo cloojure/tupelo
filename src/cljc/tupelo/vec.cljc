@@ -5,28 +5,24 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tupelo.vec
-  (:use tupelo.core) ; #todo remove for cljs
   (:refer-clojure :exclude [load ->VecNode get set])
   #?(:clj (:require
-            [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab glue map-entry indexed
-                                       forv vals->map fetch-in let-spy xlast xfirst keep-if drop-if
-                                       it-> cond-it->
-                                       xfirst xsecond xthird xlast
-                                       ]]
-            [tupelo.schema :as tsk]
-            [tupelo.data.index :as index]
             [clojure.core :as cc]
             [clojure.set :as set]
             [schema.core :as s]
+            [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab glue map-entry indexed
+                                       forv vals->map fetch-in let-spy xlast xfirst keep-if drop-if
+                                       it-> cond-it-> xfirst xsecond xthird xlast ]]
+            [tupelo.data.index :as index]
+            [tupelo.schema :as tsk]
             ))
   #?(:cljs (:require
-             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]] ; #todo :include-macros true
-             [tupelo.schema :as tsk]
-             [tupelo.data.index :as index]
              [clojure.set :as set]
              [schema.core :as s]
-             ))
-  )
+             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]] ; #todo :include-macros true
+             [tupelo.data.index :as index]
+             [tupelo.schema :as tsk]
+             )))
 
 ; #todo add indexes
 ; #todo add sets (primative only or EID) => map with same key/value
@@ -130,7 +126,7 @@
   "Delete elements at the specified indexes."
   [src :- tsk/Vec
    idxs :- IndexSpec]
-  (let [drop-idx? (->set (coerce->vec idxs))
+  (let [drop-idx? (t/->set (coerce->vec idxs))
         idxs-keep (drop-if drop-idx? (range (count src)))]
     (verify-idxs src idxs)
     (forv [idx idxs-keep]
