@@ -12,7 +12,7 @@
             [clojure.test.check.properties          :as prop]
             [clojure.test.check.clojure-test        :as tst]
             [tupelo.base64url                       :as b64url]
-            [tupelo.char                            :as char]
+            [tupelo.chars                            :as char]
             [tupelo.core                            :as t]
             [tupelo.misc                            :as misc]
             [tupelo.types                           :as types] ) )

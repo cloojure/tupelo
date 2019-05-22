@@ -11,7 +11,7 @@
             [clojure.test.check.clojure-test :as tst]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
-            [tupelo.char :as char]
+            [tupelo.chars :as char]
             [tupelo.misc :as misc]
             [tupelo.types :as types]
             [tupelo.y64 :as y64]) )

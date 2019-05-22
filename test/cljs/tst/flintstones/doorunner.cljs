@@ -18,7 +18,7 @@
     [tst.flintstones.bambam]
 
     [tst.tupelo.array]
-;   [tst.tupelo.char]  ; #todo need tests
+;   [tst.tupelo.chars]  ; #todo need tests
     [tst.tupelo.core]
 ;   [tst.tupelo.data]  ; #todo fix for cljs
     [tst.tupelo.gotchas]
@@ -48,7 +48,7 @@
   'tst.flintstones.bambam
 
   'tst.tupelo.array
-; 'tst.tupelo.char  ; #todo need tests
+; 'tst.tupelo.chars  ; #todo need tests
   'tst.tupelo.core
 ; 'tst.tupelo.data  ; #todo fix for cljs
   'tst.tupelo.gotchas

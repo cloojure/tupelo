@@ -13,7 +13,7 @@
     [clojure.string :as str]
     [clojure.walk :as walk]
     [tupelo.core :as t :refer [spy spyx spyx-pretty let-spy forv]]
-    [tupelo.char :as char]
+    [tupelo.chars :as chars]
     #?(:clj [clojure.java.io :as io]))
   #?(:clj
      (:import [java.io InputStream ByteArrayInputStream]
@@ -119,17 +119,17 @@
 (defn ^:deprecated ^:no-doc double-quotes->single-quotes [& args] (apply quotes->single args))
 (defn ^:deprecated ^:no-doc single-quotes->double-quotes [& args] (apply quotes->double args))
 
-(defn alphanumeric?       [& args] (every? char/alphanumeric?        (t/strcat args)))
-(defn whitespace-horiz?   [& args] (every? char/whitespace-horiz?    (t/strcat args)))
-(defn whitespace-eol?     [& args] (every? char/whitespace-eol?      (t/strcat args)))
-(defn whitespace?         [& args] (every? char/whitespace?          (t/strcat args)))
-(defn lowercase?          [& args] (every? char/lowercase?           (t/strcat args)))
-(defn uppercase?          [& args] (every? char/uppercase?           (t/strcat args)))
-(defn digit?              [& args] (every? char/digit?               (t/strcat args)))
-(defn hex?                [& args] (every? char/hex?                 (t/strcat args)))
-(defn alpha?              [& args] (every? char/alpha?               (t/strcat args)))
-(defn visible?            [& args] (every? char/visible?             (t/strcat args)))
-(defn text?               [& args] (every? char/text?                (t/strcat args)))
+(defn alphanumeric?       [& args] (every? chars/alphanumeric?        (t/strcat args)))
+(defn whitespace-horiz?   [& args] (every? chars/whitespace-horiz?    (t/strcat args)))
+(defn whitespace-eol?     [& args] (every? chars/whitespace-eol?      (t/strcat args)))
+(defn whitespace?         [& args] (every? chars/whitespace?          (t/strcat args)))
+(defn lowercase?          [& args] (every? chars/lowercase?           (t/strcat args)))
+(defn uppercase?          [& args] (every? chars/uppercase?           (t/strcat args)))
+(defn digit?              [& args] (every? chars/digit?               (t/strcat args)))
+(defn hex?                [& args] (every? chars/hex?                 (t/strcat args)))
+(defn alpha?              [& args] (every? chars/alpha?               (t/strcat args)))
+(defn visible?            [& args] (every? chars/visible?             (t/strcat args)))
+(defn text?               [& args] (every? chars/text?                (t/strcat args)))
 
 ; #todo make general version vec -> vec; str-specific version str -> str
 ; #todo need (substring {:start I :stop J                 } ) ; half-open (or :stop)

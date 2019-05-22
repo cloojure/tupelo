@@ -9,7 +9,7 @@
   (:require
     [clojure.core :as cc]
     [clojure.string :as str]
-    [tupelo.char :as char]
+    [tupelo.chars :as char]
     #?@(:clj [[tupelo.core :as t :refer [spy spyx spyxx]]
               [tupelo.test :refer [define-fixture dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
               [tupelo.string :as ts]
