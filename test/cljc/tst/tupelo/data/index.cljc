@@ -5,7 +5,6 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.data.index
-  (:use tupelo.core)
   #?(:clj (:refer-clojure :exclude [load ->VecNode]))
   #?(:clj (:require
             [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
@@ -33,12 +32,12 @@
 #?(:cljs (enable-console-print!))
 
 (dotest
-  (let [index   (it-> (index/empty-index)
+  (let [index   (t/it-> (index/empty-index)
                   (index/add-entry it [2 :b])
                   (index/add-entry it [2 :c])
                   (index/add-entry it [2 :a])
                   (index/add-entry it [1]))
-        index-2 (it-> index
+        index-2 (t/it-> index
                   (index/remove-entry it [2 :c])
                   (index/remove-entry it [1]))]
     (is= (vec index) [[1] [2 :a] [2 :b] [2 :c]])
