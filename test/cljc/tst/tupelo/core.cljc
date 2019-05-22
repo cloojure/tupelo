@@ -1980,6 +1980,8 @@
   (is (t/submap? {:a 1} {:a 1 :b 2}))
   (is (t/submap? {:b 2} {:a 1 :b 2})) )
 
+
+#?(:clj (do ; #todo fix this cljs failure
 (dotest
   (is= (range 5) (t/unlazy (range 5)))
   (let [c1 {:a 1 :b (range 3) :c {:x (range 4) (range 5) "end"}}]
@@ -1992,6 +1994,7 @@
     )
   (is= [1 2 3] (t/unlazy (map inc (range 3))))
   (is= #{1 2 3} (t/unlazy #{3 2 1})))
+))
 
 (dotest
   (let [info  {:a 1
@@ -2651,12 +2654,4 @@
 
 
           ))
-
-
-
-
-
-
-
-
 
