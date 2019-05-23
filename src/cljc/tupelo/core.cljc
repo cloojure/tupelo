@@ -358,8 +358,13 @@
   (let [unlazy-item (fn [item]
                       (cond
                         (sequential? item) (vec item)
-                        (map? item) (into (sorted-map) item) ; #todo => (sorted-map-generic)
+
+            #?@(:clj  [ (map? item) (into (sorted-map-generic) item)
+                        (set? item) (into (sorted-set-generic) item) ]
+                :cljs [ (map? item) (into (sorted-map) item) ; #todo => (sorted-map-generic)
                         (set? item) (into (sorted-set) item) ; #todo => (sorted-map-generic)
+                      ] )
+
             #?@(:clj [
                         (instance? java.io.InputStream item) (slurp item)  ; #todo need test
                         (instance? java.util.List item) (vec item)  ; #todo need test

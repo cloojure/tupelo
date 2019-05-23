@@ -23,6 +23,7 @@
 
 #?(:clj
    (do
+
      (defn edn-parsible
        "Traverses a data structure to ensure it can be serialized with `pr-str` and read via
        clojure.tools.reader.edn/read-string. All non-parsible content is replaced

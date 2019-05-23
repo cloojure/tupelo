@@ -17,9 +17,15 @@
             [tupelo.schema :as tsk]
             ))
   #?(:cljs (:require
+             [clojure.core :as cc]
              [clojure.set :as set]
              [schema.core :as s]
-             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]] ; #todo :include-macros true
+             [tupelo.core :as t  :include-macros true
+                  :refer [spy spyx spyxx spyx-pretty grab glue map-entry indexed
+                          forv vals->map fetch-in let-spy xlast xfirst keep-if drop-if
+                          it-> cond-it-> xfirst xsecond xthird xlast
+                          ]
+              ] ; #todo :include-macros true
              [tupelo.data.index :as index]
              [tupelo.schema :as tsk]
              )))
