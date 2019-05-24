@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.2.xsd">
+<suppress>
+    <notes><![CDATA[
+         file name: closure-compiler-unshaded-v20180805.jar
+         ]]></notes>
+    <gav regex="true">^com\.google\.javascript:closure-compiler-unshaded:.*$</gav>
+    <cve>CVE-2008-3891</cve>
+</suppress>
+</suppressions>

@@ -9,6 +9,16 @@
              org.clojure/clojurescript]
 
   :dependencies [
+    ; high-priority deps identified by lein-nvd
+    [com.google.protobuf/protobuf-java "3.7.1"]
+    [org.eclipse.jetty.http2/http2-common "9.4.18.v20190429"]
+    [org.eclipse.jetty.http2/http2-server "9.4.18.v20190429"]
+    [org.eclipse.jetty.websocket/websocket-server "9.4.18.v20190429"]
+    [org.eclipse.jetty/jetty-alpn-server "9.4.18.v20190429"]
+    [org.eclipse.jetty/jetty-server "9.4.18.v20190429"]
+    [org.eclipse.jetty/jetty-xml "9.4.18.v20190429"]
+
+
     [binaryage/oops "0.7.0"]
     [cheshire "5.8.1"]
     [clj-time "0.15.1"]
@@ -18,7 +28,7 @@
     [io.pedestal/pedestal.jetty "0.5.5"]
     [io.pedestal/pedestal.route "0.5.5"]
     [io.pedestal/pedestal.service "0.5.5"]
-    [joda-time/joda-time "2.10.1"]
+    [joda-time/joda-time "2.10.2"]
     [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
     [org.clojure/core.async "0.4.490"]
     [org.clojure/core.match "0.3.0"]
@@ -30,14 +40,17 @@
     [org.clojure/tools.reader "1.3.2"]
     [org.snakeyaml/snakeyaml-engine "1.0"]
     [prismatic/schema "1.1.10"]
-    [reagent-utils "0.3.2"]
+    [reagent-utils "0.3.3"]
   ]
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-codox "0.10.6"]
             [lein-doo "0.1.11"]
             [lein-figwheel "0.5.18"]
+            [lein-nvd "1.0.0"]
            ;[lein-nomis-ns-graph "0.14.2"]
             [com.jakemccrary/lein-test-refresh "0.24.1"]]
+
+  :nvd {:suppression-file "nvd-suppression.xml"} ; lein-nvd
 
   :test-refresh {:quiet      true ; true => suppress printing namespaces when testing
                 }
@@ -48,9 +61,9 @@
                                       ;[org.clojure/clojurescript "1.10.516" :scope "provided"]  ; ***** WARNING - FAILS IN COMPILE!!! *****
                                       ]}
              :dev      {:dependencies [[binaryage/devtools "0.9.10"]
-                                       [binaryage/dirac "1.3.5"]
+                                       [binaryage/dirac "1.3.7"]
                                        [com.cemerick/piggieback "0.2.2"]
-                                       [criterium "0.4.4"]
+                                       [criterium "0.4.5"]
                                       ;[org.clojure/clojure "1.10.0"]
                                        [org.clojure/clojure "1.10.1-beta1"]
                                        [org.clojure/clojurescript "1.10.439"]
