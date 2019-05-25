@@ -9,18 +9,17 @@
              org.clojure/clojurescript]
 
   :dependencies [
-    ; high-priority deps identified by lein-nvd
-    [com.google.protobuf/protobuf-java "3.7.1"]
-    [org.eclipse.jetty.http2/http2-common "9.4.18.v20190429"]
-    [org.eclipse.jetty.http2/http2-server "9.4.18.v20190429"]
-    [org.eclipse.jetty.websocket/websocket-server "9.4.18.v20190429"]
-    [org.eclipse.jetty/jetty-alpn-server "9.4.18.v20190429"]
-    [org.eclipse.jetty/jetty-server "9.4.18.v20190429"]
-    [org.eclipse.jetty/jetty-xml "9.4.18.v20190429"]
-
+   ; high-priority deps identified by lein-nvd
+   ;[com.google.protobuf/protobuf-java "3.7.1"]
+   ;[org.eclipse.jetty.http2/http2-common "9.4.18.v20190429"]
+   ;[org.eclipse.jetty.http2/http2-server "9.4.18.v20190429"]
+   ;[org.eclipse.jetty.websocket/websocket-server "9.4.18.v20190429"]
+   ;[org.eclipse.jetty/jetty-alpn-server "9.4.18.v20190429"]
+   ;[org.eclipse.jetty/jetty-server "9.4.18.v20190429"]
+   ;[org.eclipse.jetty/jetty-xml "9.4.18.v20190429"]
 
     [binaryage/oops "0.7.0"]
-    [cheshire "5.8.1"]
+    [cheshire "5.8.1"] ; #todo switch to muuntaja/jsonista
     [clj-time "0.15.1"]
     [clojure-csv/clojure-csv "2.0.2"]
     [com.climate/claypoole "1.1.4"]

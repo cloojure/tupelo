@@ -1337,7 +1337,12 @@
     (take nchars it)
     (apply str it)))
 
-(defmacro forv
+(s/defn ->list :- [s/Any]
+  "Coerce any sequential argument into a List."
+  [arg :- [s/Any]]
+  (apply list arg))
+
+(defmacro forv ; #todo rename for-vec ???
   "Like clojure.core/for but returns results in a vector.
   Wraps the loop body in a `do` as with `doseq`. Not lazy."
   [& forms]
@@ -1352,7 +1357,7 @@
   [& forms]
   (let [bindings-vec (xfirst forms)
         body-forms   (xrest forms)]
-    `(apply list
+    `(->list
        (for ~bindings-vec
          (do ~@body-forms)))))
 
