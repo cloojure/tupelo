@@ -1,0 +1,7 @@
+{:log-syntax-error-style :concise
+ :watch-dirs ["src/cljc" "src/cljs" ]
+ :css-dirs ["resources/public/css"]
+
+; :ring-handler hello-world.server/handler  ; or as metadata in dev.cljs.edn
+
+ }
