@@ -8,13 +8,13 @@
   "Tupelo - Making Clojure even sweeter"
   (:refer-clojure :exclude [drop take contains?])
   (:require
-    [schema.core :as s]
     [clojure.core :as cc]
     [clojure.string :as str]
     [clojure.walk :as walk]
-    [tupelo.core :as t :refer [spy spyx spyx-pretty let-spy forv]]
+    [schema.core :as s]
     [tupelo.chars :as chars]
-    #?(:clj [clojure.java.io :as io]))
+    [tupelo.core :as t ] )
+  #?(:clj (:require [clojure.java.io :as io]))
   #?(:clj
      (:import [java.io InputStream ByteArrayInputStream]
               [java.nio.charset StandardCharsets])))

@@ -11,7 +11,7 @@
     ;[tst.flintstones.wilma]
     ;[tst.flintstones.pebbles]
     [tst.flintstones.slate]
-    ;[tst.flintstones.bambam]
+    [tst.flintstones.bambam]
 
     ;-----------------------------------------------------------------------------
 
@@ -35,7 +35,7 @@
     ;'tst.flintstones.wilma
     ;'tst.flintstones.pebbles
     'tst.flintstones.slate
-    ; 'tst.flintstones.bambam
+    'tst.flintstones.bambam
 
     ;-----------------------------------------------------------------------------
 

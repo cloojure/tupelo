@@ -1,7 +1,7 @@
 (ns tupelo.test-cljs ; this file defines macros
-  (:require
-    [tupelo.string :as ts]
-    ))
+  (:require [tupelo.string :as ts])
+  #?(:cljs (:require [cljs.test]))
+  )
 
 ; #todo merge into a single namespace using `is-cljs` macro when necessary
 
