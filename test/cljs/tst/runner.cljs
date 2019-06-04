@@ -1,4 +1,4 @@
-(ns tst.tupelo.test-runner
+(ns tst.runner
   (:require
     [cljs.test :refer [report] :refer-macros [run-tests]]
     [figwheel.main.async-result :as async-result]
