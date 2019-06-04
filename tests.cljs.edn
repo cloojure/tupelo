@@ -1,5 +1,6 @@
 ^{:launch-js "chrome-headless.bash"
   } {:main         tupelo.core
+     :optimizations :none
      :foreign-libs [
                     {:file     "./resources/public/dino.js"
                      :provides ["dinoPhony"]}

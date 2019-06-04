@@ -1,7 +1,5 @@
 (ns tupelo.test-cljs ; this file defines macros
-  (:require [tupelo.string :as ts])
-  #?(:cljs (:require [cljs.test]))
-  )
+  (:require [tupelo.string :as ts]) )
 
 ; #todo merge into a single namespace using `is-cljs` macro when necessary
 
@@ -16,6 +14,8 @@
   ;#todo   (def-fixture-local abc {abc-fixture-intc} ...)   defines entry in ns-local fixture map for (dotest-with abc ...)
   )
 
+
+
 (defmacro define-fixture ; #todo maybe (define-fixture ...)
   [mode interceptor-map]
   (assert (contains? #{:each :once} mode))
@@ -27,9 +27,9 @@
        {:before #(~enter-fn ~ctx)
         :after  #(~leave-fn ~ctx)})))
 
-(defmacro deftest [& forms] `(cljs.test/deftest ~@forms))
-(defmacro testing [& forms] `(cljs.test/testing ~@forms))
-(defmacro is [& forms] `(cljs.test/is ~@forms))
+; (defmacro deftest [& forms] `(cljs.test/deftest ~@forms))
+; (defmacro testing [& forms] `(cljs.test/testing ~@forms))
+; (defmacro is [& forms] `(cljs.test/is ~@forms))
 
 (defmacro dotest [& body] ; #todo README & tests
   (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
@@ -146,7 +146,6 @@
 
     (println "minerva.core-test leave")
     (println "-----------------------------------------------------------------------------")
-
     )
-
   )
+

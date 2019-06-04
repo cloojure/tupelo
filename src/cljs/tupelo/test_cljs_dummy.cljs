@@ -1,5 +1,6 @@
-(ns tupelo.test-cljs  ; *.cljs file makes macros available to normal CLJS code
-  (:require-macros [tupelo.test-cljs]))
+(ns tupelo.test-cljs-dummy  ; *.cljs file makes macros available to normal CLJS code
+ ;(:require-macros [tupelo.test-cljs])
+  )
 
 ;*****************************************************************************
 ;

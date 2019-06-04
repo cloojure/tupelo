@@ -1,7 +1,9 @@
 (ns tst.flintstones.dino
   (:require
-    [tupelo.test-cljs :include-macros true ; #todo #bug copy  :include-macros true everywhere!!!
-                      :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
+    [cljs.test :refer-macros [deftest testing is ]  ]
+    [tupelo.test-cljs :as tt :include-macros true ; #todo #bug copy  :include-macros true everywhere!!!
+     :refer [define-fixture dotest isnt is= isnt= is-set= is-nonblank= throws? ]
+     ]
     [dinoPhony]
     ))
 

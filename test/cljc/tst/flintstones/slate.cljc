@@ -1,24 +1,34 @@
 (ns tst.flintstones.slate
-  #?(:clj (:require
-            [tupelo.test :as ttst
-             :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-            [tupelo.core :as t :refer [spy spyx spyxx]]
-            [tupelo.types :as types]
+  (:require
+    [clojure.string :as str]
 
-            [flintstones.slate :as slate]
-            ))
-  #?(:cljs (:require
-             [tupelo.test-cljs :include-macros true ; #todo #bug copy  :include-macros true everywhere!!!
-              :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-             [tupelo.core :include-macros true :as t :refer [spy spyx spyxx]]
-             [tupelo.string :include-macros true :as ts]
-             [clojure.string :as str]
+    #?(:clj  [clojure.test :refer [deftest testing is]]
+       :cljs [cljs.test :refer-macros [deftest testing is]])
 
-             [flintstones.slate :as slate :include-macros true]
-             )))
+    ; ; #todo #bug copy  :include-macros true everywhere!!!
+    #?(:clj  [tupelo.test      :refer [define-fixture dotest isnt is= isnt= is-set= is-nonblank= throws?]]
+       :cljs [tupelo.test-cljs :refer [define-fixture dotest isnt is= isnt= is-set= is-nonblank= throws?]
+              ;:as tt
+              :include-macros true ])
 
-  #?(:cljs (enable-console-print!))
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx]]
+       :cljs [tupelo.core :as t :refer [spy spyx spyxx]] :include-macros true )
 
+    #?(:clj  [flintstones.slate :as slate]
+       :cljs [flintstones.slate :as slate :include-macros true])
+    ))
+
+
+#?(:cljs (enable-console-print!))
+
+
+(define-fixture :once
+  {:enter (fn [ctx]
+            (println "*** TEST ONCE *** - slate enter ctx=" ctx)
+            )
+   :leave (fn [ctx]
+            (println "*** TEST ONCE *** - slate leave ctx=" ctx)
+            )})
 
 (dotest
   (is= 2 (+ 1 1))   ; this works
