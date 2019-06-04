@@ -29,14 +29,16 @@
     [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.lexical :as lex]
-    [tupelo.schema :as tsk]
+    [tupelo.schema :as tsk])
 
-    #?@(:clj [[cheshire.core :as cheshire]
-              [clojure.core.match :as ccm]
-              [tupelo.types :as types] ]))
-  #?(:clj (:import [java.io BufferedReader ByteArrayOutputStream PrintStream StringReader]
-                   [java.nio ByteBuffer]))
-)
+  #?(:clj
+     (:require [cheshire.core :as cheshire]
+               [clojure.core.match :as ccm]
+               [tupelo.types :as types]))
+  #?(:clj
+     (:import [java.io BufferedReader ByteArrayOutputStream PrintStream StringReader]
+              [java.nio ByteBuffer]))
+  )
 
 ;---------------------------------------------------------------------------------------------------
 ; #todo unify terminolgy (atom/ref/agent)

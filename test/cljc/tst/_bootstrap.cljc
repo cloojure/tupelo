@@ -34,4 +34,7 @@
 (dotest
   (t/print-versions)
   ;(spyx (s/fn-validation?))
+
+  (is (= 5 (+ 2 3)))
+  (isnt (= 2 3))
   )
