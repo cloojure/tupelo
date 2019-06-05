@@ -15,6 +15,10 @@
 
     [tst.tupelo.core]
     [tst.tupelo.string]
+    [tst.tupelo.data.index]
+    [tst.tupelo.data]
+    [tst.tupelo.lexical]
+    [tst.tupelo.array]
 
     ;-----------------------------------------------------------------------------
 
@@ -42,7 +46,10 @@
 
     'tst.tupelo.core
     'tst.tupelo.string
-
+    'tst.tupelo.data.index
+    'tst.tupelo.data
+    'tst.tupelo.lexical
+    'tst.tupelo.array
     ;-----------------------------------------------------------------------------
 
   )

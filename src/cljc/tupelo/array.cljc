@@ -3,14 +3,13 @@
     [clojure.set :as set]
     [clojure.string :as str]
     [schema.core :as s]
-    #?@(:clj [[tupelo.core :as t :refer [spy spyx spyxx forv  glue grab vals->map truthy?]]
-              [tupelo.string :as ts]
-              ])
-    #?@(:cljs [[tupelo.core :as t :refer [spy spyx spyxx forv glue grab vals->map truthy?] :include-macros true]
-               [tupelo.string :as ts :include-macros true]
-               [reagent.format :as rfmt]
-               ])
+    [tupelo.string :as ts]
+
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty]]
+       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spy-pretty spyx-pretty]])
     ))
+
+#?(:clj (do ; #todo fix this
 
 (def Vector
   "A 1-D array of values (a vector of vectors)."
@@ -322,18 +321,5 @@
     result ))
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+))
 
