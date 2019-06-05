@@ -1,5 +1,9 @@
 (ns tupelo.test-cljs ; this file defines macros
-  (:require [tupelo.string :as ts]) )
+  (:require
+    #?(:clj [clojure.test :as test]
+       :cljs [cljs.test :as test] )
+    [tupelo.string :as ts]
+    ))
 
 ; #todo merge into a single namespace using `is-cljs` macro when necessary
 
@@ -14,8 +18,6 @@
   ;#todo   (def-fixture-local abc {abc-fixture-intc} ...)   defines entry in ns-local fixture map for (dotest-with abc ...)
   )
 
-
-
 (defmacro define-fixture ; #todo maybe (define-fixture ...)
   [mode interceptor-map]
   (assert (contains? #{:each :once} mode))
@@ -23,32 +25,50 @@
   (let [enter-fn (:enter interceptor-map) ; #todo grab
         leave-fn (:leave interceptor-map) ; #todo grab
         ctx      (meta &form)]
-    `(cljs.test/use-fixtures ~mode
+    `(test/use-fixtures ~mode
        {:before #(~enter-fn ~ctx)
         :after  #(~leave-fn ~ctx)})))
 
- (defmacro deftest [& forms] `(cljs.test/deftest ~@forms))
- (defmacro testing [& forms] `(cljs.test/testing ~@forms))
- (defmacro is [& forms] `(cljs.test/is ~@forms))
+;(defn define-fixture-impl
+;  [ctx mode interceptor-map]
+;  (let [enter-fn (or (:enter interceptor-map) `identity)
+;        leave-fn (or (:leave interceptor-map) `identity) ]
+;    `(test/use-fixtures ~mode
+;       (fn ~'fixture-fn [tgt-fn#] ; #todo
+;         (~enter-fn ~ctx)
+;         (tgt-fn#)
+;         (~leave-fn ~ctx))))
+;  )
+;
+;(defmacro define-fixture
+;  [mode interceptor-map]
+;  (assert (contains? #{:each :once} mode))
+;  (assert (map? interceptor-map))
+;  (let [ctx (meta &form)]
+;    (define-fixture-impl ctx mode interceptor-map)))
+
+ (defmacro deftest [& forms] `(test/deftest ~@forms))
+ (defmacro testing [& forms] `(test/testing ~@forms))
+ (defmacro is [& forms] `(test/is ~@forms))
 
 (defmacro dotest [& body] ; #todo README & tests
   (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
-    `(cljs.test/deftest ~test-name-sym ~@body)))
+    `(test/deftest ~test-name-sym ~@body)))
 
 (defmacro isnt      ; #todo readme/test
   "Use (isnt ...) instead of (is (not ...)) for clojure.test"
-  [& body]
-  `(cljs.test/is (not ~@body)))
+  [& forms]
+  `(test/is (not ~@forms)))
 
 (defmacro is=       ; #todo readme/test
   "Use (is= ...) instead of (is (= ...)) for clojure.test"
   [& forms]
-  `(cljs.test/is (= ~@forms)))
+  `(test/is (= ~@forms)))
 
 (defmacro isnt=     ; #todo readme/test
   "Use (isnt= ...) instead of (is (not= ...)) for clojure.test"
-  [& body]
-  `(cljs.test/is (not (= ~@body))))
+  [& forms]
+  `(test/is (not (= ~@forms))))
 
 ; #todo use t/set=
 (defmacro is-set=  ; #todo readme/test
@@ -66,12 +86,12 @@
   (if (<= (count forms) 1)
     (let [line-str (str "[source line=" (:line (meta &form)) "]")]
       `(throw (ex-info (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
-    `(cljs.test/is (ts/nonblank= ~@forms))))
+    `(clojure.test/is (ts/nonblank= ~@forms))))
 
 (defn throws?-impl
   [forms]
   (if (symbol? (first forms))
-    `(cljs.test/is
+    `(test/is
        (try
          ~@forms
          false ; fail if no exception thrown
