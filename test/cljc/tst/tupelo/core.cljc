@@ -5,23 +5,26 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.core
-  #?(:clj (:require
-            [tupelo.test :as ttst
-               :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
+  (:require
+    [clojure.string :as str]
 
-            [clojure.string :as str]
-            [tupelo.core :as t :refer [spy spyx spyxx]]
-            [tupelo.string :as ts]
-            [tupelo.types :as types]
-            ))
-  #?(:cljs (:require
-             [tupelo.test-cljs :include-macros true ; #todo #bug copy  :include-macros true everywhere!!!
-                :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
+    #?(:clj  [tupelo.string :as ts]
+       :cljs [tupelo.string :as ts :include-macros true])
 
-             [clojure.string :as str]
-             [tupelo.core :include-macros true :as t :refer [spy spyx spyxx]]
-             [tupelo.string  :include-macros true :as ts]
-             )))
+    #?(:clj  [clojure.test :refer [deftest testing is]]
+       :cljs [cljs.test :refer-macros [deftest testing is]])
+
+    ; ; #todo #bug copy  :include-macros true everywhere!!!
+    #?(:clj  [tupelo.test :refer [define-fixture dotest isnt is= isnt= is-set= is-nonblank= throws?]]
+       :cljs [tupelo.test-cljs :refer [define-fixture dotest isnt is= isnt= is-set= is-nonblank= throws?]
+              ;:as tt
+              :include-macros true])
+
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx]]
+       :cljs [tupelo.core :as t :refer [spy spyx spyxx]] :include-macros true)
+
+    #?(:clj [tupelo.types :as types])
+    ))
 
 #?(:cljs (enable-console-print!))
 

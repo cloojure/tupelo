@@ -66,32 +66,23 @@
   (if (<= (count forms) 1)
     (let [line-str (str "[source line=" (:line (meta &form)) "]")]
       `(throw (ex-info (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
-    `(is (ts/nonblank= ~@forms))))
-
-; #?(:cljs (do ))
+    `(cljs.test/is (ts/nonblank= ~@forms))))
 
 (defn throws?-impl
-  [& forms]
+  [forms]
   (if (symbol? (first forms))
-    ; symbol 1st arg => expected Throwable provided
-    (do
-      (println "symbol found")
-      (println "Error - CLJS impl not allow specific exception type to be specified" (first forms))
-      (throw (ex-info "Error - CLJS impl not allow specific exception type to be specified" (first forms))))
-    (do             ; expected Throwable not provided
-      (println "symbol not found")
-      `(cljs.test/is
-         (try
-           ~@forms
-           false    ; fail if no exception thrown
-           (catch :default ex# ; NOTE:  cannot catch java.lang.Throwable
-             true)))))) ; if anything is thrown, test succeeds
+    `(cljs.test/is
+       (try
+         ~@forms
+         false ; fail if no exception thrown
+         (catch :default ex# ; NOTE:  cannot catch java.lang.Throwable
+           true))))) ; if anything is thrown, test succeeds
 
-(defmacro throws?   ; #todo document in readme
+(defmacro throws? ; #todo document in readme
   "Use (t/throws? ...) instead of (is (thrown? ...)) from clojure.test. Usage:
      (throws? (/ 1 0))  ; catches any Throwable "
   [& forms]
-  (apply throws?-impl forms))
+  (throws?-impl forms))
 
 ;---------------------------------------------------------------------------------------------------
 ; #todo incorporate this example & ritual for tupelo and enflame and cljs-template

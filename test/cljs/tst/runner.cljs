@@ -8,10 +8,12 @@
     [tst._bootstrap]
 
     [tst.flintstones.dino]
+    [tst.flintstones.slate]
     ;[tst.flintstones.wilma]
     ;[tst.flintstones.pebbles]
-    [tst.flintstones.slate]
-    [tst.flintstones.bambam]
+   ;[tst.flintstones.bambam]
+
+    [tst.tupelo.core]
 
     ;-----------------------------------------------------------------------------
 
@@ -32,10 +34,12 @@
     'tst._bootstrap
 
     'tst.flintstones.dino
+    'tst.flintstones.slate
     ;'tst.flintstones.wilma
     ;'tst.flintstones.pebbles
-    'tst.flintstones.slate
-    'tst.flintstones.bambam
+   ;'tst.flintstones.bambam
+
+    'tst.tupelo.core
 
     ;-----------------------------------------------------------------------------
 
