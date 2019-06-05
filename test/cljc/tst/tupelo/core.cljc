@@ -7,21 +7,15 @@
 (ns tst.tupelo.core
   (:require
     [clojure.string :as str]
-
-    #?(:clj  [tupelo.string :as ts]
-       :cljs [tupelo.string :as ts :include-macros true])
-
-    #?(:clj  [clojure.test :refer [deftest testing is]]
-       :cljs [cljs.test :refer-macros [deftest testing is]])
-
-    ; ; #todo #bug copy  :include-macros true everywhere!!!
-    #?(:clj  [tupelo.test :refer [define-fixture dotest isnt is= isnt= is-set= is-nonblank= throws?]]
-       :cljs [tupelo.test-cljs :refer [define-fixture dotest isnt is= isnt= is-set= is-nonblank= throws?]
-              ;:as tt
-              :include-macros true])
+    [tupelo.string :as ts]
 
     #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx]]
-       :cljs [tupelo.core :as t :refer [spy spyx spyxx]] :include-macros true)
+       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx]])
+
+    #?(:clj [clojure.test] :cljs [cljs.test])
+    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
+       :cljs [tupelo.test-cljs :include-macros true
+              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]])
 
     #?(:clj [tupelo.types :as types])
     ))
@@ -30,10 +24,10 @@
 
 (define-fixture :once
   {:enter (fn [ctx]
-           ;(println "*** TEST ONCE *** - enter ")
+           (println "*** TEST ONCE *** - tst.tupelo.core enter ")
             )
    :leave (fn [ctx]
-           ;(println "*** TEST ONCE *** - leave ")
+           (println "*** TEST ONCE *** - tst.tupelo.core leave ")
             )})
 
 ;--------------------------------------------------------------------------------------------------
