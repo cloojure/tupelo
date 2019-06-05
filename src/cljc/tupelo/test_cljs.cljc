@@ -20,34 +20,34 @@
   ;#todo   (def-fixture-local abc {abc-fixture-intc} ...)   defines entry in ns-local fixture map for (dotest-with abc ...)
   )
 
-(defmacro define-fixture ; #todo maybe (define-fixture ...)
-  [mode interceptor-map]
-  (assert (contains? #{:each :once} mode))
-  (assert (map? interceptor-map))
-  (let [enter-fn (:enter interceptor-map) ; #todo grab
-        leave-fn (:leave interceptor-map) ; #todo grab
-        ctx      (meta &form)]
-    `(test/use-fixtures ~mode
-       {:before #(~enter-fn ~ctx)
-        :after  #(~leave-fn ~ctx)})))
-
-;(defn define-fixture-impl
-;  [ctx mode interceptor-map]
-;  (let [enter-fn (or (:enter interceptor-map) `identity)
-;        leave-fn (or (:leave interceptor-map) `identity) ]
-;    `(test/use-fixtures ~mode
-;       (fn ~'fixture-fn [tgt-fn#] ; #todo
-;         (~enter-fn ~ctx)
-;         (tgt-fn#)
-;         (~leave-fn ~ctx))))
-;  )
-;
-;(defmacro define-fixture
+;(defmacro define-fixture ; #todo maybe (define-fixture ...)
 ;  [mode interceptor-map]
 ;  (assert (contains? #{:each :once} mode))
 ;  (assert (map? interceptor-map))
-;  (let [ctx (meta &form)]
-;    (define-fixture-impl ctx mode interceptor-map)))
+;  (let [enter-fn (:enter interceptor-map) ; #todo grab
+;        leave-fn (:leave interceptor-map) ; #todo grab
+;        ctx      (meta &form)]
+;    `(test/use-fixtures ~mode
+;       {:before #(~enter-fn ~ctx)
+;        :after  #(~leave-fn ~ctx)})))
+
+(defn define-fixture-impl
+  [ctx mode interceptor-map]
+  (let [enter-fn (or (:enter interceptor-map) `identity)
+        leave-fn (or (:leave interceptor-map) `identity) ]
+    `(test/use-fixtures ~mode
+       (fn ~'fixture-fn [tgt-fn#] ; #todo
+         (~enter-fn ~ctx)
+         (tgt-fn#)
+         (~leave-fn ~ctx))))
+  )
+
+(defmacro define-fixture
+  [mode interceptor-map]
+  (assert (contains? #{:each :once} mode))
+  (assert (map? interceptor-map))
+  (let [ctx (meta &form)]
+    (define-fixture-impl ctx mode interceptor-map)))
 
  (defmacro deftest [& forms] `(test/deftest ~@forms))
  (defmacro testing [& forms] `(test/testing ~@forms))
