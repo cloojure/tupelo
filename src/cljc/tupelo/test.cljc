@@ -13,39 +13,8 @@
      [tupelo.string :as tstr]
   ))
 
-; (defn use-fixtures [& args] (apply test/use-fixtures args)) #todo why is this here???
 (defmacro deftest [& forms] `(test/deftest ~@forms))
 (defmacro testing [& forms] `(test/testing ~@forms))
-
-(defn define-fixture-impl
-  [ctx mode interceptor-map]
-  (let [enter-fn (or (:enter interceptor-map) `identity)
-        leave-fn (or (:leave interceptor-map) `identity) ]
-    `(test/use-fixtures ~mode
-       (fn ~'fixture-fn [tgt-fn#] ; #todo
-         (~enter-fn ~ctx)
-         (tgt-fn#)
-         (~leave-fn ~ctx))))
-  )
-
-(defmacro define-fixture
-  [mode interceptor-map]
-  (assert (contains? #{:each :once} mode))
-  (assert (map? interceptor-map))
-  (let [ctx (meta &form)]
-    (define-fixture-impl ctx mode interceptor-map)))
-
-;(defmacro deftest ; #todo README & tests
-;  [& items]
-;  (let [item-1 (clojure.core/first items)
-;        suffix (str "-line-" (:line (meta &form)))
-;        [label forms] (cond
-;                        (symbol? item-1) [(symbol (str (clojure.core/name           item-1) suffix)) (vec (clojure.core/rest items))]
-;                        (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
-;                        :else [(symbol (str "deftest-block" suffix)) (vec items)]) ]
-;    `(def ~(vary-meta label assoc
-;             :test `(fn [] ~@forms))
-;       (fn [] (test/test-var (var ~label))))))
 
 (defmacro dotest ; #todo README & tests
   "Like clojure.test/deftest, but doesn't require a test name. Usage:
@@ -60,15 +29,24 @@
         (throws? (/ 1 0)))
   "
 
+  [& body]
+  (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
+    `(def ~(vary-meta test-name-sym assoc
+             :test `(fn [] ~@body))
+       (fn [] (test/test-var (var ~test-name-sym))))))
+
+(defmacro dotest-focus ; #todo README & tests
+  "Alias for tupelo.test/deftest-focus "
   [& items]
   (let [item-1 (clojure.core/first items)
         suffix (str "-line-" (:line (meta &form)))
         [label forms] (cond
-                        (symbol? item-1) [(symbol (str (clojure.core/name           item-1) suffix)) (vec (clojure.core/rest items))]
+                        (symbol? item-1) [(symbol (str (clojure.core/name item-1) suffix)) (vec (clojure.core/rest items))]
                         (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
-                        :else [(symbol (str "dotest-block" suffix)) (vec items)]) ]
+                        :else [(symbol (str "dotest-focus-block" suffix)) (vec items)])]
     `(def ~(vary-meta label assoc
-             :test `(fn [] ~@forms))
+             :test `(fn [] ~@forms)
+             :test-refresh/focus true)
        (fn [] (test/test-var (var ~label))))))
 
 
@@ -153,19 +131,24 @@
        (catch Throwable dummy#
          false)))) ; if anything is thrown, test fails
 
-(defmacro dotest-focus ; #todo README & tests
-  "Alias for tupelo.test/deftest-focus "
-  [& items]
-  (let [item-1 (clojure.core/first items)
-        suffix (str "-line-" (:line (meta &form)))
-        [label forms] (cond
-                        (symbol? item-1) [(symbol (str (clojure.core/name item-1) suffix)) (vec (clojure.core/rest items))]
-                        (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
-                        :else [(symbol (str "dotest-focus-block" suffix)) (vec items)])]
-    `(def ~(vary-meta label assoc
-             :test `(fn [] ~@forms)
-             :test-refresh/focus true)
-       (fn [] (test/test-var (var ~label))))))
+; (defn use-fixtures-all [& args] (apply test/use-fixtures args)) #todo why is this here???
+(defn define-fixture-impl
+  [ctx mode interceptor-map]
+  (let [enter-fn (or (:enter interceptor-map) `identity)
+        leave-fn (or (:leave interceptor-map) `identity) ]
+    `(test/use-fixtures ~mode
+       (fn ~'fixture-fn [tgt-fn#] ; #todo
+         (~enter-fn ~ctx)
+         (tgt-fn#)
+         (~leave-fn ~ctx))))
+  )
+
+(defmacro define-fixture
+  [mode interceptor-map]
+  (assert (contains? #{:each :once} mode))
+  (assert (map? interceptor-map))
+  (let [ctx (meta &form)]
+    (define-fixture-impl ctx mode interceptor-map)))
 
 ; #todo ^:slow not working (always executed); need to fix
 ; #todo maybe def-anon-spec or anon-spec; maybe (gen-spec 999 ...) or (gen-test 999 ...)

@@ -10,31 +10,9 @@
 
 ; #todo merge into a single namespace using `is-cljs` macro when necessary
 
-(comment            ; #todo  new format?
-  (define-fixtures  ; #todo cljs allows only one choice of :each of :once   :(
-    {:once {:enter (fn [] (println "*** TEST ONCE *** - enter"))
-            :leave (fn [] (println "*** TEST ONCE *** - leave"))}}
-    {:each {:enter (fn [] (println "*** TEST EACH *** - enter"))
-            :leave (fn [] (println "*** TEST EACH *** - leave"))}})
-  ;#todo maybe define
-  ;#todo   (def-fixture-global {intc-fixture-map} ...)  as global `use-fixtures`
-  ;#todo   (def-fixture-local abc {abc-fixture-intc} ...)   defines entry in ns-local fixture map for (dotest-with abc ...)
-  )
-
-; ********** WARNING: different than clojure.test/use-fixtures **********
-(defmacro define-fixture
-  [mode interceptor-map]
-  (assert (contains? #{:each :once} mode))
-  (assert (map? interceptor-map))
-  (let [enter-fn (or (:enter interceptor-map) `identity)
-        leave-fn (or (:leave interceptor-map) `identity)
-        ctx      (meta &form)]
-    `(test/use-fixtures ~mode
-       {:before #(~enter-fn ~ctx)
-        :after  #(~leave-fn ~ctx)})))
-
 (defmacro deftest [& forms] `(test/deftest ~@forms))
 (defmacro testing [& forms] `(test/testing ~@forms))
+
 (defmacro is [& forms] `(test/is ~@forms))
 
 (defmacro dotest [& body] ; #todo README & tests
@@ -89,6 +67,29 @@
      (throws? (/ 1 0))  ; catches any Throwable "
   [& forms]
   (throws?-impl forms))
+
+(comment            ; #todo  new format?
+  (define-fixtures  ; #todo cljs allows only one choice of :each of :once   :(
+    {:once {:enter (fn [] (println "*** TEST ONCE *** - enter"))
+            :leave (fn [] (println "*** TEST ONCE *** - leave"))}}
+    {:each {:enter (fn [] (println "*** TEST EACH *** - enter"))
+            :leave (fn [] (println "*** TEST EACH *** - leave"))}})
+  ;#todo maybe define
+  ;#todo   (def-fixture-global {intc-fixture-map} ...)  as global `use-fixtures`
+  ;#todo   (def-fixture-local abc {abc-fixture-intc} ...)   defines entry in ns-local fixture map for (dotest-with abc ...)
+  )
+
+; ********** WARNING: different than clojure.test/use-fixtures **********
+(defmacro define-fixture
+  [mode interceptor-map]
+  (assert (contains? #{:each :once} mode))
+  (assert (map? interceptor-map))
+  (let [enter-fn (or (:enter interceptor-map) `identity)
+        leave-fn (or (:leave interceptor-map) `identity)
+        ctx      (meta &form)]
+    `(test/use-fixtures ~mode
+       {:before #(~enter-fn ~ctx)
+        :after  #(~leave-fn ~ctx)})))
 
 ;---------------------------------------------------------------------------------------------------
 ; #todo incorporate this example & ritual for tupelo and enflame and cljs-template
