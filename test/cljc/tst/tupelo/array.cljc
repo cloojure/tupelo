@@ -11,13 +11,14 @@
     [tupelo.array :as tar]
     [tupelo.string :as ts]
 
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty]]
-       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spy-pretty spyx-pretty]])
-
     #?(:clj [clojure.test] :cljs [cljs.test])
     #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
        :cljs [tupelo.test-cljs :include-macros true
               :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]])
+
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey? ]]
+       :cljs [tupelo.core :as t :include-macros true
+              :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey? ]])
     ))
 
 ; #todo restore this???  (st/use-fixtures :once st/validate-schemas)

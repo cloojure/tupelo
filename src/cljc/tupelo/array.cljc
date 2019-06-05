@@ -5,8 +5,9 @@
     [schema.core :as s]
     [tupelo.string :as ts]
 
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty]]
-       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spy-pretty spyx-pretty]])
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey? ]]
+       :cljs [tupelo.core :as t :include-macros true
+              :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey? ]])
     ))
 
 #?(:clj (do ; #todo fix this
