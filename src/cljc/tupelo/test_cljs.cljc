@@ -23,6 +23,8 @@
   (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
     `(test/deftest ~test-name-sym ~@body)))
 
+; For all the following arity tests, we use an `if` statement so the exception is thrown during
+; the test execution, not during compilation.
 (defmacro is
   "Equivalent to clojure.test/is."
   [& forms]
@@ -74,6 +76,8 @@
     `(test/is (ts/nonblank= ~@forms))))
 
 (defmacro throws? ; #todo document in readme
+  "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
+     (throws? (/ 1 0))                      ; catches any Throwable"
   [& forms]
   `(test/is
      (try
@@ -81,6 +85,16 @@
        false ; fail if no exception thrown
        (catch :default dummy# ; NOTE:  cannot catch java.lang.Throwable
          true)))) ; if anything is thrown, test succeeds
+
+(defmacro throws-not?   ; #todo document in readme
+  "The opposite of (throws? ...)"
+  [& forms]
+  `(test/is
+     (try
+       ~@forms
+       true    ; succeed if no exception thrown
+       (catch :default dummy# ; NOTE:  cannot catch java.lang.Throwable
+         false)))) ; if anything is thrown, test fails
 
 (comment            ; #todo  new format?
   (define-fixtures  ; #todo cljs allows only one choice of :each of :once   :(

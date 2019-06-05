@@ -43,6 +43,8 @@
              :test-refresh/focus true)
        (fn [] (test/test-var (var ~test-name-sym))))))
 
+; For all the following arity tests, we use an `if` statement so the exception is thrown during
+; the test execution, not during compilation.
 (defmacro is
   "Equivalent to clojure.test/is."
   [& forms]
@@ -95,7 +97,6 @@
 
 (defmacro throws? ; #todo document in readme
   "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
-
      (throws? (/ 1 0))                      ; catches any Throwable"
   [& forms]
   `(test/is
@@ -106,7 +107,6 @@
          true)))) ; if anything is thrown, test succeeds
 ; #todo #awt #bug in cljs if use (apply throws-impl forms) and [& forms]
 
-; #todo => CLJS
 (defmacro throws-not?   ; #todo document in readme
   "The opposite of (throws? ...)"
   [& forms]
