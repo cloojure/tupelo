@@ -11,7 +11,7 @@
     [tst.flintstones.slate]
     ;[tst.flintstones.wilma]
     ;[tst.flintstones.pebbles]
-   ;[tst.flintstones.bambam]
+   [tst.flintstones.bambam]
 
     [tst.tupelo.core]
     [tst.tupelo.string]
@@ -38,7 +38,7 @@
     'tst.flintstones.slate
     ;'tst.flintstones.wilma
     ;'tst.flintstones.pebbles
-   ;'tst.flintstones.bambam
+   'tst.flintstones.bambam
 
     'tst.tupelo.core
     'tst.tupelo.string
