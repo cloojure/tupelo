@@ -10,14 +10,16 @@
     [clojure.core :as cc]
     [clojure.string :as str]
     [tupelo.chars :as char]
-    #?@(:clj [[tupelo.core :as t :refer [spy spyx spyxx]]
-              [tupelo.test :refer [define-fixture dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-              [tupelo.string :as ts]
-             ])
-    #?@(:cljs [[tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
-               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-               [tupelo.string :as ts :include-macros true]
-              ])))
+    [tupelo.string :as ts]
+
+    #?(:clj  [tupelo.core :as t]
+       :cljs [tupelo.core :as t :include-macros true])
+
+    #?(:clj [clojure.test] :cljs [cljs.test] )
+    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
+       :cljs [tupelo.test-cljs :include-macros true
+              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]])
+    ))
 
 ; #todo add generative testing?
 ; #todo add clojure.spec testing?

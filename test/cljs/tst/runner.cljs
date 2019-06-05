@@ -14,6 +14,7 @@
    ;[tst.flintstones.bambam]
 
     [tst.tupelo.core]
+    [tst.tupelo.string]
 
     ;-----------------------------------------------------------------------------
 
@@ -40,6 +41,7 @@
    ;'tst.flintstones.bambam
 
     'tst.tupelo.core
+    'tst.tupelo.string
 
     ;-----------------------------------------------------------------------------
 

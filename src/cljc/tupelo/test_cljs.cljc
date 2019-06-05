@@ -27,9 +27,9 @@
        {:before #(~enter-fn ~ctx)
         :after  #(~leave-fn ~ctx)})))
 
-; (defmacro deftest [& forms] `(cljs.test/deftest ~@forms))
-; (defmacro testing [& forms] `(cljs.test/testing ~@forms))
-; (defmacro is [& forms] `(cljs.test/is ~@forms))
+ (defmacro deftest [& forms] `(cljs.test/deftest ~@forms))
+ (defmacro testing [& forms] `(cljs.test/testing ~@forms))
+ (defmacro is [& forms] `(cljs.test/is ~@forms))
 
 (defmacro dotest [& body] ; #todo README & tests
   (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
