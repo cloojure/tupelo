@@ -13,7 +13,7 @@
      [tupelo.string :as tstr]
   ))
 
-(defn use-fixtures [& args] (apply test/use-fixtures args))
+; (defn use-fixtures [& args] (apply test/use-fixtures args)) #todo why is this here???
 (defmacro deftest [& forms] `(test/deftest ~@forms))
 (defmacro testing [& forms] `(test/testing ~@forms))
 

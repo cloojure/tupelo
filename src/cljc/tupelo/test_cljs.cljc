@@ -1,8 +1,9 @@
 (ns tupelo.test-cljs ; this file defines macros
   (:require
-;  #?(:clj [clojure.test :as test]
+;  #?(:clj
+; [clojure.test :as test]
 ;     :cljs
-            [cljs.test :as test]
+  [cljs.test :as test]
 ;     )
     [tupelo.string :as ts]
     ))
@@ -20,38 +21,21 @@
   ;#todo   (def-fixture-local abc {abc-fixture-intc} ...)   defines entry in ns-local fixture map for (dotest-with abc ...)
   )
 
-;(defmacro define-fixture ; #todo maybe (define-fixture ...)
-;  [mode interceptor-map]
-;  (assert (contains? #{:each :once} mode))
-;  (assert (map? interceptor-map))
-;  (let [enter-fn (:enter interceptor-map) ; #todo grab
-;        leave-fn (:leave interceptor-map) ; #todo grab
-;        ctx      (meta &form)]
-;    `(test/use-fixtures ~mode
-;       {:before #(~enter-fn ~ctx)
-;        :after  #(~leave-fn ~ctx)})))
-
-(defn define-fixture-impl
-  [ctx mode interceptor-map]
-  (let [enter-fn (or (:enter interceptor-map) `identity)
-        leave-fn (or (:leave interceptor-map) `identity) ]
-    `(test/use-fixtures ~mode
-       (fn ~'fixture-fn [tgt-fn#] ; #todo
-         (~enter-fn ~ctx)
-         (tgt-fn#)
-         (~leave-fn ~ctx))))
-  )
-
+; ********** WARNING: different than clojure.test/use-fixtures **********
 (defmacro define-fixture
   [mode interceptor-map]
   (assert (contains? #{:each :once} mode))
   (assert (map? interceptor-map))
-  (let [ctx (meta &form)]
-    (define-fixture-impl ctx mode interceptor-map)))
+  (let [enter-fn (or (:enter interceptor-map) `identity)
+        leave-fn (or (:leave interceptor-map) `identity)
+        ctx      (meta &form)]
+    `(test/use-fixtures ~mode
+       {:before #(~enter-fn ~ctx)
+        :after  #(~leave-fn ~ctx)})))
 
- (defmacro deftest [& forms] `(test/deftest ~@forms))
- (defmacro testing [& forms] `(test/testing ~@forms))
- (defmacro is [& forms] `(test/is ~@forms))
+(defmacro deftest [& forms] `(test/deftest ~@forms))
+(defmacro testing [& forms] `(test/testing ~@forms))
+(defmacro is [& forms] `(test/is ~@forms))
 
 (defmacro dotest [& body] ; #todo README & tests
   (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
