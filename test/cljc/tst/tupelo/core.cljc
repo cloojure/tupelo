@@ -14,7 +14,7 @@
 
     #?(:clj [clojure.test] :cljs [cljs.test])
     #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
-       :cljs [tupelo.test-cljs :include-macros true
+       :cljs [tupelo.test-cljs ; :include-macros true
               :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]])
 
     #?(:clj [tupelo.types :as types])
