@@ -1,18 +1,15 @@
 (ns tst.flintstones.slate
   (:require
     [clojure.string :as str]
-
-    #?(:clj  [clojure.test :refer [deftest testing is]]
-       :cljs [cljs.test :refer-macros [deftest testing is]])
-
     ; ; #todo #bug copy  :include-macros true everywhere!!!
-    #?(:clj  [tupelo.test      :refer [define-fixture dotest isnt is= isnt= is-set= is-nonblank= throws?]]
-       :cljs [tupelo.test-cljs :refer [define-fixture dotest isnt is= isnt= is-set= is-nonblank= throws?]
-              ;:as tt
-              :include-macros true ])
 
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx]]
-       :cljs [tupelo.core :as t :refer [spy spyx spyxx]] :include-macros true )
+    #?(:clj  [tupelo.core :as t]
+       :cljs [tupelo.core :as t :include-macros true])
+
+    #?(:clj [clojure.test] :cljs [cljs.test] )
+    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
+       :cljs [tupelo.test-cljs :include-macros true
+              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]])
 
     #?(:clj  [flintstones.slate :as slate]
        :cljs [flintstones.slate :as slate :include-macros true])

@@ -1,10 +1,10 @@
 (ns tst.flintstones.dino
   (:require
-    [cljs.test :refer-macros [deftest testing is ]  ]
-    [tupelo.test-cljs :as tt :include-macros true ; #todo #bug copy  :include-macros true everywhere!!!
-     :refer [define-fixture dotest isnt is= isnt= is-set= is-nonblank= throws? ]
-     ]
     [dinoPhony]
+    [tupelo.core :as t :include-macros true]
+    [cljs.test]
+    [tupelo.test-cljs :include-macros true
+     :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
     ))
 
 (define-fixture :each
