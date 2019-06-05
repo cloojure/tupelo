@@ -1,3 +1,9 @@
+;   Copyright (c) Alan Thompson. All rights reserved.
+;   The use and distribution terms for this software are covered by the Eclipse Public
+;   License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the
+;   file epl-v10.html at the root of this distribution.  By using this software in any
+;   fashion, you are agreeing to be bound by the terms of this license.
+;   You must not remove this notice, or any other, from this software.
 (ns tupelo.test-cljs ; this file defines macros
   (:require
 ;  #?(:clj
@@ -13,26 +19,41 @@
 (defmacro deftest [& forms] `(test/deftest ~@forms))
 (defmacro testing [& forms] `(test/testing ~@forms))
 
-(defmacro is [& forms] `(test/is ~@forms))
-
 (defmacro dotest [& body] ; #todo README & tests
   (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
     `(test/deftest ~test-name-sym ~@body)))
 
+(defmacro is
+  "Equivalent to clojure.test/is."
+  [& forms]
+  (if (not= (count forms) 1)
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (ex-info "tupelo.test/is requires exactly 1 form " {:line-str ~line-str })))
+    `(test/is ~@forms)))
+
 (defmacro isnt      ; #todo readme/test
   "Use (isnt ...) instead of (is (not ...)) for clojure.test"
   [& forms]
-  `(test/is (not ~@forms)))
+  (if (not= (count forms) 1)
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (ex-info "tupelo.test/isnt requires exactly 1 form " {:line-str ~line-str })))
+    `(test/is (not ~@forms))))
 
-(defmacro is=       ; #todo readme/test
+(defmacro is=  ; #todo readme/test
   "Use (is= ...) instead of (is (= ...)) for clojure.test"
   [& forms]
-  `(test/is (= ~@forms)))
+  (if (<= (count forms) 1 )
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (ex-info "tupelo.test/is= requires at least 2 forms " {:line-str ~line-str })))
+    `(test/is (= ~@forms))))
 
-(defmacro isnt=     ; #todo readme/test
+(defmacro isnt=         ; #todo readme/test
   "Use (isnt= ...) instead of (is (not= ...)) for clojure.test"
   [& forms]
-  `(test/is (not (= ~@forms))))
+  (if (<= (count forms) 1 )
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (ex-info "tupelo.test/isnt= requires at least 2 forms " {:line-str ~line-str })))
+    `(test/is (not (= ~@forms)))))
 
 ; #todo use t/set=
 (defmacro is-set=  ; #todo readme/test
@@ -40,8 +61,8 @@
   [& forms]
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-      `(throw (ex-info  "tupelo.test-cljs/set= requires at least 2 forms " ~line-str)))
-    `(is= ~@(mapv #(list 'set %) forms))))
+      `(throw (ex-info  "tupelo is-set= requires at least 2 forms " ~line-str)))
+    `(test/is (= ~@(mapv #(list 'set %) forms)))))
 
 ; #todo use tstr/nonblank=
 (defmacro is-nonblank= ; #todo readme/test
@@ -49,24 +70,17 @@
   [& forms]
   (if (<= (count forms) 1)
     (let [line-str (str "[source line=" (:line (meta &form)) "]")]
-      `(throw (ex-info (str "tupelo.test/set= requires at least 2 forms " ~line-str))))
+      `(throw (ex-info (str "tupelo is-nonblank= requires at least 2 forms " ~line-str))))
     `(test/is (ts/nonblank= ~@forms))))
 
-(defn throws?-impl
-  [forms]
-  (if (symbol? (first forms))
-    `(test/is
-       (try
-         ~@forms
-         false ; fail if no exception thrown
-         (catch :default ex# ; NOTE:  cannot catch java.lang.Throwable
-           true))))) ; if anything is thrown, test succeeds
-
 (defmacro throws? ; #todo document in readme
-  "Use (t/throws? ...) instead of (is (thrown? ...)) from clojure.test. Usage:
-     (throws? (/ 1 0))  ; catches any Throwable "
   [& forms]
-  (throws?-impl forms))
+  `(test/is
+     (try
+       ~@forms
+       false ; fail if no exception thrown
+       (catch :default dummy# ; NOTE:  cannot catch java.lang.Throwable
+         true)))) ; if anything is thrown, test succeeds
 
 (comment            ; #todo  new format?
   (define-fixtures  ; #todo cljs allows only one choice of :each of :once   :(

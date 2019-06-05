@@ -10,7 +10,7 @@
     #?(:clj [clojure.test :as test]
        :cljs [cljs.test :as test] )
      [tupelo.core :as t ]
-     [tupelo.string :as tstr]
+     [tupelo.string :as ts]
   ))
 
 (defmacro deftest [& forms] `(test/deftest ~@forms))
@@ -28,7 +28,6 @@
         (set= [1 2 3] [3 2 1])   ; set equality semantics
         (throws? (/ 1 0)))
   "
-
   [& body]
   (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
     `(def ~(vary-meta test-name-sym assoc
@@ -82,7 +81,7 @@
   [& forms]
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-      `(throw (ex-info "tupelo.test/set= requires at least 2 forms " {:line-str ~line-str })))
+      `(throw (ex-info  "tupelo is-set= requires at least 2 forms " ~line-str)))
     `(test/is (= ~@(mapv #(list 'set %) forms)))))
 
 ; #todo use tstr/nonblank=
@@ -91,28 +90,21 @@
   [& forms]
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-      `(throw (ex-info "tupelo.test/set= requires at least 2 forms " {:line-str ~line-str })))
-    `(test/is (tstr/nonblank= ~@forms) )))
+      `(throw (ex-info (str "tupelo is-nonblank= requires at least 2 forms " ~line-str))))
+    `(test/is (ts/nonblank= ~@forms) )))
 
-;---------------------------------------------------------------------------------------------------
-; non-CLJS follows ;
-#?(:clj (do
+(defmacro throws? ; #todo document in readme
+  "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
 
-(defn throws?-impl
-  [forms]
+     (throws? (/ 1 0))                      ; catches any Throwable"
+  [& forms]
   `(test/is
      (try
        ~@forms
        false ; fail if no exception thrown
        (catch Throwable dummy#
          true)))) ; if anything is thrown, test succeeds
-
-(defmacro throws?   ; #todo document in readme
-  "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
-
-     (throws? (/ 1 0))                      ; catches any Throwable"
-  [& forms]
-  (throws?-impl forms)) ; #todo #awt #bug in cljs if use (apply throws-impl forms) and [& forms]
+; #todo #awt #bug in cljs if use (apply throws-impl forms) and [& forms]
 
 ; #todo => CLJS
 (defmacro throws-not?   ; #todo document in readme
@@ -124,6 +116,10 @@
        true    ; succeed if no exception thrown
        (catch Throwable dummy#
          false)))) ; if anything is thrown, test fails
+
+;---------------------------------------------------------------------------------------------------
+; non-CLJS follows ;
+#?(:clj (do
 
 ; (defn use-fixtures-all [& args] (apply test/use-fixtures args)) #todo why is this here???
 (defn define-fixture-impl
