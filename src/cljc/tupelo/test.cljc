@@ -37,18 +37,12 @@
 
 (defmacro dotest-focus ; #todo README & tests
   "Alias for tupelo.test/deftest-focus "
-  [& items]
-  (let [item-1 (clojure.core/first items)
-        suffix (str "-line-" (:line (meta &form)))
-        [label forms] (cond
-                        (symbol? item-1) [(symbol (str (clojure.core/name item-1) suffix)) (vec (clojure.core/rest items))]
-                        (string? item-1) [(symbol (str (tupelo.string/normalize-str item-1) suffix)) (vec (clojure.core/rest items))]
-                        :else [(symbol (str "dotest-focus-block" suffix)) (vec items)])]
-    `(def ~(vary-meta label assoc
-             :test `(fn [] ~@forms)
+  [& body]
+  (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
+    `(def ~(vary-meta test-name-sym assoc
+             :test `(fn [] ~@body)
              :test-refresh/focus true)
-       (fn [] (test/test-var (var ~label))))))
-
+       (fn [] (test/test-var (var ~test-name-sym))))))
 
 (defmacro is
   "Equivalent to clojure.test/is."
