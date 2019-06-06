@@ -1,4 +1,4 @@
-^{:launch-js "chrome-headless.bash"
+^{:launch-js "/home/alan/tupelo/chrome-headless.bash"
   } {:main         tupelo.core
      :optimizations :none
      :foreign-libs [
