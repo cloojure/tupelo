@@ -161,5 +161,5 @@
   :jvm-opts ["-Xms500m" "-Xmx2g"
            ; "--illegal-access=permit"  ; may need for Java10+
             ] ; permit, warn, debug, deny
-
 )
+
