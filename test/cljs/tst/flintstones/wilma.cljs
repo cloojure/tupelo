@@ -1,9 +1,10 @@
 (ns tst.flintstones.wilma
   (:require
-    [clojure.string :as str]
     [tupelo.test-cljs :refer [dotest is isnt is= isnt= testing define-fixture]]
-    [wilmaPhony]    ; This one must be first or get;
-         ; "WARNING: Use of undeclared Var cljs.test/test-var at line 15 test/cljs/tst/flintstones/wilma.cljs"
+    [wilma] ; new for figwheel-main
+
+    ; #todo figure out how to make wilma tests work with externs
+
   ))
 
 (define-fixture :each
@@ -15,13 +16,13 @@
   (is= 3 (+ 2 1)))
 
 (dotest
-  (println "wilmaPhony/stats:   " wilmaPhony/stats)
-  (isnt= wilmaPhony/stats wilmaPhony/stats2) ; JS objs are not=
+  (println "wilma/stats:   " wilma/stats)
+  (isnt= wilma/stats wilma/stats2) ; JS objs are not=
 
-  (is= (js->clj wilmaPhony/stats) ; must convert to clojure maps for value equality to work
-    (js->clj wilmaPhony/stats2))
+  (is= (js->clj wilma/stats) ; must convert to clojure maps for value equality to work
+    (js->clj wilma/stats2))
 
-  (let [wilma (wilmaPhony/makeWilma)]
+  (let [wilma (wilma/makeWilma)]
     (println "wilma =>" wilma)
     (is= (.-desc wilma) "patient housewife")
     (is= (.says wilma "Fred") "Hello, Fred")))

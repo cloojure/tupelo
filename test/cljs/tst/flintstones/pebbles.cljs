@@ -1,7 +1,9 @@
 (ns tst.flintstones.pebbles
   (:require
-    [clojure.string :as str]
-    [tupelo.test-cljs :refer [dotest is isnt is= isnt= testing define-fixture]] ))
+    [cljs.test]
+    [tupelo.test-cljs :include-macros true ; #todo #bug copy  :include-macros true everywhere!!!
+                      :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
+    ))
 
 (define-fixture :each
   {:enter (fn [ctx] (println "*** TEST EACH *** - enter ctx=" ctx))

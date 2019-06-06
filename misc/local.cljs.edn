@@ -1,0 +1,6 @@
+^{
+  ; :ring-handler hello-world.server/handler
+  :open-url     "http://localhost:9500/index-figwheel-local.html"
+  :watch-dirs   ["src/cljc" "src/cljs" "test/cljs"  ] ;  "test/cljc"
+  :auto-testing {:namespaces [tst.minerva.core ]}
+  } {:main minerva.core}

@@ -1,7 +1,11 @@
 (ns tst.flintstones.dino
   (:require
-    [tupelo.test-cljs :refer [dotest is isnt is= isnt= testing define-fixture]]
-    [dinoPhony] ))
+    [dinoPhony]
+    [tupelo.core :as t :include-macros true]
+    [cljs.test]
+    [tupelo.test-cljs :include-macros true
+     :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
+    ))
 
 (define-fixture :each
   {:enter (fn [ctx] (println "*** TEST EACH *** - enter ctx=" ctx))

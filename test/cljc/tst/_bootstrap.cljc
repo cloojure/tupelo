@@ -16,12 +16,18 @@
               [tupelo.string :as ts]
               ])
     #?@(:cljs [
-               [schema.core :as s]
-               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-nonblank= testing throws?]]
+               [cljs.test :refer-macros [deftest testing is ]  ]
+               [tupelo.test-cljs :as tt :include-macros true ; #todo #bug copy  :include-macros true everywhere!!!
+                :refer [define-fixture dotest isnt is= isnt= is-set= is-nonblank= throws? ]
+                ]
+
                [tupelo.core :as t :include-macros true]
                [tupelo.string :as ts :include-macros true]
+               [schema.core :as s]
                ])
   ))
+
+
 
 #?(:cljs (enable-console-print!))
 
@@ -34,4 +40,7 @@
 (dotest
   (t/print-versions)
   ;(spyx (s/fn-validation?))
+
+  (is (= 5 (+ 2 3)))
+  (isnt (= 2 3))
   )

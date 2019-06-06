@@ -1,5 +1,8 @@
-(ns tupelo.test-cljs  ; *.cljs file makes macros available to normal CLJS code
+(ns tupelo.test-cljs
   (:require-macros [tupelo.test-cljs]))
+; Having both a `*.cljc` and a `*.cljs` file for the same namespace makes macros
+; available to normal CLJS code without needing the `:include-macros true`.
+; See "Implicit macro loading" at https://clojurescript.org/about/differences#_namespaces
 
 ;*****************************************************************************
 ;

@@ -1,0 +1,2 @@
+^{:launch-js "chrome-headless.bash"
+  } {:main minerva.core}

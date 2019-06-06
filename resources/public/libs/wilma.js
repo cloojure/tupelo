@@ -1,5 +1,6 @@
 
-goog.provide('wilmaPhony');  // 'wilmaPhony' is a "virtual-namespace" that doesn't really exist
+// doesn't seem to work with figwheel-main
+goog.provide( 'wilmaPhony' );  // 'wilmaPhony' is a "virtual-namespace" that doesn't really exist
 
 wilmaPhony.stats  = {  lipstick : "red",  height : 5.5 };  // both are the same
 wilmaPhony.stats2 = { "lipstick": "red", "height": 5.5 };

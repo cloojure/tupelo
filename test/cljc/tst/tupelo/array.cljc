@@ -9,22 +9,22 @@
     [schema.core :as s]
     [schema.test :as st]
     [tupelo.array :as tar]
-    #?@(:clj [[schema.core :as s]
-              [tupelo.test :refer [define-fixture dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-              [tupelo.core :as t :refer [spy spyx spyxx forv]]
-              [tupelo.string :as ts]
-             ])
-    #?@(:cljs [
-               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-               [tupelo.core :as t :refer [spy spyx spyxx forv] :include-macros true]
-               [tupelo.string :as ts :include-macros true]
-               [goog.crypt :as crypt]
-               [goog.crypt.Sha1]
-               [reagent.format :as rf]
-              ])
-  ))
+    [tupelo.string :as ts]
+
+    #?(:clj [clojure.test] :cljs [cljs.test])
+    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
+       :cljs [tupelo.test-cljs :include-macros true
+              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]])
+
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey? ]]
+       :cljs [tupelo.core :as t :include-macros true
+              :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey? ]])
+    ))
 
 ; #todo restore this???  (st/use-fixtures :once st/validate-schemas)
+
+#?(:clj (do
+
 
 (dotest
   (let [a34  (tar/create 3 4 :a)
@@ -368,3 +368,5 @@
     (throws? (tar/col-set demo 1 [[1 2 3 4]]))
     (is= (tar/col-set demo 1 [7 8]) [[1 7 3]
                                      [4 8 6]]) ) )
+
+))

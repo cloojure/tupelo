@@ -1,0 +1,11 @@
+^{:launch-js "./chrome-headless.bash"
+  } {:main         tupelo.core
+     :optimizations :none
+     :foreign-libs [
+                    {:file     "./resources/public/dino.js"
+                     :provides ["dinoPhony"]}
+                    ;{:file     "./resources/public/libs/"
+                    ; :provides ["wilmaPhony"]
+                    ; :global-exports {"wilmaPhony" "wilmaPhony"}}
+                   ]
+     }

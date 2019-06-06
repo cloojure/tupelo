@@ -1,11 +1,31 @@
 (ns tst.flintstones.slate
   (:require
-    #?@(:clj [[tupelo.test :refer [dotest is isnt is= isnt=]]
-              [flintstones.slate :as slate]])
+    [clojure.string :as str]
+    ; ; #todo #bug copy  :include-macros true everywhere!!!
 
-    #?@(:cljs [[tupelo.test-cljs :refer [dotest is isnt is= isnt=]]
-               [flintstones.slate :as slate :include-macros true]])
-  ))
+    #?(:clj  [tupelo.core :as t]
+       :cljs [tupelo.core :as t :include-macros true])
+
+    #?(:clj [clojure.test] :cljs [cljs.test] )
+    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
+       :cljs [tupelo.test-cljs ; :include-macros true
+              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]])
+
+    #?(:clj  [flintstones.slate :as slate]
+       :cljs [flintstones.slate :as slate :include-macros true])
+    ))
+
+
+#?(:cljs (enable-console-print!))
+
+
+(define-fixture :once
+  {:enter (fn [ctx]
+            (println "*** TEST ONCE *** - slate enter ctx=" ctx)
+            )
+   :leave (fn [ctx]
+            (println "*** TEST ONCE *** - slate leave ctx=" ctx)
+            )})
 
 (dotest
   (is= 2 (+ 1 1))   ; this works

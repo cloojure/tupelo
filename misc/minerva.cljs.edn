@@ -1,0 +1,3 @@
+{:main          minerva.core
+ :optimizations :whitespace ; :advanced ; :whitespace :advanced
+ }

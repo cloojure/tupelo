@@ -6,25 +6,24 @@
 ;   software.
 (ns tst.tupelo.data.index
   #?(:clj (:refer-clojure :exclude [load ->VecNode]))
-  #?(:clj (:require
-            [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-            [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty ]]
-            [tupelo.data :as td]
-            [tupelo.data.index :as index]
-            [tupelo.lexical :as lex]
-            [clojure.data.avl :as avl]
-            [schema.core :as s]
-            [clojure.walk :as walk]))
-  #?(:cljs (:require
-             [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]
-              :include-macros true]
-             [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
-             [tupelo.data :as td]
-             [tupelo.lexical :as lex]
-             [clojure.data.avl :as avl]
-             [schema.core :as s]
-             ))
-  )
+  (:require
+    [clojure.data.avl :as avl]
+    [clojure.walk :as walk]
+    [schema.core :as s]
+    [tupelo.data :as td]
+    [tupelo.data.index :as index]
+    [tupelo.lexical :as lex]
+
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty]]
+       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spy-pretty spyx-pretty]])
+
+    #?(:clj [clojure.test] :cljs [cljs.test])
+    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
+       :cljs [tupelo.test-cljs :include-macros true
+              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]])
+    ))
+
+
 
 ; #todo fix for cljs
 ; #todo fix dotest-focus so it works again!
