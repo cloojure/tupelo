@@ -170,6 +170,10 @@
   (throws? (conj "ab" nil)) )
 
 (dotest
+  (is= [] (flatten #{1 2 3}))
+  )
+
+(dotest
   (is= "abc" (str "ab" \c))
   (is= "ab" (str "ab" nil))
   (is= "abc" (str "ab" nil \c))
