@@ -1353,15 +1353,19 @@
     `(vec (for ~bindings-vec
             (do ~@body-forms)))))
 
-(defmacro for-list
-  "Like clojure.core/for but returns results in a list.
+(defmacro for-list ; #todo test
+  "Like clojure.core/for but returns results in an eager list.
   Wraps the loop body in a `do` as with `doseq`. Not lazy."
   [& forms]
   (let [bindings-vec (xfirst forms)
         body-forms   (xrest forms)]
-    `(->list
-       (for ~bindings-vec
-         (do ~@body-forms)))))
+    `(->list (for ~bindings-vec
+               (do ~@body-forms)))))
+
+(defmacro map-list ; #todo test
+  "Like clojure.core/map but returns results in an eager list. Not lazy."
+  [& forms]
+  `(->list (map ~@forms)))
 
 ;-----------------------------------------------------------------------------
 (defmacro with-timer
