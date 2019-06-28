@@ -27,6 +27,8 @@
              ))
   )
 
+; #todo also use for logging, debugging, metrics
+
 ; #todo add enflame-style subscriptions/flames (like db views, but with notifications/reactive)
 ; #todo add sets (primative only or EID) => map with same key/value
 ; #todo copy destruct syntax for search

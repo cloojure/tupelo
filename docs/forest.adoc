@@ -17,10 +17,14 @@ In addition, `tupelo.forest` allows you to update the tree by adding, changing, 
 Since `tupelo.forest` allows one to easily find parent and/or sibling nodes, this is a powerful feature
 missing in most other tree-processing libraries.
 
-== Quick Start
+== Resources
 
-You can link:https://youtu.be/RtavTnRr0oM[watch a video of the Lightning Talk] about tupelo.forest from
-the 2017 Clojure/Conj.  Be sure to also read the link:https://cloojure.github.io/doc/tupelo/tupelo.forest.html[Tupelo Forest API docs].
+- You can link:https://youtu.be/RtavTnRr0oM[watch a video of the Lightning Talk] about tupelo.forest from
+the 2017 Clojure/Conj.  
+- Be sure to read the link:https://cloojure.github.io/doc/tupelo/tupelo.forest.html[Tupelo Forest API docs].
+- Be sure to browse link:https://github.com/cloojure/tupelo/blob/master/test/clj/tst/tupelo/forest_examples.clj[the numerous live examples.].
+
+== Quick Start
 
 Create a tree using Hiccup:
 
