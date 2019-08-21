@@ -119,17 +119,39 @@
 (defn ^:deprecated ^:no-doc double-quotes->single-quotes [& args] (apply quotes->single args))
 (defn ^:deprecated ^:no-doc single-quotes->double-quotes [& args] (apply quotes->double args))
 
-(defn alphanumeric?       [& args] (every? chars/alphanumeric?        (t/strcat args)))
-(defn whitespace-horiz?   [& args] (every? chars/whitespace-horiz?    (t/strcat args)))
-(defn whitespace-eol?     [& args] (every? chars/whitespace-eol?      (t/strcat args)))
-(defn whitespace?         [& args] (every? chars/whitespace?          (t/strcat args)))
-(defn lowercase?          [& args] (every? chars/lowercase?           (t/strcat args)))
-(defn uppercase?          [& args] (every? chars/uppercase?           (t/strcat args)))
-(defn digit?              [& args] (every? chars/digit?               (t/strcat args)))
-(defn hex?                [& args] (every? chars/hex?                 (t/strcat args)))
-(defn alpha?              [& args] (every? chars/alpha?               (t/strcat args)))
-(defn visible?            [& args] (every? chars/visible?             (t/strcat args)))
-(defn text?               [& args] (every? chars/text?                (t/strcat args)))
+(defn alphanumeric?
+  "Returns true iff every char passes tupelo.chars/alphanumeric?"
+  [& args] (every? chars/alphanumeric?        (t/strcat args)))
+(defn whitespace-horiz?
+  "Returns true iff every char passes tupelo.chars/whitespace-horiz?"
+  [& args] (every? chars/whitespace-horiz?    (t/strcat args)))
+(defn whitespace-eol?
+  "Returns true iff every char passes tupelo.chars/whitespace-eol?"
+  [& args] (every? chars/whitespace-eol?      (t/strcat args)))
+(defn whitespace?
+  "Returns true iff every char passes tupelo.chars/whitespace?"
+  [& args] (every? chars/whitespace?          (t/strcat args)))
+(defn lowercase?
+  "Returns true iff every char passes tupelo.chars/lowercase?"
+  [& args] (every? chars/lowercase?           (t/strcat args)))
+(defn uppercase?
+  "Returns true iff every char passes tupelo.chars/uppercase?"
+  [& args] (every? chars/uppercase?           (t/strcat args)))
+(defn digit?
+  "Returns true iff every char passes tupelo.chars/digit?"
+  [& args] (every? chars/digit?               (t/strcat args)))
+(defn hex?
+  "Returns true iff every char passes tupelo.chars/hex?"
+  [& args] (every? chars/hex?                 (t/strcat args)))
+(defn alpha?
+  "Returns true iff every char passes tupelo.chars/alpha?"
+  [& args] (every? chars/alpha?               (t/strcat args)))
+(defn visible?
+  "Returns true iff every char passes tupelo.chars/visible?"
+  [& args] (every? chars/visible?             (t/strcat args)))
+(defn text?
+  "Returns true iff every char passes tupelo.chars/text?"
+  [& args] (every? chars/text?                (t/strcat args)))
 
 ; #todo make general version vec -> vec; str-specific version str -> str
 ; #todo need (substring {:start I :stop J                 } ) ; half-open (or :stop)
