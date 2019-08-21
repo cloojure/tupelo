@@ -1859,7 +1859,7 @@
   (verify (not-nil? coll))
   (rand-nth (vec coll)))
 
-; #todo maybe submap-without-keys, submap-without-vals ?
+; #todo convert to (submap-by-keys ctx m ks) & (submap-by-vals ctx m ks) variants
 ; #todo filter by pred in addition to set/list?
 ; #todo -> README
 (s/defn submap-by-keys :- tsk/Map
@@ -1872,19 +1872,14 @@
   [map-arg :- tsk/Map
    keep-keys :- (s/if set? tsk/Set tsk/List)
    & opts]
- ;(println :awt00 map-arg)
   (let [keep-keys (set keep-keys)]
-   ;(println :awt01 keep-keys)
-   ;(println :awt02 opts)
     (if (= opts [:missing-ok])
       (do
-       ;(println :awt10 )
         (apply glue {}
           (for [key keep-keys]
             (with-exception-default {}
               {key (grab key map-arg)}))))
       (do
-       ;(println :awt20 )
         (apply glue {}
           (for [key keep-keys]
             {key (grab key map-arg)}))))))
@@ -1927,7 +1922,7 @@
   [m :- tsk/Map ]
   (reduce into [] (seq m)))
 
-(s/defn keyvals-seq-impl :- [s/Any]
+(s/defn ^:no-doc keyvals-seq-impl :- [s/Any]
   [ctx :- tsk/KeyMap]
   (with-map-vals ctx [missing-ok the-map the-keys]
     (apply glue
@@ -1939,6 +1934,7 @@
               []
               (throw (ex-info "Key not present in map:" (vals->map the-map key))))))))))
 
+; #todo convert to (keyvals (select-keys m ks))
 (s/defn keyvals-seq :- [s/Any]
   "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
    (apply hash-map (keyvals m)). (keyvals {:a 1 :b 2} => [:a 1 :b 2]
