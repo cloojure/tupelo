@@ -30,30 +30,39 @@
 
 ; #todo: docstrings
 (s/def whitespace-horiz :- tsk/Set
+  "Horizontal whitespace (space & tab)"
   (set [\space \tab]))
 
 (s/def whitespace-eol :- tsk/Set
+  "Vertical whitespace (return & newline)"
   (set [\return \newline]))
 
 (s/def whitespace :- tsk/Set
+  "All whitespace (vertical & horizontal)"
   (t/glue whitespace-horiz whitespace-eol))
 
 (s/def lowercase :- tsk/Set
+  "Lowercase chars a-z"
   (into (sorted-set) (t/chars-thru \a \z)))
 
 (s/def uppercase :- tsk/Set
+  "Uppercase chars A-Z"
   (into (sorted-set) (t/chars-thru \A \Z)))
 
 (s/def digit :- tsk/Set
+  "Digit chars 0-9"
   (into (sorted-set) (t/chars-thru \0 \9)))
 
 (s/def hex :- tsk/Set
+  "Hexadecimal chars 0-9, a-f, A-F"
   (into (sorted-set) (flatten [(t/chars-thru \a \f) (t/chars-thru \A \F) (t/chars-thru \0 \9)])))
 
 (s/def alpha :- tsk/Set
+  "All alphabetic chars (either case)"
   (t/glue lowercase uppercase))
 
 (s/def alphanumeric :- tsk/Set
+  "All alphabetic & digit chars"
   (t/glue alpha digit))
 
 (s/def visible :- tsk/Set
@@ -73,17 +82,39 @@
   "Set of chars used in 'normal' text. Includes all visible chars plus whitespace & EOL chars."
   (t/glue visible whitespace))
 
-(defn alphanumeric? [ch] (contains? alphanumeric ch))
-(defn whitespace-horiz? [ch] (contains? whitespace-horiz ch))
-(defn whitespace-eol? [ch] (contains? whitespace-eol ch))
-(defn whitespace? [ch] (contains? whitespace ch))
-(defn lowercase? [ch] (contains? lowercase ch))
-(defn uppercase? [ch] (contains? uppercase ch))
-(defn digit? [ch] (contains? digit ch))
-(defn hex? [ch] (contains? hex ch))
-(defn alpha? [ch] (contains? alpha ch))
-(defn visible? [ch] (contains? visible ch))
-(defn text? [ch] (contains? text ch))
+(defn alphanumeric?
+  "Returns true iff char is in tupelo.chars/alphanumeric"
+  [ch] (contains? alphanumeric ch))
+(defn whitespace-horiz?
+  "Returns true iff char is in tupelo.chars/whitespace-horiz"
+  [ch] (contains? whitespace-horiz ch))
+(defn whitespace-eol?
+  "Returns true iff char is in tupelo.chars/whitespace-eol"
+  [ch] (contains? whitespace-eol ch))
+(defn whitespace?
+  "Returns true iff char is in tupelo.chars/whitespace"
+  [ch] (contains? whitespace ch))
+(defn lowercase?
+  "Returns true iff char is in tupelo.chars/lowercase"
+  [ch] (contains? lowercase ch))
+(defn uppercase?
+  "Returns true iff char is in tupelo.chars/uppercase"
+  [ch] (contains? uppercase ch))
+(defn digit?
+  "Returns true iff char is in tupelo.chars/digit"
+  [ch] (contains? digit ch))
+(defn hex?
+  "Returns true iff char is in tupelo.chars/hex"
+  [ch] (contains? hex ch))
+(defn alpha?
+  "Returns true iff char is in tupelo.chars/alpha"
+  [ch] (contains? alpha ch))
+(defn visible?
+  "Returns true iff char is in tupelo.chars/visible"
+  [ch] (contains? visible ch))
+(defn text?
+  "Returns true iff char is in tupelo.chars/text"
+  [ch] (contains? text ch))
 
 #?(:cljs
    (do

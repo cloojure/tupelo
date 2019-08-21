@@ -352,11 +352,11 @@
 
 ;-----------------------------------------------------------------------------
 (defn ^:deprecated iso-date-str
-  "DEPRECATED: use `date-str-iso`"
+  "DEPRECATED: use `string-date-iso`"
   [& args] (apply string-date-iso args))
 
 (defn ^:deprecated iso-date-time-str
-  "DEPRECATED: use `date-time-str-iso`"
+  "DEPRECATED: use `string-date-time-iso`"
   [& args] (apply string-date-time-iso args))
 ;-----------------------------------------------------------------------------
 
