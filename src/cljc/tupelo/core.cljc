@@ -60,11 +60,6 @@
 
 ; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
 
-
-
-
-
-
 ; #todo replace clojure.core/map => tupelo.lazy/map if (t/refer-tupelo :strict)
 ; #todo replace clojure.core/map : not lazy; can add one of :trunc or :lazy modifiers
 ; (map + (range 5))
@@ -241,6 +236,13 @@
    to (not (truthy? arg))."
   [arg]
   (if arg false true))
+
+; #todo keep these?   at least do docstring
+(defn ->true [& args] true)
+(defn ->false [& args] false)
+(defn ->nil [& args] nil)
+(defn ->zero [& args] 0)
+(defn ->one [& args] 1)
 
 (defn nl
   "Abbreviated name for `newline` "
@@ -1947,6 +1949,8 @@
   ([the-map :- tsk/KeyMap
     the-keys :- [s/Any]]
     (keyvals-seq (vals->map the-map the-keys))) )
+
+; #todo add reference to medley/deep-merge  ???
 
 ; #todo rename -> drop-idx
 ; #todo force to vector result
