@@ -61,7 +61,7 @@
 
  (def context-keys-base #{:bindings
                           :io.pedestal.interceptor.chain/execution-id
-                          ; :io.pedestal.interceptor.chain/queue
+                          ; :io.pedestal.interceptor.chain/queue  ;   ; NOT ALWAYS PRESENT!
                           :io.pedestal.interceptor.chain/stack
                           :io.pedestal.interceptor.chain/terminators
                           :request
@@ -101,9 +101,9 @@
 
  (def Context
    "Plumatic Schema definition of a Pedestal Context"
-   ; :io.pedestal.interceptor.chain/queue        [s/Any]  ; NOT ALWAYS PRESENT!
    {:bindings                                   tsk/Map
     :io.pedestal.interceptor.chain/execution-id s/Int
+    ; :io.pedestal.interceptor.chain/queue      [s/Any]  ; NOT ALWAYS PRESENT!
     :io.pedestal.interceptor.chain/stack        [tsk/KeyMap]
     :io.pedestal.interceptor.chain/terminators  [s/Any]
     :request                                    Request
@@ -154,7 +154,20 @@
        (or (not-nil? enter-fn) (not-nil? leave-fn) (not-nil? error-fn))
        (set/subset? keys-found #{:name :enter :leave :error}))))
 
- (defn ^:no-doc definterceptor-impl
+
+;---------------------------------------------------------------------------------------------------
+(defonce ctx-trim-queue-stack (atom true))
+(defn ctx-trim [ctx] ; #todo need test
+  "Removes `:queue` and `:stack` entries from the context map to declutter printing"
+  (if @ctx-trim-queue-stack
+    (dissoc ctx
+      :io.pedestal.interceptor.chain/queue  ; NOT ALWAYS PRESENT!
+      :io.pedestal.interceptor.chain/stack
+      :io.pedestal.interceptor.chain/terminators )
+    ctx))
+
+;---------------------------------------------------------------------------------------------------
+(defn ^:no-doc definterceptor-impl
    [name ctx]
    (assert symbol? name)
    (assert map? ctx)
