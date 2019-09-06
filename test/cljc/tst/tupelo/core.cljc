@@ -2645,9 +2645,21 @@
             (is (t/int-val? 5.0))
             (is (t/int-val? 5N))
             (is (t/int-val? 5M))
+            (is (t/int-val? (byte 5)))
+            (is (t/int-val? (short 5)))
+            (is (t/int-val? (int 5)))
+            (is (t/int-val? (long 5)))
+            (is (t/int-val? (float 5)))
+            (is (t/int-val? (double 5)))
             (is (t/int-val? (bigdec 5)))
             (is (t/int-val? (bigint 5)))
             (is (t/int-val? (biginteger 5)))
+
+            (isnt (t/int-val? 5.5))
+            (isnt (t/int-val? 5.5M))
+            (isnt (t/int-val? (float 5.5)))
+            (isnt (t/int-val? (double 5.5)))
+            (isnt (t/int-val? (bigdec 5.5)))
 
             (let [x 5/3]
               (isnt (t/int-val? x))

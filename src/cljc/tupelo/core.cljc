@@ -1101,14 +1101,16 @@
        "Returns true if x is a java.math.BigDecimal (synonym for `clojure.core/decimal?`)"
        [x] (= (type x) java.math.BigDecimal))
 
-
      (defn int-val?
        "Returns true iff arg is an integer value of any Clojure/Java type
        (all int types, float/double, BigInt/BigInteger, BigDecimal, clojure.lang.Ratio)."
        [x]
        (cond
          (or (int? x) (integer? x)) true
-         (double? x) (= x (Math/floor x))
+
+         ; handles both java.lang.Float & java.lang.Double types
+         (float? x) (let [x-dbl (double x)] (= x-dbl (Math/floor x-dbl)))
+
          (bigdecimal? x) (try
                            (let [bi-val (.toBigIntegerExact x)]
                              ; no exception => fraction was zero
@@ -1119,9 +1121,7 @@
          (ratio? x) (zero? (mod x 1))
          :else (throw (ex-info "Invalid type" {:x x}))))
 
-
      ))
-
 
 ;-----------------------------------------------------------------------------
 (declare
