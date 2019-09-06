@@ -2638,6 +2638,30 @@
             )
 
           (dotest
+            (isnt (= 5 5.0))
+            (is (== 5 5.0))
+
+            (is (t/int-val? 5))
+            (is (t/int-val? 5.0))
+            (is (t/int-val? 5N))
+            (is (t/int-val? 5M))
+            (is (t/int-val? (bigdec 5)))
+            (is (t/int-val? (bigint 5)))
+            (is (t/int-val? (biginteger 5)))
+
+            (let [x 5/3]
+              (isnt (t/int-val? x))
+              (is (t/int-val? (* 3 x))))
+            (let [n  (bigint 1e20)
+                  x  (/ n 3)]
+              (isnt (t/int-val? x))
+              (is (t/int-val? (* 3 x))))
+
+            (throws? (t/int-val? "five"))
+            (throws? (t/int-val? :five))
+            )
+
+          (dotest
             (throws? (/ 1 0))
             (throws? Exception (/ 1 0))             ; catches specified Throwable (or subclass) - JVM only
             (throws? ArithmeticException (/ 1 0))   ; catches specified Throwable (or subclass) - JVM only

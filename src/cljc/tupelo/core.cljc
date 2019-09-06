@@ -111,6 +111,18 @@
 ;  (assert (< 1 (count colls))) ; #todo add msg
 ;  (apply = (mapv set colls)))
 
+;-----------------------------------------------------------------------------
+; #todo maybe unify update & set for all state types:
+;   atom-set       /  atom-update
+;    ref-set       /   ref-update
+;    var-set       /   var-update
+;  agent-set       / agent-update
+;   atom-set-both  /  atom-update-both  ; to return [old new] vector
+;   xxxx-reset     /  xxxx-alter        ; other names
+;   atom-set-old   /  atom-update-old   ; to return old value, not new
+
+;-----------------------------------------------------------------------------
+
 
 ;                                               "1234.4567.89ab.cdef"  also valid for read
 ; #todo need conversion from Long -> hex string="1234-4567-89ab-cdef" (& inverse)
@@ -567,7 +579,7 @@
 ; spy stuff
 
 ; #todo defn-spy  saves fn name to locals for spy printout
-; #todo spyxl  adds line # to spy printout
+; #todo spyxl  adds file/line to spy printout
 
 ; (def ^:dynamic *spy-enabled* false)
 (def ^:dynamic *spy-enabled* true) ; #TODO fix before commit!!!
@@ -1086,6 +1098,25 @@
      (defn bigdecimal?
        "Returns true if x is a java.math.BigDecimal (synonym for `clojure.core/decimal?`)"
        [x] (= (type x) java.math.BigDecimal))
+
+
+     (defn int-val?
+       "Returns true iff arg is an integer value of any Clojure/Java type
+       (all int types, float/double, BigInt/BigInteger, BigDecimal, clojure.lang.Ratio)."
+       [x]
+       (cond
+         (or (int? x) (integer? x)) true
+         (double? x) (= x (Math/floor x))
+         (bigdecimal? x) (try
+                           (let [bi-val (.toBigIntegerExact x)]
+                             ; no exception => fraction was zero
+                             true)
+                           (catch Exception e
+                             ; exception => fraction was non-zero
+                             false))
+         (ratio? x) (zero? (mod x 1))
+         :else (throw (ex-info "Invalid type" {:x x}))))
+
 
      ))
 
