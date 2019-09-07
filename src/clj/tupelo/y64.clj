@@ -63,33 +63,33 @@
         :default byte-val))))
 
 
-(defn byte-array-encode-native
+(defn byte-array-encode
   "Encodes a byte array into Y64, returning a new byte array."
-  [data-bytes]
-  (types/byte-array? data-bytes) 
-  (-> data-bytes b64/byte-array-encode-native b64->y64))
+  [byte-arr]
+  (types/byte-array? byte-arr)
+  (-> byte-arr b64/byte-array-encode b64->y64))
 
-(defn byte-array-decode-native
+(defn byte-array-decode
   "Decodes a byte array from Y64, returning a new byte array."
   [code-bytes]
   (types/byte-array? code-bytes) 
-  (-> code-bytes y64->b64 b64/byte-array-decode-native))
+  (-> code-bytes y64->b64 b64/byte-array-decode))
 
 (s/defn byte-array->code-str :- s/Str
   "Encodes a byte array into Y64, returning a String."
   [byte-arr]
   (types/byte-array? byte-arr)
-  (-> byte-arr byte-array-encode-native types/bytes->str))
+  (-> byte-arr byte-array-encode types/byte-array->str))
 
 (s/defn code-str->byte-array
   "Decodes a Y64 encoded String, returning a byte array"
   [code-str :- s/Str]
-  (-> code-str types/str->bytes byte-array-decode-native))
+  (-> code-str types/str->byte-array byte-array-decode))
 
 (s/defn bytes->code-str :- s/Str ; #todo need test
   "Encodes a vector of byte values into Y64, returning a String."
-  [byte-vec :- [s/Int]]
-  (byte-array->code-str (byte-array byte-vec)))
+  [src-bytes :- [s/Int]]
+  (byte-array->code-str (byte-array src-bytes)))
 
 (s/defn code-str->bytes :- [s/Int] ; #todo need test
   "Decodes a Y64 encoded String, returning a vector of byte values"
@@ -98,11 +98,11 @@
 
 (s/defn str->code-str :- s/Str
   "Encodes a String into Y64, returning a String."
-  [data-str :- s/Str]
-  (-> data-str types/str->bytes byte-array->code-str))
+  [src-str :- s/Str]
+  (-> src-str types/str->byte-array byte-array->code-str))
 
 (s/defn code-str->str :- s/Str
   "Decodes a Y64 encoded String, returning a String."
   [code-str :- s/Str]
-  (-> code-str code-str->byte-array types/bytes->str))
+  (-> code-str code-str->byte-array types/byte-array->str))
 

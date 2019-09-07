@@ -19,8 +19,8 @@
 (when (is-java-1-8-plus?)
   (dotest
     (let [orig      (byte-array [(byte \A)])
-          y64-bytes (y64/byte-array-encode-native orig)
-          result    (y64/byte-array-decode-native y64-bytes)]
+          y64-bytes (y64/byte-array-encode orig)
+          result    (y64/byte-array-decode y64-bytes)]
       (is (every? y64/encoding-char-set (map char y64-bytes)))
       (is (= (seq orig) (seq result)))))
 
@@ -28,8 +28,8 @@
     ;byte
     (doseq [step [50 20 7]]
       (let [orig      (byte-array (mapv #(.byteValue %) (range 0 400 step)))
-            y64-bytes (y64/byte-array-encode-native orig)
-            result    (y64/byte-array-decode-native y64-bytes)]
+            y64-bytes (y64/byte-array-encode orig)
+            result    (y64/byte-array-decode y64-bytes)]
         (is (every? y64/encoding-char-set (map char y64-bytes)))
         (is (= (seq orig) (seq result)))))
     ; string

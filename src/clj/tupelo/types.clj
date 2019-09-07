@@ -114,7 +114,7 @@
   (instance? java.lang.Character arg))
 
 ;-----------------------------------------------------------------------------
-(defn str->bytes  ; #todo move to tupelo.misc
+(defn str->byte-array  ; #todo move to tupelo.misc
   "Converts a String to a byte array using the UTF-8 Charset"
   [^String arg]
   {:pre  [ (string? arg) ] 
@@ -122,7 +122,7 @@
   [arg]
   (.getBytes arg UTF-8-Charset-Name))
 
-(defn bytes->str  ; #todo move to tupelo.misc
+(defn byte-array->str  ; #todo move to tupelo.misc
   "Converts a byte array to a String using the UTF-8 Charset"
   [arg]
   {:pre  [ (byte-array? arg) ] 

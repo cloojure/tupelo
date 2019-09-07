@@ -141,7 +141,7 @@
     (isnt (double? long-val))))
 
 (dotest
-  (is (= [65 66 67] (into [] (str->bytes "ABC"))))
-  (is (= "ABC" (bytes->str (byte-array [65 66 67]))))
-  (is (= "Hello World!" (-> "Hello World!" (str->bytes) (bytes->str)))))
+  (is (= [65 66 67] (into [] (str->byte-array "ABC"))))
+  (is (= "ABC" (byte-array->str (byte-array [65 66 67]))))
+  (is (= "Hello World!" (-> "Hello World!" (str->byte-array) (byte-array->str)))))
 
