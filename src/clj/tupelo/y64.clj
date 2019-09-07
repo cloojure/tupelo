@@ -71,9 +71,9 @@
 
 (defn byte-array-decode
   "Decodes a byte array from Y64, returning a new byte array."
-  [code-bytes]
-  (types/byte-array? code-bytes) 
-  (-> code-bytes y64->b64 b64/byte-array-decode))
+  [byte-arr]
+  (types/byte-array? byte-arr)
+  (-> byte-arr y64->b64 b64/byte-array-decode))
 
 (s/defn byte-array->code-str :- s/Str
   "Encodes a byte array into Y64, returning a String."
