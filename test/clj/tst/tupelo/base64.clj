@@ -80,12 +80,12 @@
 
   ; padding = vs -
   (is=  (b64/str->code-str "begin||end") "YmVnaW58fGVuZA==")
-  (is=  (y64/string-encode "begin||end") "YmVnaW58fGVuZA--")
+  (is=  (y64/str->code-str "begin||end") "YmVnaW58fGVuZA--")
 
   ; / vs _
   (let [ss "Yr?~H1FfGZ}n4!}A([=Wi'k"]
     (is= (b64/str->code-str (str "begin|" ss "|end")) "YmVnaW58WXI/fkgxRmZHWn1uNCF9QShbPVdpJ2t8ZW5k" )
-    (is= (y64/string-encode (str "begin|" ss "|end")) "YmVnaW58WXI_fkgxRmZHWn1uNCF9QShbPVdpJ2t8ZW5k" ))
+    (is= (y64/str->code-str (str "begin|" ss "|end")) "YmVnaW58WXI_fkgxRmZHWn1uNCF9QShbPVdpJ2t8ZW5k" ))
 
   ; + vs -
   (let [ss "ql>Q0cQ~\\O6"]

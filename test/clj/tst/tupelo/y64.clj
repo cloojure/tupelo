@@ -35,16 +35,16 @@
     ; string
     (doseq [num-chars [1 2 3 7 20]]
       (let [orig    (str/join (misc/take-dist num-chars char/text))
-            y64-str (y64/string-encode orig)
-            result  (y64/string-decode y64-str)]
+            y64-str (y64/str->code-str orig)
+            result  (y64/code-str->str y64-str)]
         (is (every? y64/encoding-char-set (seq y64-str)))
         (is (= orig result)))))
 
   ; Transform a seq of bytes to a y64 string and back
   (dospec 999       ; round-trip-bytes
     (prop/for-all [orig gen/bytes]
-      (let [y64-str (y64/byte-array-encode orig)
-            result  (y64/byte-array-decode y64-str)]
+      (let [y64-str (y64/byte-array->code-str orig)
+            result  (y64/code-str->byte-array y64-str)]
         (assert (every? y64/encoding-char-set (seq y64-str)))
         (assert (types/byte-array? result))
         (= (seq orig) (seq result)))))
@@ -52,8 +52,8 @@
   ; Transform a string to a y64 string and back
   (dospec 999       ; round-trip-string
     (prop/for-all [orig gen/string]
-      (let [y64-str (y64/string-encode orig)
-            result  (y64/string-decode y64-str)]
+      (let [y64-str (y64/str->code-str orig)
+            result  (y64/code-str->str y64-str)]
         (assert (every? y64/encoding-char-set (seq y64-str)))
         (assert (string? result))
         (= orig result)))))
@@ -66,8 +66,8 @@
     (newline)
     (doseq [prefix ["" "a" "ab" "abc"]]
       (let [orig-str (str prefix curr-char)
-            enc-str  (y64/string-encode orig-str)
-            dec-str  (y64/string-decode enc-str)]
+            enc-str  (y64/str->code-str orig-str)
+            dec-str  (y64/code-str->str enc-str)]
         (print (format "\"%s\" \"%s\" \"%s\"          " orig-str enc-str dec-str)))))
   (newline))
 

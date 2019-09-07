@@ -32,15 +32,15 @@
 
 (defn byte-array-encode-native
   "Encodes a byte array into base64, returning a new byte array."
-  [data-bytes]
-  (assert (types/byte-array? data-bytes))
-  (.encode (base64-encoder) data-bytes))
+  [byte-arr]
+  (assert (types/byte-array? byte-arr))
+  (.encode (base64-encoder) byte-arr))
 
 (defn byte-array-decode-native
   "Decodes a byte array from base64, returning a new byte array."
-  [code-bytes]
-  (assert (types/byte-array? code-bytes))
-  (.decode (base64-decoder)  code-bytes))
+  [byte-arr]
+  (assert (types/byte-array? byte-arr))
+  (.decode (base64-decoder)  byte-arr))
 
 (s/defn byte-array->code-str :- s/Str
   "Encodes a byte array into base64, returning a String."

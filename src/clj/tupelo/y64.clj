@@ -75,34 +75,34 @@
   (types/byte-array? code-bytes) 
   (-> code-bytes y64->b64 b64/byte-array-decode-native))
 
-(s/defn byte-array-encode :- s/Str
+(s/defn byte-array->code-str :- s/Str
   "Encodes a byte array into Y64, returning a String."
-  [data-bytes]
-  (types/byte-array? data-bytes) 
-  (-> data-bytes byte-array-encode-native types/bytes->str))
+  [byte-arr]
+  (types/byte-array? byte-arr)
+  (-> byte-arr byte-array-encode-native types/bytes->str))
 
-(s/defn byte-array-decode
+(s/defn code-str->byte-array
   "Decodes a Y64 encoded String, returning a byte array"
   [code-str :- s/Str]
   (-> code-str types/str->bytes byte-array-decode-native))
 
-(s/defn bytes-encode :- s/Str ; #todo need test
+(s/defn bytes->code-str :- s/Str ; #todo need test
   "Encodes a vector of byte values into Y64, returning a String."
   [byte-vec :- [s/Int]]
-  (byte-array-encode (byte-array byte-vec)))
+  (byte-array->code-str (byte-array byte-vec)))
 
-(s/defn bytes-decode :- [s/Int] ; #todo need test
+(s/defn code-str->bytes :- [s/Int] ; #todo need test
   "Decodes a Y64 encoded String, returning a vector of byte values"
   [code-str :- s/Str]
-  (vec (byte-array-decode code-str)))
+  (vec (code-str->byte-array code-str)))
 
-(s/defn string-encode :- s/Str
+(s/defn str->code-str :- s/Str
   "Encodes a String into Y64, returning a String."
   [data-str :- s/Str]
-  (-> data-str types/str->bytes byte-array-encode))
+  (-> data-str types/str->bytes byte-array->code-str))
 
-(s/defn string-decode :- s/Str
+(s/defn code-str->str :- s/Str
   "Decodes a Y64 encoded String, returning a String."
   [code-str :- s/Str]
-  (-> code-str byte-array-decode types/bytes->str))
+  (-> code-str code-str->byte-array types/bytes->str))
 
