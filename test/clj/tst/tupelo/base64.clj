@@ -70,11 +70,11 @@
       "amFjaytiYXNlNjRAbGFkZGVybGlmZS5jb20gb3IgNmE2MTYzNmIyYjY4NjU3ODQwNmM2MTY0NjQ2NTcyNmM2OTY2NjUyZTYzNmY2ZDIwNmY3MjIwNmQ2NDM1M2E2MzMwMzczNzYxMzYzNjYyMzgzMTM3NjQzNzMzNjIzNTM2NjM2MTMwNjIzNjY1MzczMjY1MzAzMjM5Mzk2MTMy"
       )
 
-    (b64url/string-decode
+    (b64url/code-str->str
       "amFjaytiYXNlNjRAbGFkZGVybGlmZS5jb20gb3IgNmE2MTYzNmIyYjY4NjU3ODQwNmM2MTY0NjQ2NTcyNmM2OTY2NjUyZTYzNmY2ZDIwNmY3MjIwNmQ2NDM1M2E2MzMwMzczNzYxMzYzNjYyMzgzMTM3NjQzNzMzNjIzNTM2NjM2MTMwNjIzNjY1MzczMjY1MzAzMjM5Mzk2MTMy"
       )
 
-    (b64url/string-decode
+    (b64url/code-str->str
       "amFjaytiYXNlNjRAbGFkZGVybGlmZS5jb20gb3IgNmE2MTYzNmIyYjY4NjU3ODQwNmM2MTY0NjQ2NTcyNmM2OTY2NjUyZTYzNmY2ZDIwNmY3MjIwNmQ2NDM1M2E2MzMwMzczNzYxMzYzNjYyMzgzMTM3NjQzNzMzNjIzNTM2NjM2MTMwNjIzNjY1MzczMjY1MzAzMjM5Mzk2MTMy"
       ))
 
@@ -90,7 +90,7 @@
   ; + vs -
   (let [ss "ql>Q0cQ~\\O6"]
     (is= (b64/str->code-str    (str "begin|" ss "|end")) "YmVnaW58cWw+UTBjUX5cTzZ8ZW5k")
-    (is= (b64url/string-encode (str "begin|" ss "|end")) "YmVnaW58cWw-UTBjUX5cTzZ8ZW5k")))
+    (is= (b64url/str->code-str (str "begin|" ss "|end")) "YmVnaW58cWw-UTBjUX5cTzZ8ZW5k")))
 
 (defn -main []
   (newline)
