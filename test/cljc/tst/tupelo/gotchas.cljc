@@ -196,6 +196,23 @@
     (is= 1 (first ll))
     (is= 1 (first cc))))
 
+; Assume symbol or keyword first means associative lookup
+(dotest
+  ; with keyword
+  (is= 1 (:a {:a 1}))
+  (is= 1 (:a {:a 1} 9))
+  (is= 9 (:b {:a 1} 9))
+  (is= 9 (:b "dummy" 9))
+  (is= 9 (:b :dummy 9))
+  (is= 9 (:b 1234567 9))
+  ; with symbols
+  (is= 1 ('a {'a 1}))
+  (is= 1 ('a {'a 1} 9))
+  (is= 9 ('b {'a 1} 9))
+  (is= 9 ('b "dummy" 9))
+  (is= 9 ('b :dummy 9))
+  (is= 9 ('b 1234567 9)))
+
 ; binding operates in parallel, not sequentially
 (def ^:dynamic xx nil)
 (def ^:dynamic yy nil)
