@@ -42,33 +42,33 @@
   (assert (types/byte-array? code-bytes))
   (.decode (base64-decoder)  code-bytes))
 
-(s/defn byte-array-encode :- s/Str
+(s/defn byte-array->code-str :- s/Str
   "Encodes a byte array into base64, returning a String."
   [data-bytes]
   (assert (types/byte-array? data-bytes))
   (.encodeToString (base64-encoder) data-bytes))
 
-(s/defn byte-array-decode
+(s/defn code-str->byte-array
   "Decodes a base64 encoded String, returning a byte array"
   [code-str :- s/Str]
   (.decode (base64-decoder) code-str))
 
-(s/defn bytes-encode :- s/Str ; #todo need test
+(s/defn bytes->code-str :- s/Str ; #todo need test
   "Encodes a vector of byte values into base64, returning a String."
   [byte-vec :- [s/Int]]
-  (byte-array-encode (byte-array byte-vec)))
+  (byte-array->code-str (byte-array byte-vec)))
 
-(s/defn bytes-decode :- [s/Int] ; #todo need test
+(s/defn code-str->bytes :- [s/Int] ; #todo need test
   "Decodes a base64 encoded String, returning a vector of byte values"
   [code-str :- s/Str]
-  (vec (byte-array-decode code-str)))
+  (vec (code-str->byte-array code-str)))
 
-(s/defn string-encode :- s/Str
+(s/defn str->code-str :- s/Str
   "Encodes a String into base64, returning a String."
   [data-str :- s/Str]
-  (-> data-str types/str->bytes byte-array-encode))
+  (-> data-str types/str->bytes byte-array->code-str))
 
-(s/defn string-decode :- s/Str
+(s/defn code-str->str :- s/Str
   "Decodes a base64 encoded String, returning a String."
   [code-str :- s/Str]
-  (-> code-str byte-array-decode types/bytes->str))
+  (-> code-str code-str->byte-array types/bytes->str))
