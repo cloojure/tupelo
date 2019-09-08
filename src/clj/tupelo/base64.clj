@@ -30,45 +30,45 @@
     (java.util.Base64/getDecoder)
     (throw (RuntimeException. "Unimplemented prior to Java 1.8: "))))
 
-(defn byte-array-encode
+(defn encode-byte-array
   "Encodes a byte array into base64, returning a new byte array."
   [byte-arr]
   (assert (types/byte-array? byte-arr))
   (.encode (base64-encoder) byte-arr))
 
-(defn byte-array-decode
+(defn decode-byte-array
   "Decodes a byte array from base64, returning a new byte array."
   [byte-arr]
   (assert (types/byte-array? byte-arr))
   (.decode (base64-decoder)  byte-arr))
 
-(s/defn byte-array->code-str :- s/Str
+(s/defn encode-byte-array->str :- s/Str
   "Encodes a byte array into base64, returning a String."
   [byte-arr]
   (assert (types/byte-array? byte-arr))
   (.encodeToString (base64-encoder) byte-arr))
 
-(s/defn code-str->byte-array
+(s/defn decode-str->byte-array
   "Decodes a base64 encoded String, returning a byte array"
   [code-str :- s/Str]
   (.decode (base64-decoder) code-str))
 
-(s/defn bytes->code-str :- s/Str ; #todo need test
+(s/defn encode-bytes->str :- s/Str ; #todo need test
   "Encodes a vector of byte values into base64, returning a String."
   [src-bytes :- [s/Int]]
-  (byte-array->code-str (byte-array src-bytes)))
+  (encode-byte-array->str (byte-array src-bytes)))
 
-(s/defn code-str->bytes :- [s/Int] ; #todo need test
+(s/defn decode-str->bytes :- [s/Int] ; #todo need test
   "Decodes a base64 encoded String, returning a vector of byte values"
   [code-str :- s/Str]
-  (vec (code-str->byte-array code-str)))
+  (vec (decode-str->byte-array code-str)))
 
-(s/defn str->code-str :- s/Str
+(s/defn encode-str :- s/Str
   "Encodes a String into base64, returning a String."
   [src-str :- s/Str]
-  (-> src-str types/str->byte-array byte-array->code-str))
+  (-> src-str types/str->byte-array encode-byte-array->str))
 
-(s/defn code-str->str :- s/Str
+(s/defn decode-str :- s/Str
   "Decodes a base64 encoded String, returning a String."
   [code-str :- s/Str]
-  (-> code-str code-str->byte-array types/byte-array->str))
+  (-> code-str decode-str->byte-array types/byte-array->str))
