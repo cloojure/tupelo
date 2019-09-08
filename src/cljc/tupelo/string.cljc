@@ -93,11 +93,19 @@
   (not (str/blank? it)))
 
 (s/defn nonblank= :- s/Bool  ; #todo readme & blog
-  "Compares arguments for equality using tupelo.misc/collapse-whitespace.
+  "Compares strings for equality using tupelo.misc/collapse-whitespace.
    Equivalent to separating tokens by whitespace and comparing the resulting sequences."
   [& args :- [s/Str]]
   (let [ws-collapsed-args (mapv collapse-whitespace args)]
     (apply = ws-collapsed-args)))
+
+(s/defn lowercase= :- s/Bool ; #todo readme & blog
+  "Compares strings for equality after applying clojure.string/lower-case. "
+  [& args :- [s/Str]]
+  (when (< (count args) 2)
+    (throw (ex-info "Too few args" (t/vals->map args))))
+  (let [lowercase-args (mapv clojure.string/lower-case args)]
+    (apply = lowercase-args)))
 
 (defn ^:deprecated equals-ignore-spacing?
   "Renamed => `nonblank=` "

@@ -350,6 +350,12 @@
     (is (ts/nonblank= (ts/fgrep "today." search-str) ""))))
 
 (dotest
+  (throws? (ts/lowercase=))
+  (throws? (ts/lowercase= "Camel-Case"))
+  (is (ts/lowercase= "abc" "ABC"))
+  (is (ts/lowercase= "Camel-Case" "camel-case" "CAMEL-CASE")))
+
+(dotest
   (is   (ts/alphanumeric? \a))
   (is   (ts/alphanumeric? [\a]))
   (is   (ts/alphanumeric? "a"))
