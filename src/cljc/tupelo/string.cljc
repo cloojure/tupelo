@@ -245,6 +245,7 @@
                      (t/str->kw item)
                      item))
     form))
+
 (defn walk-keywords->strings
   "Recursively walks form, converting all keywords to strings. "
   [form]
@@ -254,6 +255,14 @@
                      item))
     form))
 
+(defn walk-clojurize-keys
+  "Recursively walks form, normalizing all map keys via `clojurize-key`. "
+  [form]
+  (walk/postwalk (fn [item]
+                   (if (map? item)
+                     (t/map-keys item clojurize-key)
+                     item))
+    form))
 ;-----------------------------------------------------------------------------
 
 (s/defn drop :- s/Str  ; #todo add readme

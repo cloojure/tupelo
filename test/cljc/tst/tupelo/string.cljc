@@ -198,7 +198,7 @@
     (is= s1 (-> s1 ts/quotes->double
                    ts/quotes->single))))
 
-(dotest-focus
+(dotest
   (is= "abc" (t/kw->str :abc))
 
   (is= (ts/snake->kabob "some_multiple_word_str") "some-multiple-word-str")
@@ -235,12 +235,18 @@
   (is   (ts/increasing-or-equal? "abc" "abd"))
   (is   (ts/increasing-or-equal? "abc" "abcd"))
   (is   (ts/increasing-or-equal? "abc" "ad"))
-  (is   (ts/increasing-or-equal? "abc" "b"))
-  )
+  (is   (ts/increasing-or-equal? "abc" "b")) )
 
 (dotest
-  (is= (ts/walk-strings->keywords {"aa" ["bb" 33 "dd"]}) {:aa [:bb 33 :dd]} )
-  (is= (ts/walk-keywords->strings {:aa [:bb 33 :dd]}) {"aa" ["bb" 33 "dd"]} ) )
+  (is= (ts/walk-strings->keywords {"aa" ["bb" 33 "dd"]}) {:aa [:bb 33 :dd]})
+  (is= (ts/walk-keywords->strings {:aa [:bb 33 :dd]}) {"aa" ["bb" 33 "dd"]})
+
+  (is= (ts/walk-clojurize-keys {"aa" ["aval" 33 {"nested" "map"}]
+                                :bb  "bval"
+                                "cc" #{"c1" "c2" :ck1}})
+    {:aa ["aval" 33 {:nested "map"}]
+     :bb "bval"
+     :cc #{:ck1 "c2" "c1"}}))
 
 (dotest
   (is (= ""    (ts/take 0 "abc")))
