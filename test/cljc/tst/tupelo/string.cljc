@@ -7,12 +7,12 @@
 (ns tst.tupelo.string
   (:refer-clojure :exclude [take drop])
   (:require
-    [clojure.core :as cc]
+    [clojure.core :as cc ]
     [clojure.string :as str]
     [tupelo.chars :as char]
     [tupelo.string :as ts]
 
-    #?(:clj  [tupelo.core :as t]
+    #?(:clj  [tupelo.core :as t :refer [spyx spyx-pretty]]
        :cljs [tupelo.core :as t :include-macros true])
 
     #?(:clj [clojure.test] :cljs [cljs.test] )
@@ -198,15 +198,21 @@
     (is= s1 (-> s1 ts/quotes->double
                    ts/quotes->single))))
 
-(dotest
-  (is= :abc-def-gh-qrs (ts/str->kw-normalized "abc def*gh_qrs"))
+(dotest-focus
   (is= "abc" (t/kw->str :abc))
 
   (is= (ts/snake->kabob "some_multiple_word_str") "some-multiple-word-str")
   (is= (ts/kabob->snake "some-multiple-word-str") "some_multiple_word_str")
 
   (is= (ts/kw-snake->kabob :some_multiple_word_kw) :some-multiple-word-kw)
-  (is= (ts/kw-kabob->snake :some-multiple-word-kw) :some_multiple_word_kw) )
+  (is= (ts/kw-kabob->snake :some-multiple-word-kw) :some_multiple_word_kw)
+
+  (is= :abc-def-gh-qrs (ts/str->kw-normalized "abc def*gh_qrs"))
+  (is= :ABC-DEF-gh-qrs (ts/str->kw-normalized "ABC DEF*gh_qrs"))
+  (is= :abc-def-gh-qrs
+    (ts/clojurize-key "abc def*gh_qrs")
+    (ts/clojurize-key "abc DEF*gh_qrs")
+    (ts/clojurize-key "ABC def*GH_QRS")))
 
 #?(:clj             ; #todo need cljs tests (or delete completely?)
    (dotest

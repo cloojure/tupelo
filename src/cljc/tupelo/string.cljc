@@ -195,6 +195,14 @@
   [arg]
   (keyword (normalize-str arg)))
 
+(defn clojurize-key ; #todo need test & readme
+  "Given a string or keyword, converts to lowercase and calls str->kw-normalized"
+  [arg]
+  (-> arg
+    (name)
+    (str/lower-case)
+    (str->kw-normalized)))
+
 (defn snake->kabob
   "Converts a string from a_snake_case_value to a-kabob-case-value"
   [arg]
