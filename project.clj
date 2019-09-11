@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.151"
+(defproject tupelo "0.9.152"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
@@ -9,15 +9,6 @@
              org.clojure/clojurescript]
 
   :dependencies [
-   ; high-priority deps identified by lein-nvd
-   ;[com.google.protobuf/protobuf-java "3.7.1"]
-   ;[org.eclipse.jetty.http2/http2-common "9.4.18.v20190429"]
-   ;[org.eclipse.jetty.http2/http2-server "9.4.18.v20190429"]
-   ;[org.eclipse.jetty.websocket/websocket-server "9.4.18.v20190429"]
-   ;[org.eclipse.jetty/jetty-alpn-server "9.4.18.v20190429"]
-   ;[org.eclipse.jetty/jetty-server "9.4.18.v20190429"]
-   ;[org.eclipse.jetty/jetty-xml "9.4.18.v20190429"]
-
     [binaryage/oops "0.7.0"]
     [cheshire "5.9.0"] ; #todo switch to muuntaja/jsonista
     [clj-time "0.15.2"]
@@ -41,11 +32,12 @@
     [prismatic/schema "1.1.12"]
     [reagent-utils "0.3.3"]
   ]
+  ; Using `lein-ancient check :all` checks plugins
   :plugins [[lein-cljsbuild "1.1.7"]
-            [lein-codox "0.10.6"]
+            [lein-codox "0.10.7"]
             [lein-doo "0.1.11"]
-            [lein-figwheel "0.5.18"]
-            [lein-nvd "1.0.0"]
+            [lein-figwheel "0.5.19"]
+            [lein-nvd "1.3.0"]
            ;[lein-nomis-ns-graph "0.14.2"]
             [com.jakemccrary/lein-test-refresh "0.24.1"]]
 
@@ -55,16 +47,14 @@
                 }
 
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
-                                       [org.clojure/clojurescript "1.10.339" :scope "provided"]
-                                      ;[org.clojure/clojurescript "1.10.439" :scope "provided"]
-                                      ;[org.clojure/clojurescript "1.10.516" :scope "provided"]  ; ***** WARNING - FAILS IN COMPILE!!! *****
+                                       [org.clojure/clojurescript "1.10.520" :scope "provided"]
                                       ]}
              :dev      {:dependencies [[binaryage/devtools "0.9.10"]
                                        [binaryage/dirac "1.4.0"]
                                        [com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.5"]
                                        [org.clojure/clojure "1.10.1"]
-                                       [org.clojure/clojurescript "1.10.439"]
+                                       [org.clojure/clojurescript "1.10.520"]
                                       ]
                         }
              :1.8      {:dependencies [[org.clojure/clojure "1.8.0"]]}
