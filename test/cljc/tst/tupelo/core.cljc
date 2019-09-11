@@ -170,8 +170,56 @@
     (throws? (t/xvec nil))
     (is= [] (t/xvec []))
     (is= [1] (t/xvec '(1)))
-    (is= [1 2] (t/xvec [1 2]))
-    ))
+    (is= [1 2] (t/xvec [1 2])) ))
+
+(dotest
+  (let [inf-rng-1 (map inc (range))]
+    (is= nil (t/first-or-nil []))
+    (is= 1 (t/first-or-nil [1]))
+    (is= 1 (t/first-or-nil [1 2]))
+    (is= 1 (t/first-or-nil inf-rng-1))
+
+    (is= nil (t/second-or-nil []))
+    (is= nil (t/second-or-nil [1]))
+    (is= 2 (t/second-or-nil [1 2]))
+    (is= 2 (t/second-or-nil [1 2 3]))
+    (is= 2 (t/second-or-nil [1 2 3 4]))
+    (is= 2 (t/second-or-nil inf-rng-1))
+
+    (is= nil (t/third-or-nil []))
+    (is= nil (t/third-or-nil [1]))
+    (is= nil (t/third-or-nil [1 2]))
+    (is= 3 (t/third-or-nil [1 2 3]))
+    (is= 3 (t/third-or-nil [1 2 3 4]))
+    (is= 3 (t/third-or-nil inf-rng-1))
+
+    (is= nil (t/fourth-or-nil []))
+    (is= nil (t/fourth-or-nil [1]))
+    (is= nil (t/fourth-or-nil [1 2]))
+    (is= nil (t/fourth-or-nil [1 2 3]))
+    (is= 4 (t/fourth-or-nil [1 2 3 4]))
+    (is= 4 (t/fourth-or-nil [1 2 3 4 5]))
+    (is= 4 (t/fourth-or-nil inf-rng-1))
+
+    (is= nil (t/last-or-nil nil))
+    (is= nil (t/last-or-nil []))
+    (is= 3 (t/last-or-nil [1 2 3]))
+
+    (is= [] (rest nil) (t/rest-or-empty nil))
+    (is= [] (rest []) (t/rest-or-empty []))
+    (is= [] (rest [1]) (t/rest-or-empty [1]))
+    (is= [2] (rest [1 2]) (t/rest-or-empty [1 2]))
+    (is= [2 3] (rest [1 2 3]) (t/rest-or-empty [1 2 3]))
+    (is= [2 3 4] (rest [1 2 3 4]) (t/rest-or-empty [1 2 3 4]))
+    (is= [2 3 4] (take 3 (rest inf-rng-1)) (take 3 (t/rest-or-empty inf-rng-1)))
+
+    (is= nil (next nil) (t/rest-or-nil nil))
+    (is= nil (next []) (t/rest-or-nil []))
+    (is= nil (next [1]) (t/rest-or-nil [1]))
+    (is= [2] (next [1 2]) (t/rest-or-nil [1 2]))
+    (is= [2 3] (next [1 2 3]) (t/rest-or-nil [1 2 3]))
+    (is= [2 3 4] (next [1 2 3 4]) (t/rest-or-nil [1 2 3 4]))
+    (is= [2 3 4] (take 3 (next inf-rng-1)) (take 3 (t/rest-or-nil inf-rng-1)))))
 
 (dotest
   (is= :23 (t/int->kw  23))
@@ -180,7 +228,6 @@
   (is=  {:a  1 :b  2}  (t/json->edn (ts/quotes->double "{'a':1, 'b':2}")))
   (is= "{'a':1,'b':2}" (ts/quotes->single (t/edn->json  {:a  1  :b  2})))
   (is= {:a 1 :b 2} (-> {:a 1 :b 2} (t/edn->json) (t/json->edn)))
-
 
   (is= 'abc (t/kw->sym :abc))
   (is= "abc" (t/kw->str :abc))

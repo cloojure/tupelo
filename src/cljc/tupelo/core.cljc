@@ -452,6 +452,41 @@
   "Returns true if the collection contains exactly 4 items."
   [coll] (has-length? coll 4))
 
+(defn first-or-nil
+  "Returns the first item in a sequence, or nil"
+  [seq-arg]
+  (clojure.core/first seq-arg))
+
+(defn second-or-nil
+  "Returns the second item in a sequence, or nil"
+  [seq-arg]
+  (clojure.core/first (drop 1 seq-arg)))
+
+(defn third-or-nil
+  "Returns the third item in a sequence, or nil"
+  [seq-arg]
+  (clojure.core/first (drop 2 seq-arg)))
+
+(defn fourth-or-nil
+  "Returns the fourth item in a sequence, or nil"
+  [seq-arg]
+  (clojure.core/first (drop 3 seq-arg)))
+
+(defn last-or-nil
+  "Returns the last item in a sequence, or nil"
+  [seq-arg]
+  (first-or-nil (reverse seq-arg)))
+
+(defn rest-or-empty
+  "Returns a sequence with the first item removed, or an zero-length seq if there are no more items"
+  [seq-arg]
+  (rest seq-arg))
+
+(defn rest-or-nil
+  "Returns a sequence with the first item removed, or nil if there are no more items"
+  [seq-arg]
+  (next seq-arg))
+
 ; #todo make xdrop ?
 (defn xtake
   "Returns the first n values from a collection.  Returns map for map colls.
