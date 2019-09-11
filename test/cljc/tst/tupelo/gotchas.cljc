@@ -160,7 +160,10 @@
   ; nil same as {} (empty map)
   (is= {:a 1}      (assoc nil :a 1))
   (is= {:a {:b 1}} (assoc-in nil [:a :b] 1))
-  (is= {} (into {} nil)))
+  (is= {} (into {} nil))
+
+  (is= nil (get {:a 1} [:x :y])) ; doesn't fail when should have been `get-in`
+  )
 
 (dotest             ; conj inconsistencies
   (is= [1 2 nil] (conj [1 2] nil))
