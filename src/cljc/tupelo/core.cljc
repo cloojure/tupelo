@@ -478,7 +478,7 @@
   (first-or-nil (reverse seq-arg)))
 
 (defn rest-or-empty
-  "Returns a sequence with the first item removed, or an zero-length seq if there are no more items"
+  "Returns a sequence with the first item removed, or a zero-length seq if there are no more items"
   [seq-arg]
   (rest seq-arg))
 
