@@ -31,7 +31,7 @@
     [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
     [org.clojure/core.async "0.4.500"]
     [org.clojure/core.match "0.3.0"]
-    [org.clojure/data.avl "0.1.9"]
+    [org.clojure/data.avl "0.1.0"]
     [org.clojure/data.xml "0.2.0-alpha5"]
     [org.clojure/math.combinatorics "0.1.6"]
     [org.clojure/spec.alpha "0.2.176"]
