@@ -349,6 +349,15 @@
   "Coerces a map into a sorted-map"
   [map-in :- tsk/Map] (glue (sorted-map) map-in))
 
+(defn walk-maps->sorted
+  "Recursively walks form, converting all strings to keywords. "
+  [form]
+  (walk/postwalk (fn [item]
+                   (if (map? item)
+                     (->sorted-map item)
+                     item))
+    form))
+
 #?(:clj
    (do
      (defn sorted-map-generic
@@ -888,7 +897,7 @@
     [solo-map :- tsk/Map]
     (let [map-seq (seq solo-map)
           >>      (when-not #(= 1 (count map-seq))
-                    (throw (ex-info "solo-map must be of length=1 " (t/vals->map solo-map))))]
+                    (throw (ex-info "solo-map must be of length=1 " (vals->map solo-map))))]
       (mapentry->kv (only map-seq))))
   )
 
