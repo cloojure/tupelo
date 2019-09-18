@@ -1833,7 +1833,7 @@
                           (let [keys-orig   (keys it)
                                 keys-sorted (sort keys-orig)]
                             (= keys-orig keys-sorted))))
-        nums          (shuffle (range 5))
+        nums          (shuffle (range 25))
         map-orig      (zipmap nums nums)
         map-sorted    (t/->sorted-map map-orig)
         nested-orig   {:a map-orig
