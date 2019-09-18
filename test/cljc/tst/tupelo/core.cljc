@@ -9,8 +9,8 @@
     [clojure.string :as str]
     [tupelo.string :as ts]
 
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx]]
-       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx]])
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
+       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty]])
 
     #?(:clj [clojure.test] :cljs [cljs.test])
     #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
@@ -1818,6 +1818,32 @@
     (is= (lazy-countdown  1) [1 0] )
     (is= (lazy-countdown  0) [0] )
     (is= (lazy-countdown -1) nil )))
+
+(dotest
+  (let [sample (t/->set [1 2 3])]
+    (is (set? sample))
+    (is= #{3 2 1} sample))
+  (let [raw    (t/->set (range 100))
+        sorted (t/->sorted-set raw)]
+    (is (set? sorted))
+    (is= raw sorted)
+    (is (apply < (seq sorted))))
+  (let [sorted-map?   (fn [it]
+                        (and (map? it)
+                          (let [keys-orig   (keys it)
+                                keys-sorted (sort keys-orig)]
+                            (= keys-orig keys-sorted))))
+        nums          (shuffle (range 5))
+        map-orig      (zipmap nums nums)
+        map-sorted    (t/->sorted-map map-orig)
+        nested-orig   {:a map-orig
+                       :b [map-orig 2 3]}
+        nested-sorted (t/walk-maps->sorted nested-orig)]
+    (is (sorted-map? map-sorted))
+    (is (sorted-map? (get-in nested-sorted [:a])))
+    (isnt (sorted-map? (get-in nested-sorted [:b])))
+    (is (sorted-map? (get-in nested-sorted [:b 0])))
+    (is (sorted-map? nested-sorted))))
 
 (dotest
   (is= (range 10)   ; vector/list
