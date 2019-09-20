@@ -417,3 +417,16 @@
       (= interval-type :open)           within-open-interval
       (= interval-type :half-open)  (or within-open-interval (.equals instant lb))
       (= interval-type :closed)     (or within-open-interval (.equals instant lb) (.equals instant ub)))))
+
+(s/defn parse-iso-str-nice  :- Instant
+  "Parse a near-iso string like '2019-09-19 18:09:35Z' (it is missing the 'T' between the
+  date & time fields) into an Instant"
+  [iso-str :- s/Str]
+  (it-> iso-str
+    (vec it)
+    (assoc it 10 \T)
+    (str/join it)
+    (Instant/parse it)))
+
+
+

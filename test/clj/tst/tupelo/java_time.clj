@@ -296,6 +296,11 @@
       (is= (walk-instant->timestamp [1 {:j-s-ts instant} 2 3]) [1 {:j-s-ts timestamp} 2 3]))
     ))
 
+(dotest
+  (let [str-nice "2019-09-19 18:09:35Z"
+        result   (parse-iso-str-nice str-nice)]
+    (is (instance? Instant result))
+    (is= str-nice (string-date-time-nice result))))
 
 
 
