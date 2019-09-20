@@ -1,9 +1,11 @@
-(defproject tupelo "0.9.152"
+(defproject tupelo "0.9.153"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
-  :min-lein-version "2.7.1"
+  :min-lein-version "2.9.1"
+
+  :global-vars {*warn-on-reflection*      false }
 
   :excludes [org.clojure/clojure
              org.clojure/clojurescript]
@@ -35,16 +37,17 @@
   ; Using `lein-ancient check :all` checks plugins
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-codox "0.10.7"]
-            [lein-doo "0.1.11"]
-            [lein-figwheel "0.5.19"]
-            [lein-nvd "1.3.0"]
            ;[lein-nomis-ns-graph "0.14.2"]
             [com.jakemccrary/lein-test-refresh "0.24.1"]]
 
-  :nvd {:suppression-file "nvd-suppression.xml"} ; lein-nvd
+  :test-refresh {:quiet true ; true => suppress printing namespaces when testing
+                 }
 
-  :test-refresh {:quiet      true ; true => suppress printing namespaces when testing
-                }
+  :codox {:src-dir-uri               "http://github.com/cloojure/tupelo/blob/master/"
+          :src-linenum-anchor-prefix "L"
+          :source-paths               ["src/clj" "src/cljc"]
+          :language                   :clojure
+          :namespaces                 [ #"^tupelo\." ] }
 
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
                                        [org.clojure/clojurescript "1.10.520" :scope "provided"]
@@ -60,75 +63,9 @@
              :1.8      {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9      {:dependencies [[org.clojure/clojure "1.9.0"]]}
              }
-               ; :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
-
-  :codox {:src-dir-uri               "http://github.com/cloojure/tupelo/blob/master/"
-          :src-linenum-anchor-prefix "L"
-          :source-paths               ["src/clj" "src/cljc"]
-          :language                   :clojure
-          :namespaces                 [ #"^tupelo\." ] }
-
-  :deploy-repositories {"snapshots"    :clojars
-                        "releases"     :clojars
-                        :sign-releases false}
-  :doo {:karma {:config {"plugins"       ["karma-junit-reporter"]
-                         "reporters"     ["progress" "junit"]
-                         "junitReporter" {"outputDir" "target/test-results"}}}
-        :paths {:karma   "node_modules/karma/bin/karma"
-               ;:phantom "node_modules/phantomjs/bin/phantomjs"
-               }}
-
-  :global-vars {*warn-on-reflection*      false }
-
   :source-paths [  "src/clj"   "src/cljc" ]
   :test-paths   [ "test/clj"  "test/cljc" ]
   :target-path  "target/%s"
-
-  :cljsbuild {:builds
-              [{:id           "dev"
-                :source-paths [ "src/cljc" "src/cljs" ]
-                ; The presence of a :figwheel configuration here will cause figwheel to inject the
-                ; figwheel client into your build
-                :figwheel     {:on-jsload "flintstones.core/figwheel-reload"
-                               ; :open-urls will pop open your application in the default browser once
-                               ; Figwheel has started and compiled your application.  Comment this out
-                               ; once it no longer serves you.
-                               :open-urls ["http://localhost:3449/index.html"]}
-                :compiler     {:main                 flintstones.core
-                               :optimizations        :none
-                               :libs                 ["resources/public/libs"] ; recursive includes all children
-
-                               ; figwheel server has implicit path `resources/public`, leave off here
-                               :foreign-libs         [{:file     "dino.js"
-                                                       :provides ["dinoPhony"]}]
-                               :externs              ["dino-externs.js"]
-
-                               :output-to            "resources/public/js/compiled/flintstones.js"
-                               :output-dir           "resources/public/js/compiled/flintstones-dev"
-                               :asset-path           "js/compiled/flintstones-dev" ; rel to figwheel default of `resources/public`
-                               ;                       ^^^^^ must match :output-dir
-
-                               :source-map           true
-                               :source-map-timestamp true}}
-               {:id           "test"
-                :source-paths [ "src/cljc" "test/cljc"
-                                "src/cljs" "test/cljs" ] ; #todo  :test-paths ???
-                :compiler     {:main                 tst.flintstones.doorunner
-                               :optimizations        :none ; :advanced
-                               :libs                 ["resources/public/libs"] ; recursively includes all children
-
-                               ; tests run w/o figwheel server, so need to explicitely add path `resources/public` here
-                               :foreign-libs         [{:file     "resources/public/dino.js"
-                                                       :provides ["dinoPhony"]}]
-                               :externs              ["resources/public/dino-externs.js"]
-
-                               :output-to            "resources/public/js/compiled/bedrock.js"
-                               :output-dir           "resources/public/js/compiled/bedrock-tst"
-                               ; :asset-path           "js/compiled/bedrock-tst"  ; not used for testing
-                               ; ^^^ rel to figwheel default of `resources/public`
-
-                               :source-map           true
-                               :source-map-timestamp true}}]}
 
   ; need to add the compliled assets to the :clean-targets
   :clean-targets ^{:protect false} ["resources/public/js/compiled"
@@ -144,11 +81,32 @@
       ; #todo broken for tupelo.test/dospec - why?
 
   ; :main ^:skip-aot tupelo.core
-  :uberjar      {:aot :all}
+  ; :uberjar      {:aot :all}
+
+  :deploy-repositories {"snapshots"    :clojars
+                        "releases"     :clojars
+                        :sign-releases false}
+
+  ; :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
   ; automatically handle `--add-modules` stuff req'd for Java 9 & Java 10
   :jvm-opts ["-Xms500m" "-Xmx2g"
-           ; "--illegal-access=permit"  ; may need for Java10+
-            ] ; permit, warn, debug, deny
+           ; "--illegal-access=permit"  ; may need for Java10+  [ permit, warn, debug, deny ]
+            ]
 )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

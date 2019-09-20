@@ -345,6 +345,10 @@
   "Converts arg to a set."
   [arg] (cc/set arg) )
 
+(s/defn ->sorted-set :- tsk/Set
+  "Coerces a set into a sorted-set"
+  [set-in :- tsk/Set] (glue (sorted-set) set-in))
+
 (s/defn ->sorted-map :- tsk/Map
   "Coerces a map into a sorted-map"
   [map-in :- tsk/Map] (glue (sorted-map) map-in))
