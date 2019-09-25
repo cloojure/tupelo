@@ -2187,15 +2187,15 @@
 ; #todo readme
 (s/defn partition-using
   "Partitions a collection into vector of segments based on a predicate with a collection argument.
-  The first segment is initialized by removing the first element from `values`, with subsequent
-  elements similarly transferred as long as `(pred remaining-values)` is falsey. When
-  `(pred remaining-values)` becomes truthy, the algorithm begins building the next segment.
-  Thus, the first partition finds the smallest N (< 0 N) such that (pred (drop N values))
-  is true, and constructs the segment as (take N values). If pred is never satisified,
-  [values] is returned."
-  [pred :- s/Any ; a predicate function  taking a list arg
-   values :- tsk/List]
-  (loop [vals   (vec values)
+  The first segment is initialized by removing the first element from `coll`, with subsequent
+  elements similarly transferred as long as `(pred remaining-coll)` is falsey. When
+  `(pred remaining-coll)` becomes truthy, the algorithm begins building the next segment.
+  Thus, the first partition finds the smallest N (< 0 N) such that (pred (drop N coll))
+  is true, and constructs the segment as (take N coll). If pred is never satisified,
+  [coll] is returned."
+  [pred :- s/Any ; a predicate function taking a list arg
+   coll :- tsk/List]
+  (loop [vals   (vec coll)
          result []]
     (if (empty? vals)
       result
