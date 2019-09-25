@@ -2193,38 +2193,34 @@
   Thus, the first partition finds the smallest N (< 0 N) such that (pred (drop N values))
   is true, and constructs the segment as (take N values). If pred is never satisified,
   [values] is returned."
-  [pred   :- s/Any    ; a predicate function  taking a list arg
-   values :- tsk/List ]
+  [pred :- s/Any ; a predicate function  taking a list arg
+   values :- tsk/List]
   (loop [vals   (vec values)
          result []]
     (if (empty? vals)
       result
-      (let [
-            out-first  (take 1 vals)
+      (let [out-first  (take 1 vals)
             [out-rest unprocessed] (split-using pred (cc/rest vals))
             out-vals   (glue out-first out-rest)
-            new-result (append result out-vals)
-            ]
+            new-result (append result out-vals)]
         (recur unprocessed new-result)))))
 
-(s/defn take-while-result
+(s/defn take-while-result :- tsk/List
   "Takes from a collection based on a predicate with a collection argument.
   Continues taking from the source collection until `(pred <taken-items>)` is falsey.
   If pred is never falsey, `coll` is returned."
-  [pred :- s/Any ; a predicate function  taking a list arg
-   coll :- tsk/List]
-  (when (empty? coll)
-    (throw (ex-info "items must not be empty" {:coll coll})))
-  (let [all-vals (vec coll)
-        num-vals (count all-vals)]
-    (loop [i      1
-           result []] ; start by taking first value
-      (if (< num-vals i)
-        result
-        (let [test-vals (subvec all-vals 0 i)]
-          (if (not (pred test-vals))
-            result
-            (recur (inc i) test-vals)))))))
+  [pred coll ]
+  (when (or (nil? coll) (empty? coll))
+    (throw (ex-info "invalid source collection" {:coll coll})))
+  (loop [taken     []
+         remaining (seq coll)]
+    (if (empty? remaining)
+      taken
+      (let [taken-next     (append taken (xfirst remaining))
+            remaining-next (xrest remaining)]
+        (if (not (pred taken-next))
+          taken
+          (recur taken-next remaining-next))))))
 
 (s/defn val= :- s/Bool ; maybe value=  or   map=  (like set=)
   "Compares values for equality using clojure.core/=, treating records as plain map values:

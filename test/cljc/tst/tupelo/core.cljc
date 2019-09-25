@@ -1804,7 +1804,23 @@
     (is= (t/take-while-result #(<= (sum-count %) 15) items)
       [{:name :a, :count 1} {:name :b, :count 2} {:name :c, :count 3} {:name :d, :count 4} {:name :e, :count 5}])
     (is= (t/take-while-result #(<= (sum-count %) 16) items)
-      [{:name :a, :count 1} {:name :b, :count 2} {:name :c, :count 3} {:name :d, :count 4} {:name :e, :count 5}])))
+      [{:name :a, :count 1} {:name :b, :count 2} {:name :c, :count 3} {:name :d, :count 4} {:name :e, :count 5}]))
+
+  (let [cum-within (fn cum-within-fn
+                     [items limit]
+                     (<= (apply + items) limit))]
+    (is= (t/take-while-result #(cum-within % -1) (range)) [])
+    (is= (t/take-while-result #(cum-within % 0) (range)) [0])
+    (is= (t/take-while-result #(cum-within % 1) (range)) [0 1])
+    (is= (t/take-while-result #(cum-within % 2) (range)) [0 1])
+    (is= (t/take-while-result #(cum-within % 3) (range)) [0 1 2])
+    (is= (t/take-while-result #(cum-within % 4) (range)) [0 1 2])
+    (is= (t/take-while-result #(cum-within % 5) (range)) [0 1 2])
+    (is= (t/take-while-result #(cum-within % 6) (range)) [0 1 2 3])
+    (is= (t/take-while-result #(cum-within % 7) (range)) [0 1 2 3])
+    (is= (t/take-while-result #(cum-within % 8) (range)) [0 1 2 3])
+    (is= (t/take-while-result #(cum-within % 9) (range)) [0 1 2 3])
+    (is= (t/take-while-result #(cum-within % 10) (range)) [0 1 2 3 4])))
 
 (dotest
   (let [ctx (let [a 1
