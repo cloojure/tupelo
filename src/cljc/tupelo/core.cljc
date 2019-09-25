@@ -2205,6 +2205,7 @@
             new-result (append result out-vals)]
         (recur unprocessed new-result)))))
 
+; #todo readme
 (s/defn take-while-result :- tsk/List
   "Takes from a collection based on a predicate with a collection argument.
   Continues taking from the source collection until `(pred <taken-items>)` is falsey.
