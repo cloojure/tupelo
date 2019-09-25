@@ -1767,6 +1767,46 @@
   (throws? (t/partition-using even? 5)))
 
 (dotest
+  (let [items     [{:name :a :count 1}
+                   {:name :b :count 2}
+                   {:name :c :count 3}
+                   {:name :d :count 4}
+                   {:name :e :count 5}]
+        sum-count (fn sum-count-fn [items] (reduce + (map :count items)))]
+    (throws? (t/take-while-result #(<= (sum-count %) 0) []))
+
+    (is= (t/take-while-result #(<= (sum-count %) -1) items) [])
+    (is= (t/take-while-result #(<= (sum-count %) 0) items) [])
+    (is= (t/take-while-result #(<= (sum-count %) 1) items)
+      [{:name :a, :count 1}])
+    (is= (t/take-while-result #(<= (sum-count %) 2) items)
+      [{:name :a, :count 1}])
+    (is= (t/take-while-result #(<= (sum-count %) 3) items)
+      [{:name :a, :count 1} {:name :b, :count 2}])
+    (is= (t/take-while-result #(<= (sum-count %) 4) items)
+      [{:name :a, :count 1} {:name :b, :count 2}])
+    (is= (t/take-while-result #(<= (sum-count %) 5) items)
+      [{:name :a, :count 1} {:name :b, :count 2}])
+    (is= (t/take-while-result #(<= (sum-count %) 6) items)
+      [{:name :a, :count 1} {:name :b, :count 2} {:name :c, :count 3}])
+    (is= (t/take-while-result #(<= (sum-count %) 7) items)
+      [{:name :a, :count 1} {:name :b, :count 2} {:name :c, :count 3}])
+    (is= (t/take-while-result #(<= (sum-count %) 8) items)
+      [{:name :a, :count 1} {:name :b, :count 2} {:name :c, :count 3}])
+    (is= (t/take-while-result #(<= (sum-count %) 9) items)
+      [{:name :a, :count 1} {:name :b, :count 2} {:name :c, :count 3}])
+    (is= (t/take-while-result #(<= (sum-count %) 10) items)
+      [{:name :a, :count 1} {:name :b, :count 2} {:name :c, :count 3} {:name :d, :count 4}])
+    (is= (t/take-while-result #(<= (sum-count %) 11) items)
+      [{:name :a, :count 1} {:name :b, :count 2} {:name :c, :count 3} {:name :d, :count 4}])
+    (is= (t/take-while-result #(<= (sum-count %) 14) items)
+      [{:name :a, :count 1} {:name :b, :count 2} {:name :c, :count 3} {:name :d, :count 4}])
+    (is= (t/take-while-result #(<= (sum-count %) 15) items)
+      [{:name :a, :count 1} {:name :b, :count 2} {:name :c, :count 3} {:name :d, :count 4} {:name :e, :count 5}])
+    (is= (t/take-while-result #(<= (sum-count %) 16) items)
+      [{:name :a, :count 1} {:name :b, :count 2} {:name :c, :count 3} {:name :d, :count 4} {:name :e, :count 5}])))
+
+(dotest
   (let [ctx (let [a 1
                   b 2
                   c 3

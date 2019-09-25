@@ -2207,6 +2207,25 @@
             ]
         (recur unprocessed new-result)))))
 
+(s/defn take-while-result
+  "Takes from a collection based on a predicate with a collection argument.
+  Continues taking from the source collection until `(pred <taken-items>)` is falsey.
+  If pred is never falsey, `coll` is returned."
+  [pred :- s/Any ; a predicate function  taking a list arg
+   coll :- tsk/List]
+  (when (empty? coll)
+    (throw (ex-info "items must not be empty" {:coll coll})))
+  (let [all-vals (vec coll)
+        num-vals (count all-vals)]
+    (loop [i      1
+           result []] ; start by taking first value
+      (if (< num-vals i)
+        result
+        (let [test-vals (subvec all-vals 0 i)]
+          (if (not (pred test-vals))
+            result
+            (recur (inc i) test-vals)))))))
+
 (s/defn val= :- s/Bool ; maybe value=  or   map=  (like set=)
   "Compares values for equality using clojure.core/=, treating records as plain map values:
 
