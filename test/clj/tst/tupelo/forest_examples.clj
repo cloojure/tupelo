@@ -1738,6 +1738,44 @@
       (is= grandparent-tags
           #{[:root :a :x] [:root :a :x :y] [:root :b :c]} ))))
 
+;-----------------------------------------------------------------------------
+(dotest ; walk the tree and keep track of all the visited nodes
+  (hid-count-reset)
+  (with-forest (new-forest)
+    ; an "hid" is like a pointer to the node
+    (let [root-hid (add-tree-hiccup [:a
+                                     [:b
+                                      [:c 1]]
+                                     [:d
+                                      [:e 2]]])
+          tgt-hid  (find-hid root-hid [:** :c]) ; hid of the :c node we want to stop at
+          state-atom    (atom {:visited-hids []
+                          :found-tgt?   false})
+          enter-fn (fn [path] ; path is from root
+                     (let [curr-hid (xlast path)] ; curr node is last elem in path
+                       (swap! state-atom
+                         (fn [curr-state]
+                           (cond-it-> curr-state
+                             (falsey? (grab :found-tgt? it)) (update it :visited-hids append curr-hid)
+                             (= curr-hid tgt-hid) (assoc it :found-tgt? true))))))]
+      (newline)
+      (println "Overall Tree Structure:")
+      (spy-pretty (hid->tree root-hid))
+      (newline)
+      (walk-tree root-hid {:enter enter-fn}) ; accum results => state atom
+      (newline)
+      (println "final state map")
+      (spyx @state-atom)
+      (newline)
+      (let [depth-first-tags (it-> (grab :visited-hids @state-atom)
+                               (mapv hid->node it)
+                               (mapv #(grab :tag %) it))]
+        (is= depth-first-tags [:a :b :c])
+        (println "depth-first tags thru target:")
+        (println depth-first-tags)
+        (newline)))))
+
+
 
 
 

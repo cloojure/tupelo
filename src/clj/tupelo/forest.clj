@@ -499,7 +499,7 @@
    (s/optional-key :id)    s/Keyword})
 
 ; #todo add [curr-path] to -impl and intc fn args
-(s/defn ^:no-doc walk-tree-impl
+(s/defn ^:private ^:no-doc walk-tree-impl
   [path :- [HID]
    interceptor :- Interceptor]
   (let [enter-fn (grab :enter interceptor)
@@ -543,7 +543,6 @@
         canonical-interceptor {:enter enter-fn :leave leave-fn}
         root-path             [root-hid]]
     (walk-tree-impl root-path canonical-interceptor)))
-
 
 (s/defn add-tree :- HID
   "Adds a tree to the forest."

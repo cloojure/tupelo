@@ -354,7 +354,7 @@
   [map-in :- tsk/Map] (glue (sorted-map) map-in))
 
 (defn walk-maps->sorted
-  "Recursively walks form, converting all strings to keywords. "
+  "Recursively walks form, converting all maps to sorted-maps. "
   [form]
   (walk/postwalk (fn [item]
                    (if (map? item)
