@@ -1750,7 +1750,7 @@
                                       [:e 2]]])
           tgt-hid  (find-hid root-hid [:** :c]) ; hid of the :c node we want to stop at
           state-atom    (atom {:visited-hids []
-                          :found-tgt?   false})
+                               :found-tgt?   false})
           enter-fn (fn [path] ; path is from root
                      (let [curr-hid (xlast path)] ; curr node is last elem in path
                        (swap! state-atom
@@ -1774,6 +1774,8 @@
         (println "depth-first tags thru target:")
         (println depth-first-tags)
         (newline)))))
+
+
 
 
 

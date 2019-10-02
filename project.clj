@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.154"
+(defproject tupelo "0.9.155"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
@@ -11,6 +11,7 @@
              org.clojure/clojurescript]
 
   :dependencies [
+    [overtone/at-at "1.2.0"]
     [binaryage/oops "0.7.0"]
     [cheshire "5.9.0"] ; #todo switch to muuntaja/jsonista
     [clj-time "0.15.2"]

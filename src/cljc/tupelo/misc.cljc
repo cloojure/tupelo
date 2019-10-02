@@ -447,15 +447,6 @@
 
 
 ; #todo move to tupelo
-;(defmacro with-timer
-;  [id & forms]
-;  `(let [start#   (System/nanoTime)
-;         result#  (do ~@forms)
-;         stop#    (System/nanoTime)
-;         elapsed# (double (- stop# start#))
-;         secs#    (/ elapsed# 1e9)]
-;     (println ~id (format "time = %.3f" secs#))
-;     result#))
 ;
 ;(def xml-file-name
 ;   "data.xml"

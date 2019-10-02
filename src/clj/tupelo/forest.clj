@@ -879,12 +879,12 @@
 (s/defn remove-path-subtree
   "Given an HID path, removes from the forest all nodes in the subtree rooted at the end of that path."
   [path :- [HID]]
-  (let [parents  (butlast path)
-        hid-root (xlast path)]
-    (walk-tree hid-root {:leave (fn [path]
-                                  (let [subtree-hid (xlast path)]
-                                    (swap! *forest* dissoc subtree-hid)))})
-    (remove-node-from-parents parents hid-root)))
+  (let [parents      (butlast path)
+        subtree-root (xlast path)]
+    (walk-tree subtree-root {:leave (fn [path]
+                                      (let [subtree-hid (xlast path)]
+                                        (swap! *forest* dissoc subtree-hid)))})
+    (remove-node-from-parents parents subtree-root)))
 
 (s/defn ^:no-doc hid-matches?
   "Returns true if an HID node matches a pattern"
