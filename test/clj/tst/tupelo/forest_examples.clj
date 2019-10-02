@@ -1739,7 +1739,7 @@
           #{[:root :a :x] [:root :a :x :y] [:root :b :c]} ))))
 
 ;-----------------------------------------------------------------------------
-(dotest ; walk the tree and keep track of all the visited nodes
+(dotest   ; walk the tree and keep track of all the visited nodes
   (hid-count-reset)
   (with-forest (new-forest)
     ; an "hid" is like a pointer to the node
@@ -1763,29 +1763,10 @@
       (spy-pretty (hid->tree root-hid))
       (newline)
       (walk-tree root-hid {:enter enter-fn}) ; accum results => state atom
-      (newline)
-      (println "final state map")
-      (spyx @state-atom)
-      (newline)
       (let [depth-first-tags (it-> (grab :visited-hids @state-atom)
                                (mapv hid->node it)
                                (mapv #(grab :tag %) it))]
-        (is= depth-first-tags [:a :b :c])
-        (println "depth-first tags thru target:")
-        (println depth-first-tags)
-        (newline)))))
-
-
-
-
-
-
-
-
-
-
-
-
+        (is= depth-first-tags [:a :b :c])))))
 
 
 
