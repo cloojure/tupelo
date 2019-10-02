@@ -1,4 +1,4 @@
-(ns tupelo.prof
+(ns tupelo.profile
   (:use tupelo.core))
 
 (def timer-stats (atom {}))
