@@ -1,13 +1,13 @@
 (ns tupelo.profile
   (:use tupelo.core))
 
-(def timer-stats (atom {}))
+(def ^:private timer-stats (atom {}))
 (defn timer-stats-reset
   "Reset timer-stats to empty"
   [] (reset! timer-stats {}))
 
 (defn stats-update
-  "Updates timing stats for a given key"
+  "Updates timing stats for a given key & elapsed time"
   [id seconds]
   (swap! timer-stats
     (fn update-stats-fn
@@ -25,7 +25,7 @@
             stats-map-new))))))
 
 (defmacro with-timer-accum
-  "Prints `id` and the elapsed (elapsed) execution time for a set of forms."
+  "Accumulates execution time stats in global stats map under key `id`."
   [id & forms]
   (do
     (when-not (keyword? id)
@@ -36,14 +36,13 @@
            elapsed# (double (- stop# start#))
            secs#    (/ elapsed# 1e9)]
        (stats-update ~id secs#)
-       ;(swap! timer-stats update ~id plus-nil-zero secs#)
        )))
 
 (defmacro defnp
   "A replacement for clojure.core/defn that accumuldates profiling data. Converts a function like:
 
     (defnp add-1
-    \"Adds one to an arg\"
+      \"Adds one to an arg\"
       [x]
       (inc x))
 
@@ -90,6 +89,7 @@
     result))
 
 (defn stats-print-all
+  "Prints stats for all keys to stdout"
   []
   (let [stats-all-sorted (sort-by (fn sort-by-fn
                                     [mapentry]
