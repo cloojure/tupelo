@@ -1,7 +1,9 @@
 (ns tupelo.profile
   (:use tupelo.core))
 
-(def ^:private timer-stats (atom {}))
+(def      ; ^:private   ; #todo #awt finish
+  timer-stats (atom {}))
+
 (defn timer-stats-reset
   "Reset timer-stats to empty"
   [] (reset! timer-stats {}))
@@ -24,19 +26,35 @@
                 stats-map-new (assoc stats-map id stats-new)]
             stats-map-new))))))
 
+(defmacro with-timer-result
+  "Times execution of Clojure forms, returning a result map like:
+      {:result result  :seconds seconds} "
+  [& forms]
+  `(let [start#   (System/nanoTime)
+         result#  (do ~@forms)
+         stop#    (System/nanoTime)
+         elapsed# (double (- stop# start#))
+         seconds# (/ elapsed# 1e9)]
+     {:result  result#
+      :seconds seconds#}))
+
+(defmacro with-timer-print
+  "Accumulates execution time stats in global stats map under key `id`."
+  [id & forms]
+  (when-not (keyword? id)
+    (throw (ex-info "id must be a keyword" (vals->map id))))
+  `(let [result-map# (with-timer-result ~@forms)]
+     (println (format ":with-timer-print %s %12.6f" ~id (grab :seconds result-map#)))
+     (grab :result result-map#)))
+
 (defmacro with-timer-accum
   "Accumulates execution time stats in global stats map under key `id`."
   [id & forms]
-  (do
-    (when-not (keyword? id)
-      (throw (ex-info "id must be a keyword" (vals->map id))))
-    `(let [start#   (System/nanoTime)
-           result#  (do ~@forms)
-           stop#    (System/nanoTime)
-           elapsed# (double (- stop# start#))
-           secs#    (/ elapsed# 1e9)]
-       (stats-update ~id secs#)
-       )))
+  (when-not (keyword? id)
+    (throw (ex-info "id must be a keyword" (vals->map id))))
+  `(let [result-map# (with-timer-result ~@forms)]
+     (stats-update ~id (grab :seconds result-map#))
+     (grab :result result-map#)))
 
 (defmacro defnp
   "A replacement for clojure.core/defn that accumuldates profiling data. Converts a function like:
@@ -78,13 +96,14 @@
         mean-x2   (/ sum2 n)
         sigma2-x  (max 0.0 (- mean-x2 mean2-x)) ; in case roundoff => neg
         sigma-x   (Math/sqrt sigma2-x)]
-    {:n n :mean mean-x :sigma sigma-x}))
+    {:n n :total sum :mean mean-x :sigma sigma-x}))
 
 (defn stats-get-all
   "Return all stats"
   []
-  (let [result (apply glue
-                 (forv [k (keys @timer-stats)]
+  (let [stats-map @timer-stats
+        result (apply glue {} ; need dummy empty map in case no stats present
+                 (forv [k (keys stats-map)]
                    {k (stats-get k)}))]
     result))
 
@@ -94,16 +113,22 @@
   (let [stats-all-sorted (sort-by (fn sort-by-fn
                                     [mapentry]
                                     (let [[stats-key stats] mapentry]
-                                      (:mean stats)))
+                                      (:total stats)))
                            (stats-get-all))]
+    (println "---------------------------------------------------------------------------------------------------")
+    (println "Profile Stats:")
+    (println "  Samples      TOTAL        MEAN      SIGMA           STATS-KEY")
     (doseq [[stats-key stats] stats-all-sorted]
       (let [n     (grab :n stats)
+            total (grab :total stats)
             mean  (grab :mean stats)
             sigma (grab :sigma stats)]
-        (println (format "%-30s %5d %9.5f %10.8f" stats-key n mean sigma))))))
+        (println (format "%9d %12.3f %12.6f %9.6f %-80s " n total mean sigma stats-key))))
+    (println "---------------------------------------------------------------------------------------------------") ))
 
 ;(newline)
 ;(println "********************")
 ;(pretty (macroexpand-1
 ;           '(defnp add-1 [x] (inc x))))
 ;(println "********************")
+
