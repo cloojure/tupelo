@@ -101,18 +101,21 @@
 (defn stats-get-all
   "Return all stats"
   []
-  (let [stats-map @timer-stats
-        result (apply glue {} ; need dummy empty map in case no stats present
-                 (forv [k (keys stats-map)]
-                   {k (stats-get k)}))]
-    result))
+  (let [stats-map     @timer-stats
+        result        (apply glue {} ; need dummy empty map in case no stats present
+                        (forv [stats-id (keys stats-map)]
+                          {stats-id (stats-get stats-id)}))
+
+        ; see last example from https://clojuredocs.org/clojure.core/sorted-map-by
+        result-sorted (sorted-map-via-path result [:* :total])]
+    result-sorted))
 
 (defn stats-print-all
   "Prints stats for all keys to stdout"
   []
   (let [stats-all-sorted (sort-by (fn sort-by-fn
                                     [mapentry]
-                                    (let [[stats-key stats] mapentry]
+                                    (let [[-stats-key- stats] mapentry]
                                       (:total stats)))
                            (stats-get-all))]
     (println "---------------------------------------------------------------------------------------------------")

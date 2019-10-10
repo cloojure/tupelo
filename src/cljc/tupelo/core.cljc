@@ -22,6 +22,7 @@
   (:require
     [clojure.core :as cc]
     [clojure.core.async :as async]
+    [clojure.data.avl :as avl]
     [clojure.pprint :as pprint]
     [clojure.set :as set]
     [clojure.string :as str]
@@ -339,7 +340,7 @@
 ;  [& args]
 ;  (throw (ex-info "`case` is evil, use `cond` instead" {:args args} )))
 
-(declare glue)
+(declare glue xfirst xrest prepend )
 
 (s/defn ->set :- tsk/Set
   "Converts arg to a set."
@@ -1001,6 +1002,102 @@
             [sym (list `grab kw the-map)]))
        ~@forms)))
 
+; #todo  Need it?-> like some-> that short-circuits on nil
+(defmacro it->
+  "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
+      (it-> 1
+            (inc it)
+            (+ it 3)
+            (/ 10 it))
+      ;=> 2 "
+  [expr & forms]
+  `(let [~'it ~expr
+         ~@(interleave (repeat 'it) forms)
+         ]
+     ~'it))
+
+(defn cond-it-impl
+  [expr & forms]
+  (let [num-forms (count forms)]
+    (when-not (even? num-forms)
+      (throw (ex-info "num-forms must be even; value=" (vals->map num-forms forms)))))
+  (let [cond-action-pairs (partition 2 forms)
+        cond-action-forms (for [[cond-form action-form] cond-action-pairs]
+                            `(if ~cond-form
+                               ~action-form
+                               ~'it)) ]
+    `(it-> ~expr ~@cond-action-forms)))
+
+; #todo make look like this?
+;(t/cond-it-> (parent-hid (hid->node hid))
+;  {:when (or
+;           (instance? MapEntryNode (hid->node it))
+;           (instance? ArrayEntryNode (hid->node it)))
+;   :then (parent-hid (hid->node it))})
+
+(defmacro cond-it->
+  "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
+
+    (let [params {:a 1 :b 1 :c nil :d nil}]
+      (cond-it-> params
+        (:a it)        (update it :b inc)
+        (= (:b it) 2)  (assoc it :c \"here\")
+        (:c it)        (assoc it :d \"again\")))
+
+    ;=> {:a 1, :b 2, :c \"here\", :d \"again\"}"
+  [& forms]
+  (apply cond-it-impl forms))
+
+; #todo #wip
+(defmacro some-it->
+  "Threads forms as with `it->`, terminates & returns `nil` if any expression is nil."
+  [expr & forms]
+  (let [binding-pairs (interleave (repeat 'it) forms) ]
+    `(let-some [~'it ~expr
+                ~@binding-pairs]
+       ~'it)))
+
+(s/defn sorted-map-via-path :- tsk/Map
+  "Given a source map, returns a sorted version of the same map. The value to sort
+  by is specified via a path vector as with `clojure.core/get-in`, where the first
+  element is always specified as `:*`, since the path must work for every top-level key
+  in <src-map>. The sorting value must be acceptable to clojure.core/compare.
+  Defaults to ascending sort order.  Returns an instance of `clojure.data.avl.AVLMap`.
+  Usage:
+    (sorted-map-via <src-map> <path-vec>)
+    (sorted-map-via <src-map> <path-vec> <ascending?>)
+
+  Example:
+    (let [unsorted {:c {:val 3}
+                    :a {:val 1}
+                    :b {:val 2}}
+          sorted   (sorted-map-via unsorted [:* :val])]
+      (assert (= unsorted sorted)))
+  "
+  ; implicit sort order - ascending
+  ([src-map :- tsk/Map
+    path-vec :- tsk/Vec] (sorted-map-via-path src-map path-vec true))
+  ; explicit sort order
+  ([src-map :- tsk/Map
+    path-vec :- tsk/Vec
+    ascending? :- s/Bool]
+   (when-not (= :* (xfirst path-vec))
+     (throw (ex-info "First path element must be `:*`" (vals->map path-vec))))
+   (when-not (< 1 (count path-vec))
+     (throw (ex-info "path-vec must have at least 2 elements" (vals->map path-vec))))
+   (let [path-tail       (xrest path-vec)
+         sortable-unique (fn [key]
+                           (let [get-in-path (prepend key path-tail)
+                                 sort-val    (get-in src-map get-in-path)]
+                             [sort-val key]))
+         comparator-fn   (fn [x y]
+                           (let [compare-result (compare (sortable-unique x) (sortable-unique y))
+                                 final-result   (cond-it-> compare-result
+                                                  (not ascending?) (- it))]
+                             final-result))
+         sorted-map      (glue (avl/sorted-map-by comparator-fn) src-map)]
+     sorted-map)))
+
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
 
@@ -1399,20 +1496,6 @@
         (str indent-str line)))))
 
 ;-----------------------------------------------------------------------------
-; #todo  Need it?-> like some-> that short-circuits on nil
-(defmacro it->
-  "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
-      (it-> 1
-            (inc it)
-            (+ it 3)
-            (/ 10 it))
-      ;=> 2 "
-  [expr & forms]
-  `(let [~'it ~expr
-         ~@(interleave (repeat 'it) forms)
-         ]
-     ~'it))
-
 (defn clip-str      ; #todo -> tupelo.string?
   "Converts all args to single string and clips any characters beyond nchars."
   [nchars & args]
@@ -1842,47 +1925,6 @@
                           (unnest-coll item)
                           [item])))]
     result))
-
-(defn cond-it-impl
-  [expr & forms]
-  (let [num-forms (count forms)]
-    (when-not (even? num-forms)
-      (throw (ex-info "num-forms must be even; value=" (vals->map num-forms forms)))))
-  (let [cond-action-pairs (partition 2 forms)
-        cond-action-forms (for [[cond-form action-form] cond-action-pairs]
-                            `(if ~cond-form
-                               ~action-form
-                               ~'it)) ]
-    `(it-> ~expr ~@cond-action-forms)))
-
-; #todo make look like this?
-;(t/cond-it-> (parent-hid (hid->node hid))
-;  {:when (or
-;           (instance? MapEntryNode (hid->node it))
-;           (instance? ArrayEntryNode (hid->node it)))
-;   :then (parent-hid (hid->node it))})
-
-(defmacro cond-it->
-  "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
-
-    (let [params {:a 1 :b 1 :c nil :d nil}]
-      (cond-it-> params
-        (:a it)        (update it :b inc)
-        (= (:b it) 2)  (assoc it :c \"here\")
-        (:c it)        (assoc it :d \"again\")))
-
-    ;=> {:a 1, :b 2, :c \"here\", :d \"again\"}"
-  [& forms]
-  (apply cond-it-impl forms))
-
-; #todo #wip
-(defmacro some-it->
-  "Threads forms as with `it->`, terminates & returns `nil` if any expression is nil."
-  [expr & forms]
-  (let [binding-pairs (interleave (repeat 'it) forms) ]
-    `(let-some [~'it ~expr
-                            ~@binding-pairs]
-       ~'it)))
 
 (defmacro with-exception-default
   "Evaluates body & returns its result.  In the event of an exception, default-val is returned

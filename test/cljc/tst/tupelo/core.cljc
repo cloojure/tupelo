@@ -1876,6 +1876,64 @@
     (is= (lazy-countdown -1) nil )))
 
 (dotest
+  (let [N                  9
+        nums               (range N)
+        kws                (mapv #(-> % str keyword) nums)
+        nums-cycle         (mapv #(rem % 3) nums)
+        mes                (mapv #(hash-map :rem %) nums-cycle)
+        stuff              (zipmap kws mes)
+        stuff-sorted-asc-0 (t/sorted-map-via-path stuff [:* :rem])
+        stuff-sorted-asc-1 (t/sorted-map-via-path stuff [:* :rem] true)
+        stuff-sorted-desc  (t/sorted-map-via-path stuff [:* :rem] false)]
+    (is= clojure.data.avl.AVLMap (type stuff-sorted-asc-0))
+    (throws? (t/sorted-map-via-path stuff []))
+    (throws? (t/sorted-map-via-path stuff [:*]))
+    (throws? (t/sorted-map-via-path stuff [:invalid :rem]))
+    (is= stuff {:0 {:rem 0},
+                :4 {:rem 1},
+                :7 {:rem 1},
+                :1 {:rem 1},
+                :8 {:rem 2},
+                :2 {:rem 2},
+                :5 {:rem 2},
+                :3 {:rem 0},
+                :6 {:rem 0}})
+    (is= stuff stuff-sorted-asc-0)
+    (is= stuff stuff-sorted-asc-1)
+    (is= stuff stuff-sorted-desc)
+    (is= (vec stuff-sorted-asc-0)
+      [[:0 {:rem 0}]
+       [:3 {:rem 0}]
+       [:6 {:rem 0}]
+       [:1 {:rem 1}]
+       [:4 {:rem 1}]
+       [:7 {:rem 1}]
+       [:2 {:rem 2}]
+       [:5 {:rem 2}]
+       [:8 {:rem 2}]])
+    (is= (vec stuff-sorted-asc-1)
+      [[:0 {:rem 0}]
+       [:3 {:rem 0}]
+       [:6 {:rem 0}]
+       [:1 {:rem 1}]
+       [:4 {:rem 1}]
+       [:7 {:rem 1}]
+       [:2 {:rem 2}]
+       [:5 {:rem 2}]
+       [:8 {:rem 2}]])
+    (is= (vec stuff-sorted-desc)
+      [[:8 {:rem 2}]
+       [:5 {:rem 2}]
+       [:2 {:rem 2}]
+       [:7 {:rem 1}]
+       [:4 {:rem 1}]
+       [:1 {:rem 1}]
+       [:6 {:rem 0}]
+       [:3 {:rem 0}]
+       [:0 {:rem 0}]])
+    ))
+
+(dotest
   (let [sample (t/->set [1 2 3])]
     (is (set? sample))
     (is= #{3 2 1} sample))
