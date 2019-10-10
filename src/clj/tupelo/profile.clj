@@ -116,9 +116,7 @@
     stats-sorted))
 
 (defn print-profile-stats []
-  (nl)
-  (spyx-pretty (profile-data-sorted))
-  (nl)
+  (newline)
   (println "---------------------------------------------------------------------------------------------------")
   (println "Profile Stats:")
   (println "   Samples       TOTAL        MEAN      SIGMA           ID")
