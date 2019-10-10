@@ -270,8 +270,6 @@
     (is-nonblank= result expected )))
 
 (dotest
-  ; (spyx (s/check-fn t/truthy? ))
-
   (let [data [true :a 'my-symbol 1 "hello" \x false nil] ]
     (testing "basic usage"
       (let [truthies    (t/keep-if boolean data)       ; coerce to primitive type
@@ -479,7 +477,6 @@
     (is= ":msg2 => 5"            (ts/collapse-whitespace (with-out-str (fn2))))
     (is= ":msg1 => 5 :msg2 => 5" (ts/collapse-whitespace (with-out-str (fn1))))
     (is= ":msg0 => 5"            (ts/collapse-whitespace (with-out-str (fn0)))) ))
-
 
 (dotest
   (is= 3 (t/let-some [a 1
@@ -1858,7 +1855,6 @@
   (let [lazy-range (fn lazy-range
                      [limit]
                      (let [lazy-range-step (fn lazy-range-step [curr limit]
-                                             ; (spyx [curr limit]) (flush)
                                              (when (< curr limit)
                                                (t/lazy-cons curr (lazy-range-step (inc curr) limit))))]
                        (lazy-range-step 0 limit))) ]
@@ -1934,7 +1930,20 @@
     (let [stuff2 (zipmap kws nums-cycle)]
       (is= stuff2 {:0 0, :4 1, :7 1, :1 1, :8 2, :2 2, :5 2, :3 0, :6 0})
       (is= (t/sorted-map-via-path stuff2 [:*])
-        {:0 0, :3 0, :6 0, :1 1, :4 1, :7 1, :2 2, :5 2, :8 2}))))
+        {:0 0, :3 0, :6 0, :1 1, :4 1, :7 1, :2 2, :5 2, :8 2})))
+  )
+
+(dotest   ; #todo #clojure.core/sorted-map-by bug
+  (when false
+    (let [unsorted {:x.y/a {:rem 0}
+                    :x.y/b {:rem 1}}
+          sorted   (into (sorted-map-by
+                           (fn [k1 k2]
+                             (println {:keys-seen [k1 k2]})
+                             (compare k1 k2)))
+                     unsorted)]
+      (println :unsorted unsorted)
+      (println :sorted sorted))))
 
 (dotest
   (let [sample (t/->set [1 2 3])]
@@ -2683,7 +2692,6 @@
               (is   (t/is-java-1-7-plus?))
               (is   (t/is-java-1-8?))
               (is   (t/is-java-1-8-plus?)) ) )
-
 
           (dotest
             (let [tst-fn (fn [vals5]

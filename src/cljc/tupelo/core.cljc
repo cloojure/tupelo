@@ -229,6 +229,10 @@
 
 ))
 ;-----------------------------------------------------------------------------
+(declare glue xfirst xrest append prepend grab fetch-in)
+(declare clip-str )
+
+;-----------------------------------------------------------------------------
 (defn const-fn       ; #todo or const-fn or always
   "Returns a function that always returns the specified value, and accepts any number of args
   (synonym for `clojure.core/constantly`)."
@@ -339,8 +343,6 @@
 ;(defn case
 ;  [& args]
 ;  (throw (ex-info "`case` is evil, use `cond` instead" {:args args} )))
-
-(declare glue xfirst xrest prepend )
 
 (s/defn ->set :- tsk/Set
   "Converts arg to a set."
@@ -1058,11 +1060,19 @@
        ~'it)))
 
 (s/defn sorted-map-via-path :- tsk/Map
-  "Given a source map, returns a sorted version of the same map. The value to sort
+  "
+  *************************************************************************
+  ***** WARNING:  due to a bug in clojure.core/sorted-map-by,         *****
+  *****           this crashes if namespaced keys are used.           *****
+  *************************************************************************
+
+  Given a source map, returns a sorted version of the same map. The value to sort
   by is specified via a path vector as with `clojure.core/get-in`, where the first
   element is always specified as `:*`, since the path must work for every top-level key
   in <src-map>. The sorting value must be acceptable to clojure.core/compare.
   Defaults to ascending sort order.  Returns an instance of `clojure.data.avl.AVLMap`.
+  NOTE:  because of peculiarities of clojure.core/sorted-map-by, one cannot add new entries
+  to the sorted map.  Instead, a new map must be created from a plain map.
   Usage:
     (sorted-map-via <src-map> <path-vec>)
     (sorted-map-via <src-map> <path-vec> <ascending?>)
@@ -1072,8 +1082,7 @@
                     :a {:val 1}
                     :b {:val 2}}
           sorted   (sorted-map-via unsorted [:* :val])]
-      (assert (= unsorted sorted)))
-  "
+      (assert (= unsorted sorted))) "
   ; implicit sort order - ascending
   ([src-map :- tsk/Map
     path-vec :- tsk/Vec] (sorted-map-via-path src-map path-vec true))
@@ -1087,8 +1096,8 @@
      (throw (ex-info "path-vec must have at least 2 elements" (vals->map path-vec))))
    (let [path-tail       (xrest path-vec)
          sortable-unique (fn [key]
-                           (let [get-in-path (prepend key path-tail)
-                                 sort-val    (get-in src-map get-in-path)]
+                           (let [fetch-in-path (prepend key path-tail)
+                                 sort-val      (fetch-in src-map fetch-in-path)]
                              [sort-val key]))
          comparator-fn   (fn [x y]
                            (let [compare-result (compare (sortable-unique x) (sortable-unique y))
@@ -1269,9 +1278,6 @@
      ))
 
 ;-----------------------------------------------------------------------------
-(declare
-  clip-str
-  )
 
 ; #todo add not-neg? not-pos? not-zero?
 

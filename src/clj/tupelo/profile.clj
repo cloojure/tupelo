@@ -98,40 +98,54 @@
         sigma-x   (Math/sqrt sigma2-x)]
     {:n n :total sum :mean mean-x :sigma sigma-x}))
 
-(defn stats-get-all
-  "Return all stats"
+(defn profile-map
+  "Return a map from ID to profile data."
   []
   (let [stats-map     @timer-stats
-        result        (apply glue {} ; need dummy empty map in case no stats present
+        result        (apply glue (sorted-map)
                         (forv [stats-id (keys stats-map)]
-                          {stats-id (stats-get stats-id)}))
+                          {stats-id (stats-get stats-id)}))]
+    result))
 
-        ; see last example from https://clojuredocs.org/clojure.core/sorted-map-by
-        result-sorted (sorted-map-via-path result [:* :total])]
-    result-sorted))
-
-(defn stats-print-all
+(defn profile-data-sorted
   "Prints stats for all keys to stdout"
   []
-  (let [stats-all-sorted (sort-by (fn sort-by-fn
-                                    [mapentry]
-                                    (let [[-stats-key- stats] mapentry]
-                                      (:total stats)))
-                           (stats-get-all))]
-    (println "---------------------------------------------------------------------------------------------------")
-    (println "Profile Stats:")
-    (println "  Samples      TOTAL        MEAN      SIGMA           STATS-KEY")
-    (doseq [[stats-key stats] stats-all-sorted]
-      (let [n     (grab :n stats)
-            total (grab :total stats)
-            mean  (grab :mean stats)
-            sigma (grab :sigma stats)]
-        (println (format "%9d %12.3f %12.6f %9.6f %-80s " n total mean sigma stats-key))))
-    (println "---------------------------------------------------------------------------------------------------") ))
+  (let [stats-sorted (vec (sort-by :id
+                            (forv [[stats-id stats-data] (profile-map)]
+                              (glue {:id stats-id} stats-data))))]
+    stats-sorted))
 
-;(newline)
-;(println "********************")
-;(pretty (macroexpand-1
-;           '(defnp add-1 [x] (inc x))))
-;(println "********************")
+(defn print-profile-stats []
+  (nl)
+  (spyx-pretty (profile-data-sorted))
+  (nl)
+  (println "---------------------------------------------------------------------------------------------------")
+  (println "Profile Stats:")
+  (println "   Samples       TOTAL        MEAN      SIGMA           ID")
+  (doseq [stats (profile-data-sorted)]
+    (with-map-vals stats [id n total mean sigma]
+      (println (format "%9d %12.3f %12.6f %10.6f   %-80s " n total mean sigma id))))
+  (println "---------------------------------------------------------------------------------------------------")
+  )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
