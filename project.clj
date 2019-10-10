@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.157"
+(defproject tupelo "0.9.158"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "http://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
@@ -21,7 +21,7 @@
     [io.pedestal/pedestal.jetty "0.5.7"]
     [io.pedestal/pedestal.route "0.5.7"]
     [io.pedestal/pedestal.service "0.5.7"]
-    [joda-time/joda-time "2.10.3"]
+    [joda-time/joda-time "2.10.4"]
     [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
     [org.clojure/core.async "0.4.500"]
     [org.clojure/core.match "0.3.0"]
@@ -31,7 +31,7 @@
     [org.clojure/spec.alpha "0.2.176"]
     [org.clojure/test.check "0.10.0"]
     [org.clojure/tools.reader "1.3.2"]
-    [org.snakeyaml/snakeyaml-engine "1.0"]
+    [org.snakeyaml/snakeyaml-engine "1.0"] ; #todo upgrade to 2.0, edit Java imports
     [prismatic/schema "1.1.12"]
     [reagent-utils "0.3.3"]
   ]
@@ -54,7 +54,7 @@
                                        [org.clojure/clojurescript "1.10.520" :scope "provided"]
                                       ]}
              :dev      {:dependencies [[binaryage/devtools "0.9.10"]
-                                       [binaryage/dirac "1.4.0"]
+                                       [binaryage/dirac "1.4.3"]
                                        [com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.5"]
                                        [org.clojure/clojure "1.10.1"]
