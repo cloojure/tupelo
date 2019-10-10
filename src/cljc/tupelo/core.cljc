@@ -1083,7 +1083,7 @@
     ascending? :- s/Bool]
    (when-not (= :* (xfirst path-vec))
      (throw (ex-info "First path element must be `:*`" (vals->map path-vec))))
-   (when-not (< 1 (count path-vec))
+   (when-not (pos? (count path-vec))
      (throw (ex-info "path-vec must have at least 2 elements" (vals->map path-vec))))
    (let [path-tail       (xrest path-vec)
          sortable-unique (fn [key]

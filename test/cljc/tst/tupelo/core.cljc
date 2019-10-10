@@ -1931,7 +1931,10 @@
        [:6 {:rem 0}]
        [:3 {:rem 0}]
        [:0 {:rem 0}]])
-    ))
+    (let [stuff2 (zipmap kws nums-cycle)]
+      (is= stuff2 {:0 0, :4 1, :7 1, :1 1, :8 2, :2 2, :5 2, :3 0, :6 0})
+      (is= (t/sorted-map-via-path stuff2 [:*])
+        {:0 0, :3 0, :6 0, :1 1, :4 1, :7 1, :2 2, :5 2, :8 2}))))
 
 (dotest
   (let [sample (t/->set [1 2 3])]
