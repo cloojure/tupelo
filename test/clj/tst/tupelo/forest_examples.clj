@@ -1816,6 +1816,7 @@
       ; replace the old namespace symbol with a new one
       (attrs-merge ns-sym-hid {::tf/value (symbol "something.new.core")})
 
+      ; find the 3 kids of the `:root` node
       (let [root-khids      (it-> root-hid
                               (hid->node it)
                               (grab ::tf/khids it)
@@ -1828,14 +1829,16 @@
                                 (prn form)))
             ; expected-result is the original edn-str but with the new namespace symbol
             expected-result (str/replace edn-str "tst.demo.core" "something.new.core")]
+
         (when debug-flg
           (spyx (hid->node ns-sym-hid))
           (newline)
           (spyx-pretty kids-edn)
           (newline)
-          (println :modified-src \newline modified-src))
+          (println "modified-src:")
+          (println modified-src))
 
-        (is (ts/nonblank= modified-src expected-result))))))
+        (is-nonblank= modified-src expected-result)))))
 
 
 
