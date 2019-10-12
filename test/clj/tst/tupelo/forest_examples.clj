@@ -1781,7 +1781,7 @@
   (with-forest (new-forest)
     (let [debug-flg       false
           edn-str ;   Notice that there are 3 forms in the source
-                          (ts/quotes->double
+                          (ts/quotes->double ; use single-quotes in string, then convert => double-quotes
                             "(ns tst.demo.core
                                (:use demo.core tupelo.core tupelo.test))
 
