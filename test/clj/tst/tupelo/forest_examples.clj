@@ -1828,7 +1828,23 @@
           root-hid        (add-tree-edn edn-data) ; add edn data to a single forest tree
           ]
         ;(nl) (spyx-pretty (hid->tree root-hid))
-        ;(nl) (spyx-pretty (hid->bush root-hid))
+        (is= (hid->bush root-hid)
+          [{:tag ::tf/entity, ::tf/index nil}
+           [{:tag ::tf/entry, ::tf/key :a}
+            [{:tag ::tf/vec, ::tf/index nil}
+             [{:tag ::tf/entity, ::tf/index 0}
+              [{:tag ::tf/entry, ::tf/key :x}
+               [#::tf{:value 2, :index nil}]]
+              [{:tag ::tf/entry, ::tf/key :y}
+               [#::tf{:value 3, :index nil}]]]]]
+           [{:tag ::tf/entry, ::tf/key :b}
+            [{:tag ::tf/entity, ::tf/index nil}
+             [{:tag ::tf/entry, ::tf/key :c}
+              [#::tf{:value 3, :index nil}]]
+             [{:tag ::tf/entry, ::tf/key :d}
+              [{:tag ::tf/entity, ::tf/index nil}
+               [{:tag ::tf/entry, ::tf/key :e}
+                [#::tf{:value 5, :index nil}]]]]]]] )
         (is= edn-data (hid->edn root-hid))
         )))
 
