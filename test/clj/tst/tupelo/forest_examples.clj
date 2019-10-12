@@ -13,7 +13,7 @@
     [clojure.set :as cs]
     [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.core :as t]
+    [tupelo.core :as t ]
     [tupelo.forest :as tf]
     [tupelo.parse.tagsoup :as tagsoup]
     [tupelo.schema :as tsk]
@@ -1768,5 +1768,67 @@
                                (mapv #(grab :tag %) it))]
         (is= depth-first-tags [:a :b :c])))))
 
+;-----------------------------------------------------------------------------
+(dotest
+  (hid-count-reset)
+  (with-forest (new-forest)
+    (let [edn-data      (quote [:root
+                                [ns
+                                 tst.demo.core
+                                 [:use demo.core tupelo.core tupelo.test]
+                                 [:require [clojure.edn :as edn] [clojure.java.io :as io]]]
+                                [dotest
+                                 [let [txt [str
+                                            "[ :root"
+                                            [slurp [io/file "./test/clj/tst/demo/core.clj"]]
+                                            "]"]
+                                       forms [unlazy [edn/read-string txt]]]
+                                  [spyx txt]
+                                  [spyx-pretty forms]
+                                  [spyx [get-in forms [1 1]]]]]])
+          edn-tree      (edn->tree edn-data)
+          root-hid      (add-tree edn-tree)
+          ns-path       (only (find-paths root-hid [:** {::tf/value (symbol "ns")}]))
+          ns-hid        (xlast ns-path)
+          ns-parent-hid (xsecond (reverse ns-path))
+          ns-khids      (hid->kids ns-parent-hid)
+          ns-sym-hid    (xsecond ns-khids)
+          ]
+      (nl)
+      (spyx-pretty edn-tree)
+      (nl)
+      (spyx-pretty (hid->bush root-hid))
+      (nl)
+      ;(spyx (hid->node (only ns-hid)))
+      (spyx ns-hid)
+      (nl)
+      (spyx (hid->node ns-hid))
+      (spyx (hid->node ns-parent-hid))
+      (spyx ns-khids)
+      (doseq [khid ns-khids]
+        (spyx (hid->node khid)))
+      (spyx (hid->node ns-sym-hid))
+      (attrs-merge ns-sym-hid {::tf/value (symbol "something.new.core")})
+      (spyx (hid->node ns-sym-hid))
+      (let [edn-new (tree->edn (hid->tree root-hid))]
+        (is= edn-new
+          (quote [:root
+                  [ns
+                   something.new.core
+                   [:use demo.core tupelo.core tupelo.test]
+                   [:require [clojure.edn :as edn] [clojure.java.io :as io]]]
+                  [dotest
+                   [let
+                    [txt
+                     [str
+                      "[ :root"
+                      [slurp [io/file "./test/clj/tst/demo/core.clj"]]
+                      "]"]
+                     forms
+                     [unlazy [edn/read-string txt]]]
+                    [spyx txt]
+                    [spyx-pretty forms]
+                    [spyx [get-in forms [1 1]]]]]]))
+        ))))
 
 

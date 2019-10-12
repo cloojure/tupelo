@@ -366,6 +366,25 @@
                            (glue attrs {::kids kids})))]
       result)))
 
+;(defn mapentry->tree
+;  [mapentry]
+;  (let [[k v] mapentry]
+;    {:tag    ::mapentry
+;     ::key   k
+;     ::value (edn->tree v)}))
+;
+;(defn edn->tree
+;  [form]
+;  (cond
+;    (map? form) {:tag   ::map
+;                 ::kids (forv [mapentry form]
+;                          (mapentry->tree mapentry))}
+;    (sequential? form) {:tag   ::vec
+;                        ::kids (forv [item form]
+;                                 (edn->tree item))}
+;    (set? form) (throw (ex-info "sets not implemented" {:input form}))
+;    :else {:tag :primative :value form}))
+
 (s/defn validate-hid
   "Returns HID arg iff it exists in the forest, else throws."
   [hid :- HID]
