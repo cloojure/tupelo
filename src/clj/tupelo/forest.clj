@@ -172,6 +172,14 @@
   ([idx :- (s/if int? s/Int (s/eq nil))
     data :- s/Any]
     (cond
+      (listy? data) {:tag ::list
+                     ::index idx
+                     ::kids  (forv [[idx val] (indexed data)]
+                               (edn->tree idx val))}
+      (vector? data) {:tag    ::vec
+                      ::index idx
+                      ::kids  (forv [[idx val] (indexed data)]
+                                (edn->tree idx val))}
       (sequential? data) {:tag   ::list
                           ::index idx
                           ::kids  (forv [[idx val] (indexed data)]
@@ -184,11 +192,12 @@
                               ::kids [(edn->tree child-val)]})}
       :else {::value data ::index idx ::kids []})))
 
-(defn ^:private ^:no-doc validate-list-kids-idx
+(defn ^:private ^:no-doc validate-listvec-kids-idx
   "verify that a ::list node in a tree has a valid index for all kid nodes"
   [node]
-  (assert (= ::list (grab :tag node)))
-  (let [kids        (grab ::kids node)
+  (let [tag         (grab :tag node)
+        >>          (assert (or (= tag ::list) (= tag ::vec)))
+        kids        (grab ::kids node)
         kids-sorted (vec (sort-by #(grab ::index %) kids))
         idx-vals    (mapv #(grab ::index %) kids-sorted)
         idx-tgts    (range (count idx-vals))]
@@ -199,6 +208,11 @@
   [node :- tsk/KeyMap]
   (and (contains-key? node :tag)
     (= ::list (grab :tag node))))
+
+(s/defn ^:private ^:no-doc data-vec-node?
+  [node :- tsk/KeyMap]
+  (and (contains-key? node :tag)
+    (= ::vec (grab :tag node))))
 
 (s/defn ^:private ^:no-doc data-entity-node?
   [node :- tsk/KeyMap]
@@ -218,10 +232,15 @@
     (data-leaf-node? node) (let [leaf-value (grab ::value node)]
                              leaf-value)
 
-    (data-list-node? node) (let [kids-sorted (validate-list-kids-idx node)
-                                 kids-data   (forv [kid kids-sorted]
+    (data-list-node? node) (let [kids-sorted (validate-listvec-kids-idx node)
+                                 kids-data   (for-list [kid kids-sorted]
                                                (tree->edn kid))]
                              kids-data)
+
+    (data-vec-node? node) (let [kids-sorted (validate-listvec-kids-idx node)
+                                kids-data   (forv [kid kids-sorted]
+                                              (tree->edn kid))]
+                            kids-data)
 
     (data-entity-node? node) (let [entries  (grab ::kids node)
                                    map-data (apply glue
@@ -661,11 +680,15 @@
   [arg]
   (add-tree (enlive->tree arg)))
 
-(s/defn add-tree-hiccup :- HID ; #todo maybe make (add-tree-edn ...) for simplicity?
-  "Adds a Hiccup-format tree to the forest. Tag values are converted to nil attributes:
-  [:a ...] -> {:a nil ...}..."
+(s/defn add-tree-hiccup :- HID
+  "Adds a Hiccup-format tree to the forest. "
   [arg]
   (add-tree (hiccup->tree arg)))
+
+(s/defn add-tree-edn :- HID
+  "Adds a EDN-format tree to the forest. "
+  [arg]
+  (add-tree (edn->tree arg)))
 
 (s/defn add-tree-html :- HID
   "Adds a tree to the forest from an HTML string."
@@ -737,6 +760,11 @@
   "Returns the subtree rooted ad an HID (hiccup format)"
   [hid :- HID]
   (-> (validate-hid hid) hid->tree tree->hiccup))
+
+(s/defn hid->edn :- tsk/Vec
+  "Returns the data rooted ad an HID (EDN format)"
+  [hid :- HID]
+  (-> (validate-hid hid) hid->tree tree->edn))
 
 ; #todo make sure all permutations are available;  need test
 (defn hid->enlive [hid]

@@ -254,6 +254,11 @@
   [arg]
   (if arg false true))
 
+(defn listy?
+  "Returns true if arg is a list or a seq, else false."
+  [arg]
+  (or (list? arg) (seq? arg)))
+
 ; #todo keep these?   at least do docstring
 (defn ->true [& args] true)
 (defn ->false [& args] false)
