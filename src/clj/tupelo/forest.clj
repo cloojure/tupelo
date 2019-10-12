@@ -185,7 +185,7 @@
                           ::kids  (forv [[idx val] (indexed data)]
                                     (edn->tree idx val))}
       (map? data) {:tag   ::entity
-                   ::index idx
+                   ::index idx ; #todo get rid of this for maps & mapentry's
                    ::kids  (forv [[child-key child-val] data]
                              {:tag  ::entry
                               ::key  child-key
@@ -761,7 +761,7 @@
   [hid :- HID]
   (-> (validate-hid hid) hid->tree tree->hiccup))
 
-(s/defn hid->edn :- tsk/Vec
+(s/defn hid->edn
   "Returns the data rooted ad an HID (EDN format)"
   [hid :- HID]
   (-> (validate-hid hid) hid->tree tree->edn))

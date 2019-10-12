@@ -989,28 +989,6 @@
             colt-nodes  (forv [hid colt-path] (hid->node hid))
             ]
 
-        ; #todo fix to work with 1.8 ???
-        ;(is= (format-path colt-path)
-        ;  [#::tf{:tag :tupelo.forest/entity, :index nil}
-        ;   [#::tf{:tag :tupelo.forest/entry, :key :bucket-aggregation}
-        ;    [#::tf{:tag :tupelo.forest/entity, :index nil}
-        ;     [#::tf{:tag :tupelo.forest/entry, :key :buckets}
-        ;      [#::tf{:tag :tupelo.forest/list, :index nil}
-        ;       [#::tf{:tag :tupelo.forest/entity, :index 0}
-        ;        [#::tf{:tag :tupelo.forest/entry, :key :bucket-aggregation}
-        ;         [#::tf{:tag :tupelo.forest/entity, :index nil}
-        ;          [#::tf{:tag :tupelo.forest/entry, :key :buckets}
-        ;           [#::tf{:tag :tupelo.forest/list, :index nil}
-        ;            [#::tf{:tag :tupelo.forest/entity, :index 2}
-        ;             [#::tf{:tag :tupelo.forest/entry, :key :bucket-aggregation}
-        ;              [#::tf{:tag :tupelo.forest/entity, :index nil}
-        ;               [#::tf{:tag :tupelo.forest/entry, :key :buckets}
-        ;                [#::tf{:tag :tupelo.forest/list, :index nil}
-        ;                 [#::tf{:tag :tupelo.forest/entity, :index 1}
-        ;                  [#::tf{:tag :tupelo.forest/entry, :key :sum}
-        ;                   [#::tf{:tag :tupelo.forest/entity, :index nil}
-        ;                    [#::tf{:tag :tupelo.forest/entry, :key :value}
-        ;                     [#::tf{:value 45, :index nil}]]]]]]]]]]]]]]]]]]]])
         ;(is= colt-nodes
         ;  [#::tf{:khids [:0049], :tag :tupelo.forest/entity, :index nil}
         ;   #::tf{:khids [:0048], :tag :tupelo.forest/entry, :key :bucket-aggregation}
@@ -1839,6 +1817,20 @@
           (println modified-src))
 
         (is-nonblank= modified-src expected-result)))))
+
+;-----------------------------------------------------------------------------
+(dotest
+  (hid-count-reset)
+  (with-forest (new-forest)
+    (let [edn-data        {:a [{:x 2 :y 3} ]
+                           :b {:c 3
+                               :d {:e 5} }}
+          root-hid        (add-tree-edn edn-data) ; add edn data to a single forest tree
+          ]
+        ;(nl) (spyx-pretty (hid->tree root-hid))
+        ;(nl) (spyx-pretty (hid->bush root-hid))
+        (is= edn-data (hid->edn root-hid))
+        )))
 
 
 
