@@ -5,7 +5,7 @@
   timer-stats (atom {}))
 
 (defn timer-stats-reset
-  "Reset timer-stats to empty"
+  "Reset all timer statistics to empty"
   [] (reset! timer-stats {}))
 
 (defn stats-update
@@ -39,7 +39,7 @@
       :seconds seconds#}))
 
 (defmacro with-timer-print
-  "Accumulates execution time stats in global stats map under key `id`."
+  "Times execution of Clojure forms, printing the result to the screen. "
   [id & forms]
   (when-not (keyword? id)
     (throw (ex-info "id must be a keyword" (vals->map id))))
@@ -48,7 +48,7 @@
      (grab :result result-map#)))
 
 (defmacro with-timer-accum
-  "Accumulates execution time stats in global stats map under key `id`."
+  "Times execution of Clojure forms, accumulating results in timer-stats map under key `id`."
   [id & forms]
   (when-not (keyword? id)
     (throw (ex-info "id must be a keyword" (vals->map id))))
@@ -99,7 +99,7 @@
     {:n n :total sum :mean mean-x :sigma sigma-x}))
 
 (defn profile-map
-  "Return a map from ID to profile data."
+  "Returns a map of all profile stats, keyed by ID."
   []
   (let [stats-map     @timer-stats
         result        (apply glue (sorted-map)
@@ -108,7 +108,7 @@
     result))
 
 (defn profile-data-sorted
-  "Prints stats for all keys to stdout"
+  "Returns a vector of profile stats sorted by ID."
   []
   (let [stats-sorted (vec (sort-by :id
                             (forv [[stats-id stats-data] (profile-map)]
@@ -116,6 +116,7 @@
     stats-sorted))
 
 (defn print-profile-stats []
+  "Prints profile stats to stdout."
   (newline)
   (println "---------------------------------------------------------------------------------------------------")
   (println "Profile Stats:")

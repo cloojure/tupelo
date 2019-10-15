@@ -11,7 +11,6 @@
              org.clojure/clojurescript]
 
   :dependencies [
-    [overtone/at-at "1.2.0"]
     [binaryage/oops "0.7.0"]
     [cheshire "5.9.0"] ; #todo switch to muuntaja/jsonista
     [clj-time "0.15.2"]
@@ -52,15 +51,16 @@
 
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
                                        [org.clojure/clojurescript "1.10.520" :scope "provided"]
-                                      ]}
+                                       ]}
              :dev      {:dependencies [[binaryage/devtools "0.9.10"]
                                        [binaryage/dirac "1.4.3"]
                                        [com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.5"]
                                        [org.clojure/clojure "1.10.1"]
                                        [org.clojure/clojurescript "1.10.520"]
-                                      ]
+                                       ]
                         }
+             :test     {:dependencies [[overtone/at-at "1.2.0"]]}
              :1.8      {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9      {:dependencies [[org.clojure/clojure "1.9.0"]]}
              }
