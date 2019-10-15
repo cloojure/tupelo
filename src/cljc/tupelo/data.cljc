@@ -27,6 +27,10 @@
              ))
   )
 
+; #todo Add destruct features in search (hiccup for db search):
+; #todo   basic:  (find [ {:hid ? :kid id5} { :eid id5 :value 5} ]) ; parent of node with {:value 5}
+; #todo   better: (find [ {:hid ? :kid [{ :value 5}]} ]) ; parent of node with {:value 5}
+
 ; #todo also use for logging, debugging, metrics
 
 ; #todo add enflame-style subscriptions/flames (like db views, but with notifications/reactive)
