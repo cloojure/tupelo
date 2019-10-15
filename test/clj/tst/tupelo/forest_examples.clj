@@ -12,12 +12,14 @@
     [clojure.java.io :as io]
     [clojure.set :as cs]
     [clojure.string :as str]
+    [clojure.tools.reader.edn :as edn]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.forest :as tf]
     [tupelo.parse.tagsoup :as tagsoup]
     [tupelo.schema :as tsk]
-    [tupelo.string :as ts] )
+    [tupelo.string :as ts]
+    )
   (:import [java.io StringReader]))
 
 (dotest
@@ -186,6 +188,9 @@
     (let [root-hid (add-tree-hiccup t0-hiccup)
           tree (hid->tree root-hid)
           bush (hid->bush root-hid)]
+      ; #todo *REWORK*  so [:item 1] => {:tag :item ::kids [ {:tag ::primative :value 1 ::kids []} ]
+      ; #todo primative must have empty ::khids
+      ; #todo only ::primative can have ::value
        (is= tree
          {:tag :item,
           ::tf/kids
@@ -984,28 +989,6 @@
             colt-nodes  (forv [hid colt-path] (hid->node hid))
             ]
 
-        ; #todo fix to work with 1.8 ???
-        ;(is= (format-path colt-path)
-        ;  [#::tf{:tag :tupelo.forest/entity, :index nil}
-        ;   [#::tf{:tag :tupelo.forest/entry, :key :bucket-aggregation}
-        ;    [#::tf{:tag :tupelo.forest/entity, :index nil}
-        ;     [#::tf{:tag :tupelo.forest/entry, :key :buckets}
-        ;      [#::tf{:tag :tupelo.forest/list, :index nil}
-        ;       [#::tf{:tag :tupelo.forest/entity, :index 0}
-        ;        [#::tf{:tag :tupelo.forest/entry, :key :bucket-aggregation}
-        ;         [#::tf{:tag :tupelo.forest/entity, :index nil}
-        ;          [#::tf{:tag :tupelo.forest/entry, :key :buckets}
-        ;           [#::tf{:tag :tupelo.forest/list, :index nil}
-        ;            [#::tf{:tag :tupelo.forest/entity, :index 2}
-        ;             [#::tf{:tag :tupelo.forest/entry, :key :bucket-aggregation}
-        ;              [#::tf{:tag :tupelo.forest/entity, :index nil}
-        ;               [#::tf{:tag :tupelo.forest/entry, :key :buckets}
-        ;                [#::tf{:tag :tupelo.forest/list, :index nil}
-        ;                 [#::tf{:tag :tupelo.forest/entity, :index 1}
-        ;                  [#::tf{:tag :tupelo.forest/entry, :key :sum}
-        ;                   [#::tf{:tag :tupelo.forest/entity, :index nil}
-        ;                    [#::tf{:tag :tupelo.forest/entry, :key :value}
-        ;                     [#::tf{:value 45, :index nil}]]]]]]]]]]]]]]]]]]]])
         ;(is= colt-nodes
         ;  [#::tf{:khids [:0049], :tag :tupelo.forest/entity, :index nil}
         ;   #::tf{:khids [:0048], :tag :tupelo.forest/entry, :key :bucket-aggregation}
@@ -1057,6 +1040,7 @@
       (is= (mapv hid->node leaf-hids)
         [{:tupelo.forest/khids [], :tag :a, :value "1"}
          {:tupelo.forest/khids [], :tag :b, :value "2"}]))))
+
 ;-----------------------------------------------------------------------------
 (dotest
   (let [xml-str (ts/quotes->double
@@ -1580,7 +1564,7 @@
   (with-forest (new-forest)
     (let [edn-orig          [1 [[2] 3]]
           root-hid          (add-tree (edn->tree edn-orig))
-          hid               (find-hid root-hid [::tf/list ::tf/list])
+          hid               (find-hid root-hid [::tf/vec ::tf/vec])
           subtree-edn-orig  (-> hid hid->tree tree->edn)
           >>                (kids-update hid butlast)
           subtree-edn-final (-> hid hid->tree tree->edn)
@@ -1591,10 +1575,10 @@
       (is= edn-final          [1 [[2]]]  )
 
       (is= (hid->bush root-hid)
-        [{:tag :tupelo.forest/list, :tupelo.forest/index nil}
+        [{:tag :tupelo.forest/vec, :tupelo.forest/index nil}
          [#:tupelo.forest{:value 1, :index 0}]
-         [{:tag :tupelo.forest/list, :tupelo.forest/index 1}
-          [{:tag :tupelo.forest/list, :tupelo.forest/index 0}
+         [{:tag :tupelo.forest/vec, :tupelo.forest/index 1}
+          [{:tag :tupelo.forest/vec, :tupelo.forest/index 0}
            [#:tupelo.forest{:value 2, :index 0}]]]] ) )))
 
 ;-----------------------------------------------------------------------------
@@ -1758,15 +1742,119 @@
                            (cond-it-> curr-state
                              (falsey? (grab :found-tgt? it)) (update it :visited-hids append curr-hid)
                              (= curr-hid tgt-hid) (assoc it :found-tgt? true))))))]
-      (newline)
-      (println "Overall Tree Structure:")
-      (spy-pretty (hid->tree root-hid))
-      (newline)
+      (when false
+        (newline)
+        (println "Overall Tree Structure:")
+        (spy-pretty (hid->tree root-hid))
+        (newline))
       (walk-tree root-hid {:enter enter-fn}) ; accum results => state atom
       (let [depth-first-tags (it-> (grab :visited-hids @state-atom)
                                (mapv hid->node it)
                                (mapv #(grab :tag %) it))]
         (is= depth-first-tags [:a :b :c])))))
+
+;-----------------------------------------------------------------------------
+(dotest
+  (hid-count-reset)
+  (with-forest (new-forest)
+    (let [debug-flg       false
+          edn-str ;   Notice that there are 3 forms in the source
+                          (ts/quotes->double ; use single-quotes in string, then convert => double-quotes
+                            "(ns tst.demo.core
+                               (:use demo.core tupelo.core tupelo.test))
+
+                             (defn add2 [x y] (+ x y))
+
+                             (dotest
+                               (is= 5 (spyx (add2 2 3)))
+                               (is= 'abc' (str 'ab' 'c'))) ")
+
+          ; since `edn/read-string` only returns the next form, we wrap all forms in an artifical [:root ...] node
+          parse-txt       (str "[:root " edn-str " ]")
+          edn-data        (edn/read-string parse-txt) ; reads only the first form
+
+          root-hid        (add-tree-edn edn-data) ; add edn data to a single forest tree
+          ns-path         (only (find-paths root-hid [:** {::tf/value (symbol "ns")}])) ; search for the `ns` symbol`
+          ; ns-path looks like  `[1038 1009 1002]`, where 1002 points to the `ns` node
+
+          ns-hid          (xlast ns-path) ; ns-hid is a pointer to the node with `ns`
+          ns-parent-hid   (xsecond (reverse ns-path)) ; get the parent hid (eg 1009)
+          ns-parent-khids (hid->kids ns-parent-hid) ; vector with `ns` contains 4 kids, of which `ns` is the first
+          ns-sym-hid      (xsecond ns-parent-khids)] ; symbol `tst.demo.core` is the 2nd kid
+      (when debug-flg
+        (newline)
+        (spyx-pretty (hid->bush root-hid))
+        (newline)
+        (spyx (hid->node ns-hid))
+        (spyx (hid->node ns-parent-hid))
+        (spyx ns-parent-khids)
+        (newline)
+        (spyx (hid->node ns-sym-hid)))
+
+      ; replace the old namespace symbol with a new one
+      (attrs-merge ns-sym-hid {::tf/value (symbol "something.new.core")})
+
+      ; find the 3 kids of the `:root` node
+      (let [root-khids      (it-> root-hid
+                              (hid->node it)
+                              (grab ::tf/khids it)
+                              (drop 1 it) ;  remove :root tag we added
+                              )
+            kids-edn        (forv [hid root-khids] ; still 3 forms to output
+                              (hid->edn hid))
+            modified-src    (with-out-str ; convert EDN forms to a single string
+                              (doseq [form kids-edn]
+                                (prn form)))
+            ; expected-result is the original edn-str but with the new namespace symbol
+            expected-result (str/replace edn-str "tst.demo.core" "something.new.core")]
+
+        (when debug-flg
+          (spyx (hid->node ns-sym-hid))
+          (newline)
+          (spyx-pretty kids-edn)
+          (newline)
+          (println "modified-src:")
+          (println modified-src))
+
+        (is-nonblank= modified-src expected-result)))))
+
+;-----------------------------------------------------------------------------
+(dotest
+  (hid-count-reset)
+  (with-forest (new-forest)
+    (let [edn-data        {:a [{:x 2 :y 3} ]
+                           :b {:c 3
+                               :d {:e 5} }}
+          root-hid        (add-tree-edn edn-data) ; add edn data to a single forest tree
+          ]
+        ;(nl) (spyx-pretty (hid->tree root-hid))
+        (is= (hid->bush root-hid)
+          [{:tag ::tf/entity, ::tf/index nil}
+           [{:tag ::tf/entry, ::tf/key :a}
+            [{:tag ::tf/vec, ::tf/index nil}
+             [{:tag ::tf/entity, ::tf/index 0}
+              [{:tag ::tf/entry, ::tf/key :x}
+               [#::tf{:value 2, :index nil}]]
+              [{:tag ::tf/entry, ::tf/key :y}
+               [#::tf{:value 3, :index nil}]]]]]
+           [{:tag ::tf/entry, ::tf/key :b}
+            [{:tag ::tf/entity, ::tf/index nil}
+             [{:tag ::tf/entry, ::tf/key :c}
+              [#::tf{:value 3, :index nil}]]
+             [{:tag ::tf/entry, ::tf/key :d}
+              [{:tag ::tf/entity, ::tf/index nil}
+               [{:tag ::tf/entry, ::tf/key :e}
+                [#::tf{:value 5, :index nil}]]]]]]] )
+        (is= edn-data (hid->edn root-hid))
+        )))
+
+
+
+
+
+
+
+
 
 
 
