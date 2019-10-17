@@ -1043,7 +1043,8 @@
 ;   :then (parent-hid (hid->node it))})
 
 (defmacro cond-it->
-  "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
+  "A threading macro like cond-> that always uses the symbol 'it' as the placeholder for the next threaded value.
+  Works in both the conditional form and the value form:
 
     (let [params {:a 1 :b 1 :c nil :d nil}]
       (cond-it-> params
