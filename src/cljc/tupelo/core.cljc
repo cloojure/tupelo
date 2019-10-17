@@ -728,7 +728,7 @@
   ([value] ; 1-arg arity uses a generic "spy" message
    (spy :spy value)))
 
-(defn spyx-impl
+(defn ^:no-doc spyx-impl
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
                      (when *spy-enabled*
@@ -1023,7 +1023,7 @@
          ]
      ~'it))
 
-(defn cond-it-impl
+(defn ^:no-doc cond-it-impl
   [expr & forms]
   (let [num-forms (count forms)]
     (when-not (even? num-forms)
@@ -2630,7 +2630,7 @@
   [item :- s/Any]
   (has-some? #(= :* %) (unnest [item])))
 
-(defn set-match-impl
+(defn ^:no-doc  set-match-impl
   [ctx pattern data]
   (or
     (= pattern :*)
