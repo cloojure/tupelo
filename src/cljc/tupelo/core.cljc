@@ -2689,6 +2689,34 @@
   [arg]
   (with-out-str (pprint/pprint arg)))
 
+(defn ^:no-doc walk-parents-impl
+  [parents data intc]
+  (println :walk-parents-impl data)
+  (let [enter-fn        (:enter intc) ; may be nil
+        leave-fn        (:leave intc) ; may be nil
+        parents-next    (append parents data)
+        data-post-enter (cond-it-> data
+                          (not-nil? enter-fn) (enter-fn parents it))
+        data-post-walk  (cond
+                          (map? data-post-enter) (into {}
+                                                   (forv [mapentry data-post-enter]
+                                                     (walk-parents-impl parents-next mapentry intc)))
+                          (map-entry? data-post-enter) (let [[me-key me-val] data-post-enter]
+                                                         (map-entry
+                                                           (walk-parents-impl parents-next me-key intc)
+                                                           (walk-parents-impl parents-next me-val intc)))
+                          (set? data-post-enter) (into #{}
+                                                   (forv [elem data-post-enter]
+                                                     (walk-parents-impl parents-next elem intc)))
+                          (sequential? data-post-enter) (forv [elem data-post-enter]
+                                                          (walk-parents-impl parents-next elem intc)))
+        data-post-leave (cond-it-> data-post-walk
+                          (not-nil? leave-fn) (leave-fn parents it))]
+    data-post-leave))
+
+(defn walk-parents
+  [data intc]
+  (walk-parents-impl [] data intc))
 
 ; bottom
 ;***************************************************************************************************

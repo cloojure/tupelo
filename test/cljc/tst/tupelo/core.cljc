@@ -1971,6 +1971,18 @@
     (is (sorted-map? (get-in nested-sorted [:b 0])))
     (is (sorted-map? nested-sorted))))
 
+(dotest-focus
+  (let [data {:a 1 :b  {:c 3}}
+        intc {:enter (fn [path data]
+                       (t/with-result data
+                         (newline)
+                         (println :enter)) (t/spy-pretty [path data]))
+              :leave nil} ]
+    (spyx-pretty data)
+    (t/walk-parents data intc)
+    )
+  )
+
 (dotest
   (is= (range 10)   ; vector/list
     (t/unnest  0 1 2 3 4 5 6 7 8 9 )
