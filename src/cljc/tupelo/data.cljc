@@ -268,7 +268,7 @@
       (get env elem)
       elem)))
 
-(s/defn query-impl :- s/Any
+(s/defn ^:no-doc query-impl :- s/Any
   [ctx :- tsk/KeyMap]
   (newline)
 
