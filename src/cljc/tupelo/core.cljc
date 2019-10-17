@@ -2691,7 +2691,6 @@
 
 (defn ^:no-doc walk-parents-impl
   [parents data intc]
-  (println :walk-parents-impl data)
   (let [enter-fn        (:enter intc) ; may be nil
         leave-fn        (:leave intc) ; may be nil
         parents-next    (append parents data)
@@ -2709,7 +2708,8 @@
                                                    (forv [elem data-post-enter]
                                                      (walk-parents-impl parents-next elem intc)))
                           (sequential? data-post-enter) (forv [elem data-post-enter]
-                                                          (walk-parents-impl parents-next elem intc)))
+                                                          (walk-parents-impl parents-next elem intc))
+                          :else data-post-enter)
         data-post-leave (cond-it-> data-post-walk
                           (not-nil? leave-fn) (leave-fn parents it))]
     data-post-leave))
