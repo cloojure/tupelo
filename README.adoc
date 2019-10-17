@@ -1,14 +1,9 @@
 
 = Making Clojure Even Sweeter
 
-=== The Tupelo API Docs link:http://cloojure.github.io/doc/tupelo/[are posted on GitHub Pages]
-
-=== Current Version
-
-image:https://img.shields.io/clojars/v/tupelo.svg[link="http://clojars.org/tupelo"]
-
-image:https://cljdoc.org/badge/tupelo/tupelo[link="https://cljdoc.org/d/$group-id/$artifact-id/CURRENT"]
-
+=== image:https://img.shields.io/clojars/v/tupelo.svg[link="http://clojars.org/tupelo"] <= Current Version
+=== image:https://cljdoc.org/badge/tupelo/tupelo[link="https://cljdoc.org/d/tupelo/tupelo/CURRENT"] <= Full API Docs on cljdoc.org
+=== link:http://cloojure.github.io/doc/tupelo/[API Docs] on GitHub Pages
 
 == Tupelo Overview
 
