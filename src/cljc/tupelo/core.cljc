@@ -2717,8 +2717,8 @@
 (defn walk-with-parents
   "Performs a depth-first traversal of a data structure, using an interceptor with signature:
 
-      {:enter (fn [path data] ...)
-       :leave (fn [path data] ...) }
+      {:enter (fn [parents data] ...)
+       :leave (fn [parents data] ...) }
 
    For each data node in the tree, the `:enter` function is called prior to walking the subtree rooted
    at that element, and the `:leave` function is called after walking the subtree. The result of each
@@ -2728,30 +2728,30 @@
    (the result of which must also be a valid map entry). The resulting sequence of MapEntry elements is then reassembled
    into a map.
 
-   The `path` arg to each interceptor function is a vector of elements from the root data value passed in.  Using dummy
+   The `parents` arg to each interceptor function is a vector of elements from the root data value passed in.  Using dummy
    (i.e. noop) interceptors which simply print their args as a map, we have this example:
 
     (walk-with-parents  {:a 1 :b {:c 3}}}  <noop-intc>) =>
-       :enter {:path []                                                :data {:a 1 :b {:c 3}}}
-       :enter {:path [{:a 1 :b {:c 3}}]                                :data [:a 1]}
-       :enter {:path [{:a 1 :b {:c 3}} [:a 1]]                         :data :a}
-       :leave {:path [{:a 1 :b {:c 3}} [:a 1]]                         :data :a}
-       :enter {:path [{:a 1 :b {:c 3}} [:a 1]]                         :data 1}
-       :leave {:path [{:a 1 :b {:c 3}} [:a 1]]                         :data 1}
-       :leave {:path [{:a 1 :b {:c 3}}]                                :data [:a 1]}
-       :enter {:path [{:a 1 :b {:c 3}}]                                :data [:b {:c 3}]}
-       :enter {:path [{:a 1 :b {:c 3}} [:b {:c 3}]]                    :data :b}
-       :leave {:path [{:a 1 :b {:c 3}} [:b {:c 3}]]                    :data :b}
-       :enter {:path [{:a 1 :b {:c 3}} [:b {:c 3}]]                    :data {:c 3}}
-       :enter {:path [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3}]             :data [:c 3]}
-       :enter {:path [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]]      :data :c}
-       :leave {:path [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]]      :data :c}
-       :enter {:path [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]]      :data 3}
-       :leave {:path [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]]      :data 3}
-       :leave {:path [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3}]             :data [:c 3]}
-       :leave {:path [{:a 1 :b {:c 3}} [:b {:c 3}]]                    :data {:c 3}}
-       :leave {:path [{:a 1 :b {:c 3}}]                                :data [:b {:c 3}]}
-       :leave {:path []                                                :data {:a 1 :b {:c 3}}}
+       :enter {:parents []                                                :data {:a 1 :b {:c 3}}}
+       :enter {:parents [{:a 1 :b {:c 3}}]                                :data [:a 1]}
+       :enter {:parents [{:a 1 :b {:c 3}} [:a 1]]                         :data :a}
+       :leave {:parents [{:a 1 :b {:c 3}} [:a 1]]                         :data :a}
+       :enter {:parents [{:a 1 :b {:c 3}} [:a 1]]                         :data 1}
+       :leave {:parents [{:a 1 :b {:c 3}} [:a 1]]                         :data 1}
+       :leave {:parents [{:a 1 :b {:c 3}}]                                :data [:a 1]}
+       :enter {:parents [{:a 1 :b {:c 3}}]                                :data [:b {:c 3}]}
+       :enter {:parents [{:a 1 :b {:c 3}} [:b {:c 3}]]                    :data :b}
+       :leave {:parents [{:a 1 :b {:c 3}} [:b {:c 3}]]                    :data :b}
+       :enter {:parents [{:a 1 :b {:c 3}} [:b {:c 3}]]                    :data {:c 3}}
+       :enter {:parents [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3}]             :data [:c 3]}
+       :enter {:parents [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]]      :data :c}
+       :leave {:parents [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]]      :data :c}
+       :enter {:parents [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]]      :data 3}
+       :leave {:parents [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]]      :data 3}
+       :leave {:parents [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3}]             :data [:c 3]}
+       :leave {:parents [{:a 1 :b {:c 3}} [:b {:c 3}]]                    :data {:c 3}}
+       :leave {:parents [{:a 1 :b {:c 3}}]                                :data [:b {:c 3}]}
+       :leave {:parents []                                                :data {:a 1 :b {:c 3}}}
    "
   [data intc]
   (let [enter-fn (:enter intc) ; may be nil

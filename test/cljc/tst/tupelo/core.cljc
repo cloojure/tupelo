@@ -1973,35 +1973,35 @@
 
 (dotest
   (let [data    {:a 1 :b {:c 3}}
-        intc    {:enter (fn [path data]
+        intc    {:enter (fn [parents data]
                           (t/with-result data
-                            (print :enter) (t/spy-pretty (t/vals->map path data))))
-                 :leave (fn [path data]
+                            (print :enter) (t/spy-pretty (t/vals->map parents data))))
+                 :leave (fn [parents data]
                           (t/with-result data
-                            (print :leave) (t/spy-pretty (t/vals->map path data))))}
+                            (print :leave) (t/spy-pretty (t/vals->map parents data))))}
         str-out (with-out-str
                   (is= data (t/walk-with-parents data intc)))]
     (is-nonblank= str-out
-      ":enter{:path [], :data {:a 1, :b {:c 3}}}
-       :enter{:path [{:a 1, :b {:c 3}}], :data [:a 1]}
-       :enter{:path [{:a 1, :b {:c 3}} [:a 1]], :data :a}
-       :leave{:path [{:a 1, :b {:c 3}} [:a 1]], :data :a}
-       :enter{:path [{:a 1, :b {:c 3}} [:a 1]], :data 1}
-       :leave{:path [{:a 1, :b {:c 3}} [:a 1]], :data 1}
-       :leave{:path [{:a 1, :b {:c 3}}], :data [:a 1]}
-       :enter{:path [{:a 1, :b {:c 3}}], :data [:b {:c 3}]}
-       :enter{:path [{:a 1, :b {:c 3}} [:b {:c 3}]], :data :b}
-       :leave{:path [{:a 1, :b {:c 3}} [:b {:c 3}]], :data :b}
-       :enter{:path [{:a 1, :b {:c 3}} [:b {:c 3}]], :data {:c 3}}
-       :enter{:path [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3}], :data [:c 3]}
-       :enter{:path [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data :c}
-       :leave{:path [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data :c}
-       :enter{:path [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data 3}
-       :leave{:path [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data 3}
-       :leave{:path [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3}], :data [:c 3]}
-       :leave{:path [{:a 1, :b {:c 3}} [:b {:c 3}]], :data {:c 3}}
-       :leave{:path [{:a 1, :b {:c 3}}], :data [:b {:c 3}]}
-       :leave{:path [], :data {:a 1, :b {:c 3}}} ")))
+      ":enter{:parents [],                                                    :data {:a 1, :b {:c 3}}}
+       :enter{:parents [{:a 1, :b {:c 3}}],                                   :data [:a 1]}
+       :enter{:parents [{:a 1, :b {:c 3}} [:a 1]],                            :data :a}
+       :leave{:parents [{:a 1, :b {:c 3}} [:a 1]],                            :data :a}
+       :enter{:parents [{:a 1, :b {:c 3}} [:a 1]],                            :data 1}
+       :leave{:parents [{:a 1, :b {:c 3}} [:a 1]],                            :data 1}
+       :leave{:parents [{:a 1, :b {:c 3}}],                                   :data [:a 1]}
+       :enter{:parents [{:a 1, :b {:c 3}}],                                   :data [:b {:c 3}]}
+       :enter{:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                       :data :b}
+       :leave{:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                       :data :b}
+       :enter{:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                       :data {:c 3}}
+       :enter{:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3}],                :data [:c 3]}
+       :enter{:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],         :data :c}
+       :leave{:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],         :data :c}
+       :enter{:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],         :data 3}
+       :leave{:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],         :data 3}
+       :leave{:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3}],                :data [:c 3]}
+       :leave{:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                       :data {:c 3}}
+       :leave{:parents [{:a 1, :b {:c 3}}],                                   :data [:b {:c 3}]}
+       :leave{:parents [],                                                    :data {:a 1, :b {:c 3}}} ")))
 
 (dotest
   (let [data {:a 1 :b {:c 3}}
