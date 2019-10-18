@@ -1980,7 +1980,7 @@
                           (t/with-result data
                             (print :leave) (t/spy-pretty (t/vals->map path data))))}
         str-out (with-out-str
-                  (is= data (t/walk-parents data intc)))]
+                  (is= data (t/walk-with-parents data intc)))]
     (is-nonblank= str-out
       ":enter{:path [], :data {:a 1, :b {:c 3}}}
        :enter{:path [{:a 1, :b {:c 3}}], :data [:a 1]}
@@ -2015,7 +2015,7 @@
                                      (= :c (key parent))
                                      (number? data))
                                (inc data))))))}]
-    (is= {:a 1 :b {:c 4}} (t/walk-parents data intc))))
+    (is= {:a 1 :b {:c 4}} (t/walk-with-parents data intc))))
 
 (dotest
   (is= (range 10)   ; vector/list
