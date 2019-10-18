@@ -122,7 +122,7 @@
 #?(:clj (do
 
 ; (defn use-fixtures-all [& args] (apply test/use-fixtures args)) #todo why is this here???
-(defn define-fixture-impl
+(defn ^:no-doc define-fixture-impl
   [ctx mode interceptor-map]
   (let [enter-fn (or (:enter interceptor-map) `identity)
         leave-fn (or (:leave interceptor-map) `identity) ]

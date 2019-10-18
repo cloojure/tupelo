@@ -728,7 +728,7 @@
   ([value] ; 1-arg arity uses a generic "spy" message
    (spy :spy value)))
 
-(defn spyx-impl
+(defn ^:no-doc spyx-impl
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
                      (when *spy-enabled*
@@ -1023,7 +1023,7 @@
          ]
      ~'it))
 
-(defn cond-it-impl
+(defn ^:no-doc cond-it-impl
   [expr & forms]
   (let [num-forms (count forms)]
     (when-not (even? num-forms)
@@ -1043,7 +1043,8 @@
 ;   :then (parent-hid (hid->node it))})
 
 (defmacro cond-it->
-  "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
+  "A threading macro like cond-> that always uses the symbol 'it' as the placeholder for the next threaded value.
+  Works in both the conditional form and the value form:
 
     (let [params {:a 1 :b 1 :c nil :d nil}]
       (cond-it-> params
@@ -2630,7 +2631,7 @@
   [item :- s/Any]
   (has-some? #(= :* %) (unnest [item])))
 
-(defn set-match-impl
+(defn ^:no-doc  set-match-impl
   [ctx pattern data]
   (or
     (= pattern :*)
@@ -2688,6 +2689,76 @@
   [arg]
   (with-out-str (pprint/pprint arg)))
 
+(defn ^:no-doc walk-parents-impl
+  [parents data intc]
+  (let [enter-fn        (:enter intc) ; may be nil
+        leave-fn        (:leave intc) ; may be nil
+        parents-next    (append parents data)
+        data-post-enter (cond-it-> data
+                          (not-nil? enter-fn) (enter-fn parents it))
+        data-post-walk  (cond
+                          (map? data-post-enter) (into {}
+                                                   (forv [mapentry data-post-enter]
+                                                     (walk-parents-impl parents-next mapentry intc)))
+                          (map-entry? data-post-enter) (let [[me-key me-val] data-post-enter]
+                                                         (map-entry
+                                                           (walk-parents-impl parents-next me-key intc)
+                                                           (walk-parents-impl parents-next me-val intc)))
+                          (set? data-post-enter) (into #{}
+                                                   (forv [elem data-post-enter]
+                                                     (walk-parents-impl parents-next elem intc)))
+                          (sequential? data-post-enter) (forv [elem data-post-enter]
+                                                          (walk-parents-impl parents-next elem intc))
+                          :else data-post-enter)
+        data-post-leave (cond-it-> data-post-walk
+                          (not-nil? leave-fn) (leave-fn parents it))]
+    data-post-leave))
+
+(defn walk-with-parents
+  "Performs a depth-first traversal of a data structure, using an interceptor with signature:
+
+      {:enter (fn [path data] ...)
+       :leave (fn [path data] ...) }
+
+   For each data node in the tree, the `:enter` function is called prior to walking the subtree rooted
+   at that element, and the `:leave` function is called after walking the subtree. The result of each
+   function replaces the data value.
+
+   Clojure maps have special processing.  They are broken up into a sequence of MapEntry elements, each of which is walked
+   (the result of which must also be a valid map entry). The resulting sequence of MapEntry elements is then reassembled
+   into a map.
+
+   The `path` arg to each interceptor function is a vector of elements from the root data value passed in.  Using dummy
+   (i.e. noop) interceptors which simply print their args as a map, we have this example:
+
+    (walk-with-parents  {:a 1 :b {:c 3}}}  <noop-intc>) =>
+       :enter {:path []                                                :data {:a 1 :b {:c 3}}}
+       :enter {:path [{:a 1 :b {:c 3}}]                                :data [:a 1]}
+       :enter {:path [{:a 1 :b {:c 3}} [:a 1]]                         :data :a}
+       :leave {:path [{:a 1 :b {:c 3}} [:a 1]]                         :data :a}
+       :enter {:path [{:a 1 :b {:c 3}} [:a 1]]                         :data 1}
+       :leave {:path [{:a 1 :b {:c 3}} [:a 1]]                         :data 1}
+       :leave {:path [{:a 1 :b {:c 3}}]                                :data [:a 1]}
+       :enter {:path [{:a 1 :b {:c 3}}]                                :data [:b {:c 3}]}
+       :enter {:path [{:a 1 :b {:c 3}} [:b {:c 3}]]                    :data :b}
+       :leave {:path [{:a 1 :b {:c 3}} [:b {:c 3}]]                    :data :b}
+       :enter {:path [{:a 1 :b {:c 3}} [:b {:c 3}]]                    :data {:c 3}}
+       :enter {:path [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3}]             :data [:c 3]}
+       :enter {:path [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]]      :data :c}
+       :leave {:path [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]]      :data :c}
+       :enter {:path [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]]      :data 3}
+       :leave {:path [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]]      :data 3}
+       :leave {:path [{:a 1 :b {:c 3}} [:b {:c 3}] {:c 3}]             :data [:c 3]}
+       :leave {:path [{:a 1 :b {:c 3}} [:b {:c 3}]]                    :data {:c 3}}
+       :leave {:path [{:a 1 :b {:c 3}}]                                :data [:b {:c 3}]}
+       :leave {:path []                                                :data {:a 1 :b {:c 3}}}
+   "
+  [data intc]
+  (let [enter-fn (:enter intc) ; may be nil
+        leave-fn (:leave intc)] ; may be nil
+    (when (and (nil? enter-fn) (nil? leave-fn))
+      (throw (ex-info "Invalid interceptor. :enter and :leave functions cannot both be nil." (vals->map intc))))
+    (walk-parents-impl [] data intc)))
 
 ; bottom
 ;***************************************************************************************************

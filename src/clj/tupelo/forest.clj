@@ -29,6 +29,9 @@
 ;   still immutable, native Clojure maps at base
 ;      `with-forest` macro restricted to a single thread at a time
 
+; #todo Add destruct features in search (hiccup for tree search):
+; #todo   (find root-hid [ {:hid ?} { :value 5}]) ; parent of node with {:value 5}
+
 ; #todo  define tf/Bush type (& Hiccup, Enlive)
 
 ; forest  data-forest  ForestDb forest-db
@@ -172,25 +175,25 @@
   ([idx :- (s/if int? s/Int (s/eq nil))
     data :- s/Any]
     (cond
-      (listy? data) {:tag ::list
+      ; need also (sequential? data)  ???
+      (listy? data) {:tag ::list ; #todo {::type ::list}
                      ::index idx
                      ::kids  (forv [[idx val] (indexed data)]
                                (edn->tree idx val))}
-      (vector? data) {:tag    ::vec
+      (vector? data) {:tag    ::vec ; #todo {::type ::vec}
                       ::index idx
                       ::kids  (forv [[idx val] (indexed data)]
                                 (edn->tree idx val))}
-      (sequential? data) {:tag   ::list
-                          ::index idx
-                          ::kids  (forv [[idx val] (indexed data)]
-                                    (edn->tree idx val))}
       (map? data) {:tag   ::entity
                    ::index idx ; #todo get rid of this for maps & mapentry's
                    ::kids  (forv [[child-key child-val] data]
                              {:tag  ::entry
                               ::key  child-key
                               ::kids [(edn->tree child-val)]})}
-      :else {::value data ::index idx ::kids []})))
+      ; #todo (set? data)
+
+      :else {::value data ::index idx ::kids []} ; #todo make explicit primative: number, string, kw, symbol
+      )))
 
 (defn ^:private ^:no-doc validate-listvec-kids-idx
   "verify that a ::list node in a tree has a valid index for all kid nodes"

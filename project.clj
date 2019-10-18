@@ -1,6 +1,7 @@
-(defproject tupelo "0.9.158"
+(defproject tupelo "0.9.163"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
-  :url "http://github.com/cloojure/tupelo"
+  :url "https://github.com/cloojure/tupelo"
+  :scm "https://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :min-lein-version "2.9.1"

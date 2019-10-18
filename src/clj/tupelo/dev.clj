@@ -12,7 +12,7 @@
     [clojure.math.combinatorics :as combo]
     [schema.core :as s] ))
 
-(defn find-idxs-impl
+(defn ^:no-doc find-idxs-impl
   [idxs data pred-fn]
   (if (empty? data)
     []

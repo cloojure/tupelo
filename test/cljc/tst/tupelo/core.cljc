@@ -1972,6 +1972,52 @@
     (is (sorted-map? nested-sorted))))
 
 (dotest
+  (let [data    {:a 1 :b {:c 3}}
+        intc    {:enter (fn [path data]
+                          (t/with-result data
+                            (print :enter) (t/spy-pretty (t/vals->map path data))))
+                 :leave (fn [path data]
+                          (t/with-result data
+                            (print :leave) (t/spy-pretty (t/vals->map path data))))}
+        str-out (with-out-str
+                  (is= data (t/walk-with-parents data intc)))]
+    (is-nonblank= str-out
+      ":enter{:path [], :data {:a 1, :b {:c 3}}}
+       :enter{:path [{:a 1, :b {:c 3}}], :data [:a 1]}
+       :enter{:path [{:a 1, :b {:c 3}} [:a 1]], :data :a}
+       :leave{:path [{:a 1, :b {:c 3}} [:a 1]], :data :a}
+       :enter{:path [{:a 1, :b {:c 3}} [:a 1]], :data 1}
+       :leave{:path [{:a 1, :b {:c 3}} [:a 1]], :data 1}
+       :leave{:path [{:a 1, :b {:c 3}}], :data [:a 1]}
+       :enter{:path [{:a 1, :b {:c 3}}], :data [:b {:c 3}]}
+       :enter{:path [{:a 1, :b {:c 3}} [:b {:c 3}]], :data :b}
+       :leave{:path [{:a 1, :b {:c 3}} [:b {:c 3}]], :data :b}
+       :enter{:path [{:a 1, :b {:c 3}} [:b {:c 3}]], :data {:c 3}}
+       :enter{:path [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3}], :data [:c 3]}
+       :enter{:path [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data :c}
+       :leave{:path [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data :c}
+       :enter{:path [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data 3}
+       :leave{:path [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data 3}
+       :leave{:path [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3}], :data [:c 3]}
+       :leave{:path [{:a 1, :b {:c 3}} [:b {:c 3}]], :data {:c 3}}
+       :leave{:path [{:a 1, :b {:c 3}}], :data [:b {:c 3}]}
+       :leave{:path [], :data {:a 1, :b {:c 3}}} ")))
+
+(dotest
+  (let [data {:a 1 :b {:c 3}}
+        intc {:enter nil
+              :leave (fn [path data]
+                       ; only increment number if in a mapentry with key :c
+                       (t/with-nil-default data
+                         (when (t/not-empty? path)
+                           (let [parent (t/xlast path)]
+                             (when (and (map-entry? parent)
+                                     (= :c (key parent))
+                                     (number? data))
+                               (inc data))))))}]
+    (is= {:a 1 :b {:c 4}} (t/walk-with-parents data intc))))
+
+(dotest
   (is= (range 10)   ; vector/list
     (t/unnest  0 1 2 3 4 5 6 7 8 9 )
     (t/unnest  0 1 2 [3 [4] 5 6] 7 [8 9])
