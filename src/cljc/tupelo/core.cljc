@@ -2689,8 +2689,10 @@
   [arg]
   (with-out-str (pprint/pprint arg)))
 
-(defn ^:no-doc walk-parents-impl
-  [parents data intc]
+(s/defn ^:no-doc walk-parents-impl :- s/Any
+  [parents :- tsk/Vec
+   data :- s/Any
+   intc :- tsk/KeyMap]
   (let [enter-fn        (:enter intc) ; may be nil
         leave-fn        (:leave intc) ; may be nil
         parents-next    (append parents data)
@@ -2714,7 +2716,7 @@
                           (not-nil? leave-fn) (leave-fn parents it))]
     data-post-leave))
 
-(defn walk-with-parents
+(s/defn walk-with-parents :- s/Any
   "Performs a depth-first traversal of a data structure, using an interceptor with signature:
 
       {:enter (fn [path data] ...)
@@ -2753,12 +2755,13 @@
        :leave {:path [{:a 1 :b {:c 3}}]                                :data [:b {:c 3}]}
        :leave {:path []                                                :data {:a 1 :b {:c 3}}}
    "
-  [data intc]
-  (let [enter-fn (:enter intc) ; may be nil
-        leave-fn (:leave intc)] ; may be nil
+  [data :- s/Any
+   interceptor :- tsk/KeyMap]
+  (let [enter-fn (:enter interceptor) ; may be nil
+        leave-fn (:leave interceptor)] ; may be nil
     (when (and (nil? enter-fn) (nil? leave-fn))
-      (throw (ex-info "Invalid interceptor. :enter and :leave functions cannot both be nil." (vals->map intc))))
-    (walk-parents-impl [] data intc)))
+      (throw (ex-info "Invalid interceptor. :enter and :leave functions cannot both be nil." (vals->map interceptor))))
+    (walk-parents-impl [] data interceptor)))
 
 ; bottom
 ;***************************************************************************************************
