@@ -1933,6 +1933,21 @@
         {:0 0, :3 0, :6 0, :1 1, :4 1, :7 1, :2 2, :5 2, :8 2})))
   )
 
+(dotest-focus
+  (newline)
+  (let [vv [0 1 2]]
+    (spyx vv)
+    (spyx (t/drop-at vv 1 ))
+    (spyx (t/replace-at vv 1 99 ))
+    (spyx (t/insert-at vv 1 88 ))
+
+    (is= vv [0 1 2])
+    (throws? (t/drop-at {0 :0 1 :1} 1))
+
+    )
+   )
+
+
 (dotest   ; #todo #clojure.core/sorted-map-by bug
   (when false
     (let [unsorted {:x.y/a {:rem 0}
