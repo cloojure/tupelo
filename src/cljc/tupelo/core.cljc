@@ -2722,16 +2722,18 @@
       {:enter (fn [parents data] ...)
        :leave (fn [parents data] ...) }
 
-   For each data node in the tree, the `:enter` function is called prior to walking the subtree rooted
-   at that element, and the `:leave` function is called after walking the subtree. The result of each
-   function replaces the data value.
+   For each data node in the tree, the `:enter` function is called prior to walking
+   the subtree rooted at that element, and the `:leave` function is called after
+   walking the subtree. The result of each function replaces the data value.
 
-   Clojure maps have special processing.  They are broken up into a sequence of MapEntry elements, each of which is walked
-   (the result of which must also be a valid map entry). The resulting sequence of MapEntry elements is then reassembled
-   into a map.
+   Clojure maps have special processing.  They are broken up into a sequence of
+   MapEntry elements, each of which is walked (the result of which must also be a
+   valid map entry). The resulting sequence of MapEntry elements is then
+   reassembled into a map.
 
-   The `parents` arg to each interceptor function is a vector of elements from the root data value passed in.  Using dummy
-   (i.e. noop) interceptors which simply print their args as a map, we have this example:
+   The `parents` arg to each interceptor function is a vector of elements from
+   the root data value passed in.  Using dummy (i.e. noop) interceptors which
+   simply print their args as a map, we have this example:
 
     (walk-with-parents  {:a 1 :b {:c 3}}}  <noop-intc>) =>
        :enter {:parents []                                                :data {:a 1 :b {:c 3}}}
