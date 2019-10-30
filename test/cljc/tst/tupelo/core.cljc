@@ -13,9 +13,9 @@
        :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty]])
 
     #?(:clj [clojure.test] :cljs [cljs.test])
-    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
+    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]]
        :cljs [tupelo.test-cljs ; :include-macros true
-              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]])
+              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]])
 
     #?(:clj [tupelo.types :as types])
     ))
@@ -1933,21 +1933,6 @@
         {:0 0, :3 0, :6 0, :1 1, :4 1, :7 1, :2 2, :5 2, :8 2})))
   )
 
-(dotest-focus
-  (newline)
-  (let [vv [0 1 2]]
-    (spyx vv)
-    (spyx (t/drop-at vv 1 ))
-    (spyx (t/replace-at vv 1 99 ))
-    (spyx (t/insert-at vv 1 88 ))
-
-    (is= vv [0 1 2])
-    (throws? (t/drop-at {0 :0 1 :1} 1))
-
-    )
-   )
-
-
 (dotest   ; #todo #clojure.core/sorted-map-by bug
   (when false
     (let [unsorted {:x.y/a {:rem 0}
@@ -1986,17 +1971,19 @@
     (is (sorted-map? (get-in nested-sorted [:b 0])))
     (is (sorted-map? nested-sorted))))
 
-(dotest
-  (let [data    {:a 1 :b {:c 3}}
-        intc    {:enter (fn [parents data]
-                          (t/with-result data
-                            (print :enter) (t/spy-pretty (t/vals->map parents data))))
-                 :leave (fn [parents data]
-                          (t/with-result data
-                            (print :leave) (t/spy-pretty (t/vals->map parents data))))}
-        str-out (with-out-str
-                  (is= data (t/walk-with-parents data intc)))]
-    (is-nonblank= str-out
+(dotest-focus
+  (let [data     {:a 1 :b {:c 3}}
+        intc     {:enter (fn [parents data]
+                           (t/with-result data
+                             (print :enter) (t/spy-pretty (t/vals->map parents data))))
+                  :leave (fn [parents data]
+                           (t/with-result data
+                             (print :leave) (t/spy-pretty (t/vals->map parents data))))}
+        str-walk (with-out-str
+                   (let [data-noop (t/walk-with-parents data intc)]
+                     (is= data data-noop)))]
+    (println str-walk)
+    (is-nonblank= str-walk
       ":enter{:parents [],                                                    :data {:a 1, :b {:c 3}}}
        :enter{:parents [{:a 1, :b {:c 3}}],                                   :data [:a 1]}
        :enter{:parents [{:a 1, :b {:c 3}} [:a 1]],                            :data :a}
@@ -2031,6 +2018,18 @@
                                      (number? data))
                                (inc data))))))}]
     (is= {:a 1 :b {:c 4}} (t/walk-with-parents data intc))))
+
+(dotest-focus (newline)
+
+  (let [le (t/list-entry 5 6)
+        ii (t/le-idx le)
+        vv (t/le-val le)]
+    (is= 5 (spyx ii))
+    (is= 6 (spyx vv))
+    (throws-not? (t/list-entry 0 6))
+    (throws? (t/list-entry -1 6)))
+
+  (newline))
 
 (dotest
   (is= (range 10)   ; vector/list

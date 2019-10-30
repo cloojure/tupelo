@@ -898,6 +898,27 @@
   #?(:clj  (clojure.lang.MapEntry/create key val)
      :cljs (cljs.core.MapEntry. key val)))
 
+(defprotocol IListEntry
+  (le-idx [this])
+  (le-val [this]))
+
+; A structure analogous to MapEntry used to describe a single element in a
+; sequential data structure (list, vec, or seq)
+(defrecord ListEntry
+  [index value]
+  IListEntry
+  (le-idx [this] (.-index this))
+  (le-val [this] (.-value this)))
+(defn list-entry
+  "Constructs a ListEntry object given an index and value"
+  [idx val]
+  (assert (nat-int? idx))
+  (->ListEntry idx val ) )
+(defn list-entry?
+  "Returns true iff the arg implements IListEntry"
+  [arg]
+  (instance? IListEntry arg) )
+
 (comment
   ; #todo => tupelo.core
   (s/defn mapentry->kv :- tsk/Pair ; #todo need test
