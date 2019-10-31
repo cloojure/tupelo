@@ -2714,11 +2714,11 @@
   [parents :- tsk/Vec
    data :- s/Any
    intc :- tsk/KeyMap]
-  (let [enter-fn        (:enter intc) ; may be nil
-        leave-fn        (:leave intc) ; may be nil
+  (let [data-identity-fn (fn [-parents- data] data)
+        enter-fn        (or (:enter intc) data-identity-fn)
+        leave-fn        (or (:leave intc) data-identity-fn)
         parents-next    (append parents data)
-        data-post-enter (cond-it-> data
-                          (not-nil? enter-fn) (enter-fn parents it))
+        data-post-enter (enter-fn parents data)
         data-post-walk  (cond
                           (map? data-post-enter) (into {}
                                                    (forv [mapentry data-post-enter]
@@ -2733,8 +2733,7 @@
                           (sequential? data-post-enter) (forv [elem data-post-enter]
                                                           (walk-parents-impl parents-next elem intc))
                           :else data-post-enter)
-        data-post-leave (cond-it-> data-post-walk
-                          (not-nil? leave-fn) (leave-fn parents it))]
+        data-post-leave (leave-fn parents data-post-walk)]
     data-post-leave))
 
 (s/defn walk-with-parents :- s/Any
