@@ -229,8 +229,9 @@
 
 ))
 ;-----------------------------------------------------------------------------
-(declare glue xfirst xrest append prepend grab fetch-in)
-(declare clip-str )
+(declare
+  glue xfirst xrest append prepend grab fetch-in indexed clip-str validate
+  )
 
 ;-----------------------------------------------------------------------------
 (defn const-fn       ; #todo or const-fn or always
@@ -586,6 +587,34 @@
   (when (nil? coll) (throw (ex-info "xvec: invalid coll: " {:coll coll})))
   (clojure.core/vec coll))
 
+(s/defn ->list :- [s/Any]
+  "Coerce any sequential argument into a List."
+  [arg :- [s/Any]]
+  (apply list arg))
+
+(defmacro forv ; #todo rename for-vec ???
+  "Like clojure.core/for but returns results in a vector.
+  Wraps the loop body in a `do` as with `doseq`. Not lazy."
+  [& forms]
+  (let [bindings-vec (xfirst forms)
+        body-forms   (xrest forms)]
+    `(vec (for ~bindings-vec
+            (do ~@body-forms)))))
+
+(defmacro for-list ; #todo test
+  "Like clojure.core/for but returns results in an eager list.
+  Wraps the loop body in a `do` as with `doseq`. Not lazy."
+  [& forms]
+  (let [bindings-vec (xfirst forms)
+        body-forms   (xrest forms)]
+    `(->list (for ~bindings-vec
+               (do ~@body-forms)))))
+
+(defmacro map-list ; #todo test
+  "Like clojure.core/map but returns results in an eager list. Not lazy."
+  [& forms]
+  `(->list (map ~@forms)))
+
 ; #todo:  make (map-ctx {:trunc false :eager true} <fn> <coll1> <coll2> ...) <- default ctx
 ; #todo:  mapz, forz, filterz, ...?
 (defn keep-if
@@ -909,15 +938,32 @@
   IListEntry
   (le-idx [this] (.-index this))
   (le-val [this] (.-value this)))
+
 (defn list-entry
   "Constructs a ListEntry object given an index and value"
   [idx val]
   (assert (nat-int? idx))
   (->ListEntry idx val ) )
+
 (defn list-entry?
   "Returns true iff the arg implements IListEntry"
-  [arg]
-  (instance? IListEntry arg) )
+  [arg] (satisfies? IListEntry arg) )
+
+(s/defn list->entries :- [ListEntry]
+  "Returns a vector of ListEntry objects given a vector/list"
+  [data :- tsk/Vec]
+  (forv [[ii dd] (indexed data)]
+    (list-entry ii dd)))
+
+(s/defn list-entries->vec :- tsk/Vec ; #todo modify with :lax option & consolidate with lisit-entries-rerack
+  [list-entries :- tsk/Vec]
+  (doseq [item list-entries]
+    (validate list-entry? item))
+  (let [N    (count list-entries)
+        idxs (mapv le-idx list-entries)
+        vals (mapv le-val list-entries)]
+    (assert (= idxs (range N)))
+    vals))
 
 (comment
   ; #todo => tupelo.core
@@ -1535,34 +1581,6 @@
   (it-> (apply str args)
     (take nchars it)
     (apply str it)))
-
-(s/defn ->list :- [s/Any]
-  "Coerce any sequential argument into a List."
-  [arg :- [s/Any]]
-  (apply list arg))
-
-(defmacro forv ; #todo rename for-vec ???
-  "Like clojure.core/for but returns results in a vector.
-  Wraps the loop body in a `do` as with `doseq`. Not lazy."
-  [& forms]
-  (let [bindings-vec (xfirst forms)
-        body-forms   (xrest forms)]
-    `(vec (for ~bindings-vec
-            (do ~@body-forms)))))
-
-(defmacro for-list ; #todo test
-  "Like clojure.core/for but returns results in an eager list.
-  Wraps the loop body in a `do` as with `doseq`. Not lazy."
-  [& forms]
-  (let [bindings-vec (xfirst forms)
-        body-forms   (xrest forms)]
-    `(->list (for ~bindings-vec
-               (do ~@body-forms)))))
-
-(defmacro map-list ; #todo test
-  "Like clojure.core/map but returns results in an eager list. Not lazy."
-  [& forms]
-  `(->list (map ~@forms)))
 
 ;-----------------------------------------------------------------------------
 (defmacro with-timer

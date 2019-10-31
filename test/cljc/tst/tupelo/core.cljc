@@ -2028,6 +2028,13 @@
     (is= 6 (spyx vv))
     (throws-not? (t/list-entry 0 6))
     (throws? (t/list-entry -1 6)))
+  (let [data [:a :b :c]
+        le-vec (t/list->entries data)
+        data-out (t/list-entries->vec le-vec)]
+    (is= (spyx data-out) [:a :b :c])
+    (is (every? t/list-entry? le-vec))
+    (throws? (t/list-entries->vec (reverse le-vec))) ; data indexes must be in order  0..(N-1)
+    )
 
   (newline))
 
