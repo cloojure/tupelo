@@ -19,7 +19,7 @@
     [io.pedestal/pedestal.jetty "0.5.7"]
     [io.pedestal/pedestal.route "0.5.7"]
     [io.pedestal/pedestal.service "0.5.7"]
-    [joda-time/joda-time "2.10.4"]
+    [joda-time/joda-time "2.10.5"]
     [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
     [org.clojure/core.async "0.4.500"]
     [org.clojure/core.match "0.3.0"]
@@ -29,7 +29,7 @@
     [org.clojure/spec.alpha "0.2.176"]
     [org.clojure/test.check "0.10.0"]
     [org.clojure/tools.reader "1.3.2"]
-    [org.snakeyaml/snakeyaml-engine "1.0"] ; #todo upgrade to 2.0, edit Java imports
+    [org.snakeyaml/snakeyaml-engine "2.0"] ; #todo upgrade to 2.0, edit Java imports
     [prismatic/schema "1.1.12"]
   ]
   ; Using `lein-ancient check :all` checks plugins

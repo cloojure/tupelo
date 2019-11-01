@@ -6,13 +6,11 @@
     [tupelo.schema :as tsk]
     )
   (:import ; #todo maybe switch to jackson for yaml ???
-    [org.snakeyaml.engine.v1.api LoadSettingsBuilder Load]
-    [org.snakeyaml.engine.v1.api DumpSettingsBuilder Dump]
-    ))
+    [org.snakeyaml.engine.v2.api LoadSettings DumpSettings Load Dump ]))
 
 ;-----------------------------------------------------------------------------
-(def ^:private load-settings (-> (LoadSettingsBuilder.)
-                               ;(.setLabel "Custom user configuration")
+
+(def ^:private load-settings (-> (LoadSettings/builder)
                                (.build)))
 
 (def ^:private yaml-load (Load. load-settings))
@@ -40,9 +38,8 @@
     (parse-raw (s/validate s/Str str-in))))
 
 ;-----------------------------------------------------------------------------
-(def ^:private dump-settings (it-> (DumpSettingsBuilder.)
-                               ;(.setDefaultScalarStyle it ScalarStyle.DOUBLE_QUOTED)
-                               (.build it)))
+(def ^:private dump-settings (-> (DumpSettings/builder)
+                               (.build)))
 
 (def ^:private yaml-dump (Dump. dump-settings))
 
