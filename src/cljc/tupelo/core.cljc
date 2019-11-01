@@ -2740,11 +2740,33 @@
 
 ; (def ^:no-doc Map-or-List-or-Set (s/cond-pre tsk/Map tsk/Vec tsk/Set)) ; #todo use for launcher of walk-strict...
 
-(s/defn walk-strict-readonly :- s/Any ; #todo make version with parents, but skipping recurse of MapEntry & ListEntry
+(s/defn ^:no-doc walk-with-parents-readonly-impl :- s/Any ; #todo make version with parents, but skipping recurse of MapEntry & ListEntry
+  [parents :- tsk/Vec
+   data :- s/Any
+   intc :- tsk/KeyMap] ;  #todo fix problem with s/fn-schema {s/Keyword s/fn-schema}
+  (let [enter-fn     (:enter intc) ; may be nil
+        leave-fn     (:leave intc) ; may be nil
+        parents-next (append parents data)]
+    (when enter-fn
+      (enter-fn (vals->map parents data)))
+    (cond
+      (map? data) (doseq [mapentry data]
+                    (walk-with-parents-readonly-impl parents-next (key mapentry) intc)
+                    (walk-with-parents-readonly-impl parents-next (val mapentry) intc))
+
+      (or (set? data)
+        (sequential? data)) (doseq [item data]
+                              (walk-with-parents-readonly-impl parents-next item intc))
+
+      :else data) ; anything else just return it
+    (when leave-fn
+      (leave-fn (vals->map parents data)))))
+
+(s/defn walk-with-parents-readonly :- s/Any ; #todo make version with parents, but skipping recurse of MapEntry & ListEntry
   "Walks a data structure as with `walk-with-parents`, but in a read-only mode
-  (interceptor function return values are ignored). Always returns its input.
-  Used for side-effects such as printing or validation (can throw Exception
-  upon validation failure). "
+  (interceptor function return values are ignored). Use for side-effects
+  such as printing or validation (throw Exception to indicate validation failure).
+  Returns input value (can be used for chaining). "
   [data :- s/Any
    intc :- tsk/KeyMap] ;  #todo fix problem with s/fn-schema {s/Keyword s/fn-schema}
   (with-result data
@@ -2752,63 +2774,50 @@
           leave-fn (:leave intc)] ; may be nil
       (when (and (nil? enter-fn) (nil? leave-fn))
         (throw (ex-info "Invalid interceptor. :enter and :leave functions cannot both be nil." intc)))
-      (when enter-fn
-        (enter-fn data))
-      (cond
-        (map? data) (doseq [mapentry data]
-                      (let [kk (key mapentry)
-                            vv (val mapentry)]
-                        (walk-strict-readonly kk intc)
-                        (walk-strict-readonly vv intc)))
+      (walk-with-parents-readonly-impl [] data intc))))
 
-        (or (set? data)
-          (sequential? data)) (doseq [item data]
-                                (walk-strict-readonly item intc))
-
-        :else data) ; anything else just return it
-      (when leave-fn
-        (leave-fn data)))))
-
-(s/defn ^:no-doc walk-parents-impl :- s/Any
+(s/defn ^:no-doc walk-with-parents-impl :- s/Any
   [parents :- tsk/Vec
    data :- s/Any
    intc :- tsk/KeyMap] ; #todo {s/Keyword s/fn-schema}
-  (let [data-identity-fn (fn [-parents- data] data)
+  (let [data-identity-fn (fn [ctx] (grab :data ctx))
         enter-fn         (or (:enter intc) data-identity-fn)
         leave-fn         (or (:leave intc) data-identity-fn)
         parents-next     (append parents data)
-        data-post-enter  (enter-fn parents data)
+        data-post-enter  (enter-fn (vals->map parents data))
         data-post-walk   (cond
                            (sequential? data-post-enter) (list-entries->vec
                                                            (forv [listentry (list->entries data-post-enter)]
-                                                             (let [ii              (le-idx listentry)
-                                                                   vv              (le-val listentry)
-                                                                   parents-next-le (append parents-next listentry)]
-                                                               (list-entry ii (walk-parents-impl parents-next-le vv intc)))))
+                                                             (let [parents-next-le (append parents-next listentry)]
+                                                               (list-entry (le-idx listentry)
+                                                                 (walk-with-parents-impl parents-next-le (le-val listentry) intc)))))
 
                            (map? data-post-enter) (into {}
                                                     (forv [mapentry data-post-enter]
-                                                      (let [me-key          (key mapentry)
-                                                            me-val          (val mapentry)
-                                                            parents-next-me (append parents-next mapentry)]
+                                                      (let [parents-next-me (append parents-next mapentry)]
                                                         (map-entry
-                                                          (walk-parents-impl parents-next-me me-key intc)
-                                                          (walk-parents-impl parents-next-me me-val intc))) ))
+                                                          (walk-with-parents-impl parents-next-me (key mapentry) intc)
+                                                          (walk-with-parents-impl parents-next-me (val mapentry) intc)))))
 
                            (set? data-post-enter) (into #{}
                                                     (forv [elem data-post-enter]
-                                                      (walk-parents-impl parents-next elem intc)))
+                                                      (walk-with-parents-impl parents-next elem intc)))
 
                            ; otherwise, return data unaltered
                            :else data-post-enter)
-        data-post-leave  (leave-fn parents data-post-walk)]
+        data-post-leave  (leave-fn {:parents parents :data data-post-walk})]
     data-post-leave))
 
 (s/defn walk-with-parents :- s/Any
   "Performs a depth-first traversal of a data structure, using an interceptor with signature:
 
-      {:enter (fn [parents data] ...)
-       :leave (fn [parents data] ...) }
+      {:enter (fn [ctx] ...)
+       :leave (fn [ctx] ...) }
+
+   where `ctx` is a map like:
+
+      {:parents [...]
+       :data    <clojure edn value> }
 
    For each data node in the tree, the `:enter` function is called prior to walking
    the subtree rooted at that element, and the `:leave` function is called after
@@ -2864,12 +2873,13 @@
     (when (and (nil? enter-fn) (nil? leave-fn))
       (throw (ex-info "Invalid interceptor. :enter and :leave functions cannot both be nil." (vals->map interceptor))))
     ; ensure data does not contain any MapEntry of ListEntry objects
-    (walk-strict-readonly data
-      {:enter (fn [item]
-                (if (or (map-entry? item)
-                      (list-entry? item))
-                  (throw (ex-info "User-level MapEntry and/or ListEntry not allowed"))))})
-    (walk-parents-impl [] data interceptor)))
+    (walk-with-parents-readonly data
+      {:enter (s/fn [ctx :- tsk/KeyMap]
+                (let [item (grab :data ctx)]
+                  (if (or (map-entry? item)
+                        (list-entry? item))
+                    (throw (ex-info "User-level MapEntry and/or ListEntry not allowed")))))})
+    (walk-with-parents-impl [] data interceptor)))
 
 ; bottom
 ;***************************************************************************************************
