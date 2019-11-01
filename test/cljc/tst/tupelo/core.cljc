@@ -1971,72 +1971,132 @@
     (is (sorted-map? (get-in nested-sorted [:b 0])))
     (is (sorted-map? nested-sorted))))
 
-(dotest-focus
-  (let [data     {:a 1 :b {:c 3}}
-        intc     {:enter (fn [parents data]
-                           (t/with-result data
-                             (print :enter) (t/spy-pretty (t/vals->map parents data))))
-                  :leave (fn [parents data]
-                           (t/with-result data
-                             (print :leave) (t/spy-pretty (t/vals->map parents data))))}
-        str-walk (with-out-str
-                   (let [data-noop (t/walk-with-parents data intc)]
-                     (is= data data-noop)))]
-    (println str-walk)
-    (is-nonblank= str-walk
-      ":enter{:parents [],                                                    :data {:a 1, :b {:c 3}}}
-       :enter{:parents [{:a 1, :b {:c 3}}],                                   :data [:a 1]}
-       :enter{:parents [{:a 1, :b {:c 3}} [:a 1]],                            :data :a}
-       :leave{:parents [{:a 1, :b {:c 3}} [:a 1]],                            :data :a}
-       :enter{:parents [{:a 1, :b {:c 3}} [:a 1]],                            :data 1}
-       :leave{:parents [{:a 1, :b {:c 3}} [:a 1]],                            :data 1}
-       :leave{:parents [{:a 1, :b {:c 3}}],                                   :data [:a 1]}
-       :enter{:parents [{:a 1, :b {:c 3}}],                                   :data [:b {:c 3}]}
-       :enter{:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                       :data :b}
-       :leave{:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                       :data :b}
-       :enter{:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                       :data {:c 3}}
-       :enter{:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3}],                :data [:c 3]}
-       :enter{:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],         :data :c}
-       :leave{:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],         :data :c}
-       :enter{:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],         :data 3}
-       :leave{:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],         :data 3}
-       :leave{:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3}],                :data [:c 3]}
-       :leave{:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                       :data {:c 3}}
-       :leave{:parents [{:a 1, :b {:c 3}}],                                   :data [:b {:c 3}]}
-       :leave{:parents [],                                                    :data {:a 1, :b {:c 3}}} ")))
+(dotest
+  (spyxx (first {:a 1}))
+  (let [intc {:enter (fn [parents data]
+                       (t/with-result data
+                         (spy :enter (t/vals->map parents data))))
+              :leave (fn [parents data]
+                       (t/with-result data
+                         (spy :leave (t/vals->map parents data))))}]
+    ; demo with map
+    (let [data     {:a 1 :b {:c 3}}
+          str-walk (with-out-str
+                     (let [data-noop (t/walk-with-parents data intc)]
+                       (is= data data-noop)))]
+     ;(println str-walk)
+      (is-nonblank= str-walk
+        ":enter => {:parents [], :data {:a 1, :b {:c 3}}}
+         :enter => {:parents [{:a 1, :b {:c 3}} [:a 1]], :data :a}
+         :leave => {:parents [{:a 1, :b {:c 3}} [:a 1]], :data :a}
+         :enter => {:parents [{:a 1, :b {:c 3}} [:a 1]], :data 1}
+         :leave => {:parents [{:a 1, :b {:c 3}} [:a 1]], :data 1}
+         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]], :data :b}
+         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]], :data :b}
+         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]], :data {:c 3}}
+         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data :c}
+         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data :c}
+         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data 3}
+         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data 3}
+         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]], :data {:c 3}}
+         :leave => {:parents [], :data {:a 1, :b {:c 3}}} "))))
 
 (dotest
-  (let [data {:a 1 :b {:c 3}}
-        intc {:enter nil
-              :leave (fn [path data]
-                       ; only increment number if in a mapentry with key :c
-                       (t/with-nil-default data
-                         (when (t/not-empty? path)
-                           (let [parent (t/xlast path)]
-                             (when (and (map-entry? parent)
-                                     (= :c (key parent))
-                                     (number? data))
-                               (inc data))))))}]
-    (is= {:a 1 :b {:c 4}} (t/walk-with-parents data intc))))
+  (let [intc {:enter (fn [parents data]
+                       (t/with-result data
+                         (spy :enter (t/vals->map parents data))))
+              }]
+    ; demo with vectors
+    (let [data     [10 [20 21]]
+          str-walk (with-out-str
+                     (let [data-noop (t/walk-with-parents data intc)]
+                       (is= data data-noop)))
+          expected-str
+                   ":enter => {:parents [],
+                               :data [10 [20 21]]}
+                    :enter => {:parents [[10 [20 21]] #tupelo.core.ListEntry{:index 0, :value 10}],
+                               :data 10}
+                    :enter => {:parents [[10 [20 21]] #tupelo.core.ListEntry{:index 1, :value [20 21]}],
+                               :data [20 21]}
+                    :enter => {:parents [[10 [20 21]] #tupelo.core.ListEntry{:index 1, :value [20 21]} [20 21] #tupelo.core.ListEntry{:index 0, :value 20}],
+                               :data 20}
+                    :enter => {:parents [[10 [20 21]] #tupelo.core.ListEntry{:index 1, :value [20 21]} [20 21] #tupelo.core.ListEntry{:index 1, :value 21}],
+                               :data 21} "
+          ]
+      ;(println str-walk)
+      (is-nonblank= str-walk expected-str))))
 
-(dotest-focus (newline)
+(dotest
+  (let [data   {:a 1 :b [20 21 22] :c {:d 4}}
+        intc   {:enter t/noop
+                :leave identity}
+        result (t/walk-strict-readonly data intc)]
+    (throws? (t/walk-strict-readonly data {})) ; must have at least one of :enter or :leave
+    (is= result data))
+
+  ; verify walk-with-parents disallows any user-data MapEntry or ListEntry objects in input data structure
+  (let [data {:a 1 :b (t/map-entry :c 3)}]
+    (throws?
+      (t/walk-with-parents data {:leave t/noop})))
+
+  (let [lea (t/->ListEntry 0 100)
+        leb (t/list-entry 0 100)
+        lec (t/map->ListEntry {:index 0 :value 100})]
+    (is= lea leb lec)
+    (is (map? lea)) ; since a ListEntry passes (map? x), must process before plain maps in tupelo.core!!!
+    (is (map? leb))
+    (is (map? lec))
+
+    (is= true (instance? tupelo.core.ListEntry lea)) ; buggy without the `true` literal when reload with test-refresh
+    (is= true (instance? tupelo.core.ListEntry leb))
+    (is= true (instance? tupelo.core.ListEntry lec))
+
+    (isnt (sequential? lea)) ; since a ListEntry passes (map? x), must process before plain maps in tupelo.core!!!
+    (isnt (sequential? leb))
+    (isnt (sequential? lec))
+
+    (is= 0 (t/le-idx lea) (t/le-idx leb))
+    (is= 100 (t/le-val lea) (t/le-val leb)))
 
   (let [le (t/list-entry 5 6)
         ii (t/le-idx le)
         vv (t/le-val le)]
-    (is= 5 (spyx ii))
-    (is= 6 (spyx vv))
+    (is= 5 ii)
+    (is= 6 vv)
     (throws-not? (t/list-entry 0 6))
     (throws? (t/list-entry -1 6)))
-  (let [data [:a :b :c]
-        le-vec (t/list->entries data)
+  (let [data     [:a :b :c]
+        le-vec   (t/list->entries data)
         data-out (t/list-entries->vec le-vec)]
-    (is= (spyx data-out) [:a :b :c])
+    (is= data-out [:a :b :c])
     (is (every? t/list-entry? le-vec))
     (throws? (t/list-entries->vec (reverse le-vec))) ; data indexes must be in order  0..(N-1)
-    )
+    ))
 
-  (newline))
+(dotest
+  ; only increment mapentry number values when key is :c
+  (let [data   {:a 1 :b {:c 3}}
+        intc   {:leave (fn [path data]
+                         (t/with-nil-default data
+                           (when (number? data)
+                             (let [parent (t/xlast path)]
+                               (when (and (map-entry? parent) (= (key parent) :c))
+                                 (inc data))))))}
+        result (t/walk-with-parents data intc)]
+    (is= result {:a 1 :b {:c 4}})))
+
+(dotest
+  ; only increment numeric values at even index
+  (let [data   [0 1 :two 3 4 5]
+        intc   {:leave (fn [path data]
+                         (t/with-nil-default data
+                           (when (number? data)
+                             (let [parent (t/xlast path)]
+                               (spyx parent)
+                               (when (and (t/list-entry? parent) (even? (t/le-idx parent)))
+                                 (inc data))))))}
+        result (t/walk-with-parents data intc)]
+    (is= (spyx result) [1 1 :two 3 5 5])))
 
 (dotest
   (is= (range 10)   ; vector/list
@@ -2079,7 +2139,7 @@
   (let [empty-gen-fn (fn [] (t/lazy-gen))]
     (is (nil? (empty-gen-fn))))
 
-  (let [range-gen (fn [limit] ; "A generator 'range' function."
+  (let [range-gen (fn [limit] ; " A generator 'range' function. "
                     (t/lazy-gen
                       (loop [cnt 0]
                         (when (< cnt limit)
@@ -2213,8 +2273,8 @@
       (spyx (count iter-glue-result))
       (spyx (count iter-flat-result)))
     ; for N = 1299
-    ; (count iter-glue-result) => 3900 "Elapsed time: 2453.917953 msecs"
-    ; (count iter-flat-result) => 3900 "Elapsed time: 2970.726412 msecs"
+    ; (count iter-glue-result) => 3900 " Elapsed time: 2453.917953 msecs "
+    ; (count iter-flat-result) => 3900 " Elapsed time: 2970.726412 msecs "
     (is= iter-glue-result iter-flat-result))
 
   ; Bare yield won't compile => java.lang.RuntimeException: Unable to resolve symbol: lazy-gen-output-buffer
@@ -2247,12 +2307,12 @@
 #?(:clj (do ; #todo fix this cljs failure
 (dotest
   (is= (range 5) (t/unlazy (range 5)))
-  (let [c1 {:a 1 :b (range 3) :c {:x (range 4) (range 5) "end"}}]
+  (let [c1 {:a 1 :b (range 3) :c {:x (range 4) (range 5) " end "}}]
     (is= c1 (t/unlazy c1)))
-  (let [l2 '({:a ("zero" 0)} {:a ("one" 1)} {:a ("two" 2)})
+  (let [l2 '({:a (" zero " 0)} {:a (" one " 1)} {:a (" two " 2)})
         e2 (t/unlazy l2)]
     (is= l2 e2)
-    (is= "one" (get-in e2 [1 :a 0] l2))
+    (is= " one " (get-in e2 [1 :a 0] l2))
     ; (throws? (spyx (get-in l2 [1 :a 0] l2)))    ; #todo: SHOULD throw
     )
   (is= [1 2 3] (t/unlazy (map inc (range 3))))
@@ -2403,15 +2463,15 @@
     (comment
       (t/destruct [data-1 {:a ? :b {:c ?}}
                    data-2 {:x ? :y {:c ?}}]
-        (println "destruct/dummy"))
+        (println " destruct/dummy "))
       (t/destruct [{:a {:b {:c ?}}
                     :x {:y {:c ?}}}]
-        (println "destruct/dummy")))))
+        (println " destruct/dummy ")))))
 
 ; #todo add different lengths a/b
 ; #todo add missing entries a/b
 (dotest
-  (testing "vectors"
+  (testing " vectors "
     (is   (t/wild-match? [1]  [1] ))
     (is   (t/wild-match? [1]  [1] [1] ))
     (is   (t/wild-match? [:*] [1] [1] ))
@@ -2458,7 +2518,7 @@
     (isnt (t/wild-match? [1  [2 3]]
             [1  [2 9]] ))
     )
-  (testing "maps"
+  (testing " maps "
     (is (t/wild-match? {:a 1 } {:a 1} ))
     (is (t/wild-match? {:a :*} {:a 1} ))
     (is (t/wild-match? {:a :*} {:a 1 } {:a 1 } ))
@@ -2483,7 +2543,7 @@
       (is   (t/wild-match? w5 vv))
       (isnt (t/wild-match? zz vv)))
     )
-  (testing "vecs & maps 1"
+  (testing " vecs & maps 1 "
     (let [vv [:a 1  :b {:c  3} ]
           tt [:a 1  :b {:c  3} ]
           w1 [:* 1  :b {:c  3} ]
@@ -2499,7 +2559,7 @@
       (is (t/wild-match? w5 vv))
       (isnt (t/wild-match? zz vv)))
     )
-  (testing "vecs & maps 2"
+  (testing " vecs & maps 2 "
     (let [vv {:a 1  :b [:c  3] }
           tt {:a 1  :b [:c  3] }
           w2 {:a :* :b [:c  3] }
@@ -2515,7 +2575,7 @@
       (isnt (t/wild-match? z1 vv))
       (isnt (t/wild-match? z2 vv)))
     )
-  (testing "sets"
+  (testing " sets "
     (is   (t/wild-match? #{1} #{1} ))
     (isnt (t/wild-match? #{1} #{9} ))
     (isnt (t/wild-match? #{1} #{:a :b} ))
@@ -2594,7 +2654,7 @@
   (is   (t/wild-item? :*))
   (isnt (t/wild-item? :a))
   (isnt (t/wild-item? 5))
-  (isnt (t/wild-item? "hello"))
+  (isnt (t/wild-item? " hello "))
 
   (is   (t/wild-item? [:* 2 3]))
   (is   (t/wild-item? [1 [:* 3]]))
@@ -2636,9 +2696,9 @@
 
 ; #todo fix for cljs
 ;(deftest t-2332
-;  (spyx "abc")
-;  (spyx (type "abc"))
-;  (spyxx "abc")
+;  (spyx " abc ")
+;  (spyx (type " abc "))
+;  (spyxx " abc ")
 ;  (spyx 42)
 ;  (spyx (type 42))
 ;  (spyxx 42)
@@ -2685,10 +2745,10 @@
           (defn fn-any [] 42)
           (defn fn7 [] (t/if-java-1-7-plus
                          7
-                         (throw (ex-info "Unimplemented prior to Java 1.7: " nil))))
+                         (throw (ex-info " Unimplemented prior to Java 1.7: " nil))))
           (defn fn8 [] (t/if-java-1-8-plus
                          8
-                         (throw (ex-info "Unimplemented prior to Java 1.8: " nil))))
+                         (throw (ex-info " Unimplemented prior to Java 1.8: " nil))))
 
           (dotest
             (when (t/is-java-1-7?)
@@ -2711,32 +2771,32 @@
               (isnt (t/java-version-matches? "1.7.0-b1234"))
               (isnt (t/java-version-matches? "1.8"))
               )
-            (with-redefs [t/java-version (constantly "1.7.0")]
-              (is   (t/java-version-min? "1.7"))
+            (with-redefs [t/java-version (constantly " 1.7.0 ")]
+              (is   (t/java-version-min? " 1.7 "))
               (is   (t/java-version-min? "1.7.0"))
               (isnt (t/java-version-min? "1.7.0-b1234"))
-              (isnt (t/java-version-min? "1.8"))
+              (isnt (t/java-version-min? " 1.8 "))
 
               (is   (t/java-version-matches? "1.7"))
-              (is   (t/java-version-matches? "1.7.0"))
-              (isnt (t/java-version-matches? "1.7.0-b1234"))
-              (isnt (t/java-version-matches? "1.8"))
+              (is   (t/java-version-matches? " 1.7.0 "))
+              (isnt (t/java-version-matches? " 1.7.0-b1234 "))
+              (isnt (t/java-version-matches? " 1.8 "))
               )
-            (with-redefs [t/java-version (constantly "1.7.0-b1234")]
+            (with-redefs [t/java-version (constantly " 1.7.0-b1234 ")]
               (is   (t/java-version-min? "1.7"))
-              (is   (t/java-version-min? "1.7.0"))
-              (is   (t/java-version-min? "1.7.0-b1234"))
-              (isnt (t/java-version-min? "1.8"))
+              (is   (t/java-version-min? " 1.7.0 "))
+              (is   (t/java-version-min? " 1.7.0-b1234 "))
+              (isnt (t/java-version-min? " 1.8 "))
 
-              (is   (t/java-version-matches? "1.7"))
-              (is   (t/java-version-matches? "1.7.0"))
-              (is   (t/java-version-matches? "1.7.0-b1234"))
-              (isnt (t/java-version-matches? "1.8"))
+              (is   (t/java-version-matches? " 1.7 "))
+              (is   (t/java-version-matches? " 1.7.0 "))
+              (is   (t/java-version-matches? " 1.7.0-b1234 "))
+              (isnt (t/java-version-matches? " 1.8 "))
               )
 
-            (with-redefs [t/java-version (constantly "1.7") ]
+            (with-redefs [t/java-version (constantly " 1.7 ") ]
               (when false
-                (println "testing java 1.7")
+                (println " testing java 1.7 ")
                 (t/spyx (t/is-java-1-7?))
                 (t/spyx (t/is-java-1-8?))
                 (t/spyx (t/is-java-1-7-plus?))
@@ -2747,9 +2807,9 @@
               (isnt (t/is-java-1-8?))
               (isnt (t/is-java-1-8-plus?)) )
 
-            (with-redefs [t/java-version (constantly "1.8") ]
+            (with-redefs [t/java-version (constantly " 1.8 ") ]
               (when false
-                (println "testing java 1.8")
+                (println " testing java 1.8 ")
                 (t/spyx (t/is-java-1-7?))
                 (t/spyx (t/is-java-1-8?))
                 (t/spyx (t/is-java-1-7-plus?))
@@ -2934,7 +2994,7 @@
               (isnt (t/int-val? x))
               (is (t/int-val? (* 3 x))))
 
-            (throws? (t/int-val? "five"))
+            (throws? (t/int-val? " five "))
             (throws? (t/int-val? :five))
             )
 
