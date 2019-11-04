@@ -1972,15 +1972,12 @@
     (is (sorted-map? nested-sorted))))
 
 (dotest
-  (spyxx (first {:a 1}))
-  (let [intc {:enter (fn [ctx]
-                       (t/with-map-vals ctx [parents data]
-                         (t/with-result data
-                           (spy :enter (t/vals->map parents data)))))
-              :leave (fn [ctx]
-                       (t/with-map-vals ctx [parents data]
-                         (t/with-result data
-                           (spy :leave (t/vals->map parents data)))))}]
+  (let [intc {:enter (fn [parents data]
+                       (t/with-result data
+                         (spy :enter (t/vals->map parents data))))
+              :leave (fn [parents data]
+                       (t/with-result data
+                         (spy :leave (t/vals->map parents data))))}]
     ; demo with map
     (let [data            {:a 1 :b {:c 3}}
           walk-result-str (with-out-str
@@ -2004,10 +2001,9 @@
          :leave => {:parents [], :data {:a 1, :b {:c 3}}} "))))
 
 (dotest
-  (let [intc {:enter (fn [ctx]
-                       (t/with-map-vals ctx [parents data]
-                         (t/with-result data
-                           (spy :enter (t/vals->map parents data))))) }]
+  (let [intc {:enter (fn [parents data]
+                       (t/with-result data
+                         (spy :enter (t/vals->map parents data))))}]
     ; demo with vectors
     (let [data            [10 [20 21]]
           walk-result-str (with-out-str
@@ -2032,11 +2028,11 @@
   (let [data   {:a 1 :b [20 21 22] :c {:d 4}}
         intc   {:enter t/noop
                 :leave t/->nil}
-        result (t/walk-with-parents-readonly data intc)]
+        result (t/walk-with-parents-readonly data intc)] ; return values don't matter
     (throws? (t/walk-with-parents-readonly data {})) ; must have at least one of :enter or :leave
     (is= result data))
 
-  ; verify walk-with-parents disallows any user-data MapEntry or ListEntry objects in input data structure
+  ; walk-with-parents disallows any user-data MapEntry or ListEntry objects in input data structure
   (let [data {:a 1 :b (t/map-entry :c 3)}]
     (throws?
       (t/walk-with-parents data {:leave t/noop})))
@@ -2078,29 +2074,26 @@
 (dotest
   ; only increment mapentry number values when key is :c
   (let [data   {:a 1 :b {:c 3}}
-        intc   {:leave (fn [ctx]
-                         (t/with-map-vals ctx [parents data]
-                           (t/with-nil-default data
-                             (when (number? data)
-                               (let [parent (t/xlast parents)]
-                                 (when (and (map-entry? parent) (= (key parent) :c))
-                                   (inc data)))))))}
+        intc   {:leave (fn [parents data]
+                         (t/with-nil-default data
+                           (when (number? data)
+                             (let [parent (t/xlast parents)]
+                               (when (and (map-entry? parent) (= (key parent) :c))
+                                 (inc data))))))}
         result (t/walk-with-parents data intc)]
     (is= result {:a 1 :b {:c 4}})))
 
 (dotest
   ; only increment numeric values at even index
   (let [data   [0 1 :two 3 4 5]
-        intc   {:leave (fn [ctx]
-                         (t/with-map-vals ctx [parents data]
-                           (t/with-nil-default data
-                             (when (number? data)
-                               (let [parent (t/xlast parents)]
-                                 (spyx parent)
-                                 (when (and (t/list-entry? parent) (even? (t/le-idx parent)))
-                                   (inc data)))))))}
+        intc   {:leave (fn [parents data]
+                         (t/with-nil-default data
+                           (when (number? data)
+                             (let [parent (t/xlast parents)]
+                               (when (and (t/list-entry? parent) (even? (t/le-idx parent)))
+                                 (inc data))))))}
         result (t/walk-with-parents data intc)]
-    (is= (spyx result) [1 1 :two 3 5 5])))
+    (is= result [1 1 :two 3 5 5])))
 
 (dotest
   (is= (range 10)   ; vector/list
