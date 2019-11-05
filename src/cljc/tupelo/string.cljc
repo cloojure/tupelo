@@ -31,10 +31,12 @@
     :v "victor"   :w "whiskey"  :x "x-ray"    :y "yankee"   :z "zulu" } )
 
 (s/defn quotes->single :- s/Str ; #todo readme & blog
+  "Converts all double-quotes in a string to single-quotes"
   [arg :- s/Str]
   (str/replace arg "\""  "'"))
 
 (s/defn quotes->double :- s/Str ; #todo readme & blog
+  "Converts all single-quotes in a string to double-quotes"
   [arg :- s/Str]
   (str/replace arg "'" "\"" ))
 
@@ -203,27 +205,33 @@
     (str/lower-case)
     (str->kw-normalized)))
 
-(defn snake->kabob
-  "Converts a string from a_snake_case_value to a-kabob-case-value"
-  [arg]
-  (str/replace arg \_ \- ))
+(s/defn ->kabob-str :- s/Str
+  "Coerce a string, keyword, or symbol to a kabob-case-string"
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol )]
+  (t/it-> arg
+    (name it)
+    (str/replace it \_ \-)))
 
-(defn kabob->snake
-  "Converts a string from a-kabob-case-value to a_snake_case_value"
-  [arg]
-  (str/replace arg \- \_ ))
+(s/defn ->snake-str :- s/Str
+  "Coerce a string, keyword, or symbol to a snake_case_string"
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol )]
+  (t/it-> arg
+    (name it)
+    (str/replace it \- \_)))
 
-(defn kw-snake->kabob [kw]
-  (-> kw
-    (t/kw->str)
-    (snake->kabob)
-    (t/str->kw)))
+(s/defn ->kabob-kw :- s/Keyword
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol )]
+  "Coerce a string, keyword, or symbol to a kabob-case-keyword"
+  (-> arg
+    (->kabob-str)
+    (keyword)))
 
-(defn kw-kabob->snake [kw]
-  (->> kw
-    (t/kw->str)
-    (kabob->snake)
-    (t/str->kw)))
+(s/defn ->snake-kw  :- s/Keyword
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol )]
+  "Coerce a string, keyword, or symbol to a snake_case_keyword"
+  (-> arg
+    (->snake-str)
+    (keyword)))
 
 ; #todo need conversions for camel<->snake<->kabob (for both kw & str) (dynamic or case)
 

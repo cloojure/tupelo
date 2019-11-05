@@ -199,14 +199,50 @@
                    ts/quotes->single))))
 
 (dotest
-  (is= "abc" (t/kw->str :abc))
+  (let [kabob-str "abc-de-f-ghi"
+        snake-str "abc_de_f_ghi"
+        kabob-kw  (keyword kabob-str)
+        snake-kw  (keyword snake-str)
+        kabob-sym (symbol kabob-str)
+        snake-sym (symbol snake-str)]
+    (is= "abc" (name :abc))
+    (is= "abc" (name (symbol "abc")))
 
-  (is= (ts/snake->kabob "some_multiple_word_str") "some-multiple-word-str")
-  (is= (ts/kabob->snake "some-multiple-word-str") "some_multiple_word_str")
+    (is= kabob-kw (ts/->kabob-kw kabob-str))
+    (is= kabob-kw (ts/->kabob-kw kabob-kw))
+    (is= kabob-kw (ts/->kabob-kw kabob-sym))
+    (is= kabob-kw (ts/->kabob-kw snake-str))
+    (is= kabob-kw (ts/->kabob-kw snake-kw))
+    (is= kabob-kw (ts/->kabob-kw snake-sym))
 
-  (is= (ts/kw-snake->kabob :some_multiple_word_kw) :some-multiple-word-kw)
-  (is= (ts/kw-kabob->snake :some-multiple-word-kw) :some_multiple_word_kw)
+    (is= kabob-str (ts/->kabob-str kabob-str))
+    (is= kabob-str (ts/->kabob-str kabob-kw))
+    (is= kabob-str (ts/->kabob-str kabob-sym))
+    (is= kabob-str (ts/->kabob-str snake-str))
+    (is= kabob-str (ts/->kabob-str snake-kw))
+    (is= kabob-str (ts/->kabob-str snake-sym))
 
+    (is= snake-kw (ts/->snake-kw kabob-str))
+    (is= snake-kw (ts/->snake-kw kabob-kw))
+    (is= snake-kw (ts/->snake-kw kabob-sym))
+    (is= snake-kw (ts/->snake-kw snake-str))
+    (is= snake-kw (ts/->snake-kw snake-kw))
+    (is= snake-kw (ts/->snake-kw snake-sym))
+
+    (is= snake-str (ts/->snake-str kabob-str))
+    (is= snake-str (ts/->snake-str kabob-kw))
+    (is= snake-str (ts/->snake-str kabob-sym))
+    (is= snake-str (ts/->snake-str snake-str))
+    (is= snake-str (ts/->snake-str snake-kw))
+    (is= snake-str (ts/->snake-str snake-sym)))
+
+  (is= (ts/->kabob-str "some_multiple_word_str") "some-multiple-word-str")
+  (is= (ts/->snake-str "some-multiple-word-str") "some_multiple_word_str")
+
+  (is= (ts/->kabob-kw :some_multiple_word_kw) :some-multiple-word-kw)
+  (is= (ts/->snake-kw :some-multiple-word-kw) :some_multiple_word_kw))
+
+(dotest
   (is= :abc-def-gh-qrs (ts/str->kw-normalized "abc def*gh_qrs"))
   (is= :ABC-DEF-gh-qrs (ts/str->kw-normalized "ABC DEF*gh_qrs"))
   (is= :abc-def-gh-qrs
