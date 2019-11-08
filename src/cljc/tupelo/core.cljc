@@ -2872,7 +2872,7 @@
       {:enter (s/fn [parents data]
                 (if (or (map-entry? data)
                       (list-entry? data))
-                  (throw (ex-info "User-level MapEntry and/or ListEntry not allowed"))))})
+                  (throw (ex-info "User-level MapEntry and/or ListEntry not allowed" (vals->map data)))))})
     (walk-with-parents-impl [] data interceptor)))
 
 ; bottom

@@ -205,28 +205,28 @@
     (str/lower-case)
     (str->kw-normalized)))
 
-(s/defn ->kabob-str :- s/Str
+(s/defn ->kabob-str :- s/Str ; #todo fix for namespaced kw & sym
   "Coerce a string, keyword, or symbol to a kabob-case-string"
   [arg :- (s/cond-pre s/Keyword s/Str s/Symbol )]
   (t/it-> arg
     (name it)
     (str/replace it \_ \-)))
 
-(s/defn ->snake-str :- s/Str
+(s/defn ->snake-str :- s/Str ; #todo fix for namespaced kw & sym
   "Coerce a string, keyword, or symbol to a snake_case_string"
   [arg :- (s/cond-pre s/Keyword s/Str s/Symbol )]
   (t/it-> arg
     (name it)
     (str/replace it \- \_)))
 
-(s/defn ->kabob-kw :- s/Keyword
+(s/defn ->kabob-kw :- s/Keyword ; #todo fix for namespaced kw & sym
   [arg :- (s/cond-pre s/Keyword s/Str s/Symbol )]
   "Coerce a string, keyword, or symbol to a kabob-case-keyword"
   (-> arg
     (->kabob-str)
     (keyword)))
 
-(s/defn ->snake-kw  :- s/Keyword
+(s/defn ->snake-kw  :- s/Keyword ; #todo fix for namespaced kw & sym
   [arg :- (s/cond-pre s/Keyword s/Str s/Symbol )]
   "Coerce a string, keyword, or symbol to a snake_case_keyword"
   (-> arg
