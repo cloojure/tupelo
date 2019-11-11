@@ -105,6 +105,15 @@
     (isnt (t/quad? inf-rng-1))))
 
 (dotest
+  (let [vals [-3.14 -2 0 2 3.14]]
+    (is= [false false false true false] (mapv t/int-pos? vals))
+    (is= [false true false false false] (mapv t/int-neg? vals))
+    (is= [false false true true false] (mapv t/int-nonneg? vals))
+    (is= [false true true false false] (mapv t/int-nonpos? vals))
+    (is= [false false true true true] (mapv t/nonneg? vals))
+    (is= [true true true false false] (mapv t/nonpos? vals))))
+
+(dotest
   (let [inf-rng-1 (map inc (range))
         tst-map   (t/glue (sorted-map) {:a 1 :b 2 :c 3 :d 4 :e 5 :f 6})]
 

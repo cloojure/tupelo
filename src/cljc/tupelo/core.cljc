@@ -282,6 +282,31 @@
   [] (newline))
 
 ;-----------------------------------------------------------------------------
+(s/defn int-pos? :- s/Bool
+  "Returns true iff x is an integer and is positive"
+  [arg] (and (int? arg) (pos? arg) ) )
+
+(s/defn int-neg? :- s/Bool
+  "Returns true iff x is an integer and is negative"
+  [arg] (and (int? arg) (neg? arg) ) )
+
+(s/defn int-nonneg? :- s/Bool
+  "Returns true iff x is an integer and is not negative"
+  [arg] (and (int? arg) (not (neg? arg))) )
+
+(s/defn int-nonpos? :- s/Bool
+  "Returns true iff x is an integer and is not positive"
+  [arg] (and (int? arg) (not (pos? arg))) )
+
+(s/defn nonneg? :- s/Bool
+  "Returns true iff x is not negative"
+  [arg] (not (neg? arg)) )
+
+(s/defn nonpos? :- s/Bool
+  "Returns true iff x is not positive"
+  [arg] (not (pos? arg)) )
+
+;-----------------------------------------------------------------------------
 (s/defn not-nil? :- s/Bool
   "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
    or the poorly-named clojure.core/some? "
