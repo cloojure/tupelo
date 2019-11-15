@@ -8,19 +8,16 @@
   (:require
     [clojure.set :as raw]
     [tupelo.set :as set]
-  #?@(:clj [
-            [schema.core :as s]
-            [tupelo.test   :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-            [tupelo.core :as t :refer [spy spyx spyxx] ]
-            [tupelo.schema :as tsk]
-            [tupelo.string :as ts] ])
-  #?@(:cljs [
-             [schema.core :as s]
-             [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-             [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
-             [tupelo.schema :as tsk]
-             [tupelo.string :as ts :include-macros true] ])
-  ))
+    [schema.core :as s]
+
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
+       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty]])
+
+    #?(:clj [clojure.test] :cljs [cljs.test])
+    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]]
+       :cljs [tupelo.test-cljs ; :include-macros true
+              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]])
+    ))
 
 (dotest
   (is= #{1 2 3 4 5} (set/union #{1 2 3 4} #{2 3 4 5}))

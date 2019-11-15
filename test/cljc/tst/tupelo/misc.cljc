@@ -6,22 +6,22 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.misc
   (:require
-    [clojure.string :as str]
     [tupelo.misc :as misc]
-    #?@(:clj [[clojure.test :as cljtst]
-              [schema.core :as s]
-              [tupelo.test :refer [define-fixture dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-              [tupelo.core :as t :refer [spy spyx spyxx it-> rel=]]
-              [tupelo.string :as ts]
-              ])
-    #?@(:cljs [[schema.core :as s]
-               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-               [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
-               [tupelo.string :as ts :include-macros true]
-               [goog.crypt :as crypt]
-               [goog.crypt.Sha1]
-               [reagent.format :as rf]
-               ]))
+    [schema.core :as s]
+    [tupelo.string :as ts]
+
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
+       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty]])
+
+    #?(:clj [clojure.test] :cljs [cljs.test])
+    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]]
+       :cljs [tupelo.test-cljs ; :include-macros true
+              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]])
+
+    #?(:cljs [goog.crypt :as crypt])
+    #?(:cljs [goog.crypt.Sha1])
+    #?(:cljs [reagent.format :as rf] )
+    )
   #?(:clj (:import [java.lang Byte Integer]))
   )
 
@@ -146,14 +146,14 @@
              sqrt-2-rnd (misc/round-pow sqrt-2 -2)
              error      (- 1.414 sqrt-2-rnd)]
          (is (<= 0 (Math/abs error) 0.01))
-         (is (rel= sqrt-2-rnd sqrt-2 :tol 0.01)))
+         (is (t/rel= sqrt-2-rnd sqrt-2 :tol 0.01)))
        (let [val     12345
              val-rnd (misc/round-pow val 2)
              error   (- val val-rnd)]
          (is (<= 0 (Math/abs error) 100))
-         (is (rel= val-rnd val :tol 100))
-         (is (rel= val-rnd val :digits 2))
-         (isnt (rel= val-rnd val :digits 4)) ) )
+         (is (t/rel= val-rnd val :tol 100))
+         (is (t/rel= val-rnd val :digits 2))
+         (isnt (t/rel= val-rnd val :digits 4)) ) )
 
      (dotest
        (is (#{:windows :linux :mac} (misc/get-os))))

@@ -4,22 +4,26 @@
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
+
+; #todo break this out into a separate repo
 (ns tst.tupelo.gotchas
   (:require
     [clojure.set :as set]
     [tupelo.string :as ts]
-    #?@(:clj [[clojure.test.check.generators :as gen]
-              [clojure.test.check.properties :as prop]
-              [tupelo.test :as tt :refer [define-fixture dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws? ]]
-              [tupelo.core :as t :refer [spy spyx spyxx]]
-              ])
-    #?@(:cljs [[tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-               [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
-               [tupelo.string :as ts :include-macros true]
-               ])))
+
+    #?(:clj [clojure.test.check.generators :as gen])
+    #?(:clj [clojure.test.check.properties :as prop])
+
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
+       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty]])
+
+    #?(:clj [clojure.test] :cljs [cljs.test])
+    #?(:clj  [tupelo.test :as tt :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]]
+       :cljs [tupelo.test-cljs :as tt  ; :include-macros true
+              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]])
+    ))
 
 ; #todo add example for duplicates in clojure.core.combo
-
 
 ; rest/next too loose
 (dotest

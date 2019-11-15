@@ -7,20 +7,18 @@
 (ns tst.tupelo.lazy
   (:require
     [clojure.string :as str]
+    [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.lazy :as lazy]
-    #?@(:clj [
-              [schema.core :as s]
-              [tupelo.test :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-              [tupelo.core :as t :refer [spy spyx spyxx]]
-              [tupelo.schema :as tsk]
-              [tupelo.string :as ts] ])
-    #?@(:cljs [
-               [schema.core :as s]
-               [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-               [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
-               [tupelo.schema :as tsk]
-               [tupelo.string :as ts :include-macros true] ])
+
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
+       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty]])
+
+    #?(:clj [clojure.test] :cljs [cljs.test])
+    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]]
+       :cljs [tupelo.test-cljs ; :include-macros true
+              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]])
+
     ))
 
 ; #todo add generative testing?

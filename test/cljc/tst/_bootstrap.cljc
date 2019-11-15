@@ -9,22 +9,16 @@
   Clojure version."
   (:require
     [clojure.string :as str]
-    #?@(:clj [
-              [schema.core :as s]
-              [tupelo.test   :refer [define-fixture dotest is isnt is= isnt= is-nonblank= testing throws?]]
-              [tupelo.core :as t]
-              [tupelo.string :as ts]
-              ])
-    #?@(:cljs [
-               [cljs.test :refer-macros [deftest testing is ]  ]
-               [tupelo.test-cljs :as tt :include-macros true ; #todo #bug copy  :include-macros true everywhere!!!
-                :refer [define-fixture dotest isnt is= isnt= is-set= is-nonblank= throws? ]
-                ]
+    [schema.core :as s]
 
-               [tupelo.core :as t :include-macros true]
-               [tupelo.string :as ts :include-macros true]
-               [schema.core :as s]
-               ])
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
+       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty]])
+
+    #?(:clj [clojure.test]
+       :cljs [cljs.test])
+    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]]
+       :cljs [tupelo.test-cljs ; :include-macros true
+              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]])
   ))
 
 

@@ -6,18 +6,16 @@
 ;   software.
 (ns tupelo.gen
   "Tupelo - Clojure With A Spoonful of Honey"
-  #?@(:clj [
-  (:refer-clojure :exclude [rand-nth constantly] )
-  (:require
-    [clojure.string :as str]
-    [clojure.test.check :as tc]
-    [clojure.test.check.clojure-test :as tst]
-    [clojure.test.check.generators :as tcgen]
-    [clojure.test.check.properties :as prop]
-    [tupelo.core :as i]
-    [tupelo.chars :as char]
-  )
-            ]))
+  (:refer-clojure :exclude [rand-nth constantly])
+  #?(:clj
+     (:require
+       [clojure.string :as str]
+       [clojure.test.check :as tc]
+       [clojure.test.check.clojure-test :as tst]
+       [clojure.test.check.generators :as tcgen]
+       [clojure.test.check.properties :as prop]
+       [tupelo.chars :as char]
+       )))
 
 ; #todo: for test.check v2:
 ;     fmap        -> map
