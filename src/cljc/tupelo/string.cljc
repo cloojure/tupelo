@@ -78,7 +78,6 @@
         (for [line lines]
           (tab-space-oneline-impl tab-size line))))))
 
-; #todo -> tupelo.string
 (defn collapse-whitespace ; #todo readme & blog
   "Replaces all consecutive runs of whitespace characters (including newlines) with a single space.
    Removes any leading or trailing whitespace. Returns a string composed of all tokens
