@@ -1992,22 +1992,22 @@
           walk-result-str (with-out-str
                             (let [data-noop (t/walk-with-parents data intc)]
                               (is= data data-noop)))]
-     ;(println walk-result-str)
+      ;(newline) (println walk-result-str) (newline)
       (is-nonblank= walk-result-str
-        ":enter => {:parents [], :data {:a 1, :b {:c 3}}}
-         :enter => {:parents [{:a 1, :b {:c 3}} [:a 1]], :data :a}
-         :leave => {:parents [{:a 1, :b {:c 3}} [:a 1]], :data :a}
-         :enter => {:parents [{:a 1, :b {:c 3}} [:a 1]], :data 1}
-         :leave => {:parents [{:a 1, :b {:c 3}} [:a 1]], :data 1}
-         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]], :data :b}
-         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]], :data :b}
-         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]], :data {:c 3}}
-         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data :c}
-         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data :c}
-         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data 3}
-         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]], :data 3}
-         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]], :data {:c 3}}
-         :leave => {:parents [], :data {:a 1, :b {:c 3}}} "))))
+        " :enter => {:parents [], :data {:a 1, :b {:c 3}}}
+          :enter => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-key, :value :a}], :data :a}
+          :leave => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-key, :value :a}], :data :a}
+          :enter => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-val, :value 1}], :data 1}
+          :leave => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-val, :value 1}], :data 1}
+          :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-key, :value :b}], :data :b}
+          :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-key, :value :b}], :data :b}
+          :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}}], :data {:c 3}}
+          :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-key, :value :c}], :data :c}
+          :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-key, :value :c}], :data :c}
+          :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-val, :value 3}], :data 3}
+          :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-val, :value 3}], :data 3}
+          :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}}], :data {:c 3}}
+          :leave => {:parents [], :data {:a 1, :b {:c 3}}} ") )))
 
 (dotest
   (let [intc {:enter (fn [parents data]
@@ -2017,21 +2017,14 @@
     (let [data            [10 [20 21]]
           walk-result-str (with-out-str
                             (let [data-noop (t/walk-with-parents data intc)]
-                              (is= data data-noop)))
-          expected-str
-            ":enter => {:parents [],
-                        :data [10 [20 21]]}
-             :enter => {:parents [[10 [20 21]] #tupelo.core.ListEntry{:index 0, :value 10}],
-                        :data 10}
-             :enter => {:parents [[10 [20 21]] #tupelo.core.ListEntry{:index 1, :value [20 21]}],
-                        :data [20 21]}
-             :enter => {:parents [[10 [20 21]] #tupelo.core.ListEntry{:index 1, :value [20 21]} [20 21] #tupelo.core.ListEntry{:index 0, :value 20}],
-                        :data 20}
-             :enter => {:parents [[10 [20 21]] #tupelo.core.ListEntry{:index 1, :value [20 21]} [20 21] #tupelo.core.ListEntry{:index 1, :value 21}],
-                        :data 21} "
-          ]
-      ;(println walk-result-str)
-      (is-nonblank= walk-result-str expected-str))))
+                              (is= data data-noop))) ]
+      ; (newline) (println walk-result-str) (newline)
+      (is-nonblank= walk-result-str
+        " :enter => {:parents [], :data [10 [20 21]]}
+          :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 0, :val 10}], :data 10}
+          :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]}], :data [20 21]}
+          :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 0, :val 20}], :data 20}
+          :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 1, :val 21}], :data 21} " ))))
 
 (dotest
   (let [data   {:a 1 :b [20 21 22] :c {:d 4}}
@@ -2046,28 +2039,18 @@
     (throws?
       (t/walk-with-parents data {:leave t/noop})))
 
-  (let [lea (t/->ListEntry 0 100)
-        leb (t/list-entry 0 100)
-        lec (t/map->ListEntry {:index 0 :value 100})]
-    (is= lea leb lec)
-    (is (map? lea)) ; since a ListEntry passes (map? x), must process before plain maps in tupelo.core!!!
-    (is (map? leb))
-    (is (map? lec))
+  (let [ le (t/list-entry 0 100) ]
+    (is= le {:type :list-entry, :idx 0, :val 100} )
+    (is (map? le))
 
-    (is= true (instance? tupelo.core.ListEntry lea)) ; buggy without the `true` literal when reload with test-refresh
-    (is= true (instance? tupelo.core.ListEntry leb))
-    (is= true (instance? tupelo.core.ListEntry lec))
+    (isnt (sequential? le)) ; since a ListEntry passes (map? x), must process before plain maps in tupelo.core!!!
 
-    (isnt (sequential? lea)) ; since a ListEntry passes (map? x), must process before plain maps in tupelo.core!!!
-    (isnt (sequential? leb))
-    (isnt (sequential? lec))
-
-    (is= 0 (t/le-idx lea) (t/le-idx leb))
-    (is= 100 (t/le-val lea) (t/le-val leb)))
+    (is= 0 (:idx le) )
+    (is= 100 (:val le) ))
 
   (let [le (t/list-entry 5 6)
-        ii (t/le-idx le)
-        vv (t/le-val le)]
+        ii (:idx le)
+        vv (:val le)]
     (is= 5 ii)
     (is= 6 vv)
     (throws-not? (t/list-entry 0 6))
@@ -2081,25 +2064,31 @@
     ))
 
 (dotest
-  ; only increment mapentry number values when key is :c
-  (let [data   {:a 1 :b {:c 3}}
+  ; only increment numeric mapentry values when key is :c
+  (let [data   {:a 1 :b {:c 3} 41 42}
         intc   {:leave (fn [parents data]
                          (t/with-nil-default data
-                           (when (number? data)
-                             (let [parent (t/xlast parents)]
-                               (when (and (map-entry? parent) (= (key parent) :c))
+                           (when (<= 2 (count parents))
+                             (let [ancestors (reverse parents)
+                                   a1        (t/xfirst ancestors)
+                                   a2        (t/xsecond ancestors)]
+                               (when (and (number? data)
+                                       (= :map-val (:type a1))
+                                       (map-entry? a2)
+                                       (= :c (key a2)))
                                  (inc data))))))}
         result (t/walk-with-parents data intc)]
-    (is= result {:a 1 :b {:c 4}})))
+    (is= result {:a 1 :b {:c 4} 41 42})))
 
 (dotest
   ; only increment numeric values at even index
   (let [data   [0 1 :two 3 4 5]
         intc   {:leave (fn [parents data]
+                         (spyx (t/vals->map parents data))
                          (t/with-nil-default data
                            (when (number? data)
                              (let [parent (t/xlast parents)]
-                               (when (and (t/list-entry? parent) (even? (t/le-idx parent)))
+                               (when (and (t/list-entry? parent) (even? (t/grab :idx parent)))
                                  (inc data))))))}
         result (t/walk-with-parents data intc)]
     (is= result [1 1 :two 3 5 5])))

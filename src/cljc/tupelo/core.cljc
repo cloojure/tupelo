@@ -962,30 +962,19 @@
   #?(:clj  (clojure.lang.MapEntry/create key val)
      :cljs (cljs.core.MapEntry. key val)))
 
-(defprotocol IListEntry
-  (le-idx [this])
-  (le-val [this]))
-
-; A structure analogous to MapEntry used to describe a single element in a
-; sequential data structure (list, vec, or seq)
-(defrecord ListEntry
-  [index value]
-  IListEntry
-  (le-idx [this] (.-index this))
-  (le-val [this] (.-value this)))
-
 (defn list-entry
-  "Constructs a ListEntry object given an index and value"
+  "Constructs a list-entry map given an index and value"
   [idx val]
-  (assert (nat-int? idx))
-  (->ListEntry idx val ) )
+  (assert (int-nonneg? idx))
+  {:type :list-entry :idx idx :val val})
 
 (defn list-entry?
-  "Returns true iff the arg implements IListEntry"
-  [arg] (satisfies? IListEntry arg) )
+  "Returns true iff the arg is a list-entry"
+  [arg] (and (map? arg)
+          (= :list-entry (:type arg))))
 
-(s/defn list->entries :- [ListEntry]
-  "Returns a vector of ListEntry objects given a vector/list"
+(s/defn list->entries :- [tsk/Map]
+  "Returns a vector of list-entry maps given a vector/list"
   [data :- tsk/Vec]
   (forv [[ii dd] (indexed data)]
     (list-entry ii dd)))
@@ -995,8 +984,8 @@
   (doseq [item list-entries]
     (validate list-entry? item))
   (let [N    (count list-entries)
-        idxs (mapv le-idx list-entries)
-        vals (mapv le-val list-entries)]
+        idxs (mapv :idx list-entries)
+        vals (mapv :val list-entries)]
     (assert (= idxs (range N)))
     vals))
 
@@ -2814,15 +2803,19 @@
                            (sequential? data-post-enter) (list-entries->vec
                                                            (forv [listentry (list->entries data-post-enter)]
                                                              (let [parents-next-le (append parents-next listentry)]
-                                                               (list-entry (le-idx listentry)
-                                                                 (walk-with-parents-impl parents-next-le (le-val listentry) intc)))))
+                                                               (list-entry (grab :idx listentry)
+                                                                 (walk-with-parents-impl parents-next-le (grab :val listentry) intc)))))
 
                            (map? data-post-enter) (into {}
                                                     (forv [mapentry data-post-enter]
-                                                      (let [parents-next-me (append parents-next mapentry)]
+                                                      (let [me-key           (key mapentry)
+                                                            me-val           (val mapentry)
+                                                            parents-next-me  (append parents-next mapentry)
+                                                            parents-next-key (append parents-next-me {:type :map-key :value me-key })
+                                                            parents-next-val (append parents-next-me {:type :map-val :value me-val }) ]
                                                         (map-entry
-                                                          (walk-with-parents-impl parents-next-me (key mapentry) intc)
-                                                          (walk-with-parents-impl parents-next-me (val mapentry) intc)))))
+                                                          (walk-with-parents-impl parents-next-key me-key intc)
+                                                          (walk-with-parents-impl parents-next-val me-val intc)))))
 
                            (set? data-post-enter) (into #{}
                                                     (forv [elem data-post-enter]
@@ -2897,7 +2890,7 @@
       {:enter (s/fn [parents data]
                 (if (or (map-entry? data)
                       (list-entry? data))
-                  (throw (ex-info "User-level MapEntry and/or ListEntry not allowed" (vals->map data)))))})
+                  (throw (ex-info "User-level MapEntry and/or list-entry objects not allowed" (vals->map data)))))})
     (walk-with-parents-impl [] data interceptor)))
 
 ; bottom
