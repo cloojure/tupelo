@@ -32,7 +32,7 @@
    [org.clojure/tools.reader "1.3.2"]
    [org.snakeyaml/snakeyaml-engine "2.0"] ; #todo upgrade to 2.0, edit Java imports
    [prismatic/schema "1.1.12"]
-   [reagent-utils "0.3.3"] ; used by cljs
+   [reagent-utils "0.3.3"] ; needed by cljdoc.org for cljs version
    ]
   ; Using `lein-ancient check :all` checks plugins
   :plugins [[lein-cljsbuild "1.1.7"]
