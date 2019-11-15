@@ -7,7 +7,6 @@
 (ns tst.tupelo.misc
   (:require
     [tupelo.misc :as misc]
-    [schema.core :as s]
     [tupelo.string :as ts]
 
     #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
