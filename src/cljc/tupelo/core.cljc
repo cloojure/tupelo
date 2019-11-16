@@ -448,21 +448,6 @@
         result    (walk/prewalk unlazy-item coll) ]
     result))
 
-(defn unlazy-1 ; #todo need tests & docs. Use for datomic Entity?
-  "Converts a lazy collection to a concrete (eager) collection of the same type."
-  [coll]
-  (let [unlazy-item (fn [item]
-                      (cond
-                        (sequential? item) (vec item)
-                        (map? item) (into {} item)
-                        (set? item) (into #{} item)
-             #?@(:clj [ (instance? java.io.InputStream item) (slurp item) ])  ; #todo need test
-             #?@(:clj [ (instance? java.util.List item) (vec item) ])  ; #todo need test
-
-                        :else item))
-        result    (walk/postwalk unlazy-item coll) ]
-    result ))
-
 ; #todo impl-merge *****************************************************************************
 
 (defn has-length?

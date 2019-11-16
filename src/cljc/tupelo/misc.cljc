@@ -364,8 +364,8 @@
          (when (not= old-count new-count)
            (locking dot-counter
              (when (zero? (rem old-count counts-per-row))
-               (print ( #?(:clj format)
-                        #?(:cljs rfmt/format)
+               (print ( #?(:clj format
+                           :cljs rfmt/format)
                         "%10d " old-count))
                (flush))
              (when (zero? (rem old-count decimation))
@@ -399,8 +399,8 @@
           (add-watch dot-counter :dot-counter dot-counter-watch-fn)
           (let [result# (do ~@body)]
             (newline) (println (
-                                 #?(:clj format)
-                                 #?(:cljs rfmt/format)
+                                 #?(:clj format
+                                    :cljs rfmt/format)
                                  "%10d total" @dot-counter))
             result#)))
 
