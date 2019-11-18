@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.169"
+(defproject tupelo "0.9.171"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -11,27 +11,28 @@
   :excludes [org.clojure/clojure
              org.clojure/clojurescript]
 
-  :dependencies [
-    [cheshire "5.9.0"] ; #todo switch to muuntaja/jsonista
-    [clj-time "0.15.2"]
-    [clojure-csv/clojure-csv "2.0.2"]
-    [danlentz/clj-uuid "0.1.9"]
-    [io.pedestal/pedestal.jetty "0.5.7"]
-    [io.pedestal/pedestal.route "0.5.7"]
-    [io.pedestal/pedestal.service "0.5.7"]
-    [joda-time/joda-time "2.10.5"]
-    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
-    [org.clojure/core.async "0.4.500"]
-    [org.clojure/core.match "0.3.0"]
-    [org.clojure/data.avl "0.1.0"]
-    [org.clojure/data.xml "0.2.0-alpha5"]
-    [org.clojure/math.combinatorics "0.1.6"]
-    [org.clojure/spec.alpha "0.2.176"]
-    [org.clojure/test.check "0.10.0"]
-    [org.clojure/tools.reader "1.3.2"]
-    [org.snakeyaml/snakeyaml-engine "2.0"] ; #todo upgrade to 2.0, edit Java imports
-    [prismatic/schema "1.1.12"]
-  ]
+  :dependencies
+  [
+   [cheshire "5.9.0"] ; #todo switch to muuntaja/jsonista
+   [clj-time "0.15.2"]
+   [clojure-csv/clojure-csv "2.0.2"]
+   [danlentz/clj-uuid "0.1.9"]
+   [io.pedestal/pedestal.jetty "0.5.7"]
+   [io.pedestal/pedestal.route "0.5.7"]
+   [io.pedestal/pedestal.service "0.5.7"]
+   [joda-time/joda-time "2.10.5"]
+   [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
+   [org.clojure/core.async "0.5.527"]
+   [org.clojure/core.match "0.3.0"]
+   [org.clojure/data.avl "0.1.0"]
+   [org.clojure/data.xml "0.2.0-alpha5"]
+   [org.clojure/math.combinatorics "0.1.6"]
+   [org.clojure/spec.alpha "0.2.176"]
+   [org.clojure/test.check "0.10.0"]
+   [org.clojure/tools.reader "1.3.2"]
+   [org.snakeyaml/snakeyaml-engine "2.0"] ; #todo upgrade to 2.0, edit Java imports
+   [prismatic/schema "1.1.12"]
+   ]
   ; Using `lein-ancient check :all` checks plugins
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-codox "0.10.7"]

@@ -8,7 +8,7 @@
   "Miscellaneous functions."
   ; We use the self-require trick to force separate compilation stages for macros
   ; See "ClojureScript Macro Tower & Loop" by Mike Fikes (2015-12-18)
-  #?(:cljs          ; http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  #?(:cljs ; http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
      (:require-macros
        [tupelo.misc :refer [with-dots]]))
   (:require
@@ -17,19 +17,20 @@
     [tupelo.core :as t :refer [grab thru kw->str validate it-> spyx spyxx vals->map]]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
-    #?@(:clj [[clj-uuid :as clj-uuid]
-              [clojure.java.shell :as shell]])
-    #?@(:cljs [[goog.crypt :as crypt]
-               [goog.crypt.Sha1]
-               [reagent.format :as rfmt]]))
+    #?(:clj [clj-uuid :as clj-uuid])
+    #?(:clj [clojure.java.shell :as shell])
+
+    #?(:cljs [goog.crypt :as crypt])
+    #?(:cljs [goog.crypt.Sha1])
+    #?(:cljs [reagent.format :as rfmt]))
+
   #?(:clj (:import
             [java.lang Byte Integer]
             [java.nio ByteBuffer]
             [java.nio.file Paths]
             [java.security MessageDigest]
             [java.util UUID]
-            ))
-  )
+            )))
 
 (s/defn factorial :- s/Int
   "Computes the factorial of N"
@@ -363,8 +364,8 @@
          (when (not= old-count new-count)
            (locking dot-counter
              (when (zero? (rem old-count counts-per-row))
-               (print ( #?(:clj format)
-                        #?(:cljs rfmt/format)
+               (print ( #?(:clj format
+                           :cljs rfmt/format)
                         "%10d " old-count))
                (flush))
              (when (zero? (rem old-count decimation))
@@ -398,8 +399,8 @@
           (add-watch dot-counter :dot-counter dot-counter-watch-fn)
           (let [result# (do ~@body)]
             (newline) (println (
-                                 #?(:clj format)
-                                 #?(:cljs rfmt/format)
+                                 #?(:clj format
+                                    :cljs rfmt/format)
                                  "%10d total" @dot-counter))
             result#)))
 

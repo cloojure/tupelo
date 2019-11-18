@@ -11,11 +11,11 @@
   function arguments, etc.  Each function also provides an optional default-value which
   will be returned if there is an exception during parsing."
   (:require
-    #?@(:clj [[clojure.tools.reader.edn :as edn]
-              [clojure.walk :as walk]])
     [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t]
+    #?(:clj [clojure.tools.reader.edn :as edn])
+    #?(:clj [clojure.walk :as walk])
     ))
 
 ; #todo:  write doc page

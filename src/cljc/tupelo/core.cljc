@@ -166,18 +166,19 @@
 ;-----------------------------------------------------------------------------
 ; for tupelo.string
 
-(s/defn string-increasing? :- s/Bool ; #todo merge with general in tupelo.core
+(s/defn ^:no-doc string-increasing? :- s/Bool ; #todo merge with general in tupelo.core
   "Returns true if a pair of strings are in increasing lexicographic order."
   [a :- s/Str
    b :- s/Str ]
   (neg? (compare a b)))
 
-(s/defn string-increasing-or-equal? :- s/Bool ; #todo merge with general in tupelo.core
+(s/defn ^:no-doc string-increasing-or-equal? :- s/Bool ; #todo merge with general in tupelo.core
   "Returns true if a pair of strings are in increasing lexicographic order, or equal."
   [a :- s/Str
    b :- s/Str ]
   (or (= a b)
     (string-increasing? a b)))
+
 ;-----------------------------------------------------------------------------
 #?(:clj
    (do
@@ -447,21 +448,6 @@
                         :else item))
         result    (walk/prewalk unlazy-item coll) ]
     result))
-
-(defn unlazy-1 ; #todo need tests & docs. Use for datomic Entity?
-  "Converts a lazy collection to a concrete (eager) collection of the same type."
-  [coll]
-  (let [unlazy-item (fn [item]
-                      (cond
-                        (sequential? item) (vec item)
-                        (map? item) (into {} item)
-                        (set? item) (into #{} item)
-             #?@(:clj [ (instance? java.io.InputStream item) (slurp item) ])  ; #todo need test
-             #?@(:clj [ (instance? java.util.List item) (vec item) ])  ; #todo need test
-
-                        :else item))
-        result    (walk/postwalk unlazy-item coll) ]
-    result ))
 
 ; #todo impl-merge *****************************************************************************
 
@@ -1207,6 +1193,21 @@
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
 
+(defn ^:no-doc cmp-seq-lexi ; from generic compare from clojure.org
+  [x y]
+  (loop [x x
+         y y]
+    (if (seq x)
+      (if (seq y)
+        (let [c (compare (first x) (first y))]
+          (if (zero? c)
+            (recur (rest x) (rest y))
+            c))
+        1) ; else we reached end of y first, so x > y
+      (if (seq y)
+        -1 ; we reached end of x first, so x < y
+        0)))) ; Sequences contain same elements.  x = y
+
 (s/defn increasing? :- s/Bool
   "Returns true iff the vectors are in (strictly) lexicographically increasing order
     [1 2]  [1]        -> false
@@ -1219,21 +1220,7 @@
     [1 2]  [2]        -> true "
   [a :- tsk/List
    b :- tsk/List]
-  (let [len-a        (count a)
-        len-b        (count b)
-        cmpr         (fn [x y] (cond
-                                 (= x y) :eq
-                                 (< x y) :incr
-                                 (> x y) :decr
-                                 :else (throw (ex-info "should never get here" nil))))
-        cmpr-res     (mapv cmpr a b)
-        first-change (first (drop-while #{:eq} cmpr-res)) ; nil if all :eq
-        ]
-    (cond
-      (= a b)                       false
-      (= first-change :decr)        false
-      (= first-change :incr)        true
-      (nil? first-change)           (< len-a len-b))))
+  (neg? (cmp-seq-lexi a b)))
 
 (s/defn increasing-or-equal? :- s/Bool
   "Returns true iff the vectors are in (strictly) lexicographically increasing-or-equal order
@@ -1247,8 +1234,7 @@
     [1 2]  [2]        -> true "
   [a :- tsk/List
    b :- tsk/List]
-  (or (= a b)
-    (increasing? a b)))
+  (nonpos? (cmp-seq-lexi a b)))
 
 #?(:clj
    (do
@@ -1307,8 +1293,13 @@
        (let [{:keys [major minor]} *clojure-version*]
          (increasing-or-equal? [1 9] [major minor])))
 
+     (defn is-clojure-1-10-plus? []
+       (let [{:keys [major minor]} *clojure-version*]
+         (increasing-or-equal? [1 10] [major minor])))
+
      (defn is-pre-clojure-1-8? [] (not (is-clojure-1-8-plus?)))
      (defn is-pre-clojure-1-9? [] (not (is-clojure-1-9-plus?)))
+     (defn is-pre-clojure-1-10? [] (not (is-clojure-1-10-plus?)))
 
      (defmacro when-clojure-1-8-plus
        "Wraps code that should only be included for Clojure 1.8 or higher.  Otherwise, code is supressed."
@@ -1320,6 +1311,12 @@
        "Wraps code that should only be included for Clojure 1.9 or higher.  Otherwise, code is supressed."
        [& forms]
        (if (is-clojure-1-9-plus?)
+         `(do ~@forms)))
+
+     (defmacro when-clojure-1-10-plus
+       "Wraps code that should only be included for Clojure 1.10 or higher.  Otherwise, code is supressed."
+       [& forms]
+       (if (is-clojure-1-10-plus?)
          `(do ~@forms)))
 
      (defmacro when-not-clojure-1-9-plus
