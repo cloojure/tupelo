@@ -1202,11 +1202,11 @@
         (let [c (compare (first x) (first y))]
           (if (zero? c)
             (recur (rest x) (rest y))
-            (neg? c))) ; -1 => (< x y) i.e. increasing => true
-        false) ; else we reached end of y first, so x > y
+            c))
+        1) ; else we reached end of y first, so x > y
       (if (seq y)
-        true ; we reached end of x first, so x < y
-        false)))) ; Sequences contain same elements.  x = y
+        -1 ; we reached end of x first, so x < y
+        0)))) ; Sequences contain same elements.  x = y
 
 (s/defn increasing? :- s/Bool
   "Returns true iff the vectors are in (strictly) lexicographically increasing order
@@ -1220,7 +1220,7 @@
     [1 2]  [2]        -> true "
   [a :- tsk/List
    b :- tsk/List]
-  (cmp-seq-lexi a b) )
+  (neg? (cmp-seq-lexi a b)))
 
 (s/defn increasing-or-equal? :- s/Bool
   "Returns true iff the vectors are in (strictly) lexicographically increasing-or-equal order
@@ -1234,8 +1234,7 @@
     [1 2]  [2]        -> true "
   [a :- tsk/List
    b :- tsk/List]
-  (or (= a b)
-    (increasing? a b)))
+  (nonpos? (cmp-seq-lexi a b)))
 
 #?(:clj
    (do
@@ -1254,7 +1253,7 @@
        "Returns true if Java version is at least as great as supplied string.
        Sort is by lexicographic (alphabetic) order."
        [version-str :- s/Str]
-       (increasing-or-equal? (seq (str/trim version-str)) (seq (str/trim (java-version)))))
+       (string-increasing-or-equal? (str/trim version-str) (str/trim (java-version))))
 
      ; #todo need min-java-1-8  ???
 
@@ -1294,8 +1293,13 @@
        (let [{:keys [major minor]} *clojure-version*]
          (increasing-or-equal? [1 9] [major minor])))
 
+     (defn is-clojure-1-10-plus? []
+       (let [{:keys [major minor]} *clojure-version*]
+         (increasing-or-equal? [1 10] [major minor])))
+
      (defn is-pre-clojure-1-8? [] (not (is-clojure-1-8-plus?)))
      (defn is-pre-clojure-1-9? [] (not (is-clojure-1-9-plus?)))
+     (defn is-pre-clojure-1-10? [] (not (is-clojure-1-10-plus?)))
 
      (defmacro when-clojure-1-8-plus
        "Wraps code that should only be included for Clojure 1.8 or higher.  Otherwise, code is supressed."
@@ -1307,6 +1311,12 @@
        "Wraps code that should only be included for Clojure 1.9 or higher.  Otherwise, code is supressed."
        [& forms]
        (if (is-clojure-1-9-plus?)
+         `(do ~@forms)))
+
+     (defmacro when-clojure-1-10-plus
+       "Wraps code that should only be included for Clojure 1.10 or higher.  Otherwise, code is supressed."
+       [& forms]
+       (if (is-clojure-1-10-plus?)
          `(do ~@forms)))
 
      (defmacro when-not-clojure-1-9-plus
