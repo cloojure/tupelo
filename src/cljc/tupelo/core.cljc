@@ -166,18 +166,19 @@
 ;-----------------------------------------------------------------------------
 ; for tupelo.string
 
-(s/defn string-increasing? :- s/Bool ; #todo merge with general in tupelo.core
+(s/defn ^:no-doc string-increasing? :- s/Bool ; #todo merge with general in tupelo.core
   "Returns true if a pair of strings are in increasing lexicographic order."
   [a :- s/Str
    b :- s/Str ]
   (neg? (compare a b)))
 
-(s/defn string-increasing-or-equal? :- s/Bool ; #todo merge with general in tupelo.core
+(s/defn ^:no-doc string-increasing-or-equal? :- s/Bool ; #todo merge with general in tupelo.core
   "Returns true if a pair of strings are in increasing lexicographic order, or equal."
   [a :- s/Str
    b :- s/Str ]
   (or (= a b)
     (string-increasing? a b)))
+
 ;-----------------------------------------------------------------------------
 #?(:clj
    (do
@@ -1192,25 +1193,6 @@
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
 
-;(s/defn increasing-orig? :- s/Bool ; #todo replace with loop-recur
-;  [a :- tsk/List
-;   b :- tsk/List]
-;  (let [len-a        (count a)
-;        len-b        (count b)
-;        cmpr         (fn [x y] (cond
-;                                 (= x y) :eq ; #todo replace with (compare x y)
-;                                 (< x y) :incr
-;                                 (> x y) :decr
-;                                 :else (throw (ex-info "should never get here" nil))))
-;        cmpr-res     (mapv cmpr a b)
-;        first-change (first (drop-while #{:eq} cmpr-res)) ; nil if all :eq
-;        ]
-;    (cond
-;      (= a b)                       false
-;      (= first-change :decr)        false
-;      (= first-change :incr)        true
-;      (nil? first-change)           (< len-a len-b))))
-
 (defn ^:no-doc cmp-seq-lexi ; from generic compare from clojure.org
   [x y]
   (loop [x x
@@ -1226,7 +1208,7 @@
         true ; we reached end of x first, so x < y
         false)))) ; Sequences contain same elements.  x = y
 
-(s/defn increasing? :- s/Bool ; #todo replace with loop-recur
+(s/defn increasing? :- s/Bool
   "Returns true iff the vectors are in (strictly) lexicographically increasing order
     [1 2]  [1]        -> false
     [1 2]  [1 1]      -> false
@@ -1272,7 +1254,7 @@
        "Returns true if Java version is at least as great as supplied string.
        Sort is by lexicographic (alphabetic) order."
        [version-str :- s/Str]
-       (string-increasing-or-equal? (str/trim version-str) (str/trim (java-version))))
+       (increasing-or-equal? (seq (str/trim version-str)) (seq (str/trim (java-version)))))
 
      ; #todo need min-java-1-8  ???
 
