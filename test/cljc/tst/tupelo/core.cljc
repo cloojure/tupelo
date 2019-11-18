@@ -930,6 +930,64 @@
   (is (t/increasing-or-equal? [1 2] [2])))
 
 (dotest
+  (isnt (t/increasing? [\a \b] [\a]))
+  (isnt (t/increasing? [\a \b] [\a \a]))
+  (isnt (t/increasing? [\a \b] [\a \b]))
+  (is (t/increasing? [\a \b] [\a \b nil]))
+  (is (t/increasing? [\a \b] [\a \b \c]))
+  (is (t/increasing? [\a \b] [\a \c]))
+  (is (t/increasing? [\a \b] [\b \a]))
+  (is (t/increasing? [\a \b] [\b]))
+
+  (isnt (t/increasing-or-equal? [\a \b] [\a]))
+  (isnt (t/increasing-or-equal? [\a \b] [\a \a]))
+  (is (t/increasing-or-equal? [\a \b] [\a \b]))
+  (is (t/increasing-or-equal? [\a \b] [\a \b nil]))
+  (is (t/increasing-or-equal? [\a \b] [\a \b \c]))
+  (is (t/increasing-or-equal? [\a \b] [\a \c]))
+  (is (t/increasing-or-equal? [\a \b] [\b \a]))
+  (is (t/increasing-or-equal? [\a \b] [\b])))
+
+(dotest
+  (isnt (t/increasing? [:a :b] [:a]))
+  (isnt (t/increasing? [:a :b] [:a :a]))
+  (isnt (t/increasing? [:a :b] [:a :b]))
+  (is (t/increasing? [:a :b] [:a :b nil]))
+  (is (t/increasing? [:a :b] [:a :b :c]))
+  (is (t/increasing? [:a :b] [:a :c]))
+  (is (t/increasing? [:a :b] [:b :a]))
+  (is (t/increasing? [:a :b] [:b]))
+
+  (isnt (t/increasing-or-equal? [:a :b] [:a]))
+  (isnt (t/increasing-or-equal? [:a :b] [:a :a]))
+  (is (t/increasing-or-equal? [:a :b] [:a :b]))
+  (is (t/increasing-or-equal? [:a :b] [:a :b nil]))
+  (is (t/increasing-or-equal? [:a :b] [:a :b :c]))
+  (is (t/increasing-or-equal? [:a :b] [:a :c]))
+  (is (t/increasing-or-equal? [:a :b] [:b :a]))
+  (is (t/increasing-or-equal? [:a :b] [:b])))
+
+(dotest
+  (isnt (t/increasing? ["a" "b"] ["a"]))
+  (isnt (t/increasing? ["a" "b"] ["a" "a"]))
+  (isnt (t/increasing? ["a" "b"] ["a" "b"]))
+  (is (t/increasing? ["a" "b"] ["a" "b" nil]))
+  (is (t/increasing? ["a" "b"] ["a" "b" "c"]))
+  (is (t/increasing? ["a" "b"] ["a" "c"]))
+  (is (t/increasing? ["a" "b"] ["b" "a"]))
+  (is (t/increasing? ["a" "b"] ["b"]))
+
+  (isnt (t/increasing-or-equal? ["a" "b"] ["a"]))
+  (isnt (t/increasing-or-equal? ["a" "b"] ["a" "a"]))
+  (is (t/increasing-or-equal? ["a" "b"] ["a" "b"]))
+  (is (t/increasing-or-equal? ["a" "b"] ["a" "b" nil]))
+  (is (t/increasing-or-equal? ["a" "b"] ["a" "b" "c"]))
+  (is (t/increasing-or-equal? ["a" "b"] ["a" "c"]))
+  (is (t/increasing-or-equal? ["a" "b"] ["b" "a"]))
+  (is (t/increasing-or-equal? ["a" "b"] ["b"])))
+
+
+(dotest
   (let [map1  { :a 1 :b 2 :c nil
                nil :NIL
                "hi" "hello"

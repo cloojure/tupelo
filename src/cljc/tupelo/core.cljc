@@ -1192,7 +1192,41 @@
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
 
-(s/defn increasing? :- s/Bool
+;(s/defn increasing-orig? :- s/Bool ; #todo replace with loop-recur
+;  [a :- tsk/List
+;   b :- tsk/List]
+;  (let [len-a        (count a)
+;        len-b        (count b)
+;        cmpr         (fn [x y] (cond
+;                                 (= x y) :eq ; #todo replace with (compare x y)
+;                                 (< x y) :incr
+;                                 (> x y) :decr
+;                                 :else (throw (ex-info "should never get here" nil))))
+;        cmpr-res     (mapv cmpr a b)
+;        first-change (first (drop-while #{:eq} cmpr-res)) ; nil if all :eq
+;        ]
+;    (cond
+;      (= a b)                       false
+;      (= first-change :decr)        false
+;      (= first-change :incr)        true
+;      (nil? first-change)           (< len-a len-b))))
+
+(defn ^:no-doc cmp-seq-lexi ; from generic compare from clojure.org
+  [x y]
+  (loop [x x
+         y y]
+    (if (seq x)
+      (if (seq y)
+        (let [c (compare (first x) (first y))]
+          (if (zero? c)
+            (recur (rest x) (rest y))
+            (neg? c))) ; -1 => (< x y) i.e. increasing => true
+        false) ; else we reached end of y first, so x > y
+      (if (seq y)
+        true ; we reached end of x first, so x < y
+        false)))) ; Sequences contain same elements.  x = y
+
+(s/defn increasing? :- s/Bool ; #todo replace with loop-recur
   "Returns true iff the vectors are in (strictly) lexicographically increasing order
     [1 2]  [1]        -> false
     [1 2]  [1 1]      -> false
@@ -1204,21 +1238,7 @@
     [1 2]  [2]        -> true "
   [a :- tsk/List
    b :- tsk/List]
-  (let [len-a        (count a)
-        len-b        (count b)
-        cmpr         (fn [x y] (cond
-                                 (= x y) :eq
-                                 (< x y) :incr
-                                 (> x y) :decr
-                                 :else (throw (ex-info "should never get here" nil))))
-        cmpr-res     (mapv cmpr a b)
-        first-change (first (drop-while #{:eq} cmpr-res)) ; nil if all :eq
-        ]
-    (cond
-      (= a b)                       false
-      (= first-change :decr)        false
-      (= first-change :incr)        true
-      (nil? first-change)           (< len-a len-b))))
+  (cmp-seq-lexi a b) )
 
 (s/defn increasing-or-equal? :- s/Bool
   "Returns true iff the vectors are in (strictly) lexicographically increasing-or-equal order
