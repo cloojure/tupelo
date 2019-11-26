@@ -115,18 +115,16 @@
 
   ; verify parsing
   (let [clj-xml-data             (clj-xml/parse (ts/string->stream xml-str))
-        tf-xml-data              (parse-xml/parse (ts/string->stream xml-str))
-        tf-xml-data-input-source (parse-xml/parse (org.xml.sax.InputSource.
-                                                 (ts/string->stream xml-str)))
-        tf-xml-data-reader       (parse-xml/parse (StringReader. xml-str))
-        tf-tagsoup-data          (parse-tagsoup/parse (ts/string->stream xml-str))]
+        tf-xml-data              (parse-xml/parse xml-str)
+        tf-xml-data-input-source (parse-xml/parse-streaming (org.xml.sax.InputSource. (ts/string->stream xml-str)))
+        tf-xml-data-reader       (parse-xml/parse-streaming (StringReader. xml-str))
+        tf-tagsoup-data          (parse-tagsoup/parse xml-str)]
     (is= enlive-tree-normalized clj-xml-data)
-
     (is= enlive-tree-normalized-nonblank (parse-xml/enlive-remove-whitespace clj-xml-data))
     (is= enlive-tree-normalized-nonblank tf-xml-data)
     (is= enlive-tree-normalized-nonblank tf-xml-data-input-source)
     (is= enlive-tree-normalized-nonblank tf-xml-data-reader)
-    (is= enlive-tree-normalized-nonblank tf-tagsoup-data) ))
+    (is= enlive-tree-normalized-nonblank tf-tagsoup-data)))
 
 (dotest
   (let [xml-str-out (clj-xml/indent-str enlive-tree-normalized-nonblank)]

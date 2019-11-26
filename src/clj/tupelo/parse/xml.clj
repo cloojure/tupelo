@@ -14,7 +14,8 @@
     [clojure.walk :as walk]
     [clojure.zip :as zip]
     [schema.core :as s]
-    [tupelo.string :as ts])
+    [tupelo.string :as ts]
+    [tupelo.schema :as tsk])
   (:import
     [java.io Reader InputStream]
     [javax.xml.parsers SAXParserFactory]
@@ -137,8 +138,8 @@
         ^org.xml.sax.InputSource             input-source
         ^org.xml.sax.helpers.DefaultHandler  content-handler))))
 
-(s/defn parse-raw       ; #todo fix docstring
-  ([xml-input] (parse-raw xml-input sax-parse-fn))
+(s/defn parse-raw-streaming       ; #todo fix docstring
+  ([xml-input] (parse-raw-streaming xml-input sax-parse-fn))
   ([xml-input parse-fn]
     (let [result-atom     (atom (xml-zip {:type :document :content nil}))
           content-handler (handler result-atom)]
@@ -152,12 +153,20 @@
                           (only it) )]
         parsed-data))))
 
-(s/defn parse       ; #todo fix docstring
-  ([xml-input] (parse xml-input sax-parse-fn))
+(s/defn parse-streaming       ; #todo fix docstring
+  ([xml-input] (parse-streaming xml-input sax-parse-fn))
   ([xml-input parse-fn]
     (enlive-remove-whitespace
       (enlive-normalize
-        (parse-raw xml-input parse-fn)))))
+        (parse-raw-streaming xml-input parse-fn)))))
+
+;---------------------------------------------------------------------------------------------------
+(s/defn parse-raw ; #todo fix docstring
+  [xml-input] (parse-raw-streaming (ts/string->stream xml-input)))
+
+(s/defn parse ; #todo fix docstring
+  [xml-input] (parse-streaming (ts/string->stream xml-input)))
+
 
 ; "Parses and loads the source input-source, which can be a File, InputStream or String
 ;  naming a URI. Returns a seq of tree of the xml/element struct-map, which has the keys

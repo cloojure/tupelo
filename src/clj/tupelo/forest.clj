@@ -566,8 +566,7 @@
 
        (fn [path] ...)
 
-   where `parent-path` is a vector of parent HIDs beginning at the root of the sub-tree being processed,
-   and `hid` points to the current node to be processed. "
+   where `path` is a vector of HIDs beginning at the root of the sub-tree being walked."
   [root-hid :- HID
    intc-map :- tsk/KeyMap]
   (let [legal-keys   #{:id :enter :leave}
@@ -635,8 +634,7 @@
 (s/defn html->enlive :- tsk/KeyMap ; #todo need tree->xml  ???
   [html-str :- s/Str]
   (tagsoup/parse
-    (ts/string->stream
-      html-str)))
+    html-str))
 
 (s/defn xml->enlive :- tsk/KeyMap ; #todo need tree->xml  ???
   [xml-str :- s/Str]
@@ -926,6 +924,7 @@
         (throw (ex-info "parent khids entry not found!" (vals->map parents parent-hid parent-khids hid))))
       (kids-set parent-hid parent-khids-new))))
 
+; #todo convert to `(defn remove-subtree [hid] ...` once have parent pointer
 (s/defn remove-path-subtree
   "Given an HID path, removes from the forest all nodes in the subtree rooted at the end of that path."
   [path :- [HID]]

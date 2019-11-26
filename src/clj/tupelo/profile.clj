@@ -115,8 +115,9 @@
                               (glue {:id stats-id} stats-data))))]
     stats-sorted))
 
-(defn print-profile-stats []
+(defn print-profile-stats
   "Prints profile stats to stdout."
+  []
   (newline)
   (println "---------------------------------------------------------------------------------------------------")
   (println "Profile Stats:")

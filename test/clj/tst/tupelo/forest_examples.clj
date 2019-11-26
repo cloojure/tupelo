@@ -1139,7 +1139,7 @@
   []
   (it-> "xkcd-sample.html"
     (io/resource it)
-    (io/input-stream it)
+    (slurp it)
     (tagsoup/parse it)))
 
 (dotest

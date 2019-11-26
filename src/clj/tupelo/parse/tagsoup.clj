@@ -12,7 +12,9 @@
   (:use tupelo.core)
   (:require
     [schema.core :as s]
-    [tupelo.parse.xml :as xml] ))
+    [tupelo.parse.xml :as xml]
+    [tupelo.string :as ts]
+    [tupelo.schema :as tsk]))
 
 (s/defn ^:private tagsoup-parse-fn
   [input-source :- org.xml.sax.InputSource
@@ -29,21 +31,22 @@
     (.setProperty "http://xml.org/sax/properties/lexical-handler" content-handler)
     (.parse input-source)))
 
-(s/defn parse-raw
+; #todo make use string input:  (ts/string->stream html-str)
+(s/defn parse-raw :- tsk/KeyMap
   "Loads and parse an HTML resource and closes the input-stream."
-  [input-stream :- java.io.InputStream]
-  (when-not input-stream
-    (throw (NullPointerException. "HTML resource not found.")))
-  (with-open [^java.io.Closeable input-stream input-stream]
-    (xml/parse-raw
-      (org.xml.sax.InputSource. input-stream)
-      tagsoup-parse-fn)))
+  [html-str :- s/Str]
+  (xml/parse-raw-streaming
+    (org.xml.sax.InputSource.
+      (ts/string->stream html-str))
+    tagsoup-parse-fn))
 
-(s/defn parse
+; #todo make use string input:  (ts/string->stream html-str)
+(s/defn parse :- tsk/KeyMap
   "Loads and parse an HTML resource and closes the input-stream."
-  [input-stream :- java.io.InputStream]
+  [html-str :- s/Str]
   (xml/enlive-remove-whitespace
     (xml/enlive-normalize
-      (parse-raw input-stream))))
+      (parse-raw
+        html-str))))
 
 
