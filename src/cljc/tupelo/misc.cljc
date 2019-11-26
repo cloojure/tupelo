@@ -14,7 +14,7 @@
   (:require
     [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.core :as t :refer [grab thru kw->str validate it-> spyx spyxx vals->map]]
+    [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map]]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
     #?(:clj [clj-uuid :as clj-uuid])
@@ -22,7 +22,7 @@
 
     #?(:cljs [goog.crypt :as crypt])
     #?(:cljs [goog.crypt.Sha1])
-    #?(:cljs [reagent.format :as rfmt]))
+)
 
   #?(:clj (:import
             [java.lang Byte Integer]
@@ -364,9 +364,11 @@
          (when (not= old-count new-count)
            (locking dot-counter
              (when (zero? (rem old-count counts-per-row))
-               (print ( #?(:clj format
-                           :cljs rfmt/format)
-                        "%10d " old-count))
+               (it-> old-count
+                 (str it)
+                 (ts/pad-left it 10)
+                 (glue it \space)
+                 (print it))
                (flush))
              (when (zero? (rem old-count decimation))
                (print \.)

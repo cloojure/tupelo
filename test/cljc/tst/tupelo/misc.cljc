@@ -19,7 +19,6 @@
 
     #?(:cljs [goog.crypt :as crypt])
     #?(:cljs [goog.crypt.Sha1])
-    #?(:cljs [reagent.format :as rf] )
     )
   #?(:clj (:import [java.lang Byte Integer]))
   )
@@ -187,25 +186,28 @@
 
      (dotest
        (misc/dots-config! {:dots-per-row 10 :decimation 1})
-       (is= (ts/collapse-whitespace (with-out-str
-                                      (misc/with-dots
-                                        (doseq [x (range 9)]
-                                          (misc/dot)))))
-         (ts/collapse-whitespace
-           "0 .........
-            9 total"))
+       (let [result   (with-out-str
+                        (misc/with-dots
+                          (doseq [x (range 9)]
+                            (misc/dot))))
+             expected "0 .........
+                       9 total"]
+         (is-nonblank= result expected))
 
        (misc/dots-config! {:dots-per-row 10 :decimation 3})
-       (is= (ts/collapse-whitespace (with-out-str
-                                      (misc/with-dots
-                                        (doseq [x (range 99)]
-                                          (misc/dot)))))
-         (ts/collapse-whitespace
-           "  0 ..........
-             30 ..........
-             60 ..........
-             90 ...
-             99 total")))
+       (is-nonblank= (with-out-str
+                       (misc/with-dots
+                         (doseq [x (range 99)]
+                           (misc/dot))))
+         "  0 ..........
+           30 ..........
+           60 ..........
+           90 ...
+           99 total"))
 
-))
+     ))
+
+
+
+
 
