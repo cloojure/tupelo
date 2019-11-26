@@ -1137,10 +1137,10 @@
 (defn get-xkcd-enlive
   "Load a sample webpage from disk"
   []
-  (it-> "xkcd-sample.html"
-    (io/resource it)
-    (slurp it)
-    (tagsoup/parse it)))
+  (-> "xkcd-sample.html"
+    (io/resource)
+    (slurp)
+    (tagsoup/parse)))
 
 (dotest
   (when false       ; manually enable to grab a new copy of the webpage
