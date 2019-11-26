@@ -12,20 +12,34 @@
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.schema :as tsk]
-    #?(:cljs
-       [goog.string :as gstring]
-      )
+    #?(:cljs [goog.string :as gstring] )
     ))
 
 ;-----------------------------------------------------------------------------
-(def code-point-backspace 8)
-(def code-point-tab 9)
-(def code-point-newline 10)
-(def code-point-tab-vertical 11)
-(def code-point-formfeed 12)
-(def code-point-return 13)
-(def code-point-escape 27)
-(def code-point-del 127)
+(def code-point-backspace
+  "The unicode code-point for the backspace char."
+  8)
+(def code-point-tab
+  "The unicode code-point for the horizontal tab char."
+  9)
+(def code-point-newline
+  "The unicode code-point for the newline char."
+  10)
+(def code-point-tab-vertical
+  "The unicode code-point for the vertical tab char."
+  11)
+(def code-point-formfeed
+  "The unicode code-point for the form-feed char."
+  12)
+(def code-point-return
+  "The unicode code-point for the return char."
+  13)
+(def code-point-escape
+  "The unicode code-point for the escape char."
+  27)
+(def code-point-del
+  "The unicode code-point for the delete char."
+  127)
 ;-----------------------------------------------------------------------------
 
 ; #todo: docstrings
@@ -75,7 +89,7 @@
   (set/difference visible #{\"}))
 
 (s/def visible-no-squote :- tsk/Set
-  "All visible (printing) ASCII chars except double-quote."
+  "All visible (printing) ASCII chars except single-quote."
   (set/difference visible #{\'}))
 
 (s/def text :- tsk/Set
@@ -134,18 +148,6 @@
 
 
      ))
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
