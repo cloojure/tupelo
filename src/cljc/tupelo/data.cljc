@@ -27,6 +27,22 @@
              ))
   )
 
+
+; #todo Treeify: {k1 v1 k2 v2} =>
+; #todo   {:data/id 100 :edn/type :edn/map ::kids [101 102] }
+; #todo     {:data/id 101 :edn/type :edn/MapEntry  :edn/MapEntryKey 103  :edn/MapEntryVal 104}
+; #todo     {:data/id 102 :edn/type :edn/MapEntry  :edn/MapEntryKey 105  :edn/MapEntryVal 106}
+; #todo       {:data/id 103 :edn/type :edn/primitive  :data/type :data/keyword   :data/value k1 }
+; #todo       {:data/id 104 :edn/type :edn/primitive  :data/type :data/int       :data/value v1 }
+; #todo       {:data/id 105 :edn/type :edn/primitive  :data/type :data/keyword   :data/value k1 }
+; #todo       {:data/id 106 :edn/type :edn/primitive  :data/type :data/int       :data/value v1 }
+; #todo Treeify: [v0 v1] =>
+; #todo   {:data/id 100 :edn/type :edn/list ::kids [101 102] }
+; #todo     {:data/id 101 :edn/type :edn/ListEntry  :edn/ListEntryIdx 0  :edn/ListEntryVal 103}
+; #todo     {:data/id 102 :edn/type :edn/ListEntry  :edn/ListEntryIdx 1  :edn/ListEntryVal 104}
+; #todo       {:data/id 103 :edn/type :edn/primitive  :data/type :data/string  :data/value v0 }
+; #todo       {:data/id 104 :edn/type :edn/primitive  :data/type :data/string  :data/value v1 }
+
 ; #todo Add destruct features in search (hiccup for db search):
 ; #todo   basic:  (find [ {:hid ? :kid id5} { :eid id5 :value 5} ]) ; parent of node with {:value 5}
 ; #todo   better: (find [ {:hid ? :kid [{ :value 5}]} ]) ; parent of node with {:value 5}

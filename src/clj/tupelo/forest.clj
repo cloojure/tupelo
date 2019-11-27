@@ -48,6 +48,8 @@
     set? #{HID}
     :else [HID] ))
 
+; #todo { :node/type :data/node  :node/tag :address :data/type :data/int  :data/value 123  ::khids [...]  ...}
+; #todo { :node/type :data/leaf  :data/type :data/string  :data/value "abc"  ::khids []  ...}
 (def Node
   "The Plumatic Schema description of a legal node in a forest of trees"
   {(s/required-key ::khids) [HID]
