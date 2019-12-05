@@ -38,13 +38,16 @@
     (parse-raw (s/validate s/Str str-in))))
 
 ;-----------------------------------------------------------------------------
-(def ^:private dump-settings (-> (DumpSettings/builder)
-                               (.build)))
+(def ^:private dump-settings
+  (-> (DumpSettings/builder)
+    (.build)))
 
-(def ^:private yaml-dump (Dump. dump-settings))
+(def ^:private yaml-dump
+  (Dump. dump-settings))
 
-(defn encode [it]
+(s/defn encode :- s/Str
   "Serializes a Clojure data structure into a YAML string."
+  [it]
   (.dumpToString yaml-dump
     (walk/stringify-keys it)))
 
