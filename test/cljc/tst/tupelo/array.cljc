@@ -81,6 +81,9 @@
                            [22 12 02]
                            [23 13 03]]
         ]
+    (when false
+      (println \newline :awt01)
+      (println (tar/array->str target)))
     (dotimes [ii 3]
       (dotimes [jj 4]
         (do
@@ -100,23 +103,23 @@
     (is= (tar/col-get target 2) [02 12 22])
     (is= (tar/col-get target 3) [03 13 23])
 
-    (is= (tar/array-rows->vec target) [00 01 02 03
+    (is= (tar/array->row-data target) [00 01 02 03
                                        10 11 12 13
                                        20 21 22 23])
-    (is= (-> target (tar/transpose) (tar/array-cols->vec)) [00 01 02 03
+    (is= (-> target (tar/transpose) (tar/array->col-data)) [00 01 02 03
                                                             10 11 12 13
                                                             20 21 22 23])
 
-    (is= target-rows-vec (tar/array-rows->vec target))
-    (is= target-cols-vec (tar/array-cols->vec target))
-    (is= target (tar/vec->array-rows 3 4 target-rows-vec))
-    (is= target (tar/vec->array-cols 3 4 target-cols-vec))
+    (is= target-rows-vec (tar/array->row-data target))
+    (is= target-cols-vec (tar/array->col-data target))
+    (is= target (tar/row-data->array 3 4 target-rows-vec))
+    (is= target (tar/col-data->array 3 4 target-cols-vec))
     (is= target (->> target
-                  (tar/array-rows->vec)
-                  (tar/vec->array-rows 3 4)))
+                  (tar/array->row-data)
+                  (tar/row-data->array 3 4)))
     (is= target (->> target
-                  (tar/array-cols->vec)
-                  (tar/vec->array-cols 3 4)))
+                  (tar/array->col-data)
+                  (tar/col-data->array 3 4)))
 
     (is= target @a34)
     (is= target-flip-ud (tar/flip-ud target))

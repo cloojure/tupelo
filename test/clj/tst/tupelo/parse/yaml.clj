@@ -38,11 +38,11 @@
 
 ;----------------------------------------------------------------------------
 (dotest
-  (is= "a\n" (yaml/encode "a"))
-  (is= "1\n" (yaml/encode 1))
-  (is= "true\n" (yaml/encode true))
-  (is= "[2, a, true]\n" (yaml/encode [2 "a" true]))
-  (is= "{a: 1, b: 2, c: 3}\n" (yaml/encode {:a 1 :b 2 :c 3})))
+  (is= "a\n" (yaml/edn->yaml "a"))
+  (is= "1\n" (yaml/edn->yaml 1))
+  (is= "true\n" (yaml/edn->yaml true))
+  (is= "[2, a, true]\n" (yaml/edn->yaml [2 "a" true]))
+  (is= "{a: 1, b: 2, c: 3}\n" (yaml/edn->yaml {:a 1 :b 2 :c 3})))
 
 ;----------------------------------------------------------------------------
 (def yaml-str
@@ -77,8 +77,28 @@ tupelo:
                                   "YAML Parsers"
                                   "XML Parsers"]
                      :platforms  ["clj" "cljs"]}}
+        yaml-str-2 "tupelo:
+                      name: Tupelo
+                      url: https://github.com/cloojure/tupelo
+                      categories: [Data Transformation, Date and Time, Datomic, Misc. Functions, Unit
+                                   Testing, HTML Parsers, JSON Parsers, YAML Parsers, XML Parsers]
+                      platforms: [clj, cljs] "
+
         edn-parsed (yaml/parse yaml-str)
         m1         (:tupelo edn-parsed)]
     (is (map? edn-parsed))
     (is (map? m1))
-    (is= edn-parsed edn-data)))
+    (is= edn-parsed edn-data)
+
+    (when false
+      (nl) (println :awt01)
+      (println (yaml/edn->yaml edn-data)))
+    (is-nonblank= yaml-str-2 (yaml/edn->yaml edn-data))
+    (is= edn-data (-> edn-data
+                    (yaml/edn->yaml)
+                    (yaml/parse)))
+    ))
+
+
+
+

@@ -45,8 +45,8 @@
 (def ^:private yaml-dump
   (Dump. dump-settings))
 
-(s/defn encode :- s/Str
-  "Serializes a Clojure data structure into a YAML string."
+(s/defn edn->yaml :- s/Str
+  "Serializes a Clojure EDN data structure into a YAML string."
   [it]
   (.dumpToString yaml-dump
     (walk/stringify-keys it)))

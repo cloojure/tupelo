@@ -13,16 +13,15 @@
 #?(:clj (do ; #todo fix this
 
 (def Vector
-  "A 1-D array of values (a vector of vectors)."
+  "Plumatic Schema type definition for a 1-D array of values (a vector of values)."
   [s/Any] )
 
 (def Array
-  "A 2-D array of values (a vector of vectors)."
+  "Plumatic Schema type definition for a 2-D array of values (a vector of vectors)."
   [[s/Any]] )
 
 (s/defn create :- Array
-  "([nrows ncols] [nrows ncols init-val])
-  Return a new Array of size=[nrows ncols] initialized to zero (or init-val if supplied)"
+  "Return a new Array of size=[nrows ncols] initialized to zero (or init-val if supplied)"
   ( [nrows  :- s/Int
      ncols  :- s/Int]
       (create nrows ncols nil))
@@ -33,26 +32,24 @@
     (forv [ii (range nrows)]
       (vec (repeat ncols init-val)))))
 
-(s/defn vec->array-rows :- Array
-  "([nrows ncols data-vec])
-  Return a new Array of size=[nrows ncols] row-wise from data-vec."
+(s/defn row-data->array :- Array
+  "Return a new Array of size=[nrows ncols] with its rows constructed from from row-data."
   [nrows :- s/Int
    ncols :- s/Int
-   data-vec :- Vector]
+   row-data :- Vector]
   (assert (and (pos? nrows) (pos? ncols)))
-  (assert (= (* nrows ncols) (count data-vec)))
+  (assert (= (* nrows ncols) (count row-data)))
   (mapv vec
-    (partition ncols data-vec)))
+    (partition ncols row-data)))
 
-(s/defn vec->array-cols :- Array
-  "([nrows ncols data-vec])
-  Return a new Array of size=[nrows ncols] col-wise from data-vec."
+(s/defn col-data->array :- Array
+  "Return a new Array of size=[nrows ncols] with its columns constructed from from col-data."
   [nrows :- s/Int
    ncols :- s/Int
-   data-vec :- Vector]
+   col-data :- Vector]
   (assert (and (pos? nrows) (pos? ncols)))
-  (assert (= (* nrows ncols) (count data-vec)))
-  (let [data-vec (vec data-vec)]
+  (assert (= (* nrows ncols) (count col-data)))
+  (let [data-vec (vec col-data)]
     (forv [ii (range nrows)]
       (forv [jj (range ncols) ]
         (nth data-vec (+ ii (* jj nrows)))))))
@@ -77,7 +74,7 @@
     (assert (apply = nrows (mapv count col-vecs)))
     (dotimes [jj ncols]
       (assert sequential? (nth col-vecs jj)))
-    (vec->array-cols nrows ncols (apply glue col-vecs))))
+    (col-data->array nrows ncols (apply glue col-vecs))))
 
 (s/defn num-rows :- s/Int
   "Returns the number of rows of an Array."
@@ -168,12 +165,12 @@
       (row-get arr ii))))
 ; #todo need parallel rows-set
 
-(s/defn array-rows->vec :- Vector
+(s/defn array->row-data :- Vector
   "Returns the concatenation of all array rows."
   [arr :- Array]
   (apply glue arr))
 
-(s/defn array-cols->vec :- Vector
+(s/defn array->col-data :- Vector
   "Returns the concatenation of all array cols."
   [arr :- Array]
   (forv [jj (range (num-cols arr))
@@ -222,31 +219,38 @@
 ; #todo need parallel cols-set
 
 (s/defn transpose :- Array
+  "Returns the transpose of an array"
   [orig :- Array]
   (forv [jj (range (num-cols orig)) ]
     (col-get orig jj)))
 
 (s/defn flip-ud :- Array
+  "Reverses the order of the rows of an array"
+  [orig :- Array]
   [orig :- Array]
   (forv [ii (reverse (range (num-rows orig))) ]
     (row-get orig ii)))
 
 (s/defn flip-lr :- Array
+  "Reverses the order of the cols of an array"
   [orig :- Array]
   (forv [ii (range (num-rows orig))]
     (vec (reverse (row-get orig ii)))))
 
 (s/defn rot-left :- Array
+  "Rotates an array 90 deg counter-clockwise."
   [orig :- Array]
   (forv [jj (reverse (range (num-cols orig)))]
     (col-get orig jj)))
 
 (s/defn rot-right :- Array
+  "Rotates an array 90 deg clockwise."
   [orig :- Array]
   (forv [jj (range (num-cols orig))]
     (vec (reverse (col-get orig jj))))) ; reverse yields a seq, not a vec! doh!
 
 (s/defn symmetric? :- s/Bool
+  "Returns true iff an array is symmetric"
   [arr :- Array]
   (let [nrows (num-rows arr)
         ncols (num-cols arr)]
@@ -278,6 +282,7 @@
         (elem-get orig ii jj)))))
 
 (s/defn row-add :- Array
+  "Appends a new row onto an array."
   [orig :- Array
    & rows :- [Vector] ]
   (let [row-lens (mapv count rows)]
@@ -285,6 +290,7 @@
   (into orig rows))
 
 (s/defn col-add :- Array
+  "Appends a new col onto an array."
   [orig :- Array
    & cols :- [Vector]]
   (let [nrows    (num-rows orig)
@@ -295,6 +301,7 @@
                                 (nth col ii))))))
 
 (s/defn glue-vert :- Array
+  "Concatenates 2 or more arrays vertically. Arrays must all have the same number of cols."
   [& arrays :- [Array] ]
   (assert (pos? (count arrays)))
   (let [ncol-vals (mapv num-cols arrays)]
@@ -302,6 +309,7 @@
   (apply glue arrays))
 
 (s/defn glue-horiz :- Array
+  "Concatenates 2 or more arrays horizontally. Arrays must all have the same number of rows."
   [& arrays :- [Array] ]
   (assert (pos? (count arrays)))
   (let [nrow-vals (mapv num-rows arrays)]
@@ -310,6 +318,7 @@
     (apply glue (mapv #(row-get % ii) arrays))))
 
 (s/defn array->str :- s/Str
+  "Returns a string representation of an array"
   [arr :- Array]
   (let [result (str/join
                  (flatten
