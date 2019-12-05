@@ -225,14 +225,16 @@
     (col-get orig jj)))
 
 (s/defn flip-ud :- Array
-  "Reverses the order of the rows of an array"
+  "Flips an array in the up-down direction,
+  reversing the order of the rows of an array"
   [orig :- Array]
   [orig :- Array]
   (forv [ii (reverse (range (num-rows orig))) ]
     (row-get orig ii)))
 
 (s/defn flip-lr :- Array
-  "Reverses the order of the cols of an array"
+  "Flips an array in the left-right direction,
+  reversing the order of the cols of an array"
   [orig :- Array]
   (forv [ii (range (num-rows orig))]
     (vec (reverse (row-get orig ii)))))
