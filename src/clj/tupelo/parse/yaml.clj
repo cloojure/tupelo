@@ -28,14 +28,14 @@
 
 (s/defn parse-raw
   "Parses a String containing a single YAML object, returning a normalized Clojure data structure."
-  [str-in :- s/Str]
-  (unlazy (.loadFromString yaml-load (s/validate s/Str str-in))))
+  [yaml-str :- s/Str]
+  (unlazy (.loadFromString yaml-load (s/validate s/Str yaml-str))))
 
 (s/defn parse
   "Parses a String containing a single YAML object, returning a normalized Clojure data structure (with keywordized map keys)."
-  [str-in :- s/Str]
+  [yaml-str :- s/Str]
   (walk/keywordize-keys
-    (parse-raw (s/validate s/Str str-in))))
+    (parse-raw (s/validate s/Str yaml-str))))
 
 ;-----------------------------------------------------------------------------
 (def ^:private dump-settings

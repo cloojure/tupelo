@@ -139,8 +139,8 @@
         ^org.xml.sax.helpers.DefaultHandler  content-handler))))
 
 (s/defn parse-raw-streaming       ; #todo fix docstring
-  "Parses an input-stream of XML data, returning Enlive-format data.  Does not include
-  whitespace removal or enlive normalization."
+  "Parses XML data from an input-stream or Reader, returning Enlive-format data.
+  Does not include whitespace removal or enlive normalization."
   ([xml-input] (parse-raw-streaming xml-input sax-parse-fn))
   ([xml-input parse-fn]
     (let [result-atom     (atom (xml-zip {:type :document :content nil}))
@@ -156,7 +156,7 @@
         parsed-data))))
 
 (s/defn parse-streaming       ; #todo fix docstring
-  "Parses a input-stream of XML data, returning Enlive-format data"
+  "Parses XML data from an input-stream or Reader, returning Enlive-format data"
   ([xml-input] (parse-streaming xml-input sax-parse-fn))
   ([xml-input parse-fn]
     (enlive-remove-whitespace
@@ -165,15 +165,15 @@
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn parse-raw ; #todo fix docstring
-  "Parses a string of XML data, returning Enlive-format data.  Does not include
-  whitespace removal or enlive normalization."
-  [xml-input :- s/Str]
-  (parse-raw-streaming (ts/string->stream xml-input)))
+  "Parses a string of XML data, returning Enlive-format data.
+  Does not include whitespace removal or enlive normalization."
+  [xml-str :- s/Str]
+  (parse-raw-streaming (ts/string->stream xml-str)))
 
 (s/defn parse ; #todo fix docstring
   "Parses a string of XML data, returning Enlive-format data"
-  [xml-input :- s/Str]
-  (parse-streaming (ts/string->stream xml-input)))
+  [xml-str :- s/Str]
+  (parse-streaming (ts/string->stream xml-str)))
 
 
 ; "Parses and loads the source input-source, which can be a File, InputStream or String
