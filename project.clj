@@ -22,7 +22,7 @@
    [io.pedestal/pedestal.service "0.5.7"]
    [joda-time/joda-time "2.10.5"]
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
-   [org.clojure/core.async "0.5.527"]
+   [org.clojure/core.async "0.6.532"]
    [org.clojure/core.match "0.3.0"]
    [org.clojure/data.avl "0.1.0"]
    [org.clojure/data.xml "0.2.0-alpha5"]
