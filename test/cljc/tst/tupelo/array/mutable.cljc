@@ -132,20 +132,17 @@
          (is= target-flip-lr (tam/array->edn (tam/flip-lr (tam/edn->array target))))
          (is= target-tx (tam/array->edn (tam/transpose (tam/edn->array target))))
 
-         ;(is= target-rot-left-1 (-> target (tam/rotate-left)))
-         ;(is= target-rot-left-2 (-> target (tam/rotate-left) (tam/rotate-left)))
-         ;(is= target-rot-left-3 (-> target (tam/rotate-left) (tam/rotate-left) (tam/rotate-left)))
-         ;(is= target (-> target (tam/rotate-left) (tam/rotate-left) (tam/rotate-left) (tam/rotate-left)))
-         ;
-         ;(is= target-rot-left-3 (-> target (tam/rotate-right)))
-         ;(is= target-rot-left-2 (-> target (tam/rotate-right) (tam/rotate-right)))
-         ;(is= target-rot-left-1 (-> target (tam/rotate-right) (tam/rotate-right) (tam/rotate-right)))
-         ;(is= target (-> target (tam/rotate-right) (tam/rotate-right) (tam/rotate-right) (tam/rotate-right)))
+         (is= target-rot-left-1 (-> target tam/edn->array tam/rotate-left tam/array->edn))
+         (is= target-rot-left-2 (-> target tam/edn->array tam/rotate-left tam/rotate-left tam/array->edn))
+         (is= target-rot-left-3 (-> target tam/edn->array tam/rotate-left tam/rotate-left tam/rotate-left tam/array->edn))
+         (is= target (-> target tam/edn->array tam/rotate-left tam/rotate-left tam/rotate-left tam/rotate-left tam/array->edn))
 
-         ))
+         (is= target-rot-left-3 (-> target tam/edn->array tam/rotate-right tam/array->edn))
+         (is= target-rot-left-2 (-> target tam/edn->array tam/rotate-right tam/rotate-right tam/array->edn))
+         (is= target-rot-left-1 (-> target tam/edn->array tam/rotate-right tam/rotate-right tam/rotate-right tam/array->edn))
+         (is= target (-> target tam/edn->array tam/rotate-right tam/rotate-right tam/rotate-right tam/rotate-right tam/array->edn))))
 
      (comment
-
 
        (dotest
          (let [demo [[00 01 02 03]

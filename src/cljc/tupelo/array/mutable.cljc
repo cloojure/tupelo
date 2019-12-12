@@ -190,7 +190,7 @@
          result))
 
      (s/defn transpose :- Array
-       "Returns the transpose of an array"
+       "Returns the transpose of an array. Returns a new array."
        [orig :- Array]
        (row-vals->array (:ncols orig) (:nrows orig)
          (array->col-vals orig)))
@@ -211,7 +211,7 @@
 
      (s/defn flip-ud :- Array
        "Flips an array in the up-down direction,
-       reversing the order of the rows of an array"
+       reversing the order of the rows of an array. Returns a new array."
        [orig :- Array]
        (let [nrows  (:nrows orig)
              ncols  (:ncols orig)
@@ -225,7 +225,7 @@
 
      (s/defn flip-lr :- Array
        "Flips an array in the left-right direction,
-       reversing the order of the cols of an array"
+       reversing the order of the cols of an array. Returns a new array."
        [orig :- Array]
        (let [nrows  (:nrows orig)
              ncols  (:ncols orig)
@@ -236,6 +236,20 @@
                (elem-set result ii jj
                  (elem-get orig ii jj-orig)))))
          result))
+
+     (s/defn rotate-left :- Array
+       "Rotates an array 90 deg counter-clockwise. Returns a new array."
+       [orig :- Array]
+       (rows->array
+         (forv [jj (reverse (range (num-cols orig)))]
+           (col-get orig jj))))
+
+     (s/defn rotate-right :- Array
+       "Rotates an array 90 deg clockwise. Returns a new array."
+       [orig :- Array]
+       (rows->array
+         (forv [jj (range (num-cols orig))]
+           (vec (reverse (col-get orig jj)))))) ; reverse yields a seq, not a vec! doh!
 
      (comment
 
@@ -318,18 +332,6 @@
           (forv [jj (range low high)]
             (col-get arr jj))))
        ; #todo need parallel cols-set
-
-       (s/defn rotate-left :- Array
-         "Rotates an array 90 deg counter-clockwise."
-         [orig :- Array]
-         (forv [jj (reverse (range (num-cols orig)))]
-           (col-get orig jj)))
-
-       (s/defn rotate-right :- Array
-         "Rotates an array 90 deg clockwise."
-         [orig :- Array]
-         (forv [jj (range (num-cols orig))]
-           (vec (reverse (col-get orig jj))))) ; reverse yields a seq, not a vec! doh!
 
        (s/defn symmetric? :- s/Bool
          "Returns true iff an array is symmetric"
