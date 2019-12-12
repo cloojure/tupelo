@@ -170,45 +170,46 @@
                                     [10 11 12]
                                     [20 21 22 23]])) ))
 
+     (dotest
+       (let [demo [[00 01 02 03]
+                   [10 11 12 13]
+                   [20 21 22 23]]
+             a34 (tam/edn->array demo)
+             ]
+         (throws? (tam/array->cols a34 0 0))
+         (is= (tam/array->cols a34 0 1) [[00 10 20]])
+         (is= (tam/array->cols a34 0 2) [[00 10 20]
+                                          [01 11 21]])
+         (is= (tam/array->cols a34 0 3) [[00 10 20]
+                                          [01 11 21]
+                                          [02 12 22]])
+         (is= (tam/array->cols a34 0 4) [[00 10 20]
+                                          [01 11 21]
+                                          [02 12 22]
+                                          [03 13 23]])
+         (is= (tam/array->cols a34 1 4) [[01 11 21]
+                                          [02 12 22]
+                                          [03 13 23]])
+         (is= (tam/array->cols a34 2 4) [[02 12 22]
+                                          [03 13 23]])
+         (is= (tam/array->cols a34 3 4) [[03 13 23]])
+         (throws? (tam/array->cols a34 4 4))
+
+         (is= (tam/array->cols a34) (tam/array->cols a34 0 4))
+         (is= (tam/array->cols a34 [2 0 3 1]) [[02 12 22]
+                                                [00 10 20]
+                                                [03 13 23]
+                                                [01 11 21]])
+         (is (tam/equals a34 (tam/cols->array [[00 10 20]
+                                               [01 11 21]
+                                               [02 12 22]
+                                               [03 13 23]])))
+         (throws? (tam/cols->array [[00 10 20]
+                                    [01 11 21]
+                                    [02 12]
+                                    [03 13 23]])) ))
+
      (comment
-
-       (dotest
-         (let [demo [[00 01 02 03]
-                     [10 11 12 13]
-                     [20 21 22 23]]
-               ]
-           (throws? (tam/array->cols demo 0 0))
-           (is= (tam/array->cols demo 0 1) [[00 10 20]])
-           (is= (tam/array->cols demo 0 2) [[00 10 20]
-                                            [01 11 21]])
-           (is= (tam/array->cols demo 0 3) [[00 10 20]
-                                            [01 11 21]
-                                            [02 12 22]])
-           (is= (tam/array->cols demo 0 4) [[00 10 20]
-                                            [01 11 21]
-                                            [02 12 22]
-                                            [03 13 23]])
-           (is= (tam/array->cols demo 1 4) [[01 11 21]
-                                            [02 12 22]
-                                            [03 13 23]])
-           (is= (tam/array->cols demo 2 4) [[02 12 22]
-                                            [03 13 23]])
-           (is= (tam/array->cols demo 3 4) [[03 13 23]])
-           (throws? (tam/array->cols demo 4 4))
-
-           (is= (tam/array->cols demo) (tam/array->cols demo 0 4))
-           (is= (tam/array->cols demo [2 0 3 1]) [[02 12 22]
-                                                  [00 10 20]
-                                                  [03 13 23]
-                                                  [01 11 21]])
-           (is= demo (tam/cols->array [[00 10 20]
-                                       [01 11 21]
-                                       [02 12 22]
-                                       [03 13 23]]))
-           (throws? (tam/cols->array [[00 10 20]
-                                      [01 11 21]
-                                      [02 12]
-                                      [03 13 23]]))))
 
        (dotest
          (is (tam/symmetric? [[1 2]

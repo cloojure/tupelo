@@ -272,19 +272,39 @@
           (row-get arr ii))))
      ; #todo need parallel rows-set
 
+     (s/defn array->cols :- [[s/Any]]
+       "
+        [arr]           Returns all array cols
+        [arr col-idxs]  Returns array cols specified by col-idxs
+        [arr low high]  Returns array cols in half-open interval [low..high) "
+       ([arr] (array->cols arr 0 (num-cols arr)))
+       ([arr
+         col-idxs :- [s/Int]]
+        (forv [jj col-idxs]
+          (col-get arr jj)))
+       ([arr :- Array
+         low :- s/Int
+         high :- s/Int]
+        (check-col-idx arr low)
+        (check-col-idx arr (dec high))
+        (assert (< low high))
+        (forv [jj (range low high)]
+          (col-get arr jj))))
+     ; #todo need parallel cols-set
+
+     (s/defn cols->array :- Array
+       "[col-vecs]
+       Return a new Array initialized from col-vecs. Cols must all have same length."
+       [col-vecs :- [[s/Any]]]
+       (let [ncols (count col-vecs)
+             nrows (count (first col-vecs))]
+         (assert (apply = nrows (mapv count col-vecs)))
+         (dotimes [jj ncols]
+           (assert sequential? (nth col-vecs jj)))
+         (col-vals->array nrows ncols (apply glue col-vecs))))
+
      (comment
 
-
-       (s/defn cols->array :- Array
-         "[col-vecs]
-         Return a new Array initialized from col-vecs. Cols must all have same length."
-         [col-vecs :- Array]
-         (let [ncols (count col-vecs)
-               nrows (count (first col-vecs))]
-           (assert (apply = nrows (mapv count col-vecs)))
-           (dotimes [jj ncols]
-             (assert sequential? (nth col-vecs jj)))
-           (col-vals->array nrows ncols (apply glue col-vecs))))
 
        (s/defn row-set :- Array
          "Sets an Array row"
@@ -314,25 +334,6 @@
                               new-row  (t/replace-at curr-row jj new-val)]
                           new-row))]
            result))
-
-       (s/defn array->cols :- Array
-         "
-          [arr]           Returns all array cols
-          [arr col-idxs]  Returns array cols specified by col-idxs
-          [arr low high]  Returns array cols in half-open interval [low..high) "
-         ([arr] (array->cols arr 0 (num-cols arr)))
-         ([arr col-idxs]
-          (forv [jj col-idxs]
-            (col-get arr jj)))
-         ([arr :- Array
-           low :- s/Int
-           high :- s/Int]
-          (check-col-idx arr low)
-          (check-col-idx arr (dec high))
-          (assert (< low high))
-          (forv [jj (range low high)]
-            (col-get arr jj))))
-       ; #todo need parallel cols-set
 
        (s/defn symmetric? :- s/Bool
          "Returns true iff an array is symmetric"
