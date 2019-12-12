@@ -97,33 +97,34 @@
                        (tam/array->edn)))
          (is (tam/equals (tam/edn->array target) (tam/rows->array target)))
 
-         ;(is= (tam/row-get target 0) [00 01 02 03])
-         ;(is= (tam/row-get target 1) [10 11 12 13])
-         ;(is= (tam/row-get target 2) [20 21 22 23])
-         ;
-         ;(is= (tam/col-get target 0) [00 10 20])
-         ;(is= (tam/col-get target 1) [01 11 21])
-         ;(is= (tam/col-get target 2) [02 12 22])
-         ;(is= (tam/col-get target 3) [03 13 23])
-         ;
-         ;(is= (tam/array->row-vals target) [00 01 02 03
-         ;                                   10 11 12 13
-         ;                                   20 21 22 23])
-         ;(is= (-> target (tam/transpose) (tam/array->col-vals)) [00 01 02 03
-         ;                                                        10 11 12 13
-         ;                                                        20 21 22 23])
-         ;
-         ;(is= target-rows-vec (tam/array->row-vals target))
-         ;(is= target-cols-vec (tam/array->col-vals target))
-         ;(is= target (tam/row-vals->array 3 4 target-rows-vec))
-         ;(is= target (tam/col-vals->array 3 4 target-cols-vec))
-         ;(is= target (->> target
-         ;              (tam/array->row-vals)
-         ;              (tam/row-vals->array 3 4)))
-         ;(is= target (->> target
-         ;              (tam/array->col-vals)
-         ;              (tam/col-vals->array 3 4)))
-         ;
+         (is= (tam/row-get a34 0) [00 01 02 03])
+         (is= (tam/row-get a34 1) [10 11 12 13])
+         (is= (tam/row-get a34 2) [20 21 22 23])
+
+         (is= (tam/col-get a34 0) [00 10 20])
+         (is= (tam/col-get a34 1) [01 11 21])
+         (is= (tam/col-get a34 2) [02 12 22])
+         (is= (tam/col-get a34 3) [03 13 23])
+
+         (is= (tam/array->row-vals a34) [00 01 02 03
+                                         10 11 12 13
+                                         20 21 22 23])
+         (is= (-> a34 (tam/transpose) (tam/array->col-vals))
+           [00 01 02 03
+            10 11 12 13
+            20 21 22 23])
+
+         (is= target-rows-vec (tam/array->row-vals a34))
+         (is= target-cols-vec (tam/array->col-vals a34))
+         (is (tam/equals a34 (tam/row-vals->array 3 4 target-rows-vec)))
+         (is (tam/equals a34 (tam/col-vals->array 3 4 target-cols-vec)))
+         (is (tam/equals a34 (->> a34
+                                  (tam/array->row-vals)
+                                  (tam/row-vals->array 3 4))))
+         (is (tam/equals a34 (->> a34
+                                  (tam/array->col-vals)
+                                  (tam/col-vals->array 3 4))))
+
          ;(is= target @a34)
          ;(is= target-flip-ud (tam/flip-ud target))
          ;(is= target-flip-lr (tam/flip-lr target))

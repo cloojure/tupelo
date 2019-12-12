@@ -134,7 +134,7 @@
            arr)))
 
      (s/defn edn->array :- Array
-       "Returns a persistant EDN data structure (vector-of-vectors) from the array."
+       "Synonym for rows->array"
        [row-vecs :- [[s/Any]]]
        (rows->array row-vecs))
 
@@ -147,29 +147,69 @@
          (= (:ncols x) (:ncols y))
          (= (seq (:data x)) (seq (:data y)))))
 
+     (s/defn row-get :- Vector
+       "Gets an Array row"
+       [arr :- Array
+        ii :- s/Int]
+       (check-row-idx arr ii)
+       (forv [jj (range (num-cols arr))]
+         (elem-get arr ii jj)))
+
+     (s/defn col-get :- Vector
+       "Gets an Array col"
+       [arr :- Array
+        jj :- s/Int]
+       (check-col-idx arr jj)
+       (forv [ii (range (num-rows arr))]
+         (elem-get arr ii jj)))
+
+     (s/defn array->row-vals :- Vector
+       "Returns the concatenation of all array rows."
+       [arr :- Array]
+       (forv [ii (range (num-rows arr))
+              jj (range (num-cols arr))]
+         (elem-get arr ii jj)))
+
+     (s/defn array->col-vals :- Vector
+       "Returns the concatenation of all array cols."
+       [arr :- Array]
+       (forv [jj (range (num-cols arr))
+              ii (range (num-rows arr))]
+         (elem-get arr ii jj)))
+
+     (s/defn row-vals->array :- Array
+       "Return a new Array of size=[nrows ncols] with its rows constructed from from row-data."
+       [nrows :- s/Int
+        ncols :- s/Int
+        row-data :- Vector]
+       (assert (and (pos? nrows) (pos? ncols)))
+       (assert (= (* nrows ncols) (count row-data)))
+       (let [result (glue
+                      (vals->map nrows ncols)
+                      {:data (object-array row-data)})]
+         result))
+
+     (s/defn transpose :- Array
+       "Returns the transpose of an array"
+       [orig :- Array]
+       (row-vals->array (:ncols orig) (:nrows orig)
+         (array->col-vals orig)))
+
+     (s/defn col-vals->array :- Array
+       "Return a new Array of size=[nrows ncols] with its columns constructed from from col-data."
+       [nrows :- s/Int
+        ncols :- s/Int
+        col-data :- Vector]
+       (assert (and (pos? nrows) (pos? ncols)))
+       (assert (= (* nrows ncols) (count col-data)))
+       (let [result (create nrows ncols)]
+         (dotimes [ii nrows]
+           (dotimes [jj ncols]
+             (elem-set result ii jj
+               (nth col-data (+ ii (* jj nrows))))))
+         result))
+
      (comment
-
-       (s/defn row-vals->array :- Array
-         "Return a new Array of size=[nrows ncols] with its rows constructed from from row-data."
-         [nrows :- s/Int
-          ncols :- s/Int
-          row-data :- Vector]
-         (assert (and (pos? nrows) (pos? ncols)))
-         (assert (= (* nrows ncols) (count row-data)))
-         (mapv vec
-           (partition ncols row-data)))
-
-       (s/defn col-vals->array :- Array
-         "Return a new Array of size=[nrows ncols] with its columns constructed from from col-data."
-         [nrows :- s/Int
-          ncols :- s/Int
-          col-data :- Vector]
-         (assert (and (pos? nrows) (pos? ncols)))
-         (assert (= (* nrows ncols) (count col-data)))
-         (let [data-vec (vec col-data)]
-           (forv [ii (range nrows)]
-             (forv [jj (range ncols)]
-               (nth data-vec (+ ii (* jj nrows)))))))
 
 
        (s/defn cols->array :- Array
@@ -182,14 +222,6 @@
            (dotimes [jj ncols]
              (assert sequential? (nth col-vecs jj)))
            (col-vals->array nrows ncols (apply glue col-vecs))))
-
-       (s/defn row-get :- Vector
-         "Gets an Array row"
-         [arr :- Array
-          ii :- s/Int]
-         (check-row-idx arr ii)
-         (forv [jj (range (num-cols arr))]
-           (elem-get arr ii jj)))
 
        (s/defn row-set :- Array
          "Sets an Array row"
@@ -225,26 +257,6 @@
             (row-get arr ii))))
        ; #todo need parallel rows-set
 
-       (s/defn array->row-vals :- Vector
-         "Returns the concatenation of all array rows."
-         [arr :- Array]
-         (apply glue arr))
-
-       (s/defn array->col-vals :- Vector
-         "Returns the concatenation of all array cols."
-         [arr :- Array]
-         (forv [jj (range (num-cols arr))
-                ii (range (num-rows arr))]
-           (elem-get arr ii jj)))
-
-       (s/defn col-get :- Vector
-         "Gets an Array col"
-         [arr :- Array
-          jj :- s/Int]
-         (check-col-idx arr jj)
-         (forv [ii (range (num-rows arr))]
-           (elem-get arr ii jj)))
-
        (s/defn col-set :- Array
          "Sets an Array col"
          [orig :- Array
@@ -278,12 +290,6 @@
           (forv [jj (range low high)]
             (col-get arr jj))))
        ; #todo need parallel cols-set
-
-       (s/defn transpose :- Array
-         "Returns the transpose of an array"
-         [orig :- Array]
-         (forv [jj (range (num-cols orig))]
-           (col-get orig jj)))
 
        (s/defn flip-ud :- Array
          "Flips an array in the up-down direction,
