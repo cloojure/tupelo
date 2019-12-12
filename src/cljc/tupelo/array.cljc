@@ -56,8 +56,7 @@
              (nth data-vec (+ ii (* jj nrows)))))))
 
      (s/defn rows->array :- Array
-       "[row-vecs]
-       Return a new Array initialized from row-vecs. Rows must all have same length."
+       "Return a new Array initialized from row-vecs. Rows must all have same length."
        [row-vecs :- Array]
        (let [nrows (count row-vecs)
              ncols (count (first row-vecs))]

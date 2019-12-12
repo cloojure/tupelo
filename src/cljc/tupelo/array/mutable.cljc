@@ -26,18 +26,46 @@
 
      (def Array
        "Plumatic Schema type definition for a 2-D array of values (a vector of vectors)."
-       {:data [s/Any]
+       {:data  s/Any
         :nrows s/Int
         :ncols s/Int})
+
+     (s/defn num-rows :- s/Int
+       "Returns the number of rows of an Array."
+       [arr :- Array]
+       (:nrows arr))
+
+     (s/defn num-cols :- s/Int
+       "Returns the number of cols of an Array."
+       [arr :- Array]
+       (:ncols arr))
+
+     (s/defn ^:no-doc check-row-idx
+       [arr :- Array
+        idx :- s/Int]
+       (let [limit (num-rows arr)]
+         (when-not (< -1 idx limit)
+           (throw (ex-info "Row index out of range" (vals->map idx limit))))))
+
+     (s/defn ^:no-doc check-col-idx
+       [arr :- Array
+        idx :- s/Int]
+       (let [limit (num-cols arr)]
+         (when-not (< -1 idx limit)
+           (throw (ex-info "Col index out of range" (vals->map idx limit))))))
+
+     (s/defn ^:no-doc check-array-indexes
+       [arr :- Array
+        ii :- s/Int
+        jj :- s/Int]
+       (check-row-idx arr ii)
+       (check-col-idx arr jj))
 
      (s/defn ^:no-doc idx :- s/Int
        [arr :- Array
         ii :- s/Int
         jj :- s/Int]
-       (when-not (< -1 ii (:nrows arr))
-         (throw (ex-info "Illegal row index" (vals->map arr ii jj))) )
-       (when-not (< -1 jj (:ncols arr))
-         (throw (ex-info "Illegal col index" (vals->map arr ii jj))) )
+       (check-array-indexes arr ii jj)
        (+ (* ii (:ncols arr)) jj))
 
      (s/defn create :- Array
@@ -51,9 +79,73 @@
         (assert (and (pos? nrows) (pos? ncols)))
         (let [num-elems (* nrows ncols)
               result (glue
-                          (vals->map nrows ncols)
-                          {:data (object-array num-elems)})]
-          (Arrays/fill (:data result) init-val) )))
+                       (vals->map nrows ncols)
+                       {:data (object-array num-elems)})]
+          (Arrays/fill (:data result) init-val)
+          result)))
+
+     (s/defn elem-get :- s/Any
+       "Gets an Array element"
+       [arr :- Array
+        ii :- s/Int
+        jj :- s/Int]
+       (aget (:data arr) (idx arr ii jj)))
+
+     (s/defn elem-set :- Array
+       "Puts a value into an Array element, returning the updated Array."
+       [arr :- Array
+        ii :- s/Int
+        jj :- s/Int
+        newVal :- s/Any]
+       (aset (:data arr) (idx arr ii jj) newVal)
+       arr)
+
+     (s/defn array->str :- s/Str
+       "Returns a string representation of an array"
+       [arr :- Array]
+       (let [result (str/join
+                      (flatten
+                        (for [ii (range (num-rows arr))]
+                          (t/append
+                            (for [jj (range (num-cols arr))]
+                              (let [val (str (elem-get arr ii jj))]
+                                (ts/pad-left val 8)))
+                            \newline))))]
+         result))
+
+     (s/defn array->edn :- [[s/Any]]
+       "Returns a persistant EDN data structure (vector-of-vectors) from the array."
+       [arr :- Array]
+       (mapv vec (partition (:ncols arr) (:data arr))))
+
+     (s/defn rows->array :- Array
+       "Return a new Array initialized from row-vecs. Rows must all have same length."
+       [row-vecs :- [[s/Any]]]
+       (let [nrows (count row-vecs)
+             ncols (count (first row-vecs))]
+         (assert (apply = ncols (mapv count row-vecs)))
+         (dotimes [ii nrows]
+           (assert sequential? (nth row-vecs ii)))
+         (let [arr (create nrows ncols)]
+           (dotimes [ii nrows]
+             (dotimes [jj ncols]
+               (elem-set arr ii jj
+                 (get-in row-vecs [ii jj]))))
+           arr)))
+
+     (s/defn edn->array :- Array
+       "Returns a persistant EDN data structure (vector-of-vectors) from the array."
+       [row-vecs :- [[s/Any]]]
+       (rows->array row-vecs))
+
+     (s/defn equals :- s/Bool
+       "Returns true if two Arrays contain equal data"
+       [x :- Array
+        y :- Array]
+       (and
+         (= (:nrows x) (:nrows y))
+         (= (:ncols x) (:ncols y))
+         (= (seq (:data x)) (seq (:data y)))))
 
      (comment
 
@@ -79,16 +171,6 @@
              (forv [jj (range ncols)]
                (nth data-vec (+ ii (* jj nrows)))))))
 
-       (s/defn rows->array :- Array
-         "[row-vecs]
-         Return a new Array initialized from row-vecs. Rows must all have same length."
-         [row-vecs :- Array]
-         (let [nrows (count row-vecs)
-               ncols (count (first row-vecs))]
-           (assert (apply = ncols (mapv count row-vecs)))
-           (dotimes [ii nrows]
-             (assert sequential? (nth row-vecs ii)))
-           (mapv vec row-vecs)))
 
        (s/defn cols->array :- Array
          "[col-vecs]
@@ -100,54 +182,6 @@
            (dotimes [jj ncols]
              (assert sequential? (nth col-vecs jj)))
            (col-vals->array nrows ncols (apply glue col-vecs))))
-
-       (s/defn num-rows :- s/Int
-         "Returns the number of rows of an Array."
-         [arr :- Array]
-         (count arr))
-
-       (s/defn num-cols :- s/Int
-         "Returns the number of cols of an Array."
-         [arr :- Array]
-         (count (arr 0)))
-
-       (s/defn ^:no-doc check-row-idx
-         [arr :- Array
-          idx :- s/Int]
-         (let [limit (num-rows arr)]
-           (when-not (< -1 idx limit)
-             (throw (ex-info "Row index out of range" (vals->map idx limit))))))
-
-       (s/defn ^:no-doc check-col-idx
-         [arr :- Array
-          idx :- s/Int]
-         (let [limit (num-cols arr)]
-           (when-not (< -1 idx limit)
-             (throw (ex-info "Col index out of range" (vals->map idx limit))))))
-
-       (s/defn ^:no-doc check-array-indexes
-         [arr :- Array
-          ii :- s/Int
-          jj :- s/Int]
-         (check-row-idx arr ii)
-         (check-col-idx arr jj))
-
-       (s/defn elem-get :- s/Any
-         "Gets an Array element"
-         [arr :- Array
-          ii :- s/Int
-          jj :- s/Int]
-         (check-array-indexes arr ii jj)
-         (get-in arr [ii jj]))
-
-       (s/defn elem-set :- Array
-         "Puts a value into an Array element, returning the updated Array."
-         [arr :- Array
-          ii :- s/Int
-          jj :- s/Int
-          newVal :- s/Any]
-         (check-array-indexes arr ii jj)
-         (assoc-in arr [ii jj] newVal))
 
        (s/defn row-get :- Vector
          "Gets an Array row"
@@ -345,19 +379,6 @@
            (assert (apply = nrow-vals)))
          (forv [ii (range (num-rows (t/xfirst arrays)))]
            (apply glue (mapv #(row-get % ii) arrays))))
-
-       (s/defn array->str :- s/Str
-         "Returns a string representation of an array"
-         [arr :- Array]
-         (let [result (str/join
-                        (flatten
-                          (for [ii (range (num-rows arr))]
-                            (t/append
-                              (for [jj (range (num-cols arr))]
-                                (let [val (str (elem-get arr ii jj))]
-                                  (ts/pad-left val 8)))
-                              \newline))))]
-           result))
 
        )
 
