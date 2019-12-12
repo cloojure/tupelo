@@ -140,20 +140,20 @@
                    [10 11 12 13]
                    [20 21 22 23]]
              ]
-         (throws? (tar/rows-get demo 0 0))
-         (is= (tar/rows-get demo 0 1) [[00 01 02 03]])
-         (is= (tar/rows-get demo 0 2) [[00 01 02 03]
+         (throws? (tar/array->rows demo 0 0))
+         (is= (tar/array->rows demo 0 1) [[00 01 02 03]])
+         (is= (tar/array->rows demo 0 2) [[00 01 02 03]
                                        [10 11 12 13]])
-         (is= (tar/rows-get demo 0 3) [[00 01 02 03]
+         (is= (tar/array->rows demo 0 3) [[00 01 02 03]
                                        [10 11 12 13]
                                        [20 21 22 23]])
-         (is= (tar/rows-get demo 1 3) [[10 11 12 13]
+         (is= (tar/array->rows demo 1 3) [[10 11 12 13]
                                        [20 21 22 23]])
-         (is= (tar/rows-get demo 2 3) [[20 21 22 23]])
-         (throws? (tar/rows-get demo 3 3))
+         (is= (tar/array->rows demo 2 3) [[20 21 22 23]])
+         (throws? (tar/array->rows demo 3 3))
 
-         (is= demo (tar/rows-get demo))
-         (is= (tar/rows-get demo [2 0 1]) [[20 21 22 23]
+         (is= demo (tar/array->rows demo))
+         (is= (tar/array->rows demo [2 0 1]) [[20 21 22 23]
                                            [00 01 02 03]
                                            [10 11 12 13]])
          (is= demo (tar/rows->array [[00 01 02 03]
@@ -168,27 +168,27 @@
                    [10 11 12 13]
                    [20 21 22 23]]
              ]
-         (throws? (tar/cols-get demo 0 0))
-         (is= (tar/cols-get demo 0 1) [[00 10 20]])
-         (is= (tar/cols-get demo 0 2) [[00 10 20]
+         (throws? (tar/array->cols demo 0 0))
+         (is= (tar/array->cols demo 0 1) [[00 10 20]])
+         (is= (tar/array->cols demo 0 2) [[00 10 20]
                                        [01 11 21]])
-         (is= (tar/cols-get demo 0 3) [[00 10 20]
+         (is= (tar/array->cols demo 0 3) [[00 10 20]
                                        [01 11 21]
                                        [02 12 22]])
-         (is= (tar/cols-get demo 0 4) [[00 10 20]
+         (is= (tar/array->cols demo 0 4) [[00 10 20]
                                        [01 11 21]
                                        [02 12 22]
                                        [03 13 23]])
-         (is= (tar/cols-get demo 1 4) [[01 11 21]
+         (is= (tar/array->cols demo 1 4) [[01 11 21]
                                        [02 12 22]
                                        [03 13 23]])
-         (is= (tar/cols-get demo 2 4) [[02 12 22]
+         (is= (tar/array->cols demo 2 4) [[02 12 22]
                                        [03 13 23]])
-         (is= (tar/cols-get demo 3 4) [[03 13 23]])
-         (throws? (tar/cols-get demo 4 4))
+         (is= (tar/array->cols demo 3 4) [[03 13 23]])
+         (throws? (tar/array->cols demo 4 4))
 
-         (is= (tar/cols-get demo) (tar/cols-get demo 0 4))
-         (is= (tar/cols-get demo [2 0 3 1]) [[02 12 22]
+         (is= (tar/array->cols demo) (tar/array->cols demo 0 4))
+         (is= (tar/array->cols demo [2 0 3 1]) [[02 12 22]
                                              [00 10 20]
                                              [03 13 23]
                                              [01 11 21]])

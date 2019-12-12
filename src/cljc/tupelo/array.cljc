@@ -148,11 +148,12 @@
          result))
 
      ;#todo make both rows/cols -> submatrix result
-     (s/defn rows-get :- Array
-       "[arr]          Returns all array rows
-        [arr row-idxs] Returns array rows specified by row-idxs
-        [arr low high] Returns array rows in half-open interval [low..high) "
-       ([arr] (rows-get arr 0 (num-rows arr)))
+     (s/defn array->rows :- Array
+       "
+        [arr]           Returns all array rows
+        [arr row-idxs]  Returns array rows specified by row-idxs
+        [arr low high]  Returns array rows in half-open interval [low..high) "
+       ([arr] (array->rows arr 0 (num-rows arr)))
        ([arr row-idxs]
         (forv [ii row-idxs]
           (row-get arr ii)))
@@ -201,11 +202,12 @@
                         new-row))]
          result))
 
-     (s/defn cols-get :- Array
-       "[arr]          Returns all array cols
-        [arr col-idxs] Returns array cols specified by col-idxs
-        [arr low high] Returns array cols in half-open interval [low..high) "
-       ([arr] (cols-get arr 0 (num-cols arr)))
+     (s/defn array->cols :- Array
+       "
+        [arr]           Returns all array cols
+        [arr col-idxs]  Returns array cols specified by col-idxs
+        [arr low high]  Returns array cols in half-open interval [low..high) "
+       ([arr] (array->cols arr 0 (num-cols arr)))
        ([arr col-idxs]
         (forv [jj col-idxs]
           (col-get arr jj)))
