@@ -45,8 +45,7 @@
                             (tam/elem-get a34 ii jj))))))
 
      (dotest
-       (let [a34               (tam/create 3 4)
-             target            [[00 01 02 03]
+       (let [target            [[00 01 02 03]
                                 [10 11 12 13]
                                 [20 21 22 23]]
              target-rows-vec   [00 01 02 03 10 11 12 13 20 21 22 23]
@@ -77,59 +76,62 @@
                                 [22 12 02]
                                 [23 13 03]]
              ]
-         (dotimes [ii 3]
-           (dotimes [jj 4]
-             (let [elem-val (+ (* ii 10) jj)]
-               (tam/elem-set a34 ii jj elem-val))))
-         (let [str-val (tam/array->str a34)]
+         (let [a34 (tam/create 3 4)]
+           (dotimes [ii 3]
+             (dotimes [jj 4]
+               (let [elem-val (+ (* ii 10) jj)]
+                 (tam/elem-set a34 ii jj elem-val))))
+           (let [str-val (tam/array->str a34)]
+             (when false
+               (println :awt-01)
+               (println str-val))
+             (is-nonblank= str-val
+               " 0    1    2    3
+                10   11   12   13
+                20   21   22   23"))
+           (is= (tam/array->edn a34) target)
            (when false
-             (println :awt-01)
-             (println str-val))
-           (is-nonblank= str-val
-             " 0    1    2    3
-              10   11   12   13
-              20   21   22   23"))
-         (is= (tam/array->edn a34) target)
-         (when false
-           (println (tam/array->str (tam/edn->array target))))
-         (is= target (-> target
-                       (tam/edn->array)
-                       (tam/array->edn)))
-         (is (tam/equals (tam/edn->array target) (tam/rows->array target)))
+             (println (tam/array->str (tam/edn->array target))))
+           (is= target (-> target
+                         (tam/edn->array)
+                         (tam/array->edn)))
+           (is (tam/equals (tam/edn->array target) (tam/rows->array target)))
 
-         (is= (tam/row-get a34 0) [00 01 02 03])
-         (is= (tam/row-get a34 1) [10 11 12 13])
-         (is= (tam/row-get a34 2) [20 21 22 23])
+           (is= (tam/row-get a34 0) [00 01 02 03])
+           (is= (tam/row-get a34 1) [10 11 12 13])
+           (is= (tam/row-get a34 2) [20 21 22 23])
 
-         (is= (tam/col-get a34 0) [00 10 20])
-         (is= (tam/col-get a34 1) [01 11 21])
-         (is= (tam/col-get a34 2) [02 12 22])
-         (is= (tam/col-get a34 3) [03 13 23])
+           (is= (tam/col-get a34 0) [00 10 20])
+           (is= (tam/col-get a34 1) [01 11 21])
+           (is= (tam/col-get a34 2) [02 12 22])
+           (is= (tam/col-get a34 3) [03 13 23])
 
-         (is= (tam/array->row-vals a34) [00 01 02 03
-                                         10 11 12 13
-                                         20 21 22 23])
-         (is= (-> a34 (tam/transpose) (tam/array->col-vals))
-           [00 01 02 03
-            10 11 12 13
-            20 21 22 23])
+           (is= (tam/array->row-vals a34) [00 01 02 03
+                                           10 11 12 13
+                                           20 21 22 23]))
+         (let [a34 (tam/edn->array target)]
+           (is= (-> a34 (tam/transpose) (tam/array->col-vals))
+             [00 01 02 03
+              10 11 12 13
+              20 21 22 23]))
 
-         (is= target-rows-vec (tam/array->row-vals a34))
-         (is= target-cols-vec (tam/array->col-vals a34))
-         (is (tam/equals a34 (tam/row-vals->array 3 4 target-rows-vec)))
-         (is (tam/equals a34 (tam/col-vals->array 3 4 target-cols-vec)))
-         (is (tam/equals a34 (->> a34
-                                  (tam/array->row-vals)
-                                  (tam/row-vals->array 3 4))))
-         (is (tam/equals a34 (->> a34
-                                  (tam/array->col-vals)
-                                  (tam/col-vals->array 3 4))))
+         (let [a34 (tam/edn->array target)]
+           (is= target-rows-vec (tam/array->row-vals a34))
+           (is= target-cols-vec (tam/array->col-vals a34))
+           (is (tam/equals a34 (tam/row-vals->array 3 4 target-rows-vec)))
+           (is (tam/equals a34 (tam/col-vals->array 3 4 target-cols-vec)))
+           (is (tam/equals a34 (->> a34
+                                 (tam/array->row-vals)
+                                 (tam/row-vals->array 3 4))))
+           (is (tam/equals a34 (->> a34
+                                 (tam/array->col-vals)
+                                 (tam/col-vals->array 3 4)))))
 
-         ;(is= target @a34)
-         ;(is= target-flip-ud (tam/flip-ud target))
-         ;(is= target-flip-lr (tam/flip-lr target))
-         ;(is= target-tx (tam/transpose target))
-         ;
+         (is= target (tam/array->edn (tam/edn->array target)))
+         (is= target-flip-ud (tam/array->edn (tam/flip-ud (tam/edn->array target))))
+         (is= target-flip-lr (tam/array->edn (tam/flip-lr (tam/edn->array target))))
+         (is= target-tx (tam/array->edn (tam/transpose (tam/edn->array target))))
+
          ;(is= target-rot-left-1 (-> target (tam/rotate-left)))
          ;(is= target-rot-left-2 (-> target (tam/rotate-left) (tam/rotate-left)))
          ;(is= target-rot-left-3 (-> target (tam/rotate-left) (tam/rotate-left) (tam/rotate-left)))

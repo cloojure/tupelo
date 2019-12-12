@@ -230,7 +230,6 @@
        "Flips an array in the up-down direction,
        reversing the order of the rows of an array"
        [orig :- Array]
-       [orig :- Array]
        (forv [ii (reverse (range (num-rows orig)))]
          (row-get orig ii)))
 

@@ -209,6 +209,34 @@
                (nth col-data (+ ii (* jj nrows))))))
          result))
 
+     (s/defn flip-ud :- Array
+       "Flips an array in the up-down direction,
+       reversing the order of the rows of an array"
+       [orig :- Array]
+       (let [nrows  (:nrows orig)
+             ncols  (:ncols orig)
+             result (create nrows ncols)]
+         (dotimes [ii nrows]
+           (let [ii-orig (- nrows ii 1)]
+             (dotimes [jj ncols]
+               (elem-set result ii jj
+                 (elem-get orig ii-orig jj)))))
+         result))
+
+     (s/defn flip-lr :- Array
+       "Flips an array in the left-right direction,
+       reversing the order of the cols of an array"
+       [orig :- Array]
+       (let [nrows  (:nrows orig)
+             ncols  (:ncols orig)
+             result (create nrows ncols)]
+         (dotimes [jj ncols]
+           (let [jj-orig (- ncols jj 1)]
+             (dotimes [ii nrows]
+               (elem-set result ii jj
+                 (elem-get orig ii jj-orig)))))
+         result))
+
      (comment
 
 
@@ -290,21 +318,6 @@
           (forv [jj (range low high)]
             (col-get arr jj))))
        ; #todo need parallel cols-set
-
-       (s/defn flip-ud :- Array
-         "Flips an array in the up-down direction,
-         reversing the order of the rows of an array"
-         [orig :- Array]
-         [orig :- Array]
-         (forv [ii (reverse (range (num-rows orig)))]
-           (row-get orig ii)))
-
-       (s/defn flip-lr :- Array
-         "Flips an array in the left-right direction,
-         reversing the order of the cols of an array"
-         [orig :- Array]
-         (forv [ii (range (num-rows orig))]
-           (vec (reverse (row-get orig ii)))))
 
        (s/defn rotate-left :- Array
          "Rotates an array 90 deg counter-clockwise."
