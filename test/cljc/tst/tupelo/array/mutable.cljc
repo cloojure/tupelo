@@ -142,35 +142,35 @@
          (is= target-rot-left-1 (-> target tam/edn->array tam/rotate-right tam/rotate-right tam/rotate-right tam/array->edn))
          (is= target (-> target tam/edn->array tam/rotate-right tam/rotate-right tam/rotate-right tam/rotate-right tam/array->edn))))
 
+     (dotest
+       (let [demo [[00 01 02 03]
+                   [10 11 12 13]
+                   [20 21 22 23]]
+             a34 (tam/edn->array demo) ]
+         (throws? (tam/array->rows a34 0 0))
+         (is= (tam/array->rows a34 0 1) [[00 01 02 03]])
+         (is= (tam/array->rows a34 0 2) [[00 01 02 03]
+                                          [10 11 12 13]])
+         (is= (tam/array->rows a34 0 3) [[00 01 02 03]
+                                          [10 11 12 13]
+                                          [20 21 22 23]])
+         (is= (tam/array->rows a34 1 3) [[10 11 12 13]
+                                          [20 21 22 23]])
+         (is= (tam/array->rows a34 2 3) [[20 21 22 23]])
+         (throws? (tam/array->rows a34 3 3))
+
+         (is= demo (tam/array->rows a34))
+         (is= (tam/array->rows a34 [2 0 1]) [[20 21 22 23]
+                                              [00 01 02 03]
+                                              [10 11 12 13]])
+         (is (tam/equals a34 (tam/rows->array [[00 01 02 03]
+                                               [10 11 12 13]
+                                               [20 21 22 23]])))
+         (throws? (tam/rows->array [[00 01 02 03]
+                                    [10 11 12]
+                                    [20 21 22 23]])) ))
+
      (comment
-
-       (dotest
-         (let [demo [[00 01 02 03]
-                     [10 11 12 13]
-                     [20 21 22 23]]
-               ]
-           (throws? (tam/array->rows demo 0 0))
-           (is= (tam/array->rows demo 0 1) [[00 01 02 03]])
-           (is= (tam/array->rows demo 0 2) [[00 01 02 03]
-                                            [10 11 12 13]])
-           (is= (tam/array->rows demo 0 3) [[00 01 02 03]
-                                            [10 11 12 13]
-                                            [20 21 22 23]])
-           (is= (tam/array->rows demo 1 3) [[10 11 12 13]
-                                            [20 21 22 23]])
-           (is= (tam/array->rows demo 2 3) [[20 21 22 23]])
-           (throws? (tam/array->rows demo 3 3))
-
-           (is= demo (tam/array->rows demo))
-           (is= (tam/array->rows demo [2 0 1]) [[20 21 22 23]
-                                                [00 01 02 03]
-                                                [10 11 12 13]])
-           (is= demo (tam/rows->array [[00 01 02 03]
-                                       [10 11 12 13]
-                                       [20 21 22 23]]))
-           (throws? (tam/rows->array [[00 01 02 03]
-                                      [10 11 12]
-                                      [20 21 22 23]]))))
 
        (dotest
          (let [demo [[00 01 02 03]

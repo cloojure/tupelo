@@ -251,6 +251,27 @@
          (forv [jj (range (num-cols orig))]
            (vec (reverse (col-get orig jj)))))) ; reverse yields a seq, not a vec! doh!
 
+     ;#todo make both rows/cols -> submatrix result
+     (s/defn array->rows :- [[s/Any]]
+       "
+        [arr]           Returns all array rows
+        [arr row-idxs]  Returns array rows specified by row-idxs
+        [arr low high]  Returns array rows in half-open interval [low..high) "
+       ([arr] (array->rows arr 0 (num-rows arr)))
+       ([arr
+         row-idxs :- [s/Int]]
+        (forv [ii row-idxs]
+          (row-get arr ii)))
+       ([arr :- Array
+         low :- s/Int
+         high :- s/Int]
+        (check-row-idx arr low)
+        (check-row-idx arr (dec high))
+        (assert (< low high))
+        (forv [ii (range low high)]
+          (row-get arr ii))))
+     ; #todo need parallel rows-set
+
      (comment
 
 
@@ -278,26 +299,6 @@
                         [new-row]
                         (forv [ii (range (inc ii) nrows)] (row-get orig ii)))]
            result))
-
-       ;#todo make both rows/cols -> submatrix result
-       (s/defn array->rows :- Array
-         "
-          [arr]           Returns all array rows
-          [arr row-idxs]  Returns array rows specified by row-idxs
-          [arr low high]  Returns array rows in half-open interval [low..high) "
-         ([arr] (array->rows arr 0 (num-rows arr)))
-         ([arr row-idxs]
-          (forv [ii row-idxs]
-            (row-get arr ii)))
-         ([arr :- Array
-           low :- s/Int
-           high :- s/Int]
-          (check-row-idx arr low)
-          (check-row-idx arr (dec high))
-          (assert (< low high))
-          (forv [ii (range low high)]
-            (row-get arr ii))))
-       ; #todo need parallel rows-set
 
        (s/defn col-set :- Array
          "Sets an Array col"
