@@ -406,29 +406,22 @@
              (array->col-vals arr)
              (apply glue cols)))))
 
+     (s/defn glue-vert :- Array
+       "Concatenates 2 or more arrays vertically. Arrays must all have the same number of cols. Returns a new array."
+       [& arrays :- [Array]]
+       (assert (pos? (count arrays)))
+       (let [ncol-vals (mapv num-cols arrays)]
+         (assert (apply = ncol-vals)))
+       (let [nrows-total (reduce + (mapv num-rows arrays))
+             ncols       (num-cols (first arrays))]
+         (row-vals->array nrows-total ncols
+           (apply glue
+             (mapv array->row-vals arrays)))))
+
      (comment
 
-       (s/defn col-add :- Array
-         "Appends one or more cols onto an array. Returns a new array."
-         [orig :- Array
-          & cols :- [Vector]]
-         (let [nrows    (num-rows orig)
-               col-lens (mapv count cols)]
-           (assert (apply = nrows col-lens))
-           (forv [ii (range nrows)]
-             (glue (row-get orig ii) (forv [col cols]
-                                       (nth col ii))))))
-
-       (s/defn glue-vert :- Array
-         "Concatenates 2 or more arrays vertically. Arrays must all have the same number of cols."
-         [& arrays :- [Array]]
-         (assert (pos? (count arrays)))
-         (let [ncol-vals (mapv num-cols arrays)]
-           (assert (apply = ncol-vals)))
-         (apply glue arrays))
-
        (s/defn glue-horiz :- Array
-         "Concatenates 2 or more arrays horizontally. Arrays must all have the same number of rows."
+         "Concatenates 2 or more arrays horizontally. Arrays must all have the same number of rows. Returns a new array."
          [& arrays :- [Array]]
          (assert (pos? (count arrays)))
          (let [nrow-vals (mapv num-rows arrays)]

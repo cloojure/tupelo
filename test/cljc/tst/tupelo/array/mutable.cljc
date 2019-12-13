@@ -297,62 +297,66 @@
          (is= a23 (tam/array->edn (tam/cols-append (tam/edn->array a22) [2 12])))
          (is= a24 (tam/array->edn (tam/cols-append (tam/edn->array a22) [2 12] [3 13])))))
 
+     (dotest
+       (let [a12 [[00 01]]
+             a22 [[00 01]
+                  [10 11]]
+             a32 [[00 01]
+                  [10 11]
+                  [20 21]]
+             a42 [[00 01]
+                  [10 11]
+                  [20 21]
+                  [30 31]]]
+         (throws? (tam/glue-vert
+                    (tam/edn->array a22)
+                    (tam/edn->array [[1 2 3]])))
+         (is= a22
+           (tam/array->edn (tam/glue-vert
+                             (tam/edn->array [[00 01]])
+                             (tam/edn->array [[10 11]]))))
+         (is= a32
+
+           (tam/array->edn (tam/glue-vert ; noop
+                             (tam/edn->array [[00 01]
+                                              [10 11]
+                                              [20 21]])))
+           (tam/array->edn (tam/glue-vert
+                             (tam/edn->array [[00 01]])
+                             (tam/edn->array [[10 11]])
+                             (tam/edn->array [[20 21]])))
+           (tam/array->edn (tam/glue-vert
+                             (tam/edn->array [[00 01]])
+                             (tam/edn->array [[10 11]
+                                              [20 21]])))
+           (tam/array->edn (tam/glue-vert
+                             (tam/edn->array [[00 01]
+                                              [10 11]])
+                             (tam/edn->array [[20 21]]))))
+
+         (is= a42
+           (tam/array->edn (tam/glue-vert
+                             (tam/edn->array [[00 01]])
+                             (tam/edn->array [[10 11]])
+                             (tam/edn->array [[20 21]])
+                             (tam/edn->array [[30 31]])))
+           (tam/array->edn (tam/glue-vert
+                             (tam/edn->array [[00 01]
+                                              [10 11]])
+                             (tam/edn->array [[20 21]
+                                              [30 31]])))
+           (tam/array->edn (tam/glue-vert
+                             (tam/edn->array [[00 01]
+                                              [10 11]
+                                              [20 21]])
+                             (tam/edn->array [[30 31]])))
+           (tam/array->edn (tam/glue-vert
+                             (tam/edn->array [[00 01]])
+                             (tam/edn->array [[10 11]
+                                              [20 21]
+                                              [30 31]]))))))
+
      (comment
-
-       (dotest
-         (let [a12 [[00 01]]
-               a22 [[00 01]
-                    [10 11]]
-               a32 [[00 01]
-                    [10 11]
-                    [20 21]]
-               a42 [[00 01]
-                    [10 11]
-                    [20 21]
-                    [30 31]]]
-           (throws? (tam/glue-vert a22 [[1 2 3]]))
-           (is= a22 (tam/glue-vert
-                      [[00 01]]
-                      [[10 11]]))
-           (is= a32
-             (tam/glue-vert ; noop
-               [[00 01]
-                [10 11]
-                [20 21]])
-             (tam/glue-vert
-               [[00 01]]
-               [[10 11]]
-               [[20 21]])
-             (tam/glue-vert
-               [[00 01]]
-               [[10 11]
-                [20 21]])
-             (tam/glue-vert
-               [[00 01]
-                [10 11]]
-               [[20 21]]))
-
-           (is= a42
-             (tam/glue-vert
-               [[00 01]]
-               [[10 11]]
-               [[20 21]]
-               [[30 31]])
-             (tam/glue-vert
-               [[00 01]
-                [10 11]]
-               [[20 21]
-                [30 31]])
-             (tam/glue-vert
-               [[00 01]
-                [10 11]
-                [20 21]]
-               [[30 31]])
-             (tam/glue-vert
-               [[00 01]]
-               [[10 11]
-                [20 21]
-                [30 31]]))))
 
        (dotest
          (let [a21 [[00]
