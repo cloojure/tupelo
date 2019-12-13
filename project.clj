@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.179"
+(defproject tupelo "0.9.180"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -6,7 +6,7 @@
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
   :min-lein-version "2.9.1"
 
-  :global-vars {*warn-on-reflection*      false }
+  :global-vars {*warn-on-reflection* false}
 
   :excludes [org.clojure/clojure
              org.clojure/clojurescript]
@@ -36,7 +36,7 @@
   ; Using `lein-ancient check :all` checks plugins
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-codox "0.10.7"]
-           ;[lein-nomis-ns-graph "0.14.2"]
+            ;[lein-nomis-ns-graph "0.14.2"]
             [com.jakemccrary/lein-test-refresh "0.24.1"]]
 
   :test-refresh {:quiet true ; true => suppress printing namespaces when testing
@@ -44,17 +44,17 @@
 
   :codox {:src-dir-uri               "http://github.com/cloojure/tupelo/blob/master/"
           :src-linenum-anchor-prefix "L"
-          :source-paths               ["src/clj" "src/cljc"]
-          :language                   :clojure
-          :namespaces                 [ #"^tupelo\." ] }
+          :source-paths              ["src/clj" "src/cljc"]
+          :language                  :clojure
+          :namespaces                [#"^tupelo\."]}
 
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
                                        [org.clojure/clojurescript "1.10.520" :scope "provided"]
                                        ]}
              :dev      {:dependencies [
-                                      ;[binaryage/devtools "0.9.10"]
-                                      ;[binaryage/dirac "1.4.3"]
-                                      ;[com.cemerick/piggieback "0.2.2"]
+                                       ;[binaryage/devtools "0.9.10"]
+                                       ;[binaryage/dirac "1.4.3"]
+                                       ;[com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.5"]
                                        [org.clojure/clojure "1.10.1"]
                                        [org.clojure/clojurescript "1.10.520"]
@@ -64,9 +64,9 @@
              :1.8      {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9      {:dependencies [[org.clojure/clojure "1.9.0"]]}
              }
-  :source-paths [  "src/clj"   "src/cljc" ]
-  :test-paths   [ "test/clj"  "test/cljc" ]
-  :target-path  "target/%s"
+  :source-paths ["src/clj" "src/cljc"]
+  :test-paths ["test/clj" "test/cljc"]
+  :target-path "target/%s"
 
   ; need to add the compliled assets to the :clean-targets
   :clean-targets ^{:protect false} ["resources/public/js/compiled"
@@ -79,7 +79,7 @@
   :test-selectors {:default (complement :slow)
                    :slow    :slow
                    :fast    :fast}
-      ; #todo broken for tupelo.test/dospec - why?
+  ; #todo broken for tupelo.test/dospec - why?
 
   ; :main ^:skip-aot tupelo.core
   ; :uberjar      {:aot :all}
@@ -92,9 +92,9 @@
 
   ; automatically handle `--add-modules` stuff req'd for Java 9 & Java 10
   :jvm-opts ["-Xms500m" "-Xmx2g"
-           ; "--illegal-access=permit"  ; may need for Java10+  [ permit, warn, debug, deny ]
-            ]
-)
+             ; "--illegal-access=permit"  ; may need for Java10+  [ permit, warn, debug, deny ]
+             ]
+  )
 
 
 
