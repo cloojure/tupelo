@@ -61,7 +61,7 @@
 ; #todo: change to allow line-seq, FILE, etc? (document!)
 ; #todo: change to ignore blank lines
 ; #todo: throw if mismatched missing/excess fields found? (test at least!)
-; #todo: modify to accept an opts map
+; #todo: modify to accept an opts map (and support parent opts:  https://github.com/davidsantiago/clojure-csv)
 ; #todo: add option for no header line in input (default keys => :column-001 :column-002 :column-003...
 ; #todo: document user-supplied column keys
 ; #todo: default everything to keyword keys
