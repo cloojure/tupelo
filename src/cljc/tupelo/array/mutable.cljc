@@ -240,23 +240,39 @@
      (s/defn rotate-left :- Array
        "Rotates an array 90 deg counter-clockwise. Returns a new array."
        [orig :- Array]
-       (rows->array
-         (forv [jj (reverse (range (num-cols orig)))]
-           (col-get orig jj))))
+       (let [M      (:nrows orig)
+             N      (:ncols orig)
+             result (create N M)] ; transpose shape
+         (dotimes [ii M]
+           (dotimes [jj N]
+             (let [i2 (- N 1 jj)
+                   j2 ii]
+              ;(spyx [[ii jj] [i2 j2]])
+               (elem-set result i2 j2
+                 (elem-get orig ii jj)))))
+         result))
 
      (s/defn rotate-right :- Array
-       "Rotates an array 90 deg clockwise. Returns a new array."
+       "Rotates an array 90 deg counter-clockwise. Returns a new array."
        [orig :- Array]
-       (rows->array
-         (forv [jj (range (num-cols orig))]
-           (vec (reverse (col-get orig jj)))))) ; reverse yields a seq, not a vec! doh!
+       (let [M      (:nrows orig)
+             N      (:ncols orig)
+             result (create N M)] ; transpose shape
+         (dotimes [ii M]
+           (dotimes [jj N]
+             (let [j2 (- M 1 ii)
+                   i2 jj]
+               ;(spyx [[ii jj] [i2 j2]])
+               (elem-set result i2 j2
+                 (elem-get orig ii jj)))))
+         result))
 
      ;#todo make both rows/cols -> submatrix result
      (s/defn array->rows :- [[s/Any]]
-       "
-        [arr]           Returns all array rows
-        [arr row-idxs]  Returns array rows specified by row-idxs
-        [arr low high]  Returns array rows in half-open interval [low..high) "
+       "Usage:
+          (array->rows arr)           Returns all array rows
+          (array->rows arr row-idxs)  Returns array rows specified by row-idxs
+          (array->rows arr low high)  Returns array rows in half-open interval [low..high) "
        ([arr] (array->rows arr 0 (num-rows arr)))
        ([arr
          row-idxs :- [s/Int]]
@@ -273,10 +289,10 @@
      ; #todo need parallel rows-set
 
      (s/defn array->cols :- [[s/Any]]
-       "
-        [arr]           Returns all array cols
-        [arr col-idxs]  Returns array cols specified by col-idxs
-        [arr low high]  Returns array cols in half-open interval [low..high) "
+       "Usage:
+          (array->cols arr)           Returns all array cols
+          (array->cols arr col-idxs)  Returns array cols specified by col-idxs
+          (array->cols arr low high)  Returns array cols in half-open interval [low..high) "
        ([arr] (array->cols arr 0 (num-cols arr)))
        ([arr
          col-idxs :- [s/Int]]
@@ -303,22 +319,44 @@
            (assert sequential? (nth col-vecs jj)))
          (col-vals->array nrows ncols (apply glue col-vecs))))
 
+     (s/defn symmetric? :- s/Bool
+       "Returns true iff an array is symmetric"
+       [arr :- Array]
+       (let [nrows (num-rows arr)
+             ncols (num-cols arr)]
+         (and (= nrows ncols)
+           (every? truthy?
+             (for [ii (range 0 nrows)
+                   jj (range ii ncols)] (= (elem-get arr ii jj)
+                                          (elem-get arr jj ii)))))))
+
+     (s/defn row-set :- Array
+       "Sets an Array row"
+       [arr :- Array
+        ii :- s/Int
+        new-row :- Vector]
+       (check-row-idx arr ii)
+       (let [ncols (num-cols arr)]
+         (assert (= ncols (count new-row)))
+         (dotimes [jj ncols]
+           (elem-set arr ii jj
+             (nth new-row jj)))
+         arr))
+
+     (s/defn col-set :- Array
+       "Sets an Array col"
+       [arr :- Array
+        jj :- s/Int
+        new-col :- Vector]
+       (check-col-idx arr jj)
+       (let [nrows (num-rows arr)]
+         (assert (= nrows (count new-col)))
+         (dotimes [ii nrows]
+           (elem-set arr ii jj
+             (nth new-col ii)))
+         arr))
+
      (comment
-
-
-       (s/defn row-set :- Array
-         "Sets an Array row"
-         [orig :- Array
-          ii :- s/Int
-          new-row :- Vector]
-         (check-row-idx orig ii)
-         (assert (= (num-cols orig) (count new-row)))
-         (let [nrows  (num-rows orig)
-               result (glue
-                        (forv [ii (range ii)] (row-get orig ii))
-                        [new-row]
-                        (forv [ii (range (inc ii) nrows)] (row-get orig ii)))]
-           result))
 
        (s/defn col-set :- Array
          "Sets an Array col"
@@ -334,17 +372,6 @@
                               new-row  (t/replace-at curr-row jj new-val)]
                           new-row))]
            result))
-
-       (s/defn symmetric? :- s/Bool
-         "Returns true iff an array is symmetric"
-         [arr :- Array]
-         (let [nrows (num-rows arr)
-               ncols (num-cols arr)]
-           (and (= nrows ncols)
-             (every? truthy?
-               (for [ii (range 0 nrows)
-                     jj (range ii ncols)] (= (elem-get arr ii jj)
-                                            (elem-get arr jj ii)))))))
 
        (s/defn row-drop :- Array
          "Drop one or more rows from an array"

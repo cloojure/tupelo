@@ -209,22 +209,39 @@
                                     [02 12]
                                     [03 13 23]])) ))
 
-     (comment
+     (dotest
+       (is (tam/symmetric? (tam/edn->array [[1 2]
+                                            [2 1]])))
+       (isnt (tam/symmetric? (tam/edn->array [[1 3]
+                                              [2 1]])))
+       (is (tam/symmetric? (tam/edn->array [[1 2 3]
+                                            [2 4 5]
+                                            [3 5 6]])))
+       (isnt (tam/symmetric? (tam/edn->array [[1 9 3]
+                                              [2 4 5]
+                                              [3 5 6]])))
+       (isnt (tam/symmetric? (tam/edn->array [[1 2 9]
+                                              [2 4 5]
+                                              [3 5 6]]))))
 
-       (dotest
-         (is (tam/symmetric? [[1 2]
-                              [2 1]]))
-         (isnt (tam/symmetric? [[1 3]
-                                [2 1]]))
-         (is (tam/symmetric? [[1 2 3]
-                              [2 4 5]
-                              [3 5 6]]))
-         (isnt (tam/symmetric? [[1 9 3]
-                                [2 4 5]
-                                [3 5 6]]))
-         (isnt (tam/symmetric? [[1 2 9]
-                                [2 4 5]
-                                [3 5 6]])))
+     (dotest
+       (let [demo (tam/edn->array [[1 2 3]
+                                   [4 5 6]])]
+         (throws? (tam/row-set demo 2 [[1 2 3]]))
+         (throws? (tam/row-set demo 1 [[1 2 3 4]]))
+         (is= (tam/array->edn (tam/row-set demo 1 [7 8 9]))
+           [[1 2 3]
+            [7 8 9]]))
+       (let [demo (tam/edn->array [[1 2 3]
+                                   [4 5 6]])]
+
+         (throws? (tam/col-set demo 3 [[1 2]]))
+         (throws? (tam/col-set demo 1 [[1 2 3 4]]))
+         (is= (tam/array->edn (tam/col-set demo 1 [7 8]))
+           [[1 7 3]
+            [4 8 6]])))
+
+     (comment
 
        (dotest
          (let [demo [[00 01 02 03]
@@ -365,20 +382,6 @@
                        [11]]
                       [[02 03]
                        [12 13]]))))
-
-       (dotest
-         (let [demo
-               [[1 2 3]
-                [4 5 6]]]
-           (throws? (tam/row-set demo 2 [[1 2 3]]))
-           (throws? (tam/row-set demo 1 [[1 2 3 4]]))
-           (is= (tam/row-set demo 1 [7 8 9]) [[1 2 3]
-                                              [7 8 9]])
-
-           (throws? (tam/col-set demo 3 [[1 2]]))
-           (throws? (tam/col-set demo 1 [[1 2 3 4]]))
-           (is= (tam/col-set demo 1 [7 8]) [[1 7 3]
-                                            [4 8 6]])))
 
        )
 
