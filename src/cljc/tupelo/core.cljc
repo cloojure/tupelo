@@ -307,6 +307,8 @@
   "Returns true iff x is not positive"
   [arg] (not (pos? arg)) )
 
+; #todo add not-zero?
+
 ;-----------------------------------------------------------------------------
 (s/defn not-nil? :- s/Bool
   "Returns true if arg is not nil; false otherwise. Equivalent to (not (nil? arg)),
@@ -1372,8 +1374,6 @@
      ))
 
 ;-----------------------------------------------------------------------------
-
-; #todo add not-neg? not-pos? not-zero?
 
 ; #todo make coercing versions of these ->sym ->str ->kw ->int  for args of (kw, str, sym, int)
 
