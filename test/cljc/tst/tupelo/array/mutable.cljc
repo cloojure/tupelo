@@ -285,19 +285,19 @@
          (is= a23 (tam/array->edn (tam/rows-append (tam/edn->array a13) [10 11 12])))
          (is= a33 (tam/array->edn (tam/rows-append (tam/edn->array a13) [10 11 12] [20 21 22])))))
 
-     (comment
+     (dotest
+       (let [a22 [[00 01]
+                  [10 11]]
+             a23 [[00 01 02]
+                  [10 11 12]]
+             a24 [[00 01 02 03]
+                  [10 11 12 13]]]
+         (throws? (tam/cols-append (tam/edn->array a23) [1 2 3]))
+         (throws? (tam/cols-append (tam/edn->array a23) [1 2] [1 2 3]))
+         (is= a23 (tam/array->edn (tam/cols-append (tam/edn->array a22) [2 12])))
+         (is= a24 (tam/array->edn (tam/cols-append (tam/edn->array a22) [2 12] [3 13])))))
 
-       (dotest
-         (let [a22 [[00 01]
-                    [10 11]]
-               a23 [[00 01 02]
-                    [10 11 12]]
-               a24 [[00 01 02 03]
-                    [10 11 12 13]]]
-           (throws? (tam/col-add a23 [1 2 3]))
-           (throws? (tam/col-add a23 [1 2] [1 2 3]))
-           (is= a23 (tam/col-add a22 [2 12]))
-           (is= a24 (tam/col-add a22 [2 12] [3 13]))))
+     (comment
 
        (dotest
          (let [a12 [[00 01]]

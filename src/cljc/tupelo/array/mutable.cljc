@@ -392,6 +392,20 @@
              (array->row-vals arr)
              (apply glue rows)))))
 
+     (s/defn cols-append :- Array
+       "Appends one or more cols onto an array. Returns a new array."
+       [arr :- Array
+        & cols :- [Vector]]
+       (let [ncols-orig  (num-cols arr)
+             ncols-added (count cols)
+             ncols-total (+ ncols-orig ncols-added)
+             col-lens    (mapv count cols)]
+         (assert (apply = (num-rows arr) col-lens))
+         (col-vals->array (num-rows arr) ncols-total
+           (glue
+             (array->col-vals arr)
+             (apply glue cols)))))
+
      (comment
 
        (s/defn col-add :- Array
