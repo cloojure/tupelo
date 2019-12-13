@@ -269,23 +269,23 @@
             [21]])
          (throws? (tam/row-drop demo :x))))
 
-     (comment
+     (dotest
+       (let [a13 [[00 01 02]]
+             a23 [[00 01 02]
+                  [10 11 12]]
+             a33 [[00 01 02]
+                  [10 11 12]
+                  [20 21 22]]
+             a34 [[00 01 02 03]
+                  [10 11 12 13]
+                  [20 21 22 23]]]
+         (throws? (tam/rows-append (tam/edn->array a13) [1 2]))
+         (throws? (tam/rows-append (tam/edn->array a13) [1 2] [1 2 3]))
+         (throws? (tam/rows-append (tam/edn->array a13) [1 2 3 4]))
+         (is= a23 (tam/array->edn (tam/rows-append (tam/edn->array a13) [10 11 12])))
+         (is= a33 (tam/array->edn (tam/rows-append (tam/edn->array a13) [10 11 12] [20 21 22])))))
 
-       (dotest
-         (let [a13 [[00 01 02]]
-               a23 [[00 01 02]
-                    [10 11 12]]
-               a33 [[00 01 02]
-                    [10 11 12]
-                    [20 21 22]]
-               a34 [[00 01 02 03]
-                    [10 11 12 13]
-                    [20 21 22 23]]]
-           (throws? (tam/row-add a13 [1 2]))
-           (throws? (tam/row-add a13 [1 2] [1 2 3]))
-           (throws? (tam/row-add a13 [1 2 3 4]))
-           (is= a23 (tam/row-add a13 [10 11 12]))
-           (is= a33 (tam/row-add a13 [10 11 12] [20 21 22]))))
+     (comment
 
        (dotest
          (let [a22 [[00 01]

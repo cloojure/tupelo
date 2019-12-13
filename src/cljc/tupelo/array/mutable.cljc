@@ -378,29 +378,24 @@
            (forv [jj idxs-keep]
              (col-get orig jj)))))
 
+     (s/defn rows-append :- Array
+       "Appends one or more rows onto an array. Returns a new array."
+       [arr :- Array
+        & rows :- [Vector]]
+       (let [nrows-orig  (num-rows arr)
+             nrows-added (count rows)
+             nrows-total (+ nrows-orig nrows-added)
+             row-lens    (mapv count rows)]
+         (assert (apply = (num-cols arr) row-lens))
+         (row-vals->array nrows-total (num-cols arr)
+           (glue
+             (array->row-vals arr)
+             (apply glue rows)))))
+
      (comment
 
-       (s/defn col-drop :- Array
-         "Drop one or more colss from an array"
-         [orig :- Array
-          & idxs-drop :- [s/Int]]
-         (let [idxs-all  (set (range (num-cols orig)))
-               idxs-drop (set idxs-drop)
-               idxs-keep (sort (set/difference idxs-all idxs-drop))]
-           (forv [ii (range (num-rows orig))]
-             (forv [jj idxs-keep]
-               (elem-get orig ii jj)))))
-
-       (s/defn row-add :- Array
-         "Appends a new row onto an array."
-         [orig :- Array
-          & rows :- [Vector]]
-         (let [row-lens (mapv count rows)]
-           (assert (apply = (num-cols orig) row-lens)))
-         (into orig rows))
-
        (s/defn col-add :- Array
-         "Appends a new col onto an array."
+         "Appends one or more cols onto an array. Returns a new array."
          [orig :- Array
           & cols :- [Vector]]
          (let [nrows    (num-rows orig)
