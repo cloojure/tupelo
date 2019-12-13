@@ -136,7 +136,7 @@
        (rows->array row-vecs))
 
      (s/defn equals :- s/Bool
-       "Returns true if two Arrays contain equal data"
+       "Returns true if two arrays contain equal data"
        [x :- Array
         y :- Array]
        (and
@@ -404,7 +404,7 @@
              (apply glue cols)))))
 
      (s/defn glue-vert :- Array
-       "Concatenates 2 or more arrays vertically. Arrays must all have the same number of cols. Returns a new array."
+       "Concatenates 2 or more arrays vertically. All arrays must have the same number of cols. Returns a new array."
        [& arrays :- [Array]]
        (assert (pos? (count arrays)))
        (let [ncol-vals (mapv num-cols arrays)]
@@ -416,7 +416,7 @@
              (mapv array->row-vals arrays)))))
 
      (s/defn glue-horiz :- Array
-       "Concatenates 2 or more arrays horizontally. Arrays must all have the same number of rows. Returns a new array."
+       "Concatenates 2 or more arrays horizontally. All arrays must have the same number of rows. Returns a new array."
        [& arrays :- [Array]]
        (assert (pos? (count arrays)))
        (let [nrow-vals (mapv num-rows arrays)]
