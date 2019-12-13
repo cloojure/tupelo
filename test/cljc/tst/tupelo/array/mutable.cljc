@@ -90,12 +90,17 @@
                 10   11   12   13
                 20   21   22   23"))
            (is= (tam/array->edn a34) target)
+           (is (tam/equals (tam/edn->array target) ; synonyms
+                 (tam/rows->array target)))
+           (is (tam/equals a34 (tam/edn->array target)))
            (when false
              (println (tam/array->str (tam/edn->array target))))
-           (is= target (-> target
+           (is= target (-> target ; round-trip from edn
                          (tam/edn->array)
                          (tam/array->edn)))
-           (is (tam/equals (tam/edn->array target) (tam/rows->array target)))
+           (is (tam/equals a34 (-> a34 ; round-trip from array
+                                 (tam/array->edn)
+                                 (tam/edn->array))))
 
            (is= (tam/row-get a34 0) [00 01 02 03])
            (is= (tam/row-get a34 1) [10 11 12 13])
