@@ -15,10 +15,7 @@
     #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]]
        :cljs [tupelo.core :as t :include-macros true
               :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]])
-    )
-  #?(:clj
-     (:import [java.util Arrays])) ; #todo make work for cljs
-  )
+    ))
 
 #?(:clj
    (do    ; #todo fix this
@@ -79,8 +76,7 @@
         (let [num-elems (* nrows ncols)
               result    (glue
                           (vals->map nrows ncols)
-                          {:data (object-array num-elems)})]
-          (Arrays/fill (:data result) init-val)
+                          {:data (object-array (repeat num-elems init-val))})]
           result)))
 
      (s/defn elem-get :- s/Any
