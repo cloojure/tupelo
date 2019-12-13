@@ -5,11 +5,8 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.csv
-  (:use tupelo.csv clojure.test)
-  (:require [clojure.string         :as str]
-            [clojure.java.io        :as io]
-            [schema.core            :as s] )
-  (:import  [java.io Reader StringReader] ) )
+  (:use tupelo.csv tupelo.core tupelo.test)
+  (:import  [java.io StringReader] ) )
 
 (def test1-str-no-label
 "01002,00006,4
@@ -56,56 +53,54 @@
   { :zipcode            ["01002" "01002" "01003" "01008" "01009" "01020"]
     :store-id           [     6     277     277    1217     439    1193 ] } )
 
-(deftest parse-csv->row-maps-test
-  (testing "basic parse-csv->row-maps test, using String"
-    (let [result (parse-csv->row-maps test1-str-label ) ]
-    (is (= result test1-expected)) ))
+(dotest
+  ; basic parse-csv->rows test, using String
+  (let [result (parse->rows test1-str-label)]
+    (is (= result test1-expected)))
 
-  (testing "read PSV file instead of default CSV"
-    (let [raw-maps  (parse-csv->row-maps test2-str-label :delimiter \| )
-          result    (map #(hash-map :store-id (Long/parseLong (:STORE-NUM %))
-                                    :zipcode                  (:ZIP-POSTAL-CODE %) )
-                      raw-maps ) ]
-    (is (= result test2-expected)) ))
+  ; read PSV file instead of default CS"
+  (let [raw-maps (parse->rows test2-str-label :delimiter \|)
+        result   (map #(hash-map :store-id (Long/parseLong (:STORE-NUM %))
+                         :zipcode (:ZIP-POSTAL-CODE %))
+                   raw-maps)]
+    (is (= result test2-expected)))
 
-  (testing "no header row in file, user spec :labels"
-    (let [result (parse-csv->row-maps test1-str-no-label 
-                    :labels [:zip-postal-code :store-num :chain-rank] ) ]
-    (is (= result test1-expected)) ))
-)
+  ; no header row in file, user spec :labels
+  (let [result (parse->rows test1-str-no-label
+                 :labels [:zip-postal-code :store-num :chain-rank])]
+    (is (= result test1-expected))))
 
-(deftest t-parse-csv->row-maps-reader
-  (testing "basic parse-csv->row-maps test, using Reader"
-    (let [result (parse-csv->row-maps (StringReader. test1-str-label) ) ]
-    (is (= result test1-expected)) ))
-)
+  (dotest
+    ; basic parse-csv->rows test, using Reader
+    (let [result (parse->rows (StringReader. test1-str-label))]
+      (is (= result test1-expected))) )
+
+(dotest
+  (is= {} (rows->cols []))
+  (is= [] (cols->rows {}))
+  (let [result (rows->cols test1-expected)]
+    (is (= result test3-expected)))
+  (let [result (rows->cols test2-expected)]
+    (is (= result test4-expected))))
+
+(dotest
+  (let [result (cols->rows test3-expected)]
+    (is (= result test1-expected)))
+  (let [result (cols->rows test4-expected)]
+    (is (= result test2-expected))))
+
+(dotest
+  (let [result (parse->cols test1-str-label)]
+    (is (= result test3-expected)))
+
+  (let [raw-maps (parse->cols test2-str-label :delimiter \|)
+        result   {:store-id (map #(Long/parseLong %) (:STORE-NUM raw-maps))
+                  :zipcode  (:ZIP-POSTAL-CODE raw-maps)}]
+    (is (= result test4-expected))))
 
 
-(deftest row-maps->col-vecs-test
-  (testing "row-maps->col-vecs-test-1"
-    (let [result (row-maps->col-vecs test1-expected) ]
-    (is (= result test3-expected)) ))
-  (testing "row-maps->col-vecs-test-2"
-    (let [result (row-maps->col-vecs test2-expected) ]
-    (is (= result test4-expected)) )))
-
-(deftest col-vecs->row-maps-test
-  (testing "col-vecs->row-maps-test-1"
-    (let [result (col-vecs->row-maps test3-expected) ]
-    (is (= result test1-expected)) ))
-  (testing "col-vecs->row-maps-test-2"
-    (let [result (col-vecs->row-maps test4-expected) ]
-    (is (= result test2-expected)) )))
 
 
-(deftest parse-csv->col-vecs-test
-  (testing "parse-csv->col-vecs-test-1"
-    (let [result    (parse-csv->col-vecs test1-str-label) ]
-    (is (= result test3-expected)) ))
 
-  (testing "parse-csv->col-vecs-test-2"
-    (let [raw-maps  (parse-csv->col-vecs test2-str-label :delimiter \| )
-          result    { :store-id (map #(Long/parseLong %) (:STORE-NUM       raw-maps))
-                      :zipcode                           (:ZIP-POSTAL-CODE raw-maps) } ]
-    (is (= result test4-expected)) )))
+
 
