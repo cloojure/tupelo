@@ -241,28 +241,35 @@
            [[1 7 3]
             [4 8 6]])))
 
+     (dotest
+       (let [demo (tam/edn->array [[00 01 02 03]
+                                   [10 11 12 13]
+                                   [20 21 22 23]])]
+         (is= (tam/array->edn (tam/row-drop demo 0))
+           [[10 11 12 13]
+            [20 21 22 23]])
+         (is=
+           (tam/array->edn (tam/row-drop demo 0 2))
+           (tam/array->edn (tam/row-drop demo 0 2 0 2 0))
+           [[10 11 12 13]])
+         (is= (tam/array->edn (tam/row-drop demo 1 2))
+           [[00 01 02 03]])
+
+         (is= (tam/array->edn (tam/col-drop demo 1))
+           [[00 02 03]
+            [10 12 13]
+            [20 22 23]])
+         (is= (tam/array->edn (tam/col-drop demo 1 2 2 1))
+           [[00 03]
+            [10 13]
+            [20 23]])
+         (is= (tam/array->edn (tam/col-drop demo 0 2 3))
+           [[01]
+            [11]
+            [21]])
+         (throws? (tam/row-drop demo :x))))
+
      (comment
-
-       (dotest
-         (let [demo [[00 01 02 03]
-                     [10 11 12 13]
-                     [20 21 22 23]]]
-           (is= (tam/row-drop demo 0) [[10 11 12 13]
-                                       [20 21 22 23]])
-           (is= (tam/row-drop demo 0 2)
-             (tam/row-drop demo 0 2 0 2 0) [[10 11 12 13]])
-           (is= (tam/row-drop demo 1 2) [[00 01 02 03]])
-
-           (is= (tam/col-drop demo 1) [[00 02 03]
-                                       [10 12 13]
-                                       [20 22 23]])
-           (is= (tam/col-drop demo 1 2 2 1) [[00 03]
-                                             [10 13]
-                                             [20 23]])
-           (is= (tam/col-drop demo 0 2 3) [[01]
-                                           [11]
-                                           [21]])
-           (throws? (tam/row-drop demo :x))))
 
        (dotest
          (let [a13 [[00 01 02]]

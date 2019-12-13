@@ -356,32 +356,29 @@
              (nth new-col ii)))
          arr))
 
-     (comment
-
-       (s/defn col-set :- Array
-         "Sets an Array col"
-         [orig :- Array
-          jj :- s/Int
-          new-col :- Vector]
-         (check-col-idx orig jj)
-         (let [nrows  (num-rows orig)
-               >>     (assert (= nrows (count new-col)))
-               result (forv [ii (range nrows)]
-                        (let [curr-row (row-get orig ii)
-                              new-val  (nth new-col ii)
-                              new-row  (t/replace-at curr-row jj new-val)]
-                          new-row))]
-           result))
-
-       (s/defn row-drop :- Array
-         "Drop one or more rows from an array"
-         [orig :- Array
-          & idxs-drop :- [s/Int]]
-         (let [idxs-all  (set (range (num-rows orig)))
-               idxs-drop (set idxs-drop)
-               idxs-keep (sort (set/difference idxs-all idxs-drop))]
+     (s/defn row-drop :- Array
+       "Drop one or more rows from an array"
+       [orig :- Array
+        & idxs-drop :- [s/Int]]
+       (let [idxs-all  (set (range (num-rows orig)))
+             idxs-drop (set idxs-drop)
+             idxs-keep (sort (set/difference idxs-all idxs-drop))]
+         (rows->array
            (forv [ii idxs-keep]
-             (row-get orig ii))))
+             (row-get orig ii)))))
+
+     (s/defn col-drop :- Array
+       "Drop one or more cols from an array"
+       [orig :- Array
+        & idxs-drop :- [s/Int]]
+       (let [idxs-all  (set (range (num-cols orig)))
+             idxs-drop (set idxs-drop)
+             idxs-keep (sort (set/difference idxs-all idxs-drop))]
+         (cols->array
+           (forv [jj idxs-keep]
+             (col-get orig jj)))))
+
+     (comment
 
        (s/defn col-drop :- Array
          "Drop one or more colss from an array"
