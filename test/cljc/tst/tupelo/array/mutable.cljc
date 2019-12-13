@@ -79,8 +79,8 @@
          (let [a34 (tam/create 3 4)]
            (dotimes [ii 3]
              (dotimes [jj 4]
-               (let [elem-val (+ (* ii 10) jj)]
-                 (tam/elem-set a34 ii jj elem-val))))
+               (tam/elem-set a34 ii jj
+                 (+ jj (* ii 10)))))
            (let [str-val (tam/array->str a34)]
              (when false
                (println :awt-01)
