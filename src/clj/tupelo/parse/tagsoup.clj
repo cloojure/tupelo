@@ -8,6 +8,11 @@
 ;   the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 
+; #todo consider => Yahoo "Tag Chowder"  https://github.com/yahoo/tagchowder
+; #todo     [com.github.lafa.tagchowder/tagchowder.core "2.0.3"]
+; #todo     & need to update all "feature" and "property" strings
+; #todo     & need to update AutoDetector
+
 (ns tupelo.parse.tagsoup
   (:use tupelo.core)
   (:require
