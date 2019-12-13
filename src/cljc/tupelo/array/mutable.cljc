@@ -16,7 +16,9 @@
        :cljs [tupelo.core :as t :include-macros true
               :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]])
     )
-  (:import [java.util Arrays]))
+  #?(:clj
+     (:import [java.util Arrays])) ; #todo make work for cljs
+  )
 
 #?(:clj
    (do    ; #todo fix this
