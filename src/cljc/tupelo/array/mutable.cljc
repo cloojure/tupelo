@@ -10,6 +10,7 @@
     [clojure.string :as str]
     [schema.core :as s]
     [tupelo.string :as ts]
+    [tupelo.schema :as tsk]
 
     #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]]
        :cljs [tupelo.core :as t :include-macros true
@@ -19,10 +20,6 @@
 
 #?(:clj
    (do    ; #todo fix this
-
-     (def Vector
-       "Plumatic Schema type definition for a 1-D array of values (a vector of values)."
-       [s/Any])
 
      (def Array
        "Plumatic Schema type definition for a 2-D array of values (a vector of vectors)."
@@ -78,9 +75,9 @@
          init-val :- s/Any]
         (assert (and (pos? nrows) (pos? ncols)))
         (let [num-elems (* nrows ncols)
-              result (glue
-                       (vals->map nrows ncols)
-                       {:data (object-array num-elems)})]
+              result    (glue
+                          (vals->map nrows ncols)
+                          {:data (object-array num-elems)})]
           (Arrays/fill (:data result) init-val)
           result)))
 
@@ -147,7 +144,7 @@
          (= (:ncols x) (:ncols y))
          (= (seq (:data x)) (seq (:data y)))))
 
-     (s/defn row-get :- Vector
+     (s/defn row-get :- tsk/Vec
        "Gets an Array row"
        [arr :- Array
         ii :- s/Int]
@@ -155,7 +152,7 @@
        (forv [jj (range (num-cols arr))]
          (elem-get arr ii jj)))
 
-     (s/defn col-get :- Vector
+     (s/defn col-get :- tsk/Vec
        "Gets an Array col"
        [arr :- Array
         jj :- s/Int]
@@ -163,14 +160,14 @@
        (forv [ii (range (num-rows arr))]
          (elem-get arr ii jj)))
 
-     (s/defn array->row-vals :- Vector
+     (s/defn array->row-vals :- tsk/Vec
        "Returns the concatenation of all array rows."
        [arr :- Array]
        (forv [ii (range (num-rows arr))
               jj (range (num-cols arr))]
          (elem-get arr ii jj)))
 
-     (s/defn array->col-vals :- Vector
+     (s/defn array->col-vals :- tsk/Vec
        "Returns the concatenation of all array cols."
        [arr :- Array]
        (forv [jj (range (num-cols arr))
@@ -181,7 +178,7 @@
        "Return a new Array of size=[nrows ncols] with its rows constructed from from row-data."
        [nrows :- s/Int
         ncols :- s/Int
-        row-data :- Vector]
+        row-data :- tsk/Vec]
        (assert (and (pos? nrows) (pos? ncols)))
        (assert (= (* nrows ncols) (count row-data)))
        (let [result (glue
@@ -199,7 +196,7 @@
        "Return a new Array of size=[nrows ncols] with its columns constructed from from col-data."
        [nrows :- s/Int
         ncols :- s/Int
-        col-data :- Vector]
+        col-data :- tsk/Vec]
        (assert (and (pos? nrows) (pos? ncols)))
        (assert (= (* nrows ncols) (count col-data)))
        (let [result (create nrows ncols)]
@@ -247,7 +244,7 @@
            (dotimes [jj N]
              (let [i2 (- N 1 jj)
                    j2 ii]
-              ;(spyx [[ii jj] [i2 j2]])
+               ;(spyx [[ii jj] [i2 j2]])
                (elem-set result i2 j2
                  (elem-get orig ii jj)))))
          result))
@@ -334,7 +331,7 @@
        "Sets an Array row"
        [arr :- Array
         ii :- s/Int
-        new-row :- Vector]
+        new-row :- tsk/Vec]
        (check-row-idx arr ii)
        (let [ncols (num-cols arr)]
          (assert (= ncols (count new-row)))
@@ -347,7 +344,7 @@
        "Sets an Array col"
        [arr :- Array
         jj :- s/Int
-        new-col :- Vector]
+        new-col :- tsk/Vec]
        (check-col-idx arr jj)
        (let [nrows (num-rows arr)]
          (assert (= nrows (count new-col)))
@@ -381,7 +378,7 @@
      (s/defn rows-append :- Array
        "Appends one or more rows onto an array. Returns a new array."
        [arr :- Array
-        & rows :- [Vector]]
+        & rows :- [tsk/Vec]]
        (let [nrows-orig  (num-rows arr)
              nrows-added (count rows)
              nrows-total (+ nrows-orig nrows-added)
@@ -395,7 +392,7 @@
      (s/defn cols-append :- Array
        "Appends one or more cols onto an array. Returns a new array."
        [arr :- Array
-        & cols :- [Vector]]
+        & cols :- [tsk/Vec]]
        (let [ncols-orig  (num-cols arr)
              ncols-added (count cols)
              ncols-total (+ ncols-orig ncols-added)
@@ -418,19 +415,19 @@
            (apply glue
              (mapv array->row-vals arrays)))))
 
-     (comment
-
-       (s/defn glue-horiz :- Array
-         "Concatenates 2 or more arrays horizontally. Arrays must all have the same number of rows. Returns a new array."
-         [& arrays :- [Array]]
-         (assert (pos? (count arrays)))
-         (let [nrow-vals (mapv num-rows arrays)]
-           (assert (apply = nrow-vals)))
-         (forv [ii (range (num-rows (t/xfirst arrays)))]
-           (apply glue (mapv #(row-get % ii) arrays))))
-
-       )
+     (s/defn glue-horiz :- Array
+       "Concatenates 2 or more arrays horizontally. Arrays must all have the same number of rows. Returns a new array."
+       [& arrays :- [Array]]
+       (assert (pos? (count arrays)))
+       (let [nrow-vals (mapv num-rows arrays)]
+         (assert (apply = nrow-vals)))
+       (let [ncols-total (reduce + (mapv num-cols arrays))
+             nrows       (num-rows (first arrays))]
+         (col-vals->array nrows ncols-total
+           (apply glue
+             (mapv array->col-vals arrays)))))
 
      ))
+
 
 

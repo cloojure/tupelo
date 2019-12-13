@@ -4,7 +4,7 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns ^:test-refresh/focus tst.tupelo.array.mutable
+(ns tst.tupelo.array.mutable
   (:require
     [tupelo.array.mutable :as tam]
     [tupelo.string :as ts]
@@ -14,9 +14,9 @@
        :cljs [tupelo.test-cljs :include-macros true
               :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]])
 
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey? ]]
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]]
        :cljs [tupelo.core :as t :include-macros true
-              :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey? ]])
+              :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]])
     ))
 
 ; #todo restore this???  (st/use-fixtures :once st/validate-schemas)
@@ -146,60 +146,60 @@
        (let [demo [[00 01 02 03]
                    [10 11 12 13]
                    [20 21 22 23]]
-             a34 (tam/edn->array demo) ]
+             a34  (tam/edn->array demo)]
          (throws? (tam/array->rows a34 0 0))
          (is= (tam/array->rows a34 0 1) [[00 01 02 03]])
          (is= (tam/array->rows a34 0 2) [[00 01 02 03]
-                                          [10 11 12 13]])
+                                         [10 11 12 13]])
          (is= (tam/array->rows a34 0 3) [[00 01 02 03]
-                                          [10 11 12 13]
-                                          [20 21 22 23]])
+                                         [10 11 12 13]
+                                         [20 21 22 23]])
          (is= (tam/array->rows a34 1 3) [[10 11 12 13]
-                                          [20 21 22 23]])
+                                         [20 21 22 23]])
          (is= (tam/array->rows a34 2 3) [[20 21 22 23]])
          (throws? (tam/array->rows a34 3 3))
 
          (is= demo (tam/array->rows a34))
          (is= (tam/array->rows a34 [2 0 1]) [[20 21 22 23]
-                                              [00 01 02 03]
-                                              [10 11 12 13]])
+                                             [00 01 02 03]
+                                             [10 11 12 13]])
          (is (tam/equals a34 (tam/rows->array [[00 01 02 03]
                                                [10 11 12 13]
                                                [20 21 22 23]])))
          (throws? (tam/rows->array [[00 01 02 03]
                                     [10 11 12]
-                                    [20 21 22 23]])) ))
+                                    [20 21 22 23]]))))
 
      (dotest
        (let [demo [[00 01 02 03]
                    [10 11 12 13]
                    [20 21 22 23]]
-             a34 (tam/edn->array demo)
+             a34  (tam/edn->array demo)
              ]
          (throws? (tam/array->cols a34 0 0))
          (is= (tam/array->cols a34 0 1) [[00 10 20]])
          (is= (tam/array->cols a34 0 2) [[00 10 20]
-                                          [01 11 21]])
+                                         [01 11 21]])
          (is= (tam/array->cols a34 0 3) [[00 10 20]
-                                          [01 11 21]
-                                          [02 12 22]])
+                                         [01 11 21]
+                                         [02 12 22]])
          (is= (tam/array->cols a34 0 4) [[00 10 20]
-                                          [01 11 21]
-                                          [02 12 22]
-                                          [03 13 23]])
+                                         [01 11 21]
+                                         [02 12 22]
+                                         [03 13 23]])
          (is= (tam/array->cols a34 1 4) [[01 11 21]
-                                          [02 12 22]
-                                          [03 13 23]])
+                                         [02 12 22]
+                                         [03 13 23]])
          (is= (tam/array->cols a34 2 4) [[02 12 22]
-                                          [03 13 23]])
+                                         [03 13 23]])
          (is= (tam/array->cols a34 3 4) [[03 13 23]])
          (throws? (tam/array->cols a34 4 4))
 
          (is= (tam/array->cols a34) (tam/array->cols a34 0 4))
          (is= (tam/array->cols a34 [2 0 3 1]) [[02 12 22]
-                                                [00 10 20]
-                                                [03 13 23]
-                                                [01 11 21]])
+                                               [00 10 20]
+                                               [03 13 23]
+                                               [01 11 21]])
          (is (tam/equals a34 (tam/cols->array [[00 10 20]
                                                [01 11 21]
                                                [02 12 22]
@@ -207,7 +207,7 @@
          (throws? (tam/cols->array [[00 10 20]
                                     [01 11 21]
                                     [02 12]
-                                    [03 13 23]])) ))
+                                    [03 13 23]]))))
 
      (dotest
        (is (tam/symmetric? (tam/edn->array [[1 2]
@@ -356,44 +356,46 @@
                                               [20 21]
                                               [30 31]]))))))
 
-     (comment
+     (dotest
+       (let [a21 [[00]
+                  [10]]
+             a22 [[00 01]
+                  [10 11]]
+             a23 [[00 01 02]
+                  [10 11 12]]
+             a24 [[00 01 02 03]
+                  [10 11 12 13]]]
+         (throws? (tam/glue-horiz (tam/edn->array a22)
+                    (tam/edn->array [[1 2 3]])))
+         (is= a22 (tam/array->edn (tam/glue-horiz
+                                    (tam/edn->array a21)
+                                    (tam/edn->array [[01]
+                                                     [11]]))))
+         (is= a23 (tam/array->edn (tam/glue-horiz (tam/edn->array a21)
+                                    (tam/edn->array [[01]
+                                                     [11]])
+                                    (tam/edn->array [[02]
+                                                     [12]]))))
+         (is= a23 (tam/array->edn (tam/glue-horiz (tam/edn->array a21)
+                                    (tam/edn->array [[01 02]
+                                                     [11 12]]))))
 
-       (dotest
-         (let [a21 [[00]
-                    [10]]
-               a22 [[00 01]
-                    [10 11]]
-               a23 [[00 01 02]
-                    [10 11 12]]
-               a24 [[00 01 02 03]
-                    [10 11 12 13]]]
-           (throws? (tam/glue-horiz a22 [[1 2 3]]))
-           (is= a22 (tam/glue-horiz a21
-                      [[01]
-                       [11]]))
-           (is= a23 (tam/glue-horiz a21
-                      [[01]
-                       [11]]
-                      [[02]
-                       [12]]))
-           (is= a23 (tam/glue-horiz a21
-                      [[01 02]
-                       [11 12]]))
-
-           (is= a24 (tam/glue-horiz a22
-                      [[02]
-                       [12]]
-                      [[03]
-                       [13]]))
-           (is= a24 (tam/glue-horiz a22
-                      [[02 03]
-                       [12 13]]))
-           (is= a24 (tam/glue-horiz a21
-                      [[01]
-                       [11]]
-                      [[02 03]
-                       [12 13]]))))
-
-       )
+         (is= a24 (tam/array->edn (tam/glue-horiz (tam/edn->array a22)
+                                    (tam/edn->array [[02]
+                                                     [12]])
+                                    (tam/edn->array [[03]
+                                                     [13]]))))
+         (is= a24 (tam/array->edn (tam/glue-horiz (tam/edn->array a22)
+                                    (tam/edn->array [[02 03]
+                                                     [12 13]]))))
+         (is= a24 (tam/array->edn (tam/glue-horiz (tam/edn->array a21)
+                                    (tam/edn->array [[01]
+                                                     [11]])
+                                    (tam/edn->array [[02 03]
+                                                     [12 13]]))))))
 
      ))
+
+
+
+
