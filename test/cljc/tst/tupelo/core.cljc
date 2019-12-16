@@ -627,9 +627,9 @@
     (is= [11 22 33]
       (t/map-let [x xs y ys] (+ x y))
       (t/map-let* {:lazy false :strict false} [x xs y ys] (+ x y))
-      (t/map-let* {:lazy false :strict true}  [x xs y ys] (+ x y))
-      (t/map-let* {:lazy true :strict false}  [x xs y ys] (+ x y))
-      (t/map-let* {:lazy true :strict true}   [x xs y ys] (+ x y)))
+      (t/map-let* {:lazy false :strict true} [x xs y ys] (+ x y))
+      (t/map-let* {:lazy true :strict false} [x xs y ys] (+ x y))
+      (t/map-let* {:lazy true :strict true} [x xs y ys] (+ x y)))
     (let [result-vec     (t/map-let* {:lazy false :strict true} [x xs y ys] (+ x y))
           result-lazyseq (t/map-let* {:lazy true :strict true} [result-vec xs y ys] (+ result-vec y))]
       (is (instance?
@@ -640,13 +640,18 @@
             #?(:clj clojure.lang.LazySeq)
             #?(:cljs cljs.core/LazySeq)
             result-lazyseq)))
-      )
+    )
 
   (let [xs [1 2 3]
         ys [10 20 30 40]]
-    (throws?        (t/map-let                  [x xs y ys] (+ x y)))
-    (throws?        (t/map-let* {:strict true}  [x xs y ys] (+ x y)))
-    (is= [11 22 33] (t/map-let* {:strict false} [x xs y ys] (+ x y)))))
+    (throws? (t/map-let [x xs y ys] (+ x y)))
+    (throws? (t/map-let* {:strict true} [x xs y ys] (+ x y)))
+    (is= [11 22 33] (t/map-let* {:strict false} [x xs y ys] (+ x y)))
+
+    (throws? (t/xmap inc))
+    (is= [1 2 3] (t/xmap inc (range 3)))
+    (is= [0 2 4] (t/xmap (fn [x y] (+ x y)) (range 3) (range 3)))
+    (throws? (t/xmap (fn [x y] (+ x y)) (range 3) (range 4)))))
 
 (dotest
   (is= (vector [])               [[]] )

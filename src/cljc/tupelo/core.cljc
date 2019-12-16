@@ -1671,7 +1671,7 @@
              output-fn#     (if lazy# identity vec)]
          (when (and strict#
                  (not lengths-equal#))
-           (throw (ex-info  "map-let*: colls must all be same length; lengths=" lengths#)))
+           (throw (ex-info  "map-let*: colls must all be same length" {:lens lengths#})))
          (output-fn# (map map-fn# ~@colls))))))
 
 (defmacro map-let
@@ -1686,6 +1686,17 @@
   `(map-let* {:strict true
               :lazy   false}
      ~bindings ~@forms))
+
+(s/defn xmap :- tsk/Vec
+  "Like clojure.core/mapv, but throws if colls are not of equal length."
+  [map-fn & colls]
+  (when (empty? colls)
+    (throw (ex-info "colls cannot be empty")))
+  (let [col-lens (mapv count colls)]
+    (when-not (apply = col-lens)
+      (throw (ex-info "xmap: colls must all be same length" (vals->map col-lens))))
+    (apply mapv map-fn colls)))
+
 
 ; #todo rename :strict -> :trunc
 (defn zip-1*
