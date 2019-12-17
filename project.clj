@@ -30,9 +30,15 @@
    [org.clojure/spec.alpha "0.2.176"]
    [org.clojure/test.check "0.10.0"]
    [org.clojure/tools.reader "1.3.2"]
-   [org.snakeyaml/snakeyaml-engine "2.0"] ; #todo upgrade to 2.0, edit Java imports
+   [org.snakeyaml/snakeyaml-engine "2.0"]
    [prismatic/schema "1.1.12"]
+
+   ; #todo clojures pprint doesn't work under graal native-image
+   ;[fipp "0.6.21"]
+   ;[mvxcvi/puget "1.2.0"]
+
    ]
+
   ; Using `lein-ancient check :all` checks plugins
   :plugins [[lein-cljsbuild "1.1.7"]
             [lein-codox "0.10.7"]
