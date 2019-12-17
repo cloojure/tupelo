@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.181"
+(defproject tupelo "0.9.182"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -17,9 +17,6 @@
    [clj-time "0.15.2"]
    [clojure-csv/clojure-csv "2.0.2"]
    [danlentz/clj-uuid "0.1.9"]
-   [io.pedestal/pedestal.jetty "0.5.7"]
-   [io.pedestal/pedestal.route "0.5.7"]
-   [io.pedestal/pedestal.service "0.5.7"]
    [joda-time/joda-time "2.10.5"]
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
    [org.clojure/core.async "0.6.532"]
