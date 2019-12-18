@@ -3,6 +3,12 @@
 
 == Change Log
 
+.2019-12-17  Version 0.9.182:  
+- Moved tupelo.pedestal out into a separate project:  
+  - https://github.com/io-tupelo/pedestal
+  - https://cljdoc.org/d/io.tupelo/pedestal
+
+
 .2018-1-1  Version 0.9.70:  
 - minor redefinition of `spy` for 2 args; requires at least 1 arg to be a keyword, which is treated
   as a "label" for the output line.

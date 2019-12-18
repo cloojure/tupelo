@@ -69,6 +69,7 @@
   (is= [5] (apply list [5]))
   (is= [5 6] (apply list [5 6]))
   (is= [6 5] (into (list) [5 6])) ; accidentally reversed
+  (is= [6 5] (into nil [5 6])) ; accidentally reversed
   (is= 5 (first [5]))
   (is= nil (second [5])) ; should throw
   (is= [] (rest [5]))
