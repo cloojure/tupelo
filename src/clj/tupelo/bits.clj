@@ -28,12 +28,13 @@
     (= bit-char \1) 1
     :else (throw (ex-info "Illegal bit char" (vals->map bit-char)))))
 
+;-----------------------------------------------------------------------------
 (s/defn long->bits-unsigned :- [s/Int]
   "Given a positive integer value, returns a 64-len vector of 0/1 integer values"
-  [val :- s/Int]
-  (when (neg? val)
-    (throw (ex-info "value must be non-negative" (vals->map val))))
-  (let [binary-chars  (Long/toBinaryString val)
+  [long-val :- s/Int]
+  (when-not (<= 0 long-val Long/MAX_VALUE)
+    (throw (ex-info "value out of range [0..Long/MAX_VALUE]" (vals->map long-val))))
+  (let [binary-chars  (Long/toBinaryString long-val)
         bits          (mapv char->bit binary-chars)
         nbits         (count bits)
         leading-zeros (repeat (- 64 nbits) 0)
@@ -47,6 +48,14 @@
         binary-str   (str/join binary-chars)
         result       (Long/valueOf binary-str 2)] ; cannot return neg value unless has '-' sign
     result))
+
+;-----------------------------------------------------------------------------
+(s/defn byte->bits-unsigned :- [s/Int]
+  "Given a positive integer value, returns an 8-len vector of 0/1 integer values"
+  [byte-val :- s/Int]
+  (when-not (<= 0 byte-val Byte/MAX_VALUE)
+    (throw (ex-info "value out of range [0..Byte/MAX_VALUE]" (vals->map byte-val))))
+  (vec (take-last 8 (long->bits-unsigned byte-val))))
 
 (s/defn bits-unsigned->byte :- s/Int
   "Given a vector of 0/1 integer bit values, returns a signed byte value"

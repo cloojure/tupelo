@@ -32,6 +32,21 @@
   (is= 127 (bits-unsigned->byte [0 0 1 1 1 1 1 1 1 ])) ;  even if more than 8 bits
   (throws? (bits-unsigned->byte [1 1 1 1 1 1 1 1])) ; twos-complement -1 fails (8x1 bits)
 
+  (is= (take-last 5 (byte->bits-unsigned 5)) [0 0 1 0 1])
+  (is= Byte/MAX_VALUE (-> Byte/MAX_VALUE
+                        (byte->bits-unsigned)
+                        (bits-unsigned->byte)))
+  (is= 0 (-> 0
+           (byte->bits-unsigned)
+           (bits-unsigned->byte)))
+  (is= 123 (-> 123
+                 (byte->bits-unsigned)
+                 (bits-unsigned->byte)))
+
+  (let [invalid-bits (glue [1 1 1] (-> Byte/MAX_VALUE
+                                     (byte->bits-unsigned)))]
+    (throws? (bits-unsigned->byte invalid-bits)))
+
   ;-----------------------------------------------------------------------------
   (is= (take-last 5 (long->bits-unsigned 5)) [0 0 1 0 1])
   (is= Long/MAX_VALUE (-> Long/MAX_VALUE
@@ -47,5 +62,6 @@
   (let [invalid-bits (glue [1 1 1] (-> Long/MAX_VALUE
                                      (long->bits-unsigned)))]
     (throws? (bits-unsigned->long invalid-bits)))
+
   )
 
