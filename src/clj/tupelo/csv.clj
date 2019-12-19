@@ -15,8 +15,8 @@
     [tupelo.schema :as tsk])
   (:import [java.io Reader StringReader]))
 
-(s/defn rows->cols :- tsk/Map
-  "Converts a sequence of row-maps into a map of column-vectors"
+(s/defn entities->attrs :- tsk/Map
+  "Converts a sequence of entity-maps into a map of column-vectors. Not lazy."
   [row-maps :- [tsk/Map]]
   (if (empty? row-maps)
     {}
@@ -31,8 +31,8 @@
                        {col-key (mapv #(grab col-key %) row-maps)}))]
       col-vecs)))
 
-(s/defn cols->rows :- [tsk/Map]
-  "Converts a map of column-vectors into a sequence of row-maps"
+(s/defn attrs->entities :- [tsk/Map]
+  "Converts a map of attribute-vectors into a vector of entity-maps. Not lazy."
   [cols-map :- tsk/Map]
   (if (empty? cols-map)
     []
@@ -67,7 +67,7 @@
 ; #todo: default everything to keyword keys
 ; #todo: throw if missing or extra fields found
 ; #todo: return empty map if no data rows found (with or without header row)
-(s/defn parse->rows :- [tsk/Map]
+(s/defn parse->entities :- [tsk/Map]
   "[csv-input & {:as opts} ]
    Returns a lazy sequence of maps constructed from csv-input.  The first line
    is assumed to be column label strings, which are (safely) converted into keywords.
@@ -95,17 +95,17 @@
                          (map data-fn data-line)))]
     row-maps))
 
-(defn parse->cols
+(defn parse->attrs
   "[csv-input & {:as opts} ]
-   Returns a map constructed from the columns of csv-input.  The first line is
+   Returns a map of attributes constructed from the columns of csv-input.  The first line is
    assumed to be column label strings, which are (safely) converted into keywords. The
    returned map has one entry for each column label keyword. The corresponding value for
    each keyword is a vector of string data taken from each subsequent line in the file.
-   See tupelo.csv/parse-csv->row-maps for options."
+   See tupelo.csv/parse->entities for options.  Not lazy."
   [csv-input & {:as opts}]
   (let [opts (or opts {})]
-    (rows->cols
-      (apply parse->rows csv-input (keyvals opts)))))
+    (entities->attrs
+      (apply parse->entities csv-input (keyvals opts)))))
 
 
 

@@ -55,45 +55,45 @@
 
 (dotest
   ; basic parse-csv->rows test, using String
-  (let [result (parse->rows test1-str-label)]
+  (let [result (parse->entities test1-str-label)]
     (is (= result test1-expected)))
 
   ; read PSV file instead of default CS"
-  (let [raw-maps (parse->rows test2-str-label :delimiter \|)
+  (let [raw-maps (parse->entities test2-str-label :delimiter \|)
         result   (map #(hash-map :store-id (Long/parseLong (:STORE-NUM %))
                          :zipcode (:ZIP-POSTAL-CODE %))
                    raw-maps)]
     (is (= result test2-expected)))
 
   ; no header row in file, user spec :labels
-  (let [result (parse->rows test1-str-no-label
+  (let [result (parse->entities test1-str-no-label
                  :labels [:zip-postal-code :store-num :chain-rank])]
     (is (= result test1-expected))))
 
   (dotest
     ; basic parse-csv->rows test, using Reader
-    (let [result (parse->rows (StringReader. test1-str-label))]
+    (let [result (parse->entities (StringReader. test1-str-label))]
       (is (= result test1-expected))) )
 
 (dotest
-  (is= {} (rows->cols []))
-  (is= [] (cols->rows {}))
-  (let [result (rows->cols test1-expected)]
+  (is= {} (entities->attrs []))
+  (is= [] (attrs->entities {}))
+  (let [result (entities->attrs test1-expected)]
     (is (= result test3-expected)))
-  (let [result (rows->cols test2-expected)]
+  (let [result (entities->attrs test2-expected)]
     (is (= result test4-expected))))
 
 (dotest
-  (let [result (cols->rows test3-expected)]
+  (let [result (attrs->entities test3-expected)]
     (is (= result test1-expected)))
-  (let [result (cols->rows test4-expected)]
+  (let [result (attrs->entities test4-expected)]
     (is (= result test2-expected))))
 
 (dotest
-  (let [result (parse->cols test1-str-label)]
+  (let [result (parse->attrs test1-str-label)]
     (is (= result test3-expected)))
 
-  (let [raw-maps (parse->cols test2-str-label :delimiter \|)
+  (let [raw-maps (parse->attrs test2-str-label :delimiter \|)
         result   {:store-id (map #(Long/parseLong %) (:STORE-NUM raw-maps))
                   :zipcode  (:ZIP-POSTAL-CODE raw-maps)}]
     (is (= result test4-expected))))
