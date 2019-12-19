@@ -247,11 +247,11 @@
              a34 [[00 01 02 03]
                   [10 11 12 13]
                   [20 21 22 23]]]
-         (throws? (tar/row-add a13 [1 2]))
-         (throws? (tar/row-add a13 [1 2] [1 2 3]))
-         (throws? (tar/row-add a13 [1 2 3 4]))
-         (is= a23 (tar/row-add a13 [10 11 12]))
-         (is= a33 (tar/row-add a13 [10 11 12] [20 21 22]))))
+         (throws? (tar/rows-append a13 [1 2]))
+         (throws? (tar/rows-append a13 [1 2] [1 2 3]))
+         (throws? (tar/rows-append a13 [1 2 3 4]))
+         (is= a23 (tar/rows-append a13 [10 11 12]))
+         (is= a33 (tar/rows-append a13 [10 11 12] [20 21 22]))))
 
      (dotest
        (let [a22 [[00 01]
@@ -260,10 +260,10 @@
                   [10 11 12]]
              a24 [[00 01 02 03]
                   [10 11 12 13]]]
-         (throws? (tar/col-add a23 [1 2 3]))
-         (throws? (tar/col-add a23 [1 2] [1 2 3]))
-         (is= a23 (tar/col-add a22 [2 12]))
-         (is= a24 (tar/col-add a22 [2 12] [3 13]))))
+         (throws? (tar/cols-append a23 [1 2 3]))
+         (throws? (tar/cols-append a23 [1 2] [1 2 3]))
+         (is= a23 (tar/cols-append a22 [2 12]))
+         (is= a24 (tar/cols-append a22 [2 12] [3 13]))))
 
      (dotest
        (let [a12 [[00 01]]

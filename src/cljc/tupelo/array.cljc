@@ -287,16 +287,16 @@
            (forv [jj idxs-keep]
              (elem-get orig ii jj)))))
 
-     (s/defn row-add :- tsk/Array
-       "Appends a new row onto an array."
+     (s/defn rows-append :- tsk/Array
+       "Appends one or more rows onto an array."
        [orig :- tsk/Array
         & rows :- [tsk/Vec]]
        (let [row-lens (mapv count rows)]
          (assert (apply = (num-cols orig) row-lens)))
        (into orig rows))
 
-     (s/defn col-add :- tsk/Array
-       "Appends a new col onto an array."
+     (s/defn cols-append :- tsk/Array
+       "Appends one or more cols onto an array."
        [orig :- tsk/Array
         & cols :- [tsk/Vec]]
        (let [nrows    (num-rows orig)
