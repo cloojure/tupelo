@@ -21,8 +21,6 @@
               :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]])
   ))
 
-
-
 #?(:cljs (enable-console-print!))
 
 (s/set-fn-validation! true) ; enforce fn schemas
