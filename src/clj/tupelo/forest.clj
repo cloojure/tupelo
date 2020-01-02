@@ -169,7 +169,7 @@
     (not (contains-key? node ::khids))))
 ; #todo need to delete these???  Concentrate on forest nodes
 
-;---------------------------------------------------------------------------------------------------
+;-----------------------------------------------------------------------------
 (s/defn edn->tree
   "Creates a tree from an EDN data structure"
   ([data :- s/Any]

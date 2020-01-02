@@ -116,7 +116,8 @@
           root-eid (td/add-edn edn-val)]
       (is= (td/->Eid 1001) root-eid)
       (is= (unlazy (deref *tdb*))
-        {:eid-type {{:eid 1001} :map, {:eid 1002} :map},
+        {:eid-type {{:eid 1001} :map,
+                    {:eid 1002} :map},
          :idx-ave  #{[{:attr :a} {:leaf 1} {:eid 1001}]
                      [{:attr :b} {:leaf 2} {:eid 1001}]
                      [{:attr :c} {:eid 1002} {:eid 1001}]
@@ -153,7 +154,8 @@
     (let [edn-val  {:a 1 :b 2 :c [10 11 12]}
           root-eid (td/add-edn edn-val)]
       (is= (unlazy (deref *tdb*))
-        {:eid-type {{:eid 1001} :map, {:eid 1002} :array},
+        {:eid-type {{:eid 1001} :map
+                    {:eid 1002} :array},
          :idx-ave  #{[{:attr :a} {:leaf 1} {:eid 1001}]
                      [{:attr :b} {:leaf 2} {:eid 1001}]
                      [{:attr :c} {:eid 1002} {:eid 1001}]
@@ -189,7 +191,7 @@
       (doseq [m data]
         (td/add-edn m))
       (is= (unlazy @*tdb*)
-        {:eid-type {{:eid 1001} :map,
+        {:eid-type {{:eid 1001} :map, ; #todo error: missing :array
                     {:eid 1002} :map,
                     {:eid 1003} :map,
                     {:eid 1004} :map,
@@ -260,15 +262,15 @@
                      [{:eid 1001} {:attr :b} {:leaf 2}]},
          :idx-vae  #{[{:leaf 1} {:attr :a} {:eid 1001}]
                      [{:leaf 2} {:attr :b} {:eid 1001}]}}))
+
     (let [search-spec [[(td/->SearchParam :x) (td/->Attr :a) (td/->Leaf 1)]]]
-      (is= (unlazy (query-triples search-spec))
-        [{{:param :x} {:eid 1001}}]))
+      (is= (unlazy (query-triples search-spec)) [{{:param :x} {:eid 1001}}]))
+
     (let [search-spec [[(td/->SearchParam :x) (td/->Attr :a) (td/->SearchParam :y)]]]
-      (is= (unlazy (query-triples search-spec))
-        [{{:param :x} {:eid 1001}, {:param :y} {:leaf 1}}]))
+      (is= (unlazy (query-triples search-spec)) [{{:param :x} {:eid 1001}, {:param :y} {:leaf 1}}]))
+
     (let [search-spec [[(td/->SearchParam :x) (td/->SearchParam :y) (td/->Leaf 1)]]]
-      (is= (unlazy (query-triples search-spec))
-        [{{:param :x} {:eid 1001}, {:param :y} {:attr :a}}]))))
+      (is= (unlazy (query-triples search-spec)) [{{:param :x} {:eid 1001}, {:param :y} {:attr :a}}]))))
 
 (dotest   ; -focus
   (with-tdb (new-tdb)
@@ -289,12 +291,13 @@
          :idx-vae
                    #{[{:leaf 1} {:attr :a} {:eid 1001}]
                      [{:leaf 1} {:attr :b} {:eid 1001}]}}))
+
     (let [search-spec [[(td/->SearchParam :x) (td/->Attr :a) (td/->Leaf 1)]]]
-      (is= (unlazy (query-triples search-spec))
-        [{{:param :x} {:eid 1001}}]))
+      (is= (unlazy (query-triples search-spec)) [{{:param :x} {:eid 1001}}]))
+
     (let [search-spec [[(td/->SearchParam :x) (td/->Attr :b) (td/->Leaf 1)]]]
-      (is= (unlazy (query-triples search-spec))
-        [{{:param :x} {:eid 1001}}]))
+      (is= (unlazy (query-triples search-spec)) [{{:param :x} {:eid 1001}}]))
+
     (let [search-spec [[(td/->SearchParam :x) (td/->SearchParam :y) (td/->Leaf 1)]]]
       (is= (unlazy (query-triples search-spec))
         [{{:param :x} {:eid 1001}, {:param :y} {:attr :a}}
