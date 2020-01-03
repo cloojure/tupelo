@@ -34,19 +34,19 @@
 ; comparison-class throws exceptions for some types that might be
 ; useful to include.
 
-(defn comparison-class [x]
+(s/defn comparison-class :- s/Str
+  "Returns a string specifying the comparison class to be used for sorting a piece of data."
+  [x :- s/Any]
   (cond (nil? x) ""
         ; Lump all numbers together since Clojure's compare can
         ; compare them all to each other sensibly.
         (number? x) "java.lang.Number"
 
-        ; sequential? includes lists, conses, vectors, and seqs of
-        ; just about any collection, although it is recommended not
-        ; to use this to compare seqs of unordered collections like
-        ; sets or maps (vectors should be OK).  This should be
-        ; everything we would want to compare using cmp-seq-lexi
-        ; below.  TBD: Does it leave anything out?  Include anything
-        ; it should not?
+        ; sequential? includes lists, conses, vectors, and seqs of just about any collection, although it is recommended not
+        ; to use this to compare seqs of unordered collections like sets or maps (vectors should be OK).  This should be
+        ; everything we would want to compare using cmp-seq-lexi below. A clojure.lang.MapEntry also implements clojure.lang.Sequential,
+        ; so we can sort {:a 1 :b 2} as if it were [[:a 1] [:b 2]].
+        ; TBD: Does it leave anything out?  Include anything it should not?
         (sequential? x) "clojure.lang.Sequential"
 
         ; NOTE: record case must preempt `(map? ...)` case below, since all records can be viewed as maps
@@ -56,9 +56,9 @@
         (map? x) "clojure.lang.IPersistentMap"
         (.isArray (class x)) "java.util.Arrays"
 
-        ; Comparable includes Boolean, Character, String, Clojure
-        ; refs, and many others.
+        ; Comparable includes Boolean, Character, String, Clojure refs, and many others.
         (instance? Comparable x) (.getName (class x))
+
         :else (throw
                (ex-info (format "cc-cmp does not implement comparison of values with class %s"
                                 (.getName (class x)))
@@ -135,12 +135,12 @@
             (sort-by key compare-generic (seq x))
             (sort-by key compare-generic (seq y)))
 
-          ; Compare maps to each other as sequences of [key val]
-          ; pairs, with pairs in order sorted by key.
+          ; Compare maps to each other as sequences of [key val] pairs, with pairs in order sorted by key.
+          ; Since keys are unique
           (= x-cls "clojure.lang.IPersistentMap")
           (cmp-seq-lexi compare-generic
-                        (sort-by key compare-generic (seq x))
-                        (sort-by key compare-generic (seq y)))
+                        (sort-by key compare-generic (seq x))  ; sorted [[xk1 xv1] [xk2 xv2] ...]
+                        (sort-by key compare-generic (seq y))) ; sorted [[yk1 yv1] [yk2 yv2] ...]
 
           (= x-cls "java.util.Arrays")
           (cmp-array-lexi compare-generic x y)

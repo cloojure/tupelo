@@ -27,6 +27,20 @@
 #?(:clj (do
 
 (dotest
+  (is= "clojure.lang.IPersistentMap" (lex/comparison-class {:a 1}))
+  (is= "clojure.lang.Sequential" (lex/comparison-class (first {:a 1}))) ; a MapEntry
+  (is= "clojure.lang.Sequential" (lex/comparison-class [1 2 3]))
+  (is= "clojure.lang.Sequential" (lex/comparison-class (list 1 2 3)))
+  (is= "clojure.lang.IPersistentSet" (lex/comparison-class #{1 3 2}))
+  (is= "clojure.lang.Keyword" (lex/comparison-class :hello))
+  (is= "clojure.lang.Symbol" (lex/comparison-class (symbol "hello")))
+  (is= "java.lang.Number" (lex/comparison-class 3))
+  (is= "java.lang.Number" (lex/comparison-class 3.14159))
+  (is= "java.lang.String" (lex/comparison-class "hello"))
+  (is= "java.lang.Character" (lex/comparison-class \X))
+  (is= "java.lang.Boolean" (lex/comparison-class true)))
+
+(dotest
   (defrecord Leaf [raw])
   (defrecord Eid [raw])
   (let [eid-0  (->Eid 0) ; "Eid" sorts before "Leaf"
