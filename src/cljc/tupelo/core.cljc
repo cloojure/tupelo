@@ -279,8 +279,11 @@
   [& args] 1)
 
 (defn nl
-  "Abbreviated name for `newline` "
-  [] (newline))
+  "Abbreviated name for `newline`.  Accepts varargs to be printed 1 per line after initial newline. "
+  [& args]
+  (newline)
+  (doseq [arg args]
+    (println arg)))
 
 ;-----------------------------------------------------------------------------
 (s/defn int-pos? :- s/Bool

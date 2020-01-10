@@ -65,7 +65,7 @@
        (+ (* ii (:ncols arr)) jj))
 
      (s/defn create :- Array
-       "Return a new Array (vector-of-vectors) of size=[nrows ncols], initialized to `init-val` (default=nil)"
+       "Return a new Array of size=[nrows ncols], initialized to `init-val` (default=nil)"
        ([nrows :- s/Int
          ncols :- s/Int]
         (create nrows ncols nil))
