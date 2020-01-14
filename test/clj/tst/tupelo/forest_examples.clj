@@ -22,32 +22,37 @@
     )
   (:import [java.io StringReader]))
 
-(dotest
+; #demo
+(dotest-focus
+  (is= 5 (only [5]))
+  (throws? (only [5 6]))
   (hid-count-reset)
   (with-forest (new-forest)
-    (let [root-hid  (add-tree-hiccup [:a
-                                      [:b 1]
-                                      [:b 2]
-                                      [:b
-                                       [:c 4]
-                                       [:c 5]]
-                                      [:c 9]])
-          c-paths   (find-paths root-hid [:** :c])
-          c4-paths  (find-paths root-hid [:** {:tag :c :value 4}])
-          c4-hid    (-> c4-paths only last)
-          c4-parent (-> c4-paths only reverse second)]
-      (is= c-paths
-        [[1007 1005 1003]
-         [1007 1005 1004]
-         [1007 1006]] )
-      (is= (hid->hiccup 1006) [:c 9])
-      (is= c4-paths [[1007 1005 1003]] )
-      (is= 1005 c4-parent)
-      (is= (hid->hiccup c4-parent) [:b [:c 4] [:c 5]])
-      (is= (hid->node c4-parent) {:tag :b, :tupelo.forest/khids [1003 1004]})
-      (is= c4-hid 1003)
-      (attr-update c4-hid :value inc)
-      (is= (hid->node c4-hid) {:tupelo.forest/khids [], :tag :c, :value 5}))))
+               (let [root-hid  (add-tree-hiccup [:a
+                                                 [:b 1]
+                                                 [:b 2]
+                                                 [:b
+                                                  [:c 4]
+                                                  [:c 5]]
+                                                 [:c 9]])
+                     c-paths   (find-paths root-hid [:** :c])
+                     c4-paths  (find-paths root-hid [:** {:tag :c :value 4}])
+                     c4-hid    (-> c4-paths only last)
+                     c4-parent (-> c4-paths only reverse second)]
+                ;(spyx-pretty (hid->bush root-hid))
+                (spyx root-hid)
+                 (is= c-paths
+                      [[1007 1005 1003]
+                       [1007 1005 1004]
+                       [1007 1006]])
+                 (is= (hid->hiccup 1006) [:c 9])
+                 (is= c4-paths [[1007 1005 1003]])
+                 (is= 1005 c4-parent)
+                 (is= (hid->hiccup c4-parent) [:b [:c 4] [:c 5]])
+                 (is= (hid->node c4-parent) {:tag :b, :tupelo.forest/khids [1003 1004]})
+                 (is= c4-hid 1003)
+                 (attr-update c4-hid :value inc)
+                 (is= (hid->node c4-hid) {:tupelo.forest/khids [], :tag :c, :value 5}))))
 
 (dotest
   (hid-count-reset)
@@ -107,6 +112,7 @@
          [{:tag :a} [{:tag :c, :value 9}]]])
       ))
 
+  ; #demo
   (with-forest (new-forest)
                (let [root-hid (add-tree-hiccup [:a
                                                 [:b 1]
@@ -245,13 +251,14 @@
          [:item [:item 40] [:item 50] [:item 60]]] ))))
 
 ; update the 2nd child of the root by appending :c
-(dotest
+(dotest-focus
   (with-forest (new-forest)
     (let [root-hid  (add-tree-hiccup t0-hiccup)
           kid-2-hid (xsecond (hid->kids root-hid))]
       (kids-append kid-2-hid [(add-tree-hiccup [:item :c])])
-      (is= (hid->hiccup root-hid)
-        [:item
+      (kids-append kid-2-hid [(add-tree-hiccup [:item :d])])
+      (is= (spyx-pretty (hid->hiccup root-hid))
+           [:item
          [:item 1]
          [:item [:item :a] [:item :b] [:item :c]]
          [:item 2]
@@ -1160,10 +1167,12 @@
           value-str   (grab :value link-node)
           result      (re-find #"http.*$" value-str)]
       (when false
+        (newline)
         (println :xkcd-enlive)
-        (println (clip-str 999 (pretty-str xkcd-enlive)))
+        (println (clip-str 555 (pretty-str xkcd-enlive)))
+        (newline)
         (println :xkcd-bush)
-        (println (clip-str 999 (pretty-str (hid->bush root-hid)))))
+        (println (clip-str 9999 (pretty-str (hid->bush root-hid)))))
       (is= value-str "\nPermanent link to this comic: https://xkcd.com/1988/")
       (is= "https://xkcd.com/1988/" result))))
 
@@ -1464,6 +1473,7 @@
     (is (nil? (find-step "invalid-id"))) ))
 
 ;-----------------------------------------------------------------------------
+; #demo
 (dotest
   (let [xml-data "<foo>
                     <name>John</name>
@@ -1757,7 +1767,7 @@
 (dotest
   (hid-count-reset)
   (with-forest (new-forest)
-    (let [debug-flg       false
+    (let [debug-flg       true
           edn-str ;   Notice that there are 3 forms in the source
                           (ts/quotes->double ; use single-quotes in string, then convert => double-quotes
                             "(ns tst.demo.core
