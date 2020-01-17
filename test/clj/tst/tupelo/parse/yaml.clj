@@ -97,6 +97,8 @@ tupelo:
     (is= edn-data (-> edn-data
                     (yaml/edn->yaml)
                     (yaml/parse)))
+
+    (let [dumped ()])
     ))
 
 
