@@ -1,12 +1,13 @@
-(ns tupelo.parse.yaml
+(ns tupelo.parse.yaml ; #todo maybe switch to jackson for yaml ???
   (:use tupelo.core)
   (:require
     [clojure.walk :as walk]
     [schema.core :as s]
-    [tupelo.schema :as tsk]
     )
-  (:import ; #todo maybe switch to jackson for yaml ???
-    [org.snakeyaml.engine.v2.api LoadSettings DumpSettings Load Dump ]))
+  (:import
+    ; from  https://bitbucket.org/asomov/snakeyaml-engine/src/default/
+    [org.snakeyaml.engine.v2.api LoadSettings DumpSettings Load Dump ]
+    [org.snakeyaml.engine.v2.common FlowStyle ScalarStyle] ))
 
 ;-----------------------------------------------------------------------------
 
@@ -39,13 +40,15 @@
 
 ;-----------------------------------------------------------------------------
 (def ^:private dump-settings
-  (-> (DumpSettings/builder)
-    (.build)))
+  (it-> (DumpSettings/builder)
+   ;(.setDefaultScalarStyle it ScalarStyle/DOUBLE_QUOTED)
+    (.setDefaultFlowStyle it FlowStyle/BLOCK)
+    (.build it)))
 
 (def ^:private yaml-dump
   (Dump. dump-settings))
 
-(s/defn edn->yaml :- s/Str
+(s/defn edn->yaml :- s/Str ; #todo:  rename =>  `data->yaml`  ???
   "Serializes a Clojure EDN data structure into a YAML string."
   [it]
   (.dumpToString yaml-dump

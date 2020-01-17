@@ -1,4 +1,4 @@
-(ns tupelo.var-demo
+(ns tst.tupelo.var-demo
   (:use tupelo.core tupelo.test))
 
 (def wilma 3)
