@@ -1,6 +1,6 @@
-(ns tst.tupelo.parse.yaml
-  (:use tupelo.core
-        tupelo.test)
+(ns  ^:test-refresh/focus
+  tst.tupelo.parse.yaml
+  (:use tupelo.core tupelo.test)
   (:require
     [clojure.data :as data]
     [clojure.string :as str]
@@ -42,11 +42,11 @@
   (is-nonblank= "a" (yaml/edn->yaml "a"))
   (is-nonblank= "1" (yaml/edn->yaml 1))
   (is-nonblank= "true" (yaml/edn->yaml true))
-  (is-nonblank= (yaml/edn->yaml [2 "a" true])
+  (is-nonblank-lines= (yaml/edn->yaml [2 "a" true])
     " - 2
       - a
       - true ")
-  (is-nonblank= (yaml/edn->yaml {:a 1 :b 2 :c 3})
+  (is-nonblank-lines= (yaml/edn->yaml {:a 1 :b 2 :c 3})
     "a: 1
      b: 2
      c: 3" ))
@@ -97,7 +97,7 @@ tupelo:
     (is (map? m1))
     (is= edn-parsed edn-data)
 
-    (is-nonblank= (yaml/edn->yaml edn-data)
+    (is-nonblank-lines= (yaml/edn->yaml edn-data)
       "tupelo:
          name: Tupelo
          url: https://github.com/cloojure/tupelo

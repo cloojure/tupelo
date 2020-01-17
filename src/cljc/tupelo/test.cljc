@@ -95,6 +95,15 @@
       `(throw (ex-info (str "tupelo is-nonblank= requires at least 2 forms " ~line-str))))
     `(test/is (ts/nonblank= ~@forms) )))
 
+; #todo use tstr/nonblank=
+(defmacro is-nonblank-lines=  ; #todo readme/test
+  "Returns true if each line of each input string is equal treating all whitespace as equivalent."
+  [& forms]
+  (if (<= (count forms) 1 )
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (ex-info (str "tupelo is-nonblank-lines= requires at least 2 forms " ~line-str))))
+    `(test/is (ts/nonblank-lines= ~@forms) )))
+
 (defmacro throws? ; #todo document in readme
   "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
      (throws? (/ 1 0))                      ; catches any Throwable"

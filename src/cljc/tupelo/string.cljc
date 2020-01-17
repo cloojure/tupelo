@@ -100,6 +100,14 @@
   (let [ws-collapsed-args (mapv collapse-whitespace args)]
     (apply = ws-collapsed-args)))
 
+(s/defn nonblank-lines= :- s/Bool  ; #todo readme & blog
+  "Compares corresponding lines of input strings for equality using tupelo.misc/collapse-whitespace."
+  [& args :- [s/Str]]
+  (let [nonblank-args-lines        (t/forv [tgt args]
+                            (t/forv [line (str/split-lines tgt)]
+                              (collapse-whitespace line))) ]
+    (apply = nonblank-args-lines)))
+
 (s/defn lowercase= :- s/Bool ; #todo readme & blog
   "Compares strings for equality after applying clojure.string/lower-case. "
   [& args :- [s/Str]]

@@ -4,7 +4,7 @@
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
-(ns tst.tupelo.string
+(ns  tst.tupelo.string
   (:refer-clojure :exclude [take drop])
   (:require
     [clojure.core :as cc ]
@@ -12,13 +12,15 @@
     [tupelo.chars :as char]
     [tupelo.string :as ts]
 
-    #?(:clj  [tupelo.core :as t :refer [spyx spyx-pretty]]
+    #?(:clj  [tupelo.core :as t :refer [spyx spyx-pretty forv]]
        :cljs [tupelo.core :as t :include-macros true])
 
     #?(:clj [clojure.test] :cljs [cljs.test] )
-    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
+    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set=
+                                  is-nonblank= is-nonblank-lines= throws? define-fixture]]
        :cljs [tupelo.test-cljs :include-macros true
-              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]])
+              :refer [deftest testing is dotest isnt is= isnt= is-set=
+                      is-nonblank= is-nonblank-lines= throws? define-fixture]])
     ))
 
 ; #todo add generative testing?
@@ -155,7 +157,7 @@
 (dotest
   (is (= "abc def g hij kl"
         (ts/collapse-whitespace "  abc    def			g
-                                     hij kl	 " ))))
+                                     hij kl	 "))))
 (dotest
   (is (ts/nonblank= "a"))
   (is (ts/nonblank= "a" "  a "))
@@ -184,7 +186,19 @@
                                let my schooling interfere with my education.  If you
                                tell the truth, you don't have to remember
                                anything.
-                               Mark Twain      		" )))
+                               Mark Twain      		"))
+  (is (ts/nonblank-lines= "a
+                          b "
+        "  a
+           b"))
+  (isnt (ts/nonblank-lines= "a
+                          b "
+          "  a b "))
+
+  (is-nonblank-lines= "a
+                          b "
+    "  a
+       b"))
 
 (dotest
   (is= (ts/quotes->single (str \")) (str \'))
