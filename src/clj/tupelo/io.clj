@@ -10,8 +10,12 @@
   (:refer-clojure :exclude [read-string])
   (:require
     [schema.core :as s]
-    [tupelo.types :as types] )
-  (:import [java.io File DataInputStream DataOutputStream InputStream OutputStream]))
+    [tupelo.types :as types]
+    [clojure.java.io :as io])
+  (:import [java.io File DataInputStream DataOutputStream InputStream OutputStream]
+           [java.nio.file Files Paths Path]
+           [java.nio.file.attribute FileAttribute]
+           ))
 
 (def ^:no-doc zeros-4 (byte-array (repeat 4 0)))
 (def ^:no-doc zeros-8 (byte-array (repeat 8 0)))
@@ -34,13 +38,49 @@
   [arg] (instance? DataOutputStream arg))
 
 ;---------------------------------------------------------------------------------------------------
+
 (s/defn create-temp-file :- java.io.File
-  "Given a unique ID string (e.g. 'my.dummy.file'), returns a java File object
+  "Given a Path dir unique ID string (e.g. 'my.dummy.file'), returns a java File object
   for a temporary that will be deleted upon JVM exit."
-  [id-str :- s/Str]
-  (let [tmp-file (File/createTempFile id-str nil)]
-    (.deleteOnExit tmp-file)
-    tmp-file))
+  ([prefix :- s/Str
+    suffix :- (s/maybe s/Str)]
+   (let [attrs    (into-array FileAttribute [])
+         tmp-file (.toFile (Files/createTempFile (str prefix "-") suffix attrs))]
+     (.deleteOnExit tmp-file)
+     tmp-file))
+  ([dir :- Path
+    prefix :- s/Str
+    suffix :- (s/maybe s/Str)]
+   (let [attrs    (into-array FileAttribute [])
+         tmp-file (.toFile (Files/createTempFile dir (str prefix "-") suffix attrs))]
+     (.deleteOnExit tmp-file)
+     tmp-file)))
+
+(s/defn create-temp-directory :- Path
+  ([prefix :- s/Str]
+   (let [attrs       (into-array FileAttribute [])]
+     (Files/createTempDirectory (str prefix "-") attrs)))
+  ([dir :- Path
+    prefix :- s/Str]
+   (let [ attrs       (into-array FileAttribute [])]
+     (Files/createTempDirectory dir (str prefix "-") attrs))))
+
+(s/defn delete-directory
+  "Recursively deletes a directory and all its contents. Returns count of objects deleted."
+  [dir-name :- s/Str]
+  (with-nil-default 0
+    (let [file-obj  (io/file dir-name)
+          num-files (count (file-seq file-obj)) ]
+      (spyx num-files)
+      (when (.exists file-obj)
+        (it-> file-obj
+          (file-seq it)
+          (reverse it)
+          (map io/delete-file it)
+          (dorun it))
+        num-files))))
+
+;---------------------------------------------------------------------------------------------------
 
 (s/defn read-bytes  ; #todo type?
   "Reads N bytes from a DataInputStream, returning a byte array."
@@ -207,6 +247,4 @@
    val :- s/Num]
   (.writeDouble ^DataOutputStream  (validate data-output-stream? dos) val)
   val)
-
-
 

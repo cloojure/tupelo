@@ -9,16 +9,18 @@
   (:refer-clojure :exclude [read-string])
   (:require
     [clojure.java.io :as io]
-    [tupelo.types :as types])
-  (:import [java.io DataInputStream DataOutputStream FileOutputStream ]))
+    [tupelo.types :as types]
+    [schema.core :as s])
+  (:import [java.io DataInputStream DataOutputStream FileOutputStream File]
+           [java.nio.file Files]
+           [java.nio.file.attribute FileAttribute]))
 
 (def int-val (long (+ 1e9 123456789)))
 (def long-val (long 12345e9))
 (def pi-float (float Math/PI))
 (def pi-double (double Math/PI))
 
-(def dummy-file-name "tst.tupelo.io")
-(def dummy-file (create-temp-file dummy-file-name))
+(def dummy-file (create-temp-file "tst-tupelo-io" ".tmp"))
 
 (dotest
   (is= types/BYTE_UNSIGNED_MAX_VALUE 255)
@@ -61,23 +63,23 @@
     (throws? (write-short-unsigned dos (dec types/SHORT_UNSIGNED_MIN_VALUE)))
 
     ;-----------------------------------------------------------------------------
-    (is= (write-byte dos Byte/MIN_VALUE)         Byte/MIN_VALUE)
-    (is= (write-byte dos Byte/MAX_VALUE)         Byte/MAX_VALUE)
+    (is= (write-byte dos Byte/MIN_VALUE) Byte/MIN_VALUE)
+    (is= (write-byte dos Byte/MAX_VALUE) Byte/MAX_VALUE)
 
-    (is= (write-short dos Short/MIN_VALUE)       Short/MIN_VALUE)
-    (is= (write-short dos Short/MAX_VALUE)       Short/MAX_VALUE)
+    (is= (write-short dos Short/MIN_VALUE) Short/MIN_VALUE)
+    (is= (write-short dos Short/MAX_VALUE) Short/MAX_VALUE)
 
-    (is= (write-integer dos Integer/MIN_VALUE)       Integer/MIN_VALUE)
-    (is= (write-integer dos Integer/MAX_VALUE)       Integer/MAX_VALUE)
+    (is= (write-integer dos Integer/MIN_VALUE) Integer/MIN_VALUE)
+    (is= (write-integer dos Integer/MAX_VALUE) Integer/MAX_VALUE)
 
-    (is= (write-long dos Long/MIN_VALUE)         Long/MIN_VALUE)
-    (is= (write-long dos Long/MAX_VALUE)         Long/MAX_VALUE)
+    (is= (write-long dos Long/MIN_VALUE) Long/MIN_VALUE)
+    (is= (write-long dos Long/MAX_VALUE) Long/MAX_VALUE)
 
-    (is= (write-byte-unsigned dos types/BYTE_UNSIGNED_MIN_VALUE)       types/BYTE_UNSIGNED_MIN_VALUE)
-    (is= (write-byte-unsigned dos types/BYTE_UNSIGNED_MAX_VALUE)       types/BYTE_UNSIGNED_MAX_VALUE)
+    (is= (write-byte-unsigned dos types/BYTE_UNSIGNED_MIN_VALUE) types/BYTE_UNSIGNED_MIN_VALUE)
+    (is= (write-byte-unsigned dos types/BYTE_UNSIGNED_MAX_VALUE) types/BYTE_UNSIGNED_MAX_VALUE)
 
-    (is= (write-short-unsigned dos types/SHORT_UNSIGNED_MIN_VALUE)     types/SHORT_UNSIGNED_MIN_VALUE)
-    (is= (write-short-unsigned dos types/SHORT_UNSIGNED_MAX_VALUE)     types/SHORT_UNSIGNED_MAX_VALUE)
+    (is= (write-short-unsigned dos types/SHORT_UNSIGNED_MIN_VALUE) types/SHORT_UNSIGNED_MIN_VALUE)
+    (is= (write-short-unsigned dos types/SHORT_UNSIGNED_MAX_VALUE) types/SHORT_UNSIGNED_MAX_VALUE)
 
     (is= (write-string-bytes dos "hello") "hello")))
 
@@ -88,7 +90,7 @@
       (write-string-bytes "hello")
       (write-bytes (byte-array [1 2 3 4]))
 
-      (write-byte  42)
+      (write-byte 42)
       (write-byte -42)
       (write-byte Byte/MIN_VALUE)
       (write-byte Byte/MAX_VALUE)
@@ -97,7 +99,7 @@
       (write-byte-unsigned types/BYTE_UNSIGNED_MIN_VALUE)
       (write-byte-unsigned types/BYTE_UNSIGNED_MAX_VALUE)
 
-      (write-short  9999)
+      (write-short 9999)
       (write-short -9999)
       (write-short Short/MIN_VALUE)
       (write-short Short/MAX_VALUE)
@@ -130,14 +132,13 @@
       (write-double Double/MIN_VALUE)
       (write-double Double/MAX_VALUE)
 
-
       ))
 
   (with-open [dis (DataInputStream. (io/input-stream dummy-file))]
     (is= (read-string-bytes 5 dis) "hello")
     (is= (vec (read-bytes 4 dis)) [1 2 3 4])
 
-    (is= (read-byte dis)  42)
+    (is= (read-byte dis) 42)
     (is= (read-byte dis) -42)
     (is= (read-byte dis) Byte/MIN_VALUE)
     (is= (read-byte dis) Byte/MAX_VALUE)
@@ -146,7 +147,7 @@
     (is= (read-byte-unsigned dis) types/BYTE_UNSIGNED_MIN_VALUE)
     (is= (read-byte-unsigned dis) types/BYTE_UNSIGNED_MAX_VALUE)
 
-    (is= (read-short dis)  9999)
+    (is= (read-short dis) 9999)
     (is= (read-short dis) -9999)
     (is= (read-short dis) Short/MIN_VALUE)
     (is= (read-short dis) Short/MAX_VALUE)
@@ -181,30 +182,36 @@
 
   )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+(dotest
+  (let [tmp-path       (create-temp-directory "some-stuff")
+        tmp-name       (str tmp-path)
+        dir-one        (create-temp-directory tmp-path "dir-one")
+        dir-two        (create-temp-directory dir-one "dir-two")
+        tmp-one-a      (create-temp-file dir-one "aaa" nil)
+        tmp-one-b      (create-temp-file dir-one "bbb" ".dummy")
+        tmp-two-a      (create-temp-file dir-two "aaa" ".tmp")
+        tmp-two-b      (create-temp-file dir-two "bbb" ".tmp")
+        count-files-fn (s/fn [dir-name :- s/Str]
+                         (let [dir-file (io/file dir-name)
+                               counts   (for [file (file-seq dir-file)]
+                                          (if (.exists file)
+                                            1
+                                            0))
+                               total    (apply + counts)]
+                           total))]
+    (when false
+      (spyx tmp-path)
+      (spyx tmp-name)
+      (spyx dir-one)
+      (spyx tmp-one-a)
+      (spyx tmp-one-b)
+      (spyx tmp-two-a)
+      (spyx tmp-two-b)
+      (spyx-pretty (sort
+                     (mapv str
+                       (file-seq (.toFile tmp-path))))))
+    (is= 7 (count-files-fn tmp-name))
+    (is= 7 (delete-directory tmp-name))
+    (is= 0 (count-files-fn tmp-name))
+    (is= 0 (delete-directory tmp-name))))
 
