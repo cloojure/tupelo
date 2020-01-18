@@ -4,7 +4,7 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns tst.tupelo.io
+(ns ^:test-refresh/focus tst.tupelo.io
   (:use tupelo.io tupelo.core tupelo.test)
   (:refer-clojure :exclude [read-string])
   (:require
@@ -61,6 +61,12 @@
     (is= (write-short-unsigned dos types/SHORT_UNSIGNED_MIN_VALUE) types/SHORT_UNSIGNED_MIN_VALUE)
     (is= (write-short-unsigned dos types/SHORT_UNSIGNED_MAX_VALUE) types/SHORT_UNSIGNED_MAX_VALUE)
 
+    (is= (write-integer-unsigned dos types/INTEGER_UNSIGNED_MIN_VALUE) types/INTEGER_UNSIGNED_MIN_VALUE)
+    (is= (write-integer-unsigned dos types/INTEGER_UNSIGNED_MAX_VALUE) types/INTEGER_UNSIGNED_MAX_VALUE)
+
+    (is= (write-long-unsigned dos types/LONG_UNSIGNED_MIN_VALUE) types/LONG_UNSIGNED_MIN_VALUE)
+    (is= (write-long-unsigned dos types/LONG_UNSIGNED_MAX_VALUE) types/LONG_UNSIGNED_MAX_VALUE)
+
     (is= (write-string-bytes dos "hello") "hello")
 
     ;-----------------------------------------------------------------------------
@@ -80,7 +86,13 @@
     (throws? (write-byte-unsigned dos (dec types/BYTE_UNSIGNED_MIN_VALUE)))
 
     (throws? (write-short-unsigned dos (inc types/SHORT_UNSIGNED_MAX_VALUE)))
-    (throws? (write-short-unsigned dos (dec types/SHORT_UNSIGNED_MIN_VALUE)))))
+    (throws? (write-short-unsigned dos (dec types/SHORT_UNSIGNED_MIN_VALUE)))
+
+    (throws? (write-integer-unsigned dos (inc types/INTEGER_UNSIGNED_MAX_VALUE)))
+    (throws? (write-integer-unsigned dos (dec types/INTEGER_UNSIGNED_MIN_VALUE)))
+
+    (throws? (write-long-unsigned dos (inc types/LONG_UNSIGNED_MAX_VALUE)))
+    (throws? (write-long-unsigned dos (dec types/LONG_UNSIGNED_MIN_VALUE)))))
 
 (dotest
   (with-open [dos (DataOutputStream.
@@ -227,7 +239,9 @@
 
     (is= 7 (count-files-fn tmp-name))
     (is= 7 (delete-directory tmp-name))
-    (is= 0 (count-files-fn tmp-name))))
+    (is= 0 (count-files-fn tmp-name))
+    (is= 0 (delete-directory tmp-name)) ; idempotent
+    ))
 
 
 
