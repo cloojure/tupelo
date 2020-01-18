@@ -10,10 +10,9 @@
   (:require
     [clojure.java.io :as io]
     [tupelo.types :as types]
-    [schema.core :as s])
-  (:import [java.io DataInputStream DataOutputStream FileOutputStream File]
-           [java.nio.file Files]
-           [java.nio.file.attribute FileAttribute]))
+    [schema.core :as s]
+    [clojure.pprint :as pprint])
+  (:import [java.io DataInputStream DataOutputStream FileOutputStream]))
 
 (def int-val (long (+ 1e9 123456789)))
 (def long-val (long 12345e9))
@@ -44,25 +43,6 @@
   (with-open [dos (DataOutputStream.
                     (FileOutputStream. dummy-file))]
     ;-----------------------------------------------------------------------------
-    (throws? (write-byte dos (inc Byte/MAX_VALUE)))
-    (throws? (write-byte dos (dec Byte/MIN_VALUE)))
-
-    (throws? (write-short dos (inc Short/MAX_VALUE)))
-    (throws? (write-short dos (dec Short/MIN_VALUE)))
-
-    (throws? (write-integer dos (inc Integer/MAX_VALUE)))
-    (throws? (write-integer dos (dec Integer/MIN_VALUE)))
-
-    (throws? (write-long dos (* 2M (bigdec Long/MAX_VALUE))))
-    (throws? (write-long dos (* -2M (bigdec Long/MIN_VALUE))))
-
-    (throws? (write-byte-unsigned dos (inc types/BYTE_UNSIGNED_MAX_VALUE)))
-    (throws? (write-byte-unsigned dos (dec types/BYTE_UNSIGNED_MIN_VALUE)))
-
-    (throws? (write-short-unsigned dos (inc types/SHORT_UNSIGNED_MAX_VALUE)))
-    (throws? (write-short-unsigned dos (dec types/SHORT_UNSIGNED_MIN_VALUE)))
-
-    ;-----------------------------------------------------------------------------
     (is= (write-byte dos Byte/MIN_VALUE) Byte/MIN_VALUE)
     (is= (write-byte dos Byte/MAX_VALUE) Byte/MAX_VALUE)
 
@@ -81,7 +61,26 @@
     (is= (write-short-unsigned dos types/SHORT_UNSIGNED_MIN_VALUE) types/SHORT_UNSIGNED_MIN_VALUE)
     (is= (write-short-unsigned dos types/SHORT_UNSIGNED_MAX_VALUE) types/SHORT_UNSIGNED_MAX_VALUE)
 
-    (is= (write-string-bytes dos "hello") "hello")))
+    (is= (write-string-bytes dos "hello") "hello")
+
+    ;-----------------------------------------------------------------------------
+    (throws? (write-byte dos (inc Byte/MAX_VALUE)))
+    (throws? (write-byte dos (dec Byte/MIN_VALUE)))
+
+    (throws? (write-short dos (inc Short/MAX_VALUE)))
+    (throws? (write-short dos (dec Short/MIN_VALUE)))
+
+    (throws? (write-integer dos (inc Integer/MAX_VALUE)))
+    (throws? (write-integer dos (dec Integer/MIN_VALUE)))
+
+    (throws? (write-long dos (* 2M (bigdec Long/MAX_VALUE))))
+    (throws? (write-long dos (* -2M (bigdec Long/MIN_VALUE))))
+
+    (throws? (write-byte-unsigned dos (inc types/BYTE_UNSIGNED_MAX_VALUE)))
+    (throws? (write-byte-unsigned dos (dec types/BYTE_UNSIGNED_MIN_VALUE)))
+
+    (throws? (write-short-unsigned dos (inc types/SHORT_UNSIGNED_MAX_VALUE)))
+    (throws? (write-short-unsigned dos (dec types/SHORT_UNSIGNED_MIN_VALUE)))))
 
 (dotest
   (with-open [dos (DataOutputStream.
@@ -130,9 +129,7 @@
 
       (write-double pi-double)
       (write-double Double/MIN_VALUE)
-      (write-double Double/MAX_VALUE)
-
-      ))
+      (write-double Double/MAX_VALUE) ))
 
   (with-open [dis (DataInputStream. (io/input-stream dummy-file))]
     (is= (read-string-bytes 5 dis) "hello")
@@ -178,11 +175,10 @@
 
     (is= (read-double dis) pi-double)
     (is= (read-double dis) Double/MIN_VALUE)
-    (is= (read-double dis) Double/MAX_VALUE))
-
-  )
+    (is= (read-double dis) Double/MAX_VALUE)) )
 
 (dotest
+  ; Create nested dirs & files, then delete recursively
   (let [tmp-path       (create-temp-directory "some-stuff")
         tmp-name       (str tmp-path)
         dir-one        (create-temp-directory tmp-path "dir-one")
@@ -199,19 +195,38 @@
                                             0))
                                total    (apply + counts)]
                            total))]
-    (when false
-      (spyx tmp-path)
-      (spyx tmp-name)
-      (spyx dir-one)
-      (spyx tmp-one-a)
-      (spyx tmp-one-b)
-      (spyx tmp-two-a)
-      (spyx tmp-two-b)
-      (spyx-pretty (sort
-                     (mapv str
-                       (file-seq (.toFile tmp-path))))))
+    (when false ; debug printouts
+      (spyx (str tmp-path))
+      (spyx (str tmp-name))
+      (spyx (str dir-one))
+      (spyx (str tmp-one-a))
+      (spyx (str tmp-one-b))
+      (spyx (str tmp-two-a))
+      (spyx (str tmp-two-b))
+      (pprint/pprint (vec (sort
+                            (map str
+                              (file-seq (.toFile tmp-path))))))
+      ; Sample debug output:
+      ;    (str tmp-path) => "/tmp/some-stuff-562114607264734833"
+      ;    (str tmp-name) => "/tmp/some-stuff-562114607264734833"
+      ;    (str dir-one) => "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970"
+      ;    (str tmp-one-a) => "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/aaa-345552808102662294.tmp"
+      ;    (str tmp-one-b) => "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/bbb-14875687905791190659.dummy"
+      ;    (str tmp-two-a) => "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/dir-two-15168249174986120265/aaa-14487327636081006800.tmp"
+      ;    (str tmp-two-b) => "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/dir-two-15168249174986120265/bbb-8158500208162744706.tmp"
+      ;
+      ;    ["/tmp/some-stuff-562114607264734833"
+      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970"
+      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/aaa-345552808102662294.tmp"
+      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/bbb-14875687905791190659.dummy"
+      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/dir-two-15168249174986120265"
+      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/dir-two-15168249174986120265/aaa-14487327636081006800.tmp"
+      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/dir-two-15168249174986120265/bbb-8158500208162744706.tmp"]
+      )
+
     (is= 7 (count-files-fn tmp-name))
     (is= 7 (delete-directory tmp-name))
-    (is= 0 (count-files-fn tmp-name))
-    (is= 0 (delete-directory tmp-name))))
+    (is= 0 (count-files-fn tmp-name))))
+
+
 

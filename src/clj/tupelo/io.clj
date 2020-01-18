@@ -71,7 +71,6 @@
   (with-nil-default 0
     (let [file-obj  (io/file dir-name)
           num-files (count (file-seq file-obj)) ]
-      (spyx num-files)
       (when (.exists file-obj)
         (it-> file-obj
           (file-seq it)
