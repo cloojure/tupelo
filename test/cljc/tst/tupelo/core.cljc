@@ -31,6 +31,20 @@
             )})
 
 ;--------------------------------------------------------------------------------------------------
+(dotest
+  (is (ts/contains-str? (with-out-str
+                          (println "clojure.core/println"))
+        "println"))
+  (is (ts/contains-str? (t/with-system-out-str
+                          (doto System/out
+                            (.println "System.out.println")))
+        "println"))
+  (is (ts/contains-str? (t/with-system-err-str
+                          (doto System/err
+                            (.println "System.err.println")))
+        "println")))
+
+;--------------------------------------------------------------------------------------------------
 
 (dotest
   (is (nil? (t/noop)))

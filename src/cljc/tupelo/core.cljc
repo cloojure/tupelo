@@ -183,52 +183,52 @@
 #?(:clj
    (do
 
-   (defmacro with-err-str
-     "Evaluates exprs in a context in which *err* is bound to a fresh
-     StringWriter.  Returns the string created by any nested printing
-     calls."
-     [& body]
-     `(let [s# (new java.io.StringWriter)]
-        (binding [*err* s#]
+     (defmacro with-err-str
+       "Evaluates exprs in a context in which *err* is bound to a fresh
+       StringWriter.  Returns the string created by any nested printing
+       calls."
+       [& body]
+       `(let [s# (new java.io.StringWriter)]
+          (binding [*err* s#]
+            ~@body
+            (str s#))))
+
+     (defmacro with-system-err-str
+       "Evaluates exprs in a context in which JVM System/err is bound to a fresh
+       PrintStream.  Returns the string created by any nested printing calls."
+       [& body]
+       `(let [baos# (ByteArrayOutputStream.)
+              ps#   (PrintStream. baos#)]
+          (System/setErr ps#)
           ~@body
-          (str s#))))
+          (System/setErr System/err)
+          (.close ps#)
+          (.toString baos#)))
 
-   (defmacro with-system-err-str
-     "Evaluates exprs in a context in which JVM System/err is bound to a fresh
-     PrintStream.  Returns the string created by any nested printing calls."
-     [& body]
-     `(let [baos# (ByteArrayOutputStream.)
-            ps#   (PrintStream. baos#)]
-        (System/setErr ps#)
-        ~@body
-        (System/setErr System/err)
-        (.close ps#)
-        (.toString baos#)))
+     (defmacro with-system-out-str
+       "Evaluates exprs in a context in which JVM System/out is bound to a fresh
+       PrintStream.  Returns the string created by any nested printing calls."
+       [& body]
+       `(let [baos# (ByteArrayOutputStream.)
+              ps#   (PrintStream. baos#)]
+          (System/setOut ps#)
+          ~@body
+          (System/setOut System/out)
+          (.close ps#)
+          (.toString baos#)))
 
-   (defmacro with-system-out-str
-     "Evaluates exprs in a context in which JVM System/out is bound to a fresh
-     PrintStream.  Returns the string created by any nested printing calls."
-     [& body]
-     `(let [baos# (ByteArrayOutputStream.)
-            ps#   (PrintStream. baos#)]
-        (System/setOut ps#)
-        ~@body
-        (System/setOut System/out)
-        (.close ps#)
-        (.toString baos#)))
+     (defn exception-message
+       "Returns the message from an exception => (.getMessage exception)"
+       [exception]
+       (.getMessage exception))
 
-   (defn exception-message
-     "Returns the message from an exception => (.getMessage exception)"
-     [exception]
-     (.getMessage exception))
+     (defn exception-stacktrace
+       "Returns the stacktrace from an exception "
+       [exception]
+       (with-system-err-str
+         (.printStackTrace exception)))
 
-   (defn exception-stacktrace
-     "Returns the stacktrace from an exception "
-     [exception]
-     (with-system-err-str
-       (.printStackTrace exception)))
-
-))
+     ))
 ;-----------------------------------------------------------------------------
 (declare
   glue xfirst xrest append prepend grab fetch-in indexed clip-str validate
