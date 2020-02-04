@@ -217,6 +217,28 @@
           (.close ps#)
           (.toString baos#)))
 
+     (defmacro discarding-system-err
+       "Evaluates exprs in a context in which JVM System/err is bound to a fresh PrintStream that is discarded."
+       [& body]
+       `(let [baos# (ByteArrayOutputStream.)
+              ps#   (PrintStream. baos#)]
+          (System/setErr ps#)
+          (let [result# ~@body]
+            (System/setErr System/err)
+            (.close ps#)
+            result#)))
+
+     (defmacro discarding-system-out
+       "Evaluates exprs in a context in which JVM System/out is bound to a fresh PrintStream that is discarded."
+       [& body]
+       `(let [baos# (ByteArrayOutputStream.)
+              ps#   (PrintStream. baos#)]
+          (System/setOut ps#)
+          (let [result# ~@body]
+            (System/setOut System/out)
+            (.close ps#)
+            result#)))
+
      (defn exception-message
        "Returns the message from an exception => (.getMessage exception)"
        [exception]
