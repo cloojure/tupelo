@@ -37,7 +37,7 @@
                [clojure.core.match :as ccm]
                [tupelo.types :as types]))
   #?(:clj
-     (:import [java.io BufferedReader ByteArrayOutputStream PrintStream StringReader]
+     (:import [java.io BufferedReader ByteArrayOutputStream PrintStream StringReader OutputStream]
               [java.nio ByteBuffer]))
   )
 
@@ -220,8 +220,7 @@
      (defmacro discarding-system-err
        "Evaluates exprs in a context in which JVM System/err is bound to a fresh PrintStream that is discarded."
        [& body]
-       `(let [baos# (ByteArrayOutputStream.)
-              ps#   (PrintStream. baos#)]
+       `(let [ps# (PrintStream. (OutputStream/nullOutputStream))]
           (System/setErr ps#)
           (let [result# ~@body]
             (System/setErr System/err)
@@ -231,8 +230,7 @@
      (defmacro discarding-system-out
        "Evaluates exprs in a context in which JVM System/out is bound to a fresh PrintStream that is discarded."
        [& body]
-       `(let [baos# (ByteArrayOutputStream.)
-              ps#   (PrintStream. baos#)]
+       `(let [ps# (PrintStream. (OutputStream/nullOutputStream))]
           (System/setOut ps#)
           (let [result# ~@body]
             (System/setOut System/out)
