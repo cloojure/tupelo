@@ -1714,7 +1714,7 @@
   "Like clojure.core/mapv, but throws if colls are not of equal length."
   [map-fn & colls]
   (when (empty? colls)
-    (throw (ex-info "colls cannot be empty")))
+    (throw (ex-info "colls cannot be empty" {})))
   (let [col-lens (mapv count colls)]
     (when-not (apply = col-lens)
       (throw (ex-info "xmap: colls must all be same length" (vals->map col-lens))))
