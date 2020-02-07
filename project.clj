@@ -13,11 +13,11 @@
 
   :dependencies
   [
-   [cheshire "5.9.0"] ; #todo switch to muuntaja/jsonista
+   [cheshire "5.10.0"] ; #todo switch to muuntaja/jsonista
    [clj-time "0.15.2"]
    [clojure-csv/clojure-csv "2.0.2"]
    [danlentz/clj-uuid "0.1.9"]
-   [joda-time/joda-time "2.10.4"]
+   [joda-time/joda-time "2.10.5"]
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
    [org.clojure/core.async "0.7.559"]
    [org.clojure/core.match "0.3.0"]
@@ -27,7 +27,7 @@
    [org.clojure/spec.alpha "0.2.176"]
    [org.clojure/test.check "0.10.0"]
    [org.clojure/tools.reader "1.3.2"]
-   [org.snakeyaml/snakeyaml-engine "2.0"]
+   [org.snakeyaml/snakeyaml-engine "2.1"]
    [prismatic/schema "1.1.12"]
 
    ; #todo clojures pprint doesn't work under graal native-image
