@@ -11,7 +11,6 @@
 (ns tupelo.parse.xml
   (:use tupelo.core)
   (:require
-    [clojure.walk :as walk]
     [clojure.zip :as zip]
     [schema.core :as s]
     [tupelo.string :as ts]
@@ -181,8 +180,6 @@
 ;  :tag, :attrs, and :content. and accessor fns tag, attrs, and content. Other parsers
 ;  can be supplied by passing parse-fn, a fn taking a source and a
 ;  ContentHandler and returning a parse-fn"
-
-
 
 
 

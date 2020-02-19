@@ -19,13 +19,13 @@
    [danlentz/clj-uuid "0.1.9"]
    [joda-time/joda-time "2.10.5"]
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
-   [org.clojure/core.async "0.7.559"]
-   [org.clojure/core.match "0.3.0"]
+   [org.clojure/core.async "1.0.567"]
+   [org.clojure/core.match "1.0.0"]
    [org.clojure/data.avl "0.1.0"]
    [org.clojure/data.xml "0.2.0-alpha5"]
    [org.clojure/math.combinatorics "0.1.6"]
    [org.clojure/spec.alpha "0.2.176"]
-   [org.clojure/test.check "0.10.0"]
+   [org.clojure/test.check "1.0.0"]
    [org.clojure/tools.reader "1.3.2"]
    [org.snakeyaml/snakeyaml-engine "2.1"]
    [prismatic/schema "1.1.12"]
@@ -52,7 +52,7 @@
           :namespaces                [#"^tupelo\."]}
 
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
-                                       [org.clojure/clojurescript "1.10.520" :scope "provided"]
+                                       [org.clojure/clojurescript "1.10.597" :scope "provided"]
                                        ]}
              :dev      {:dependencies [
                                        ;[binaryage/devtools "0.9.10"]
@@ -60,7 +60,7 @@
                                        ;[com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.5"]
                                        [org.clojure/clojure "1.10.1"]
-                                       [org.clojure/clojurescript "1.10.520"]
+                                       [org.clojure/clojurescript "1.10.597"]
                                        ]
                         }
              :test     {:dependencies [[overtone/at-at "1.2.0"]]}
