@@ -67,6 +67,10 @@
 (def TupleMap [Map]) ; a single  result  returned by Datomic pull api  ; #todo needs (s/one ...) ??? or MapList?
 (def TupleMaps [TupleMap]) ; a list of results returned by Datomic pull api
 
+(def Collection
+  "Any collection type of Vec (& List), Map, or Set"
+  (s/cond-pre Vec Map Set))
+
 (def Fn (s/make-fn-schema s/Any s/Any))
 
 #?(:clj

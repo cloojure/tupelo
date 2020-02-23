@@ -555,20 +555,46 @@
   [seq-arg]
   (next seq-arg))
 
-; #todo make xdrop ?
-(defn xtake
+; NOTE:  Plumatic Schema doesn't handle infininite sequences
+(defn xtake ;  :- tsk/Collection
   "Returns the first n values from a collection.  Returns map for map colls.
   Throws if empty."
-  [n coll]
+  [n      ; :- s/Num
+   coll   ; :- tsk/Collection
+   ]
+  (assert (number? n))
+  (assert (or (sequential? coll) (map? coll) (set? coll)))
   (when (or (nil? coll) (empty? coll))
     (throw (ex-info "xtake: invalid coll: " {:coll coll})))
-  (let [items (cc/take n coll)
+  (let [items  (cc/take n coll)
         actual (count items)]
-    (when (<  actual n)
-      (throw (ex-info "xtake: insufficient items" {:n n :actual actual} )))
-    (if (map? coll)
-      (into {} items)
-      (vec items))))
+    (when (< actual n)
+      (throw (ex-info "xtake: insufficient items" {:n n :actual actual})))
+    (cond
+      (sequential? coll) (vec items)
+      (map? coll) (into {} items)
+      (set? coll) (into #{} items)
+      :else (throw (ex-info "Invalid collection type" {:coll coll})))))
+
+(s/defn xdrop :- tsk/Collection
+  "Returns a collection as a vector with the first n values removed.    Returns map for map colls.
+  Throws if empty."
+  [n :- s/Num
+   coll :- tsk/Collection]
+  (assert (number? n))
+  (assert (or (sequential? coll) (map? coll) (set? coll)))
+  (when (or (nil? coll) (empty? coll))
+    (throw (ex-info "xdrop: invalid coll: " {:coll coll})))
+  (let [taken     (cc/take n coll)
+        taken-cnt (count taken)
+        remaining (cc/drop n coll)]
+    (when (not= taken-cnt n)
+      (throw (ex-info "xdrop: insufficient taken" {:n n :actual taken-cnt})))
+    (cond
+      (sequential? coll) (vec remaining)
+      (map? coll) (into {} remaining)
+      (set? coll) (into #{} remaining)
+      :else (throw (ex-info "Invalid collection type" {:coll coll})))))
 
 (defn xfirst        ; #todo -> tests
   "Returns the first value in a list or vector. Throws if empty."

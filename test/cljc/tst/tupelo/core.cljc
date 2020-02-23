@@ -130,10 +130,10 @@
 
 (dotest
   (let [inf-rng-1 (map inc (range))
-        tst-map   (t/glue (sorted-map) {:a 1 :b 2 :c 3 :d 4 :e 5 :f 6})]
+        tst-map   (t/glue (sorted-map) {:a 1 :b 2 :c 3 :d 4 :e 5 :f 6})
+        tst-set   (t/glue (sorted-set) #{3 2 1}) ]
 
     (throws? (t/xtake 1 []))
-
     (is= [1] (t/xtake 1 [1]))
     (is= [1] (t/xtake 1 [1 2]))
     (is= [1] (t/xtake 1 inf-rng-1))
@@ -141,6 +141,19 @@
     (is= [1 2] (t/xtake 2 inf-rng-1))
     (is= {:a 1} (t/xtake 1 tst-map))
     (is= {:a 1 :b 2} (t/xtake 2 tst-map))
+    (is= #{1 2} (t/xtake 2 tst-set))
+
+    (throws? (t/xdrop 1 []))
+    (throws? (t/xdrop 2 [1]))
+    (is= [] (t/xdrop 1 [1]))
+    (is= [2] (t/xdrop 1 [1 2]))
+    (is= [] (t/xdrop 2 [1 2]))
+    (is= [3] (t/xdrop 2 [1 2 3]))
+    (is= {:b 2 :c 3 :d 4 :e 5 :f 6} (t/xdrop 1 tst-map))
+    (is= {:c 3 :d 4 :e 5 :f 6} (t/xdrop 2 tst-map))
+    (is= {} (t/xdrop 6 tst-map))
+    (throws? (t/xdrop 7 tst-map))
+    (is= #{2 3} (t/xdrop 1 tst-set))
 
     (throws? (t/xfirst []))
     (is= 1 (t/xfirst [1]))
