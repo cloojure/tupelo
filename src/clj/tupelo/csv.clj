@@ -50,7 +50,7 @@
   [opts parsed-lines]
   (if (:labels opts)
     ; if user supplied col label keywords
-    {:labels-kw  (:labels opts) ; use them
+    {:labels-kw  (grab :labels opts) ; use them
      :data-lines parsed-lines} ; all lines are data
 
     ;else, convert first row of strings -> col label keywords
@@ -81,18 +81,23 @@
   ; AWTAWT TODO: update docs re. col-labels (keywords)
   [csv-input & opts]
   (assert (or (string? csv-input)
-            (instance? Reader csv-input)) )
+            (instance? Reader csv-input)))
   (let [opts-default {:data-fn str/trim}
         opts         (apply hash-map opts) ; opts could be nil => {}
         opts         (glue opts-default opts)
+        data-fn      (grab :data-fn opts)
         csv-reader   (cond-it-> csv-input
                        (string? it) (StringReader. it))
         parsed-lines (apply csv/parse-csv csv-reader (keyvals opts))
         {:keys [labels-kw data-lines]} (get-labels-and-data-lines opts parsed-lines)
-        data-fn      (grab :data-fn opts)
+        num-labels   (count labels-kw)
         row-maps     (for [data-line data-lines]
-                       (zipmap labels-kw
-                         (map data-fn data-line)))]
+                       (let [data-fields (map data-fn data-line)
+                             num-fields  (count data-fields)]
+                         (when (not= num-labels num-fields)
+                           (throw (ex-info "Incorrect number of fields"
+                                    (vals->map num-labels num-fields labels-kw data-fields))))
+                         (zipmap labels-kw data-fields)))]
     row-maps))
 
 (defn parse->attrs

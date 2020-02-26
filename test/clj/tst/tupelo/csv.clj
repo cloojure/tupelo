@@ -9,24 +9,24 @@
   (:import  [java.io StringReader] ) )
 
 (def test1-str-no-label
-"01002,00006,4
-01002,00277,5
-01003,00277,5
-01008,01217,5
-01009,00439,5
-01020,01193,5" )
+  "01002,00006,4
+  01002,00277,5
+  01003,00277,5
+  01008,01217,5
+  01009,00439,5
+  01020,01193,5" )
 
 (def test1-str-label
   (str "zip_postal_code,store$num,chain#rank" \newline test1-str-no-label) )
 
 (def test2-str-label
-"ZIP_POSTAL_CODE|STORE_NUM|CHAIN_RANK
-01002|00006|4
-01002|00277|5
-01003|00277|5
-01008|01217|5
-01009|00439|5
-01020|01193|5" )
+  "ZIP_POSTAL_CODE|STORE_NUM|CHAIN_RANK
+  01002|00006|4
+  01002|00277|5
+  01003|00277|5
+  01008|01217|5
+  01009|00439|5
+  01020|01193|5" )
 
 (def test1-expected
   [ { :zip-postal-code "01002" :store-num "00006" :chain-rank "4" }
@@ -98,9 +98,12 @@
                   :zipcode  (:ZIP-POSTAL-CODE raw-maps)}]
     (is (= result test4-expected))))
 
-
-
-
+(dotest
+  (let [test2-str-label-error "zipcode, store_num, chain_rank
+                                  01002,00006,4
+                                  01002,00277,5
+                                  01003,00277" ]
+    (throws? (parse->entities test2-str-label-error))))
 
 
 
