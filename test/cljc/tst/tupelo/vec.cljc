@@ -10,10 +10,7 @@
             [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
             [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty unlazy let-spy only forv glue ]]
 
-            [clojure.set :as set]
             [schema.core :as s]
-            [tupelo.data.index :as index]
-            [tupelo.lexical :as lex]
             [tupelo.vec :as tv]
             ))
   #?(:cljs (:require
@@ -23,11 +20,7 @@
                                         forv vals->map fetch-in let-spy xlast xfirst keep-if drop-if
                                         it-> cond-it-> xfirst xsecond xthird xlast ]]
 
-             [clojure.set :as set]
              [schema.core :as s]
-             [tupelo.data :as td]
-             [tupelo.data.index :as index]
-             [tupelo.lexical :as lex]
              [tupelo.vec :as tv]
              ))
   )
