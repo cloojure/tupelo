@@ -96,6 +96,7 @@
   "Set of chars used in 'normal' text. Includes all visible chars plus whitespace & EOL chars."
   (t/glue visible whitespace))
 
+;---------------------------------------------------------------------------------------------------
 (defn alphanumeric?
   "Returns true iff char is in tupelo.chars/alphanumeric"
   [ch] (contains? alphanumeric ch))
@@ -129,6 +130,23 @@
 (defn text?
   "Returns true iff char is in tupelo.chars/text"
   [ch] (contains? text ch))
+
+;---------------------------------------------------------------------------------------------------
+(def char-lower->upper (zipmap lowercase uppercase))
+(def char-upper->lower (zipmap uppercase lowercase))
+
+(defn ->uppercase
+  "Converts any lowercase chars to uppercase"
+  [ch]
+  (if-not (lowercase? ch)
+    ch
+    (t/fetch char-lower->upper ch)))
+(defn ->lowercase
+  "Converts any uppercase chars to lowercase"
+  [ch]
+  (if-not (uppercase? ch)
+    ch
+    (t/fetch char-upper->lower ch)))
 
 #?(:cljs
    (do
