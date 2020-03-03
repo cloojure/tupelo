@@ -2414,6 +2414,21 @@
           taken
           (recur taken-next remaining-next))))))
 
+(defn distinct-using
+  "Removes elements from a collection so that the result has no duplicates of `(keyfn <elem>)`.
+  Employs a first-one-wins strategy. Not lazy."
+  [keyfn coll]
+  (loop [seen    #{}
+         waiting coll
+         keepers []]
+    (if (empty? waiting)
+      keepers
+      (let [candidate (xfirst waiting)
+            key       (keyfn candidate)]
+        (if (contains? seen key)
+          (recur seen (xrest waiting) keepers)
+          (recur (conj seen key) (xrest waiting) (append keepers candidate)))))))
+
 (s/defn val= :- s/Bool ; maybe value=  or   map=  (like set=)
   "Compares values for equality using clojure.core/=, treating records as plain map values:
 

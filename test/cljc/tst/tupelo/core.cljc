@@ -1920,6 +1920,20 @@
     (is= (t/take-while-result #(cum-within % 10) (range)) [0 1 2 3 4])))
 
 (dotest
+  (let [data [[:a 1]
+              [:a 2]
+              [:a 3]
+              [:b 1]
+              [:b 2]
+              [:b 3]]]
+    (is= (t/distinct-using first data)
+      [[:a 1] [:b 1]])
+    (is= (t/distinct-using second data)
+      [[:a 1] [:a 2] [:a 3]])
+    (is= (t/distinct-using identity data)
+      [[:a 1] [:a 2] [:a 3] [:b 1] [:b 2] [:b 3]])))
+
+(dotest
   (let [ctx (let [a 1
                   b 2
                   c 3

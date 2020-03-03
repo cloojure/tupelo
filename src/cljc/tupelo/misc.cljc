@@ -431,22 +431,49 @@
            (uncaughtException [_ thread ex]
              (println ex "Uncaught exception on" (.getName thread)))))) ; or (log/error ...)
 
-
-     (defn caller-ns-func ; #todo test
+     (s/defn stacktrace-info :- [tsk/KeyMap]
        "Returns a map with the caller's namespace and function names as strings, like:
            {:ns-name 'tst.demo.core' :fn-name 'funky'} "
-       []
-       (let [ex                (RuntimeException. "dummy")
-             st                (.getStackTrace ex)
-             class-names       (mapv #(.getClassName %) st)
-             class-name-this   (first class-names)
-             class-name-caller (first
-                                 (drop-while #(= class-name-this %)
-                                   class-names))
+       [throwable :- Throwable]
+       (let [stacktrace      (.getStackTrace throwable)
+             stacktrace-info (t/distinct-using #(grab :class-name %)
+                               (for [st-elem stacktrace]
+                                 (let [class-name  (.getClassName st-elem)
+                                       file-name   (.getFileName st-elem)
+                                       method-name (.getMethodName st-elem)
+                                       line-num    (.getLineNumber st-elem)
 
-             ; class-name-caller is like "tst.demo.core$funky"
-             [ns-name fn-name] (str/split class-name-caller #"\$")]
-         (vals->map ns-name fn-name)))))
+                                       ;class-name-caller is like "tst.demo.core$funky"
+                                       [ns-name fn-name] (str/split class-name #"\$")]
+                                   (vals->map class-name file-name method-name line-num ns-name fn-name))))]
+         stacktrace-info))
+
+     (defn fn-info
+       "Returns a map of info about the current function, like:
+           {:ns-name     'demo.core'
+            :fn-name     'add2'
+            :class-name  'demo.core$add2'
+            :file-name   'core.clj'
+            :line-num    57
+            :method-name 'invokeStatic' } "
+       []
+       (let [stacktrace-info (stacktrace-info (RuntimeException. "dummy"))]
+         (t/xsecond stacktrace-info)))
+
+     (defn fn-info-caller
+       "Returns a map of info about the caller of the current function, like:
+           {:ns-name     'demo.core'
+            :fn-name     'add2'
+            :class-name  'demo.core$add2'
+            :file-name   'core.clj'
+            :line-num    57
+            :method-name 'invokeStatic' } "
+       []
+       (let [stacktrace-info (stacktrace-info (RuntimeException. "dummy"))]
+         (t/xthird stacktrace-info)))
+
+
+     ))
 
 
 ; #todo move to tupelo

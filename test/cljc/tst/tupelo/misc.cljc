@@ -205,6 +205,39 @@
            90 ...
            99 total"))
 
+     (dotest
+       (defn add2 [x y]
+         (let [add2-info        (misc/fn-info)
+               add2-caller-info (misc/fn-info-caller)
+               sum              (+ 2 3)]
+           (t/vals->map add2-info add2-caller-info sum)))
+       (defn add2-parent [] (add2 2 3))
+
+
+       (let [result (add2-parent)]
+         (comment ; sample results
+           {:add2-info
+                 {:class-name  "tst.tupelo.misc$fn__101257$add2__101258",
+                  :file-name   "misc.cljc",
+                  :method-name "invoke",
+                  :line-num    211,
+                  :ns-name     "tst.tupelo.misc",
+                  :fn-name     "fn__101257"},
+            :add2-caller-info
+                 {:class-name  "tst.tupelo.misc$fn__101257$add2_parent__101260",
+                  :file-name   "misc.cljc",
+                  :method-name "invoke",
+                  :line-num    215,
+                  :ns-name     "tst.tupelo.misc",
+                  :fn-name     "fn__101257"},
+            :sum 5})
+
+         (is (ts/contains-match? (get-in result [:add2-info :class-name])
+               #"tst.tupelo.misc.fn__\d+.add2__\d+"))
+         (is (ts/contains-match? (get-in result [:add2-caller-info :class-name])
+               #"tst.tupelo.misc.fn__\d+.add2_parent__\d+"))))
+
+
      ))
 
 
