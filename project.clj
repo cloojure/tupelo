@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.195"
+(defproject tupelo "0.9.196"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"

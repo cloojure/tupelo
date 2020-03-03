@@ -444,30 +444,38 @@
                                        line-num    (.getLineNumber st-elem)
 
                                        ;class-name-caller is like "tst.demo.core$funky"
-                                       [ns-name fn-name] (str/split class-name #"\$")]
+                                       idx        (str/index-of class-name \$)
+                                       ns-name     (t/cond-it-> class-name
+                                                     (t/not-nil? idx) (.substring ^String class-name 0 idx))
+                                       fn-name     (t/cond-it-> class-name
+                                                     (t/not-nil? idx) (.substring ^String class-name idx)) ]
                                    (vals->map class-name file-name method-name line-num ns-name fn-name))))]
          stacktrace-info))
 
      (defn fn-info
        "Returns a map of info about the current function, like:
+
            {:ns-name     'demo.core'
             :fn-name     'add2'
             :class-name  'demo.core$add2'
             :file-name   'core.clj'
             :line-num    57
-            :method-name 'invokeStatic' } "
+            :method-name 'invokeStatic' }
+            "
        []
        (let [stacktrace-info (stacktrace-info (RuntimeException. "dummy"))]
          (t/xsecond stacktrace-info)))
 
      (defn fn-info-caller
        "Returns a map of info about the caller of the current function, like:
+
            {:ns-name     'demo.core'
             :fn-name     'add2'
             :class-name  'demo.core$add2'
             :file-name   'core.clj'
             :line-num    57
-            :method-name 'invokeStatic' } "
+            :method-name 'invokeStatic' }
+            "
        []
        (let [stacktrace-info (stacktrace-info (RuntimeException. "dummy"))]
          (t/xthird stacktrace-info)))
