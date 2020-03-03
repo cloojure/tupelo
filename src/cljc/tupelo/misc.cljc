@@ -431,7 +431,7 @@
            (uncaughtException [_ thread ex]
              (println ex "Uncaught exception on" (.getName thread)))))) ; or (log/error ...)
 
-     (s/defn stacktrace-info :- [tsk/KeyMap]
+     (s/defn stacktrace-info :- [tsk/KeyMap] ; #todo make cljs version
        "Returns a map with the caller's namespace and function names as strings, like:
            {:ns-name 'tst.demo.core' :fn-name 'funky'} "
        [throwable :- Throwable]
@@ -454,7 +454,7 @@
                                    (vals->map class-name file-name method-name line-num ns-name fn-name))))]
          stacktrace-info))
 
-     (defn fn-info
+     (s/defn fn-info :- tsk/KeyMap ; #todo make cljs version
        "Returns a map of info about the current function, like:
 
            {:ns-name     'demo.core'
@@ -468,7 +468,7 @@
        (let [stacktrace-info (stacktrace-info (RuntimeException. "dummy"))]
          (t/xsecond stacktrace-info)))
 
-     (defn fn-info-caller
+     (s/defn fn-info-caller :- tsk/KeyMap ; #todo make cljs version
        "Returns a map of info about the caller of the current function, like:
 
            {:ns-name     'demo.core'
