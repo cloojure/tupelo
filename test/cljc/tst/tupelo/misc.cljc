@@ -205,6 +205,9 @@
            90 ...
            99 total"))
 
+     ;(dotest-focus
+     ;  (spyx-pretty (misc/stacktrace-info (RuntimeException. "dummy"))))
+
      (dotest
        (defn add2 [x y]
          (let [add2-info        (misc/fn-info)
@@ -212,7 +215,6 @@
                sum              (+ 2 3)]
            (t/vals->map add2-info add2-caller-info sum)))
        (defn add2-parent [] (add2 2 3))
-
 
        (let [result (add2-parent)]
          (spyx-pretty result)
