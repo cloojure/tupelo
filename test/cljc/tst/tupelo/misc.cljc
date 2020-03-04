@@ -208,7 +208,7 @@
      ;(dotest-focus
      ;  (spyx-pretty (misc/stacktrace-info (RuntimeException. "dummy"))))
 
-     (dotest-focus
+     (do
        (defn add2 [x y]
          (let [add2-info        (misc/fn-info)
                add2-caller-info (misc/fn-info-caller)
@@ -216,32 +216,34 @@
            (t/vals->map add2-info add2-caller-info sum)))
        (defn add2-parent [] (add2 2 3))
 
-       (let [result (add2-parent)]
-         (comment ; sample results
-           {:add2-info
-            {:class-name  "tst.tupelo.misc$fn__47731$add2__47732"
-             :file-name   "misc.cljc"
-             :method-name "invoke"
-             :line-num    214
-             :ns-name     "tst.tupelo.misc"
-             :fn-name     "$fn__47731$add2__47732"}
-            :add2-caller-info
-            {:class-name  "tst.tupelo.misc$fn__47731$add2_parent__47734"
-             :file-name   "misc.cljc"
-             :method-name "invoke"
-             :line-num    218
-             :ns-name     "tst.tupelo.misc"
-             :fn-name     "$fn__47731$add2_parent__47734"}})
+       (dotest
+         (let [result (add2-parent)]
+           (spyx-pretty result)
+           (comment ; sample results
+             {:add2-info
+                   {:class-name "tst.tupelo.misc$add2",
+                    :file-name "misc.cljc",
+                    :method-name "invokeStatic",
+                    :line-num 213,
+                    :ns-name "tst.tupelo.misc",
+                    :fn-name "add2"},
+              :add2-caller-info
+                   {:class-name "tst.tupelo.misc$add2_parent",
+                    :file-name "misc.cljc",
+                    :method-name "invokeStatic",
+                    :line-num 217,
+                    :ns-name "tst.tupelo.misc",
+                    :fn-name "add2_parent"},
+              :sum 5}
+             )
 
-         (is (ts/contains-match? (get-in result [:add2-info :class-name])
-               #"tst.tupelo.misc.fn__\d+.add2__\d+"))
-         (is (ts/contains-match? (get-in result [:add2-info :fn-name])
-               #".fn__\d+.add2__\d+"))
-         (is (ts/contains-match? (get-in result [:add2-caller-info :class-name])
-               #"tst.tupelo.misc.fn__\d+.add2_parent__\d+"))
-         (is (ts/contains-match? (get-in result [:add2-caller-info :fn-name])
-               #".fn__\d+\$add2_parent__\d+"))))
+           (is= (get-in result [:add2-info :class-name]) "tst.tupelo.misc$add2")
+           (is= (get-in result [:add2-info :ns-name]) "tst.tupelo.misc")
+           (is= (get-in result [:add2-info :fn-name]) "add2")
 
+           (is= (get-in result [:add2-caller-info :class-name]) "tst.tupelo.misc$add2_parent")
+           (is= (get-in result [:add2-caller-info :ns-name]) "tst.tupelo.misc")
+           (is= (get-in result [:add2-caller-info :fn-name]) "add2_parent" ))))
 
      ))
 

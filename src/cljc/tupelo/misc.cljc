@@ -449,7 +449,7 @@
                                        ns-name     (t/cond-it-> class-name
                                                      (t/not-nil? idx) (subs class-name 0 idx))
                                        fn-name     (if (t/not-nil? idx)
-                                                     (subs class-name idx)
+                                                     (subs class-name (inc idx))
                                                      "")]
                                    (vals->map class-name file-name method-name line-num ns-name fn-name))))]
          stacktrace-info))
