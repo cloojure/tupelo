@@ -208,7 +208,7 @@
      ;(dotest-focus
      ;  (spyx-pretty (misc/stacktrace-info (RuntimeException. "dummy"))))
 
-     (dotest
+     (dotest-focus
        (defn add2 [x y]
          (let [add2-info        (misc/fn-info)
                add2-caller-info (misc/fn-info-caller)
@@ -217,22 +217,21 @@
        (defn add2-parent [] (add2 2 3))
 
        (let [result (add2-parent)]
-         (spyx-pretty result)
          (comment ; sample results
            {:add2-info
-            {:ns-name     "tst.tupelo.misc"
-             :fn-name     "$fn__68484$add2__68485"
-             :class-name  "tst.tupelo.misc$fn__68484$add2__68485"
+            {:class-name  "tst.tupelo.misc$fn__47731$add2__47732"
              :file-name   "misc.cljc"
              :method-name "invoke"
-             :line-num    210}
+             :line-num    214
+             :ns-name     "tst.tupelo.misc"
+             :fn-name     "$fn__47731$add2__47732"}
             :add2-caller-info
-            {:ns-name     "tst.tupelo.misc"
-             :fn-name     "$fn__68484$add2_parent__68487"
-             :class-name  "tst.tupelo.misc$fn__68484$add2_parent__68487"
+            {:class-name  "tst.tupelo.misc$fn__47731$add2_parent__47734"
              :file-name   "misc.cljc"
              :method-name "invoke"
-             :line-num    214}})
+             :line-num    218
+             :ns-name     "tst.tupelo.misc"
+             :fn-name     "$fn__47731$add2_parent__47734"}})
 
          (is (ts/contains-match? (get-in result [:add2-info :class-name])
                #"tst.tupelo.misc.fn__\d+.add2__\d+"))

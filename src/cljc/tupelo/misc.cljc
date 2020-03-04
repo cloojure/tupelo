@@ -465,8 +465,15 @@
             :method-name 'invokeStatic' }
             "
        []
-       (let [stacktrace-info (stacktrace-info (RuntimeException. "dummy"))]
-         (t/xsecond stacktrace-info)))
+       (let [stacktrace-info (stacktrace-info (RuntimeException. "dummy"))
+             my-ns           (grab :ns-name (t/xfirst stacktrace-info))
+             info-keep       (t/drop-if (fn [ste]
+                                          (let [unwanted-flg (and (= my-ns (grab :ns-name ste))
+                                                               (ts/contains-match? (grab :fn-name ste) #"fn.info"))]
+                                            ; (spyx (vals->map ste unwanted-flg))
+                                            unwanted-flg))
+                               stacktrace-info)]
+         (t/xfirst info-keep)))
 
      (s/defn fn-info-caller :- tsk/KeyMap ; #todo make cljs version
        "Returns a map of info about the caller of the current function, like:
@@ -479,8 +486,15 @@
             :method-name 'invokeStatic' }
             "
        []
-       (let [stacktrace-info (stacktrace-info (RuntimeException. "dummy"))]
-         (t/xthird stacktrace-info)))
+       (let [stacktrace-info (stacktrace-info (RuntimeException. "dummy"))
+             my-ns           (grab :ns-name (t/xfirst stacktrace-info))
+             info-keep       (t/drop-if (fn [ste]
+                                          (let [unwanted-flg (and (= my-ns (grab :ns-name ste))
+                                                               (ts/contains-match? (grab :fn-name ste) #"fn.info"))]
+                                            ; (spyx (vals->map ste unwanted-flg))
+                                            unwanted-flg))
+                               stacktrace-info)]
+         (t/xsecond info-keep)))
 
 
      ))

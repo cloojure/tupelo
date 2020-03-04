@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.196"
+(defproject tupelo "0.9.197"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -24,7 +24,7 @@
    [org.clojure/data.avl "0.1.0"]
    [org.clojure/data.xml "0.2.0-alpha5"]
    [org.clojure/math.combinatorics "0.1.6"]
-   [org.clojure/spec.alpha "0.2.176"]
+   [org.clojure/spec.alpha "0.2.187"]
    [org.clojure/test.check "1.0.0"]
    [org.clojure/tools.reader "1.3.2"]
    [org.snakeyaml/snakeyaml-engine "2.1"]
