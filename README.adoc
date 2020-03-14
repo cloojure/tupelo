@@ -247,9 +247,9 @@ all of the forms should be threaded into the first or last argument.
 
 The built-in threading macro `as\->` can avoid this problem, but the order of the first expression
 and the placeholder symbol is arguably backwards from what most users would expect. Also, there is
-often no obvious name to use for the placeholder symbol.  Re-using a good idea from Groovy, we
-simply use the symbol `it` as the placeholder symbol in each expression to represent the value of
-the previous result.
+often no obvious name to use for the placeholder symbol.  Re-using a good idea from Groovy (also 
+copied by Kotlin), we simply use the symbol `it` as the placeholder symbol in each expression 
+to represent the value of the previous result.
 
 [source,clojure]
 ----
