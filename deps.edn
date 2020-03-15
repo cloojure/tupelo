@@ -1,6 +1,6 @@
 {:deps    {
-           org.clojure/clojure             {:mvn/version "1.10.1"}
-           org.clojure/clojurescript       {:mvn/version "1.10.520"}
+           org.clojure/clojure             {:mvn/version "1.10.2-alpha1"}
+           org.clojure/clojurescript       {:mvn/version "1.10.597"}
 
           ;binaryage/oops                  {:mvn/version "0.7.0"}
            cheshire                        {:mvn/version "5.9.0"}

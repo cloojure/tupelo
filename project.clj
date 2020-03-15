@@ -59,7 +59,7 @@
                                        ;[binaryage/dirac "1.4.3"]
                                        ;[com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.5"]
-                                       [org.clojure/clojure "1.10.1"]
+                                       [org.clojure/clojure "1.10.2-alpha1"]
                                        [org.clojure/clojurescript "1.10.597"]
                                        ]
                         }
