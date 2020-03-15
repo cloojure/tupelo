@@ -2000,14 +2000,15 @@
 ; #todo need safe (assoc-in m [ks] v) (assoc-in m [ks] v :missing-ok)
 ; #todo need safe (update-in m [ks] f & args)
 (s/defn fetch-in :- s/Any
-  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in the-map keys-vec),
-   returns the value associated with keys-vec as for (clojure.core/get-in the-map keys-vec).
-   Throws an Exception if the path keys-vec is not present in the-map."
-  [the-map   :- tsk/Map
-   keys-vec  :- tsk/Vec ] ; #todo add arity to take default value like `get-in`
-  (let [result (get-in the-map keys-vec ::not-found)]
+  "A fail-fast version of clojure.core/get-in. When invoked as (fetch-in mappy path),
+   returns the value associated with path as for (clojure.core/get-in mappy path).
+   Throws an Exception if the path path is not present in mappy."
+  [mappy   :- (s/cond-pre tsk/Map tsk/Vec)
+   path  :- tsk/Vec ] ; #todo add arity to take default value like `get-in`
+  (validate associative? mappy)
+  (let [result (get-in mappy path ::not-found)]
     (if (= result ::not-found)
-      (throw (ex-info "Key seq not present in map:" (vals->map the-map keys-vec)))
+      (throw (ex-info "Key seq not present in map:" (vals->map mappy path)))
       result)))
 
 (s/defn fetch :- s/Any

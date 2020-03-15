@@ -1037,21 +1037,25 @@
 
 (dotest
   (testing "basic usage"
-    (let [map1  {:a1 "a1"
-                 :a2 { :b1 "b1"
-                      :b2 { :c1 "c1"
-                           :c2 "c2" }}
-                 nil "NIL"
-                 :nil nil} ]
-      (is= "a1"  (t/fetch-in map1 [:a1]))
-      (is= "b1"  (t/fetch-in map1 [:a2 :b1]))
-      (is= "c1"  (t/fetch-in map1 [:a2 :b2 :c1]))
-      (is= "c2"  (t/fetch-in map1 [:a2 :b2 :c2]))
+    (let [map1 {:a1  "a1"
+                :a2  {:b1 "b1"
+                      :b2 {:c1 "c1"
+                           :c2 "c2"}}
+                nil  "NIL"
+                :nil nil}
+          vv   [[:00 :01 :02]
+                [:10 :11 :12]]]
+      (is= "a1" (t/fetch-in map1 [:a1]))
+      (is= "b1" (t/fetch-in map1 [:a2 :b1]))
+      (is= "c1" (t/fetch-in map1 [:a2 :b2 :c1]))
+      (is= "c2" (t/fetch-in map1 [:a2 :b2 :c2]))
       (is= "NIL" (t/fetch-in map1 [nil]))
-      (is= nil   (t/fetch-in map1 [:nil]))
-      (throws?   (t/fetch-in map1 [:a9]))
-      (throws?   (t/fetch-in map1 [:a2 :b9]))
-      (throws?   (t/fetch-in map1 [:a2 :b2 :c9])))))
+      (is= nil (t/fetch-in map1 [:nil]))
+      (throws? (t/fetch-in map1 [:a9]))
+      (throws? (t/fetch-in map1 [:a2 :b9]))
+      (throws? (t/fetch-in map1 [:a2 :b2 :c9]))
+      (is= :12 (t/fetch-in vv [1 2]))
+      )))
 
 (dotest
   (let [mm    {:a { :b { :c "c" }}} ]
