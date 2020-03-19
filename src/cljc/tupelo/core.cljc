@@ -2854,17 +2854,17 @@
     (when enter-fn
       (enter-fn parents data))
     (cond
-      (map? data) (doseq [mapentry data]
-                    (walk-with-parents-readonly-impl parents-next (key mapentry) intc)
-                    (walk-with-parents-readonly-impl parents-next (val mapentry) intc))
+      (map? data)
+      (doseq [mapentry data]
+        (walk-with-parents-readonly-impl parents-next (key mapentry) intc)
+        (walk-with-parents-readonly-impl parents-next (val mapentry) intc))
 
-      (or (set? data)
-        (sequential? data)) (doseq [item data]
-                              (walk-with-parents-readonly-impl parents-next item intc))
-
-      :else data) ; anything else just return it
+      (or (set? data) (sequential? data))
+      (doseq [item data]
+        (walk-with-parents-readonly-impl parents-next item intc)))
     (when leave-fn
-      (leave-fn parents data))))
+      (leave-fn parents data)))
+  nil)    ; return value ignored
 
 (s/defn walk-with-parents-readonly :- s/Any ; #todo make version with parents, but skipping recurse of MapEntry & ListEntry
   "Walks a data structure as with `walk-with-parents`, but in a read-only mode
