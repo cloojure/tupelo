@@ -4,7 +4,8 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns tst.tupelo.array
+(ns       ; ^:test-refresh/focus
+  tst.tupelo.array
   (:require
     [tupelo.array :as tar]
     [tupelo.string :as ts]
@@ -368,6 +369,14 @@
          (throws? (tar/col-set demo 3 [[1 2]]))
          (throws? (tar/col-set demo 1 [[1 2 3 4]]))
          (is= (tar/col-set demo 1 [7 8]) [[1 7 3]
-                                          [4 8 6]])))
+                                          [4 8 6]]))
+
+       ; demonstrate diag fns
+       (let [linear-array (tar/row-vals->array 3 3 [0 1 2
+                                                    3 4 5
+                                                    6 7 8])]
+         (is= [0 4 8] (tar/diagonal-main linear-array))
+         (is= [2 4 6] (tar/diagonal-anti linear-array)))
+       )
 
      ))

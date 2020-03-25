@@ -336,6 +336,22 @@
                             \newline))))]
          result))
 
+
+     (s/defn diagonal-main :- tsk/Vec
+       "Returns the main diagonal of an array"
+       [arr :- Array]
+       (assert (= (num-rows arr)
+                 (num-cols arr)))
+       (let [rows-indexed (t/indexed arr)]
+         (t/forv [[idx row] rows-indexed]
+           (elem-get arr idx idx))))
+
+     (s/defn diagonal-anti :- tsk/Vec
+       "Returns the anti-diagonal of an array"
+       [arr :- Array]
+       (diagonal-main (rotate-left arr)))
+
+
      ))
 
 
