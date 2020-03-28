@@ -9,8 +9,8 @@
     [clojure.string :as str]
     [tupelo.string :as ts]
 
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
-       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty]])
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty  vals->map]]
+       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty vals->map]])
 
     #?(:clj [clojure.test] :cljs [cljs.test])
     #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]]

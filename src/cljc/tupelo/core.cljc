@@ -2842,78 +2842,50 @@
   [arg]
   (with-out-str (pprint/pprint arg)))
 
-; (def ^:no-doc Map-or-List-or-Set (s/cond-pre tsk/Map tsk/Vec tsk/Set)) ; #todo use for launcher of walk-strict...
-
-(s/defn ^:no-doc walk-with-parents-readonly-impl :- s/Any ; #todo make version with parents, but skipping recurse of MapEntry & ListEntry
-  [parents :- tsk/Vec
-   data :- s/Any
-   intc :- tsk/KeyMap] ;  #todo fix problem with s/fn-schema {s/Keyword s/fn-schema}
-  (let [enter-fn     (:enter intc) ; may be nil
-        leave-fn     (:leave intc) ; may be nil
-        parents-next (append parents data)]
-    (when enter-fn
-      (enter-fn parents data))
-    (cond
-      (map? data)
-      (doseq [mapentry data]
-        (walk-with-parents-readonly-impl parents-next (key mapentry) intc)
-        (walk-with-parents-readonly-impl parents-next (val mapentry) intc))
-
-      (or (set? data) (sequential? data))
-      (doseq [item data]
-        (walk-with-parents-readonly-impl parents-next item intc)))
-    (when leave-fn
-      (leave-fn parents data)))
-  nil)    ; return value ignored
-
-(s/defn walk-with-parents-readonly :- s/Any ; #todo make version with parents, but skipping recurse of MapEntry & ListEntry
-  "Walks a data structure as with `walk-with-parents`, but in a read-only mode
-  (interceptor function return values are ignored). Use for side-effects
-  such as printing or validation (throw Exception to indicate validation failure).
-  Returns input value (can be used for chaining). "
-  [data :- s/Any
-   intc :- tsk/KeyMap] ;  #todo fix problem with s/fn-schema {s/Keyword s/fn-schema}
-  (with-result data
-    (let [enter-fn (:enter intc) ; may be nil
-          leave-fn (:leave intc)] ; may be nil
-      (when (and (nil? enter-fn) (nil? leave-fn))
-        (throw (ex-info "Invalid interceptor. :enter and :leave functions cannot both be nil." intc)))
-      (walk-with-parents-readonly-impl [] data intc))))
-
+(def ^:no-doc ^:dynamic  *walk-with-parents-readonly-flag* false ) ; assumes not in readonly mode
 (s/defn ^:no-doc walk-with-parents-impl :- s/Any
   [parents :- tsk/Vec
    data :- s/Any
    intc :- tsk/KeyMap] ; #todo {s/Keyword s/fn-schema}
-  (let [data-identity-fn (fn [-parents- data] data)
-        enter-fn         (or (:enter intc) data-identity-fn)
-        leave-fn         (or (:leave intc) data-identity-fn)
-        parents-next     (append parents data)
-        data-post-enter  (enter-fn parents data)
-        data-post-walk   (cond
-                           (sequential? data-post-enter) (list-entries->vec
-                                                           (forv [listentry (list->entries data-post-enter)]
-                                                             (let [parents-next-le (append parents-next listentry)]
-                                                               (list-entry (grab :idx listentry)
-                                                                 (walk-with-parents-impl parents-next-le (grab :val listentry) intc)))))
+  ; ensure data does not contain any MapEntry of ListEntry objects
+  (when (or (map-entry? data) (list-entry? data))
+    (throw (ex-info "User-level MapEntry and/or list-entry objects not allowed" (vals->map data))))
+  (let [data-identity-fn        (fn [-parents- data] data)
+        enter-fn                (or (:enter intc) data-identity-fn)
+        leave-fn                (or (:leave intc) data-identity-fn)
+        parents-next            (append parents data)
+        data-post-enter         (cond-it-> (enter-fn parents data)
+                                  *walk-with-parents-readonly-flag* data)
+        data-post-walk-modified (cond
+                                  (sequential? data-post-enter) (list-entries->vec
+                                                                  (forv [listentry (list->entries data-post-enter)]
+                                                                    (let [parents-next-le (append parents-next listentry)]
+                                                                      (list-entry (grab :idx listentry)
+                                                                        (walk-with-parents-impl parents-next-le (grab :val listentry) intc)))))
 
-                           (map? data-post-enter) (into {}
-                                                    (forv [mapentry data-post-enter]
-                                                      (let [me-key           (key mapentry)
-                                                            me-val           (val mapentry)
-                                                            parents-next-me  (append parents-next mapentry)
-                                                            parents-next-key (append parents-next-me {:type :map-key :value me-key })
-                                                            parents-next-val (append parents-next-me {:type :map-val :value me-val }) ]
-                                                        (map-entry
-                                                          (walk-with-parents-impl parents-next-key me-key intc)
-                                                          (walk-with-parents-impl parents-next-val me-val intc)))))
+                                  (map? data-post-enter) (into {}
+                                                           (forv [mapentry data-post-enter]
+                                                             (let [me-key           (key mapentry)
+                                                                   me-val           (val mapentry)
+                                                                   parents-next-me  (append parents-next mapentry)
+                                                                   parents-next-key (append parents-next-me {:type :map-key :value me-key})
+                                                                   parents-next-val (append parents-next-me {:type :map-val :value me-val})]
+                                                               (map-entry
+                                                                 (walk-with-parents-impl parents-next-key me-key intc)
+                                                                 (walk-with-parents-impl parents-next-val me-val intc)))))
 
-                           (set? data-post-enter) (into #{}
-                                                    (forv [elem data-post-enter]
-                                                      (walk-with-parents-impl parents-next elem intc)))
+                                  (set? data-post-enter) (into #{}
+                                                           (forv [elem data-post-enter]
+                                                             (walk-with-parents-impl parents-next elem intc)))
 
-                           ; otherwise, return data unaltered
-                           :else data-post-enter)
-        data-post-leave  (leave-fn  parents data-post-walk)]
+                                  ; otherwise, return data unaltered
+                                  :else data-post-enter)
+
+        data-post-walk          (cond-it-> data-post-walk-modified
+                                  *walk-with-parents-readonly-flag* data)
+
+        data-post-leave         (cond-it-> (leave-fn parents data-post-walk)
+                                  *walk-with-parents-readonly-flag* data)]
     data-post-leave))
 
 (s/defn walk-with-parents :- s/Any
@@ -2935,39 +2907,39 @@
    data values. In this way, a map val can easily determine its correspond key or vice versa, and a
    vector/list/seq element can easily determine its index.
 
-  (walk-with-parents  {:a 1 :b {:c 3}}}  <noop-intc>) =>
+     (walk-with-parents  {:a 1 :b {:c 3}}}  <noop-intc>) =>
 
-       :enter => {:parents [],                                                       :data {:a 1, :b {:c 3}}}
-       :enter => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data :a}
-       :leave => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data :a}
-       :enter => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data 1}
-       :leave => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data 1}
-       :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data :b}
-       :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data :b}
-       :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data {:c 3}}
-       :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data :c}
-       :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data :c}
-       :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data 3}
-       :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data 3}
-       :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data {:c 3}}
-       :leave => {:parents [],                                                       :data {:a 1, :b {:c 3}}}
+         :enter => {:parents [],                                                       :data {:a 1, :b {:c 3}}}
+         :enter => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data :a}
+         :leave => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data :a}
+         :enter => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data 1}
+         :leave => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data 1}
+         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data :b}
+         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data :b}
+         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data {:c 3}}
+         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data :c}
+         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data :c}
+         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data 3}
+         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data 3}
+         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data {:c 3}}
+         :leave => {:parents [],                                                       :data {:a 1, :b {:c 3}}}
 
-       NOTE: in above, items in the :parents like `[:a 1]` are #clojure.lang.MapEntry values.
+         NOTE: in above, items in the :parents like `[:a 1]` are #clojure.lang.MapEntry values.
 
-  (walk-with-parents  [10 [20 21]]  <noop-intc>) =>
+     (walk-with-parents  [10 [20 21]]  <noop-intc>) =>
 
-       :enter => {:parents [],
-                  :data [10 [20 21]]}
-       :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 0, :value 10}],
-                  :data 10}
-       :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 1, :value [20 21]}],
-                  :data [20 21]}
-       :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 1, :value [20 21]} [20 21] #t.c.ListEntry{:index 0, :value 20}],
-                  :data 20}
-       :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 1, :value [20 21]} [20 21] #t.c.ListEntry{:index 1, :value 21}],
-                  :data 21}
+         :enter => {:parents [],
+                    :data [10 [20 21]]}
+         :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 0, :value 10}],
+                    :data 10}
+         :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 1, :value [20 21]}],
+                    :data [20 21]}
+         :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 1, :value [20 21]} [20 21] #t.c.ListEntry{:index 0, :value 20}],
+                    :data 20}
+         :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 1, :value [20 21]} [20 21] #t.c.ListEntry{:index 1, :value 21}],
+                    :data 21}
 
-       NOTE: in above, `#t.c.ListEntry` stands for `#tupelo.core.ListEntry`, an analog of #clojure.lang.MapEntry
+         NOTE: in above, `#t.c.ListEntry` stands for `#tupelo.core.ListEntry`, an analog of #clojure.lang.MapEntry
   "
   [data :- s/Any
    interceptor :- tsk/KeyMap]
@@ -2976,12 +2948,23 @@
     (when (and (nil? enter-fn) (nil? leave-fn))
       (throw (ex-info "Invalid interceptor. :enter and :leave functions cannot both be nil." (vals->map interceptor))))
     ; ensure data does not contain any MapEntry of ListEntry objects
-    (walk-with-parents-readonly data
-      {:enter (s/fn [parents data]
-                (if (or (map-entry? data)
-                      (list-entry? data))
-                  (throw (ex-info "User-level MapEntry and/or list-entry objects not allowed" (vals->map data)))))})
+    ;(walk/postwalk (s/fn [data]
+    ;                 (with-result data
+    ;                   (if (or (map-entry? data)
+    ;                         (list-entry? data))
+    ;                     (throw (ex-info "User-level MapEntry and/or list-entry objects not allowed" (vals->map data))))))
+    ;  data)
     (walk-with-parents-impl [] data interceptor)))
+
+(s/defn walk-with-parents-readonly :- s/Any
+  "Walks a data structure as with `walk-with-parents`, but in a read-only mode
+  (interceptor function return values are ignored). Use for side-effects
+  such as printing or validation (throw Exception to indicate validation failure).
+  Returns input value (can be used for chaining). "
+  [data :- s/Any
+   intc :- tsk/KeyMap] ;  #todo fix problem with s/fn-schema {s/Keyword s/fn-schema}
+  (binding [*walk-with-parents-readonly-flag* true]
+    (walk-with-parents data intc) ))
 
 ; bottom
 ;***************************************************************************************************
