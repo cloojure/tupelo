@@ -14,7 +14,6 @@
   ;:deploy-repositories {"snapshots"    :clojars
   ;                      "releases"     :clojars
   ;                      :sign-releases false}
-  :deploy-repositories [["clojars" "http://beta.clojars.org/repo/"]]
   :dependencies
   [
    [cheshire "5.10.0"] ; #todo switch to muuntaja/jsonista
