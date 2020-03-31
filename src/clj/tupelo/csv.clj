@@ -89,6 +89,7 @@
         csv-reader   (cond-it-> csv-input
                        (string? it) (StringReader. it))
         parsed-lines (apply csv/parse-csv csv-reader (keyvals opts))
+        ; #todo maybe break in half here =>  parse-lines->entities
         {:keys [labels-kw data-lines]} (get-labels-and-data-lines opts parsed-lines)
         num-labels   (count labels-kw)
         row-maps     (for [data-line data-lines]

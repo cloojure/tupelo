@@ -11,9 +11,6 @@
   :excludes [org.clojure/clojure
              org.clojure/clojurescript]
 
-  ;:deploy-repositories {"snapshots"    :clojars
-  ;                      "releases"     :clojars
-  ;                      :sign-releases false}
   :dependencies
   [
    [cheshire "5.10.0"] ; #todo switch to muuntaja/jsonista
