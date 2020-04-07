@@ -504,21 +504,23 @@
   "Given a collection like `[[5]]`, returns `5`.  Equivalent to `(only (only coll))`."
   [coll] (only (only coll)))
 
+;#todo:  maybe make functions `only?` and `only2?`
+
 (defn single?
   "Returns true if the collection contains a single item.`"
-  [coll] (has-length? coll 1))
+  [coll] (and (sequential? coll) (has-length? coll 1)))
 
 (defn pair?
   "Returns true if the collection contains exactly 2 items."
-  [coll] (has-length? coll 2))
+  [coll] (and (sequential? coll) (has-length? coll 2)))
 
 (defn triple?
   "Returns true if the collection contains exactly 3 items."
-  [coll] (has-length? coll 3))
+  [coll] (and (sequential? coll) (has-length? coll 3)))
 
 (defn quad?
   "Returns true if the collection contains exactly 4 items."
-  [coll] (has-length? coll 4))
+  [coll] (and (sequential? coll) (has-length? coll 4)))
 
 (defn first-or-nil
   "Returns the first item in a sequence, or nil"
