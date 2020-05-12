@@ -854,6 +854,7 @@
   [& exprs]
   (spyx-impl exprs))
 
+; #todo fix so works right with TagVal like `spyx` => <:idx 2> (not map format)
 (defn ^:no-doc spy-pretty-impl
   [exprs]
   (let [r1         (for [expr (butlast exprs)]
