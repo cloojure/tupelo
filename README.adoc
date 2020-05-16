@@ -314,7 +314,7 @@ Instead, use the function `grab` for keyword/map lookup:
 (grab :batman sidekicks)
 ;=> "robin"
 
-(grab :spiderman m)
+(grab :spiderman sidekicks)
 ;=> IllegalArgumentException Key not present in map:
 map : {:batman "robin", :clark "lois"}
 keys: [:spiderman]
