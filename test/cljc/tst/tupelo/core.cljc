@@ -9,7 +9,8 @@
     [clojure.string :as str]
     [tupelo.string :as ts]
 
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty  vals->map]]
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty  vals->map map-plain?
+                                        ]]
        :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty vals->map]])
 
     #?(:clj [clojure.test] :cljs [cljs.test])
@@ -118,6 +119,24 @@
     (isnt (t/quad? [:x :y]))
     (isnt (t/quad? [:x :y :z]))
     (isnt (t/quad? inf-rng-1))))
+
+
+(defrecord DummyRec
+  [stuff])
+(dotest
+  (let [dummyRec (->DummyRec 5)]
+    (is (map? {:a 1})) ; expected
+    (isnt (record? {:a 1})) ; expected
+    (is (record? dummyRec)) ; expected
+    (is (map? dummyRec)) ; *** problem ***
+
+    (is (map-plain? (sorted-map))) ; expected
+    (is (map-plain? {:a 1})) ; solution
+    (isnt (map-plain? dummyRec))) ;solution
+
+  (let [vv [1 2 3]]
+    (isnt (map? vv))
+    (isnt (map-plain? vv))))
 
 (dotest
   (let [vals [-3.14 -2 0 2 3.14]]

@@ -1088,6 +1088,11 @@
                          (throw (ex-info "map must be of len=1" {:arg arg})))
                  (xfirst arg-seq))))
 
+(s/defn map-plain? :- s/Bool
+  "Like clojure.core/map?, but returns false for records."
+  [arg :- s/Any]
+  (and (map? arg) (not (record? arg))) )
+
 (defn glue
   "Glues together like collections:
 
