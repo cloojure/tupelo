@@ -73,6 +73,12 @@
 
 (def Fn (s/make-fn-schema s/Any s/Any))
 
+(def Interceptor ; #todo add to tupelo.forest
+  "Plumatic Schema type name for interceptor type used by `walk-entity`."
+  {(s/required-key :enter) s/Any
+   (s/required-key :leave) s/Any
+   (s/optional-key :id)    s/Keyword})
+
 #?(:clj
    (do
      ;-----------------------------------------------------------------------------
