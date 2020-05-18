@@ -1174,6 +1174,48 @@
             [sym (list `grab kw the-map)]))
        ~@forms)))
 
+;-----------------------------------------------------------------------------
+(do  ; #todo => tupelo.core
+  (def ^:dynamic *cumulative-val*
+    "A dynamic Var pointing to an `atom`. Used by `with-cum-val` to accumulate state,
+    such as in a vector or map.  Typically manipulated via helper functions such as
+    `cum-val-set-it` or `cum-vector-append`. Can also be manipulated directly via `swap!` et al."
+    nil)
+
+  (defmacro cum-val-set-it
+    "Works inside of a `with-cum-val` block to append a new val value."
+    [& forms]
+    `(swap! *cumulative-val*
+       (fn [~'it]
+         ~@forms)))
+
+  (defmacro with-cum-val
+    "Wraps forms containing `cum-val-set-it` calls to accumulate values into a vector."
+    [init-val & forms]
+    `(binding [*cumulative-val* (atom ~init-val)]
+       (do ~@forms)
+       (deref *cumulative-val*)))
+
+  ;-----------------------------------------------------------------------------
+  (s/defn cum-vector-append :- s/Any
+    "Works inside of a `with-cum-vector` block to append a new vector value."
+    [value :- s/Any] (cum-val-set-it (append it value)))
+
+  (defmacro with-cum-vector
+    "Wraps forms containing `cum-vector-append` calls to accumulate values into a vector."
+    [& forms]
+    `(with-cum-val []
+       ~@forms))
+
+  ;-----------------------------------------------------------------------------
+  (s/defn only? :- s/Bool
+    "Returns true iff collection has length=1"
+    [coll :- s/Any] (and (has-length? coll 1)))
+  (s/defn only2? :- s/Bool
+    "Returns true iff arg is two nested collections of length=1"
+    [coll :- s/Any] (and (has-length? coll 1)
+                      (has-length? (first coll) 1))))
+
 ; #todo  Need it?-> like some-> that short-circuits on nil
 (defmacro it->
   "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:

@@ -9,7 +9,7 @@
     [clojure.string :as str]
     [tupelo.string :as ts]
 
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty  vals->map map-plain?
+    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty  vals->map map-plain? forv glue
                                         ]]
        :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty vals->map]])
 
@@ -137,6 +137,69 @@
   (let [vv [1 2 3]]
     (isnt (map? vv))
     (isnt (map-plain? vv))))
+
+
+(dotest ; #todo => tupelo.core
+  (is (t/only? [1]))
+  (is (t/only? {:a 1}))
+  (is (t/only? #{:stuff}))
+  (isnt (t/only? [1 2]))
+  (isnt (t/only? {:a 1 :b 2}))
+  (isnt (t/only? #{:stuff :more}))
+
+  (is (t/only2? [[1]]))
+  (is (t/only2? #{{:a 1}}))
+  (is (t/only2? #{#{:stuff}}))
+  (isnt (t/only2? [[1 2]]))
+  (isnt (t/only2? [{:a 1 :b 2}]))
+  (isnt (t/only2? [#{:stuff :more}])))
+
+(dotest ; #todo => tupelo.core
+  (is= 5 (t/with-cum-val 0
+           (doseq [ii (t/thru 5)]
+             (t/cum-val-set-it ii))))
+  (is= 15 (t/with-cum-val 0
+            (doseq [ii (t/thru 5)]
+              (t/cum-val-set-it (+ it ii)))))
+  (is= (t/with-cum-val {}
+         (doseq [ii (t/thru 3)]
+           (t/cum-val-set-it (glue it {ii (+ 10 ii)}))))
+    {0 10
+     1 11
+     2 12
+     3 13})
+  (is= (t/with-cum-val {}
+         (doseq [ii (t/thru 3)]
+           (swap! t/*cumulative-val* assoc ii (+ 10 ii)))) ; can do it "manually" if desired
+    {0 10
+     1 11
+     2 12
+     3 13}))
+
+(dotest ; #todo => tupelo.core
+  (is= (t/with-cum-vector
+         (dotimes [ii 5]
+           (t/cum-vector-append ii)))
+    [0 1 2 3 4])
+  (let [ff (fn ff-fn [n]
+             (when (t/nonneg? n)
+               (t/cum-vector-append n)
+               (ff-fn (dec n))))]
+    (is= (t/with-cum-vector (ff 5))
+      [5 4 3 2 1 0]))
+  ; It will even work across multiple futures:  https://clojure.org/reference/vars#conveyance
+  (let [N     10
+        randy (fn [n]
+                (Thread/sleep (int (+ 50 (* 50 (Math/random)))))
+                (t/cum-vector-append n)
+                n)
+        nums  (t/with-cum-vector
+                (let [futures     (forv [ii (range N)]
+                                    (future (randy ii)))
+                      future-vals (forv [future futures] @future)] ; wait for all futures to finish
+                  (is= future-vals (range N))))] ; in order of creation
+    (is-set= nums (range N)))) ; nums is in random order
+
 
 (dotest
   (let [vals [-3.14 -2 0 2 3.14]]
