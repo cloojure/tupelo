@@ -67,6 +67,11 @@
                                (last coll)])]
         result))))
 
+
+(s/defn boolean->binary :- s/Int ; #todo => misc
+  "Convert true => 1, false => 0"
+  [arg :- s/Bool] (if arg 1 0))
+
 ; -----------------------------------------------------------------------------
 ; #todo maybe move to tupelo.bytes ns
 (s/defn byte-unsigned->signed

@@ -870,6 +870,19 @@
                       ~r2)]
     final-code))
 
+; #todo (spyl value) prints:   spy-line-xxxx => value
+(defn spyq ; #todo => tupelo.core/spy
+  "(spyq <value>) - Spy Quiet
+        This variant is intended for use in very simple situations and is the same as the
+        2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
+        prints 'spy => 5' to stdout.  "
+  [value]
+  (when *spy-enabled*
+    (println (str (spy-indent-spaces) (pr-str value))))
+  value)
+
+(defn spydiv [] (spyq :-----------------------------------------------------------------------------))
+
 ; #todo only allow 1 arg + optional kw-label
 (defmacro spy-pretty ; #todo => core
   "Like `spyx-pretty` but without printing the original form"

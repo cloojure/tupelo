@@ -50,6 +50,12 @@
   (throws? (misc/factorial -1)))
 
 (dotest
+  (is= 1 (misc/boolean->binary true))
+  (is= 0 (misc/boolean->binary false))
+  (throws? (misc/boolean->binary))
+  (throws? (misc/boolean->binary 234)))
+
+(dotest
   ;              0 1 2  3    4    5    6    7   8 9]
   (let [data [0 1 2 0xAA 0xFA 0xFF 0xDA 0xDD 8 9]]
     (is= 5 (first (misc/find-pattern [0xFF 0xDA] data))))
