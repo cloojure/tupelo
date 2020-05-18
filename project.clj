@@ -17,9 +17,9 @@
    [clj-time "0.15.2"]
    [clojure-csv/clojure-csv "2.0.2"]
    [danlentz/clj-uuid "0.1.9"]
-   [joda-time/joda-time "2.10.5"]
+   [joda-time/joda-time "2.10.6"]
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
-   [org.clojure/core.async "1.0.567"]
+   [org.clojure/core.async "1.2.603"]
    [org.clojure/core.match "1.0.0"]
    [org.clojure/data.avl "0.1.0"]
    [org.clojure/data.xml "0.2.0-alpha5"]
@@ -37,7 +37,7 @@
    ]
 
   ; Using `lein-ancient check :all` checks plugins
-  :plugins [[lein-cljsbuild "1.1.7"]
+  :plugins [[lein-cljsbuild "1.1.8"]
             [lein-codox "0.10.7"]
             ;[lein-nomis-ns-graph "0.14.2"]
             [com.jakemccrary/lein-test-refresh "0.24.1"]]
