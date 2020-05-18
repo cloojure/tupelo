@@ -391,14 +391,14 @@
   (has-some? truthy?
     (mapv #(= elem %) (vals map))))
 
-(s/defn dissoc-in :- s/Any
+(s/defn dissoc-in :- s/Any ; #todo upgrade tupelo.core
   "A sane version of dissoc-in that will not delete intermediate keys.
    When invoked as (dissoc-in the-map [:k1 :k2 :k3... :kZ]), acts like
    (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only
    the map entry containing the last key :kZ is removed, and all map entries
    higher than kZ in the hierarchy are unaffected."
-  [the-map :- tsk/KeyMap
-   keys-vec :- [s/Keyword]]
+  [the-map :- tsk/Map
+   keys-vec :- [s/Any]] ; #todo  Primitive?
   (let [num-keys     (count keys-vec)
         key-to-clear (last keys-vec)
         parent-keys  (butlast keys-vec)]
