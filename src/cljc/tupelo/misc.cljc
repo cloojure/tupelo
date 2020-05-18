@@ -13,6 +13,7 @@
        [tupelo.misc :refer [with-dots]]))
   (:require
     [clojure.string :as str]
+    [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map]]
     [tupelo.schema :as tsk]
@@ -255,6 +256,25 @@
       (and (ts/hex? name-str)
         ; (= 40 (count name-str)) ; #todo make more robust re. with-debug-hid
         ))))
+
+;-----------------------------------------------------------------------------
+; #todo => tupelo.misc
+(defn normalized-sorted ; #todo need tests & docs. Use for datomic Entity?
+  "Walks EDN data, converting all collections to vector, sorted-map-generic, or sorted-set-generic"
+  [edn-data]
+  (let [unlazy-item (fn [item]
+                      (cond
+                        (sequential? item) (vec item)
+                        (t/map-plain? item) (t/->sorted-map-generic item)
+                        (set? item) (t/->sorted-set-generic item)
+                        :else item))
+        result      (walk/postwalk unlazy-item edn-data)]
+    result))
+
+(s/defn edn->sha :- s/Str
+  "Converts EDN data into a normalized SHA-1 string"
+  [edn-data]
+  (str->sha (pr-str (normalized-sorted edn-data))))
 
 
 ;----- toptop -----------------------------------------------------------------------------
