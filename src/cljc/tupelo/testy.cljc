@@ -103,44 +103,55 @@
       `(throw (ex-info (str "tupelo is-nonblank-lines= requires at least 2 forms " ~line-str))))
     `(test/is (ts/nonblank-lines= ~@forms) )))
 
-(defmacro throws-2019? ; #todo document in readme
-  "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
-     (throws? (/ 1 0))                      ; catches any Throwable"
-  [& forms]
-  `(test/is
-     (try
-       ~@forms
-       false ; fail if no exception thrown
+(comment  ; #todo delete
+  (defmacro throws-2019? ; #todo document in readme
+    "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
+       (throws? (/ 1 0))                      ; catches any Throwable"
+    [& forms]
+    `(test/is
+       (try
+         ~@forms
+         false ; fail if no exception thrown
 
-       ; if anything is thrown, test succeeds
-       (catch
-         #?(:clj  Throwable
-            :cljs :default) ; NOTE:  cannot catch java.lang.Throwable
-         dummy# true))))
+         ; if anything is thrown, test succeeds
+         (catch
+           #?(:clj  Throwable
+              :cljs :default) ; NOTE:  cannot catch java.lang.Throwable
+           dummy# true))))
+
+  (defmacro throws-not-2019? ; #todo document in readme
+    "The opposite of (throws? ...)"
+    [& forms]
+    `(test/is
+       (try
+         ~@forms
+         true ; succeed if no exception thrown
+
+         ; if anything is thrown, test fails
+         #?(:clj (catch
+                   #?(:clj  Throwable
+                      :cljs :default) ; NOTE:  cannot catch java.lang.Throwable
+                   dummy# false)))))
+  )
 
 (defmacro throws? ; #todo document in readme
   "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
-     (throws? (/ 1 0))                      ; catches any Throwable"
+     (throws? (/ 1 0))   ; catches any Throwable"
   [& forms]
   `(test/is
      (tupelo.core/try-catchall
        ~@forms
-       false
-       (catch e# true))))
+       false ; fail if no exception thrown
+       (catch e# true)))) ; if anything is thrown, test succeeds
 
 (defmacro throws-not? ; #todo document in readme
   "The opposite of (throws? ...)"
   [& forms]
   `(test/is
-     (try
+     (tupelo.core/try-catchall
        ~@forms
        true ; succeed if no exception thrown
-
-       ; if anything is thrown, test fails
-       #?(:clj (catch
-                 #?(:clj  Throwable
-                    :cljs :default) ; NOTE:  cannot catch java.lang.Throwable
-                 dummy# false)))))
+       (catch e# false)))) ; if anything is thrown, test fails
 
 ;---------------------------------------------------------------------------------------------------
 ; non-CLJS follows ;
