@@ -5,20 +5,19 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.lazy
+  ;---------------------------------------------------------------------------------------------------
+  ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
+  ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  #?(:cljs (:require-macros
+             [tupelo.misc]
+             [tupelo.testy] ))
   (:require
-    [clojure.string :as str]
+    [clojure.test] ; sometimes this is required - not sure why
     [schema.core :as s]
-    [tupelo.core :as t]
     [tupelo.lazy :as lazy]
-
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
-       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty]])
-
-    #?(:clj [clojure.test] :cljs [cljs.test])
-    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]]
-       :cljs [tupelo.test-cljs ; :include-macros true
-              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]])
-
+    [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
+    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? define-fixture ]]
     ))
 
 ; #todo add generative testing?

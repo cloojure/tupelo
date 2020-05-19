@@ -6,9 +6,10 @@
 ;   software.
 (ns tupelo.lazy
   "Tupelo - Making Clojure even sweeter"
-  (:require [clojure.core :as cc]
-            [schema.core :as s]
-            [tupelo.schema :as tsk]))
+  (:require
+    [clojure.core :as cc]
+    [schema.core :as s]
+    [tupelo.schema :as tsk]))
 
 (defn join
   "Lazily concatenates a sequence-of-sequences into a flat sequence."
