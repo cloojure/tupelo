@@ -8,7 +8,9 @@
   "Tupelo - Making Clojure even sweeter"
   ; We use the self-require trick to force separate compilation stages for macros
   ; See "ClojureScript Macro Tower & Loop" by Mike Fikes (2015-12-18)
-  #?(:cljs          ; http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
+  ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  #?(:cljs ; http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
      (:require-macros
        [tupelo.core :refer [it-> cond-it-> some-it->
                             vals->map with-map-vals forv
@@ -17,8 +19,7 @@
                             try-catchall with-exception-default verify
                             if-java-1-7-plus if-java-1-8-plus
                             when-clojure-1-8-plus when-clojure-1-9-plus when-not-clojure-1-9-plus
-                            destruct lazy-gen yield yield-all matches? ]]))
- ;(:refer-clojure :exclude [empty? ])
+                            destruct lazy-gen yield yield-all matches?]]))
   (:require
     [clojure.core :as cc]
     [clojure.core.async :as async]
@@ -31,15 +32,13 @@
     [schema.core :as s]
     [tupelo.lexical :as lex]
     [tupelo.schema :as tsk])
-
   #?(:clj
      (:require [cheshire.core :as cheshire]
                [clojure.core.match :as ccm]
                [tupelo.types :as types]))
   #?(:clj
      (:import [java.io BufferedReader ByteArrayOutputStream PrintStream StringReader OutputStream]
-              [java.nio ByteBuffer]))
-  )
+              [java.nio ByteBuffer])))
 
 ;---------------------------------------------------------------------------------------------------
 ; #todo unify terminolgy (atom/ref/agent)
