@@ -8,17 +8,10 @@
   (:require
     [tupelo.math :as math]
     [schema.core :as s]
-
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
-       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty]])
-
-    #?(:clj [clojure.test] :cljs [cljs.test])
-    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]]
-       :cljs [tupelo.test-cljs ; :include-macros true
-              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]])
-    )
-  #?(:clj (:import [java.lang Byte Integer]))
-)
+    [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
+    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? define-fixture]])
+  #?(:clj (:import [java.lang Byte Integer])))
 
 #?(:cljs (enable-console-print!))
 
@@ -35,26 +28,26 @@
        (is= (type (biginteger 5)) (type (biginteger 5.0)) (type (java.math.BigInteger. "5")) java.math.BigInteger)
 
        ; type testing
-       (is   (t/bigdecimal? (bigdec 5)))
-       (is   (t/bigdecimal? 5M))
-       (is   (t/bigint? (bigint 5)))
-       (is   (t/bigint? 5N))
-       (is   (t/biginteger? (biginteger 5)))
+       (is (t/bigdecimal? (bigdec 5)))
+       (is (t/bigdecimal? 5M))
+       (is (t/bigint? (bigint 5)))
+       (is (t/bigint? 5N))
+       (is (t/biginteger? (biginteger 5)))
        (isnt (t/biginteger? 5N))
 
        ; equivalence of values
-       (is=   (bigdec 5) 5M)
+       (is= (bigdec 5) 5M)
        (isnt= (bigdec 5) 5)
        (isnt= (bigdec 5) 5.0)
 
-       (is=   (bigint 5) 5N)
-       (is=   (bigint 5) 5)
-       (is=   (bigint 5) (biginteger 5))
+       (is= (bigint 5) 5N)
+       (is= (bigint 5) 5)
+       (is= (bigint 5) (biginteger 5))
        (isnt= (bigint 5) 5.0)
 
-       (is=   (biginteger 5) 5N)
-       (is=   (biginteger 5) 5)
-       (is=   (biginteger 5) (bigint 5))
+       (is= (biginteger 5) 5N)
+       (is= (biginteger 5) 5)
+       (is= (biginteger 5) (bigint 5))
        (isnt= (biginteger 5) 5.0))
 
-))
+     ))

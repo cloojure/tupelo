@@ -5,6 +5,7 @@
 
 #?(:clj
    (do
+
      (def ^:dynamic UNIT
        "The unit magnitued & type used for round, floor, ceil, etc"
        (double 1))
@@ -16,12 +17,11 @@
           ~@forms))
 
      #_(s/defn unit-type []
-       (cond = )
-       )
+         (cond =)
+         )
 
      (s/defn floor :- s/Num
        [x :- s/Num]
-
        )
 
      ))
