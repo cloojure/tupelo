@@ -522,6 +522,39 @@
 
      ))
 
+#?(:cljs
+   (do
+
+     (defn grouper
+       "Uses js/RegExp to find matching groups.  Sample output:
+
+         (grouper #\"[a-z0-9][A-Z]\"  \"aTaTa\")  =>
+           [ {:groups [\"aT\"]  :match \"aT\"  :index 0  :last-index 2  :input \"aTaTa\" }
+             {:groups [\"aT\"]  :match \"aT\"  :index 2  :last-index 4  :input \"aTaTa\" } ]
+
+         (grouper  #\"((\\d+)-(\\d+))\" \"672-345-456-3212\")  =>
+           [ {:groups [\"672-345\"  \"672-345\"  \"672\" \"345\" ]  :match \"672-345\"   :index 0  :last-index  7  :input \"672-345-456-3212\" }
+             {:groups [\"456-3212\" \"456-3212\" \"456\" \"3212\"]  :match \"456-3212\"  :index 8  :last-index 16  :input \"672-345-456-3212\" } ]
+
+       Note that the JS value returned by `:last-index` is the index of the first char in the input string *after* the current match.
+       "
+       [re input-str]
+       (let [re-src (.-source re)] ; the source string from the regexp arg
+         (loop [groups []
+                regexp (js/RegExp. re-src "g")] ; 'g' => global search
+           (let [res-js  (.exec regexp input-str)
+                 res-clj (js->clj res-js)]
+             (if (nil? res-js)
+               groups
+               (recur
+                 (conj groups {:groups     res-clj :match (get res-clj 0)
+                               :index      (.-index res-js)
+                               :input      (.-input res-js)
+                               :last-index (.-lastIndex regexp)})
+                 regexp))))))
+
+     ))
+
 
 ; #todo move to tupelo
 ;

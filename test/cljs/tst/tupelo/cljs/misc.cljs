@@ -6,16 +6,19 @@
 ;   software.
 (ns tst.tupelo.cljs.misc
   "Tupelo - Making Clojure even sweeter"
+  ;---------------------------------------------------------------------------------------------------
+  ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
+  ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  #?(:cljs (:require-macros
+             ; [tupelo.core]
+             [tupelo.misc]
+             [tupelo.testy]
+             ))
   (:require
-    [tupelo.cljs.misc :as misc]
-    [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
-    [tupelo.test-cljs :refer [define-fixture dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]))
+    [clojure.test] ; sometimes this is required - not sure why
+    [tupelo.misc :as misc]
+    [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
+    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? define-fixture ]]
+    ))
 
-(dotest
-  (is= (misc/grouper #"[a-z0-9][A-Z]" "aTaTa")
-    [{:groups ["aT"] :match "aT" :index 0 :last-index 2 :input "aTaTa"}
-     {:groups ["aT"] :match "aT" :index 2 :last-index 4 :input "aTaTa"}])
-
-  (is= (misc/grouper #"((\d+)-(\d+))" "672-345-456-3212")
-    [{:groups ["672-345"  "672-345"  "672"  "345"] :match "672-345"  :index 0 :last-index  7 :input "672-345-456-3212"}
-     {:groups ["456-3212" "456-3212" "456" "3212"] :match "456-3212" :index 8 :last-index 16 :input "672-345-456-3212"}]))
