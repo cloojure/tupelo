@@ -8,7 +8,9 @@
   "Miscellaneous functions."
   ; We use the self-require trick to force separate compilation stages for macros
   ; See "ClojureScript Macro Tower & Loop" by Mike Fikes (2015-12-18)
-  #?(:cljs ; http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
+  ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  #?(:cljs
      (:require-macros
        [tupelo.misc :refer [with-dots]]))
   (:require [clojure.string :as str]
@@ -25,13 +27,10 @@
             [java.nio ByteBuffer]
             [java.nio.file Paths]
             [java.security MessageDigest]
-            [java.util UUID]
-            [java.security MessageDigest]
-            [java.nio.file Paths]))
+            [java.util UUID]))
   #?(:cljs (:require
              [goog.crypt :as crypt]
-             [goog.crypt.Sha1]))
-  )
+             [goog.crypt.Sha1])))
 
 (s/defn factorial :- s/Int
   "Computes the factorial of N"
