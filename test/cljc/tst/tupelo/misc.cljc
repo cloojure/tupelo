@@ -10,18 +10,17 @@
   #?(:cljs (:require-macros [tupelo.core]))
   #?(:cljs (:require-macros [tupelo.misc]))
   (:require
+    #?(:clj  [clojure.test]
+       :cljs [cljs.test])
     [tupelo.misc :as misc]
-    [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
-    #?(:clj [clojure.test] :cljs [cljs.test])
-    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]]
-       :cljs [tupelo.test-cljs ; :include-macros true
-              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]])
-    )
+    [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
+    [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                         throws? throws-not? define-fixture]])
+  #?(:clj (:require [tupelo.test :refer [dotest-focus]]))
+  #?(:clj (:import [java.lang Byte Integer]))
   #?(:cljs (:require
              [goog.crypt :as crypt]
-             [goog.crypt.Sha1] ))
-  #?(:clj (:import [java.lang Byte Integer]))
-  )
+             [goog.crypt.Sha1])))
 
 #?(:cljs (enable-console-print!))
 
