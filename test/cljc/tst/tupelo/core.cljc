@@ -9,9 +9,12 @@
     [clojure.string :as str]
     [tupelo.string :as ts]
 
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty  vals->map map-plain? forv glue
+    #?(:clj  [tupelo.core :as t
+              :refer [spy spyx spyxx spyx-pretty  vals->map map-plain? forv glue
                                         ]]
-       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty vals->map]])
+       :cljs [tupelo.core :as t :include-macros true
+              :refer [spy spyx spyxx spyx-pretty vals->map map-plain? forv glue
+                                                             ]])
 
     #?(:clj [clojure.test] :cljs [cljs.test])
     #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]]
@@ -175,30 +178,6 @@
      1 11
      2 12
      3 13}))
-
-(dotest ; #todo => tupelo.core
-  (is= (t/with-cum-vector
-         (dotimes [ii 5]
-           (t/cum-vector-append ii)))
-    [0 1 2 3 4])
-  (let [ff (fn ff-fn [n]
-             (when (t/nonneg? n)
-               (t/cum-vector-append n)
-               (ff-fn (dec n))))]
-    (is= (t/with-cum-vector (ff 5))
-      [5 4 3 2 1 0]))
-  ; It will even work across multiple futures:  https://clojure.org/reference/vars#conveyance
-  (let [N     10
-        randy (fn [n]
-                (Thread/sleep (int (+ 50 (* 50 (Math/random)))))
-                (t/cum-vector-append n)
-                n)
-        nums  (t/with-cum-vector
-                (let [futures     (forv [ii (range N)]
-                                    (future (randy ii)))
-                      future-vals (forv [future futures] @future)] ; wait for all futures to finish
-                  (is= future-vals (range N))))] ; in order of creation
-    (is-set= nums (range N)))) ; nums is in random order
 
 
 (dotest
@@ -2907,7 +2886,8 @@
 ;***************************************************************************************************
 ;***************************************************************************************************
 ;***************************************************************************************************
-#?(:clj (do
+#?(:clj
+   (do
 
           (dotest
             (binding [*clojure-version* {:major 1 :minor 7}]
@@ -3202,6 +3182,31 @@
             (is   (t/macro? '->))
             (isnt (t/macro? '+))
             (isnt (t/macro? 'if)))
+
+
+          (dotest ; #todo => tupelo.core
+            (is= (t/with-cum-vector
+                   (dotimes [ii 5]
+                     (t/cum-vector-append ii)))
+              [0 1 2 3 4])
+            (let [ff (fn ff-fn [n]
+                       (when (t/nonneg? n)
+                         (t/cum-vector-append n)
+                         (ff-fn (dec n))))]
+              (is= (t/with-cum-vector (ff 5))
+                [5 4 3 2 1 0]))
+            ; It will even work across multiple futures:  https://clojure.org/reference/vars#conveyance
+            (let [N     10
+                  randy (fn [n]
+                          (Thread/sleep (int (+ 50 (* 50 (Math/random)))))
+                          (t/cum-vector-append n)
+                          n)
+                  nums  (t/with-cum-vector
+                          (let [futures     (forv [ii (range N)]
+                                              (future (randy ii)))
+                                future-vals (forv [future futures] @future)] ; wait for all futures to finish
+                            (is= future-vals (range N))))] ; in order of creation
+              (is-set= nums (range N)))) ; nums is in random order
 
 
           ))
