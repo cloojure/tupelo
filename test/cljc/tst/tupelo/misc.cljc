@@ -5,19 +5,19 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.misc
-  ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
-  ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
-  #?(:cljs (:require-macros [tupelo.core]))
-  #?(:cljs (:require-macros [tupelo.misc]))
   (:require
-    #?(:clj  [clojure.test]
-       :cljs [cljs.test])
     [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
     [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
                          throws? throws-not? define-fixture]])
   #?(:clj (:require [tupelo.test :refer [dotest-focus]]))
   #?(:clj (:import [java.lang Byte Integer]))
+  ;---------------------------------------------------------------------------------------------------
+  ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
+  ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  #?(:cljs (:require-macros
+             ; [tupelo.core]
+             [tupelo.misc]))
   #?(:cljs (:require
              [goog.crypt :as crypt]
              [goog.crypt.Sha1])))
