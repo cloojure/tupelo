@@ -20,6 +20,7 @@
     [tst.tupelo.lazy]
     [tst.tupelo.lexical]
     [tst.tupelo.misc]
+    [tst.tupelo.parse]
     [tst.tupelo.string]
 
     ;-----------------------------------------------------------------------------
@@ -53,6 +54,7 @@
     'tst.tupelo.lazy
     'tst.tupelo.lexical
     'tst.tupelo.misc
+    'tst.tupelo.parse
     'tst.tupelo.string
     ;-----------------------------------------------------------------------------
 

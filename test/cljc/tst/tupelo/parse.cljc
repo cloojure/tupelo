@@ -5,34 +5,33 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.parse
+  ;---------------------------------------------------------------------------------------------------
+  ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
+  ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  #?(:cljs (:require-macros
+             [tupelo.misc]
+             [tupelo.testy]))
+  (:require
+    [clojure.test] ; sometimes this is required - not sure why
+    [tupelo.parse :as tpar]
+    [tupelo.misc :as misc]
+    [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
+    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? define-fixture]])
   #?(:clj (:import [java.lang Math]))
-  #?(:clj (:require
-            [tupelo.test :as ttst :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-
-            [tupelo.core :as t :refer [spy spyx spyxx]]
-            [tupelo.parse :as tpar]
-            ))
-  #?(:cljs (:require
-             [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-
-             [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true]
-             [tupelo.parse :as tpar]
-             ))
   )
 
 #?(:cljs (enable-console-print!))
 
+(dotest
+  (is= (tpar/edn-parsible {:a 1 :b "two" :c [1 2 3]}) ; function object is not edn-parsible
+    {:a 1 :b "two" :c [1 2 3]})
+  (let [some-fn (fn [x] (+ x 1))]
+    (is= (tpar/edn-parsible {:a 1 :x some-fn}) ; function object is not edn-parsible
+      {:a 1 :x :tupelo.parse/edn-non-parsible})))
+
 #?(:clj
    (do
-
-     (dotest
-       (is= (tpar/edn-parsible {:a 1 :b "two" :c [1 2 3]}) ; function object is not edn-parsible
-         {:a 1 :b "two" :c [1 2 3]})
-       (let [some-fn (fn [x] (+ x 1))]
-         (is= (tpar/edn-parsible {:a 1 :x some-fn}) ; function object is not edn-parsible
-           {:a 1 :x :tupelo.parse/edn-non-parsible})))
-
-     ;-----------------------------------------------------------------------------
      (dotest
        (is= 15 (tpar/parse-byte "15"))
        (is= -5 (tpar/parse-byte "-5"))
@@ -122,14 +121,13 @@
        (is= 0.5 (tpar/parse-double "0.5" :default nil))
        (is (t/rel= (/ 1 10) (tpar/parse-double "0.1" :default 0) :digits 9))
        (is (t/rel= Math/PI (tpar/parse-double "3.141592654" :default 0) :digits 9)))
-
      ))
 
 #?(:cljs
    (do
      (dotest
-       (is= 0 (t/spyx (tpar/parse-int "0")))
-       (is= 15 (t/spyx (tpar/parse-int "15")))
+       (is= 0 (tpar/parse-int "0"))
+       (is= 15 (tpar/parse-int "15"))
        (is= -5 (tpar/parse-int "-5"))
        (is= 99999 (tpar/parse-int "99999"))
 
@@ -141,9 +139,9 @@
        (throws? (tpar/parse-int "xxx123")))
 
      (dotest
-       (is= 0 (t/spyx (tpar/parse-float "0")))
-       (is= 0 (t/spyx (tpar/parse-float "0.0")))
-       (is= 12.345 (t/spyx (tpar/parse-float "12.345")))
+       (is= 0 (tpar/parse-float "0"))
+       (is= 0 (tpar/parse-float "0.0"))
+       (is= 12.345 (tpar/parse-float "12.345"))
        (is= -5.1 (tpar/parse-float "-5.1"))
        (is= 42 (tpar/parse-float "42.0"))
        (is= 42 (tpar/parse-float "42"))
@@ -153,26 +151,6 @@
        (throws? (tpar/parse-float "xxx1.23"))
        (throws? (tpar/parse-float "1.23xxx"))
        (throws? (tpar/parse-float "1.2xx34")))
-
      ))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 

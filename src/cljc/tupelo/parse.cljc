@@ -5,42 +5,40 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.parse
- "Utils for parsing string values. Provides a thin Clojure wrapper around java native
-  parsing functions such as java.lang.Float/parseFloat.  Unlike the original java
-  functions, these native-Clojure functions can be used as higher-order functions in maps,
-  function arguments, etc.  Each function also provides an optional default-value which
-  will be returned if there is an exception during parsing."
+  "Utils for parsing string values. Provides a thin Clojure wrapper around java native
+   parsing functions such as java.lang.Float/parseFloat.  Unlike the original java
+   functions, these native-Clojure functions can be used as higher-order functions in maps,
+   function arguments, etc.  Each function also provides an optional default-value which
+   will be returned if there is an exception during parsing."
   (:require
     [clojure.string :as str]
+    [clojure.tools.reader.edn :as edn]
+    [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.core :as t]
-    #?(:clj [clojure.tools.reader.edn :as edn])
-    #?(:clj [clojure.walk :as walk])
     ))
 
 ; #todo:  write doc page
 ; #todo:  convert args from [str-val & opts] -> [str-val & {:as opts} ]
 
+(defn edn-parsible
+  "Traverses a data structure to ensure it can be serialized with `pr-str` and read via
+  clojure.tools.reader.edn/read-string. All non-parsible content is replaced
+  with `::non-parsible-object`. "
+  [data]
+  (let [edn-parse-roundtrip (fn [item]
+                              (t/with-exception-default ::edn-non-parsible
+                                (let [item-str (pr-str item)
+                                      item-edn (edn/read-string item-str)]
+                                  (when-not (= item item-edn)
+                                    (throw (ex-info "edn-non-parsible" {:data data})))
+                                  item)))
+        data-unlazy         (t/unlazy data) ; coerce to map/vector/string wherever possible
+        data-parsible       (walk/postwalk edn-parse-roundtrip data-unlazy)]
+    data-parsible))
+
 #?(:clj
    (do
-
-     (defn edn-parsible
-       "Traverses a data structure to ensure it can be serialized with `pr-str` and read via
-       clojure.tools.reader.edn/read-string. All non-parsible content is replaced
-       with `::non-parsible-object`. "
-       [data]
-       (let [edn-parse-roundtrip (fn [item]
-                                   (t/with-exception-default ::edn-non-parsible
-                                     (let [item-str (pr-str item)
-                                           item-edn (edn/read-string item-str)]
-                                       (when-not (= item item-edn)
-                                         (throw (IllegalArgumentException. (str ::edn-non-parsible))))
-                                       item)))
-             data-unlazy         (t/unlazy data) ; coerce to map/vector/string wherever possible
-             data-parsible       (walk/postwalk edn-parse-roundtrip data-unlazy)]
-         data-parsible))
-
-     ;---------------------------------------------------------------------------
      (defn parse-byte
        "( [str-val]
           [str-val :default default-val] )
@@ -141,7 +139,7 @@
 
      ; #awt TODO:  finish other parse* functions
 
-))
+     ))
 
 #?(:cljs
    (do
@@ -153,22 +151,22 @@
        "Nominal regex for signed/unsigned floating-point numbers (possibly in scientific notation)"
        #"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?")
 
-     (s/defn parse-int     :- s/Int ; #todo => tupelo.cljs.parse
+     (s/defn parse-int :- s/Int ; #todo => tupelo.cljs.parse
        "( [str-val]
           [str-val :default default-val] )
         A thin wrapper around js/parseInt  Parses the string str-val into a integer.
         If the optional default-val is specified, it will be returned in the event of an
         Nan."
        ([str-val :- s/Str]
-         (t/cond-it-> (str/trim str-val)
-           (not (re-matches regex-int it)) (throw (ex-info "parse-int: could not parse input value #1"
-                                                    (t/vals->map str-val)))
-           true (js/parseInt it)
-           (js/isNaN it) (throw (ex-info "parse-int: could not parse input value #2"
-                                  (t/vals->map str-val))) ))
+        (t/cond-it-> (str/trim str-val)
+          (not (re-matches regex-int it)) (throw (ex-info "parse-int: could not parse input value #1"
+                                                   (t/vals->map str-val)))
+          true (js/parseInt it)
+          (js/isNaN it) (throw (ex-info "parse-int: could not parse input value #2"
+                                 (t/vals->map str-val)))))
        ([str-val default-val]
-         (t/with-exception-default default-val
-           (parse-int str-val))))
+        (t/with-exception-default default-val
+          (parse-int str-val))))
 
      (s/defn parse-float :- s/Num
        "( [str-val]
@@ -177,37 +175,17 @@
         If the optional default-val is specified, it will be returned in the event of an
         NaN."
        ([str-val :- s/Str]
-         (t/cond-it-> (str/trim str-val)
-           (not (re-matches regex-float it)) (throw (ex-info "parse-float: could not parse input value #1"
-                                                      (t/vals->map str-val)))
-           true (js/parseFloat it)
-           (js/isNaN it) (throw (ex-info "parse-float: could not parse input value #2"
-                                  (t/vals->map str-val)))))
+        (t/cond-it-> (str/trim str-val)
+          (not (re-matches regex-float it)) (throw (ex-info "parse-float: could not parse input value #1"
+                                                     (t/vals->map str-val)))
+          true (js/parseFloat it)
+          (js/isNaN it) (throw (ex-info "parse-float: could not parse input value #2"
+                                 (t/vals->map str-val)))))
        ([str-val default-val]
-         (t/with-exception-default default-val
-           (parse-float str-val))))
+        (t/with-exception-default default-val
+          (parse-float str-val))))
 
-))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+     ))
 
 
 
