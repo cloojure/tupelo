@@ -162,6 +162,13 @@
        (try ~@try-body (catch js/Object ~ex-symbol ~@catch-body))
        (try ~@try-body (catch Throwable ~ex-symbol ~@catch-body)))))
 
+(defmacro type-name-str
+  "Returns the type/class name of a value as a string.  Works for both CLJ and CLJS."
+  [arg]
+  `(if-cljs
+     (cljs.core/type->str (cljs.core/type ~arg))
+     (.getName (clojure.core/class ~arg))))
+
 ;-----------------------------------------------------------------------------
 ; for tupelo.string
 
@@ -972,9 +979,7 @@
    expression, printing both the expression, its type, and its value to stdout, then returns the value."
   [expr]
   `(let [spy-val#    ~expr
-         type-name# (if-cljs
-                      (type spy-val#)
-                      (.getName (class spy-val#)))]
+         type-name# (type-name-str spy-val#) ]
      (when *spy-enabled*
        (println (str (spy-indent-spaces) '~expr " => <#" type-name# " " (pr-str spy-val#) ">")))
      spy-val#))
@@ -2142,7 +2147,8 @@
   "Evaluates body & returns its result.  In the event of an exception, default-val is returned
    instead of the exception."
   [default-val & forms] ; :default
-  `(try-catchall ~@forms (catch e# ~default-val)))
+  `(try-catchall ~@forms
+     (catch e# ~default-val)))
 
 (defmacro with-result
   "Evaluates `result` and returns it; also evaluates `forms` for their side-effects."

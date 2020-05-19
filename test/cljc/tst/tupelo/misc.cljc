@@ -5,29 +5,36 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.misc
-  (:require
-    [clojure.test] ; sometimes this is required - not sure why
-    [tupelo.misc :as misc]
-    [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
-    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture]])
-  #?(:clj (:require [tupelo.test :refer [dotest-focus]]))
-  #?(:clj (:import [java.lang Byte Integer]))
   ;---------------------------------------------------------------------------------------------------
   ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
   #?(:cljs (:require-macros
              ; [tupelo.core]
-             [tupelo.misc]))
-  #?(:cljs (:require
-             [goog.crypt :as crypt]
-             [goog.crypt.Sha1])))
+             [tupelo.misc]
+             [tupelo.testy]
+             ))
+  (:require
+    [clojure.test] ; sometimes this is required - not sure why
+    [tupelo.misc :as misc]
+    [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
+    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? define-fixture ]]
+    #?(:cljs [goog.crypt :as crypt])
+    #?(:cljs [goog.crypt.Sha1])
+    )
+  ; #?(:clj (:require [tupelo.test :refer [dotest-focus]]))
+  #?(:clj (:import [java.lang Byte Integer]))
+  )
+
 ;---------------------------------------------------------------------------------------------------
 #?(:cljs (enable-console-print!))
 ;---------------------------------------------------------------------------------------------------
 
 (dotest
   (let [data [1 2 3]]
+    (is= (t/type-name-str data) ; #todo => tst.tupelo.core
+      #?(:clj  "clojure.lang.PersistentVector"
+         :cljs "cljs.core/PersistentVector"))
     (is (= (drop 0 data) [1 2 3]))
     (is (= (drop 1 data) [  2 3]))
     (is (= (drop 2 data) [    3]))
@@ -46,14 +53,18 @@
   (is= (misc/factorial 9) 362880)
   (is= (misc/factorial 10) 3628800)
   (is (t/rel= (misc/factorial 15) 1.307674368e+12 :digits 10))
+  (newline)
+  (println :factorial-fail--start)
   (throws? (misc/factorial 1.5))
   (throws? (misc/factorial -1))
-  (throws? (misc/factorial -1)))
+  (throws? (misc/factorial -1))
+  (println :factorial-fail--end)
+  )
 
 (dotest
   (is= 1 (misc/boolean->binary true))
   (is= 0 (misc/boolean->binary false))
-  (throws? (misc/boolean->binary))
+  (throws? (misc/boolean->binary "hello"))
   (throws? (misc/boolean->binary 234)))
 
 (dotest
@@ -237,7 +248,7 @@
 
        (dotest
          (let [result (add2-parent)]
-           (spyx-pretty result)
+           ; (spyx-pretty result)
            (comment ; sample results
              {:add2-info
                    {:class-name "tst.tupelo.misc$add2",

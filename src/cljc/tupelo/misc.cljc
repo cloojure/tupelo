@@ -18,7 +18,10 @@
             [schema.core :as s]
             [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map]]
             [tupelo.schema :as tsk]
-            [tupelo.string :as ts])
+            [tupelo.string :as ts]
+            #?(:cljs [goog.crypt :as crypt])
+            #?(:cljs [goog.crypt.Sha1])
+            )
   #?(:clj (:require
             [clj-uuid :as clj-uuid]
             [clojure.java.shell :as shell]))
@@ -28,9 +31,7 @@
             [java.nio.file Paths]
             [java.security MessageDigest]
             [java.util UUID]))
-  #?(:cljs (:require
-             [goog.crypt :as crypt]
-             [goog.crypt.Sha1])))
+  )
 
 (s/defn factorial :- s/Int
   "Computes the factorial of N"
@@ -256,8 +257,6 @@
         ; (= 40 (count name-str)) ; #todo make more robust re. with-debug-hid
         ))))
 
-;-----------------------------------------------------------------------------
-; #todo => tupelo.misc
 (defn normalized-sorted ; #todo need tests & docs. Use for datomic Entity?
   "Walks EDN data, converting all collections to vector, sorted-map-generic, or sorted-set-generic"
   [edn-data]

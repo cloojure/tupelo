@@ -19,6 +19,7 @@
     ; [tst.tupelo.data]
     [tst.tupelo.lexical]
     [tst.tupelo.array]
+    [tst.tupelo.misc]
 
     ;-----------------------------------------------------------------------------
 
@@ -50,6 +51,7 @@
     ;  'tst.tupelo.data
     'tst.tupelo.lexical
     'tst.tupelo.array
+    'tst.tupelo.misc
     ;-----------------------------------------------------------------------------
 
   )
