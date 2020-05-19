@@ -22,7 +22,6 @@
     #?(:cljs [goog.crypt :as crypt])
     #?(:cljs [goog.crypt.Sha1])
     )
-  ; #?(:clj (:require [tupelo.test :refer [dotest-focus]]))
   #?(:clj (:import [java.lang Byte Integer]))
   )
 

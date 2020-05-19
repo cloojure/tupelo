@@ -11,15 +11,14 @@
     [tst.flintstones.slate]
     ;[tst.flintstones.wilma]
     ;[tst.flintstones.pebbles]
-   [tst.flintstones.bambam]
+    [tst.flintstones.bambam]
 
-    [tst.tupelo.core]
-    [tst.tupelo.string]
-    ; [tst.tupelo.data.index]
-    ; [tst.tupelo.data]
-    [tst.tupelo.lexical]
     [tst.tupelo.array]
+    [tst.tupelo.chars]
+    [tst.tupelo.core]
+    [tst.tupelo.lexical]
     [tst.tupelo.misc]
+    [tst.tupelo.string]
 
     ;-----------------------------------------------------------------------------
 
@@ -43,18 +42,17 @@
     'tst.flintstones.slate
     ;'tst.flintstones.wilma
     ;'tst.flintstones.pebbles
-   'tst.flintstones.bambam
+    'tst.flintstones.bambam
 
-    'tst.tupelo.core
-    'tst.tupelo.string
-    ; 'tst.tupelo.data.index
-    ;  'tst.tupelo.data
-    'tst.tupelo.lexical
     'tst.tupelo.array
+    'tst.tupelo.chars
+    'tst.tupelo.core
+    'tst.tupelo.lexical
     'tst.tupelo.misc
+    'tst.tupelo.string
     ;-----------------------------------------------------------------------------
 
-  )
+    )
   ; return a message to the figwheel process that tells it to wait
   [:figwheel.main.async-result/wait 5000] ; millis
-)
+  )

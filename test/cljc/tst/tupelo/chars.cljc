@@ -4,22 +4,22 @@
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
-(ns       ; ^:test-refresh/focus
-  tst.tupelo.chars
+(ns tst.tupelo.chars
   (:refer-clojure :exclude [take drop])
+  ;---------------------------------------------------------------------------------------------------
+  ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
+  ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  #?(:cljs (:require-macros
+             [tupelo.misc]
+             [tupelo.testy]
+             ))
   (:require
-    [clojure.core :as cc ]
+    [clojure.test] ; sometimes this is required - not sure why
     [tupelo.chars :as chars]
+    [tupelo.core :as t :refer [spyx spyx-pretty forv]]
 
-    #?(:clj  [tupelo.core :as t :refer [spyx spyx-pretty forv]]
-       :cljs [tupelo.core :as t :include-macros true])
-
-    #?(:clj [clojure.test] :cljs [cljs.test] )
-    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set=
-                                  is-nonblank= is-nonblank-lines= throws? define-fixture]]
-       :cljs [tupelo.test-cljs :include-macros true
-              :refer [deftest testing is dotest isnt is= isnt= is-set=
-                      is-nonblank= is-nonblank-lines= throws? define-fixture]])
+    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? define-fixture ]]
     ))
 
 ; #todo add generative testing?
@@ -37,23 +37,15 @@
   (is (every? t/truthy? (mapv chars/hex? chars/hex)))
   (is (every? t/truthy? (mapv chars/alpha? chars/alpha)))
   (is (every? t/truthy? (mapv chars/visible? chars/visible)))
-  (is (every? t/truthy? (mapv chars/text? chars/text)))
+  (is (every? t/truthy? (mapv chars/text? chars/text))))
 
-  )
+(dotest
+  (is (chars/lowercase? \a))
+  (is (chars/uppercase? \A))
+  (is (every? t/truthy? (t/it-> chars/uppercase
+                          (mapv chars/->lowercase it)
+                          (mapv chars/lowercase? it))))
+  (is (every? t/truthy? (t/it-> chars/lowercase
+                          (mapv chars/->uppercase it)
+                          (mapv chars/uppercase? it)))))
 
-#?(:clj   ; #todo make work for cljs
-   (do
-
-     (dotest
-       (is (chars/lowercase? \a))
-       (is (chars/uppercase? \A))
-       (is (every? t/truthy? (t/it-> chars/uppercase
-                               (mapv chars/->lowercase it)
-                               (mapv chars/lowercase? it))))
-       (is (every? t/truthy? (t/it-> chars/lowercase
-                               (mapv chars/->uppercase it)
-                               (mapv chars/uppercase? it))))
-
-       )
-
-     ))
