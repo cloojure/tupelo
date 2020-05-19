@@ -41,3 +41,10 @@
      (cljs.core/type->str (cljs.core/type ~arg))
      (.getName (clojure.core/class ~arg))))
 
+(defn native-array?
+  "Returns true iff arg is a native Java or JavaScript array."
+  [arg]
+  (boolean
+    #?(:clj  (.isArray (class arg))
+       :cljs (cljs.core/array? arg))))
+
