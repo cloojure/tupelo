@@ -5,20 +5,21 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.lexical
-  #?(:clj (:require
-            [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-            [tupelo.core :as t :refer [spy spyx spyxx]]
-            [schema.core :as s]
-            [clojure.data.avl :as avl]
-            [tupelo.lexical :as lex]
-            ))
-  #?(:cljs (:require
-             [tupelo.test-cljs :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?] :include-macros true]
-             [tupelo.core :as t :refer [spy spyx spyxx] :include-macros true ]
-             [schema.core :as s :include-macros true ]
-             [clojure.data.avl :as avl]
-             [tupelo.lexical :as lex]
+  ;---------------------------------------------------------------------------------------------------
+  ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
+  ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  #?(:cljs (:require-macros
+             ; [tupelo.core]
+             [tupelo.misc]
+             [tupelo.testy]
              ))
+ (:require
+   [clojure.test] ; sometimes this is required - not sure why
+   [clojure.data.avl :as avl]
+   [tupelo.lexical :as lex]
+   [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                         throws? throws-not? define-fixture ]]
+   )
 )
 
 #?(:cljs (enable-console-print!))
@@ -40,6 +41,7 @@
      (do
        (is= "Type/Clojure-Character" (lex/comparison-class \X))
        )))
+
 
 ; #todo fix for cljs
 #?(:clj
@@ -65,17 +67,20 @@
          (is (neg? (lex/compare-lex [eid-0] [leaf-1])))
          (is (neg? (lex/compare-lex [eid-1] [leaf-0])))
          (is (neg? (lex/compare-lex [eid-1] [leaf-1])))))
+     ))
 
      (dotest
-       (let [ss123 (t/it-> (avl/sorted-set)
-                     (conj it 1)
-                     (conj it 3)
-                     (conj it 2))
+       (let [ss123 (-> (avl/sorted-set)
+                     (conj 1)
+                     (conj 3)
+                     (conj 2))
              ss13  (disj ss123 2)]
          (is= #{1 2 3} ss123)
          (is= [1 2 3] (vec ss123))
          (is= #{1 3} ss13)))
 
+#?(:clj
+   (do
      (dotest ; -1 => "in order",  0 => "same", +1 => "out of order"
        ; empty list is smaller than any non-empty list
        (is (neg? -99))
