@@ -28,8 +28,8 @@
     (number? x) "Type/Clojure-Number"
 
     (keyword? x) "Type/Clojure-Keyword"
+    (char? x) "Type/Clojure-Character" ; #todo does this ever fire?
     (string? x) "Type/Clojure-String"
-    (char? x) "Type/Clojure-Character"
     (boolean? x) "Type/Clojure-Boolean"
     (symbol? x) "Type/Clojure-Symbol"
 
@@ -41,7 +41,9 @@
     (sequential? x) "Type/Clojure-Sequential"
 
     ; NOTE: record case must preempt `(map? ...)` case below, since all records can be viewed as maps
-    (record? x) (tupelo.core.impl/type-name-str x)
+    (record? x) (let [type-str  (tupelo.core.impl/type-name-str x)]
+                  ; (prn :comparison-class--record [type-str x])
+                  type-str)
 
     (set? x) "Type/Clojure-IPersistentSet"
     (map? x) "Type/Clojure-IPersistentMap"

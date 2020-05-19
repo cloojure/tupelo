@@ -38,7 +38,16 @@
   "Returns the type/class name of a value as a string.  Works for both CLJ and CLJS."
   [arg]
   #?(:clj  (.getName (clojure.core/class arg))
-     :cljs (cljs.core/type->str (cljs.core/type arg))))
+     :cljs (let
+             ; #todo file cljs bug report!
+             ; This way doesn't work for records in cljs
+             ;     (cljs.core/type->str (cljs.core/type arg))
+             ; Result is:
+             ;   "function (raw,__meta,__extmap,__hash){\nthis.raw = raw;\nthis.__meta = __meta;\nthis.__extmap = __extmap;\nthis.__hash = __hash;\nthis.cljs$lang$protocol_mask$partition0$ = 2230716170;\nthis.cljs$lang$protocol_mask$partition1$ = 139264;\n}"
+             ;
+             ; This kludge works => "tst.tupelo.lexical/DummyEid"
+             [captured (with-out-str (pr (type arg)))]
+             captured)))
 
 (defn native-array?
   "Returns true iff arg is a native Java or JavaScript array."

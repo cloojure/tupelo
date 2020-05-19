@@ -9,20 +9,26 @@
   ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
   #?(:cljs (:require-macros
-             ; [tupelo.core]
              [tupelo.misc]
              [tupelo.testy]
              ))
- (:require
-   [clojure.test] ; sometimes this is required - not sure why
-   [clojure.data.avl :as avl]
-   [tupelo.lexical :as lex]
-   [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
-                         throws? throws-not? define-fixture ]]
-   )
+  (:require
+    [clojure.test] ; sometimes this is required - not sure why
+    [clojure.data.avl :as avl]
+    [tupelo.lexical :as lex]
+    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? define-fixture]]
+    [tupelo.core.impl :as impl])
 )
 
 #?(:cljs (enable-console-print!))
+
+(defrecord ^:no-doc DummyEid [raw])
+(defrecord ^:no-doc DummyLeaf [raw])
+(def eid-0 (->DummyEid 0)) ; "Eid" sorts before "Leaf"
+(def eid-1 (->DummyEid 1))
+(def leaf-0 (->DummyLeaf 0))
+(def leaf-1 (->DummyLeaf 1))
 
 (dotest
   (is= "Type/Clojure-IPersistentMap" (lex/comparison-class {:a 1}))
@@ -34,52 +40,39 @@
   (is= "Type/Clojure-Symbol" (lex/comparison-class (symbol "hello")))
   (is= "Type/Clojure-Number" (lex/comparison-class 3))
   (is= "Type/Clojure-Number" (lex/comparison-class 3.14159))
+  (is= "Type/Clojure-Character" (lex/comparison-class \X))
   (is= "Type/Clojure-String" (lex/comparison-class "hello"))
   (is= "Type/Clojure-Boolean" (lex/comparison-class true))
 
-  #?(:clj ; #todo fix for cljs => generic type `Type/Native-Platform-Native-String` etc
-     (do
-       (is= "Type/Clojure-Character" (lex/comparison-class \X))
-       )))
+  (is= "tst.tupelo.lexical/DummyEid" (impl/type-name-str eid-0))
+  (is= "tst.tupelo.lexical/DummyLeaf" (impl/type-name-str leaf-0))
+  (is= "tst.tupelo.lexical/DummyEid" (lex/comparison-class eid-0))
+  (is= "tst.tupelo.lexical/DummyLeaf" (lex/comparison-class leaf-0)))
 
+(dotest
+  (is= [[:raw 0]] (seq eid-0))
+  (is= [[:raw 1]] (seq leaf-1))
 
-; #todo fix for cljs
-#?(:clj
-   (do
+  (is (neg? (lex/compare-lex [eid-0] [eid-1])))
+  (is (zero? (lex/compare-lex [eid-0] [eid-0])))
+  (is (pos? (lex/compare-lex [eid-1] [eid-0])))
 
-     (dotest
-       (defrecord Leaf [raw])
-       (defrecord Eid [raw])
-       (let [eid-0  (->Eid 0) ; "Eid" sorts before "Leaf"
-             eid-1  (->Eid 1)
-             leaf-0 (->Leaf 0)
-             leaf-1 (->Leaf 1)]
-         (is= "tst.tupelo.lexical.Eid" (lex/comparison-class eid-0))
-         (is= "tst.tupelo.lexical.Leaf" (lex/comparison-class leaf-0))
-         (is= [[:raw 0]] (seq eid-0))
-         (is= [[:raw 1]] (seq leaf-1))
+  (is (neg? (lex/compare-lex [eid-0] [leaf-0])))
+  (is (neg? (lex/compare-lex [eid-0] [leaf-1])))
+  (is (neg? (lex/compare-lex [eid-1] [leaf-0])))
+  (is (neg? (lex/compare-lex [eid-1] [leaf-1]))))
 
-         (is (neg? (lex/compare-lex [eid-0] [eid-1])))
-         (is (zero? (lex/compare-lex [eid-0] [eid-0])))
-         (is (pos? (lex/compare-lex [eid-1] [eid-0])))
+(dotest
+  (let [ss123 (-> (avl/sorted-set)
+                (conj 1)
+                (conj 3)
+                (conj 2))
+        ss13  (disj ss123 2)]
+    (is= #{1 2 3} ss123)
+    (is= [1 2 3] (vec ss123))
+    (is= #{1 3} ss13)))
 
-         (is (neg? (lex/compare-lex [eid-0] [leaf-0])))
-         (is (neg? (lex/compare-lex [eid-0] [leaf-1])))
-         (is (neg? (lex/compare-lex [eid-1] [leaf-0])))
-         (is (neg? (lex/compare-lex [eid-1] [leaf-1])))))
-     ))
-
-     (dotest
-       (let [ss123 (-> (avl/sorted-set)
-                     (conj 1)
-                     (conj 3)
-                     (conj 2))
-             ss13  (disj ss123 2)]
-         (is= #{1 2 3} ss123)
-         (is= [1 2 3] (vec ss123))
-         (is= #{1 3} ss13)))
-
-(dotest ; -1 => "in order",  0 => "same", +1 => "out of order"
+(dotest   ; -1 => "in order",  0 => "same", +1 => "out of order"
   ; empty list is smaller than any non-empty list
   (is (neg? -99))
   (is (neg? (lex/compare-lex [] [2])))
@@ -106,9 +99,12 @@
   (isnt (zero? (lex/compare-lex ['b] ["b"])))
   (isnt (zero? (lex/compare-lex [:b] ['b])))
   (isnt (zero? (lex/compare-lex [\b] [1])))
-  (isnt (zero? (lex/compare-lex [\b] ["b"])))
   (isnt (zero? (lex/compare-lex [:b] [\b])))
   (isnt (zero? (lex/compare-lex ['b] [\b])))
+
+  #?(:clj  (isnt (zero? (lex/compare-lex [\b] ["b"])))
+     :cljs (is (zero? (lex/compare-lex [\b] ["b"])))) ; On CLJS, char === len-1 String
+
 
   ; numeric types all compare as equal as with clojure.core/compare
   (is (zero? (lex/compare-lex [1] [1])))
