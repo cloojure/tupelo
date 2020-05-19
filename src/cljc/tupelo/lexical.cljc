@@ -7,7 +7,6 @@
 (ns tupelo.lexical
   "Utils for lexical sorting and searching"
   (:require
-    [clojure.core :as cc]
     [tupelo.core.impl :as impl]
     [tupelo.schema :as tsk]
     [schema.core :as s]
@@ -44,7 +43,7 @@
 
     ; #todo what about cljs?  THIS IS UGLY!!!
     ; #?(:clj (.isArray (class x))) #?(:clj "java.util.Arrays")
-    (impl/native-array? x)  "Type/Platform-Native-Array"
+    (impl/native-array? x) "Type/Platform-Native-Array"
 
     ; Comparable includes Boolean, Character, String, Clojure refs, and many others.
     #?(:clj  (instance? java.lang.Comparable x)
@@ -52,112 +51,107 @@
     (tupelo.core.impl/type-name-str x)
 
     :else (throw
-            (ex-info (cc/format "cc-cmp does not implement comparison of values with class %s"
-                       (tupelo.core.impl/type-name-str x))
+            (ex-info
+              (str "cc-cmp does not implement comparison of values with class name=" (tupelo.core.impl/type-name-str x))
               {:value x}))))
 
-#?(:clj
-   (do
+(defn ^:no-doc compare-seq-lexi
+  [cmpr-fn x y]
+  (loop [x x
+         y y]
+    (if (seq x)
+      (if (seq y)
+        (let [c (cmpr-fn (first x) (first y))]
+          (if (zero? c)
+            (recur (rest x) (rest y))
+            c))
+        ; else we reached end of y first, so x > y
+        1)
+      (if (seq y)
+        ; we reached end of x first, so x < y
+        -1
+        ; Sequences contain same elements.  x = y
+        0))))
 
-     (defn ^:no-doc compare-seq-lexi
-       [cmpr-fn x y]
-       (loop [x x
-              y y]
-         (if (seq x)
-           (if (seq y)
-             (let [c (cmpr-fn (first x) (first y))]
-               (if (zero? c)
-                 (recur (rest x) (rest y))
-                 c))
-             ; else we reached end of y first, so x > y
-             1)
-           (if (seq y)
-             ; we reached end of x first, so x < y
-             -1
-             ; Sequences contain same elements.  x = y
-             0))))
+; The same result can be obtained by calling cmp-seq-lexi on two
+; vectors, but cmp-vec-lexi should allocate less memory comparing
+; vectors.
+(defn ^:no-doc compare-vec-lexi
+  [cmpr-fn x y]
+  (let [x-len (count x)
+        y-len (count y)
+        len   (min x-len y-len)]
+    (loop [i 0]
+      (if (== i len)
+        ; If all elements 0..(len-1) are same, shorter vector comes
+        ; first.
+        (clojure.core/compare x-len y-len)
+        (let [c (cmpr-fn (x i) (y i))]
+          (if (zero? c)
+            (recur (inc i))
+            c))))))
 
-     ; The same result can be obtained by calling cmp-seq-lexi on two
-     ; vectors, but cmp-vec-lexi should allocate less memory comparing
-     ; vectors.
-     (defn ^:no-doc compare-vec-lexi
-       [cmpr-fn x y]
-       (let [x-len (count x)
-             y-len (count y)
-             len   (min x-len y-len)]
-         (loop [i 0]
-           (if (== i len)
-             ; If all elements 0..(len-1) are same, shorter vector comes
-             ; first.
-             (clojure.core/compare x-len y-len)
-             (let [c (cmpr-fn (x i) (y i))]
-               (if (zero? c)
-                 (recur (inc i))
-                 c))))))
+(defn ^:no-doc compare-array-lexi
+  [cmpr-fn x y]
+  (let [x-len (alength x)
+        y-len (alength y)
+        len   (min x-len y-len)]
+    (loop [i 0]
+      (if (== i len)
+        ; If all elements 0..(len-1) are same, shorter array comes
+        ; first.
+        (clojure.core/compare x-len y-len)
+        (let [c (cmpr-fn (aget x i) (aget y i))]
+          (if (zero? c)
+            (recur (inc i))
+            c))))))
 
-     (defn ^:no-doc compare-array-lexi
-       [cmpr-fn x y]
-       (let [x-len (alength x)
-             y-len (alength y)
-             len   (min x-len y-len)]
-         (loop [i 0]
-           (if (== i len)
-             ; If all elements 0..(len-1) are same, shorter array comes
-             ; first.
-             (clojure.core/compare x-len y-len)
-             (let [c (cmpr-fn (aget x i) (aget y i))]
-               (if (zero? c)
-                 (recur (inc i))
-                 c))))))
+(defn compare-generic
+  [x y]
+  (let [x-cls (comparison-class x)
+        y-cls (comparison-class y)
+        c     (clojure.core/compare x-cls y-cls)]
+    (cond (not= c 0) c ; different classes
 
-     (defn compare-generic
-       [x y]
-       (let [x-cls (comparison-class x)
-             y-cls (comparison-class y)
-             c     (clojure.core/compare x-cls y-cls)]
-         (cond (not= c 0) c ; different classes
+          ; Compare sets to each other as sequences, with elements in
+          ; sorted order.
+          (= x-cls "clojure.lang.IPersistentSet")
+          (compare-seq-lexi compare-generic (sort compare-generic x) (sort compare-generic y))
 
-               ; Compare sets to each other as sequences, with elements in
-               ; sorted order.
-               (= x-cls "clojure.lang.IPersistentSet")
-               (compare-seq-lexi compare-generic (sort compare-generic x) (sort compare-generic y))
+          ; Compare records to each other like maps below.
+          ; NOTE: record case must preempt `(map? ...)` case below, since all records can be viewed as maps
+          (record? x)
+          (compare-seq-lexi compare-generic
+            (sort-by key compare-generic (seq x))
+            (sort-by key compare-generic (seq y)))
 
-               ; Compare records to each other like maps below.
-               ; NOTE: record case must preempt `(map? ...)` case below, since all records can be viewed as maps
-               (record? x)
-               (compare-seq-lexi compare-generic
-                 (sort-by key compare-generic (seq x))
-                 (sort-by key compare-generic (seq y)))
+          ; Compare maps to each other as sequences of [key val] pairs, with pairs in order sorted by key.
+          ; Since keys are unique
+          (= x-cls "clojure.lang.IPersistentMap")
+          (compare-seq-lexi compare-generic
+            (sort-by key compare-generic (seq x)) ; sorted [[xk1 xv1] [xk2 xv2] ...]
+            (sort-by key compare-generic (seq y))) ; sorted [[yk1 yv1] [yk2 yv2] ...]
 
-               ; Compare maps to each other as sequences of [key val] pairs, with pairs in order sorted by key.
-               ; Since keys are unique
-               (= x-cls "clojure.lang.IPersistentMap")
-               (compare-seq-lexi compare-generic
-                 (sort-by key compare-generic (seq x)) ; sorted [[xk1 xv1] [xk2 xv2] ...]
-                 (sort-by key compare-generic (seq y))) ; sorted [[yk1 yv1] [yk2 yv2] ...]
+          (= x-cls "java.util.Arrays")
+          (compare-array-lexi compare-generic x y)
 
-               (= x-cls "java.util.Arrays")
-               (compare-array-lexi compare-generic x y)
+          ; Make a special check for two vectors, since cmp-vec-lexi
+          ; should allocate less memory comparing them than
+          ; cmp-seq-lexi.  Both here and for comparing sequences, we
+          ; must use cc-cmp recursively on the elements, because if
+          ; we used compare we would lose the ability to compare
+          ; elements with different types.
+          (and (vector? x) (vector? y)) (compare-vec-lexi compare-generic x y)
 
-               ; Make a special check for two vectors, since cmp-vec-lexi
-               ; should allocate less memory comparing them than
-               ; cmp-seq-lexi.  Both here and for comparing sequences, we
-               ; must use cc-cmp recursively on the elements, because if
-               ; we used compare we would lose the ability to compare
-               ; elements with different types.
-               (and (vector? x) (vector? y)) (compare-vec-lexi compare-generic x y)
+          ; This will compare any two sequences, if they are not both
+          ; vectors, e.g. a vector and a list will be compared here.
+          (= x-cls "clojure.lang.Sequential")
+          (compare-seq-lexi compare-generic x y)
 
-               ; This will compare any two sequences, if they are not both
-               ; vectors, e.g. a vector and a list will be compared here.
-               (= x-cls "clojure.lang.Sequential")
-               (compare-seq-lexi compare-generic x y)
+          :else (clojure.core/compare x y))))
 
-               :else (clojure.core/compare x y))))
+(s/defn compare-lex :- s/Int
+  [a :- tsk/Vec
+   b :- tsk/Vec]
+  (compare-generic a b))
 
-
-     (s/defn compare-lex :- s/Int
-       [a :- tsk/Vec
-        b :- tsk/Vec]
-       (compare-generic a b))
-
-     ))
