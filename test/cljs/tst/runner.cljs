@@ -23,6 +23,7 @@
     [tst.tupelo.parse]
     [tst.tupelo.set]
     [tst.tupelo.string]
+    [tst.tupelo.vec]
 
     ;-----------------------------------------------------------------------------
 
@@ -58,6 +59,7 @@
     'tst.tupelo.parse
     'tst.tupelo.set
     'tst.tupelo.string
+    'tst.tupelo.vec
     ;-----------------------------------------------------------------------------
 
     )

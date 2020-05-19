@@ -6,24 +6,23 @@
 ;   software.
 (ns tst.tupelo.vec
   #?(:clj (:refer-clojure :exclude [load ->VecNode]))
-  #?(:clj (:require
-            [tupelo.test :refer [define-fixture deftest dotest dotest-focus is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-            [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty unlazy let-spy only forv glue ]]
-
-            [schema.core :as s]
-            [tupelo.vec :as tv]
-            ))
-  #?(:cljs (:require
-             [tupelo.test-cljs :include-macros true
-                :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?] ]
-             [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab glue map-entry indexed
-                                        forv vals->map fetch-in let-spy xlast xfirst keep-if drop-if
-                                        it-> cond-it-> xfirst xsecond xthird xlast ]]
-
-             [schema.core :as s]
-             [tupelo.vec :as tv]
+  ;---------------------------------------------------------------------------------------------------
+  ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
+  ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  #?(:cljs (:require-macros
+             ; [tupelo.core]
+             [tupelo.misc]
+             [tupelo.testy]
              ))
-  )
+  (:require
+    [clojure.test] ; sometimes this is required - not sure why
+    [schema.core :as s]
+    [tupelo.vec :as tv]
+    [tupelo.misc :as misc]
+    [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty unlazy let-spy only forv glue ]]
+    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? define-fixture ]]
+    ))
 
 ; #todo fix for cljs
 
