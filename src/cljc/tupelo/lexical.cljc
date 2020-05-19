@@ -48,8 +48,6 @@
     (set? x) "Type/Clojure-IPersistentSet"
     (map? x) "Type/Clojure-IPersistentMap"
 
-    ; #todo what about cljs?  THIS IS UGLY!!!
-    ; #?(:clj (.isArray (class x))) #?(:clj "java.util.Arrays")
     (impl/native-array? x) "Type/Platform-Native-Array"
 
     ; Comparable includes Boolean, Character, String, Clojure refs, and many others.

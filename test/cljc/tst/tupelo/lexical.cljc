@@ -23,8 +23,8 @@
 
 #?(:cljs (enable-console-print!))
 
-(defrecord ^:no-doc DummyEid [raw])
-(defrecord ^:no-doc DummyLeaf [raw])
+(defrecord DummyEid [raw])
+(defrecord DummyLeaf [raw])
 (def eid-0 (->DummyEid 0)) ; "Eid" sorts before "Leaf"
 (def eid-1 (->DummyEid 1))
 (def leaf-0 (->DummyLeaf 0))
@@ -44,10 +44,16 @@
   (is= "Type/Clojure-String" (lex/comparison-class "hello"))
   (is= "Type/Clojure-Boolean" (lex/comparison-class true))
 
-  (is= "tst.tupelo.lexical/DummyEid" (impl/type-name-str eid-0))
-  (is= "tst.tupelo.lexical/DummyLeaf" (impl/type-name-str leaf-0))
-  (is= "tst.tupelo.lexical/DummyEid" (lex/comparison-class eid-0))
-  (is= "tst.tupelo.lexical/DummyLeaf" (lex/comparison-class leaf-0)))
+  #?(:clj (do
+       (is= "tst.tupelo.lexical.DummyEid" (impl/type-name-str eid-0))
+       (is= "tst.tupelo.lexical.DummyLeaf" (impl/type-name-str leaf-0))
+       (is= "tst.tupelo.lexical.DummyEid" (lex/comparison-class eid-0))
+       (is= "tst.tupelo.lexical.DummyLeaf" (lex/comparison-class leaf-0)))
+    :cljs (do
+       (is= "tst.tupelo.lexical/DummyEid" (impl/type-name-str eid-0))
+       (is= "tst.tupelo.lexical/DummyLeaf" (impl/type-name-str leaf-0))
+       (is= "tst.tupelo.lexical/DummyEid" (lex/comparison-class eid-0))
+       (is= "tst.tupelo.lexical/DummyLeaf" (lex/comparison-class leaf-0))) ) )
 
 (dotest
   (is= [[:raw 0]] (seq eid-0))
@@ -102,6 +108,7 @@
   (isnt (zero? (lex/compare-lex [:b] [\b])))
   (isnt (zero? (lex/compare-lex ['b] [\b])))
 
+  ; #todo rethink this.  Problem???
   #?(:clj  (isnt (zero? (lex/compare-lex [\b] ["b"])))
      :cljs (is (zero? (lex/compare-lex [\b] ["b"])))) ; On CLJS, char === len-1 String
 
