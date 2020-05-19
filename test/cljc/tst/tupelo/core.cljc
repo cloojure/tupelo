@@ -5,24 +5,25 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.core
+  ;---------------------------------------------------------------------------------------------------
+  ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
+  ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  #?(:cljs (:require-macros
+             [tupelo.core]
+             [tupelo.misc]
+             [tupelo.testy]
+             ))
   (:require
+    [clojure.test] ; sometimes this is required - not sure why
     [clojure.string :as str]
+    [tupelo.misc :as misc]
+    [tupelo.core :as t :refer [spy spyx spyxx spy-pretty  spyx-pretty
+                               vals->map map-plain? forv glue ] ]
     [tupelo.string :as ts]
-
-    #?(:clj  [tupelo.core :as t
-              :refer [spy spyx spyxx spyx-pretty  vals->map map-plain? forv glue
-                                        ]]
-       :cljs [tupelo.core :as t :include-macros true
-              :refer [spy spyx spyxx spyx-pretty vals->map map-plain? forv glue
-                                                             ]])
-
-    #?(:clj [clojure.test] :cljs [cljs.test])
-    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]]
-       :cljs [tupelo.test-cljs ; :include-macros true
-              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]])
-
-    #?(:clj [tupelo.types :as types])
-    ))
+    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? define-fixture ]] )
+  #?(:clj (:require [tupelo.types :as types]))
+  )
 
 #?(:cljs (enable-console-print!))
 
