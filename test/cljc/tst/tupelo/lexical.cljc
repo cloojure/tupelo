@@ -79,66 +79,63 @@
          (is= [1 2 3] (vec ss123))
          (is= #{1 3} ss13)))
 
-#?(:clj
-   (do
-     (dotest ; -1 => "in order",  0 => "same", +1 => "out of order"
-       ; empty list is smaller than any non-empty list
-       (is (neg? -99))
-       (is (neg? (lex/compare-lex [] [2])))
-       (is (neg? (lex/compare-lex [] [\b])))
-       (is (neg? (lex/compare-lex [] ["b"])))
-       (is (neg? (lex/compare-lex [] [:b])))
-       (is (neg? (lex/compare-lex [] ['b])))
-       (is (neg? (lex/compare-lex [] [nil])))
+(dotest ; -1 => "in order",  0 => "same", +1 => "out of order"
+  ; empty list is smaller than any non-empty list
+  (is (neg? -99))
+  (is (neg? (lex/compare-lex [] [2])))
+  (is (neg? (lex/compare-lex [] [\b])))
+  (is (neg? (lex/compare-lex [] ["b"])))
+  (is (neg? (lex/compare-lex [] [:b])))
+  (is (neg? (lex/compare-lex [] ['b])))
+  (is (neg? (lex/compare-lex [] [nil])))
 
-       ; nil is smaller than any non-nil item
-       (is (neg? (lex/compare-lex [nil] [2])))
-       (is (neg? (lex/compare-lex [nil] [\b])))
-       (is (neg? (lex/compare-lex [nil] ["b"])))
-       (is (neg? (lex/compare-lex [nil] [:b])))
-       (is (neg? (lex/compare-lex [nil] ['b])))
-       (is (neg? (lex/compare-lex [nil] [:b nil])))
-       (is (neg? (lex/compare-lex [nil] [nil nil])))
+  ; nil is smaller than any non-nil item
+  (is (neg? (lex/compare-lex [nil] [2])))
+  (is (neg? (lex/compare-lex [nil] [\b])))
+  (is (neg? (lex/compare-lex [nil] ["b"])))
+  (is (neg? (lex/compare-lex [nil] [:b])))
+  (is (neg? (lex/compare-lex [nil] ['b])))
+  (is (neg? (lex/compare-lex [nil] [:b nil])))
+  (is (neg? (lex/compare-lex [nil] [nil nil])))
 
-       ; Can compare items from different classes:  number, char, string, keyword, symbol
-       (isnt (zero? (lex/compare-lex [1] ["b"])))
-       (isnt (zero? (lex/compare-lex [:b] [1])))
-       (isnt (zero? (lex/compare-lex ['b] [1])))
-       (isnt (zero? (lex/compare-lex [:b] ["b"])))
-       (isnt (zero? (lex/compare-lex ['b] ["b"])))
-       (isnt (zero? (lex/compare-lex [:b] ['b])))
-       (isnt (zero? (lex/compare-lex [\b] [1])))
-       (isnt (zero? (lex/compare-lex [\b] ["b"])))
-       (isnt (zero? (lex/compare-lex [:b] [\b])))
-       (isnt (zero? (lex/compare-lex ['b] [\b])))
+  ; Can compare items from different classes:  number, char, string, keyword, symbol
+  (isnt (zero? (lex/compare-lex [1] ["b"])))
+  (isnt (zero? (lex/compare-lex [:b] [1])))
+  (isnt (zero? (lex/compare-lex ['b] [1])))
+  (isnt (zero? (lex/compare-lex [:b] ["b"])))
+  (isnt (zero? (lex/compare-lex ['b] ["b"])))
+  (isnt (zero? (lex/compare-lex [:b] ['b])))
+  (isnt (zero? (lex/compare-lex [\b] [1])))
+  (isnt (zero? (lex/compare-lex [\b] ["b"])))
+  (isnt (zero? (lex/compare-lex [:b] [\b])))
+  (isnt (zero? (lex/compare-lex ['b] [\b])))
 
-       ; numeric types all compare as equal as with clojure.core/compare
-       (is (zero? (lex/compare-lex [1] [1])))
-       (is (zero? (lex/compare-lex [1] [1N])))
-       (is (zero? (lex/compare-lex [1] [1.0])))
-       (is (zero? (lex/compare-lex [1] [1.0M])))
+  ; numeric types all compare as equal as with clojure.core/compare
+  (is (zero? (lex/compare-lex [1] [1])))
+  (is (zero? (lex/compare-lex [1] [1N])))
+  (is (zero? (lex/compare-lex [1] [1.0])))
+  (is (zero? (lex/compare-lex [1] [1.0M])))
 
-       (is (zero? (lex/compare-lex [66] [66])))
-       (is (zero? (lex/compare-lex [:a] [:a])))
-       (is (zero? (lex/compare-lex ["abc"] ["abc"])))
-       (is (zero? (lex/compare-lex [nil] [nil])))
-       (is (zero? (lex/compare-lex [\a] [\a])))
-       (is (zero? (lex/compare-lex [1 2] [1 2])))
+  (is (zero? (lex/compare-lex [66] [66])))
+  (is (zero? (lex/compare-lex [:a] [:a])))
+  (is (zero? (lex/compare-lex ["abc"] ["abc"])))
+  (is (zero? (lex/compare-lex [nil] [nil])))
+  (is (zero? (lex/compare-lex [\a] [\a])))
+  (is (zero? (lex/compare-lex [1 2] [1 2])))
 
-       ; different positions in list can be of different class
-       (is (neg? (lex/compare-lex [:a] [:b])))
-       (is (neg? (lex/compare-lex [:a] [:a 1])))
-       (is (neg? (lex/compare-lex [1 :a] [2])))
-       (is (neg? (lex/compare-lex [:a] [:a 1])))
-       (is (neg? (lex/compare-lex [1] [1 :a])))
-       (is (neg? (lex/compare-lex [1 :a] [2])))
-       (is (neg? (lex/compare-lex [1 nil] [1 2])))
-       (is (neg? (lex/compare-lex [1 nil nil] [1 2])))
-       (is (neg? (lex/compare-lex [1 2] [1 2 nil])))
+  ; different positions in list can be of different class
+  (is (neg? (lex/compare-lex [:a] [:b])))
+  (is (neg? (lex/compare-lex [:a] [:a 1])))
+  (is (neg? (lex/compare-lex [1 :a] [2])))
+  (is (neg? (lex/compare-lex [:a] [:a 1])))
+  (is (neg? (lex/compare-lex [1] [1 :a])))
+  (is (neg? (lex/compare-lex [1 :a] [2])))
+  (is (neg? (lex/compare-lex [1 nil] [1 2])))
+  (is (neg? (lex/compare-lex [1 nil nil] [1 2])))
+  (is (neg? (lex/compare-lex [1 2] [1 2 nil])))
 
-       (is (neg? (lex/compare-lex [1 :z] [2 9])))
-       (is (neg? (lex/compare-lex [1 :z] [1 2])))
+  (is (neg? (lex/compare-lex [1 :z] [2 9])))
+  (is (neg? (lex/compare-lex [1 :z] [1 2])))
+  )
 
-       )
 
-     ))
