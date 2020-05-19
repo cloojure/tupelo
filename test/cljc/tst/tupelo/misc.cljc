@@ -8,8 +8,8 @@
   (:require
     [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
-    [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
-                         throws? throws-not? define-fixture]])
+    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? define-fixture]])
   #?(:clj (:require [tupelo.test :refer [dotest-focus]]))
   #?(:clj (:import [java.lang Byte Integer]))
   ;---------------------------------------------------------------------------------------------------

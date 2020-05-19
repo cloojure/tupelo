@@ -1,22 +1,46 @@
-;   Copyright (c) Alan Thompson. All rights reserved.
+;   Copyright (c) Alan Thompson. All rights reserved. 
 ;   The use and distribution terms for this software are covered by the Eclipse Public
 ;   License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns tupelo.test-cljs ; this file defines macros
+(ns tupelo.testy
+  "Testing functions."
+  #?(:cljs (:require-macros [tupelo.testy]))
   (:require
-    [cljs.test :as test]
-    [tupelo.string :as ts] ))
-
-; #todo merge into a single namespace using `is-cljs` macro when necessary
+    [tupelo.core :as t]
+    [tupelo.string :as ts]
+    [clojure.test :as test]))
 
 (defmacro deftest [& forms] `(test/deftest ~@forms))
 (defmacro testing [& forms] `(test/testing ~@forms))
 
-(defmacro dotest [& body] ; #todo README & tests
+(defmacro dotest ; #todo README & tests
+  "Like clojure.test/deftest, but doesn't require a test name. Usage:
+
+      (ns xyz..
+        (:use tupelo.test))
+
+      (dotest
+        (is= 5 (+ 2 3))          ; contraction of (is (= ...))
+        (isnt false)             ; contraction of (is (not ...))
+        (set= [1 2 3] [3 2 1])   ; set equality semantics
+        (throws? (/ 1 0)))
+  "
+  [& body]
   (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
-    `(test/deftest ~test-name-sym ~@body)))
+    `(def ~(vary-meta test-name-sym assoc
+             :test `(fn [] ~@body))
+       (fn [] (test/test-var (var ~test-name-sym))))))
+
+(defmacro dotest-focus ; #todo README & tests
+  "Alias for tupelo.test/deftest-focus "
+  [& body]
+  (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
+    `(def ~(vary-meta test-name-sym assoc
+             :test `(fn [] ~@body)
+             :test-refresh/focus true)
+       (fn [] (test/test-var (var ~test-name-sym))))))
 
 ; For all the following arity tests, we use an `if` statement so the exception is thrown during
 ; the test execution, not during compilation.
@@ -41,8 +65,8 @@
   [& forms]
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
-      `(throw (ex-info "tupelo.test/is= requires at least 2 forms " {:line-str ~line-str })))
-    `(test/is (= ~@forms))))
+     `(throw (ex-info "tupelo.test/is= requires at least 2 forms " {:line-str ~line-str })))
+     `(test/is (= ~@forms))))
 
 (defmacro isnt=         ; #todo readme/test
   "Use (isnt= ...) instead of (is (not= ...)) for clojure.test"
@@ -62,13 +86,13 @@
     `(test/is (= ~@(mapv #(list 'set %) forms)))))
 
 ; #todo use tstr/nonblank=
-(defmacro is-nonblank= ; #todo readme/test
+(defmacro is-nonblank=  ; #todo readme/test
   "Returns true if each input string is equal treating all whitespace as equivalent."
   [& forms]
-  (if (<= (count forms) 1)
-    (let [line-str (str "[source line=" (:line (meta &form)) "]")]
+  (if (<= (count forms) 1 )
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
       `(throw (ex-info (str "tupelo is-nonblank= requires at least 2 forms " ~line-str))))
-    `(test/is (ts/nonblank= ~@forms))))
+    `(test/is (ts/nonblank= ~@forms) )))
 
 ; #todo use tstr/nonblank=
 (defmacro is-nonblank-lines=  ; #todo readme/test
@@ -87,8 +111,9 @@
      (try
        ~@forms
        false ; fail if no exception thrown
-       (catch :default dummy# ; NOTE:  cannot catch java.lang.Throwable
+       (catch Throwable dummy#
          true)))) ; if anything is thrown, test succeeds
+; #todo #awt #bug in cljs if use (apply throws-impl forms) and [& forms]
 
 (defmacro throws-not?   ; #todo document in readme
   "The opposite of (throws? ...)"
@@ -97,85 +122,46 @@
      (try
        ~@forms
        true    ; succeed if no exception thrown
-       (catch :default dummy# ; NOTE:  cannot catch java.lang.Throwable
+       (catch Throwable dummy#
          false)))) ; if anything is thrown, test fails
 
-(comment            ; #todo  new format?
-  (define-fixtures  ; #todo cljs allows only one choice of :each of :once   :(
-    {:once {:enter (fn [] (println "*** TEST ONCE *** - enter"))
-            :leave (fn [] (println "*** TEST ONCE *** - leave"))}}
-    {:each {:enter (fn [] (println "*** TEST EACH *** - enter"))
-            :leave (fn [] (println "*** TEST EACH *** - leave"))}})
-  ;#todo maybe define
-  ;#todo   (def-fixture-global {intc-fixture-map} ...)  as global `use-fixtures`
-  ;#todo   (def-fixture-local abc {abc-fixture-intc} ...)   defines entry in ns-local fixture map for (dotest-with abc ...)
-  )
-
-; ********** WARNING: different than clojure.test/use-fixtures **********
-(defmacro define-fixture
-  [mode interceptor-map]
-  (assert (contains? #{:each :once} mode))
-  (assert (map? interceptor-map))
-  (let [enter-fn (or (:enter interceptor-map) `identity)
-        leave-fn (or (:leave interceptor-map) `identity)
-        ctx      (meta &form)]
-    `(test/use-fixtures ~mode
-       {:before #(~enter-fn ~ctx)
-        :after  #(~leave-fn ~ctx)})))
-
 ;---------------------------------------------------------------------------------------------------
-; #todo incorporate this example & ritual for tupelo and enflame and cljs-template
+; non-CLJS follows ;
+#?(:clj
+   (do
 
-;(comment
-;
-;  (ns minerva.core-test
-;    (:require
-;      [tupelo.core :include-macros true :as t :refer [spy spyx spyxx try-catchall]]
-;      [tupelo.test-cljs :include-macros true :refer [define-fixture deftest dotest is isnt is= isnt= is-set= is-nonblank= testing throws?]]
-;      [tupelo.schema :as tsk]
-;      ;-----------------------------------------------------------------------------
-;      [clojure.string :as str]
-;      [clojure.test :as ct]
-;      [minerva.core :as core]
-;      [schema.core :as s]
-;      ))
-;
-;  (enable-console-print!)
-;
-;  (s/defn concat-str :- s/Str
-;          [ctx :- tsk/KeyMap]
-;          (let [{:keys [a b]} ctx]
-;            (str
-;              (s/validate s/Str a)
-;              (s/validate s/Str b))))
-;
-;  (dotest
-;    (println "-----------------------------------------------------------------------------")
-;    (println "minerva.core-test enter")
-;    (is= (s/validate s/Str "hello!") "hello!")
-;    (is= (s/validate s/Int (* 2 3 7)) 42)
-;    (is= 5 (+ 2 3))
-;    (is= 11 (+ 5 6))
-;    (is= "aabbb" (concat-str {:a "aa" :b "bbb"}))
-;    (throws? (throw (ex-info "Some Exception" {:data 42})))
-;
-;    (try
-;      (throw (ex-info "Thrower!" {:waste 86}))
-;      (catch js/Object ex
-;        (println "Exception=" ex)))
-;
-;    (try-catchall
-;      (throw (ex-info "Tosser!" {:bad 666}))
-;      (catch problem
-;             (println "Exception=" problem)))
-;
-;    (isnt false)
-;    (isnt= 3 4)
-;
-;    ;(throw (ex-info "Failer!" {:result false}))   ; works
-;
-;    (println "minerva.core-test leave")
-;    (println "-----------------------------------------------------------------------------")
-;    )
-;  )
+     ; (defn use-fixtures-all [& args] (apply test/use-fixtures args)) #todo why is this here???
+     (defn ^:no-doc define-fixture-impl
+       [ctx mode interceptor-map]
+       (let [enter-fn (or (:enter interceptor-map) `identity)
+             leave-fn (or (:leave interceptor-map) `identity)]
+         `(test/use-fixtures ~mode
+            (fn ~'fixture-fn [tgt-fn#] ; #todo
+              (~enter-fn ~ctx)
+              (tgt-fn#)
+              (~leave-fn ~ctx))))
+       )
 
+     (defmacro define-fixture
+       [mode interceptor-map]
+       (assert (contains? #{:each :once} mode))
+       (assert (map? interceptor-map))
+       (let [ctx (meta &form)]
+         (define-fixture-impl ctx mode interceptor-map)))
+
+     ; #todo ^:slow not working (always executed); need to fix
+     ; #todo maybe def-anon-spec or anon-spec; maybe (gen-spec 999 ...) or (gen-test 999 ...)
+     ; #todo maybe integrate with `dotest` like:   (dotest 999 ...)  ; 999 1st item implies generative test
+     (defmacro dospec [& body] ; #todo README & tests
+       (let [test-name-sym (symbol (str "dospec-line-" (:line (meta &form))))]
+         `(clojure.test.check.clojure-test/defspec ^:slow ~test-name-sym ~@body)))
+
+     (defmacro check-is [& body] ; #todo README & tests
+       `(test/is (t/grab :result (clojure.test.check/quick-check ~@body))))
+
+     (defmacro check-isnt [& body] ; #todo README & tests
+       `(test/is (not (t/grab :result (clojure.test.check/quick-check ~@body)))))
+
+     ; #todo: gen/elements -> clojure.check/rand-nth
+
+))
