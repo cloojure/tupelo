@@ -16,6 +16,7 @@
     [tst.tupelo.array]
     [tst.tupelo.chars]
     [tst.tupelo.core]
+    [tst.tupelo.gotchas]
     [tst.tupelo.lexical]
     [tst.tupelo.misc]
     [tst.tupelo.string]
@@ -47,6 +48,7 @@
     'tst.tupelo.array
     'tst.tupelo.chars
     'tst.tupelo.core
+    'tst.tupelo.gotchas
     'tst.tupelo.lexical
     'tst.tupelo.misc
     'tst.tupelo.string

@@ -4,24 +4,27 @@
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
-
 ; #todo break this out into a separate repo
 (ns tst.tupelo.gotchas
+  ;---------------------------------------------------------------------------------------------------
+  ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
+  ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  #?(:cljs (:require-macros
+             ; [tupelo.core]
+             [tupelo.misc]
+             [tupelo.testy]
+             ))
   (:require
+    [clojure.test] ; sometimes this is required - not sure why
     [clojure.set :as set]
+    [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
     [tupelo.string :as ts]
-
-    #?(:clj [clojure.test.check.generators :as gen])
-    #?(:clj [clojure.test.check.properties :as prop])
-
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
-       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty]])
-
-    #?(:clj [clojure.test] :cljs [cljs.test])
-    #?(:clj  [tupelo.test :as tt :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]]
-       :cljs [tupelo.test-cljs :as tt  ; :include-macros true
-              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]])
-    ))
+    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? define-fixture dospec check-isnt ]] )
+  #?(:clj (:require
+            [clojure.test.check.generators :as gen]
+            [clojure.test.check.properties :as prop] ))
+  )
 
 ; #todo add example for duplicates in clojure.core.combo
 
@@ -279,13 +282,13 @@
 
      ; samples for dospec & check-isnt
      ;-----------------------------------------------------------------------------
-     (tt/dospec 9
+     (dospec 9
        (prop/for-all [val (gen/vector gen/any)]
          (is (= (not (empty? val)) (t/not-empty? val)))
          (isnt= (empty? val) (empty val))))
      (t/when-clojure-1-9-plus
        (dotest
-         (tt/check-isnt 33
+         (check-isnt 33
            (prop/for-all [val (gen/vector gen/int)]
              (= (any? val) (not-any? odd? val))))))
 
@@ -317,7 +320,6 @@
 
 #?(:cljs
    (do
-
      ; assumes nil=0, etc (from JS)
      (dotest
        (is= {:a 1} (update {} :a inc))
