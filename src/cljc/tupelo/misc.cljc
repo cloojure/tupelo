@@ -11,27 +11,27 @@
   #?(:cljs ; http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
      (:require-macros
        [tupelo.misc :refer [with-dots]]))
-  (:require
-    [clojure.string :as str]
-    [clojure.walk :as walk]
-    [schema.core :as s]
-    [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map]]
-    [tupelo.schema :as tsk]
-    [tupelo.string :as ts]
-    #?(:clj [clj-uuid :as clj-uuid])
-    #?(:clj [clojure.java.shell :as shell])
-
-    #?(:cljs [goog.crypt :as crypt])
-    #?(:cljs [goog.crypt.Sha1])
-)
-
+  (:require [clojure.string :as str]
+            [clojure.walk :as walk]
+            [schema.core :as s]
+            [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map]]
+            [tupelo.schema :as tsk]
+            [tupelo.string :as ts])
+  #?(:clj (:require
+            [clj-uuid :as clj-uuid]
+            [clojure.java.shell :as shell]))
   #?(:clj (:import
             [java.lang Byte Integer]
             [java.nio ByteBuffer]
             [java.nio.file Paths]
             [java.security MessageDigest]
             [java.util UUID]
-            )))
+            [java.security MessageDigest]
+            [java.nio.file Paths]))
+  #?(:cljs (:require
+             [goog.crypt :as crypt]
+             [goog.crypt.Sha1]))
+  )
 
 (s/defn factorial :- s/Int
   "Computes the factorial of N"
