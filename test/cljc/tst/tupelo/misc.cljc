@@ -6,6 +6,7 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.misc
   (:require
+    [clojure.test] ; sometimes this is required - not sure why
     [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
     [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
@@ -21,8 +22,9 @@
   #?(:cljs (:require
              [goog.crypt :as crypt]
              [goog.crypt.Sha1])))
-
+;---------------------------------------------------------------------------------------------------
 #?(:cljs (enable-console-print!))
+;---------------------------------------------------------------------------------------------------
 
 (dotest
   (let [data [1 2 3]]

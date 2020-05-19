@@ -8,18 +8,12 @@
   "This namespace is used to perform one-time tasks during testing, such as printing the
   Clojure version."
   (:require
-    [clojure.string :as str]
+    [clojure.test] ; sometimes this is required - not sure why
     [schema.core :as s]
-
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
-       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty]])
-
-    #?(:clj [clojure.test]
-       :cljs [cljs.test])
-    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]]
-       :cljs [tupelo.test-cljs ; :include-macros true
-              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]])
-  ))
+    [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
+    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? define-fixture]])
+  )
 
 #?(:cljs (enable-console-print!))
 
@@ -36,3 +30,4 @@
   (is (= 5 (+ 2 3)))
   (isnt (= 2 3))
   )
+
