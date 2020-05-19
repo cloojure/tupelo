@@ -5,149 +5,140 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.array
+  #?(:cljs (:require-macros [tupelo.core]))
   (:require
     [clojure.set :as set]
     [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.string :as ts]
+    [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]]
     [tupelo.schema :as tsk]
+    [tupelo.string :as ts]
+    ))
 
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]]
-       :cljs [tupelo.core :as t :include-macros true
-              :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]])
-    ) )
+(s/defn create :- tsk/Array
+  "Return a new Array (vector-of-vectors) of size=[nrows ncols], initialized to `init-val` (default=nil)"
+  ([nrows :- s/Int
+    ncols :- s/Int]
+   (create nrows ncols nil))
+  ([nrows :- s/Int
+    ncols :- s/Int
+    init-val :- s/Any]
+   (assert (and (pos? nrows) (pos? ncols)))
+   (forv [ii (range nrows)]
+     (vec (repeat ncols init-val)))))
 
-#?(:clj
-   (do    ; #todo fix this
+(s/defn row-vals->array :- tsk/Array
+  "Return a new Array of size=[nrows ncols] with its rows constructed from from row-data."
+  [nrows :- s/Int
+   ncols :- s/Int
+   row-data :- tsk/Vec]
+  (assert (and (pos? nrows) (pos? ncols)))
+  (assert (= (* nrows ncols) (count row-data)))
+  (mapv vec
+    (partition ncols row-data)))
 
-     (def Array
-       "Plumatic Schema type definition for a 2-D array of values (a vector of vectors)."
-       [[s/Any]])
+(s/defn col-vals->array :- tsk/Array
+  "Return a new Array of size=[nrows ncols] with its columns constructed from from col-data."
+  [nrows :- s/Int
+   ncols :- s/Int
+   col-data :- tsk/Vec]
+  (assert (and (pos? nrows) (pos? ncols)))
+  (assert (= (* nrows ncols) (count col-data)))
+  (let [data-vec (vec col-data)]
+    (forv [ii (range nrows)]
+      (forv [jj (range ncols)]
+        (nth data-vec (+ ii (* jj nrows)))))))
 
-     (s/defn create :- tsk/Array
-       "Return a new Array (vector-of-vectors) of size=[nrows ncols], initialized to `init-val` (default=nil)"
-       ([nrows :- s/Int
-         ncols :- s/Int]
-        (create nrows ncols nil))
-       ([nrows :- s/Int
-         ncols :- s/Int
-         init-val :- s/Any]
-        (assert (and (pos? nrows) (pos? ncols)))
-        (forv [ii (range nrows)]
-          (vec (repeat ncols init-val)))))
+(s/defn edn-rows->array :- tsk/Array
+  "Return a new Array initialized from row-vecs. Rows must all have same length."
+  [row-vecs :- tsk/Array]
+  (let [nrows (count row-vecs)
+        ncols (count (first row-vecs))]
+    (assert (apply = ncols (mapv count row-vecs)))
+    (dotimes [ii nrows]
+      (assert sequential? (nth row-vecs ii)))
+    (mapv vec row-vecs)))
 
-     (s/defn row-vals->array :- tsk/Array
-       "Return a new Array of size=[nrows ncols] with its rows constructed from from row-data."
-       [nrows :- s/Int
-        ncols :- s/Int
-        row-data :- tsk/Vec]
-       (assert (and (pos? nrows) (pos? ncols)))
-       (assert (= (* nrows ncols) (count row-data)))
-       (mapv vec
-         (partition ncols row-data)))
+(s/defn edn-cols->array :- tsk/Array
+  "[col-vecs]
+  Return a new Array initialized from col-vecs. Cols must all have same length."
+  [col-vecs :- tsk/Array]
+  (let [ncols (count col-vecs)
+        nrows (count (first col-vecs))]
+    (assert (apply = nrows (mapv count col-vecs)))
+    (dotimes [jj ncols]
+      (assert sequential? (nth col-vecs jj)))
+    (col-vals->array nrows ncols (apply glue col-vecs))))
 
-     (s/defn col-vals->array :- tsk/Array
-       "Return a new Array of size=[nrows ncols] with its columns constructed from from col-data."
-       [nrows :- s/Int
-        ncols :- s/Int
-        col-data :- tsk/Vec]
-       (assert (and (pos? nrows) (pos? ncols)))
-       (assert (= (* nrows ncols) (count col-data)))
-       (let [data-vec (vec col-data)]
-         (forv [ii (range nrows)]
-           (forv [jj (range ncols)]
-             (nth data-vec (+ ii (* jj nrows)))))))
+(s/defn num-rows :- s/Int
+  "Returns the number of rows of an Array."
+  [arr :- tsk/Array]
+  (count arr))
 
-     (s/defn rows->array :- tsk/Array
-       "Return a new Array initialized from row-vecs. Rows must all have same length."
-       [row-vecs :- tsk/Array]
-       (let [nrows (count row-vecs)
-             ncols (count (first row-vecs))]
-         (assert (apply = ncols (mapv count row-vecs)))
-         (dotimes [ii nrows]
-           (assert sequential? (nth row-vecs ii)))
-         (mapv vec row-vecs)))
+(s/defn num-cols :- s/Int
+  "Returns the number of cols of an Array."
+  [arr :- tsk/Array]
+  (count (arr 0)))
 
-     (s/defn cols->array :- tsk/Array
-       "[col-vecs]
-       Return a new Array initialized from col-vecs. Cols must all have same length."
-       [col-vecs :- tsk/Array]
-       (let [ncols (count col-vecs)
-             nrows (count (first col-vecs))]
-         (assert (apply = nrows (mapv count col-vecs)))
-         (dotimes [jj ncols]
-           (assert sequential? (nth col-vecs jj)))
-         (col-vals->array nrows ncols (apply glue col-vecs))))
+(s/defn ^:no-doc check-row-idx
+  [arr :- tsk/Array
+   idx :- s/Int]
+  (let [limit (num-rows arr)]
+    (when-not (< -1 idx limit)
+      (throw (ex-info "Row index out of range" (vals->map idx limit))))))
 
-     (s/defn num-rows :- s/Int
-       "Returns the number of rows of an Array."
-       [arr :- tsk/Array]
-       (count arr))
+(s/defn ^:no-doc check-col-idx
+  [arr :- tsk/Array
+   idx :- s/Int]
+  (let [limit (num-cols arr)]
+    (when-not (< -1 idx limit)
+      (throw (ex-info "Col index out of range" (vals->map idx limit))))))
 
-     (s/defn num-cols :- s/Int
-       "Returns the number of cols of an Array."
-       [arr :- tsk/Array]
-       (count (arr 0)))
+(s/defn ^:no-doc check-array-indexes
+  [arr :- tsk/Array
+   ii :- s/Int
+   jj :- s/Int]
+  (check-row-idx arr ii)
+  (check-col-idx arr jj))
 
-     (s/defn ^:no-doc check-row-idx
-       [arr :- tsk/Array
-        idx :- s/Int]
-       (let [limit (num-rows arr)]
-         (when-not (< -1 idx limit)
-           (throw (ex-info "Row index out of range" (vals->map idx limit))))))
+(s/defn elem-get :- s/Any
+  "Gets an Array element"
+  [arr :- tsk/Array
+   ii :- s/Int
+   jj :- s/Int]
+  (check-array-indexes arr ii jj)
+  (get-in arr [ii jj]))
 
-     (s/defn ^:no-doc check-col-idx
-       [arr :- tsk/Array
-        idx :- s/Int]
-       (let [limit (num-cols arr)]
-         (when-not (< -1 idx limit)
-           (throw (ex-info "Col index out of range" (vals->map idx limit))))))
+(s/defn elem-set :- tsk/Array
+  "Puts a value into an Array element, returning the updated Array."
+  [arr :- tsk/Array
+   ii :- s/Int
+   jj :- s/Int
+   newVal :- s/Any]
+  (check-array-indexes arr ii jj)
+  (assoc-in arr [ii jj] newVal))
 
-     (s/defn ^:no-doc check-array-indexes
-       [arr :- tsk/Array
-        ii :- s/Int
-        jj :- s/Int]
-       (check-row-idx arr ii)
-       (check-col-idx arr jj))
+(s/defn row-get :- tsk/Vec
+  "Gets an Array row"
+  [arr :- tsk/Array
+   ii :- s/Int]
+  (check-row-idx arr ii)
+  (forv [jj (range (num-cols arr))]
+    (elem-get arr ii jj)))
 
-     (s/defn elem-get :- s/Any
-       "Gets an Array element"
-       [arr :- tsk/Array
-        ii :- s/Int
-        jj :- s/Int]
-       (check-array-indexes arr ii jj)
-       (get-in arr [ii jj]))
-
-     (s/defn elem-set :- tsk/Array
-       "Puts a value into an Array element, returning the updated Array."
-       [arr :- tsk/Array
-        ii :- s/Int
-        jj :- s/Int
-        newVal :- s/Any]
-       (check-array-indexes arr ii jj)
-       (assoc-in arr [ii jj] newVal))
-
-     (s/defn row-get :- tsk/Vec
-       "Gets an Array row"
-       [arr :- tsk/Array
-        ii :- s/Int]
-       (check-row-idx arr ii)
-       (forv [jj (range (num-cols arr))]
-         (elem-get arr ii jj)))
-
-     (s/defn row-set :- tsk/Array
-       "Sets an Array row"
-       [orig :- tsk/Array
-        ii :- s/Int
-        new-row :- tsk/Vec]
-       (check-row-idx orig ii)
-       (assert (= (num-cols orig) (count new-row)))
-       (let [nrows  (num-rows orig)
-             result (glue
-                      (forv [ii (range ii)] (row-get orig ii))
-                      [new-row]
-                      (forv [ii (range (inc ii) nrows)] (row-get orig ii)))]
-         result))
+(s/defn row-set :- tsk/Array
+  "Sets an Array row"
+  [orig :- tsk/Array
+   ii :- s/Int
+   new-row :- tsk/Vec]
+  (check-row-idx orig ii)
+  (assert (= (num-cols orig) (count new-row)))
+  (let [nrows  (num-rows orig)
+        result (glue
+                 (forv [ii (range ii)] (row-get orig ii))
+                 [new-row]
+                 (forv [ii (range (inc ii) nrows)] (row-get orig ii)))]
+    result))
 
      ;#todo make both rows/cols -> submatrix result
      (s/defn array->rows :- tsk/Array
@@ -336,10 +327,9 @@
                             \newline))))]
          result))
 
-
      (s/defn diagonal-main :- tsk/Vec
        "Returns the main diagonal of an array"
-       [arr :- Array]
+       [arr :- tsk/Array]
        (assert (= (num-rows arr)
                  (num-cols arr)))
        (let [rows-indexed (t/indexed arr)]
@@ -348,10 +338,6 @@
 
      (s/defn diagonal-anti :- tsk/Vec
        "Returns the anti-diagonal of an array"
-       [arr :- Array]
+       [arr :- tsk/Array]
        (diagonal-main (rotate-left arr)))
-
-
-     ))
-
 
