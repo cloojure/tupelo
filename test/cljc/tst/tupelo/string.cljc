@@ -6,21 +6,21 @@
 ;   software.
 (ns  tst.tupelo.string
   (:refer-clojure :exclude [take drop])
+  ;---------------------------------------------------------------------------------------------------
+  ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
+  ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  #?(:cljs (:require-macros
+             [tupelo.testy]
+             ))
   (:require
+    [clojure.test] ; sometimes this is required - not sure why
     [clojure.core :as cc ]
+    [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty forv]]
+    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
+                          throws? throws-not? define-fixture ]]
     [clojure.string :as str]
     [tupelo.chars :as char]
     [tupelo.string :as ts]
-
-    #?(:clj  [tupelo.core :as t :refer [spyx spyx-pretty forv]]
-       :cljs [tupelo.core :as t :include-macros true])
-
-    #?(:clj [clojure.test] :cljs [cljs.test] )
-    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set=
-                                  is-nonblank= is-nonblank-lines= throws? define-fixture]]
-       :cljs [tupelo.test-cljs :include-macros true
-              :refer [deftest testing is dotest isnt is= isnt= is-set=
-                      is-nonblank= is-nonblank-lines= throws? define-fixture]])
     ))
 
 ; #todo add generative testing?
