@@ -1,15 +1,15 @@
 (ns tst.tupelo.schema
+  ;---------------------------------------------------------------------------------------------------
+  ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
+  ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  #?(:cljs (:require-macros [tupelo.testy]))
   (:require
+    [clojure.test] ; sometimes this is required - not sure why
     [schema.core :as s]
+    [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
     [tupelo.schema :as tsk]
-
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
-       :cljs [tupelo.core :as t :include-macros true :refer [spy spyx spyxx spyx-pretty]])
-
-    #?(:clj [clojure.test] :cljs [cljs.test])
-    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]]
-       :cljs [tupelo.test-cljs ; :include-macros true
-              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? throws-not? define-fixture]])
+    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? define-fixture]]
     ))
 
 ; #todo add more tests (& test.check for Eid, etc)
