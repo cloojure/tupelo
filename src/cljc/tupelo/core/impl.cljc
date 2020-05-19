@@ -34,12 +34,11 @@
        (try ~@try-body (catch js/Object ~ex-symbol ~@catch-body))
        (try ~@try-body (catch Throwable ~ex-symbol ~@catch-body)))))
 
-(defmacro type-name-str
+(defn type-name-str
   "Returns the type/class name of a value as a string.  Works for both CLJ and CLJS."
   [arg]
-  `(if-cljs
-     (cljs.core/type->str (cljs.core/type ~arg))
-     (.getName (clojure.core/class ~arg))))
+  #?(:clj  (.getName (clojure.core/class arg))
+     :cljs (cljs.core/type->str (cljs.core/type arg))))
 
 (defn native-array?
   "Returns true iff arg is a native Java or JavaScript array."

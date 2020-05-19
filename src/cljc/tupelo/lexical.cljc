@@ -22,24 +22,29 @@
   "Returns a string specifying the comparison class to be used for sorting a piece of data."
   [x :- s/Any]
   (cond
-    (nil? x) ""
+    (nil? x) "" ; empty string sorts first of all strings
 
-    ; Lump all numbers together since Clojure's compare can
-    ; compare them all to each other sensibly.
-    (number? x) "java.lang.Number"
+    ; Lump all numbers together since Clojure's compare can compare them all to each other sensibly.
+    (number? x) "Type/Clojure-Number"
+
+    (keyword? x) "Type/Clojure-Keyword"
+    (string? x) "Type/Clojure-String"
+    (char? x) "Type/Clojure-Character"
+    (boolean? x) "Type/Clojure-Boolean"
+    (symbol? x) "Type/Clojure-Symbol"
 
     ; sequential? includes lists, conses, vectors, and seqs of just about any collection, although it is recommended not
     ; to use this to compare seqs of unordered collections like sets or maps (vectors should be OK).  This should be
     ; everything we would want to compare using cmp-seq-lexi below. A clojure.lang.MapEntry also implements clojure.lang.Sequential,
     ; so we can sort {:a 1 :b 2} as if it were [[:a 1] [:b 2]].
     ; TBD: Does it leave anything out?  Include anything it should not?
-    (sequential? x) "clojure.lang.Sequential"
+    (sequential? x) "Type/Clojure-Sequential"
 
     ; NOTE: record case must preempt `(map? ...)` case below, since all records can be viewed as maps
     (record? x) (tupelo.core.impl/type-name-str x)
 
-    (set? x) "clojure.lang.IPersistentSet"
-    (map? x) "clojure.lang.IPersistentMap"
+    (set? x) "Type/Clojure-IPersistentSet"
+    (map? x) "Type/Clojure-IPersistentMap"
 
     ; #todo what about cljs?  THIS IS UGLY!!!
     ; #?(:clj (.isArray (class x))) #?(:clj "java.util.Arrays")
@@ -48,7 +53,9 @@
     ; Comparable includes Boolean, Character, String, Clojure refs, and many others.
     #?(:clj  (instance? java.lang.Comparable x)
        :cljs (satisfies? cljs.core/IComparable x))
-    (tupelo.core.impl/type-name-str x)
+    (do
+      (println :comparable-block x)
+      (tupelo.core.impl/type-name-str x))
 
     :else (throw
             (ex-info
@@ -108,47 +115,49 @@
 
 (defn compare-generic
   [x y]
-  (let [x-cls (comparison-class x)
-        y-cls (comparison-class y)
-        c     (clojure.core/compare x-cls y-cls)]
-    (cond (not= c 0) c ; different classes
+  (let [x-class-str    (comparison-class x)
+        y-class-str    (comparison-class y)
+        ;>> (println [x-class-str x])
+        ;>> (println [y-class-str y])
+        compare-result (clojure.core/compare x-class-str y-class-str)]
+    (cond
+      (not= compare-result 0) compare-result ; different classes
 
-          ; Compare sets to each other as sequences, with elements in
-          ; sorted order.
-          (= x-cls "clojure.lang.IPersistentSet")
-          (compare-seq-lexi compare-generic (sort compare-generic x) (sort compare-generic y))
+      ; Compare sets to each other as sequences, with elements in
+      ; sorted order.
+      (= x-class-str "Type/Clojure-IPersistentSet")
+      (compare-seq-lexi compare-generic (sort compare-generic x) (sort compare-generic y))
 
-          ; Compare records to each other like maps below.
-          ; NOTE: record case must preempt `(map? ...)` case below, since all records can be viewed as maps
-          (record? x)
-          (compare-seq-lexi compare-generic
-            (sort-by key compare-generic (seq x))
-            (sort-by key compare-generic (seq y)))
+      ; Compare records to each other like maps below.
+      ; NOTE: record case must preempt `(map? ...)` case below, since all records can be viewed as maps
+      (record? x) (compare-seq-lexi compare-generic
+                    (sort-by key compare-generic (seq x))
+                    (sort-by key compare-generic (seq y)))
 
-          ; Compare maps to each other as sequences of [key val] pairs, with pairs in order sorted by key.
-          ; Since keys are unique
-          (= x-cls "clojure.lang.IPersistentMap")
-          (compare-seq-lexi compare-generic
-            (sort-by key compare-generic (seq x)) ; sorted [[xk1 xv1] [xk2 xv2] ...]
-            (sort-by key compare-generic (seq y))) ; sorted [[yk1 yv1] [yk2 yv2] ...]
+      ; Compare maps to each other as sequences of [key val] pairs, with pairs in order sorted by key.
+      ; Since keys are unique
+      (= x-class-str "Type/Clojure-IPersistentMap")
+      (compare-seq-lexi compare-generic
+        (sort-by key compare-generic (seq x)) ; sorted [[xk1 xv1] [xk2 xv2] ...]
+        (sort-by key compare-generic (seq y))) ; sorted [[yk1 yv1] [yk2 yv2] ...]
 
-          (= x-cls "java.util.Arrays")
-          (compare-array-lexi compare-generic x y)
+      (= x-class-str "Type/Platform-Native-Array")
+      (compare-array-lexi compare-generic x y)
 
-          ; Make a special check for two vectors, since cmp-vec-lexi
-          ; should allocate less memory comparing them than
-          ; cmp-seq-lexi.  Both here and for comparing sequences, we
-          ; must use cc-cmp recursively on the elements, because if
-          ; we used compare we would lose the ability to compare
-          ; elements with different types.
-          (and (vector? x) (vector? y)) (compare-vec-lexi compare-generic x y)
+      ; Make a special check for two vectors, since cmp-vec-lexi
+      ; should allocate less memory comparing them than
+      ; cmp-seq-lexi.  Both here and for comparing sequences, we
+      ; must use cc-cmp recursively on the elements, because if
+      ; we used compare we would lose the ability to compare
+      ; elements with different types.
+      (and (vector? x) (vector? y)) (compare-vec-lexi compare-generic x y)
 
-          ; This will compare any two sequences, if they are not both
-          ; vectors, e.g. a vector and a list will be compared here.
-          (= x-cls "clojure.lang.Sequential")
-          (compare-seq-lexi compare-generic x y)
+      ; This will compare any two sequences, if they are not both
+      ; vectors, e.g. a vector and a list will be compared here.
+      (= x-class-str "Type/Clojure-Sequential")
+      (compare-seq-lexi compare-generic x y)
 
-          :else (clojure.core/compare x y))))
+      :else (clojure.core/compare x y))))
 
 (s/defn compare-lex :- s/Int
   [a :- tsk/Vec
