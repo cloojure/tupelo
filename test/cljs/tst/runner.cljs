@@ -14,6 +14,7 @@
     [tst.flintstones.bambam]
 
     [tst.tupelo.array]
+    [tst.tupelo.array.mutable]
     [tst.tupelo.chars]
     [tst.tupelo.core]
     [tst.tupelo.gotchas]
@@ -50,6 +51,7 @@
     'tst.flintstones.bambam
 
     'tst.tupelo.array
+    'tst.tupelo.array.mutable
     'tst.tupelo.chars
     'tst.tupelo.core
     'tst.tupelo.gotchas

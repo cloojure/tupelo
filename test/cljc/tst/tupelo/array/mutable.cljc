@@ -5,24 +5,19 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.array.mutable
+  ;---------------------------------------------------------------------------------------------------
+  ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
+  ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+  #?(:cljs (:require-macros [tupelo.testy] ))
   (:require
+    [clojure.test] ; sometimes this is required - not sure why
     [tupelo.array.mutable :as tam]
-    [tupelo.string :as ts]
-
-    #?(:clj [clojure.test] :cljs [cljs.test])
-    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
-       :cljs [tupelo.test-cljs :include-macros true
-              :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]])
-
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]]
-       :cljs [tupelo.core :as t :include-macros true
-              :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]])
-    ))
+    [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]]
+    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? define-fixture ]]
+))
 
 ; #todo restore this???  (st/use-fixtures :once st/validate-schemas)
-
-#?(:clj
-   (do
 
      (dotest
        (let [a34  (tam/create 3 4 :a)
@@ -398,9 +393,5 @@
                                                      [11]])
                                     (tam/edn->array [[02 03]
                                                      [12 13]]))))))
-
-     ))
-
-
 
 

@@ -9,16 +9,11 @@
     [clojure.set :as set]
     [clojure.string :as str]
     [schema.core :as s]
-    [tupelo.string :as ts]
     [tupelo.schema :as tsk]
-
-    #?(:clj  [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]]
-       :cljs [tupelo.core :as t :include-macros true
-              :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]])
-    ))
-
-#?(:clj
-   (do    ; #todo fix this
+    [tupelo.string :as ts]
+    [tupelo.core :as t :refer [glue grab thru kw->str validate forv it-> vals->map truthy? falsey?
+                               spy spyx spyxx spy-pretty spyx-pretty]]
+))
 
      (def Array
        "Plumatic Schema type definition for a 2-D array of values (a vector of vectors)."
@@ -424,8 +419,6 @@
          (col-vals->array nrows ncols-total
            (apply glue
              (mapv array->col-vals arrays)))))
-
-     ))
 
 
 
