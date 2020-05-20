@@ -429,23 +429,23 @@
                      item))
     form))
 
+(defn sorted-map-generic
+  "Returns a generic sorted map, able to accept keys of different classes"
+  [] (sorted-map-by lex/compare-generic))
+
+(s/defn ->sorted-map-generic :- tsk/Map
+  "Coerces a map into a sorted-map"
+  [map-in :- tsk/Map] (glue (sorted-map-generic) map-in))
+
+(defn sorted-set-generic
+  "Returns a generic sorted set, able to accept keys of different classes"
+  [] (sorted-set-by lex/compare-generic))
+
+(s/defn ->sorted-set-generic :- tsk/Set
+  "Coerces a set into a sorted-set-generic"
+  [set-in :- tsk/Set] (glue (sorted-set-generic) set-in))
 #?(:clj
    (do
-     (defn sorted-map-generic
-       "Returns a generic sorted map, able to accept keys of different classes"
-       [] (sorted-map-by lex/compare-generic))
-
-     (s/defn ->sorted-map-generic :- tsk/Map
-       "Coerces a map into a sorted-map"
-       [map-in :- tsk/Map] (glue (sorted-map-generic) map-in))
-
-     (defn sorted-set-generic
-       "Returns a generic sorted set, able to accept keys of different classes"
-       [] (sorted-set-by lex/compare-generic))
-
-     (s/defn ->sorted-set-generic :- tsk/Set
-       "Coerces a set into a sorted-set-generic"
-       [set-in :- tsk/Set] (glue (sorted-set-generic) set-in))
      ))
 
 (defn unlazy ; #todo need tests & docs. Use for datomic Entity?
