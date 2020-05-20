@@ -444,9 +444,6 @@
 (s/defn ->sorted-set-generic :- tsk/Set
   "Coerces a set into a sorted-set-generic"
   [set-in :- tsk/Set] (glue (sorted-set-generic) set-in))
-#?(:clj
-   (do
-     ))
 
 (defn unlazy ; #todo need tests & docs. Use for datomic Entity?
   "Converts a lazy collection to a concrete (eager) collection of the same type."
