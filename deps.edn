@@ -1,6 +1,7 @@
 {:deps    {
            org.clojure/clojure             {:mvn/version "1.10.2-alpha1"}
-           org.clojure/clojurescript       {:mvn/version "1.10.597"}
+          ;org.clojure/clojurescript       {:mvn/version "1.10.597"}
+           org.clojure/clojurescript       {:mvn/version "1.10.764"}
 
            cheshire                        {:mvn/version "5.9.0"}
            clj-commons/secretary           {:mvn/version "1.2.4"}

@@ -60,7 +60,7 @@
                                        ;[com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.5"]
                                        [org.clojure/clojure "1.10.2-alpha1"]
-                                       [org.clojure/clojurescript "1.10.597"]
+                                      ;[org.clojure/clojurescript  "1.10.764"] ; "1.10.597"
                                        ]
                         }
              :test     {:dependencies [[overtone/at-at "1.2.0"]]}

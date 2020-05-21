@@ -714,7 +714,7 @@
   [listy       :- tsk/List
    & elems     :- [s/Any] ]
   (when-not (sequential? listy)
-    (throw (ex-info  "Sequential collection required, found=" {:listy listy})))
+    (throw (ex-info  "append: Sequential collection required, found=" {:listy listy})))
   (when (empty? elems)
     (throw (ex-info "Nothing to append! elems=" {:elems elems})))
   (vec (concat listy elems)))
@@ -725,7 +725,7 @@
   (let [elems (butlast args)
         listy (xlast args)]
     (when-not (sequential? listy)
-      (throw (ex-info  "Sequential collection required, found=" {:listy listy})))
+      (throw (ex-info  "prepend: Sequential collection required, found=" {:listy listy})))
     (when (empty? elems)
       (throw (ex-info "Nothing to prepend! elems=" {:elems elems})))
     (vec (concat elems listy))))
@@ -2762,7 +2762,6 @@
       (every? truthy?
         (for [value values]
           (wild-match-impl ctx pattern value))))))
-
 
 (defmulti wild-match?
   "Returns true if a pattern is matched by one or more values.  The special keyword :* (colon-star)
