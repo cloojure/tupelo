@@ -24,15 +24,21 @@
 (defn tagval? ; :- s/Bool
   [arg] (= TagVal (type arg)))
 
-(defmethod print-method TagVal
-  [tv ^java.io.Writer writer]
-  (.write writer
-    (format "<%s %s>" (<tag tv) (<val tv))))
+#?(:clj
+   (defmethod print-method TagVal
+     [tv ^java.io.Writer writer]
+     (.write writer
+       (format "<%s %s>" (<tag tv) (<val tv)))))
+#?(:cljs
+   ; https://stackoverflow.com/questions/42916447/adding-a-custom-print-method-for-clojurescript
+     (extend-protocol IPrintWithWriter TagVal
+       (-pr-writer [arg writer -opts-]
+         (write-all writer "<TagVal" (<val arg) ">"))) )
 
 (s/defn tagval-map? :- s/Bool
   "Returns true iff arg is a map that looks like a TagVal record:  {:tag :something :val 42}"
   [item]
-  (and (map? item)
+  (and (t/map-plain? item)
     (= #{:tag :val} (set (keys item)))))
 
 (s/defn tagval-with?
