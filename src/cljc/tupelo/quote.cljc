@@ -16,36 +16,77 @@
                                xfirst xsecond forv ]]
     ))
 
-(defn insert-form? ; #todo => `run` or `live` or `unq` or `ins` or `insert`???
+(defn ^:no-doc insert-form? ; #todo => `run` or `live` or `unq` or `ins` or `insert`???
   [arg]
   (and (list? arg)
     (= (quote insert) (first arg))))
 
-(defn splice-form? ; #todo => `splat` or `splice` or `unq*` ???
+(defn ^:no-doc splice-form? ; #todo => `splat` or `splice` or `unq*` ???
   [arg]
   (and (list? arg)
     (= (quote splice) (first arg))))
 
-(defn tmpl-impl
+(defn tmpl-fn
+  "Template function similar to clojure.core/syntax-quote, except does not prepend current namespace to all free symbols.
+  Value substitution is supported via `(insert ...)` and `(splice ...)` forms:
+  ```
+      (ns demo.core
+        (:require [tupelo.quote :as q]))
+
+      ; problem:  free symbols a and b are fully-qualified using current ns
+      `[a b ~(+ 2 3)] => [demo.core/a
+                          demo.core/b
+                          5]
+
+      (q/tmpl-fn '[a b (insert (+ 2 3))])  =>  [a b 5]
+
+      (let [a 1 b 2]
+        (q/tmpl [a b (insert (+ 2 3))]))  =>  [1 2 5]
+
+      (is= [1 [2 3 4] 5] (q/tmpl [1 (insert (t/thru 2 4)) 5]))
+      (is= [1  2 3 4  5] (q/tmpl [1 (splice (t/thru 2 4)) 5]))
+  ``` "
   [form]
-  (walk/prewalk
-    (fn [item]
-      (cond
-        (insert-form? item) (eval (xsecond item))
-        (sequential? item) (let [unquoted-vec (apply glue
-                                                (forv [it item]
-                                                  (if (splice-form? it)
-                                                    (eval (xsecond it))
-                                                    [it])))
-                                 final-result (if (list? item)
-                                                (t/->list unquoted-vec)
-                                                unquoted-vec)]
-                             final-result)
-        :else item))
-    form))
+  (let [result (walk/prewalk
+          (fn [item]
+            (cond
+              (insert-form? item) (eval (xsecond item))
+              (sequential? item) (let [unquoted-vec (apply glue
+                                                      (forv [it item]
+                                                        (if (splice-form? it)
+                                                          (eval (xsecond it))
+                                                          [it])))
+                                       final-result (if (list? item)
+                                                      (t/->list unquoted-vec)
+                                                      unquoted-vec)]
+                                   final-result)
+              :else item))
+          form)]
+    ; (spyx result)
+    result))
 
 (defmacro tmpl ; #todo maybe => `qtmpl` or `quot` or `qt` or `quoted` or `template`
+  "Template macro similar to clojure.core/syntax-quote, except does not prepend current namespace to all free symbols.
+  Value substitution is supported via `(insert ...)` and `(splice ...)` forms:
+  ```
+      (ns demo.core
+        (:require [tupelo.quote :as q]))
+
+      ; problem:  free symbols a and b are fully-qualified using current ns
+      `[a b ~(+ 2 3)] => [demo.core/a
+                          demo.core/b
+                          5]
+
+      (q/tmpl-fn '[a b (insert (+ 2 3))])  =>  [a b 5]
+
+      (let [a 1 b 2]
+        (q/tmpl [a b (insert (+ 2 3))]))  =>  [1 2 5]
+
+      (is= [1 [2 3 4] 5] (q/tmpl [1 (insert (t/thru 2 4)) 5]))
+      (is= [1  2 3 4  5] (q/tmpl [1 (splice (t/thru 2 4)) 5]))
+  ``` "
+
   [form]
-  (tmpl-impl form))
+  (tmpl-fn form))
 
 
