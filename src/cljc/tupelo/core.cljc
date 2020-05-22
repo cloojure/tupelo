@@ -1189,9 +1189,9 @@
        (deref *cumulative-val*)))
 
   ;-----------------------------------------------------------------------------
-  (s/defn cum-vector-append :- s/Any
+  (s/defn cum-vector-append :- s/Any ; #todo file bug report for CLJS
     "Works inside of a `with-cum-vector` block to append a new vector value."
-    [value :- s/Any] (cum-val-set-it (append it value)))
+    [value :- s/Any] (cum-val-set-it (append it value))) ; #todo copy td/cum-vector-swap-append kludge
 
   (defmacro with-cum-vector
     "Wraps forms containing `cum-vector-append` calls to accumulate values into a vector."

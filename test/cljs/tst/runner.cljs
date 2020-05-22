@@ -67,5 +67,5 @@
 
     )
   ; return a message to the figwheel process that tells it to wait
-  [:figwheel.main.async-result/wait 15000] ; millis
+  [:figwheel.main.async-result/wait 22000] ; millis
   )
