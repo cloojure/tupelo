@@ -249,6 +249,7 @@
 ;-----------------------------------------------------------------------------
 (declare
   glue xfirst xrest append prepend grab fetch-in indexed clip-str validate
+  walk-with-parents with-nil-default
   )
 
 ;-----------------------------------------------------------------------------
@@ -328,6 +329,133 @@
   [arg] (not (pos? arg)) )
 
 ; #todo add not-zero?
+
+;-----------------------------------------------------------------------------
+; #todo make coercing versions of these ->sym ->str ->kw ->int  for args of (kw, str, sym, int)
+
+(s/defn kw->sym :- s/Symbol
+  "Converts a keyword to a symbol"
+  [arg :- s/Keyword]
+  (symbol (name arg)))
+
+(s/defn kw->str :- s/Str
+  "Converts a keyword to a string"
+  [arg :- s/Keyword]
+  (name arg))
+
+(s/defn sym->str :- s/Str
+  "Converts a symbol to a string"
+  [arg :- s/Symbol]
+  (name arg))
+
+(s/defn sym->kw :- s/Keyword
+  "Converts a symbol to a keyword"
+  [arg :- s/Symbol]
+  (keyword arg))
+
+(s/defn str->sym :- s/Symbol
+  "Converts a string to a symbol"
+  [arg :- s/Str]
+  (symbol arg))
+
+; #todo throw if bad string
+(s/defn str->kw :- s/Keyword
+  "Converts a string to a keyword"
+  [arg :- s/Str]
+  (keyword arg))
+
+(s/defn str->chars  :- [s/Any]  ;  #todo  make tighter
+  "Converts a string to a vector of chars"
+  [arg :- s/Str]
+  (vec arg))
+
+(defn int->kw [arg]
+  (keyword (str arg)))
+
+(s/defn ->kw :- s/Keyword
+  "Coerce arg to a keyword"
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol s/Num)]
+  (cond
+    (keyword? arg) arg
+    (symbol? arg) (sym->kw arg)
+    (string? arg) (str->kw arg)
+    (number? arg) (str->kw (str arg))
+    :else (throw (ex-info "bad arg" {:arg arg})) ))
+
+(s/defn ->str :- s/Str
+  "Coerce arg to a string"
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol s/Num)]
+  (cond
+    (string? arg) arg
+    (symbol? arg) (sym->str arg)
+    (keyword? arg) (kw->str arg)
+    (number? arg) (str arg)
+    :else (throw (ex-info "bad arg" {:arg arg})) ))
+
+(s/defn ->sym :- s/Symbol
+  "Coerce arg to a symbol"
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol)]
+  (cond
+    (symbol? arg) arg
+    (keyword? arg) (kw->sym arg)
+    (string? arg) (str->sym arg)
+    :else (throw (ex-info "bad arg" {:arg arg}))))
+
+
+(s/defn codepoint->char :- s/Any    ; #todo need clj/cljs char? test
+  "Convert a unicode int to a char"
+  [arg :- s/Int]
+  #?(:clj (char arg))
+  #?(:cljs
+     (do
+       (assert (int? arg))
+       (.fromCharCode js/String arg) ; #todo just use cljs.core/char  ???
+       )))
+
+(s/defn char->codepoint :- s/Int
+  "Convert a char to an unicode int"
+  [arg :- s/Any ]   ; #todo need clj/cljs char? test
+  #?(:clj (int arg))
+  #?(:cljs
+     (do
+       (assert (= 1 (count arg)))
+       (.charCodeAt arg 0))))
+
+#?(:clj
+   (defn kw->int [arg]
+     (Integer/parseInt (kw->str arg))))
+#?(:cljs
+   (defn kw->int [arg]
+     (js/parseInt (kw->str arg) 10)))
+
+; #todo add edn->js
+; #todo add js->edn (:keywordize-keys true)
+#?(:clj
+   (do
+     ; #todo add test & README
+     (s/defn json->edn
+       "Shortcut to cheshire.core/parse-string"
+       [json-str :- s/Str]
+       (cheshire/parse-string json-str true)) ; true => keywordize-keys
+
+     ; #todo add test & README
+     (s/defn edn->json :- s/Str
+       "Shortcut to cheshire.core/generate-string"
+       [arg]
+       (cheshire/generate-string arg)) ))
+#?(:cljs
+   (do
+     ; #todo add test & README
+     (s/defn json->edn
+       "Convert from json -> edn"
+       [json-str :- s/Str]
+       (js->clj (.parse js/JSON json-str) :keywordize-keys true)) ; true => keywordize-keys
+
+     ; #todo add test & README
+     (s/defn edn->json :- s/Str
+       "Convert from edn -> json "
+       [arg]
+       (.stringify js/JSON (clj->js arg))) ))
 
 ;-----------------------------------------------------------------------------
 (s/defn not-nil? :- s/Bool
@@ -1166,6 +1294,23 @@
             [sym (list `grab kw the-map)]))
        ~@forms)))
 
+(defn construct-impl
+  [template]
+  ;(spyx template)
+  ;(spy :impl-out)
+  (walk-with-parents template
+    {:leave (fn [parents item]
+              (with-nil-default item
+                (when (= (->sym :?) item)
+                  (let [ancestors  (vec (reverse parents))
+                        -mv-ent-   (xfirst ancestors)
+                        me         (xsecond ancestors)
+                        me-key     (xfirst me)
+                        me-key-sym (kw->sym me-key)]
+                    me-key-sym))))}))
+(defmacro construct
+  [template] (construct-impl template))
+
 ;-----------------------------------------------------------------------------
 (do  ; #todo => tupelo.core
   (def ^:dynamic *cumulative-val*
@@ -1492,135 +1637,6 @@
          :else (throw (ex-info "Invalid type" {:x x}))))
 
      ))
-
-;-----------------------------------------------------------------------------
-
-; #todo make coercing versions of these ->sym ->str ->kw ->int  for args of (kw, str, sym, int)
-
-(s/defn kw->sym :- s/Symbol
-  "Converts a keyword to a symbol"
-  [arg :- s/Keyword]
-  (symbol (name arg)))
-
-(s/defn kw->str :- s/Str
-  "Converts a keyword to a string"
-  [arg :- s/Keyword]
-  (name arg))
-
-(s/defn sym->str :- s/Str
-  "Converts a symbol to a string"
-  [arg :- s/Symbol]
-  (name arg))
-
-(s/defn sym->kw :- s/Keyword
-  "Converts a symbol to a keyword"
-  [arg :- s/Symbol]
-  (keyword arg))
-
-(s/defn str->sym :- s/Symbol
-  "Converts a string to a symbol"
-  [arg :- s/Str]
-  (symbol arg))
-
-; #todo throw if bad string
-(s/defn str->kw :- s/Keyword
-  "Converts a string to a keyword"
-  [arg :- s/Str]
-  (keyword arg))
-
-(s/defn str->chars  :- [s/Any]  ;  #todo  make tighter
-  "Converts a string to a vector of chars"
-  [arg :- s/Str]
-  (vec arg))
-
-(defn int->kw [arg]
-  (keyword (str arg)))
-
-
-(s/defn ->kw :- s/Keyword
-  "Coerce arg to a keyword"
-  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol s/Num)]
-  (cond
-    (keyword? arg) arg
-    (symbol? arg) (sym->kw arg)
-    (string? arg) (str->kw arg)
-    (number? arg) (str->kw (str arg))
-    :else (throw (ex-info "bad arg" {:arg arg})) ))
-
-(s/defn ->str :- s/Str
-  "Coerce arg to a string"
-  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol s/Num)]
-  (cond
-    (string? arg) arg
-    (symbol? arg) (sym->str arg)
-    (keyword? arg) (kw->str arg)
-    (number? arg) (str arg)
-    :else (throw (ex-info "bad arg" {:arg arg})) ))
-
-(s/defn ->sym :- s/Symbol
-  "Coerce arg to a symbol"
-  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol)]
-  (cond
-    (symbol? arg) arg
-    (keyword? arg) (kw->sym arg)
-    (string? arg) (str->sym arg)
-    :else (throw (ex-info "bad arg" {:arg arg}))))
-
-
-(s/defn codepoint->char :- s/Any    ; #todo need clj/cljs char? test
-  "Convert a unicode int to a char"
-  [arg :- s/Int]
-  #?(:clj (char arg))
-  #?(:cljs
-     (do
-       (assert (int? arg))
-       (.fromCharCode js/String arg) ; #todo just use cljs.core/char  ???
-       )))
-
-(s/defn char->codepoint :- s/Int
-  "Convert a char to an unicode int"
-  [arg :- s/Any ]   ; #todo need clj/cljs char? test
-  #?(:clj (int arg))
-  #?(:cljs
-     (do
-       (assert (= 1 (count arg)))
-       (.charCodeAt arg 0))))
-
-#?(:clj
-   (defn kw->int [arg]
-     (Integer/parseInt (kw->str arg))))
-#?(:cljs
-   (defn kw->int [arg]
-     (js/parseInt (kw->str arg) 10)))
-
-; #todo add edn->js
-; #todo add js->edn (:keywordize-keys true)
-#?(:clj
-   (do
-     ; #todo add test & README
-     (s/defn json->edn
-       "Shortcut to cheshire.core/parse-string"
-       [json-str :- s/Str]
-       (cheshire/parse-string json-str true)) ; true => keywordize-keys
-
-     ; #todo add test & README
-     (s/defn edn->json :- s/Str
-       "Shortcut to cheshire.core/generate-string"
-       [arg]
-       (cheshire/generate-string arg)) ))
-#?(:cljs
-   (do
-     ; #todo add test & README
-     (s/defn json->edn
-       "Convert from json -> edn"
-       [json-str :- s/Str]
-       (js->clj (.parse js/JSON json-str) :keywordize-keys true)) ; true => keywordize-keys
-
-     ; #todo add test & README
-     (s/defn edn->json :- s/Str
-       "Convert from edn -> json "
-       [arg]
-       (.stringify js/JSON (clj->js arg))) ))
 
 ;-----------------------------------------------------------------------------
 (defn prettify

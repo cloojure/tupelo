@@ -75,5 +75,16 @@
 
   (is= 3 (eval (quote (+ 1 2)))))
 
+(comment  ; demo
+  (let [a 1
+        b (inc a)]
+    (println :1 (quote [a b]))
+    (println :2 '{:out [~a ~b]}) ; ***** doesn't work *****
+    (println :3 `{:out [~a ~b]})
+    ; (println (td/quote-template {:out (unquote [a b])})) ; ***** fails due to locals *****
+    (println :4 (q/tmpl {:out (insert [a-1400 b-1400])})) ; globals are OK
+    (println :5 (q/tmpl {:a 1 :b (insert (+ 2 3))})) ; global function works too
+    ;(println  :6 (q/tmpl {:out (insert [a b])})) ; fails when try to use locals
+    ))
 
 

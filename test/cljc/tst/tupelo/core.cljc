@@ -2023,6 +2023,26 @@
       (t/with-map-vals ctx [a b z] ; thows if key doesn't exist
         (println "won't ever get here")))))
 
+;---------------------------------------------------------------------------------------------------
+; demo and poc for td/construct
+(def a-1400 1401)
+(def b-1400 1402)
+
+(def c 3)
+(dotest
+  (let [env {:a 1 :b 2}]
+    (t/with-map-vals env [a b]
+      (is= {:likes {:a a :b b}} ; normal
+        {:likes {:a 1, :b 2}})
+      (is= (t/construct-impl (quote {:likes {:a ? :b ?}}))
+        (quote {:likes {:a a, :b b}}))
+      (is= (t/construct {:likes {:a ? :b ?}})
+        {:likes {:a a, :b b}}
+        {:likes {:a 1, :b 2}} )
+      (is= (t/construct {:likes {:a ? :b ? :c ?}}) ; works for locals and Vars
+        {:likes {:a 1, :b 2 :c 3}} ) )))
+
+;---------------------------------------------------------------------------------------------------
 (dotest
   (let [lazy-next-int (fn lazy-next-int [n]
                         (t/lazy-cons n (lazy-next-int (inc n))))
