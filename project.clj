@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.207"
+(defproject tupelo "0.9.208"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -31,9 +31,6 @@
    [prismatic/schema "1.1.12"]
 
    ; #todo clojures pprint doesn't work under graal native-image
-   ;[fipp "0.6.21"]
-   ;[mvxcvi/puget "1.2.0"]
-
    ]
 
   ; Using `lein-ancient check :all` checks plugins
