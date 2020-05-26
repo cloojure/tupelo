@@ -16,7 +16,7 @@
     [clojure.test] ; sometimes this is required - not sure why
     [tupelo.set :as set]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
-    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+    [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture ]]
   ))
 
@@ -24,6 +24,14 @@
   (is= #{1 2 3 4 5} (set/union #{1 2 3 4} #{2 3 4 5}))
   (throws? (set/union #{1 2 3 4} {2 3 4 5}))
   (throws? (set/union #{1 2 3 4} [2 3 4 5])))
+
+(dotest
+  (is= #{:a} (set/add nil :a))
+  (is= #{:a :b} (set/add #{:a} :b))
+  (is= #{:b} (set/remove #{:a :b} :a))
+  (is= #{} (set/remove #{:a } :a))
+  (is= #{} (set/remove nil :a))
+  )
 
 ; #todo tests for clojure.set stuff
 
