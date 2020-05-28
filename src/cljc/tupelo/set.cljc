@@ -16,20 +16,23 @@
   (assert (every? set? args))
   (apply raw/union args))
 
-(def ^:no-doc conj-or-create (fnil conj #{}))
-(def ^:no-doc disj-or-create (fnil disj #{}))
+(comment  ; clearer to use conditional
+  (def ^:no-doc conj-or-create (fnil conj #{}))
+  (def ^:no-doc disj-or-create (fnil disj #{})))
 
 (s/defn add :- #{s/Any}
   "Adds a value to a set, creating the set if necessary."
-  [tgt :- (s/maybe #{s/Any})
+  [set-in :- (s/maybe #{s/Any})
    value :- s/Any]
-  (conj-or-create tgt value))
+  (let [tgt-set (or set-in #{})]
+    (clojure.core/conj tgt-set value)))
 
 (s/defn remove :- #{s/Any}
   "Removes a value from a set iff present, creating the set if necessary."
-  [tgt :- (s/maybe #{s/Any})
+  [set-in :- (s/maybe #{s/Any})
    value :- s/Any]
-  (disj-or-create tgt value))
+  (let [tgt-set (or set-in #{})]
+    (clojure.core/disj tgt-set value))) ; disj from empty set is a noop
 
 
 ; #todo copy clojure.set stuff
