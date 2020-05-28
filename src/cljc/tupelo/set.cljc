@@ -6,6 +6,7 @@
 ;   software.
 (ns tupelo.set
   "Tupelo - Making Clojure even sweeter"
+  (:refer-clojure :exclude [remove])
   (:require
     [clojure.set :as raw]
     [schema.core :as s]
