@@ -679,6 +679,12 @@
   [seq-arg]
   (next seq-arg))
 
+(defn get-or-nil
+  [mappy key] (clojure.core/get mappy key))
+
+(defn get-or-default
+  [mappy key default] (clojure.core/get mappy key default))
+
 ; NOTE:  Plumatic Schema doesn't handle infininite sequences
 (defn xtake ;  :- tsk/Collection
   "Returns the first n values from a collection.  Returns map for map colls.

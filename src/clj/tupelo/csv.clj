@@ -75,7 +75,9 @@
    construct a map for that line.  Default delimiter is the comma character (i.e. \\,) but
    may be changed using the syntax such as:
 
-     (parse-csv->row-maps <csv-data-src> :delimiter \\| )
+   ```
+      (parse-csv->row-maps <csv-data-src> :delimiter \\|)
+   ```
 
    to select the pipe character (i.e. \\|) as the delimiter.  "
   ; AWTAWT TODO: update docs re. col-labels (keywords)

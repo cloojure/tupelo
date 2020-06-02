@@ -47,7 +47,7 @@
      (println (format ":with-timer-print %s %12.6f" ~id (grab :seconds result-map#)))
      (grab :result result-map#)))
 
-(defmacro with-timer-accum
+(defmacro with-timer-accum ; #todo:  vastly overcounts recursive calls!
   "Times execution of Clojure forms, accumulating results in timer-stats map under key `id`."
   [id & forms]
   (when-not (keyword? id)

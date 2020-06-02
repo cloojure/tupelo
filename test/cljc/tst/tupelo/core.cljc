@@ -20,7 +20,7 @@
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty
                                vals->map map-plain? forv glue]]
     [tupelo.string :as ts]
-    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+    [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture]])
   #?(:clj (:require [tupelo.types :as types]))
   )
@@ -319,6 +319,18 @@
     (is= [2 3] (next [1 2 3]) (t/rest-or-nil [1 2 3]))
     (is= [2 3 4] (next [1 2 3 4]) (t/rest-or-nil [1 2 3 4]))
     (is= [2 3 4] (take 3 (next inf-rng-1)) (take 3 (t/rest-or-nil inf-rng-1)))))
+
+(dotest
+  (let [data {:a 1}]
+    (is= 1 (t/get-or-nil data :a))
+    (is= nil (t/get-or-nil data :x))
+    (is= 1 (t/get-or-default data :a 666))
+    (is= 666 (t/get-or-default data :x 666)))
+  (let [data [0 1 2 3]]
+    (is= 1 (t/get-or-nil data 1))
+    (is= nil (t/get-or-nil data 9))
+    (is= 1 (t/get-or-default data 1 666))
+    (is= 666 (t/get-or-default data 9 666))))
 
 (dotest
   (is= :23 (t/int->kw 23))
