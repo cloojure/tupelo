@@ -34,5 +34,16 @@
   (let [tgt-set (or set-in #{})]
     (apply clojure.core/disj tgt-set values))) ; disj from empty set is a noop
 
-
-; #todo copy clojure.set stuff
+; for convenience of requiring only 1 ns
+(def difference clojure.set/difference)
+(def index clojure.set/index)
+(def intersection clojure.set/intersection)
+(def join clojure.set/join)
+(def map-invert clojure.set/map-invert)
+(def project clojure.set/project)
+(def rename clojure.set/rename)
+(def rename-keys clojure.set/rename-keys)
+(def select clojure.set/select)
+(def subset? clojure.set/subset?)
+(def superset? clojure.set/superset?)
+(def union clojure.set/union)
