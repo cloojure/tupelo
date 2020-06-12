@@ -28,8 +28,13 @@
 (dotest
   (is= #{:a} (set/add nil :a))
   (is= #{:a :b} (set/add #{:a} :b))
+  (is= #{:a :b :c} (set/add #{:a} :a :b :c))
+
   (is= #{:b} (set/remove #{:a :b} :a))
-  (is= #{} (set/remove #{:a } :a))
+  (is= #{:a :b} (set/remove #{:a :b} :zzz))
+  (is= #{:b :c} (set/remove #{:a :b :c} :a))
+  (is= #{:c} (set/remove #{:a :b :c} :a :b))
+  (is= #{} (set/remove #{:a} :a))
   (is= #{} (set/remove nil :a))
   )
 

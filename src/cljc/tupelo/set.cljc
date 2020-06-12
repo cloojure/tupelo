@@ -23,16 +23,16 @@
 (s/defn add :- #{s/Any}
   "Adds a value to a set, creating the set if necessary."
   [set-in :- (s/maybe #{s/Any})
-   value :- s/Any]
+   & values :- [s/Any]]
   (let [tgt-set (or set-in #{})]
-    (clojure.core/conj tgt-set value)))
+    (apply clojure.core/conj tgt-set values)))
 
 (s/defn remove :- #{s/Any}
-  "Removes a value from a set iff present, creating the set if necessary."
+  "Removes a values from a set iff present, creating the set if necessary."
   [set-in :- (s/maybe #{s/Any})
-   value :- s/Any]
+   & values :- [s/Any]]
   (let [tgt-set (or set-in #{})]
-    (clojure.core/disj tgt-set value))) ; disj from empty set is a noop
+    (apply clojure.core/disj tgt-set values))) ; disj from empty set is a noop
 
 
 ; #todo copy clojure.set stuff
