@@ -208,7 +208,7 @@
            (let [result (misc/shell-cmd "ls /bin/*sh")]
              (is= 0 (:exit result))
              (is (pos? (count (re-seq #"/bin/bash" (:out result)))))))
-         (binding [misc/*os-shell* "/bin/tcsh"]
+         (binding [misc/*os-shell* "/bin/zsh"]
            (let [result (misc/shell-cmd "ls /bin/*sh")]
              (is= 0 (:exit result))
              (is (pos? (count (re-seq #"/bin/bash" (:out result)))))))))
