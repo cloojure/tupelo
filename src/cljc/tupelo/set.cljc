@@ -8,7 +8,7 @@
   "Tupelo - Making Clojure even sweeter"
   (:refer-clojure :exclude [remove])
   (:require
-    [clojure.set :as raw]
+    [clojure.set]
     [schema.core :as s]
     [tupelo.core :as t]
     ))
@@ -30,23 +30,19 @@
 
 (defn union [& args]
   (assert (every? set? args))
-  (apply raw/union args))
-
-(comment  ; clearer to use conditional
-  (def ^:no-doc conj-or-create (fnil conj #{}))
-  (def ^:no-doc disj-or-create (fnil disj #{})))
+  (apply clojure.set/union args))
 
 (s/defn add :- #{s/Any}
   "Adds a value to a set, creating the set if necessary."
-  [set-in :- (s/maybe #{s/Any})
+  [tgt-set :- (s/maybe #{s/Any})
    & values :- [s/Any]]
-  (let [tgt-set (or set-in #{})]
-    (apply clojure.core/conj tgt-set values)))
+  (let [result (or tgt-set #{})]
+    (apply clojure.core/conj result values)))
 
 (s/defn remove :- #{s/Any}
   "Removes a values from a set iff present, creating the set if necessary."
-  [set-in :- (s/maybe #{s/Any})
+  [tgt-set :- (s/maybe #{s/Any})
    & values :- [s/Any]]
-  (let [tgt-set (or set-in #{})]
-    (apply clojure.core/disj tgt-set values))) ; disj from empty set is a noop
+  (let [result (or tgt-set #{})]
+    (apply clojure.core/disj result values))) ; disj from empty set is a noop
 
