@@ -1,4 +1,4 @@
-(defproject tupelo "0.9.214"
+(defproject tupelo "20.07.01"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -25,7 +25,7 @@
    [org.clojure/data.xml "0.2.0-alpha5"]
    [org.clojure/math.combinatorics "0.1.6"]
    [org.clojure/spec.alpha "0.2.187"]
-   [org.clojure/test.check "1.0.0"]
+   [org.clojure/test.check "1.1.0"]
    [org.clojure/tools.reader "1.3.2"]
    [org.snakeyaml/snakeyaml-engine "2.1"]
    [prismatic/schema "1.1.12"]
@@ -55,7 +55,7 @@
                                        ;[binaryage/devtools "0.9.10"]
                                        ;[binaryage/dirac "1.4.3"]
                                        ;[com.cemerick/piggieback "0.2.2"]
-                                       [criterium "0.4.5"]
+                                       [criterium "0.4.6"]
                                        [org.clojure/clojure "1.10.2-alpha1"]
                                       ;[org.clojure/clojurescript  "1.10.764"] ; "1.10.597"
                                        ]
