@@ -335,12 +335,13 @@
        "Runs a command string in the default OS shell (/bin/bash); returns result in a Clojure map.
         Example:
 
-       (shell-cmd \"ls -ldF *\")
+             (shell-cmd \"ls -ldF *\")
 
-         ;=>   {:exit    0     ; unix exit status (0 -> normal)
-                :err    ''     ; text from any errors
-                :out    '...'  ; text output as would printed to console
-               } "
+               ;=>   {:exit    0     ; unix exit status (0 -> normal)
+                      :err    ''     ; text from any errors
+                      :out    '...'  ; text output as would printed to console
+                     }
+       "
        [cmd-str]
        (let [result (shell/sh *os-shell* "-c" cmd-str)]
          (if (= 0 (grab :exit result))
@@ -404,13 +405,13 @@
         newline when 100 dots have been printed. Displays the running dot count at the beginning of each line.
         Usage:
 
-          (ns xxx.core
-            (:require [tupelo.misc :as tm]))
-          (tm/dots-config! {:decimation 10} )
-          (tm/with-dots
-            (doseq [ii (range 2345)]
-              (tm/dot)
-              (Thread/sleep 5)))
+            (ns xxx.core
+              (:require [tupelo.misc :as tm]))
+            (tm/dots-config! {:decimation 10} )
+            (tm/with-dots
+              (doseq [ii (range 2345)]
+                (tm/dot)
+                (Thread/sleep 5)))
         "
        []
        (swap! dot-counter inc))
@@ -480,12 +481,12 @@
      (s/defn fn-info :- tsk/KeyMap ; #todo make cljs version
        "Returns a map of info about the current function, like:
 
-           {:ns-name     'demo.core'
-            :fn-name     'add2'
-            :class-name  'demo.core$add2'
-            :file-name   'core.clj'
-            :line-num    57
-            :method-name 'invokeStatic' }
+             {:ns-name     'demo.core'
+              :fn-name     'add2'
+              :class-name  'demo.core$add2'
+              :file-name   'core.clj'
+              :line-num    57
+              :method-name 'invokeStatic' }
             "
        []
        (let [stacktrace-info (stacktrace-info (RuntimeException. "dummy"))
@@ -501,12 +502,12 @@
      (s/defn fn-info-caller :- tsk/KeyMap ; #todo make cljs version
        "Returns a map of info about the caller of the current function, like:
 
-           {:ns-name     'demo.core'
-            :fn-name     'add2'
-            :class-name  'demo.core$add2'
-            :file-name   'core.clj'
-            :line-num    57
-            :method-name 'invokeStatic' }
+             {:ns-name     'demo.core'
+              :fn-name     'add2'
+              :class-name  'demo.core$add2'
+              :file-name   'core.clj'
+              :line-num    57
+              :method-name 'invokeStatic' }
             "
        []
        (let [stacktrace-info (stacktrace-info (RuntimeException. "dummy"))
@@ -528,13 +529,13 @@
      (defn grouper
        "Uses js/RegExp to find matching groups.  Sample output:
 
-         (grouper #\"[a-z0-9][A-Z]\"  \"aTaTa\")  =>
-           [ {:groups [\"aT\"]  :match \"aT\"  :index 0  :last-index 2  :input \"aTaTa\" }
-             {:groups [\"aT\"]  :match \"aT\"  :index 2  :last-index 4  :input \"aTaTa\" } ]
+           (grouper #\"[a-z0-9][A-Z]\"  \"aTaTa\")  =>
+             [ {:groups [\"aT\"]  :match \"aT\"  :index 0  :last-index 2  :input \"aTaTa\" }
+               {:groups [\"aT\"]  :match \"aT\"  :index 2  :last-index 4  :input \"aTaTa\" } ]
 
-         (grouper  #\"((\\d+)-(\\d+))\" \"672-345-456-3212\")  =>
-           [ {:groups [\"672-345\"  \"672-345\"  \"672\" \"345\" ]  :match \"672-345\"   :index 0  :last-index  7  :input \"672-345-456-3212\" }
-             {:groups [\"456-3212\" \"456-3212\" \"456\" \"3212\"]  :match \"456-3212\"  :index 8  :last-index 16  :input \"672-345-456-3212\" } ]
+           (grouper  #\"((\\d+)-(\\d+))\" \"672-345-456-3212\")  =>
+             [ {:groups [\"672-345\"  \"672-345\"  \"672\" \"345\" ]  :match \"672-345\"   :index 0  :last-index  7  :input \"672-345-456-3212\" }
+               {:groups [\"456-3212\" \"456-3212\" \"456\" \"3212\"]  :match \"456-3212\"  :index 8  :last-index 16  :input \"672-345-456-3212\" } ]
 
        Note that the JS value returned by `:last-index` is the index of the first char in the input string *after* the current match.
        "
