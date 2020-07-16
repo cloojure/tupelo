@@ -6,14 +6,17 @@
 ;   software.
 (ns tupelo.string
   "Tupelo - Making Clojure even sweeter"
-  (:refer-clojure :exclude [drop take contains? replace reverse ])
+  (:refer-clojure :exclude [drop take contains? format replace reverse ])
   (:require
     [clojure.string]
     [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.chars :as chars]
-    [tupelo.core :as t ] )
-  #?(:clj (:require [clojure.java.io :as io]))
+    [tupelo.core :as t ]
+
+    #?(:clj [clojure.java.io :as io])
+    #?(:cljs [goog.string.format])
+    )
   #?(:clj
      (:import [java.io InputStream ByteArrayInputStream]
               [java.nio.charset StandardCharsets])))
@@ -433,6 +436,15 @@
   "Keeps the N right-most chars of a string"
   [str-val n]
   (clojure.string/join (take-last n (t/str->chars str-val))))
+
+(s/defn format :- s/Str
+  "Performs sprintf-like formatting (via goog.string.format)"
+  [fmtstr  :- s/Str
+   & args]
+  (let [format-fn #?(:clj clojure.core/format
+                     :cljs goog.string.format)]
+    (apply format-fn fmtstr args)))
+
 
 #?(:cljs
    (do

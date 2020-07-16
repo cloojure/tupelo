@@ -16,9 +16,9 @@
     [clojure.test] ; sometimes this is required - not sure why
     [clojure.core :as cc ]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty forv]]
-    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
+    [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
                           throws? throws-not? define-fixture ]]
-    [clojure.string :as str]
+    [clojure.string :as str] ; #todo => tupelo.string via aliases
     [tupelo.chars :as char]
     [tupelo.string :as ts]
     ))
@@ -476,26 +476,12 @@
   (is=  (ts/pad-right "ab"    4 \-) "ab--")
   (is=  (ts/pad-right "abc"   4 \-) "abc-")
   (is=  (ts/pad-right "abcd"  4 \-) "abcd")
-  (is=  (ts/pad-right "abcde" 4 \-) "abcde")
+  (is=  (ts/pad-right "abcde" 4 \-) "abcde"))
 
-  )
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+(dotest
+  (let [xx 123.456789012345]
+    (is= "Cost: 00123"    (ts/format "Cost: %05d" 123))
+    (is= "Cost:   123.46" (ts/format "Cost: %8.2f" xx))))
 
 
 

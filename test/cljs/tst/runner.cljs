@@ -21,6 +21,7 @@
     [tst.tupelo.lazy]
     [tst.tupelo.lexical]
     [tst.tupelo.misc]
+    [tst.tupelo.math]
     [tst.tupelo.parse]
     [tst.tupelo.schema]
     [tst.tupelo.set]
@@ -58,6 +59,7 @@
     'tst.tupelo.lazy
     'tst.tupelo.lexical
     'tst.tupelo.misc
+    'tst.tupelo.math
     'tst.tupelo.parse
     'tst.tupelo.schema
     'tst.tupelo.set

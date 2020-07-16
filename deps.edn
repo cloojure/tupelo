@@ -1,6 +1,6 @@
 {:deps    {
            org.clojure/clojure             {:mvn/version "1.10.2-alpha1"}
-          ;org.clojure/clojurescript       {:mvn/version "1.10.597"}
+           ;org.clojure/clojurescript       {:mvn/version "1.10.597"}
            org.clojure/clojurescript       {:mvn/version "1.10.764"}
 
            cheshire                        {:mvn/version "5.9.0"}
@@ -12,8 +12,9 @@
            com.bhauman/figwheel-main       {:mvn/version "0.2.3"}
            com.bhauman/rebel-readline-cljs {:mvn/version "0.1.4"}
            com.cemerick/url                {:mvn/version "0.1.1"}
-          ;com.climate/claypoole           {:mvn/version "1.1.4"}
-          ;com.taoensso/timbre             {:mvn/version "4.10.0"}
+           ;com.climate/claypoole           {:mvn/version "1.1.4"}
+           ;com.taoensso/timbre             {:mvn/version "4.10.0"}
+
            danlentz/clj-uuid               {:mvn/version "0.1.9"}
            io.pedestal/pedestal.jetty      {:mvn/version "0.5.7"}
            io.pedestal/pedestal.route      {:mvn/version "0.5.7"}
@@ -34,7 +35,7 @@
 
  :paths   ["src/cljs" "src/cljc" "src/clj"
            "test/cljs" "test/cljc"
-           "target" "resources" ]
+           "target" "resources"]
 
  :aliases {
            :ancient   {:main-opts  ["-m" "deps-ancient.deps-ancient"]
