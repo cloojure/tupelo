@@ -15,6 +15,7 @@
              ))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
+    [tupelo.math :as math]
     [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
     [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
@@ -38,27 +39,6 @@
     (is (= (drop 1 data) [  2 3]))
     (is (= (drop 2 data) [    3]))
     (is (= (drop 3 data) [     ]))))
-
-(dotest
-  (is= (misc/factorial 0) 1)
-  (is= (misc/factorial 1) 1)
-  (is= (misc/factorial 2) 2)
-  (is= (misc/factorial 3) 6)
-  (is= (misc/factorial 4) 24)
-  (is= (misc/factorial 5) 120)
-  (is= (misc/factorial 6) 720)
-  (is= (misc/factorial 7) 5040)
-  (is= (misc/factorial 8) 40320)
-  (is= (misc/factorial 9) 362880)
-  (is= (misc/factorial 10) 3628800)
-  (is (t/rel= (misc/factorial 15) 1.307674368e+12 :digits 10))
-  (newline)
-  (println :factorial-fail--start)
-  (throws? (misc/factorial 1.5))
-  (throws? (misc/factorial -1))
-  (throws? (misc/factorial -1))
-  (println :factorial-fail--end)
-  )
 
 (dotest
   (is= 1 (misc/boolean->binary true))
@@ -165,22 +145,9 @@
                              #?(:cljs cljs.core/UUID)))
     (is= (misc/uuid->sha uuid-val) "03a49d4729c971a0dc8ddf8d8847290416ad58d2")))
 
+
 #?(:clj
    (do
-
-     (dotest
-       (let [sqrt-2     1.414213562
-             sqrt-2-rnd (misc/round-pow sqrt-2 -2)
-             error      (- 1.414 sqrt-2-rnd)]
-         (is (<= 0 (Math/abs error) 0.01))
-         (is (t/rel= sqrt-2-rnd sqrt-2 :tol 0.01)))
-       (let [val     12345
-             val-rnd (misc/round-pow val 2)
-             error   (- val val-rnd)]
-         (is (<= 0 (Math/abs error) 100))
-         (is (t/rel= val-rnd val :tol 100))
-         (is (t/rel= val-rnd val :digits 2))
-         (isnt (t/rel= val-rnd val :digits 4)) ) )
 
      (dotest
        (is (#{:windows :linux :mac} (misc/get-os))))

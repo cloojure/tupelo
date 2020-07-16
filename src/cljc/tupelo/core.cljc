@@ -2033,13 +2033,13 @@
 ;  #todo range version => (butlast (thru ...))
 (defn thru          ; #todo make lazy: (thruz ...) -> (thru* {:lazy true} ...)
   "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. Not lazy. "
-  ([end]       (thru 0 end))
+  ([end] (thru 0 end))
   ([start end] (thru start end 1))
   ([start end step]
-   (let [delta          (- (double end)   (double start))
+   (let [delta          (- (double end) (double start))
          nsteps-dbl     (/ (double delta) (double step))
          nsteps-int     (Math/round nsteps-dbl)
-         rounding-error (Math/abs (- nsteps-dbl nsteps-int)) ]
+         rounding-error (Math/abs (- nsteps-dbl nsteps-int))]
      (when (< 0.00001 rounding-error)
        (throw (ex-info "thru: non-integer number of steps \n   args:" (vals->map start end step))))
      (vec (clojure.core/map #(-> %

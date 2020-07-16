@@ -33,15 +33,6 @@
             [java.util UUID]))
   )
 
-(s/defn factorial :- s/Int
-  "Computes the factorial of N"
-  [n :- s/Int]
-  (when (neg? n)
-    (throw (ex-info "factorial: N must be a non-negative integer=" (vals->map n))))
-  (if (zero? n)
-    1
-    (apply * (thru 1 n))))
-
 (s/defn find-pattern :- [s/Int]
   "Searches for pattern-vec within data-vec, returning a lazy seq of indexes into data-vec."
   [pattern-vec :- tsk/List
@@ -305,15 +296,6 @@
      ; def curr_utc_secs_hexstr()
      ; """Returns the current UTC time in integer seconds."""
      ; return int32_to_hexstr(curr_utc_secs())
-
-     (defn round-pow       ; #todo => tupelo.misc
-       "Round a floating point number to 2 decimal places"
-       [val pow]
-       (let [factor (Math/pow 10.0 (double pow))]
-         (it-> (double val)
-           (/ it factor)
-           (Math/round it)
-           (* it factor))))
 
      (def ^:dynamic *os-shell* "/bin/bash") ; could also use /bin/zsh, etc
 
