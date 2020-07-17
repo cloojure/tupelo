@@ -34,8 +34,8 @@
 
         (round-decimals 3.14156 2) => 3.14
   "
-  [val num-decimals]
-  (let [factor (Math/pow 10.0 (double num-decimals))]
+  [val N]
+  (let [factor (Math/pow 10.0 (double N))]
     (it-> (double val)
       (* it factor)
       (Math/round it)
