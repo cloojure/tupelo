@@ -19,7 +19,7 @@
     [clojure.set :as set]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
     [tupelo.string :as ts]
-    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+    [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture dospec check-isnt ]] )
   #?(:clj (:require
             [clojure.test.check.generators :as gen]
@@ -237,6 +237,29 @@
 (dotest             ; should throw if empty arg
   (is (every? even? []))
   (is (every? odd? [])))
+
+
+; `case` automatically quotes its argument with misleading results
+(dotest
+  (let [expected    123
+        value       123
+        case-result (case value
+                      expected :success
+                      :failure)
+        cond-result (cond
+                      (= value expected) :success
+                      :else :failure)]
+    (is= :failure case-result)
+    (is= :success cond-result))
+  (let [value       2
+        result-case (case value
+                      (first [2 3 4]) :success
+                      :fail)
+        result-cond (cond
+                      (= value (first [2 3 4])) :pass
+                      :else :fail)]
+    (is= :fail result-case)
+    (is= :pass result-cond)))
 
 #?(:clj
    ; transducer surprises
