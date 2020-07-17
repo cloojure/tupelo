@@ -438,7 +438,10 @@
   (clojure.string/join (take-last n (t/str->chars str-val))))
 
 (s/defn format :- s/Str
-  "Performs sprintf-like formatting (via goog.string.format)"
+  "Performs sprintf-like formatting for CLJ & CLJS:
+
+       (format \"%8.2f\" 123.456789) => '  123.46'
+  "
   [fmtstr  :- s/Str
    & args]
   (let [format-fn #?(:clj clojure.core/format
