@@ -1,4 +1,4 @@
-;   Copyright (c) Alan Thompson. All rights reserved.
+;   Copyrigh (c) Alan Thompson. All rights reserved.
 ;   The use and distribution terms for this software are covered by the Eclipse Public License 1.0
 ;   (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the file epl-v10.html at
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
@@ -249,7 +249,8 @@
 ;-----------------------------------------------------------------------------
 (declare
   glue xfirst xrest append prepend grab fetch-in indexed clip-str validate
-  walk-with-parents with-nil-default
+  walk-with-parents with-nil-default vals->map
+  spy spyx spy-pretty spyx-pretty let-spy let-spy-pretty
   )
 
 ;-----------------------------------------------------------------------------
@@ -816,6 +817,39 @@
   "Like clojure.core/map but returns results in an eager list. Not lazy."
   [& forms]
   `(->list (map ~@forms)))
+
+(defn ^:no-doc for-indexed-impl
+  [forms]
+  (let
+    [bindings-vec (xfirst forms)
+     body-forms   (xrest forms)
+     >>           (when-not (= 2 (count bindings-vec))
+                    (throw (ex-info "for-indexed: binding form must be len=2 " (vals->map bindings-vec))))
+     bndg-dest    (xfirst bindings-vec)
+     bndg-src     (xsecond bindings-vec)]
+    `(vec
+       (for [~bndg-dest (indexed ~bndg-src)]
+         (do ~@body-forms)))))
+
+(defmacro for-indexed
+  "Like clojure.core/map-indexed, converts each element x in a sequence into a Pair [i x],
+  where `i` is the zero-based index number. Supports only a single sequence in the binding form.
+  Wraps all forms with an implicit `(do ...)` as with clojure.core/doseq.  Use `tupelo.core/indexed`
+  for more complicated looping constructs. Usage:
+
+      (for-indexed [[i x] vals]
+        (println (format \"i=%d x=%s\" i x))
+        {:i i :x x} )
+
+  is equivalent to:
+
+      (vec
+        (for [[i x] (indexed vals)]
+          (do
+            (println (format \"i=%d x=%s\" i x))
+            {:i i :x x} )))  "
+  [& forms]
+  (for-indexed-impl forms))
 
 ; #todo:  make (map-ctx {:trunc false :eager true} <fn> <coll1> <coll2> ...) <- default ctx
 ; #todo:  mapz, forz, filterz, ...?

@@ -724,6 +724,14 @@
     (for [x (range 5) y (range 2 9)] (str x y))))
 
 (dotest
+  (is= (t/for-indexed [[i x] [:a :b :c]]
+         ; (println (format "i=%d x=%s" i x)) ; uncomment to print to stdout :wa
+         {:i i :x x})
+    [{:i 0 :x :a}
+     {:i 1 :x :b}
+     {:i 2 :x :c}]))
+
+(dotest
   (let [xs [1 2 3]
         ys [10 20 30]]
     (is= [11 22 33]
