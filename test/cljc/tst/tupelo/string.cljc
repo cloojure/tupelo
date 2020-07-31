@@ -362,6 +362,33 @@
   (is= nil (str/index-of "abc" "d"))
   )
 
+; search for successive string fragments (regex-safe)
+(dotest
+  (is (ts/contains-str-frags? "abcde" "a" ))
+  (is (ts/contains-str-frags? "abcde" "a" "e"))
+  (is (ts/contains-str-frags? "abcde" "a" "c" ))
+  (is (ts/contains-str-frags? "abcde" "a" "c" "e"))
+
+  (isnt (ts/contains-str-frags? "abcde" "z" ))
+  (isnt (ts/contains-str-frags? "abcde" "e" "a" ))
+  (isnt (ts/contains-str-frags? "abcde" "c" "a" ))
+  (isnt (ts/contains-str-frags? "abcde" "c" "a" "e"))
+
+  (is (ts/contains-str-frags? "ab.*de" "a" ))
+  (is (ts/contains-str-frags? "ab.*de" "a" "e"))
+  (is (ts/contains-str-frags? "ab.*de" "a" ".*" ))
+  (is (ts/contains-str-frags? "ab.*de" "a" ".*" "e"))
+
+  (is (ts/contains-str-frags? "ab.de" "a" ))
+  (is (ts/contains-str-frags? "ab.de" "a" "e"))
+  (is (ts/contains-str-frags? "ab.de" "a" "." ))
+  (is (ts/contains-str-frags? "ab.de" "a" "." "e"))
+
+  (isnt (ts/contains-str-frags? "abcde" "a" "." ))
+  (isnt (ts/contains-str-frags? "abcde" "a" "." ))
+  (isnt (ts/contains-str-frags? "abcde" "a" ".*" ))
+  (isnt (ts/contains-str-frags? "abcde" "a" ".*" )))
+
 (dotest
   ; clojure.string
 ; (t/when-clojure-1-8-plus)

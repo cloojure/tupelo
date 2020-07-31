@@ -374,6 +374,25 @@
    tgt-str :- s/Str]
   (t/truthy? (clojure.string/includes? search-str tgt-str)))
 
+(s/defn contains-str-frags? :- s/Bool
+  "Returns true if the intput string contains the target string fragments.
+  Search fragments may be separated by zero-or-more arbitrary chars in src"
+  [src :- s/Str
+   & frags :- [s/Str]]
+  (when (empty? frags)
+    (throw (ex-info "invalid frags" (t/vals->map src frags))))
+  (loop [src   src
+         frags frags]
+    (if (empty? frags)
+      true
+      (let [frag      (t/xfirst frags)
+            idx-found (.indexOf src frag)]
+        (if (= -1 idx-found)
+          false     ; next fragment was not found
+          (let [src-next   (clojure.core/subs src idx-found)
+                frags-next (t/xrest frags)]
+            (recur src-next frags-next)))))))
+
 (s/defn grep
   "Given a multi-line text string, returns a string containing lines matching a regex pattern."
   [pattern :- s/Regex
