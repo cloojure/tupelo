@@ -173,6 +173,14 @@
   (is= nil (get {:a 1} [:x :y])) ; doesn't fail when should have been `get-in`
   )
 
+(dotest ; regarding get & nil
+  (is= nil (get nil :a))
+  (is= nil (get-in nil [:a :b]))
+  (is= nil (:a nil))
+  (is= nil (:a {:b 2}))
+  (is= nil (get {:b 2} nil))
+  (is= nil (get nil nil)))
+
 (dotest             ; conj inconsistencies
   (is= [1 2 nil] (conj [1 2] nil))
   (is= [nil 1 2] (conj '(1 2) nil))
