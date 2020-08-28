@@ -837,9 +837,9 @@
   Wraps all forms with an implicit `(do ...)` as with clojure.core/doseq.  Use `tupelo.core/indexed`
   for more complicated looping constructs. Usage:
 
-      (for-indexed [[i x] vals]
-        (println (format \"i=%d x=%s\" i x))
-        {:i i :x x} )
+        (for-indexed [[i x] vals]
+          (println (format \"i=%d x=%s\" i x))
+          {:i i :x x} )
 
   is equivalent to:
 
@@ -948,11 +948,13 @@
    forms or function return values. There are three variants.  Usage:
 
     (spy :msg <msg-string>)
-        This variant is intended for use in either thread-first (->) or thread-last (->>)
-        forms.  The keyword :msg is used to identify the message string and works equally
-        well for both the -> and ->> operators. Spy prints both <msg-string>  and the
-        threading value to stdout, then returns the value for further propogation in the
-        threading form. For example, both of the following:
+
+      This variant is intended for use in either thread-first (->) or thread-last (->>)
+      forms.  The keyword :msg is used to identify the message string and works equally
+      well for both the -> and ->> operators. Spy prints both <msg-string>  and the
+      threading value to stdout, then returns the value for further propogation in the
+      threading form. For example, both of the following:
+
             (->   2
                   (+ 3)
                   (spy :msg \"sum\" )
@@ -961,19 +963,23 @@
                   (+ 3)
                   (spy :msg \"sum\" )
                   (* 4))
+
         will print 'sum => 5' to stdout.
 
     (spy <msg-string> <value>)
-        This variant is intended for simpler use cases such as function return values.
-        Function return value expressions often invoke other functions and cannot be
-        easily displayed since (println ...) swallows the return value and returns nil
-        itself.  Spy will output both <msg-string> and the value, then return the value
-        for use by further processing.  For example, the following:
+      This variant is intended for simpler use cases such as function return values.
+      Function return value expressions often invoke other functions and cannot be
+      easily displayed since (println ...) swallows the return value and returns nil
+      itself.  Spy will output both <msg-string> and the value, then return the value
+      for use by further processing.  For example, the following:
+
             (println (* 2
                        (spy \"sum\" (+ 3 4))))
       will print:
+
             sum => 7
             14
+
       to stdout.
 
     (spy <value>)
@@ -1256,19 +1262,19 @@
 (defn glue
   "Glues together like collections:
 
-     (glue [1 2] [3 4] [5 6])                -> [1 2 3 4 5 6]
-     (glue {:a 1} {:b 2} {:c 3})             -> {:a 1 :c 3 :b 2}
-     (glue #{1 2} #{3 4} #{6 5})             -> #{1 2 6 5 3 4}
-     (glue \"I\" \" like \" \\a \" nap!\" )  -> \"I like a nap!\"
+       (glue [1 2] [3 4] [5 6])                -> [1 2 3 4 5 6]
+       (glue {:a 1} {:b 2} {:c 3})             -> {:a 1 :c 3 :b 2}
+       (glue #{1 2} #{3 4} #{6 5})             -> #{1 2 6 5 3 4}
+       (glue \"I\" \" like \" \\a \" nap!\" )  -> \"I like a nap!\"
 
   If you want to convert to a sorted set or map, just put an empty one first:
 
-     (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
-     (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
+       (glue (sorted-map) {:a 1} {:b 2} {:c 3})      -> {:a 1 :b 2 :c 3}
+       (glue (sorted-set) #{1 2} #{3 4} #{6 5})      -> #{1 2 3 4 5 6}
 
    If there are duplicate keys when using glue for maps or sets, then \"the last one wins\":
 
-     (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
+       (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
   [& colls] ; #todo maybe return nil if no colls?  would allow some-> for users
   (let [string-or-char? #(or (string? %) (char? %))]
     (cond
@@ -1396,11 +1402,12 @@
 ; #todo  Need it?-> like some-> that short-circuits on nil
 (defmacro it->
   "A threading macro like as-> that always uses the symbol 'it' as the placeholder for the next threaded value:
-      (it-> 1
-            (inc it)
-            (+ it 3)
-            (/ 10 it))
-      ;=> 2 "
+
+        (it-> 1
+              (inc it)
+              (+ it 3)
+              (/ 10 it))
+        ;=> 2 "
   [expr & forms]
   `(let [~'it ~expr
          ~@(interleave (repeat 'it) forms)
@@ -1430,13 +1437,13 @@
   "A threading macro like cond-> that always uses the symbol 'it' as the placeholder for the next threaded value.
   Works in both the conditional form and the value form:
 
-    (let [params {:a 1 :b 1 :c nil :d nil}]
-      (cond-it-> params
-        (:a it)        (update it :b inc)
-        (= (:b it) 2)  (assoc it :c \"here\")
-        (:c it)        (assoc it :d \"again\")))
+      (let [params {:a 1 :b 1 :c nil :d nil}]
+        (cond-it-> params
+          (:a it)        (update it :b inc)
+          (= (:b it) 2)  (assoc it :c \"here\")
+          (:c it)        (assoc it :d \"again\")))
 
-    ;=> {:a 1, :b 2, :c \"here\", :d \"again\"}"
+      ;=> {:a 1, :b 2, :c \"here\", :d \"again\"}"
   [& forms]
   (apply cond-it-impl forms))
 
@@ -1464,15 +1471,17 @@
   NOTE:  because of peculiarities of clojure.core/sorted-map-by, one cannot add new entries
   to the sorted map.  Instead, a new map must be created from a plain map.
   Usage:
-    (sorted-map-via <src-map> <path-vec>)
-    (sorted-map-via <src-map> <path-vec> <ascending?>)
+
+      (sorted-map-via <src-map> <path-vec>)
+      (sorted-map-via <src-map> <path-vec> <ascending?>)
 
   Example:
-    (let [unsorted {:c {:val 3}
-                    :a {:val 1}
-                    :b {:val 2}}
-          sorted   (sorted-map-via unsorted [:* :val])]
-      (assert (= unsorted sorted))) "
+
+      (let [unsorted {:c {:val 3}
+                      :a {:val 1}
+                      :b {:val 2}}
+            sorted   (sorted-map-via unsorted [:* :val])]
+        (assert (= unsorted sorted))) "
   ; implicit sort order - ascending
   ([src-map :- tsk/Map
     path-vec :- tsk/Vec] (sorted-map-via-path src-map path-vec true))
@@ -1517,28 +1526,30 @@
 
 (s/defn increasing? :- s/Bool
   "Returns true iff the vectors are in (strictly) lexicographically increasing order
-    [1 2]  [1]        -> false
-    [1 2]  [1 1]      -> false
-    [1 2]  [1 2]      -> false
-    [1 2]  [1 2 nil]  -> true
-    [1 2]  [1 2 3]    -> true
-    [1 2]  [1 3]      -> true
-    [1 2]  [2 1]      -> true
-    [1 2]  [2]        -> true "
+
+        [1 2]  [1]        -> false
+        [1 2]  [1 1]      -> false
+        [1 2]  [1 2]      -> false
+        [1 2]  [1 2 nil]  -> true
+        [1 2]  [1 2 3]    -> true
+        [1 2]  [1 3]      -> true
+        [1 2]  [2 1]      -> true
+        [1 2]  [2]        -> true "
   [a :- tsk/List
    b :- tsk/List]
   (neg? (cmp-seq-lexi a b)))
 
 (s/defn increasing-or-equal? :- s/Bool
   "Returns true iff the vectors are in (strictly) lexicographically increasing-or-equal order
-    [1 2]  [1]        -> false
-    [1 2]  [1 1]      -> false
-    [1 2]  [1 2]      -> true
-    [1 2]  [1 2 nil]  -> true
-    [1 2]  [1 2 3]    -> true
-    [1 2]  [1 3]      -> true
-    [1 2]  [2 1]      -> true
-    [1 2]  [2]        -> true "
+
+        [1 2]  [1]        -> false
+        [1 2]  [1 1]      -> false
+        [1 2]  [1 2]      -> true
+        [1 2]  [1 2 nil]  -> true
+        [1 2]  [1 2 3]    -> true
+        [1 2]  [1 3]      -> true
+        [1 2]  [2 1]      -> true
+        [1 2]  [2]        -> true "
   [a :- tsk/List
    b :- tsk/List]
   (nonpos? (cmp-seq-lexi a b)))
@@ -1956,18 +1967,22 @@
 
 (defn indexed
   "Given one or more collections, returns a sequence of indexed tuples from the collections:
-      (indexed xs ys zs) -> [ [0 x0 y0 z0]
-                              [1 x1 y1 z1]
-                              [2 x2 y2 z2]
-                              ... ] "
+
+        (indexed xs ys zs) -> [ [0 x0 y0 z0]
+                                [1 x1 y1 z1]
+                                [2 x2 y2 z2]
+                                ... ]
+                                "
   [& colls]
   (apply zip-lazy (range) colls))
 
 (defmacro lazy-cons
   "The simple way to create a lazy sequence:
-      (defn lazy-next-int [n]
-        (t/lazy-cons n (lazy-next-int (inc n))))
-      (def all-ints (lazy-next-int 0)) "
+
+        (defn lazy-next-int [n]
+          (t/lazy-cons n (lazy-next-int (inc n))))
+        (def all-ints (lazy-next-int 0))
+        "
   [curr-val recursive-call-form]
   `(lazy-seq (cons ~curr-val ~recursive-call-form)))
 
@@ -2146,8 +2161,8 @@
   "Works with the `->vector` function to unwrap vectors/lists to insert
   their elements as with the unquote-spicing operator (~@). Examples:
 
-      (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
-      (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9] "
+        (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
+        (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9] "
   [data :- [s/Any]]
   (assert (sequential? data))
   (->Unwrapped data))
@@ -2157,8 +2172,8 @@
   any embedded calls to (unwrap <vec-or-list>) and insert their elements as with the
   unquote-spicing operator (~@). Examples:
 
-      (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
-      (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9] "
+        (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
+        (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9] "
   [& args :- [s/Any]]
   (let [result (reduce (fn [accum item]
                          (let [it-use (cond
@@ -2324,8 +2339,8 @@
   "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
    (apply hash-map (keyvals m)). (keyvals {:a 1 :b 2} => [:a 1 :b 2]
 
-     Usage:  (keyvals-seq ctx) ctx-default: {:missing-ok false}
-             (keyvals-seq the-map the-keys) "
+         Usage:  (keyvals-seq ctx) ctx-default: {:missing-ok false}
+                 (keyvals-seq the-map the-keys) "
   ([ctx :- tsk/KeyMap ]
     (let [defaults {:missing-ok false}]
       (keyvals-seq-impl (into defaults ctx))))
@@ -2403,8 +2418,8 @@
 (s/defn map-keys :- tsk/Map ; #todo README
   "Transforms each key in a map using the supplied `tx-fn`:
 
-    (t/map-keys {1 :a 2 :b 3 :c} inc)                  =>  {  2 :a   3 :b 4   :c}
-    (t/map-keys {1 :a 2 :b 3 :c} {1 101 2 202 3 303})  =>  {101 :a 202 :b 303 :c}"
+        (t/map-keys {1 :a 2 :b 3 :c} inc)                  =>  {  2 :a   3 :b 4   :c}
+        (t/map-keys {1 :a 2 :b 3 :c} {1 101 2 202 3 303})  =>  {101 :a 202 :b 303 :c}"
   [map-in :- tsk/Map
    tx-fn  :- tsk/Fn
    & tx-args ]
@@ -2417,8 +2432,8 @@
 (s/defn map-vals :- tsk/Map ; #todo README ; #todo docstring, README
   "Transforms each value in a map using the supplied `tx-fn`:
 
-      (t/map-vals {:a 1 :b 2 :c 3} inc)                  =>  {:a 2,   :b 3,   :c 4}
-      (t/map-vals {:a 1 :b 2 :c 3} {1 101 2 202 3 303})  =>  {:a 101, :b 202, :c 303} "
+        (t/map-vals {:a 1 :b 2 :c 3} inc)                  =>  {:a 2,   :b 3,   :c 4}
+        (t/map-vals {:a 1 :b 2 :c 3} {1 101 2 202 3 303})  =>  {:a 101, :b 202, :c 303} "
   [map-in :- tsk/Map
    tx-fn  :- tsk/Fn
    & tx-args ]
@@ -2545,8 +2560,8 @@
 (s/defn val= :- s/Bool ; maybe value=  or   map=  (like set=)
   "Compares values for equality using clojure.core/=, treating records as plain map values:
 
-      (defrecord SampleRec [a b])
-      (assert (val= (->SampleRec 1 2) {:a 1 :b 2}))   ; fails for clojure.core/= "
+        (defrecord SampleRec [a b])
+        (assert (val= (->SampleRec 1 2) {:a 1 :b 2}))   ; fails for clojure.core/= "
   [& vals]
   (let [mapify   (fn [arg]
                    (if (map? arg)
@@ -2715,20 +2730,24 @@
 ; #todo maybe (with-destruct ...) implies automatic (restruct) upon exit
 (defmacro destruct
   "Natural destructuring:
-     (let [data {:a 1
-                 :b {:c 3
-                     :d 4}}]
-       ...
-       (destruct [data {:a ?
-                        :b {:c ?}}]
-       ...
+
+       (let [data {:a 1
+                   :b {:c 3
+                       :d 4}}]
+         ...
+         (destruct [data {:a ?
+                          :b {:c ?}}]
+         ...
+
    then can use local values  a=1, c=3.  With vector data:
-     (let [data [1 2 3 4 5]]
-       ...
-       (destruct [data [a b c]]
-        ...
-     then can use local values a=1 b=2 c=3.  Can use `(restruct)`, `(restruct data)`, or `(restruct-all)`
-     to re-structure & return original data shape using current values."
+
+       (let [data [1 2 3 4 5]]
+         ...
+         (destruct [data [a b c]]
+          ...
+
+   then can use local values a=1 b=2 c=3.  Can use `(restruct)`, `(restruct data)`, or `(restruct-all)`
+   to re-structure & return original data shape using current values."
   [bindings & forms]
   (destruct-impl bindings forms))
 
@@ -2824,33 +2843,33 @@
    in the pattern serves as a wildcard value.  Note that a wildcald can match either a primitive or a
    composite value: Classic usage:
 
-     (wild-match? pattern & values)
+       (wild-match? pattern & values)
 
    examples:
 
-     (wild-match? {:a :* :b 2}
-                  {:a 1  :b 2})         ;=> true
+       (wild-match? {:a :* :b 2}
+                    {:a 1  :b 2})         ;=> true
 
-     (wild-match? [1 :* 3]
-                  [1 2  3]
-                  [1 9  3] ))           ;=> true
+       (wild-match? [1 :* 3]
+                    [1 2  3]
+                    [1 9  3] ))           ;=> true
 
-     (wild-match? {:a :*       :b 2}
-                  {:a [1 2 3]  :b 2})   ;=> true
+       (wild-match? {:a :*       :b 2}
+                    {:a [1 2 3]  :b 2})   ;=> true
 
    wild-match? also accepts a context map; usage:
 
-     (wild-match? ctx)
+       (wild-match? ctx)
 
    example (default values shown):
 
-     (wild-match?  { :submap-ok   false
-                     :subset-ok   false
-                     :subvec-ok   false
-                     :wildcard-ok true
-                     :pattern     <required param>
-                     :values    [ <patttern-spec>+ ]   ; vector of 1 or more required
-                   } )
+       (wild-match?  { :submap-ok   false
+                       :subset-ok   false
+                       :subvec-ok   false
+                       :wildcard-ok true
+                       :pattern     <required param>
+                       :values    [ <patttern-spec>+ ]   ; vector of 1 or more required
+                     } )
 "
   (fn wild-match-dispatch-fn [& args]
     (if (and (= 1 (count args))
@@ -3018,39 +3037,39 @@
    data values. In this way, a map val can easily determine its correspond key or vice versa, and a
    vector/list/seq element can easily determine its index.
 
-     (walk-with-parents  {:a 1 :b {:c 3}}}  <noop-intc>) =>
+         (walk-with-parents  {:a 1 :b {:c 3}}}  <noop-intc>) =>
 
-         :enter => {:parents [],                                                       :data {:a 1, :b {:c 3}}}
-         :enter => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data :a}
-         :leave => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data :a}
-         :enter => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data 1}
-         :leave => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data 1}
-         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data :b}
-         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data :b}
-         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data {:c 3}}
-         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data :c}
-         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data :c}
-         :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data 3}
-         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data 3}
-         :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data {:c 3}}
-         :leave => {:parents [],                                                       :data {:a 1, :b {:c 3}}}
+             :enter => {:parents [],                                                       :data {:a 1, :b {:c 3}}}
+             :enter => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data :a}
+             :leave => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data :a}
+             :enter => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data 1}
+             :leave => {:parents [{:a 1, :b {:c 3}} [:a 1]],                               :data 1}
+             :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data :b}
+             :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data :b}
+             :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data {:c 3}}
+             :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data :c}
+             :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data :c}
+             :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data 3}
+             :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:c 3} [:c 3]],            :data 3}
+             :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}]],                          :data {:c 3}}
+             :leave => {:parents [],                                                       :data {:a 1, :b {:c 3}}}
 
-         NOTE: in above, items in the :parents like `[:a 1]` are #clojure.lang.MapEntry values.
+             NOTE: in above, items in the :parents like `[:a 1]` are #clojure.lang.MapEntry values.
 
-     (walk-with-parents  [10 [20 21]]  <noop-intc>) =>
+         (walk-with-parents  [10 [20 21]]  <noop-intc>) =>
 
-         :enter => {:parents [],
-                    :data [10 [20 21]]}
-         :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 0, :value 10}],
-                    :data 10}
-         :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 1, :value [20 21]}],
-                    :data [20 21]}
-         :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 1, :value [20 21]} [20 21] #t.c.ListEntry{:index 0, :value 20}],
-                    :data 20}
-         :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 1, :value [20 21]} [20 21] #t.c.ListEntry{:index 1, :value 21}],
-                    :data 21}
+             :enter => {:parents [],
+                        :data [10 [20 21]]}
+             :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 0, :value 10}],
+                        :data 10}
+             :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 1, :value [20 21]}],
+                        :data [20 21]}
+             :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 1, :value [20 21]} [20 21] #t.c.ListEntry{:index 0, :value 20}],
+                        :data 20}
+             :enter => {:parents [[10 [20 21]] #t.c.ListEntry{:index 1, :value [20 21]} [20 21] #t.c.ListEntry{:index 1, :value 21}],
+                        :data 21}
 
-         NOTE: in above, `#t.c.ListEntry` stands for `#tupelo.core.ListEntry`, an analog of #clojure.lang.MapEntry
+       NOTE: in above, `#t.c.ListEntry` stands for `#tupelo.core.ListEntry`, an analog of #clojure.lang.MapEntry
   "
   [data :- s/Any
    interceptor :- tsk/KeyMap]

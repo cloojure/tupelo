@@ -1,4 +1,4 @@
-(defproject tupelo "20.07.28"
+(defproject tupelo "20.08.27"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -19,14 +19,14 @@
    [danlentz/clj-uuid "0.1.9"]
    [joda-time/joda-time "2.10.6"]
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
-   [org.clojure/core.async "1.2.603"]
+   [org.clojure/core.async "1.3.610"]
    [org.clojure/core.match "1.0.0"]
    [org.clojure/data.avl "0.1.0"]
    [org.clojure/data.xml "0.2.0-alpha5"]
    [org.clojure/math.combinatorics "0.1.6"]
    [org.clojure/spec.alpha "0.2.187"]
    [org.clojure/test.check "1.1.0"]
-   [org.clojure/tools.reader "1.3.2"]
+   [org.clojure/tools.reader "1.3.3"]
    [org.snakeyaml/snakeyaml-engine "2.1"]
    [prismatic/schema "1.1.12"]
 
