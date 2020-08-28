@@ -40,8 +40,10 @@
 #?(:clj
    (do
      (defn parse-byte
-       "( [str-val]
-          [str-val :default default-val] )
+       "
+             (parse-byte str-val )
+             (parse-byte str-val :default default-val )
+
         A thin wrapper around java.lang.Byte/parseByte.  Parses the string str-val into a byte.
         If the optional default-val is specified, it will be returned in the event of an
         exception."
@@ -54,8 +56,10 @@
            (t/with-exception-default default-val (Byte/parseByte str-val)))))
 
      (defn parse-short
-       "( [str-val]
-          [str-val :default default-val] )
+       "
+             (parse-short str-val)
+             (parse-short str-val :default default-val )
+
         A thin wrapper around java.lang.Short/parseShort.  Parses the string str-val into a short.
         If the optional default-val is specified, it will be returned in the event of an
         exception."
@@ -68,8 +72,10 @@
            (t/with-exception-default default-val (Short/parseShort str-val)))))
 
      (defn parse-int
-       "( [str-val]
-          [str-val :default default-val] )
+       "
+             (parse-int str-val)
+             (parse-int str-val :default default-val )
+
         A thin wrapper around java.lang.Integer/parseInt  Parses the string str-val into a integer.
         If the optional default-val is specified, it will be returned in the event of an
         exception."
@@ -82,8 +88,10 @@
            (t/with-exception-default default-val (Integer/parseInt str-val)))))
 
      (defn parse-long
-       "( [str-val]
-          [str-val :default default-val] )
+       "
+             (parse-long str-val)
+             (parse-long str-val :default default-val )
+
         A thin wrapper around java.lang.Long/parseLong.  Parses the string str-val into a long.
         If the optional default-val is specified, it will be returned in the event of an
         exception."
@@ -96,8 +104,10 @@
            (t/with-exception-default default-val (Long/parseLong str-val)))))
 
      (defn parse-float
-       "( [str-val]
-          [str-val :default default-val] )
+       "
+             (parse-float str-val
+             (parse-float str-val :default default-val )
+
         A thin wrapper around java.lang.Float/parseFloat.  Parses the string str-val into a float.
         If the optional default-val is specified, it will be returned in the event of an
         exception."
@@ -110,8 +120,10 @@
            (t/with-exception-default default-val (Float/parseFloat str-val)))))
 
      (defn parse-double
-       "( [str-val]
-          [str-val :default default-val] )
+       "
+             (parse-double str-val
+             (parse-double str-val :default default-val )
+
         A thin wrapper around java.lang.Double/parseDouble.  Parses the string str-val into a double.
         If the optional default-val is specified, it will be returned in the event of an
         exception."
@@ -152,8 +164,10 @@
        #"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?")
 
      (s/defn parse-int :- s/Int ; #todo => tupelo.cljs.parse
-       "( [str-val]
-          [str-val :default default-val] )
+       "
+             (parse-int str-val)
+             (parse-int str-val :default default-val )
+
         A thin wrapper around js/parseInt  Parses the string str-val into a integer.
         If the optional default-val is specified, it will be returned in the event of an
         Nan."
@@ -169,8 +183,10 @@
           (parse-int str-val))))
 
      (s/defn parse-float :- s/Num
-       "( [str-val]
-          [str-val :default default-val] )
+       "
+             (parse-float str-val)
+             (parse-float str-val :default default-val )
+
         A thin wrapper around js/parseFloat.  Parses the string str-val into a float.
         If the optional default-val is specified, it will be returned in the event of an
         NaN."

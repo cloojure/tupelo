@@ -51,10 +51,12 @@
 
 (def phonetic-alphabet
   "A map from keyword character to string phonetic name:
-   {:a \"alpha\"    :b \"bravo\"    :c \"charlie\"  :d \"delta\"    :e \"echo\"     :f \"foxtrot\"  :g \"golf\"
-    :h \"hotel\"    :i \"india\"    :j \"juliett\"  :k \"kilo\"     :l \"lima\"     :m \"mike\"     :n \"november\"
-    :o \"oscar\"    :p \"papa\"     :q \"quebec\"   :r \"romeo \"   :s \"sierra\"   :t \"tango\"    :u \"uniform\"
-    :v \"victor\"   :w \"whiskey\"  :x \"x-ray\"    :y \"yankee\"   :z \"zulu\" } "
+
+       {:a \"alpha\"    :b \"bravo\"    :c \"charlie\"  :d \"delta\"    :e \"echo\"     :f \"foxtrot\"  :g \"golf\"
+        :h \"hotel\"    :i \"india\"    :j \"juliett\"  :k \"kilo\"     :l \"lima\"     :m \"mike\"     :n \"november\"
+        :o \"oscar\"    :p \"papa\"     :q \"quebec\"   :r \"romeo \"   :s \"sierra\"   :t \"tango\"    :u \"uniform\"
+        :v \"victor\"   :w \"whiskey\"  :x \"x-ray\"    :y \"yankee\"   :z \"zulu\" }
+    "
    {:a "alpha"    :b "bravo"    :c "charlie"  :d "delta"    :e "echo"     :f "foxtrot"  :g "golf"
     :h "hotel"    :i "india"    :j "juliett"  :k "kilo"     :l "lima"     :m "mike"     :n "november"
     :o "oscar"    :p "papa"     :q "quebec"   :r "romeo "   :s "sierra"   :t "tango"    :u "uniform"
@@ -96,9 +98,10 @@
 
 (s/defn tabs->spaces :- s/Str
   "Replaces all tabs with appropriate number of spaces (default tab-size => 8)
+   Usage:
 
-     Usage:   (tabs->spaces   'abc<tab>def'  => 'ab      cd'
-              (tabs->spaces 4 'ab<tab>cd'    => 'ab  cd'
+        (tabs->spaces   'abc<tab>def'  => 'ab      cd'
+        (tabs->spaces 4 'ab<tab>cd'    => 'ab  cd'
   "
   ([src-str :- s/Str] (tabs->spaces 8 src-str))
   ([tab-size :- s/Int
@@ -459,7 +462,7 @@
 (s/defn format :- s/Str
   "Performs sprintf-like formatting for CLJ & CLJS:
 
-       (format \"%8.2f\" 123.456789) => '  123.46'
+         (format \"%8.2f\" 123.456789) => '  123.46'
   "
   [fmtstr  :- s/Str
    & args]

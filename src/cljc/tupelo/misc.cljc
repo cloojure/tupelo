@@ -226,8 +226,10 @@
 
 (s/defn sha-uuid :- s/Str
   "Returns a string that is the SHA-1 hash of the
-    Clojure:         (clj-uuid/v1)
-    ClojureScript:   (cljs.core/random-uuid)  "
+
+        Clojure:         (clj-uuid/v1)
+        ClojureScript:   (cljs.core/random-uuid)
+        "
   []
   (uuid->sha
     #?(:clj (clj-uuid/v1))
@@ -387,13 +389,13 @@
         newline when 100 dots have been printed. Displays the running dot count at the beginning of each line.
         Usage:
 
-            (ns xxx.core
-              (:require [tupelo.misc :as tm]))
-            (tm/dots-config! {:decimation 10} )
-            (tm/with-dots
-              (doseq [ii (range 2345)]
-                (tm/dot)
-                (Thread/sleep 5)))
+              (ns demo.core
+                (:require [tupelo.misc :as tm]))
+              (tm/dots-config! {:decimation 10} )
+              (tm/with-dots
+                (doseq [ii (range 2345)]
+                  (tm/dot)
+                  (Thread/sleep 5)))
         "
        []
        (swap! dot-counter inc))
@@ -511,13 +513,13 @@
      (defn grouper
        "Uses js/RegExp to find matching groups.  Sample output:
 
-           (grouper #\"[a-z0-9][A-Z]\"  \"aTaTa\")  =>
-             [ {:groups [\"aT\"]  :match \"aT\"  :index 0  :last-index 2  :input \"aTaTa\" }
-               {:groups [\"aT\"]  :match \"aT\"  :index 2  :last-index 4  :input \"aTaTa\" } ]
+             (grouper #\"[a-z0-9][A-Z]\"  \"aTaTa\")  =>
+               [ {:groups [\"aT\"]  :match \"aT\"  :index 0  :last-index 2  :input \"aTaTa\" }
+                 {:groups [\"aT\"]  :match \"aT\"  :index 2  :last-index 4  :input \"aTaTa\" } ]
 
-           (grouper  #\"((\\d+)-(\\d+))\" \"672-345-456-3212\")  =>
-             [ {:groups [\"672-345\"  \"672-345\"  \"672\" \"345\" ]  :match \"672-345\"   :index 0  :last-index  7  :input \"672-345-456-3212\" }
-               {:groups [\"456-3212\" \"456-3212\" \"456\" \"3212\"]  :match \"456-3212\"  :index 8  :last-index 16  :input \"672-345-456-3212\" } ]
+             (grouper  #\"((\\d+)-(\\d+))\" \"672-345-456-3212\")  =>
+               [ {:groups [\"672-345\"  \"672-345\"  \"672\" \"345\" ]  :match \"672-345\"   :index 0  :last-index  7  :input \"672-345-456-3212\" }
+                 {:groups [\"456-3212\" \"456-3212\" \"456\" \"3212\"]  :match \"456-3212\"  :index 8  :last-index 16  :input \"672-345-456-3212\" } ]
 
        Note that the JS value returned by `:last-index` is the index of the first char in the input string *after* the current match.
        "

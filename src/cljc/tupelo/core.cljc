@@ -519,10 +519,16 @@
 
 (s/defn dissoc-in :- s/Any ; #todo upgrade tupelo.core
   "A sane version of dissoc-in that will not delete intermediate keys.
-   When invoked as (dissoc-in the-map [:k1 :k2 :k3... :kZ]), acts like
-   (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ). That is, only
-   the map entry containing the last key :kZ is removed, and all map entries
-   higher than kZ in the hierarchy are unaffected."
+   When invoked as
+
+        (dissoc-in the-map [:k1 :k2 :k3... :kZ])
+
+   acts like
+
+        (clojure.core/update-in the-map [:k1 :k2 :k3...] dissoc :kZ)
+
+   That is, only the map entry containing the last key `:kZ` is removed, and all map entries
+   higher than `:kZ` in the hierarchy are unaffected."
   [the-map :- tsk/Map
    keys-vec :- [s/Any]] ; #todo  Primitive?
   (let [num-keys     (count keys-vec)
@@ -2174,11 +2180,13 @@
 
 (defrecord SpliceItem [data])
 (s/defn <> :- SpliceItem
-  "Works with the `->vector` function to splice vectors/lists and insert
+  "Splice operator.
+
+  Works with the `->vector` function to splice vectors/lists and insert
   their elements as with the unquote-spicing operator (~@).  Modeled
   on the Javascript React splice operatoe `<>`. Examples:
 
-        (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
+        (->vector 1 2 3      4 5 6   7 8 9)   =>  [1 2 3 4 5 6 7 8 9]
         (->vector 1 2 3 (<> [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9] "
   [data :- [s/Any]]
   (assert (sequential? data))
@@ -2189,7 +2197,7 @@
   any embedded calls to `(unwrap <vec-or-list>)` (i.e. the 'splice' operator)
   and insert their elements as with the unquote-spicing operator (~@). Examples:
 
-        (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
+        (->vector 1 2 3      4 5 6   7 8 9)   =>  [1 2 3 4 5 6 7 8 9]
         (->vector 1 2 3 (<> [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9]
         "
   [& args :- [s/Any]]
