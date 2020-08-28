@@ -619,8 +619,10 @@
 
 (defn onlies
   "Given an outer collection of length-1 collections, returns a sequence of the unwrapped values.
-    (onlies  [ [1] [2] [3] ])  =>  [1 2 3]
-    (onlies #{ [1] [2] [3] })  => #{1 2 3} "
+
+        (onlies  [ [1] [2] [3] ])  =>  [1 2 3]
+        (onlies #{ [1] [2] [3] })  => #{1 2 3}
+        "
   [coll] (into (unlazy (empty coll)) (mapv only coll)))
 
 (defn only2
@@ -1862,12 +1864,18 @@
          (output-fn# (map map-fn# ~@colls))))))
 
 (defmacro map-let
-  "Usage:
-    (map-let bindings & forms)
+  "Usage: (map-let bindings & forms)
 
-  Given bindings and forms like `(map-let [x xs, y ys, ...] (+ x y))`, will iterate over the
-  collections [xs ys ...] assigning successive values of each collection to [x y ...], respectively.
-  The local symbols [x y ...] can then be used in `forms` to generate the output mapping.
+  Given bindings and forms like
+
+      (map-let [x xs
+                y ys]
+        (+ x y))
+
+  will iterate over the collections [xs ys] assigning
+  successive values of each collection to `x` & `y`, respectively.  Note that the sequences are
+  consumed ***in parallel***, and are not nested as with `for` and `doseq`.
+  The local symbols `x` & `y` can then be used in `forms` to generate the output mapping.
   Will throw if collections are not all of the same length. Not lazy."
   [bindings & forms]
   `(map-let* {:strict true
@@ -1887,8 +1895,8 @@
 
 ; #todo rename :strict -> :trunc
 (defn zip-1*
-  "Usage:  (zip* context & colls)
-  where context is a map with default values:  {:strict true}
+  "Usage:  `(zip* context & colls)`
+  where context is a map with default values:  `{:strict true}`
   Not lazy. "
   [context & colls] ; #todo how use Schema with "rest" args?
   (assert (map? context))
@@ -1909,8 +1917,8 @@
 
 ; #todo rename :strict -> :trunc
 (defn zip*
-  "Usage:  (zip* context & colls)
-  where context is a map with default values:  {:strict true}
+  "Usage:  `(zip* context & colls)`
+  where context is a map with default values:  `{:strict true}`
   Not lazy. "
   [context & colls] ; #todo how use Schema with "rest" args?
   (assert (map? context))
@@ -1941,7 +1949,13 @@
   "Zips together vectors producing a vector of tuples (like Python zip). Not lazy.
   Example:
 
-     (zip [:a :b :c] [1 2 3]) ->  [ [:a 1] [:b 2] [:c 3] ]
+        (zip
+          [:a :b :c]
+          [ 1  2  3])
+
+        ;=>  [ [:a 1]
+               [:b 2]
+               [:c 3] ]
 
    ***** WARNING - will hang for infinite length inputs ***** "
   ; #todo ***** WARNING - will hang for infinite length inputs *****
@@ -1952,12 +1966,12 @@
   (apply zip* {:strict true} args))
 
 (defn zip-lazy
-  "Usage:  (zip-lazy coll1 coll2 ...)
+  "Usage:  `(zip-lazy coll1 coll2 ...)`
 
-      (zip-lazy xs ys zs) => [ [x0 y0 z0]
-                               [x1 y1 z1]
-                               [x2 y2 z2]
-                               ... ]
+        (zip-lazy xs ys zs) => [ [x0 y0 z0]
+                                 [x1 y1 z1]
+                                 [x2 y2 z2]
+                                 ... ]
 
   Returns a lazy result. Will truncate to the length of the shortest collection.
   A convenience wrapper for `(map vector coll1 coll2 ...)`.  "
@@ -1981,6 +1995,7 @@
 
         (defn lazy-next-int [n]
           (t/lazy-cons n (lazy-next-int (inc n))))
+
         (def all-ints (lazy-next-int 0))
         "
   [curr-val recursive-call-form]
@@ -2013,8 +2028,9 @@
    difference is less than a tolerance value.  Input values are coerced to double before comparison.
    Example:
 
-     (rel= 123450000 123456789   :digits 4   )  ; true
-     (rel= 1         1.001       :tol    0.01)  ; true
+         (rel= 123450000 123456789   :digits 4   )  ; true
+         (rel= 1         1.001       :tol    0.01)  ; true
+
    "
   [val1 val2 & {:as opts}]
   {:pre  [(number? val1) (number? val2)]
@@ -2156,29 +2172,31 @@
    the-map :- tsk/Map]
   (fetch-in the-map [the-key]))
 
-(defrecord Unwrapped [data])
-(s/defn unwrap :- Unwrapped
-  "Works with the `->vector` function to unwrap vectors/lists to insert
-  their elements as with the unquote-spicing operator (~@). Examples:
+(defrecord SpliceItem [data])
+(s/defn <> :- SpliceItem
+  "Works with the `->vector` function to splice vectors/lists and insert
+  their elements as with the unquote-spicing operator (~@).  Modeled
+  on the Javascript React splice operatoe `<>`. Examples:
 
         (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
-        (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9] "
+        (->vector 1 2 3 (<> [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9] "
   [data :- [s/Any]]
   (assert (sequential? data))
-  (->Unwrapped data))
+  (->SpliceItem data))
 
 (s/defn ->vector :- [s/Any]
   "Wraps all args in a vector, as with `clojure.core/vector`. Will (recursively) recognize
-  any embedded calls to (unwrap <vec-or-list>) and insert their elements as with the
-  unquote-spicing operator (~@). Examples:
+  any embedded calls to `(unwrap <vec-or-list>)` (i.e. the 'splice' operator)
+  and insert their elements as with the unquote-spicing operator (~@). Examples:
 
         (->vector 1 2 3 4 5 6 7 8 9)              =>  [1 2 3 4 5 6 7 8 9]
-        (->vector 1 2 3 (unwrap [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9] "
+        (->vector 1 2 3 (<> [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9]
+        "
   [& args :- [s/Any]]
   (let [result (reduce (fn [accum item]
                          (let [it-use (cond
                                         (sequential? item) [ (apply ->vector item) ]
-                                        (instance? Unwrapped item) (apply ->vector (fetch item :data))
+                                        (instance? SpliceItem item) (apply ->vector (fetch item :data))
                                         :else [item])
                                accum-out (glue accum it-use ) ]
                            accum-out ))
@@ -2240,8 +2258,10 @@
   (validate-or-default not-nil? sample-val default-val))
 
 (defmacro verify
-  "(verify <some-expr>)
-  Used to verify intermediate results. Returns value of <some-expr> if the result
+  "
+         (verify <some-expr>)
+
+  Used to verify intermediate results. Returns value of `<some-expr>` if the result
   is truthy.  Otherwise, throws an Exception."
   [form]
   `(let [value# ~form]
@@ -2485,7 +2505,10 @@
 (defn split-using    ; #todo schema
   "Splits a collection based on a predicate with a collection argument.
   Finds the first index N such that (pred (drop N coll)) is true. Returns a length-2 vector
-  of [ (take N coll) (drop N coll) ]. If pred is never satisified, [ coll [] ] is returned."
+  of
+       [ (take N coll) (drop N coll) ]
+
+  If pred is never satisified, `[ coll [] ]` is returned."
   [pred coll]
   (let [N (index-using pred (vec coll))]
     (if (nil? N)
@@ -2495,9 +2518,12 @@
 ; #todo readme
 (defn split-match    ; #todo schema
   "Splits a collection src by matching with a sub-sequence tgt of length L.
-  Finds the first index N such that (= tgt (->> coll (drop N) (take L))) is true.
-  Returns a length-2 vector of [ (take N coll) (drop N coll) ].
-  If no match is found, [ coll [] ] is returned."
+  Finds the first index N such that
+
+       (= tgt (->> coll (drop N) (take L)))
+
+  is true. Returns a length-2 vector of [ (take N coll) (drop N coll) ].
+  If no match is found, `[ coll [] ]` is returned."
   [coll tgt]
   (split-using
     (fn [partial-coll] (starts-with? partial-coll (vec tgt)))
@@ -2509,9 +2535,15 @@
   The first segment is initialized by removing the first element from `coll`, with subsequent
   elements similarly transferred as long as `(pred remaining-coll)` is falsey. When
   `(pred remaining-coll)` becomes truthy, the algorithm begins building the next segment.
-  Thus, the first partition finds the smallest N (< 0 N) such that (pred (drop N coll))
-  is true, and constructs the segment as (take N coll). If pred is never satisified,
-  [coll] is returned."
+  Thus, the first partition finds the smallest N (< 0 N) such that
+
+        (pred (drop N coll))
+
+  is true, and constructs the segment as
+
+        (take N coll)
+
+  If pred is never satisified, `[coll]` is returned."
   [pred :- s/Any ; a predicate function taking a list arg
    coll :- tsk/List]
   (loop [vals   (vec coll)
@@ -2770,14 +2802,21 @@
 
 
 (defn restruct
-  "within a `(destruct [<data> <shape>] ...) form, `(restruct)` or `(restruct <data>)` causes re-structuring
-   & return of original data shape using current values."
+  "within a `(destruct [<data> <shape>] ...)` form, `(restruct)` or `(restruct <data>)`
+   causes re-structuring & return of original data shape using current values."
   [& args] (throw (ex-info "restruct: illegal usage - should never get here." args)))
 
 (defn restruct-all
-  "within a `(destruct [data-1 <shape-1>
-                        data-2 <shape-2] ...) form, causes re-structuring & return of original data shapes using
-  current values as with (vals->map data-1 data-2 ...)"
+  "Within a form
+
+      (destruct [data-1 <shape-1>
+                 data-2 <shape-2] ...)
+
+   causes re-structuring & return of original data shapes using
+   current values as with
+
+        (vals->map data-1 data-2 ...)
+  "
   [& args] (throw (ex-info "restruct-all: illegal usage - should never get here." args)))
 
 ; #todo allow pred fn to replace entire node in search path:
@@ -3211,15 +3250,15 @@
        "A shortcut to clojure.core.match/match to aid in testing.  Returns true if the data value
         matches the pattern value.  Underscores serve as wildcard values. Usage:
 
-          (matches? pattern & values)
+            (matches? pattern & values)
 
         sample:
 
-          (matches?  [1 _ 3] [1 2 3] )         ;=> true
-          (matches?  {:a _ :b _       :c 3}
-                     {:a 1 :b [1 2 3] :c 3}
-                     {:a 2 :b 99      :c 3}
-                     {:a 3 :b nil     :c 3} )  ;=> true
+            (matches?  [1 _ 3] [1 2 3] )         ;=> true
+            (matches?  {:a _ :b _       :c 3}
+                       {:a 1 :b [1 2 3] :c 3}
+                       {:a 2 :b 99      :c 3}
+                       {:a 3 :b nil     :c 3} )  ;=> true
 
         Note that a wildcald can match either a primitive or a composite value."
        [pattern & values]
@@ -3231,7 +3270,7 @@
      (defn macro?
        "Returns true if a quoted symbol resolves to a macro. Usage:
 
-         (println (macro? 'and))  ;=> true "
+             (println (macro? 'and))  ;=> true "
        [s]
        (-> s resolve meta :macro boolean))
      ; from Alex Miller StackOverflow answer 2017-5-6
