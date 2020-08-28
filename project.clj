@@ -13,12 +13,7 @@
 
   :dependencies
   [
-   [cheshire "5.10.0"] ; #todo switch to muuntaja/jsonista
-   [clj-time "0.15.2"]
-   [clojure-csv/clojure-csv "2.0.2"]
-   [danlentz/clj-uuid "0.1.9"]
-   [joda-time/joda-time "2.10.6"]
-   [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
+   ; top-priority libs
    [org.clojure/core.async "1.3.610"]
    [org.clojure/core.match "1.0.0"]
    [org.clojure/data.avl "0.1.0"]
@@ -27,6 +22,14 @@
    [org.clojure/spec.alpha "0.2.187"]
    [org.clojure/test.check "1.1.0"]
    [org.clojure/tools.reader "1.3.3"]
+
+   ; other libs
+   [cheshire "5.10.0"] ; #todo switch to muuntaja/jsonista
+   [clj-time "0.15.2"]
+   [clojure-csv/clojure-csv "2.0.2"]
+   [danlentz/clj-uuid "0.1.9"]
+   [joda-time/joda-time "2.10.6"]
+   [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
    [org.snakeyaml/snakeyaml-engine "2.1"]
    [prismatic/schema "1.1.12"]
 
