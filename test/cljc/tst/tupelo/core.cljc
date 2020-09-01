@@ -1247,12 +1247,13 @@
   (throws? (t/verify (= 1 2)))
   (is= 333 (t/verify (* 3 111))))
 
+; #todo add test.check
 (dotest
   (let [m1 {:a 1 :b 2 :c 3}
         m2 {:a 1 :b 2 :c [3 4]}]
+    (is= [:a 1 :b 2 :c 3] (t/keyvals m1))
     (is= m1 (apply hash-map (t/keyvals m1)))
     (is= m2 (apply hash-map (t/keyvals m2)))))
-; AWTAWT TODO: add test.check
 
 (dotest
   (let [m1 {:a 1 :b 2 :c 3}]

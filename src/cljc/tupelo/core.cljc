@@ -2346,7 +2346,7 @@
 
 (s/defn keyvals :- [s/Any]
   "For any map m, returns the (alternating) keys & values of m as a vector, suitable for reconstructing m via
-   (apply hash-map (keyvals m)). (keyvals {:a 1 :b 2} => [:a 1 :b 2] "
+   `(apply hash-map (keyvals m))`. `(keyvals {:a 1 :b 2} => [:a 1 :b 2] ` "
   [m :- tsk/Map ]
   (reduce into [] (seq m)))
 
@@ -3019,20 +3019,20 @@
   [arg]
   (with-out-str (pprint/pprint arg)))
 
-(def ^:no-doc ^:dynamic  *walk-with-parents-readonly-flag* false ) ; assumes not in readonly mode
+(def ^:no-doc ^:dynamic *walk-with-parents-readonly-flag* false) ; assumes not in readonly mode
 (s/defn ^:no-doc walk-with-parents-impl :- s/Any
   [parents :- tsk/Vec
-   data :- s/Any
+   data-in :- s/Any
    intc :- tsk/KeyMap] ; #todo {s/Keyword s/fn-schema}
-  ; ensure data does not contain any MapEntry of ListEntry objects
-  (when (or (map-entry? data) (list-entry? data))
-    (throw (ex-info "User-level MapEntry and/or list-entry objects not allowed" (vals->map data))))
+  ; ensure data-in does not contain any MapEntry of ListEntry objects
+  (when (or (map-entry? data-in) (list-entry? data-in))
+    (throw (ex-info "User-level MapEntry and/or list-entry objects not allowed" (vals->map data-in))))
   (let [data-identity-fn        (fn [-parents- data] data)
         enter-fn                (or (:enter intc) data-identity-fn)
         leave-fn                (or (:leave intc) data-identity-fn)
-        parents-next            (append parents data)
-        data-post-enter         (cond-it-> (enter-fn parents data)
-                                  *walk-with-parents-readonly-flag* data)
+        parents-next            (append parents data-in)
+        data-post-enter         (cond-it-> (enter-fn parents data-in)
+                                  *walk-with-parents-readonly-flag* data-in)
         data-post-walk-modified (cond
                                   (sequential? data-post-enter) (list-entries->vec
                                                                   (forv [listentry (list->entries data-post-enter)]
@@ -3055,14 +3055,14 @@
                                                            (forv [elem data-post-enter]
                                                              (walk-with-parents-impl parents-next elem intc)))
 
-                                  ; otherwise, return data unaltered
+                                  ; otherwise, return data-in unaltered
                                   :else data-post-enter)
 
         data-post-walk          (cond-it-> data-post-walk-modified
-                                  *walk-with-parents-readonly-flag* data)
+                                  *walk-with-parents-readonly-flag* data-in)
 
         data-post-leave         (cond-it-> (leave-fn parents data-post-walk)
-                                  *walk-with-parents-readonly-flag* data)]
+                                  *walk-with-parents-readonly-flag* data-in)]
     data-post-leave))
 
 (s/defn walk-with-parents :- s/Any
