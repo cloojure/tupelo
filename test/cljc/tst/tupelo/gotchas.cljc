@@ -181,6 +181,11 @@
   (is= nil (get {:b 2} nil))
   (is= nil (get nil nil)))
 
+;-----------------------------------------------------------------------------
+; Incorporate all from:
+;    https://stackoverflow.com/questions/64237949/value-of-a-list-with-quoted-first-argument-in-clojure-is-the-last-argument
+
+
 (dotest             ; conj inconsistencies
   (is= [1 2 nil] (conj [1 2] nil))
   (is= [nil 1 2] (conj '(1 2) nil))

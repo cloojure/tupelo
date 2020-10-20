@@ -17,7 +17,7 @@
     [clojure.test] ; sometimes this is required - not sure why
     [clojure.string :as str]
     [tupelo.misc :as misc]
-    [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty
+    [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty nl
                                vals->map map-plain? forv glue]]
     [tupelo.string :as ts]
     [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
@@ -2192,34 +2192,45 @@
     (is (sorted-map? (get-in nested-sorted [:b 0])))
     (is (sorted-map? nested-sorted))))
 
+; #todo:  finish this! 2020-10-20
 (dotest
   (let [intc {:enter (fn [parents data]
                        (t/with-result data
-                         (spy :enter (t/vals->map parents data))))
-              :leave (fn [parents data]
-                       (t/with-result data
-                         (spy :leave (t/vals->map parents data))))}]
+                         (nl) (spy-pretty :enter (t/vals->map parents data))))
+              ;:leave (fn [parents data]
+              ;         (t/with-result data
+              ;           (spy :leave (t/vals->map parents data))))
+              }]
     ; demo with map
-    (let [data            {:a 1 :b {:c 3}}
+    (let [data            {:a 1 :b [{:c 3} :fred [1 2 3]]}
+
           walk-result-str (with-out-str
                             (let [data-noop (t/walk-with-parents data intc)]
-                              (is= data data-noop)))]
-      ;(newline) (println walk-result-str) (newline)
-      (is-nonblank= walk-result-str
-        " :enter => {:parents [], :data {:a 1, :b {:c 3}}}
-          :enter => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-key, :value :a}], :data :a}
-          :leave => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-key, :value :a}], :data :a}
-          :enter => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-val, :value 1}], :data 1}
-          :leave => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-val, :value 1}], :data 1}
-          :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-key, :value :b}], :data :b}
-          :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-key, :value :b}], :data :b}
-          :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}}], :data {:c 3}}
-          :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-key, :value :c}], :data :c}
-          :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-key, :value :c}], :data :c}
-          :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-val, :value 3}], :data 3}
-          :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-val, :value 3}], :data 3}
-          :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}}], :data {:c 3}}
-          :leave => {:parents [], :data {:a 1, :b {:c 3}}} "))))
+                              (is= data data-noop)))
+          ]
+      (newline) (println walk-result-str) (newline)
+
+      ;(is-nonblank= walk-result-str
+      ;  " :enter => {:parents [], :data {:a 1, :b {:c 3}}}
+      ;
+      ;    :enter => {:parents [{:a 1, :b {:c 3}}
+      ;               [:a 1]
+      ;                {:type :map-key, :value :a}],
+      ;                :data :a}
+      ;
+      ;    :leave => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-key, :value :a}], :data :a}
+      ;    :enter => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-val, :value 1}], :data 1}
+      ;    :leave => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-val, :value 1}], :data 1}
+      ;    :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-key, :value :b}], :data :b}
+      ;    :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-key, :value :b}], :data :b}
+      ;    :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}}], :data {:c 3}}
+      ;    :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-key, :value :c}], :data :c}
+      ;    :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-key, :value :c}], :data :c}
+      ;    :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-val, :value 3}], :data 3}
+      ;    :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-val, :value 3}], :data 3}
+      ;    :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}}], :data {:c 3}}
+      ;    :leave => {:parents [], :data {:a 1, :b {:c 3}}} ")
+      )))
 
 (dotest
   (let [intc {:enter (fn [parents data]

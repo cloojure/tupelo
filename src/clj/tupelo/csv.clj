@@ -79,8 +79,17 @@
       (parse-csv->row-maps <csv-data-src> :delimiter \\|)
    ```
 
-   to select the pipe character (i.e. \\|) as the delimiter.  "
-  ; AWTAWT TODO: update docs re. col-labels (keywords)
+   to select the pipe character (i.e. \\|) as the delimiter.
+
+   <csv-data-source> is either a multi-line-string, or a java.io.Reader. "
+  ; #todo: update docs re. col-labels (keywords)
+  ; #todo: add option for :ignore-blank-lines
+  ; #todo: change options to (parse* ctx), using
+  ;   {:output-type :attrs/:entities,
+  ;    :ignore-blank-lines true/false
+  ;    :delimiter <char> default to \,
+  ;    :data-fn (default to str/trim)
+  ;   make existing functions defer to (parse* ctx) function
   [csv-input & opts]
   (assert (or (string? csv-input)
             (instance? Reader csv-input)))
