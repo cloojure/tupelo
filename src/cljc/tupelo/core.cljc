@@ -1110,6 +1110,7 @@
          (finally
            (println (indent-lines-with (spy-indent-spaces) tag-leave#)))))))
 
+; #todo: for all let-spy*:  if symbol is '>>' or '<>", skip display
 (defmacro let-spy
   "An expression (println ...) for use in threading forms (& elsewhere). Evaluates the supplied
    expressions, printing both the expression and its value to stdout. Returns the value of the

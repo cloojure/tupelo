@@ -158,12 +158,16 @@
   (is= false (contains? [:a :b :c :d] :a)))
 
 ; map oddities
-(dotest
+(dotest-focus
   (is= {:a 1 :b 2} (conj {:a 1} [:b 2])) ; MapEntry as 2-vec
   (is= {:a 1 }     (conj {:a 1} nil)) ; this is ok => noop
   (throws?         (conj {:a 1} [])) ; illegal
-  (is= {:a 1}      (into {:a 1} [])) ; this works
   (is= {:a 1 :b 2} (conj {:a 1} {:b 2})) ; this works, but shouldn't
+
+  (is= {:a 1}      (into {:a 1} nil))
+  (is= {:a 1}      (into {:a 1} []))
+  (throws?         (into {:a 1} [:b 2]))
+  (is= {:a 1 :b 2} (into {:a 1} {:b 2}))
 
   ; nil same as {} (empty map)
   (is= {:a 1}      (assoc nil :a 1))

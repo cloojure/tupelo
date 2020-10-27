@@ -15,6 +15,9 @@
     [tupelo.string :as ts]
     ))
 
+; #todo:  scalar/{add,mul}
+; #todo:  ebe/{add,mul}
+
 ;-----------------------------------------------------------------------------
 (s/defn num-rows :- s/Int
   "Returns the number of rows of an Array."

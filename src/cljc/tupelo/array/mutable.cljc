@@ -21,6 +21,11 @@
    :nrows s/Int
    :ncols s/Int})
 
+; #todo:  deep-copy fn
+; #todo:  copy other base fns
+; #todo:  copy other scalar/{add,mul}
+; #todo:  copy other ebe/{add,mul}
+
 ;-----------------------------------------------------------------------------
 (s/defn num-rows :- s/Int
   "Returns the number of rows of an Array."
