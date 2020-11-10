@@ -4,7 +4,7 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns ^:test-refresh/focus tst.tupelo.array.mutable
+(ns tst.tupelo.array.mutable
   ;---------------------------------------------------------------------------------------------------
   ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html

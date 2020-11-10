@@ -158,7 +158,7 @@
   (is= false (contains? [:a :b :c :d] :a)))
 
 ; map oddities
-(dotest-focus
+(dotest
   (is= {:a 1 :b 2} (conj {:a 1} [:b 2])) ; MapEntry as 2-vec
   (is= {:a 1 }     (conj {:a 1} nil)) ; this is ok => noop
   (throws?         (conj {:a 1} [])) ; illegal
@@ -205,9 +205,14 @@
   (is= "abc" (str "ab" \c))
   (is= "ab" (str "ab" nil))
   (is= "abc" (str "ab" nil \c))
+
+  (is= "abc" (str "abc"))
+  (is= "{:s 'abc'}" (ts/quotes->single (str {:s "abc"}))) ; calls pr-str automatically
+
   (is=  "123" (ts/quotes->single (pr-str 123)))
   (is= "'abc'" (ts/quotes->single (pr-str "abc")))
-  (is= "nil" (ts/quotes->single (pr-str nil))) )
+  (is= "nil" (ts/quotes->single (pr-str nil)))
+  )
 
 
 ; "generic" indexing is a problem; always be explicit with first, nth, get, etc
