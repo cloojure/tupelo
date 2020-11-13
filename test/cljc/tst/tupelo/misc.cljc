@@ -33,7 +33,11 @@
 (dotest
   (is= "00c81555" (tm/hash->hex 5))
   (is= "64c47d9a" (tm/hash->hex [5]))
-  (is= "7bc71a4c" (tm/hash->hex [5 6 :a "hello"])))
+  (is= "7bc71a4c" (tm/hash->hex [5 6 :a "hello"]))
+  (is= "2e1d6bb4" (tm/hash->hex "xyz1"))
+  (is= "41f1824c" (tm/hash->hex "xyz1" "abd"))
+  (is= "8410d26a" (tm/hash->hex ["xyz1" "abc"]))
+  (is= "14e51713" (tm/hash->hex ["xyz2" "abc"])))
 
 (dotest
   (let [data [1 2 3]]
