@@ -8,7 +8,7 @@
   (:require
     [clojure.set :as set]
     [schema.core :as s]
-    [tupelo.core :as t]
+    [tupelo.core :as t :refer [spyx spyxx it-> ] ]
     [tupelo.schema :as tsk]))
 
 (def ^:no-doc Symbol-or-Keyword
@@ -22,21 +22,21 @@
                 (= #{clojure.lang.Symbol} item-types))
       (throw (ex-info "items must be all Keyword or all Symbol" (t/vals->map items))))))
 
-(s/defn lineage-to-item
+(s/defn lineage-to-item :- tsk/Set
   "Returns a set of an items ancestors, including the item itself."
   [h :- tsk/KeyMap
    item :- Symbol-or-Keyword]
   (conj
-    (ancestors h item)
+    (set (ancestors h item)) ; could be nil
     item))
 
-(s/defn num-ancestors
+(s/defn num-ancestors :- s/Num
   "Returns the number of ancestors for an item."
   [h :- tsk/KeyMap
    item :- Symbol-or-Keyword]
   (count (ancestors h item)))
 
-(s/defn common-lineage
+(s/defn common-lineage :- tsk/Set
   "Returns all common lineage elements for all items."
   [h :- tsk/KeyMap
    & items :- [Symbol-or-Keyword]] ; all symbols or all keywords
@@ -44,7 +44,7 @@
   (apply set/intersection
     (mapv #(lineage-to-item h %) items)))
 
-(s/defn greatest-common-derivation
+(s/defn greatest-common-derivation :- Symbol-or-Keyword
   "Returns the most derived element in the lineage of all items"
   [h :- tsk/KeyMap
    & items :- [Symbol-or-Keyword]] ; all symbols or all keywords

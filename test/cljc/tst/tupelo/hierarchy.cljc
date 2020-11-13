@@ -16,7 +16,7 @@
   [tupelo.hierarchy :as th]
   [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?
                              ]]
-  [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+  [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                         throws? throws-not? define-fixture]]))
 
 (dotest
