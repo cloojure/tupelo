@@ -5,31 +5,43 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.hierarchy
-  (:use tupelo.hierarchy tupelo.core tupelo.test))
+;---------------------------------------------------------------------------------------------------
+;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
+;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
+#?(:cljs (:require-macros
+           [tupelo.testy]
+           ))
+(:require
+  [clojure.test] ; sometimes this is required - not sure why
+  [tupelo.hierarchy :as th]
+  [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?
+                             ]]
+  [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                        throws? throws-not? define-fixture]]))
 
 (dotest
-  (throws? (validate-item-types [:a :b 'c]))
-  (throws-not? (validate-item-types [:a :b :c]))
-  (throws-not? (validate-item-types ['a 'b 'c]))
+  (throws? (th/validate-item-types [:a :b 'c]))
+  (throws-not? (th/validate-item-types [:a :b :c]))
+  (throws-not? (th/validate-item-types ['a 'b 'c]))
 
-  (let [h (it-> (make-hierarchy)
+  (let [h (t/it-> (make-hierarchy)
             (derive it ::rect ::shape)
             (derive it ::square ::rect)
             (derive it ::ellipse ::shape)
             (derive it ::circle ::ellipse))
         ]
-    (is= (lineage-to-item h ::rect)
+    (is= (th/lineage-to-item h ::rect)
       #{::rect ::shape})
-    (is= (lineage-to-item h ::square)
+    (is= (th/lineage-to-item h ::square)
       #{::square ::rect ::shape})
-    (is= (common-lineage h ::rect ::square)
+    (is= (th/common-lineage h ::rect ::square)
       #{::shape ::rect})
 
-    (is= (greatest-common-derivation h ::square ::shape) ::shape)
-    (is= (greatest-common-derivation h ::rect ::shape) ::shape)
-    (is= (greatest-common-derivation h ::rect ::square) ::rect)
-    (is= (greatest-common-derivation h ::square ::rect) ::rect)
-    (is= (greatest-common-derivation h ::circle ::square) ::shape)
-    (is= (greatest-common-derivation h ::circle ::rect) ::shape)
-    (is= (greatest-common-derivation h ::circle ::shape) ::shape))
+    (is= (th/greatest-common-derivation h ::square ::shape) ::shape)
+    (is= (th/greatest-common-derivation h ::rect ::shape) ::shape)
+    (is= (th/greatest-common-derivation h ::rect ::square) ::rect)
+    (is= (th/greatest-common-derivation h ::square ::rect) ::rect)
+    (is= (th/greatest-common-derivation h ::circle ::square) ::shape)
+    (is= (th/greatest-common-derivation h ::circle ::rect) ::shape)
+    (is= (th/greatest-common-derivation h ::circle ::shape) ::shape))
   )

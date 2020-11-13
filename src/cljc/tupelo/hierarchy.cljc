@@ -5,10 +5,10 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.hierarchy 
-  (:use tupelo.core)
   (:require
     [clojure.set :as set]
     [schema.core :as s]
+    [tupelo.core :as t]
     [tupelo.schema :as tsk]))
 
 (def ^:no-doc Symbol-or-Keyword
@@ -20,7 +20,7 @@
     (when-not (or
                 (= #{clojure.lang.Keyword} item-types)
                 (= #{clojure.lang.Symbol} item-types))
-      (throw (ex-info "items must be all Keyword or all Symbol" (vals->map items))))))
+      (throw (ex-info "items must be all Keyword or all Symbol" (t/vals->map items))))))
 
 (s/defn lineage-to-item
   "Returns a set of an items ancestors, including the item itself."
@@ -50,10 +50,10 @@
    & items :- [Symbol-or-Keyword]] ; all symbols or all keywords
   (validate-item-types items)
   (let [common-derivations (vec (apply common-lineage h items))
-        member-level-pairs (forv [member common-derivations]
+        member-level-pairs (t/forv [member common-derivations]
                              [member (num-ancestors h member)])
-        most-derived       (it-> member-level-pairs
-                             (apply max-key xsecond it)
-                             (xfirst it))]
+        most-derived       (t/it-> member-level-pairs
+                             (apply max-key t/xsecond it)
+                             (t/xfirst it))]
     most-derived))
 
