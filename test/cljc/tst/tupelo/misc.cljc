@@ -15,20 +15,25 @@
              ))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
-    [tupelo.math :as math]
     [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
-    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture ]]
+    [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? define-fixture]]
+
     #?(:cljs [goog.crypt :as crypt])
     #?(:cljs [goog.crypt.Sha1])
-    )
+    [tupelo.misc :as tm])
   #?(:clj (:import [java.lang Byte Integer]))
   )
 
 ;---------------------------------------------------------------------------------------------------
 #?(:cljs (enable-console-print!))
 ;---------------------------------------------------------------------------------------------------
+
+(dotest
+  (is= "00c81555" (tm/hash->hex 5))
+  (is= "64c47d9a" (tm/hash->hex [5]))
+  (is= "7bc71a4c" (tm/hash->hex [5 6 :a "hello"])))
 
 (dotest
   (let [data [1 2 3]]

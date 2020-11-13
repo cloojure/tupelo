@@ -163,6 +163,7 @@
 ;-----------------------------------------------------------------------------
 ; for tupelo.string
 
+; #todo move to tupelo.impl
 (s/defn ^:no-doc string-increasing? :- s/Bool ; #todo merge with general in tupelo.core
   "Returns true if a pair of strings are in increasing lexicographic order."
   [a :- s/Str
@@ -1518,6 +1519,25 @@
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
 
+(s/defn compare-less :- s/Bool
+  [& xs :- [s/Any]]
+  (assert (< 1 (count xs)))
+  (every? neg?
+    (for [[a b] (partition 2 1 xs)]
+      (compare a b))))
+
+(s/defn compare-less-equal :- s/Bool
+  [& xs :- [s/Any]]
+  (assert (< 1 (count xs)))
+  (every? nonpos?
+    (for [[a b] (partition 2 1 xs)]
+      (compare a b))))
+
+
+; #todo => tupelo.tuple/less-than?
+; #todo re-home lexical increasing/equal fns
+
+; #todo => tupelo.tuple/compare
 (defn ^:no-doc cmp-seq-lexi ; from generic compare from clojure.org
   [x y]
   (loop [x x
@@ -1533,7 +1553,8 @@
         -1 ; we reached end of x first, so x < y
         0)))) ; Sequences contain same elements.  x = y
 
-(s/defn increasing? :- s/Bool
+; #todo make variadic versions of these?
+(s/defn increasing? :- s/Bool ; #todo => tupelo.tuple/less-than?
   "Returns true iff the vectors are in (strictly) lexicographically increasing order
 
         [1 2]  [1]        -> false
@@ -1548,7 +1569,7 @@
    b :- tsk/List]
   (neg? (cmp-seq-lexi a b)))
 
-(s/defn increasing-or-equal? :- s/Bool
+(s/defn increasing-or-equal? :- s/Bool ; #todo => tupelo.tuple/less-equal-than?
   "Returns true iff the vectors are in (strictly) lexicographically increasing-or-equal order
 
         [1 2]  [1]        -> false
@@ -2086,6 +2107,20 @@
   (every? truthy?
     (clojure.core/map #(apply rel= %1 %2 opts)
       x-vals y-vals)))
+
+(defn deep-rel=
+  [a b]
+  (or (= a b)
+    (and (number? a) (number? b) (or (tupelo.core/rel= a b :tol 1e-10)
+                                   (tupelo.core/rel= a b :digits 10)))
+    (and (map? a) (map? b) (every? truthy? (map-let [[ak av] a
+                                                     [bk bv] b]
+                                             (and (deep-rel= ak bk) (deep-rel= av bv)))))
+    (and (sequential? a) (sequential? b) (every? truthy? (map-let [av a
+                                                                   bv b]
+                                                           (deep-rel= av bv))))))
+
+
 
 (defn range-vec     ; #todo README;  maybe xrange?  maybe kill this?
   "An eager version clojure.core/range that always returns its result in a vector."

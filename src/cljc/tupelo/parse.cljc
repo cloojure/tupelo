@@ -16,6 +16,7 @@
     [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.core :as t]
+    [tupelo.schema :as tsk]
     ))
 
 ; #todo:  write doc page
@@ -39,6 +40,7 @@
 
 #?(:clj
    (do
+
      (defn parse-byte
        "
              (parse-byte str-val )
@@ -135,6 +137,19 @@
            (Double/parseDouble str-val)
            (t/with-exception-default default-val (Double/parseDouble str-val)))))
 
+     (def ^:no-doc unspecified ::unspecified) ; #todo make all use Var instead of ::none ???
+     (s/defn parse-decimal
+       "A thin wrapper around java.math/BigDecimal(String value).  Parses the string str-val into a BigDecimal.
+        An optional default value may be specified in the opts map; is present, it will be returned in the event of an exception. "
+       ([str-val :- s/Str] (parse-decimal {} str-val))
+       ([opts :- tsk/KeyMap
+         str-val :- s/Str]
+        (let [default-val (get opts :default unspecified)]
+          (if (= default-val unspecified)
+            (BigDecimal. str-val)
+            (t/with-exception-default default-val
+              (BigDecimal. str-val))))))
+
      #_(defn parse-xxxx
          "( [str-val]
             [str-val :default default-val] )
@@ -151,7 +166,7 @@
 
      ; #awt TODO:  finish other parse* functions
 
-     ))
+     ))     ; clj
 
 #?(:cljs
    (do

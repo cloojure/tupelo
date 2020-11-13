@@ -22,6 +22,95 @@
 (def dummy-file (create-temp-file "tst-tupelo-io" ".tmp"))
 
 (dotest
+  (let [path-str "/tmp/a/b/c/x.txt"
+        path     (->Path path-str)
+        file     (->File path-str)
+        ]
+    (is (Path? path))
+    (is (File? file))
+
+    (is= path-str (str path))
+    (is= path-str (str file))
+
+    (do (delete-file-if-exists path-str)
+        (isnt (delete-file-if-exists path-str))) ; returns false if not found
+    (isnt (file-exists? path-str))
+    (is (.createNewFile file))
+    (is (file-exists? path-str))
+    (is (delete-file-if-exists path-str))
+    (isnt (file-exists? path-str))
+
+    (do (delete-file-if-exists file)
+        (isnt (delete-file-if-exists file))) ; returns false if not found
+    (isnt (file-exists? file))
+    (is (.createNewFile file))
+    (is (file-exists? file))
+    (is (delete-file-if-exists file))
+    (isnt (file-exists? file))
+
+    (do (delete-file-if-exists path)
+        (isnt (delete-file-if-exists path))) ; returns false if not found
+    (isnt (file-exists? path))
+    (is (.createNewFile file))
+    (is (file-exists? path))
+    (is (delete-file-if-exists path))
+    (isnt (file-exists? path))
+    )
+
+  ; Create nested dirs & files, then delete recursively
+  (let [tmp-path       (create-temp-directory "some-stuff")
+        tmp-name       (str tmp-path)
+        dir-one        (create-temp-directory tmp-path "dir-one")
+        dir-two        (create-temp-directory dir-one "dir-two")
+        tmp-one-a      (create-temp-file dir-one "aaa" nil)
+        tmp-one-b      (create-temp-file dir-one "bbb" ".dummy")
+        tmp-two-a      (create-temp-file dir-two "aaa" ".tmp")
+        tmp-two-b      (create-temp-file dir-two "bbb" ".tmp")
+        count-files-fn (s/fn [dir-name :- s/Str]
+                         (let [dir-file (io/file dir-name)
+                               counts   (for [file (file-seq dir-file)]
+                                          (if (.exists file)
+                                            1
+                                            0))
+                               total    (apply + counts)]
+                           total))]
+    (when false ; debug printouts
+      (spyx (str tmp-path))
+      (spyx (str tmp-name))
+      (spyx (str dir-one))
+      (spyx (str tmp-one-a))
+      (spyx (str tmp-one-b))
+      (spyx (str tmp-two-a))
+      (spyx (str tmp-two-b))
+      (pprint/pprint (vec (sort
+                            (map str
+                              (file-seq (.toFile tmp-path))))))
+      ; Sample debug output:
+      ;    (str tmp-path) => "/tmp/some-stuff-562114607264734833"
+      ;    (str tmp-name) => "/tmp/some-stuff-562114607264734833"
+      ;    (str dir-one) => "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970"
+      ;    (str tmp-one-a) => "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/aaa-345552808102662294.tmp"
+      ;    (str tmp-one-b) => "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/bbb-14875687905791190659.dummy"
+      ;    (str tmp-two-a) => "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/dir-two-15168249174986120265/aaa-14487327636081006800.tmp"
+      ;    (str tmp-two-b) => "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/dir-two-15168249174986120265/bbb-8158500208162744706.tmp"
+      ;
+      ; File names produced:
+      ;    ["/tmp/some-stuff-562114607264734833"
+      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970"
+      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/aaa-345552808102662294.tmp"
+      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/bbb-14875687905791190659.dummy"
+      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/dir-two-15168249174986120265"
+      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/dir-two-15168249174986120265/aaa-14487327636081006800.tmp"
+      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/dir-two-15168249174986120265/bbb-8158500208162744706.tmp"]
+      )
+
+    (is= 7 (count-files-fn tmp-name))
+    (is= 7 (delete-directory-recursive tmp-name))
+    (is= 0 (count-files-fn tmp-name))
+    (is= 0 (delete-directory-recursive tmp-name)) ; idempotent
+    ))
+
+(dotest
   (is= types/BYTE_UNSIGNED_MAX_VALUE 255)
   (is= types/SHORT_UNSIGNED_MAX_VALUE 65535)
 
@@ -188,60 +277,6 @@
     (is= (read-double dis) pi-double)
     (is= (read-double dis) Double/MIN_VALUE)
     (is= (read-double dis) Double/MAX_VALUE)) )
-
-(dotest
-  ; Create nested dirs & files, then delete recursively
-  (let [tmp-path       (create-temp-directory "some-stuff")
-        tmp-name       (str tmp-path)
-        dir-one        (create-temp-directory tmp-path "dir-one")
-        dir-two        (create-temp-directory dir-one "dir-two")
-        tmp-one-a      (create-temp-file dir-one "aaa" nil)
-        tmp-one-b      (create-temp-file dir-one "bbb" ".dummy")
-        tmp-two-a      (create-temp-file dir-two "aaa" ".tmp")
-        tmp-two-b      (create-temp-file dir-two "bbb" ".tmp")
-        count-files-fn (s/fn [dir-name :- s/Str]
-                         (let [dir-file (io/file dir-name)
-                               counts   (for [file (file-seq dir-file)]
-                                          (if (.exists file)
-                                            1
-                                            0))
-                               total    (apply + counts)]
-                           total))]
-    (when false ; debug printouts
-      (spyx (str tmp-path))
-      (spyx (str tmp-name))
-      (spyx (str dir-one))
-      (spyx (str tmp-one-a))
-      (spyx (str tmp-one-b))
-      (spyx (str tmp-two-a))
-      (spyx (str tmp-two-b))
-      (pprint/pprint (vec (sort
-                            (map str
-                              (file-seq (.toFile tmp-path))))))
-      ; Sample debug output:
-      ;    (str tmp-path) => "/tmp/some-stuff-562114607264734833"
-      ;    (str tmp-name) => "/tmp/some-stuff-562114607264734833"
-      ;    (str dir-one) => "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970"
-      ;    (str tmp-one-a) => "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/aaa-345552808102662294.tmp"
-      ;    (str tmp-one-b) => "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/bbb-14875687905791190659.dummy"
-      ;    (str tmp-two-a) => "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/dir-two-15168249174986120265/aaa-14487327636081006800.tmp"
-      ;    (str tmp-two-b) => "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/dir-two-15168249174986120265/bbb-8158500208162744706.tmp"
-      ;
-      ; File names produced:
-      ;    ["/tmp/some-stuff-562114607264734833"
-      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970"
-      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/aaa-345552808102662294.tmp"
-      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/bbb-14875687905791190659.dummy"
-      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/dir-two-15168249174986120265"
-      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/dir-two-15168249174986120265/aaa-14487327636081006800.tmp"
-      ;     "/tmp/some-stuff-562114607264734833/dir-one-15514198984069907970/dir-two-15168249174986120265/bbb-8158500208162744706.tmp"]
-      )
-
-    (is= 7 (count-files-fn tmp-name))
-    (is= 7 (delete-directory tmp-name))
-    (is= 0 (count-files-fn tmp-name))
-    (is= 0 (delete-directory tmp-name)) ; idempotent
-    ))
 
 
 

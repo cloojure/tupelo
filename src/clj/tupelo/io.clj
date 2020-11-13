@@ -9,13 +9,15 @@
   (:use tupelo.core)
   (:refer-clojure :exclude [read-string])
   (:require
+    [clojure.java.io :as io]
     [schema.core :as s]
     [tupelo.types :as types]
-    [clojure.java.io :as io])
-  (:import [java.io File DataInputStream DataOutputStream InputStream OutputStream]
-           [java.nio.file Files Paths Path]
-           [java.nio.file.attribute FileAttribute]
-           ))
+    )
+  (:import
+    [java.io File DataInputStream DataOutputStream InputStream OutputStream]
+    [java.nio.file Files Path Paths LinkOption]
+    [java.nio.file.attribute FileAttribute]
+    ))
 
 (def ^:no-doc zeros-4 (byte-array (repeat 4 0)))
 (def ^:no-doc zeros-8 (byte-array (repeat 8 0)))
@@ -38,7 +40,55 @@
   [arg] (instance? DataOutputStream arg))
 
 ;---------------------------------------------------------------------------------------------------
-(s/defn create-temp-file :- java.io.File
+(s/defn Path? :- s/Bool
+  [arg :- s/Any]
+  (instance? Path arg))
+
+(s/defn File? :- s/Bool
+  [arg :- s/Any]
+  (instance? File arg))
+
+(s/defn ->Path :- Path
+  "Convert a String or File arg to a Path. Idempotent."
+  [arg :- (s/cond-pre File s/Str Path)]
+  (cond
+    (Path? arg) arg
+    (string? arg) (Paths/get arg (into-array String []))
+    (File? arg) (.toPath arg)
+    :else (throw (ex-info "unknown arg type" {:arg arg :type (type arg)}))))
+
+(s/defn ->File :- File
+  "Convert a String arg to a File. Idempotent."
+  [arg :- (s/cond-pre Path s/Str)]
+  (cond
+    (File? arg) arg
+    (string? arg) (File. arg)
+    (Path? arg) (.toFile arg)
+    :else (throw (ex-info "unknown arg type" {:arg arg :type (type arg)}))))
+
+(s/defn file-exists? :- s/Bool
+  [arg :- (s/cond-pre s/Str File Path)]
+  (Files/exists (->Path arg) (into-array LinkOption [])))
+
+(s/defn delete-file-if-exists :- s/Bool
+  [arg :- (s/cond-pre s/Str File Path)]
+  (Files/deleteIfExists (->Path arg)))
+
+(s/defn mkdirs ; #todo => tupelo.io  &  need test
+  "Creates a directory and all parent dirs."
+  [arg :- (s/cond-pre s/Str File Path)]
+  (.mkdirs (->File arg)))
+
+(s/defn mkdirs-parent ; #todo => tupelo.io   &  need test
+  "Creates all parent dirs of a file."
+  [arg :- (s/cond-pre s/Str File Path)]
+  (it-> arg
+    (->File it)
+    (.getParentFile it)
+    (.mkdirs it)))
+
+;---------------------------------------------------------------------------------------------------
+(s/defn create-temp-file :- File
   "Given a Path dir unique ID string (e.g. 'my.dummy.file'), returns a java File object
   for a temporary that will be deleted upon JVM exit."
   ([prefix :- s/Str
@@ -47,32 +97,35 @@
          tmp-file (.toFile (Files/createTempFile (str prefix "-") suffix attrs))]
      (.deleteOnExit tmp-file)
      tmp-file))
-  ([dir :- Path
+  ([dir :- (s/cond-pre File s/Str Path)
     prefix :- s/Str
     suffix :- (s/maybe s/Str)]
    (let [attrs    (into-array FileAttribute [])
-         tmp-file (.toFile (Files/createTempFile dir (str prefix "-") suffix attrs))]
+         tmp-file (.toFile (Files/createTempFile (->Path dir) (str prefix "-") suffix attrs))]
      (.deleteOnExit tmp-file)
      tmp-file)))
 
-(s/defn create-temp-directory :- Path
-  ([prefix :- s/Str]
-   (let [attrs       (into-array FileAttribute [])]
-     (Files/createTempDirectory (str prefix "-") attrs)))
-  ([dir :- Path
+(s/defn create-temp-directory :- File
+  ([prefix :- (s/cond-pre File s/Str Path)]
+   (let [tmp-file (.toFile (Files/createTempDirectory (str prefix "-")
+                             (into-array FileAttribute [])))]
+     (.deleteOnExit tmp-file)
+     tmp-file))
+  ([dir :- (s/cond-pre File s/Str Path)
     prefix :- s/Str]
-   (let [ attrs       (into-array FileAttribute [])]
-     (Files/createTempDirectory dir (str prefix "-") attrs))))
+   (let [tmp-file (.toFile (Files/createTempDirectory (->Path dir) (str prefix "-") (into-array FileAttribute [])))]
+     (.deleteOnExit tmp-file)
+     tmp-file)))
 
-(s/defn delete-directory
+(s/defn delete-directory-recursive
   "Recursively deletes a directory and all its contents. Returns count of objects deleted.
   Idempotent in case dir is already deleted."
   [dir-name :- s/Str]
   (with-nil-default 0
-    (let [file-obj  (io/file dir-name)
-          num-files (count (file-seq file-obj)) ]
-      (when (.exists file-obj)
-        (it-> file-obj
+    (let [file      (->File dir-name)
+          num-files (count (file-seq file))]
+      (when (.exists file)
+        (it-> file
           (file-seq it)
           (reverse it)
           (map io/delete-file it)

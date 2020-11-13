@@ -16,7 +16,7 @@
     [tupelo.parse :as tpar]
     [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
-    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+    [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture]])
   #?(:clj (:import [java.lang Math]))
   )
@@ -121,6 +121,25 @@
        (is= 0.5 (tpar/parse-double "0.5" :default nil))
        (is (t/rel= (/ 1 10) (tpar/parse-double "0.1" :default 0) :digits 9))
        (is (t/rel= Math/PI (tpar/parse-double "3.141592654" :default 0) :digits 9)))
+
+     (dotest
+       (is= 15.0M (tpar/parse-decimal "15"))
+       (is= -5.0M (tpar/parse-decimal "-5"))
+       (throws? NumberFormatException (tpar/parse-decimal ""))
+       (throws? NumberFormatException (tpar/parse-decimal "xyz"))
+       (is= 0.5M (tpar/parse-decimal "0.5"))
+       (is (= 0.1M (tpar/parse-decimal "0.1")))
+       (is (t/rel= Math/PI (tpar/parse-decimal "3.141592654") :digits 9))
+
+       (is= 15.0M (tpar/parse-decimal {:default nil} "15"))
+       (is= -5.0M (tpar/parse-decimal {:default nil} "-5"))
+       (is= nil (tpar/parse-decimal {:default nil} ""))
+       (is= 0 (tpar/parse-decimal {:default 0} "xyz"))
+       (is= 0.5M (tpar/parse-decimal {:default nil} "0.5"))
+       (is (t/rel= (/ 1 10) (tpar/parse-decimal {:default 0} "0.1") :digits 9))
+       (is (t/rel= Math/PI (tpar/parse-decimal {:default 0} "3.141592654") :digits 9)))
+
+
      ))
 
 #?(:cljs

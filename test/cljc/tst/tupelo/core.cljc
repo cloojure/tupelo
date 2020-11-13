@@ -16,6 +16,7 @@
   (:require
     [clojure.test] ; sometimes this is required - not sure why
     [clojure.string :as str]
+    [clojure.walk :as walk]
     [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty nl
                                vals->map map-plain? forv glue]]
@@ -1026,6 +1027,29 @@
   (is= [1 2 3 4 5 6 7 8 9] (concat [1 2 3] [4 5 6] [7 8 9])))
 
 (dotest
+  (throws? (t/compare-less 1))
+  (is (t/compare-less 1 2))
+  (is (t/compare-less 1 2 3))
+  (is (t/compare-less 1 2 3 4))
+  (isnt (t/compare-less 2 2))
+  (isnt (t/compare-less 2 2 3))
+  (isnt (t/compare-less 2 2 3 4))
+  (isnt (t/compare-less 91 2))
+  (isnt (t/compare-less 91 2 3))
+  (isnt (t/compare-less 91 2 3 4))
+
+  (throws? (t/compare-less-equal 1))
+  (is (t/compare-less-equal 1 2))
+  (is (t/compare-less-equal 1 2 3))
+  (is (t/compare-less-equal 1 2 3 4))
+  (is (t/compare-less-equal 2 2))
+  (is (t/compare-less-equal 2 2 3))
+  (is (t/compare-less-equal 2 2 3 4))
+  (isnt (t/compare-less-equal 91 2))
+  (isnt (t/compare-less-equal 91 2 3))
+  (isnt (t/compare-less-equal 91 2 3 4)))
+
+(dotest
   (isnt (t/increasing? [1 2] [1]))
   (isnt (t/increasing? [1 2] [1 1]))
   (isnt (t/increasing? [1 2] [1 2]))
@@ -1370,7 +1394,23 @@
   (is (not (t/rel= 0.123450000 0.123456789 :digits 6)))
 
   (is (t/rel= 1 1.001 :tol 0.01))
-  (is (not (t/rel= 1 1.001 :tol 0.0001))))
+  (is (not (t/rel= 1 1.001 :tol 0.0001)))
+
+  (let [base       {:a 1 :b [:c 3 :d [4 5 6]]}
+        tweaked-5  (walk/postwalk (fn [it]
+                                    (if-not (number? it)
+                                      it
+                                      (+ it 1.0e-5)))
+                     base)
+        tweaked-13 (walk/postwalk (fn [it]
+                                    (if-not (number? it)
+                                      it
+                                      (+ it 1.0e-13)))
+                     base)]
+    (isnt= base tweaked-5)
+    (isnt (t/deep-rel= base tweaked-5))
+    (is (t/deep-rel= base tweaked-13))))
+
 
 (dotest
   (is (every? t/truthy? (t/forv [ul (range 0 4)] (vector? (t/range-vec ul)))))

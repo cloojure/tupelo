@@ -79,40 +79,49 @@
    (s/required-key :leave) s/Any
    (s/optional-key :id)    s/Keyword})
 
+(defmacro with-validation-enabled
+  "Run forms with Plumatic Schema enabled"
+  [& forms]
+  `(let [orig-validation-state# (s/fn-validation?)]
+     (s/set-fn-validation! true)
+     ~@forms
+     (s/set-fn-validation! orig-validation-state#)))
 
+(defmacro with-validation-disabled
+  "Run forms with Plumatic Schema disabled"
+  [& forms]
+  `(let [orig-validation-state# (s/fn-validation?)]
+     (s/set-fn-validation! false)
+     ~@forms
+     (s/set-fn-validation! orig-validation-state#)))
 
-#?(:clj
-   (do
-     ;-----------------------------------------------------------------------------
-     ; HTTP related stuff
+;-----------------------------------------------------------------------------
+; HTTP related stuff
 
-     (def HttpRequest
-       {s/Any                             s/Any
-        :body                             s/Any
-        :content-length                   s/Any
-        :headers                          {s/Str s/Str}
-        :params                           s/Any
-        :protocol                         s/Str
-        :remote-addr                      s/Str
-        :scheme                           s/Keyword
-        :server-name                      s/Str
-        :server-port                      s/Int
-        :uri                              s/Str
+(def HttpRequest
+  {s/Any                             s/Any
+   :body                             s/Any
+   :content-length                   s/Any
+   :headers                          {s/Str s/Str}
+   :params                           s/Any
+   :protocol                         s/Str
+   :remote-addr                      s/Str
+   :scheme                           s/Keyword
+   :server-name                      s/Str
+   :server-port                      s/Int
+   :uri                              s/Str
 
-        (s/optional-key :content-type)    nil
-        (s/optional-key :cookies)         s/Any
-        (s/optional-key :flash)           nil
-        (s/optional-key :form-params)     s/Any
-        (s/optional-key :query-params)    {}
-        (s/optional-key :query-string)    s/Any
-        (s/optional-key :request-method)  s/Keyword
-        (s/optional-key :route-handler)   s/Any
-        (s/optional-key :route-params)    s/Any
-        (s/optional-key :session)         s/Any
-        (s/optional-key :ssl-client-cert) s/Any})
-
-     ))
-
+   (s/optional-key :content-type)    nil
+   (s/optional-key :cookies)         s/Any
+   (s/optional-key :flash)           nil
+   (s/optional-key :form-params)     s/Any
+   (s/optional-key :query-params)    {}
+   (s/optional-key :query-string)    s/Any
+   (s/optional-key :request-method)  s/Keyword
+   (s/optional-key :route-handler)   s/Any
+   (s/optional-key :route-params)    s/Any
+   (s/optional-key :session)         s/Any
+   (s/optional-key :ssl-client-cert) s/Any})
 
 
 

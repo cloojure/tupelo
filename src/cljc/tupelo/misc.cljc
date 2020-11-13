@@ -185,6 +185,11 @@
              hex-result (bytes-unsigned->hex-str bytes)]
          hex-result))))
 
+(s/defn hash->hex :- s/Str
+  "Given arbitrary arguments, uses clojure.lang/hash to generate a 32-bit hex hashcode."
+  [& args] (format "%08x" (hash args)))
+
+;---------------------------------------------------------------------------------------------------
 ;#?(:clj  ; #todo old way; delete?
 ;   (do
 ;     ;(s/defn long->byte-array
