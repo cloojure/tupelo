@@ -184,26 +184,51 @@
         (->instant (->zoned-date-time (joda/date-time 2018 9 1))))) )
 
 (dotest
-  (let [lb      (zoned-date-time 2018 9 1)
-        ub      (zoned-date-time 2018 9 2)
-        mid     (zoned-date-time 2018 9 1, 1 2 3)
+  (let [out-low  (zoned-date-time 2018 8 30)
+        lb       (zoned-date-time 2018 9 1)
+        mid      (zoned-date-time 2018 9 1, 1 2 3)
+        ub       (zoned-date-time 2018 9 2)
+        out-high (zoned-date-time 2018 9 3)
 
-        itvl    (interval lb ub)
-        itvl-o  (interval lb ub :open)
-        itvl-ho (interval lb ub :half-open)
-        itvl-c  (interval lb ub :closed)]
-    (is= itvl itvl-ho)
-    (is (interval-contains? itvl lb))
-    (is (interval-contains? itvl mid))
-    (isnt (interval-contains? itvl ub))
+        itvl     (->Interval lb ub)
+        itvl-o   (->Interval lb ub) ; :open
+        itvl-ho  (->Interval lb ub) ; :half-open
+        itvl-c   (->Interval lb ub)] ; :closed
 
-    (isnt (interval-contains? itvl-o lb))
-    (is (interval-contains? itvl-o mid))
-    (isnt (interval-contains? itvl-o ub))
+    (isnt (interval-open-contains? itvl out-low))
+    (isnt (interval-open-contains? itvl lb))
+    (is (interval-open-contains? itvl mid))
+    (isnt (interval-open-contains? itvl ub))
+    (isnt (interval-open-contains? itvl out-high))
 
-    (is (interval-contains? itvl-c lb))
-    (is (interval-contains? itvl-c mid))
-    (is (interval-contains? itvl-c ub)) )
+    (isnt (interval-slice-contains? itvl out-low))
+    (is (interval-slice-contains? itvl lb))
+    (is (interval-slice-contains? itvl mid))
+    (isnt (interval-slice-contains? itvl ub))
+    (isnt (interval-slice-contains? itvl out-high))
+
+    (isnt (interval-closed-contains? itvl out-low))
+    (is (interval-closed-contains? itvl lb))
+    (is (interval-closed-contains? itvl mid))
+    (is (interval-closed-contains? itvl ub))
+    (isnt (interval-closed-contains? itvl out-high))
+
+
+    (comment
+      (is (interval-contains? itvl lb))
+      (is (interval-contains? itvl mid))
+      (isnt (interval-contains? itvl ub))
+
+      (isnt (interval-contains? itvl-o lb))
+      (is (interval-contains? itvl-o mid))
+      (isnt (interval-contains? itvl-o ub))
+
+      (is (interval-contains? itvl-c lb))
+      (is (interval-contains? itvl-c mid))
+      (is (interval-contains? itvl-c ub))
+      )
+
+    )
 
   (is= (stringify-times [:something
                          {:ambassador-id 13590,
@@ -219,22 +244,22 @@
   )
 
 (dotest
-  (let [now-instant-1      (instant)
-        now-zdt-1          (zoned-date-time)
-        now-zdt-2          (now->zdt)
-        >>                 (Thread/sleep 100)
-        now-instant-2      (now->instant)
+  (let [now-instant-1          (instant)
+        now-zdt-1a             (zoned-date-time)
+        now-zdt-1b             (now->zdt)
+        >>                     (Thread/sleep 100)
+        now-instant-2          (now->instant)
 
-        tst-interval-short (interval now-instant-1 now-instant-2)
-        tst-interval-1-sec (interval (.minusSeconds now-instant-1 1) now-instant-2)
+        instant-interval-short (->Interval now-instant-1 now-instant-2)
+        instant-interval-11    (->Interval (.minusSeconds now-instant-1 1) now-instant-2)
 
-        now-millis         (.toEpochMilli now-instant-1)
-        now-instant-millis (millis->instant now-millis)
-        now-instant-secs   (secs->instant (quot now-millis 1000))]
-    (is (interval-contains? tst-interval-short now-zdt-1))
-    (is (interval-contains? tst-interval-short now-zdt-2))
-    (is (interval-contains? tst-interval-1-sec now-instant-millis))
-    (is (interval-contains? tst-interval-1-sec now-instant-secs))))
+        millis-1               (.toEpochMilli now-instant-1)
+        instant-1c             (millis->instant millis-1)
+        instant-1-trunc        (secs->instant (quot millis-1 1000))]
+    (is (interval-closed-contains? instant-interval-short (->instant now-zdt-1a)))
+    (is (interval-closed-contains? instant-interval-short (->instant now-zdt-1b)))
+    (is (interval-closed-contains? instant-interval-11 instant-1c))
+    (is (interval-closed-contains? instant-interval-11 instant-1-trunc))))
 
 (dotest
   ; note that instants are in DESCENDING order

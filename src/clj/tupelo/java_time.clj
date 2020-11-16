@@ -52,15 +52,13 @@
 (def zoneid-us-mountain    (ZoneId/of "US/Mountain"))
 (def zoneid-us-pacific     (ZoneId/of "US/Pacific"))
 
-(defprotocol ToInstant
-   (->instant [arg]))
-(extend-protocol ToInstant
-  Instant (->instant [arg]
-            arg)
-  ZonedDateTime (->instant [arg]
-                  (.toInstant arg))
-  org.joda.time.ReadableInstant (->instant [arg]
-                                  (-> arg .getMillis Instant/ofEpochMilli)))
+(defn ->instant
+  "Coerces an Instant, ZonedDateTime, or org.joda.time.ReadableInstant => Instant "
+  [arg]
+  (cond
+    (instance? Instant arg) arg
+    (instance? ZonedDateTime arg) (.toInstant arg)
+    (instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli)))
 
 (defn ->zoned-date-time ; #todo -> protocol?
   "Coerces a org.joda.time.ReadableInstant to java.time.ZonedDateTime"
@@ -136,7 +134,6 @@
 (defn now->instant
   "Returns the current time as a java.lang.Instant"
   [] (Instant/now))
-
 
 ;----------------------------------------------------------------------------------------
 ; #todo: Make all use protocol for all Temporal's (ZonedDateTime, OffsetDateTime, Instant, ...?)
@@ -387,21 +384,9 @@
         (.plus curr-inst step-dur))
       result)))
 
-(defn interval
-  "Returns a map representing an interval in time. Usage:
-
-    (interval start stop)           ; default type => :half-open
-    (interval start stop type)      ; type one of [:open :half-open :closed]
-  "
-  ([start stop] (interval start stop :half-open))
-  ([start stop type]
-   {:lower-bound   (->instant start)
-    :upper-bound   (->instant stop)
-    :interval-type (validate #{:open :half-open :closed} type)}))
-
 (defn interval?
   "Returns true iff the arg represents an interval"
-  [it] (= (set (keys it)) #{:lower-bound :upper-bound :interval-type}))
+  [it] (instance? tupelo.core.Interval it))
 
 (defn interval-contains?
   "Returns true iff the interval contains the instant in time"
@@ -412,11 +397,11 @@
         lb                   (grab :lower-bound interval)
         ub                   (grab :upper-bound interval)
         within-open-interval (and (.isBefore lb instant) (.isBefore instant ub))
-        interval-type       (grab :interval-type interval) ]
+        interval-type        (grab :interval-type interval)]
     (cond
-      (= interval-type :open)           within-open-interval
-      (= interval-type :half-open)  (or within-open-interval (.equals instant lb))
-      (= interval-type :closed)     (or within-open-interval (.equals instant lb) (.equals instant ub)))))
+      (= interval-type :open) within-open-interval
+      (= interval-type :half-open) (or within-open-interval (.equals instant lb))
+      (= interval-type :closed) (or within-open-interval (.equals instant lb) (.equals instant ub)))))
 
 (s/defn parse-iso-str-nice  :- Instant
   "Parse a near-iso string like '2019-09-19 18:09:35Z' (it is missing the 'T' between the
