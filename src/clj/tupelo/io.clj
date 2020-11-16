@@ -41,10 +41,12 @@
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn Path? :- s/Bool
+  "Returns true iff arg is a java.io.Path"
   [arg :- s/Any]
   (instance? Path arg))
 
 (s/defn File? :- s/Bool
+  "Returns true iff arg is a java.io.File"
   [arg :- s/Any]
   (instance? File arg))
 
@@ -58,7 +60,7 @@
     :else (throw (ex-info "unknown arg type" {:arg arg :type (type arg)}))))
 
 (s/defn ->File :- File
-  "Convert a String arg to a File. Idempotent."
+  "Convert a String or Path arg to a File. Idempotent."
   [arg :- (s/cond-pre Path s/Str)]
   (cond
     (File? arg) arg
@@ -67,10 +69,12 @@
     :else (throw (ex-info "unknown arg type" {:arg arg :type (type arg)}))))
 
 (s/defn file-exists? :- s/Bool
+  "Returns true iff a file exists"
   [arg :- (s/cond-pre s/Str File Path)]
   (Files/exists (->Path arg) (into-array LinkOption [])))
 
 (s/defn delete-file-if-exists :- s/Bool
+  "Deletes a file if it exists. Accepts String, File, or Path arg."
   [arg :- (s/cond-pre s/Str File Path)]
   (Files/deleteIfExists (->Path arg)))
 
@@ -80,7 +84,7 @@
   (.mkdirs (->File arg)))
 
 (s/defn mkdirs-parent ; #todo => tupelo.io   &  need test
-  "Creates all parent dirs of a file."
+  "Creates all parent dirs of a file.  Accepts String, File, or Path arg."
   [arg :- (s/cond-pre s/Str File Path)]
   (it-> arg
     (->File it)
@@ -106,6 +110,7 @@
      tmp-file)))
 
 (s/defn create-temp-directory :- File
+  "Creates a temporary directory with the given [`dir`  and] prefix"
   ([prefix :- (s/cond-pre File s/Str Path)]
    (let [tmp-file (.toFile (Files/createTempDirectory (str prefix "-")
                              (into-array FileAttribute [])))]

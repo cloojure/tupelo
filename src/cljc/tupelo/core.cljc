@@ -423,41 +423,38 @@
        (assert (= 1 (count arg)))
        (.charCodeAt arg 0))))
 
-#?(:clj
-   (defn kw->int [arg]
-     (Integer/parseInt (kw->str arg))))
-#?(:cljs
-   (defn kw->int [arg]
-     (js/parseInt (kw->str arg) 10)))
+#?(:clj  (defn kw->int [arg]
+           (Integer/parseInt (kw->str arg)))
+   :cljs (defn kw->int [arg]
+           (js/parseInt (kw->str arg) 10)))
 
 ; #todo add edn->js
 ; #todo add js->edn (:keywordize-keys true)
-#?(:clj
-   (do
-     ; #todo add test & README
-     (s/defn json->edn
-       "Shortcut to cheshire.core/parse-string"
-       [json-str :- s/Str]
-       (cheshire/parse-string json-str true)) ; true => keywordize-keys
+#?(:clj  (do
+           ; #todo add test & README
+           (s/defn json->edn
+             "Shortcut to cheshire.core/parse-string"
+             [json-str :- s/Str]
+             (cheshire/parse-string json-str true)) ; true => keywordize-keys
 
-     ; #todo add test & README
-     (s/defn edn->json :- s/Str
-       "Shortcut to cheshire.core/generate-string"
-       [arg]
-       (cheshire/generate-string arg)) ))
-#?(:cljs
-   (do
-     ; #todo add test & README
-     (s/defn json->edn
-       "Convert from json -> edn"
-       [json-str :- s/Str]
-       (js->clj (.parse js/JSON json-str) :keywordize-keys true)) ; true => keywordize-keys
+           ; #todo add test & README
+           (s/defn edn->json :- s/Str
+             "Shortcut to cheshire.core/generate-string"
+             [arg]
+             (cheshire/generate-string arg)))
+   :cljs (do
+           ; #todo add test & README
+           (s/defn json->edn
+             "Convert from json -> edn"
+             [json-str :- s/Str]
+             (js->clj (.parse js/JSON json-str) :keywordize-keys true)) ; true => keywordize-keys
 
-     ; #todo add test & README
-     (s/defn edn->json :- s/Str
-       "Convert from edn -> json "
-       [arg]
-       (.stringify js/JSON (clj->js arg))) ))
+           ; #todo add test & README
+           (s/defn edn->json :- s/Str
+             "Convert from edn -> json "
+             [arg]
+             (.stringify js/JSON (clj->js arg)))))
+
 
 ;-----------------------------------------------------------------------------
 (s/defn not-nil? :- s/Bool
@@ -1532,6 +1529,33 @@
   (every? nonpos?
     (for [[a b] (partition 2 1 xs)]
       (compare a b))))
+
+;-----------------------------------------------------------------------------
+; Represents the boundaries of an interval, without specifying open, half-open, or closed.
+(defrecord Interval [lower upper])
+
+(s/defn interval-open-contains? :- s/Bool
+  "Returns true iff an open interval contains a value such that (lower < L < upper)."
+  [interval :- Interval
+   val :- s/Any]
+  (with-map-vals interval [lower upper]
+    (compare-less lower val upper)))
+
+(s/defn interval-slice-contains? :- s/Bool
+  "Returns true iff a 'slice' interval contains a value such that (lower <= L < upper)."
+  [interval :- Interval
+   val :- s/Any]
+  (with-map-vals interval [lower upper]
+    (and
+      (compare-less-equal lower val)
+      (compare-less val upper))))
+
+(s/defn interval-closed-contains? :- s/Bool
+  "Returns true iff a closed interval contains a value such that (lower <= L <= upper)."
+  [range :- tsk/KeyMap
+   val :- s/Any]
+  (with-map-vals range [lower upper]
+    (compare-less-equal lower val upper)))
 
 
 ; #todo => tupelo.tuple/less-than?
