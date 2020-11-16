@@ -13,9 +13,11 @@
 (defn zoned-date-time?
   "Returns true iff arg is an instance of java.time.ZonedDateTime"
   [it] (instance? ZonedDateTime it)) ; #todo test all
+
 (defn instant?
   "Returns true iff arg is an instance of java.time.Instant "
   [it] (instance? Instant it))
+
 (defn joda-instant?
   "Returns true iff arg is an instance of org.joda.time.ReadableInstant "
   [it] (instance? org.joda.time.ReadableInstant it))
@@ -194,7 +196,7 @@
     trunc-to-day
     (.with (TemporalAdjusters/firstDayOfYear))))
 
-(s/defn trunc-to-sunday-midnight
+(s/defn trunc-to-midnight-sunday
   "For an instant T, truncate time to midnight and return the first Sunday at or before T."
   [temporal :- Temporal]
   (validate temporal? temporal) ; #todo plumatic schema
@@ -202,7 +204,7 @@
     trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/SUNDAY))))
 
-(s/defn trunc-to-monday-midnight
+(s/defn trunc-to-midnight-monday
   "For an instant T, truncate time to midnight and return the first Monday at or before T."
   [temporal :- Temporal]
   (validate temporal? temporal) ; #todo plumatic schema
@@ -210,7 +212,7 @@
     trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/MONDAY))))
 
-(s/defn trunc-to-tuesday-midnight
+(s/defn trunc-to-midnight-tuesday
   "For an instant T, truncate time to midnight and return the first Tuesday at or before T."
   [temporal :- Temporal]
   (validate temporal? temporal) ; #todo plumatic schema
@@ -218,7 +220,7 @@
     trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/TUESDAY))))
 
-(s/defn trunc-to-wednesday-midnight
+(s/defn trunc-to-midnight-wednesday
   "For an instant T, truncate time to midnight and return the first Wednesday at or before T."
   [temporal :- Temporal]
   (validate temporal? temporal) ; #todo plumatic schema
@@ -226,7 +228,7 @@
     trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/WEDNESDAY))))
 
-(s/defn trunc-to-thursday-midnight
+(s/defn trunc-to-midnight-thursday
   "For an instant T, truncate time to midnight and return the first thursday at or before T."
   [temporal :- Temporal]
   (validate temporal? temporal) ; #todo plumatic schema
@@ -234,7 +236,7 @@
     trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/THURSDAY))))
 
-(s/defn trunc-to-friday-midnight
+(s/defn trunc-to-midnight-friday
   "For an instant T, truncate time to midnight and return the first Friday at or before T."
   [temporal :- Temporal]
   (validate temporal? temporal) ; #todo plumatic schema
@@ -242,7 +244,7 @@
     trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/FRIDAY))))
 
-(s/defn trunc-to-saturday-midnight
+(s/defn trunc-to-midnight-saturday
   "For an instant T, truncate time to midnight and return the first Saturday at or before T."
   [temporal :- Temporal]
   (validate temporal? temporal) ; #todo plumatic schema
