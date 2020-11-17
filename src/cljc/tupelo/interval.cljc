@@ -26,13 +26,16 @@
     [tupelo.schema :as tsk]
     [tupelo.core :as t]))
 
-
 ;-----------------------------------------------------------------------------
 ; Represents the boundaries of an interval, without specifying open, half-open, or closed.
 (defrecord Interval [lower upper])
 
+(defn interval?
+  "Returns true iff the arg represents an interval"
+  [it] (instance? Interval it))
+
 (s/defn new
-  "Creates a new Interval record"
+  "Creates a new Interval record using the `->Interval` constructor function."
   [lower upper]
   (assert (t/nonpos? (compare lower upper)))
   (->Interval lower upper))

@@ -8,7 +8,9 @@
   (:import
     [java.time DayOfWeek ZoneId ZonedDateTime Instant Period]
     [java.time.format DateTimeFormatter]
-    [java.time.temporal TemporalAdjusters Temporal TemporalAmount ChronoUnit] ))
+    [java.time.temporal TemporalAdjusters Temporal TemporalAmount ChronoUnit]
+    [tupelo.interval Interval]
+    ))
 
 (defn zoned-date-time?
   "Returns true iff arg is an instance of java.time.ZonedDateTime"
@@ -385,25 +387,6 @@
       (recur (conj result curr-inst)
         (.plus curr-inst step-dur))
       result)))
-
-(defn interval?
-  "Returns true iff the arg represents an interval"
-  [it] (instance? tupelo.core.Interval it))
-
-(defn interval-contains?
-  "Returns true iff the interval contains the instant in time"
-  [interval time]
-  (validate interval? interval)
-  (validate fixed-time-point? time)
-  (let [instant              (->instant time)
-        lb                   (grab :lower-bound interval)
-        ub                   (grab :upper-bound interval)
-        within-open-interval (and (.isBefore lb instant) (.isBefore instant ub))
-        interval-type        (grab :interval-type interval)]
-    (cond
-      (= interval-type :open) within-open-interval
-      (= interval-type :half-open) (or within-open-interval (.equals instant lb))
-      (= interval-type :closed) (or within-open-interval (.equals instant lb) (.equals instant ub)))))
 
 (s/defn parse-iso-str-nice  :- Instant
   "Parse a near-iso string like '2019-09-19 18:09:35Z' (it is missing the 'T' between the

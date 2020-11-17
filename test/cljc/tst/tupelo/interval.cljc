@@ -15,15 +15,11 @@
              ))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
-    [clojure.string :as str]
-    [clojure.walk :as walk]
-    [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty nl
                                vals->map map-plain? forv glue keep-if]]
     [tupelo.interval :as interval]
     [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture]])
-  #?(:clj (:require [tupelo.types :as types]))
   )
 
 #?(:cljs (enable-console-print!))
@@ -47,12 +43,13 @@
   (is= (compare 1 1.0) 0)
   (is= (compare 2 1.0) 1)
 
+  (throws? (interval/new 5 1))
   (let [itvl        (interval/new 1.0 5.0) ; float interval bounds vs integer values
         open-vals   (keep-if #(interval/open-contains? itvl %) (range 10))
         slice-vals  (keep-if #(interval/slice-contains? itvl %) (range 10))
         closed-vals (keep-if #(interval/closed-contains? itvl %) (range 10))]
+    (is (interval/interval? itvl))
+    (isnt (interval/interval? [7 8]))
     (is= open-vals [2 3 4])
     (is= slice-vals [1 2 3 4])
     (is= closed-vals [1 2 3 4 5])))
-
-
