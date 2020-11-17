@@ -19,8 +19,7 @@
     [clojure.walk :as walk]
     [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty nl
-                               vals->map map-plain? forv glue keep-if
-                               ->Interval]]
+                               vals->map map-plain? forv glue keep-if]]
     [tupelo.string :as ts]
     [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture]])
@@ -53,33 +52,6 @@
            "println"))))
 
 ;-----------------------------------------------------------------------------
-
-(dotest
-  (is= (< 0 1.0) true)
-  (is= (= 0 1.0) false)
-  (is= (> 0 1.0) false)
-
-  (is= (< 1 1.0) false)
-  (is= (= 1 1.0) false) ; ***** integers and floating point values are never equal! *****
-  (is= (== 1 1.0) true) ; *****  works for numbers (only) in different categories *****
-  (is= (> 1 1.0) false)
-
-  (is= (< 2 1.0) false)
-  (is= (= 2 1.0) false)
-  (is= (> 2 1.0) true)
-
-  (is= (compare 0 1.0) -1)
-  (is= (compare 1 1.0) 0)
-  (is= (compare 2 1.0) 1)
-
-  (let [itvl        (t/->Interval 1 5)
-        open-vals   (keep-if #(t/interval-open-contains? itvl %) (range 10))
-        slice-vals  (keep-if #(t/interval-slice-contains? itvl %) (range 10))
-        closed-vals (keep-if #(t/interval-closed-contains? itvl %) (range 10))]
-    (is= open-vals [2 3 4])
-    (is= slice-vals [1 2 3 4])
-    (is= closed-vals [1 2 3 4 5])))
-
 
 (dotest
   (is (nil? (t/noop)))

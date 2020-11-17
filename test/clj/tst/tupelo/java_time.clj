@@ -4,6 +4,7 @@
   (:require
     [clj-time.core :as joda]
     [clojure.string :as str]
+    [tupelo.interval :as interval]
     [tupelo.string :as ts]
     )
   (:import [java.time Duration ZoneId ZoneId ZonedDateTime ZonedDateTime LocalDateTime Instant Period]
@@ -190,42 +191,42 @@
         ub       (zoned-date-time 2018 9 2)
         out-high (zoned-date-time 2018 9 3)
 
-        itvl     (->Interval lb ub)
-        itvl-o   (->Interval lb ub) ; :open
-        itvl-ho  (->Interval lb ub) ; :half-open
-        itvl-c   (->Interval lb ub)] ; :closed
+        itvl     (interval/new lb ub)
+        itvl-o   (interval/new lb ub) ; :open
+        itvl-ho  (interval/new lb ub) ; :half-open
+        itvl-c   (interval/new lb ub)] ; :closed
 
-    (isnt (interval-open-contains? itvl out-low))
-    (isnt (interval-open-contains? itvl lb))
-    (is (interval-open-contains? itvl mid))
-    (isnt (interval-open-contains? itvl ub))
-    (isnt (interval-open-contains? itvl out-high))
+    (isnt (interval/open-contains? itvl out-low))
+    (isnt (interval/open-contains? itvl lb))
+    (is (interval/open-contains? itvl mid))
+    (isnt (interval/open-contains? itvl ub))
+    (isnt (interval/open-contains? itvl out-high))
 
-    (isnt (interval-slice-contains? itvl out-low))
-    (is (interval-slice-contains? itvl lb))
-    (is (interval-slice-contains? itvl mid))
-    (isnt (interval-slice-contains? itvl ub))
-    (isnt (interval-slice-contains? itvl out-high))
+    (isnt (interval/slice-contains? itvl out-low))
+    (is (interval/slice-contains? itvl lb))
+    (is (interval/slice-contains? itvl mid))
+    (isnt (interval/slice-contains? itvl ub))
+    (isnt (interval/slice-contains? itvl out-high))
 
-    (isnt (interval-closed-contains? itvl out-low))
-    (is (interval-closed-contains? itvl lb))
-    (is (interval-closed-contains? itvl mid))
-    (is (interval-closed-contains? itvl ub))
-    (isnt (interval-closed-contains? itvl out-high))
+    (isnt (interval/closed-contains? itvl out-low))
+    (is (interval/closed-contains? itvl lb))
+    (is (interval/closed-contains? itvl mid))
+    (is (interval/closed-contains? itvl ub))
+    (isnt (interval/closed-contains? itvl out-high))
 
 
     (comment
-      (is (interval-contains? itvl lb))
-      (is (interval-contains? itvl mid))
-      (isnt (interval-contains? itvl ub))
+      (is (interval/contains? itvl lb))
+      (is (interval/contains? itvl mid))
+      (isnt (interval/contains? itvl ub))
 
-      (isnt (interval-contains? itvl-o lb))
-      (is (interval-contains? itvl-o mid))
-      (isnt (interval-contains? itvl-o ub))
+      (isnt (interval/contains? itvl-o lb))
+      (is (interval/contains? itvl-o mid))
+      (isnt (interval/contains? itvl-o ub))
 
-      (is (interval-contains? itvl-c lb))
-      (is (interval-contains? itvl-c mid))
-      (is (interval-contains? itvl-c ub))
+      (is (interval/contains? itvl-c lb))
+      (is (interval/contains? itvl-c mid))
+      (is (interval/contains? itvl-c ub))
       )
 
     )
@@ -250,16 +251,16 @@
         >>                     (Thread/sleep 100)
         now-instant-2          (now->instant)
 
-        instant-interval-short (->Interval now-instant-1 now-instant-2)
-        instant-interval-11    (->Interval (.minusSeconds now-instant-1 1) now-instant-2)
+        instant-interval-short (interval/new now-instant-1 now-instant-2)
+        instant-interval-11    (interval/new (.minusSeconds now-instant-1 1) now-instant-2)
 
         millis-1               (.toEpochMilli now-instant-1)
         instant-1c             (millis->instant millis-1)
         instant-1-trunc        (secs->instant (quot millis-1 1000))]
-    (is (interval-closed-contains? instant-interval-short (->instant now-zdt-1a)))
-    (is (interval-closed-contains? instant-interval-short (->instant now-zdt-1b)))
-    (is (interval-closed-contains? instant-interval-11 instant-1c))
-    (is (interval-closed-contains? instant-interval-11 instant-1-trunc))))
+    (is (interval/closed-contains? instant-interval-short (->instant now-zdt-1a)))
+    (is (interval/closed-contains? instant-interval-short (->instant now-zdt-1b)))
+    (is (interval/closed-contains? instant-interval-11 instant-1c))
+    (is (interval/closed-contains? instant-interval-11 instant-1-trunc))))
 
 (dotest
   ; note that instants are in DESCENDING order

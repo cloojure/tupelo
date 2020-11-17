@@ -1574,34 +1574,6 @@
     (for [[a b] (partition 2 1 xs)]
       (compare a b))))
 
-;-----------------------------------------------------------------------------
-; Represents the boundaries of an interval, without specifying open, half-open, or closed.
-(defrecord Interval [lower upper])
-
-(s/defn interval-open-contains? :- s/Bool
-  "Returns true iff an open interval contains a value such that (lower < L < upper)."
-  [interval :- Interval
-   val :- s/Any]
-  (with-map-vals interval [lower upper]
-    (compare-less lower val upper)))
-
-(s/defn interval-slice-contains? :- s/Bool
-  "Returns true iff a 'slice' interval contains a value such that (lower <= L < upper)."
-  [interval :- Interval
-   val :- s/Any]
-  (with-map-vals interval [lower upper]
-    (and
-      (compare-less-equal lower val)
-      (compare-less val upper))))
-
-(s/defn interval-closed-contains? :- s/Bool
-  "Returns true iff a closed interval contains a value such that (lower <= L <= upper)."
-  [range :- tsk/KeyMap
-   val :- s/Any]
-  (with-map-vals range [lower upper]
-    (compare-less-equal lower val upper)))
-
-
 ; #todo => tupelo.tuple/less-than?
 ; #todo re-home lexical increasing/equal fns
 
