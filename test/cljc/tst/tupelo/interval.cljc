@@ -44,6 +44,7 @@
   (is= (compare 2 1.0) 1)
 
   (throws? (interval/new 5 1))
+  (throws-not? (interval/new 5 5))
   (let [itvl        (interval/new 1.0 5.0) ; float interval bounds vs integer values
         open-vals   (keep-if #(interval/open-contains? itvl %) (range 10))
         slice-vals  (keep-if #(interval/slice-contains? itvl %) (range 10))

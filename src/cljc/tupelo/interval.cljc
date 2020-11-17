@@ -37,7 +37,7 @@
 (s/defn new
   "Creates a new Interval record using the `->Interval` constructor function."
   [lower upper]
-  (assert (t/nonpos? (compare lower upper)))
+  (assert (t/compare-less-equal lower upper))
   (->Interval lower upper))
 
 (s/defn open-contains? :- s/Bool
