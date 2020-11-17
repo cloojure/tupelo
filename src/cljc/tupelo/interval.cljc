@@ -18,8 +18,6 @@
                             with-spy-indent spyx spyxx spy-pretty spyx-pretty
                             let-spy let-spy-pretty let-some map-let* map-let lazy-cons
                             try-catchall with-exception-default verify
-                            if-java-1-7-plus if-java-1-8-plus
-                            when-clojure-1-8-plus when-clojure-1-9-plus when-not-clojure-1-9-plus
                             destruct lazy-gen yield yield-all matches?]]))
   (:require
     [schema.core :as s]

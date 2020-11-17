@@ -9,7 +9,6 @@
     [java.time DayOfWeek ZoneId ZonedDateTime Instant Period]
     [java.time.format DateTimeFormatter]
     [java.time.temporal TemporalAdjusters Temporal TemporalAmount ChronoUnit]
-    [tupelo.interval Interval]
     ))
 
 (defn zoned-date-time?
