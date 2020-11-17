@@ -52,7 +52,7 @@
                                (.println "System.err.println")))
            "println"))))
 
-;--------------------------------------------------------------------------------------------------
+;-----------------------------------------------------------------------------
 
 (dotest
   (is= (< 0 1.0) true)
@@ -541,6 +541,7 @@
                       b (+ 2 3)]
                      (-> b (* (inc a)) (+ 7))))))))
 
+;-----------------------------------------------------------------------------
 (dotest
   (testing "basic usage"
     (let [side-effect-cum-sum (atom 0) ; side-effect running total
@@ -599,12 +600,28 @@
       (is= 10 @side-effect-cum-sum)
 
       (is= ":value => 5" (ts/collapse-whitespace (with-out-str (spy :value (+ 2 3)))))
-      (is= ":spy => 5" (ts/collapse-whitespace (with-out-str (spy (+ 2 3)))))
+      ; (is= ":spy => 5" (ts/collapse-whitespace (with-out-str (spy (+ 2 3)))))
 
       (is= "(str \"abc\" \"def\") => \"abcdef\""
         (ts/collapse-whitespace (with-out-str (spyx (str "abc" "def")))))
 
       ; (throws? (spy :some-tag "some-str" 42))  ; #todo how test in cljs?
+      )))
+(comment
+  (dotest
+    (spy :hello)
+    (spy "goodbye")
+    (spy :hello 5)
+    (spy 99 :tears)
+    (spyx (t/source-code-env))
+    (spyx "something")
+    (comment ; sample output
+      :spy--tst.tupelo.core--line-057 => :hello
+      :spy--tst.tupelo.core--line-058 => "goodbye"
+      :hello => 5
+      :tears => 99
+      (t/source-code-env) => {:src-line 61, :src-col 9, :src-ns-name "tst.tupelo.core"}
+      something => "something"
       )))
 
 (dotest

@@ -1,5 +1,4 @@
-(ns       ; ^:test-refresh/focus
-  tst.tupelo.parse.yaml
+(ns tst.tupelo.parse.yaml
   (:use tupelo.core tupelo.test)
   (:require
     [clojure.data :as data]

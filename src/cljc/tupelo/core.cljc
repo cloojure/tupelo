@@ -949,7 +949,19 @@
   (reset! spy-indent-level 0))
 
 ;-----------------------------------------------------------------------------
-(defn spy
+(defn spy2-impl ; 2-arg arity requires user-supplied keyword
+  [arg1 arg2]
+  (let [[tag value] (cond
+                      (keyword? arg1) [arg1 arg2]
+                      (keyword? arg2) [arg2 arg1]
+                      :else (throw (ex-info "spy: either first or 2nd arg must be a keyword tag \n   args:"
+                                     {:arg1 arg1
+                                      :arg2 arg2})))]
+    (when *spy-enabled*
+      (println (str (spy-indent-spaces) tag " => " (pr-str value))))
+    value))
+
+(defmacro spy
   "A form of (println ...) to ease debugging display of either intermediate values in threading
    forms or function return values. There are three variants.  Usage:
 
@@ -992,18 +1004,39 @@
         This variant is intended for use in very simple situations and is the same as the
         2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
         prints 'spy => 5' to stdout.  "
+  ; 1-arg arity uses a generic "spy" message
+  ([value]
+   (let [src-line   (:line (meta &form))
+         src-ns-str (str (ns-name *ns*))
+         out-tag    (keyword (format "spy--%s--line-%03d" src-ns-str src-line))]
+     `(do
+        (println ~out-tag "=>" (pr-str ~value))
+        ~value)))
   ([arg1 arg2]
-   (let [[tag value] (cond
-                       (keyword? arg1) [arg1 arg2]
-                       (keyword? arg2) [arg2 arg1]
-                       :else (throw (ex-info "spy: either first or 2nd arg must be a keyword tag \n   args:"
-                                      {:arg1 arg1
-                                       :arg2 arg2} )))]
-     (when *spy-enabled*
-       (println (str (spy-indent-spaces) tag " => " (pr-str value))))
-     value ))
-  ([value] ; 1-arg arity uses a generic "spy" message
-   (spy :spy value)))
+   `(spy2-impl ~arg1 ~arg2)))
+
+(comment
+  (defn spy
+    ; 1-arg arity uses a generic "spy" message
+    ([value]
+     (let [src-line   (:line (meta &form))
+           src-ns-str (str (ns-name *ns*))
+           out-tag    (keyword (format "spy--%s--line-%03d" src-ns-str src-line))]
+       (spy ~out-tag ~value)))
+    ; 2-arg arity requires user-supplied keyword
+    ([arg1 arg2]
+     (let [[tag value] (cond
+                         (keyword? arg1) [arg1 arg2]
+                         (keyword? arg2) [arg2 arg1]
+                         :else (throw (ex-info "spy: either first or 2nd arg must be a keyword tag \n   args:"
+                                        {:arg1 arg1
+                                         :arg2 arg2})))]
+       (when *spy-enabled*
+         (println (str (spy-indent-spaces) tag " => " (pr-str value))))
+       value))
+    ))
+
+
 
 (defn ^:no-doc spyx-impl
   [exprs]
@@ -1405,6 +1438,17 @@
     "Returns true iff arg is two nested collections of length=1"
     [coll :- s/Any] (and (has-length? coll 1)
                       (has-length? (first coll) 1))))
+
+(defmacro source-code-env
+  "A macro that returns information about the calling source code location like:
+       {:src-line    61
+        :src-col      9
+        :src-ns-name 'tst.tupelo.core' } "
+  []
+  (let [src-line    (:line (meta &form))
+        src-col     (:column (meta &form))
+        src-ns-name (str (ns-name *ns*))]
+    (vals->map src-line src-col src-ns-name)))
 
 ; #todo  Need it?-> like some-> that short-circuits on nil
 (defmacro it->

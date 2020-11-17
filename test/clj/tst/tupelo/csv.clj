@@ -4,8 +4,7 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns       ; ^:test-refresh/focus
-  tst.tupelo.csv
+(ns tst.tupelo.csv
   (:use tupelo.csv tupelo.core tupelo.test)
   (:require [tupelo.parse :as parse])
   (:import  [java.io StringReader] ) )

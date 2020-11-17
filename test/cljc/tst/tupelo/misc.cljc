@@ -210,7 +210,7 @@
            90 ...
            99 total"))
 
-     ;(dotest-focus
+     ;(dotest
      ;  (spyx-pretty (misc/stacktrace-info (RuntimeException. "dummy"))))
 
      (do
