@@ -84,16 +84,19 @@
   [& forms]
   `(let [orig-validation-state# (s/fn-validation?)]
      (s/set-fn-validation! true)
-     ~@forms
-     (s/set-fn-validation! orig-validation-state#)))
+     (let [result# (do ~@forms)]
+       (s/set-fn-validation! orig-validation-state#)
+       result#)))
 
 (defmacro with-validation-disabled
   "Run forms with Plumatic Schema disabled"
   [& forms]
   `(let [orig-validation-state# (s/fn-validation?)]
      (s/set-fn-validation! false)
-     ~@forms
-     (s/set-fn-validation! orig-validation-state#)))
+     (let [result# (do ~@forms)]
+       ~@forms
+       (s/set-fn-validation! orig-validation-state#)
+       result#)))
 
 ;-----------------------------------------------------------------------------
 ; HTTP related stuff
