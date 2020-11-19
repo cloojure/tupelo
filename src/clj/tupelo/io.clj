@@ -52,7 +52,7 @@
 
 (s/defn ->Path :- Path
   "Convert a String or File arg to a Path. Idempotent."
-  [arg :- (s/cond-pre File s/Str Path)]
+  [arg :- (s/cond-pre s/Str File Path)]
   (cond
     (Path? arg) arg
     (string? arg) (Paths/get arg (into-array String []))
@@ -61,7 +61,7 @@
 
 (s/defn ->File :- File
   "Convert a String or Path arg to a File. Idempotent."
-  [arg :- (s/cond-pre Path s/Str)]
+  [arg :- (s/cond-pre s/Str File Path)]
   (cond
     (File? arg) arg
     (string? arg) (File. arg)
