@@ -54,7 +54,7 @@
     #?(:clj  (instance? java.lang.Comparable x)
        :cljs (satisfies? cljs.core/IComparable x))
     (do
-      (println :comparable-block x)
+      ; (println :comparable-block x)
       (tupelo.core.impl/type-name-str x))
 
     :else (throw

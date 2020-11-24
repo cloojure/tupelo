@@ -273,6 +273,32 @@
   (str->sha (pr-str (normalized-sorted edn-data))))
 
 
+(defn walk->snippet
+  [data]
+  (walk/postwalk (fn [item]
+                   (cond
+                     (and (t/xsequential? item) (< 4 (count item)))
+                     (let [a      (t/xfirst item)
+                           b      (t/xsecond item)
+                           c      :<snip>
+                           d      (t/xlast item)
+                           result [a b c d]
+                           ]
+                       result)
+
+                     (and (map? item) (< 4 (count item)))
+                     (let [a      (first item)
+                           b      (second item)
+                           c      [:<snip-key> :<snip-val>]
+                           d      (last item)
+                           result (into (array-map) [a b c d])]
+                       result)
+
+                     :else item))
+    data))
+
+
+
 ;----- toptop -----------------------------------------------------------------------------
 
 #?(:clj

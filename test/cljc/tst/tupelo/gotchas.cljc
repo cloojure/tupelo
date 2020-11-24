@@ -23,7 +23,8 @@
                           throws? throws-not? define-fixture dospec check-isnt ]] )
   #?(:clj (:require
             [clojure.test.check.generators :as gen]
-            [clojure.test.check.properties :as prop] ))
+            [clojure.test.check.properties :as prop]
+            [clojure.walk :as walk]))
   )
 
 ; #todo add example for duplicates in clojure.core.combo
@@ -160,28 +161,32 @@
 ; map oddities
 (dotest
   (is= {:a 1 :b 2} (conj {:a 1} [:b 2])) ; MapEntry as 2-vec
-  (is= {:a 1 }     (conj {:a 1} nil)) ; this is ok => noop
-  (throws?         (conj {:a 1} [])) ; illegal
+  (is= {:a 1} (conj {:a 1} nil)) ; this is ok => noop
+  (throws? (conj {:a 1} [])) ; illegal
   (is= {:a 1 :b 2} (conj {:a 1} {:b 2})) ; this works, but shouldn't
 
-  (is= {:a 1}      (into {:a 1} nil))
-  (is= {:a 1}      (into {:a 1} []))
-  (throws?         (into {:a 1} [:b 2]))
+  (is= {:a 1} (into {:a 1} nil))
+  (is= {:a 1} (into {:a 1} []))
+  (throws? (into {:a 1} [:b 2]))
   (is= {:a 1 :b 2} (into {:a 1} {:b 2}))
 
   ; nil same as {} (empty map)
-  (is= {:a 1}      (assoc nil :a 1))
+  (is= {:a 1} (assoc nil :a 1))
   (is= {:a {:b 1}} (assoc-in nil [:a :b] 1))
   (is= {} (into {} nil))
 
   (is= nil (get {:a 1} [:x :y])) ; doesn't fail when should have been `get-in`
 
   ; clojure.lang.MapEntry passes sequential?  (argh!!!)
-  (let [m {:a 1 :b 2}
-        me (first m)]
-    (isnt (sequential? m))
+  (let [m       {:a 1 :b 2}
+        me      (first m)
+        avec     [1 2 3]
+        alst     (list 1 2 3)]
     (is= clojure.lang.MapEntry (type me))
-    (is (sequential? me))))
+    (is (sequential? me))
+    (isnt (t/xsequential? me))
+    (is (t/xsequential? avec))
+    (is (t/xsequential? alst))))
 
 (dotest ; regarding get & nil
   (is= nil (get nil :a))

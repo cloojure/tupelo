@@ -801,6 +801,12 @@
   [arg :- [s/Any]]
   (apply list arg))
 
+(s/defn xsequential? :- s/Bool
+  "Like clojure.core/sequential? EXCEPT returns false for clojure.lang.MapEntry"
+  [coll]
+  (and (sequential? coll)
+    (not (map-entry? coll))))
+
 (defmacro forv ; #todo rename for-vec ???
   "Like clojure.core/for but returns results in a vector.
   Wraps the loop body in a `do` as with `doseq`. Not lazy."

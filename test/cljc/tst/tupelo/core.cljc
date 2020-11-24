@@ -273,6 +273,18 @@
     (is= [1 2] (t/xvec [1 2]))))
 
 (dotest
+  ; clojure.lang.MapEntry passes sequential?  (argh!!!)
+  (let [m       {:a 1 :b 2}
+        me      (first m)
+        avec     [1 2 3]
+        alst     (list 1 2 3)]
+    (is= clojure.lang.MapEntry (type me))
+    (is (sequential? me))
+    (isnt (t/xsequential? me))
+    (is (t/xsequential? avec))
+    (is (t/xsequential? alst))))
+
+(dotest
   (let [inf-rng-1 (map inc (range))]
     (is= nil (t/first-or-nil []))
     (is= 1 (t/first-or-nil [1]))

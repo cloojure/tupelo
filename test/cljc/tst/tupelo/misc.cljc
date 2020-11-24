@@ -154,7 +154,21 @@
                              #?(:cljs cljs.core/UUID)))
     (is= (misc/uuid->sha uuid-val) "03a49d4729c971a0dc8ddf8d8847290416ad58d2")))
 
+(dotest
+  (let [mm (t/unlazy {:a 1
+                    :b (t/thru 21 30)
+                    :c 3
+                    :d 4
+                    :e 5
+                    :f 6
+                    :g 7
+                    :h 8
+                    :i 9
+                    :j 10})]
+    (is= (misc/walk->snippet mm)
+      {:a 1, :b [21 22 :<snip> 30], :<snip-key> :<snip-val>, :j 10})))
 
+;---------------------------------------------------------------------------------------------------
 #?(:clj
    (do
 
@@ -251,6 +265,7 @@
            (is= (get-in result [:add2-caller-info :fn-name]) "add2_parent" ))))
      ))
 
+;---------------------------------------------------------------------------------------------------
 #?(:cljs
    (do
      (dotest
