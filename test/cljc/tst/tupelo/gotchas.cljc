@@ -255,16 +255,22 @@
   (is= 9 ('b {'a 1} 9))
   (is= 9 ('b "dummy" 9))
   (is= 9 ('b :dummy 9))
-  (is= 9 ('b 1234567 9)))
+  (is= 9 ('b 1234567 9))
+
+  (is= [0 1 2 3 4]
+    (:or "abc" (range 5)) ; keyword function morphs into `get` function call
+    (get "abc" :or (range 5))))
 
 ; binding operates in parallel, not sequentially
-(def ^:dynamic xx nil)
-(def ^:dynamic yy nil)
-(dotest
+(def ^:dynamic xx :a)
+(def ^:dynamic yy :b)
+(dotest-focus
+  (is= xx :a)
+  (is= yy :b)
   (binding [xx 99
-            yy xx]
+            yy xx] ; gets the old `xx` value
     (is= 99 xx)
-    (is= nil yy)))
+    (is= :a yy)))
 
 ; every? not-every? some not-any? + has-some? has-none?
 (dotest             ; should throw if empty arg

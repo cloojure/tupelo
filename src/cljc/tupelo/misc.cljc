@@ -272,6 +272,11 @@
   [edn-data]
   (str->sha (pr-str (normalized-sorted edn-data))))
 
+; #todo add dynamic vars (& test):
+;   *snipped-sequential-leaders* (default 2)
+;   *snipped-sequential-trailers* (default 1)
+;   *snipped-map-leaders* (default 2)
+;   *snipped-map-trailers* (default 1)
 (defn walk->snippet
   [data]
   (walk/postwalk (fn [item]
@@ -281,8 +286,7 @@
                            b      (t/xsecond item)
                            c      :<snip>
                            d      (t/xlast item)
-                           result [a b c d]
-                           ]
+                           result [a b c d]]
                        result)
 
                      (and (map? item) (< 4 (count item)))
