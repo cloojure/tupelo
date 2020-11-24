@@ -272,7 +272,6 @@
   [edn-data]
   (str->sha (pr-str (normalized-sorted edn-data))))
 
-
 (defn walk->snippet
   [data]
   (walk/postwalk (fn [item]
@@ -287,10 +286,12 @@
                        result)
 
                      (and (map? item) (< 4 (count item)))
-                     (let [a      (first item)
-                           b      (second item)
+                     (let [ ; >> (spyx-pretty item)
+                           sorted-item (glue (t/sorted-map-generic) item)
+                           a      (first sorted-item)
+                           b      (second sorted-item)
                            c      [:<snip-key> :<snip-val>]
-                           d      (last item)
+                           d      (last sorted-item)
                            result (into (array-map) [a b c d])]
                        result)
 
