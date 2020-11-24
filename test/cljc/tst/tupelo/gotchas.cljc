@@ -175,7 +175,13 @@
   (is= {} (into {} nil))
 
   (is= nil (get {:a 1} [:x :y])) ; doesn't fail when should have been `get-in`
-  )
+
+  ; clojure.lang.MapEntry passes sequential?  (argh!!!)
+  (let [m {:a 1 :b 2}
+        me (first m)]
+    (isnt (sequential? m))
+    (is= clojure.lang.MapEntry (type me))
+    (is (sequential? me))))
 
 (dotest ; regarding get & nil
   (is= nil (get nil :a))
