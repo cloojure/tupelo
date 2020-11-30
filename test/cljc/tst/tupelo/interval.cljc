@@ -16,7 +16,7 @@
   (:require
     [clojure.test] ; sometimes this is required - not sure why
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty nl
-                               vals->map map-plain? forv glue keep-if]]
+                               vals->map xmap? forv glue keep-if]]
     [tupelo.interval :as interval]
     [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture]])

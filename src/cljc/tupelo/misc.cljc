@@ -59,10 +59,18 @@
                                (last coll)])]
         result))))
 
-
 (s/defn boolean->binary :- s/Int ; #todo => misc
   "Convert true => 1, false => 0"
   [arg :- s/Bool] (if arg 1 0))
+
+;---------------------------------------------------------------------------------------------------
+(defn walk-map->sorted
+  [data]
+  (walk/postwalk (fn [item]
+                   (t/cond-it-> item
+                     (t/xmap? it) (glue (sorted-map) it)))
+    data))
+
 
 ; -----------------------------------------------------------------------------
 ; #todo maybe move to tupelo.bytes ns
@@ -261,7 +269,7 @@
   (let [unlazy-item (fn [item]
                       (cond
                         (sequential? item) (vec item)
-                        (t/map-plain? item) (t/->sorted-map-generic item)
+                        (t/xmap? item) (t/->sorted-map-generic item)
                         (set? item) (t/->sorted-set-generic item)
                         :else item))
         result      (walk/postwalk unlazy-item edn-data)]

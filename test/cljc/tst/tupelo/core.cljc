@@ -19,7 +19,7 @@
     [clojure.walk :as walk]
     [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty nl
-                               vals->map map-plain? forv glue keep-if]]
+                               vals->map xmap? forv glue keep-if]]
     [tupelo.string :as ts]
     [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture]])
@@ -129,19 +129,20 @@
 (defrecord DummyRec
   [stuff])
 (dotest
-  (let [dummyRec (->DummyRec 5)]
-    (is (map? {:a 1})) ; expected
-    (isnt (record? {:a 1})) ; expected
+  (let [dummyRec (->DummyRec 5)
+        amap {:stuff 5}]
+    (is (map? amap)) ; expected
+    (isnt (record? amap)) ; expected
     (is (record? dummyRec)) ; expected
     (is (map? dummyRec)) ; *** problem ***
 
-    (is (map-plain? (sorted-map))) ; expected
-    (is (map-plain? {:a 1})) ; solution
-    (isnt (map-plain? dummyRec))) ;solution
+    (is (xmap? (sorted-map))) ; expected
+    (is (xmap? {:a 1})) ; solution
+    (isnt (xmap? dummyRec))) ;solution
 
   (let [vv [1 2 3]]
     (isnt (map? vv))
-    (isnt (map-plain? vv))))
+    (isnt (xmap? vv))))
 
 
 (dotest   ; #todo => tupelo.core

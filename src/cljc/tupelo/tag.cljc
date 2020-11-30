@@ -38,7 +38,7 @@
 (s/defn tagval-map? :- s/Bool
   "Returns true iff arg is a map that looks like a TagVal record:  {:tag :something :val 42}"
   [item]
-  (and (t/map-plain? item)
+  (and (t/xmap? item)
     (= #{:tag :val} (set (keys item)))))
 
 (s/defn tagval-with?

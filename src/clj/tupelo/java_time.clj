@@ -4,13 +4,34 @@
   (:require
     [clojure.string :as str]
     [clojure.walk :as walk]
-    [schema.core :as s] )
+    [schema.core :as s]
+    [tupelo.schema :as tsk]
+    )
   (:import
-    [java.time DayOfWeek ZoneId ZonedDateTime Instant Period]
+    [java.time LocalDate DayOfWeek ZoneId ZonedDateTime Instant Period]
     [java.time.format DateTimeFormatter]
     [java.time.temporal TemporalAdjusters Temporal TemporalAmount ChronoUnit]
     ))
 
+;---------------------------------------------------------------------------------------------------
+(def ^:no-doc EPOCH-START-DAY (LocalDate/parse "1970-01-01"))
+(s/defn LocalDate->daynum  :- s/Int
+  "Normalizes a LocalDate as the offset from 1970-1-1"
+  [arg :- LocalDate]
+  (.between ChronoUnit/DAYS EPOCH-START-DAY arg))
+
+(s/defn LocalDate->tagval :- tsk/KeyMap
+  "Converts a java.time.LocalDate object to a TagVal"
+  [ld :- LocalDate] {:LocalDate (str ld)})
+
+(defn walk-LocalDate->tagval
+  [data]
+  (walk/postwalk (fn [item]
+                   (cond-it-> item
+                     (instance? LocalDate it) (LocalDate->tagval it)))
+    data))
+
+;---------------------------------------------------------------------------------------------------
 (defn zoned-date-time?
   "Returns true iff arg is an instance of java.time.ZonedDateTime"
   [it] (instance? ZonedDateTime it)) ; #todo test all
@@ -74,6 +95,7 @@
                                                     (.atZone it zoneid-utc))
     :else (throw (IllegalArgumentException. (str "Invalid type found: " (class arg) " " arg)))))
 
+;---------------------------------------------------------------------------------------------------
 (def ^:dynamic *zone-id* zoneid-utc)
 
 (defmacro with-zoneid

@@ -7,8 +7,10 @@
     [tupelo.interval :as interval]
     [tupelo.string :as ts]
     )
-  (:import [java.time Duration ZoneId ZoneId ZonedDateTime ZonedDateTime LocalDateTime Instant Period]
-           [java.util Date] ))
+  (:import
+    [java.time Duration ZoneId ZoneId ZonedDateTime ZonedDateTime LocalDate LocalDateTime Instant Period]
+    [java.util Date]
+    ))
 
 (dotest
   (is (temporal? (ZonedDateTime/parse "2018-09-08T13:03:04.500Z")))
@@ -31,6 +33,12 @@
       {:zdt     (zoned-date-time 2018 9 1)
        :instant (->instant (zoned-date-time 2018 9 1))
        :joda-dt (->instant (joda/date-time 2018 9 1))})))
+
+(dotest-focus
+  (is= 0 (LocalDate->daynum (LocalDate/parse "1970-01-01")))
+  (is= 1 (LocalDate->daynum (LocalDate/parse "1970-01-02")))
+  (is= 31 (LocalDate->daynum (LocalDate/parse "1970-02-01")))
+  (is= 365 (LocalDate->daynum (LocalDate/parse "1971-01-01"))))
 
 (dotest
   (let [zone-ids          (vec (sort (ZoneId/getAvailableZoneIds))) ; all ZoneId String values

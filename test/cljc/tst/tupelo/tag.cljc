@@ -46,13 +46,13 @@
     (is (record? dum5)) ; expected
     (is (map? dum5)) ; *** problem ***
 
-    (is (t/map-plain? (sorted-map))) ; expected
-    (is (t/map-plain? {:a 1})) ; solution
-    (isnt (t/map-plain? dum5))) ;solution
+    (is (t/xmap? (sorted-map))) ; expected
+    (is (t/xmap? {:a 1})) ; solution
+    (isnt (t/xmap? dum5))) ;solution
 
   (let [vv [1 2 3]]
     (isnt (map? vv))
-    (isnt (t/map-plain? vv)))
+    (isnt (t/xmap? vv)))
 
   (let [sa  (t/->sym :a)
         tva (tt/->TagVal :sym sa)]

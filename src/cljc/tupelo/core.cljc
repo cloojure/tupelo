@@ -807,6 +807,11 @@
   (and (sequential? coll)
     (not (map-entry? coll))))
 
+(s/defn xmap? :- s/Bool
+  "Like clojure.core/map?, but returns false for records."
+  [arg :- s/Any]
+  (and (map? arg) (not (record? arg))) )
+
 (defmacro forv ; #todo rename for-vec ???
   "Like clojure.core/for but returns results in a vector.
   Wraps the loop body in a `do` as with `doseq`. Not lazy."
@@ -1299,11 +1304,6 @@
                  (when-not #(= 1 (count arg-seq))
                          (throw (ex-info "map must be of len=1" {:arg arg})))
                  (xfirst arg-seq))))
-
-(s/defn map-plain? :- s/Bool
-  "Like clojure.core/map?, but returns false for records."
-  [arg :- s/Any]
-  (and (map? arg) (not (record? arg))) )
 
 (defn glue
   "Glues together like collections:
@@ -2515,7 +2515,7 @@
   [coll       :- tsk/List
    index-val  :- s/Int]
   (when (nil? coll)
-    (throw (ex-info "idx: coll cannot be nil: " coll)))
+    (throw (ex-info "idx: coll cannot be nil: " (vals->map coll))))
   (let [data-vec (vec coll)
         N        (count data-vec)
         >>       (assert (pos? N))
