@@ -262,15 +262,15 @@
     (get "abc" :or (range 5))))
 
 ; binding operates in parallel, not sequentially
-(def ^:dynamic xx :a)
-(def ^:dynamic yy :b)
-(dotest-focus
-  (is= xx :a)
-  (is= yy :b)
-  (binding [xx 99
+(def ^:dynamic xx :x-old)
+(def ^:dynamic yy :b-old)
+(dotest
+  (is= xx :x-old)
+  (is= yy :b-old)
+  (binding [xx :x-new
             yy xx] ; gets the old `xx` value
-    (is= 99 xx)
-    (is= :a yy)))
+    (is= xx :x-new)
+    (is= yy :x-old))) ; ***** OLD VALUE *****
 
 ; every? not-every? some not-any? + has-some? has-none?
 (dotest             ; should throw if empty arg

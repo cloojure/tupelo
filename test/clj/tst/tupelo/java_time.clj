@@ -8,7 +8,8 @@
     [tupelo.string :as ts]
     )
   (:import
-    [java.time Duration ZoneId ZoneId ZonedDateTime ZonedDateTime LocalDate LocalDateTime Instant Period]
+    [java.time Duration Instant LocalDate LocalDateTime Period
+               ZoneId ZoneId ZonedDateTime ZonedDateTime]
     [java.util Date]
     ))
 
@@ -34,7 +35,7 @@
        :instant (->instant (zoned-date-time 2018 9 1))
        :joda-dt (->instant (joda/date-time 2018 9 1))})))
 
-(dotest-focus
+(dotest
   (is= 0 (LocalDate->daynum (LocalDate/parse "1970-01-01")))
   (is= 1 (LocalDate->daynum (LocalDate/parse "1970-01-02")))
   (is= 31 (LocalDate->daynum (LocalDate/parse "1970-02-01")))

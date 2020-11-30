@@ -39,6 +39,25 @@
   (is= "8410d26a" (tm/hash->hex ["xyz1" "abc"]))
   (is= "14e51713" (tm/hash->hex ["xyz2" "abc"])))
 
+;---------------------------------------------------------------------------------------------------
+(defrecord Dummy [a b c])
+(dotest
+  (let [arec  (->Dummy 1 2 3)
+        amap  {:a 1 :b 2 :c 3}
+        amap2 (misc/walk-rec->map arec)]
+    (is= (record? arec) true)
+    (is= (map? arec) true)
+
+    (is= (record? amap) false)
+    (is= (map? amap) true)
+
+    (is= (record? amap2) false)
+    (is= (map? amap2) true)
+
+    (isnt= amap arec)
+    (is= amap amap2)))
+
+;---------------------------------------------------------------------------------------------------
 (dotest
   (let [data [1 2 3]]
     (is= (t/type-name-str data) ; #todo => tst.tupelo.core

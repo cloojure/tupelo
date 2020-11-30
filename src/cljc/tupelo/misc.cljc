@@ -65,12 +65,28 @@
 
 ;---------------------------------------------------------------------------------------------------
 (defn walk-map->sorted
+  "Recursively walks a data structure, converting maps (but not records!) into (plain) sorted maps."
   [data]
   (walk/postwalk (fn [item]
                    (t/cond-it-> item
                      (t/xmap? it) (glue (sorted-map) it)))
     data))
 
+(defn walk-map->sorted-generic
+  "Recursively walks a data structure, converting maps (but not records!) into generic sorted maps.
+  A generic sort allows keys of different categories such as keyword, string, int, nil, etc."
+  [data]
+  (walk/postwalk (fn [item]
+                   (t/cond-it-> item
+                     (t/xmap? it) (glue (t/sorted-map-generic) it)))
+    data))
+
+(defn walk-rec->map
+  [data]
+  (walk/postwalk (fn [item]
+                   (t/cond-it-> item
+                     (record? it) (into {} it)))
+    data))
 
 ; -----------------------------------------------------------------------------
 ; #todo maybe move to tupelo.bytes ns
