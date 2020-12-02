@@ -14,15 +14,24 @@
     ))
 
 ;---------------------------------------------------------------------------------------------------
-(def ^:no-doc EPOCH-START-DAY (LocalDate/parse "1970-01-01"))
-(s/defn LocalDate->daynum  :- s/Int
-  "Normalizes a LocalDate as the offset from 1970-1-1"
-  [arg :- LocalDate]
-  (.between ChronoUnit/DAYS EPOCH-START-DAY arg))
+(def ^:no-doc epoch-reference-LocalDate (LocalDate/parse "1970-01-01"))
 
-(s/defn LocalDate->tagval :- tsk/KeyMap
-  "Converts a java.time.LocalDate object to a TagVal"
+(s/defn LocalDate->daynum :- s/Int
+  "Normalizes a LocalDate as the offset from 1970-1-1"
+  [arg :- LocalDate] (.between ChronoUnit/DAYS epoch-reference-LocalDate arg))
+
+(s/defn daynum->LocalDate :- LocalDate
+  "Returns a LocalDate given an offset from 1970-1-1"
+  [arg :- s/Int] (.plusDays epoch-reference-LocalDate arg))
+
+(s/defn LocalDate->tagval :- {:LocalDate s/Str}
+  "Converts a java.time.LocalDate object to a tagval"
   [ld :- LocalDate] {:LocalDate (str ld)})
+
+(s/defn tagval->LocalDate :- LocalDate
+  "Parses a tagval into a java.time.LocalDate"
+  [ldtv :- {:LocalDate s/Str}]
+  (LocalDate/parse (grab :LocalDate ldtv)))
 
 (defn walk-LocalDate->tagval
   [data]

@@ -39,7 +39,26 @@
   (is= 0 (LocalDate->daynum (LocalDate/parse "1970-01-01")))
   (is= 1 (LocalDate->daynum (LocalDate/parse "1970-01-02")))
   (is= 31 (LocalDate->daynum (LocalDate/parse "1970-02-01")))
-  (is= 365 (LocalDate->daynum (LocalDate/parse "1971-01-01"))))
+  (is= 365 (LocalDate->daynum (LocalDate/parse "1971-01-01")))
+  (doseq [ld-str ["1970-01-01"
+                  "1970-01-02"
+                  "1970-02-01"
+                  "1971-01-01"
+                  "1999-12-31"]]
+    (let [ld (LocalDate/parse ld-str)]
+      (is= ld (-> ld (LocalDate->daynum) (daynum->LocalDate)))))
+  (doseq [daynum [0 1 9 99 999 9999]]
+    (is= daynum (-> daynum (daynum->LocalDate) (LocalDate->daynum))))
+
+  (doseq [ld-str ["1970-01-01"
+                  "1970-01-02"
+                  "1970-02-01"
+                  "1971-01-01"
+                  "1999-12-31"]]
+    (let [ld (LocalDate/parse ld-str)
+          tv (LocalDate->tagval ld)]
+      (is= ld (-> ld (LocalDate->tagval) (tagval->LocalDate)))
+      (is= tv (-> tv (tagval->LocalDate) (LocalDate->tagval))))))
 
 (dotest
   (let [zone-ids          (vec (sort (ZoneId/getAvailableZoneIds))) ; all ZoneId String values
