@@ -94,7 +94,6 @@
   `(let [orig-validation-state# (s/fn-validation?)]
      (s/set-fn-validation! false)
      (let [result# (do ~@forms)]
-       ~@forms
        (s/set-fn-validation! orig-validation-state#)
        result#)))
 

@@ -2154,18 +2154,34 @@
     (clojure.core/map #(apply rel= %1 %2 opts)
       x-vals y-vals)))
 
+(comment
+  (defn deep-rel= ; #todo add sets
+    [a b]
+    (or (= a b)
+      (and (number? a) (number? b) (or (tupelo.core/rel= a b :tol 1e-5)
+                                     (tupelo.core/rel= a b :digits 5)))
+      (and (map? a) (map? b) (every? truthy? (map-let [[ak av] (->sorted-map-generic a)
+                                                       [bk bv] (->sorted-map-generic b)]
+                                               (and (deep-rel= ak bk) (deep-rel= av bv)))))
+      (and (sequential? a) (sequential? b) (every? truthy? (map-let [av a
+                                                                     bv b]
+                                                             (deep-rel= av bv)))))))
+
+; #todo => tupelo.misc
+; #todo add sets
+; #todo add ctx options map as 1st arg
+; #todo add var-args pairwise mode
 (defn deep-rel=
   [a b]
   (or (= a b)
-    (and (number? a) (number? b) (or (tupelo.core/rel= a b :tol 1e-10)
-                                   (tupelo.core/rel= a b :digits 10)))
-    (and (map? a) (map? b) (every? truthy? (map-let [[ak av] a
-                                                     [bk bv] b]
+    (and (number? a) (number? b) (or (tupelo.core/rel= a b :tol 1e-5)
+                                   (tupelo.core/rel= a b :digits 5)))
+    (and (map? a) (map? b) (every? truthy? (map-let [[ak av] (->sorted-map-generic a)
+                                                     [bk bv] (->sorted-map-generic b)]
                                              (and (deep-rel= ak bk) (deep-rel= av bv)))))
     (and (sequential? a) (sequential? b) (every? truthy? (map-let [av a
                                                                    bv b]
                                                            (deep-rel= av bv))))))
-
 
 
 (defn range-vec     ; #todo README;  maybe xrange?  maybe kill this?
@@ -2223,6 +2239,17 @@
     (when-not (<= start-int stop-int)
       (throw (ex-info "chars-thru: start-char must come before stop-char." (vals->map start-int stop-int))))
     char-vals))
+
+(s/defn repeat-dims :- [s/Any]
+  [dims :- [s/Num]
+   val :- s/Any]
+  (assert (pos? (count dims)))
+  (assert (every? int-nonneg? dims))
+  (let [dim-curr (xfirst dims)]
+    (vec
+      (if (= 1 (count dims))
+        (repeat dim-curr val)
+        (repeat dim-curr (repeat-dims (xrest dims) val))))))
 
 ; #todo rename to "get-in-safe" ???
 ; #todo make throw if not Associative arg (i.e. (get-in '(1 2 3) [0]) -> throw)

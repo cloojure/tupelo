@@ -1430,12 +1430,12 @@
         tweaked-5  (walk/postwalk (fn [it]
                                     (if-not (number? it)
                                       it
-                                      (+ it 1.0e-5)))
+                                      (+ it 1.0e-2)))
                      base)
         tweaked-13 (walk/postwalk (fn [it]
                                     (if-not (number? it)
                                       it
-                                      (+ it 1.0e-13)))
+                                      (+ it 1.0e-9)))
                      base)]
     (isnt= base tweaked-5)
     (isnt (t/deep-rel= base tweaked-5))
@@ -1644,6 +1644,28 @@
     (is (t/all-rel= [1.1 1.3 1.5 1.7] (t/thru 1.1 1.7 0.2) :digits 7))
     (is (t/all-rel= [1.1 1.2 1.3 1.4] (t/thru 1.1 1.4 0.1) :digits 7)))
   (throws? (t/thru 1.1 2.1 0.3)))
+
+(dotest
+  ; 1-D
+  (is= (t/repeat-dims [0] 9) [])
+  (is= (t/repeat-dims [1] 9) [9])
+  (is= (t/repeat-dims [3] 9) [9 9 9])
+
+  ; 2-D
+  (is= (t/repeat-dims [0 0] 9) [])
+  (is= (t/repeat-dims [1 0] 9) [[]])
+  (is= (t/repeat-dims [1 1] 9) [[9]])
+
+  (is= (t/repeat-dims [2 0] 9) [[]
+                              []])
+  (is= (t/repeat-dims [2 1] 9) [[9]
+                              [9]])
+  (is= (t/repeat-dims [2 3] 9) [[9 9 9]
+                              [9 9 9]])
+  ; error
+  (throws? (t/repeat-dims [] :a))
+  (throws? (t/repeat-dims [2 -3] :a))
+  (throws? (t/repeat-dims [-3 0] :a)))
 
 (dotest
   (is= [0 2 4 6 8] (t/keep-if even? (range 10))
