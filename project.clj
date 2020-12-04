@@ -1,4 +1,4 @@
-(defproject tupelo "20.12.01"
+(defproject tupelo "20.12.03"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -21,7 +21,7 @@
    [org.clojure/math.combinatorics "0.1.6"]
    [org.clojure/spec.alpha "0.2.187"]
    [org.clojure/test.check "1.1.0"]
-   [org.clojure/tools.reader "1.3.3"]
+   [org.clojure/tools.reader "1.3.4"]
 
    ; other libs
    [cheshire "5.10.0"] ; #todo switch to muuntaja/jsonista
@@ -30,7 +30,7 @@
    [danlentz/clj-uuid "0.1.9"]
    [joda-time/joda-time "2.10.8"]
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
-   [org.snakeyaml/snakeyaml-engine "2.1"]
+   [org.snakeyaml/snakeyaml-engine "2.2.1"]
    [prismatic/schema "1.1.12"]
 
    ; #todo clojures pprint doesn't work under graal native-image
