@@ -332,7 +332,6 @@
 (defn walk->snippet ; #todo => tupelo.misc
   [data]
   (walk/postwalk (fn [item]
-                   (spyx item)
                    (cond
                      (and (t/xsequential? item) (< 7 (count item))) (t/append (t/xtake 5 item)
                                                                       :<snip>
