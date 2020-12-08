@@ -16,6 +16,13 @@
 ;---------------------------------------------------------------------------------------------------
 (def ^:no-doc epoch-reference-LocalDate (LocalDate/parse "1970-01-01"))
 
+(s/defn LocalDate-str? :- s/Bool
+  "Returns true iff string is a legal LocalDate"
+  [arg]
+  (with-exception-default false
+    (LocalDate/parse arg)
+    true))    ; if no exception => passes
+
 (s/defn LocalDate->daynum :- s/Int
   "Normalizes a LocalDate as the offset from 1970-1-1"
   [arg :- LocalDate] (.between ChronoUnit/DAYS epoch-reference-LocalDate arg))
@@ -31,7 +38,6 @@
 (s/defn daynum->LocalDate-str :- s/Str
   "Converts an integer daynum like 10956 a LocalDate string like `1999-12-31` "
   [arg :- s/Int] (-> arg (daynum->LocalDate) (str)))
-
 
 (s/defn LocalDate->tagval :- {:LocalDate s/Str}
   "Converts a java.time.LocalDate object to a tagval"

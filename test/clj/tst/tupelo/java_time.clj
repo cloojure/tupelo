@@ -36,6 +36,10 @@
        :joda-dt (->instant (joda/date-time 2018 9 1))})))
 
 (dotest
+  (isnt (LocalDate-str? "12-31-1999"))
+  (isnt (LocalDate-str? "12-31-99"))
+  (is (LocalDate-str? "1999-12-31"))
+
   ; LocalDate <==> daynum
   (is= 0 (LocalDate->daynum (LocalDate/parse "1970-01-01")))
   (is= 1 (LocalDate->daynum (LocalDate/parse "1970-01-02")))
