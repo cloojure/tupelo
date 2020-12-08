@@ -24,6 +24,15 @@
   "Returns a LocalDate given an offset from 1970-1-1"
   [arg :- s/Int] (.plusDays epoch-reference-LocalDate arg))
 
+(s/defn LocalDate-str->daynum :- s/Int
+  "Parses a LocalDate string like `1999-12-31` to an integer daynum like 10956"
+  [arg :- s/Str] (-> arg (LocalDate/parse) (LocalDate->daynum)))
+
+(s/defn daynum->LocalDate-str :- s/Str
+  "Converts an integer daynum like 10956 a LocalDate string like `1999-12-31` "
+  [arg :- s/Int] (-> arg (daynum->LocalDate) (str)))
+
+
 (s/defn LocalDate->tagval :- {:LocalDate s/Str}
   "Converts a java.time.LocalDate object to a tagval"
   [ld :- LocalDate] {:LocalDate (str ld)})

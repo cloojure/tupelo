@@ -36,6 +36,7 @@
        :joda-dt (->instant (joda/date-time 2018 9 1))})))
 
 (dotest
+  ; LocalDate <==> daynum
   (is= 0 (LocalDate->daynum (LocalDate/parse "1970-01-01")))
   (is= 1 (LocalDate->daynum (LocalDate/parse "1970-01-02")))
   (is= 31 (LocalDate->daynum (LocalDate/parse "1970-02-01")))
@@ -58,7 +59,13 @@
     (let [ld (LocalDate/parse ld-str)
           tv (LocalDate->tagval ld)]
       (is= ld (-> ld (LocalDate->tagval) (tagval->LocalDate)))
-      (is= tv (-> tv (tagval->LocalDate) (LocalDate->tagval))))))
+      (is= tv (-> tv (tagval->LocalDate) (LocalDate->tagval)))))
+
+  ; string <==> daynum
+  (is= 9134 (LocalDate-str->daynum "1995-01-04"))
+  (is= 10956 (LocalDate-str->daynum "1999-12-31"))
+  (doseq [daynum [0 9 99 999 9999]]
+    (is= daynum (-> daynum (daynum->LocalDate-str) (LocalDate-str->daynum)))))
 
 (dotest
   (let [zone-ids          (vec (sort (ZoneId/getAvailableZoneIds))) ; all ZoneId String values
