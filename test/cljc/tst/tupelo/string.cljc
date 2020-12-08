@@ -156,8 +156,11 @@
 
 (dotest
   (is (= "abc def g hij kl"
-        (ts/collapse-whitespace "  abc    def			g
-                                     hij kl	 "))))
+        (ts/whitespace-collapse "  abc    def			g
+                                     hij kl	 ")))
+  (is (= "abc" (ts/whitespace-remove "abc")))
+  (is (= "" (ts/whitespace-remove ""))))
+
 (dotest
   (is (ts/nonblank= "a"))
   (is (ts/nonblank= "a" "  a "))

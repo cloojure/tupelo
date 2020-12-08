@@ -479,25 +479,25 @@
 ; spy stuff
 (dotest
   (is= "(+ 2 3) => 5"
-    (ts/collapse-whitespace
+    (ts/whitespace-collapse
       (with-out-str
         (is= 5 (spyx (+ 2 3))))))
 
   ; #todo -> readme
-  (is= (ts/collapse-whitespace "(inc 0) => 1
+  (is= (ts/whitespace-collapse "(inc 0) => 1
                                   (inc 1) => 2
                                   (inc 2) => 3 ")
-    (ts/collapse-whitespace
+    (ts/whitespace-collapse
       (with-out-str
         (is= 3 (spyx (inc 0)
                  (inc 1)
                  (inc 2))))))
 
   ; #todo -> readme
-  (is= (ts/collapse-whitespace ":some-kw
+  (is= (ts/whitespace-collapse ":some-kw
                                   (inc 1) => 2
                                   (inc 2) => 3 ")
-    (ts/collapse-whitespace
+    (ts/whitespace-collapse
       (with-out-str
         (is= 3 (spyx :some-kw
                  (inc 1)
@@ -506,10 +506,10 @@
 ; #todo blog about this nested (is= ...) testing technique
 (dotest
   (is=
-    (ts/collapse-whitespace " a => 1
+    (ts/whitespace-collapse " a => 1
                                b => 5
                                (-> (inc a) (* 2) inc) => 5 ")
-    (ts/collapse-whitespace
+    (ts/whitespace-collapse
       (with-out-str
         (is= 13
           (t/let-spy [a (inc 0)
@@ -517,9 +517,9 @@
                      (spyx (-> (inc a) (* 2) inc))
             (-> b (* 2) (+ 3)))))))
 
-  (is= (ts/collapse-whitespace " a => 1
+  (is= (ts/whitespace-collapse " a => 1
                                   b => 5 ")
-    (ts/collapse-whitespace
+    (ts/whitespace-collapse
       (with-out-str
         (is= 17
           (t/let-spy [a (inc 0)
@@ -537,33 +537,33 @@
                                   (swap! side-effect-cum-sum + result)
                                   result))]
       (is= ":hi => 5"
-        (ts/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :hi))))
+        (ts/whitespace-collapse (with-out-str (spy (side-effect-add! 2 3) :hi))))
       (is= ":hi => 5"
-        (ts/collapse-whitespace (with-out-str (spy :hi (side-effect-add! 2 3)))))
+        (ts/whitespace-collapse (with-out-str (spy :hi (side-effect-add! 2 3)))))
       (is= ":after-inc => 2"
-        (ts/collapse-whitespace (with-out-str (-> 1
+        (ts/whitespace-collapse (with-out-str (-> 1
                                                 (inc)
                                                 (spy :after-inc) ; add a custom keyword message
                                                 (* 2)))))
       (is= ":after-inc => 2"
-        (ts/collapse-whitespace (with-out-str (->> 1
+        (ts/whitespace-collapse (with-out-str (->> 1
                                                 (inc)
                                                 (spy :after-inc) ; add a custom keyword message
                                                 (* 2)))))
 
       (is= "(side-effect-add! 2 3) => 5"
-        (ts/collapse-whitespace (with-out-str (spyx (side-effect-add! 2 3)))))
+        (ts/whitespace-collapse (with-out-str (spyx (side-effect-add! 2 3)))))
       (is= 15 @side-effect-cum-sum))
 
     (is= ":first => 5 :second => 25"
-      (ts/collapse-whitespace
+      (ts/whitespace-collapse
         (with-out-str (-> 2
                         (+ 3)
                         (spy :first)
                         (* 5)
                         (spy :second)))))
     (is= ":first => 5 :second => 25"
-      (ts/collapse-whitespace
+      (ts/whitespace-collapse
         (with-out-str (->> 2
                         (+ 3)
                         (spy :first)
@@ -579,16 +579,16 @@
                                   result))
           ]
       (is= ":value => 5"
-        (ts/collapse-whitespace (with-out-str (spy (side-effect-add! 2 3) :value))))
+        (ts/whitespace-collapse (with-out-str (spy (side-effect-add! 2 3) :value))))
       (is= ":value => 5"
-        (ts/collapse-whitespace (with-out-str (spy :value (side-effect-add! 2 3)))))
+        (ts/whitespace-collapse (with-out-str (spy :value (side-effect-add! 2 3)))))
       (is= 10 @side-effect-cum-sum)
 
-      (is= ":value => 5" (ts/collapse-whitespace (with-out-str (spy :value (+ 2 3)))))
+      (is= ":value => 5" (ts/whitespace-collapse (with-out-str (spy :value (+ 2 3)))))
       ; (is= ":spy => 5" (ts/collapse-whitespace (with-out-str (spy (+ 2 3)))))
 
       (is= "(str \"abc\" \"def\") => \"abcdef\""
-        (ts/collapse-whitespace (with-out-str (spyx (str "abc" "def")))))
+        (ts/whitespace-collapse (with-out-str (spyx (str "abc" "def")))))
 
       ; (throws? (spy :some-tag "some-str" 42))  ; #todo how test in cljs?
       )))
@@ -616,9 +616,9 @@
                      (spy :msg1 (+ 2 3))
                      (fn2)))
         fn0 (fn [] (spy :msg0 (+ 2 3)))]
-    (is= ":msg2 => 5" (ts/collapse-whitespace (with-out-str (fn2))))
-    (is= ":msg1 => 5 :msg2 => 5" (ts/collapse-whitespace (with-out-str (fn1))))
-    (is= ":msg0 => 5" (ts/collapse-whitespace (with-out-str (fn0))))))
+    (is= ":msg2 => 5" (ts/whitespace-collapse (with-out-str (fn2))))
+    (is= ":msg1 => 5 :msg2 => 5" (ts/whitespace-collapse (with-out-str (fn1))))
+    (is= ":msg0 => 5" (ts/whitespace-collapse (with-out-str (fn0))))))
 
 (dotest
   (is= 3 (t/let-some [a 1
@@ -3169,11 +3169,11 @@
      (dotest
        (let [val1 (into (sorted-map) {:a 1 :b 2})]
          (is= "val1 => <#clojure.lang.PersistentTreeMap {:a 1, :b 2}>"
-           (ts/collapse-whitespace (with-out-str (t/spyxx val1))))
+           (ts/whitespace-collapse (with-out-str (t/spyxx val1))))
          (is= "(+ 2 3) => <#java.lang.Long 5>"
-           (ts/collapse-whitespace (with-out-str (t/spyxx (+ 2 3)))))
+           (ts/whitespace-collapse (with-out-str (t/spyxx (+ 2 3)))))
          (is= "(mapv inc (range 3)) => <#clojure.lang.PersistentVector [1 2 3]>"
-           (ts/collapse-whitespace (with-out-str (t/spyxx (mapv inc (range 3))))))))
+           (ts/whitespace-collapse (with-out-str (t/spyxx (mapv inc (range 3))))))))
 
      ;(sp/def ::vector (sp/coll-of clj/any :kind vector?))
      ;(dotest

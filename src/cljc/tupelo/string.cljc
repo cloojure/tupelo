@@ -52,10 +52,10 @@
 (def phonetic-alphabet
   "A map from keyword character to string phonetic name:
 
-       {:a \"alpha\"    :b \"bravo\"    :c \"charlie\"  :d \"delta\"    :e \"echo\"     :f \"foxtrot\"  :g \"golf\"
-        :h \"hotel\"    :i \"india\"    :j \"juliett\"  :k \"kilo\"     :l \"lima\"     :m \"mike\"     :n \"november\"
-        :o \"oscar\"    :p \"papa\"     :q \"quebec\"   :r \"romeo \"   :s \"sierra\"   :t \"tango\"    :u \"uniform\"
-        :v \"victor\"   :w \"whiskey\"  :x \"x-ray\"    :y \"yankee\"   :z \"zulu\" }
+       {:a 'alpha'    :b 'bravo'    :c 'charlie'  :d 'delta'    :e 'echo'     :f 'foxtrot'  :g 'golf'
+        :h 'hotel'    :i 'india'    :j 'juliett'  :k 'kilo'     :l 'lima'     :m 'mike'     :n 'november'
+        :o 'oscar'    :p 'papa'     :q 'quebec'   :r 'romeo '   :s 'sierra'   :t 'tango'    :u 'uniform'
+        :v 'victor'   :w 'whiskey'  :x 'x-ray'    :y 'yankee'   :z 'zulu' }
     "
    {:a "alpha"    :b "bravo"    :c "charlie"  :d "delta"    :e "echo"     :f "foxtrot"  :g "golf"
     :h "hotel"    :i "india"    :j "juliett"  :k "kilo"     :l "lima"     :m "mike"     :n "november"
@@ -111,14 +111,22 @@
         (for [line lines]
           (tab-space-oneline-impl tab-size line))))))
 
-(defn collapse-whitespace ; #todo readme & blog
+(s/defn whitespace-collapse  :- s/Str ; #todo readme & blog
   "Replaces all consecutive runs of whitespace characters (including newlines) with a single space.
    Removes any leading or trailing whitespace. Returns a string composed of all tokens
    separated by a single space."
-  [arg]
+  [arg :- s/Str]
   (-> arg
     clojure.string/trim
     (clojure.string/replace #"\s+" " ")))
+
+(s/defn whitespace-remove :- s/Str ; #todo readme & blog
+  "Removes all whitespace characters (including newlines) from string. "
+  [arg :- s/Str]
+  (clojure.string/replace arg #"\s+" ""))
+
+(def ^:deprecated collapse-whitespace
+  whitespace-collapse)
 
 ; #todo need test
 (defn not-blank?
@@ -130,7 +138,7 @@
   "Compares strings for equality using tupelo.misc/collapse-whitespace.
    Equivalent to separating tokens by whitespace and comparing the resulting sequences."
   [& args :- [s/Str]]
-  (let [ws-collapsed-args (mapv collapse-whitespace args)]
+  (let [ws-collapsed-args (mapv whitespace-collapse args)]
     (apply = ws-collapsed-args)))
 
 (s/defn nonblank-lines= :- s/Bool ; #todo readme & blog
@@ -138,7 +146,7 @@
   [& args :- [s/Str]]
   (let [nonblank-args-lines (t/forv [tgt args]
                               (t/forv [line (clojure.string/split-lines tgt)]
-                                (collapse-whitespace line)))]
+                                (whitespace-collapse line)))]
     (apply = nonblank-args-lines)))
 
 (s/defn lowercase= :- s/Bool ; #todo readme & blog

@@ -329,7 +329,9 @@
 
 ; #todo need plain snip fn, or maybe snip len by dimension e.g. [2 5 9]
 ; #todo need take-by-dimension e.g. [2 5 9] (recursive, and retain type sequential/map/set)
-(defn walk->snippet ; #todo => tupelo.misc
+; #todo:  (use 'flatland.ordered.map)
+; #todo:  (ordered-map :b 2 :a 1 :d 4)
+(defn walk->snippet
   [data]
   (walk/postwalk (fn [item]
                    (cond
