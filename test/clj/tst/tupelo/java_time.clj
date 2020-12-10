@@ -1,4 +1,5 @@
-(ns tst.tupelo.java-time
+(ns  ^:test-refresh/focus
+  tst.tupelo.java-time
   (:refer-clojure :exclude [range])
   (:use tupelo.java-time tupelo.core tupelo.test)
   (:require
@@ -146,16 +147,16 @@
 
 (dotest
   (let [zdt (zoned-date-time 2018 9 8,, 2 3 4)]
-    (is= (string-date-iso zdt)            "2018-09-08")
-    (is= (string-date-time-iso zdt)       "2018-09-08T02:03:04Z")
-    (is= (string-date-time-nice zdt)      "2018-09-08 02:03:04Z")
+    (is= (->str-iso-date zdt)            "2018-09-08")
+    (is= (->str-date-time-iso zdt)       "2018-09-08T02:03:04Z")
+    (is= (->str-date-time-nice zdt)      "2018-09-08 02:03:04Z")
     (is= (iso-date-str zdt)            "2018-09-08") ; deprecated
     (is= (iso-date-time-str zdt) "2018-09-08T02:03:04Z")) ; deprecated
   (let [zdt (zoned-date-time 2018 9 8,, 2 3 4,, 123456789)]
-    (is= (string-date-compact zdt)        "20180908" )
-    (is= (string-date-time-nice zdt)      "2018-09-08 02:03:04.123456789Z")
-    (is= (string-date-time-compact zdt)   "20180908-020304" )
-    (is= (string-date-time-hyphens zdt)   "2018-09-08-02-03-04")
+    (is= (->str-date-compact zdt)        "20180908" )
+    (is= (->str-date-time-nice zdt)      "2018-09-08 02:03:04.123456789Z")
+    (is= (->str-date-time-compact zdt)   "20180908-020304" )
+    (is= (->str-date-time-hyphens zdt)   "2018-09-08-02-03-04")
     (is= (iso-date-str zdt)            "2018-09-08") ; deprecated
     (is= (iso-date-time-str zdt)       "2018-09-08T02:03:04.123456789Z") ; deprecated
   ))
@@ -341,8 +342,8 @@
     (is= zdt-str "2019-02-03T04:05:06.789Z")
     (is= (.toString jud) "Sat Feb 02 20:05:06 PST 2019")
 
-    (is= "2019-02-03T04:05:06.789Z" (string-date-time-iso zdt))
-    (is= "2019-02-03T04:05:06.789Z" (string-date-time-iso instant))
+    (is= "2019-02-03T04:05:06.789Z" (->str-date-time-iso zdt))
+    (is= "2019-02-03T04:05:06.789Z" (->str-date-time-iso instant))
 
     (is= millis
       (iso-str->millis iso-str)
@@ -350,7 +351,7 @@
       (iso-str->millis zdt-str))
 
     (let [timestamp          (java.sql.Timestamp. millis)
-          timestamp-from-str (iso-str->timestamp iso-str)
+          timestamp-from-str (iso-str->sql-timestamp iso-str)
           timestamp-str      (.toString timestamp)
           timestamp-str-gmt  (.toGMTString timestamp)]
       (is= timestamp-str "2019-02-02 20:05:06.789") ; uses default TZ (US/Pacific in this example)
@@ -365,7 +366,7 @@
   (let [str-nice "2019-09-19 18:09:35Z"
         result   (parse-iso-str-nice str-nice)]
     (is (instance? Instant result))
-    (is= str-nice (string-date-time-nice result))))
+    (is= str-nice (->str-date-time-nice result))))
 
 
 

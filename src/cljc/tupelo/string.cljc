@@ -5,7 +5,7 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tupelo.string
-  "Tupelo - Making Clojure even sweeter"
+  "A superset of `clojure.string` with many added functions."
   (:refer-clojure :exclude [drop take contains? format replace reverse ])
   (:require
     [clojure.string]

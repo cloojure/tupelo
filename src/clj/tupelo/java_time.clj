@@ -299,11 +299,6 @@
     trunc-to-day
     (.with (TemporalAdjusters/previousOrSame DayOfWeek/SATURDAY))))
 
-(defn string-date-iso ; #todo maybe inst->iso-date
-  "Returns a string like `2018-09-05`"
-  [zdt]
-  (.format zdt DateTimeFormatter/ISO_LOCAL_DATE))
-
 (defn now->iso-str
   "Returns an ISO string representation of the current time,
   like '2019-02-19T18:44:01.123456Z' "
@@ -321,45 +316,50 @@
     (.toString)))
 
 ; #todo rethink these and simplify/rename
-(defn string-date-compact
+(defn ->str-iso-date ; #todo maybe inst->iso-date
+  "Returns a string like `2018-09-05`"
+  [zdt]
+  (.format zdt DateTimeFormatter/ISO_LOCAL_DATE))
+
+(defn ->str-date-compact
   "Returns a compact date-time string like `2018-09-05 23:05:19.123Z` => `20180905` "
   [timestamp]
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd")]
     (.format timestamp formatter)))
 
-(defn string-date-time-iso ; #todo maybe inst->iso-date-time
+(defn ->str-date-time-iso ; #todo maybe inst->iso-date-time
   "Returns a ISO date-time string like `2018-09-05T23:05:19.123Z`"
   [timestamp]
   (str (->instant timestamp))) ; uses DateTimeFormatter/ISO_INSTANT
 
-(defn string-date-time-compact
+(defn ->str-date-time-compact
   "Returns a compact date-time string like `2018-09-05 23:05:19.123Z` => `20180905-230519` "
   [timestamp]
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd-HHmmss")]
     (.format timestamp formatter)))
 
-(defn string-date-time-hyphens
+(defn ->str-date-time-hyphens
   "Returns a compact date-time string like `2018-09-05 23:05:19.123Z` => `2018-09-05-23-05-19` "
   [timestamp]
   (let [formatter (DateTimeFormatter/ofPattern "yyyy-MM-dd-HH-mm-ss")]
     (.format timestamp formatter)))
 
-(defn string-date-time-nice
+(defn ->str-date-time-nice
   "Returns an ISO date-time string like `2018-09-05 23:05:19.123Z`
   (with a space instead of `T`)"
   [timestamp]
-  (let [sb (StringBuffer. (string-date-time-iso timestamp))]
+  (let [sb (StringBuffer. (->str-date-time-iso timestamp))]
     (.setCharAt sb 10 \space)
     (str sb)))
 
-(s/defn iso-str->millis
+(s/defn iso-str->millis :- s/Int
   "Convert an ISO 8601 string to a java.sql.Date"
   [iso-datetime-str :- s/Str]
   (-> iso-datetime-str
     (Instant/parse)
     (.toEpochMilli)))
 
-(s/defn iso-str->timestamp
+(s/defn iso-str->sql-timestamp
   "Convert an ISO 8601 string to a java.sql.Date"
   [iso-datetime-str :- s/Str]
   (java.sql.Timestamp.
@@ -399,11 +399,11 @@
 ;-----------------------------------------------------------------------------
 (defn ^:deprecated iso-date-str
   "DEPRECATED: use `string-date-iso`"
-  [& args] (apply string-date-iso args))
+  [& args] (apply ->str-iso-date args))
 
 (defn ^:deprecated iso-date-time-str
   "DEPRECATED: use `string-date-time-iso`"
-  [& args] (apply string-date-time-iso args))
+  [& args] (apply ->str-date-time-iso args))
 ;-----------------------------------------------------------------------------
 
 ; #todo make work for relative times (LocalDate, LocalDateTime, etc)
@@ -442,6 +442,5 @@
     (assoc it 10 \T)
     (str/join it)
     (Instant/parse it)))
-
 
 
