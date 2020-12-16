@@ -56,6 +56,20 @@
     data))
 
 ;---------------------------------------------------------------------------------------------------
+(s/defn ->quarter :- tsk/Quarter
+  "Given a date-ish value (e.g. LocalDate, et al), returns the quarter of the year
+  as one of #{ :Q1 :Q2 :Q3 :Q4 } "
+  [arg]
+  (let [quarters-vec [:Q1 :Q2 :Q3 :Q4]
+        month-value  (.getMonthValue arg) ; 1..12
+        month-idx    (dec month-value) ; 0..11
+        quarter-idx  (quot month-idx 4)
+        result       (nth quarters-vec quarter-idx)]
+    result))
+
+
+
+;---------------------------------------------------------------------------------------------------
 (defn zoned-date-time?
   "Returns true iff arg is an instance of java.time.ZonedDateTime"
   [it] (instance? ZonedDateTime it)) ; #todo test all
@@ -209,6 +223,11 @@
 
 ; #todo need version of < and <= (N-arity) for both ZDT/Instant
 
+; #todo: make a generic (truncate-to :day)
+; #todo: make a generic (previous :tuesday)
+; #todo: make a generic (previous-or-same :tuesday)
+; #todo: make a generic (next :tuesday)
+; #todo: make a generic (next-or-same :tuesday)
 (s/defn trunc-to-second
   "Returns a ZonedDateTime truncated to first instant of the second."
   [zdt :- DateTimeStamp]

@@ -1,4 +1,4 @@
-(ns  ^:test-refresh/focus
+(ns     ^:test-refresh/focus
   tst.tupelo.java-time
   (:refer-clojure :exclude [range])
   (:use tupelo.java-time tupelo.core tupelo.test)
@@ -9,10 +9,22 @@
     [tupelo.string :as ts]
     )
   (:import
-    [java.time Duration Instant LocalDate LocalDateTime Period
-               ZoneId ZoneId ZonedDateTime ZonedDateTime]
+    [java.time Duration Instant MonthDay YearMonth LocalDate LocalDateTime Period
+               ZoneId ZoneId ZonedDateTime]
     [java.util Date]
     ))
+(dotest
+  (let [month->quarter [:Q1 :Q1 :Q1 :Q1 :Q2 :Q2 :Q2 :Q2 :Q3 :Q3 :Q3 :Q3]]
+    (is= month->quarter
+      (forv [month-num (thru 1 12)] (->quarter (YearMonth/of 2013 month-num))))
+    (is= month->quarter
+      (forv [month-num (thru 1 12)] (->quarter (MonthDay/of month-num 13)))) ; 13'th of each month
+    (is= month->quarter
+      (forv [month-num (thru 1 12)] (->quarter (LocalDate/parse (format "2013-%02d-19" month-num)))))
+    (is= month->quarter
+      (forv [month-num (thru 1 12)] (->quarter (LocalDateTime/parse (format "2013-%02d-19T12:13:14" month-num)))))
+    (is= month->quarter
+      (forv [month-num (thru 1 12)] (->quarter (ZonedDateTime/parse (format "2013-%02d-19T12:13:14Z" month-num)))))))
 
 (dotest
   (is (temporal? (ZonedDateTime/parse "2018-09-08T13:03:04.500Z")))
@@ -367,16 +379,6 @@
         result   (parse-iso-str-nice str-nice)]
     (is (instance? Instant result))
     (is= str-nice (->str-date-time-nice result))))
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -16,6 +16,8 @@
 (def MapEntry #?(:clj  clojure.lang.MapEntry
                  :cljs cljs.core.MapEntry))
 
+(def TagVal {s/Keyword s/Any}) ; and length=1
+
 (def Set
   "Either a Clojure hash-set or a java.util.HashSet"
   #?(:clj  (s/if set? #{s/Any} java.util.HashSet)
@@ -44,6 +46,8 @@
 (def EnliveNode
   "An Enlive tree node"
   {:tag s/Any :attrs KeyMap :content [s/Any]})
+
+(def Quarter (s/enum :Q1 :Q2 :Q3 :Q4))
 
 (def Tuple
   "A specific type of sequential collection, typically a vector of constant length where each
