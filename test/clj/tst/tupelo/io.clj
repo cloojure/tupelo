@@ -23,7 +23,7 @@
 (def dummy-file (create-temp-file "tst-tupelo-io" ".tmp"))
 
 (dotest
-  (let [path-str "/tmp/a/b/c/x.txt"
+  (let [path-str "/tmp/tupelo/a/b/c/x.txt"
         path     (->Path path-str)
         file     (->File path-str)
         ]
@@ -36,6 +36,7 @@
     (do (delete-file-if-exists path-str)
         (isnt (delete-file-if-exists path-str))) ; returns false if not found
     (isnt (file-exists? path-str))
+    (mkdirs-parent file)
     (is (.createNewFile file))
     (is (file-exists? path-str))
     (is (delete-file-if-exists path-str))
@@ -53,11 +54,13 @@
     (do (delete-file-if-exists path)
         (isnt (delete-file-if-exists path))) ; returns false if not found
     (isnt (file-exists? path))
+    (mkdirs-parent file)
     (is (.createNewFile file))
     (is (file-exists? path))
     (is (delete-file-if-exists path))
     (isnt (file-exists? path))
-    )
+
+    (delete-directory-recursive  "/tmp/tupelo"))
 
   ; Create nested dirs & files, then delete recursively
   (let [tmp-path       (create-temp-directory "some-stuff")

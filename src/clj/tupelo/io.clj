@@ -125,9 +125,9 @@
 (s/defn delete-directory-recursive
   "Recursively deletes a directory and all its contents. Returns count of objects deleted.
   Idempotent in case dir is already deleted."
-  [dir-name :- s/Str]
+  [arg :- (s/cond-pre s/Str File Path)]
   (with-nil-default 0
-    (let [file      (->File dir-name)
+    (let [file      (->File arg)
           num-files (count (file-seq file))]
       (when (.exists file)
         (it-> file
