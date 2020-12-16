@@ -4,7 +4,8 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns tst.tupelo.io
+(ns ^:test-refresh/focus
+  tst.tupelo.io
   (:use tupelo.io tupelo.core tupelo.test)
   (:refer-clojure :exclude [read-string])
   (:require
@@ -43,6 +44,7 @@
     (do (delete-file-if-exists file)
         (isnt (delete-file-if-exists file))) ; returns false if not found
     (isnt (file-exists? file))
+    (mkdirs-parent file)
     (is (.createNewFile file))
     (is (file-exists? file))
     (is (delete-file-if-exists file))

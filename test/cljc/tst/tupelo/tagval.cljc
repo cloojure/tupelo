@@ -27,7 +27,7 @@
 
 (defrecord DummyRec [dum])
 
-(dotest-focus
+(dotest
   (let [tv     (tv/new :a 1)
         tv-str (with-out-str (println tv))]
     (is= {:a 1} tv)
