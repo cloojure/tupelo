@@ -61,3 +61,21 @@
   (t/with-map-vals range [lower upper]
     (t/compare-less-equal lower val upper)))
 
+(s/defn ->vals-slice ; #todo => tupelo.interval
+  "For an Interval of integer values, returns to a slice (half-open range) like:
+       (is= [5 6 7] (->slice-int (interval/new 5 8))) "
+  [itvl :- Interval]  ; #todo: optional step-size (default=1), could be ChronoUnit or 1 day for LocalDateStr
+  (t/with-map-vals itvl [lower upper]
+    (assert (every? int? [lower upper]))
+    (range lower upper)))
+
+(s/defn ->vals-thru ; #todo => tupelo.interval
+  "For an Interval of integer values, returns to a `thru` (closed range) like:
+       (is= [5 6 7 8] (->thru-int (interval/new 5 8))) "
+  [itvl :- Interval]
+  (t/with-map-vals itvl [lower upper]
+    (assert (every? int? [lower upper]))
+    (t/thru lower upper)))
+
+; #todo maybe add (tupelo.interval/sample interval
+

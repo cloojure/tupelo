@@ -54,3 +54,8 @@
     (is= open-vals [2 3 4])
     (is= slice-vals [1 2 3 4])
     (is= closed-vals [1 2 3 4 5])))
+
+(dotest
+  (is= [5 6 7] (interval/->vals-slice (interval/new 5 8)))
+  (is= [5 6 7 8] (interval/->vals-thru (interval/new 5 8))))
+

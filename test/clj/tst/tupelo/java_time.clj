@@ -5,6 +5,7 @@
   (:require
     [clj-time.core :as joda]
     [clojure.string :as str]
+    [tupelo.core :as t]
     [tupelo.interval :as interval]
     [tupelo.string :as ts]
     )
@@ -25,6 +26,61 @@
       (forv [month-num (thru 1 12)] (->quarter (LocalDateTime/parse (format "2013-%02d-19T12:13:14" month-num)))))
     (is= month->quarter
       (forv [month-num (thru 1 12)] (->quarter (ZonedDateTime/parse (format "2013-%02d-19T12:13:14Z" month-num)))))))
+
+(dotest
+  (is= 9134 (LocalDate-str->daynum "1995-01-04"))
+  (is= 10956 (LocalDate-str->daynum "1999-12-31"))
+  (doseq [daynum [0 9 99 999 9999]]
+    (is= daynum (-> daynum (daynum->LocalDate-str) (LocalDate-str->daynum)))))
+
+(dotest
+  (dotest
+    (let [date (LocalDate->Date (LocalDate/parse "1999-12-31"))]
+      (is (instance? java.util.Date date))
+      (is= "1999-12-31T00:00:00Z" (str (.toInstant date))))
+    (let [inst (LocalDate->Instant (LocalDate/parse "1999-12-31"))]
+      (is (instance? java.time.Instant inst))
+      (is= "1999-12-31T00:00:00Z" (str inst))))
+
+  (dotest
+    (let [ld (LocalDate/parse "1995-01-04")]
+      (is= {:LocalDate "1995-01-04"} (LocalDate->tagval ld))
+      (is= (walk-LocalDate->tagval (LocalDate->trailing-interval ld 5))
+        #tupelo.interval.Interval{:lower {:LocalDate "1994-12-30"},
+                                  :upper {:LocalDate "1995-01-04"}}))))
+
+(dotest
+  (let [localdates-30 (forv [day (thru 1 30)]
+                        (LocalDate/parse (format "2019-12-%02d" day)))]
+    ; LocalDate-str (ISO text string) sorts correctly
+    (let [dates-1 (shuffle localdates-30)
+          dates-2 (sort dates-1)]
+      (is= localdates-30 dates-2))
+
+    ; LocalDate-str values work with compare
+    (let [d1 (nth localdates-30 0)
+          d2 (nth localdates-30 1)
+          d3 (nth localdates-30 2)]
+      (is (t/compare-less d1 d2 d3))
+      (isnt (t/compare-less d2 d2 d3))
+      (is (t/compare-less-equal d1 d2 d3))
+      (is (t/compare-less-equal d2 d2 d3))
+      (isnt (t/compare-less-equal d3 d2 d3))
+
+      (is= 1 (LocalDate-interval->days (interval/new d1 d2)))
+      (is= [0 1 2 3 4]
+        (localdates->day-idxs (take 5 localdates-30))
+        (localdates->day-idxs (take 5 (drop 9 localdates-30)))))
+
+    (let [ld-2019-12-05 (LocalDate/parse "2019-12-05")
+          ld-2019-12-09 (LocalDate/parse "2019-12-09")
+          ld-range      (interval/new ld-2019-12-05 ld-2019-12-09)
+          open-5-9      (keep-if #(interval/open-contains? ld-range %) localdates-30)
+          slice-5-9     (keep-if #(interval/slice-contains? ld-range %) localdates-30)
+          thru-5-9      (keep-if #(interval/closed-contains? ld-range %) localdates-30)]
+      (is= (mapv str open-5-9) ["2019-12-06" "2019-12-07" "2019-12-08"])
+      (is= (mapv str slice-5-9) ["2019-12-05" "2019-12-06" "2019-12-07" "2019-12-08"])
+      (is= (mapv str thru-5-9) ["2019-12-05" "2019-12-06" "2019-12-07" "2019-12-08" "2019-12-09"]))))
 
 (dotest
   (is (temporal? (ZonedDateTime/parse "2018-09-08T13:03:04.500Z")))

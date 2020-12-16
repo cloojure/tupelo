@@ -5,17 +5,42 @@
     [clojure.string :as str]
     [clojure.walk :as walk]
     [schema.core :as s]
+    [tupelo.interval :as interval]
     [tupelo.schema :as tsk]
     )
   (:import
     [java.time LocalDate DayOfWeek ZoneId ZonedDateTime Instant Period]
     [java.time.format DateTimeFormatter]
     [java.time.temporal TemporalAdjusters Temporal TemporalAmount ChronoUnit]
+    [java.util Date]
+    [tupelo.interval Interval]
     ))
+
+;-----------------------------------------------------------------------------
+; #todo study:  clojure.java.io/Coercions
+; #todo study:  clojure.java.io/file
+
+;---------------------------------------------------------------------------------------------------
+(comment
+  (def months-q1 #{Month/JANUARY Month/FEBRUARY Month/MARCH})
+  (def months-q2 #{Month/APRIL Month/MAY Month/JUNE})
+  (def months-q3 #{Month/JULY Month/AUGUST Month/SEPTEMBER})
+  (def months-q4 #{Month/OCTOBER Month/NOVEMBER Month/DECEMBER}))
 
 ;---------------------------------------------------------------------------------------------------
 (def ^:no-doc epoch-reference-LocalDate (LocalDate/parse "1970-01-01"))
 
+; #todo: create a namespace java-time.zone ???
+(def zoneid-utc            (ZoneId/of "UTC"))
+(def zoneid-us-alaska      (ZoneId/of "US/Alaska"))
+(def zoneid-us-aleutian    (ZoneId/of "US/Aleutian"))
+(def zoneid-us-central     (ZoneId/of "US/Central"))
+(def zoneid-us-eastern     (ZoneId/of "US/Eastern"))
+(def zoneid-us-hawaii      (ZoneId/of "US/Hawaii"))
+(def zoneid-us-mountain    (ZoneId/of "US/Mountain"))
+(def zoneid-us-pacific     (ZoneId/of "US/Pacific"))
+
+;---------------------------------------------------------------------------------------------------
 (s/defn LocalDate-str? :- s/Bool
   "Returns true iff string is a legal LocalDate"
   [arg]
@@ -31,12 +56,12 @@
   "Returns a LocalDate given an offset from 1970-1-1"
   [arg :- s/Int] (.plusDays epoch-reference-LocalDate arg))
 
-(s/defn LocalDate-str->daynum :- s/Int
-  "Parses a LocalDate string like `1999-12-31` to an integer daynum like 10956"
+(s/defn LocalDate-str->daynum :- s/Int ; #todo => tupelo.string
+  "Parses a LocalDate string like `1999-12-31` into an integer daynum (rel to epoch) like 10956"
   [arg :- s/Str] (-> arg (LocalDate/parse) (LocalDate->daynum)))
 
-(s/defn daynum->LocalDate-str :- s/Str
-  "Converts an integer daynum like 10956 a LocalDate string like `1999-12-31` "
+(s/defn daynum->LocalDate-str :- s/Str ; #todo => tupelo.string
+  "Converts an integer daynum like 10956 (rel to epoch) into a LocalDate string like `1999-12-31` "
   [arg :- s/Int] (-> arg (daynum->LocalDate) (str)))
 
 (s/defn LocalDate->tagval :- {:LocalDate s/Str}
@@ -67,6 +92,54 @@
         result       (nth quarters-vec quarter-idx)]
     result))
 
+(s/defn LocalDate-str? :- s/Bool ; #todo => tupelo.string
+  "Returns true iff string is a legal ISO LocalDate like '1999-12-31' "
+  [arg :- s/Str]
+  (and (string? arg)
+    (= 10 (count arg))
+    (with-exception-default false
+      (LocalDate/parse arg)
+      true))) ; if no exception => passes
+
+;-----------------------------------------------------------------------------
+(s/defn LocalDate->Instant :- Instant
+  "Converts a LocalDate to a java.util.Date, using midnight (start of day) and the UTC timezone."
+  [ld :- LocalDate]
+  (it-> ld
+    (.atStartOfDay it zoneid-utc)
+    (.toInstant it)))
+
+(s/defn LocalDate->Date :- Date
+  "Converts a LocalDate to a java.util.Date, using midnight (start of day) and the UTC timezone."
+  [ld :- LocalDate] (Date/from (LocalDate->Instant ld)))
+
+(s/defn LocalDate-interval->days :- s/Int
+  "Returns the duration in days from the start to the end of a LocalDate Interval"
+  [interval :- Interval]
+  (with-map-vals interval [lower upper]
+    (.between ChronoUnit/DAYS lower upper)))
+
+(s/defn localdates->day-idxs :- [s/Int]
+  "Converts a sequence of LocalDate objects into an integer series like [0 1 2 ...], relative to the first value.
+  Assumes LocalDate's are in ascending order."
+  [ld-vals :- [LocalDate]]
+  (let [first-date (xfirst ld-vals)]
+    (mapv #(LocalDate-interval->days (interval/new first-date %)) ld-vals)))
+
+(s/defn interval-LocalDate-str->daynum  :- Interval
+  [ldstr :- Interval]
+  (let [lds-lower (grab :lower ldstr)
+        lds-upper (grab :upper ldstr)]
+    (interval/new
+      (LocalDate-str->daynum lds-lower)
+      (LocalDate-str->daynum lds-upper))))
+
+(s/defn LocalDate->trailing-interval
+  "Returns a LocalDate interval of span N days ending on the date supplied"
+  [localdate :- LocalDate
+   N :- s/Num]
+  (let [ld-start (.minusDays localdate N)]
+    (interval/new ld-start localdate)))
 
 
 ;---------------------------------------------------------------------------------------------------
@@ -103,16 +176,6 @@
   Example:  (period (days 3)) => true "
   [it]
   (instance? Period it))
-
-; #todo: create a namespace java-time.zone ???
-(def zoneid-utc            (ZoneId/of "UTC"))
-(def zoneid-us-alaska      (ZoneId/of "US/Alaska"))
-(def zoneid-us-aleutian    (ZoneId/of "US/Aleutian"))
-(def zoneid-us-central     (ZoneId/of "US/Central"))
-(def zoneid-us-eastern     (ZoneId/of "US/Eastern"))
-(def zoneid-us-hawaii      (ZoneId/of "US/Hawaii"))
-(def zoneid-us-mountain    (ZoneId/of "US/Mountain"))
-(def zoneid-us-pacific     (ZoneId/of "US/Pacific"))
 
 (defn ->instant
   "Coerces an Instant, ZonedDateTime, or org.joda.time.ReadableInstant => Instant "
