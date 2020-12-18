@@ -56,11 +56,11 @@
   "Returns a LocalDate given an offset from 1970-1-1"
   [arg :- s/Int] (.plusDays epoch-reference-LocalDate arg))
 
-(s/defn LocalDate-str->daynum :- s/Int ; #todo => tupelo.string
+(s/defn LocalDate-str->daynum :- s/Int
   "Parses a LocalDate string like `1999-12-31` into an integer daynum (rel to epoch) like 10956"
   [arg :- s/Str] (-> arg (LocalDate/parse) (LocalDate->daynum)))
 
-(s/defn daynum->LocalDate-str :- s/Str ; #todo => tupelo.string
+(s/defn daynum->LocalDate-str :- s/Str
   "Converts an integer daynum like 10956 (rel to epoch) into a LocalDate string like `1999-12-31` "
   [arg :- s/Int] (-> arg (daynum->LocalDate) (str)))
 
@@ -81,18 +81,28 @@
     data))
 
 ;---------------------------------------------------------------------------------------------------
-(s/defn ->quarter :- tsk/Quarter
+(def year-quarters (sorted-set :Q1 :Q2 :Q3 :Q4))
+(def ^:no-doc year-quarters-sorted-vec (vec (sort year-quarters)))
+(s/defn year-quarter? :- s/Bool
+  "Returns true iff arg is indicates a (financial) quarter in the year."
+  [arg] (contains-key? year-quarters arg))
+
+(s/defn ->year-quarter :- tsk/Quarter
   "Given a date-ish value (e.g. LocalDate, et al), returns the quarter of the year
   as one of #{ :Q1 :Q2 :Q3 :Q4 } "
   [arg]
-  (let [quarters-vec [:Q1 :Q2 :Q3 :Q4]
-        month-value  (.getMonthValue arg) ; 1..12
+  (let [month-value  (.getMonthValue arg) ; 1..12
         month-idx    (dec month-value) ; 0..11
-        quarter-idx  (quot month-idx 4)
-        result       (nth quarters-vec quarter-idx)]
+        quarter-idx  (quot month-idx 3)
+        result       (nth year-quarters-sorted-vec quarter-idx)]
     result))
 
-(s/defn LocalDate-str? :- s/Bool ; #todo => tupelo.string
+(s/defn daynum->year-quarter :- tsk/Quarter
+  "Like `->year-quarter` but works for DayNum values"
+  [daynum :- s/Int] (-> daynum (daynum->LocalDate) (->year-quarter)))
+
+;-----------------------------------------------------------------------------
+(s/defn LocalDate-str? :- s/Bool
   "Returns true iff string is a legal ISO LocalDate like '1999-12-31' "
   [arg :- s/Str]
   (and (string? arg)
@@ -101,7 +111,6 @@
       (LocalDate/parse arg)
       true))) ; if no exception => passes
 
-;-----------------------------------------------------------------------------
 (s/defn LocalDate->Instant :- Instant
   "Converts a LocalDate to a java.util.Date, using midnight (start of day) and the UTC timezone."
   [ld :- LocalDate]
@@ -126,7 +135,7 @@
   (let [first-date (xfirst ld-vals)]
     (mapv #(LocalDate-interval->days (interval/new first-date %)) ld-vals)))
 
-(s/defn interval-LocalDate-str->daynum  :- Interval
+(s/defn interval-LocalDate-str->daynum  :- Interval ; #todo need test
   [ldstr :- Interval]
   (let [lds-lower (grab :lower ldstr)
         lds-upper (grab :upper ldstr)]
@@ -140,7 +149,6 @@
    N :- s/Num]
   (let [ld-start (.minusDays localdate N)]
     (interval/new ld-start localdate)))
-
 
 ;---------------------------------------------------------------------------------------------------
 (defn zoned-date-time?

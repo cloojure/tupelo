@@ -1,4 +1,4 @@
-(ns ;   ^:test-refresh/focus
+(ns     ; ^:test-refresh/focus
   tst.tupelo.java-time
   (:refer-clojure :exclude [range])
   (:use tupelo.java-time tupelo.core tupelo.test)
@@ -15,17 +15,32 @@
     [java.util Date]
     ))
 (dotest
-  (let [month->quarter [:Q1 :Q1 :Q1 :Q1 :Q2 :Q2 :Q2 :Q2 :Q3 :Q3 :Q3 :Q3]]
+  (let [month->quarter [:Q1 :Q1 :Q1 :Q2 :Q2 :Q2 :Q3 :Q3 :Q3 :Q4 :Q4 :Q4 ]
+        quarters-set   (set month->quarter)]
+    (is-set= quarters-set [:Q1 :Q2 :Q3 :Q4])
+    (is= (vec year-quarters) [:Q1 :Q2 :Q3 :Q4])
+    (is= 12 (count month->quarter))
+    (is (every? year-quarter? month->quarter))
     (is= month->quarter
-      (forv [month-num (thru 1 12)] (->quarter (YearMonth/of 2013 month-num))))
+      (forv [month-num (thru 1 12)] (->year-quarter (YearMonth/of 2013 month-num))))
     (is= month->quarter
-      (forv [month-num (thru 1 12)] (->quarter (MonthDay/of month-num 13)))) ; 13'th of each month
+      (forv [month-num (thru 1 12)] (->year-quarter (MonthDay/of month-num 13)))) ; 13'th of each month
     (is= month->quarter
-      (forv [month-num (thru 1 12)] (->quarter (LocalDate/parse (format "2013-%02d-19" month-num)))))
+      (forv [month-num (thru 1 12)] (->year-quarter (LocalDate/parse (format "2013-%02d-19" month-num)))))
     (is= month->quarter
-      (forv [month-num (thru 1 12)] (->quarter (LocalDateTime/parse (format "2013-%02d-19T12:13:14" month-num)))))
+      (forv [month-num (thru 1 12)] (->year-quarter (LocalDateTime/parse (format "2013-%02d-19T12:13:14" month-num)))))
     (is= month->quarter
-      (forv [month-num (thru 1 12)] (->quarter (ZonedDateTime/parse (format "2013-%02d-19T12:13:14Z" month-num)))))))
+      (forv [month-num (thru 1 12)] (->year-quarter (ZonedDateTime/parse (format "2013-%02d-19T12:13:14Z" month-num))))))
+
+  (let [dnum-q1         (LocalDate-str->daynum "2013-03-31")
+        dnum-q2         (LocalDate-str->daynum "2013-04-01")
+        dnum-q1-quarter (daynum->year-quarter dnum-q1)
+        dnum-q2-quarter (daynum->year-quarter dnum-q2)]
+    (isnt= dnum-q1 dnum-q2)
+    (is= (inc dnum-q1) dnum-q2)
+    (is= :Q1 dnum-q1-quarter)
+    (is= :Q2 dnum-q2-quarter)
+    (isnt= dnum-q1-quarter dnum-q2-quarter)))
 
 (dotest
   (is= 9134 (LocalDate-str->daynum "1995-01-04"))
