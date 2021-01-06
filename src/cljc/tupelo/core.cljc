@@ -972,7 +972,7 @@
       (println (str (spy-indent-spaces) tag " => " (pr-str value))))
     value))
 
-(defmacro spy
+(defmacro spy ; #todo clean up all spy stuff
   "A form of (println ...) to ease debugging display of either intermediate values in threading
    forms or function return values. There are three variants.  Usage:
 
@@ -1020,9 +1020,9 @@
    (let [src-line   (:line (meta &form))
          src-ns-str (str (ns-name *ns*))
          out-tag    (keyword (format "spy--%s--line-%03d" src-ns-str src-line))]
-     `(do
-        (println ~out-tag "=>" (pr-str ~value))
-        ~value)))
+     `(let [result# ~value]
+        (println ~out-tag "=>" (pr-str result#))
+        result#)))
   ([arg1 arg2]
    `(spy2-impl ~arg1 ~arg2)))
 

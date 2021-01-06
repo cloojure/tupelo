@@ -56,9 +56,9 @@
 
 (s/defn closed-contains? :- s/Bool
   "Returns true iff a closed interval contains a value such that (lower <= L <= upper)."
-  [range :- tsk/KeyMap
+  [interval :- Interval
    val :- s/Any]
-  (t/with-map-vals range [lower upper]
+  (t/with-map-vals interval [lower upper]
     (t/compare-less-equal lower val upper)))
 
 (s/defn ->vals-slice ; #todo => tupelo.interval
