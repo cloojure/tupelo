@@ -43,6 +43,20 @@
     (isnt= dnum-q1-quarter dnum-q2-quarter)))
 
 (dotest
+  (let [ldstr->monthVal (fn [arg] (-> arg (LocalDate-str->daynum) (daynum->monthValue)))]
+    (is= 1 (ldstr->monthVal "2013-01-25" ))
+    (is= 2 (ldstr->monthVal "2013-02-28" ))
+    (is= 11 (ldstr->monthVal "2013-11-30" ))
+    (is= 12 (ldstr->monthVal "2013-12-31" ))))
+
+(dotest
+  (let [ldstr->year (fn [arg] (-> arg (LocalDate-str->daynum) (daynum->year)))]
+    (is= 2013 (ldstr->year "2013-01-25" ))
+    (is= 2014 (ldstr->year "2014-02-28" ))
+    (is= 2014 (ldstr->year "2014-11-30" ))
+    (is= 2019 (ldstr->year "2019-12-31" ))))
+
+(dotest
   (is= 9134 (LocalDate-str->daynum "1995-01-04"))
   (is= 10956 (LocalDate-str->daynum "1999-12-31"))
   (doseq [daynum [0 9 99 999 9999]]

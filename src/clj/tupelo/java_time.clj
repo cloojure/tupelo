@@ -53,8 +53,16 @@
   [arg :- LocalDate] (.between ChronoUnit/DAYS epoch-reference-LocalDate arg))
 
 (s/defn daynum->LocalDate :- LocalDate
-  "Returns a LocalDate given an offset from 1970-1-1"
+  "Given a daynum, returns a LocalDate "
   [arg :- s/Int] (.plusDays epoch-reference-LocalDate arg))
+
+(s/defn daynum->monthValue :- s/Int
+  "Given a daynum, returns a monthValue in [1..12]"
+  [arg :- s/Int] (.getMonthValue (daynum->LocalDate arg)))
+
+(s/defn daynum->year :- s/Int
+  "Given a daynum, returns a year like 2013"
+  [arg :- s/Int] (.getYear (daynum->LocalDate arg)))
 
 (s/defn LocalDate-str->daynum :- s/Int
   "Parses a LocalDate string like `1999-12-31` into an integer daynum (rel to epoch) like 10956"

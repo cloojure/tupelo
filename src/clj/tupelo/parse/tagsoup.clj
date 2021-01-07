@@ -38,7 +38,7 @@
 
 ; #todo make use string input:  (ts/string->stream html-str)
 (s/defn parse-raw :- tsk/KeyMap
-  "Loads and parse an HTML resource and closes the input-stream."
+  "Parses an HTML string in raw mode"
   [html-str :- s/Str]
   (xml/parse-raw-streaming
     (org.xml.sax.InputSource.
@@ -47,7 +47,8 @@
 
 ; #todo make use string input:  (ts/string->stream html-str)
 (s/defn parse :- tsk/KeyMap
-  "Loads and parse an HTML resource and closes the input-stream."
+  "Parses an HTML string, returning an Enlive data structure
+  with whitespace nodes removed."
   [html-str :- s/Str]
   (xml/enlive-remove-whitespace
     (xml/enlive-normalize
