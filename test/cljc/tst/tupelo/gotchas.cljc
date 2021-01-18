@@ -164,6 +164,9 @@
   (is= {:a 1} (conj {:a 1} nil)) ; this is ok => noop
   (throws? (conj {:a 1} [])) ; illegal
   (is= {:a 1 :b 2} (conj {:a 1} {:b 2})) ; this works, but shouldn't
+  (let [me (first {:a 1})]
+    (is= clojure.lang.MapEntry (type me))
+    (is= [:a 1] me)) ; MapEntry is "equal" to a 2-vec
 
   (is= {:a 1} (into {:a 1} nil))
   (is= {:a 1} (into {:a 1} []))

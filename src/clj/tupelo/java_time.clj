@@ -48,7 +48,10 @@
     (LocalDate/parse arg)
     true))    ; if no exception => passes
 
-(s/defn LocalDate->daynum :- s/Int
+; #todo add eweek, emonth, equarter, quarter-of-year, year-quarter
+
+; #todo convert all to "epoch-day" => eday ??? etc
+(s/defn LocalDate->daynum :- s/Int ; #todo generalize & test for negative daynum
   "Normalizes a LocalDate as the offset from 1970-1-1"
   [arg :- LocalDate] (.between ChronoUnit/DAYS epoch-reference-LocalDate arg))
 
@@ -89,13 +92,14 @@
     data))
 
 ;---------------------------------------------------------------------------------------------------
-(def year-quarters (sorted-set :Q1 :Q2 :Q3 :Q4))
+(def year-quarters (sorted-set :Q1 :Q2 :Q3 :Q4)) ; #todo => String like "Q1"
 (def ^:no-doc year-quarters-sorted-vec (vec (sort year-quarters)))
 (s/defn year-quarter? :- s/Bool
   "Returns true iff arg is indicates a (financial) quarter in the year."
   [arg] (contains-key? year-quarters arg))
 
-(s/defn ->year-quarter :- tsk/Quarter
+;#todo year-quarter => like "2013-Q1"
+(s/defn ->year-quarter :- tsk/Quarter ;#todo rename quarter-of-year
   "Given a date-ish value (e.g. LocalDate, et al), returns the quarter of the year
   as one of #{ :Q1 :Q2 :Q3 :Q4 } "
   [arg]
