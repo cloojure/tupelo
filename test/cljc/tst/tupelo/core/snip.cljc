@@ -3,7 +3,9 @@
   (:require
     [clojure.pprint :as pprint]
     [tupelo.core :as t]
-    #?(:clj
+    )
+  #?(:clj
+     (:require
        [flatland.ordered.map :as omap]
        [flatland.ordered.set :as oset]
        )))
