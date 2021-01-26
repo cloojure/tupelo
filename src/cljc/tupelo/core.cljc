@@ -32,14 +32,14 @@
     [clojure.string :as str]
     [clojure.test]
     [clojure.walk :as walk]
-    [flatland.ordered.map :as omap]
-    [flatland.ordered.set :as oset]
     [schema.core :as s]
     [tupelo.lexical :as lex]
     [tupelo.schema :as tsk])
   #?(:clj
      (:require [cheshire.core :as cheshire]
                [clojure.core.match :as ccm]
+               [flatland.ordered.map :as omap]
+               [flatland.ordered.set :as oset]
                [tupelo.types :as types]))
   #?(:clj
      (:import [java.io BufferedReader ByteArrayOutputStream PrintStream StringReader OutputStream]
@@ -3257,114 +3257,119 @@
     (walk-with-parents data intc) ))
 
 ;---------------------------------------------------------------------------------------------------
-(s/defn ^:no-doc snip-seq-heads :- tsk/List
-  [snip-sizes :- [s/Int]
-   data-list :- tsk/List]
-  (vec      ; always return a vector
-    (let [snip-total (apply + snip-sizes)
-          data-len   (count data-list)]
-      (if (<= data-len snip-total)
-        data-list
-        (let [num-parts  (count snip-sizes)
-              part-size  (quot data-len num-parts) ; truncates
-              parts      (vec (take num-parts (partition part-size data-list))) ; drop any leftovers due to truncation
-              parts-keep (apply glue
-                           (map-let [part      parts
-                                     keep-curr snip-sizes]
-                             (append (xtake keep-curr part) :<snip>)))]
-          parts-keep)))))
+#?(:clj
+   (do
 
-(s/defn ^:no-doc snip-seq-tail :- tsk/List
-  [keep-tail :- s/Int
-   data-list :- tsk/List]
-  (vec      ; always return a vector
-    (let [data-num (count data-list)]
-      (if (<= data-num keep-tail)
-        data-list
-        (take-last keep-tail data-list)))))
+     (s/defn ^:no-doc snip-seq-heads :- tsk/List
+       [snip-sizes :- [s/Int]
+        data-list :- tsk/List]
+       (vec ; always return a vector
+         (let [snip-total (apply + snip-sizes)
+               data-len   (count data-list)]
+           (if (<= data-len snip-total)
+             data-list
+             (let [num-parts  (count snip-sizes)
+                   part-size  (quot data-len num-parts) ; truncates
+                   parts      (vec (take num-parts (partition part-size data-list))) ; drop any leftovers due to truncation
+                   parts-keep (apply glue
+                                (map-let [part      parts
+                                          keep-curr snip-sizes]
+                                  (append (xtake keep-curr part) :<snip>)))]
+               parts-keep)))))
 
-(s/defn ^:no-doc snip-seq :- tsk/List
-  [snip-sizes :- [s/Int]
-   data-list :- tsk/List]
-  (vec      ; always return a vector
-    (let [num-snips (count snip-sizes)]
-      (assert (pos? num-snips))
-      (assert (every? int-pos? snip-sizes))
-      (if (= 1 num-snips)
-        (snip-seq-heads snip-sizes data-list)
-        (let [snip-total (apply + snip-sizes)]
-          (if (<= (count data-list) snip-total)
-            data-list
-            (let [snip-size-tail  (xlast snip-sizes)
-                  snipped-tail    (snip-seq-tail snip-size-tail data-list)
+     (s/defn ^:no-doc snip-seq-tail :- tsk/List
+       [keep-tail :- s/Int
+        data-list :- tsk/List]
+       (vec ; always return a vector
+         (let [data-num (count data-list)]
+           (if (<= data-num keep-tail)
+             data-list
+             (take-last keep-tail data-list)))))
 
-                  snip-sizes-main (butlast snip-sizes)
-                  data-main       (drop-last snip-size-tail data-list)
-                  snipped-main    (snip-seq-heads snip-sizes-main data-main)
-                  result          (glue snipped-main snipped-tail)]
-              result)))))))
+     (s/defn ^:no-doc snip-seq :- tsk/List
+       [snip-sizes :- [s/Int]
+        data-list :- tsk/List]
+       (vec ; always return a vector
+         (let [num-snips (count snip-sizes)]
+           (assert (pos? num-snips))
+           (assert (every? int-pos? snip-sizes))
+           (if (= 1 num-snips)
+             (snip-seq-heads snip-sizes data-list)
+             (let [snip-total (apply + snip-sizes)]
+               (if (<= (count data-list) snip-total)
+                 data-list
+                 (let [snip-size-tail  (xlast snip-sizes)
+                       snipped-tail    (snip-seq-tail snip-size-tail data-list)
 
-; *****  Must use this function to turn off `#ordered/set (...)` print result!!! (or `spyx-pretty` or `pprint`)  *****
-(defn coerce-flatland-ordered->normal-print!
-  " ***** Will disable the custom printing like `#ordered/set (...)`  "
-  []
-  (remove-method print-method flatland.ordered.map.OrderedMap)
-  (remove-method print-method flatland.ordered.set.OrderedSet))
+                       snip-sizes-main (butlast snip-sizes)
+                       data-main       (drop-last snip-size-tail data-list)
+                       snipped-main    (snip-seq-heads snip-sizes-main data-main)
+                       result          (glue snipped-main snipped-tail)]
+                   result)))))))
 
-(def SnipCtx {:snip-sizes [s/Int]
-              :data       s/Any})
+     ; *****  Must use this function to turn off `#ordered/set (...)` print result!!! (or `spyx-pretty` or `pprint`)  *****
+     (defn coerce-flatland-ordered->normal-print!
+       " ***** Will disable the custom printing like `#ordered/set (...)`  "
+       []
+       (remove-method print-method flatland.ordered.map.OrderedMap)
+       (remove-method print-method flatland.ordered.set.OrderedSet))
 
-; #todo - make recursive
-(s/defn ^:no-doc snip-impl :- s/Any
-  [ctx :- SnipCtx]
-  (with-map-vals ctx [snip-sizes data]
-    (with-nil-default data ; return unchanged if no match
-      (cond
-        (sequential? data) (snip-seq snip-sizes (seq data)) ; coerce to a seq in case it's something weird
+     (def SnipCtx {:snip-sizes [s/Int]
+                   :data       s/Any})
 
-        (map? data) (let [result-seq  (snip-seq snip-sizes (seq (->sorted-map-generic data)))
-                          parts       (partition-by #(= :<snip> %) result-seq)
-                          parts-data  (drop-if #(= [:<snip>] %) parts)
-                          parts-snip  (forv [idx (range (count parts-data))]
-                                        [[(str->kw (format "<snip-key-%d>" idx))
-                                          (str->kw (format "<snip-val-%d>" idx))]])
-                          parts-fused (drop-last (interleave parts-data parts-snip))
-                          result      (reduce (fn [accum item]
-                                                (into accum item))
-                                        (omap/ordered-map)
-                                        parts-fused)]
-                      result)
+     ; #todo - make recursive
+     (s/defn ^:no-doc snip-impl :- s/Any
+       [ctx :- SnipCtx]
+       (with-map-vals ctx [snip-sizes data]
+         (with-nil-default data ; return unchanged if no match
+           (cond
+             (sequential? data) (snip-seq snip-sizes (seq data)) ; coerce to a seq in case it's something weird
 
-        (set? data) (let [result-seq  (snip-seq snip-sizes (seq (->sorted-set-generic data)))
-                          parts       (partition-by #(= :<snip> %) result-seq)
-                          parts-data  (drop-if #(= [:<snip>] %) parts)
-                          parts-snip  (forv [idx (range (count parts-data))]
-                                        [(str->kw (format "<snip-%d>" idx))])
-                          parts-fused (drop-last (interleave parts-data parts-snip))
-                          result      (reduce (fn [accum item]
-                                                (into accum item))
-                                        (oset/ordered-set)
-                                        parts-fused)]
-                      result)))))
+             (map? data) (let [result-seq  (snip-seq snip-sizes (seq (->sorted-map-generic data)))
+                               parts       (partition-by #(= :<snip> %) result-seq)
+                               parts-data  (drop-if #(= [:<snip>] %) parts)
+                               parts-snip  (forv [idx (range (count parts-data))]
+                                             [[(str->kw (format "<snip-key-%d>" idx))
+                                               (str->kw (format "<snip-val-%d>" idx))]])
+                               parts-fused (drop-last (interleave parts-data parts-snip))
+                               result      (reduce (fn [accum item]
+                                                     (into accum item))
+                                             (omap/ordered-map)
+                                             parts-fused)]
+                           result)
+
+             (set? data) (let [result-seq  (snip-seq snip-sizes (seq (->sorted-set-generic data)))
+                               parts       (partition-by #(= :<snip> %) result-seq)
+                               parts-data  (drop-if #(= [:<snip>] %) parts)
+                               parts-snip  (forv [idx (range (count parts-data))]
+                                             [(str->kw (format "<snip-%d>" idx))])
+                               parts-fused (drop-last (interleave parts-data parts-snip))
+                               result      (reduce (fn [accum item]
+                                                     (into accum item))
+                                             (oset/ordered-set)
+                                             parts-fused)]
+                           result)))))
 
 
-(s/defn snip* :- s/Any
-  "Snips a large data structure into a smaller representative snapshot.
-  ctx is like:
+     (s/defn snip* :- s/Any
+       "Snips a large data structure into a smaller representative snapshot.
+       ctx is like:
 
-        {:snip-sizes [4 3] :data data}
-  "
-  [ctx :- SnipCtx]
-  (with-map-vals ctx [snip-sizes data]
-    (walk/postwalk (fn [arg]
-                     (let [ctx-arg (glue ctx {:data arg})]
-                       (snip-impl ctx-arg)))
-      data)))
+             {:snip-sizes [4 3] :data data}
+       "
+       [ctx :- SnipCtx]
+       (with-map-vals ctx [snip-sizes data]
+         (walk/postwalk (fn [arg]
+                          (let [ctx-arg (glue ctx {:data arg})]
+                            (snip-impl ctx-arg)))
+           data)))
 
-(s/defn snip :- s/Any
-  "Returns snipped data with defaulting to first 4 and last 3 along each dimension"
-  [data :- s/Any]
-  (snip* {:snip-sizes [4 3] :data data}))
+     (s/defn snip :- s/Any
+       "Returns snipped data with defaulting to first 4 and last 3 along each dimension"
+       [data :- s/Any]
+       (snip* {:snip-sizes [4 3] :data data}))
+
+     ))   ; :clj
 
 ; bottom
 ;***************************************************************************************************
