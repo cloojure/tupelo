@@ -3259,6 +3259,12 @@
 ;---------------------------------------------------------------------------------------------------
 #?(:clj
    (do
+     ; #todo add dynamic vars (& test):
+     ;   *snipped-sequential-leaders* (default 2)
+     ;   *snipped-sequential-trailers* (default 1)
+     ;   *snipped-map-leaders* (default 2)
+     ;   *snipped-map-trailers* (default 1)
+
 
      (s/defn ^:no-doc snip-seq-heads :- tsk/List
        [snip-sizes :- [s/Int]

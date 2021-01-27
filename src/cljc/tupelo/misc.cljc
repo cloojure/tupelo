@@ -296,68 +296,6 @@
   [edn-data]
   (str->sha (pr-str (normalized-sorted edn-data))))
 
-; #todo add dynamic vars (& test):
-;   *snipped-sequential-leaders* (default 2)
-;   *snipped-sequential-trailers* (default 1)
-;   *snipped-map-leaders* (default 2)
-;   *snipped-map-trailers* (default 1)
-
-
-; #todo need plain snip fn, or maybe snip len by dimension e.g. [2 5 9]
-; #todo need take-by-dimension e.g. [2 5 9] (recursive, and retain type sequential/map/set)
-; #todo:  (use 'flatland.ordered.map)
-; #todo:  (ordered-map :b 2 :a 1 :d 4)
-(defn walk->snippet
-  [data]
-  (walk/postwalk (fn [item]
-                   (cond
-                     (and (t/xsequential? item) (< 7 (count item))) (t/append (t/xtake 5 item)
-                                                                      :<snip>
-                                                                      (t/xlast item))
-
-                     (and (map? item) (< 7 (count item))) (let [; >> (spyx-pretty item)
-                                                                sorted-item (t/->sorted-map-generic item)]
-                                                            ; (spyx-pretty sorted-item)
-                                                            (into (array-map)
-                                                              (t/append (take 5 sorted-item)
-                                                                [:<snip-key> :<snip-val>]
-                                                                (last sorted-item))))
-
-                     :else item))
-    data))
-
-(s/defn ^:no-doc  walk->snippet-dims-list
-  [dims  :- [ [s/Num]]
-   data]
-  (let [dims-curr (t/xfirst dims)
-        dims-rest (t/xrest dims)]
-
-    )
-  )
-
-
-
-(s/defn walk->snippet-dims
-  [dims  :- [ [s/Num]]
-   data]
-  (walk/postwalk (fn [item]
-                   (cond
-                     (and (t/xsequential? item) (< 7 (count item))) (t/append (t/xtake 5 item)
-                                                                      :<snip>
-                                                                      (t/xlast item))
-
-                     (and (map? item) (< 7 (count item))) (let [; >> (spyx-pretty item)
-                                                                sorted-item (t/->sorted-map-generic item)]
-                                                            ; (spyx-pretty sorted-item)
-                                                            (into (array-map)
-                                                              (t/append (take 5 sorted-item)
-                                                                [:<snip-key> :<snip-val>]
-                                                                (last sorted-item))))
-
-                     :else item))
-    data))
-
-
 
 ;----- toptop -----------------------------------------------------------------------------
 
