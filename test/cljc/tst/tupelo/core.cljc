@@ -3329,7 +3329,7 @@
        (isnt (t/macro? 'if)))
 
 
-     (dotest ; #todo => tupelo.core
+     (dotest
        (is= (t/with-cum-vector
               (dotimes [ii 5]
                 (t/cum-vector-append ii)))

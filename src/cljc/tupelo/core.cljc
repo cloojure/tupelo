@@ -1406,46 +1406,51 @@
   [template] (construct-impl template))
 
 ;-----------------------------------------------------------------------------
-(do  ; #todo => tupelo.core
-  (def ^:dynamic *cumulative-val*
-    "A dynamic Var pointing to an `atom`. Used by `with-cum-val` to accumulate state,
-    such as in a vector or map.  Typically manipulated via helper functions such as
-    `cum-val-set-it` or `cum-vector-append`. Can also be manipulated directly via `swap!` et al."
-    nil)
+(def ^:dynamic *cumulative-val*
+  "A dynamic Var pointing to an `atom`. Used by `with-cum-val` to accumulate state,
+  such as in a vector or map.  Typically manipulated via helper functions such as
+  `cum-val-set-it` or `cum-vector-append`. Can also be manipulated directly via `swap!` et al."
+  nil)
 
-  (defmacro cum-val-set-it
-    "Works inside of a `with-cum-val` block to append a new val value."
-    [& forms]
-    `(swap! *cumulative-val*
-       (fn [~'it]
-         ~@forms)))
+(defmacro with-cum-val
+  "Wraps forms containing `cum-val-set-it` calls to accumulate values into a vector."
+  [init-val & forms]
+  `(binding [tupelo.core/*cumulative-val* (atom ~init-val)]
+     (do ~@forms)
+     (deref tupelo.core/*cumulative-val*)))
 
-  (defmacro with-cum-val
-    "Wraps forms containing `cum-val-set-it` calls to accumulate values into a vector."
-    [init-val & forms]
-    `(binding [*cumulative-val* (atom ~init-val)]
-       (do ~@forms)
-       (deref *cumulative-val*)))
+(defmacro with-cum-vector
+  "Wraps forms containing `cum-vector-append` calls to accumulate values into a vector."
+  [& forms]
+  `(with-cum-val []
+     ~@forms))
 
-  ;-----------------------------------------------------------------------------
-  (s/defn cum-vector-append :- s/Any ; #todo file bug report for CLJS
-    "Works inside of a `with-cum-vector` block to append a new vector value."
-    [value :- s/Any] (cum-val-set-it (append it value))) ; #todo copy td/cum-vector-swap-append kludge
+(defn cum-val-set-it-impl
+  "Works inside of a `with-cum-val` block to append a new val value."
+  [forms]
+  (let [x1 (concat '(fn [it]) forms)
+        x2 (concat '(swap! tupelo.core/*cumulative-val*) [x1])]
+    x2))
 
-  (defmacro with-cum-vector
-    "Wraps forms containing `cum-vector-append` calls to accumulate values into a vector."
-    [& forms]
-    `(with-cum-val []
-       ~@forms))
+(defmacro cum-val-set-it
+  "Works inside of a `with-cum-val` block to append a new val value."
+  [& forms]
+  (cum-val-set-it-impl forms))
 
-  ;-----------------------------------------------------------------------------
-  (s/defn only? :- s/Bool
-    "Returns true iff collection has length=1"
-    [coll :- s/Any] (and (has-length? coll 1)))
-  (s/defn only2? :- s/Bool
-    "Returns true iff arg is two nested collections of length=1"
-    [coll :- s/Any] (and (has-length? coll 1)
-                      (has-length? (first coll) 1))))
+(defn cum-vector-append ; #todo file bug report for CLJS
+  "Works inside of a `with-cum-vector` block to append a new vector value."
+  [value]
+  (cum-val-set-it (tupelo.core/append it value))) ; #todo copy td/cum-vector-swap-append kludge
+
+
+;-----------------------------------------------------------------------------
+(s/defn only? :- s/Bool
+  "Returns true iff collection has length=1"
+  [coll :- s/Any] (and (has-length? coll 1)))
+(s/defn only2? :- s/Bool
+  "Returns true iff arg is two nested collections of length=1"
+  [coll :- s/Any] (and (has-length? coll 1)
+                    (has-length? (first coll) 1)))
 
 (defmacro source-code-env
   "A macro that returns information about the calling source code location like:
