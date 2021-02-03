@@ -66,11 +66,11 @@
   (+ (* ii (:ncols arr)) jj))
 
 ;-----------------------------------------------------------------------------
-(s/defn create :- Array
+(s/defn new :- Array
   "Return a new Array of size=[nrows ncols], initialized to `init-val` (default=nil)"
   ([nrows :- s/Int
     ncols :- s/Int]
-   (create nrows ncols nil))
+   (tupelo.array.mutable/new nrows ncols nil))
   ([nrows :- s/Int
     ncols :- s/Int
     init-val :- s/Any]
@@ -115,7 +115,7 @@
    col-data :- tsk/Vec]
   (assert (and (pos? nrows) (pos? ncols)))
   (assert (= (* nrows ncols) (count col-data)))
-  (let [result (create nrows ncols)]
+  (let [result (tupelo.array.mutable/new nrows ncols)]
     (dotimes [ii nrows]
       (dotimes [jj ncols]
         (elem-set result ii jj
@@ -130,7 +130,7 @@
     (assert (apply = ncols (mapv count row-vecs)))
     (dotimes [ii nrows]
       (assert sequential? (nth row-vecs ii)))
-    (let [arr (create nrows ncols)]
+    (let [arr (tupelo.array.mutable/new nrows ncols)]
       (dotimes [ii nrows]
         (dotimes [jj ncols]
           (elem-set arr ii jj
@@ -312,7 +312,7 @@
   [orig :- Array]
   (let [nrows  (:nrows orig)
         ncols  (:ncols orig)
-        result (create nrows ncols)]
+        result (tupelo.array.mutable/new nrows ncols)]
     (dotimes [ii nrows]
       (let [ii-orig (- nrows ii 1)]
         (dotimes [jj ncols]
@@ -326,7 +326,7 @@
   [orig :- Array]
   (let [nrows  (:nrows orig)
         ncols  (:ncols orig)
-        result (create nrows ncols)]
+        result (tupelo.array.mutable/new nrows ncols)]
     (dotimes [jj ncols]
       (let [jj-orig (- ncols jj 1)]
         (dotimes [ii nrows]
@@ -339,7 +339,7 @@
   [orig :- Array]
   (let [M      (:nrows orig)
         N      (:ncols orig)
-        result (create N M)] ; transpose shape
+        result (tupelo.array.mutable/new N M)] ; transpose shape
     (dotimes [ii M]
       (dotimes [jj N]
         (let [i2 (- N 1 jj)
@@ -354,7 +354,7 @@
   [orig :- Array]
   (let [M      (:nrows orig)
         N      (:ncols orig)
-        result (create N M)] ; transpose shape
+        result (tupelo.array.mutable/new N M)] ; transpose shape
     (dotimes [ii M]
       (dotimes [jj N]
         (let [j2 (- M 1 ii)

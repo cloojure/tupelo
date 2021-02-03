@@ -20,7 +20,7 @@
 ; #todo restore this???  (st/use-fixtures :once st/validate-schemas)
 
 (dotest
-  (let [a34  (tam/create 3 4 :a)
+  (let [a34  (tam/new 3 4 :a)
         data (vec (:data a34))]
     (is= 3 (tam/num-rows a34))
     (is= 4 (tam/num-cols a34))
@@ -29,7 +29,7 @@
     (is (every? #(= :a %) (forv [ii (range (tam/num-rows a34))
                                  jj (range (tam/num-cols a34))]
                             (tam/elem-get a34 ii jj)))))
-  (let [a34  (tam/create 3 4)
+  (let [a34  (tam/new 3 4)
         data (vec (:data a34))]
     (is= 3 (tam/num-rows a34))
     (is= 4 (tam/num-cols a34))
@@ -71,7 +71,7 @@
                            [22 12 02]
                            [23 13 03]]
         ]
-    (let [a34 (tam/create 3 4)]
+    (let [a34 (tam/new 3 4)]
       (dotimes [ii 3]
         (dotimes [jj 4]
           (tam/elem-set a34 ii jj
@@ -391,5 +391,4 @@
                                                      [11]])
                                (tam/edn-rows->array [[02 03]
                                                      [12 13]]))))))
-
 

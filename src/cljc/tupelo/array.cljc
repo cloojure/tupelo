@@ -51,17 +51,29 @@
   (check-col-idx arr jj))
 
 ;-----------------------------------------------------------------------------
-(s/defn create :- tsk/Array
+(s/defn new :- tsk/Array
   "Return a new Array (vector-of-vectors) of size=[nrows ncols], initialized to `init-val` (default=nil)"
   ([nrows :- s/Int
     ncols :- s/Int]
-   (create nrows ncols nil))
+   (tupelo.array/new nrows ncols nil))
   ([nrows :- s/Int
     ncols :- s/Int
     init-val :- s/Any]
    (assert (and (pos? nrows) (pos? ncols)))
    (forv [ii (range nrows)]
      (vec (repeat ncols init-val)))))
+
+(s/defn zeros :- tsk/Array
+  "Return a new Array (vector-of-vectors) of size=[nrows ncols], initialized to zero"
+  [nrows :- s/Int
+   ncols :- s/Int]
+  (tupelo.array/new nrows ncols 0))
+
+(s/defn ones :- tsk/Array
+  "Return a new Array (vector-of-vectors) of size=[nrows ncols], initialized to one"
+  [nrows :- s/Int
+   ncols :- s/Int]
+  (tupelo.array/new nrows ncols 1))
 
 (s/defn elem-get :- s/Any
   "Gets an Array element"
