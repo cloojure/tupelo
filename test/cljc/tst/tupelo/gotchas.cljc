@@ -79,6 +79,22 @@
   (is= [] (rest [5]))
   (is= nil (next [5]))) ; should be []
 
+(dotest  ; duality between `nil` and empty list
+  (is= [1] (cons 1 nil))
+  (is= [5] (conj nil 5))
+  (is= [ 3 2 1 ] (into nil [1 2 3]))
+
+  (is= [5] (take 1 [5 6 7]))
+  (is= [] (take 1 [])) ; should be error
+
+  (is= [6 7] (drop 1 [5 6 7]))
+  (is= [] (drop 1 [])) ; should be error
+
+  ; Predictable bahavior
+  (throws? (t/xtake 1 []))
+  (throws? (t/xdrop 1 []))
+  )
+
 (dotest
   ; Predictable bahavior
   (throws? (t/xfirst nil))
