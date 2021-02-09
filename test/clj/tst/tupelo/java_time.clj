@@ -1,5 +1,4 @@
-(ns     ; ^:test-refresh/focus
-  tst.tupelo.java-time
+(ns tst.tupelo.java-time
   (:refer-clojure :exclude [range])
   (:use tupelo.java-time tupelo.core tupelo.test)
   (:require
@@ -8,12 +7,54 @@
     [tupelo.core :as t]
     [tupelo.interval :as interval]
     [tupelo.string :as ts]
-    )
+    [schema.core :as s]
+    [tupelo.schema :as tsk])
   (:import
     [java.time Duration Instant MonthDay YearMonth LocalDate LocalDateTime Period
                ZoneId ZoneId ZonedDateTime]
     [java.util Date]
     ))
+
+(dotest
+  (isnt (matches-iso-date-regex? "1999-12-3"))
+  (isnt (matches-iso-date-regex? "1999-12-003"))
+  (isnt (matches-iso-date-regex? "1999-12-39"))
+  (isnt (matches-iso-date-regex? "1599-12-31"))
+  (isnt (matches-iso-date-regex? "1999-13-31"))
+  (isnt (matches-iso-date-regex? "1999-00-31"))
+  (isnt (matches-iso-date-regex? "1999-12-32"))
+  (isnt (matches-iso-date-regex? "1999-12-00"))
+
+  (isnt (matches-iso-date-regex? "1234-12-01"))
+  (isnt (matches-iso-date-regex? "9999-12-31"))
+  (isnt (matches-iso-date-regex? "1999-1-01"))
+  (isnt (matches-iso-date-regex? "1999-005-31"))
+  (isnt (matches-iso-date-regex? "1999-12-001"))
+  (isnt (matches-iso-date-regex? "1999-12-3"))
+
+  (is (matches-iso-date-regex? "1999-12-01"))
+  (is (matches-iso-date-regex? "1999-12-31"))
+  (is (matches-iso-date-regex? "1999-01-01"))
+  (is (matches-iso-date-regex? "1999-01-31"))
+  (is (matches-iso-date-regex? "1999-02-01"))
+  (is (matches-iso-date-regex? "1999-02-31")) ; does not validate days-in-month
+  )
+
+(dotest
+  (throws-not? (Instant/parse "2019-02-14T02:03:04.334Z"))
+  (throws-not? (Instant/parse "2019-02-14T02:03:04Z"))
+  (throws-not? (Instant/parse "0019-02-14T02:03:04Z")) ; can handle really old dates w/o throwing
+
+  ; is very strict on format & values
+  (throws? (Instant/parse "2019-02-14T02:03:04"))
+  (throws? (Instant/parse "2019-02-14T02:03:4Z"))
+  (throws? (Instant/parse "2019-02-14T02:3:04Z"))
+  (throws? (Instant/parse "2019-02-14T2:03:04Z"))
+  (throws? (Instant/parse "2019-02-14 02:03:04Z"))
+  (throws? (Instant/parse "2019-02-4T02:03:04Z"))
+  (throws? (Instant/parse "2019-2-14T02:03:04Z"))
+  (throws? (Instant/parse "2019-02-31T02:03:04Z")))
+
 (dotest
   (let [month->quarter [:Q1 :Q1 :Q1 :Q2 :Q2 :Q2 :Q3 :Q3 :Q3 :Q4 :Q4 :Q4 ]
         quarters-set   (set month->quarter)]
@@ -134,9 +175,9 @@
        :joda-dt (->instant (joda/date-time 2018 9 1))})))
 
 (dotest
-  (isnt (LocalDate-str? "12-31-1999"))
-  (isnt (LocalDate-str? "12-31-99"))
-  (is (LocalDate-str? "1999-12-31"))
+  (isnt  (LocalDate-str? "12-31-1999"))
+  (isnt  (LocalDate-str? "12-31-99"))
+  (is    (LocalDate-str? "1999-12-31"))
 
   ; LocalDate <==> daynum
   (is= 0 (LocalDate->daynum (LocalDate/parse "1970-01-01")))

@@ -114,11 +114,43 @@
   [daynum :- s/Int] (-> daynum (daynum->LocalDate) (->year-quarter)))
 
 ;-----------------------------------------------------------------------------
+(def ^:no-doc iso-date-regex #"(\d\d\d\d)-(\d\d)-(\d\d)")
+(def ^:no-doc iso-date-bounds-default {:year  {:min 1776 :max 2112}
+                                       :month {:min 1 :max 12}
+                                       :day   {:min 1 :max 31}
+                                       :hour   {:min 0 :max 23}
+                                       :minute   {:min 0 :max 59}
+                                       :second   {:min 0 :max 60}})
+
+(s/defn ^:no-doc matches-iso-date-regex? :- s/Bool
+  ([s :- s/Str] (matches-iso-date-regex?  iso-date-bounds-default s ))
+  ([iso-date-bounds :- tsk/KeyMap
+    s :- s/Str]
+   (let [bounds     (glue iso-date-bounds-default iso-date-bounds)
+         year-min   (fetch-in bounds [:year :min])
+         year-max   (fetch-in bounds [:year :max])
+         month-min  (fetch-in bounds [:month :min])
+         month-max  (fetch-in bounds [:month :max])
+         day-min    (fetch-in bounds [:day :min])
+         day-max    (fetch-in bounds [:day :max])
+         match-data (re-matches iso-date-regex s)
+         result     (truthy?
+                      (and match-data
+                        (let [year  (Integer/parseInt (xsecond match-data))
+                              month (Integer/parseInt (xthird match-data))
+                              day   (Integer/parseInt (xfourth match-data))]
+                          (and
+                            (<= year-min year year-max)
+                            (<= month-min month month-max)
+                            (<= day-min day day-max)))))]
+     result)))
+
 (s/defn LocalDate-str? :- s/Bool
-  "Returns true iff string is a legal ISO LocalDate like '1999-12-31' "
+  "Returns true iff string is a legal ISO LocalDate like '1999-12-31' (valid for years 1900-2100)."
   [arg :- s/Str]
   (and (string? arg)
     (= 10 (count arg))
+    (matches-iso-date-regex?  arg)
     (with-exception-default false
       (LocalDate/parse arg)
       true))) ; if no exception => passes
