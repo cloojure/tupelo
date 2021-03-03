@@ -366,19 +366,21 @@
     (is= :abc (t/->kw (quote abc)))
     (is= :abc (t/->kw :abc))
     (is= :abc (t/->kw "abc"))
+    (is= :x (t/->kw \x))
     (is= :123 (t/->kw 123))
     (is= :12.3 (t/->kw 12.3)))
   (do
     (is= "abc" (t/->str (quote abc)))
     (is= "abc" (t/->str :abc))
     (is= "abc" (t/->str "abc"))
+    (is= "x" (t/->str \x))
     (is= "123" (t/->str 123))
     (is= "12.3" (t/->str 12.3)))
-
   (do
     (is= (t/str->sym "abc") (t/->sym (quote abc)))
     (is= (t/str->sym "abc") (t/->sym :abc))
-    (is= (t/str->sym "abc") (t/->sym "abc"))))
+    (is= (t/str->sym "abc") (t/->sym "abc"))
+    (is= (t/str->sym "x") (t/->sym \x))))
 
 (dotest
   (let [orig     {:b #{3 2 1}
