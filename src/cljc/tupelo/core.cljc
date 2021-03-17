@@ -253,7 +253,7 @@
 (declare
   glue xfirst xrest append prepend grab fetch-in indexed clip-str validate
   walk-with-parents with-nil-default vals->map snip snip* map-let  map-let*
-  spy spyx spy-pretty spyx-pretty let-spy let-spy-pretty
+  spy spyx spy-pretty spyx-pretty let-spy let-spy-pretty unlazy
   )
 
 ;-----------------------------------------------------------------------------
@@ -438,7 +438,7 @@
            (s/defn json->edn
              "Shortcut to cheshire.core/parse-string"
              [json-str :- s/Str]
-             (cheshire/parse-string json-str true)) ; true => keywordize-keys
+             (unlazy (cheshire/parse-string json-str true))) ; true => keywordize-keys
 
            ; #todo add test & README
            (s/defn edn->json :- s/Str
@@ -450,7 +450,7 @@
            (s/defn json->edn
              "Convert from json -> edn"
              [json-str :- s/Str]
-             (js->clj (.parse js/JSON json-str) :keywordize-keys true)) ; true => keywordize-keys
+             (unlazy (js->clj (.parse js/JSON json-str) :keywordize-keys true))) ; true => keywordize-keys
 
            ; #todo add test & README
            (s/defn edn->json :- s/Str
