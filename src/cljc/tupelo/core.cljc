@@ -544,9 +544,13 @@
 ;  [& args]
 ;  (throw (ex-info "`case` is evil, use `cond` instead" {:args args} )))
 
+; #todo maybe add coerce->set, coerce->vec, coerce->list, coerce->map to accept nil (& others?)
 (s/defn ->set :- tsk/Set
   "Converts arg to a set."
-  [arg] (cc/set arg) )
+  [arg]
+  (when-not (or (nil? arg) (set? arg) (sequential? arg))
+    (throw (ex-info "invalid arg" {:arg arg})))
+  (cc/set arg) )
 
 (s/defn ->sorted-set :- tsk/Set
   "Coerces a set into a sorted-set"
@@ -2313,7 +2317,7 @@
 
 (s/defn ->vector :- [s/Any]
   "Wraps all args in a vector, as with `clojure.core/vector`. Will (recursively) recognize
-  any embedded calls to `(unwrap <vec-or-list>)` (i.e. the 'splice' operator)
+  any embedded calls to the splice operator like `(<> [4 5 6)` (a la React)
   and insert their elements as with the unquote-spicing operator (~@). Examples:
 
         (->vector 1 2 3      4 5 6   7 8 9)   =>  [1 2 3 4 5 6 7 8 9]

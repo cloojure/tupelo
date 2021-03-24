@@ -10,9 +10,9 @@
   (:require
     [clojure.core :as clj]
     [schema.core :as s]
-    [tupelo.core :as t :refer [spy spyx spyx-pretty spyxx  ]]
+    [tupelo.core :as t :refer [spy spyx spyx-pretty spyxx]]
     [tupelo.schema :as tsk]
-    ))
+    [clojure.tools.reader.edn :as edn]))
 
 (s/defn tagval? :- s/Bool
   "Returns true if arg is a TagVal "
@@ -92,4 +92,53 @@
     (t/cond-it-> arg
       (satisfies? IVal it) (val it)))
 
+  )
+
+; #todo use tagvals to encode any EDN <--> JSON
+(comment
+  {:a                                 1
+   (Instant. "2019-12-13t14:22:33.0") "something happened"}
+  <-->
+  {"type"    "edn/map"
+   "entries" [{"key"   {"type"  "edn/keyword"
+                        "value" "a"}
+               "value" {"type"  "edn/int" ; 64-bit precision expected
+                        "value" 1}}
+              {"key"   {"type"  "java.time.Instant"
+                        "value" "2019-12-13t14:22:33.0Z"}
+               "value" {"type"  "edn/string"
+                        "value" "something happened"}}]}
+
+  ; other composite types:
+  {"type"     "edn/vector" ; same format for "edn/list" and "edn/set"
+   "elements" [{"type"  "edn/int" ; 64-bit precision expected
+                "value" 1}
+
+               ; edn/tagged is generally unneeded, but provides an "escape hatch" for intermediate processors
+               {"type"  "edn/tagged"
+                "tag"   "#inst"
+                "value" "2019-12-13t14:22:33.0"}
+               {"type"  "edn/tagged"
+                "tag"   "#uuid"
+                "value" "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"}]}
+
+  ; basic types
+  :edn/nil
+  :edn/boolean     true | false
+  :edn/string      "abc"
+  :edn/character   "x"
+  :edn/symbol      "name"
+  :edn/keyword     "some-keyword"
+  :edn/int         1       ; 64-bit precision expected
+  :edn/float       12.345  ; 64-bit precision expected
+
+  ; composite types
+  :edn/list       [<x> ...]
+  :edn/vector     [<x> ...]
+  :edn/map        [<mapentry> ...]
+  :edn/set        [<x> ...]
+
+  ; extension types (via EDN tags)
+  :clj/bigint      "100"
+  :clj/bigdec      "12.345"
   )

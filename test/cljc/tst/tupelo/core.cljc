@@ -1059,6 +1059,27 @@
   (is= [1 2 3 4 5 6 7 8 9] (concat [1 2 3] [4 5 6] [7 8 9])))
 
 (dotest
+  (is= (list) []
+    (t/->list nil)
+    (t/->list []))
+  (is= (list 1) (t/->list [1]))
+  (is (list? (t/->list [1])))
+  (throws? (t/->list 1))
+  (throws? (t/->list {:a 1}))
+  (throws? (t/->list #{1})))
+
+(dotest
+  (is= #{} (hash-set)
+    (t/->set nil)
+    (t/->set []))
+  (is= #{1}
+    (t/->set [1])
+    (t/->set #{1}))
+  (is (set? (t/->set [1])))
+  (throws? (t/->set 1))
+  (throws? (t/->set {:a 1})))
+
+(dotest
   (throws? (t/compare-less 1))
   (is (t/compare-less 1 2))
   (is (t/compare-less 1 2 3))
