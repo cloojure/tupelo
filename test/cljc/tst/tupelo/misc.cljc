@@ -106,25 +106,34 @@
 
 
 (dotest
-  (is= misc/int->hex {0 \0, 1 \1, 2 \2, 3 \3, 4 \4, 5 \5, 6 \6, 7 \7, 8 \8, 9 \9, 10 \a, 11 \b, 12 \c, 13 \d, 14 \e, 15 \f})
-  (is= misc/hex->int {\0 0, \1 1, \2 2, \3 3, \4 4, \5 5, \6 6, \7 7, \8 8, \9 9, \a 10, \b 11, \c 12, \d 13, \e 14, \f 15})
-
-
   (is= (misc/str->sha "abc") "a9993e364706816aba3e25717850c26c9cd0d89d")
   (is= (misc/str->sha "abd") "cb4cc28df0fdbe0ecf9d9662e294b118092a5735")
   (is= (misc/str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d")
 
-  ;-----------------------------------------------------------------------------
-  (dotest
-    (is= "356a192b7913b04c54574d18c28d46e6395428ab" (misc/edn->sha 1))
-    (is= "e8dc057d3346e56aed7cf252185dbe1fa6454411" (misc/edn->sha 1.0))
-    (is= "a4839edbf020b8c1ac398fa119979fc5384f52d4" (misc/edn->sha :a))
-    (is= "7b3ce68b6c2f7d67dae4210eeb83be69f978e2a8" (misc/edn->sha "a"))
-    (is= "86f7e437faa5a7fce15d1ddcb9eaeaea377667b8" (misc/edn->sha (quote a)))
-    (is= "aad1409b889ef360dad475dc32649f26d9df142a" (misc/edn->sha [1 2]))
-    (is= "6d780b01458b623aa5f77db71ac9a02ff1d5ecda" (misc/edn->sha [1 2 3]))
-    (is= "6d78b62f48aafe38bbbb2a977f0d578109c0c8e2" (misc/edn->sha {:a 1, :b 2}))
-    (is= "c071ca0471e2ed68a46db1db4c8cf84c2a1c7806" (misc/edn->sha #{1 2 :b :a})))
+  (is= "356a192b7913b04c54574d18c28d46e6395428ab" (misc/edn->sha 1))
+  (is= "e8dc057d3346e56aed7cf252185dbe1fa6454411" (misc/edn->sha 1.0))
+  (is= "a4839edbf020b8c1ac398fa119979fc5384f52d4" (misc/edn->sha :a))
+  (is= "7b3ce68b6c2f7d67dae4210eeb83be69f978e2a8" (misc/edn->sha "a"))
+  (is= "86f7e437faa5a7fce15d1ddcb9eaeaea377667b8" (misc/edn->sha (quote a)))
+
+  (is= "6d780b01458b623aa5f77db71ac9a02ff1d5ecda" (misc/edn->sha [1 2 3])) ; vec of len 3
+  (is= "aad1409b889ef360dad475dc32649f26d9df142a" ; vec, list, seq of len 2
+    (misc/edn->sha [1 2])
+    (misc/edn->sha (list 1 2))
+    (misc/edn->sha (seq [1 2])))
+  (is= "9c59f4aebb1a5db2f29609c027155f5867f1060d" ; vector & lazy seq
+    (misc/edn->sha (vec (range 999)))
+    (misc/edn->sha (range 999)))
+  (is= "6d78b62f48aafe38bbbb2a977f0d578109c0c8e2" ; map order doesn't matter
+    (misc/edn->sha {:a 1 :b 2})
+    (misc/edn->sha {:b 2 :a 1}))
+  (is= "c071ca0471e2ed68a46db1db4c8cf84c2a1c7806" ; set order doesn't matter
+    (misc/edn->sha #{1 2 :b :a})
+    (misc/edn->sha #{:a 1 :b 2})))
+
+(dotest
+  (is= misc/int->hex {0 \0, 1 \1, 2 \2, 3 \3, 4 \4, 5 \5, 6 \6, 7 \7, 8 \8, 9 \9, 10 \a, 11 \b, 12 \c, 13 \d, 14 \e, 15 \f})
+  (is= misc/hex->int {\0 0, \1 1, \2 2, \3 3, \4 4, \5 5, \6 6, \7 7, \8 8, \9 9, \a 10, \b 11, \c 12, \d 13, \e 14, \f 15})
 
   (let [unsigned-vals   [0 15 16 240 255]
         signed-vals     (misc/bytes-unsigned->signed unsigned-vals)
