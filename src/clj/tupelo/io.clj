@@ -59,7 +59,7 @@
     (File? arg) (.toPath arg)
     :else (throw (ex-info "unknown arg type" {:arg arg :type (type arg)}))))
 
-(s/defn ->File :- File
+(s/defn ^:public  ->File :- File
   "Convert a String or Path arg to a File. Idempotent."
   [arg :- (s/cond-pre s/Str File Path)]
   (cond

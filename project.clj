@@ -4,7 +4,7 @@
   :scm "https://github.com/cloojure/tupelo"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
-  :min-lein-version "2.9.1"
+  :min-lein-version "2.9.5"
 
   :global-vars {*warn-on-reflection* false}
 
@@ -13,6 +13,9 @@
 
   :dependencies
   [
+   ; temp dev libs
+   [org.clojure/clojure "1.10.3"]
+
    ; top-priority libs
    [org.clojure/core.async "1.3.610"]
    [org.clojure/core.match "1.0.0"]
@@ -21,14 +24,14 @@
    [org.clojure/math.combinatorics "0.1.6"]
    [org.clojure/spec.alpha "0.2.194"]
    [org.clojure/test.check "1.1.0"]
-   [org.clojure/tools.reader "1.3.4"]
+   [org.clojure/tools.reader "1.3.5"]
 
    ; other libs
    [cheshire "5.10.0"] ; #todo switch to muuntaja/jsonista
    [clj-time "0.15.2"]
    [clojure-csv/clojure-csv "2.0.2"]
    [danlentz/clj-uuid "0.1.9"]
-   [joda-time/joda-time "2.10.9"]
+   [joda-time/joda-time "2.10.10"]
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
    [org.flatland/ordered "1.5.9"]
    [org.snakeyaml/snakeyaml-engine "2.2.1"]
@@ -38,7 +41,8 @@
    ]
 
   ; Using `lein-ancient check :all` checks plugins
-  :plugins [[lein-cljsbuild "1.1.8"]
+  :plugins [
+            ;[lein-cljsbuild "1.1.8"]
             [lein-codox "0.10.7"]
             ;[lein-nomis-ns-graph "0.14.2"]
             [com.jakemccrary/lein-test-refresh "0.24.1"]]
@@ -50,7 +54,8 @@
           :src-linenum-anchor-prefix "L"
           :source-paths              ["src/clj" "src/cljc"]
           :language                  :clojure
-          :namespaces                [#"^tupelo\."]}
+          :namespaces                [#"^tupelo\."]
+          :exclude-vars              nil}
 
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
                                        [org.clojure/clojurescript "1.10.597" :scope "provided"]
@@ -60,7 +65,7 @@
                                        ;[binaryage/dirac "1.4.3"]
                                        ;[com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.6"]
-                                       [org.clojure/clojure "1.10.2"]
+                                       [org.clojure/clojure "1.10.3"]
                                       ;[org.clojure/clojurescript  "1.10.764"] ; "1.10.597"
                                        ]
                         }
