@@ -14,6 +14,11 @@
     [tupelo.schema :as tsk]
     [clojure.tools.reader.edn :as edn]))
 
+; #todo: create unit-number/unum {:meter 5} or {:km 5} => {:kilo {:meter 5}} => {:meter 5000}
+; #todo: maybe separate concept of "tagged primitive" vs "tagged entity".
+; So, "tagval" would be only number, etc like (:inch 5) (ie tagprim, tagnum, unit-num/unum unit-val/uval)
+; & "tagent" could be {:friend {:name "Joe" :age 23}}
+
 (s/defn tagval? :- s/Bool
   "Returns true if arg is a TagVal "
   [arg :- s/Any]
