@@ -2301,7 +2301,7 @@
    the-map :- tsk/Map]
   (fetch-in the-map [the-key]))
 
-(defrecord SpliceItem [data])
+(defrecord ^:no-doc SpliceItem [data])
 (s/defn <> :- SpliceItem
   "Splice operator.
 

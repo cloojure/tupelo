@@ -55,7 +55,8 @@
           :source-paths              ["src/clj" "src/cljc"]
           :language                  :clojure
           :namespaces                [#"^tupelo\."]
-          :exclude-vars              nil}
+          :exclude-vars              #".*IntervalClosed|.*SpliceItem|map->[A-Z].*"
+          }
 
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
                                        [org.clojure/clojurescript "1.10.597" :scope "provided"]
