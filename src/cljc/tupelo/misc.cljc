@@ -179,7 +179,7 @@
 
 
 ; for ref:  (crypt/stringToUtf8ByteArray s)
-(s/defn str->byte-array
+(s/defn str->byte-array ; #todo: move to tupelo.string and avoid duplicate!
   [str-val :- s/Str]
   (let [unsigned-bytes (mapv t/char->codepoint (t/str->chars str-val))
         byte-arr       (do
@@ -188,7 +188,7 @@
     byte-arr))
 
 #?(:clj
-   (def str->sha
+   (def str->sha ; #todo: move to tupelo.string
      "Returns the SHA-1 hex string for a string"
      (let [sha-1-instance (MessageDigest/getInstance "SHA")]
        (s/fn str->sha :- s/Str
@@ -199,7 +199,7 @@
            (let [bytes      (vec (.digest sha-1-instance))
                  hex-result (bytes-signed->hex-str bytes)]
              hex-result))))))
-#?(:cljs
+#?(:cljs ; #todo: move to tupelo.string
    (s/defn str->sha ; modeled after reagent-utils reagent.crypt
      [str-val :- s/Str]
      (let [sha-1-instance (goog.crypt.Sha1.)]

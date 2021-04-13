@@ -1,4 +1,4 @@
-(defproject tupelo "21.03.25"
+(defproject tupelo "21.04.12"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -14,7 +14,7 @@
   :dependencies
   [
    ; temp dev libs
-   [org.clojure/clojure "1.10.3"]
+   ; [org.clojure/clojure "1.10.3"]
 
    ; top-priority libs
    [org.clojure/core.async "1.3.610"]
