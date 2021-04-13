@@ -18,6 +18,7 @@
   (:use tupelo.core)
   (:require
     [tupelo.base64 :as b64]
+    [tupelo.string :as str]
     [tupelo.types :as types]
     [schema.core :as s]))
 
@@ -79,12 +80,12 @@
   "Encodes a byte array into Y64, returning a String."
   [byte-arr]
   (types/byte-array? byte-arr)
-  (-> byte-arr encode-byte-array types/byte-array->str))
+  (-> byte-arr encode-byte-array str/byte-array->str))
 
 (s/defn decode-str->byte-array
   "Decodes a Y64 encoded String, returning a byte array"
   [code-str :- s/Str]
-  (-> code-str types/str->byte-array decode-byte-array))
+  (-> code-str str/str->byte-array decode-byte-array))
 
 (s/defn encode-bytes->str :- s/Str ; #todo need test
   "Encodes a vector of byte values into Y64, returning a String."
@@ -99,10 +100,10 @@
 (s/defn encode-str :- s/Str
   "Encodes a String into Y64, returning a String."
   [src-str :- s/Str]
-  (-> src-str types/str->byte-array encode-byte-array->str))
+  (-> src-str str/str->byte-array encode-byte-array->str))
 
 (s/defn decode-str :- s/Str
   "Decodes a Y64 encoded String, returning a String."
   [code-str :- s/Str]
-  (-> code-str decode-str->byte-array types/byte-array->str))
+  (-> code-str decode-str->byte-array str/byte-array->str))
 
