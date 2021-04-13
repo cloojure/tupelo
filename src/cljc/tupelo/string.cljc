@@ -13,8 +13,7 @@
     [schema.core :as s]
     [tupelo.chars :as chars]
     [tupelo.core :as t ]
-    [tupelo.types :as types ]
-
+    #?(:clj [tupelo.types :as types])
     #?(:clj [clojure.java.io :as io])
     #?(:cljs [goog.string.format])
     )
