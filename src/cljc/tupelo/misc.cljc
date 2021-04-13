@@ -117,12 +117,12 @@
 (s/defn bytes-unsigned->signed
   "Converts a vector of unsigned byte values [0..255] into one of signed byte values [-128..127]"
   [byte-vals]
-  (mapv byte-unsigned->signed byte-vals ))
+  (mapv byte-unsigned->signed byte-vals))
 
 (s/defn bytes-signed->unsigned
   "Converts a vector of signed byte values [-128..127] into one of unsigned byte values [0..255] "
   [byte-vals]
-  (mapv byte-signed->unsigned byte-vals ))
+  (mapv byte-signed->unsigned byte-vals))
 
 (def hex-chars [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \a \b \c \d \e \f])
 (def int->hex (zipmap (range 16) hex-chars))
