@@ -8,8 +8,10 @@
   "Convert to/from traditional base64url encoding."
   (:use tupelo.core)
   (:require
+    [schema.core :as s]
+    [tupelo.string :as str]
     [tupelo.types :as types]
-    [schema.core :as s] ))
+    ))
 
 ; #todo -> code-chars (& other ns's)
 (def encoding-char-set
@@ -95,9 +97,9 @@
 (s/defn encode-str :- s/Str
   "Encodes a String into base64url, returning a String."
   [src-str :- s/Str]
-  (-> src-str types/str->byte-array encode-byte-array->str))
+  (-> src-str str/str->byte-array encode-byte-array->str))
 
 (s/defn decode-str :- s/Str
   "Decodes a base64url encoded String, returning a String."
   [code-str :- s/Str]
-  (-> code-str decode-str->byte-array types/byte-array->str))
+  (-> code-str decode-str->byte-array str/byte-array->str))

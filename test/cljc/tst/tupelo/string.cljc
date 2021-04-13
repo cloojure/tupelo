@@ -18,66 +18,65 @@
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty forv]]
     [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
                           throws? throws-not? define-fixture ]]
-    [clojure.string :as str] ; #todo => tupelo.string via aliases
     [tupelo.chars :as char]
-    [tupelo.string :as ts]
+    [tupelo.string :as str]
     ))
 
 ; #todo add generative testing?
 ; #todo add clojure.spec testing?
 
 (dotest
-  (is= "" (ts/tabs->spaces ""))
-  (is= "x" (ts/tabs->spaces "x"))
+  (is= "" (str/tabs->spaces ""))
+  (is= "x" (str/tabs->spaces "x"))
   ;     01234567012345670123456701234567
-  (is= "        x" (ts/tabs->spaces (str/join [\tab \x])))
-  (is= "0       x" (ts/tabs->spaces (str/join [\0 \tab \x])))
-  (is= "01      x" (ts/tabs->spaces (str/join [\0 \1 \tab \x])))
-  (is= "012     x" (ts/tabs->spaces (str/join [\0 \1 \2 \tab \x])))
-  (is= "0123    x" (ts/tabs->spaces (str/join [\0 \1 \2 \3 \tab \x])))
-  (is= "01234   x" (ts/tabs->spaces (str/join [\0 \1 \2 \3 \4 \tab \x])))
-  (is= "012345  x" (ts/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \tab \x])))
-  (is= "0123456 x" (ts/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \tab \x])))
+  (is= "        x" (str/tabs->spaces (str/join [\tab \x])))
+  (is= "0       x" (str/tabs->spaces (str/join [\0 \tab \x])))
+  (is= "01      x" (str/tabs->spaces (str/join [\0 \1 \tab \x])))
+  (is= "012     x" (str/tabs->spaces (str/join [\0 \1 \2 \tab \x])))
+  (is= "0123    x" (str/tabs->spaces (str/join [\0 \1 \2 \3 \tab \x])))
+  (is= "01234   x" (str/tabs->spaces (str/join [\0 \1 \2 \3 \4 \tab \x])))
+  (is= "012345  x" (str/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \tab \x])))
+  (is= "0123456 x" (str/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \tab \x])))
   ;     01234567012345670123456701234567
-  (is= "01234567        x" (ts/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \tab \x])))
-  (is= "012345670       x" (ts/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \tab \x])))
-  (is= "0123456701      x" (ts/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \tab \x])))
-  (is= "01234567012     x" (ts/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \tab \x])))
-  (is= "012345670123    x" (ts/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \tab \x])))
-  (is= "0123456701234   x" (ts/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \tab \x])))
-  (is= "01234567012345  x" (ts/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \5 \tab \x])))
-  (is= "012345670123456 x" (ts/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \5 \6 \tab \x])))
+  (is= "01234567        x" (str/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \tab \x])))
+  (is= "012345670       x" (str/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \tab \x])))
+  (is= "0123456701      x" (str/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \tab \x])))
+  (is= "01234567012     x" (str/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \tab \x])))
+  (is= "012345670123    x" (str/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \tab \x])))
+  (is= "0123456701234   x" (str/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \tab \x])))
+  (is= "01234567012345  x" (str/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \5 \tab \x])))
+  (is= "012345670123456 x" (str/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \5 \6 \tab \x])))
   ;     01234567012345670123456701234567
-  (is= "0123456701234567        x" (ts/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \5 \6 \7 \tab \x])))
+  (is= "0123456701234567        x" (str/tabs->spaces (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \0 \1 \2 \3 \4 \5 \6 \7 \tab \x])))
   ;     01234567012345670123456701234567
 
 
-  (is= "" (ts/tabs->spaces 4 ""))
-  (is= "x" (ts/tabs->spaces 4 "x"))
+  (is= "" (str/tabs->spaces 4 ""))
+  (is= "x" (str/tabs->spaces 4 "x"))
   ;     0123012301230123
-  (is= "    x" (ts/tabs->spaces 4 (str/join [\tab \x])))
-  (is= "0   x" (ts/tabs->spaces 4 (str/join [\0 \tab \x])))
-  (is= "01  x" (ts/tabs->spaces 4 (str/join [\0 \1 \tab \x])))
-  (is= "012 x" (ts/tabs->spaces 4 (str/join [\0 \1 \2 \tab \x])))
+  (is= "    x" (str/tabs->spaces 4 (str/join [\tab \x])))
+  (is= "0   x" (str/tabs->spaces 4 (str/join [\0 \tab \x])))
+  (is= "01  x" (str/tabs->spaces 4 (str/join [\0 \1 \tab \x])))
+  (is= "012 x" (str/tabs->spaces 4 (str/join [\0 \1 \2 \tab \x])))
   ;     0123012301230123
-  (is= "0123    x" (ts/tabs->spaces 4 (str/join [\0 \1 \2 \3 \tab \x])))
-  (is= "01234   x" (ts/tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \tab \x])))
-  (is= "012345  x" (ts/tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \tab \x])))
-  (is= "0123456 x" (ts/tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \tab \x])))
+  (is= "0123    x" (str/tabs->spaces 4 (str/join [\0 \1 \2 \3 \tab \x])))
+  (is= "01234   x" (str/tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \tab \x])))
+  (is= "012345  x" (str/tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \tab \x])))
+  (is= "0123456 x" (str/tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \tab \x])))
   ;     0123012301230123
-  (is= "01234567    x" (ts/tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \tab \x])))
-  (is= "012345678   x" (ts/tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \8 \tab \x])))
-  (is= "0123456789  x" (ts/tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \tab \x])))
+  (is= "01234567    x" (str/tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \tab \x])))
+  (is= "012345678   x" (str/tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \8 \tab \x])))
+  (is= "0123456789  x" (str/tabs->spaces 4 (str/join [\0 \1 \2 \3 \4 \5 \6 \7 \8 \9 \tab \x])))
 
   ;     0123012301230123
-  (is= "01  a   b" (ts/tabs->spaces 4 (str/join [\0 \1 \tab \a \tab \b]))))
+  (is= "01  a   b" (str/tabs->spaces 4 (str/join [\0 \1 \tab \a \tab \b]))))
 
 (dotest
   (let [text-blk (str/join \newline
                    ["one two three four five six seven eight nine ten"
                     "one two three four five six seven eight nine ten"
                     "one two three four five six seven eight nine ten"])]
-    (is (ts/nonblank= (ts/clip-text 30 text-blk)
+    (is (str/nonblank= (str/clip-text 30 text-blk)
           (str/join \newline ["one two three four five six se"
                               "one two three four five six se"
                               "one two three four five six se"])))))
@@ -85,22 +84,22 @@
 (dotest
   (is= (str/join \newline ["    a"
                            "0   a"])
-    (ts/tabs->spaces 4
+    (str/tabs->spaces 4
       (str/join [\tab \a \newline
                  \0 \tab \a])))
   (is= (str/join \newline ["    ab"
                            "0   a"])
-    (ts/tabs->spaces 4
+    (str/tabs->spaces 4
       (str/join [\tab \a \b \newline
                  \0 \tab \a])))
   (is= (str/join \newline ["    abc"
                            "0   a"])
-    (ts/tabs->spaces 4
+    (str/tabs->spaces 4
       (str/join [\tab \a \b \c \newline
                  \0 \tab \a])))
   (is= (str/join \newline ["    abcd"
                            "0   a"])
-    (ts/tabs->spaces 4
+    (str/tabs->spaces 4
       (str/join [\tab \a \b \c \d \newline
                  \0 \tab \a]))))
 
@@ -156,20 +155,20 @@
 
 (dotest
   (is (= "abc def g hij kl"
-        (ts/whitespace-collapse "  abc    def			g
+        (str/whitespace-collapse "  abc    def			g
                                      hij kl	 ")))
-  (is (= "abc" (ts/whitespace-remove "abc")))
-  (is (= "" (ts/whitespace-remove ""))))
+  (is (= "abc" (str/whitespace-remove "abc")))
+  (is (= "" (str/whitespace-remove ""))))
 
 (dotest
-  (is (ts/nonblank= "a"))
-  (is (ts/nonblank= "a" "  a "))
-  (is (ts/nonblank= "a" "  a  " "   a" "a   "))
+  (is (str/nonblank= "a"))
+  (is (str/nonblank= "a" "  a "))
+  (is (str/nonblank= "a" "  a  " "   a" "a   "))
 
   (is-nonblank= "a" "  a ")
   (is-nonblank= "a" "  a  " "   a" "a   ")
 
-  (is (ts/nonblank= "
+  (is (str/nonblank= "
         Whenever you find yourself on the side of the majority, it is time to pause and reflect.
         Don't go around saying the world owes you a living. The world owes you nothing. It was here first.
         I have never let my schooling interfere with my education.
@@ -190,11 +189,11 @@
                                tell the truth, you don't have to remember
                                anything.
                                Mark Twain      		"))
-  (is (ts/nonblank-lines= "a
+  (is (str/nonblank-lines= "a
                           b "
         "  a
            b"))
-  (isnt (ts/nonblank-lines= "a
+  (isnt (str/nonblank-lines= "a
                           b "
           "  a b "))
 
@@ -204,16 +203,16 @@
        b"))
 
 (dotest
-  (is= (ts/quotes->single (str \")) (str \'))
-  (is= (ts/quotes->double (str \')) (str \"))
+  (is= (str/quotes->single (str \")) (str \'))
+  (is= (str/quotes->double (str \')) (str \"))
   (let [s1 "I said, 'Yes, please.'"
         s2 "I said, \"Yes, please.\"" ]
-    (is= s1 (-> s2 ts/quotes->single))
-    (is= s2 (-> s1 ts/quotes->double))
-    (is= s2 (-> s2 ts/quotes->single
-                   ts/quotes->double))
-    (is= s1 (-> s1 ts/quotes->double
-                   ts/quotes->single))))
+    (is= s1 (-> s2 str/quotes->single))
+    (is= s2 (-> s1 str/quotes->double))
+    (is= s2 (-> s2 str/quotes->single
+                   str/quotes->double))
+    (is= s1 (-> s1 str/quotes->double
+                   str/quotes->single))))
 
 (dotest
   (let [kabob-str "abc-de-f-ghi"
@@ -225,134 +224,139 @@
     (is= "abc" (name :abc))
     (is= "abc" (name (symbol "abc")))
 
-    (is= kabob-kw (ts/->kabob-kw kabob-str))
-    (is= kabob-kw (ts/->kabob-kw kabob-kw))
-    (is= kabob-kw (ts/->kabob-kw kabob-sym))
-    (is= kabob-kw (ts/->kabob-kw snake-str))
-    (is= kabob-kw (ts/->kabob-kw snake-kw))
-    (is= kabob-kw (ts/->kabob-kw snake-sym))
+    (is= kabob-kw (str/->kabob-kw kabob-str))
+    (is= kabob-kw (str/->kabob-kw kabob-kw))
+    (is= kabob-kw (str/->kabob-kw kabob-sym))
+    (is= kabob-kw (str/->kabob-kw snake-str))
+    (is= kabob-kw (str/->kabob-kw snake-kw))
+    (is= kabob-kw (str/->kabob-kw snake-sym))
 
-    (is= kabob-str (ts/->kabob-str kabob-str))
-    (is= kabob-str (ts/->kabob-str kabob-kw))
-    (is= kabob-str (ts/->kabob-str kabob-sym))
-    (is= kabob-str (ts/->kabob-str snake-str))
-    (is= kabob-str (ts/->kabob-str snake-kw))
-    (is= kabob-str (ts/->kabob-str snake-sym))
+    (is= kabob-str (str/->kabob-str kabob-str))
+    (is= kabob-str (str/->kabob-str kabob-kw))
+    (is= kabob-str (str/->kabob-str kabob-sym))
+    (is= kabob-str (str/->kabob-str snake-str))
+    (is= kabob-str (str/->kabob-str snake-kw))
+    (is= kabob-str (str/->kabob-str snake-sym))
 
-    (is= snake-kw (ts/->snake-kw kabob-str))
-    (is= snake-kw (ts/->snake-kw kabob-kw))
-    (is= snake-kw (ts/->snake-kw kabob-sym))
-    (is= snake-kw (ts/->snake-kw snake-str))
-    (is= snake-kw (ts/->snake-kw snake-kw))
-    (is= snake-kw (ts/->snake-kw snake-sym))
+    (is= snake-kw (str/->snake-kw kabob-str))
+    (is= snake-kw (str/->snake-kw kabob-kw))
+    (is= snake-kw (str/->snake-kw kabob-sym))
+    (is= snake-kw (str/->snake-kw snake-str))
+    (is= snake-kw (str/->snake-kw snake-kw))
+    (is= snake-kw (str/->snake-kw snake-sym))
 
-    (is= snake-str (ts/->snake-str kabob-str))
-    (is= snake-str (ts/->snake-str kabob-kw))
-    (is= snake-str (ts/->snake-str kabob-sym))
-    (is= snake-str (ts/->snake-str snake-str))
-    (is= snake-str (ts/->snake-str snake-kw))
-    (is= snake-str (ts/->snake-str snake-sym)))
+    (is= snake-str (str/->snake-str kabob-str))
+    (is= snake-str (str/->snake-str kabob-kw))
+    (is= snake-str (str/->snake-str kabob-sym))
+    (is= snake-str (str/->snake-str snake-str))
+    (is= snake-str (str/->snake-str snake-kw))
+    (is= snake-str (str/->snake-str snake-sym)))
 
-  (is= (ts/->kabob-str "some_multiple_word_str") "some-multiple-word-str")
-  (is= (ts/->snake-str "some-multiple-word-str") "some_multiple_word_str")
+  (is= (str/->kabob-str "some_multiple_word_str") "some-multiple-word-str")
+  (is= (str/->snake-str "some-multiple-word-str") "some_multiple_word_str")
 
-  (is= (ts/->kabob-kw :some_multiple_word_kw) :some-multiple-word-kw)
-  (is= (ts/->snake-kw :some-multiple-word-kw) :some_multiple_word_kw))
+  (is= (str/->kabob-kw :some_multiple_word_kw) :some-multiple-word-kw)
+  (is= (str/->snake-kw :some-multiple-word-kw) :some_multiple_word_kw))
 
 (dotest
-  (is= :abc-def-gh-qrs (ts/str->kw-normalized "abc def*gh_qrs"))
-  (is= :ABC-DEF-gh-qrs (ts/str->kw-normalized "ABC DEF*gh_qrs"))
+  (is= :abc-def-gh-qrs (str/str->kw-normalized "abc def*gh_qrs"))
+  (is= :ABC-DEF-gh-qrs (str/str->kw-normalized "ABC DEF*gh_qrs"))
   (is= :abc-def-gh-qrs
-    (ts/clojurize-key "abc def*gh_qrs")
-    (ts/clojurize-key "abc DEF*gh_qrs")
-    (ts/clojurize-key "ABC def*GH_QRS")))
+    (str/clojurize-key "abc def*gh_qrs")
+    (str/clojurize-key "abc DEF*gh_qrs")
+    (str/clojurize-key "ABC def*GH_QRS")))
 
-#?(:clj             ; #todo need cljs tests (or delete completely?)
+#?(:clj ; #todo need cljs tests (or delete completely?)
+   (dotest
+     (is (= [65 66 67] (into [] (str/str->byte-array "ABC"))))
+     (is (= "ABC" (str/byte-array->str (byte-array [65 66 67]))))
+     (is (= "Hello World!" (-> "Hello World!" (str/str->byte-array) (str/byte-array->str)))))
+
    (dotest
      (is (= " :a :b 3 4" (t/seq->str [:a :b 3 4])))
      (is (= " \\a \\b \\c" (t/seq->str "abc")))
      (is (= " 1 2 3" (t/seq->str (byte-array [1 2 3]))))))
 
 (dotest
-  (isnt (ts/increasing? "abc" "a"))
-  (isnt (ts/increasing? "abc" "ab"))
-  (isnt (ts/increasing? "abc" "abc"))
-  (is   (ts/increasing? "abc" "abd"))
-  (is   (ts/increasing? "abc" "abcd"))
-  (is   (ts/increasing? "abc" "ad"))
-  (is   (ts/increasing? "abc" "b"))
+  (isnt (str/increasing? "abc" "a"))
+  (isnt (str/increasing? "abc" "ab"))
+  (isnt (str/increasing? "abc" "abc"))
+  (is   (str/increasing? "abc" "abd"))
+  (is   (str/increasing? "abc" "abcd"))
+  (is   (str/increasing? "abc" "ad"))
+  (is   (str/increasing? "abc" "b"))
 
-  (isnt (ts/increasing-or-equal? "abc" "a"))
-  (isnt (ts/increasing-or-equal? "abc" "ab"))
-  (is   (ts/increasing-or-equal? "abc" "abc"))
-  (is   (ts/increasing-or-equal? "abc" "abd"))
-  (is   (ts/increasing-or-equal? "abc" "abcd"))
-  (is   (ts/increasing-or-equal? "abc" "ad"))
-  (is   (ts/increasing-or-equal? "abc" "b")) )
+  (isnt (str/increasing-or-equal? "abc" "a"))
+  (isnt (str/increasing-or-equal? "abc" "ab"))
+  (is   (str/increasing-or-equal? "abc" "abc"))
+  (is   (str/increasing-or-equal? "abc" "abd"))
+  (is   (str/increasing-or-equal? "abc" "abcd"))
+  (is   (str/increasing-or-equal? "abc" "ad"))
+  (is   (str/increasing-or-equal? "abc" "b")) )
 
 (dotest
-  (is= (ts/walk-strings->keywords {"aa" ["bb" 33 "dd"]}) {:aa [:bb 33 :dd]})
-  (is= (ts/walk-keywords->strings {:aa [:bb 33 :dd]}) {"aa" ["bb" 33 "dd"]})
+  (is= (str/walk-strings->keywords {"aa" ["bb" 33 "dd"]}) {:aa [:bb 33 :dd]})
+  (is= (str/walk-keywords->strings {:aa [:bb 33 :dd]}) {"aa" ["bb" 33 "dd"]})
 
-  (is= (ts/walk-clojurize-keys {"aa" ["aval" 33 {"nested" "map"}]
-                                :bb  "bval"
-                                "cc" #{"c1" "c2" :ck1}})
+  (is= (str/walk-clojurize-keys {"aa" ["aval" 33 {"nested" "map"}]
+                                :bb   "bval"
+                                "cc"  #{"c1" "c2" :ck1}})
     {:aa ["aval" 33 {:nested "map"}]
      :bb "bval"
      :cc #{:ck1 "c2" "c1"}}))
 
 (dotest
-  (is (= ""    (ts/take 0 "abc")))
-  (is (= "a"   (ts/take 1 "abc")))
-  (is (= "ab"  (ts/take 2 "abc")))
-  (is (= "abc" (ts/take 3 "abc")))
-  (is (= "abc" (ts/take 4 "abc"))))
+  (is (= ""    (str/take 0 "abc")))
+  (is (= "a"   (str/take 1 "abc")))
+  (is (= "ab"  (str/take 2 "abc")))
+  (is (= "abc" (str/take 3 "abc")))
+  (is (= "abc" (str/take 4 "abc"))))
 
 (dotest
-  (is (= "abc" (ts/drop 0 "abc")))
-  (is (= "bc"  (ts/drop 1 "abc")))
-  (is (= "c"   (ts/drop 2 "abc")))
-  (is (= ""    (ts/drop 3 "abc")))
-  (is (= ""    (ts/drop 4 "abc"))))
+  (is (= "abc" (str/drop 0 "abc")))
+  (is (= "bc"  (str/drop 1 "abc")))
+  (is (= "c"   (str/drop 2 "abc")))
+  (is (= ""    (str/drop 3 "abc")))
+  (is (= ""    (str/drop 4 "abc"))))
 
 (dotest
-  (is (= "abc"    (ts/indent 0 "abc")))
-  (is (= " abc"   (ts/indent 1 "abc")))
-  (is (= "  abc"  (ts/indent 2 "abc")))
-  (is (= "   abc" (ts/indent 3 "abc")))
+  (is (= "abc"    (str/indent 0 "abc")))
+  (is (= " abc"   (str/indent 1 "abc")))
+  (is (= "  abc"  (str/indent 2 "abc")))
+  (is (= "   abc" (str/indent 3 "abc")))
 
-  (is (= "ab"    (ts/indent 0 "ab")))
-  (is (= " ab"   (ts/indent 1 "ab")))
-  (is (= "  ab"  (ts/indent 2 "ab")))
-  (is (= "   ab" (ts/indent 3 "ab")))
+  (is (= "ab"    (str/indent 0 "ab")))
+  (is (= " ab"   (str/indent 1 "ab")))
+  (is (= "  ab"  (str/indent 2 "ab")))
+  (is (= "   ab" (str/indent 3 "ab")))
 
-  (is (= "a"    (ts/indent 0 "a")))
-  (is (= " a"   (ts/indent 1 "a")))
-  (is (= "  a"  (ts/indent 2 "a")))
-  (is (= "   a" (ts/indent 3 "a")))
+  (is (= "a"    (str/indent 0 "a")))
+  (is (= " a"   (str/indent 1 "a")))
+  (is (= "  a"  (str/indent 2 "a")))
+  (is (= "   a" (str/indent 3 "a")))
 
-  (is (= ""    (ts/indent 0 "")))
-  (is (= " "   (ts/indent 1 "")))
-  (is (= "  "  (ts/indent 2 "")))
-  (is (= "   " (ts/indent 3 ""))))
+  (is (= ""    (str/indent 0 "")))
+  (is (= " "   (str/indent 1 "")))
+  (is (= "  "  (str/indent 2 "")))
+  (is (= "   " (str/indent 3 ""))))
 
 (dotest
   ; clojure accepts either CR/LF or LF (CR=/return & LF=\newline) as line-separator
-  (is (= "abc"    (ts/indent-lines 0      "abc"                    )))
-  (is (= "abc"    (ts/indent-lines 0 (str "abc"         \newline  ))))
-  (is (= "abc"    (ts/indent-lines 0 (str "abc" \return \newline  ))))
+  (is (= "abc"    (str/indent-lines 0      "abc"                    )))
+  (is (= "abc"    (str/indent-lines 0 (str "abc"         \newline  ))))
+  (is (= "abc"    (str/indent-lines 0 (str "abc" \return \newline  ))))
 
   ; counterexample: clojure doesn't accept \formfeed or solo \return as line-separator
-  (isnt (= "abc"    (ts/indent-lines 0 (str "abc" \formfeed ))))
-  (isnt (= "abc"    (ts/indent-lines 0 (str "abc" \return   ))))
+  (isnt (= "abc"    (str/indent-lines 0 (str "abc" \formfeed ))))
+  (isnt (= "abc"    (str/indent-lines 0 (str "abc" \return   ))))
 
-  (is (= "  abc\n  def"    (ts/indent-lines 2 (str "abc" \newline "def" ))))
-  (is (= "  abc\n  def"    (ts/indent-lines 2 (str "abc" \newline "def" \newline ))))
+  (is (= "  abc\n  def"    (str/indent-lines 2 (str "abc" \newline "def" ))))
+  (is (= "  abc\n  def"    (str/indent-lines 2 (str "abc" \newline "def" \newline ))))
 
-  (is (= "abc\ndef"         (ts/indent-lines 0 (str "abc" \newline "def" ))))
-  (is (= " abc\n def"       (ts/indent-lines 1 (str "abc" \newline "def" ))))
-  (is (= "  abc\n  def"     (ts/indent-lines 2 (str "abc" \newline "def" ))))
-  (is (= "   abc\n   def"   (ts/indent-lines 3 (str "abc" \newline "def" ))))
+  (is (= "abc\ndef"         (str/indent-lines 0 (str "abc" \newline "def" ))))
+  (is (= " abc\n def"       (str/indent-lines 1 (str "abc" \newline "def" ))))
+  (is (= "  abc\n  def"     (str/indent-lines 2 (str "abc" \newline "def" ))))
+  (is (= "   abc\n   def"   (str/indent-lines 3 (str "abc" \newline "def" ))))
   )
 
 (dotest
@@ -367,30 +371,30 @@
 
 ; search for successive string fragments (regex-safe)
 (dotest
-  (is (ts/contains-str-frags? "abcde" "a" ))
-  (is (ts/contains-str-frags? "abcde" "a" "e"))
-  (is (ts/contains-str-frags? "abcde" "a" "c" ))
-  (is (ts/contains-str-frags? "abcde" "a" "c" "e"))
+  (is (str/contains-str-frags? "abcde" "a" ))
+  (is (str/contains-str-frags? "abcde" "a" "e"))
+  (is (str/contains-str-frags? "abcde" "a" "c" ))
+  (is (str/contains-str-frags? "abcde" "a" "c" "e"))
 
-  (isnt (ts/contains-str-frags? "abcde" "z" ))
-  (isnt (ts/contains-str-frags? "abcde" "e" "a" ))
-  (isnt (ts/contains-str-frags? "abcde" "c" "a" ))
-  (isnt (ts/contains-str-frags? "abcde" "c" "a" "e"))
+  (isnt (str/contains-str-frags? "abcde" "z" ))
+  (isnt (str/contains-str-frags? "abcde" "e" "a" ))
+  (isnt (str/contains-str-frags? "abcde" "c" "a" ))
+  (isnt (str/contains-str-frags? "abcde" "c" "a" "e"))
 
-  (is (ts/contains-str-frags? "ab.*de" "a" ))
-  (is (ts/contains-str-frags? "ab.*de" "a" "e"))
-  (is (ts/contains-str-frags? "ab.*de" "a" ".*" ))
-  (is (ts/contains-str-frags? "ab.*de" "a" ".*" "e"))
+  (is (str/contains-str-frags? "ab.*de" "a" ))
+  (is (str/contains-str-frags? "ab.*de" "a" "e"))
+  (is (str/contains-str-frags? "ab.*de" "a" ".*" ))
+  (is (str/contains-str-frags? "ab.*de" "a" ".*" "e"))
 
-  (is (ts/contains-str-frags? "ab.de" "a" ))
-  (is (ts/contains-str-frags? "ab.de" "a" "e"))
-  (is (ts/contains-str-frags? "ab.de" "a" "." ))
-  (is (ts/contains-str-frags? "ab.de" "a" "." "e"))
+  (is (str/contains-str-frags? "ab.de" "a" ))
+  (is (str/contains-str-frags? "ab.de" "a" "e"))
+  (is (str/contains-str-frags? "ab.de" "a" "." ))
+  (is (str/contains-str-frags? "ab.de" "a" "." "e"))
 
-  (isnt (ts/contains-str-frags? "abcde" "a" "." ))
-  (isnt (ts/contains-str-frags? "abcde" "a" "." ))
-  (isnt (ts/contains-str-frags? "abcde" "a" ".*" ))
-  (isnt (ts/contains-str-frags? "abcde" "a" ".*" )))
+  (isnt (str/contains-str-frags? "abcde" "a" "." ))
+  (isnt (str/contains-str-frags? "abcde" "a" "." ))
+  (isnt (str/contains-str-frags? "abcde" "a" ".*" ))
+  (isnt (str/contains-str-frags? "abcde" "a" ".*" )))
 
 (dotest
   ; clojure.string
@@ -407,111 +411,111 @@
 
   ;-----------------------------------------------------------------------------
   ; tupelo.string
-  (is (ts/contains-match? "abcde" #"abc"))
-  (is (ts/contains-match? "abcde" #"abc.*"))
-  (is (ts/contains-match? "abcde" #".bc.*"))
-  (is (ts/contains-match? "abcde" #"^ab"))
-  (is (ts/contains-match? "abcde" #"bc"))
-  (isnt (ts/contains-match? "abcde" #"^bc"))
-  (isnt (ts/contains-match? "abcde" #".bc9.*"))
+  (is (str/contains-match? "abcde" #"abc"))
+  (is (str/contains-match? "abcde" #"abc.*"))
+  (is (str/contains-match? "abcde" #".bc.*"))
+  (is (str/contains-match? "abcde" #"^ab"))
+  (is (str/contains-match? "abcde" #"bc"))
+  (isnt (str/contains-match? "abcde" #"^bc"))
+  (isnt (str/contains-match? "abcde" #".bc9.*"))
 
   ; regex special chars don't work in tgt-str
-  (is (ts/contains-str? "abcde" "abc"))
-  (is (ts/contains-str? "abcde" "bc"))
-  (isnt (ts/contains-str? "abcde" "abc.*"))
-  (isnt (ts/contains-str? "abcde" ".bc.*"))
-  (isnt (ts/contains-str? "abcde" "^ab"))
-  (isnt (ts/contains-str? "abcde" "^bc"))
+  (is (str/contains-str? "abcde" "abc"))
+  (is (str/contains-str? "abcde" "bc"))
+  (isnt (str/contains-str? "abcde" "abc.*"))
+  (isnt (str/contains-str? "abcde" ".bc.*"))
+  (isnt (str/contains-str? "abcde" "^ab"))
+  (isnt (str/contains-str? "abcde" "^bc"))
 
   ; regex special chars OK in both search-str & tgt-str
-  (is (ts/contains-str? "abc.*de" "abc.*"))
-  (is (ts/contains-str? "a.bc.*de" ".bc.*"))
-  (is (ts/contains-str? "^abcde" "^ab"))
-  (is (ts/contains-str? "a^bcde" "^bc"))
+  (is (str/contains-str? "abc.*de" "abc.*"))
+  (is (str/contains-str? "a.bc.*de" ".bc.*"))
+  (is (str/contains-str? "^abcde" "^ab"))
+  (is (str/contains-str? "a^bcde" "^bc"))
 
   (let [search-str "Hello there, you.
                         How are you
                            doing today?"]
-    (is (ts/nonblank= (ts/grep #"hello" search-str) ""))
-    (is (ts/nonblank= (ts/grep #"Hello" search-str) "Hello there, you."))
-    (is (ts/nonblank= (ts/grep #"(?i)hello" search-str) "Hello there, you."))
-    (is (ts/nonblank= (ts/grep #"you" search-str)
+    (is (str/nonblank= (str/grep #"hello" search-str) ""))
+    (is (str/nonblank= (str/grep #"Hello" search-str) "Hello there, you."))
+    (is (str/nonblank= (str/grep #"(?i)hello" search-str) "Hello there, you."))
+    (is (str/nonblank= (str/grep #"you" search-str)
           "Hello there, you.
            How are you"))
-    (is (ts/nonblank= (ts/grep #"today." search-str) "doing today?"))
-    (is (ts/nonblank= (ts/fgrep "today." search-str) ""))))
+    (is (str/nonblank= (str/grep #"today." search-str) "doing today?"))
+    (is (str/nonblank= (str/fgrep "today." search-str) ""))))
 
 (dotest
-  (throws? (ts/lowercase=))
-  (throws? (ts/lowercase= "Camel-Case"))
-  (is (ts/lowercase= "abc" "ABC"))
-  (is (ts/lowercase= "Camel-Case" "camel-case" "CAMEL-CASE")))
+  (throws? (str/lowercase=))
+  (throws? (str/lowercase= "Camel-Case"))
+  (is (str/lowercase= "abc" "ABC"))
+  (is (str/lowercase= "Camel-Case" "camel-case" "CAMEL-CASE")))
 
 (dotest
-  (is   (ts/alphanumeric? \a))
-  (is   (ts/alphanumeric? [\a]))
-  (is   (ts/alphanumeric? "a"))
-  (is   (ts/alphanumeric? "abc"))
-  (isnt (ts/alphanumeric? "*"))
-  (isnt (ts/alphanumeric? "ab*de"))
-  (isnt (ts/alphanumeric? \=))
+  (is   (str/alphanumeric? \a))
+  (is   (str/alphanumeric? [\a]))
+  (is   (str/alphanumeric? "a"))
+  (is   (str/alphanumeric? "abc"))
+  (isnt (str/alphanumeric? "*"))
+  (isnt (str/alphanumeric? "ab*de"))
+  (isnt (str/alphanumeric? \=))
 
-  (is (ts/whitespace?   "")) ; empty string counts as "whitespace"
-  (is (ts/whitespace?   " "))
-  (is (ts/whitespace?   " \n"))
-  (is (ts/whitespace?   " \r"))
-  (is (ts/whitespace? (str \tab "   "  "\n")))
-  (isnt (ts/whitespace? (str \tab " xyz "  "\n")))
+  (is (str/whitespace?   "")) ; empty string counts as "whitespace"
+  (is (str/whitespace?   " "))
+  (is (str/whitespace?   " \n"))
+  (is (str/whitespace?   " \r"))
+  (is (str/whitespace? (str \tab "   "  "\n")))
+  (isnt (str/whitespace? (str \tab " xyz "  "\n")))
 
-  (is (ts/whitespace-horiz?                char/whitespace-horiz))
-  (is (ts/whitespace-eol?                  char/whitespace-eol))
-  (is (ts/whitespace?                      char/whitespace))
-  (is (ts/lowercase?                       char/lowercase))
-  (is (ts/uppercase?                       char/uppercase))
-  (is (ts/digit?                           char/digit))
-  (is (ts/alpha?                           char/alpha))
-  (is (ts/visible?                         char/visible))
-  (is (ts/text?                            char/text))
+  (is (str/whitespace-horiz?                char/whitespace-horiz))
+  (is (str/whitespace-eol?                  char/whitespace-eol))
+  (is (str/whitespace?                      char/whitespace))
+  (is (str/lowercase?                       char/lowercase))
+  (is (str/uppercase?                       char/uppercase))
+  (is (str/digit?                           char/digit))
+  (is (str/alpha?                           char/alpha))
+  (is (str/visible?                         char/visible))
+  (is (str/text?                            char/text))
 
-  (is (apply ts/whitespace-horiz?          (vec char/whitespace-horiz)))
-  (is (apply ts/whitespace-eol?            (vec char/whitespace-eol)))
-  (is (apply ts/whitespace?                (vec char/whitespace)))
-  (is (apply ts/lowercase?                 (vec char/lowercase)))
-  (is (apply ts/uppercase?                 (vec char/uppercase)))
-  (is (apply ts/digit?                     (vec char/digit)))
-  (is (apply ts/alpha?                     (vec char/alpha)))
-  (is (apply ts/visible?                   (vec char/visible)))
-  (is (apply ts/text?                      (vec char/text))) )
+  (is (apply str/whitespace-horiz?          (vec char/whitespace-horiz)))
+  (is (apply str/whitespace-eol?            (vec char/whitespace-eol)))
+  (is (apply str/whitespace?                (vec char/whitespace)))
+  (is (apply str/lowercase?                 (vec char/lowercase)))
+  (is (apply str/uppercase?                 (vec char/uppercase)))
+  (is (apply str/digit?                     (vec char/digit)))
+  (is (apply str/alpha?                     (vec char/alpha)))
+  (is (apply str/visible?                   (vec char/visible)))
+  (is (apply str/text?                      (vec char/text))) )
 
 (dotest
-  (is=  (ts/pad-left "a"     4) "   a")
-  (is=  (ts/pad-left "ab"    4) "  ab")
-  (is=  (ts/pad-left "abc"   4) " abc")
-  (is=  (ts/pad-left "abcd"  4) "abcd")
-  (is=  (ts/pad-left "abcde" 4) "abcde")
+  (is=  (str/pad-left "a"     4) "   a")
+  (is=  (str/pad-left "ab"    4) "  ab")
+  (is=  (str/pad-left "abc"   4) " abc")
+  (is=  (str/pad-left "abcd"  4) "abcd")
+  (is=  (str/pad-left "abcde" 4) "abcde")
 
-  (is=  (ts/pad-right "a"     4) "a   ")
-  (is=  (ts/pad-right "ab"    4) "ab  ")
-  (is=  (ts/pad-right "abc"   4) "abc ")
-  (is=  (ts/pad-right "abcd"  4) "abcd")
-  (is=  (ts/pad-right "abcde" 4) "abcde")
+  (is=  (str/pad-right "a"     4) "a   ")
+  (is=  (str/pad-right "ab"    4) "ab  ")
+  (is=  (str/pad-right "abc"   4) "abc ")
+  (is=  (str/pad-right "abcd"  4) "abcd")
+  (is=  (str/pad-right "abcde" 4) "abcde")
 
-  (is=  (ts/pad-left "a"     4 \-) "---a")
-  (is=  (ts/pad-left "ab"    4 \-) "--ab")
-  (is=  (ts/pad-left "abc"   4 \-) "-abc")
-  (is=  (ts/pad-left "abcd"  4 \-) "abcd")
-  (is=  (ts/pad-left "abcde" 4 \-) "abcde")
+  (is=  (str/pad-left "a"     4 \-) "---a")
+  (is=  (str/pad-left "ab"    4 \-) "--ab")
+  (is=  (str/pad-left "abc"   4 \-) "-abc")
+  (is=  (str/pad-left "abcd"  4 \-) "abcd")
+  (is=  (str/pad-left "abcde" 4 \-) "abcde")
 
-  (is=  (ts/pad-right "a"     4 \-) "a---")
-  (is=  (ts/pad-right "ab"    4 \-) "ab--")
-  (is=  (ts/pad-right "abc"   4 \-) "abc-")
-  (is=  (ts/pad-right "abcd"  4 \-) "abcd")
-  (is=  (ts/pad-right "abcde" 4 \-) "abcde"))
+  (is=  (str/pad-right "a"     4 \-) "a---")
+  (is=  (str/pad-right "ab"    4 \-) "ab--")
+  (is=  (str/pad-right "abc"   4 \-) "abc-")
+  (is=  (str/pad-right "abcd"  4 \-) "abcd")
+  (is=  (str/pad-right "abcde" 4 \-) "abcde"))
 
 (dotest
   (let [xx 123.456789012345]
-    (is= "Cost: 00123"    (ts/format "Cost: %05d" 123))
-    (is= "Cost:   123.46" (ts/format "Cost: %8.2f" xx))))
+    (is= "Cost: 00123"    (str/format "Cost: %05d" 123))
+    (is= "Cost:   123.46" (str/format "Cost: %8.2f" xx))))
 
 
 

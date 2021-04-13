@@ -8,8 +8,9 @@
   "Convert to/from traditional base64 encoding."
   (:use tupelo.core)
   (:require
-    [tupelo.types :as types]
     [schema.core :as s]
+    [tupelo.string :as str]
+    [tupelo.types :as types]
   ))
 
 (def base64-chars
@@ -66,9 +67,9 @@
 (s/defn encode-str :- s/Str
   "Encodes a String into base64, returning a String."
   [src-str :- s/Str]
-  (-> src-str types/str->byte-array encode-byte-array->str))
+  (-> src-str str/str->byte-array encode-byte-array->str))
 
 (s/defn decode-str :- s/Str
   "Decodes a base64 encoded String, returning a String."
   [code-str :- s/Str]
-  (-> code-str decode-str->byte-array types/byte-array->str))
+  (-> code-str decode-str->byte-array str/byte-array->str))
