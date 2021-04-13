@@ -11,8 +11,6 @@
     [clojure.string :as str]
     [schema.core :as s]))
 
-(def ^:const UTF-8-Charset-Name "UTF-8")
-
 ; An instance of the java.lang.Class<XXXX[]> (e.g. java.lang.Class<Byte[]>).
 (def ^:private  class-boolean-array (.getClass (boolean-array   0)))
 (def ^:private  class-byte-array    (.getClass (byte-array      0)))
@@ -112,22 +110,6 @@
   "Returns true is the arg is a Character, else false."
   [arg]
   (instance? java.lang.Character arg))
-
-;-----------------------------------------------------------------------------
-(defn str->byte-array  ; #todo move to tupelo.misc
-  "Converts a String to a byte array using the UTF-8 Charset"
-  [^String arg]
-  {:pre  [ (string? arg) ]
-   :post [ (byte-array? %) ] }
-  [arg]
-  (.getBytes arg UTF-8-Charset-Name))
-
-(defn byte-array->str  ; #todo move to tupelo.misc
-  "Converts a byte array to a String using the UTF-8 Charset"
-  [arg]
-  {:pre  [ (byte-array? arg) ]
-   :post [ (string? %) ] }
-  (String. arg UTF-8-Charset-Name))
 
 ;---------------------------------------------------------------------------------------------------
 

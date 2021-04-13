@@ -24,6 +24,9 @@
     [tupelo.schema :as tsk]
     [tupelo.core :as t]))
 
+; #todo maybe use shorthand names: slice [), block [], span (), naps (]
+; #todo maybe add in Allen's Interval Algebra predicates
+
 ;-----------------------------------------------------------------------------
 ; Represents the boundaries of an interval, without specifying open, half-open, or closed.
 (defrecord Interval [lower upper])

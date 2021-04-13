@@ -267,7 +267,12 @@
     (ts/clojurize-key "abc DEF*gh_qrs")
     (ts/clojurize-key "ABC def*GH_QRS")))
 
-#?(:clj             ; #todo need cljs tests (or delete completely?)
+#?(:clj ; #todo need cljs tests (or delete completely?)
+   (dotest
+     (is (= [65 66 67] (into [] (str/str->byte-array "ABC"))))
+     (is (= "ABC" (str/byte-array->str (byte-array [65 66 67]))))
+     (is (= "Hello World!" (-> "Hello World!" (str/str->byte-array) (str/byte-array->str)))))
+
    (dotest
      (is (= " :a :b 3 4" (t/seq->str [:a :b 3 4])))
      (is (= " \\a \\b \\c" (t/seq->str "abc")))

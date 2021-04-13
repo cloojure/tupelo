@@ -13,6 +13,7 @@
     [schema.core :as s]
     [tupelo.chars :as chars]
     [tupelo.core :as t ]
+    [tupelo.types :as types ]
 
     #?(:clj [clojure.java.io :as io])
     #?(:cljs [goog.string.format])
@@ -20,6 +21,8 @@
   #?(:clj
      (:import [java.io InputStream ByteArrayInputStream]
               [java.nio.charset StandardCharsets])))
+
+(def ^:const UTF-8-Charset-Name "UTF-8")
 
 ;-----------------------------------------------------------------------------
 ; for convenience of requiring only 1 ns
@@ -420,12 +423,29 @@
         result (t/keep-if #(contains-str? % tgt) lines)]
     (clojure.string/join \newline result)))
 
+;-----------------------------------------------------------------------------
 #?(:clj
+   (defn str->byte-array ; #todo move to tupelo.misc
+     "Converts a String to a byte array using the UTF-8 Charset"
+     [^String arg]
+     {:pre  [(string? arg)]
+      :post [(types/byte-array? %)]}
+     [arg]
+     (.getBytes arg UTF-8-Charset-Name))
+
+   (defn byte-array->str ; #todo move to tupelo.misc
+     "Converts a byte array to a String using the UTF-8 Charset"
+     [arg]
+     {:pre  [(types/byte-array? arg)]
+      :post [(string? %)]}
+     (String. arg UTF-8-Charset-Name))
+
    (s/defn string->stream :- InputStream
      [str-val :- s/Str]
      (io/input-stream
        (.getBytes str-val StandardCharsets/UTF_8))))
 
+;-----------------------------------------------------------------------------
 (s/defn pad-left :- s/Str
   "Pads a string on the left until it is at least N chars in size"
   ([str-val :- s/Str
