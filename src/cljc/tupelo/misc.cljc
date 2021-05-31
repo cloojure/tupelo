@@ -13,14 +13,17 @@
   #?(:cljs
      (:require-macros
        [tupelo.misc :refer [with-dots]]))
-  (:require [clojure.string :as str]
-            [clojure.walk :as walk]
-            [schema.core :as s]
-            [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map]]
-            [tupelo.schema :as tsk]
-            [tupelo.string :as ts]
-            #?(:cljs [goog.crypt :as crypt])
-            #?(:cljs [goog.crypt.Sha1])
+  (:require 
+    [clojure.string :as str]
+    [clojure.walk :as walk]
+    [schema.core :as s]
+    [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map]]
+    [tupelo.chars :as chars]
+    [tupelo.java-time :as tjt]
+    [tupelo.schema :as tsk]
+    [tupelo.string :as ts]
+    #?(:cljs [goog.crypt :as crypt])
+    #?(:cljs [goog.crypt.Sha1])
             )
   #?(:clj (:require
             [clj-uuid :as clj-uuid]
@@ -30,6 +33,7 @@
             [java.nio ByteBuffer]
             [java.nio.file Paths]
             [java.security MessageDigest]
+            [java.time Instant]
             [java.util UUID]))
   )
 
@@ -241,6 +245,14 @@
 ;             (let [bytes (.digest sha-1-instance)]
 ;               (signed-bytes->hex-str (vec bytes)))))))))
 
+
+; #todo:  make an Time Unique ID (TUID)  -  valid year 1970-2514
+;           128 bits total:  <34-bit-unix-sec> + <30 bit nanos> + <64 bits rand>
+;           Format:  YYYY-MMDD-HHMMSS-nanosec*9-rndhex*8-rndhex*8
+;           Sample:  2021-0714-191716-123456789-da39a3ee-5e6b4b0d
+
+
+
    (defn uuid->sha
      "Returns the SHA-1 hex string for a UUID's string representation"
      [uuid]
@@ -269,6 +281,61 @@
   "Returns a new HexID"
   []
   (keyword (sha-uuid)))
+
+
+#?(:clj
+   (do
+
+     (def ^:no-doc TWO_POW_34 (Math/round (Math/pow 2 34)))
+     (def ^:no-doc TWO_POW_30 (Math/round (Math/pow 2 30)))
+     (def ^:no-doc HEX_CHARS "0123456789abcdef")
+
+     (s/defn ^:no-doc random-hex-chars
+       "Returns a random vector of hex chars of length N"
+       [N :- s/Int]
+       (assert (pos? N))
+       (vec (str/join (repeatedly N #(rand-nth HEX_CHARS)))))
+
+     (s/defn ^:no-doc random-hex-str
+       "Returns a random hex string of length N"
+       [N :- s/Int] (str/join (random-hex-chars N)))
+
+     (defn ^:no-doc instant-now
+       [] (Instant/now))
+
+     (defn tuid
+       "Returns a 'Time Unique ID' (TUID), a 128-bit human-readable UUID-cousin based on the current
+        java.time.Instant. From MSB->LSB, it is composed of a 34-bit epoch second field
+        (valid years: 1970-2514), a 10-bit nanosecond field, and a 64-bit random field.
+
+             128 bits total:  <34-bit-unix-sec> + <30 bit nanos> + <64 bits rand>
+             Format:  YYYY-MMDD-HHMMSS-nanosec*9-rndhex*8-rndhex*8  ; string format
+             Sample:  2021-0714-191716-123456789-da39a3ee-5e6b4b0d  ; sample value
+        "
+       []
+       (let [inst         (instant-now)
+             esec         (.getEpochSecond inst)
+             nanos        (.getNano inst)
+             iso-8601-str (.toString inst) ; like "2021-05-18T00:32:45.196101Z"
+             ;   012345678901234567890123456789
+             yr4          (subs iso-8601-str 0 4)
+             mo2          (subs iso-8601-str 5 7)
+             day2         (subs iso-8601-str 8 10)
+             hr2          (subs iso-8601-str 11 13)
+             min2         (subs iso-8601-str 14 16)
+             sec2         (subs iso-8601-str 17 19)
+             result       (format "%4s-%2s%2s-%2s%2s%2s-%9s-%8s-%8s"
+                                  yr4 mo2 day2
+                                  hr2 min2 sec2
+                                  (str nanos)
+                                  (random-hex-str 8)
+                                  (random-hex-str 8))
+             ]
+         (assert (< 0 esec TWO_POW_34))
+         (assert (< 0 nanos TWO_POW_30))
+         result))
+
+     ))
 
 (s/defn hid? :- s/Bool
   "Returns true if the arg is a legal HexID"
