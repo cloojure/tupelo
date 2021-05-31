@@ -1,4 +1,4 @@
-(defproject tupelo "21.04.13"
+(defproject tupelo "21.05.30"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -17,7 +17,7 @@
    ; [org.clojure/clojure "1.10.3"]
 
    ; top-priority libs
-   [org.clojure/core.async "1.3.610"]
+   [org.clojure/core.async "1.3.618"]
    [org.clojure/core.match "1.0.0"]
    [org.clojure/data.avl "0.1.0"]
    [org.clojure/data.xml "0.2.0-alpha6"]
@@ -34,7 +34,7 @@
    [joda-time/joda-time "2.10.10"]
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
    [org.flatland/ordered "1.5.9"]
-   [org.snakeyaml/snakeyaml-engine "2.2.1"]
+   [org.snakeyaml/snakeyaml-engine "2.3"]
    [prismatic/schema "1.1.12"]
 
    ; #todo clojures pprint doesn't work under graal native-image
@@ -73,6 +73,7 @@
              :test     {:dependencies [[overtone/at-at "1.2.0"]]}
              :1.8      {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9      {:dependencies [[org.clojure/clojure "1.9.0"]]}
+             :1.10      {:dependencies [[org.clojure/clojure "1.10.0"]]}
              }
   :source-paths ["src/clj" "src/cljc"]
   :test-paths ["test/clj" "test/cljc"]

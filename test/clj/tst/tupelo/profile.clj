@@ -61,8 +61,8 @@
     ;    ---------------------------------------------------------------------------------------------------
 
     (let [prof-map (prof/profile-map)]
-      (let [within-tol (fn [val low] ; add 3 millis + 20% as upper bound
-                         (<= low val (+ low (* 1.2 low) 0.003)))]
+      (let [within-tol (fn [val low] ; add 13 millis + 20% as upper bound
+                         (<= low val (+ low (* 1.2 low) 0.013)))]
         (is (within-tol (fetch-in prof-map [:tst.tupelo.profile/sleep-02 :mean]) 0.002))
         (is (within-tol (fetch-in prof-map [:tst.tupelo.profile/sleep-03 :mean]) 0.003))
         (is (within-tol (fetch-in prof-map [:tst.tupelo.profile/sleep-05 :mean]) 0.005))
