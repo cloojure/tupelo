@@ -19,14 +19,14 @@
     [schema.core :as s]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
     [tupelo.chars :as chars]
-    [tupelo.java-time :as tjt]
     [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture]]
 
+    [tupelo.misc :as misc]
+
+    #?(:clj [tupelo.java-time :as tjt])
     #?(:cljs [goog.crypt :as crypt])
     #?(:cljs [goog.crypt.Sha1])
-    [tupelo.misc :as misc]
-    [tupelo.schema :as tsk]
     )
   #?(:clj
      (:import

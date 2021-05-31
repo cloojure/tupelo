@@ -13,21 +13,22 @@
   #?(:cljs
      (:require-macros
        [tupelo.misc :refer [with-dots]]))
-  (:require 
+  (:require
     [clojure.string :as str]
     [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map]]
     [tupelo.chars :as chars]
-    [tupelo.java-time :as tjt]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
     #?(:cljs [goog.crypt :as crypt])
     #?(:cljs [goog.crypt.Sha1])
-            )
+    )
   #?(:clj (:require
             [clj-uuid :as clj-uuid]
-            [clojure.java.shell :as shell]))
+            [clojure.java.shell :as shell]
+            [tupelo.java-time :as tjt]
+            ))
   #?(:clj (:import
             [java.lang Byte Integer]
             [java.nio ByteBuffer]
