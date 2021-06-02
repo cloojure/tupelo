@@ -6,8 +6,14 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.csv
   (:use tupelo.csv tupelo.core tupelo.test)
-  (:require [tupelo.parse :as parse])
-  (:import  [java.io StringReader] ) )
+  (:require
+    [camel-snake-kebab.core :as csk]
+    [tupelo.parse :as parse]
+    [tupelo.string :as str]
+    [clojure.walk :as walk])
+  (:import
+    [java.io StringReader]
+    ))
 
 (def data1-str-no-label
   "01002,00006,4
@@ -100,6 +106,41 @@
                                   01002,00277,5
                                   01003,00277"]
     (throws? (parse->entities test2-str-label-error))))
+
+(dotest
+  (let [sample-edn [{:aa-key "aaa" :bb-key "b,b"} ; 2nd val needs to be quoted
+                    {:aa-key "aa2" :bb-key "bb2"}]]
+    ; is verified-keys working?
+    (is= (verified-keys sample-edn) [:aa-key :bb-key])
+    (throws?
+      (verified-keys
+        [{:aa-key "aaa" :bb-X "b,b"} ; "bb" keys don't match
+         {:aa-key "aa2" :bb-key "bb2"}]))
+
+    ; 'b,b' value quoted correctly
+    (do
+      (let [edn-str-keys (walk/postwalk
+                           (fn [item]
+                             (cond-it-> item
+                               (keyword? it) (kw->str it)))
+                           sample-edn)]
+        (is (str/nonblank-lines=
+              (entities->csv edn-str-keys) ; not map key tx
+              (str/quotes->double
+                "aa-key,bb-key
+                 aaa,'b,b'
+                 aa2,bb2 "))))
+
+      ; 'b,b' value quoted correctly
+      (is (str/nonblank-lines=
+            (entities->csv sample-edn csk/->snake_case_string)
+            (str/quotes->double
+              "aa_key,bb_key
+               aaa,'b,b'
+               aa2,bb2 "))))
+    ))
+
+
 
 
 

@@ -8,12 +8,12 @@
   "Utils for reading CSV (comma-separated-value) formatted files."
   (:use tupelo.core)
   (:require
-    [clojure.string :as str]
     [clojure-csv.core :as csv]
     [schema.core :as s]
-    [tupelo.string :as ts]
-    [tupelo.schema :as tsk])
-  (:import [java.io Reader StringReader]))
+    [tupelo.schema :as tsk]
+    [tupelo.string :as str])
+  (:import
+    [java.io Reader StringReader]))
 
 (s/defn entities->attrs :- tsk/Map
   "Converts a sequence of entity-maps into a map of column-vectors. Not lazy."
@@ -54,7 +54,7 @@
      :data-lines parsed-lines} ; all lines are data
 
     ;else, convert first row of strings -> col label keywords
-    {:labels-kw  (mapv ts/str->kw-normalized (first parsed-lines))
+    {:labels-kw  (mapv str/str->kw-normalized (first parsed-lines))
      :data-lines (rest parsed-lines)})) ; rest of lines are data
 
 ; #todo: add default label-fn (comp trim safe-char )
@@ -123,6 +123,32 @@
   (let [opts (or opts {})]
     (entities->attrs
       (apply parse->entities csv-input (keyvals opts)))))
+
+(s/defn ^:no-doc verified-keys :- [s/Any]
+  "Verifies that each entity has an identical keyset. Returns a sorted vector of keys."
+  [entities :- [tsk/Map]]
+  (let [keyset (into (sorted-set) (keys (xfirst entities)))]
+    (doseq [entity entities]
+      (assert
+        (= keyset (set (keys entity)))
+        "All entities must have identical keys"))
+    (vec keyset)))
+
+(s/defn entities->csv :- s/Str
+  "Writes a sequence of EDN maps to a multi-line CSV string. Optionally accepts a map-key conversion function"
+  ([entities :- [tsk/Map]] (entities->csv entities identity))
+  ([entities :- [tsk/Map]
+    key-fn :- tsk/Fn]
+   (let [keys-vec        (verified-keys entities)
+         hdr-vec         (forv [curr-key keys-vec]
+                           (key-fn curr-key))
+         data-vecs       (forv [entity entities]
+                           (forv [curr-key keys-vec]
+                             (str (grab curr-key entity)))) ; coerce all to string for output to CSV
+         string-table-2d (prepend hdr-vec data-vecs)
+         result          (csv/write-csv string-table-2d)
+         ]
+     result)))
 
 
 

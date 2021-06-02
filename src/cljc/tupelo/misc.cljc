@@ -24,7 +24,7 @@
     #?(:cljs [goog.crypt :as crypt])
     #?(:cljs [goog.crypt.Sha1])
     )
-  #?(:clj (:require
+  #?(:clj (:require ; #todo fix all #?(:clj[s]) requires to be like this
             [clj-uuid :as clj-uuid]
             [clojure.java.shell :as shell]
             [tupelo.java-time :as tjt]
