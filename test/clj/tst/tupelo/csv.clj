@@ -64,20 +64,20 @@
 
 (dotest
   ; basic parse-csv->rows test, using String
-  (let [result (parse->entities data1-str)]
+  (let [result (csv->entities data1-str)]
     (is= result expected-1-entity))
 
   ; no header row in file, user spec :labels
-  (let [result (parse->entities data1-str-no-label
+  (let [result (csv->entities data1-str-no-label
                  :labels [:zip-postal-code :store-num :chain-rank])]
     (is= result expected-1-entity))
 
   ; basic parse-csv->rows test, using Reader
-  (let [result (parse->entities (StringReader. data1-str))]
+  (let [result (csv->entities (StringReader. data1-str))]
     (is= result expected-1-entity))
 
   ; read PSV file instead of default CSV"
-  (let [result (forv [entity (parse->entities data2-str-label :delimiter \|)]
+  (let [result (forv [entity (csv->entities data2-str-label :delimiter \|)]
                  {:store-id (parse/parse-long (grab :STORE-NUM entity))
                   :zipcode  (grab :ZIP-POSTAL-CODE entity)})]
     (is= result expected-2-entity)))
@@ -93,9 +93,9 @@
   (is= (attrs->entities expected-2-attr) expected-2-entity))
 
 (dotest
-  (is= (parse->attrs data1-str) expected-1-attr)
+  (is= (csv->attrs data1-str) expected-1-attr)
 
-  (let [raw-maps (parse->attrs data2-str-label :delimiter \|)
+  (let [raw-maps (csv->attrs data2-str-label :delimiter \|)
         result   {:store-id (mapv parse/parse-long (grab :STORE-NUM raw-maps))
                   :zipcode  (:ZIP-POSTAL-CODE raw-maps)}]
     (is= result expected-2-attr)))
@@ -105,7 +105,7 @@
                                   01002,00006,4
                                   01002,00277,5
                                   01003,00277"]
-    (throws? (parse->entities test2-str-label-error))))
+    (throws? (csv->entities test2-str-label-error))))
 
 (dotest
   (let [sample-edn [{:aa-key "aaa" :bb-key "b,b"} ; 2nd val needs to be quoted

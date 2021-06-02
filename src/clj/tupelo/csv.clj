@@ -67,7 +67,7 @@
 ; #todo: default everything to keyword keys
 ; #todo: throw if missing or extra fields found
 ; #todo: return empty map if no data rows found (with or without header row)
-(s/defn parse->entities :- [tsk/Map]
+(s/defn csv->entities :- [tsk/Map]
   "[csv-input & {:as opts} ]
    Returns a lazy sequence of maps constructed from csv-input.  The first line
    is assumed to be column label strings, which are (safely) converted into keywords.
@@ -112,17 +112,17 @@
                          (zipmap labels-kw data-fields)))]
     row-maps))
 
-(defn parse->attrs
+(s/defn csv->attrs :- tsk/KeyMap
   "[csv-input & {:as opts} ]
    Returns a map of attributes constructed from the columns of csv-input.  The first line is
    assumed to be column label strings, which are (safely) converted into keywords. The
    returned map has one entry for each column label keyword. The corresponding value for
    each keyword is a vector of string data taken from each subsequent line in the file.
    See tupelo.csv/parse->entities for options.  Not lazy."
-  [csv-input & {:as opts}]
-  (let [opts (or opts {})]
+  [csv-input & opts]
+  (let [opts (vec opts)]
     (entities->attrs
-      (apply parse->entities csv-input (keyvals opts)))))
+      (apply csv->entities csv-input opts))))
 
 (s/defn ^:no-doc verified-keys :- [s/Any]
   "Verifies that each entity has an identical keyset. Returns a sorted vector of keys."
