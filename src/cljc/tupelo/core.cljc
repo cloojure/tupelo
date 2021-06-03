@@ -2293,6 +2293,7 @@
 ; #todo:  (grab [:person :address :zip] the-map)  => fetch-in
 ; #todo:  (grab-all :name :phone [:address :zip] the-map)
 ; #todo:      => (mapv #(grab % the-map) keys)
+; #todo:  allow to use a default value like `get`
 (s/defn grab :- s/Any
   "A fail-fast version of keyword/map lookup.  When invoked as (grab :the-key the-map),
    returns the value associated with :the-key as for (clojure.core/get the-map :the-key).
