@@ -1,5 +1,6 @@
 (ns tupelo.uuid
   (:use tupelo.core)
+  (:refer-clojure :exclude [rand])
   (:require
     [clojure.core :exclude [rand]]
     [clj-uuid :as uuid]
@@ -14,15 +15,17 @@
 (def dummy-str "cafebabe-0867-5309-0666-0123456789ff")
 (def dummy (constantly dummy-str))
 
-(s/defn uuid-str?
+(s/defn uuid-str? :- s/Bool
   "Returns true iff the string shows a valid UUID-like pattern of hex digits. Does not
   distinguish between UUID subtypes."
-  [s :- s/Str]
-  (let [segs (str/split s #"-")]
-    (and
-      (= 5 (count segs))
-      (= [8 4 4 4 12] (map count segs))
-      (str/hex? (str/join segs)))))
+  [arg ]
+    (truthy?
+      (when (string? arg)
+        (let [segs (str/split arg #"-")]
+          (and
+            (= 5 (count segs))
+            (= [8 4 4 4 12] (map count segs))
+            (str/hex? (str/join segs)))))))
 
 (s/defn rand :- s/Str
   "Returns a random uuid"

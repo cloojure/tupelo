@@ -1,5 +1,6 @@
 (ns tst.tupelo.uuid
   (:use tupelo.core tupelo.test)
+  (:refer-clojure :exclude [rand])
   (:require
     [tupelo.uuid :as uuid]
     ))
@@ -20,6 +21,10 @@
   (isnt (uuid/uuid-str? "cafebabe-0867-5309-066x-0123456789ff"))
   (isnt (uuid/uuid-str? "cafebabe-0867-5309-0123456789ff"))
   (isnt (uuid/uuid-str? "cafebabe-0867-5309|0666-0123456789ff"))
+  (isnt (uuid/uuid-str? 5))
+  (isnt (uuid/uuid-str? :nope))
+  (isnt (uuid/uuid-str? nil))
+  (isnt (uuid/uuid-str? nil))
 
   ; we return uuids as a string
   (is (string? (uuid/rand)))
