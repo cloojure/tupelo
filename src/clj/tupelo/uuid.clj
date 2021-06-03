@@ -18,14 +18,14 @@
 (s/defn uuid-str? :- s/Bool
   "Returns true iff the string shows a valid UUID-like pattern of hex digits. Does not
   distinguish between UUID subtypes."
-  [arg ]
-    (truthy?
-      (when (string? arg)
-        (let [segs (str/split arg #"-")]
-          (and
-            (= 5 (count segs))
-            (= [8 4 4 4 12] (map count segs))
-            (str/hex? (str/join segs)))))))
+  [arg]
+  (truthy?
+    (when (string? arg)
+      (let [segs (str/split arg #"-")]
+        (and
+          (= 5 (count segs))
+          (= [8 4 4 4 12] (map count segs))
+          (str/hex? (str/join segs)))))))
 
 (s/defn rand :- s/Str
   "Returns a random uuid"
