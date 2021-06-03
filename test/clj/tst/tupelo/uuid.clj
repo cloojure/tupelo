@@ -12,6 +12,15 @@
        uuid/dummy-str
        (uuid/dummy))
 
+  (is (uuid/uuid-str? uuid/null-str))
+  (is (uuid/uuid-str? uuid/dummy-str))
+
+  (isnt (uuid/uuid-str? "cafebabe-0867-5309-0666-0123456789fff"))
+  (isnt (uuid/uuid-str? "cafebabe-0867-5309-06660-123456789ff"))
+  (isnt (uuid/uuid-str? "cafebabe-0867-5309-066x-0123456789ff"))
+  (isnt (uuid/uuid-str? "cafebabe-0867-5309-0123456789ff"))
+  (isnt (uuid/uuid-str? "cafebabe-0867-5309|0666-0123456789ff"))
+
   ; we return uuids as a string
   (is (string? (uuid/rand)))
   (dotimes [i 99] ; 2 uuids are never equal
