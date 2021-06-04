@@ -15,17 +15,25 @@
 (def dummy-str "cafebabe-0867-5309-0666-0123456789ff")
 (def dummy (constantly dummy-str))
 
+(def ^:no-doc uuid-regex-pattern
+  #"(?x)            # expanded mode
+  \p{XDigit}{8}     # 8 hex digits
+  -                 # hyphen
+  \p{XDigit}{4}     # 4 hex digits
+  -                 # hyphen
+  \p{XDigit}{4}     # 4 hex digits
+  -                 # hyphen
+  \p{XDigit}{4}     # 4 hex digits
+  -                 # hyphen
+  \p{XDigit}{12}    # 12 hex digits
+  ")
 (s/defn uuid-str? :- s/Bool
   "Returns true iff the string shows a valid UUID-like pattern of hex digits. Does not
   distinguish between UUID subtypes."
   [arg]
   (truthy?
     (when (string? arg)
-      (let [segs (str/split arg #"-")]
-        (and
-          (= 5 (count segs))
-          (= [8 4 4 4 12] (map count segs))
-          (str/hex? (str/join segs)))))))
+      (re-matches uuid-regex-pattern arg))))
 
 (s/defn rand :- s/Str
   "Returns a random uuid"
