@@ -1364,6 +1364,23 @@
             (inc it))))
 
 (dotest
+  #_(spy-pretty ; dbg
+      (t/spy-it->-impl '[1
+                         (inc it)
+                         (+ 3 it)
+                         (/ 10 it)]))
+  (let [stdout-result (with-out-str
+                        (is= 2 (t/spy-it-> 1
+                                 (inc it)
+                                 (+ 3 it)
+                                 (/ 10 it))))]
+    (is-nonblank= stdout-result
+      "spy-it-> 1
+         (inc it)   =>  2
+         (+ 3 it)   =>  5
+         (/ 10 it)  =>  2 ")))
+
+(dotest
   (let [params {:a 1 :b 1 :c nil :d nil}]
     (is= (t/cond-it-> params
            (:a it) (update it :b inc)

@@ -5,7 +5,7 @@
     [tupelo.uuid :as uuid]
     ))
 
-(dotest-focus
+(dotest
   (is= "00000000-0000-0000-0000-000000000000"
        uuid/null-str
        (uuid/null))
@@ -28,8 +28,10 @@
 
   ; we return uuids as a string
   (is (string? (uuid/rand)))
-  (dotimes [i 99] ; 2 uuids are never equal
-    (isnt (= (uuid/rand) (uuid/rand))))
+  (is (with-exception-default false
+        (dotimes [i 99] ; 2 uuids are never equal
+          (assert (not= (uuid/rand) (uuid/rand))))
+        true))
 
   ; demonstrate uuid/with-null usage for testing
   (uuid/with-null

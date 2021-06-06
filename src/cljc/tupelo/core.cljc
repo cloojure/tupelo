@@ -1483,6 +1483,25 @@
          ]
      ~'it))
 
+; #todo  Need it?-> like some-> that short-circuits on nil
+(defn ^:no-doc spy-it->-impl
+  [[expr & forms]]
+  ; (spyx expr)   ; dbg
+  ; (spyx forms)  ; dbg
+  `(do
+     (print "spy-it-> ") (prn ~expr)
+     (let [~'it ~expr
+           ~@(apply concat
+               (forv [form forms]
+                 ; (spyx form)  ; dbg
+                 ['it form
+                  '>> `(println "  " (quote ~form) " => " (pr-str ~'it))]))
+           ]
+       ~'it)))
+(defmacro spy-it->
+  "Like it-> but prints the value at each stage of the pipeline"
+  [& args] (spy-it->-impl args))
+
 (defn ^:no-doc cond-it-impl
   [expr & forms]
   (let [num-forms (count forms)]
