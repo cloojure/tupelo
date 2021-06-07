@@ -135,7 +135,8 @@
     (vec keyset)))
 
 (s/defn entities->csv :- s/Str
-  "Writes a sequence of EDN maps to a multi-line CSV string. Optionally accepts a map-key conversion function"
+  "Writes a sequence of EDN maps to a multi-line CSV string.  Keys are output in
+   sorted order.  Optionally accepts a map-key conversion function"
   ([entities :- [tsk/Map]] (entities->csv entities identity))
   ([entities :- [tsk/Map]
     key-fn :- tsk/Fn]
