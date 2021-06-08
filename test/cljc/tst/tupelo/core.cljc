@@ -2155,7 +2155,7 @@
     (is= (t/distinct-using identity data)
       [[:a 1] [:a 2] [:a 3] [:b 1] [:b 2] [:b 3]])))
 
-(dotest
+(dotest-focus
   (let [ctx (let [a 1
                   b 2
                   c 3
@@ -2177,7 +2177,27 @@
 
     (throws?
       (t/with-map-vals ctx [a b z] ; thows if key doesn't exist
-        (println "won't ever get here")))))
+        (println "won't ever get here"))))
+
+  (let [ctx (let [a 1
+                  b 2
+                  c 3]
+              (t/vals->strmap a b c ))]
+    (is= ctx {"a" 1 "b" 2 "c" 3 })
+    (t/with-strmap-vals ctx [a b c ]
+      (is= [a b c d e] [1 2 3 4 5])
+      (is= 15 (+ a b c d e)))
+    (t/with-strmap-vals ctx [b a  c ] ; order doesn't matter
+      (is= [a b c d e] [1 2 3 4 5])
+      (is= 15 (+ a b c  )))
+    (t/with-strmap-vals ctx [b a ] ; can ignore stuff you don't care about
+      (is= [d a ] [ 1 2]))
+
+    (throws?
+      (t/with-strmap-vals ctx [a b z] ; thows if key doesn't exist
+        (println "won't ever get here"))))
+
+  )
 
 ;---------------------------------------------------------------------------------------------------
 ; demo and poc for td/construct
