@@ -967,7 +967,7 @@
   (reset! spy-indent-level 0))
 
 ;-----------------------------------------------------------------------------
-(defn spy2-impl ; 2-arg arity requires user-supplied keyword
+(defn ^:no-doc spy2-impl ; 2-arg arity requires user-supplied keyword
   [arg1 arg2]
   (let [[tag value] (cond
                       (keyword? arg1) [arg1 arg2]
@@ -1371,7 +1371,7 @@
                     {(keyword symbol) symbol})]
     `(glue ~@maps-list)) )
 
-(defn vals->strmap-impl
+(defn ^:no-doc  vals->strmap-impl
   [symbols]
   (let [maps-list (for [symbol symbols]
                     {(->str symbol) (->sym symbol)})]
@@ -1429,7 +1429,7 @@
             [sym (list `tupelo.core/grab strkey the-map)]))
        ~@forms)))
 
-(defn construct-impl
+(defn ^:no-doc   construct-impl
   [template]
   ;(spyx template)
   ;(spy :impl-out)
@@ -1466,7 +1466,7 @@
   `(with-cum-val []
      ~@forms))
 
-(defn cum-val-set-it-impl
+(defn ^:no-doc cum-val-set-it-impl
   "Works inside of a `with-cum-val` block to append a new val value."
   [forms]
   (let [x1 (concat '(fn [it]) forms)
@@ -3011,7 +3011,7 @@
 ; #todo allow pred fn to replace entire node in search path:
 ; #todo    (fn [node] (and (contains? #{:horse :dog} (grab :animal/species node))
 ; #todo                 (<= 1 (grab :age node) 3 )))   ; an "adolescent" animal
-(s/defn ^:private ^:no-doc wild-match-impl
+(s/defn ^:no-doc wild-match-impl
   [ctx :- tsk/KeyMap ; #todo more precise schema needed { :submap-ok s/Bool ... }
    pattern :- s/Any
    value :- s/Any ]
