@@ -2529,8 +2529,7 @@
   [m :- tsk/Map ]
   (reduce into [] (seq m)))
 
-(comment  ; #todo fix this, or delete?
-
+(do       ; #todo fix delete this???
   (s/defn ^:no-doc keyvals-seq-impl :- [s/Any]
     [ctx :- tsk/KeyMap]
     (with-map-vals ctx [missing-ok the-map the-keys]
@@ -2555,7 +2554,8 @@
        (keyvals-seq-impl (into defaults ctx))))
     ([the-map :- tsk/KeyMap
       the-keys :- [s/Any]]
-     (keyvals-seq (vals->map the-map the-keys)))))
+     (keyvals-seq (vals->map the-map the-keys))))
+  )
 
 ; #todo add reference to medley/deep-merge  ???
 

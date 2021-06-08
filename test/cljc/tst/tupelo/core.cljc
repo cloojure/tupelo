@@ -1335,21 +1335,20 @@
     (is= m1 (apply hash-map (t/keyvals m1)))
     (is= m2 (apply hash-map (t/keyvals m2)))))
 
-(comment  ; #todo fix or delete???
-  (dotest
-    (let [m1 {:a 1 :b 2 :c 3}]
-      (is= [:a 1 :b 2] (t/keyvals-seq m1 [:a :b]))
-      (is= [:b 2 :a 1] (t/keyvals-seq m1 [:b :a]))
-      (is= [:a 1 :b 2 :c 3] (t/keyvals-seq m1 [:a :b :c]))
-      (is= [:c 3 :a 1 :b 2] (t/keyvals-seq m1 [:c :a :b]))
-      (is= [:c 3 :b 2 :a 1] (t/keyvals-seq m1 [:c :b :a]))
-      (is= [:a 1 :b 2 :a 1] (t/keyvals-seq m1 [:a :b :a]))
+(dotest   ; #todo delete this???
+  (let [m1 {:a 1 :b 2 :c 3}]
+    (is= [:a 1 :b 2] (t/keyvals-seq m1 [:a :b]))
+    (is= [:b 2 :a 1] (t/keyvals-seq m1 [:b :a]))
+    (is= [:a 1 :b 2 :c 3] (t/keyvals-seq m1 [:a :b :c]))
+    (is= [:c 3 :a 1 :b 2] (t/keyvals-seq m1 [:c :a :b]))
+    (is= [:c 3 :b 2 :a 1] (t/keyvals-seq m1 [:c :b :a]))
+    (is= [:a 1 :b 2 :a 1] (t/keyvals-seq m1 [:a :b :a]))
 
-      (throws? (t/keyvals-seq m1 [:a :b :z]))
-      (is= [:a 1 :b 2] (t/keyvals-seq {:missing-ok true
-                                       :the-map    m1 :the-keys [:a :b :z]}))
-      (is= [:b 2 :c 3] (t/keyvals-seq {:missing-ok true
-                                       :the-map    m1 :the-keys [:z :b :c]})))))
+    (throws? (t/keyvals-seq m1 [:a :b :z]))
+    (is= [:a 1 :b 2] (t/keyvals-seq {:missing-ok true
+                                     :the-map    m1 :the-keys [:a :b :z]}))
+    (is= [:b 2 :c 3] (t/keyvals-seq {:missing-ok true
+                                     :the-map    m1 :the-keys [:z :b :c]}))))
 
 (dotest
   (is= 2 (t/it-> 1
