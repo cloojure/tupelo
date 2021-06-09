@@ -3085,10 +3085,6 @@
 ;  (spyxx {:a 1})
 ;  )
 
-
-;-----------------------------------------------------------------------------
-; Clojure version stuff
-
 ;***************************************************************************************************
 ;***************************************************************************************************
 ;***************************************************************************************************
@@ -3410,9 +3406,13 @@
              nums  (t/with-cum-vector
                      (let [futures     (forv [ii (range N)]
                                          (future (randy ii)))
-                           future-vals (forv [future futures] @future)] ; wait for all futures to finish
+                           future-vals (forv [fut futures] @fut)] ; wait for all futures to finish
                        (is= future-vals (range N))))] ; in order of creation
-         (is-set= nums (range N)))) ; nums is in random order
+         (is-set= nums (range N))) ; nums is in random order
+
+       (is= 15 (t/with-cum-val 0
+                 (doseq [i (t/thru 5)]
+                   (t/cum-val-set-it (+ it i))))))
 
      ))
 
