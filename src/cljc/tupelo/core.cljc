@@ -1447,42 +1447,39 @@
   [template] (construct-impl template))
 
 ;-----------------------------------------------------------------------------
-(def ^:dynamic *cumulative-val*
-  "A dynamic Var pointing to an `atom`. Used by `with-cum-val` to accumulate state,
+(def ^:dynamic *dynamic-atom*
+  "A dynamic Var pointing to an `atom`. Used by `with-cynamic-val` to accumulate state,
   such as in a vector or map.  Typically manipulated via helper functions such as
   `cum-val-set-it` or `cum-vector-append`. Can also be manipulated directly via `swap!` et al."
   nil)
 
-(defmacro with-cum-val
+(defmacro with-dynamic-val
   "Wraps forms containing `cum-val-set-it` calls to accumulate values into a vector."
   [init-val & forms]
-  `(binding [tupelo.core/*cumulative-val* (atom ~init-val)]
+  `(binding [tupelo.core/*dynamic-atom* (atom ~init-val)]
      (do ~@forms)
-     (deref tupelo.core/*cumulative-val*)))
+     (deref tupelo.core/*dynamic-atom*)))
+
+(defn ^:no-doc dynamic-val-set-it-impl
+  [forms]
+  `(swap! *dynamic-atom*
+     (fn [~'it] ~@forms)))
+
+(defmacro dynamic-val-set-it
+  "Works inside of a `with-dynamic-val` block to store a new value."
+  [& forms]
+  (dynamic-val-set-it-impl forms))
 
 (defmacro with-cum-vector
   "Wraps forms containing `cum-vector-append` calls to accumulate values into a vector."
   [& forms]
-  `(with-cum-val []
+  `(with-dynamic-val []
      ~@forms))
 
-(defn ^:no-doc cum-val-set-it-impl
-  "Works inside of a `with-cum-val` block to append a new val value."
-  [forms]
-  (let [x1 (concat '(fn [it]) forms)
-        x2 (concat '(swap! tupelo.core/*cumulative-val*) [x1])]
-    x2))
-
-(defmacro cum-val-set-it
-  "Works inside of a `with-cum-val` block to append a new val value."
-  [& forms]
-  (cum-val-set-it-impl forms))
-
 (defn cum-vector-append ; #todo file bug report for CLJS
-  "Works inside of a `with-cum-vector` block to append a new vector value."
+  "Within a `with-cum-vector` form, will append a new value."
   [value]
-  (cum-val-set-it (tupelo.core/append it value))) ; #todo copy td/cum-vector-swap-append kludge
-
+  (dynamic-val-set-it (tupelo.core/append it value)))
 
 ;-----------------------------------------------------------------------------
 (s/defn only? :- s/Bool

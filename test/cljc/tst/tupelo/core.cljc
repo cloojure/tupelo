@@ -161,22 +161,22 @@
   (isnt (t/only2? [#{:stuff :more}])))
 
 (dotest   ; #todo => tupelo.core
-  (is= 5 (t/with-cum-val 0
+  (is= 5 (t/with-dynamic-val 0
            (doseq [ii (t/thru 5)]
-             (t/cum-val-set-it ii))))
-  (is= 15 (t/with-cum-val 0
+             (t/dynamic-val-set-it ii))))
+  (is= 15 (t/with-dynamic-val 0
             (doseq [ii (t/thru 5)]
-              (t/cum-val-set-it (+ it ii)))))
-  (is= (t/with-cum-val {}
+              (t/dynamic-val-set-it (+ it ii)))))
+  (is= (t/with-dynamic-val {}
          (doseq [ii (t/thru 3)]
-           (t/cum-val-set-it (glue it {ii (+ 10 ii)}))))
+           (t/dynamic-val-set-it (glue it {ii (+ 10 ii)}))))
     {0 10
      1 11
      2 12
      3 13})
-  (is= (t/with-cum-val {}
+  (is= (t/with-dynamic-val {}
          (doseq [ii (t/thru 3)]
-           (swap! t/*cumulative-val* assoc ii (+ 10 ii)))) ; can do it "manually" if desired
+           (swap! t/*dynamic-atom* assoc ii (+ 10 ii)))) ; can do it "manually" if desired
     {0 10
      1 11
      2 12
@@ -3410,9 +3410,9 @@
                        (is= future-vals (range N))))] ; in order of creation
          (is-set= nums (range N))) ; nums is in random order
 
-       (is= 15 (t/with-cum-val 0
+       (is= 15 (t/with-dynamic-val 0
                  (doseq [i (t/thru 5)]
-                   (t/cum-val-set-it (+ it i))))))
+                   (t/dynamic-val-set-it (+ it i))))))
 
      ))
 
