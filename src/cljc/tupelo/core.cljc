@@ -1453,33 +1453,39 @@
   `cum-val-set-it` or `cum-vector-append`. Can also be manipulated directly via `swap!` et al."
   nil)
 
-(defmacro with-dynamic-val
-  "Wraps forms containing `cum-val-set-it` calls to accumulate values into a vector."
+(defmacro with-dynamic-var
+  "Works with `dynval-set-it` to simulate a mutable variable.
+
+        (is= 3 (with-dynamic-var
+                 (dynval-set-it! 1)
+                 (dynval-set-it! 2)
+                 (dynval-set-it! 3)))
+  "
   [init-val & forms]
   `(binding [tupelo.core/*dynamic-atom* (atom ~init-val)]
      (do ~@forms)
      (deref tupelo.core/*dynamic-atom*)))
 
-(defn ^:no-doc dynamic-val-set-it-impl
+(defn ^:no-doc dynvar-set-it-impl
   [forms]
   `(swap! *dynamic-atom*
      (fn [~'it] ~@forms)))
 
-(defmacro dynamic-val-set-it
-  "Works inside of a `with-dynamic-val` block to store a new value."
+(defmacro dynvar-set-it!
+  "Within `(with-dynamic-val ...)` form, replaces value."
   [& forms]
-  (dynamic-val-set-it-impl forms))
+  (dynvar-set-it-impl forms))
 
 (defmacro with-cum-vector
-  "Wraps forms containing `cum-vector-append` calls to accumulate values into a vector."
+  "Wraps forms containing `cum-vector-append` to accumulate values into a vector."
   [& forms]
-  `(with-dynamic-val []
+  `(with-dynamic-var []
      ~@forms))
 
-(defn cum-vector-append ; #todo file bug report for CLJS
-  "Within a `with-cum-vector` form, will append a new value."
+(defn cum-vector-append! ; #todo file bug report for CLJS
+  "Within `(with-cum-vector ...)` form, appends a new value."
   [value]
-  (dynamic-val-set-it (tupelo.core/append it value)))
+  (dynvar-set-it! (append it value)))
 
 ;-----------------------------------------------------------------------------
 (s/defn only? :- s/Bool

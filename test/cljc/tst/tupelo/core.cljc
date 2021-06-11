@@ -161,20 +161,20 @@
   (isnt (t/only2? [#{:stuff :more}])))
 
 (dotest   ; #todo => tupelo.core
-  (is= 5 (t/with-dynamic-val 0
+  (is= 5 (t/with-dynamic-var 0
            (doseq [ii (t/thru 5)]
-             (t/dynamic-val-set-it ii))))
-  (is= 15 (t/with-dynamic-val 0
+             (t/dynvar-set-it! ii))))
+  (is= 15 (t/with-dynamic-var 0
             (doseq [ii (t/thru 5)]
-              (t/dynamic-val-set-it (+ it ii)))))
-  (is= (t/with-dynamic-val {}
+              (t/dynvar-set-it! (+ it ii)))))
+  (is= (t/with-dynamic-var {}
          (doseq [ii (t/thru 3)]
-           (t/dynamic-val-set-it (glue it {ii (+ 10 ii)}))))
+           (t/dynvar-set-it! (glue it {ii (+ 10 ii)}))))
     {0 10
      1 11
      2 12
      3 13})
-  (is= (t/with-dynamic-val {}
+  (is= (t/with-dynamic-var {}
          (doseq [ii (t/thru 3)]
            (swap! t/*dynamic-atom* assoc ii (+ 10 ii)))) ; can do it "manually" if desired
     {0 10
@@ -3389,11 +3389,11 @@
      (dotest
        (is= (t/with-cum-vector
               (dotimes [ii 5]
-                (t/cum-vector-append ii)))
+                (t/cum-vector-append! ii)))
          [0 1 2 3 4])
        (let [ff (fn ff-fn [n]
                   (when (t/nonneg? n)
-                    (t/cum-vector-append n)
+                    (t/cum-vector-append! n)
                     (ff-fn (dec n))))]
          (is= (t/with-cum-vector (ff 5))
            [5 4 3 2 1 0]))
@@ -3401,7 +3401,7 @@
        (let [N     10
              randy (fn [n]
                      (Thread/sleep (int (+ 50 (* 50 (Math/random)))))
-                     (t/cum-vector-append n)
+                     (t/cum-vector-append! n)
                      n)
              nums  (t/with-cum-vector
                      (let [futures     (forv [ii (range N)]
@@ -3410,9 +3410,9 @@
                        (is= future-vals (range N))))] ; in order of creation
          (is-set= nums (range N))) ; nums is in random order
 
-       (is= 15 (t/with-dynamic-val 0
+       (is= 15 (t/with-dynamic-var 0
                  (doseq [i (t/thru 5)]
-                   (t/dynamic-val-set-it (+ it i))))))
+                   (t/dynvar-set-it! (+ it i))))))
 
      ))
 
