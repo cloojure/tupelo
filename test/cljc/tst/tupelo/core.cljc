@@ -160,28 +160,6 @@
   (isnt (t/only2? [{:a 1 :b 2}]))
   (isnt (t/only2? [#{:stuff :more}])))
 
-(dotest   ; #todo => tupelo.core
-  (is= 5 (t/with-dynamic-var 0
-           (doseq [ii (t/thru 5)]
-             (t/dynvar-set-it! ii))))
-  (is= 15 (t/with-dynamic-var 0
-            (doseq [ii (t/thru 5)]
-              (t/dynvar-set-it! (+ it ii)))))
-  (is= (t/with-dynamic-var {}
-         (doseq [ii (t/thru 3)]
-           (t/dynvar-set-it! (glue it {ii (+ 10 ii)}))))
-    {0 10
-     1 11
-     2 12
-     3 13})
-  (is= (t/with-dynamic-var {}
-         (doseq [ii (t/thru 3)]
-           (swap! t/*dynamic-atom* assoc ii (+ 10 ii)))) ; can do it "manually" if desired
-    {0 10
-     1 11
-     2 12
-     3 13}))
-
 
 (dotest
   (let [vals [-3.14 -2 0 2 3.14]]
@@ -3385,8 +3363,28 @@
        (isnt (t/macro? '+))
        (isnt (t/macro? 'if)))
 
-
      (dotest
+       (is= 5 (t/with-mutable-var 0
+                (doseq [ii (t/thru 5)]
+                  (t/mutable-var-set-it! ii))))
+       (is= 15 (t/with-mutable-var 0
+                 (doseq [ii (t/thru 5)]
+                   (t/mutable-var-set-it! (+ it ii)))))
+       (is= (t/with-mutable-var {}
+              (doseq [ii (t/thru 3)]
+                (t/mutable-var-set-it! (glue it {ii (+ 10 ii)}))))
+         {0 10
+          1 11
+          2 12
+          3 13})
+       (is= (t/with-mutable-var {}
+              (doseq [ii (t/thru 3)]
+                (swap! t/*dynamic-atom* assoc ii (+ 10 ii)))) ; can do it "manually" if desired
+         {0 10
+          1 11
+          2 12
+          3 13})
+
        (is= (t/with-cum-vector
               (dotimes [ii 5]
                 (t/cum-vector-append! ii)))
@@ -3410,9 +3408,9 @@
                        (is= future-vals (range N))))] ; in order of creation
          (is-set= nums (range N))) ; nums is in random order
 
-       (is= 15 (t/with-dynamic-var 0
+       (is= 15 (t/with-mutable-var 0
                  (doseq [i (t/thru 5)]
-                   (t/dynvar-set-it! (+ it i))))))
+                   (t/mutable-var-set-it! (+ it i))))))
 
      ))
 
