@@ -1454,7 +1454,7 @@
   nil)
 
 (defmacro with-dynamic-var
-  "Works with `dynval-set-it` to simulate a mutable variable.
+  "Works with `(dynval-set-it ...)` to simulate a mutable variable.
 
         (is= 3 (with-dynamic-var
                  (dynval-set-it! 1)
@@ -1472,18 +1472,25 @@
      (fn [~'it] ~@forms)))
 
 (defmacro dynvar-set-it!
-  "Within `(with-dynamic-val ...)` form, replaces value."
+  "Within `(with-dynamic-val ...)`, replaces value."
   [& forms]
   (dynvar-set-it-impl forms))
 
 (defmacro with-cum-vector
-  "Wraps forms containing `cum-vector-append` to accumulate values into a vector."
+  "Works with `(cum-vector-append ...)` to accumulate values into a vector.
+
+        (is= [1 2 3]
+          (with-cum-vector
+            (cum-vector-append! 1)
+            (cum-vector-append! 2)
+            (cum-vector-append! 3)))
+  "
   [& forms]
   `(with-dynamic-var []
      ~@forms))
 
 (defn cum-vector-append! ; #todo file bug report for CLJS
-  "Within `(with-cum-vector ...)` form, appends a new value."
+  "Within `(with-cum-vector ...)`, appends a new value."
   [value]
   (dynvar-set-it! (append it value)))
 
