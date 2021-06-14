@@ -58,7 +58,7 @@
   (is (nil? (t/noop 1)))
   (is (nil? (t/noop 1 2 3 4))))
 (dotest
-  (let [always-42-fn (t/const-fn 42)]
+  (let [always-42-fn (t/const->fn 42)]
     (is= 42 (always-42-fn))
     (is= 42 (always-42-fn 1))
     (is= 42 (always-42-fn 1 2 3 4))))
