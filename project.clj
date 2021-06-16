@@ -31,6 +31,7 @@
    [cheshire "5.10.0"] ; #todo switch to muuntaja/jsonista
    [clj-time "0.15.2"]
    [clojure-csv/clojure-csv "2.0.2"]
+   [org.clojure/data.csv "1.0.0"]
    [danlentz/clj-uuid "0.1.9"]
    [joda-time/joda-time "2.10.10"]
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
@@ -67,7 +68,8 @@
                                        ;[binaryage/dirac "1.4.3"]
                                        ;[com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.6"]
-                                       [org.clojure/clojure "1.11.0-alpha1"]
+                                       [org.clojure/clojure "1.10.2"]
+                                      ;[org.clojure/clojure "1.11.0-alpha1"]
                                       ;[org.clojure/clojurescript  "1.10.764"] ; "1.10.597"
                                        ]
                         }
