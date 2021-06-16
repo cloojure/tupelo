@@ -30,10 +30,7 @@
    [camel-snake-kebab "0.4.2"]
    [cheshire "5.10.0"] ; #todo switch to muuntaja/jsonista
    [clj-time "0.15.2"]
-
-   [clojure-csv/clojure-csv "2.0.2"]
    [org.clojure/data.csv "1.0.0"]
-
    [danlentz/clj-uuid "0.1.9"]
    [joda-time/joda-time "2.10.10"]
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
