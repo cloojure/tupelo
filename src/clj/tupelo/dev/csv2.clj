@@ -1,4 +1,4 @@
-(ns tupelo.csv2
+(ns tupelo.dev.csv2
   "Utils for reading CSV (comma-separated-value) formatted files."
   (:use tupelo.core)
   (:require
@@ -12,7 +12,7 @@
 (s/defn ^:no-doc verified-keys :- [s/Any]
   "Verifies that each entity has an identical keyset. Returns a sorted vector of keys."
   [entities :- [tsk/Map]]
-  (let [keyset (into (sorted-set) (keys (xfirst entities)))]
+  (let [keyset (into #{} (keys (xfirst entities)))]
     (doseq [entity entities]
       (assert
         (= keyset (set (keys entity)))
@@ -23,16 +23,16 @@
   "Writes a sequence of EDN maps to a multi-line CSV string.  Keys are output in
    sorted order.  Optionally accepts a map-key conversion function"
   [entities :- [tsk/Map]]
-  (let-spy [keys-vec        (verified-keys entities)
-            hdr-vec         (forv [curr-key keys-vec]
-                               curr-key)
-            data-vecs       (forv [entity entities]
-                              (forv [curr-key keys-vec]
-                                (str (grab curr-key entity)))) ; coerce all to string for output to CSV
-            string-table-2d (prepend hdr-vec data-vecs)
-            string-writer  (StringWriter.)
-            >>          (apply csv/write-csv string-writer string-table-2d [:quote? (constantly true)])
-            result (.toString string-writer)
-            ]
+  (let [keys-sorted     (vec (sort (verified-keys entities)))
+        hdr-vec         (forv [curr-key keys-sorted]
+                          curr-key)
+        data-vecs       (forv [entity entities]
+                          (forv [curr-key keys-sorted]
+                            (str (grab curr-key entity)))) ; coerce all to string for output to CSV
+        string-table-2d (prepend hdr-vec data-vecs)
+        string-writer   (StringWriter.)
+        >>              (apply csv/write-csv string-writer string-table-2d [:quote? (constantly true)])
+        result          (.toString string-writer)
+        ]
     result))
 

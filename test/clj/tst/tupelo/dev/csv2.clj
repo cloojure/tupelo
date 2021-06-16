@@ -4,8 +4,8 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns ^:test-refresh/focus tst.tupelo.csv2
-  (:use tupelo.csv2 tupelo.core tupelo.test)
+(ns tst.tupelo.dev.csv2
+  (:use tupelo.dev.csv2 tupelo.core tupelo.test)
   (:require
     [clojure.walk :as walk]
     [tupelo.string :as str]
@@ -22,29 +22,21 @@
          {:aa-key "aa2" :bb-key "bb2"}]))
 
     ; 'b,b' value quoted correctly
-    (do
-      (let [edn-str-keys (walk/postwalk
-                           (fn [item]
-                             (cond-it-> item
-                               (keyword? it) (kw->str it)))
-                           sample-edn)]
-        (is (str/nonblank-lines=
-              (entities->csv-force-quote edn-str-keys)
-              (str/quotes->double
-                "aa-key,bb-key
-                 aaa,'b,b'
-                 aa2,bb2 ")))
+    (let [result (str/quotes->single (entities->csv-force-quote sample-edn))]
+      (is (str/nonblank-lines= result
+            "':aa-key',':bb-key'
+             'aaa','b,b'
+             'aa2','bb2' ")))
 
-        (let [result (str/quotes->single (entities->csv-force-quote sample-edn))]
-          (nl)
-          (println :result-----------------------------------------------------------------------------)
-          (println result)
-          (is (str/nonblank-lines=  result
-             "':aa-key',':bb-key'
-              'aaa','b,b'
-              'aa2','bb2' ")))
-        (nl)
-
-        ))))
+    (let [edn-str-keys (walk/postwalk
+                         (fn [item]
+                           (cond-it-> item
+                             (keyword? it) (kw->str it)))
+                         sample-edn)
+          result       (str/quotes->single (entities->csv-force-quote edn-str-keys))]
+      (is (str/nonblank-lines= result
+            "'aa-key','bb-key'
+            'aaa','b,b'
+            'aa2','bb2' ")))))
 
 
