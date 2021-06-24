@@ -24,7 +24,8 @@
   #?(:clj (:require
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
-            [clojure.walk :as walk]))
+            [clojure.walk :as walk]
+            [tupelo.string :as str]))
   )
 
 ; #todo add example for duplicates in clojure.core.combo
@@ -342,7 +343,7 @@
        (is= [2 4 6 8 10] result-thread))))
 
 #?(:clj
-   (do              ; #todo make work for clj/cljs
+   (do    ; #todo make work for clj/cljs
 
      (t/when-clojure-1-9-plus
        (dotest
@@ -394,7 +395,13 @@
      (dotest
        (is= [:z :y :x 1 2 3] (set/union '(1 2 3) '(:x :y :z)))
        (is= [1 2 3 :x :y :z] (set/union [1 2 3] [:x :y :z]))
-       (is= #{1 2 3 :x :y :z} (set/union #{1 2 3} #{:x :y :z}))
+       (is= #{1 2 3 :x :y :z} (set/union #{1 2 3} #{:x :y :z})))
+
+     ;-----------------------------------------------------------------------------
+     ; clojure.string has no type-checking
+     (dotest
+       (is= "false" (clojure.string/lower-case false))
+       ; (throws? (clojure.string/lower-case false))   ; #todo fix in tupelo.string
        )
      ))
 
@@ -406,5 +413,10 @@
        (is= {:a 1} (update {} :a inc))
        (is= 1 (inc nil))
        (is= 1 (+ 1 nil)))
+
+     ; from skillsmatter.com ClojureExchange 2018 "Fullstack Clojure in the Movie Business"
+     (let [foo-bar 1
+           foo_bar 2]
+       (is= foo-bar 2)) ; #todo verify or not???
 
      ))
