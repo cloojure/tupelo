@@ -792,15 +792,6 @@ always returns results in a vector:
        [0 1 4 9] )
 ----
 
-For most purposes, it is is easy to use `(vec some-seq)` to convert an arbitrary sequence to a vector. In the
-event of nested data, we can use `(flat-vec ...)`. This works like `flatten` but is not lazy and returns
-results in a nice simple vector.
-
-[source,clojure]
-----
-  (is= [1 2 3 4 5] (flat-vec [[[1] 2] [3 [4 [5]]]]))
-----
-
 === Simplified Lazy Sequence Generation
 
 Clojure training materials seem to vary somewhat in the recommended form for the generation of a lazy sequence. This
