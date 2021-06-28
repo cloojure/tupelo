@@ -443,6 +443,7 @@
 
 
      ; #todo document in README
+     (def ^:no-doc dots-lock (Object.))
      (def ^:no-doc dot-counter (atom 0))
      (def ^:no-doc dots-ctx (atom {:dots-per-row 100
                                    :decimation   1}))
@@ -453,7 +454,7 @@
        [key dot-counter-ref old-count new-count]
        (let [decimation     (grab :decimation @dots-ctx)
              counts-per-row (* decimation (grab :dots-per-row @dots-ctx))]
-         (locking dot-counter
+         (locking dots-lock
            (when (not= old-count new-count)
              (when (zero? (rem old-count counts-per-row))
                (it-> old-count
