@@ -453,8 +453,8 @@
        [key dot-counter-ref old-count new-count]
        (let [decimation     (grab :decimation @dots-ctx)
              counts-per-row (* decimation (grab :dots-per-row @dots-ctx))]
-         (when (not= old-count new-count)
-           (locking dot-counter
+         (locking dot-counter
+           (when (not= old-count new-count)
              (when (zero? (rem old-count counts-per-row))
                (it-> old-count
                  (str it)
