@@ -492,10 +492,11 @@
           (reset! dot-counter 0)
           (add-watch dot-counter :dot-counter dot-counter-watch-fn)
           (let [result# (do ~@body)]
-            (newline) (println (
-                                 #?(:clj format
-                                    :cljs rfmt/format)
-                                 "%10d total" @dot-counter))
+            (newline)
+            (println (#?(:clj format
+                         :cljs rfmt/format)
+                           "%10d total" @dot-counter))
+            (newline)
             result#)))
 
      (s/defn hid->wid :- s/Keyword
