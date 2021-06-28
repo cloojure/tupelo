@@ -909,7 +909,8 @@
     (throw (ex-info  "append: Sequential collection required, found=" {:listy listy})))
   (when (empty? elems)
     (throw (ex-info "Nothing to append! elems=" {:elems elems})))
-  (vec (concat listy elems)))
+  ; (vec (concat listy elems))  ; #TODO ***WARNING*** never use `concat`!!! 1000x slower!
+  (into (vec listy) elems))   ; #todo measure & write blog re TPX/TigerGraph data
 
 (s/defn prepend :- tsk/List
   "Given a sequential object (vector or list), add one or more elements to the beginning"
