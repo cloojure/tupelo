@@ -467,7 +467,8 @@
                (print \.)
                (flush))
              (when (zero? (rem new-count counts-per-row))
-               (newline))))))
+               (newline)
+               (flush))))))
 
      (defn dot
        "Prints a single dot (flushed) to the console, keeping a running count of dots printed.  Wraps to a
