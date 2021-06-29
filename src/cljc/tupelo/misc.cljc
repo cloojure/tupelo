@@ -450,25 +450,6 @@
      (defn dots-config! ; #todo need docstring
        [ctx]        ; #todo check pos integers
        (swap! dots-ctx conj ctx))
-     (defn dot-counter-watch-fn
-       [key dot-counter-ref old-count new-count]
-       (let [decimation     (grab :decimation @dots-ctx)
-             counts-per-row (* decimation (grab :dots-per-row @dots-ctx))]
-         (locking dots-lock
-           (when (not= old-count new-count)
-             (when (zero? (rem old-count counts-per-row))
-               (it-> old-count
-                 (str it)
-                 (ts/pad-left it 10)
-                 (glue it \space)
-                 (print it))
-               (flush))
-             (when (zero? (rem old-count decimation))
-               (print \.)
-               (flush))
-             (when (zero? (rem new-count counts-per-row))
-               (newline)
-               (flush))))))
 
      (defn dot
        "Prints a single dot (flushed) to the console, keeping a running count of dots printed.  Wraps to a
@@ -484,15 +465,33 @@
                   (Thread/sleep 5)))
         "
        []
-       (swap! dot-counter inc))
+       (locking dots-lock
+         (let [[old-count new-count] (swap-vals! dot-counter inc)
+               decimation     (grab :decimation @dots-ctx)
+               counts-per-row (* decimation (grab :dots-per-row @dots-ctx))]
+           (when (zero? (rem old-count counts-per-row))
+             (it-> old-count
+               (str it)
+               (ts/pad-left it 10)
+               (glue it \space)
+               (print it))
+             (flush))
+           (when (zero? (rem old-count decimation))
+             (print \.)
+             (flush))
+           (when (zero? (rem new-count counts-per-row))
+             (newline)
+             (flush)))))
 
      (defmacro with-dots
        "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
        [& body]
        `(do
-          (remove-watch dot-counter :dot-counter)
+          (newline)
+          (println "***** with-dots-new *****")
+          (newline)
+
           (reset! dot-counter 0)
-          (add-watch dot-counter :dot-counter dot-counter-watch-fn)
           (let [result# (do ~@body)]
             (newline)
             (println (#?(:clj format
@@ -506,7 +505,6 @@
        Useful for debugging purposes."
        [hid :- HID]
        nil)         ; #todo
-
 
      ;-----------------------------------------------------------------------------
      ; -> tupelo.files ?
