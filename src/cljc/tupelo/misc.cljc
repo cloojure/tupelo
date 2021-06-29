@@ -438,9 +438,7 @@
          (when-not (string? cmd-str)
            (throw (ex-info "format-shell-cmd: cmd-str must be a string; received=" (vals->map cmd-str))))
          (apply shell/sh (util/format-shell-cmd-vec cmd-str)))
-
        )
-
 
      ; #todo document in README
      (def ^:no-doc dots-lock (Object.))
@@ -465,7 +463,7 @@
                   (Thread/sleep 5)))
         "
        []
-       (locking dots-lock
+       (locking dots-lock ; must serialize all printing code
          (let [[old-count new-count] (swap-vals! dot-counter inc)
                decimation     (grab :decimation @dots-ctx)
                counts-per-row (* decimation (grab :dots-per-row @dots-ctx))]
@@ -487,10 +485,6 @@
        "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
        [& body]
        `(do
-          (newline)
-          (println "***** with-dots-new *****")
-          (newline)
-
           (reset! dot-counter 0)
           (let [result# (do ~@body)]
             (newline)
