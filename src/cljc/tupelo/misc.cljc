@@ -443,13 +443,11 @@
      ; #todo document in README
      (def ^:no-doc dots-lock (Object.))
      (def ^:no-doc dots-counter (atom 0))
-     (def ^:no-doc  dots-ctx-default
-       {:dots-per-row 100
-        :decimation   1
-        :enabled?     true})
-
-     (def ^:dynamic dots-ctx
-       "Dynamic Var containing a configuration map for controlling dots printing. Default values:
+     (def ^:no-doc dots-ctx-default {:dots-per-row 100
+                                     :decimation   1
+                                     :enabled?     true})
+     (def ^:no-doc dots-ctx
+       "An atom containing a configuration map for controlling dots printing. Default values:
             {:dots-per-row  100
              :decimation    1
              :enabled?      true }
@@ -460,7 +458,23 @@
                                        :decimation    10
                                        :enabled?      true  } ]
            ...) "
-       dots-ctx-default)
+       (atom nil))
+     (defn dots-reset!
+       "Reset dots-ctx to default values "
+       [] (reset! dots-ctx dots-ctx-default))
+     (dots-reset!) ; reset upon load
+
+     (s/defn dots-config!
+       "Will override default configuration with values from a map.  Default values:
+            {:dots-per-row  100
+             :decimation    1
+             :enabled?      true }
+       Sample Usage:
+           (dots-config! {:dots-per-row  50
+                          :decimation    10} )
+       "
+       [ctx :- tsk/KeyMap]
+       (swap! dots-ctx glue ctx))
 
        (defn dot
        "Prints a single dot (flushed) to the console, keeping a running count of dots printed.  Wraps to a
@@ -477,11 +491,10 @@
         "
        []
        (locking dots-lock ; must serialize all printing code
-         (let [config         (glue dots-ctx-default dots-ctx)
-               [old-count new-count] (swap-vals! dots-counter inc)
-               decimation     (grab :decimation config)
-               enabled?       (grab :enabled? config)
-               counts-per-row (* decimation (grab :dots-per-row config))]
+         (let [[old-count new-count] (swap-vals! dots-counter inc)
+                 decimation (grab :decimation @dots-ctx)
+                 enabled? (grab :enabled? @dots-ctx)
+                 counts-per-row (* decimation (grab :dots-per-row @dots-ctx))]
            (when enabled?
              (when (zero? (rem old-count counts-per-row))
                (it-> old-count

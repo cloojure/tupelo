@@ -258,31 +258,38 @@
              (is (pos? (count (re-seq #"/bin/bash" (:out result)))))))))
 
      (dotest
-       (alter-var-root (var misc/dots-ctx) t/glue {:dots-per-row 10 :decimation 1})
-       (let [result   (with-out-str
-                        (misc/with-dots
-                          (doseq [x (range 9)]
-                            (misc/dot))))
-             expected "0 .........
-                       9 total"]
-         (is-nonblank= result expected))
+       (when true
+         (misc/dots-reset!)
+         (misc/dots-config! {:dots-per-row 10 :decimation 1})
+         (let [result   (with-out-str
+                          (misc/with-dots
+                            (doseq [x (range 9)]
+                              (misc/dot))))
+               expected "0 .........
+                         9 total"]
+           (is-nonblank= result expected)))
 
-       (alter-var-root (var misc/dots-ctx) t/glue {:dots-per-row 10 :decimation 3})
-       (is-nonblank= (with-out-str
-                       (misc/with-dots
-                         (doseq [x (range 99)]
-                           (misc/dot))))
-         "  0 ..........
-           30 ..........
-           60 ..........
-           90 ...
-           99 total")
+       (when true
+         (misc/dots-reset!)
+         (misc/dots-config! {:dots-per-row 10 :decimation 3})
+         (let [result   (with-out-str
+                          (misc/with-dots
+                            (doseq [x (range 99)]
+                              (misc/dot))))
+               expected "  0 ..........
+                          30 ..........
+                          60 ..........
+                          90 ...
+                          99 total"]
+           (is-nonblank= result expected)))
 
-       (binding [misc/dots-ctx {:enabled? false}]
-         (is-nonblank= (with-out-str
-                         (doseq [x (range 99)]
-                           (misc/dot)))
-           "")))
+       (when true
+         (misc/dots-reset!)
+         (misc/dots-config! {:enabled? false})
+         (let [result (with-out-str
+                        (doseq [x (range 99)]
+                          (misc/dot)))]
+           (is-nonblank= result ""))))
 
      ;(dotest
      ;  (spyx-pretty (misc/stacktrace-info (RuntimeException. "dummy"))))
