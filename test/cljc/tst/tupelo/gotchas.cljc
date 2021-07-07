@@ -320,6 +320,26 @@
     (is= :fail result-case)
     (is= :pass result-cond)))
 
+; Var surprises
+(dotest
+  (def some-var 5) ; Set a value to a Var (& create if needed)
+  (is= 5 some-var)
+  (def some-var 6) ; Set a new value in the Var
+  (is= 6 some-var)
+  (throws? (alter-var-root some-var inc)) ; forgot to deref the Var-Symbol
+  (alter-var-root (var some-var) inc) ; Must deref the symbol to get the Var object
+  (is= 7 some-var)
+
+  (def ^:dynamic some-dynvar 5) ; Set a value to a Var (& create if needed)
+  (is= 5 some-dynvar)
+  (def ^:dynamic some-dynvar 6) ; Set a new value in the Var
+  (is= 6 some-dynvar)
+  (throws? (alter-var-root some-dynvar inc)) ; forgot to deref the Var-Symbol
+  (alter-var-root (var some-dynvar) inc) ; Must deref the symbol to get the Var object
+  (is= 7 some-dynvar)
+
+  )
+
 #?(:clj
    ; transducer surprises
    (dotest

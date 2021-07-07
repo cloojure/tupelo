@@ -258,7 +258,7 @@
              (is (pos? (count (re-seq #"/bin/bash" (:out result)))))))))
 
      (dotest
-       (misc/dots-config! {:dots-per-row 10 :decimation 1})
+       (alter-var-root (var misc/dots-ctx) t/glue {:dots-per-row 10 :decimation 1})
        (let [result   (with-out-str
                         (misc/with-dots
                           (doseq [x (range 9)]
@@ -267,7 +267,7 @@
                        9 total"]
          (is-nonblank= result expected))
 
-       (misc/dots-config! {:dots-per-row 10 :decimation 3})
+       (alter-var-root (var misc/dots-ctx) t/glue {:dots-per-row 10 :decimation 3})
        (is-nonblank= (with-out-str
                        (misc/with-dots
                          (doseq [x (range 99)]
@@ -276,7 +276,13 @@
            30 ..........
            60 ..........
            90 ...
-           99 total"))
+           99 total")
+
+       (binding [misc/dots-ctx {:enabled? false}]
+         (is-nonblank= (with-out-str
+                         (doseq [x (range 99)]
+                           (misc/dot)))
+           "")))
 
      ;(dotest
      ;  (spyx-pretty (misc/stacktrace-info (RuntimeException. "dummy"))))

@@ -442,21 +442,34 @@
 
      ; #todo document in README
      (def ^:no-doc dots-lock (Object.))
-     (def ^:no-doc dot-counter (atom 0))
-     (def ^:no-doc dots-ctx (atom {:dots-per-row 100
-                                   :decimation   1}))
-     (defn dots-config! ; #todo need docstring
-       [ctx]        ; #todo check pos integers
-       (swap! dots-ctx conj ctx))
+     (def ^:no-doc dots-counter (atom 0))
+     (def ^:no-doc  dots-ctx-default
+       {:dots-per-row 100
+        :decimation   1
+        :enabled?     true})
 
-     (defn dot
+     (def ^:dynamic dots-ctx
+       "Dynamic Var containing a configuration map for controlling dots printing. Default values:
+            {:dots-per-row  100
+             :decimation    1
+             :enabled?      true }
+       Modify as via:
+           (alter-var-root  (var misc/dots-ctx)  glue {:decimation 10} )  ; *** don't forget (var ...) ***
+       or
+           (binding [misc/dots-ctx    {:dots-per-row  50
+                                       :decimation    10
+                                       :enabled?      true  } ]
+           ...) "
+       dots-ctx-default)
+
+       (defn dot
        "Prints a single dot (flushed) to the console, keeping a running count of dots printed.  Wraps to a
         newline when 100 dots have been printed. Displays the running dot count at the beginning of each line.
         Usage:
 
               (ns demo.core
                 (:require [tupelo.misc :as tm]))
-              (tm/dots-config! {:decimation 10} )
+              (alter-var-root tm/dots-ctx glue {:decimation 10} )
               (tm/with-dots
                 (doseq [ii (range 2345)]
                   (tm/dot)
@@ -464,33 +477,36 @@
         "
        []
        (locking dots-lock ; must serialize all printing code
-         (let [[old-count new-count] (swap-vals! dot-counter inc)
-               decimation     (grab :decimation @dots-ctx)
-               counts-per-row (* decimation (grab :dots-per-row @dots-ctx))]
-           (when (zero? (rem old-count counts-per-row))
-             (it-> old-count
-               (str it)
-               (ts/pad-left it 10)
-               (glue it \space)
-               (print it))
-             (flush))
-           (when (zero? (rem old-count decimation))
-             (print \.)
-             (flush))
-           (when (zero? (rem new-count counts-per-row))
-             (newline)
-             (flush)))))
+         (let [config         (glue dots-ctx-default dots-ctx)
+               [old-count new-count] (swap-vals! dots-counter inc)
+               decimation     (grab :decimation config)
+               enabled?       (grab :enabled? config)
+               counts-per-row (* decimation (grab :dots-per-row config))]
+           (when enabled?
+             (when (zero? (rem old-count counts-per-row))
+               (it-> old-count
+                 (str it)
+                 (ts/pad-left it 10)
+                 (glue it \space)
+                 (print it))
+               (flush))
+             (when (zero? (rem old-count decimation))
+               (print \.)
+               (flush))
+             (when (zero? (rem new-count counts-per-row))
+               (newline)
+               (flush))))))
 
-     (defmacro with-dots
-       "Increments indentation level of all spy, spyx, or spyxx expressions within the body."
+     (defmacro with-dots ; #todo rework this
+       "Resets the dot counter and prints a total when completed."
        [& body]
        `(do
-          (reset! dot-counter 0)
+          (reset! dots-counter 0)
           (let [result# (do ~@body)]
             (newline)
             (println (#?(:clj format
                          :cljs rfmt/format)
-                           "%10d total" @dot-counter))
+                           "%10d total" @dots-counter))
             (newline)
             result#)))
 
