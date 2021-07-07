@@ -516,11 +516,12 @@
        `(do
           (reset! dots-counter 0)
           (let [result# (do ~@body)]
-            (newline)
-            (println (#?(:clj format
-                         :cljs rfmt/format)
-                           "%10d total" @dots-counter))
-            (newline)
+            (when (grab :enabled? @dots-ctx)
+              (newline)
+              (println (#?(:clj  format
+                           :cljs rfmt/format)
+                         "%10d total" @dots-counter))
+              (newline))
             result#)))
 
      (s/defn hid->wid :- s/Keyword

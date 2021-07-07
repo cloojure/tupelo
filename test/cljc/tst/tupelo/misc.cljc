@@ -287,8 +287,9 @@
          (misc/dots-reset!)
          (misc/dots-config! {:enabled? false})
          (let [result (with-out-str
-                        (doseq [x (range 99)]
-                          (misc/dot)))]
+                        (misc/with-dots
+                          (doseq [x (range 99)]
+                            (misc/dot))))]
            (is-nonblank= result ""))))
 
      ;(dotest
