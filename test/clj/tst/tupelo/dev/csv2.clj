@@ -8,7 +8,6 @@
   (:use tupelo.dev.csv2 tupelo.core tupelo.test)
   (:require
     [clojure.walk :as walk]
-    [clojure.walk :as walk]
     [tupelo.parse :as parse]
     [tupelo.string :as str])
   (:import
@@ -189,22 +188,24 @@
          {:aa-key "aa2" :bb-key "bb2"}]))
 
     ; 'b,b' value quoted correctly
-    (let [result (str/quotes->single (entities->csv-force-quote sample-edn))]
-      (is (str/nonblank-lines= result
-            "':aa-key',':bb-key'
-             'aaa','b,b'
-             'aa2','bb2' ")))
+    (let [result (str/quotes->single (entities->csv sample-edn {:force-quote? true}))
+          expected "'aa-key','bb-key'
+                    'aaa','b,b'
+                    'aa2','bb2' "]
+      (is-nonblank-lines= result expected))
 
     (let [edn-str-keys (walk/postwalk
                          (fn [item]
                            (cond-it-> item
                              (keyword? it) (kw->str it)))
                          sample-edn)
-          result       (str/quotes->single (entities->csv-force-quote edn-str-keys))]
-      (is (str/nonblank-lines= result
-            "'aa-key','bb-key'
-            'aaa','b,b'
-            'aa2','bb2' ")))))
+          result       (str/quotes->single (entities->csv edn-str-keys  {:force-quote? true
+                                                                         :key-fn str
+                                                                         }))
+          expected "'aa-key','bb-key'
+                    'aaa','b,b'
+                    'aa2','bb2'  "]
+      (is (str/nonblank-lines= result expected)))))
 
 (dotest
   (is-nonblank-lines=

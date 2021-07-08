@@ -173,51 +173,45 @@
    (entities->attrs
      (csv->entities csv-input opts))))
 
-(s/defn entities->csv-force-quote :- s/Str
-  "Writes a sequence of EDN maps to a multi-line CSV string.  Keys are output in
-   sorted order.  Optionally accepts a map-key conversion function"
-  [entities :- [tsk/Map]]
-  (let [
-        keys-sorted     (vec (sort (verified-keys entities)))
-        hdr-vec         (forv [curr-key keys-sorted]
-                          curr-key)
-        data-vecs       (forv [entity entities]
-                          (forv [curr-key keys-sorted]
-                            (str (grab curr-key entity)))) ; coerce all to string for output to CSV
-        string-table-2d (prepend hdr-vec data-vecs)
-        string-writer   (StringWriter.)
-        >>              (apply csv/write-csv string-writer string-table-2d
-                          [:quote? (constantly true)]) ; options vector, hence need apply
-        result          (.toString string-writer)
-        ]
-    result))
-
-
 (s/defn entities->csv :- s/Str
   "Writes a sequence of EDN maps to a multi-line CSV string.  Keys are output in
-   sorted order.  Optionally accepts a map-key conversion function"
+   sorted order.  Optionally accepts a map-key conversion function.  Default options:
+
+        {:separator     \\,
+         :quote         \\\"
+         :key-fn        kw->str
+         :val-fn        ->str
+         :newline       :lf     ; or :cr+lf
+         :force-quote?   false
+         }
+  "
   ([entities :- [tsk/Map]] (entities->csv entities {}))
   ([entities :- [tsk/Map]
     opts :- tsk/KeyMap]
-   (let [opts-default {:separator \,
+   (let [opts-default
+                      {:separator \,
                        :quote     \"
                        :key-fn    kw->str
                        :val-fn    ->str
+                       :newline   :lf     ; or :cr+lf
+                       :force-quote? false
                        ; #todo :quote?  *** add this? ***
-                       :newline   \newline}
-         options      (glue opts-default opts)]
+                       }
+         options      (glue opts-default opts)
+         lib-opts     (cond-it-> (submap-by-keys options [:separator :quote :newline])
+                        (grab :force-quote? options) (glue it {:quote? (constantly true)}))
+         ]
      (with-map-vals options [key-fn val-fn]
-       (let [
-             keys-sorted     (vec (sort (verified-keys entities)))
+       (let [keys-sorted     (vec (sort (verified-keys entities)))
              hdr-vec         (mapv  key-fn keys-sorted)
              data-vecs       (forv [entity entities]
                                (forv [curr-key keys-sorted]
                                  (val-fn (grab curr-key entity)))) ; coerce all to string for output to CSV
              string-table-2d (prepend hdr-vec data-vecs)
              string-writer   (StringWriter.)
-             >>              (csv/write-csv string-writer string-table-2d)
+             >>              (apply csv/write-csv string-writer string-table-2d
+                               (spyx (keyvals lib-opts)))
              result          (.toString string-writer)
 
              ]
          result)))))
-
