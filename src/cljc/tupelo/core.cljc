@@ -921,7 +921,7 @@
       (throw (ex-info  "prepend: Sequential collection required, found=" {:listy listy})))
     (when (empty? elems)
       (throw (ex-info "Nothing to prepend! elems=" {:elems elems})))
-    (vec (concat elems listy))))
+    (into (vec elems) listy)))
 
 ;-----------------------------------------------------------------------------
 ; spy stuff

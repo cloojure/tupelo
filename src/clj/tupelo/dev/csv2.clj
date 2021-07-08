@@ -58,16 +58,17 @@
 )) ; rest of lines are data
 
 (s/defn csv->table :- [[s/Str]]
+  "Load `csv-input` (Reader or String) into a string table (vector of vectors). Default options:
+
+       {:separator \\,
+        :quote     \\\"}
+ "
   ([csv-input :- CsvInput] (csv->table csv-input {}))
   ([csv-input :- CsvInput
     opts :- tsk/KeyMap]
    ; (nl) (spyx :table opts)
-   (let [opts-default {:key-fn    str/trim
-                       :val-fn    str/trim
-                       :headers?  true
-                       :separator \,
-                       :quote     \"
-                       } ; #todo  add option for
+   (let [opts-default {:separator \,
+                       :quote     \"}
          opts         (glue opts-default opts)
          csv-lib-opts (keyvals (submap-by-keys opts [:separator :quote]))
          csv-reader   (cond-it-> csv-input
@@ -86,22 +87,30 @@
 ; #todo: throw if missing or extra fields found
 ; #todo: return empty map if no data rows found (with or without header row)
 (s/defn csv->entities :- [tsk/Map]
-  "[csv-input]
+  "
+   [csv-input]
    [csv-input opts-map]
 
-   Returns a lazy sequence of maps constructed from csv-input.  The first line
+   Load `csv-input` (Reader or String), returning a vector of maps.  The first line
    is assumed to be column label strings, which are (safely) converted into keywords.
    String data from each subsequent line is paired with the corresponding column keyword to
    construct a map for that line.  Default delimiter is the comma character (i.e. \\,) but
    may be changed using the syntax such as:
 
-   ```
-      (parse-csv->row-maps <csv-data-src> {:delimiter \\}|)
-   ```
+       (parse-csv->row-maps <csv-data-src> {:delimiter \\}|)
 
    to select the pipe character (i.e. \\|) as the delimiter.
 
-   <csv-data-source> is either a multi-line-string, or a java.io.Reader. "
+   <csv-data-source> is either a multi-line-string, or a java.io.Reader.  Default options map:
+
+        {:key-fn           str/trim
+         :val-fn           str/trim
+         :headers?         true       ; is header row present?
+         :headers-to-use   nil        ; vec of string/keyword to use as headers
+         :keywordize-keys? true
+         :separator        \\,
+         :quote            \\\"}
+  "
   ; #todo: update docs re. col-labels (keywords)
   ; #todo: add option for :ignore-blank-lines
   ; #todo: change options to (parse* ctx), using
@@ -113,39 +122,42 @@
   ([csv-input :- CsvInput
     opts :- tsk/KeyMap]
    ; (nl) (spyx :csv->entities opts)
-   (let [opts-default {:key-fn           str/trim
+   (let [opts-default
+                   {:key-fn           str/trim
                     :val-fn           str/trim
                     :headers?         true
-                    :headers-to-use   nil ; str/kw vec if desired
+                    :headers-to-use   nil
                     :keywordize-keys? true
                     :separator        \,
-                    :quote            \"
-                    } ; #todo  add option for
-      opts         (glue opts-default opts)
-      parsed-lines (csv->table csv-input opts)]
-     (with-map-vals opts [key-fn val-fn headers? headers-to-use keywordize-keys?]
-       (let [; convert first row of strings -> col label keywords
-             keys-vec   (if (not-nil? headers-to-use)
-                          headers-to-use
-                          (let [parsed-first-row (first parsed-lines)]
-                            (if headers?
-                              (cond-it-> (mapv key-fn parsed-first-row)
-                                keywordize-keys? (forv [k it]
-                                                   (-> k
-                                                     (->str)
-                                                     (str/lower-case)
-                                                     (str/str->kw-normalized))))
-                              (range (count parsed-first-row)))))
-             num-keys   (count keys-vec)
-             data-lines (cond-it-> parsed-lines
-                          headers? (rest parsed-lines))
-             entities   (forv [line data-lines]
-                          (let [data-fields (mapv val-fn line)
-                                num-fields  (count data-fields)]
-                            (when (not= num-keys num-fields)
-                              (throw (ex-info "Incorrect number of fields"
-                                       (vals->map num-keys num-fields keys-vec line))))
-                            (zipmap keys-vec data-fields)))]
+                    :quote            \"}
+      options         (glue opts-default opts)
+      parsed-lines (csv->table csv-input options)]
+     ; (spyx-pretty options)
+     (with-map-vals options [key-fn val-fn headers? headers-to-use keywordize-keys?]
+       (let [parsed-first-row (first parsed-lines)
+             keys-vec         (if (not-nil? headers-to-use)
+                                headers-to-use
+                                (if headers?
+                                  (cond-it-> (mapv key-fn parsed-first-row)
+                                    keywordize-keys? (forv [k it]
+                                                       (-> k
+                                                         (->str)
+                                                         (str/lower-case)
+                                                         (str/str->kw-normalized))))
+
+                                  (range (count parsed-first-row))))
+
+
+             num-keys         (count keys-vec)
+             data-lines       (cond-it-> parsed-lines
+                                headers? (rest parsed-lines))
+             entities         (forv [line data-lines]
+                                (let [data-fields (mapv val-fn line)
+                                      num-fields  (count data-fields)]
+                                  (when (not= num-keys num-fields)
+                                    (throw (ex-info "Incorrect number of fields"
+                                             (vals->map num-keys num-fields keys-vec line))))
+                                  (zipmap keys-vec data-fields)))]
          entities)))))
 
 (s/defn csv->attrs :- tsk/KeyMap
@@ -165,7 +177,8 @@
   "Writes a sequence of EDN maps to a multi-line CSV string.  Keys are output in
    sorted order.  Optionally accepts a map-key conversion function"
   [entities :- [tsk/Map]]
-  (let [keys-sorted     (vec (sort (verified-keys entities)))
+  (let [
+        keys-sorted     (vec (sort (verified-keys entities)))
         hdr-vec         (forv [curr-key keys-sorted]
                           curr-key)
         data-vecs       (forv [entity entities]
@@ -173,26 +186,38 @@
                             (str (grab curr-key entity)))) ; coerce all to string for output to CSV
         string-table-2d (prepend hdr-vec data-vecs)
         string-writer   (StringWriter.)
-        >>              (apply csv/write-csv string-writer string-table-2d [:quote? (constantly true)])
+        >>              (apply csv/write-csv string-writer string-table-2d
+                          [:quote? (constantly true)]) ; options vector, hence need apply
         result          (.toString string-writer)
         ]
     result))
 
-(comment  ; #todo test this, fix options
-  (s/defn entities->csv :- s/Str
-    "Writes a sequence of EDN maps to a multi-line CSV string.  Keys are output in
-     sorted order.  Optionally accepts a map-key conversion function"
-    ([entities :- [tsk/Map]] (entities->csv entities identity))
-    ([entities :- [tsk/Map]
-      key-fn :- tsk/Fn]
-     (let [all-keys        (verified-keys entities)
-           hdr-vec         (forv [curr-key all-keys]
-                             (key-fn curr-key))
-           data-vecs       (forv [entity entities]
-                             (forv [curr-key all-keys]
-                               (str (grab curr-key entity)))) ; coerce all to string for output to CSV
-           string-table-2d (prepend hdr-vec data-vecs)
-           result          (csv/write-csv string-table-2d)
-           ]
-       result))))
+
+(s/defn entities->csv :- s/Str
+  "Writes a sequence of EDN maps to a multi-line CSV string.  Keys are output in
+   sorted order.  Optionally accepts a map-key conversion function"
+  ([entities :- [tsk/Map]] (entities->csv entities {}))
+  ([entities :- [tsk/Map]
+    opts :- tsk/KeyMap]
+   (let [opts-default {:separator \,
+                       :quote     \"
+                       :key-fn    kw->str
+                       :val-fn    ->str
+                       ; #todo :quote?  *** add this? ***
+                       :newline   \newline}
+         options      (glue opts-default opts)]
+     (with-map-vals options [key-fn val-fn]
+       (let [
+             keys-sorted     (vec (sort (verified-keys entities)))
+             hdr-vec         (mapv  key-fn keys-sorted)
+             data-vecs       (forv [entity entities]
+                               (forv [curr-key keys-sorted]
+                                 (val-fn (grab curr-key entity)))) ; coerce all to string for output to CSV
+             string-table-2d (prepend hdr-vec data-vecs)
+             string-writer   (StringWriter.)
+             >>              (csv/write-csv string-writer string-table-2d)
+             result          (.toString string-writer)
+
+             ]
+         result)))))
 
