@@ -9,7 +9,7 @@
   (:import
     [java.io Reader StringReader StringWriter]))
 
-(def CsvInput  (s/cond-pre Reader s/Str))
+(def ^:no-doc CsvInput  (s/cond-pre Reader s/Str))
 
 (s/defn ^:no-doc verified-keys :- [s/Any]
   "Verifies that each entity has an identical keyset. Returns a vector of keys."
@@ -109,7 +109,8 @@
          :headers-to-use   nil        ; vec of string/keyword to use as headers
          :keywordize-keys? true
          :separator        \\,
-         :quote            \\\"}
+         :quote            \\\"
+        }
   "
   ; #todo: update docs re. col-labels (keywords)
   ; #todo: add option for :ignore-blank-lines
@@ -183,7 +184,7 @@
          :val-fn        ->str
          :newline       :lf     ; or :cr+lf
          :force-quote?   false
-         }
+        }
   "
   ([entities :- [tsk/Map]] (entities->csv entities {}))
   ([entities :- [tsk/Map]
