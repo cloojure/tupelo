@@ -1,12 +1,14 @@
 
-= Tupelo: Making Clojure Even Sweeter
+= Change Log
 
-== Change Log
+.21.07.08
+  - Replaced tupelo.csv with tupelo.dev.csv2
+    * rewrite using `clojure.data.csv` instead of previous `clojure-csv` library
 
-.2019-12-17  Version 0.9.182:  
+.2019-12-17  Version 0.9.182:
 - Moved tupelo.pedestal out into a separate project:  
-  - https://github.com/io-tupelo/pedestal
-  - https://cljdoc.org/d/io.tupelo/pedestal
+  * https://github.com/io-tupelo/pedestal
+  * https://cljdoc.org/d/io.tupelo/pedestal
 
 
 .2018-1-1  Version 0.9.70:  
