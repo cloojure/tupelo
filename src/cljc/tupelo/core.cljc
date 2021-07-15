@@ -250,6 +250,22 @@
 
      ))
 ;-----------------------------------------------------------------------------
+(defn assert-info-impl
+  [[pred-expr err-str info-expr]]
+  `(when-not ~pred-expr
+     (throw (ex-info ~err-str ~info-expr))))
+
+(defmacro assert-info
+  "Like `assert` but accepts a map like `ex-info`:
+
+        (assert-info (sequential? listy)
+          \"prepend: Sequential collection required, found=\"
+          {:listy listy} )
+
+   Implemented using `(throw (ex-info ...))` "
+  [pred-expr err-str info-expr] (assert-info-impl [pred-expr err-str info-expr]))
+
+;-----------------------------------------------------------------------------
 (declare
   glue xfirst xrest append prepend grab fetch-in indexed clip-str validate
   walk-with-parents with-nil-default vals->map snip snip* map-let  map-let*
@@ -900,21 +916,6 @@
   "Returns a vector of items in coll for which (pred item) is false (alias for clojure.core/remove)"
   [pred coll]
   (keep-if (complement pred) coll))
-
-(defn assert-info-impl
-  [[pred-expr err-str info-expr]]
-  `(when-not ~pred-expr
-     (throw (ex-info ~err-str ~info-expr))))
-
-(defmacro assert-info
-  "Like `assert` but accepts an `ex-info`-style info-map:
-
-        (assert-info (sequential? listy)
-          \"prepend: Sequential collection required, found=\"
-          {:listy listy} )
-
-   Implemented using `(throw (ex-info ...))` "
-  [pred-expr err-str info-expr] (assert-info-impl [pred-expr err-str info-expr]))
 
 (s/defn append :- tsk/List
   "Given a sequential object (vector or list), add one or more elements to the end."
