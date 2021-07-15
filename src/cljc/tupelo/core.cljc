@@ -901,14 +901,29 @@
   [pred coll]
   (keep-if (complement pred) coll))
 
+(defn assert-info-impl
+  [[pred-expr err-str info-expr]]
+  `(when-not ~pred-expr
+     (throw (ex-info ~err-str ~info-expr))))
+
+(defmacro assert-info
+  "Like `assert` but accepts an `ex-info`-style info-map:
+
+        (assert-info (sequential? listy)
+          \"prepend: Sequential collection required, found=\"
+          {:listy listy} )
+
+   Implemented using `(throw (ex-info ...))` "
+  [pred-expr err-str info-expr] (assert-info-impl [pred-expr err-str info-expr]))
+
 (s/defn append :- tsk/List
   "Given a sequential object (vector or list), add one or more elements to the end."
   [listy       :- tsk/List
    & elems     :- [s/Any] ]
-  (when-not (sequential? listy)
-    (throw (ex-info  "append: Sequential collection required, found=" {:listy listy})))
-  (when (empty? elems)
-    (throw (ex-info "Nothing to append! elems=" {:elems elems})))
+  (assert-info (sequential? listy)
+     "append: Sequential collection required, found=" {:listy listy})
+  (assert-info (not-empty? elems)
+     "Nothing to append! elems=" {:elems elems})
   ; (vec (concat listy elems))  ; #TODO ***WARNING*** never use `concat`!!! 1000x slower!
   (into (vec listy) elems))   ; #todo measure & write blog re TPX/TigerGraph data
 
@@ -917,10 +932,10 @@
   [& args]
   (let [elems (butlast args)
         listy (xlast args)]
-    (when-not (sequential? listy)
-      (throw (ex-info  "prepend: Sequential collection required, found=" {:listy listy})))
-    (when (empty? elems)
-      (throw (ex-info "Nothing to prepend! elems=" {:elems elems})))
+    (assert-info (sequential? listy)
+       "prepend: Sequential collection required, found=" {:listy listy})
+    (assert-info (not-empty? elems)
+      "Nothing to prepend! elems=" {:elems elems})
     (into (vec elems) listy)))
 
 ;-----------------------------------------------------------------------------
