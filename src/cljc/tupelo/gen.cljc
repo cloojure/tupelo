@@ -109,3 +109,32 @@
   (vector+ char-eol))
 
 ))
+
+(comment ; #todo sample usage:
+
+  (ns tst.demo.core
+    (:use tupelo.core tupelo.test)
+    (:require
+      [tupelo.gen :as tg]
+      [clojure.test.check.properties     :as prop]
+      ))
+
+  (dospec 9
+    (do
+      (newline)
+      (spy :sample)
+      (prop/for-all [w tg/word-alpha+]
+        (spyx w))))
+
+  (dospec 9
+    (do
+      (newline)
+      (spy :emails)
+      (prop/for-all [w1 tg/word-alpha+
+                     w2 tg/word-alpha+]
+        (let [email-addr (str w1 \@ w2 ".com")]
+          (spyx email-addr)
+          )
+        )))
+
+  )
