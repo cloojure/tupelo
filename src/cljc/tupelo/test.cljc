@@ -105,6 +105,43 @@
       `(throw (ex-info (str "tupelo is-nonblank-lines= requires at least 2 forms " ~line-str))))
     `(test/is (ts/nonblank-lines= ~@forms) )))
 
+(def ^:dynamic *equality-digits-float=* 4)
+(defmacro is-float=  ; #todo readme/test
+  "Use (is-float= ...) instead of (is (rel= ... :digits *digits-float=*))"
+  [& forms]
+  (if (<= (count forms) 1 )
+    ; #todo make `throw-macro-error` helper function...???
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (ex-info "tupelo.test/is-float= requires at least 2 forms " {:line-str ~line-str })))
+    `(test/is (tupelo.core/rel= ~@forms :digits *equality-digits-float=*))))
+(defmacro isnt-float=  ; #todo readme/test
+  "Use (isnt-float= ...) instead of (is (rel= ... :digits *digits-float=*))"
+  [& forms]
+  (if (<= (count forms) 1 )
+    ; #todo make `throw-macro-error` helper function...???
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (ex-info "tupelo.test/isnt-float= requires at least 2 forms " {:line-str ~line-str })))
+    `(test/is (not (tupelo.core/rel= ~@forms :digits *equality-digits-float=*)))))
+
+(def ^:dynamic *equality-digits-double=* 10)
+(defmacro is-double=  ; #todo readme/test
+  "Use (is-double= ...) instead of (is (rel= ... :digits *digits-double=*))"
+  [& forms]
+  (if (<= (count forms) 1 )
+    ; #todo make `throw-macro-error` helper function...???
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (ex-info "tupelo.test/is-double= requires at least 2 forms " {:line-str ~line-str })))
+    `(test/is (tupelo.core/rel= ~@forms :digits *equality-digits-double=*))))
+(defmacro isnt-double=  ; #todo readme/test
+  "Use (isnt-double= ...) instead of (is (rel= ... :digits *digits-double=*))"
+  [& forms]
+  (if (<= (count forms) 1 )
+    ; #todo make `throw-macro-error` helper function...???
+    (let [line-str (str "[source line=" (:line (meta &form))  "]")]
+      `(throw (ex-info "tupelo.test/isnt-double= requires at least 2 forms " {:line-str ~line-str })))
+    `(test/is (not (tupelo.core/rel= ~@forms :digits *equality-digits-double=*)))))
+
+
 (defmacro throws? ; #todo document in readme
   "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
      (throws? (/ 1 0))                      ; catches any Throwable"
