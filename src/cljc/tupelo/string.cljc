@@ -222,6 +222,13 @@
 ; #todo need (indexes "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5]) -> [ \b \d \f ]
 ; #todo need (idxs    "abcde" [1 3 5]) -> (mapv #(idx "abcde" %) [1 3 5])   ; like matlab
 
+(s/defn clip :- s/Str
+  "Converts all args to single string and clips any characters beyond nchars."
+  [nchars & args]
+  (t/it-> (apply str args)
+    (clojure.core/take nchars it)
+    (apply str it)))
+
 (s/defn clip-text :- s/Str
   "Given a multi-line string, returns a string with each line clipped to a max of N chars "
   [N       :- s/Int
@@ -229,7 +236,7 @@
   (clojure.string/join \newline
     (let [lines (clojure.string/split-lines src-str)]
       (for [line lines]
-        (t/clip-str N line)))))
+        (clip N line)))))
 
 ; #todo need tests
 (defn normalize-str

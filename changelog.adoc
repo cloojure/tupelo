@@ -1,6 +1,10 @@
 
 = Change Log
 
+.21.09.03
+ - Moved `tupelo.core/clip-str` => `tupelo.string/clip`
+ - Added `is-float=` and `is-double=` to `tupelo.test`
+
 .21.07.08
   - Replaced tupelo.csv with tupelo.dev.csv2
     * rewrite using `clojure.data.csv` instead of previous `clojure-csv` library

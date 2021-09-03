@@ -267,7 +267,7 @@
 
 ;-----------------------------------------------------------------------------
 (declare
-  glue xfirst xrest append prepend grab fetch-in indexed clip-str validate
+  glue xfirst xrest append prepend grab fetch-in indexed -str validate
   walk-with-parents with-nil-default vals->map snip snip* map-let  map-let*
   spy spyx spy-pretty spyx-pretty let-spy let-spy-pretty unlazy
   )
@@ -1965,14 +1965,6 @@
         (str indent-str line)))))
 
 ;-----------------------------------------------------------------------------
-(defn clip-str      ; #todo -> tupelo.string?
-  "Converts all args to single string and clips any characters beyond nchars."
-  [nchars & args]
-  (it-> (apply str args)
-    (take nchars it)
-    (apply str it)))
-
-;-----------------------------------------------------------------------------
 (defmacro with-timer
   "Prints `id` and the elapsed (elapsed) execution time for a set of forms."
   [id & forms]
@@ -3649,7 +3641,7 @@
 ;     append prepend grab dissoc-in fetch fetch-in
 ;     submap? submap-by-keys submap-by-vals keyvals keyvals-seq validate-map-keys map-keys map-vals
 ;     validate only it-> keep-if drop-if zip zip* zip-lazy indexed
-;     strcat nl pretty pretty-str json->edn edn->json clip-str range-vec thru rel= all-rel=
+;     strcat nl pretty pretty-str json->edn edn->json range-vec thru rel= all-rel=
 ;     drop-at insert-at replace-at idx
 ;     starts-with? int->kw kw->int
 ;     xfirst xsecond xthird xfourth xlast xbutlast xrest xreverse
