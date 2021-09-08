@@ -456,6 +456,12 @@
   (throws? (t/not-empty? 3.14)))
 
 ;-----------------------------------------------------------------------------
+; pretty stuff
+(dotest
+  (is-nonblank=  "{:a [1 2 3], :d 4}" (t/pretty-str (quote {:d 4 :a (1 2 3)})))
+  )
+
+;-----------------------------------------------------------------------------
 ; spy stuff
 (dotest
   (is= "(+ 2 3) => 5"
@@ -2264,7 +2270,7 @@
         map-sorted    (t/->sorted-map map-orig)
         nested-orig   {:a map-orig
                        :b [map-orig 2 3]}
-        nested-sorted (t/walk-maps->sorted nested-orig)]
+        nested-sorted (t/walk-data->pretty nested-orig)]
     (is (sorted-map? map-sorted))
     (is (sorted-map? (get-in nested-sorted [:a])))
     (isnt (sorted-map? (get-in nested-sorted [:b])))

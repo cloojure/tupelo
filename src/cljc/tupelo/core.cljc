@@ -576,15 +576,6 @@
   "Coerces a map into a sorted-map"
   [map-in :- tsk/Map] (glue (sorted-map) map-in))
 
-(defn walk-maps->sorted
-  "Recursively walks form, converting all maps to sorted-maps. "
-  [form]
-  (walk/postwalk (fn [item]
-                   (if (map? item)
-                     (->sorted-map item)
-                     item))
-    form))
-
 (defn sorted-map-generic
   "Returns a generic sorted map, able to accept keys of different classes"
   [] (sorted-map-by lex/compare-generic))
@@ -601,28 +592,47 @@
   "Coerces a set into a sorted-set-generic"
   [set-in :- tsk/Set] (glue (sorted-set-generic) set-in))
 
+(defn walk-data->pretty
+  "Recursively walks a data structure, converting all maps & sets to (generic) sorted versions,
+   and all sequences to vectors. "
+  [data]
+  (let [pretty-item (fn [item]
+                      (cond
+                        (sequential? item) (vec item)
+
+                        #?@(:clj  [(map? item) (into (sorted-map-generic) item)
+                                   (set? item) (into (sorted-set-generic) item) ]
+                            :cljs [(map? item) (into (sorted-map) item) ; #todo => (sorted-map-generic)
+                                   (set? item) (into (sorted-set) item) ; #todo => (sorted-map-generic)
+                                  ])
+
+                        :else item))
+        result    (walk/postwalk pretty-item data) ]
+    result))
+
 (defn unlazy ; #todo need tests & docs. Use for datomic Entity?
   "Converts a lazy collection to a concrete (eager) collection of the same type."
   [coll]
   (let [unlazy-item (fn [item]
                       (cond
                         (sequential? item) (vec item)
+                        (map? item) (into {} item)
+                        (set? item) (into #{} item)
 
-            #?@(:clj  [ (map? item) (into (sorted-map-generic) item)
-                        (set? item) (into (sorted-set-generic) item) ]
-                :cljs [ (map? item) (into (sorted-map) item) ; #todo => (sorted-map-generic)
-                        (set? item) (into (sorted-set) item) ; #todo => (sorted-map-generic)
-                      ] )
+                        #?@(:clj [
+                                  (instance? java.io.InputStream item) (slurp item) ; #todo need test
+                                  (instance? java.util.List item) (vec item) ; #todo need test
+                                  (instance? java.util.Map item) (into {} item) ; #todo need test
+                                  (instance? java.lang.Iterable item) (into [] item) ; #todo need test
+                                  ])
 
-            #?@(:clj [
-                        (instance? java.io.InputStream item) (slurp item)  ; #todo need test
-                        (instance? java.util.List item) (vec item)  ; #todo need test
-                        (instance? java.util.Map item) (into {} item)  ; #todo need test
-                        (instance? java.lang.Iterable item) (into [] item)  ; #todo need test
-                     ])
                         :else item))
-        result    (walk/prewalk unlazy-item coll) ]
+        result      (walk/prewalk unlazy-item coll)]
     result))
+
+(defn unlazy-pretty
+  "Shorthand for (walk-data->pretty (unlazy data))."
+  [data]  (walk-data->pretty (unlazy data)))
 
 ; #todo impl-merge *****************************************************************************
 
@@ -3210,24 +3220,15 @@
       (set-match-impl {} pattern value))))
 
 
-; #todo add postwalk and change to all sorted-map, sorted-set
-; #todo rename to pp or pprint ?
 ; #todo add test & README
-(defn pretty   ; #todo experimental
-  "Shortcut to clojure.pprint/pprint. Returns it (1st) argument."
-  ([arg]
-   (pprint/pprint arg)
-   arg)
-  ([arg writer]
-   (pprint/pprint arg writer)
-   arg))
+(defn pretty
+  "Shortcut for (clojure.pprint/pprint (unlazy-pretty data))."
+  [data] (pprint/pprint (unlazy-pretty data)))
 
 ; #todo add test & README
-; #todo defer to tupelo.core/pretty
 (defn pretty-str
-  "Returns a string that is the result of clojure.pprint/pprint"
-  [arg]
-  (with-out-str (pprint/pprint arg)))
+  "Returns a string that is the result of tupelo.core/pretty"
+  [data] (with-out-str (pretty data)))
 
 (def ^:no-doc ^:dynamic *walk-with-parents-readonly-flag* false) ; assumes not in readonly mode
 (s/defn ^:no-doc walk-with-parents-impl :- s/Any
