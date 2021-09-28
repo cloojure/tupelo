@@ -636,7 +636,7 @@
 
 ; #todo impl-merge *****************************************************************************
 
-(defn has-length?
+(defn has-length?  ; #todo rework => (count= N coll)  ???
   "Returns true if the collection has the indicated length. Does not hang for infinite sequences."
   [coll n]
   (when (nil? coll) (throw (ex-info "has-length?: coll must not be nil" {:coll coll})))
@@ -666,7 +666,13 @@
   "Given a collection like `[[5]]`, returns `5`.  Equivalent to `(only (only coll))`."
   [coll] (only (only coll)))
 
-;#todo:  maybe make functions `only?` and `only2?`
+(s/defn only? :- s/Bool
+  "Returns true iff collection has length=1"
+  [coll :- s/Any] (and (has-length? coll 1)))
+(s/defn only2? :- s/Bool
+  "Returns true iff arg is two nested collections of length=1 (eg `[[5]]`)"
+  [coll :- s/Any] (and (has-length? coll 1)
+                    (has-length? (first coll) 1)))
 
 (defn single?
   "Returns true if the collection contains a single item.`"
@@ -1532,14 +1538,6 @@
   (mutable-var-set-it! (append it value)))
 
 ;-----------------------------------------------------------------------------
-(s/defn only? :- s/Bool
-  "Returns true iff collection has length=1"
-  [coll :- s/Any] (and (has-length? coll 1)))
-(s/defn only2? :- s/Bool
-  "Returns true iff arg is two nested collections of length=1"
-  [coll :- s/Any] (and (has-length? coll 1)
-                    (has-length? (first coll) 1)))
-
 (defmacro source-code-env
   "A macro that returns information about the calling source code location like:
        {:src-line    61
