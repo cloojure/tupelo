@@ -222,7 +222,7 @@
        [& body]
        `(let [ps# (PrintStream. (OutputStream/nullOutputStream))]
           (System/setErr ps#)
-          (let [result# ~@body]
+          (let [result# (do ~@body)]
             (System/setErr System/err)
             (.close ps#)
             result#)))
@@ -232,7 +232,7 @@
        [& body]
        `(let [ps# (PrintStream. (OutputStream/nullOutputStream))]
           (System/setOut ps#)
-          (let [result# ~@body]
+          (let [result# (do ~@body)]
             (System/setOut System/out)
             (.close ps#)
             result#)))
