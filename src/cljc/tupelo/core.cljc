@@ -197,11 +197,12 @@
        "Evaluates exprs in a context in which JVM System/err is bound to a fresh
        PrintStream.  Returns the string created by any nested printing calls."
        [& body]
-       `(let [baos# (ByteArrayOutputStream.)
+       `(let [err-orig# System/err
+              baos# (ByteArrayOutputStream.)
               ps#   (PrintStream. baos#)]
           (System/setErr ps#)
           ~@body
-          (System/setErr System/err)
+          (System/setErr err-orig#)
           (.close ps#)
           (.toString baos#)))
 
@@ -209,31 +210,34 @@
        "Evaluates exprs in a context in which JVM System/out is bound to a fresh
        PrintStream.  Returns the string created by any nested printing calls."
        [& body]
-       `(let [baos# (ByteArrayOutputStream.)
+       `(let [out-orig# System/out
+              baos# (ByteArrayOutputStream.)
               ps#   (PrintStream. baos#)]
           (System/setOut ps#)
           ~@body
-          (System/setOut System/out)
+          (System/setOut out-orig#)
           (.close ps#)
           (.toString baos#)))
 
      (defmacro discarding-system-err
        "Evaluates exprs in a context in which JVM System/err is bound to a fresh PrintStream that is discarded."
        [& body]
-       `(let [ps# (PrintStream. (OutputStream/nullOutputStream))]
+       `(let [err-orig# System/err
+              ps# (PrintStream. (OutputStream/nullOutputStream))]
           (System/setErr ps#)
           (let [result# (do ~@body)]
-            (System/setErr System/err)
+            (System/setErr  err-orig# )
             (.close ps#)
             result#)))
 
      (defmacro discarding-system-out
        "Evaluates exprs in a context in which JVM System/out is bound to a fresh PrintStream that is discarded."
        [& body]
-       `(let [ps# (PrintStream. (OutputStream/nullOutputStream))]
+       `(let [out-orig# System/out
+              ps# (PrintStream. (OutputStream/nullOutputStream))]
           (System/setOut ps#)
           (let [result# (do ~@body)]
-            (System/setOut System/out)
+            (System/setOut out-orig#)
             (.close ps#)
             result#)))
 
