@@ -11,14 +11,13 @@
     [clojure.java.io :as io]
     [clojure.java.io :as io]
     [clojure.set :as cs]
-    [clojure.string :as str]
     [clojure.tools.reader.edn :as edn]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.forest :as tf]
     [tupelo.parse.tagsoup :as tagsoup]
     [tupelo.schema :as tsk]
-    [tupelo.string :as ts]
+    [tupelo.string :as str]
     )
   (:import [java.io StringReader]))
 
@@ -1043,7 +1042,7 @@
 
 ;-----------------------------------------------------------------------------
 (dotest
-  (let [xml-str (ts/quotes->double
+  (let [xml-str (str/quotes->double
                   "<document>
                      <sentence id='1'>
                        <word id='1.1'>foo</word>
@@ -1161,9 +1160,9 @@
           result      (re-find #"http.*$" value-str)]
       (when false
         (println :xkcd-enlive)
-        (println (clip-str 999 (pretty-str xkcd-enlive)))
+        (println (str/clip 999 (pretty-str xkcd-enlive)))
         (println :xkcd-bush)
-        (println (clip-str 999 (pretty-str (hid->bush root-hid)))))
+        (println (str/clip 999 (pretty-str (hid->bush root-hid)))))
       (is= value-str "\nPermanent link to this comic: https://xkcd.com/1988/")
       (is= "https://xkcd.com/1988/" result))))
 
@@ -1759,7 +1758,7 @@
   (with-forest (new-forest)
     (let [debug-flg       false
           edn-str ;   Notice that there are 3 forms in the source
-                          (ts/quotes->double ; use single-quotes in string, then convert => double-quotes
+                          (str/quotes->double ; use single-quotes in string, then convert => double-quotes
                             "(ns tst.demo.core
                                (:use demo.core tupelo.core tupelo.test))
 

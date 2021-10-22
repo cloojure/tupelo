@@ -1,4 +1,4 @@
-(defproject tupelo "21.07.08"
+(defproject tupelo "21.10.06"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -17,7 +17,7 @@
    ; [org.clojure/clojure "1.10.3"]
 
    ; top-priority libs
-   [org.clojure/core.async "1.3.618"]
+   [org.clojure/core.async "1.3.622"]
    [org.clojure/core.match "1.0.0"]
    [org.clojure/data.avl "0.1.0"]
    [org.clojure/data.csv "1.0.0"]
@@ -25,14 +25,14 @@
    [org.clojure/math.combinatorics "0.1.6"]
    [org.clojure/spec.alpha "0.2.194"]
    [org.clojure/test.check "1.1.0"]
-   [org.clojure/tools.reader "1.3.5"]
+   [org.clojure/tools.reader "1.3.6"]
 
    ; other libs
    [camel-snake-kebab "0.4.2"]
-   [cheshire "5.10.0"] ; #todo switch to muuntaja/jsonista
+   [cheshire "5.10.1"] ; #todo switch to muuntaja/jsonista
    [clj-time "0.15.2"]
    [danlentz/clj-uuid "0.1.9"]
-   [joda-time/joda-time "2.10.10"]
+   [joda-time/joda-time "2.10.12"]
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
    [org.flatland/ordered "1.5.9"]
    [org.snakeyaml/snakeyaml-engine "2.3"]

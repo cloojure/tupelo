@@ -30,7 +30,20 @@
 
   (throws?     (do (throw (Exception. "oh the misery!"))))
   (throws-not? (do (+ 1 2)))
-)
+
+  ; default 4/7 decimals must agree for "equality"
+  (is-float= 1.2345678 1.2345)
+  (isnt-float= 1.2345678 1.234)
+
+  ; default 10/15 decimals must agree for "equality"
+  (is-double= 1.123456789012345 1.123456789)
+  (isnt-double= 1.123456789012345 1.12345678)
+
+  ; can redefine number of decimals required for "equality"
+  (binding [tupelo.test/*equality-digits-double=* 4]
+    (is-double= 1.2345678 1.2345)
+    (isnt-double= 1.2345678 1.234))
+  )
 
 (dotest
   (throws? (is-set= [1]))

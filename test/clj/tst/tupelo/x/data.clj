@@ -2,10 +2,9 @@
   (:use tupelo.core tupelo.test )
   (:require
     [clojure.math.combinatorics :as combo]
-    [clojure.string :as str]
     [schema.core :as s]
     [tupelo.misc :as tm :refer [HID]]
-    [tupelo.string :as tstr]
+    [tupelo.string :as str]
     [tupelo.schema :as tsk]))
 
 
@@ -45,7 +44,7 @@
 (defn print-fracture [fracture]
   (println "-----------------------------------------------------------------------------")
   (doseq [[hid val] (glue (sorted-map) fracture)]
-    (println "  " hid (tstr/indent 4 (pr-str val))))
+    (println "  " hid (str/indent 4 (pr-str val))))
   (println "-----------------------------------------------------------------------------"))
 
 ; #todo avoid self-cycles
@@ -56,7 +55,7 @@
 (s/defn new-hid :- HID ; #todo ***** temp for testing only! *****
   []
   (->> (tm/sha-uuid)
-    (clip-str 8)
+    (str/clip 8)
     (keyword)))
 
 (s/defn add-entity

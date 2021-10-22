@@ -1,0 +1,10 @@
+walk-with-parents
+  => walk-data
+    combine with submatch? for power
+    submatch2? allows predicates as values:  {:a odd? :b "buzz"}  or [odd? even? 3] 
+tagval - polish 
+  {:LocalDate "1999-12-31"} {:int 5} {:dbl 6.0} {:user {:name "Joe" :age 33 :city "Springfield"}}
+  {:e 512} {:a 666} {:v 777}
+tagstr => <Integer 3>  <Float 4> and table of constructors
+  or just use pr-str on tagval?
+

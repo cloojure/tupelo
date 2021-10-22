@@ -222,7 +222,7 @@
        [& body]
        `(let [ps# (PrintStream. (OutputStream/nullOutputStream))]
           (System/setErr ps#)
-          (let [result# ~@body]
+          (let [result# (do ~@body)]
             (System/setErr System/err)
             (.close ps#)
             result#)))
@@ -232,7 +232,7 @@
        [& body]
        `(let [ps# (PrintStream. (OutputStream/nullOutputStream))]
           (System/setOut ps#)
-          (let [result# ~@body]
+          (let [result# (do ~@body)]
             (System/setOut System/out)
             (.close ps#)
             result#)))
@@ -267,7 +267,7 @@
 
 ;-----------------------------------------------------------------------------
 (declare
-  glue xfirst xrest append prepend grab fetch-in indexed clip-str validate
+  glue xfirst xrest append prepend grab fetch-in indexed -str validate
   walk-with-parents with-nil-default vals->map snip snip* map-let  map-let*
   spy spyx spy-pretty spyx-pretty let-spy let-spy-pretty unlazy
   )
@@ -576,15 +576,6 @@
   "Coerces a map into a sorted-map"
   [map-in :- tsk/Map] (glue (sorted-map) map-in))
 
-(defn walk-maps->sorted
-  "Recursively walks form, converting all maps to sorted-maps. "
-  [form]
-  (walk/postwalk (fn [item]
-                   (if (map? item)
-                     (->sorted-map item)
-                     item))
-    form))
-
 (defn sorted-map-generic
   "Returns a generic sorted map, able to accept keys of different classes"
   [] (sorted-map-by lex/compare-generic))
@@ -601,32 +592,51 @@
   "Coerces a set into a sorted-set-generic"
   [set-in :- tsk/Set] (glue (sorted-set-generic) set-in))
 
+(defn walk-data->pretty
+  "Recursively walks a data structure, converting all maps & sets to (generic) sorted versions,
+   and all sequences to vectors. "
+  [data]
+  (let [pretty-item (fn [item]
+                      (cond
+                        (sequential? item) (vec item)
+
+                        #?@(:clj  [(map? item) (into (sorted-map-generic) item)
+                                   (set? item) (into (sorted-set-generic) item) ]
+                            :cljs [(map? item) (into (sorted-map) item) ; #todo => (sorted-map-generic)
+                                   (set? item) (into (sorted-set) item) ; #todo => (sorted-map-generic)
+                                  ])
+
+                        :else item))
+        result    (walk/postwalk pretty-item data) ]
+    result))
+
 (defn unlazy ; #todo need tests & docs. Use for datomic Entity?
   "Converts a lazy collection to a concrete (eager) collection of the same type."
   [coll]
   (let [unlazy-item (fn [item]
                       (cond
                         (sequential? item) (vec item)
+                        (map? item) (into {} item)
+                        (set? item) (into #{} item)
 
-            #?@(:clj  [ (map? item) (into (sorted-map-generic) item)
-                        (set? item) (into (sorted-set-generic) item) ]
-                :cljs [ (map? item) (into (sorted-map) item) ; #todo => (sorted-map-generic)
-                        (set? item) (into (sorted-set) item) ; #todo => (sorted-map-generic)
-                      ] )
+                        #?@(:clj [
+                                  (instance? java.io.InputStream item) (slurp item) ; #todo need test
+                                  (instance? java.util.List item) (vec item) ; #todo need test
+                                  (instance? java.util.Map item) (into {} item) ; #todo need test
+                                  (instance? java.lang.Iterable item) (into [] item) ; #todo need test
+                                  ])
 
-            #?@(:clj [
-                        (instance? java.io.InputStream item) (slurp item)  ; #todo need test
-                        (instance? java.util.List item) (vec item)  ; #todo need test
-                        (instance? java.util.Map item) (into {} item)  ; #todo need test
-                        (instance? java.lang.Iterable item) (into [] item)  ; #todo need test
-                     ])
                         :else item))
-        result    (walk/prewalk unlazy-item coll) ]
+        result      (walk/prewalk unlazy-item coll)]
     result))
+
+(defn unlazy-pretty
+  "Shorthand for (walk-data->pretty (unlazy data))."
+  [data]  (walk-data->pretty (unlazy data)))
 
 ; #todo impl-merge *****************************************************************************
 
-(defn has-length?
+(defn has-length?  ; #todo rework => (count= N coll)  ???
   "Returns true if the collection has the indicated length. Does not hang for infinite sequences."
   [coll n]
   (when (nil? coll) (throw (ex-info "has-length?: coll must not be nil" {:coll coll})))
@@ -656,7 +666,13 @@
   "Given a collection like `[[5]]`, returns `5`.  Equivalent to `(only (only coll))`."
   [coll] (only (only coll)))
 
-;#todo:  maybe make functions `only?` and `only2?`
+(s/defn only? :- s/Bool
+  "Returns true iff collection has length=1"
+  [coll :- s/Any] (and (has-length? coll 1)))
+(s/defn only2? :- s/Bool
+  "Returns true iff arg is two nested collections of length=1 (eg `[[5]]`)"
+  [coll :- s/Any] (and (has-length? coll 1)
+                    (has-length? (first coll) 1)))
 
 (defn single?
   "Returns true if the collection contains a single item.`"
@@ -1522,14 +1538,6 @@
   (mutable-var-set-it! (append it value)))
 
 ;-----------------------------------------------------------------------------
-(s/defn only? :- s/Bool
-  "Returns true iff collection has length=1"
-  [coll :- s/Any] (and (has-length? coll 1)))
-(s/defn only2? :- s/Bool
-  "Returns true iff arg is two nested collections of length=1"
-  [coll :- s/Any] (and (has-length? coll 1)
-                    (has-length? (first coll) 1)))
-
 (defmacro source-code-env
   "A macro that returns information about the calling source code location like:
        {:src-line    61
@@ -1963,14 +1971,6 @@
     (interpose \newline
       (for [line (str/split-lines txt)]
         (str indent-str line)))))
-
-;-----------------------------------------------------------------------------
-(defn clip-str      ; #todo -> tupelo.string?
-  "Converts all args to single string and clips any characters beyond nchars."
-  [nchars & args]
-  (it-> (apply str args)
-    (take nchars it)
-    (apply str it)))
 
 ;-----------------------------------------------------------------------------
 (defmacro with-timer
@@ -3218,24 +3218,15 @@
       (set-match-impl {} pattern value))))
 
 
-; #todo add postwalk and change to all sorted-map, sorted-set
-; #todo rename to pp or pprint ?
 ; #todo add test & README
-(defn pretty   ; #todo experimental
-  "Shortcut to clojure.pprint/pprint. Returns it (1st) argument."
-  ([arg]
-   (pprint/pprint arg)
-   arg)
-  ([arg writer]
-   (pprint/pprint arg writer)
-   arg))
+(defn pretty
+  "Shortcut for (clojure.pprint/pprint (unlazy-pretty data))."
+  [data] (pprint/pprint (unlazy-pretty data)))
 
 ; #todo add test & README
-; #todo defer to tupelo.core/pretty
 (defn pretty-str
-  "Returns a string that is the result of clojure.pprint/pprint"
-  [arg]
-  (with-out-str (pprint/pprint arg)))
+  "Returns a string that is the result of tupelo.core/pretty"
+  [data] (with-out-str (pretty data)))
 
 (def ^:no-doc ^:dynamic *walk-with-parents-readonly-flag* false) ; assumes not in readonly mode
 (s/defn ^:no-doc walk-with-parents-impl :- s/Any
@@ -3649,7 +3640,7 @@
 ;     append prepend grab dissoc-in fetch fetch-in
 ;     submap? submap-by-keys submap-by-vals keyvals keyvals-seq validate-map-keys map-keys map-vals
 ;     validate only it-> keep-if drop-if zip zip* zip-lazy indexed
-;     strcat nl pretty pretty-str json->edn edn->json clip-str range-vec thru rel= all-rel=
+;     strcat nl pretty pretty-str json->edn edn->json range-vec thru rel= all-rel=
 ;     drop-at insert-at replace-at idx
 ;     starts-with? int->kw kw->int
 ;     xfirst xsecond xthird xfourth xlast xbutlast xrest xreverse

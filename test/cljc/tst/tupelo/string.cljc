@@ -26,6 +26,58 @@
 ; #todo add clojure.spec testing?
 
 (dotest
+  (testing "single string"
+    (is (= "" (str/clip 0 "abcdefg")))
+    (is (= "a" (str/clip 1 "abcdefg")))
+    (is (= "ab" (str/clip 2 "abcdefg")))
+    (is (= "abc" (str/clip 3 "abcdefg")))
+    (is (= "abcd" (str/clip 4 "abcdefg")))
+    (is (= "abcde" (str/clip 5 "abcdefg"))))
+  (testing "two strings"
+    (is (= "" (str/clip 0 "abc defg")))
+    (is (= "a" (str/clip 1 "abc defg")))
+    (is (= "ab" (str/clip 2 "abc defg")))
+    (is (= "abc" (str/clip 3 "abc defg")))
+    (is (= "abc " (str/clip 4 "abc defg")))
+    (is (= "abc d" (str/clip 5 "abc defg"))))
+  (testing "two strings & char"
+    (is (= "" (str/clip 0 "ab" \c "defg")))
+    (is (= "a" (str/clip 1 "ab" \c "defg")))
+    (is (= "ab" (str/clip 2 "ab" \c "defg")))
+    (is (= "abc" (str/clip 3 "ab" \c "defg")))
+    (is (= "abcd" (str/clip 4 "ab" \c "defg")))
+    (is (= "abcde" (str/clip 5 "ab" \c "defg"))))
+  (testing "two strings & digit"
+    (is (= "" (str/clip 0 "ab" 9 "defg")))
+    (is (= "a" (str/clip 1 "ab" 9 "defg")))
+    (is (= "ab" (str/clip 2 "ab" 9 "defg")))
+    (is (= "ab9" (str/clip 3 "ab" 9 "defg")))
+    (is (= "ab9d" (str/clip 4 "ab" 9 "defg")))
+    (is (= "ab9de" (str/clip 5 "ab" 9 "defg"))))
+  (testing "vector"
+    (is (= "" (str/clip 0 [1 2 3 4 5])))
+    (is (= "[" (str/clip 1 [1 2 3 4 5])))
+    (is (= "[1" (str/clip 2 [1 2 3 4 5])))
+    (is (= "[1 2" (str/clip 4 [1 2 3 4 5])))
+    (is (= "[1 2 3 4" (str/clip 8 [1 2 3 4 5])))
+    (is (= "[1 2 3 4 5]" (str/clip 16 [1 2 3 4 5]))))
+  (testing "map"
+    (is (= "" (str/clip 0 (sorted-map :a 1 :b 2))))
+    (is (= "{" (str/clip 1 (sorted-map :a 1 :b 2))))
+    (is (= "{:" (str/clip 2 (sorted-map :a 1 :b 2))))
+    (is (= "{:a " (str/clip 4 (sorted-map :a 1 :b 2))))
+    (is (= "{:a 1, :" (str/clip 8 (sorted-map :a 1 :b 2))))
+    (is (= "{:a 1, :b 2}" (str/clip 16 (sorted-map :a 1 :b 2)))))
+  (testing "set"
+    (let [tst-set (sorted-set 5 4 3 2 1)]
+      (is (= "" (str/clip 0 tst-set)))
+      (is (= "#" (str/clip 1 tst-set)))
+      (is (= "#{" (str/clip 2 tst-set)))
+      (is (= "#{1 " (str/clip 4 tst-set)))
+      (is (= "#{1 2 3 " (str/clip 8 tst-set)))
+      (is (= "#{1 2 3 4 5}" (str/clip 16 tst-set))))))
+
+(dotest
   (is= "" (str/tabs->spaces ""))
   (is= "x" (str/tabs->spaces "x"))
   ;     01234567012345670123456701234567
