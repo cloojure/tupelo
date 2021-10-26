@@ -572,9 +572,9 @@
   date & time fields) into an Instant"
   [iso-str :- s/Str]
   (it-> iso-str
-    (vec it)
-    (assoc it 10 \T)
-    (str/join it)
+    (vec it) ; convert to vector of chars
+    (assoc it 10 \T) ; set index 10 to a "T" char
+    (str/join it) ; convert back to a string
     (Instant/parse it)))
 
 

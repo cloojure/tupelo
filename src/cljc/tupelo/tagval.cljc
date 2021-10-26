@@ -20,7 +20,7 @@
 ; & "tagent" could be {:friend {:name "Joe" :age 23}}
 
 (s/defn tagval? :- s/Bool
-  "Returns true if arg is a TagVal "
+  "Returns true if arg is a TagVal: a keyword map with 1 entry."
   [arg :- s/Any]
   (and (t/xmap? arg)
     (let [entries (seq arg)]
