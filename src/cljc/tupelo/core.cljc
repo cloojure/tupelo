@@ -2294,17 +2294,17 @@
                                                            (deep-rel= av bv))))))
 
 
-(defn range-vec     ; #todo README;  maybe xrange?  maybe kill this?
+(defn range-vec     ; #todo rename => slice
   "An eager version clojure.core/range that always returns its result in a vector."
   [& args]
   (vec (apply range args)))
 
 ; #todo need docs & tests
-; #todo:  add (thru a b)     -> [a..b] (inclusive)
+; #todo:  add (thru a b)     -> [a..b] for integers (inclusive)
 ;             (thru 1 3)     -> [ 1  2  3]
-;             (thru \a \c)   -> [\a \b \c]
-;             (thru :a :c)   -> [:a :b :c]
-;             (thru 'a 'c)   -> ['a 'b 'c]
+;             (thru \a \c)   -> [\a \b \c]  ; only for single char
+;             (thru :a :c)   -> [:a :b :c]  ; only for single char
+;             (thru 'a 'c)   -> ['a 'b 'c]  ; only for single char
 ;             (thru 1   2   0.1)     -> [1.0  1.1  1.2 ... 2.0]
 ;             (thru 0.1 0.3 0.1)     -> [0.1  0.2  0.3]
 ;                  (thru start stop step) uses integer steps and
