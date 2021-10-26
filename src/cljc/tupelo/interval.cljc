@@ -24,7 +24,7 @@
     [tupelo.schema :as tsk]
     [tupelo.core :as t]))
 
-; #todo maybe use shorthand names: slice [), block [], span (), naps (]
+; #todo maybe use shorthand names: slice [), block [], span (), anti-slice (]
 ; #todo maybe add in Allen's Interval Algebra predicates
 
 ;-----------------------------------------------------------------------------
@@ -48,6 +48,7 @@
   (t/with-map-vals interval [lower upper]
     (t/compare-less lower val upper)))
 
+; #todo add anti-slice ???
 (s/defn slice-contains? :- s/Bool
   "Returns true iff a 'slice' interval contains a value such that (lower <= L < upper)."
   [interval :- Interval
@@ -64,7 +65,7 @@
   (t/with-map-vals interval [lower upper]
     (t/compare-less-equal lower val upper)))
 
-(s/defn ->vals-slice ; #todo => tupelo.interval
+(s/defn slice->vals ; #todo => tupelo.interval
   "For an Interval of integer values, returns to a slice (half-open range) like:
        (is= [5 6 7] (->slice-int (interval/new 5 8))) "
   [itvl :- Interval]  ; #todo: optional step-size (default=1), could be ChronoUnit or 1 day for LocalDateStr
@@ -72,7 +73,7 @@
     (assert (every? int? [lower upper]))
     (range lower upper)))
 
-(s/defn ->vals-thru ; #todo => tupelo.interval
+(s/defn closed->vals ; #todo => tupelo.interval
   "For an Interval of integer values, returns to a `thru` (closed range) like:
        (is= [5 6 7 8] (->thru-int (interval/new 5 8))) "
   [itvl :- Interval]

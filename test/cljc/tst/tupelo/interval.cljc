@@ -30,8 +30,8 @@
   (is= (> 0 1.0) false)
 
   (is= (< 1 1.0) false)
-  (is= (= 1 1.0) false) ; ***** integers and floating point values are never equal! *****
-  (is= (== 1 1.0) true) ; *****  works for numbers (only) in different categories *****
+  (is= (= 1 1.0) false) ; *****  single-equals `=` doesn't work for integer and floating point values (never!) *****
+  (is= (== 1 1.0) true) ; *****  double-equals `==` works for numbers (only) in different categories *****
   (is= (> 1 1.0) false)
 
   (is= (< 2 1.0) false)
@@ -56,6 +56,6 @@
     (is= closed-vals [1 2 3 4 5])))
 
 (dotest
-  (is= [5 6 7] (interval/->vals-slice (interval/new 5 8)))
-  (is= [5 6 7 8] (interval/->vals-thru (interval/new 5 8))))
+  (is= [5 6 7] (interval/slice->vals (interval/new 5 8)))
+  (is= [5 6 7 8] (interval/closed->vals (interval/new 5 8))))
 
