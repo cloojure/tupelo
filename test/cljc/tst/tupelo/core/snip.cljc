@@ -20,12 +20,12 @@
              s10     #{:a :b :c :d :e :f :g :h :i :j}]
          (throws? (snip-seq-heads [] r10))
 
-         (is= (snip-seq-heads [0] r10) [:<snip>])
-         (is= (snip-seq-heads [1] r10) [0 :<snip>])
-         (is= (snip-seq-heads [2] r10) [0 1 :<snip>])
-         (is= (snip-seq-heads [1 1] r10) [0 :<snip> 5 :<snip>])
-         (is= (snip-seq-heads [2 3] r10) [0 1 :<snip> 5 6 7 :<snip>])
-         (is= (snip-seq-heads [3 3 3] r10) [0 1 2 :<snip> 3 4 5 :<snip> 6 7 8 :<snip>])
+         (is= (snip-seq-heads [0] r10) [t/SNIP-TOKEN])
+         (is= (snip-seq-heads [1] r10) [0 t/SNIP-TOKEN])
+         (is= (snip-seq-heads [2] r10) [0 1 t/SNIP-TOKEN])
+         (is= (snip-seq-heads [1 1] r10) [0 t/SNIP-TOKEN 5 t/SNIP-TOKEN])
+         (is= (snip-seq-heads [2 3] r10) [0 1 t/SNIP-TOKEN 5 6 7 t/SNIP-TOKEN])
+         (is= (snip-seq-heads [3 3 3] r10) [0 1 2 t/SNIP-TOKEN 3 4 5 t/SNIP-TOKEN 6 7 8 t/SNIP-TOKEN])
          (is= (snip-seq-heads [4 9] r10) [0 1 2 3 4 5 6 7 8 9])
 
          (is= (snip-seq-tail 0 r10) [])
@@ -33,26 +33,26 @@
          (is= (snip-seq-tail 2 r10) [8 9])
 
          (throws? (snip-seq [0] r10))
-         (is= (snip-seq [1] r10) [0 :<snip>])
-         (is= (snip-seq [1 1] r10) [0 :<snip> 9])
-         (is= (snip-seq [1 1 1] r10) [0 :<snip> 4 :<snip> 9])
-         (is= (snip-seq [2 3 2] r10) [0 1 :<snip> 4 5 6 :<snip> 8 9])
-         (is= (snip-seq [3 3 3] r10) [0 1 2 :<snip> 3 4 5 :<snip> 7 8 9])
+         (is= (snip-seq [1] r10) [0 t/SNIP-TOKEN])
+         (is= (snip-seq [1 1] r10) [0 t/SNIP-TOKEN 9])
+         (is= (snip-seq [1 1 1] r10) [0 t/SNIP-TOKEN 4 t/SNIP-TOKEN 9])
+         (is= (snip-seq [2 3 2] r10) [0 1 t/SNIP-TOKEN 4 5 6 t/SNIP-TOKEN 8 9])
+         (is= (snip-seq [3 3 3] r10) [0 1 2 t/SNIP-TOKEN 3 4 5 t/SNIP-TOKEN 7 8 9])
 
          ;---------------------------------------------------------------------------------------------------
          (throws? (snip-seq-heads [] m10-seq))
 
-         (is= (snip-seq-heads [0] m10-seq) [:<snip>])
-         (is= (snip-seq-heads [1] m10-seq) [[:a 1] :<snip>])
-         (is= (snip-seq-heads [2] m10-seq) [[:a 1] [:b 2] :<snip>])
-         (is= (snip-seq-heads [1 1] m10-seq) [[:a 1] :<snip> [:f 6] :<snip>])
-         (is= (snip-seq-heads [2 3] m10-seq) [[:a 1] [:b 2] :<snip> [:f 6] [:g 7] [:h 8] :<snip>])
-         (is= (snip-seq-heads [3 3 3] m10-seq) [[:a 1] [:b 2] [:c 3] :<snip> [:d 4] [:e 5] [:f 6] :<snip> [:g 7] [:h 8] [:i 9] :<snip>])
+         (is= (snip-seq-heads [0] m10-seq) [t/SNIP-TOKEN])
+         (is= (snip-seq-heads [1] m10-seq) [[:a 1] t/SNIP-TOKEN])
+         (is= (snip-seq-heads [2] m10-seq) [[:a 1] [:b 2] t/SNIP-TOKEN])
+         (is= (snip-seq-heads [1 1] m10-seq) [[:a 1] t/SNIP-TOKEN [:f 6] t/SNIP-TOKEN])
+         (is= (snip-seq-heads [2 3] m10-seq) [[:a 1] [:b 2] t/SNIP-TOKEN [:f 6] [:g 7] [:h 8] t/SNIP-TOKEN])
+         (is= (snip-seq-heads [3 3 3] m10-seq) [[:a 1] [:b 2] [:c 3] t/SNIP-TOKEN [:d 4] [:e 5] [:f 6] t/SNIP-TOKEN [:g 7] [:h 8] [:i 9] t/SNIP-TOKEN])
          (is= (snip-seq-heads [4 9] m10-seq) [[:a 1] [:b 2] [:c 3] [:d 4] [:e 5] [:f 6] [:g 7] [:h 8] [:i 9] [:j 10]])
 
          ;---------------------------------------------------------------------------------------------------
-         (is= (snip-impl {:snip-sizes [1 1 1] :data r10}) [0 :<snip> 4 :<snip> 9])
-         (is= (snip-impl {:snip-sizes [2 3 2] :data r10}) [0 1 :<snip> 4 5 6 :<snip> 8 9])
+         (is= (snip-impl {:snip-sizes [1 1 1] :data r10}) [0 t/SNIP-TOKEN 4 t/SNIP-TOKEN 9])
+         (is= (snip-impl {:snip-sizes [2 3 2] :data r10}) [0 1 t/SNIP-TOKEN 4 5 6 t/SNIP-TOKEN 8 9])
 
          (is= (snip-impl {:snip-sizes [1 1] :data m10})
            {:a 1, :<snip-key-0> :<snip-val-0>, :j 10})
@@ -131,7 +131,7 @@
             {:date "2020-10-02", :value 112.8253}
             {:date "2020-10-05", :value 116.2993}
             {:date "2020-10-06", :value 112.9651}
-            :<snip>
+            t/SNIP-TOKEN
             {:date "2020-10-13", :value 120.8914}
             {:date "2020-10-14", :value 120.9812}
             {:date "2020-10-15", :value 120.5021}])
@@ -156,14 +156,14 @@
             [:9-1 :9-2 :9-3 :9-4 :9-5 :9-6 :9-7 :9-8 :9-9 :9-10 :9-11 :9-12]])
 
          (is= v312-snip
-           [[:1-1 :1-2 :1-3 :1-4 :<snip> :1-10 :1-11 :1-12]
-            [:2-1 :2-2 :2-3 :2-4 :<snip> :2-10 :2-11 :2-12]
-            [:3-1 :3-2 :3-3 :3-4 :<snip> :3-10 :3-11 :3-12]
-            [:4-1 :4-2 :4-3 :4-4 :<snip> :4-10 :4-11 :4-12]
-            :<snip>
-            [:7-1 :7-2 :7-3 :7-4 :<snip> :7-10 :7-11 :7-12]
-            [:8-1 :8-2 :8-3 :8-4 :<snip> :8-10 :8-11 :8-12]
-            [:9-1 :9-2 :9-3 :9-4 :<snip> :9-10 :9-11 :9-12]])))
+           [[:1-1 :1-2 :1-3 :1-4 t/SNIP-TOKEN :1-10 :1-11 :1-12]
+            [:2-1 :2-2 :2-3 :2-4 t/SNIP-TOKEN :2-10 :2-11 :2-12]
+            [:3-1 :3-2 :3-3 :3-4 t/SNIP-TOKEN :3-10 :3-11 :3-12]
+            [:4-1 :4-2 :4-3 :4-4 t/SNIP-TOKEN :4-10 :4-11 :4-12]
+            t/SNIP-TOKEN
+            [:7-1 :7-2 :7-3 :7-4 t/SNIP-TOKEN :7-10 :7-11 :7-12]
+            [:8-1 :8-2 :8-3 :8-4 t/SNIP-TOKEN :8-10 :8-11 :8-12]
+            [:9-1 :9-2 :9-3 :9-4 t/SNIP-TOKEN :9-10 :9-11 :9-12]])))
 
      (dotest
        (let [data      (apply glue
@@ -185,14 +185,14 @@
             :i [:i-1 :i-2 :i-3 :i-4 :i-5 :i-6 :i-7 :i-8 :i-9 :i-10 :i-11 :i-12],
             :a [:a-1 :a-2 :a-3 :a-4 :a-5 :a-6 :a-7 :a-8 :a-9 :a-10 :a-11 :a-12]})
          (is= data-snip
-           {:a            [:a-1 :a-2 :a-3 :a-4 :<snip> :a-10 :a-11 :a-12],
-            :b            [:b-1 :b-2 :b-3 :b-4 :<snip> :b-10 :b-11 :b-12],
-            :c            [:c-1 :c-2 :c-3 :c-4 :<snip> :c-10 :c-11 :c-12],
-            :d            [:d-1 :d-2 :d-3 :d-4 :<snip> :d-10 :d-11 :d-12],
+           {:a            [:a-1 :a-2 :a-3 :a-4 t/SNIP-TOKEN :a-10 :a-11 :a-12],
+            :b            [:b-1 :b-2 :b-3 :b-4 t/SNIP-TOKEN :b-10 :b-11 :b-12],
+            :c            [:c-1 :c-2 :c-3 :c-4 t/SNIP-TOKEN :c-10 :c-11 :c-12],
+            :d            [:d-1 :d-2 :d-3 :d-4 t/SNIP-TOKEN :d-10 :d-11 :d-12],
             :<snip-key-0> :<snip-val-0>,
-            :i            [:i-1 :i-2 :i-3 :i-4 :<snip> :i-10 :i-11 :i-12],
-            :j            [:j-1 :j-2 :j-3 :j-4 :<snip> :j-10 :j-11 :j-12],
-            :k            [:k-1 :k-2 :k-3 :k-4 :<snip> :k-10 :k-11 :k-12]})))
+            :i            [:i-1 :i-2 :i-3 :i-4 t/SNIP-TOKEN :i-10 :i-11 :i-12],
+            :j            [:j-1 :j-2 :j-3 :j-4 t/SNIP-TOKEN :j-10 :j-11 :j-12],
+            :k            [:k-1 :k-2 :k-3 :k-4 t/SNIP-TOKEN :k-10 :k-11 :k-12]})))
 
      (dotest
        (let [data      (apply glue

@@ -3365,6 +3365,7 @@
      ;   *snipped-map-leaders* (default 2)
      ;   *snipped-map-trailers* (default 1)
 
+     (def SNIP-TOKEN  :<----------snip-----------> )
 
      (s/defn ^:no-doc snip-seq-heads :- tsk/List
        [snip-sizes :- [s/Int]
@@ -3380,7 +3381,7 @@
                    parts-keep (apply glue
                                 (map-let [part      parts
                                           keep-curr snip-sizes]
-                                  (append (xtake keep-curr part) :<snip>)))]
+                                  (append (xtake keep-curr part) SNIP-TOKEN)))]
                parts-keep)))))
 
      (s/defn ^:no-doc snip-seq-tail :- tsk/List
@@ -3432,8 +3433,8 @@
              (sequential? data) (snip-seq snip-sizes (seq data)) ; coerce to a seq in case it's something weird
 
              (map? data) (let [result-seq  (snip-seq snip-sizes (seq (->sorted-map-generic data)))
-                               parts       (partition-by #(= :<snip> %) result-seq)
-                               parts-data  (drop-if #(= [:<snip>] %) parts)
+                               parts       (partition-by #(= SNIP-TOKEN %) result-seq)
+                               parts-data  (drop-if #(= [SNIP-TOKEN] %) parts)
                                parts-snip  (forv [idx (range (count parts-data))]
                                              [[(str->kw (format "<snip-key-%d>" idx))
                                                (str->kw (format "<snip-val-%d>" idx))]])
@@ -3445,8 +3446,8 @@
                            result)
 
              (set? data) (let [result-seq  (snip-seq snip-sizes (seq (->sorted-set-generic data)))
-                               parts       (partition-by #(= :<snip> %) result-seq)
-                               parts-data  (drop-if #(= [:<snip>] %) parts)
+                               parts       (partition-by #(= SNIP-TOKEN %) result-seq)
+                               parts-data  (drop-if #(= [SNIP-TOKEN] %) parts)
                                parts-snip  (forv [idx (range (count parts-data))]
                                              [(str->kw (format "<snip-%d>" idx))])
                                parts-fused (drop-last (interleave parts-data parts-snip))
