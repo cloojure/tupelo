@@ -5,7 +5,7 @@
     [clojure.string :as str]
     [clojure.walk :as walk]
     [schema.core :as s]
-    [tupelo.interval :as interval]
+    [tupelo.interval2 :as interval]
     [tupelo.schema :as tsk]
     )
   (:import
@@ -13,7 +13,7 @@
     [java.time.format DateTimeFormatter]
     [java.time.temporal TemporalAdjusters Temporal TemporalAmount ChronoUnit]
     [java.util Date]
-    [tupelo.interval Interval]
+    [tupelo.interval2 Interval]
     ))
 
 ;-----------------------------------------------------------------------------

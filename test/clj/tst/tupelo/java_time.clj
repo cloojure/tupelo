@@ -1,11 +1,12 @@
-(ns tst.tupelo.java-time
+(ns ^:test-refresh/focus
+  tst.tupelo.java-time
   (:refer-clojure :exclude [range])
   (:use tupelo.java-time tupelo.core tupelo.test)
   (:require
     [clj-time.core :as joda]
     [clojure.string :as str]
     [tupelo.core :as t]
-    [tupelo.interval :as interval]
+    [tupelo.interval2 :as interval]
     [tupelo.string :as ts]
     [schema.core :as s]
     [tupelo.schema :as tsk])
@@ -56,7 +57,7 @@
   (throws? (Instant/parse "2019-02-31T02:03:04Z")))
 
 (dotest
-  (let [month->quarter [:Q1 :Q1 :Q1 :Q2 :Q2 :Q2 :Q3 :Q3 :Q3 :Q4 :Q4 :Q4 ]
+  (let [month->quarter [:Q1 :Q1 :Q1 :Q2 :Q2 :Q2 :Q3 :Q3 :Q3 :Q4 :Q4 :Q4]
         quarters-set   (set month->quarter)]
     (is-set= quarters-set [:Q1 :Q2 :Q3 :Q4])
     (is= (vec year-quarters) [:Q1 :Q2 :Q3 :Q4])
@@ -85,17 +86,17 @@
 
 (dotest
   (let [ldstr->monthVal (fn [arg] (-> arg (LocalDate-str->daynum) (daynum->monthValue)))]
-    (is= 1 (ldstr->monthVal "2013-01-25" ))
-    (is= 2 (ldstr->monthVal "2013-02-28" ))
-    (is= 11 (ldstr->monthVal "2013-11-30" ))
-    (is= 12 (ldstr->monthVal "2013-12-31" ))))
+    (is= 1 (ldstr->monthVal "2013-01-25"))
+    (is= 2 (ldstr->monthVal "2013-02-28"))
+    (is= 11 (ldstr->monthVal "2013-11-30"))
+    (is= 12 (ldstr->monthVal "2013-12-31"))))
 
 (dotest
   (let [ldstr->year (fn [arg] (-> arg (LocalDate-str->daynum) (daynum->year)))]
-    (is= 2013 (ldstr->year "2013-01-25" ))
-    (is= 2014 (ldstr->year "2014-02-28" ))
-    (is= 2014 (ldstr->year "2014-11-30" ))
-    (is= 2019 (ldstr->year "2019-12-31" ))))
+    (is= 2013 (ldstr->year "2013-01-25"))
+    (is= 2014 (ldstr->year "2014-02-28"))
+    (is= 2014 (ldstr->year "2014-11-30"))
+    (is= 2019 (ldstr->year "2019-12-31"))))
 
 (dotest
   (is= 9134 (LocalDate-str->daynum "1995-01-04"))
@@ -116,8 +117,9 @@
     (let [ld (LocalDate/parse "1995-01-04")]
       (is= {:LocalDate "1995-01-04"} (LocalDate->tagval ld))
       (is= (walk-LocalDate->tagval (LocalDate->trailing-interval ld 5))
-        #tupelo.interval.Interval{:lower {:LocalDate "1994-12-30"},
-                                  :upper {:LocalDate "1995-01-04"}}))))
+        #tupelo.interval2.Interval{:type :generic
+                                   :lower {:LocalDate "1994-12-30"},
+                                   :upper {:LocalDate "1995-01-04"}}))))
 
 (dotest
   (let [localdates-30 (forv [day (thru 1 30)]
@@ -142,12 +144,17 @@
         (localdates->day-idxs (take 5 localdates-30))
         (localdates->day-idxs (take 5 (drop 9 localdates-30)))))
 
-    (let [ld-2019-12-05 (LocalDate/parse "2019-12-05")
-          ld-2019-12-09 (LocalDate/parse "2019-12-09")
-          ld-range      (interval/new ld-2019-12-05 ld-2019-12-09)
-          open-5-9      (keep-if #(interval/open-contains? ld-range %) localdates-30)
-          slice-5-9     (keep-if #(interval/slice-contains? ld-range %) localdates-30)
-          thru-5-9      (keep-if #(interval/closed-contains? ld-range %) localdates-30)]
+    (let [ld-2019-12-05  (LocalDate/parse "2019-12-05")
+          ld-2019-12-09  (LocalDate/parse "2019-12-09")
+
+          ld-itvl-open   (interval/new-open ld-2019-12-05 ld-2019-12-09)
+          ld-itvl-slice  (interval/new-slice ld-2019-12-05 ld-2019-12-09)
+          ld-itvl-closed (interval/new-closed ld-2019-12-05 ld-2019-12-09)
+
+          open-5-9       (keep-if #(interval/contains? ld-itvl-open %) localdates-30)
+          slice-5-9      (keep-if #(interval/contains? ld-itvl-slice %) localdates-30)
+          thru-5-9       (keep-if #(interval/contains? ld-itvl-closed %) localdates-30)]
+
       (is= (mapv str open-5-9) ["2019-12-06" "2019-12-07" "2019-12-08"])
       (is= (mapv str slice-5-9) ["2019-12-05" "2019-12-06" "2019-12-07" "2019-12-08"])
       (is= (mapv str thru-5-9) ["2019-12-05" "2019-12-06" "2019-12-07" "2019-12-08" "2019-12-09"]))))
@@ -175,9 +182,9 @@
        :joda-dt (->instant (joda/date-time 2018 9 1))})))
 
 (dotest
-  (isnt  (LocalDate-str? "12-31-1999"))
-  (isnt  (LocalDate-str? "12-31-99"))
-  (is    (LocalDate-str? "1999-12-31"))
+  (isnt (LocalDate-str? "12-31-1999"))
+  (isnt (LocalDate-str? "12-31-99"))
+  (is (LocalDate-str? "1999-12-31"))
 
   ; LocalDate <==> daynum
   (is= 0 (LocalDate->daynum (LocalDate/parse "1970-01-01")))
@@ -211,14 +218,14 @@
     (is= daynum (-> daynum (daynum->LocalDate-str) (LocalDate-str->daynum)))))
 
 (dotest
-  (let [zone-ids          (vec (sort (ZoneId/getAvailableZoneIds))) ; all ZoneId String values
-        zone-ids-america  (vec (keep-if #(str/starts-with? % "America/" ) zone-ids))
-        zone-ids-europe   (vec (keep-if #(str/starts-with? % "Europe/" ) zone-ids))
-        zone-ids-us       (vec (keep-if #(str/starts-with? % "US/" ) zone-ids)) ]
+  (let [zone-ids         (vec (sort (ZoneId/getAvailableZoneIds))) ; all ZoneId String values
+        zone-ids-america (vec (keep-if #(str/starts-with? % "America/") zone-ids))
+        zone-ids-europe  (vec (keep-if #(str/starts-with? % "Europe/") zone-ids))
+        zone-ids-us      (vec (keep-if #(str/starts-with? % "US/") zone-ids))]
     (is (< 590 (count zone-ids)))
     (is (< 160 (count zone-ids-america)))
-    (is (<  60 (count zone-ids-europe)))
-    (is (<  10 (count zone-ids-us))))
+    (is (< 60 (count zone-ids-europe)))
+    (is (< 10 (count zone-ids-us))))
 
   (let [ref           (ZonedDateTime/of 2018 2 3 4 5 6 123456789 (ZoneId/of "UTC"))
         ref-from-str  (ZonedDateTime/parse "2018-02-03T04:05:06.123456789Z") ; zulu = utc
@@ -235,22 +242,22 @@
     (is (.isEqual ref ref-from-str)) ; converts to Instant, then compares
     (is (same-instant? ref ref-from-str)) ; more Clojurey way
 
-    (is (same-instant? (zoned-date-time 2018)                 (trunc-to-year ref)))
-    (is (same-instant? (zoned-date-time 2018 2)               (trunc-to-month ref)))
-    (is (same-instant? (zoned-date-time 2018 2 3)             (trunc-to-day ref)))
-    (is (same-instant? (zoned-date-time 2018 2 3 ,, 4)        (trunc-to-hour ref)))
-    (is (same-instant? (zoned-date-time 2018 2 3 ,, 4 5)      (trunc-to-minute ref)))
-    (is (same-instant? (zoned-date-time 2018 2 3 ,, 4 5 6)    (trunc-to-second ref)))
-    (is (same-instant? (zoned-date-time 2018 2 3 ,, 4 5 6 ,, 123456789) ref))
-    (is (same-instant? (zoned-date-time 2018 2 3 ,, 4 5 6 ,, 123456789 zoneid-utc) ref))
+    (is (same-instant? (zoned-date-time 2018) (trunc-to-year ref)))
+    (is (same-instant? (zoned-date-time 2018 2) (trunc-to-month ref)))
+    (is (same-instant? (zoned-date-time 2018 2 3) (trunc-to-day ref)))
+    (is (same-instant? (zoned-date-time 2018 2 3,, 4) (trunc-to-hour ref)))
+    (is (same-instant? (zoned-date-time 2018 2 3,, 4 5) (trunc-to-minute ref)))
+    (is (same-instant? (zoned-date-time 2018 2 3,, 4 5 6) (trunc-to-second ref)))
+    (is (same-instant? (zoned-date-time 2018 2 3,, 4 5 6,, 123456789) ref))
+    (is (same-instant? (zoned-date-time 2018 2 3,, 4 5 6,, 123456789 zoneid-utc) ref))
 
     (is (same-instant? ref (with-zoneid zoneid-utc
-                             (zoned-date-time 2018 2 3 ,, 4 5 6 123456789))))
-    (is (same-instant?                    (zoned-date-time 2018 2 3 ,, 12 5 6 ,, 123456789)
-          (with-zoneid zoneid-us-eastern  (zoned-date-time 2018 2 3 ,,  7 5 6 ,, 123456789))
-          (with-zoneid zoneid-us-central  (zoned-date-time 2018 2 3 ,,  6 5 6 ,, 123456789))
-          (with-zoneid zoneid-us-mountain (zoned-date-time 2018 2 3 ,,  5 5 6 ,, 123456789))
-          (with-zoneid zoneid-us-pacific  (zoned-date-time 2018 2 3 ,,  4 5 6 ,, 123456789)))))
+                             (zoned-date-time 2018 2 3,, 4 5 6 123456789))))
+    (is (same-instant? (zoned-date-time 2018 2 3,, 12 5 6,, 123456789)
+          (with-zoneid zoneid-us-eastern (zoned-date-time 2018 2 3,, 7 5 6,, 123456789))
+          (with-zoneid zoneid-us-central (zoned-date-time 2018 2 3,, 6 5 6,, 123456789))
+          (with-zoneid zoneid-us-mountain (zoned-date-time 2018 2 3,, 5 5 6,, 123456789))
+          (with-zoneid zoneid-us-pacific (zoned-date-time 2018 2 3,, 4 5 6,, 123456789)))))
 
   (is (same-instant? (zoned-date-time 2018 8 26)
         (trunc-to-midnight-sunday (zoned-date-time 2018 9 1))))
@@ -281,55 +288,55 @@
     (is (same-instant? (zoned-date-time 2018 9 4) (trunc-to-midnight-tuesday zdt)))
     (is (same-instant? (zoned-date-time 2018 9 5) (trunc-to-midnight-wednesday zdt)))
     (is (same-instant? (zoned-date-time 2018 9 6) (trunc-to-midnight-thursday zdt)))
-    (is (same-instant? (zoned-date-time 2018 9 7) (trunc-to-midnight-friday zdt)))) )
+    (is (same-instant? (zoned-date-time 2018 9 7) (trunc-to-midnight-friday zdt)))))
 
 (dotest
   (let [zdt (zoned-date-time 2018 9 8,, 2 3 4)]
-    (is= (->str-iso-date zdt)            "2018-09-08")
-    (is= (->str-date-time-iso zdt)       "2018-09-08T02:03:04Z")
-    (is= (->str-date-time-nice zdt)      "2018-09-08 02:03:04Z")
-    (is= (iso-date-str zdt)            "2018-09-08") ; deprecated
+    (is= (->str-iso-date zdt) "2018-09-08")
+    (is= (->str-date-time-iso zdt) "2018-09-08T02:03:04Z")
+    (is= (->str-date-time-nice zdt) "2018-09-08 02:03:04Z")
+    (is= (iso-date-str zdt) "2018-09-08") ; deprecated
     (is= (iso-date-time-str zdt) "2018-09-08T02:03:04Z")) ; deprecated
   (let [zdt (zoned-date-time 2018 9 8,, 2 3 4,, 123456789)]
-    (is= (->str-date-compact zdt)        "20180908" )
-    (is= (->str-date-time-nice zdt)      "2018-09-08 02:03:04.123456789Z")
-    (is= (->str-date-time-compact zdt)   "20180908-020304" )
-    (is= (->str-date-time-hyphens zdt)   "2018-09-08-02-03-04")
-    (is= (iso-date-str zdt)            "2018-09-08") ; deprecated
-    (is= (iso-date-time-str zdt)       "2018-09-08T02:03:04.123456789Z") ; deprecated
-  ))
+    (is= (->str-date-compact zdt) "20180908")
+    (is= (->str-date-time-nice zdt) "2018-09-08 02:03:04.123456789Z")
+    (is= (->str-date-time-compact zdt) "20180908-020304")
+    (is= (->str-date-time-hyphens zdt) "2018-09-08-02-03-04")
+    (is= (iso-date-str zdt) "2018-09-08") ; deprecated
+    (is= (iso-date-time-str zdt) "2018-09-08T02:03:04.123456789Z") ; deprecated
+    ))
 
 (dotest
-  (is (re-matches #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3,}Z" (now->iso-str)))  ; at least 3 decimal seconds
-  (is (re-matches #"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}Z"         (now->iso-str-simple))))
+  (is (re-matches #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3,}Z" (now->iso-str))) ; at least 3 decimal seconds
+  (is (re-matches #"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}Z" (now->iso-str-simple))))
 
 (dotest
   (is= [(zoned-date-time 2018 9 1)
         (zoned-date-time 2018 9 2)
         (zoned-date-time 2018 9 3)
         (zoned-date-time 2018 9 4)]
-       (range
-         (zoned-date-time 2018 9 1)
-         (zoned-date-time 2018 9 5)
-         (Duration/ofDays 1)))
+    (range
+      (zoned-date-time 2018 9 1)
+      (zoned-date-time 2018 9 5)
+      (Duration/ofDays 1)))
 
-  (is= [(zoned-date-time 2018 9 1  2 3 4)
-        (zoned-date-time 2018 9 2  2 3 4)
-        (zoned-date-time 2018 9 3  2 3 4)
-        (zoned-date-time 2018 9 4  2 3 4)]
-       (range
-         (zoned-date-time 2018 9 1  2 3 4)
-         (zoned-date-time 2018 9 5  2 3 4)
-         (Duration/ofDays 1)))
+  (is= [(zoned-date-time 2018 9 1 2 3 4)
+        (zoned-date-time 2018 9 2 2 3 4)
+        (zoned-date-time 2018 9 3 2 3 4)
+        (zoned-date-time 2018 9 4 2 3 4)]
+    (range
+      (zoned-date-time 2018 9 1 2 3 4)
+      (zoned-date-time 2018 9 5 2 3 4)
+      (Duration/ofDays 1)))
 
-  (is= [(zoned-date-time 2018 9 1  1)
-        (zoned-date-time 2018 9 1  2)
-        (zoned-date-time 2018 9 1  3)
-        (zoned-date-time 2018 9 1  4)]
-       (range
-         (zoned-date-time 2018 9 1  1 )
-         (zoned-date-time 2018 9 1  5 )
-         (Duration/ofHours 1))))
+  (is= [(zoned-date-time 2018 9 1 1)
+        (zoned-date-time 2018 9 1 2)
+        (zoned-date-time 2018 9 1 3)
+        (zoned-date-time 2018 9 1 4)]
+    (range
+      (zoned-date-time 2018 9 1 1)
+      (zoned-date-time 2018 9 1 5)
+      (Duration/ofHours 1))))
 
 (dotest
   (let [start-sunday   (trunc-to-midnight-sunday (zoned-date-time 2018 9 1))
@@ -343,54 +350,53 @@
 
 (dotest
   (is= (zoned-date-time 2018 9 1) (->zoned-date-time (joda/date-time 2018 9 1)))
-  (is= (zoned-date-time 2018 9 1) (->zoned-date-time (joda/date-time 2018 9 1 ,, 0 0 0)))
-  (is= (zoned-date-time 2018 9 1 ,, 2 3 4) (->zoned-date-time (joda/date-time 2018 9 1 ,, 2 3 4)))
+  (is= (zoned-date-time 2018 9 1) (->zoned-date-time (joda/date-time 2018 9 1,, 0 0 0)))
+  (is= (zoned-date-time 2018 9 1,, 2 3 4) (->zoned-date-time (joda/date-time 2018 9 1,, 2 3 4)))
 
   (is (same-instant?
         (zoned-date-time 2018 9 1)
         (joda/date-time 2018 9 1)
         (->instant (zoned-date-time 2018 9 1))
-        (->instant (joda/date-time 2018 9 1)) ))
+        (->instant (joda/date-time 2018 9 1))))
   (is (same-instant?
         (zoned-date-time 2018 9 1)
         (joda/date-time 2018 9 1)
         (->zoned-date-time (zoned-date-time 2018 9 1))
-        (->zoned-date-time (joda/date-time 2018 9 1)) ))
+        (->zoned-date-time (joda/date-time 2018 9 1))))
   (is (same-instant?
         (zoned-date-time 2018 9 1)
         (joda/date-time 2018 9 1)
         (->instant (->zoned-date-time (zoned-date-time 2018 9 1)))
-        (->instant (->zoned-date-time (joda/date-time 2018 9 1))))) )
+        (->instant (->zoned-date-time (joda/date-time 2018 9 1))))))
 
 (dotest
-  (let [out-low  (zoned-date-time 2018 8 30)
-        lb       (zoned-date-time 2018 9 1)
-        mid      (zoned-date-time 2018 9 1, 1 2 3)
-        ub       (zoned-date-time 2018 9 2)
-        out-high (zoned-date-time 2018 9 3)
+  (let [out-low     (zoned-date-time 2018 8 30)
+        lb          (zoned-date-time 2018 9 1)
+        mid         (zoned-date-time 2018 9 1, 1 2 3)
+        ub          (zoned-date-time 2018 9 2)
+        out-high    (zoned-date-time 2018 9 3)
 
-        itvl     (interval/new lb ub)
-        itvl-o   (interval/new lb ub) ; :open
-        itvl-ho  (interval/new lb ub) ; :half-open
-        itvl-c   (interval/new lb ub)] ; :closed
+        itvl-slice  (interval/new-slice lb ub) ; slice
+        itvl-open   (interval/new-open lb ub) ; :open
+        itvl-closed (interval/new-closed lb ub)] ; :closed
 
-    (isnt (interval/open-contains? itvl out-low))
-    (isnt (interval/open-contains? itvl lb))
-    (is (interval/open-contains? itvl mid))
-    (isnt (interval/open-contains? itvl ub))
-    (isnt (interval/open-contains? itvl out-high))
+    (isnt (interval/contains? itvl-open out-low))
+    (isnt (interval/contains? itvl-open lb))
+    (is (interval/contains? itvl-open mid))
+    (isnt (interval/contains? itvl-open ub))
+    (isnt (interval/contains? itvl-open out-high))
 
-    (isnt (interval/slice-contains? itvl out-low))
-    (is (interval/slice-contains? itvl lb))
-    (is (interval/slice-contains? itvl mid))
-    (isnt (interval/slice-contains? itvl ub))
-    (isnt (interval/slice-contains? itvl out-high))
+    (isnt (interval/contains? itvl-slice out-low))
+    (is (interval/contains? itvl-slice lb))
+    (is (interval/contains? itvl-slice mid))
+    (isnt (interval/contains? itvl-slice ub))
+    (isnt (interval/contains? itvl-slice out-high))
 
-    (isnt (interval/closed-contains? itvl out-low))
-    (is (interval/closed-contains? itvl lb))
-    (is (interval/closed-contains? itvl mid))
-    (is (interval/closed-contains? itvl ub))
-    (isnt (interval/closed-contains? itvl out-high))
+    (isnt (interval/contains? itvl-closed out-low))
+    (is (interval/contains? itvl-closed lb))
+    (is (interval/contains? itvl-closed mid))
+    (is (interval/contains? itvl-closed ub))
+    (isnt (interval/contains? itvl-closed out-high))
 
 
     (comment
@@ -398,15 +404,14 @@
       (is (interval/contains? itvl mid))
       (isnt (interval/contains? itvl ub))
 
-      (isnt (interval/contains? itvl-o lb))
-      (is (interval/contains? itvl-o mid))
-      (isnt (interval/contains? itvl-o ub))
+      (isnt (interval/contains? itvl-open lb))
+      (is (interval/contains? itvl-open mid))
+      (isnt (interval/contains? itvl-open ub))
 
-      (is (interval/contains? itvl-c lb))
-      (is (interval/contains? itvl-c mid))
-      (is (interval/contains? itvl-c ub))
+      (is (interval/contains? itvl-closed lb))
+      (is (interval/contains? itvl-closed mid))
+      (is (interval/contains? itvl-closed ub))
       )
-
     )
 
   (is= (stringify-times [:something
@@ -429,16 +434,16 @@
         >>                     (Thread/sleep 100)
         now-instant-2          (now->instant)
 
-        instant-interval-short (interval/new now-instant-1 now-instant-2)
-        instant-interval-11    (interval/new (.minusSeconds now-instant-1 1) now-instant-2)
+        instant-interval-short (interval/new-closed now-instant-1 now-instant-2)
+        instant-interval-11    (interval/new-closed (.minusSeconds now-instant-1 1) now-instant-2)
 
         millis-1               (.toEpochMilli now-instant-1)
         instant-1c             (millis->instant millis-1)
         instant-1-trunc        (secs->instant (quot millis-1 1000))]
-    (is (interval/closed-contains? instant-interval-short (->instant now-zdt-1a)))
-    (is (interval/closed-contains? instant-interval-short (->instant now-zdt-1b)))
-    (is (interval/closed-contains? instant-interval-11 instant-1c))
-    (is (interval/closed-contains? instant-interval-11 instant-1-trunc))))
+    (is (interval/contains? instant-interval-short (->instant now-zdt-1a)))
+    (is (interval/contains? instant-interval-short (->instant now-zdt-1b)))
+    (is (interval/contains? instant-interval-11 instant-1c))
+    (is (interval/contains? instant-interval-11 instant-1-trunc))))
 
 (dotest
   ; note that instants are in DESCENDING order
@@ -456,8 +461,8 @@
     (is= durations [53176 3 1370 37347 53156]))
 
   ; Can use Clojure #inst or string as input
-  (let [instant (.toInstant            #inst "2016-03-24T12:13:12.000-00:00")  ; java.util.Date
-        zdt     (ZonedDateTime/parse         "2016-03-24T12:13:12.000-00:00")] ; String
+  (let [instant (.toInstant #inst "2016-03-24T12:13:12.000-00:00") ; java.util.Date
+        zdt     (ZonedDateTime/parse "2016-03-24T12:13:12.000-00:00")] ; String
     (is (zero? (.toMillis (Duration/between instant zdt))))))
 
 (dotest

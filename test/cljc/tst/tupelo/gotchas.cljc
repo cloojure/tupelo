@@ -30,6 +30,13 @@
 
 ; #todo add example for duplicates in clojure.core.combo
 
+#?(:clj
+   (dotest
+     (is= (< 1 1.0) false)
+     (is= (= 1 1.0) false) ; *****  single-equals `=` doesn't work for integer and floating point values (never!) *****
+     (is= (== 1 1.0) true) ; *****  double-equals `==` works for numbers (only) in different categories *****
+     (is= (> 1 1.0) false)))
+
 ; rest/next too loose
 (dotest
   ; Expected, intuitive behavior

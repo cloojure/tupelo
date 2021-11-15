@@ -36,6 +36,12 @@
   "Returns true iff the arg represents an interval"
   [it] (instance? Interval it))
 
+(s/defn new
+  "Creates a new generic Interval record using the `->Interval` constructor function."
+  [lower upper]
+  (assert (t/compare-less-equal lower upper))
+  (->Interval :generic lower upper))
+
 (s/defn new-closed
   "Creates a new closed Interval record using the `->Interval` constructor function."
   [lower upper]
@@ -74,8 +80,7 @@
       (= type :anti-slice) (and
                              (t/compare-less lower val)
                              (t/compare-less-equal val upper))
-      :else (throw (ex-info "Invalid Interval type" {:interval interval})))
-    ))
+      :else (throw (ex-info "Invalid Interval type" {:interval interval})))))
 
 (s/defn ->integers :- [s/Int] ; #todo => tupelo.interval
   "For an Interval with integer bounds, returns a vector of all integers within the Interval"

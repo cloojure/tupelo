@@ -4,7 +4,8 @@
   ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
   ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
   ;   software.
-  (ns tst.tupelo.interval2
+  (ns ^:test-refresh/focus
+    tst.tupelo.interval2
     ;---------------------------------------------------------------------------------------------------
     ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
     ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
@@ -54,6 +55,10 @@
   (throws-not? (interval/new-closed 5 5))
   (throws-not? (interval/new-open 5 5))
   (throws-not? (interval/new-anti-slice 5 5))
+
+  (let [itvl    (interval/new "aa" "cc")]
+    (is (interval/interval? itvl))
+    (throws? (interval/contains? itvl "b")))
 
   (let [itvl    (interval/new-slice 1.0 5.0) ; float interval bounds vs integer values
         members (keep-if #(interval/contains? itvl %) (range 10))]
