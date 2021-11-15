@@ -4,8 +4,7 @@
   ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
   ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
   ;   software.
-  (ns ^:test-refresh/focus
-    tst.tupelo.interval2
+  (ns tst.tupelo.interval
     ;---------------------------------------------------------------------------------------------------
     ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
     ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
@@ -18,7 +17,7 @@
       [clojure.test] ; sometimes this is required - not sure why
       [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty nl
                                  vals->map xmap? forv glue keep-if]]
-      [tupelo.interval2 :as interval]
+      [tupelo.interval :as interval]
       [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                             throws? throws-not? define-fixture]])
     )

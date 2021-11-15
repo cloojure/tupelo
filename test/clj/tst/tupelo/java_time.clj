@@ -1,12 +1,11 @@
-(ns ^:test-refresh/focus
-  tst.tupelo.java-time
+(ns tst.tupelo.java-time
   (:refer-clojure :exclude [range])
   (:use tupelo.java-time tupelo.core tupelo.test)
   (:require
     [clj-time.core :as joda]
     [clojure.string :as str]
     [tupelo.core :as t]
-    [tupelo.interval2 :as interval]
+    [tupelo.interval :as interval]
     [tupelo.string :as ts]
     [schema.core :as s]
     [tupelo.schema :as tsk])
@@ -117,7 +116,7 @@
     (let [ld (LocalDate/parse "1995-01-04")]
       (is= {:LocalDate "1995-01-04"} (LocalDate->tagval ld))
       (is= (walk-LocalDate->tagval (LocalDate->trailing-interval ld 5))
-        #tupelo.interval2.Interval{:type :generic
+        #tupelo.interval.Interval{:type :generic
                                    :lower {:LocalDate "1994-12-30"},
                                    :upper {:LocalDate "1995-01-04"}}))))
 
