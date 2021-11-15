@@ -22,7 +22,8 @@
   (:require
     [schema.core :as s]
     [tupelo.schema :as tsk]
-    [tupelo.core :as t]))
+    [tupelo.core :as t])
+  (:refer-clojure :exclude [contains?]))
 
 ; #todo maybe use shorthand names: slice [), block [], span (), anti-slice (]
 ; #todo maybe add in Allen's Interval Algebra predicates
