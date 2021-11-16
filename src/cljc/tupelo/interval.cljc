@@ -66,6 +66,9 @@
   (assert (t/compare-less-equal lower upper))
   (->Interval :anti-slice lower upper))
 
+; #todo maybe add Interval coercion functions ->closed ->slice ->open ->anti-slice
+; #todo maybe add Interval predicate functions closed? slice? open? anti-slice?
+
 (s/defn contains? :- s/Bool
   "Returns true iff an interval contains a value such that (lower < L < upper)."
   [interval :- Interval
