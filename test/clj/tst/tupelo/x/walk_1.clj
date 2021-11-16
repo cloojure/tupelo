@@ -19,36 +19,37 @@
     (is= nil (:a nil)) ; safe for `nil` value
     ))
 
-(dotest-focus
+(dotest   ; -focus
   (let [intc {:enter (fn [ctx]
-                       (spyx :intc-enter (ctx-depth ctx))
-                       ; (spy-pretty :enter-in ctx)
-                       ; (spy-pretty :enter-out)
                        (cond-it-> ctx
                          (and (= :list-entry/val (grab :branch it))
                            (int? (grab :data it)))
-                         (update-in it [:data] #(* % 10))
-                         ))
+                         (update-in it [:data] #(* % 10))))
               :leave (fn [ctx]
-                       (spyx :intc-leave (ctx-depth ctx))
-                       ; (spy-pretty :leave-in ctx)
-                       ; (spy-pretty :leave-out)
                        (cond-it-> ctx
                          (xsequential? (grab :data it)) (update-in it [:data] #(glue % [:zz 99]))
 
-                         (= (grab :branch it) :list-entry/idx)
-                         (update-in it [:data] #(- %))
-
                          (and (= :list-entry/val (grab :branch it))
                            (int? (grab :data it)))
-                         (update-in it [:data] #(inc %))
+                         (update-in it [:data] #(inc %))))}]
+    (is= (walk-with-context [2 3] intc)
+      [21 31 :zz 99]))
 
-                         ))}]
-    (walk-with-context [2 3] intc)))
+  (let [intc {:enter (fn [ctx]
+                       (cond-it-> ctx
+                         (and (= :list-entry/val (grab :branch it))
+                           (int? (grab :data it)))
+                         (update-in it [:data] #(* % 10))))
+              :leave (fn [ctx]
+                       (cond-it-> ctx
+                         (= (grab :branch it) :list-entry/idx)
+                         (update-in it [:data] #(- %))))}]
+    (is= (walk-with-context [2 3] intc)
+      [30 20])))
 
 (dotest   ; -focus
   (let [intc {:enter (fn [ctx]
-                       (spyx :intc-enter (ctx-depth ctx))
+                       ; (spyx :intc-enter (ctx-depth ctx))
                        ; (spy-pretty :enter-in ctx)
                        ; (spy-pretty :enter-out)
                        (cond-it-> ctx
@@ -57,7 +58,7 @@
                          (update-in it [:data] #(* % 10))
                          ))
               :leave (fn [ctx]
-                       (spyx :intc-leave (ctx-depth ctx))
+                       ; (spyx :intc-leave (ctx-depth ctx))
                        ; (spy-pretty :leave-in ctx)
                        ; (spy-pretty :leave-out)
                        (cond-it-> ctx
@@ -67,7 +68,8 @@
                            (int? (grab :data it)))
                          (update-in it [:data] inc)
                          ))}]
-    (walk-with-context {:a 1 :b 2} intc)))
+    (is= (walk-with-context {:a 1 :b 2} intc)
+      {:a 11, :b 21, :zz 99})))
 
 
 

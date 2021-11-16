@@ -37,9 +37,9 @@
   (t/with-spy-indent
     (let [enter-fn (or (:enter interceptor) identity)
           leave-fn (or (:leave interceptor) identity)]
-      (nl) (spyq :map-entry--enter---------------------------------)
-      (spyx-pretty ctx-in)
-      (let-spy-pretty
+      ; (nl) (spyq :map-entry--enter---------------------------------)
+      ; (spyx-pretty ctx-in)
+      (let ; -spy-pretty
         [ctx-post-enter   (enter-fn ctx-in)
          data             (:data ctx-post-enter)
          ctx-post-key     (let [ctx-me-key {:data (:key data) :branch :map-entry/key :parent ctx-post-enter}]
@@ -51,8 +51,8 @@
          ctx-post-recurse (glue ctx-post-enter {:data data-out})
          ctx-post-leave   (leave-fn ctx-post-recurse)
          ]
-        (spyq :map-entry--leave---------------------------------)
-        (nl)
+        ;(spyq :map-entry--leave---------------------------------)
+        ;(nl)
         ctx-post-leave))))
 
 (s/defn ^:no-doc proc-map
@@ -63,7 +63,7 @@
           leave-fn (or (:leave interceptor) identity)]
       (nl) (spyq :map-enter---------------------------------)
       (spyx-pretty ctx-in)
-      (let-spy-pretty
+      (let ; -spy-pretty
         [ctx-post-enter   (enter-fn ctx-in)
          data             (grab :data ctx-post-enter)
          ctx-subs         (forv [me data] ; for each map-entry
@@ -79,8 +79,8 @@
                                (:val me-spread)}))
          ctx-post-recurse (glue ctx-post-enter {:data data-new})
          ctx-post-leave   (leave-fn ctx-post-recurse)]
-        (spyq :map-leave---------------------------------)
-        (nl)
+        ;(spyq :map-leave---------------------------------)
+        ;(nl)
         ctx-post-leave))))
 
 ;-----------------------------------------------------------------------------
@@ -90,9 +90,9 @@
   (t/with-spy-indent
     (let [enter-fn (or (:enter interceptor) identity)
           leave-fn (or (:leave interceptor) identity)]
-      (nl) (spyq :list-entry--enter---------------------------------)
-      (spyx-pretty ctx-in)
-      (let-spy-pretty
+      ;(nl) (spyq :list-entry--enter---------------------------------)
+      ;(spyx-pretty ctx-in)
+      (let ; -spy-pretty
         [ctx-post-enter   (enter-fn ctx-in)
          data             (grab :data ctx-post-enter)
          ctx-post-idx     (let [ctx-le-idx {:data (:idx data) :branch :list-entry/idx :parent ctx-post-enter}]
@@ -104,8 +104,8 @@
          ctx-post-recurse (glue ctx-post-enter {:data data-out})
          ctx-post-leave   (leave-fn ctx-post-recurse)
          ]
-        (spyq :list-entry--leave---------------------------------)
-        (nl)
+        ;(spyq :list-entry--leave---------------------------------)
+        ;(nl)
         ctx-post-leave))))
 
 (s/defn ^:no-doc proc-list
@@ -114,9 +114,9 @@
   (t/with-spy-indent
     (let [enter-fn (or (:enter interceptor) identity)
           leave-fn (or (:leave interceptor) identity)]
-      (nl) (spyq :list-enter---------------------------------)
-      (spyx-pretty ctx-in)
-      (let-spy-pretty
+      ;(nl) (spyq :list-enter---------------------------------)
+      ;(spyx-pretty ctx-in)
+      (let ; -spy-pretty
         [ctx-post-enter      (enter-fn ctx-in)
          data-indexed        (t/indexed (grab :data ctx-post-enter))
          ctx-subs            (forv [le data-indexed] ; for each list-entry
@@ -134,8 +134,8 @@
          data-new            (vec (vals data-new-map-sorted))
          ctx-post-recurse    (glue ctx-post-enter {:data data-new})
          ctx-post-leave      (leave-fn ctx-post-recurse)]
-        (spyq :list-leave---------------------------------)
-        (nl)
+        ;(spyq :list-leave---------------------------------)
+        ;(nl)
         ctx-post-leave))))
 
 ;-----------------------------------------------------------------------------
@@ -145,13 +145,13 @@
   (t/with-spy-indent
     (let [enter-fn (or (:enter interceptor) identity)
           leave-fn (or (:leave interceptor) identity)]
-      (nl) (spyq :other-enter---------------------------------)
-      (spyx-pretty ctx-in)
-      (let-spy-pretty
+      ;(nl) (spyq :other-enter---------------------------------)
+      ;(spyx-pretty ctx-in)
+      (let ; -spy-pretty
         [ctx-post-enter (enter-fn ctx-in)
          ctx-post-leave (leave-fn ctx-post-enter)]
-        (spyq :other-leave---------------------------------)
-        (nl)
+        ;(spyq :other-leave---------------------------------)
+        ;(nl)
         ctx-post-leave))))
 
 ;-----------------------------------------------------------------------------
@@ -159,29 +159,29 @@
   [ctx :- tsk/KeyMap
    interceptor :- tsk/KeyMap]
   (t/with-spy-indent
-    (spyq :dispatch-enter---------------------------------)
+    ; (spyq :dispatch-enter---------------------------------)
     (let [data    (grab :data ctx)
           ctx-out (cond
                     (t/xmap? data) (proc-map ctx interceptor)
                     (t/xsequential? data) (proc-list ctx interceptor)
                     (set? data) (proc-other ctx interceptor)
                     :else (proc-other ctx interceptor))]
-      (spyq :dispatch-leave---------------------------------)
+      ; (spyq :dispatch-leave---------------------------------)
       ctx-out)))
 
 ;-----------------------------------------------------------------------------
 (s/defn walk-with-context :- s/Any
   [data :- s/Any
    interceptor :- tsk/KeyMap]
-  (spyq :walk-enter---------------------------------)
+  ; (spyq :walk-enter---------------------------------)
   (let [enter-fn (:enter interceptor) ; may be nil
         leave-fn (:leave interceptor)] ; may be nil
     (when (and (nil? enter-fn) (nil? leave-fn))
       (throw (ex-info "Invalid interceptor. :enter and :leave functions cannot both be nil." (vals->map interceptor))))
-    (let-spy-pretty
+    (let ; -spy-pretty
       [ctx-out  (walk-with-context-dispatch {:branch :root :parent nil :data data} interceptor)
        data-out (grab :data ctx-out)]
-      (spyq :walk-leave---------------------------------)
+      ; (spyq :walk-leave---------------------------------)
       data-out
       )))
 
