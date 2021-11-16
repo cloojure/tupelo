@@ -24,42 +24,43 @@
           data     (grab :data ctx-in)]
       (nl) (spyq :map-entry--enter---------------------------------)
       (let-spy-pretty
-        [ctx-post-enter (enter-fn ctx-in)
-         ctx-key        (let [ctx-me-key {:data (grab :key data) :branch :map-entry/key :parent ctx-post-enter}]
-                          (walk-with-context-impl ctx-me-key interceptor))
-         ctx-val        (let [ctx-me-val {:data (grab :val data) :branch :map-entry/val :parent ctx-post-enter}]
-                          (walk-with-context-impl ctx-me-val interceptor))
-         data-out       {:key (grab :data ctx-key) :val (grab :data ctx-val)}
-         ctx-out        (glue ctx-post-enter {:data data-out})]
+        [ctx-post-enter   (enter-fn ctx-in)
+         ctx-key          (let [ctx-me-key {:data (grab :key data) :branch :map-entry/key :parent ctx-post-enter}]
+                            (walk-with-context-impl ctx-me-key interceptor))
+         ctx-val          (let [ctx-me-val {:data (grab :val data) :branch :map-entry/val :parent ctx-post-enter}]
+                            (walk-with-context-impl ctx-me-val interceptor))
+         data-out         {:key (grab :data ctx-key) :val (grab :data ctx-val)}
+         ctx-post-recurse (glue ctx-post-enter {:data data-out})
+         ctx-post-leave   (leave-fn ctx-post-recurse)
+         ]
         (spyq :map-entry--leave---------------------------------)
         (nl)
-        ctx-out))))
+        ctx-post-leave))))
 
 
 (s/defn ^:no-doc proc-map
-  [ctx :- tsk/KeyMap
+  [ctx-in :- tsk/KeyMap
    interceptor :- tsk/KeyMap]
   (t/with-spy-indent
     (let [enter-fn (or (:enter interceptor) identity)
           leave-fn (or (:leave interceptor) identity)
-          data     (grab :data ctx)]
+          data     (grab :data ctx-in)]
       (nl) (spyq :map-enter---------------------------------)
       (let-spy-pretty
-        [ctx      (enter-fn ctx)
-         ctx-subs (forv [me data] ; for each map-entry
-                    (with-spy-indent
-                      (spyx-pretty ctx)
-                      (let [ctx-me {:data {:key (key me) :val (val me)} :branch :map-entry :parent ctx}]
-                        (spyx-pretty ctx-me)
-                        (proc-map-entry ctx-me interceptor))))
-         data-new (apply glue
-                    (forv [me-spread (mapv :data ctx-subs)]
-                      {(grab :key me-spread) (grab :val me-spread)}))
-         ctx-new  (glue ctx {:data data-new})
-         ctx-out  (leave-fn ctx-new)]
+        [ctx-post-enter   (enter-fn ctx-in)
+         ctx-subs         (forv [me data] ; for each map-entry
+                            (with-spy-indent
+                              (let [ctx-me {:data {:key (key me) :val (val me)} :branch :map-entry :parent ctx-post-enter}]
+                                (spyx-pretty ctx-me)
+                                (proc-map-entry ctx-me interceptor))))
+         data-new         (apply glue
+                            (forv [me-spread (mapv :data ctx-subs)]
+                              {(grab :key me-spread) (grab :val me-spread)}))
+         ctx-post-recurse (glue ctx-post-enter {:data data-new})
+         ctx-post-leave   (leave-fn ctx-post-recurse)]
         (spyq :map-leave---------------------------------)
         (nl)
-        ctx-out))))
+        ctx-post-leave))))
 
 (s/defn ^:no-doc proc-other
   [ctx :- tsk/KeyMap
@@ -69,11 +70,11 @@
           leave-fn (or (:leave interceptor) identity)]
       (nl) (spyq :other-enter---------------------------------)
       (let-spy-pretty
-        [ctx1    (enter-fn ctx)
-         ctx-out (leave-fn ctx1)]
+        [ctx-post-enter (enter-fn ctx)
+         ctx-post-leave (leave-fn ctx-post-enter)]
         (spyq :other-leave---------------------------------)
         (nl)
-        ctx-out))))
+        ctx-post-leave))))
 
 (s/defn ^:no-doc walk-with-context-impl ; dispatch fn
   [ctx :- tsk/KeyMap
@@ -93,7 +94,6 @@
   [data :- s/Any
    interceptor :- tsk/KeyMap]
   (spyq :walk-enter---------------------------------)
-  (spyq :walk-leave---------------------------------)
   (let [enter-fn (:enter interceptor) ; may be nil
         leave-fn (:leave interceptor)] ; may be nil
     (when (and (nil? enter-fn) (nil? leave-fn))
