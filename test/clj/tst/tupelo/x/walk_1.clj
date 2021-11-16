@@ -1,23 +1,54 @@
-(ns  ^:test-refresh/focus
+(ns       ; ^:test-refresh/focus
   tst.tupelo.x.walk-1
   (:use tupelo.x.walk-1 tupelo.core tupelo.test)
   (:require
     [schema.core :as s]
     [tupelo.core :as t]
-    [tupelo.string :as str]))
+    [tupelo.schema :as tsk]))
 
-
-(dotest
-  (let [m  {:a 1}
+(dotest-focus
+  (let [m   {:a 1}
         mes (vec m) ; convert map => seq of MapEntry objs
         me1 (first mes)]
     (is= :a (key me1)) ; access key from ME
     (is= 1 (val me1)) ; access val from ME
+
+    (is= {:a 1 :b 2} (apply-glue-not-nil [{:a 1} nil {:b 2}]))
+
+    (throws? (grab :a nil)) ; error for `nil` map value
+    (is= nil (:a nil)) ; safe for `nil` value
     ))
 
-(dotest
-  (prn :-----------------------------------------------------------------------------)
+(dotest-focus
   (let [intc {:enter (fn [ctx]
+                       (spyx :intc-enter (ctx-depth ctx))
+                       ; (spy-pretty :enter-in ctx)
+                       ; (spy-pretty :enter-out)
+                       (cond-it-> ctx
+                         (and (= :list-entry/val (grab :branch it))
+                           (int? (grab :data it)))
+                         (update-in it [:data] #(* % 10))
+                         ))
+              :leave (fn [ctx]
+                       (spyx :intc-leave (ctx-depth ctx))
+                       ; (spy-pretty :leave-in ctx)
+                       ; (spy-pretty :leave-out)
+                       (cond-it-> ctx
+                         (xsequential? (grab :data it)) (update-in it [:data] #(glue % [:zz 99]))
+
+                         (= (grab :branch it) :list-entry/idx)
+                         (update-in it [:data] #(- %))
+
+                         (and (= :list-entry/val (grab :branch it))
+                           (int? (grab :data it)))
+                         (update-in it [:data] #(inc %))
+
+                         ))}]
+    (walk-with-context [2 3] intc)))
+
+(dotest   ; -focus
+  (let [intc {:enter (fn [ctx]
+                       (spyx :intc-enter (ctx-depth ctx))
                        ; (spy-pretty :enter-in ctx)
                        ; (spy-pretty :enter-out)
                        (cond-it-> ctx
@@ -26,6 +57,7 @@
                          (update-in it [:data] #(* % 10))
                          ))
               :leave (fn [ctx]
+                       (spyx :intc-leave (ctx-depth ctx))
                        ; (spy-pretty :leave-in ctx)
                        ; (spy-pretty :leave-out)
                        (cond-it-> ctx
@@ -35,7 +67,9 @@
                            (int? (grab :data it)))
                          (update-in it [:data] inc)
                          ))}]
-    (walk-with-context {:a 1 :b 2} intc)
-    )
-  (nl)
-  )
+    (walk-with-context {:a 1 :b 2} intc)))
+
+
+
+(dotest-focus
+  (nl))
