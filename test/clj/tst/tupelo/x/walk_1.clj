@@ -1,10 +1,9 @@
-(ns       ; ^:test-refresh/focus
+(ns       ^:test-refresh/focus
   tst.tupelo.x.walk-1
   (:use tupelo.x.walk-1 tupelo.core tupelo.test)
   (:require
-    [schema.core :as s]
     [tupelo.core :as t]
-    [tupelo.schema :as tsk]))
+    ))
 
 (dotest   ; -focus
   (let [m   {:a 1}
@@ -21,12 +20,12 @@
 
 (dotest   ; -focus
   (let [intc {:enter (fn [ctx]
+                       (spyx-pretty ctx)
                        (cond-it-> ctx
                          (and (= :list-entry/val (grab :branch it))
                            (int? (grab :data it)))
                          (update-in it [:data] #(* % 10))))
               :leave (fn [ctx]
-                       ; (spyx-pretty ctx)
                        (cond-it-> ctx
                          (xsequential? (grab :data it)) (update-in it [:data] #(glue % [:zz 99]))
 
@@ -37,6 +36,7 @@
       [21 31 :zz 99]))
 
   (let [intc {:enter (fn [ctx]
+                       (spyx-pretty ctx)
                        (cond-it-> ctx
                          (and (= :list-entry/val (grab :branch it))
                            (int? (grab :data it)))
@@ -52,7 +52,7 @@
 
 (dotest   ; -focus
   (let [intc {:enter (fn [ctx]
-                       ; (spyx :intc-enter (ctx-depth ctx))
+                       (spyx-pretty ctx)
                        ; (spy-pretty :enter-in ctx)
                        ; (spy-pretty :enter-out)
                        (cond-it-> ctx
