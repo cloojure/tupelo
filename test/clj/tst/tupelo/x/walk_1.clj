@@ -6,7 +6,7 @@
     [tupelo.core :as t]
     [tupelo.schema :as tsk]))
 
-(dotest-focus
+(dotest   ; -focus
   (let [m   {:a 1}
         mes (vec m) ; convert map => seq of MapEntry objs
         me1 (first mes)]
@@ -26,6 +26,7 @@
                            (int? (grab :data it)))
                          (update-in it [:data] #(* % 10))))
               :leave (fn [ctx]
+                       ; (spyx-pretty ctx)
                        (cond-it-> ctx
                          (xsequential? (grab :data it)) (update-in it [:data] #(glue % [:zz 99]))
 
@@ -45,7 +46,9 @@
                          (= (grab :branch it) :list-entry/idx)
                          (update-in it [:data] #(- %))))}]
     (is= (walk-with-context [2 3] intc)
-      [30 20])))
+      [30 20]))
+
+  (nl))
 
 (dotest   ; -focus
   (let [intc {:enter (fn [ctx]
@@ -69,9 +72,7 @@
                          (update-in it [:data] inc)
                          ))}]
     (is= (walk-with-context {:a 1 :b 2} intc)
-      {:a 11, :b 21, :zz 99})))
+      {:a 11, :b 21, :zz 99}))
 
-
-
-(dotest-focus
   (nl))
+
