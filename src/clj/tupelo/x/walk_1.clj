@@ -42,12 +42,12 @@
       (let ; -spy-pretty
         [ctx-post-enter   (enter-fn ctx-in)
          data             (:data ctx-post-enter)
-         ctx-post-key     (let [ctx-me-key {:data (:map-entry/key data) :branch :map-entry/key :parent ctx-post-enter}]
+         ctx-post-key     (let [ctx-me-key {:data (:key data) :branch :map-entry/key :parent ctx-post-enter}]
                             (walk-with-context-dispatch ctx-me-key interceptor))
-         ctx-post-val     (let [ctx-me-val {:data (:map-entry/val data) :branch :map-entry/val :parent ctx-post-enter}]
+         ctx-post-val     (let [ctx-me-val {:data (:val data) :branch :map-entry/val :parent ctx-post-enter}]
                             (walk-with-context-dispatch ctx-me-val interceptor))
-         data-out         {:map-entry/key (grab :data ctx-post-key)
-                           :map-entry/val (grab :data ctx-post-val)}
+         data-out         {:key (grab :data ctx-post-key)
+                           :val (grab :data ctx-post-val)}
          ctx-post-recurse (glue ctx-post-enter {:data data-out})
          ctx-post-leave   (leave-fn ctx-post-recurse)
          ]
@@ -68,19 +68,67 @@
          data             (grab :data ctx-post-enter)
          ctx-subs         (forv [me data] ; for each map-entry
                             (with-spy-indent
-                              (let [ctx-me {:data {:map-entry/key (key me)
-                                                   :map-entry/val (val me)}
+                              (let [ctx-me {:data {:key (key me)
+                                                   :val (val me)}
                                             :branch :map-entry
                                             :parent ctx-post-enter}]
                                 (proc-map-entry ctx-me interceptor))))
          data-new         (apply-glue-not-nil
                             (forv [me-spread (mapv :data ctx-subs)]
-                              {(:map-entry/key me-spread)
-                               (:map-entry/val me-spread)}))
+                              {(:key me-spread)
+                               (:val me-spread)}))
          ctx-post-recurse (glue ctx-post-enter {:data data-new})
          ctx-post-leave   (leave-fn ctx-post-recurse)]
         ;(spyq :map-leave---------------------------------)
         ;(nl)
+        ctx-post-leave))))
+
+;-----------------------------------------------------------------------------
+(s/defn ^:no-doc proc-set-entry
+  [ctx-in :- tsk/KeyMap
+   interceptor :- tsk/KeyMap]
+  (t/with-spy-indent
+    (let [enter-fn (or (:enter interceptor) identity)
+          leave-fn (or (:leave interceptor) identity)]
+      (nl) (spyq :set-entry--enter---------------------------------)
+      (spyx-pretty ctx-in)
+      (let-spy-pretty
+        [ctx-post-enter   (enter-fn ctx-in)
+         data             (:data ctx-post-enter)
+         ctx-post-key     (let [ctx-me-key {:data (:elem data) :branch :set-entry/elem :parent ctx-post-enter}]
+                            (walk-with-context-dispatch ctx-me-key interceptor))
+         data-out         {:elem (grab :data ctx-post-key)}
+         ctx-post-recurse (glue ctx-post-enter {:data data-out})
+         ctx-post-leave   (leave-fn ctx-post-recurse)
+         ]
+        (spyq :set-entry--leave---------------------------------)
+        (nl)
+        ctx-post-leave))))
+
+(s/defn ^:no-doc proc-set
+  [ctx-in :- tsk/KeyMap
+   interceptor :- tsk/KeyMap]
+  (t/with-spy-indent
+    (let [enter-fn (or (:enter interceptor) identity)
+          leave-fn (or (:leave interceptor) identity)]
+      (nl) (spyq :set-enter---------------------------------)
+      (spyx-pretty ctx-in)
+      (let-spy-pretty
+        [ctx-post-enter   (enter-fn ctx-in)
+         data             (grab :data ctx-post-enter)
+         ctx-subs         (forv [se data] ; for each set-entry
+                            (with-spy-indent
+                              (let [ctx-se {:data   {:elem se}
+                                            :branch :set-entry
+                                            :parent ctx-post-enter}]
+                                (proc-set-entry ctx-se interceptor))))
+         data-new         (apply-glue-not-nil
+                            (forv [se-spread (mapv :data ctx-subs)]
+                              #{(:elem se-spread)}))
+         ctx-post-recurse (glue ctx-post-enter {:data data-new})
+         ctx-post-leave   (leave-fn ctx-post-recurse)]
+        (spyq :set-leave---------------------------------)
+        (nl)
         ctx-post-leave))))
 
 ;-----------------------------------------------------------------------------
@@ -95,12 +143,12 @@
       (let ; -spy-pretty
         [ctx-post-enter   (enter-fn ctx-in)
          data             (grab :data ctx-post-enter)
-         ctx-post-idx     (let [ctx-le-idx {:data (:list-entry/idx data) :branch :list-entry/idx :parent ctx-post-enter}]
+         ctx-post-idx     (let [ctx-le-idx {:data (:idx data) :branch :list-entry/idx :parent ctx-post-enter}]
                             (walk-with-context-dispatch ctx-le-idx interceptor))
-         ctx-post-val     (let [ctx-le-val {:data (:list-entry/val data) :branch :list-entry/val :parent ctx-post-enter}]
+         ctx-post-val     (let [ctx-le-val {:data (:val data) :branch :list-entry/val :parent ctx-post-enter}]
                             (walk-with-context-dispatch ctx-le-val interceptor))
-         data-out         {:list-entry/idx (grab :data ctx-post-idx)
-                           :list-entry/val (grab :data ctx-post-val)}
+         data-out         {:idx (grab :data ctx-post-idx)
+                           :val (grab :data ctx-post-val)}
          ctx-post-recurse (glue ctx-post-enter {:data data-out})
          ctx-post-leave   (leave-fn ctx-post-recurse)
          ]
@@ -121,16 +169,16 @@
          data-indexed        (t/indexed (grab :data ctx-post-enter))
          ctx-subs            (forv [le data-indexed] ; for each list-entry
                                (with-spy-indent
-                                 (let [ctx-le {:data   {:list-entry/idx (xfirst le)
-                                                        :list-entry/val (xsecond le)}
+                                 (let [ctx-le {:data   {:idx (xfirst le)
+                                                        :val (xsecond le)}
                                                :branch :list-entry
                                                :parent ctx-post-enter}]
                                    (proc-list-entry ctx-le interceptor))))
          data-new-sorted-map (into (sorted-map)
                                (apply-glue-not-nil
                                  (forv [le-spread (mapv :data ctx-subs)]
-                                   {(:list-entry/idx le-spread)
-                                    (:list-entry/val le-spread)})))
+                                   {(:idx le-spread)
+                                    (:val le-spread)})))
          data-new            (vec (vals data-new-sorted-map))
          ctx-post-recurse    (glue ctx-post-enter {:data data-new})
          ctx-post-leave      (leave-fn ctx-post-recurse)]
@@ -164,7 +212,7 @@
           ctx-out (cond
                     (t/xmap? data) (proc-map ctx interceptor)
                     (t/xsequential? data) (proc-list ctx interceptor)
-                    (set? data) (proc-other ctx interceptor)
+                    (set? data) (proc-set ctx interceptor)
                     :else (proc-other ctx interceptor))]
       ; (spyq :dispatch-leave---------------------------------)
       ctx-out)))

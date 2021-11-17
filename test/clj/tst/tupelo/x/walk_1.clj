@@ -1,4 +1,4 @@
-(ns       ^:test-refresh/focus
+(ns ;     ^:test-refresh/focus
   tst.tupelo.x.walk-1
   (:use tupelo.x.walk-1 tupelo.core tupelo.test)
   (:require
@@ -20,7 +20,23 @@
 
 (dotest   ; -focus
   (let [intc {:enter (fn [ctx]
-                       (spyx-pretty ctx)
+                       ; (spyx-pretty ctx)
+                       (cond-it-> ctx
+                         (and (= :set-entry/elem (grab :branch it))
+                           (int? (grab :data it)))
+                         (update-in it [:data] #(* % 10))))
+              :leave (fn [ctx]
+                       (cond-it-> ctx
+                         (and (= :set-entry/elem (grab :branch it))
+                           (int? (grab :data it)))
+                         (update-in it [:data] #(inc %))))}]
+    (is= (walk-with-context #{2 3} intc)
+      #{21 31}))
+  (nl))
+
+(dotest-focus
+  (let [intc {:enter (fn [ctx]
+                       ; (spyx-pretty ctx)
                        (cond-it-> ctx
                          (and (= :list-entry/val (grab :branch it))
                            (int? (grab :data it)))
@@ -36,7 +52,7 @@
       [21 31 :zz 99]))
 
   (let [intc {:enter (fn [ctx]
-                       (spyx-pretty ctx)
+                       ; (spyx-pretty ctx)
                        (cond-it-> ctx
                          (and (= :list-entry/val (grab :branch it))
                            (int? (grab :data it)))
@@ -52,7 +68,7 @@
 
 (dotest   ; -focus
   (let [intc {:enter (fn [ctx]
-                       (spyx-pretty ctx)
+                       ; (spyx-pretty ctx)
                        ; (spy-pretty :enter-in ctx)
                        ; (spy-pretty :enter-out)
                        (cond-it-> ctx
