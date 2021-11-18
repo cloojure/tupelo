@@ -90,9 +90,9 @@
   (t/with-spy-indent
     (let [enter-fn (or (:enter interceptor) identity)
           leave-fn (or (:leave interceptor) identity)]
-      (nl) (spyq :set-entry--enter---------------------------------)
-      (spyx-pretty ctx-in)
-      (let-spy-pretty
+      ;(nl) (spyq :set-entry--enter---------------------------------)
+      ;(spyx-pretty ctx-in)
+      (let ; -spy-pretty
         [ctx-post-enter   (enter-fn ctx-in)
          data             (:data ctx-post-enter)
          ctx-post-key     (let [ctx-me-key {:data (:elem data) :branch :set-entry/elem :parent ctx-post-enter}]
@@ -101,8 +101,8 @@
          ctx-post-recurse (glue ctx-post-enter {:data data-out})
          ctx-post-leave   (leave-fn ctx-post-recurse)
          ]
-        (spyq :set-entry--leave---------------------------------)
-        (nl)
+        ;(spyq :set-entry--leave---------------------------------)
+        ;(nl)
         ctx-post-leave))))
 
 (s/defn ^:no-doc proc-set
@@ -111,9 +111,9 @@
   (t/with-spy-indent
     (let [enter-fn (or (:enter interceptor) identity)
           leave-fn (or (:leave interceptor) identity)]
-      (nl) (spyq :set-enter---------------------------------)
-      (spyx-pretty ctx-in)
-      (let-spy-pretty
+      ;(nl) (spyq :set-enter---------------------------------)
+      ;(spyx-pretty ctx-in)
+      (let ; -spy-pretty
         [ctx-post-enter   (enter-fn ctx-in)
          data             (grab :data ctx-post-enter)
          ctx-subs         (forv [se data] ; for each set-entry
@@ -127,8 +127,8 @@
                               #{(:elem se-spread)}))
          ctx-post-recurse (glue ctx-post-enter {:data data-new})
          ctx-post-leave   (leave-fn ctx-post-recurse)]
-        (spyq :set-leave---------------------------------)
-        (nl)
+        ;(spyq :set-leave---------------------------------)
+        ;(nl)
         ctx-post-leave))))
 
 ;-----------------------------------------------------------------------------

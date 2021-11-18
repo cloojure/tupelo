@@ -92,6 +92,7 @@
        (s/set-fn-validation! orig-validation-state#)
        result#)))
 
+; #todo convert to try/finally
 (defmacro with-validation-disabled
   "Run forms with Plumatic Schema disabled"
   [& forms]

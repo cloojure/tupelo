@@ -2205,7 +2205,7 @@
   [N]
   (first (drop N (fibonacci-seq))))
 
-
+; #todo enhance to handle BigDec
 (defn rel=
   "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative equality
    is specified as either (1) the N most significant digits are equal, or (2) the absolute

@@ -2278,7 +2278,7 @@
     (is (sorted-map? nested-sorted))))
 
 ; #todo:  finish this! 2020-10-20
-(dotest
+#_(dotest
   (let [intc {:enter (fn [parents data]
                        (t/with-result data
                          (nl) (spy-pretty :enter (t/vals->map parents data))))
@@ -2317,7 +2317,7 @@
       ;    :leave => {:parents [], :data {:a 1, :b {:c 3}}} ")
       )))
 
-(dotest
+#_(dotest
   (let [intc {:enter (fn [parents data]
                        (t/with-result data
                          (spy :enter (t/vals->map parents data))))}]
@@ -2334,51 +2334,52 @@
           :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 0, :val 20}], :data 20}
           :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 1, :val 21}], :data 21} "))))
 
-#?(:clj
-   (dotest
-     (let [data   {:a 1 :b [20 21 22] :c {:d 4}}
-           intc   {:enter t/noop
-                   :leave t/->nil}
-           result (t/walk-with-parents-readonly data intc)] ; return values don't matter
-       (throws? (t/walk-with-parents-readonly data {})) ; must have at least one of :enter or :leave
+(comment
+  #?(:clj
+     (dotest
+       (let [data   {:a 1 :b [20 21 22] :c {:d 4}}
+             intc   {:enter t/noop
+                     :leave t/->nil}
+             result (t/walk-with-parents-readonly data intc)] ; return values don't matter
+         (throws? (t/walk-with-parents-readonly data {})) ; must have at least one of :enter or :leave
 
-       (do ; #todo #bug 2020-2-6 this fails in CLJS
-         ; (println :2113-before)
-         ; (spyx result)
-         (is= result data)
-         ; (println :2113-after)
-         ))
+         (do ; #todo #bug 2020-2-6 this fails in CLJS
+           ; (println :2113-before)
+           ; (spyx result)
+           (is= result data)
+           ; (println :2113-after)
+           ))
 
-     ; walk-with-parents disallows any user-data MapEntry or ListEntry objects in input data structure
-     (let [data {:a 1 :b (t/map-entry :c 3)}]
-       (throws?
-         (t/walk-with-parents data {:leave t/noop})))
+       ; walk-with-parents disallows any user-data MapEntry or ListEntry objects in input data structure
+       (let [data {:a 1 :b (t/map-entry :c 3)}]
+         (throws?
+           (t/walk-with-parents data {:leave t/noop})))
 
-     (let [le (t/list-entry 0 100)]
-       (is= le {:type :list-entry, :idx 0, :val 100})
-       (is (map? le))
+       (let [le (t/list-entry 0 100)]
+         (is= le {:type :list-entry, :idx 0, :val 100})
+         (is (map? le))
 
-       (isnt (sequential? le)) ; since a ListEntry passes (map? x), must process before plain maps in tupelo.core!!!
+         (isnt (sequential? le)) ; since a ListEntry passes (map? x), must process before plain maps in tupelo.core!!!
 
-       (is= 0 (:idx le))
-       (is= 100 (:val le)))
+         (is= 0 (:idx le))
+         (is= 100 (:val le)))
 
-     (let [le (t/list-entry 5 6)
-           ii (:idx le)
-           vv (:val le)]
-       (is= 5 ii)
-       (is= 6 vv)
-       (throws-not? (t/list-entry 0 6))
-       (throws? (t/list-entry -1 6)))
-     (let [data         [:a :b :c]
-           list-entries (t/list->entries data)
-           data-out     (t/list-entries->vec list-entries)]
-       (is= data-out [:a :b :c])
-       (is (every? t/list-entry? list-entries))
-       (throws? (t/list-entries->vec (reverse list-entries))) ; data indexes must be in order  0..(N-1)
-       )))
+       (let [le (t/list-entry 5 6)
+             ii (:idx le)
+             vv (:val le)]
+         (is= 5 ii)
+         (is= 6 vv)
+         (throws-not? (t/list-entry 0 6))
+         (throws? (t/list-entry -1 6)))
+       (let [data         [:a :b :c]
+             list-entries (t/list->entries data)
+             data-out     (t/list-entries->vec list-entries)]
+         (is= data-out [:a :b :c])
+         (is (every? t/list-entry? list-entries))
+         (throws? (t/list-entries->vec (reverse list-entries))) ; data indexes must be in order  0..(N-1)
+         ))))
 
-(dotest
+#_(dotest
   ; only increment numeric mapentry values when key is :c
   (let [data   {:a 1 :b {:c 3} 41 42}
         intc   {:leave (fn [parents data]
@@ -2395,7 +2396,7 @@
         result (t/walk-with-parents data intc)]
     (is= result {:a 1 :b {:c 4} 41 42})))
 
-(dotest
+#_(dotest
   ; only increment numeric values at even index
   (let [data   [0 1 :two 3 4 5]
         intc   {:leave (fn [parents data]

@@ -1,11 +1,10 @@
-(ns ;     ^:test-refresh/focus
-  tst.tupelo.x.walk-1
+(ns tst.tupelo.x.walk-1
   (:use tupelo.x.walk-1 tupelo.core tupelo.test)
   (:require
     [tupelo.core :as t]
     ))
 
-(dotest   ; -focus
+(dotest
   (let [m   {:a 1}
         mes (vec m) ; convert map => seq of MapEntry objs
         me1 (first mes)]
@@ -18,7 +17,7 @@
     (is= nil (:a nil)) ; safe for `nil` value
     ))
 
-(dotest   ; -focus
+(dotest
   (let [intc {:enter (fn [ctx]
                        ; (spyx-pretty ctx)
                        (cond-it-> ctx
@@ -34,7 +33,7 @@
       #{21 31}))
   (nl))
 
-(dotest-focus
+(dotest
   (let [intc {:enter (fn [ctx]
                        ; (spyx-pretty ctx)
                        (cond-it-> ctx
@@ -66,7 +65,7 @@
 
   (nl))
 
-(dotest   ; -focus
+(dotest
   (let [intc {:enter (fn [ctx]
                        ; (spyx-pretty ctx)
                        ; (spy-pretty :enter-in ctx)
