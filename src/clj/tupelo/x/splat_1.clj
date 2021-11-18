@@ -13,4 +13,39 @@
     [tupelo.string :as str]
     ))
 
+(declare splatter)
 
+(s/defn ^:no-doc splat-map :- tsk/KeyMap
+  [the-map :- tsk/Map]
+  {:type    :map
+   :entries (forv [me the-map]
+              {:type :map-entry
+               :key  (splatter (key me))
+               :val  (splatter (val me))})})
+
+(s/defn ^:no-doc splat-list :- tsk/KeyMap
+  [the-list :- tsk/List]
+  {:type    :list
+   :entries (forv [[idx item] (indexed the-list)]
+              {:type :list-entry
+               :idx  idx
+               :val  (splatter item)})})
+
+(s/defn ^:no-doc splat-set :- tsk/KeyMap
+  [the-set :- tsk/Set]
+  {:type    :list
+   :entries (forv [item the-set]
+              {:type :set-entry
+               :val  (splatter item)})})
+
+(s/defn ^:no-doc splat-prim :- tsk/KeyMap
+  [item :- s/Any]
+  {:type :prim :data item})
+
+(s/defn splatter
+  [arg]
+  (cond
+    (xmap? arg) (splat-map arg)
+    (xsequential? arg) (splat-list arg)
+    (set? arg) (splat-set arg)
+    :else (splat-prim arg)))
