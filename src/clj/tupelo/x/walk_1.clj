@@ -95,9 +95,9 @@
       (let ; -spy-pretty
         [ctx-post-enter   (enter-fn ctx-in)
          data             (:data ctx-post-enter)
-         ctx-post-key     (let [ctx-me-key {:data (:elem data) :branch :set-entry/elem :parent ctx-post-enter}]
+         ctx-post-key     (let [ctx-me-key {:data (:val data) :branch :set-entry/elem :parent ctx-post-enter}]
                             (walk-with-context-dispatch ctx-me-key interceptor))
-         data-out         {:elem (grab :data ctx-post-key)}
+         data-out         {:val (grab :data ctx-post-key)}
          ctx-post-recurse (glue ctx-post-enter {:data data-out})
          ctx-post-leave   (leave-fn ctx-post-recurse)
          ]
@@ -118,13 +118,13 @@
          data             (grab :data ctx-post-enter)
          ctx-subs         (forv [se data] ; for each set-entry
                             (with-spy-indent
-                              (let [ctx-se {:data   {:elem se}
+                              (let [ctx-se {:data   {:val se}
                                             :branch :set-entry
                                             :parent ctx-post-enter}]
                                 (proc-set-entry ctx-se interceptor))))
          data-new         (apply-glue-not-nil
                             (forv [se-spread (mapv :data ctx-subs)]
-                              #{(:elem se-spread)}))
+                              #{(:val se-spread)}))
          ctx-post-recurse (glue ctx-post-enter {:data data-new})
          ctx-post-leave   (leave-fn ctx-post-recurse)]
         ;(spyq :set-leave---------------------------------)
@@ -176,6 +176,7 @@
                                    (proc-list-entry ctx-le interceptor))))
          data-new-sorted-map (into (sorted-map)
                                (apply-glue-not-nil
+                                 ; #todo filter not-nil? here vvv !!!
                                  (forv [le-spread (mapv :data ctx-subs)]
                                    {(:idx le-spread)
                                     (:val le-spread)})))
