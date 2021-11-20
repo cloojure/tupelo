@@ -1,8 +1,10 @@
-(ns tst.tupelo.x.splat-1
+(ns  ^:test-refresh/focus
+  tst.tupelo.x.splat-1
   (:use tupelo.x.splat-1 tupelo.core tupelo.test)
   (:require
     [tupelo.core :as t]
     ))
+(prn ::enter)
 
 (dotest
   (let [data  {:a 1 :b [2 3]}
@@ -47,5 +49,4 @@
     (is= splat expected)
     (is= data (unsplatter splat)))
   )
-
 

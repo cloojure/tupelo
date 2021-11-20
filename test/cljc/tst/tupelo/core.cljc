@@ -30,10 +30,10 @@
 
 (define-fixture :once
   {:enter (fn [ctx]
-            (println "*** TEST ONCE *** - tst.tupelo.core enter ")
+            ; (newline) (println "*** TEST ONCE *** - tst.tupelo.core enter ")
             )
    :leave (fn [ctx]
-            (println "*** TEST ONCE *** - tst.tupelo.core leave ")
+            ;  (println "*** TEST ONCE *** - tst.tupelo.core leave ")
             )})
 
 ;--------------------------------------------------------------------------------------------------
@@ -130,7 +130,7 @@
   [stuff])
 (dotest
   (let [dummyRec (->DummyRec 5)
-        amap {:stuff 5}]
+        amap     {:stuff 5}]
     (is (map? amap)) ; expected
     (isnt (record? amap)) ; expected
     (is (record? dummyRec)) ; expected
@@ -253,10 +253,10 @@
 
 (dotest
   ; clojure.lang.MapEntry passes sequential?  (argh!!!)
-  (let [m       {:a 1 :b 2}
-        me      (first m)
-        avec     [1 2 3]
-        alst     (list 1 2 3)]
+  (let [m    {:a 1 :b 2}
+        me   (first m)
+        avec [1 2 3]
+        alst (list 1 2 3)]
     (is= clojure.lang.MapEntry (type me))
     (is (sequential? me))
     (isnt (t/xsequential? me))
@@ -458,7 +458,7 @@
 ;-----------------------------------------------------------------------------
 ; pretty stuff
 (dotest
-  (is-nonblank=  "{:a [1 2 3], :d 4}" (t/pretty-str (quote {:d 4 :a (1 2 3)})))
+  (is-nonblank= "{:a [1 2 3], :d 4}" (t/pretty-str (quote {:d 4 :a (1 2 3)})))
   )
 
 ;-----------------------------------------------------------------------------
@@ -500,7 +500,7 @@
         (is= 13
           (t/let-spy [a (inc 0)
                       b (+ 2 3)]
-                     (spyx (-> (inc a) (* 2) inc))
+            (spyx (-> (inc a) (* 2) inc))
             (-> b (* 2) (+ 3)))))))
 
   (is= (ts/whitespace-collapse " a => 1
@@ -510,7 +510,7 @@
         (is= 17
           (t/let-spy [a (inc 0)
                       b (+ 2 3)]
-                     (-> b (* (inc a)) (+ 7))))))))
+            (-> b (* (inc a)) (+ 7))))))))
 
 ;-----------------------------------------------------------------------------
 (dotest
@@ -1036,7 +1036,7 @@
 
   (is= [1 [2 3 4 [5] 6 7 8] 9]
     (t/->vector 1 `(2 3 ~(t/<> [4 [5] 6]) 7 8) 9)
-    (t/->vector 1  [2 3  (t/<> [4 [5] 6]) 7 8] 9))
+    (t/->vector 1 [2 3 (t/<> [4 [5] 6]) 7 8] 9))
 
   (is= [1 2 3 4 5 6 7 8 9]
     (t/glue [1] [2] [3] [4 5 6] [7] [8] [9])
@@ -1344,7 +1344,7 @@
     (is= (t/it-> mm (it :a) (:b it)) 2))
   (is= 48 (t/it-> 42
             (let [x 5]
-              (+ x it))
+                 (+ x it))
             (inc it))))
 
 (dotest
@@ -1684,11 +1684,11 @@
   (is= (t/repeat-dims [1 1] 9) [[9]])
 
   (is= (t/repeat-dims [2 0] 9) [[]
-                              []])
+                                []])
   (is= (t/repeat-dims [2 1] 9) [[9]
-                              [9]])
+                                [9]])
   (is= (t/repeat-dims [2 3] 9) [[9 9 9]
-                              [9 9 9]])
+                                [9 9 9]])
   ; error
   (throws? (t/repeat-dims [] :a))
   (throws? (t/repeat-dims [2 -3] :a))
@@ -2117,14 +2117,14 @@
               (t/vals->strmap a b c))]
     (is= ctx {"a" 1, "b" 2, "c" 3})
 
-    (t/with-strmap-vals ctx [a b c ]
-      (is= [a b c ] [1 2 3 ])
-      (is= 6 (+ a b c )))
-    (t/with-strmap-vals ctx [b a  c ] ; order doesn't matter
-      (is= [a b c ] [1 2 3 ])
-      (is= 6 (+ a b c  )))
-    (t/with-strmap-vals ctx [b a ] ; can ignore stuff you don't care about
-      (is= [ a b ] [1 2]))
+    (t/with-strmap-vals ctx [a b c]
+      (is= [a b c] [1 2 3])
+      (is= 6 (+ a b c)))
+    (t/with-strmap-vals ctx [b a c] ; order doesn't matter
+      (is= [a b c] [1 2 3])
+      (is= 6 (+ a b c)))
+    (t/with-strmap-vals ctx [b a] ; can ignore stuff you don't care about
+      (is= [a b] [1 2]))
     (throws?
       (t/with-strmap-vals ctx [a b zzz] ; throws if key doesn't exist
         (println "won't ever get here")))))
@@ -2144,9 +2144,9 @@
         (quote {:likes {:a a, :b b}}))
       (is= (t/construct {:likes {:a ? :b ?}})
         {:likes {:a a, :b b}}
-        {:likes {:a 1, :b 2}} )
+        {:likes {:a 1, :b 2}})
       (is= (t/construct {:likes {:a ? :b ? :c ?}}) ; works for locals and Vars
-        {:likes {:a 1, :b 2 :c 3}} ) )))
+        {:likes {:a 1, :b 2 :c 3}}))))
 
 ;---------------------------------------------------------------------------------------------------
 (dotest
@@ -2279,60 +2279,60 @@
 
 ; #todo:  finish this! 2020-10-20
 #_(dotest
-  (let [intc {:enter (fn [parents data]
-                       (t/with-result data
-                         (nl) (spy-pretty :enter (t/vals->map parents data))))
-              ;:leave (fn [parents data]
-              ;         (t/with-result data
-              ;           (spy :leave (t/vals->map parents data))))
-              }]
-    ; demo with map
-    (let [data            {:a 1 :b [{:c 3} :fred [1 2 3]]}
+    (let [intc {:enter (fn [parents data]
+                         (t/with-result data
+                           (nl) (spy-pretty :enter (t/vals->map parents data))))
+                ;:leave (fn [parents data]
+                ;         (t/with-result data
+                ;           (spy :leave (t/vals->map parents data))))
+                }]
+      ; demo with map
+      (let [data            {:a 1 :b [{:c 3} :fred [1 2 3]]}
 
-          walk-result-str (with-out-str
-                            (let [data-noop (t/walk-with-parents data intc)]
-                              (is= data data-noop)))
-          ]
-      (newline) (println walk-result-str) (newline)
+            walk-result-str (with-out-str
+                              (let [data-noop (t/walk-with-parents data intc)]
+                                (is= data data-noop)))
+            ]
+        (newline) (println walk-result-str) (newline)
 
-      ;(is-nonblank= walk-result-str
-      ;  " :enter => {:parents [], :data {:a 1, :b {:c 3}}}
-      ;
-      ;    :enter => {:parents [{:a 1, :b {:c 3}}
-      ;               [:a 1]
-      ;                {:type :map-key, :value :a}],
-      ;                :data :a}
-      ;
-      ;    :leave => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-key, :value :a}], :data :a}
-      ;    :enter => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-val, :value 1}], :data 1}
-      ;    :leave => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-val, :value 1}], :data 1}
-      ;    :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-key, :value :b}], :data :b}
-      ;    :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-key, :value :b}], :data :b}
-      ;    :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}}], :data {:c 3}}
-      ;    :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-key, :value :c}], :data :c}
-      ;    :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-key, :value :c}], :data :c}
-      ;    :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-val, :value 3}], :data 3}
-      ;    :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-val, :value 3}], :data 3}
-      ;    :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}}], :data {:c 3}}
-      ;    :leave => {:parents [], :data {:a 1, :b {:c 3}}} ")
-      )))
+        ;(is-nonblank= walk-result-str
+        ;  " :enter => {:parents [], :data {:a 1, :b {:c 3}}}
+        ;
+        ;    :enter => {:parents [{:a 1, :b {:c 3}}
+        ;               [:a 1]
+        ;                {:type :map-key, :value :a}],
+        ;                :data :a}
+        ;
+        ;    :leave => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-key, :value :a}], :data :a}
+        ;    :enter => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-val, :value 1}], :data 1}
+        ;    :leave => {:parents [{:a 1, :b {:c 3}} [:a 1] {:type :map-val, :value 1}], :data 1}
+        ;    :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-key, :value :b}], :data :b}
+        ;    :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-key, :value :b}], :data :b}
+        ;    :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}}], :data {:c 3}}
+        ;    :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-key, :value :c}], :data :c}
+        ;    :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-key, :value :c}], :data :c}
+        ;    :enter => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-val, :value 3}], :data 3}
+        ;    :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}} {:c 3} [:c 3] {:type :map-val, :value 3}], :data 3}
+        ;    :leave => {:parents [{:a 1, :b {:c 3}} [:b {:c 3}] {:type :map-val, :value {:c 3}}], :data {:c 3}}
+        ;    :leave => {:parents [], :data {:a 1, :b {:c 3}}} ")
+        )))
 
 #_(dotest
-  (let [intc {:enter (fn [parents data]
-                       (t/with-result data
-                         (spy :enter (t/vals->map parents data))))}]
-    ; demo with vectors
-    (let [data            [10 [20 21]]
-          walk-result-str (with-out-str
-                            (let [data-noop (t/walk-with-parents data intc)]
-                              (is= data data-noop)))]
-      ; (newline) (println walk-result-str) (newline)
-      (is-nonblank= walk-result-str
-        " :enter => {:parents [], :data [10 [20 21]]}
-          :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 0, :val 10}], :data 10}
-          :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]}], :data [20 21]}
-          :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 0, :val 20}], :data 20}
-          :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 1, :val 21}], :data 21} "))))
+    (let [intc {:enter (fn [parents data]
+                         (t/with-result data
+                           (spy :enter (t/vals->map parents data))))}]
+      ; demo with vectors
+      (let [data            [10 [20 21]]
+            walk-result-str (with-out-str
+                              (let [data-noop (t/walk-with-parents data intc)]
+                                (is= data data-noop)))]
+        ; (newline) (println walk-result-str) (newline)
+        (is-nonblank= walk-result-str
+          " :enter => {:parents [], :data [10 [20 21]]}
+            :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 0, :val 10}], :data 10}
+            :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]}], :data [20 21]}
+            :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 0, :val 20}], :data 20}
+            :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 1, :val 21}], :data 21} "))))
 
 (comment
   #?(:clj
@@ -2380,34 +2380,34 @@
          ))))
 
 #_(dotest
-  ; only increment numeric mapentry values when key is :c
-  (let [data   {:a 1 :b {:c 3} 41 42}
-        intc   {:leave (fn [parents data]
-                         (t/with-nil-default data
-                           (when (<= 2 (count parents))
-                             (let [ancestors (reverse parents)
-                                   a1        (t/xfirst ancestors)
-                                   a2        (t/xsecond ancestors)]
-                               (when (and (number? data)
-                                       (= :map-val (:type a1))
-                                       (map-entry? a2)
-                                       (= :c (key a2)))
-                                 (inc data))))))}
-        result (t/walk-with-parents data intc)]
-    (is= result {:a 1 :b {:c 4} 41 42})))
+    ; only increment numeric mapentry values when key is :c
+    (let [data   {:a 1 :b {:c 3} 41 42}
+          intc   {:leave (fn [parents data]
+                           (t/with-nil-default data
+                             (when (<= 2 (count parents))
+                               (let [ancestors (reverse parents)
+                                     a1        (t/xfirst ancestors)
+                                     a2        (t/xsecond ancestors)]
+                                 (when (and (number? data)
+                                         (= :map-val (:type a1))
+                                         (map-entry? a2)
+                                         (= :c (key a2)))
+                                   (inc data))))))}
+          result (t/walk-with-parents data intc)]
+      (is= result {:a 1 :b {:c 4} 41 42})))
 
 #_(dotest
-  ; only increment numeric values at even index
-  (let [data   [0 1 :two 3 4 5]
-        intc   {:leave (fn [parents data]
-                         (spyx (t/vals->map parents data))
-                         (t/with-nil-default data
-                           (when (number? data)
-                             (let [parent (t/xlast parents)]
-                               (when (and (t/list-entry? parent) (even? (t/grab :idx parent)))
-                                 (inc data))))))}
-        result (t/walk-with-parents data intc)]
-    (is= result [1 1 :two 3 5 5])))
+    ; only increment numeric values at even index
+    (let [data   [0 1 :two 3 4 5]
+          intc   {:leave (fn [parents data]
+                           (spyx (t/vals->map parents data))
+                           (t/with-nil-default data
+                             (when (number? data)
+                               (let [parent (t/xlast parents)]
+                                 (when (and (t/list-entry? parent) (even? (t/grab :idx parent)))
+                                   (inc data))))))}
+          result (t/walk-with-parents data intc)]
+      (is= result [1 1 :two 3 5 5])))
 
 (dotest
   (is= (range 10) ; vector/list

@@ -1,8 +1,11 @@
-(ns tst.tupelo.x.walk-1
+(ns  ^:test-refresh/focus
+  tst.tupelo.x.walk-1
   (:use tupelo.x.walk-1 tupelo.core tupelo.test)
   (:require
     [tupelo.core :as t]
     ))
+
+(prn ::enter)
 
 (dotest
   (let [m   {:a 1}
@@ -31,7 +34,7 @@
                          (update-in it [:data] #(inc %))))}]
     (is= (walk-with-context #{2 3} intc)
       #{21 31}))
-  (nl))
+  )
 
 (dotest
   (let [intc {:enter (fn [ctx]
@@ -62,8 +65,7 @@
                          (update-in it [:data] #(- %))))}]
     (is= (walk-with-context [2 3] intc)
       [30 20]))
-
-  (nl))
+  )
 
 (dotest
   (let [intc {:enter (fn [ctx]
@@ -88,6 +90,6 @@
                          ))}]
     (is= (walk-with-context {:a 1 :b 2} intc)
       {:a 11, :b 21, :zz 99}))
+  )
 
-  (nl))
 

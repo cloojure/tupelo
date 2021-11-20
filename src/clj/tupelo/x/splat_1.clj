@@ -45,6 +45,7 @@
   [item :- s/Any]
   {:type :prim :data item})
 
+; #todo add :depth to each map
 (s/defn splatter
   [arg]
   (cond
@@ -54,6 +55,7 @@
     :else (splat-prim arg)))
 
 ;---------------------------------------------------------------------------------------------------
+; #todo add :depth to each map
 (s/defn unsplatter :- s/Any
   [splat :- tsk/KeyMap]
   (let [type               (grab :type splat)

@@ -13,13 +13,13 @@
     [tupelo.string :as str]
     ))
 
-(s/defn ctx-depth :- s/Int
+(s/defn ctx->depth :- s/Int
   "Returns the depth of recursion in a data structure, where {:branch :root} => 0"
   [ctx :- tsk/KeyMap]
   (let [parent (grab :parent ctx)]
     (if (nil? parent)
       0
-      (inc (ctx-depth parent)))))
+      (inc (ctx->depth parent)))))
 
 (s/defn ^:no-doc apply-glue-not-nil :- s/Any
   "Given a sequence of collections, remove any `nil` values, then combine. All non-nil
@@ -61,8 +61,8 @@
   (t/with-spy-indent
     (let [enter-fn (or (:enter interceptor) identity)
           leave-fn (or (:leave interceptor) identity)]
-      (nl) (spyq :map-enter---------------------------------)
-      (spyx-pretty ctx-in)
+      ;(nl) (spyq :map-enter---------------------------------)
+      ;(spyx-pretty ctx-in)
       (let ; -spy-pretty
         [ctx-post-enter   (enter-fn ctx-in)
          data             (grab :data ctx-post-enter)

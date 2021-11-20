@@ -21,14 +21,14 @@
 
 (define-fixture :once
   {:enter (fn [ctx]
-            (println "*** TEST ONCE *** - slate enter ctx=" ctx)
+            ; (newline) (println "*** TEST ONCE *** - slate enter ctx=" ctx)
             )
    :leave (fn [ctx]
-            (println "*** TEST ONCE *** - slate leave ctx=" ctx)
+            ; (println "*** TEST ONCE *** - slate leave ctx=" ctx)
             )})
 
 (dotest
-  (is= 2 (+ 1 1))   ; this works
+  (is= 2 (+ 1 1)) ; this works
   (is= 5 (slate/add2 2 3)) ; this works
 
   (is= 3 (slate/logr-slate

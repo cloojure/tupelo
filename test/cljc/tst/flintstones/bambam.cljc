@@ -17,15 +17,15 @@
 
 (define-fixture :once
   {:enter (fn [ctx]
-             (println "*** TEST ONCE *** - bambam enter ctx=" ctx)
+            ; (newline) (println "*** TEST ONCE *** - bambam enter ctx=" ctx)
             )
    :leave (fn [ctx]
-             (println "*** TEST ONCE *** - bambam leave ctx=" ctx)
+            ; (println "*** TEST ONCE *** - bambam leave ctx=" ctx)
             )})
 
 (defn tosser [] (throw (ex-info "It threw!" {:a 1})))
 
-(dotest         ; deftest t1         ;
+(dotest   ; deftest t1         ;
   (println "tst.flintstones.bambam - test 1 - enter")
   (is (= 2 (+ 1 1)))
 
@@ -33,7 +33,7 @@
   (println "tst.flintstones.bambam - test 1 - leave")
   )
 
-(dotest         ; deftest t2         ;
+(dotest   ; deftest t2         ;
   (println "tst.flintstones.bambam - test 2 - enter")
   (is (= 5 (bam/add2 2 3))) ; this works
   (is (= 3 (bam/logr-bambam
