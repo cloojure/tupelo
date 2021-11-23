@@ -4,7 +4,7 @@
   (:require
     [tupelo.core :as t]
     ))
-(prn ::enter)
+(dotest (prn ::enter))
 
 (dotest
   (let [data  {:a 1 :b [2 3]}

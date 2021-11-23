@@ -5,7 +5,7 @@
     [tupelo.core :as t]
     ))
 
-(prn ::enter)
+(dotest (prn ::enter))
 
 (dotest
   (let [m   {:a 1}
@@ -90,6 +90,22 @@
                          ))}]
     (is= (walk-with-context {:a 1 :b 2} intc)
       {:a 11, :b 21, :zz 99}))
+  )
+
+(dotest-focus
+  (let [intc {:enter (fn [ctx]
+                       (nl)
+                       ; (spyx-pretty ctx)
+                       (spy-pretty :enter-in ctx)
+                       ; (spy-pretty :enter-out)
+                       (cond-it-> ctx
+                         (and (= :map-entry/val (grab :branch it))
+                           (int? (grab :data it)))
+                         (update-in it [:data] #(* % 10))
+                         ))
+              }]
+    (walk-with-context {:a 1 :b [2 3]} intc)
+    )
   )
 
 
