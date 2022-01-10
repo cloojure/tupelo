@@ -17,14 +17,14 @@
    ; [org.clojure/clojure "1.10.3"]
 
    ; top-priority libs
-   [org.clojure/core.async "1.3.622"]
+   [org.clojure/core.async "1.5.648"]
    [org.clojure/core.match "1.0.0"]
    [org.clojure/data.avl "0.1.0"]
    [org.clojure/data.csv "1.0.0"]
    [org.clojure/data.xml "0.2.0-alpha6"]
    [org.clojure/math.combinatorics "0.1.6"]
-   [org.clojure/spec.alpha "0.2.194"]
-   [org.clojure/test.check "1.1.0"]
+   [org.clojure/spec.alpha "0.3.218"]
+   [org.clojure/test.check "1.1.1"]
    [org.clojure/tools.reader "1.3.6"]
 
    ; other libs
@@ -32,11 +32,11 @@
    [cheshire "5.10.1"] ; #todo switch to muuntaja/jsonista
    [clj-time "0.15.2"]
    [danlentz/clj-uuid "0.1.9"]
-   [joda-time/joda-time "2.10.12"]
+   [joda-time/joda-time "2.10.13"]
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
-   [org.flatland/ordered "1.5.9"]
+   [org.flatland/ordered "1.15.10"]
    [org.snakeyaml/snakeyaml-engine "2.3"]
-   [prismatic/schema "1.1.12"]
+   [prismatic/schema "1.2.0"]
 
    ; #todo clojures pprint doesn't work under graal native-image
    ]
@@ -44,7 +44,7 @@
   ; Using `lein-ancient check :all` checks plugins
   :plugins [
             ;[lein-cljsbuild "1.1.8"]
-            [lein-codox "0.10.7"]
+            [lein-codox "0.10.8"]
             ;[lein-nomis-ns-graph "0.14.2"]
             [com.jakemccrary/lein-test-refresh "0.24.1"]]
 
