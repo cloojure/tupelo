@@ -1,4 +1,4 @@
-(ns  ^:test-refresh/focus
+(ns       ; ^:test-refresh/focus
   tst.tupelo.x.walk-1
   (:use tupelo.x.walk-1 tupelo.core tupelo.test)
   (:require
@@ -92,7 +92,7 @@
       {:a 11, :b 21, :zz 99}))
   )
 
-(dotest-focus
+(dotest
   (let [intc {:enter (fn [ctx]
                        (nl)
                        ; (spyx-pretty ctx)
