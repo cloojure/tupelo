@@ -210,7 +210,24 @@
         (str/whitespace-collapse "  abc    def			g
                                      hij kl	 ")))
   (is (= "abc" (str/whitespace-remove "abc")))
-  (is (= "" (str/whitespace-remove ""))))
+  (is (= "" (str/whitespace-remove "")))
+  (is= "abcdef"
+    (str/whitespace-remove "abc def")
+    (str/whitespace-remove "  abc def")
+    (str/whitespace-remove "abc def  ")
+    (str/whitespace-remove "  abc def  ")
+    (str/whitespace-remove "  a    bc def  ")
+    (str/whitespace-remove (str "  abc " \newline " def  ")))
+  (is= "a"
+    (str/whitespace-remove "a")
+    (str/whitespace-remove "a ")
+    (str/whitespace-remove " a")
+    (str/whitespace-remove (str "  a " \newline "   ")))
+  (is= ""
+    (str/whitespace-remove "")
+    (str/whitespace-remove "  ")
+    (str/whitespace-remove (str "  " \newline "   ")))
+  )
 
 (dotest
   (is (str/nonblank= "a"))

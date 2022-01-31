@@ -68,14 +68,15 @@
                                        ;[com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.6"]
                                       ;[org.clojure/clojure "1.10.3"]
-                                       [org.clojure/clojure "1.11.0-alpha1"]
+                                       [org.clojure/clojure "1.11.0-alpha4"]
                                       ;[org.clojure/clojurescript  "1.10.764"] ; "1.10.597"
                                        ]
                         }
              :test     {:dependencies [[overtone/at-at "1.2.0"]]}
              :1.8      {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9      {:dependencies [[org.clojure/clojure "1.9.0"]]}
-             :1.10      {:dependencies [[org.clojure/clojure "1.10.0"]]}
+             :1.10      {:dependencies [[org.clojure/clojure "1.10.3"]]}
+             :1.11      {:dependencies [[org.clojure/clojure "1.11.0-alpha4"]]}
              }
   :source-paths ["src/clj" "src/cljc"]
   :test-paths ["test/clj" "test/cljc"]
