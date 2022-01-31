@@ -370,6 +370,44 @@
        (is= [2 4 6 8 10] result-thread))))
 
 #?(:clj
+   (do
+     ; Double and (with-precision ...) doesn't work
+     (dotest
+       (let [a6 1.112233
+             a4 1.1122
+             a2 1.11
+
+             b6 1.667788
+             b4 1.6678
+             b3 1.67]
+         (is= a6 (with-precision 6 a6))
+         (is= a6 (with-precision 4 a6))
+         (is= a6 (with-precision 2 a6))
+
+         (is= b6 (with-precision 6 b6))
+         (is= b6 (with-precision 4 b6))
+         (is= b6 (with-precision 2 b6))
+         ))
+
+     ; BigDecimal and (with-precision ...) doesn't work
+     (dotest
+       (let [a6 (bigdec 1.112233)
+             a4 (bigdec 1.1122)
+             a2 (bigdec 1.12)
+
+             b6 (bigdec 1.667788)
+             b4 (bigdec 1.6678)
+             b3 (bigdec 1.67)]
+         (is= a6 (with-precision 6 a6))
+         (is= a6 (with-precision 4 a6))
+         (is= a6 (with-precision 2 a6))
+
+         (is= b6 (with-precision 6 b6))
+         (is= b6 (with-precision 4 b6))
+         (is= b6 (with-precision 2 b6))))
+     ))
+
+#?(:clj
    (do    ; #todo make work for clj/cljs
 
      (t/when-clojure-1-9-plus

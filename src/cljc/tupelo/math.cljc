@@ -17,7 +17,11 @@
             [schema.core :as s]
             [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map]]
             [tupelo.schema :as tsk]
-            ) )
+            )
+  #?(:clj
+     (:import
+       [java.math RoundingMode]))
+  )
 
 (s/defn factorial :- s/Int
   "Computes the factorial of N"
@@ -40,6 +44,27 @@
       (* it factor)
       (Math/round it)
       (/ it factor))))
+
+#?(:clj
+   (do
+     (s/defn ->bigdec-decimals :- BigDecimal
+       "Coerces a numeric value to a BigDecimal with N decimal digits. Also accepts
+       a numeric value encoded as a String."
+       [val :- (s/cond-pre s/Num s/Str)
+        N :- s/Int]
+       (it-> val
+         (bigdec it)
+         (.setScale
+           ^BigDecimal it ; need type hint to avoid IDEA deprecation warning
+           N
+           RoundingMode/HALF_UP))) ; must include RoundingMode arg!!!
+
+     (s/defn ->bigdec-2 :- BigDecimal
+       "Coerces a numeric value to a BigDecimal with 2 decimal digits. Also accepts
+       a numeric value encoded as a String."
+       [val :- (s/cond-pre s/Num s/Str)]
+       (->bigdec-decimals val 2))
+))
 
 ;---------------------------------------------------------------------------------------------------
 (comment            ; #todo #awt complete/fix this stuff

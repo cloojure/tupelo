@@ -1,5 +1,4 @@
-(ns       ; ^:test-refresh/focus
-  tst.tupelo.x.walk-1
+(ns tst.tupelo.x.walk-1
   (:use tupelo.x.walk-1 tupelo.core tupelo.test)
   (:require
     [tupelo.core :as t]

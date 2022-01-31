@@ -65,6 +65,85 @@
 
 
 #?(:clj
+   (do
+     ; Works correctly using BigDecimal/setScale & RoundingMode arg
+     (dotest
+       (let [a6 1.112233
+             a4 1.1122
+             a2 1.11
+
+             b6 1.667788
+             b4 1.6677
+             b2 1.66]
+         (is= 1.112233M (math/->bigdec-decimals a6 6))
+         (is= 1.112200M (math/->bigdec-decimals a4 6))
+         (is= 1.110000M (math/->bigdec-decimals a2 6))
+         (is= 1.667788M (math/->bigdec-decimals b6 6))
+         (is= 1.667700M (math/->bigdec-decimals b4 6))
+         (is= 1.660000M (math/->bigdec-decimals b2 6))
+
+         (is= 1.1122M (math/->bigdec-decimals a6 4))
+         (is= 1.1122M (math/->bigdec-decimals a4 4))
+         (is= 1.1100M (math/->bigdec-decimals a2 4))
+         (is= 1.6678M (math/->bigdec-decimals b6 4))
+         (is= 1.6677M (math/->bigdec-decimals b4 4))
+         (is= 1.6600M (math/->bigdec-decimals b2 4))
+
+         (is= 1.11M (math/->bigdec-decimals a6 2))
+         (is= 1.11M (math/->bigdec-decimals a4 2))
+         (is= 1.11M (math/->bigdec-decimals a2 2))
+         (is= 1.67M (math/->bigdec-decimals b6 2))
+         (is= 1.67M (math/->bigdec-decimals b4 2))
+         (is= 1.66M (math/->bigdec-decimals b2 2))
+
+         (is= 1.11M (math/->bigdec-decimals (str a6) 2))
+         (is= 1.11M (math/->bigdec-decimals (str a4) 2))
+         (is= 1.11M (math/->bigdec-decimals (str a2) 2))
+         (is= 1.67M (math/->bigdec-decimals (str b6) 2))
+         (is= 1.67M (math/->bigdec-decimals (str b4) 2))
+         (is= 1.66M (math/->bigdec-decimals (str b2) 2))
+     ))
+
+     ; Can accept value as a Double, BigDecimal, or String
+     (dotest
+       (let [a6 1.112233
+             a4 1.1122
+             a2 1.11
+
+             b6 1.667788
+             b4 1.6677
+             b2 1.66]
+         (is= 1.11M
+           (math/->bigdec-2 a6)
+           (math/->bigdec-2 (bigdec a6))
+           (math/->bigdec-2 (str a6)))
+         (is= 1.11M
+           (math/->bigdec-2 a4)
+           (math/->bigdec-2 (bigdec a4))
+           (math/->bigdec-2 (str a4)))
+         (is= 1.11M
+           (math/->bigdec-2 a2)
+           (math/->bigdec-2 (bigdec a2))
+           (math/->bigdec-2 (str a2)))
+
+         (is= 1.67M
+           (math/->bigdec-2 b6)
+           (math/->bigdec-2 (bigdec b6))
+           (math/->bigdec-2 (str b6)))
+
+         (is= 1.67M
+           (math/->bigdec-2 b4)
+           (math/->bigdec-2 (bigdec b4))
+           (math/->bigdec-2 (str b4)))
+
+         (is= 1.66M
+           (math/->bigdec-2 b2)
+           (math/->bigdec-2 (bigdec b2))
+           (math/->bigdec-2 (str b2)))))
+
+     ))
+
+#?(:clj
    ; #todo review - old stuff from clj/tupelo/math.clj
    (dotest
      ; Java Class
@@ -96,6 +175,6 @@
      (is= (biginteger 5) 5N)
      (is= (biginteger 5) 5)
      (is= (biginteger 5) (bigint 5))
-     (isnt= (biginteger 5) 5.0)))
+     (isnt= (biginteger 5) 5.0)
 
-
+     ))

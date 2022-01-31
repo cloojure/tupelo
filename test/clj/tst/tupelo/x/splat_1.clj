@@ -1,5 +1,4 @@
-(ns       ; ^:test-refresh/focus
-  tst.tupelo.x.splat-1
+(ns tst.tupelo.x.splat-1
   (:use tupelo.x.splat-1 tupelo.core tupelo.test)
   (:require
     [tupelo.core :as t]
@@ -50,7 +49,7 @@
     (is= data (unsplatter splat)))
   )
 
-(dotest-focus
+(dotest   ; -focus
   (let [intc {:enter (fn [ctx]
                        (spy-pretty :enter ctx)
                        ;(cond-it-> ctx
