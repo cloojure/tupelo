@@ -93,6 +93,28 @@
                      (record? it) (into {} it)))
     data))
 
+(defn walk-data->tagstr
+  "Convert objects to tagged strings like:
+
+        <#uuid 605ca9b3-219b-44b3-9c91-238dba64a3f8>
+        <#inst 1999-12-31T01:02:03.456Z>
+        <#java.util.Date Thu Dec 30 17:02:03 PST 1999>
+        <#java.sql.Date 1999-12-30>
+        <#java.sql.Timestamp 1999-12-30 17:02:03.456>
+  "
+  [data]
+  (walk/postwalk
+    (fn [item]
+      (cond
+        (= (type item) java.util.Date) (str "<#java.util.Date " item ">")
+        (= (type item) java.sql.Date) (str "<#java.sql.Date " item ">")
+        (= (type item) java.sql.Timestamp) (str "<#java.sql.Timestamp " item ">")
+        (inst? item) (str "<#inst " item ">") ; must go after the above items due to inheritance!
+        (uuid? item) (str "<#uuid " item ">")
+        :else item))
+    data))
+
+
 ; -----------------------------------------------------------------------------
 ; #todo maybe move to tupelo.bytes ns
 (s/defn byte-unsigned->signed
