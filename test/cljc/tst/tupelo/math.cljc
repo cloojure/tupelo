@@ -66,41 +66,6 @@
 
 #?(:clj
    (do
-     ; Double and (with-precision ...) doesn't work ; #todo move to gotchas
-     (dotest
-       (let [a6 1.112233
-             a4 1.1122
-             a2 1.11
-
-             b6 1.667788
-             b4 1.6678
-             b3 1.67]
-         (is= a6 (with-precision 6 a6))
-         (is= a6 (with-precision 4 a6))
-         (is= a6 (with-precision 2 a6))
-
-         (is= b6 (with-precision 6 b6))
-         (is= b6 (with-precision 4 b6))
-         (is= b6 (with-precision 2 b6))
-         ))
-
-     ; BigDecimal and (with-precision ...) doesn't work ; #todo move to gotchas
-     (dotest
-       (let [a6 (bigdec 1.112233)
-             a4 (bigdec 1.1122)
-             a2 (bigdec 1.12)
-
-             b6 (bigdec 1.667788)
-             b4 (bigdec 1.6678)
-             b3 (bigdec 1.67)]
-         (is= a6 (with-precision 6 a6))
-         (is= a6 (with-precision 4 a6))
-         (is= a6 (with-precision 2 a6))
-
-         (is= b6 (with-precision 6 b6))
-         (is= b6 (with-precision 4 b6))
-         (is= b6 (with-precision 2 b6))))
-
      ; Works correctly using BigDecimal/setScale & RoundingMode arg
      (dotest
        (let [a6 1.112233
@@ -129,7 +94,15 @@
          (is= 1.11M (math/->bigdec-decimals a2 2))
          (is= 1.67M (math/->bigdec-decimals b6 2))
          (is= 1.67M (math/->bigdec-decimals b4 2))
-         (is= 1.66M (math/->bigdec-decimals b2 2))))
+         (is= 1.66M (math/->bigdec-decimals b2 2))
+
+         (is= 1.11M (math/->bigdec-decimals (str a6) 2))
+         (is= 1.11M (math/->bigdec-decimals (str a4) 2))
+         (is= 1.11M (math/->bigdec-decimals (str a2) 2))
+         (is= 1.67M (math/->bigdec-decimals (str b6) 2))
+         (is= 1.67M (math/->bigdec-decimals (str b4) 2))
+         (is= 1.66M (math/->bigdec-decimals (str b2) 2))
+     ))
 
      ; Can accept value as a Double, BigDecimal, or String
      (dotest

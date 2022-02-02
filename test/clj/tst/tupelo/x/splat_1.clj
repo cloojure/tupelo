@@ -49,3 +49,21 @@
     (is= data (unsplatter splat)))
   )
 
+(dotest   ; -focus
+  (let [intc {:enter (fn [ctx]
+                       (spy-pretty :enter ctx)
+                       ;(cond-it-> ctx
+                       ;  (and (= :set-entry/elem (grab :branch it))
+                       ;    (int? (grab :data it)))
+                       ;  (update-in it [:data] #(* % 10)))
+                       )
+              :leave (fn [ctx]
+                       (spy-pretty :leave ctx)
+                         ;(cond-it-> ctx
+                         ;  (and (= :set-entry/elem (grab :branch it))
+                         ;    (int? (grab :data it)))
+                         ;  (update-in it [:data] #(inc %)))
+                       )}]
+    (spyx-pretty (walk-splatter #{2 3} intc))
+    ))
+

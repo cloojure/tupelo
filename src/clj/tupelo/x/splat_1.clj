@@ -58,30 +58,68 @@
 ; #todo add :depth to each map
 (s/defn unsplatter :- s/Any
   [splat :- tsk/KeyMap]
-  (let [type               (grab :type splat)
+  (let [splat-type         (grab :type splat)
         non-nil-entries-fn (fn [coll]
-                             (it-> coll
-                               (grab :entries it)
-                               (drop-if nil? it)))]
+                             (drop-if nil?
+                               (grab :entries coll)))]
     (cond
-      (= type :map) (apply glue
-                      (forv [me-splat (non-nil-entries-fn splat)]
-                        {(unsplatter (grab :key me-splat)) (unsplatter (grab :val me-splat))}))
+      (= :map splat-type) (apply glue
+                            (forv [me-splat (non-nil-entries-fn splat)]
+                              {(unsplatter (grab :key me-splat)) (unsplatter (grab :val me-splat))}))
 
-      (= type :list) (let [list-vals-sorted-map (into (sorted-map)
-                                                  (apply glue
-                                                    (forv [le-splat (non-nil-entries-fn splat)]
-                                                      {(grab :idx le-splat)
-                                                       (grab :val le-splat)})))
-                           list-vals            (mapv unsplatter
-                                                  (vals list-vals-sorted-map))]
-                       list-vals)
+      (= :list splat-type) (let [list-vals-sorted-map (into (sorted-map)
+                                                        (apply glue
+                                                          (forv [le-splat (non-nil-entries-fn splat)]
+                                                            {(grab :idx le-splat)
+                                                             (grab :val le-splat)})))
+                                 list-vals            (mapv unsplatter
+                                                        (vals list-vals-sorted-map))]
+                             list-vals)
 
-      (= type :set) (into #{}
-                      (forv [se-splat (non-nil-entries-fn splat)]
-                        (unsplatter (grab :val se-splat))))
+      (= :set splat-type) (into #{}
+                            (forv [se-splat (non-nil-entries-fn splat)]
+                              (unsplatter (grab :val se-splat))))
 
-      (= type :prim) (grab :data splat)
+      (= :prim splat-type) (grab :data splat)
 
       :else (throw (ex-info "invalid splat found" (vals->map splat))))))
+
+;-----------------------------------------------------------------------------
+(s/defn ^:no-doc walk-splatter-dispatch ; dispatch fn
+  [ctx-in :- tsk/KeyMap
+   interceptor :- tsk/KeyMap]
+  (t/with-spy-indent
+    (nl) (spyq :dispatch-enter---------------------------------)
+    (let [enter-fn (or (:enter interceptor) identity)
+          leave-fn (or (:leave interceptor) identity)
+          ]
+      (spyx-pretty ctx-in)
+      (let-spy-pretty
+        [ctx-post-enter (enter-fn ctx-in)
+         splat-pre-recurse (grab :splat ctx-post-enter)
+         ]
+        (let [ctx-post-leave (leave-fn ctx-post-enter)]
+          (spyq :other-leave---------------------------------)
+          (nl)
+          ctx-post-leave)))))
+
+;-----------------------------------------------------------------------------
+(s/defn walk-splatter :- s/Any
+  [data :- s/Any
+   interceptor :- tsk/KeyMap]
+  (spyq :walk-enter---------------------------------)
+  (let [enter-fn (:enter interceptor) ; may be nil
+        leave-fn (:leave interceptor)] ; may be nil
+    (when (and (nil? enter-fn) (nil? leave-fn))
+      (throw (ex-info "Invalid interceptor. :enter and :leave functions cannot both be nil." (vals->map interceptor))))
+    (let-spy-pretty
+      [splat-in    (splatter data)
+       ctx-out  (walk-splatter-dispatch {:parents [] :splat splat-in} interceptor)
+       splat-out (grab :splat ctx-out)
+       data-out (unsplatter splat-out)
+       ]
+      (spyq :walk-leave---------------------------------)
+      data-out
+      )))
+
 
