@@ -1,12 +1,13 @@
 (ns tst.tupelo.java-time
   (:refer-clojure :exclude [range])
-  (:use tupelo.java-time tupelo.core tupelo.test)
+  (:use tupelo.java-time
+        tupelo.core
+        tupelo.test)
   (:require
     [clj-time.core :as joda]
-    [clojure.string :as str]
     [tupelo.core :as t]
     [tupelo.interval :as interval]
-    [tupelo.string :as ts]
+    [tupelo.string :as str]
     [schema.core :as s]
     [tupelo.schema :as tsk])
   (:import
@@ -120,7 +121,7 @@
     (is (instance? java.time.Instant inst))
     (is= "1999-12-31T00:00:00Z" (str inst))))
 
-(comment  ; #todo kill this?
+(comment            ; #todo kill this?
   (dotest
     (let [ld (LocalDate/parse "1995-01-04")]
       (is= {:LocalDate "1995-01-04"} (LocalDate->tagval ld))
@@ -477,13 +478,13 @@
         instant-str (.toString instant)
         zdt-str     (.toString instant)]
     (is= 1549166706789 millis)
-    (let [result (ts/quotes->single (pr-str instant))]
-      (is (ts/contains-match? result #"#object\[java.time.Instant \p{Alnum}* '2019-02-03T04:05:06.789Z'\]"))
-      (is (ts/contains-str? result "#object[java.time.Instant"))
-      (is (ts/contains-str? result "2019-02-03T04:05:06.789Z")))
-    (let [result (ts/quotes->single (pr-str zdt))]
-      (is (ts/contains-str? result "#object[java.time.ZonedDateTime"))
-      (is (ts/contains-str? result "2019-02-03T04:05:06.789Z[UTC]")))
+    (let [result (str/quotes->single (pr-str instant))]
+      (is (str/contains-match? result #"#object\[java.time.Instant \p{Alnum}* '2019-02-03T04:05:06.789Z'\]"))
+      (is (str/contains-str? result "#object[java.time.Instant"))
+      (is (str/contains-str? result "2019-02-03T04:05:06.789Z")))
+    (let [result (str/quotes->single (pr-str zdt))]
+      (is (str/contains-str? result "#object[java.time.ZonedDateTime"))
+      (is (str/contains-str? result "2019-02-03T04:05:06.789Z[UTC]")))
     (is= instant-str "2019-02-03T04:05:06.789Z")
     (is= zdt-str "2019-02-03T04:05:06.789Z")
     (is= (.toString jud) "Sat Feb 02 20:05:06 PST 2019")
@@ -508,9 +509,20 @@
       (is= (walk-Instant->sql-Timestamp [1 {:j-s-ts instant} 2 3]) [1 {:j-s-ts timestamp} 2 3]))
     ))
 
-(dotest
-  (let [str-nice "2019-09-19 18:09:35Z"
-        result   (iso-str-nice->Instant str-nice)]
+(dotest-focus
+  ; near-ISO string (includes "Z" at end)
+  (let [str-sloppy "  2019-09-19   18:09:35Z  "
+        str-nice   (str/whitespace-collapse str-sloppy)
+        result     (iso-str-nice->Instant str-sloppy)]
     (is (instance? Instant result))
-    (is= str-nice (inst->datetime-str-nice result))))
+    (is= (str result) "2019-09-19T18:09:35Z")
+    (is= str-nice (inst->datetime-str-nice result))
+
+    ; also works if fractional seconds are present
+    (is= "2019-09-19T18:09:35.123Z" (str (iso-str-nice->Instant "  2019-09-19  18:09:35.123Z  "))))
+
+  ; java.sql.Timestamp (no "Z" present at end)
+  (is= "2019-09-19T18:09:35Z" (str (sql-timestamp-str-nice->Instant "  2019-09-19  18:09:35  ")))
+  (is= "2019-09-19T18:09:35.123Z" (str (sql-timestamp-str-nice->Instant "  2019-09-19  18:09:35.123  "))))
+
 

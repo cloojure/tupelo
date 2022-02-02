@@ -2,11 +2,11 @@
   (:refer-clojure :exclude [range])
   (:use tupelo.core)
   (:require
-    [clojure.string :as str]
     [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.interval :as interval]
     [tupelo.schema :as tsk]
+    [tupelo.string :as str]
     )
   (:import
     [java.time LocalDate DayOfWeek ZoneId ZonedDateTime Instant Period]
@@ -505,8 +505,21 @@
   date & time fields) into an Instant"
   [iso-str :- s/Str]
   (it-> iso-str
+    (str/whitespace-collapse it)
     (vec it) ; convert to vector of chars
     (assoc it 10 \T) ; set index 10 to a "T" char
+    (str/join it) ; convert back to a string
+    (Instant/parse it)))
+
+(s/defn sql-timestamp-str-nice->Instant :- Instant
+  "Parse a near-Timestamp string like '  2019-09-19 18:09:35 ' (sloppy spacing) into an Instant.
+  Assumes UTC timezone."
+  [sql-timestamp-str :- s/Str]
+  (it-> sql-timestamp-str
+    (str/whitespace-collapse it)
+    (vec it) ; convert to vector of chars
+    (assoc it 10 \T) ; set index 10 to a "T" char
+    (append it \Z)
     (str/join it) ; convert back to a string
     (Instant/parse it)))
 
