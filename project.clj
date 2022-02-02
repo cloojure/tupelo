@@ -1,4 +1,4 @@
-(defproject tupelo "22.01.31"
+(defproject tupelo "22.02.01"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -29,7 +29,7 @@
 
    ; other libs
    [camel-snake-kebab "0.4.2"]
-   [cheshire "5.10.1"] ; #todo switch to muuntaja/jsonista
+   [cheshire "5.10.2"] ; #todo switch to muuntaja/jsonista
    [clj-time "0.15.2"]
    [danlentz/clj-uuid "0.1.9"]
    [joda-time/joda-time "2.10.13"]
@@ -46,7 +46,7 @@
             ;[lein-cljsbuild "1.1.8"]
             [lein-codox "0.10.8"]
             ;[lein-nomis-ns-graph "0.14.2"]
-            [com.jakemccrary/lein-test-refresh "0.24.1"]]
+            [com.jakemccrary/lein-test-refresh "0.25.0"]]
 
   :test-refresh {:quiet true ; true => suppress printing namespaces when testing
                  }
