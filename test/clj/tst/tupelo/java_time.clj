@@ -509,7 +509,7 @@
       (is= (walk-Instant->sql-Timestamp [1 {:j-s-ts instant} 2 3]) [1 {:j-s-ts timestamp} 2 3]))
     ))
 
-(dotest-focus
+(dotest
   ; near-ISO string (includes "Z" at end)
   (let [str-sloppy "  2019-09-19   18:09:35Z  "
         str-nice   (str/whitespace-collapse str-sloppy)
