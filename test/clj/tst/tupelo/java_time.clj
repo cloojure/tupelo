@@ -1,4 +1,5 @@
-(ns tst.tupelo.java-time
+(ns ^:test-refresh/focus
+  tst.tupelo.java-time
   (:refer-clojure :exclude [range])
   (:use tupelo.java-time
         tupelo.core
@@ -303,26 +304,26 @@
   (let [zdt  (zoned-date-time 2018 9 8,, 2 3 4)
         inst (->Instant zdt)]
     (is= "2018-09-08"
-      (inst->date-str-iso zdt)
-      (inst->date-str-iso inst))
+      (format->LocalDate-iso zdt)
+      (format->LocalDate-iso inst))
     (is= "2018-09-08T02:03:04Z"
-      (inst->datetime-str-iso zdt)
-      (inst->datetime-str-iso inst))
+      (format->iso-str zdt)
+      (format->iso-str inst))
     (is= "2018-09-08 02:03:04Z"
-      (inst->datetime-str-nice zdt)
-      (inst->datetime-str-nice inst))
+      (format->iso-str-nice zdt)
+      (format->iso-str-nice inst))
     )
   (let [zdt  (zoned-date-time 2018 9 8,, 2 3 4,, 123456789)
         inst (->Instant zdt)]
     (is= "20180908"
-      (inst->date-str-compact zdt)
-      (inst->date-str-compact inst))
+      (format->LocalDate-compact zdt)
+      (format->LocalDate-compact inst))
     (is= "2018-09-08 02:03:04.123456789Z"
-      (inst->datetime-str-nice zdt)
-      (inst->datetime-str-nice inst))
+      (format->iso-str-nice zdt)
+      (format->iso-str-nice inst))
     (is= "20180908-020304"
-      (inst->datetime-str-compact zdt)
-      (inst->datetime-str-compact inst))))
+      (format->timestamp-compact zdt)
+      (format->timestamp-compact inst))))
 
 (dotest
   (is (re-matches #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3,}Z" (now->iso-str))) ; at least 3 decimal seconds
@@ -503,9 +504,10 @@
     (is= zdt-str "2019-02-03T04:05:06.789Z")
     (is= (.toString jud) "Sat Feb 02 20:05:06 PST 2019")
 
-    (is= "2019-02-03T04:05:06.789Z" (inst->datetime-str-iso zdt))
-    (is= "2019-02-03T04:05:06.789Z" (inst->datetime-str-iso instant))
+    (is= "2019-02-03T04:05:06.789Z" (format->iso-str zdt))
+    (is= "2019-02-03T04:05:06.789Z" (format->iso-str instant))
 
+    (is= instant (parse-iso-str->Instant iso-str))
     (is= millis
       (parse-iso-str->millis iso-str)
       (parse-iso-str->millis instant-str)
@@ -530,7 +532,7 @@
         result     (parse-iso-str-nice->Instant str-sloppy)]
     (is (instance? Instant result))
     (is= (str result) "2019-09-19T18:09:35Z")
-    (is= str-nice (inst->datetime-str-nice result))
+    (is= str-nice (format->iso-str-nice result))
 
     ; also works if fractional seconds are present
     (is= "2019-09-19T18:09:35.123Z" (str (parse-iso-str-nice->Instant "  2019-09-19  18:09:35.123Z  "))))

@@ -457,51 +457,56 @@
 
 ;-----------------------------------------------------------------------------
 ; #todo rethink these and simplify/rename
-(s/defn inst->date-str-iso :- s/Str ; won't work for Instant
+(s/defn format->LocalDate-iso :- s/Str ; won't work for Instant
   "Given an Instant or ZonedDateTime, returns a string like `2018-09-05`"
   [zdt :- TemporalAccessor]
   (.format (->ZonedDateTime zdt) DateTimeFormatter/ISO_LOCAL_DATE))
 
-(s/defn inst->date-str-compact :- s/Str ; won't work for Instant
+(s/defn format->LocalDate-compact :- s/Str ; won't work for Instant
   "Given an Instant or ZonedDateTime, returns a compact date-time string like
     `2018-09-05 23:05:19.123Z` => `20180905` "
   [inst :- TemporalAccessor]
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd")]
     (.format (->ZonedDateTime inst) formatter)))
 
-(defn inst->datetime-str-compact ; won't work for Instant
+(defn format->iso-str ; #todo maybe inst->iso-date-time
+  "Given an Instant or ZonedDateTime, returns a ISO 8601 datetime string like `2018-09-05T23:05:19.123Z`"
+  [inst]
+  (str (->Instant inst))) ; uses DateTimeFormatter/ISO_INSTANT
+
+(defn format->iso-str-nice
+  "Given an Instant or ZonedDateTime, returns an ISO date-time string like
+  `2018-09-05 23:05:19.123Z` (with a space instead of `T`)"
+  [inst]
+  (let [sb (StringBuffer. (format->iso-str inst))]
+    (.setCharAt sb 10 \space)
+    (str sb)))
+
+(defn format->timestamp-compact ; won't work for Instant
   "Given an Instant or ZonedDateTime, returns a compact date-time string like
   `2018-09-05 23:05:19.123Z` => `20180905-230519` "
   [inst]
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd-HHmmss")]
     (.format (->ZonedDateTime inst) formatter)))
 
-(defn inst->datetime-str-iso ; #todo maybe inst->iso-date-time
-  "Given an Instant or ZonedDateTime, returns a ISO date-time string like `2018-09-05T23:05:19.123Z`"
-  [inst]
-  (str (->Instant inst))) ; uses DateTimeFormatter/ISO_INSTANT
-
-(defn inst->datetime-str-nice
-  "Given an Instant or ZonedDateTime, returns an ISO date-time string like
-  `2018-09-05 23:05:19.123Z` (with a space instead of `T`)"
-  [inst]
-  (let [sb (StringBuffer. (inst->datetime-str-iso inst))]
-    (.setCharAt sb 10 \space)
-    (str sb)))
-
-(s/defn parse-iso-str->millis :- s/Int ; #todo => parse-iso-str->millis
-  "Convert an ISO 8601 string to epoch milliseconds"
+(s/defn parse-iso-str->Instant :- Instant ; #todo => parse-iso-str->millis
+  "Convert an ISO 8601 string to epoch milliseconds. Will collapse excess whitespace."
   [iso-datetime-str :- s/Str]
   (-> iso-datetime-str
     (str/trim)
-    (Instant/parse)
+    (Instant/parse)))
+
+(s/defn parse-iso-str->millis :- s/Int ; #todo => parse-iso-str->millis
+  "Convert an ISO 8601 string to epoch milliseconds. Will collapse excess whitespace."
+  [iso-datetime-str :- s/Str]
+  (-> iso-datetime-str
+    (parse-iso-str->Instant)
     (.toEpochMilli)))
 
 (s/defn parse-iso-str->sql-timestamp ; #todo => parse-iso-str->sql-timestamp
   "Convert an ISO 8601 string to a java.sql.Timestamp"
   [iso-datetime-str :- s/Str]
   (-> iso-datetime-str
-    (str/trim)
     (parse-iso-str->millis)
     (java.sql.Timestamp.)))
 
@@ -518,7 +523,7 @@
 
 (s/defn parse-sql-timestamp-str->Instant-utc :- Instant ; #todo => parse-sql-timestamp->Instant-utc
   "Parse a near-Timestamp string like '  2019-09-19 18:09:35 ' (sloppy spacing) into an Instant.
-  Assumes UTC timezone."
+  Assumes UTC timezone. Will collapse excess whitespace."
   [sql-timestamp-str :- s/Str]
   (it-> sql-timestamp-str
     (str/whitespace-collapse it)
@@ -568,7 +573,7 @@
   [form]
   (walk/postwalk (fn [item]
                    (cond-it-> item
-                     (fixed-time-point? it) (inst->datetime-str-iso it)))
+                     (fixed-time-point? it) (format->iso-str it)))
     form))
 
 (s/defn range :- [Temporal]
