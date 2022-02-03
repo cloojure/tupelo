@@ -1,4 +1,4 @@
-(defproject tupelo "22.02.02"
+(defproject tupelo "22.02.03a"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -43,7 +43,6 @@
 
   ; Using `lein-ancient check :all` checks plugins
   :plugins [
-            ;[lein-cljsbuild "1.1.8"]
             [lein-codox "0.10.8"]
             ;[lein-nomis-ns-graph "0.14.2"]
             [com.jakemccrary/lein-test-refresh "0.25.0"]]

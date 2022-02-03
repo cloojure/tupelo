@@ -1,4 +1,5 @@
-(ns tst.tupelo.java-time
+(ns  ^:test-refresh/focus
+  tst.tupelo.java-time
   (:refer-clojure :exclude [range])
   (:use tupelo.java-time
         tupelo.core
@@ -300,15 +301,29 @@
     (is (same-inst? (zoned-date-time 2018 9 7) (trunc-to-midnight-friday zdt)))))
 
 (dotest
-  (let [zdt (zoned-date-time 2018 9 8,, 2 3 4)]
-    (is= (inst->date-str-iso zdt) "2018-09-08")
-    (is= (inst->datetime-str-iso zdt) "2018-09-08T02:03:04Z")
-    (is= (inst->datetime-str-nice zdt) "2018-09-08 02:03:04Z"))
-  (let [zdt (zoned-date-time 2018 9 8,, 2 3 4,, 123456789)]
-    (is= (inst->date-str-compact zdt) "20180908")
-    (is= (inst->datetime-str-nice zdt) "2018-09-08 02:03:04.123456789Z")
-    (is= (inst->datetime-str-compact zdt) "20180908-020304")
-    ))
+  (let [zdt  (zoned-date-time 2018 9 8,, 2 3 4)
+        inst (->Instant zdt)]
+    (is= "2018-09-08"
+      (inst->date-str-iso zdt)
+      (inst->date-str-iso inst))
+    (is= "2018-09-08T02:03:04Z"
+      (inst->datetime-str-iso zdt)
+      (inst->datetime-str-iso inst))
+    (is= "2018-09-08 02:03:04Z"
+      (inst->datetime-str-nice zdt)
+      (inst->datetime-str-nice inst))
+    )
+  (let [zdt  (zoned-date-time 2018 9 8,, 2 3 4,, 123456789)
+        inst (->Instant zdt)]
+    (is= "20180908"
+      (inst->date-str-compact zdt)
+      (inst->date-str-compact inst))
+    (is= "2018-09-08 02:03:04.123456789Z"
+      (inst->datetime-str-nice zdt)
+      (inst->datetime-str-nice inst))
+    (is= "20180908-020304"
+      (inst->datetime-str-compact zdt)
+      (inst->datetime-str-compact inst))))
 
 (dotest
   (is (re-matches #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3,}Z" (now->iso-str))) ; at least 3 decimal seconds
@@ -493,12 +508,12 @@
     (is= "2019-02-03T04:05:06.789Z" (inst->datetime-str-iso instant))
 
     (is= millis
-      (iso-str->millis iso-str)
-      (iso-str->millis instant-str)
-      (iso-str->millis zdt-str))
+      (parse-iso-str->millis iso-str)
+      (parse-iso-str->millis instant-str)
+      (parse-iso-str->millis zdt-str))
 
     (let [timestamp          (java.sql.Timestamp. millis)
-          timestamp-from-str (iso-str->sql-timestamp iso-str)
+          timestamp-from-str (parse-iso-str->sql-timestamp iso-str)
           timestamp-str      (.toString timestamp)
           timestamp-str-gmt  (.toGMTString timestamp)]
       (is= timestamp-str "2019-02-02 20:05:06.789") ; uses default TZ (US/Pacific in this example)
@@ -513,16 +528,16 @@
   ; near-ISO string (includes "Z" at end)
   (let [str-sloppy "  2019-09-19   18:09:35Z  "
         str-nice   (str/whitespace-collapse str-sloppy)
-        result     (iso-str-nice->Instant str-sloppy)]
+        result     (parse-iso-str-nice->Instant str-sloppy)]
     (is (instance? Instant result))
     (is= (str result) "2019-09-19T18:09:35Z")
     (is= str-nice (inst->datetime-str-nice result))
 
     ; also works if fractional seconds are present
-    (is= "2019-09-19T18:09:35.123Z" (str (iso-str-nice->Instant "  2019-09-19  18:09:35.123Z  "))))
+    (is= "2019-09-19T18:09:35.123Z" (str (parse-iso-str-nice->Instant "  2019-09-19  18:09:35.123Z  "))))
 
   ; java.sql.Timestamp (no "Z" present at end)
-  (is= "2019-09-19T18:09:35Z" (str (sql-timestamp-str-nice->Instant "  2019-09-19  18:09:35  ")))
-  (is= "2019-09-19T18:09:35.123Z" (str (sql-timestamp-str-nice->Instant "  2019-09-19  18:09:35.123  "))))
+  (is= "2019-09-19T18:09:35Z" (str (parse-sql-timestamp-str->Instant-utc "  2019-09-19  18:09:35  ")))
+  (is= "2019-09-19T18:09:35.123Z" (str (parse-sql-timestamp-str->Instant-utc "  2019-09-19  18:09:35.123  "))))
 
 
