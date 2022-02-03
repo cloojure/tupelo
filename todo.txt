@@ -2,9 +2,21 @@ walk-with-parents
   => walk-data
     combine with submatch? for power
     submatch2? allows predicates as values:  {:a odd? :b "buzz"}  or [odd? even? 3] 
+
 tagval - polish 
   {:LocalDate "1999-12-31"} {:int 5} {:dbl 6.0} {:user {:name "Joe" :age 33 :city "Springfield"}}
   {:e 512} {:a 666} {:v 777}
-tagstr => <Integer 3>  <Float 4> and table of constructors
-  or just use pr-str on tagval?
+  (tv/->untagged ...)  :- (s/cond-pre tsk/TagVal s/Any)
+
+tupelo.string/tagstr => "<#Integer 3>"  "<#Float 4>" and table of constructors
+  elide `java.lang.` prefix?
+
+java-time 
+  stringify-times & others:  merge with misc/walk-obj->tagstr
+  fixed-point?  ZDT, Instant, others?
+
+java-time.epoch - home for esec, emillis, enanos, eday, eweek, equarter, eyear
+  tagval by default
+
+tupelo.string.safe: trim normalize lowercase uppercase whitespace-collapse ...
 
