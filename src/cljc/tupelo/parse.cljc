@@ -10,6 +10,7 @@
    functions, these native-Clojure functions can be used as higher-order functions in maps,
    function arguments, etc.  Each function also provides an optional default-value which
    will be returned if there is an exception during parsing."
+  (:refer-clojure :exclude [parse-long parse-double])
   (:require
     [clojure.string :as str]
     [clojure.tools.reader.edn :as edn]

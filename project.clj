@@ -1,4 +1,4 @@
-(defproject tupelo "22.02.01"
+(defproject tupelo "22.02.02"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -67,7 +67,7 @@
                                        ;[binaryage/dirac "1.4.3"]
                                        ;[com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.6"]
-                                      ;[org.clojure/clojure "1.10.3"]
+                                       ; [org.clojure/clojure "1.10.3"]
                                        [org.clojure/clojure "1.11.0-alpha4"]
                                       ;[org.clojure/clojurescript  "1.10.764"] ; "1.10.597"
                                        ]
