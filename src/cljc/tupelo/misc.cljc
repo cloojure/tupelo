@@ -109,6 +109,7 @@
         (= (type item) java.util.Date) (str "<#java.util.Date " item ">")
         (= (type item) java.sql.Date) (str "<#java.sql.Date " item ">")
         (= (type item) java.sql.Timestamp) (str "<#java.sql.Timestamp " item ">")
+        (= (type item) java.time.ZonedDateTime) (str "<#java.time.ZonedDateTime " item ">")
         (inst? item) (str "<#inst " item ">") ; must go after the above items due to inheritance!
         (uuid? item) (str "<#uuid " item ">")
         :else item))

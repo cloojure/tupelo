@@ -38,7 +38,7 @@
 ;---------------------------------------------------------------------------------------------------
 (def ^:no-doc LocalDate-epoch (LocalDate/parse "1970-01-01"))
 
-; #todo: create a namespace java-time.zone ???
+; #todo: create a namespace java-time.zoneid ???
 (def zoneid-utc (ZoneId/of "UTC"))
 (def zoneid-us-alaska (ZoneId/of "US/Alaska"))
 (def zoneid-us-aleutian (ZoneId/of "US/Aleutian"))
@@ -156,23 +156,6 @@
   (let [first-date (xfirst ld-vals)]
     (mapv #(LocalDate-interval->days (interval/new first-date %)) ld-vals)))
 
-(comment
-  (s/defn LocalDateStr-interval->eday-interval :- Interval ; #todo kill this?
-    [itvl :- Interval]
-    (with-map-vals itvl [lower upper]
-      (assert (and (LocalDateStr? lower) (LocalDateStr? upper)))
-      (interval/new
-        (LocalDateStr->eday lower)
-        (LocalDateStr->eday upper))))
-
-  (s/defn LocalDate->trailing-interval ; #todo kill this? at least specify type (slice, antislice, closed...?)
-    "Returns a LocalDate interval of span N days ending on the date supplied"
-    [localdate :- LocalDate
-     N :- s/Num]
-    (let [ld-start (.minusDays localdate N)]
-      (interval/new ld-start localdate)))
-  )
-
 ;---------------------------------------------------------------------------------------------------
 (defn ZonedDateTime?
   "Returns true iff arg is an instance of java.time.ZonedDateTime"
@@ -215,7 +198,7 @@
     (instance? Instant arg) arg
     (instance? ZonedDateTime arg) (.toInstant arg)
     (instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli)
-    (instance? String arg)  (parse-iso-str-nice->Instant) ; #todo need unit test
+    (instance? String arg)  (parse-iso-str-nice->Instant arg) ; #todo need unit test
     :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
 (defn ->ZonedDateTime ; #todo -> protocol?
@@ -274,10 +257,6 @@
 ; #todo: need idempotent ->zoned-date-time-utc (using with-zoneid) & ->instant for ZonedDateTime, Instant, OffsetDateTime
 ; #todo: need offset-date-time & with-offset
 ; #todo: need (instant year month day ...) arities
-
-(defn instant
-  "Wrapper for java.time.Instant/now "
-  [] (java.time.Instant/now))
 
 (defn millis->Instant
   "Wrapper for java.time.Instant/ofEpochMilli "
@@ -436,6 +415,7 @@
 
 ;-----------------------------------------------------------------------------
 ; #todo rethink these and simplify/rename
+
 (s/defn format->LocalDate-iso :- s/Str ; won't work for Instant
   "Given an Instant or ZonedDateTime, returns a string like `2018-09-05`"
   [zdt :- TemporalAccessor]
