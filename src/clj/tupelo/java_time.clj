@@ -11,7 +11,7 @@
   (:import
     [java.time LocalDate DayOfWeek ZoneId ZonedDateTime Instant Period]
     [java.time.format DateTimeFormatter]
-    [java.time.temporal Temporal TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit ]
+    [java.time.temporal Temporal TemporalUnit TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit ]
     [java.util Date]
     [tupelo.interval Interval]
     ))
@@ -319,9 +319,13 @@
     :else (let [instants (mapv ->Instant (prepend this others))]
             (apply same-inst? instants))))
 
-(def DateTimeStamp (s/conditional
-                     #(instance? ZonedDateTime %) ZonedDateTime
-                     #(instance? Instant %) Instant))
+(def TimePoint
+  "A unique point in time, like an Instant or a ZonedDateTime"
+  (s/cond-pre ZonedDateTime Instant)
+  ;(s/conditional ; #todo what is difference between these 2 approaches?
+  ;  #(instance? ZonedDateTime %) ZonedDateTime
+  ;  #(instance? Instant %) Instant)
+  )
 
 ; #todo need version of < and <= (N-arity) for both ZDT/Instant
 
@@ -330,39 +334,104 @@
 ; #todo: make a generic (previous-or-same :tuesday)
 ; #todo: make a generic (next :tuesday)
 ; #todo: make a generic (next-or-same :tuesday)
+(s/defn trunc-to-nano
+  "Returns a Temporal truncated to first instant of the second."
+  [temporal :- Temporal]
+  (.truncatedTo temporal ChronoUnit/NANOS))
+
+(s/defn trunc-to-milli
+  "Returns a Temporal truncated to first instant of the second."
+  [temporal :- Temporal]
+  (.truncatedTo temporal ChronoUnit/MILLIS))
+
 (s/defn trunc-to-second
-  "Returns a ZonedDateTime truncated to first instant of the second."
-  [zdt :- DateTimeStamp]
-  (.truncatedTo zdt ChronoUnit/SECONDS))
+  "Returns a Temporal truncated to first instant of the second."
+  [temporal :- Temporal]
+  (.truncatedTo temporal ChronoUnit/SECONDS))
 
 (s/defn trunc-to-minute
-  "Returns a ZonedDateTime truncated to first instant of the minute."
-  [zdt :- DateTimeStamp]
-  (.truncatedTo zdt ChronoUnit/MINUTES))
+  "Returns a Temporal truncated to first instant of the minute."
+  [temporal :- Temporal]
+  (.truncatedTo temporal ChronoUnit/MINUTES))
 
 (s/defn trunc-to-hour
-  "Returns a ZonedDateTime truncated to first instant of the hour."
-  [zdt :- DateTimeStamp]
-  (.truncatedTo zdt ChronoUnit/HOURS))
+  "Returns a Temporal truncated to first instant of the hour."
+  [temporal :- Temporal]
+  (.truncatedTo temporal ChronoUnit/HOURS))
 
 (s/defn trunc-to-day
-  "Returns a ZonedDateTime truncated to first instant of the day."
-  [zdt :- DateTimeStamp]
-  (.truncatedTo zdt ChronoUnit/DAYS))
+  "Returns a Temporal truncated to first instant of the day."
+  [temporal :- Temporal]
+  (.truncatedTo temporal ChronoUnit/DAYS))
 
 (s/defn trunc-to-month
-  "Returns a ZonedDateTime truncated to first instant of the month."
-  [zdt :- ZonedDateTime]
-  (-> zdt
+  "Returns a Temporal truncated to first instant of the month."
+  [temporal :- Temporal]
+  (-> temporal
     trunc-to-day
     (.with (TemporalAdjusters/firstDayOfMonth))))
 
 (s/defn trunc-to-year
-  "Returns a ZonedDateTime truncated to first instant of the year."
-  [zdt :- ZonedDateTime]
-  (-> zdt
+  "Returns a Temporal truncated to first instant of the year."
+  [temporal :- Temporal]
+  (-> temporal
     trunc-to-day
     (.with (TemporalAdjusters/firstDayOfYear))))
+
+;-----------------------------------------------------------------------------
+(s/defn between-nanos :- s/Int
+  "Returns the number of whole nanoseconds between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/NANOS t1 t2))
+
+(s/defn between-millis :- s/Int
+  "Returns the number of whole milliseconds between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/MILLIS t1 t2))
+
+(s/defn between-sec :- s/Int
+  "Returns the number of whole seconds between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/SECONDS t1 t2))
+
+(s/defn between-minutes :- s/Int
+  "Returns the number of whole minutes between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/MINUTES t1 t2))
+
+(s/defn between-hours :- s/Int
+  "Returns the number of whole hours between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/HOURS t1 t2))
+
+(s/defn between-days :- s/Int
+  "Returns the number of whole days between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/DAYS t1 t2))
+
+(s/defn between-weeks :- s/Int
+  "Returns the number of whole weeks between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/WEEKS t1 t2))
+
+(s/defn between-months :- s/Int
+  "Returns the number of whole weeks between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/MONTHS t1 t2))
+
+(s/defn between-years :- s/Int
+  "Returns the number of whole minutes between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/YEARS t1 t2))
 
 ;-----------------------------------------------------------------------------
 ; #todo maybe a single fn taking `DayOfWeek/SUNDAY` or similar?

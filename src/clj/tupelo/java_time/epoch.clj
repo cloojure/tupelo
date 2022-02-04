@@ -11,14 +11,15 @@
     [tupelo.tagval :as tv]
     )
   (:import
-    [java.time LocalDate DayOfWeek ZoneId ZonedDateTime Instant Period]
+    [java.time LocalDate ZoneId ZonedDateTime Instant Period YearMonth]
     [java.time.format DateTimeFormatter]
     [java.time.temporal Temporal TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit]
     [java.util Date]
     [tupelo.interval Interval]
     ))
 
-;---------------------------------------------------------------------------------------------------
+;-----------------------------------------------------------------------------
+; All "epoch time" quantities expressed as a tupelo.tagval so that one knows what "type" the integer represents
 (def ENano {:enano s/Int})
 (def EMilli {:emilli s/Int})
 (def ESec {:esec s/Int})
@@ -26,6 +27,7 @@
 (def EMonth {:emonth s/Int})
 (def EQtr {:eqtr s/Int})
 
+;-----------------------------------------------------------------------------
 (s/defn enano? :- s/Bool
   [arg :- s/Any] (and (tv/tagval? arg) (= :enano (tv/tag arg)) (int? (tv/val arg))))
 (s/defn emilli? :- s/Bool
@@ -39,7 +41,8 @@
 (s/defn eqtr? :- s/Bool
   [arg :- s/Any] (and (tv/tagval? arg) (= :eqtr (tv/tag arg)) (int? (tv/val arg))))
 
-;---------------------------------------------------------------------------------------------------
+;-----------------------------------------------------------------------------
+(def ^:no-doc epoch-YearMonth (YearMonth/parse "1970-01"))
 (def ^:no-doc epoch-LocalDate (LocalDate/parse "1970-01-01"))
 (def ^:no-doc epoch-Instant (Instant/parse "1970-01-01t00:00:00Z"))
 
@@ -55,17 +58,17 @@
   "Given an eday, returns a LocalDate "
   [arg :- EDay] (.plusDays epoch-LocalDate (tv/val arg)))
 
-(s/defn eday->monthValue :- s/Int
-  "Given an eday, returns a monthValue in [1..12]"
-  [arg :- EDay] (.getMonthValue (eday->LocalDate arg)))
-
-(s/defn LocalDateStr->eday :- EDay
-  "Parses a LocalDate string like `1999-12-31` into an integer eday (rel to epoch) like 10956"
-  [arg :- s/Str] (-> arg (LocalDate/parse) (LocalDate->eday)))
-
-(s/defn eday->LocalDateStr :- s/Str
-  "Converts an integer eday like 10956 (rel to epoch) into a LocalDate string like `1999-12-31` "
-  [arg :- EDay] (-> arg (eday->LocalDate) (str)))
+;(s/defn eday->monthValue :- s/Int
+;  "Given an eday, returns a monthValue in [1..12]"
+;  [arg :- EDay] (.getMonthValue (eday->LocalDate arg)))
+;
+;(s/defn LocalDateStr->eday :- EDay
+;  "Parses a LocalDate string like `1999-12-31` into an integer eday (rel to epoch) like 10956"
+;  [arg :- s/Str] (-> arg (LocalDate/parse) (LocalDate->eday)))
+;
+;(s/defn eday->LocalDateStr :- s/Str
+;  "Converts an integer eday like 10956 (rel to epoch) into a LocalDate string like `1999-12-31` "
+;  [arg :- EDay] (-> arg (eday->LocalDate) (str)))
 
 (s/defn eday->year :- s/Int
   "Given an eday, returns a year like 2013"
@@ -74,13 +77,31 @@
 (s/defn ->eday :- EDay
   [arg]
   (cond
-    (string? arg) (LocalDate->eday (tjt/->LocalDate arg))
+    (string? arg) (LocalDate->eday (tjt/->LocalDate (str/trim arg)))
     (int? arg) {:eday arg} ; #todo add other types
     (instance? LocalDate arg) (LocalDate->eday arg)
     (instance? Instant arg) (->eday (tjt/->LocalDate arg))
     (instance? ZonedDateTime arg) (->eday (tjt/->LocalDate arg))
     (instance? org.joda.time.ReadableInstant arg) (->eday (tjt/->Instant arg)) ; #todo need test
     :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
+
+#_(s/defn ->esec :- ESec
+    [arg]
+    (cond
+      (string? arg) (LocalDate->eday (tjt/->LocalDate arg))
+      (int? arg) {:eday arg} ; #todo add other types
+      (instance? LocalDate arg) (LocalDate->eday arg)
+      (instance? Instant arg) (->eday (tjt/->LocalDate arg))
+      (instance? ZonedDateTime arg) (->eday (tjt/->LocalDate arg))
+      (instance? org.joda.time.ReadableInstant arg) (->eday (tjt/->Instant arg)) ; #todo need test
+      :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
+
+; #todo: Constructor functions
+; ->enano
+; ->emilli
+; ->eqtr
+; ->emonth
+; ->year
 
 (comment
 

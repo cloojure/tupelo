@@ -11,7 +11,7 @@
   (:import
     [java.time Duration Instant MonthDay YearMonth LocalDate LocalDateTime Period
                ZoneId ZoneId ZonedDateTime]
-    [java.time.temporal Temporal TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit ]
+    [java.time.temporal Temporal TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit TemporalUnit]
     ))
 
 (dotest
@@ -37,26 +37,28 @@
   (doseq [daynum [0 1 9 99 999 9999]]
     (is= {:eday daynum} (-> daynum (->eday) (eday->LocalDate) (LocalDate->eday)))))
 
-(dotest
-  (let [ldstr->monthVal (fn [arg] (-> arg (LocalDateStr->eday) (eday->monthValue)))]
-    (is= 1 (ldstr->monthVal "2013-01-25"))
-    (is= 2 (ldstr->monthVal "2013-02-28"))
-    (is= 11 (ldstr->monthVal "2013-11-30"))
-    (is= 12 (ldstr->monthVal "2013-12-31"))))
+;-----------------------------------------------------------------------------
+;(dotest
+;  (let [ldstr->monthVal (fn [arg] (-> arg (LocalDateStr->eday) (eday->monthValue)))]
+;    (is= 1 (ldstr->monthVal "2013-01-25"))
+;    (is= 2 (ldstr->monthVal "2013-02-28"))
+;    (is= 11 (ldstr->monthVal "2013-11-30"))
+;    (is= 12 (ldstr->monthVal "2013-12-31"))))
+;
+;(dotest
+;  (let [ldstr->year (fn [arg] (-> arg (LocalDateStr->eday) (eday->year)))]
+;    (is= 2013 (ldstr->year "2013-01-25"))
+;    (is= 2014 (ldstr->year "2014-02-28"))
+;    (is= 2014 (ldstr->year "2014-11-30"))
+;    (is= 2019 (ldstr->year "2019-12-31"))))
+;
+;(dotest
+;  (is= {:eday 9134} (LocalDateStr->eday "1995-01-04"))
+;  (is= {:eday 10956} (LocalDateStr->eday "1999-12-31"))
+;  (doseq [daynum [0 9 99 999 9999]]
+;    (is= {:eday daynum} (-> daynum (->eday) (eday->LocalDateStr) (LocalDateStr->eday)))))
 
-(dotest
-  (let [ldstr->year (fn [arg] (-> arg (LocalDateStr->eday) (eday->year)))]
-    (is= 2013 (ldstr->year "2013-01-25"))
-    (is= 2014 (ldstr->year "2014-02-28"))
-    (is= 2014 (ldstr->year "2014-11-30"))
-    (is= 2019 (ldstr->year "2019-12-31"))))
-
-(dotest
-  (is= {:eday 9134} (LocalDateStr->eday "1995-01-04"))
-  (is= {:eday 10956} (LocalDateStr->eday "1999-12-31"))
-  (doseq [daynum [0 9 99 999 9999]]
-    (is= {:eday daynum} (-> daynum (->eday) (eday->LocalDateStr) (LocalDateStr->eday)))))
-
+;-----------------------------------------------------------------------------
 (dotest
   (let [inst (Instant/parse "1987-11-22t11:22:33Z")
         zdt  (tjt/->ZonedDateTime inst)
@@ -70,4 +72,14 @@
       (->eday inst)
       (->eday zdt)
       (->eday ld))))
+
+;-----------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 
