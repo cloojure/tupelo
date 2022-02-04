@@ -71,23 +71,13 @@
   "Given an eday, returns a year like 2013"
   [arg :- EDay] (.getYear (eday->LocalDate arg)))
 
-
-(s/defn ->LocalDate :- LocalDate ; #todo need tests, => tjt
-  [arg]
-  (cond
-    (string? arg) (LocalDate/parse arg)
-    (instance? Instant arg) (LocalDate/ofInstant arg tjt/zoneid-utc)
-    (instance? ZonedDateTime arg) (->LocalDate (spyx (.toInstant arg)))
-    ;(instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli) ; #todo
-    :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
-
 (s/defn ->eday :- EDay
   [arg]
   (cond
-    (string? arg) (LocalDate->eday (->LocalDate arg))
+    (string? arg) (LocalDate->eday (tjt/->LocalDate arg))
     (int? arg) {:eday arg} ; #todo add other types
     (instance? LocalDate arg) ( LocalDate->eday  arg)
-    (instance? Instant arg) (->eday (->LocalDate arg))
+    (instance? Instant arg) (->eday (tjt/->LocalDate arg))
     (instance? ZonedDateTime arg) (->eday (.toInstant arg))
     ;(instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli)
     :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))

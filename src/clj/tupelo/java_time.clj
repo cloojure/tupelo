@@ -213,6 +213,16 @@
     (instance? String arg) (->ZonedDateTime (parse-iso-str-nice->Instant arg)) ; #todo need unit test
     :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
+(s/defn ->LocalDate :- LocalDate ; #todo need tests, => tjt
+  [arg]
+  (cond
+    (string? arg) (LocalDate/parse arg)
+    (instance? Instant arg) (LocalDate/ofInstant arg zoneid-utc)
+    (instance? ZonedDateTime arg) (->LocalDate (spyx (.toInstant arg)))
+    ; #todo LocalDateTime
+    ;(instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli) ; #todo
+    :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
+
 ;---------------------------------------------------------------------------------------------------
 (def ^:dynamic *zone-id* zoneid-utc)
 

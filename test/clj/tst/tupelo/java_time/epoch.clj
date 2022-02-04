@@ -3,13 +3,11 @@
   (:refer-clojure :exclude [range])
   (:use tupelo.java-time.epoch tupelo.core tupelo.test)
   (:require
-    [clj-time.core :as joda]
-    [tupelo.core :as t]
-    [tupelo.interval :as interval]
-    [tupelo.string :as str]
     [schema.core :as s]
+    [tupelo.java-time :as tjt]
     [tupelo.schema :as tsk]
-    [tupelo.java-time :as tjt])
+    [tupelo.string :as str]
+    )
   (:import
     [java.time Duration Instant MonthDay YearMonth LocalDate LocalDateTime Period
                ZoneId ZoneId ZonedDateTime]
@@ -54,7 +52,7 @@
 (dotest
   (let [inst (Instant/parse "1987-11-22t11:22:33Z")
         zdt  (tjt/->ZonedDateTime inst)
-        ld   (->LocalDate inst)
+        ld   (tjt/->LocalDate inst)
         ]
     (is= {:eday 0} (->eday "1970-01-01"))
     (is= {:eday 1} (->eday "1970-01-02"))
