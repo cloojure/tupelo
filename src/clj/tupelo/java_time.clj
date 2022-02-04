@@ -11,7 +11,7 @@
   (:import
     [java.time LocalDate DayOfWeek ZoneId ZonedDateTime Instant Period]
     [java.time.format DateTimeFormatter]
-    [java.time.temporal Temporal TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit ]
+    [java.time.temporal Temporal TemporalUnit TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit ]
     [java.util Date]
     [tupelo.interval Interval]
     ))
@@ -19,6 +19,14 @@
 ;-----------------------------------------------------------------------------
 ; #todo study:  clojure.java.io/Coercions
 ; #todo study:  clojure.java.io/file
+
+;---------------------------------------------------------------------------------------------------
+(declare
+  parse-iso-str->Instant
+  parse-iso-str->millis
+  parse-iso-str->sql-timestamp
+  parse-iso-str-nice->Instant
+  parse-sql-timestamp-str->Instant-utc)
 
 ;---------------------------------------------------------------------------------------------------
 (comment
@@ -30,7 +38,7 @@
 ;---------------------------------------------------------------------------------------------------
 (def ^:no-doc LocalDate-epoch (LocalDate/parse "1970-01-01"))
 
-; #todo: create a namespace java-time.zone ???
+; #todo: create a namespace java-time.zoneid ???
 (def zoneid-utc (ZoneId/of "UTC"))
 (def zoneid-us-alaska (ZoneId/of "US/Alaska"))
 (def zoneid-us-aleutian (ZoneId/of "US/Aleutian"))
@@ -88,34 +96,6 @@
       (LocalDate/parse arg)
       true))) ; if no exception => passes
 
-;-----------------------------------------------------------------------------
-; NOTE: All "Epoch" units are ambiguous regarding timezone. Could be local or UTC.
-; #todo add esec (eg Instant.getEpochSecond), eweek, emonth, equarter, quarter-of-year, year-quarter
-
-(s/defn LocalDate->eday :- s/Int ; #todo generalize & test for negative eday
-  "Normalizes a LocalDate as the offset from 1970-1-1"
-  [arg :- LocalDate] (.between ChronoUnit/DAYS LocalDate-epoch arg))
-
-(s/defn eday->LocalDate :- LocalDate
-  "Given an eday, returns a LocalDate "
-  [arg :- s/Int] (.plusDays LocalDate-epoch arg))
-
-(s/defn eday->monthValue :- s/Int
-  "Given an eday, returns a monthValue in [1..12]"
-  [arg :- s/Int] (.getMonthValue (eday->LocalDate arg)))
-
-(s/defn eday->year :- s/Int
-  "Given an eday, returns a year like 2013"
-  [arg :- s/Int] (.getYear (eday->LocalDate arg)))
-
-(s/defn LocalDateStr->eday :- s/Int
-  "Parses a LocalDate string like `1999-12-31` into an integer eday (rel to epoch) like 10956"
-  [arg :- s/Str] (-> arg (LocalDate/parse) (LocalDate->eday)))
-
-(s/defn eday->LocalDateStr :- s/Str
-  "Converts an integer eday like 10956 (rel to epoch) into a LocalDate string like `1999-12-31` "
-  [arg :- s/Int] (-> arg (eday->LocalDate) (str)))
-
 (s/defn LocalDate->tagval :- {:LocalDate s/Str}
   "Converts a java.time.LocalDate object to a tagval"
   [ld :- LocalDate] {:LocalDate (str ld)})
@@ -150,10 +130,6 @@
         result      (nth year-quarters-sorted-vec quarter-idx)]
     result))
 
-(s/defn eday->year-quarter :- tsk/Quarter
-  "Like `->year-quarter` but works for eday values"
-  [eday :- s/Int] (-> eday (eday->LocalDate) (->year-quarter)))
-
 ;-----------------------------------------------------------------------------
 (s/defn LocalDate->Instant :- Instant
   "Converts a LocalDate to a java.util.Date, using midnight (start of day) and the UTC timezone."
@@ -179,23 +155,6 @@
   [ld-vals :- [LocalDate]]
   (let [first-date (xfirst ld-vals)]
     (mapv #(LocalDate-interval->days (interval/new first-date %)) ld-vals)))
-
-(comment
-  (s/defn LocalDateStr-interval->eday-interval :- Interval ; #todo kill this?
-    [itvl :- Interval]
-    (with-map-vals itvl [lower upper]
-      (assert (and (LocalDateStr? lower) (LocalDateStr? upper)))
-      (interval/new
-        (LocalDateStr->eday lower)
-        (LocalDateStr->eday upper))))
-
-  (s/defn LocalDate->trailing-interval ; #todo kill this? at least specify type (slice, antislice, closed...?)
-    "Returns a LocalDate interval of span N days ending on the date supplied"
-    [localdate :- LocalDate
-     N :- s/Num]
-    (let [ld-start (.minusDays localdate N)]
-      (interval/new ld-start localdate)))
-  )
 
 ;---------------------------------------------------------------------------------------------------
 (defn ZonedDateTime?
@@ -238,7 +197,9 @@
   (cond
     (instance? Instant arg) arg
     (instance? ZonedDateTime arg) (.toInstant arg)
-    (instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli)))
+    (instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli)
+    (instance? String arg)  (parse-iso-str-nice->Instant arg) ; #todo need unit test
+    :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
 (defn ->ZonedDateTime ; #todo -> protocol?
   "Coerces a org.joda.time.ReadableInstant to java.time.ZonedDateTime"
@@ -249,7 +210,18 @@
     (instance? org.joda.time.ReadableInstant arg) (it-> arg
                                                     (->Instant it)
                                                     (.atZone it zoneid-utc))
-    :else (throw (IllegalArgumentException. (str "Invalid type found: " (class arg) " " arg)))))
+    (instance? String arg) (->ZonedDateTime (parse-iso-str-nice->Instant arg)) ; #todo need unit test
+    :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
+
+(s/defn ->LocalDate :- LocalDate ; #todo need tests, => tjt
+  [arg]
+  (cond
+    (string? arg) (LocalDate/parse arg)
+    (instance? Instant arg) (LocalDate/ofInstant arg zoneid-utc)
+    (instance? ZonedDateTime arg) (->LocalDate (->Instant arg))
+    ; #todo LocalDateTime
+    (instance? org.joda.time.ReadableInstant arg) (->LocalDate (->Instant arg)) ; #todo need test
+    :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
 ;---------------------------------------------------------------------------------------------------
 (def ^:dynamic *zone-id* zoneid-utc)
@@ -295,10 +267,6 @@
 ; #todo: need idempotent ->zoned-date-time-utc (using with-zoneid) & ->instant for ZonedDateTime, Instant, OffsetDateTime
 ; #todo: need offset-date-time & with-offset
 ; #todo: need (instant year month day ...) arities
-
-(defn instant
-  "Wrapper for java.time.Instant/now "
-  [] (java.time.Instant/now))
 
 (defn millis->Instant
   "Wrapper for java.time.Instant/ofEpochMilli "
@@ -351,9 +319,13 @@
     :else (let [instants (mapv ->Instant (prepend this others))]
             (apply same-inst? instants))))
 
-(def DateTimeStamp (s/conditional
-                     #(instance? ZonedDateTime %) ZonedDateTime
-                     #(instance? Instant %) Instant))
+(def TimePoint
+  "A unique point in time, like an Instant or a ZonedDateTime"
+  (s/cond-pre ZonedDateTime Instant)
+  ;(s/conditional ; #todo what is difference between these 2 approaches?
+  ;  #(instance? ZonedDateTime %) ZonedDateTime
+  ;  #(instance? Instant %) Instant)
+  )
 
 ; #todo need version of < and <= (N-arity) for both ZDT/Instant
 
@@ -362,39 +334,104 @@
 ; #todo: make a generic (previous-or-same :tuesday)
 ; #todo: make a generic (next :tuesday)
 ; #todo: make a generic (next-or-same :tuesday)
+(s/defn trunc-to-nano
+  "Returns a Temporal truncated to first instant of the second."
+  [temporal :- Temporal]
+  (.truncatedTo temporal ChronoUnit/NANOS))
+
+(s/defn trunc-to-milli
+  "Returns a Temporal truncated to first instant of the second."
+  [temporal :- Temporal]
+  (.truncatedTo temporal ChronoUnit/MILLIS))
+
 (s/defn trunc-to-second
-  "Returns a ZonedDateTime truncated to first instant of the second."
-  [zdt :- DateTimeStamp]
-  (.truncatedTo zdt java.time.temporal.ChronoUnit/SECONDS))
+  "Returns a Temporal truncated to first instant of the second."
+  [temporal :- Temporal]
+  (.truncatedTo temporal ChronoUnit/SECONDS))
 
 (s/defn trunc-to-minute
-  "Returns a ZonedDateTime truncated to first instant of the minute."
-  [zdt :- DateTimeStamp]
-  (.truncatedTo zdt java.time.temporal.ChronoUnit/MINUTES))
+  "Returns a Temporal truncated to first instant of the minute."
+  [temporal :- Temporal]
+  (.truncatedTo temporal ChronoUnit/MINUTES))
 
 (s/defn trunc-to-hour
-  "Returns a ZonedDateTime truncated to first instant of the hour."
-  [zdt :- DateTimeStamp]
-  (.truncatedTo zdt java.time.temporal.ChronoUnit/HOURS))
+  "Returns a Temporal truncated to first instant of the hour."
+  [temporal :- Temporal]
+  (.truncatedTo temporal ChronoUnit/HOURS))
 
 (s/defn trunc-to-day
-  "Returns a ZonedDateTime truncated to first instant of the day."
-  [zdt :- DateTimeStamp]
-  (.truncatedTo zdt java.time.temporal.ChronoUnit/DAYS))
+  "Returns a Temporal truncated to first instant of the day."
+  [temporal :- Temporal]
+  (.truncatedTo temporal ChronoUnit/DAYS))
 
 (s/defn trunc-to-month
-  "Returns a ZonedDateTime truncated to first instant of the month."
-  [zdt :- ZonedDateTime]
-  (-> zdt
+  "Returns a Temporal truncated to first instant of the month."
+  [temporal :- Temporal]
+  (-> temporal
     trunc-to-day
     (.with (TemporalAdjusters/firstDayOfMonth))))
 
 (s/defn trunc-to-year
-  "Returns a ZonedDateTime truncated to first instant of the year."
-  [zdt :- ZonedDateTime]
-  (-> zdt
+  "Returns a Temporal truncated to first instant of the year."
+  [temporal :- Temporal]
+  (-> temporal
     trunc-to-day
     (.with (TemporalAdjusters/firstDayOfYear))))
+
+;-----------------------------------------------------------------------------
+(s/defn between-nanos :- s/Int
+  "Returns the number of whole nanoseconds between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/NANOS t1 t2))
+
+(s/defn between-millis :- s/Int
+  "Returns the number of whole milliseconds between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/MILLIS t1 t2))
+
+(s/defn between-sec :- s/Int
+  "Returns the number of whole seconds between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/SECONDS t1 t2))
+
+(s/defn between-minutes :- s/Int
+  "Returns the number of whole minutes between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/MINUTES t1 t2))
+
+(s/defn between-hours :- s/Int
+  "Returns the number of whole hours between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/HOURS t1 t2))
+
+(s/defn between-days :- s/Int
+  "Returns the number of whole days between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/DAYS t1 t2))
+
+(s/defn between-weeks :- s/Int
+  "Returns the number of whole weeks between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/WEEKS t1 t2))
+
+(s/defn between-months :- s/Int
+  "Returns the number of whole weeks between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/MONTHS t1 t2))
+
+(s/defn between-years :- s/Int
+  "Returns the number of whole minutes between two temporal values, truncating any fraction."
+  [t1 :- Temporal
+   t2 :- Temporal]
+  (.between ChronoUnit/YEARS t1 t2))
 
 ;-----------------------------------------------------------------------------
 ; #todo maybe a single fn taking `DayOfWeek/SUNDAY` or similar?
@@ -457,6 +494,7 @@
 
 ;-----------------------------------------------------------------------------
 ; #todo rethink these and simplify/rename
+
 (s/defn format->LocalDate-iso :- s/Str ; won't work for Instant
   "Given an Instant or ZonedDateTime, returns a string like `2018-09-05`"
   [zdt :- TemporalAccessor]

@@ -1,15 +1,15 @@
-(ns tst.tupelo.java-time
+(ns ^:test-refresh/focus
+  tst.tupelo.java-time
   (:refer-clojure :exclude [range])
-  (:use tupelo.java-time
-        tupelo.core
-        tupelo.test)
+  (:use tupelo.java-time tupelo.core tupelo.test)
   (:require
     [clj-time.core :as joda]
     [tupelo.core :as t]
     [tupelo.interval :as interval]
     [tupelo.string :as str]
     [schema.core :as s]
-    [tupelo.schema :as tsk])
+    [tupelo.schema :as tsk]
+    [tupelo.misc :as misc])
   (:import
     [java.time Duration Instant MonthDay YearMonth LocalDate LocalDateTime Period
                ZoneId ZoneId ZonedDateTime]
@@ -65,53 +65,34 @@
     (isnt (LocalDateStr? ld))
     (is (LocalDateStr? ldstr))))
 
-(dotest
-  (let [month->quarter [:Q1 :Q1 :Q1 :Q2 :Q2 :Q2 :Q3 :Q3 :Q3 :Q4 :Q4 :Q4]
-        quarters-set   (set month->quarter)]
-    (is-set= quarters-set [:Q1 :Q2 :Q3 :Q4])
-    (is= (vec year-quarters) [:Q1 :Q2 :Q3 :Q4])
-    (is= 12 (count month->quarter))
-    (is (every? year-quarter? month->quarter))
-    (is= month->quarter
-      (forv [month-num (thru 1 12)] (->year-quarter (YearMonth/of 2013 month-num))))
-    (is= month->quarter
-      (forv [month-num (thru 1 12)] (->year-quarter (MonthDay/of month-num 13)))) ; 13'th of each month
-    (is= month->quarter
-      (forv [month-num (thru 1 12)] (->year-quarter (LocalDate/parse (format "2013-%02d-19" month-num)))))
-    (is= month->quarter
-      (forv [month-num (thru 1 12)] (->year-quarter (LocalDateTime/parse (format "2013-%02d-19T12:13:14" month-num)))))
-    (is= month->quarter
-      (forv [month-num (thru 1 12)] (->year-quarter (ZonedDateTime/parse (format "2013-%02d-19T12:13:14Z" month-num))))))
+(comment            ; #todo update/fix
+  (dotest
+    (let [month->quarter [:Q1 :Q1 :Q1 :Q2 :Q2 :Q2 :Q3 :Q3 :Q3 :Q4 :Q4 :Q4]
+          quarters-set   (set month->quarter)]
+      (is-set= quarters-set [:Q1 :Q2 :Q3 :Q4])
+      (is= (vec year-quarters) [:Q1 :Q2 :Q3 :Q4])
+      (is= 12 (count month->quarter))
+      (is (every? year-quarter? month->quarter))
+      (is= month->quarter
+        (forv [month-num (thru 1 12)] (->year-quarter (YearMonth/of 2013 month-num))))
+      (is= month->quarter
+        (forv [month-num (thru 1 12)] (->year-quarter (MonthDay/of month-num 13)))) ; 13'th of each month
+      (is= month->quarter
+        (forv [month-num (thru 1 12)] (->year-quarter (LocalDate/parse (format "2013-%02d-19" month-num)))))
+      (is= month->quarter
+        (forv [month-num (thru 1 12)] (->year-quarter (LocalDateTime/parse (format "2013-%02d-19T12:13:14" month-num)))))
+      (is= month->quarter
+        (forv [month-num (thru 1 12)] (->year-quarter (ZonedDateTime/parse (format "2013-%02d-19T12:13:14Z" month-num))))))
 
-  (let [dnum-q1         (LocalDateStr->eday "2013-03-31")
-        dnum-q2         (LocalDateStr->eday "2013-04-01")
-        dnum-q1-quarter (eday->year-quarter dnum-q1)
-        dnum-q2-quarter (eday->year-quarter dnum-q2)]
-    (isnt= dnum-q1 dnum-q2)
-    (is= (inc dnum-q1) dnum-q2)
-    (is= :Q1 dnum-q1-quarter)
-    (is= :Q2 dnum-q2-quarter)
-    (isnt= dnum-q1-quarter dnum-q2-quarter)))
-
-(dotest
-  (let [ldstr->monthVal (fn [arg] (-> arg (LocalDateStr->eday) (eday->monthValue)))]
-    (is= 1 (ldstr->monthVal "2013-01-25"))
-    (is= 2 (ldstr->monthVal "2013-02-28"))
-    (is= 11 (ldstr->monthVal "2013-11-30"))
-    (is= 12 (ldstr->monthVal "2013-12-31"))))
-
-(dotest
-  (let [ldstr->year (fn [arg] (-> arg (LocalDateStr->eday) (eday->year)))]
-    (is= 2013 (ldstr->year "2013-01-25"))
-    (is= 2014 (ldstr->year "2014-02-28"))
-    (is= 2014 (ldstr->year "2014-11-30"))
-    (is= 2019 (ldstr->year "2019-12-31"))))
-
-(dotest
-  (is= 9134 (LocalDateStr->eday "1995-01-04"))
-  (is= 10956 (LocalDateStr->eday "1999-12-31"))
-  (doseq [daynum [0 9 99 999 9999]]
-    (is= daynum (-> daynum (eday->LocalDateStr) (LocalDateStr->eday)))))
+    (let [dnum-q1         (LocalDateStr->eday "2013-03-31")
+          dnum-q2         (LocalDateStr->eday "2013-04-01")
+          dnum-q1-quarter (eday->year-quarter dnum-q1)
+          dnum-q2-quarter (eday->year-quarter dnum-q2)]
+      (isnt= dnum-q1 dnum-q2)
+      (is= (inc dnum-q1) dnum-q2)
+      (is= :Q1 dnum-q1-quarter)
+      (is= :Q2 dnum-q2-quarter)
+      (isnt= dnum-q1-quarter dnum-q2-quarter))))
 
 (dotest
   (let [date (LocalDate->Date (LocalDate/parse "1999-12-31"))]
@@ -195,20 +176,6 @@
   (isnt (LocalDateStr? "12-31-99"))
   (is (LocalDateStr? "1999-12-31"))
 
-  ; LocalDate <==> daynum
-  (is= 0 (LocalDate->eday (LocalDate/parse "1970-01-01")))
-  (is= 1 (LocalDate->eday (LocalDate/parse "1970-01-02")))
-  (is= 31 (LocalDate->eday (LocalDate/parse "1970-02-01")))
-  (is= 365 (LocalDate->eday (LocalDate/parse "1971-01-01")))
-  (doseq [ld-str ["1970-01-01"
-                  "1970-01-02"
-                  "1970-02-01"
-                  "1971-01-01"
-                  "1999-12-31"]]
-    (let [ld (LocalDate/parse ld-str)]
-      (is= ld (-> ld (LocalDate->eday) (eday->LocalDate)))))
-  (doseq [daynum [0 1 9 99 999 9999]]
-    (is= daynum (-> daynum (eday->LocalDate) (LocalDate->eday))))
 
   (doseq [ld-str ["1970-01-01"
                   "1970-01-02"
@@ -218,13 +185,7 @@
     (let [ld (LocalDate/parse ld-str)
           tv (LocalDate->tagval ld)]
       (is= ld (-> ld (LocalDate->tagval) (tagval->LocalDate)))
-      (is= tv (-> tv (tagval->LocalDate) (LocalDate->tagval)))))
-
-  ; string <==> daynum
-  (is= 9134 (LocalDateStr->eday "1995-01-04"))
-  (is= 10956 (LocalDateStr->eday "1999-12-31"))
-  (doseq [daynum [0 9 99 999 9999]]
-    (is= daynum (-> daynum (eday->LocalDateStr) (LocalDateStr->eday)))))
+      (is= tv (-> tv (tagval->LocalDate) (LocalDate->tagval))))))
 
 (dotest
   (let [zone-ids         (vec (sort (ZoneId/getAvailableZoneIds))) ; all ZoneId String values
@@ -300,6 +261,20 @@
     (is (same-inst? (zoned-date-time 2018 9 7) (trunc-to-midnight-friday zdt)))))
 
 (dotest
+  (is= 111111111 (between-nanos (->Instant "1987-11-22t11:22:33.444444444z")
+                                (->Instant "1987-11-22t11:22:33.555555555z")))
+  (is= 444 (between-millis (->Instant "1987-11-22t11:22:33z") (->Instant "1987-11-22t11:22:33.444444z")))
+  (is= 1 (between-sec (->Instant "1987-11-22t11:22:33z") (->Instant "1987-11-22t11:22:34.4z")))
+  (is= 11 (between-minutes (->Instant "1987-11-22t11:22:33z") (->Instant "1987-11-22t11:33:44z")))
+  (is= 10 (between-hours (->Instant "1987-11-22t01:02:03z") (->Instant "1987-11-22t11:22:00z")))
+  (is= 1 (between-days (->Instant "1987-11-22t01:02:03z") (->Instant "1987-11-23t11:22:00z")))
+
+  (is= 4 (between-weeks (->LocalDate "1987-01-01") (->LocalDate "1987-01-31")))
+  (is= 10 (between-months (->LocalDate "1987-01-22") (->LocalDate "1987-11-23")))
+  (is= 12 (between-years (->LocalDate "1987-01-22") (->LocalDate "1999-11-23")))
+  )
+
+(dotest
   (let [zdt  (zoned-date-time 2018 9 8,, 2 3 4)
         inst (->Instant zdt)]
     (is= "2018-09-08"
@@ -311,7 +286,10 @@
     (is= "2018-09-08 02:03:04Z"
       (format->iso-str-nice zdt)
       (format->iso-str-nice inst))
-    )
+    (is= "2018-09-08T02:03:04Z" (str (->Instant "2018-09-08T02:03:04Z")))
+    (is= (misc/walk-data->tagstr (->ZonedDateTime "2018-09-08T02:03:04Z"))
+      "<#java.time.ZonedDateTime 2018-09-08T02:03:04Z[UTC]>"))
+
   (let [zdt  (zoned-date-time 2018 9 8,, 2 3 4,, 123456789)
         inst (->Instant zdt)]
     (is= "20180908"
@@ -446,8 +424,8 @@
   )
 
 (dotest
-  (let [now-instant-1          (instant)
-        now-zdt-1a             (zoned-date-time)
+  (let [now-instant-1          (now->Instant)
+        now-zdt-1a             (now->ZonedDateTime)
         now-zdt-1b             (now->ZonedDateTime)
         >>                     (Thread/sleep 100)
         now-instant-2          (now->Instant)
@@ -539,5 +517,4 @@
   ; java.sql.Timestamp (no "Z" present at end)
   (is= "2019-09-19T18:09:35Z" (str (parse-sql-timestamp-str->Instant-utc "  2019-09-19  18:09:35  ")))
   (is= "2019-09-19T18:09:35.123Z" (str (parse-sql-timestamp-str->Instant-utc "  2019-09-19  18:09:35.123  "))))
-
 
