@@ -103,6 +103,20 @@
 ; ->emonth
 ; ->year
 
+(s/defn between :- s/Int ; #todo test
+  "Returns the integer difference between two epoch-vals (- ev2 ev1)"
+  [epoch-val-1 :- tsk/TagVal
+   epoch-val-2 :- tsk/TagVal]
+  (let [tag1 (tv/tag epoch-val-1)
+        tag2 (tv/tag epoch-val-2)
+        num1 (tv/val epoch-val-1)
+        num2 (tv/val epoch-val-2)]
+    (when (not= tag1 tag2)
+      (throw (ex-info "incompatible epoch values " (vals->map epoch-val-1 epoch-val-2))))
+    (- num2 num1)))
+
+; #todo need fns for add, subtract, etc ???
+
 (comment
 
   (s/defn eday->quarter :- EQtr
