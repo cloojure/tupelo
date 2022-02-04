@@ -333,22 +333,22 @@
 (s/defn trunc-to-second
   "Returns a ZonedDateTime truncated to first instant of the second."
   [zdt :- DateTimeStamp]
-  (.truncatedTo zdt java.time.temporal.ChronoUnit/SECONDS))
+  (.truncatedTo zdt ChronoUnit/SECONDS))
 
 (s/defn trunc-to-minute
   "Returns a ZonedDateTime truncated to first instant of the minute."
   [zdt :- DateTimeStamp]
-  (.truncatedTo zdt java.time.temporal.ChronoUnit/MINUTES))
+  (.truncatedTo zdt ChronoUnit/MINUTES))
 
 (s/defn trunc-to-hour
   "Returns a ZonedDateTime truncated to first instant of the hour."
   [zdt :- DateTimeStamp]
-  (.truncatedTo zdt java.time.temporal.ChronoUnit/HOURS))
+  (.truncatedTo zdt ChronoUnit/HOURS))
 
 (s/defn trunc-to-day
   "Returns a ZonedDateTime truncated to first instant of the day."
   [zdt :- DateTimeStamp]
-  (.truncatedTo zdt java.time.temporal.ChronoUnit/DAYS))
+  (.truncatedTo zdt ChronoUnit/DAYS))
 
 (s/defn trunc-to-month
   "Returns a ZonedDateTime truncated to first instant of the month."
