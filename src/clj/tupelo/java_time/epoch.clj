@@ -1,10 +1,11 @@
-(ns tupelo.java-time
+(ns tupelo.java-time.epoch
   (:refer-clojure :exclude [range])
   (:use tupelo.core)
   (:require
     [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.interval :as interval]
+    [tupelo.java-time :as tjt]
     [tupelo.schema :as tsk]
     [tupelo.string :as str]
     )
@@ -16,108 +17,57 @@
     [tupelo.interval Interval]
     ))
 
-;-----------------------------------------------------------------------------
-; #todo study:  clojure.java.io/Coercions
-; #todo study:  clojure.java.io/file
-
-;---------------------------------------------------------------------------------------------------
-(declare
-  parse-iso-str->Instant
-  parse-iso-str->millis
-  parse-iso-str->sql-timestamp
-  parse-iso-str-nice->Instant
-  parse-sql-timestamp-str->Instant-utc)
-
-;---------------------------------------------------------------------------------------------------
-(comment
-  (def months-q1 #{Month/JANUARY Month/FEBRUARY Month/MARCH})
-  (def months-q2 #{Month/APRIL Month/MAY Month/JUNE})
-  (def months-q3 #{Month/JULY Month/AUGUST Month/SEPTEMBER})
-  (def months-q4 #{Month/OCTOBER Month/NOVEMBER Month/DECEMBER}))
-
 ;---------------------------------------------------------------------------------------------------
 (def ^:no-doc LocalDate-epoch (LocalDate/parse "1970-01-01"))
 
-; #todo: create a namespace java-time.zone ???
-(def zoneid-utc (ZoneId/of "UTC"))
-(def zoneid-us-alaska (ZoneId/of "US/Alaska"))
-(def zoneid-us-aleutian (ZoneId/of "US/Aleutian"))
-(def zoneid-us-central (ZoneId/of "US/Central"))
-(def zoneid-us-eastern (ZoneId/of "US/Eastern"))
-(def zoneid-us-hawaii (ZoneId/of "US/Hawaii"))
-(def zoneid-us-mountain (ZoneId/of "US/Mountain"))
-(def zoneid-us-pacific (ZoneId/of "US/Pacific"))
-
 ;-----------------------------------------------------------------------------
-(def ^:no-doc iso-date-regex #"(\d\d\d\d)-(\d\d)-(\d\d)")
-(def ^:no-doc iso-date-bounds-default {:year   {:min 1776 :max 2112}
-                                       :month  {:min 1 :max 12}
-                                       :day    {:min 1 :max 31}
-                                       :hour   {:min 0 :max 23}
-                                       :minute {:min 0 :max 59}
-                                       :second {:min 0 :max 60}})
+; NOTE: All "Epoch" units are ambiguous regarding timezone. Could be local or UTC.
+; #todo add esec (eg Instant.getEpochSecond), eweek, emonth, equarter, quarter-of-year, year-quarter
 
-(s/defn ^:no-doc matches-iso-date-regex? :- s/Bool
-  ([s :- s/Str] (matches-iso-date-regex? iso-date-bounds-default s))
-  ([iso-date-bounds :- tsk/KeyMap
-    s :- s/Str]
-   (let [bounds     (glue iso-date-bounds-default iso-date-bounds)
-         year-min   (fetch-in bounds [:year :min])
-         year-max   (fetch-in bounds [:year :max])
-         month-min  (fetch-in bounds [:month :min])
-         month-max  (fetch-in bounds [:month :max])
-         day-min    (fetch-in bounds [:day :min])
-         day-max    (fetch-in bounds [:day :max])
-         match-data (re-matches iso-date-regex s)
-         result     (truthy?
-                      (and match-data
-                        (let [year  (Integer/parseInt (xsecond match-data))
-                              month (Integer/parseInt (xthird match-data))
-                              day   (Integer/parseInt (xfourth match-data))]
-                          (and
-                            (<= year-min year year-max)
-                            (<= month-min month month-max)
-                            (<= day-min day day-max)))))]
-     result)))
+(s/defn LocalDate->eday :- s/Int ; #todo generalize & test for negative eday
+  "Normalizes a LocalDate as the offset from 1970-1-1"
+  [arg :- LocalDate] (.between ChronoUnit/DAYS LocalDate-epoch arg))
+
+(s/defn eday->LocalDate :- LocalDate
+  "Given an eday, returns a LocalDate "
+  [arg :- s/Int] (.plusDays LocalDate-epoch arg))
+
+(s/defn eday->monthValue :- s/Int
+  "Given an eday, returns a monthValue in [1..12]"
+  [arg :- s/Int] (.getMonthValue (eday->LocalDate arg)))
+
+(s/defn eday->year :- s/Int
+  "Given an eday, returns a year like 2013"
+  [arg :- s/Int] (.getYear (eday->LocalDate arg)))
+
+(s/defn LocalDateStr->eday :- s/Int
+  "Parses a LocalDate string like `1999-12-31` into an integer eday (rel to epoch) like 10956"
+  [arg :- s/Str] (-> arg (LocalDate/parse) (LocalDate->eday)))
+
+(s/defn eday->LocalDateStr :- s/Str
+  "Converts an integer eday like 10956 (rel to epoch) into a LocalDate string like `1999-12-31` "
+  [arg :- s/Int] (-> arg (eday->LocalDate) (str)))
 
 ;---------------------------------------------------------------------------------------------------
-(s/defn LocalDate? :- s/Bool
-  "Returns true iff arg is of type LocalDate"
+(def ENano {:enano s/Int})
+(def EMilli {:emilli s/Int})
+(def ESec {:esec s/Int})
+(def EDay {:eday s/Int})
+(def EMonth {:emonth s/Int})
+(def EQtr {:eqtr s/Int})
+
+(s/defn eday->quarter :- Quarter
+  [eday :- EQtr]
+  )
+
+;#todo year-quarter => like "2013-Q1"
+(s/defn eday->eqtr :- EQtr
   [arg]
-  (= java.time.LocalDate (type arg)))
-
-(s/defn LocalDateStr? :- s/Bool
-  "Returns true iff string is a legal ISO LocalDate like '1999-12-31' (valid for years 1900-2100)."
-  [arg]
-  (and (string? arg)
-    (= 10 (count arg))
-    (matches-iso-date-regex? arg)
-    (with-exception-default false
-      (LocalDate/parse arg)
-      true))) ; if no exception => passes
-
-(s/defn LocalDate->tagval :- {:LocalDate s/Str}
-  "Converts a java.time.LocalDate object to a tagval"
-  [ld :- LocalDate] {:LocalDate (str ld)})
-
-(s/defn tagval->LocalDate :- LocalDate
-  "Parses a tagval into a java.time.LocalDate"
-  [ldtv :- {:LocalDate s/Str}]
-  (LocalDate/parse (grab :LocalDate ldtv)))
-
-(defn walk-LocalDate->tagval
-  [data]
-  (walk/postwalk (fn [item]
-                   (cond-it-> item
-                     (instance? LocalDate it) (LocalDate->tagval it)))
-    data))
-
-;---------------------------------------------------------------------------------------------------
-(def year-quarters (sorted-set :Q1 :Q2 :Q3 :Q4)) ; #todo => String like "Q1"
-(def ^:no-doc year-quarters-sorted-vec (vec (sort year-quarters)))
-(s/defn year-quarter? :- s/Bool
-  "Returns true iff arg is indicates a (financial) quarter in the year."
-  [arg] (contains-key? year-quarters arg))
+  (let [month-value (.getMonthValue arg) ; 1..12
+        month-idx   (dec month-value) ; 0..11
+        quarter-idx (quot month-idx 3)
+        result      (nth year-quarters-sorted-vec quarter-idx)]
+    result))
 
 ;#todo year-quarter => like "2013-Q1"
 (s/defn ->year-quarter :- tsk/Quarter ;#todo rename quarter-of-year
@@ -129,6 +79,10 @@
         quarter-idx (quot month-idx 3)
         result      (nth year-quarters-sorted-vec quarter-idx)]
     result))
+
+(s/defn eday->year-quarter :- tsk/Quarter
+  "Like `->year-quarter` but works for eday values"
+  [eday :- s/Int] (-> eday (eday->LocalDate) (->year-quarter)))
 
 ;-----------------------------------------------------------------------------
 (s/defn LocalDate->Instant :- Instant
@@ -214,9 +168,7 @@
   (cond
     (instance? Instant arg) arg
     (instance? ZonedDateTime arg) (.toInstant arg)
-    (instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli)
-    (instance? String arg)  (parse-iso-str-nice->Instant) ; #todo need unit test
-    :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
+    (instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli)))
 
 (defn ->ZonedDateTime ; #todo -> protocol?
   "Coerces a org.joda.time.ReadableInstant to java.time.ZonedDateTime"
@@ -227,8 +179,7 @@
     (instance? org.joda.time.ReadableInstant arg) (it-> arg
                                                     (->Instant it)
                                                     (.atZone it zoneid-utc))
-    (instance? String arg) (->ZonedDateTime (parse-iso-str-nice->Instant arg)) ; #todo need unit test
-    :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
+    :else (throw (IllegalArgumentException. (str "Invalid type found: " (class arg) " " arg)))))
 
 ;---------------------------------------------------------------------------------------------------
 (def ^:dynamic *zone-id* zoneid-utc)

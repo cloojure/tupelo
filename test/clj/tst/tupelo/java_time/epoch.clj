@@ -1,8 +1,6 @@
-(ns tst.tupelo.java-time
+(ns tst.tupelo.java-time.epoch
   (:refer-clojure :exclude [range])
-  (:use tupelo.java-time
-        tupelo.core
-        tupelo.test)
+  (:use tupelo.java-time.epoch tupelo.core tupelo.test)
   (:require
     [clj-time.core :as joda]
     [tupelo.core :as t]
@@ -311,7 +309,6 @@
     (is= "2018-09-08 02:03:04Z"
       (format->iso-str-nice zdt)
       (format->iso-str-nice inst))
-    (spyx (->Instant "2018-09-08T02:03:04Z"))
     )
   (let [zdt  (zoned-date-time 2018 9 8,, 2 3 4,, 123456789)
         inst (->Instant zdt)]
