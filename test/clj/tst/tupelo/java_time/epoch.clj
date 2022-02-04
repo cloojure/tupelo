@@ -8,11 +8,12 @@
     [tupelo.interval :as interval]
     [tupelo.string :as str]
     [schema.core :as s]
-    [tupelo.schema :as tsk])
+    [tupelo.schema :as tsk]
+    [tupelo.java-time :as tjt])
   (:import
     [java.time Duration Instant MonthDay YearMonth LocalDate LocalDateTime Period
                ZoneId ZoneId ZonedDateTime]
-    [java.util Date]
+    [java.time.temporal Temporal TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit ]
     ))
 
 (dotest ; LocalDate <==> eday
@@ -50,3 +51,16 @@
   (doseq [daynum [0 9 99 999 9999]]
     (is= {:eday daynum} (-> daynum (->eday) (eday->LocalDateStr) (LocalDateStr->eday)))))
 
+(dotest
+  (let [inst (Instant/parse "1987-11-22t11:22:33Z")
+        zdt  (tjt/->ZonedDateTime inst)
+        ld   (->LocalDate inst)
+        ]
+    (is= {:eday 0} (->eday "1970-01-01"))
+    (is= {:eday 1} (->eday "1970-01-02"))
+    (is= {:eday 31} (->eday "1970-02-01"))
+    (is= {:eday 365} (->eday "1971-01-01"))
+    (is= {:eday 6534}
+      (->eday inst)
+      (->eday zdt)
+      (->eday ld))))

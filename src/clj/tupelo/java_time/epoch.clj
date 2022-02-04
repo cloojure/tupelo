@@ -26,6 +26,19 @@
 (def EMonth {:emonth s/Int})
 (def EQtr {:eqtr s/Int})
 
+(s/defn enano? :- s/Bool
+  [arg :- s/Any] (and (tv/tagval? arg) (= :enano (tv/tag arg)) (int? (tv/val arg))))
+(s/defn emilli? :- s/Bool
+  [arg :- s/Any] (and (tv/tagval? arg) (= :emilli (tv/tag arg)) (int? (tv/val arg))))
+(s/defn esec? :- s/Bool
+  [arg :- s/Any] (and (tv/tagval? arg) (= :esec (tv/tag arg)) (int? (tv/val arg))))
+(s/defn eday? :- s/Bool
+  [arg :- s/Any] (and (tv/tagval? arg) (= :eday (tv/tag arg)) (int? (tv/val arg))))
+(s/defn emonth? :- s/Bool
+  [arg :- s/Any] (and (tv/tagval? arg) (= :emonth (tv/tag arg)) (int? (tv/val arg))))
+(s/defn eqtr? :- s/Bool
+  [arg :- s/Any] (and (tv/tagval? arg) (= :eqtr (tv/tag arg)) (int? (tv/val arg))))
+
 ;---------------------------------------------------------------------------------------------------
 (def ^:no-doc epoch-LocalDate (LocalDate/parse "1970-01-01"))
 (def ^:no-doc epoch-Instant (Instant/parse "1970-01-01t00:00:00Z"))
@@ -33,18 +46,6 @@
 ;-----------------------------------------------------------------------------
 ; NOTE: All "Epoch" units are ambiguous regarding timezone. Could be local or UTC.
 ; #todo add esec (eg Instant.getEpochSecond), eweek, emonth, equarter, quarter-of-year, year-quarter
-
-
-(s/defn ->eday :- EDay
-  [arg]
-  (cond
-    (int? arg) {:eday arg} ; #todo add other types
-    ;(instance? Instant arg) arg
-    ;(instance? ZonedDateTime arg) (.toInstant arg)
-    ;(instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli)
-    ;(instance? String arg)  (parse-iso-str-nice->Instant) ; #todo need unit test
-    :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
-
 
 (s/defn LocalDate->eday :- EDay ; #todo generalize & test for negative eday
   "Normalizes a LocalDate as the offset from 1970-1-1"
@@ -69,6 +70,27 @@
 (s/defn eday->year :- s/Int
   "Given an eday, returns a year like 2013"
   [arg :- EDay] (.getYear (eday->LocalDate arg)))
+
+
+(s/defn ->LocalDate :- LocalDate ; #todo need tests, => tjt
+  [arg]
+  (cond
+    (string? arg) (LocalDate/parse arg)
+    (instance? Instant arg) (LocalDate/ofInstant arg tjt/zoneid-utc)
+    (instance? ZonedDateTime arg) (->LocalDate (spyx (.toInstant arg)))
+    ;(instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli) ; #todo
+    :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
+
+(s/defn ->eday :- EDay
+  [arg]
+  (cond
+    (string? arg) (LocalDate->eday (->LocalDate arg))
+    (int? arg) {:eday arg} ; #todo add other types
+    (instance? LocalDate arg) ( LocalDate->eday  arg)
+    (instance? Instant arg) (->eday (->LocalDate arg))
+    (instance? ZonedDateTime arg) (->eday (.toInstant arg))
+    ;(instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli)
+    :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
 (comment
 
