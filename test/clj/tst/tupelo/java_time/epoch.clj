@@ -14,6 +14,14 @@
     [java.time.temporal Temporal TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit ]
     ))
 
+(dotest
+  (isnt (enano? {:eday 234}))
+  (isnt (emilli? {:eday 234}))
+  (isnt (esec? {:eday 234}))
+  (is (eday? {:eday 234}))
+  (isnt (emonth? {:eday 234}))
+  (isnt (eqtr? {:eday 234})))
+
 (dotest ; LocalDate <==> eday
   (is= {:eday 0} (LocalDate->eday (LocalDate/parse "1970-01-01")))
   (is= {:eday 1} (LocalDate->eday (LocalDate/parse "1970-01-02")))

@@ -218,9 +218,9 @@
   (cond
     (string? arg) (LocalDate/parse arg)
     (instance? Instant arg) (LocalDate/ofInstant arg zoneid-utc)
-    (instance? ZonedDateTime arg) (->LocalDate (spyx (.toInstant arg)))
+    (instance? ZonedDateTime arg) (->LocalDate (->Instant arg))
     ; #todo LocalDateTime
-    ;(instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli) ; #todo
+    (instance? org.joda.time.ReadableInstant arg) (->LocalDate (->Instant arg)) ; #todo need test
     :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
 ;---------------------------------------------------------------------------------------------------

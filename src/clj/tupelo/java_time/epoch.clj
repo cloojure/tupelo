@@ -13,7 +13,7 @@
   (:import
     [java.time LocalDate DayOfWeek ZoneId ZonedDateTime Instant Period]
     [java.time.format DateTimeFormatter]
-    [java.time.temporal Temporal TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit ]
+    [java.time.temporal Temporal TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit]
     [java.util Date]
     [tupelo.interval Interval]
     ))
@@ -76,41 +76,41 @@
   (cond
     (string? arg) (LocalDate->eday (tjt/->LocalDate arg))
     (int? arg) {:eday arg} ; #todo add other types
-    (instance? LocalDate arg) ( LocalDate->eday  arg)
+    (instance? LocalDate arg) (LocalDate->eday arg)
     (instance? Instant arg) (->eday (tjt/->LocalDate arg))
-    (instance? ZonedDateTime arg) (->eday (.toInstant arg))
-    ;(instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli)
+    (instance? ZonedDateTime arg) (->eday (tjt/->LocalDate arg))
+    (instance? org.joda.time.ReadableInstant arg) (->eday (tjt/->Instant arg)) ; #todo need test
     :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
 (comment
 
-(s/defn eday->quarter :- EQtr
-  [eday :- EQtr]
-  )
+  (s/defn eday->quarter :- EQtr
+    [eday :- EQtr]
+    )
 
-;#todo year-quarter => like "2013-Q1"
-(s/defn eday->eqtr :- EQtr
-  [arg :- EDay]
-  (let [month-value (.getMonthValue arg) ; 1..12
-        month-idx   (dec month-value) ; 0..11
-        quarter-idx (quot month-idx 3)
-        ]
-    result))
+  ;#todo year-quarter => like "2013-Q1"
+  (s/defn eday->eqtr :- EQtr
+    [arg :- EDay]
+    (let [month-value (.getMonthValue arg) ; 1..12
+          month-idx   (dec month-value) ; 0..11
+          quarter-idx (quot month-idx 3)
+          ]
+      result))
 
-;#todo year-quarter => like "2013-Q1"
-(s/defn ->year-quarter :- tsk/Quarter ;#todo rename quarter-of-year
-  "Given a date-ish value (e.g. LocalDate, et al), returns the quarter of the year
-  as one of #{ :Q1 :Q2 :Q3 :Q4 } "
-  [arg]
-  (let [month-value (.getMonthValue arg) ; 1..12
-        month-idx   (dec month-value) ; 0..11
-        quarter-idx (quot month-idx 3)
-        result      (nth year-quarters-sorted-vec quarter-idx)]
-    result))
+  ;#todo year-quarter => like "2013-Q1"
+  (s/defn ->year-quarter :- tsk/Quarter ;#todo rename quarter-of-year
+    "Given a date-ish value (e.g. LocalDate, et al), returns the quarter of the year
+    as one of #{ :Q1 :Q2 :Q3 :Q4 } "
+    [arg]
+    (let [month-value (.getMonthValue arg) ; 1..12
+          month-idx   (dec month-value) ; 0..11
+          quarter-idx (quot month-idx 3)
+          result      (nth year-quarters-sorted-vec quarter-idx)]
+      result))
 
-(s/defn eday->year-quarter :- tsk/Quarter
-  "Like `->year-quarter` but works for eday values"
-  [eday :- s/Int] (-> eday (eday->LocalDate) (->year-quarter)))
+  (s/defn eday->year-quarter :- tsk/Quarter
+    "Like `->year-quarter` but works for eday values"
+    [eday :- s/Int] (-> eday (eday->LocalDate) (->year-quarter)))
 
   )
 
