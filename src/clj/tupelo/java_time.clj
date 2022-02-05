@@ -367,6 +367,8 @@
 (s/defn trunc-to-month
   "Returns a Temporal truncated to first instant of the month."
   [temporal :- Temporal]
+  ; cannot use previous pattern or get:
+  ;   UnsupportedTemporalTypeException: Unit is too large to be used for truncation
   (-> temporal
     trunc-to-day
     (.with (TemporalAdjusters/firstDayOfMonth))))
@@ -374,11 +376,27 @@
 (s/defn trunc-to-year
   "Returns a Temporal truncated to first instant of the year."
   [temporal :- Temporal]
+  ; cannot use previous pattern or get:
+  ;   UnsupportedTemporalTypeException: Unit is too large to be used for truncation
   (-> temporal
     trunc-to-day
     (.with (TemporalAdjusters/firstDayOfYear))))
 
 ;-----------------------------------------------------------------------------
+(s/defn between :- s/Int
+  "Returns the integer number of ChronoUnit values between two temporal values, truncating any fraction.
+
+        (between ChronoUnit/HOURS
+            (->Instant \"1987-11-22t01:30:00z\")
+            (->Instant \"1987-11-22t03:29:00z\"))
+
+        yields 1 since 1hr 59min is truncated to 1 hour.
+        "
+  [chrono-unit :- ChronoUnit
+   t1 :- Temporal
+   t2 :- Temporal]
+  (.between chrono-unit t1 t2))
+
 (s/defn between-nanos :- s/Int
   "Returns the number of whole nanoseconds between two temporal values, truncating any fraction."
   [t1 :- Temporal

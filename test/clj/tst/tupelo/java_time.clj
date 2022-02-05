@@ -12,9 +12,9 @@
     [tupelo.misc :as misc])
   (:import
     [java.time Duration Instant MonthDay YearMonth LocalDate LocalDateTime Period
-               ZoneId ZoneId ZonedDateTime]
+               ZoneId ZoneId ZonedDateTime ]
     [java.util Date]
-    ))
+    [java.time.temporal ChronoUnit]))
 
 (dotest
   (isnt (matches-iso-date-regex? "1999-12-3"))
@@ -261,18 +261,38 @@
     (is (same-inst? (zoned-date-time 2018 9 7) (trunc-to-midnight-friday zdt)))))
 
 (dotest
-  (is= 111111111 (between-nanos (->Instant "1987-11-22t11:22:33.444444444z")
-                                (->Instant "1987-11-22t11:22:33.555555555z")))
-  (is= 444 (between-millis (->Instant "1987-11-22t11:22:33z") (->Instant "1987-11-22t11:22:33.444444z")))
-  (is= 1 (between-sec (->Instant "1987-11-22t11:22:33z") (->Instant "1987-11-22t11:22:34.4z")))
-  (is= 11 (between-minutes (->Instant "1987-11-22t11:22:33z") (->Instant "1987-11-22t11:33:44z")))
-  (is= 10 (between-hours (->Instant "1987-11-22t01:02:03z") (->Instant "1987-11-22t11:22:00z")))
-  (is= 1 (between-days (->Instant "1987-11-22t01:02:03z") (->Instant "1987-11-23t11:22:00z")))
+  (is= 1 (between ChronoUnit/HOURS
+           (->Instant "1987-11-22t01:30:00z")
+           (->Instant "1987-11-22t03:29:00z")))
 
-  (is= 4 (between-weeks (->LocalDate "1987-01-01") (->LocalDate "1987-01-31")))
-  (is= 10 (between-months (->LocalDate "1987-01-22") (->LocalDate "1987-11-23")))
-  (is= 12 (between-years (->LocalDate "1987-01-22") (->LocalDate "1999-11-23")))
-  )
+  (is= 111111111 (between ChronoUnit/NANOS
+                   (->Instant "1987-11-22t11:22:33.444444444z")
+                                (->Instant "1987-11-22t11:22:33.555555555z")))
+  (is= 444 (between ChronoUnit/MILLIS
+             (->Instant "1987-11-22t11:22:33z")
+             (->Instant "1987-11-22t11:22:33.444444z")))
+  (is= 1 (between ChronoUnit/SECONDS
+           (->Instant "1987-11-22t11:22:33z")
+           (->Instant "1987-11-22t11:22:34.4z")))
+  (is= 11 (between ChronoUnit/MINUTES
+            (->Instant "1987-11-22t11:22:33z")
+            (->Instant "1987-11-22t11:33:44z")))
+  (is= 10 (between ChronoUnit/HOURS
+            (->Instant "1987-11-22t01:02:03z")
+            (->Instant "1987-11-22t11:22:00z")))
+  (is= 1 (between ChronoUnit/DAYS
+           (->Instant "1987-11-22t01:02:03z")
+           (->Instant "1987-11-23t11:22:00z")))
+
+  (is= 4 (between ChronoUnit/WEEKS
+           (->LocalDate "1987-01-01")
+           (->LocalDate "1987-01-31")))
+  (is= 10 (between ChronoUnit/MONTHS
+            (->LocalDate "1987-01-22")
+            (->LocalDate "1987-11-23")))
+  (is= 12 (between ChronoUnit/YEARS
+            (->LocalDate "1987-01-22")
+            (->LocalDate "1999-11-23"))))
 
 (dotest
   (let [zdt  (zoned-date-time 2018 9 8,, 2 3 4)
