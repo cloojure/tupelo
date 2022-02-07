@@ -397,118 +397,14 @@
    t2 :- Temporal]
   (.between chrono-unit t1 t2))
 
-(s/defn between-nanos :- s/Int
-  "Returns the number of whole nanoseconds between two temporal values, truncating any fraction."
-  [t1 :- Temporal
-   t2 :- Temporal]
-  (.between ChronoUnit/NANOS t1 t2))
-
-(s/defn between-millis :- s/Int
-  "Returns the number of whole milliseconds between two temporal values, truncating any fraction."
-  [t1 :- Temporal
-   t2 :- Temporal]
-  (.between ChronoUnit/MILLIS t1 t2))
-
-(s/defn between-sec :- s/Int
-  "Returns the number of whole seconds between two temporal values, truncating any fraction."
-  [t1 :- Temporal
-   t2 :- Temporal]
-  (.between ChronoUnit/SECONDS t1 t2))
-
-(s/defn between-minutes :- s/Int
-  "Returns the number of whole minutes between two temporal values, truncating any fraction."
-  [t1 :- Temporal
-   t2 :- Temporal]
-  (.between ChronoUnit/MINUTES t1 t2))
-
-(s/defn between-hours :- s/Int
-  "Returns the number of whole hours between two temporal values, truncating any fraction."
-  [t1 :- Temporal
-   t2 :- Temporal]
-  (.between ChronoUnit/HOURS t1 t2))
-
-(s/defn between-days :- s/Int
-  "Returns the number of whole days between two temporal values, truncating any fraction."
-  [t1 :- Temporal
-   t2 :- Temporal]
-  (.between ChronoUnit/DAYS t1 t2))
-
-(s/defn between-weeks :- s/Int
-  "Returns the number of whole weeks between two temporal values, truncating any fraction."
-  [t1 :- Temporal
-   t2 :- Temporal]
-  (.between ChronoUnit/WEEKS t1 t2))
-
-(s/defn between-months :- s/Int
-  "Returns the number of whole weeks between two temporal values, truncating any fraction."
-  [t1 :- Temporal
-   t2 :- Temporal]
-  (.between ChronoUnit/MONTHS t1 t2))
-
-(s/defn between-years :- s/Int
-  "Returns the number of whole minutes between two temporal values, truncating any fraction."
-  [t1 :- Temporal
-   t2 :- Temporal]
-  (.between ChronoUnit/YEARS t1 t2))
-
 ;-----------------------------------------------------------------------------
 ; #todo maybe a single fn taking `DayOfWeek/SUNDAY` or similar?
-
-(s/defn trunc-to-midnight-sunday
-  "For an instant T, truncate time to midnight and return the first Sunday at or before T."
-  [temporal :- Temporal]
-  (validate Temporal? temporal) ; #todo plumatic schema
-  (-> temporal
-    trunc-to-day
-    (.with (TemporalAdjusters/previousOrSame DayOfWeek/SUNDAY))))
-
-(s/defn trunc-to-midnight-monday
-  "For an instant T, truncate time to midnight and return the first Monday at or before T."
-  [temporal :- Temporal]
-  (validate Temporal? temporal) ; #todo plumatic schema
-  (-> temporal
-    trunc-to-day
-    (.with (TemporalAdjusters/previousOrSame DayOfWeek/MONDAY))))
-
-(s/defn trunc-to-midnight-tuesday
-  "For an instant T, truncate time to midnight and return the first Tuesday at or before T."
-  [temporal :- Temporal]
-  (validate Temporal? temporal) ; #todo plumatic schema
-  (-> temporal
-    trunc-to-day
-    (.with (TemporalAdjusters/previousOrSame DayOfWeek/TUESDAY))))
-
-(s/defn trunc-to-midnight-wednesday
-  "For an instant T, truncate time to midnight and return the first Wednesday at or before T."
-  [temporal :- Temporal]
-  (validate Temporal? temporal) ; #todo plumatic schema
-  (-> temporal
-    trunc-to-day
-    (.with (TemporalAdjusters/previousOrSame DayOfWeek/WEDNESDAY))))
-
-(s/defn trunc-to-midnight-thursday
-  "For an instant T, truncate time to midnight and return the first thursday at or before T."
-  [temporal :- Temporal]
-  (validate Temporal? temporal) ; #todo plumatic schema
-  (-> temporal
-    trunc-to-day
-    (.with (TemporalAdjusters/previousOrSame DayOfWeek/THURSDAY))))
-
-(s/defn trunc-to-midnight-friday
-  "For an instant T, truncate time to midnight and return the first Friday at or before T."
-  [temporal :- Temporal]
-  (validate Temporal? temporal) ; #todo plumatic schema
-  (-> temporal
-    trunc-to-day
-    (.with (TemporalAdjusters/previousOrSame DayOfWeek/FRIDAY))))
-
-(s/defn trunc-to-midnight-saturday
-  "For an instant T, truncate time to midnight and return the first Saturday at or before T."
-  [temporal :- Temporal]
-  (validate Temporal? temporal) ; #todo plumatic schema
-  (-> temporal
-    trunc-to-day
-    (.with (TemporalAdjusters/previousOrSame DayOfWeek/SATURDAY))))
+(s/defn previous-or-same :- Temporal
+  "Adjusts a temporal value to previous or same day of the week, given a target
+  such as DayOfWeek/SUNDAY "
+  [temporal  :- Temporal
+   tgt-dow :- DayOfWeek]
+  (.with temporal (TemporalAdjusters/previousOrSame tgt-dow)))
 
 ;-----------------------------------------------------------------------------
 ; #todo rethink these and simplify/rename
