@@ -319,14 +319,6 @@
     :else (let [instants (mapv ->Instant (prepend this others))]
             (apply same-inst? instants))))
 
-(def TimePoint
-  "A unique point in time, like an Instant or a ZonedDateTime"
-  (s/cond-pre ZonedDateTime Instant)
-  ;(s/conditional ; #todo what is difference between these 2 approaches?
-  ;  #(instance? ZonedDateTime %) ZonedDateTime
-  ;  #(instance? Instant %) Instant)
-  )
-
 ; #todo need version of < and <= (N-arity) for both ZDT/Instant
 
 ; #todo: make a generic (truncate-to :day)
@@ -334,53 +326,34 @@
 ; #todo: make a generic (previous-or-same :tuesday)
 ; #todo: make a generic (next :tuesday)
 ; #todo: make a generic (next-or-same :tuesday)
-(s/defn trunc-to-nano
-  "Returns a Temporal truncated to first instant of the second."
-  [temporal :- Temporal]
-  (.truncatedTo temporal ChronoUnit/NANOS))
+(def truncated-to-units-direct #{ChronoUnit/NANOS
+                                 ChronoUnit/MILLIS
+                                 ChronoUnit/SECONDS
+                                 ChronoUnit/MINUTES
+                                 ChronoUnit/HOURS
+                                 ChronoUnit/DAYS})
+(s/defn truncated-to
+  "Returns a Temporal truncated to corresponding ChronoUnit."
+  [temporal :- Temporal,
+   chrono-unit :- ChronoUnit]
+  (cond
+    (contains-key? truncated-to-units-direct chrono-unit) (.truncatedTo temporal chrono-unit)
 
-(s/defn trunc-to-milli
-  "Returns a Temporal truncated to first instant of the second."
-  [temporal :- Temporal]
-  (.truncatedTo temporal ChronoUnit/MILLIS))
+    (= chrono-unit ChronoUnit/MONTHS)
+    ; cannot use previous pattern or get:
+    ;   UnsupportedTemporalTypeException: Unit is too large to be used for truncation
+    (it-> temporal
+      (truncated-to it ChronoUnit/DAYS)
+      (.with it (TemporalAdjusters/firstDayOfMonth)))
 
-(s/defn trunc-to-second
-  "Returns a Temporal truncated to first instant of the second."
-  [temporal :- Temporal]
-  (.truncatedTo temporal ChronoUnit/SECONDS))
+    (= chrono-unit ChronoUnit/YEARS)
+    ; cannot use previous pattern or get:
+    ;   UnsupportedTemporalTypeException: Unit is too large to be used for truncation
+    (it-> temporal
+      (truncated-to it ChronoUnit/DAYS)
+      (.with it (TemporalAdjusters/firstDayOfYear)))
 
-(s/defn trunc-to-minute
-  "Returns a Temporal truncated to first instant of the minute."
-  [temporal :- Temporal]
-  (.truncatedTo temporal ChronoUnit/MINUTES))
-
-(s/defn trunc-to-hour
-  "Returns a Temporal truncated to first instant of the hour."
-  [temporal :- Temporal]
-  (.truncatedTo temporal ChronoUnit/HOURS))
-
-(s/defn trunc-to-day
-  "Returns a Temporal truncated to first instant of the day."
-  [temporal :- Temporal]
-  (.truncatedTo temporal ChronoUnit/DAYS))
-
-(s/defn trunc-to-month
-  "Returns a Temporal truncated to first instant of the month."
-  [temporal :- Temporal]
-  ; cannot use previous pattern or get:
-  ;   UnsupportedTemporalTypeException: Unit is too large to be used for truncation
-  (-> temporal
-    trunc-to-day
-    (.with (TemporalAdjusters/firstDayOfMonth))))
-
-(s/defn trunc-to-year
-  "Returns a Temporal truncated to first instant of the year."
-  [temporal :- Temporal]
-  ; cannot use previous pattern or get:
-  ;   UnsupportedTemporalTypeException: Unit is too large to be used for truncation
-  (-> temporal
-    trunc-to-day
-    (.with (TemporalAdjusters/firstDayOfYear))))
+    :else (throw (ex-info "invalid chrono-unit" (vals->map temporal chrono-unit)))))
 
 ;-----------------------------------------------------------------------------
 (s/defn between :- s/Int

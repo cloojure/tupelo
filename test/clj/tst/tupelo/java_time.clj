@@ -214,12 +214,15 @@
     (is (.isEqual ref ref-from-str)) ; converts to Instant, then compares
     (is (same-inst? ref ref-from-str)) ; more Clojurey way
 
-    (is (same-inst? (trunc-to-year ref)   (zoned-date-time 2018)))
-    (is (same-inst? (trunc-to-month ref)  (zoned-date-time 2018 2)))
-    (is (same-inst? (trunc-to-day ref)    (zoned-date-time 2018 2 3)))
-    (is (same-inst? (trunc-to-hour ref)   (zoned-date-time 2018 2 3,, 4)))
-    (is (same-inst? (trunc-to-minute ref) (zoned-date-time 2018 2 3,, 4 5)))
-    (is (same-inst? (trunc-to-second ref) (zoned-date-time 2018 2 3,, 4 5 6)))
+    (is (same-inst? (truncated-to ref ChronoUnit/YEARS) (zoned-date-time 2018)))
+    (is (same-inst? (truncated-to ref ChronoUnit/MONTHS)  (zoned-date-time 2018 2)))
+    (is (same-inst? (truncated-to ref ChronoUnit/DAYS)    (zoned-date-time 2018 2 3)))
+    (is (same-inst? (truncated-to ref ChronoUnit/HOURS) (zoned-date-time 2018 2 3,, 4)))
+    (is (same-inst? (truncated-to ref ChronoUnit/MINUTES) (zoned-date-time 2018 2 3,, 4 5)))
+    (is (same-inst? (truncated-to ref ChronoUnit/SECONDS) (zoned-date-time 2018 2 3,, 4 5 6)))
+    (is (same-inst? (truncated-to ref ChronoUnit/MILLIS) (ZonedDateTime/parse "2018-02-03t04:05:06.123z")))
+    (is (same-inst? (truncated-to ref ChronoUnit/NANOS) (ZonedDateTime/parse "2018-02-03t04:05:06.123456789z")))
+
     (is (same-inst? ref (zoned-date-time 2018 2 3,, 4 5 6,, 123456789)))
     (is (same-inst? ref (zoned-date-time 2018 2 3,, 4 5 6,, 123456789 zoneid-utc)))
 
