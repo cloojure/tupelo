@@ -373,44 +373,42 @@
 ;-----------------------------------------------------------------------------
 ; #todo maybe a single fn taking `DayOfWeek/SUNDAY` or similar?
 (s/defn previous-or-same :- Temporal
-  "Adjusts a temporal value to previous or same day of the week, given a target
-  such as DayOfWeek/SUNDAY "
+  "Given a temporal value and a target such as DayOfWeek/SUNDAY,
+  makes the minimal change to previous or same day of week"
   [temporal  :- Temporal
    tgt-dow :- DayOfWeek]
   (.with temporal (TemporalAdjusters/previousOrSame tgt-dow)))
 
 ;-----------------------------------------------------------------------------
-; #todo rethink these and simplify/rename
-
 (s/defn format->LocalDate-iso :- s/Str ; won't work for Instant
   "Given an Instant or ZonedDateTime, returns a string like `2018-09-05`"
-  [zdt :- TemporalAccessor]
+  [zdt :- Temporal]
   (.format (->ZonedDateTime zdt) DateTimeFormatter/ISO_LOCAL_DATE))
 
 (s/defn format->LocalDate-compact :- s/Str ; won't work for Instant
   "Given an Instant or ZonedDateTime, returns a compact date-time string like
     `2018-09-05 23:05:19.123Z` => `20180905` "
-  [inst :- TemporalAccessor]
+  [inst :- Temporal]
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd")]
     (.format (->ZonedDateTime inst) formatter)))
 
-(defn format->iso-str ; #todo maybe inst->iso-date-time
+(s/defn format->iso-str :- s/Str ; #todo maybe inst->iso-date-time
   "Given an Instant or ZonedDateTime, returns a ISO 8601 datetime string like `2018-09-05T23:05:19.123Z`"
-  [inst]
+  [inst :- Temporal]
   (str (->Instant inst))) ; uses DateTimeFormatter/ISO_INSTANT
 
-(defn format->iso-str-nice
+(s/defn format->iso-str-nice :- s/Str
   "Given an Instant or ZonedDateTime, returns an ISO date-time string like
   `2018-09-05 23:05:19.123Z` (with a space instead of `T`)"
-  [inst]
+  [inst :- Temporal]
   (let [sb (StringBuffer. (format->iso-str inst))]
     (.setCharAt sb 10 \space)
     (str sb)))
 
-(defn format->timestamp-compact ; won't work for Instant
+(s/defn format->timestamp-compact :- s/Str ; won't work for Instant
   "Given an Instant or ZonedDateTime, returns a compact date-time string like
   `2018-09-05 23:05:19.123Z` => `20180905-230519` "
-  [inst]
+  [inst :- Temporal]
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd-HHmmss")]
     (.format (->ZonedDateTime inst) formatter)))
 
