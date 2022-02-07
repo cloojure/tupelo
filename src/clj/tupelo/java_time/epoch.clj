@@ -60,9 +60,10 @@
   [arg :- EDay] (.plusDays epoch-LocalDate (tv/val arg)))
 
 ; #todo inline?
-(s/defn Instant->eday :- EDay ; #todo generalize & test for negative eday
+(s/defn Instant->esec :- ESec ; #todo generalize & test for negative eday
   "Normalizes a LocalDate as the offset from 1970-1-1"
-  [arg :- Instant] {:esec (tjt/between epoch-Instant arg ChronoUnit/SECONDS)})
+  [arg :- Instant]
+  {:esec (tjt/between ChronoUnit/SECONDS epoch-Instant arg)})
 
 ;(s/defn eday->Instant :- LocalDate
 ;  "Given an eday, returns a LocalDate "
@@ -92,23 +93,18 @@
     (instance? LocalDate arg) (LocalDate->eday arg)
     (instance? Instant arg) (->eday (tjt/->LocalDate arg))
     (instance? ZonedDateTime arg) (->eday (tjt/->LocalDate arg))
-    (instance? org.joda.time.ReadableInstant arg) (->eday (tjt/->Instant arg)) ; #todo need test
+    ; (instance? org.joda.time.ReadableInstant arg) (->eday (tjt/->Instant arg)) ; #todo need test
     :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
-(comment            ; #todo finish
-  (s/defn ->esec :- ESec
-    [arg]
-    (cond
-      (string? arg) (tgt/truncated-to (tjt/->Instant arg) ChronoUnit/SECONDS)
-      (int? arg) {:eday arg} ; #todo add other types
-      (instance? LocalDate arg) (LocalDate->eday arg)
-      (instance? Instant arg) (->eday (tjt/->LocalDate arg))
-
-      (tgt/truncated-to (tjt/->Instant arg) ChronoUnit/SECONDS)
-
-      (instance? ZonedDateTime arg) (->eday (tjt/->LocalDate arg))
-      (instance? org.joda.time.ReadableInstant arg) (->eday (tjt/->Instant arg)) ; #todo need test
-      :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg})))))
+(s/defn ->esec :- ESec           ; #todo finish
+  [arg]
+  (cond
+    (string? arg) (->esec (tjt/truncated-to (tjt/->Instant arg) ChronoUnit/SECONDS))
+    (int? arg) {:esec arg} ; #todo add other types
+    (instance? Instant arg) (Instant->esec arg)
+    (instance? ZonedDateTime arg) (->esec (tjt/->Instant arg))
+    ; (instance? org.joda.time.ReadableInstant arg) (->esec (tjt/->Instant arg)) ; #todo need test
+    :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
 ; #todo: Constructor functions
 ; ->enano
