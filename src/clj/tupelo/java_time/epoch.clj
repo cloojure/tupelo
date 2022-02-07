@@ -50,6 +50,7 @@
 ; NOTE: All "Epoch" units are ambiguous regarding timezone. Could be local or UTC.
 ; #todo add esec (eg Instant.getEpochSecond), eweek, emonth, equarter, quarter-of-year, year-quarter
 
+; #todo inline?
 (s/defn LocalDate->eday :- EDay ; #todo generalize & test for negative eday
   "Normalizes a LocalDate as the offset from 1970-1-1"
   [arg :- LocalDate] {:eday (.between ChronoUnit/DAYS epoch-LocalDate arg)})
@@ -57,6 +58,15 @@
 (s/defn eday->LocalDate :- LocalDate
   "Given an eday, returns a LocalDate "
   [arg :- EDay] (.plusDays epoch-LocalDate (tv/val arg)))
+
+; #todo inline?
+(s/defn Instant->eday :- EDay ; #todo generalize & test for negative eday
+  "Normalizes a LocalDate as the offset from 1970-1-1"
+  [arg :- Instant] {:esec (tjt/between epoch-Instant arg ChronoUnit/SECONDS)})
+
+;(s/defn eday->Instant :- LocalDate
+;  "Given an eday, returns a LocalDate "
+;  [arg :- EDay] (.plusDays epoch-LocalDate (tv/val arg)))
 
 ;(s/defn eday->monthValue :- s/Int
 ;  "Given an eday, returns a monthValue in [1..12]"
@@ -85,16 +95,20 @@
     (instance? org.joda.time.ReadableInstant arg) (->eday (tjt/->Instant arg)) ; #todo need test
     :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
-#_(s/defn ->esec :- ESec
+(comment            ; #todo finish
+  (s/defn ->esec :- ESec
     [arg]
     (cond
-      (string? arg) (LocalDate->eday (tjt/->LocalDate arg))
+      (string? arg) (tgt/truncated-to (tjt/->Instant arg) ChronoUnit/SECONDS)
       (int? arg) {:eday arg} ; #todo add other types
       (instance? LocalDate arg) (LocalDate->eday arg)
       (instance? Instant arg) (->eday (tjt/->LocalDate arg))
+
+      (tgt/truncated-to (tjt/->Instant arg) ChronoUnit/SECONDS)
+
       (instance? ZonedDateTime arg) (->eday (tjt/->LocalDate arg))
       (instance? org.joda.time.ReadableInstant arg) (->eday (tjt/->Instant arg)) ; #todo need test
-      :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
+      :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg})))))
 
 ; #todo: Constructor functions
 ; ->enano
@@ -109,11 +123,11 @@
    epoch-val-2 :- tsk/TagVal]
   (let [tag1 (tv/tag epoch-val-1)
         tag2 (tv/tag epoch-val-2)
-        num1 (tv/val epoch-val-1)
-        num2 (tv/val epoch-val-2)]
+        int1 (tv/val epoch-val-1)
+        int2 (tv/val epoch-val-2)]
     (when (not= tag1 tag2)
       (throw (ex-info "incompatible epoch values " (vals->map epoch-val-1 epoch-val-2))))
-    (- num2 num1)))
+    (- int2 int1)))
 
 ; #todo need fns for add, subtract, etc ???
 
