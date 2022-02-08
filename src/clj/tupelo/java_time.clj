@@ -333,7 +333,10 @@
                                  ChronoUnit/HOURS
                                  ChronoUnit/DAYS})
 (s/defn truncated-to
-  "Returns a Temporal truncated to corresponding ChronoUnit."
+  "Returns a Temporal truncated to corresponding ChronoUnit.  Example:
+
+        (truncated-to t ChronoUnit/HOURS)
+  "
   [temporal :- Temporal,
    chrono-unit :- ChronoUnit]
   (cond
@@ -358,13 +361,13 @@
 ;-----------------------------------------------------------------------------
 (s/defn between :- s/Int
   "Returns the integer number of ChronoUnit values between two temporal values, truncating any fraction.
+   Example:
 
-        (between ChronoUnit/HOURS
-            (->Instant \"1987-11-22t01:30:00z\")
-            (->Instant \"1987-11-22t03:29:00z\"))
+        (let [i1      (->Instant \"1987-11-22t01:30:00z\")
+              i2      (->Instant \"1987-11-22t03:29:00z\")
+              delta   (between ChronoUnit/HOURS i1 i2) ]  ...)
 
-        yields 1 since 1hr 59min is truncated to 1 hour.
-        "
+  yields delta=1 since 1hr 59min is truncated to 1 hour. "
   [chrono-unit :- ChronoUnit
    t1 :- Temporal
    t2 :- Temporal]
@@ -373,8 +376,11 @@
 ;-----------------------------------------------------------------------------
 ; #todo maybe a single fn taking `DayOfWeek/SUNDAY` or similar?
 (s/defn previous-or-same :- Temporal
-  "Given a temporal value and a target such as DayOfWeek/SUNDAY,
-  makes the minimal change to previous or same day of week"
+  "Given a temporal value and a target such as DayOfWeek/SUNDAY, makes the minimal
+  change to previous or same day of week. Example:
+
+        (previous-or-same t DayOfWeek/SUNDAY)
+  "
   [temporal  :- Temporal
    tgt-dow :- DayOfWeek]
   (.with temporal (TemporalAdjusters/previousOrSame tgt-dow)))
