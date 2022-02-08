@@ -321,17 +321,12 @@
 
 ; #todo need version of < and <= (N-arity) for both ZDT/Instant
 
-; #todo: make a generic (truncate-to :day)
-; #todo: make a generic (previous :tuesday)
-; #todo: make a generic (previous-or-same :tuesday)
-; #todo: make a generic (next :tuesday)
-; #todo: make a generic (next-or-same :tuesday)
-(def truncated-to-units-direct #{ChronoUnit/NANOS
-                                 ChronoUnit/MILLIS
-                                 ChronoUnit/SECONDS
-                                 ChronoUnit/MINUTES
-                                 ChronoUnit/HOURS
-                                 ChronoUnit/DAYS})
+(def ^:no-doc truncated-to-units-direct #{ChronoUnit/NANOS
+                                          ChronoUnit/MILLIS
+                                          ChronoUnit/SECONDS
+                                          ChronoUnit/MINUTES
+                                          ChronoUnit/HOURS
+                                          ChronoUnit/DAYS})
 (s/defn truncated-to
   "Returns a Temporal truncated to corresponding ChronoUnit.  Example:
 
@@ -374,7 +369,9 @@
   (.between chrono-unit t1 t2))
 
 ;-----------------------------------------------------------------------------
-; #todo maybe a single fn taking `DayOfWeek/SUNDAY` or similar?
+; #todo: make a generic (previous :tuesday)
+; #todo: make a generic (next :tuesday)
+; #todo: make a generic (next-or-same :tuesday)
 (s/defn previous-or-same :- Temporal
   "Given a temporal value and a target such as DayOfWeek/SUNDAY, makes the minimal
   change to previous or same day of week. Example:
