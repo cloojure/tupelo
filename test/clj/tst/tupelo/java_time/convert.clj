@@ -32,6 +32,8 @@
 (dotest
   (is= (str->Instant "1999-11-22") (Instant/parse "1999-11-22t00:00:00z"))
   (is= (LocalDate->LocalDateTime (LocalDate/parse "1999-11-22")) (LocalDateTime/parse "1999-11-22t00:00:00"))
+
+  ; note that equivalent ZonedDateTime values are not always equal
   (let [a  (ZonedDateTime/parse "1999-11-22t00:00:00z")
         b  (ZonedDateTime/parse "1999-11-22t00:00:00+00:00")
         c  (ZonedDateTime/parse "1999-11-22t00:00:00+00:00[UTC]")
@@ -40,8 +42,14 @@
     (is= a b)
     (isnt= b c)     ; different zone spec => not equal
     (is (tjt/same-instant? b c)) ; coerce to instant, then compare
-    (is= ib ic)     ; both convert to same instant, so equal here
-    )
+    (is= ib ic))     ; both convert to same instant, so equal here
+
+  (is (tjt/same-instant?
+        (LocalDateTime->ZonedDateTime (LocalDateTime/parse "1999-11-22t00:00:00"))
+        (ZonedDateTime/parse "1999-11-22t00:00:00z")))
+  (is (tjt/same-instant? (LocalDateTime->ZonedDateTime (LocalDateTime/parse "1999-11-22t00:00:00"))
+        (ZonedDateTime/parse "1999-11-22t00:00:00+00:00")
+        (ZonedDateTime/parse "1999-11-22T00:00:00+00:00[UTC]" )))
 
   )
 
