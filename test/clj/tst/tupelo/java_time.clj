@@ -212,31 +212,31 @@
     ; they are identical instants
     (is= inst inst-from-str)
     (is (.isEqual ref ref-from-str)) ; converts to Instant, then compares
-    (is (same-inst? ref ref-from-str)) ; more Clojurey way
+    (is (same-instant? ref ref-from-str)) ; more Clojurey way
 
-    (is (same-inst? (truncated-to ref ChronoUnit/YEARS) (zoned-date-time 2018)))
-    (is (same-inst? (truncated-to ref ChronoUnit/MONTHS)  (zoned-date-time 2018 2)))
-    (is (same-inst? (truncated-to ref ChronoUnit/DAYS)    (zoned-date-time 2018 2 3)))
-    (is (same-inst? (truncated-to ref ChronoUnit/HOURS) (zoned-date-time 2018 2 3,, 4)))
-    (is (same-inst? (truncated-to ref ChronoUnit/MINUTES) (zoned-date-time 2018 2 3,, 4 5)))
-    (is (same-inst? (truncated-to ref ChronoUnit/SECONDS) (zoned-date-time 2018 2 3,, 4 5 6)))
-    (is (same-inst? (truncated-to ref ChronoUnit/MILLIS) (ZonedDateTime/parse "2018-02-03t04:05:06.123z")))
-    (is (same-inst? (truncated-to ref ChronoUnit/NANOS) (ZonedDateTime/parse "2018-02-03t04:05:06.123456789z")))
+    (is (same-instant? (truncated-to ref ChronoUnit/YEARS) (zoned-date-time 2018)))
+    (is (same-instant? (truncated-to ref ChronoUnit/MONTHS)  (zoned-date-time 2018 2)))
+    (is (same-instant? (truncated-to ref ChronoUnit/DAYS)    (zoned-date-time 2018 2 3)))
+    (is (same-instant? (truncated-to ref ChronoUnit/HOURS) (zoned-date-time 2018 2 3,, 4)))
+    (is (same-instant? (truncated-to ref ChronoUnit/MINUTES) (zoned-date-time 2018 2 3,, 4 5)))
+    (is (same-instant? (truncated-to ref ChronoUnit/SECONDS) (zoned-date-time 2018 2 3,, 4 5 6)))
+    (is (same-instant? (truncated-to ref ChronoUnit/MILLIS) (ZonedDateTime/parse "2018-02-03t04:05:06.123z")))
+    (is (same-instant? (truncated-to ref ChronoUnit/NANOS) (ZonedDateTime/parse "2018-02-03t04:05:06.123456789z")))
 
-    (is (same-inst? ref (zoned-date-time 2018 2 3,, 4 5 6,, 123456789)))
-    (is (same-inst? ref (zoned-date-time 2018 2 3,, 4 5 6,, 123456789 zoneid-utc)))
+    (is (same-instant? ref (zoned-date-time 2018 2 3,, 4 5 6,, 123456789)))
+    (is (same-instant? ref (zoned-date-time 2018 2 3,, 4 5 6,, 123456789 zoneid-utc)))
 
-    (is (same-inst? ref (with-zoneid zoneid-utc
+    (is (same-instant? ref (with-zoneid zoneid-utc
                           (zoned-date-time 2018 2 3,, 4 5 6 123456789))))
-    (is (same-inst? (zoned-date-time 2018 2 3,, 12 5 6,, 123456789)
+    (is (same-instant? (zoned-date-time 2018 2 3,, 12 5 6,, 123456789)
           (with-zoneid zoneid-us-eastern (zoned-date-time 2018 2 3,, 7 5 6,, 123456789))
           (with-zoneid zoneid-us-central (zoned-date-time 2018 2 3,, 6 5 6,, 123456789))
           (with-zoneid zoneid-us-mountain (zoned-date-time 2018 2 3,, 5 5 6,, 123456789))
           (with-zoneid zoneid-us-pacific (zoned-date-time 2018 2 3,, 4 5 6,, 123456789)))))
 
-  (is (same-inst? (zoned-date-time 2018 8 26) ; a Sunday
+  (is (same-instant? (zoned-date-time 2018 8 26) ; a Sunday
         (previous-or-same (zoned-date-time 2018 9 1) DayOfWeek/SUNDAY)))
-  (is (same-inst? (zoned-date-time 2018 9 2) ; a Sunday
+  (is (same-instant? (zoned-date-time 2018 9 2) ; a Sunday
         (previous-or-same (zoned-date-time 2018 9 2) DayOfWeek/SUNDAY)
         (previous-or-same (zoned-date-time 2018 9 3) DayOfWeek/SUNDAY)
         (previous-or-same (zoned-date-time 2018 9 4) DayOfWeek/SUNDAY)
@@ -245,7 +245,7 @@
         (previous-or-same (zoned-date-time 2018 9 7) DayOfWeek/SUNDAY)
         (previous-or-same (zoned-date-time 2018 9 8) DayOfWeek/SUNDAY)))
 
-  (is (same-inst? (zoned-date-time 2018 9 9) ; a Sunday
+  (is (same-instant? (zoned-date-time 2018 9 9) ; a Sunday
         (previous-or-same (zoned-date-time 2018 9 9) DayOfWeek/SUNDAY)
         (previous-or-same (zoned-date-time 2018 9 10) DayOfWeek/SUNDAY))))
 
@@ -359,17 +359,17 @@
   (is= (zoned-date-time 2018 9 1) (->ZonedDateTime (joda/date-time 2018 9 1,, 0 0 0)))
   (is= (zoned-date-time 2018 9 1,, 2 3 4) (->ZonedDateTime (joda/date-time 2018 9 1,, 2 3 4)))
 
-  (is (same-inst?
+  (is (same-instant?
         (zoned-date-time 2018 9 1)
         (joda/date-time 2018 9 1)
         (->Instant (zoned-date-time 2018 9 1))
         (->Instant (joda/date-time 2018 9 1))))
-  (is (same-inst?
+  (is (same-instant?
         (zoned-date-time 2018 9 1)
         (joda/date-time 2018 9 1)
         (->ZonedDateTime (zoned-date-time 2018 9 1))
         (->ZonedDateTime (joda/date-time 2018 9 1))))
-  (is (same-inst?
+  (is (same-instant?
         (zoned-date-time 2018 9 1)
         (joda/date-time 2018 9 1)
         (->Instant (->ZonedDateTime (zoned-date-time 2018 9 1)))

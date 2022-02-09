@@ -304,20 +304,15 @@
 ; #todo: Make all use protocol for all Temporal's (ZonedDateTime, OffsetDateTime, Instant, ...?)
 
 ; #todo: make work for Clojure `=` ZDT, Instant, etc
-(defn same-inst? ; #todo coerce to correct type
+(def pseudo-Temporal (s/cond-pre Temporal org.joda.time.ReadableInstant))
+(s/defn same-instant? :- s/Bool ; #todo coerce to correct type
   "Returns true iff two Instant/ZonedDateTime objects (or similar) represent the same instant of time,
   regardless of time zone. A thin wrapper over `ZonedDateTime/isEqual`"
-  [this & others]
-  (cond
-    (every? Instant? others) (every? truthy?
-                               (mapv #(.equals this %) others))
-
-    (every? ZonedDateTime? others) (every? truthy?
-                                     (mapv #(.isEqual this %) others))
-
-    ; attempt to coerce to Instant
-    :else (let [instants (mapv ->Instant (prepend this others))]
-            (apply same-inst? instants))))
+  [& temporals :- [pseudo-Temporal]]
+  (let [instants (mapv ->Instant  temporals) ; coerce all to Instant
+        [base & others] instants]
+    (every? truthy?
+      (mapv #(.equals base %) others))))
 
 ; #todo need version of < and <= (N-arity) for both ZDT/Instant
 
