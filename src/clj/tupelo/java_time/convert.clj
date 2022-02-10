@@ -24,7 +24,8 @@
 
    :LocalDateTime #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
                    t                          # separator
-                   \d{2}:\d{2}:\d{2}"         ; 11:22:33
+                   \d{2}:\d{2}:\d{2}          # 11:22:33
+                   (\.\d+)?"                  ; fractional seconds optional
 
    :Instant       #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
                    t                          # separator
@@ -59,23 +60,22 @@
         1999-11-22t00:00:00+00:00[UTC]  ; ZonedDateTime
  "
   [s :- s/Str]
-  (cond
-    (re-matches (grab :LocalDate patterns) s)
-    (-> s (LocalDate/parse) (LocalDate->LocalDateTime) (LocalDateTime->ZonedDateTime) (Instant/from))
+  (let [tgt (str/trim s)]
+    (cond
+      (re-matches (grab :LocalDate patterns) tgt)
+      (-> tgt (LocalDate/parse) (LocalDate->LocalDateTime) (LocalDateTime->ZonedDateTime) (Instant/from))
 
-    (re-matches (grab :LocalDateTime patterns) s)
-    (-> s (LocalDateTime/parse) (LocalDateTime->ZonedDateTime) (Instant/from))
+      (re-matches (grab :LocalDateTime patterns) tgt)
+      (-> tgt (LocalDateTime/parse) (LocalDateTime->ZonedDateTime) (Instant/from))
 
-    (re-matches (grab :Timestamp patterns) s)
-    (tjt/parse-sql-timestamp-str->Instant-utc s)
+      (re-matches (grab :Timestamp patterns) tgt)
+      (tjt/parse-sql-timestamp-str->Instant-utc tgt)
 
-    (re-matches (grab :Instant patterns) s)
-    ;  (re-matches (grab :Instant+nanos patterns) s)
+      (re-matches (grab :Instant patterns) tgt)
+      (Instant/parse tgt)
 
-    (Instant/parse s)
+      (re-matches (grab :ZonedDateTime patterns) tgt)
+      (-> tgt (ZonedDateTime/parse) (Instant/from))
 
-    (re-matches (grab :ZonedDateTime patterns) s)
-    (-> s (ZonedDateTime/parse) (Instant/from))
-
-    :else (throw (ex-info "pattern not recognized" {:s s}))
-    ))
+      :else (throw (ex-info "pattern not recognized" {:s tgt}))
+      )))
