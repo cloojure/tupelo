@@ -19,7 +19,9 @@
    :LocalDate  #"\d{4}-\d{2}-\d{2}" ; maybe allow 1999-4-2 ???
    :Timestamp  #"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}"
    :Instant  #"(?i)\d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}z"
-   :ZonedDateTime  #"(?i)\d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}\[\w+\]"
+   :Instant+nanos  #"(?i)\d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}\.\d+z"
+   :ZonedDateTime      #"(?i)\d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}\+\d{2}:\d{2}"
+   :ZonedDateTime+str  #"(?i)\d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}\+\d{2}:\d{2}\[\w+\]"
    }
   )
 (s/defn LocalDate->LocalDateTime :- LocalDateTime
@@ -32,8 +34,21 @@
 
 (s/defn str->Instant :- Instant
   "Parse a string into a java.time.Instant"
-  [arg :- s/Str]
+  [s :- s/Str]
   (cond
-    (str/contains-match? arg (grab :LocalDate patterns))
-    (it-> arg (LocalDate/parse it) (.atStartOfDay it tjt/zoneid-utc) (.toInstant it))
+    (re-matches (grab :LocalDate patterns) s)
+    (-> s (LocalDate/parse) (LocalDate->LocalDateTime) (LocalDateTime->ZonedDateTime) (Instant/from))
+
+    (re-matches (grab :Timestamp patterns) s)
+    (tjt/parse-sql-timestamp-str->Instant-utc s)
+
+    (or (re-matches (grab :Instant patterns) s)
+      (re-matches (grab :Instant+nanos patterns) s))
+    (Instant/parse s)
+
+    (or (re-matches (grab :ZonedDateTime patterns) s)
+      (re-matches (grab :ZonedDateTime+str patterns) s))
+    (-> s (ZonedDateTime/parse) (Instant/from))
+
+    :else (throw (ex-info "pattern not recognized" {:s s}))
     ))

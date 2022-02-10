@@ -309,7 +309,9 @@
   "Returns true iff two Instant/ZonedDateTime objects (or similar) represent the same instant of time,
   regardless of time zone. A thin wrapper over `ZonedDateTime/isEqual`"
   [& temporals :- [pseudo-Temporal]]
-  (let [instants (mapv ->Instant  temporals) ; coerce all to Instant
+  (let [instants (if (every? Instant? temporals)
+                   temporals
+                   (mapv ->Instant temporals)) ; coerce all to Instant
         [base & others] instants]
     (every? truthy?
       (mapv #(.equals base %) others))))

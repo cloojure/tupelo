@@ -15,19 +15,23 @@
 
 (dotest
   (let [pat (grab :LocalDate patterns)]
-    (is (str/contains-match? "1999-12-31" pat))
-    (isnt (str/contains-match? "1999-2-31" pat)))
+    (is (re-matches  pat  "1999-12-31"))
+    (isnt (re-matches pat "1999-2-31")))
   (let [pat (grab :Timestamp patterns)]
-    (is (str/contains-match? "1999-12-31 11:22:33" pat))
-    (isnt (str/contains-match? "1999-12-31 1:2:3" pat)))
+    (is (re-matches  pat "1999-12-31 11:22:33"))
+    (isnt (re-matches  pat "1999-12-31 1:2:3")))
   (let [pat (grab :Instant patterns)]
-    (is (str/contains-match? "1999-12-31t11:22:33z" pat))
-    (is (str/contains-match? "1999-12-31t11:22:33Z" pat))
-    (isnt (str/contains-match? "1999-12-31 11:22:33Z" pat))
-    (isnt (str/contains-match? "1999-12-31t11:22:33x" pat)))
+    (is (re-matches  pat "1999-12-31t11:22:33z"))
+    (is (re-matches  pat "1999-12-31t11:22:33Z"))
+    (isnt (re-matches  pat "1999-12-31 11:22:33Z"))
+    (isnt (re-matches  pat "1999-12-31t11:22:33x")))
   (let [pat (grab :ZonedDateTime patterns)]
-    (is (str/contains-match? "1999-12-31t11:22:33[abc]" pat))
-    (isnt (str/contains-match? "1999-12-31t11:22:33[]" pat))))
+    (is (re-matches  pat "1999-12-31t11:22:33+00:00"))
+    (isnt (re-matches  pat "1999-12-31t11:22:33+00:00[UTC]")))
+  (let [pat (grab :ZonedDateTime+str patterns)]
+    (isnt (re-matches  pat "1999-12-31t11:22:33+00:00"))
+    (is (re-matches  pat "1999-12-31t11:22:33+00:00[UTC]")))
+  )
 
 (dotest
   (is= (str->Instant "1999-11-22") (Instant/parse "1999-11-22t00:00:00z"))
@@ -41,15 +45,30 @@
         ic (Instant/from c)]
     (is= a b)
     (isnt= b c)     ; different zone spec => not equal
+    (is= ib ic)     ; both convert to same instant, so equal here
+
     (is (tjt/same-instant? b c)) ; coerce to instant, then compare
-    (is= ib ic))     ; both convert to same instant, so equal here
+    (is (tjt/same-instant? ib ic)) ; Instants are equal
+    (is (tjt/same-instant? a b c ib ic))) ; can be mixed Temporal types
 
   (is (tjt/same-instant?
         (LocalDateTime->ZonedDateTime (LocalDateTime/parse "1999-11-22t00:00:00"))
         (ZonedDateTime/parse "1999-11-22t00:00:00z")))
-  (is (tjt/same-instant? (LocalDateTime->ZonedDateTime (LocalDateTime/parse "1999-11-22t00:00:00"))
-        (ZonedDateTime/parse "1999-11-22t00:00:00+00:00")
-        (ZonedDateTime/parse "1999-11-22T00:00:00+00:00[UTC]" )))
+  (is (tjt/same-instant?
+        (-> "1999-11-22t00:00:00z" (Instant/parse))
+        (-> "1999-11-22t00:00:00" (LocalDateTime/parse) (LocalDateTime->ZonedDateTime))
+        (-> "1999-11-22t00:00:00+00:00" (ZonedDateTime/parse))
+        (-> "1999-11-22T00:00:00+00:00[UTC]" (ZonedDateTime/parse))))
+
+  (is (tjt/same-instant?
+        (-> "1999-11-22t00:00:00z" (Instant/parse))
+        (-> "1999-11-22" (str->Instant))
+        (-> "1999-11-22 00:00:00" (str->Instant))
+        (-> "1999-11-22t00:00:00z" (str->Instant))
+        (-> "1999-11-22t00:00:00.000z" (str->Instant))
+        (-> "1999-11-22t00:00:00+00:00" (str->Instant))
+        (-> "1999-11-22t00:00:00+00:00[UTC]" (str->Instant))
+        ))
 
   )
 
