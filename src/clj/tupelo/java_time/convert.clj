@@ -16,11 +16,28 @@
 
 (def patterns
   {
-   :LocalDate     #"\d{4}-\d{2}-\d{2}" ; maybe allow 1999-4-2 ???
-   :Timestamp     #"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}"
-   :LocalDateTime #"(?i)\d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}"
-   :Instant       #"(?i)\d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}(\.\d+)?z"
-   :ZonedDateTime #"(?i)\d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}\+\d{2}:\d{2}(\[\w+\])?"
+   :LocalDate     #"(?x)\d{4}-\d{2}-\d{2}"    ; 1999-12-31   (maybe allow sloppy like '1999-4-2' ?)
+
+   :Timestamp     #"(?x)\d{4}-\d{2}-\d{2}     # 1999-12-31
+                   \s{1}                      # single space
+                   \d{2}:\d{2}:\d{2}"         ; 11:22:33
+
+   :LocalDateTime #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
+                   t                          # separator
+                   \d{2}:\d{2}:\d{2}"         ; 11:22:33
+
+   :Instant       #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
+                   t                          # separator
+                   \d{2}:\d{2}:\d{2}          # 11:22:33
+                   (\.\d+)?                   # fractional seconds optional
+                   z"                         ; always utc or "zulu" time zone
+
+   :ZonedDateTime #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
+                   t                          # separator
+                   \d{2}:\d{2}:\d{2}          # 11:22:33
+                   (\.\d+)?                   # fractional seconds optional
+                   \+\d{2}:\d{2}              # +01:00
+                   (\[\w+\])?"                ; timezone label like '[UTC]' optional
    })
 (s/defn LocalDate->LocalDateTime :- LocalDateTime
   "Converts LocalDate -> LocalDateTime at midnight "

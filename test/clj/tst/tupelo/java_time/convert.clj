@@ -66,6 +66,7 @@
     (is (tjt/same-instant? ref (str->Instant "1999-11-22t00:00:00z")))
     (is (tjt/same-instant? ref (str->Instant "1999-11-22t00:00:00.000z")))
     (is (tjt/same-instant? ref (str->Instant "1999-11-22t00:00:00+00:00")))
+    (is (tjt/same-instant? ref (str->Instant "1999-11-22t00:00:00.000+00:00")))
     (is (tjt/same-instant? ref (str->Instant "1999-11-22t00:00:00+00:00[UTC]")))
     )
 
