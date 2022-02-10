@@ -23,13 +23,11 @@
   (let [pat (grab :Instant patterns)]
     (is (re-matches  pat "1999-12-31t11:22:33z"))
     (is (re-matches  pat "1999-12-31t11:22:33Z"))
+    (is (re-matches  pat "1999-12-31t11:22:33.789Z"))
     (isnt (re-matches  pat "1999-12-31 11:22:33Z"))
     (isnt (re-matches  pat "1999-12-31t11:22:33x")))
   (let [pat (grab :ZonedDateTime patterns)]
     (is (re-matches  pat "1999-12-31t11:22:33+00:00"))
-    (isnt (re-matches  pat "1999-12-31t11:22:33+00:00[UTC]")))
-  (let [pat (grab :ZonedDateTime+str patterns)]
-    (isnt (re-matches  pat "1999-12-31t11:22:33+00:00"))
     (is (re-matches  pat "1999-12-31t11:22:33+00:00[UTC]")))
   )
 
@@ -60,15 +58,16 @@
         (-> "1999-11-22t00:00:00+00:00" (ZonedDateTime/parse))
         (-> "1999-11-22T00:00:00+00:00[UTC]" (ZonedDateTime/parse))))
 
-  (is (tjt/same-instant?
-        (-> "1999-11-22t00:00:00z" (Instant/parse))
-        (-> "1999-11-22" (str->Instant))
-        (-> "1999-11-22 00:00:00" (str->Instant))
-        (-> "1999-11-22t00:00:00z" (str->Instant))
-        (-> "1999-11-22t00:00:00.000z" (str->Instant))
-        (-> "1999-11-22t00:00:00+00:00" (str->Instant))
-        (-> "1999-11-22t00:00:00+00:00[UTC]" (str->Instant))
-        ))
+  (let [ref (-> "1999-11-22t00:00:00z" (Instant/parse))]
+    (is (tjt/same-instant? ref (str->Instant "1999-11-22t00:00:00z")))
+    (is (tjt/same-instant? ref (str->Instant "1999-11-22")))
+    (is (tjt/same-instant? ref (str->Instant "1999-11-22 00:00:00")))
+    (is (tjt/same-instant? ref (str->Instant "1999-11-22t00:00:00")))
+    (is (tjt/same-instant? ref (str->Instant "1999-11-22t00:00:00z")))
+    (is (tjt/same-instant? ref (str->Instant "1999-11-22t00:00:00.000z")))
+    (is (tjt/same-instant? ref (str->Instant "1999-11-22t00:00:00+00:00")))
+    (is (tjt/same-instant? ref (str->Instant "1999-11-22t00:00:00+00:00[UTC]")))
+    )
 
   )
 
