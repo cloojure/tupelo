@@ -15,8 +15,7 @@
     ))
 
 (def patterns
-  {
-   :LocalDate     #"(?x)\d{4}-\d{2}-\d{2}"    ; 1999-12-31   (maybe allow sloppy like '1999-4-2' ?)
+  {:LocalDate     #"(?x)\d{4}-\d{2}-\d{2}"    ; 1999-12-31   (maybe allow sloppy like '1999-4-2' ?)
 
    :Timestamp     #"(?x)\d{4}-\d{2}-\d{2}     # 1999-12-31
                    \s{1}                      # single space
@@ -40,33 +39,34 @@
                    \+\d{2}:\d{2}              # +01:00
                    (\[\w+\])?"                ; timezone label like '[UTC]' optional
    })
-(s/defn LocalDate->LocalDateTime :- LocalDateTime
+(s/defn LocalDate->LocalDateTime-midnight :- LocalDateTime
   "Converts LocalDate -> LocalDateTime at midnight "
   [ld :- LocalDate] (.atStartOfDay ld))
 
-(s/defn LocalDateTime->ZonedDateTime :- ZonedDateTime
+(s/defn LocalDateTime->ZonedDateTime-utc :- ZonedDateTime
   "Converts LocalDateTime -> ZonedDateTime with UTC time zone"
   [ldt :- LocalDateTime] (.atZone ldt tjt/zoneid-utc))
 
 (s/defn str->Instant :- Instant
   "Parse a string into a java.time.Instant. Valid formats include:
 
-        1999-11-22                      ; LocalDate (assumes midnight utc)
-        1999-11-22 00:00:00             ; sql timestamp (assumes utc)
-        1999-11-22t00:00:00             ; LocalDateTime
-        1999-11-22t00:00:00z            ; Instant
-        1999-11-22t00:00:00.000z        ; Instant
-        1999-11-22t00:00:00+00:00       ; ZonedDateTime
-        1999-11-22t00:00:00+00:00[UTC]  ; ZonedDateTime
+        1999-12-31                      ; LocalDate (assumes midnight utc)
+        1999-12-31 11:22:33             ; sql timestamp (assumes utc)
+        1999-12-31t11:22:33             ; LocalDateTime (assumes utc)
+        1999-12-31t11:22:33.123         ; LocalDateTime (assumes utc)
+        1999-12-31t11:22:33z            ; Instant
+        1999-12-31t11:22:33.123z        ; Instant
+        1999-12-31t11:22:33+00:00       ; ZonedDateTime
+        1999-12-31t11:22:33+00:00[UTC]  ; ZonedDateTime
  "
   [s :- s/Str]
   (let [tgt (str/trim s)]
     (cond
       (re-matches (grab :LocalDate patterns) tgt)
-      (-> tgt (LocalDate/parse) (LocalDate->LocalDateTime) (LocalDateTime->ZonedDateTime) (Instant/from))
+      (-> tgt (LocalDate/parse) (LocalDate->LocalDateTime-midnight) (LocalDateTime->ZonedDateTime-utc) (Instant/from))
 
       (re-matches (grab :LocalDateTime patterns) tgt)
-      (-> tgt (LocalDateTime/parse) (LocalDateTime->ZonedDateTime) (Instant/from))
+      (-> tgt (LocalDateTime/parse) (LocalDateTime->ZonedDateTime-utc) (Instant/from))
 
       (re-matches (grab :Timestamp patterns) tgt)
       (tjt/parse-sql-timestamp-str->Instant-utc tgt)
