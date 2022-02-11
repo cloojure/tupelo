@@ -33,48 +33,48 @@
 ;-----------------------------------------------------------------------------
 ; larger to smaller units => exact calculation
 
-(s/defn seconds->millis :- s/Int
+(s/defn sec->millis :- s/Int
   "Converts integer seconds to milliseconds"
   [sec :- s/Int] (* sec SECOND->MILLIS))
 
-(s/defn minutes->seconds :- s/Int
+(s/defn min->sec :- s/Int
   "Converts integer minutes to seconds"
   [min :- s/Int] (* min MINUTE->SECONDS))
 
-(s/defn hours->minutes :- s/Int
+(s/defn hours->min :- s/Int
   "Converts integer hours to minutes"
   [hours :- s/Int] (* hours HOUR->MINUTES))
 
-(s/defn hours->seconds :- s/Int
+(s/defn hours->sec :- s/Int
   "Converts integer hours to seconds"
   [hours :- s/Int] (* hours HOUR->SECONDS))
 
-(s/defn days->seconds :- s/Int
+(s/defn days->sec :- s/Int
   "Converts integer hours to seconds"
   [days :- s/Int] (* days DAY->SECONDS))
 
 ;-----------------------------------------------------------------------------
 ; smaller to larger units => truncation
 
-(s/defn millis->seconds :- s/Int
+(s/defn millis->sec :- s/Int
   "Converts integer milliseconds to seconds, with truncation"
   [millis :- s/Int] (quot millis SECOND->MILLIS))
 
-(s/defn seconds->minutes :- s/Int
+(s/defn sec->min :- s/Int
   "Converts integer seconds to minutes, with truncation"
-  [seconds :- s/Int] (quot seconds MINUTE->SECONDS))
+  [sec :- s/Int] (quot sec MINUTE->SECONDS))
 
-(s/defn minutes->hours :- s/Int
+(s/defn min->hours :- s/Int
   "Converts integer minutes to hours, with truncation"
-  [minutes :- s/Int] (quot minutes HOUR->MINUTES))
+  [min :- s/Int] (quot min HOUR->MINUTES))
 
-(s/defn seconds->hours :- s/Int
+(s/defn sec->hours :- s/Int
   "Converts integer seconds to hours, with truncation"
-  [seconds :- s/Int] (quot seconds HOUR->SECONDS))
+  [sec :- s/Int] (quot sec HOUR->SECONDS))
 
-(s/defn seconds->days :- s/Int
+(s/defn sec->days :- s/Int
   "Converts integer seconds to hours, with truncation"
-  [seconds :- s/Int] (quot seconds DAY->SECONDS))
+  [sec :- s/Int] (quot sec DAY->SECONDS))
 
 ;-----------------------------------------------------------------------------
 ; All "epoch time" quantities expressed as a tupelo.tagval so that one knows what "type" the integer represents
