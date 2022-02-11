@@ -493,7 +493,7 @@
         1999-12-31t11:22:33+00:00[UTC]  ; ZonedDateTime
  "
   [s :- s/Str]
-  (let [tgt (str/trim s)]
+  (let [tgt (str/whitespace-collapse s)]
     (cond
       (LocalDate-str? tgt)
       (-> tgt
