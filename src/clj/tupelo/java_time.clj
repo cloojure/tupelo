@@ -483,14 +483,14 @@
 (s/defn str->Instant :- Instant
   "Parse a string into a java.time.Instant. Valid formats include:
 
-        1999-12-31                      ; LocalDate (assumes midnight utc)
-        1999-12-31 11:22:33             ; sql timestamp (assumes utc)
-        1999-12-31t11:22:33             ; LocalDateTime (assumes utc)
-        1999-12-31t11:22:33.123         ; LocalDateTime (assumes utc)
-        1999-12-31t11:22:33z            ; Instant
-        1999-12-31t11:22:33.123z        ; Instant
-        1999-12-31t11:22:33+00:00       ; ZonedDateTime
-        1999-12-31t11:22:33+00:00[UTC]  ; ZonedDateTime
+      1999-12-31                          ; LocalDate (assumes utc & start-of-day (00:00:00)
+      1999-12-31 11:22:33                 ; sql timestamp (assumes utc)
+      1999-12-31t11:22:33                 ; LocalDateTime (assumes utc)
+      1999-12-31t11:22:33.123             ; LocalDateTime (assumes utc)
+      1999-12-31t11:22:33z                ; Instant
+      1999-12-31t11:22:33.123z            ; Instant
+      1999-12-31t11:22:33+00:00           ; ZonedDateTime
+      1999-12-31t11:22:33.123+00:00[UTC]  ; ZonedDateTime
  "
   [s :- s/Str]
   (let [tgt (str/whitespace-collapse s)]
@@ -498,12 +498,12 @@
       (LocalDate-str? tgt)
       (-> tgt
         (LocalDate/parse)
-        (convert/LocalDate->LocalDateTime-midnight)
-        (convert/LocalDateTime->ZonedDateTime-utc)
+        (convert/LocalDate+startOfDay->LocalDateTime)
+        (convert/LocalDateTime+utc->ZonedDateTime)
         (Instant/from))
 
       (LocalDateTime-str? tgt)
-      (-> tgt (LocalDateTime/parse) (convert/LocalDateTime->ZonedDateTime-utc) (Instant/from))
+      (-> tgt (LocalDateTime/parse) (convert/LocalDateTime+utc->ZonedDateTime) (Instant/from))
 
       (Timestamp-str? tgt) (parse-sql-timestamp-str->Instant-utc tgt)
 

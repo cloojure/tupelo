@@ -12,7 +12,7 @@
     [java.time.temporal ChronoUnit]))
 
 (dotest
-  (is= (LocalDate->LocalDateTime-midnight (LocalDate/parse "1999-11-22")) (LocalDateTime/parse "1999-11-22t00:00:00"))
+  (is= (LocalDate+startOfDay->LocalDateTime (LocalDate/parse "1999-11-22")) (LocalDateTime/parse "1999-11-22t00:00:00"))
 
   ; note that equivalent ZonedDateTime values are not always equal
   (let [a  (ZonedDateTime/parse "1999-11-22t00:00:00z")
@@ -29,11 +29,11 @@
     (is (tjt/same-instant? a b c ib ic))) ; can be mixed Temporal types
 
   (is (tjt/same-instant?
-        (LocalDateTime->ZonedDateTime-utc (LocalDateTime/parse "1999-11-22t00:00:00"))
+        (LocalDateTime+utc->ZonedDateTime (LocalDateTime/parse "1999-11-22t00:00:00"))
         (ZonedDateTime/parse "1999-11-22t00:00:00z")))
   (is (tjt/same-instant?
         (-> "1999-11-22t00:00:00z" (Instant/parse))
-        (-> "1999-11-22t00:00:00" (LocalDateTime/parse) (LocalDateTime->ZonedDateTime-utc))
+        (-> "1999-11-22t00:00:00" (LocalDateTime/parse) (LocalDateTime+utc->ZonedDateTime))
         (-> "1999-11-22t00:00:00+00:00" (ZonedDateTime/parse))
         (-> "1999-11-22T00:00:00+00:00[UTC]" (ZonedDateTime/parse))))
 

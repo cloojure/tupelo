@@ -12,11 +12,11 @@
 
 (def zoneid-utc (ZoneId/of "UTC"))
 
-(s/defn LocalDate->LocalDateTime-midnight :- LocalDateTime
+(s/defn LocalDate+startOfDay->LocalDateTime :- LocalDateTime
   "Converts LocalDate -> LocalDateTime at midnight "
   [ld :- LocalDate] (.atStartOfDay ld))
 
-(s/defn LocalDateTime->ZonedDateTime-utc :- ZonedDateTime
+(s/defn LocalDateTime+utc->ZonedDateTime :- ZonedDateTime
   "Converts LocalDateTime -> ZonedDateTime with UTC time zone"
   [ldt :- LocalDateTime] (.atZone ldt zoneid-utc))
 
