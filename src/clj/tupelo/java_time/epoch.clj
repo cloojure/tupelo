@@ -19,6 +19,64 @@
     ))
 
 ;-----------------------------------------------------------------------------
+; Remember that in java.time, there are no leap seconds!
+(def SECOND->MILLIS 1000)
+(def MINUTE->SECONDS 60)
+(def HOUR->MINUTES 60)
+(def DAY->HOURS 24)
+(def YEAR->MONTHS 12)
+
+(def HOUR->SECONDS (* HOUR->MINUTES MINUTE->SECONDS) )
+(def DAY->SECONDS (* DAY->HOURS HOUR->MINUTES MINUTE->SECONDS) )
+(def DAY->MILLIS (* DAY->HOURS HOUR->MINUTES MINUTE->SECONDS SECOND->MILLIS) )
+
+;-----------------------------------------------------------------------------
+; larger to smaller units => exact calculation
+
+(s/defn seconds->millis :- s/Int
+  "Converts integer seconds to milliseconds"
+  [sec :- s/Int] (* sec SECOND->MILLIS))
+
+(s/defn minutes->seconds :- s/Int
+  "Converts integer minutes to seconds"
+  [min :- s/Int] (* min MINUTE->SECONDS))
+
+(s/defn hours->minutes :- s/Int
+  "Converts integer hours to minutes"
+  [hours :- s/Int] (* hours HOUR->MINUTES))
+
+(s/defn hours->seconds :- s/Int
+  "Converts integer hours to seconds"
+  [hours :- s/Int] (* hours HOUR->SECONDS))
+
+(s/defn days->seconds :- s/Int
+  "Converts integer hours to seconds"
+  [days :- s/Int] (* days DAY->SECONDS))
+
+;-----------------------------------------------------------------------------
+; smaller to larger units => truncation
+
+(s/defn millis->seconds :- s/Int
+  "Converts integer milliseconds to seconds, with truncation"
+  [millis :- s/Int] (quot millis SECOND->MILLIS))
+
+(s/defn seconds->minutes :- s/Int
+  "Converts integer seconds to minutes, with truncation"
+  [seconds :- s/Int] (quot seconds MINUTE->SECONDS))
+
+(s/defn minutes->hours :- s/Int
+  "Converts integer minutes to hours, with truncation"
+  [minutes :- s/Int] (quot minutes HOUR->MINUTES))
+
+(s/defn seconds->hours :- s/Int
+  "Converts integer seconds to hours, with truncation"
+  [seconds :- s/Int] (quot seconds HOUR->SECONDS))
+
+(s/defn seconds->days :- s/Int
+  "Converts integer seconds to hours, with truncation"
+  [seconds :- s/Int] (quot seconds DAY->SECONDS))
+
+;-----------------------------------------------------------------------------
 ; All "epoch time" quantities expressed as a tupelo.tagval so that one knows what "type" the integer represents
 (def ENano {:enano s/Int})
 (def EMilli {:emilli s/Int})
@@ -109,12 +167,17 @@
     ; (instance? org.joda.time.ReadableInstant arg) (->esec (tjt/->Instant arg)) ; #todo need test
     :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
+; #todo: & "str->XXX" as (Instant->XXX (str->Instant XXX))
 ; #todo: Constructor functions
 ; ->enano
 ; ->emilli ; use .toEpochMillis & .ofEpochMillis
 ; ->eqtr
 ; ->emonth
 ; ->year
+; #todo source: Instant, ZDT
+
+; #todo eXXX->Instant
+; #todo maybe eXXX->eYYY (sec/day, etc)
 
 (s/defn between :- s/Int ; #todo test
   "Returns the integer difference between two epoch-vals (- ev2 ev1)"

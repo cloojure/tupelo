@@ -108,17 +108,6 @@
     result))
 
 ;-----------------------------------------------------------------------------
-(s/defn LocalDate->Instant :- Instant
-  "Converts a LocalDate to a java.util.Date, using midnight (start of day) and the UTC timezone."
-  [ld :- LocalDate]
-  (it-> ld
-    (.atStartOfDay it zoneid-utc)
-    (.toInstant it)))
-
-(s/defn LocalDate->Date :- Date
-  "Converts a LocalDate to a java.util.Date, using midnight (start of day) and the UTC timezone."
-  [ld :- LocalDate] (Date/from (LocalDate->Instant ld)))
-
 (s/defn LocalDate-interval->days :- s/Int
   "Returns the duration in days from the start to the end of a LocalDate Interval"
   [interval :- Interval]
@@ -134,6 +123,63 @@
     (mapv #(LocalDate-interval->days (interval/new first-date %)) ld-vals)))
 
 ;---------------------------------------------------------------------------------------------------
+(def time-str-patterns
+  {:LocalDate     #"(?x)\d{4}-\d{2}-\d{2}"    ; 1999-12-31   (maybe allow sloppy like '1999-4-2' ?)
+
+   :Timestamp     #"(?x)\d{4}-\d{2}-\d{2}     # 1999-12-31
+                   \s{1}                      # single space
+                   \d{2}:\d{2}:\d{2}"         ; 11:22:33
+
+   :LocalDateTime #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
+                   t                          # separator
+                   \d{2}:\d{2}:\d{2}          # 11:22:33
+                   (\.\d+)?"                  ; fractional seconds optional
+
+   :iso-str-nice  #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
+                   \s{1}                      # space as separator
+                   \d{2}:\d{2}:\d{2}          # 11:22:33
+                   (\.\d+)?                   # fractional seconds optional
+                   z"                         ; always utc or "zulu" time zone
+
+   :Instant       #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
+                   t                          # separator
+                   \d{2}:\d{2}:\d{2}          # 11:22:33
+                   (\.\d+)?                   # fractional seconds optional
+                   z"                         ; always utc or "zulu" time zone
+
+   :ZonedDateTime #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
+                   t                          # separator
+                   \d{2}:\d{2}:\d{2}          # 11:22:33
+                   (\.\d+)?                   # fractional seconds optional
+                   \+\d{2}:\d{2}              # +01:00
+                   (\[\w+\])?"                ; timezone label like '[UTC]' optional
+   })
+
+(s/defn LocalDate-str? :- s/Bool
+  "Returns true if string matches a LocalDate pattern like '1999-12-31' "
+  [s :- s/Str] (truthy? (re-matches (grab :LocalDate time-str-patterns) s)))
+
+(s/defn Timestamp-str? :- s/Bool
+  "Returns true if string matches a SQL Timestamp pattern like '1999-12-31 11:22:33' "
+  [s :- s/Str] (truthy? (re-matches (grab :Timestamp time-str-patterns) s)))
+
+(s/defn LocalDateTime-str? :- s/Bool
+  "Returns true if string matches a LocalDateTime pattern like '1999-12-31T11:22:33' "
+  [s :- s/Str] (truthy? (re-matches (grab :LocalDateTime time-str-patterns) s)))
+
+(s/defn Instant-str? :- s/Bool
+  "Returns true if string matches a Instant (ISO 8601) pattern like '1999-12-31T11:22:33Z' "
+  [s :- s/Str] (truthy? (re-matches (grab :Instant time-str-patterns) s)))
+
+(s/defn iso-str-nice-str? :- s/Bool
+  "Returns true if string matches a 'nice' ISO 8601 pattern like '1999-12-31 11:22:33Z' "
+  [s :- s/Str] (truthy? (re-matches (grab :iso-str-nice time-str-patterns) s)))
+
+(s/defn ZonedDateTime-str? :- s/Bool
+  "Returns true if string matches a Instant pattern like '1999-12-31T11:22:33-08:00Z' "
+  [s :- s/Str] (truthy? (re-matches (grab :ZonedDateTime time-str-patterns) s)))
+
+;---------------------------------------------------------------------------------------------------
 (defn ZonedDateTime?
   "Returns true iff arg is an instance of java.time.ZonedDateTime"
   [it] (instance? ZonedDateTime it)) ; #todo test all
@@ -146,7 +192,7 @@
   "Returns true iff arg is an instance of org.joda.time.ReadableInstant "
   [it] (instance? org.joda.time.ReadableInstant it))
 
-(defn fixed-time-point?
+(defn fixed-point?
   "Returns true iff arg represents a fixed point in time. Examples:
 
       [java.time       ZonedDateTime  Instant]
@@ -389,21 +435,22 @@
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd-HHmmss")]
     (.format (->ZonedDateTime inst) formatter)))
 
-(s/defn parse-iso-str->Instant :- Instant ; #todo => parse-iso-str->millis
+(s/defn parse-iso-str->Instant :- Instant
   "Convert an ISO 8601 string to epoch milliseconds. Will collapse excess whitespace."
   [iso-datetime-str :- s/Str]
   (-> iso-datetime-str
-    (str/trim)
+    (str/whitespace-collapse)
     (Instant/parse)))
 
-(s/defn parse-iso-str->millis :- s/Int ; #todo => parse-iso-str->millis
+
+(s/defn parse-iso-str->millis :- s/Int ; #todo => convert/Instant->millis
   "Convert an ISO 8601 string to epoch milliseconds. Will collapse excess whitespace."
   [iso-datetime-str :- s/Str]
   (-> iso-datetime-str
     (parse-iso-str->Instant)
     (.toEpochMilli)))
 
-(s/defn parse-iso-str->sql-timestamp ; #todo => parse-iso-str->sql-timestamp
+(s/defn parse-iso-str->sql-timestamp
   "Convert an ISO 8601 string to a java.sql.Timestamp"
   [iso-datetime-str :- s/Str]
   (-> iso-datetime-str
@@ -434,78 +481,30 @@
     (Instant/parse it)))
 
 ;-----------------------------------------------------------------------------
-(def time-str-patterns
-  {:LocalDate     #"(?x)\d{4}-\d{2}-\d{2}"    ; 1999-12-31   (maybe allow sloppy like '1999-4-2' ?)
-
-   :Timestamp     #"(?x)\d{4}-\d{2}-\d{2}     # 1999-12-31
-                   \s{1}                      # single space
-                   \d{2}:\d{2}:\d{2}"         ; 11:22:33
-
-   :LocalDateTime #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
-                   t                          # separator
-                   \d{2}:\d{2}:\d{2}          # 11:22:33
-                   (\.\d+)?"                  ; fractional seconds optional
-
-   :Instant       #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
-                   t                          # separator
-                   \d{2}:\d{2}:\d{2}          # 11:22:33
-                   (\.\d+)?                   # fractional seconds optional
-                   z"                         ; always utc or "zulu" time zone
-
-   :ZonedDateTime #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
-                   t                          # separator
-                   \d{2}:\d{2}:\d{2}          # 11:22:33
-                   (\.\d+)?                   # fractional seconds optional
-                   \+\d{2}:\d{2}              # +01:00
-                   (\[\w+\])?"                ; timezone label like '[UTC]' optional
-   })
-
-(s/defn LocalDate-str? :- s/Bool
-  "Returns true if string matches a LocalDate pattern like '1999-12-31' "
-  [s :- s/Str] (truthy? (re-matches (grab :LocalDate time-str-patterns) s)))
-
-(s/defn Timestamp-str? :- s/Bool
-  "Returns true if string matches a SQL Timestamp pattern like '1999-12-31 11:22:33' "
-  [s :- s/Str] (truthy? (re-matches (grab :Timestamp time-str-patterns) s)))
-
-(s/defn LocalDateTime-str? :- s/Bool
-  "Returns true if string matches a LocalDateTime pattern like '1999-12-31T11:22:33' "
-  [s :- s/Str] (truthy? (re-matches (grab :LocalDateTime time-str-patterns) s)))
-
-(s/defn Instant-str? :- s/Bool
-  "Returns true if string matches a Instant pattern like '1999-12-31T11:22:33Z' "
-  [s :- s/Str] (truthy? (re-matches (grab :Instant time-str-patterns) s)))
-
-(s/defn ZonedDateTime-str? :- s/Bool
-  "Returns true if string matches a Instant pattern like '1999-12-31T11:22:33-08:00Z' "
-  [s :- s/Str] (truthy? (re-matches (grab :ZonedDateTime time-str-patterns) s)))
-
 (s/defn str->Instant :- Instant
   "Parse a string into a java.time.Instant. Valid formats include:
 
       1999-12-31                          ; LocalDate (assumes utc & start-of-day (00:00:00)
       1999-12-31 11:22:33                 ; sql timestamp (assumes utc)
-      1999-12-31t11:22:33                 ; LocalDateTime (assumes utc)
-      1999-12-31t11:22:33.123             ; LocalDateTime (assumes utc)
-      1999-12-31t11:22:33z                ; Instant
-      1999-12-31t11:22:33.123z            ; Instant
-      1999-12-31t11:22:33+00:00           ; ZonedDateTime
-      1999-12-31t11:22:33.123+00:00[UTC]  ; ZonedDateTime
+      1999-12-31T11:22:33                 ; LocalDateTime (assumes utc)
+      1999-12-31T11:22:33.123             ; LocalDateTime (assumes utc)
+      1999-12-31T11:22:33z                ; Instant (ISO 8601)
+      1999-12-31 11:22:33Z                ; ISO 8601 'nice' format
+      1999-12-31T11:22:33.123z            ; Instant
+      1999-12-31T11:22:33+00:00           ; ZonedDateTime
+      1999-12-31T11:22:33.123+00:00[UTC]  ; ZonedDateTime
  "
   [s :- s/Str]
   (let [tgt (str/whitespace-collapse s)]
     (cond
-      (LocalDate-str? tgt)
-      (-> tgt
-        (LocalDate/parse)
-        (convert/LocalDate+startOfDay->LocalDateTime)
-        (convert/LocalDateTime+utc->ZonedDateTime)
-        (Instant/from))
+      (LocalDate-str? tgt) (-> tgt (LocalDate/parse) (convert/LocalDate->Instant))
 
       (LocalDateTime-str? tgt)
       (-> tgt (LocalDateTime/parse) (convert/LocalDateTime+utc->ZonedDateTime) (Instant/from))
 
       (Timestamp-str? tgt) (parse-sql-timestamp-str->Instant-utc tgt)
+
+      (iso-str-nice-str? tgt) (parse-iso-str-nice->Instant tgt)
 
       (Instant-str? tgt) (Instant/parse tgt)
 
@@ -553,7 +552,7 @@
   [form]
   (walk/postwalk (fn [item]
                    (cond-it-> item
-                     (fixed-time-point? it) (format->iso-str it)))
+                     (fixed-point? it) (format->iso-str it)))
     form))
 
 (s/defn range :- [Temporal]

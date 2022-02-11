@@ -39,3 +39,11 @@
 
   )
 
+(dotest
+  (let [date (LocalDate->Date (LocalDate/parse "1999-12-31"))]
+    (is (instance? java.util.Date date))
+    (is= "1999-12-31T00:00:00Z" (str (.toInstant date))))
+  (let [inst (LocalDate->Instant (LocalDate/parse "1999-12-31"))]
+    (is (instance? java.time.Instant inst))
+    (is= "1999-12-31T00:00:00Z" (str inst))))
+

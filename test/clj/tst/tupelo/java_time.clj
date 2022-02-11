@@ -71,14 +71,6 @@
       (is= :Q2 dnum-q2-quarter)
       (isnt= dnum-q1-quarter dnum-q2-quarter))))
 
-(dotest
-  (let [date (LocalDate->Date (LocalDate/parse "1999-12-31"))]
-    (is (instance? java.util.Date date))
-    (is= "1999-12-31T00:00:00Z" (str (.toInstant date))))
-  (let [inst (LocalDate->Instant (LocalDate/parse "1999-12-31"))]
-    (is (instance? java.time.Instant inst))
-    (is= "1999-12-31T00:00:00Z" (str inst))))
-
 (comment            ; #todo kill this?
   (dotest
     (let [ld (LocalDate/parse "1995-01-04")]
@@ -131,9 +123,9 @@
   (is (Temporal? (ZonedDateTime/parse "2018-09-08T13:03:04Z")))
   (is (Temporal? (ZonedDateTime/parse "2018-09-08T00:00Z")))
 
-  (is (fixed-time-point? (zoned-date-time 2018 9 1)))
-  (is (fixed-time-point? (->Instant (zoned-date-time 2018 9 1))))
-  (is (fixed-time-point? (joda/date-time 2018 9 1)))
+  (is (fixed-point? (zoned-date-time 2018 9 1)))
+  (is (fixed-point? (->Instant (zoned-date-time 2018 9 1))))
+  (is (fixed-point? (joda/date-time 2018 9 1)))
 
   (is (Period? (Period/ofDays 3)))
   (is (Period? (Period/ofWeeks 3)))
@@ -537,6 +529,7 @@
     (is (same-instant? ref (str->Instant "1999-11-22")))
     (is (same-instant? ref (str->Instant "1999-11-22 00:00:00")))
     (is (same-instant? ref (str->Instant "1999-11-22t00:00:00")))
+    (is (same-instant? ref (str->Instant "1999-11-22 00:00:00z")))
     (is (same-instant? ref (str->Instant "1999-11-22t00:00:00z")))
     (is (same-instant? ref (str->Instant "1999-11-22t00:00:00.000z")))
     (is (same-instant? ref (str->Instant "1999-11-22t00:00:00+00:00")))

@@ -15,6 +15,26 @@
     ))
 
 (dotest
+  (is= 3600 HOUR->SECONDS)
+  (is= 86400 DAY->SECONDS)
+  (is= (* 86400 1000) DAY->MILLIS)
+
+  (is= (seconds->millis 1) SECOND->MILLIS)
+  (is= (minutes->seconds 1) MINUTE->SECONDS)
+  (is= (hours->minutes 1) HOUR->MINUTES)
+  (is= (hours->seconds 1) HOUR->SECONDS)
+  (is= (days->seconds 1) DAY->SECONDS)
+
+  ; verify truncation
+  (is= (millis->seconds (inc SECOND->MILLIS)) 1)
+  (is= (seconds->minutes (inc MINUTE->SECONDS)) 1)
+  (is= (minutes->hours (inc HOUR->MINUTES)) 1)
+  (is= (seconds->hours (inc HOUR->SECONDS)) 1)
+  (is= (seconds->days (inc DAY->SECONDS)) 1)
+
+  )
+
+(dotest
   (isnt (enano? {:eday 234}))
   (isnt (emilli? {:eday 234}))
   (isnt (esec? {:eday 234}))
