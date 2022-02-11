@@ -10,10 +10,10 @@
     [tupelo.string :as str]
     )
   (:import
-    [java.time LocalDate LocalDateTime DayOfWeek ZoneId ZonedDateTime Instant Period LocalDateTime]
+    [java.time LocalDate LocalDateTime DayOfWeek ZoneId ZonedDateTime Instant Period
+               Year YearMonth]
     [java.time.format DateTimeFormatter]
     [java.time.temporal Temporal TemporalUnit TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit ]
-    [java.util Date]
     [tupelo.interval Interval]
     ))
 
@@ -388,19 +388,20 @@
    t2 :- Temporal]
   (.between chrono-unit t1 t2))
 
+(def IncreasingComparable (s/cond-pre Instant LocalDate LocalDateTime Year YearMonth))
 (s/defn increasing? :- s/Bool
-  "Returns true iff Instants [i1 i2 i3] is in strictly increasing order (open interval)"
-  [i1 :- Instant
-   i2 :- Instant
-   i3 :- Instant]
-  (and (.isBefore i1 i2) (.isBefore i2 i3)))
+  "Returns true iff times [t1 t2 t3] is in strictly increasing order (open interval)"
+  [t1 :- IncreasingComparable
+   t2 :- IncreasingComparable
+   t3 :- IncreasingComparable]
+  (and (.isBefore t1 t2) (.isBefore t2 t3)))
 
 (s/defn increasing-or-equal? :- s/Bool
-  "Returns true iff Instants [i1 i2 i3] is in strictly increasing order (closed interval)"
-  [i1 :- Instant
-   i2 :- Instant
-   i3 :- Instant]
-  (or (increasing? i1 i2 i3) (.equals i1 i2) (.equals i2 i3)))
+  "Returns true iff times [t1 t2 t3] is in strictly increasing order (closed interval)"
+  [t1 :- IncreasingComparable
+   t2 :- IncreasingComparable
+   t3 :- IncreasingComparable]
+  (or (increasing? t1 t2 t3) (.equals t1 t2) (.equals t2 t3)))
 
 ;-----------------------------------------------------------------------------
 ; #todo: make a generic (previous :tuesday)
