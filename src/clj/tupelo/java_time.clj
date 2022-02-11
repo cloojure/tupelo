@@ -496,7 +496,11 @@
   (let [tgt (str/trim s)]
     (cond
       (LocalDate-str? tgt)
-      (-> tgt (LocalDate/parse) (convert/LocalDate->LocalDateTime-midnight) (convert/LocalDateTime->ZonedDateTime-utc) (Instant/from))
+      (-> tgt
+        (LocalDate/parse)
+        (convert/LocalDate->LocalDateTime-midnight)
+        (convert/LocalDateTime->ZonedDateTime-utc)
+        (Instant/from))
 
       (LocalDateTime-str? tgt)
       (-> tgt (LocalDateTime/parse) (convert/LocalDateTime->ZonedDateTime-utc) (Instant/from))
