@@ -528,3 +528,35 @@
   (is= "2019-09-19T18:09:35Z" (str (parse-sql-timestamp-str->Instant-utc "  2019-09-19  18:09:35  ")))
   (is= "2019-09-19T18:09:35.123Z" (str (parse-sql-timestamp-str->Instant-utc "  2019-09-19  18:09:35.123  "))))
 
+;-----------------------------------------------------------------------------
+(dotest
+  (let [pat (grab :LocalDate time-str-patterns)]
+    (is (re-matches  pat  "1999-12-31"))
+    (isnt (re-matches pat "1999-2-31")))
+  (let [pat (grab :Timestamp time-str-patterns)]
+    (is (re-matches  pat "1999-12-31 11:22:33"))
+    (isnt (re-matches  pat "1999-12-31 1:2:3")))
+  (let [pat (grab :Instant time-str-patterns)]
+    (is (re-matches  pat "1999-12-31t11:22:33z"))
+    (is (re-matches  pat "1999-12-31t11:22:33Z"))
+    (is (re-matches  pat "1999-12-31t11:22:33.789Z"))
+    (isnt (re-matches  pat "1999-12-31 11:22:33Z"))
+    (isnt (re-matches  pat "1999-12-31t11:22:33x")))
+  (let [pat (grab :ZonedDateTime time-str-patterns)]
+    (is (re-matches  pat "1999-12-31t11:22:33+00:00"))
+    (is (re-matches  pat "1999-12-31t11:22:33+00:00[UTC]"))))
+
+(dotest
+  (is= (str->Instant "1999-11-22") (Instant/parse "1999-11-22t00:00:00z"))
+  (let [ref (-> "1999-11-22t00:00:00z" (Instant/parse))]
+    (is (same-instant? ref (str->Instant "1999-11-22t00:00:00z")))
+    (is (same-instant? ref (str->Instant "1999-11-22")))
+    (is (same-instant? ref (str->Instant "1999-11-22 00:00:00")))
+    (is (same-instant? ref (str->Instant "1999-11-22t00:00:00")))
+    (is (same-instant? ref (str->Instant "1999-11-22t00:00:00z")))
+    (is (same-instant? ref (str->Instant "1999-11-22t00:00:00.000z")))
+    (is (same-instant? ref (str->Instant "1999-11-22t00:00:00+00:00")))
+    (is (same-instant? ref (str->Instant "1999-11-22t00:00:00.000+00:00")))
+    (is (same-instant? ref (str->Instant "1999-11-22t00:00:00+00:00[UTC]")))))
+
+

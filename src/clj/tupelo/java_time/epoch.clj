@@ -11,7 +11,7 @@
     [tupelo.tagval :as tv]
     )
   (:import
-    [java.time LocalDate ZoneId ZonedDateTime Instant Period YearMonth]
+    [java.time LocalDate LocalDateTime ZoneId ZonedDateTime Instant Period Year YearMonth LocalDateTime]
     [java.time.format DateTimeFormatter]
     [java.time.temporal Temporal TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit]
     [java.util Date]
@@ -42,9 +42,11 @@
   [arg :- s/Any] (and (tv/tagval? arg) (= :eqtr (tv/tag arg)) (int? (tv/val arg))))
 
 ;-----------------------------------------------------------------------------
+(def ^:no-doc epoch-Year (Year/parse "1970"))
 (def ^:no-doc epoch-YearMonth (YearMonth/parse "1970-01"))
-(def ^:no-doc epoch-LocalDate (LocalDate/parse "1970-01-01"))
-(def ^:no-doc epoch-Instant (Instant/parse "1970-01-01t00:00:00Z"))
+(def ^:no-doc epoch-LocalDate  LocalDate/EPOCH)
+(def ^:no-doc epoch-LocalDateTime (LocalDateTime/parse "1970-01-01t00:00")) ; seconds optional here
+(def ^:no-doc epoch-Instant  Instant/EPOCH)
 
 ;-----------------------------------------------------------------------------
 ; NOTE: All "Epoch" units are ambiguous regarding timezone. Could be local or UTC.
@@ -96,6 +98,7 @@
     ; (instance? org.joda.time.ReadableInstant arg) (->eday (tjt/->Instant arg)) ; #todo need test
     :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
+; #todo use .toEpochSecond & .ofEpochSecond
 (s/defn ->esec :- ESec           ; #todo finish
   [arg]
   (cond
@@ -108,7 +111,7 @@
 
 ; #todo: Constructor functions
 ; ->enano
-; ->emilli
+; ->emilli ; use .toEpochMillis & .ofEpochMillis
 ; ->eqtr
 ; ->emonth
 ; ->year
