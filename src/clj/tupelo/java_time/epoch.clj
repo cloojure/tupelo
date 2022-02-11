@@ -100,10 +100,11 @@
   [arg :- s/Any] (and (tv/tagval? arg) (= :eqtr (tv/tag arg)) (int? (tv/val arg))))
 
 ;-----------------------------------------------------------------------------
+(def ^:no-doc epoch-Year-int 1970)
 (def ^:no-doc epoch-Year (Year/parse "1970"))
 (def ^:no-doc epoch-YearMonth (YearMonth/parse "1970-01"))
 (def ^:no-doc epoch-LocalDate  LocalDate/EPOCH)
-(def ^:no-doc epoch-LocalDateTime (LocalDateTime/parse "1970-01-01t00:00")) ; seconds optional here
+(def ^:no-doc epoch-LocalDateTime (LocalDateTime/parse "1970-01-01T00:00")) ; seconds optional here
 (def ^:no-doc epoch-Instant  Instant/EPOCH)
 
 ;-----------------------------------------------------------------------------
@@ -122,8 +123,7 @@
 ; #todo inline?
 (s/defn Instant->esec :- ESec ; #todo generalize & test for negative eday
   "Normalizes a LocalDate as the offset from 1970-1-1"
-  [arg :- Instant]
-  {:esec (tjt/between ChronoUnit/SECONDS epoch-Instant arg)})
+  [arg :- Instant] {:esec (tjt/between ChronoUnit/SECONDS epoch-Instant arg)})
 
 ;(s/defn eday->Instant :- LocalDate
 ;  "Given an eday, returns a LocalDate "
