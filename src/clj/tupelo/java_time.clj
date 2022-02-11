@@ -58,29 +58,6 @@
                                        :minute {:min 0 :max 59}
                                        :second {:min 0 :max 60}})
 
-(s/defn ^:no-doc matches-iso-date-regex? :- s/Bool
-  ([s :- s/Str] (matches-iso-date-regex? iso-date-bounds-default s))
-  ([iso-date-bounds :- tsk/KeyMap
-    s :- s/Str]
-   (let [bounds     (glue iso-date-bounds-default iso-date-bounds)
-         year-min   (fetch-in bounds [:year :min])
-         year-max   (fetch-in bounds [:year :max])
-         month-min  (fetch-in bounds [:month :min])
-         month-max  (fetch-in bounds [:month :max])
-         day-min    (fetch-in bounds [:day :min])
-         day-max    (fetch-in bounds [:day :max])
-         match-data (re-matches iso-date-regex s)
-         result     (truthy?
-                      (and match-data
-                        (let [year  (Integer/parseInt (xsecond match-data))
-                              month (Integer/parseInt (xthird match-data))
-                              day   (Integer/parseInt (xfourth match-data))]
-                          (and
-                            (<= year-min year year-max)
-                            (<= month-min month month-max)
-                            (<= day-min day day-max)))))]
-     result)))
-
 ;---------------------------------------------------------------------------------------------------
 (s/defn LocalDate? :- s/Bool
   "Returns true iff arg is of type LocalDate"
@@ -92,7 +69,6 @@
   [arg]
   (and (string? arg)
     (= 10 (count arg))
-    (matches-iso-date-regex? arg)
     (with-exception-default false
       (LocalDate/parse arg)
       true))) ; if no exception => passes
@@ -484,6 +460,26 @@
                    (\[\w+\])?"                ; timezone label like '[UTC]' optional
    })
 
+(s/defn LocalDate-str? :- s/Bool
+  "Returns true if string matches a LocalDate pattern like '1999-12-31' "
+  [s :- s/Str] (truthy? (re-matches (grab :LocalDate time-str-patterns) s)))
+
+(s/defn Timestamp-str? :- s/Bool
+  "Returns true if string matches a SQL Timestamp pattern like '1999-12-31 11:22:33' "
+  [s :- s/Str] (truthy? (re-matches (grab :Timestamp time-str-patterns) s)))
+
+(s/defn LocalDateTime-str? :- s/Bool
+  "Returns true if string matches a LocalDateTime pattern like '1999-12-31T11:22:33' "
+  [s :- s/Str] (truthy? (re-matches (grab :LocalDateTime time-str-patterns) s)))
+
+(s/defn Instant-str? :- s/Bool
+  "Returns true if string matches a Instant pattern like '1999-12-31T11:22:33Z' "
+  [s :- s/Str] (truthy? (re-matches (grab :Instant time-str-patterns) s)))
+
+(s/defn ZonedDateTime-str? :- s/Bool
+  "Returns true if string matches a Instant pattern like '1999-12-31T11:22:33-08:00Z' "
+  [s :- s/Str] (truthy? (re-matches (grab :ZonedDateTime time-str-patterns) s)))
+
 (s/defn str->Instant :- Instant
   "Parse a string into a java.time.Instant. Valid formats include:
 
@@ -499,23 +495,19 @@
   [s :- s/Str]
   (let [tgt (str/trim s)]
     (cond
-      (re-matches (grab :LocalDate time-str-patterns) tgt)
+      (LocalDate-str? tgt)
       (-> tgt (LocalDate/parse) (convert/LocalDate->LocalDateTime-midnight) (convert/LocalDateTime->ZonedDateTime-utc) (Instant/from))
 
-      (re-matches (grab :LocalDateTime time-str-patterns) tgt)
+      (LocalDateTime-str? tgt)
       (-> tgt (LocalDateTime/parse) (convert/LocalDateTime->ZonedDateTime-utc) (Instant/from))
 
-      (re-matches (grab :Timestamp time-str-patterns) tgt)
-      (parse-sql-timestamp-str->Instant-utc tgt)
+      (Timestamp-str? tgt) (parse-sql-timestamp-str->Instant-utc tgt)
 
-      (re-matches (grab :Instant time-str-patterns) tgt)
-      (Instant/parse tgt)
+      (Instant-str? tgt) (Instant/parse tgt)
 
-      (re-matches (grab :ZonedDateTime time-str-patterns) tgt)
-      (-> tgt (ZonedDateTime/parse) (Instant/from))
+      (ZonedDateTime-str? tgt) (-> tgt (ZonedDateTime/parse) (Instant/from))
 
-      :else (throw (ex-info "pattern not recognized" {:s tgt}))
-      )))
+      :else (throw (ex-info "pattern not recognized" {:s tgt})))))
 
 ;-----------------------------------------------------------------------------
 (defn walk-sql-Timestamp->Instant

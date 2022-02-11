@@ -19,31 +19,6 @@
     [java.time.temporal ChronoUnit]))
 
 (dotest
-  (isnt (matches-iso-date-regex? "1999-12-3"))
-  (isnt (matches-iso-date-regex? "1999-12-003"))
-  (isnt (matches-iso-date-regex? "1999-12-39"))
-  (isnt (matches-iso-date-regex? "1599-12-31"))
-  (isnt (matches-iso-date-regex? "1999-13-31"))
-  (isnt (matches-iso-date-regex? "1999-00-31"))
-  (isnt (matches-iso-date-regex? "1999-12-32"))
-  (isnt (matches-iso-date-regex? "1999-12-00"))
-
-  (isnt (matches-iso-date-regex? "1234-12-01"))
-  (isnt (matches-iso-date-regex? "9999-12-31"))
-  (isnt (matches-iso-date-regex? "1999-1-01"))
-  (isnt (matches-iso-date-regex? "1999-005-31"))
-  (isnt (matches-iso-date-regex? "1999-12-001"))
-  (isnt (matches-iso-date-regex? "1999-12-3"))
-
-  (is (matches-iso-date-regex? "1999-12-01"))
-  (is (matches-iso-date-regex? "1999-12-31"))
-  (is (matches-iso-date-regex? "1999-01-01"))
-  (is (matches-iso-date-regex? "1999-01-31"))
-  (is (matches-iso-date-regex? "1999-02-01"))
-  (is (matches-iso-date-regex? "1999-02-31")) ; does not validate days-in-month
-  )
-
-(dotest
   (throws-not? (Instant/parse "2019-02-14T02:03:04.334Z"))
   (throws-not? (Instant/parse "2019-02-14T02:03:04Z"))
   (throws-not? (Instant/parse "0019-02-14T02:03:04Z")) ; can handle really old dates w/o throwing
@@ -547,6 +522,15 @@
     (is (re-matches  pat "1999-12-31t11:22:33+00:00[UTC]"))))
 
 (dotest
+  (is (LocalDate-str? "1999-11-22"))
+  (is (Timestamp-str? "1999-11-22 00:00:00"))
+  (is (LocalDateTime-str? "1999-11-22t00:00:00"))
+  (is (Instant-str? "1999-11-22t00:00:00z"))
+  (is (Instant-str? "1999-11-22t00:00:00.000z"))
+  (is (ZonedDateTime-str? "1999-11-22t00:00:00+00:00"))
+  (is (ZonedDateTime-str? "1999-11-22t00:00:00.000+00:00"))
+  (is (ZonedDateTime-str? "1999-11-22t00:00:00+00:00[UTC]"))
+
   (is= (str->Instant "1999-11-22") (Instant/parse "1999-11-22t00:00:00z"))
   (let [ref (-> "1999-11-22t00:00:00z" (Instant/parse))]
     (is (same-instant? ref (str->Instant "1999-11-22t00:00:00z")))
