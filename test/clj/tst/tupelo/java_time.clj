@@ -1,12 +1,11 @@
 (ns ^:test-refresh/focus
   tst.tupelo.java-time
   (:refer-clojure :exclude [range])
-  (:use tupelo.java-time
-        tupelo.core
-        tupelo.test)
+  (:use tupelo.java-time tupelo.test)
   (:require
     [clj-time.core :as joda]
     [tupelo.core :as t]
+    [tupelo.java-time :as tjt]
     [tupelo.interval :as interval]
     [tupelo.string :as str]
     [schema.core :as s]
@@ -51,15 +50,15 @@
       (is= 12 (count month->quarter))
       (is (every? year-quarter? month->quarter))
       (is= month->quarter
-        (forv [month-num (thru 1 12)] (->year-quarter (YearMonth/of 2013 month-num))))
+        (t/forv [month-num (t/thru 1 12)] (->year-quarter (YearMonth/of 2013 month-num))))
       (is= month->quarter
-        (forv [month-num (thru 1 12)] (->year-quarter (MonthDay/of month-num 13)))) ; 13'th of each month
+        (t/forv [month-num (t/thru 1 12)] (->year-quarter (MonthDay/of month-num 13)))) ; 13'th of each month
       (is= month->quarter
-        (forv [month-num (thru 1 12)] (->year-quarter (LocalDate/parse (format "2013-%02d-19" month-num)))))
+        (t/forv [month-num (t/thru 1 12)] (->year-quarter (LocalDate/parse (format "2013-%02d-19" month-num)))))
       (is= month->quarter
-        (forv [month-num (thru 1 12)] (->year-quarter (LocalDateTime/parse (format "2013-%02d-19T12:13:14" month-num)))))
+        (t/forv [month-num (t/thru 1 12)] (->year-quarter (LocalDateTime/parse (format "2013-%02d-19T12:13:14" month-num)))))
       (is= month->quarter
-        (forv [month-num (thru 1 12)] (->year-quarter (ZonedDateTime/parse (format "2013-%02d-19T12:13:14Z" month-num))))))
+        (t/forv [month-num (t/thru 1 12)] (->year-quarter (ZonedDateTime/parse (format "2013-%02d-19T12:13:14Z" month-num))))))
 
     (let [dnum-q1         (LocalDateStr->eday "2013-03-31")
           dnum-q2         (LocalDateStr->eday "2013-04-01")
@@ -81,7 +80,7 @@
                                   :upper {:LocalDate "1995-01-04"}}))))
 
 (dotest
-  (let [localdates-30 (forv [day (thru 1 30)]
+  (let [localdates-30 (t/forv [day (t/thru 1 30)]
                         (LocalDate/parse (format "2019-12-%02d" day)))]
     ; LocalDate-str (ISO text string) sorts correctly
     (let [dates-1 (shuffle localdates-30)
@@ -110,9 +109,9 @@
           ld-itvl-slice  (interval/new-slice ld-2019-12-05 ld-2019-12-09)
           ld-itvl-closed (interval/new-closed ld-2019-12-05 ld-2019-12-09)
 
-          open-5-9       (keep-if #(interval/contains? ld-itvl-open %) localdates-30)
-          slice-5-9      (keep-if #(interval/contains? ld-itvl-slice %) localdates-30)
-          thru-5-9       (keep-if #(interval/contains? ld-itvl-closed %) localdates-30)]
+          open-5-9       (t/keep-if #(interval/contains? ld-itvl-open %) localdates-30)
+          slice-5-9      (t/keep-if #(interval/contains? ld-itvl-slice %) localdates-30)
+          thru-5-9       (t/keep-if #(interval/contains? ld-itvl-closed %) localdates-30)]
 
       (is= (mapv str open-5-9) ["2019-12-06" "2019-12-07" "2019-12-08"])
       (is= (mapv str slice-5-9) ["2019-12-05" "2019-12-06" "2019-12-07" "2019-12-08"])
@@ -158,9 +157,9 @@
 
 (dotest
   (let [zone-ids         (vec (sort (ZoneId/getAvailableZoneIds))) ; all ZoneId String values
-        zone-ids-america (vec (keep-if #(str/starts-with? % "America/") zone-ids))
-        zone-ids-europe  (vec (keep-if #(str/starts-with? % "Europe/") zone-ids))
-        zone-ids-us      (vec (keep-if #(str/starts-with? % "US/") zone-ids))]
+        zone-ids-america (vec (t/keep-if #(str/starts-with? % "America/") zone-ids))
+        zone-ids-europe  (vec (t/keep-if #(str/starts-with? % "Europe/") zone-ids))
+        zone-ids-us      (vec (t/keep-if #(str/starts-with? % "US/") zone-ids))]
     (is (< 590 (count zone-ids)))
     (is (< 160 (count zone-ids-america)))
     (is (< 60 (count zone-ids-europe)))
@@ -217,38 +216,56 @@
         (previous-or-same (zoned-date-time 2018 9 10) DayOfWeek/SUNDAY))))
 
 (dotest
-  (is= 1 (between ChronoUnit/HOURS
+  (is= 1 (between->units ChronoUnit/HOURS
            (->Instant "1987-11-22t01:30:00z")
            (->Instant "1987-11-22t03:29:00z")))
 
-  (is= 111111111 (between ChronoUnit/NANOS
+  (is= 111111111 (between->units ChronoUnit/NANOS
                    (->Instant "1987-11-22t11:22:33.444444444z")
                    (->Instant "1987-11-22t11:22:33.555555555z")))
-  (is= 444 (between ChronoUnit/MILLIS
+  (is= 444 (between->units ChronoUnit/MILLIS
              (->Instant "1987-11-22t11:22:33z")
              (->Instant "1987-11-22t11:22:33.444444z")))
-  (is= 1 (between ChronoUnit/SECONDS
+  (is= 1 (between->units ChronoUnit/SECONDS
            (->Instant "1987-11-22t11:22:33z")
            (->Instant "1987-11-22t11:22:34.4z")))
-  (is= 11 (between ChronoUnit/MINUTES
+  (is= 11 (between->units ChronoUnit/MINUTES
             (->Instant "1987-11-22t11:22:33z")
             (->Instant "1987-11-22t11:33:44z")))
-  (is= 10 (between ChronoUnit/HOURS
+  (is= 10 (between->units ChronoUnit/HOURS
             (->Instant "1987-11-22t01:02:03z")
             (->Instant "1987-11-22t11:22:00z")))
-  (is= 1 (between ChronoUnit/DAYS
+  (is= 1 (between->units ChronoUnit/DAYS
            (->Instant "1987-11-22t01:02:03z")
            (->Instant "1987-11-23t11:22:00z")))
 
-  (is= 4 (between ChronoUnit/WEEKS
+  (is= 4 (between->units ChronoUnit/WEEKS
            (->LocalDate "1987-01-01")
            (->LocalDate "1987-01-31")))
-  (is= 10 (between ChronoUnit/MONTHS
+  (is= 10 (between->units ChronoUnit/MONTHS
             (->LocalDate "1987-01-22")
             (->LocalDate "1987-11-23")))
-  (is= 12 (between ChronoUnit/YEARS
+  (is= 12 (between->units ChronoUnit/YEARS
             (->LocalDate "1987-01-22")
             (->LocalDate "1999-11-23"))))
+
+(dotest
+  (let [i1 (str->Instant "1987-01-22")
+        i2 (str->Instant "1987-01-23")
+        i3 (str->Instant "1987-01-24")]
+    (is (tjt/increasing? i1 i2 i3))
+    (isnt (tjt/increasing? i1 i1 i3))
+    (isnt (tjt/increasing? i1 i3 i3))
+    (isnt (tjt/increasing? i2 i1 i3))
+    (isnt (tjt/increasing? i1 i3 i2))
+    (isnt (tjt/increasing? i3 i2 i1))
+
+    (is (tjt/increasing-or-equal? i1 i2 i3))
+    (is (tjt/increasing-or-equal? i1 i1 i3))
+    (is (tjt/increasing-or-equal? i1 i3 i3))
+    (isnt (tjt/increasing-or-equal? i2 i1 i3))
+    (isnt (tjt/increasing-or-equal? i1 i3 i2))
+    (isnt (tjt/increasing-or-equal? i3 i2 i1))))
 
 (dotest
   (let [zdt  (zoned-date-time 2018 9 8,, 2 3 4)
@@ -497,19 +514,19 @@
 
 ;-----------------------------------------------------------------------------
 (dotest
-  (let [pat (grab :LocalDate time-str-patterns)]
+  (let [pat (t/grab :LocalDate time-str-patterns)]
     (is (re-matches  pat  "1999-12-31"))
     (isnt (re-matches pat "1999-2-31")))
-  (let [pat (grab :Timestamp time-str-patterns)]
+  (let [pat (t/grab :Timestamp time-str-patterns)]
     (is (re-matches  pat "1999-12-31 11:22:33"))
     (isnt (re-matches  pat "1999-12-31 1:2:3")))
-  (let [pat (grab :Instant time-str-patterns)]
+  (let [pat (t/grab :Instant time-str-patterns)]
     (is (re-matches  pat "1999-12-31t11:22:33z"))
     (is (re-matches  pat "1999-12-31t11:22:33Z"))
     (is (re-matches  pat "1999-12-31t11:22:33.789Z"))
     (isnt (re-matches  pat "1999-12-31 11:22:33Z"))
     (isnt (re-matches  pat "1999-12-31t11:22:33x")))
-  (let [pat (grab :ZonedDateTime time-str-patterns)]
+  (let [pat (t/grab :ZonedDateTime time-str-patterns)]
     (is (re-matches  pat "1999-12-31t11:22:33+00:00"))
     (is (re-matches  pat "1999-12-31t11:22:33+00:00[UTC]"))))
 

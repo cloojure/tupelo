@@ -123,7 +123,7 @@
 ; #todo inline?
 (s/defn Instant->esec :- ESec ; #todo generalize & test for negative eday
   "Normalizes a LocalDate as the offset from 1970-1-1"
-  [arg :- Instant] {:esec (tjt/between ChronoUnit/SECONDS epoch-Instant arg)})
+  [arg :- Instant] {:esec (tjt/between->units ChronoUnit/SECONDS epoch-Instant arg)})
 
 ;(s/defn eday->Instant :- LocalDate
 ;  "Given an eday, returns a LocalDate "

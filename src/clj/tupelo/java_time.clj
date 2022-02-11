@@ -1,9 +1,9 @@
 (ns tupelo.java-time
   (:refer-clojure :exclude [range])
-  (:use tupelo.core)
   (:require
     [clojure.walk :as walk]
     [schema.core :as s]
+    [tupelo.core :as t]
     [tupelo.interval :as interval]
     [tupelo.java-time.convert :as convert]
     [tupelo.schema :as tsk]
@@ -69,7 +69,7 @@
   [arg]
   (and (string? arg)
     (= 10 (count arg))
-    (with-exception-default false
+    (t/with-exception-default false
       (LocalDate/parse arg)
       true))) ; if no exception => passes
 
@@ -80,12 +80,12 @@
 (s/defn tagval->LocalDate :- LocalDate
   "Parses a tagval into a java.time.LocalDate"
   [ldtv :- {:LocalDate s/Str}]
-  (LocalDate/parse (grab :LocalDate ldtv)))
+  (LocalDate/parse (t/grab :LocalDate ldtv)))
 
 (defn walk-LocalDate->tagval
   [data]
   (walk/postwalk (fn [item]
-                   (cond-it-> item
+                   (t/cond-it-> item
                      (instance? LocalDate it) (LocalDate->tagval it)))
     data))
 
@@ -94,7 +94,7 @@
 (def ^:no-doc year-quarters-sorted-vec (vec (sort year-quarters)))
 (s/defn year-quarter? :- s/Bool
   "Returns true iff arg is indicates a (financial) quarter in the year."
-  [arg] (contains-key? year-quarters arg))
+  [arg] (t/contains-key? year-quarters arg))
 
 ;#todo year-quarter => like "2013-Q1"
 (s/defn ->year-quarter :- tsk/Quarter ;#todo rename quarter-of-year
@@ -111,7 +111,7 @@
 (s/defn LocalDate-interval->days :- s/Int
   "Returns the duration in days from the start to the end of a LocalDate Interval"
   [interval :- Interval]
-  (with-map-vals interval [lower upper]
+  (t/with-map-vals interval [lower upper]
     (assert (and (LocalDate? lower) (LocalDate? upper)))
     (.between ChronoUnit/DAYS lower upper)))
 
@@ -119,7 +119,7 @@
   "Converts a sequence of LocalDate objects into an integer series like [0 1 2 ...], relative to the first value.
   Assumes LocalDate's are in ascending order."
   [ld-vals :- [LocalDate]]
-  (let [first-date (xfirst ld-vals)]
+  (let [first-date (t/xfirst ld-vals)]
     (mapv #(LocalDate-interval->days (interval/new first-date %)) ld-vals)))
 
 ;---------------------------------------------------------------------------------------------------
@@ -157,27 +157,27 @@
 
 (s/defn LocalDate-str? :- s/Bool
   "Returns true if string matches a LocalDate pattern like '1999-12-31' "
-  [s :- s/Str] (truthy? (re-matches (grab :LocalDate time-str-patterns) s)))
+  [s :- s/Str] (t/truthy? (re-matches (t/grab :LocalDate time-str-patterns) s)))
 
 (s/defn Timestamp-str? :- s/Bool
   "Returns true if string matches a SQL Timestamp pattern like '1999-12-31 11:22:33' "
-  [s :- s/Str] (truthy? (re-matches (grab :Timestamp time-str-patterns) s)))
+  [s :- s/Str] (t/truthy? (re-matches (t/grab :Timestamp time-str-patterns) s)))
 
 (s/defn LocalDateTime-str? :- s/Bool
   "Returns true if string matches a LocalDateTime pattern like '1999-12-31T11:22:33' "
-  [s :- s/Str] (truthy? (re-matches (grab :LocalDateTime time-str-patterns) s)))
+  [s :- s/Str] (t/truthy? (re-matches (t/grab :LocalDateTime time-str-patterns) s)))
 
 (s/defn Instant-str? :- s/Bool
   "Returns true if string matches a Instant (ISO 8601) pattern like '1999-12-31T11:22:33Z' "
-  [s :- s/Str] (truthy? (re-matches (grab :Instant time-str-patterns) s)))
+  [s :- s/Str] (t/truthy? (re-matches (t/grab :Instant time-str-patterns) s)))
 
 (s/defn iso-str-nice-str? :- s/Bool
   "Returns true if string matches a 'nice' ISO 8601 pattern like '1999-12-31 11:22:33Z' "
-  [s :- s/Str] (truthy? (re-matches (grab :iso-str-nice time-str-patterns) s)))
+  [s :- s/Str] (t/truthy? (re-matches (t/grab :iso-str-nice time-str-patterns) s)))
 
 (s/defn ZonedDateTime-str? :- s/Bool
   "Returns true if string matches a Instant pattern like '1999-12-31T11:22:33-08:00Z' "
-  [s :- s/Str] (truthy? (re-matches (grab :ZonedDateTime time-str-patterns) s)))
+  [s :- s/Str] (t/truthy? (re-matches (t/grab :ZonedDateTime time-str-patterns) s)))
 
 ;---------------------------------------------------------------------------------------------------
 (defn ZonedDateTime?
@@ -230,7 +230,7 @@
   (cond
     (instance? ZonedDateTime arg) arg
     (instance? Instant arg) (ZonedDateTime/ofInstant arg zoneid-utc)
-    (instance? org.joda.time.ReadableInstant arg) (it-> arg
+    (instance? org.joda.time.ReadableInstant arg) (t/it-> arg
                                                     (->Instant it)
                                                     (.atZone it zoneid-utc))
     (instance? String arg) (->ZonedDateTime (parse-iso-str-nice->Instant arg)) ; #todo need unit test
@@ -336,7 +336,7 @@
                    temporals
                    (mapv ->Instant temporals)) ; coerce all to Instant
         [base & others] instants]
-    (every? truthy?
+    (every? t/truthy?
       (mapv #(.equals base %) others))))
 
 ; #todo need version of < and <= (N-arity) for both ZDT/Instant
@@ -355,26 +355,26 @@
   [temporal :- Temporal,
    chrono-unit :- ChronoUnit]
   (cond
-    (contains-key? truncated-to-units-direct chrono-unit) (.truncatedTo temporal chrono-unit)
+    (t/contains-key? truncated-to-units-direct chrono-unit) (.truncatedTo temporal chrono-unit)
 
     (= chrono-unit ChronoUnit/MONTHS)
     ; cannot use previous pattern or get:
     ;   UnsupportedTemporalTypeException: Unit is too large to be used for truncation
-    (it-> temporal
+    (t/it-> temporal
       (truncated-to it ChronoUnit/DAYS)
       (.with it (TemporalAdjusters/firstDayOfMonth)))
 
     (= chrono-unit ChronoUnit/YEARS)
     ; cannot use previous pattern or get:
     ;   UnsupportedTemporalTypeException: Unit is too large to be used for truncation
-    (it-> temporal
+    (t/it-> temporal
       (truncated-to it ChronoUnit/DAYS)
       (.with it (TemporalAdjusters/firstDayOfYear)))
 
-    :else (throw (ex-info "invalid chrono-unit" (vals->map temporal chrono-unit)))))
+    :else (throw (ex-info "invalid chrono-unit" (t/vals->map temporal chrono-unit)))))
 
 ;-----------------------------------------------------------------------------
-(s/defn between :- s/Int
+(s/defn between->units :- s/Int
   "Returns the integer number of ChronoUnit values between two temporal values, truncating any fraction.
    Example:
 
@@ -387,6 +387,20 @@
    t1 :- Temporal
    t2 :- Temporal]
   (.between chrono-unit t1 t2))
+
+(s/defn increasing? :- s/Bool
+  "Returns true iff Instants [i1 i2 i3] is in strictly increasing order (open interval)"
+  [i1 :- Instant
+   i2 :- Instant
+   i3 :- Instant]
+  (and (.isBefore i1 i2) (.isBefore i2 i3)))
+
+(s/defn increasing-or-equal? :- s/Bool
+  "Returns true iff Instants [i1 i2 i3] is in strictly increasing order (closed interval)"
+  [i1 :- Instant
+   i2 :- Instant
+   i3 :- Instant]
+  (or (increasing? i1 i2 i3) (.equals i1 i2) (.equals i2 i3)))
 
 ;-----------------------------------------------------------------------------
 ; #todo: make a generic (previous :tuesday)
@@ -461,7 +475,7 @@
   "Parse a near-iso string like '2019-09-19 18:09:35Z' (it is missing the 'T' between the
   date & time fields) into an Instant. Will collapse excess whitespace."
   [iso-str :- s/Str]
-  (it-> iso-str
+  (t/it-> iso-str
     (str/whitespace-collapse it)
     (vec it) ; convert to vector of chars
     (assoc it 10 \T) ; set index 10 to a "T" char
@@ -472,11 +486,11 @@
   "Parse a near-Timestamp string like '  2019-09-19 18:09:35 ' (sloppy spacing) into an Instant.
   Assumes UTC timezone. Will collapse excess whitespace."
   [sql-timestamp-str :- s/Str]
-  (it-> sql-timestamp-str
+  (t/it-> sql-timestamp-str
     (str/whitespace-collapse it)
     (vec it) ; convert to vector of chars
     (assoc it 10 \T) ; set index 10 to a "T" char
-    (append it \Z)
+    (t/append it \Z)
     (str/join it) ; convert back to a string
     (Instant/parse it)))
 
@@ -551,7 +565,7 @@
   "Will recursively walk any data structure, converting any `fixed-time-point?` object to a string"
   [form]
   (walk/postwalk (fn [item]
-                   (cond-it-> item
+                   (t/cond-it-> item
                      (fixed-point? it) (format->iso-str it)))
     form))
 
