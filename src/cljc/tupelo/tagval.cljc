@@ -51,6 +51,18 @@
   (t/cond-it-> arg
     (tagval? it) (val it)))
 
+(s/defn mapv :- [tsk/TagVal]
+  "Given a sequence of TagVals, applys tx-fn to the value in each TagVal,
+  returning a vector of TagVals. "
+  [tx-fn :- tsk/Fn
+   tagvals :- [tsk/TagVal]]
+  (t/forv [tv tagvals]
+    (let [k      (tag tv)
+          v      (val tv)
+          v-new  (tx-fn v)
+          result (tupelo.tagval/new k v-new)]
+      result)))
+
 (comment ; old Record version
   (defprotocol IVal (<val [this]))
   (defprotocol ITag (<tag [this]))

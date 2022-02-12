@@ -57,6 +57,13 @@
         tv-sym-a (tv/new :sym sa)]
     (is= tv-sym-a {:sym (quote a)})))
 
+(dotest
+  (let [tvs     [{:x 0}
+                 {:x 1}
+                 {:x 2}]
+        tvs-new (tv/mapv inc tvs)]
+    (is= tvs-new [{:x 1} {:x 2} {:x 3}])))
+
 ;---------------------------------------------------------------------------------------------------
 (comment ; old record version
   (defrecord DummyRec [dum]
