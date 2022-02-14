@@ -6,7 +6,7 @@
 ;   software.
 (ns tupelo.tagval
   "Tupelo - Making Clojure even sweeter"
-  (:refer-clojure :exclude [key val])
+  (:refer-clojure :exclude [key val mapv])
   (:require
     [clojure.core :as clj]
     [schema.core :as s]
