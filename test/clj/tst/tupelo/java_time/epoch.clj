@@ -95,6 +95,13 @@
 
 ;-----------------------------------------------------------------------------
 (dotest
+  (let [epoch-instant (Instant/parse "1970-01-01t00:00:00Z")
+        epoch-millis  (.toEpochMilli epoch-instant)
+        epoch-esec    (quot epoch-millis 1000)]
+    (is= 0 epoch-millis)
+    (is= 0 epoch-esec)
+    (is= epoch-instant (esec->Instant epoch-esec)))
+
   (is= (->esec "1970-01-01t00:00:00Z") {:esec 0})
   (is= (->esec "1970-01-01t00:00:00.123Z") {:esec 0})
   (is= (->esec "1970-01-01t01:00:00Z") {:esec 3600})
@@ -103,14 +110,6 @@
   (is= (->esec "1971-01-01t00:00:00Z") {:esec (* 86400 365)})
   (is= (->esec (tjt/->Instant "1971-01-01t00:00:00Z")) {:esec (* 86400 365)})
   (is= (->esec (tjt/->ZonedDateTime "1971-01-01t00:00:00Z")) {:esec (* 86400 365)})
+
   )
-
-
-
-
-
-
-
-
-
 

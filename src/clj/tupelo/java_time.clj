@@ -295,24 +295,18 @@
   "Wrapper for java.time.Instant/ofEpochMilli "
   [millis] (java.time.Instant/ofEpochMilli millis))
 
-(defn esec->Instant
-  "Wrapper for java.time.Instant/ofEpochSecs "
-  [esec] (java.time.Instant/ofEpochSecond esec))
+(defn now->Instant
+  "Returns the current time as a java.lang.Instant"
+  [] (Instant/now))
 
 (defn now->ZonedDateTime
   "Returns the current time as a java.lang.ZonedDateTime (UTC)"
   [] (with-zoneid zoneid-utc (ZonedDateTime/now)))
 
-(defn now->Instant
-  "Returns the current time as a java.lang.Instant"
-  [] (Instant/now))
-
 (defn now->iso-str
   "Returns an ISO string representation of the current time,
   like '2019-02-19T18:44:01.123456Z' "
-  []
-  (-> (java.time.Instant/now)
-    (.toString)))
+  [] (str (Instant/now)))
 
 (defn now->iso-str-simple
   "Returns a canonical string representation of the current time truncated to the current second,

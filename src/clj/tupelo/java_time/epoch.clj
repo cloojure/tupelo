@@ -176,6 +176,12 @@
 ; ->year
 ; #todo source: Instant, ZDT
 
+; #todo: conversions (enano, emilli, esec, eday, emonth, eqtr, year) <=> all
+
+(defn esec->Instant
+  "Wrapper for java.time.Instant/ofEpochSecs "
+  [esec] (java.time.Instant/ofEpochSecond esec))
+
 ; #todo eXXX->Instant
 ; #todo maybe eXXX->eYYY (sec/day, etc)
 

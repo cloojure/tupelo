@@ -429,11 +429,11 @@
 
         millis-1               (.toEpochMilli now-instant-1)
         instant-1c             (millis->Instant millis-1)
-        instant-1-trunc        (esec->Instant (quot millis-1 1000))]
+        ]
     (is (interval/contains? instant-interval-short (->Instant now-zdt-1a)))
     (is (interval/contains? instant-interval-short (->Instant now-zdt-1b)))
     (is (interval/contains? instant-interval-11 instant-1c))
-    (is (interval/contains? instant-interval-11 instant-1-trunc))))
+    ))
 
 (dotest
   ; note that instants are in DESCENDING order
