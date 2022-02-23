@@ -31,7 +31,7 @@
   #?(:clj
      (:import
        [java.lang Byte Integer]
-       [java.time Clock Instant]
+       [java.time Clock Instant ZonedDateTime]
        [java.sql Timestamp]
        [java.util Date UUID]
        )))
@@ -75,15 +75,17 @@
              millis            (.toEpochMilli inst-val)
              date-val          (Date. millis)
              sql-timestamp-val (Timestamp. millis)
-             sql-date-val      (java.sql.Date. millis)]
+             sql-date-val      (java.sql.Date. millis)
+             zdt-val           (ZonedDateTime/parse "1999-11-22t11:33:44.000-08:00")
+             ]
          (is= (str inst-val) "1999-12-31T01:02:03.456Z")
          (is= (misc/walk-data->tagstr uuid-val) "<#uuid 605ca9b3-219b-44b3-9c91-238dba64a3f8>")
-
          (is= (misc/walk-data->tagstr inst-val) "<#inst 1999-12-31T01:02:03.456Z>")
          (is= (misc/walk-data->tagstr date-val) "<#java.util.Date Thu Dec 30 17:02:03 PST 1999>")
          (is= (misc/walk-data->tagstr sql-date-val) "<#java.sql.Date 1999-12-30>")
-         (is= (misc/walk-data->tagstr sql-timestamp-val) "<#java.sql.Timestamp 1999-12-30 17:02:03.456>")))
-     ))
+         (is= (misc/walk-data->tagstr sql-timestamp-val) "<#java.sql.Timestamp 1999-12-30 17:02:03.456>")
+         (is= (misc/walk-data->tagstr zdt-val) "<#java.time.ZonedDateTime 1999-11-22T11:33:44-08:00>")
+         ))))
 
 
 ;---------------------------------------------------------------------------------------------------

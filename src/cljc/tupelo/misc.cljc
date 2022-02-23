@@ -93,7 +93,7 @@
                      (record? it) (into {} it)))
     data))
 
-(defn walk-data->tagstr
+(s/defn walk-data->tagstr :- s/Any ; #todo => tupelo.tagstr
   "Convert objects to tagged strings like:
 
         <#uuid 605ca9b3-219b-44b3-9c91-238dba64a3f8>
@@ -102,14 +102,14 @@
         <#java.sql.Date 1999-12-30>
         <#java.sql.Timestamp 1999-12-30 17:02:03.456>
   "
-  [data]
+  [data :- s/Any]
   (walk/postwalk
     (fn [item]
-      (cond
-        (= (type item) java.util.Date) (str "<#java.util.Date " item ">")
-        (= (type item) java.sql.Date) (str "<#java.sql.Date " item ">")
-        (= (type item) java.sql.Timestamp) (str "<#java.sql.Timestamp " item ">")
-        (= (type item) java.time.ZonedDateTime) (str "<#java.time.ZonedDateTime " item ">")
+      (cond ; #todo => make individual fns & delegate ; plus inverse constructor fns
+        (= (type item) java.util.Date) (str "<#java.util.Date " item ">") ; or j.u.Date or Date
+        (= (type item) java.sql.Date) (str "<#java.sql.Date " item ">") ; or j.s.Date
+        (= (type item) java.sql.Timestamp) (str "<#java.sql.Timestamp " item ">") ; or j.s.TimeStamp
+        (= (type item) java.time.ZonedDateTime) (str "<#java.time.ZonedDateTime " item ">") ; or j.t.*
         (inst? item) (str "<#inst " item ">") ; must go after the above items due to inheritance!
         (uuid? item) (str "<#uuid " item ">")
         :else item))
