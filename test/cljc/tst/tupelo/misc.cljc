@@ -69,30 +69,42 @@
 
 #?(:clj
    (do
-     (dotest
+     (dotest-focus
        (let [uuid-val          (UUID/fromString "605ca9b3-219b-44b3-9c91-238dba64a3f8")
              inst-val          (Instant/parse "1999-12-31t01:02:03.456Z")
              millis            (.toEpochMilli inst-val)
-             date-val          (Date. millis)
+             date-val          (Date. millis) ; NOTE: toString() truncates millis
              sql-timestamp-val (Timestamp. millis)
              sql-date-val      (java.sql.Date. millis)
              zdt-val           (ZonedDateTime/parse "1999-11-22t11:33:44.000-08:00")
              ]
+         ;(spyx millis)
+         ;(spyxx date-val)
+         ;(spyx (str date-val))
+         ;(spyx (.toString date-val))
+
          (is= (str inst-val) "1999-12-31T01:02:03.456Z")
          (is= (misc/walk-data->tagstr uuid-val) "<#uuid 605ca9b3-219b-44b3-9c91-238dba64a3f8>")
          (is= (misc/walk-data->tagstr inst-val) "<#inst 1999-12-31T01:02:03.456Z>")
-         (is= (misc/walk-data->tagstr date-val) "<#java.util.Date Thu Dec 30 17:02:03 PST 1999>")
+         (is= (misc/walk-data->tagstr date-val) "<#java.util.Date 1999-12-31T01:02:03.456Z>")
          (is= (misc/walk-data->tagstr sql-date-val) "<#java.sql.Date 1999-12-30>")
          (is= (misc/walk-data->tagstr sql-timestamp-val) "<#java.sql.Timestamp 1999-12-30 17:02:03.456>")
          (is= (misc/walk-data->tagstr zdt-val) "<#java.time.ZonedDateTime 1999-11-22T11:33:44-08:00>")
-         ))
+         )
 
-     (dotest
        (is (nil? (re-matches #"\w+" "java.util.Date"))) ; word chars, 1 or more
        (is (nil? (re-matches #"[\w]+" "java.util.Date"))) ; word chars, 1 or more
        (isnt (nil? (re-matches #"[\.\w]+" "java.util.Date"))) ; [dot or word chars], 1 or more
-       )
-     ))
+       (let         ; -spy
+         [date-str "1999-12-31T01:02:03.456Z" ; "Thu Dec 30 17:02:03 PST 1999"
+          parsed-long (.toEpochMilli (Instant/parse date-str))
+          date-str2 (java.util.Date. (long parsed-long))]
+         (when false ; #todo finish this; format Date as Instant, read & write
+           (spyx date-str2)
+           (println :date-str2 date-str2)
+           (spyx (= date-str date-str2)))
+         )
+       )))
 
 
 ;---------------------------------------------------------------------------------------------------

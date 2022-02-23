@@ -106,7 +106,7 @@
   (walk/postwalk
     (fn [item]
       (cond ; #todo => make individual fns & delegate ; plus inverse constructor fns
-        (= (type item) java.util.Date) (str "<#java.util.Date " item ">") ; or j.u.Date or Date
+        (= (type item) java.util.Date) (str "<#java.util.Date " (.toInstant item) ">") ; or j.u.Date or Date
         (= (type item) java.sql.Date) (str "<#java.sql.Date " item ">") ; or j.s.Date
         (= (type item) java.sql.Timestamp) (str "<#java.sql.Timestamp " item ">") ; or j.s.TimeStamp
         (= (type item) java.time.ZonedDateTime) (str "<#java.time.ZonedDateTime " item ">") ; or j.t.*

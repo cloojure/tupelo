@@ -7,7 +7,7 @@
     )
   (:import
     [java.time LocalDate LocalDateTime DayOfWeek ZoneId ZonedDateTime Instant Period LocalDateTime]
-    [java.time.temporal Temporal TemporalUnit TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit ]
+    [java.time.temporal Temporal TemporalUnit TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit]
     [java.util Date]
     ))
 
@@ -32,6 +32,10 @@
 (s/defn LocalDate->Date :- Date
   "Converts a LocalDate to a java.util.Date, using midnight (start of day) and the UTC timezone."
   [ld :- LocalDate] (Date/from (LocalDate->Instant ld)))
+
+(s/defn Instant->Date :- Date
+  [inst :- Instant]
+  (-> inst (.toEpochMilli) (Date.)))
 
 ; #todo ZDT->Instant
 
