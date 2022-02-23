@@ -85,7 +85,14 @@
          (is= (misc/walk-data->tagstr sql-date-val) "<#java.sql.Date 1999-12-30>")
          (is= (misc/walk-data->tagstr sql-timestamp-val) "<#java.sql.Timestamp 1999-12-30 17:02:03.456>")
          (is= (misc/walk-data->tagstr zdt-val) "<#java.time.ZonedDateTime 1999-11-22T11:33:44-08:00>")
-         ))))
+         ))
+
+     (dotest
+       (is (nil? (re-matches #"\w+" "java.util.Date"))) ; word chars, 1 or more
+       (is (nil? (re-matches #"[\w]+" "java.util.Date"))) ; word chars, 1 or more
+       (isnt (nil? (re-matches #"[\.\w]+" "java.util.Date"))) ; [dot or word chars], 1 or more
+       )
+     ))
 
 
 ;---------------------------------------------------------------------------------------------------

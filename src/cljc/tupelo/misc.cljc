@@ -110,10 +110,14 @@
         (= (type item) java.sql.Date) (str "<#java.sql.Date " item ">") ; or j.s.Date
         (= (type item) java.sql.Timestamp) (str "<#java.sql.Timestamp " item ">") ; or j.s.TimeStamp
         (= (type item) java.time.ZonedDateTime) (str "<#java.time.ZonedDateTime " item ">") ; or j.t.*
-        (inst? item) (str "<#inst " item ">") ; must go after the above items due to inheritance!
-        (uuid? item) (str "<#uuid " item ">")
+        ; must go after the above items due to inheritance!
+        (inst? item) (str "<#inst " item ">") ; or j.t.Instant etc
+
+        (uuid? item) (str "<#uuid " item ">") ; or j.u.UUID etc
         :else item))
     data))
+; #todo add tagval {:esec 23} => "#{:esec 23}" + un/serialize fns + tagval-str?
+; #todo add tagstr? "<#\w+\s\w+>"
 
 
 ; -----------------------------------------------------------------------------
