@@ -27,7 +27,8 @@
   #?(:clj (:require ; #todo fix all #?(:clj[s]) requires to be like this
             [clj-uuid :as clj-uuid]
             [clojure.java.shell :as shell]
-            [tupelo.java-time :as tjt]
+            [tupelo.java-time :as time]
+            [tupelo.java-time.convert :as time-conv]
             ))
   #?(:clj (:import
             [java.lang Byte Integer]
@@ -106,7 +107,7 @@
   (walk/postwalk
     (fn [item]
       (cond ; #todo => make individual fns & delegate ; plus inverse constructor fns
-        (= (type item) java.util.Date) (str "<#java.util.Date " (.toInstant item) ">") ; or j.u.Date or Date
+        (= (type item) java.util.Date) (str "<#java.util.Date " (time-conv/Date->str item) ">") ; or j.u.Date or Date
         (= (type item) java.sql.Date) (str "<#java.sql.Date " item ">") ; or j.s.Date
         (= (type item) java.sql.Timestamp) (str "<#java.sql.Timestamp " item ">") ; or j.s.TimeStamp
         (= (type item) java.time.ZonedDateTime) (str "<#java.time.ZonedDateTime " item ">") ; or j.t.*

@@ -95,17 +95,7 @@
        (is (nil? (re-matches #"\w+" "java.util.Date"))) ; word chars, 1 or more
        (is (nil? (re-matches #"[\w]+" "java.util.Date"))) ; word chars, 1 or more
        (isnt (nil? (re-matches #"[\.\w]+" "java.util.Date"))) ; [dot or word chars], 1 or more
-       (let         ; -spy
-         [date-str "1999-12-31T01:02:03.456Z" ; "Thu Dec 30 17:02:03 PST 1999"
-          parsed-long (.toEpochMilli (Instant/parse date-str))
-          date-str2 (java.util.Date. (long parsed-long))]
-         (when false ; #todo finish this; format Date as Instant, read & write
-           (spyx date-str2)
-           (println :date-str2 date-str2)
-           (spyx (= date-str date-str2)))
-         )
        )))
-
 
 ;---------------------------------------------------------------------------------------------------
 (dotest

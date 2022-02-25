@@ -47,3 +47,11 @@
     (is (instance? java.time.Instant inst))
     (is= "1999-12-31T00:00:00Z" (str inst))))
 
+(dotest
+  (let [inst-str    "1999-12-31T01:02:03.456Z" ; "Thu Dec 30 17:02:03 PST 1999"
+     inst (Instant/parse inst-str)
+     date       (Instant->Date inst)]
+    (is= inst (-> inst  Instant->Date Date->Instant))
+    (is= date (-> date Date->Instant  Instant->Date))
+    (is= inst-str (Date->str date))) )
+

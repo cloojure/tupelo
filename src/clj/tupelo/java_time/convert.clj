@@ -35,7 +35,15 @@
 
 (s/defn Instant->Date :- Date
   [inst :- Instant]
-  (-> inst (.toEpochMilli) (Date.)))
+  (Date/from inst))
+
+(s/defn Date->Instant :- Instant
+  [date :- Date]
+  (.toInstant date))
+
+(s/defn Date->str :- s/Str
+  [date :- Date]
+  (str (Date->Instant date)))
 
 ; #todo ZDT->Instant
 
