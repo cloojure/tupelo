@@ -10,8 +10,8 @@
   (:require
     [clojure.string :as str])
   (:import
-    [java.time Instant ZonedDateTime]
     [java.sql Timestamp]
+    [java.time Instant ZonedDateTime]
     [java.util Date UUID]
     ))
 

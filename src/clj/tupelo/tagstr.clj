@@ -115,7 +115,7 @@
    "#java.sql.Date"      sql-Date-parse
    "#java.sql.Timestamp" sql-Timestamp-parse})
 
-(s/defn walk-encode :- s/Any ; #todo => tupelo.tagstr
+(s/defn walk-encode :- s/Any
   "Walk a data structure and convert objects to tagged strings like:
         {:date          \"<#java.util.Date 1999-12-31T01:02:03.456Z>\"
          :five          5
@@ -139,7 +139,7 @@
                                                  (encode-fn item)))))
      data)))
 
-(s/defn walk-parse :- s/Any ; #todo => tupelo.tagstr
+(s/defn walk-parse :- s/Any
   "Walk a data structure like the following and parse tagged strings into objects:
 
         {:date          \"<#java.util.Date 1999-12-31T01:02:03.456Z>\"
@@ -166,5 +166,4 @@
      data)))
 
 ; #todo add tagval {:esec 23} => "#{:esec 23}" + un/serialize fns + tagval-str?
-; #todo add tagstr? "<#\w+\s\w+>"
 
