@@ -44,8 +44,7 @@
   (is= (extract-data-str  "<#java.util.Date 1999-12-31T01:02:03.456Z>") "1999-12-31T01:02:03.456Z"))
 
 (dotest
-  (let [
-        uuid          (UUID/fromString "605ca9b3-219b-44b3-9c91-238dba64a3f8")
+  (let [uuid          (UUID/fromString "605ca9b3-219b-44b3-9c91-238dba64a3f8")
         instant       (Instant/parse "1999-12-31t01:02:03.456Z")
         millis        (.toEpochMilli instant)
         date          (Date. millis) ; NOTE: toString() truncates millis
