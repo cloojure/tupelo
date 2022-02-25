@@ -18,6 +18,11 @@
     [java.util UUID]
     ))
 
+(def tag-str-regex
+  #"(?x)          # expanded form
+    \<\#          # opening sequence
+    .+            # tag & data
+    >             # closing seq ")
 (def tag-str-capture-regex
   #"(?x)          # expanded form
     \<            # opening sequence
@@ -33,11 +38,15 @@
     (.+)      # data-str, any char (1 or more), in a capture group
     >         # closing seq ")
 
-(s/defn ^:no-doc extract-tag-str :- s/Str
+(s/defn tagstr? :- s/Bool
+  [item :- s/Any] (truthy? (and (string? item)
+                             (re-matches tag-str-regex item))))
+
+(s/defn extract-tag-str :- s/Str
   [s :- s/Str]
   (xsecond (re-matches tag-str-capture-regex s)))
 
-(s/defn ^:no-doc extract-data-str :- s/Str
+(s/defn extract-data-str :- s/Str
   [s :- s/Str]
   (xsecond (re-matches data-str-capture-regex s)))
 
@@ -86,7 +95,7 @@
    "#java.sql.Date"      sql-Date-parse
    "#java.sql.Timestamp" sql-Timestamp-parse})
 
-(s/defn walk-data->tagstr :- s/Any ; #todo => tupelo.tagstr
+(s/defn walk-encode :- s/Any ; #todo => tupelo.tagstr
   "Convert objects to tagged strings like:
 
         <#uuid 605ca9b3-219b-44b3-9c91-238dba64a3f8>
@@ -95,7 +104,7 @@
         <#java.sql.Date 1999-12-30>
         <#java.sql.Timestamp 1999-12-30 17:02:03.456>
   "
-  ([data :- s/Any] (walk-data->tagstr type->encode-fn data))
+  ([data :- s/Any] (walk-encode type->encode-fn data))
   ([encode-map :- tsk/Map
     data :- s/Any]
    (walk/postwalk
@@ -105,6 +114,28 @@
            (contains-key? encode-map tgt-type) (let [encode-fn (fetch encode-map tgt-type)]
                                                  (encode-fn item)))))
      data)))
+
+(s/defn walk-parse :- s/Any ; #todo => tupelo.tagstr
+  "Parses tagged strings into objects like:
+
+        <#uuid 605ca9b3-219b-44b3-9c91-238dba64a3f8>
+        <#inst 1999-12-31T01:02:03.456Z>
+        <#java.util.Date Thu Dec 30 17:02:03 PST 1999>
+        <#java.sql.Date 1999-12-30>
+        <#java.sql.Timestamp 1999-12-30 17:02:03.456>
+  "
+  ([data :- s/Any] (walk-parse tag->parse-fn data))
+  ([parse-map :- tsk/Map
+    data :- s/Any]
+   (walk/postwalk
+     (fn [item]
+       (cond-it-> item
+         (tagstr? item) (let [tag (extract-tag-str item)]
+                          (cond-it-> item
+                            (contains-key? parse-map tag) (let [parse-fn (fetch parse-map tag)]
+                                                            (parse-fn item))))))
+     data)))
+
 ; #todo add tagval {:esec 23} => "#{:esec 23}" + un/serialize fns + tagval-str?
 ; #todo add tagstr? "<#\w+\s\w+>"
 
