@@ -38,19 +38,32 @@
 
 
 (dotest
-  (let [uuid          (UUID/fromString "605ca9b3-219b-44b3-9c91-238dba64a3f8")
+  (let [
+        uuid          (UUID/fromString "605ca9b3-219b-44b3-9c91-238dba64a3f8")
         instant          (Instant/parse "1999-12-31t01:02:03.456Z")
         millis            (.toEpochMilli instant)
         date          (Date. millis) ; NOTE: toString() truncates millis
-        sql-timestamp (Timestamp. millis)
-        sql-date      (java.sql.Date. millis)
-        zdt           (ZonedDateTime/parse "1999-11-22t11:33:44.000-08:00")
+        sql-timestamp (Timestamp/valueOf  "1999-12-31 01:02:03.456" )
+        sql-date      (java.sql.Date/valueOf "1999-11-22")
+        zdt           (ZonedDateTime/parse "1999-11-22t11:33:44.555-08:00")
         ]
-    (is= (Date-encode date) "<#java.util.Date 1999-12-31T01:02:03.456Z>")
-    (is= date (-> date Date-encode Date-parse))
+    (is= (UUID-encode uuid) "<#uuid 605ca9b3-219b-44b3-9c91-238dba64a3f8>")
+    (is= uuid (-> uuid UUID-encode UUID-parse))
 
     (is= (Instant-encode instant) "<#inst 1999-12-31T01:02:03.456Z>")
     (is= instant (-> instant Instant-encode Instant-parse))
+
+    (is= (spyx (ZonedDateTime-encode zdt)) "<#ZonedDateTime 1999-11-22T11:33:44.555-08:00>")
+    (is= zdt (-> zdt ZonedDateTime-encode ZonedDateTime-parse))
+
+    (is= (Date-encode date) "<#java.util.Date 1999-12-31T01:02:03.456Z>")
+    (is= date (-> date Date-encode Date-parse))
+
+    (is= (sql-Date-encode sql-date) "<#java.sql.Date 1999-11-22>")
+    (is= sql-date (-> sql-date sql-Date-encode sql-Date-parse))
+
+    (is= (sql-Timestamp-encode sql-timestamp) "<#java.sql.Timestamp 1999-12-31 01:02:03.456>")
+    (is= sql-timestamp (-> sql-timestamp sql-Timestamp-encode sql-Timestamp-parse))
 
     ;(spyx millis)
     ;(spyxx date)
@@ -61,9 +74,9 @@
     (is= (walk-data->tagstr uuid) "<#uuid 605ca9b3-219b-44b3-9c91-238dba64a3f8>")
     (is= (walk-data->tagstr instant) "<#inst 1999-12-31T01:02:03.456Z>")
     (is= (walk-data->tagstr date) "<#java.util.Date 1999-12-31T01:02:03.456Z>")
-    (is= (walk-data->tagstr sql-date) "<#java.sql.Date 1999-12-30>")
-    (is= (walk-data->tagstr sql-timestamp) "<#java.sql.Timestamp 1999-12-30 17:02:03.456>")
-    (is= (walk-data->tagstr zdt) "<#java.time.ZonedDateTime 1999-11-22T11:33:44-08:00>")
+    (is= (walk-data->tagstr sql-date) "<#java.sql.Date 1999-11-22>")
+    (is= (walk-data->tagstr sql-timestamp) "<#java.sql.Timestamp 1999-12-31 01:02:03.456>")
+    (is= (walk-data->tagstr zdt) "<#ZonedDateTime 1999-11-22T11:33:44.555-08:00>")
 
     )
 

@@ -9,7 +9,9 @@
     [java.time LocalDate LocalDateTime DayOfWeek ZoneId ZonedDateTime Instant Period LocalDateTime]
     [java.time.temporal Temporal TemporalUnit TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit]
     [java.util Date]
-    ))
+    [java.sql Timestamp]))
+
+; #todo fix all docstrings
 
 (def zoneid-utc (ZoneId/of "UTC"))
 
@@ -35,16 +37,26 @@
 
 (s/defn Instant->Date :- Date
   [inst :- Instant] (Date/from inst))
-
 (s/defn Date->Instant :- Instant
   [date :- Date] (.toInstant date))
 
 (s/defn Date->str :- s/Str
   [date :- Date] (str (Date->Instant date)))
-
 (s/defn str->Date :- Date
   "Parse an Instant string into a Date"
   [s :- s/Str] (Instant->Date (Instant/parse s)))
+
+(s/defn sql-Date->str :- s/Str
+  [date :- java.sql.Date] (str date))
+(s/defn str->sql-Date :- Date
+  "Parse an Instant string into a Date"
+  [s :- s/Str] (java.sql.Date/valueOf  s))
+
+(s/defn sql-Timestamp->str :- s/Str
+  [ts :- Timestamp] (str ts))
+(s/defn str->sql-Timestamp :- Timestamp
+  "Parse an Instant string into a Timestamp"
+  [s :- s/Str] (Timestamp/valueOf  s))
 
 ; #todo ZDT->Instant
 

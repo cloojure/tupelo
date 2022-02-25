@@ -7,9 +7,10 @@
     [tupelo.java-time :as tjt])
   (:import
     [java.time Duration Instant MonthDay YearMonth LocalDate LocalDateTime Period
-               ZoneId ZoneId ZonedDateTime DayOfWeek]
+               ZoneId ZonedDateTime DayOfWeek]
+    [java.sql Timestamp]
     [java.util Date]
-    [java.time.temporal ChronoUnit]))
+    ))
 
 (dotest
   (is= (LocalDate+startOfDay->LocalDateTime (LocalDate/parse "1999-11-22")) (LocalDateTime/parse "1999-11-22t00:00:00"))
@@ -50,10 +51,29 @@
 (dotest
   (let [inst-str "1999-12-31T01:02:03.456Z" ; "Thu Dec 30 17:02:03 PST 1999"
         instant  (Instant/parse inst-str)
-        date     (Instant->Date instant)]
+
+        millis        (.toEpochMilli instant)
+        date          (Date. millis) ; NOTE: toString() truncates millis
+        sql-timestamp (Timestamp. millis)
+        sql-date      (java.sql.Date/valueOf "1999-12-30")
+        zdt           (ZonedDateTime/parse "1999-11-22t11:33:44.555-08:00")
+        ]
+    (is= instant (-> instant (str) (Instant/parse)))
+    (is= zdt (-> zdt (str) (ZonedDateTime/parse)))
+
     (is= instant (-> instant Instant->Date Date->Instant))
     (is= date (-> date Date->Instant Instant->Date))
     (is= inst-str (Date->str date))
     (is= date (str->Date inst-str))
-    ) )
+
+    (is= (sql-Date->str sql-date) "1999-12-30")
+    (is= sql-date (-> sql-date sql-Date->str str->sql-Date))
+
+    (is= (sql-Timestamp->str sql-timestamp)  "1999-12-30 17:02:03.456" )
+    (is= sql-timestamp (-> sql-timestamp sql-Timestamp->str str->sql-Timestamp))
+
+    (is= (sql-Timestamp->str sql-timestamp)  "1999-12-30 17:02:03.456" )
+    (is= sql-timestamp (-> sql-timestamp sql-Timestamp->str str->sql-Timestamp))
+
+    ))
 

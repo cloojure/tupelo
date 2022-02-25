@@ -281,8 +281,7 @@
       (format->iso-str-nice zdt)
       (format->iso-str-nice inst))
     (is= "2018-09-08T02:03:04Z" (str (->Instant "2018-09-08T02:03:04Z")))
-    (is= (tagstr/walk-data->tagstr (->ZonedDateTime "2018-09-08T02:03:04Z"))
-      "<#java.time.ZonedDateTime 2018-09-08T02:03:04Z[UTC]>"))
+    (is= (str (->ZonedDateTime "2018-09-08T02:03:04Z")) "2018-09-08T02:03:04Z[UTC]"))
 
   (let [zdt  (zoned-date-time 2018 9 8,, 2 3 4,, 123456789)
         inst (->Instant zdt)]

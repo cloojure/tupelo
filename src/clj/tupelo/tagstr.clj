@@ -25,22 +25,42 @@
     \<\#        # opening sequence
     [\.\w]+   # alnum/dot, 1 or more
     \s        # single space
-    ([\-\:\.\w]+)  # alnum/dot/hypen/colon, 1 or more. In a capture group
+    (.+)      # payload any char, 1 or more. In a capture group
     >         # closing seq ")
 
 (s/defn ^:no-doc extract-data-str :- s/Str
   [s :- s/Str]
   (xsecond (re-matches alnum+dot+hyphen-colon-plus s)))
 
-(s/defn Date-encode :- s/Str
-  [date :- java.util.Date] (str "<#java.util.Date " (convert/Date->str date) ">"))
-(s/defn Date-parse :- Date
-  [s :- s/Str] (convert/str->Date (extract-data-str s)))
+(s/defn UUID-encode :- s/Str
+  [uuid :- UUID] (str "<#uuid " uuid ">"))
+(s/defn UUID-parse :- UUID
+  [s :- s/Str] (UUID/fromString (extract-data-str s)))
 
 (s/defn Instant-encode :- s/Str
   [inst :- Instant] (str "<#inst " inst ">"))
 (s/defn Instant-parse :- Instant
   [s :- s/Str] (Instant/parse (extract-data-str s)))
+
+(s/defn ZonedDateTime-encode :- s/Str
+  [inst :- ZonedDateTime] (str "<#ZonedDateTime " inst ">"))
+(s/defn ZonedDateTime-parse :- ZonedDateTime
+  [s :- s/Str] (ZonedDateTime/parse (extract-data-str s)))
+
+(s/defn Date-encode :- s/Str
+  [date :- java.util.Date] (str "<#java.util.Date " (convert/Date->str date) ">"))
+(s/defn Date-parse :- Date
+  [s :- s/Str] (convert/str->Date (extract-data-str s)))
+
+(s/defn sql-Date-encode :- s/Str
+  [date :- java.sql.Date] (str "<#java.sql.Date " (convert/sql-Date->str date) ">"))
+(s/defn sql-Date-parse :- java.sql.Date
+  [s :- s/Str] (convert/str->sql-Date (extract-data-str s)))
+
+(s/defn sql-Timestamp-encode :- s/Str
+  [ts :- java.sql.Timestamp] (str "<#java.sql.Timestamp " (convert/sql-Timestamp->str ts) ">"))
+(s/defn sql-Timestamp-parse :- java.sql.Timestamp
+  [s :- s/Str] (convert/str->sql-Timestamp (extract-data-str s)))
 
 (def tag->parse-fn
   {
@@ -60,13 +80,13 @@
     (fn [item]
       (cond ; #todo => make individual fns & delegate ; plus inverse constructor fns
         (= (type item) java.util.Date) (Date-encode item)
-        (= (type item) java.sql.Date) (str "<#java.sql.Date " item ">") ; or j.s.Date
-        (= (type item) java.sql.Timestamp) (str "<#java.sql.Timestamp " item ">") ; or j.s.TimeStamp
-        (= (type item) java.time.ZonedDateTime) (str "<#java.time.ZonedDateTime " item ">") ; or j.t.*
+        (= (type item) java.sql.Date) (sql-Date-encode item )
+        (= (type item) java.sql.Timestamp) (sql-Timestamp-encode item)
+        (= (type item) java.time.ZonedDateTime) (ZonedDateTime-encode item)
         ; must go after the above items due to inheritance!
-        (inst? item) (str "<#inst " item ">") ; or j.t.Instant etc
+        (inst? item) (Instant-encode item)
 
-        (uuid? item) (str "<#uuid " item ">") ; or j.u.UUID etc
+        (uuid? item) (UUID-encode item)
         :else item))
     data))
 ; #todo add tagval {:esec 23} => "#{:esec 23}" + un/serialize fns + tagval-str?
