@@ -58,6 +58,7 @@
                        :hello         "Hello!"
                        :instant       instant
                        :millis        millis
+                       :nil           nil
                        :sql-date      sql-date
                        :sql-timestamp sql-timestamp
                        :uuid          uuid
@@ -94,6 +95,7 @@
                               :hello         "Hello!"
                               :instant       "<#inst 1999-12-31T01:02:03.456Z>"
                               :millis        946602123456
+                              :nil           nil
                               :sql-date      "<#java.sql.Date 1999-11-22>"
                               :sql-timestamp "<#java.sql.Timestamp 1999-12-31 01:02:03.456>"
                               :uuid          "<#uuid 605ca9b3-219b-44b3-9c91-238dba64a3f8>"
