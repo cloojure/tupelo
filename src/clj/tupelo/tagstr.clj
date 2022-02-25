@@ -13,24 +13,33 @@
     [tupelo.schema :as tsk]
     )
   (:import
-    [java.time Clock Instant ZonedDateTime]
-    [java.sql Timestamp]
-    [java.util Date UUID]
+    [java.sql Date Timestamp]
+    [java.time Instant ZonedDateTime]
+    [java.util UUID]
     ))
 
-(def alnum+dot-plus #"[\.\w]+" ) ; [dot or word chars], 1 or more
-
-(def alnum+dot+hyphen-colon-plus
+(def tag-str-capture-regex
+  #"(?x)          # expanded form
+    \<            # opening sequence
+    (\#[\.\w]+)   # tag-str hash, then alnum+dot (1 or more), in a capture group
+    \s            # single space
+    .+            # data str
+    >             # closing seq ")
+(def data-str-capture-regex
   #"(?x)      # expanded form
     \<\#        # opening sequence
     [\.\w]+   # alnum/dot, 1 or more
     \s        # single space
-    (.+)      # payload any char, 1 or more. In a capture group
+    (.+)      # data-str, any char (1 or more), in a capture group
     >         # closing seq ")
+
+(s/defn ^:no-doc extract-tag-str :- s/Str
+  [s :- s/Str]
+  (xsecond (re-matches tag-str-capture-regex s)))
 
 (s/defn ^:no-doc extract-data-str :- s/Str
   [s :- s/Str]
-  (xsecond (re-matches alnum+dot+hyphen-colon-plus s)))
+  (xsecond (re-matches data-str-capture-regex s)))
 
 (s/defn UUID-encode :- s/Str
   [uuid :- UUID] (str "<#uuid " uuid ">"))
@@ -49,7 +58,7 @@
 
 (s/defn Date-encode :- s/Str
   [date :- java.util.Date] (str "<#java.util.Date " (convert/Date->str date) ">"))
-(s/defn Date-parse :- Date
+(s/defn Date-parse :- java.util.Date
   [s :- s/Str] (convert/str->Date (extract-data-str s)))
 
 (s/defn sql-Date-encode :- s/Str
@@ -58,14 +67,25 @@
   [s :- s/Str] (convert/str->sql-Date (extract-data-str s)))
 
 (s/defn sql-Timestamp-encode :- s/Str
-  [ts :- java.sql.Timestamp] (str "<#java.sql.Timestamp " (convert/sql-Timestamp->str ts) ">"))
-(s/defn sql-Timestamp-parse :- java.sql.Timestamp
+  [ts :- Timestamp] (str "<#java.sql.Timestamp " (convert/sql-Timestamp->str ts) ">"))
+(s/defn sql-Timestamp-parse :- Timestamp
   [s :- s/Str] (convert/str->sql-Timestamp (extract-data-str s)))
 
+(def type->encode-fn
+  {UUID               UUID-encode
+   Instant            Instant-encode
+   ZonedDateTime      ZonedDateTime-encode
+   java.util.Date     Date-encode
+   java.sql.Date      sql-Date-encode
+   java.sql.Timestamp sql-Timestamp-encode})
 (def tag->parse-fn
-  {
-   "java.util.Date" Date-parse
-   })
+  {"#uuid"               UUID-parse
+   "#inst"               Instant-parse
+   "#ZonedDateTime"      ZonedDateTime-parse
+   "#java.util.Date"     Date-parse
+   "#java.sql.Date"      sql-Date-parse
+   "#java.sql.Timestamp" sql-Timestamp-parse})
+
 (s/defn walk-data->tagstr :- s/Any ; #todo => tupelo.tagstr
   "Convert objects to tagged strings like:
 
@@ -75,20 +95,16 @@
         <#java.sql.Date 1999-12-30>
         <#java.sql.Timestamp 1999-12-30 17:02:03.456>
   "
-  [data :- s/Any]
-  (walk/postwalk
-    (fn [item]
-      (cond ; #todo => make individual fns & delegate ; plus inverse constructor fns
-        (= (type item) java.util.Date) (Date-encode item)
-        (= (type item) java.sql.Date) (sql-Date-encode item )
-        (= (type item) java.sql.Timestamp) (sql-Timestamp-encode item)
-        (= (type item) java.time.ZonedDateTime) (ZonedDateTime-encode item)
-        ; must go after the above items due to inheritance!
-        (inst? item) (Instant-encode item)
-
-        (uuid? item) (UUID-encode item)
-        :else item))
-    data))
+  ([data :- s/Any] (walk-data->tagstr type->encode-fn data))
+  ([encode-map :- tsk/Map
+    data :- s/Any]
+   (walk/postwalk
+     (fn [item]
+       (let [tgt-type (type item)]
+         (cond-it-> item
+           (contains-key? encode-map tgt-type) (let [encode-fn (fetch encode-map tgt-type)]
+                                                 (encode-fn item)))))
+     data)))
 ; #todo add tagval {:esec 23} => "#{:esec 23}" + un/serialize fns + tagval-str?
 ; #todo add tagstr? "<#\w+\s\w+>"
 

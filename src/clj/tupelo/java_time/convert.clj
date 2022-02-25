@@ -7,7 +7,6 @@
     )
   (:import
     [java.time LocalDate LocalDateTime DayOfWeek ZoneId ZonedDateTime Instant Period LocalDateTime]
-    [java.time.temporal Temporal TemporalUnit TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit]
     [java.util Date]
     [java.sql Timestamp]))
 
