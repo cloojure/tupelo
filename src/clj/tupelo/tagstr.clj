@@ -43,7 +43,6 @@
   [item :- s/Any] (truthy? (and (string? item)
                              (re-matches tag-str-regex item))))
 
-
 (s/defn extract-tag-str :- s/Str
   "Given a tagstr like `<#java.util.Date 1999-12-31T01:02:03.456Z>`,
   returns the tag str `#java.util.Date>` "
@@ -106,6 +105,7 @@
    java.util.Date     Date-encode
    java.sql.Date      sql-Date-encode
    java.sql.Timestamp sql-Timestamp-encode})
+
 (def tag->parse-fn
   "A map from tag to object parse fn"
   {"#uuid"               UUID-parse ; copied from EDN tagged literal
@@ -117,16 +117,17 @@
 
 (s/defn walk-encode :- s/Any
   "Walk a data structure and convert objects to tagged strings like:
-        {:date          \"<#java.util.Date 1999-12-31T01:02:03.456Z>\"
-         :five          5
-         :hello         \"Hello!\"
-         :instant       \"<#inst 1999-12-31T01:02:03.456Z>\"
-         :millis        946602123456
-         :nil           nil
-         :sql-date      \"<#java.sql.Date 1999-11-22>\"
-         :sql-timestamp \"<#java.sql.Timestamp 1999-12-31 01:02:03.456>\"
-         :uuid          \"<#uuid 605ca9b3-219b-44b3-9c91-238dba64a3f8>\"
-         :zdt           \"<#ZonedDateTime 1999-11-22T11:33:44.555-08:00>\"}
+
+      {:date          \"<#java.util.Date 1999-12-31T01:02:03.456Z>\"
+       :five          5
+       :hello         \"Hello!\"
+       :instant       \"<#inst 1999-12-31T01:02:03.456Z>\"
+       :millis        946602123456
+       :nil           nil
+       :sql-date      \"<#java.sql.Date 1999-11-22>\"
+       :sql-timestamp \"<#java.sql.Timestamp 1999-12-31 01:02:03.456>\"
+       :uuid          \"<#uuid 605ca9b3-219b-44b3-9c91-238dba64a3f8>\"
+       :zdt           \"<#ZonedDateTime 1999-11-22T11:33:44.555-08:00>\"}
   "
   ([data :- s/Any] (walk-encode type->encode-fn data))
   ([encode-map :- tsk/Map
@@ -142,16 +143,16 @@
 (s/defn walk-parse :- s/Any
   "Walk a data structure like the following and parse tagged strings into objects:
 
-        {:date          \"<#java.util.Date 1999-12-31T01:02:03.456Z>\"
-         :five          5
-         :hello         \"Hello!\"
-         :instant       \"<#inst 1999-12-31T01:02:03.456Z>\"
-         :millis        946602123456
-         :nil           nil
-         :sql-date      \"<#java.sql.Date 1999-11-22>\"
-         :sql-timestamp \"<#java.sql.Timestamp 1999-12-31 01:02:03.456>\"
-         :uuid          \"<#uuid 605ca9b3-219b-44b3-9c91-238dba64a3f8>\"
-         :zdt           \"<#ZonedDateTime 1999-11-22T11:33:44.555-08:00>\"}
+      {:date          \"<#java.util.Date 1999-12-31T01:02:03.456Z>\"
+       :five          5
+       :hello         \"Hello!\"
+       :instant       \"<#inst 1999-12-31T01:02:03.456Z>\"
+       :millis        946602123456
+       :nil           nil
+       :sql-date      \"<#java.sql.Date 1999-11-22>\"
+       :sql-timestamp \"<#java.sql.Timestamp 1999-12-31 01:02:03.456>\"
+       :uuid          \"<#uuid 605ca9b3-219b-44b3-9c91-238dba64a3f8>\"
+       :zdt           \"<#ZonedDateTime 1999-11-22T11:33:44.555-08:00>\"}
   "
   ([data :- s/Any] (walk-parse tag->parse-fn data))
   ([parse-map :- tsk/Map

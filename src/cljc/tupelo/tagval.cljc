@@ -112,6 +112,7 @@
   )
 
 ; #todo use tagvals to encode any EDN <--> JSON
+; #todo how modify given tupelo.tagstr ???
 (comment
   {:a                                 1
    (Instant. "2019-12-13t14:22:33.0") "something happened"}
