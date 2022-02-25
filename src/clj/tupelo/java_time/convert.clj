@@ -34,16 +34,17 @@
   [ld :- LocalDate] (Date/from (LocalDate->Instant ld)))
 
 (s/defn Instant->Date :- Date
-  [inst :- Instant]
-  (Date/from inst))
+  [inst :- Instant] (Date/from inst))
 
 (s/defn Date->Instant :- Instant
-  [date :- Date]
-  (.toInstant date))
+  [date :- Date] (.toInstant date))
 
 (s/defn Date->str :- s/Str
-  [date :- Date]
-  (str (Date->Instant date)))
+  [date :- Date] (str (Date->Instant date)))
+
+(s/defn str->Date :- Date
+  "Parse an Instant string into a Date"
+  [s :- s/Str] (Instant->Date (Instant/parse s)))
 
 ; #todo ZDT->Instant
 

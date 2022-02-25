@@ -28,7 +28,6 @@
             [clj-uuid :as clj-uuid]
             [clojure.java.shell :as shell]
             [tupelo.java-time :as time]
-            [tupelo.java-time.convert :as time-conv]
             ))
   #?(:clj (:import
             [java.lang Byte Integer]
@@ -93,33 +92,6 @@
                    (t/cond-it-> item
                      (record? it) (into {} it)))
     data))
-
-(s/defn walk-data->tagstr :- s/Any ; #todo => tupelo.tagstr
-  "Convert objects to tagged strings like:
-
-        <#uuid 605ca9b3-219b-44b3-9c91-238dba64a3f8>
-        <#inst 1999-12-31T01:02:03.456Z>
-        <#java.util.Date Thu Dec 30 17:02:03 PST 1999>
-        <#java.sql.Date 1999-12-30>
-        <#java.sql.Timestamp 1999-12-30 17:02:03.456>
-  "
-  [data :- s/Any]
-  (walk/postwalk
-    (fn [item]
-      (cond ; #todo => make individual fns & delegate ; plus inverse constructor fns
-        (= (type item) java.util.Date) (str "<#java.util.Date " (time-conv/Date->str item) ">") ; or j.u.Date or Date
-        (= (type item) java.sql.Date) (str "<#java.sql.Date " item ">") ; or j.s.Date
-        (= (type item) java.sql.Timestamp) (str "<#java.sql.Timestamp " item ">") ; or j.s.TimeStamp
-        (= (type item) java.time.ZonedDateTime) (str "<#java.time.ZonedDateTime " item ">") ; or j.t.*
-        ; must go after the above items due to inheritance!
-        (inst? item) (str "<#inst " item ">") ; or j.t.Instant etc
-
-        (uuid? item) (str "<#uuid " item ">") ; or j.u.UUID etc
-        :else item))
-    data))
-; #todo add tagval {:esec 23} => "#{:esec 23}" + un/serialize fns + tagval-str?
-; #todo add tagstr? "<#\w+\s\w+>"
-
 
 ; -----------------------------------------------------------------------------
 ; #todo maybe move to tupelo.bytes ns

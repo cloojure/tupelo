@@ -10,6 +10,7 @@
     [tupelo.string :as str]
     [schema.core :as s]
     [tupelo.schema :as tsk]
+    [tupelo.tagstr :as tagstr]
     [tupelo.misc :as misc])
   (:import
     [java.time Duration Instant MonthDay YearMonth LocalDate LocalDateTime Period
@@ -280,7 +281,7 @@
       (format->iso-str-nice zdt)
       (format->iso-str-nice inst))
     (is= "2018-09-08T02:03:04Z" (str (->Instant "2018-09-08T02:03:04Z")))
-    (is= (misc/walk-data->tagstr (->ZonedDateTime "2018-09-08T02:03:04Z"))
+    (is= (tagstr/walk-data->tagstr (->ZonedDateTime "2018-09-08T02:03:04Z"))
       "<#java.time.ZonedDateTime 2018-09-08T02:03:04Z[UTC]>"))
 
   (let [zdt  (zoned-date-time 2018 9 8,, 2 3 4,, 123456789)
