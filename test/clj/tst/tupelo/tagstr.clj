@@ -6,16 +6,14 @@
 ;   software.
 (ns ^:test-refresh/focus
   tst.tupelo.tagstr
-  (:use tupelo.tagstr tupelo.core  tupelo.test)
+  (:use tupelo.tagstr tupelo.core tupelo.test)
   (:require
-    [clojure.string :as str]
-    )
+    [clojure.string :as str])
   (:import
-    [java.time Clock Instant ZonedDateTime]
+    [java.time Instant ZonedDateTime]
     [java.sql Timestamp]
     [java.util Date UUID]
-    ) )
-
+    ))
 
 (dotest
   ; demo how to augment an existing character class like `\w`

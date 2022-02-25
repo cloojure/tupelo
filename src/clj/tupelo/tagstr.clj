@@ -79,8 +79,8 @@
    java.sql.Date      sql-Date-encode
    java.sql.Timestamp sql-Timestamp-encode})
 (def tag->parse-fn
-  {"#uuid"               UUID-parse
-   "#inst"               Instant-parse
+  {"#uuid"               UUID-parse ; copied from EDN tagged literal
+   "#inst"               Instant-parse ; copied from EDN tagged literal
    "#ZonedDateTime"      ZonedDateTime-parse
    "#java.util.Date"     Date-parse
    "#java.sql.Date"      sql-Date-parse
