@@ -26,17 +26,17 @@
 (def ^:no-doc tag-str-capture-regex
   #"(?x)          # expanded form
     \<            # opening sequence
-    (\#[\.\w]+)   # tag-str hash, then alnum+dot (1 or more), in a capture group
+    (\#[\.\w]+)   # tag-str:  hash, then alnum+dot (1 or more), in a capture group
     \s            # single space
-    .+            # data str
+    [^\#<>]+    # data str: no delim chars (1 or more)
     >             # closing seq ")
 (def ^:no-doc data-str-capture-regex
-  #"(?x)      # expanded form
-    \<\#      # opening sequence
-    [\.\w]+   # alnum/dot, 1 or more
-    \s        # single space
-    (.+)      # data-str, any char (1 or more), in a capture group
-    >         # closing seq ")
+  #"(?x)          # expanded form
+    \<\#          # opening sequence
+    [\.\w]+       # alnum/dot, 1 or more
+    \s            # single space
+    ([^<>\#]+)    # data str: no delim chars (1 or more), in a capture group (cannot have `\#` first!)
+    >             # closing seq ")
 
 (s/defn tagstr? :- s/Bool
   "Returns true iff arg is a Tagged String"
