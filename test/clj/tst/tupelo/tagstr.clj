@@ -22,6 +22,12 @@
     (is (nil? (re-matches #"[\w]+" "java.util.Date"))) ; word chars, 1 or more
     (is (not-nil? (re-matches alnum+dot-plus "java.util.Date"))) ; [dot or word chars], 1 or more
     (is (nil? (re-matches alnum+dot-plus "java=util=Date")))) ; [dot or word chars], 1 or more
+  (let [non-delim #"[^#<>]+"]
+    (is= "abc" (re-matches non-delim "abc"))
+    (is= nil (re-matches non-delim "#abc"))
+    (is= nil (re-matches non-delim "a#bc"))
+    (is= nil (re-matches non-delim "<abc"))
+    (is= nil (re-matches non-delim "abc>")))
 
   (isnt (tagstr? 5) )
   (isnt (tagstr? "abc") )

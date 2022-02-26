@@ -32,7 +32,7 @@
     >             # closing seq ")
 (def ^:no-doc data-str-capture-regex
   #"(?x)      # expanded form
-    \<\#        # opening sequence
+    \<\#      # opening sequence
     [\.\w]+   # alnum/dot, 1 or more
     \s        # single space
     (.+)      # data-str, any char (1 or more), in a capture group
