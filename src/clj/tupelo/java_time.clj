@@ -509,7 +509,7 @@
       (LocalDate-str? tgt) (-> tgt (LocalDate/parse) (convert/LocalDate->Instant))
 
       (LocalDateTime-str? tgt)
-      (-> tgt (LocalDateTime/parse) (convert/LocalDateTime+utc->ZonedDateTime) (Instant/from))
+      (-> tgt (LocalDateTime/parse) (convert/LocalDateTime->ZonedDateTime) (Instant/from))
 
       (Timestamp-str? tgt) (parse-sql-timestamp-str->Instant-utc tgt)
 

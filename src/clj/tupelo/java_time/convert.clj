@@ -6,7 +6,8 @@
     [tupelo.string :as str]
     )
   (:import
-    [java.time LocalDate LocalDateTime DayOfWeek ZoneId ZonedDateTime Instant Period LocalDateTime]
+    [java.time LocalDate LocalDateTime Instant LocalDateTime YearMonth Year
+               ZoneId ZonedDateTime ZoneOffset]
     [java.util Date]
     [java.sql Timestamp]))
 
@@ -14,52 +15,90 @@
 
 (def zoneid-utc (ZoneId/of "UTC"))
 
-(s/defn LocalDate+startOfDay->LocalDateTime :- LocalDateTime
-  "Converts LocalDate -> LocalDateTime at midnight "
+(s/defn LocalDate->LocalDateTime :- LocalDateTime
+  "Converts LocalDate -> LocalDateTime at start-of-day "
   [ld :- LocalDate] (.atStartOfDay ld))
 
-(s/defn LocalDateTime+utc->ZonedDateTime :- ZonedDateTime
-  "Converts LocalDateTime -> ZonedDateTime with UTC time zone"
+(s/defn LocalDateTime->ZonedDateTime :- ZonedDateTime
+  "Converts LocalDateTime -> ZonedDateTime in UTC time zone"
   [ldt :- LocalDateTime] (.atZone ldt zoneid-utc))
 
+(s/defn  Instant->LocalDate :- LocalDate
+  "Converts an Instant to a LocalDate using the UTC timezone."
+  [inst :- Instant] (LocalDate/ofInstant inst, zoneid-utc))
 (s/defn LocalDate->Instant :- Instant
-  "Converts a LocalDate to an Instant, using midnight (start of day) and the UTC timezone."
+  "Converts a LocalDate to an Instant at start-of-day in the UTC timezone."
   [ld :- LocalDate]
   (-> ld
-    (LocalDate+startOfDay->LocalDateTime)
-    (LocalDateTime+utc->ZonedDateTime)
-    (Instant/from)))
+    (LocalDate->LocalDateTime)
+    (.toInstant ZoneOffset/UTC)))
+
+(s/defn Instant->LocalDateTime :- LocalDateTime
+  "Converts an Instant to a LocalDateTime in the UTC timezone."
+  [inst :- Instant] (LocalDateTime/ofInstant inst zoneid-utc))
+(s/defn LocalDateTime->Instant :- Instant
+  "Converts a LocalDateTime to an Instant at start-of-day in the UTC timezone."
+  [ldt :- LocalDateTime] (.toInstant ldt ZoneOffset/UTC))
 
 (s/defn LocalDate->Date :- Date
-  "Converts a LocalDate to a java.util.Date, using midnight (start of day) and the UTC timezone."
+  "Converts a LocalDate to a java.util.Date at start-of-day in the UTC timezone."
   [ld :- LocalDate] (Date/from (LocalDate->Instant ld)))
 
 (s/defn Instant->Date :- Date
+  "Convert an Instant to a java.util.Date"
   [inst :- Instant] (Date/from inst))
 (s/defn Date->Instant :- Instant
+  "Convert a java.util.Date to an Instant"
   [date :- Date] (.toInstant date))
 
 (s/defn Date->str :- s/Str
+  "Convert a java.util.Date to a string like '1999-12-31T01:02:03.456Z'"
   [date :- Date] (str (Date->Instant date)))
 (s/defn str->Date :- Date
-  "Parse an Instant string into a Date"
+  "Parses a string like '1999-12-31T01:02:03.456Z' a Date"
   [s :- s/Str] (Instant->Date (Instant/parse s)))
 
 (s/defn sql-Date->str :- s/Str
+  "Converts a java.sql.Date into a String like '1999-12-30' "
   [date :- java.sql.Date] (str date))
 (s/defn str->sql-Date :- Date
-  "Parse an Instant string into a Date"
+  "Parses a String like '1999-12-30' into a java.sql.Date"
   [s :- s/Str] (java.sql.Date/valueOf  s))
 
 (s/defn sql-Timestamp->str :- s/Str
+  "Converts a java.sql.Timestamp into a string like '1999-12-30 17:02:03.456'"
   [ts :- Timestamp] (str ts))
 (s/defn str->sql-Timestamp :- Timestamp
-  "Parse an Instant string into a Timestamp"
+  "Parses a string like '1999-12-30 17:02:03.456' into a java.sql.Timestamp"
   [s :- s/Str] (Timestamp/valueOf  s))
 
-; #todo ZDT->Instant
+(s/defn ZonedDateTime->Instant :- Instant
+  "Converts a ZonedDateTime to an Instant"
+  [zdt :- ZonedDateTime] (.toInstant zdt))
+(s/defn Instant->ZonedDateTime :- ZonedDateTime
+  "Converts an Instant into a ZonedDateTime in the UTC timezone"
+  [inst :- Instant] (ZonedDateTime/ofInstant inst zoneid-utc))
 
-; #todo Instant->LocalDate
-; #todo Instant->LocalDateTime
-; #todo Instant->YearMonth
-; #todo Instant->Year
+(s/defn Instant->YearMonth :- YearMonth
+  "Convert an Instant to a YearMonth in the UTC timezone"
+  [inst :- Instant ]
+  (let [ld (Instant->LocalDate inst)
+        ym (YearMonth/of (.getYear ld) (.getMonth ld))]
+    ym))
+(s/defn YearMonth->Instant :- Instant
+  "Given a YearMonth, returns the first Instant in the UTC timezone"
+  [ym :- YearMonth ]
+  (let [ld (LocalDate/of  (.getYear ym) (.getMonth ym) 1)]
+    (LocalDate->Instant ld)))
+
+(s/defn Instant->Year :- Year
+  "Convert an Instant to a Year object in the UTC timezone"
+  [inst :- Instant ]
+  (let [ld (Instant->LocalDate inst)]
+    (Year/of (.getYear ld))))
+(s/defn Year->Instant :- Instant
+  "Given a Year object, returns the first Instant using the UTC timezone"
+  [year :- Year ]
+  (let [ld (LocalDate/of (.getValue year) 1 1)]
+    (LocalDate->Instant ld)))
+
