@@ -58,13 +58,17 @@
         sql-date      (java.sql.Date/valueOf "1999-12-30")
         zdt           (ZonedDateTime/parse "1999-11-22t11:33:44.555-08:00")
         ]
+    (is= (str instant) "1999-12-31T01:02:03.456Z")
     (is= instant (-> instant (str) (Instant/parse)))
+
+    (is= (str zdt) "1999-11-22T11:33:44.555-08:00")
     (is= zdt (-> zdt (str) (ZonedDateTime/parse)))
 
     (is= instant (-> instant Instant->Date Date->Instant))
     (is= date (-> date Date->Instant Instant->Date))
-    (is= inst-str (Date->str date))
-    (is= date (str->Date inst-str))
+
+    (is=  (Date->str date)  "1999-12-31T01:02:03.456Z")
+    (is= date (-> date Date->str str->Date ))
 
     (is= (sql-Date->str sql-date) "1999-12-30")
     (is= sql-date (-> sql-date sql-Date->str str->sql-Date))
