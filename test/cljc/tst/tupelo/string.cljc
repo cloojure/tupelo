@@ -586,8 +586,9 @@
     (is= "Cost: 00123"    (str/format "Cost: %05d" 123))
     (is= "Cost:   123.46" (str/format "Cost: %8.2f" xx))))
 
-
-
-
+(dotest-focus
+  (is (str/uuid? "123e4567-e89b-12d3-a456-426614174000"))
+  (isnt (str/uuid? "X23e4567-e89b-12d3-a456-426614174000"))
+  (isnt (str/uuid? "123e456-7e89b-12d3-a456-426614174000")))
 
 
