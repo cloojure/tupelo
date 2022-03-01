@@ -61,28 +61,18 @@
 ;---------------------------------------------------------------------------------------------------
 (s/defn LocalDate? :- s/Bool
   "Returns true iff arg is of type LocalDate"
-  [arg]
-  (= java.time.LocalDate (type arg)))
+  [arg] (= java.time.LocalDate (type arg)))
 
-(s/defn LocalDateStr? :- s/Bool
-  "Returns true iff string is a legal ISO LocalDate like '1999-12-31' (valid for years 1900-2100)."
-  [arg]
-  (and (string? arg)
-    (= 10 (count arg))
-    (t/with-exception-default false
-      (LocalDate/parse arg)
-      true))) ; if no exception => passes
-
-(s/defn LocalDate->tagval :- {:LocalDate s/Str}
+(s/defn LocalDate->tagval :- {:LocalDate s/Str} ; #todo => tupelo.tagval
   "Converts a java.time.LocalDate object to a tagval"
   [ld :- LocalDate] {:LocalDate (str ld)})
 
-(s/defn tagval->LocalDate :- LocalDate
+(s/defn tagval->LocalDate :- LocalDate ; #todo => tupelo.tagval
   "Parses a tagval into a java.time.LocalDate"
   [ldtv :- {:LocalDate s/Str}]
   (LocalDate/parse (t/grab :LocalDate ldtv)))
 
-(defn walk-LocalDate->tagval
+(defn walk-LocalDate->tagval ; #todo => tupelo.tagval
   [data]
   (walk/postwalk (fn [item]
                    (t/cond-it-> item

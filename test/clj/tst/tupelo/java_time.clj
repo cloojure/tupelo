@@ -39,8 +39,7 @@
     (is (LocalDate? ld))
     (isnt (LocalDate? ldstr))
 
-    (isnt (LocalDateStr? ld))
-    (is (LocalDateStr? ldstr))))
+    (is (LocalDate-str? ldstr))))
 
 (comment            ; #todo update/fix
   (dotest
@@ -141,9 +140,9 @@
        :joda-dt (->Instant (joda/date-time 2018 9 1))})))
 
 (dotest
-  (isnt (LocalDateStr? "12-31-1999"))
-  (isnt (LocalDateStr? "12-31-99"))
-  (is (LocalDateStr? "1999-12-31"))
+  (isnt (LocalDate-str? "12-31-1999"))
+  (isnt (LocalDate-str? "12-31-99"))
+  (is (LocalDate-str? "1999-12-31"))
 
 
   (doseq [ld-str ["1970-01-01"
