@@ -506,18 +506,18 @@
   [s :- s/Str]
   (let [tgt (str/whitespace-collapse s)]
     (cond
-      (LocalDate-str? tgt) (-> tgt (LocalDate/parse) (convert/LocalDate->Instant))
+      (Instant-str? tgt) (Instant/parse tgt)
+
+      (ZonedDateTime-str? tgt) (-> tgt (ZonedDateTime/parse) (Instant/from))
+
+      (iso-str-nice-str? tgt) (parse-iso-str-nice->Instant tgt)
 
       (LocalDateTime-str? tgt)
       (-> tgt (LocalDateTime/parse) (convert/LocalDateTime->ZonedDateTime) (Instant/from))
 
+      (LocalDate-str? tgt) (-> tgt (LocalDate/parse) (convert/LocalDate->Instant))
+
       (Timestamp-str? tgt) (parse-sql-timestamp-str->Instant-utc tgt)
-
-      (iso-str-nice-str? tgt) (parse-iso-str-nice->Instant tgt)
-
-      (Instant-str? tgt) (Instant/parse tgt)
-
-      (ZonedDateTime-str? tgt) (-> tgt (ZonedDateTime/parse) (Instant/from))
 
       :else (throw (ex-info "pattern not recognized" {:s tgt})))))
 
