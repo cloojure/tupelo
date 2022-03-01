@@ -2,7 +2,6 @@
   (:refer-clojure :exclude [range])
   (:use tupelo.core)
   (:require
-    [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.interval :as interval]
     [tupelo.java-time :as tjt]
@@ -11,15 +10,13 @@
     [tupelo.tagval :as tv]
     )
   (:import
-    [java.time LocalDate LocalDateTime ZoneId ZonedDateTime Instant Period Year YearMonth LocalDateTime]
-    [java.time.format DateTimeFormatter]
-    [java.time.temporal Temporal TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit]
-    [java.util Date]
+    [java.time LocalDate LocalDateTime ZonedDateTime Instant Year YearMonth LocalDateTime]
+    [java.time.temporal ChronoUnit]
     [tupelo.interval Interval]
     ))
 
 ;-----------------------------------------------------------------------------
-; Remember that in java.time, there are no leap seconds!
+; Remember, in java.time there are no leap seconds!
 (def SECOND->MILLIS 1000)
 (def MINUTE->SECONDS 60)
 (def HOUR->MINUTES 60)
@@ -113,17 +110,21 @@
 
 ; #todo inline?
 (s/defn LocalDate->eday :- EDay ; #todo generalize & test for negative eday
-  "Normalizes a LocalDate as the offset from 1970-1-1"
-  [arg :- LocalDate] {:eday (.between ChronoUnit/DAYS epoch-LocalDate arg)})
+  "Returns the number of days since the epoch"
+  [arg :- LocalDate] {:eday (.toEpochDay arg)})
 
 (s/defn eday->LocalDate :- LocalDate
-  "Given an eday, returns a LocalDate "
-  [arg :- EDay] (.plusDays epoch-LocalDate (tv/val arg)))
+  "Converts an eday to a LocalDate"
+  [arg :- EDay] (LocalDate/ofEpochDay (tv/val arg)))
 
 ; #todo inline?
 (s/defn Instant->esec :- ESec ; #todo generalize & test for negative eday
-  "Normalizes a LocalDate as the offset from 1970-1-1"
-  [arg :- Instant] {:esec (tjt/between->units ChronoUnit/SECONDS epoch-Instant arg)})
+  "Converts an Instant to whole epoch seconds"
+  [arg :- Instant] {:esec (.getEpochSecond arg)})
+
+(defn esec->Instant
+  "Wrapper for java.time.Instant/ofEpochSecs "
+  [esec] (java.time.Instant/ofEpochSecond esec))
 
 ;(s/defn eday->Instant :- LocalDate
 ;  "Given an eday, returns a LocalDate "
@@ -177,10 +178,6 @@
 ; #todo source: Instant, ZDT
 
 ; #todo: conversions (enano, emilli, esec, eday, emonth, eqtr, year) <=> all
-
-(defn esec->Instant
-  "Wrapper for java.time.Instant/ofEpochSecs "
-  [esec] (java.time.Instant/ofEpochSecond esec))
 
 ; #todo eXXX->Instant
 ; #todo maybe eXXX->eYYY (sec/day, etc)
