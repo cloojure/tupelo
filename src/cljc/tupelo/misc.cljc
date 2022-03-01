@@ -292,7 +292,7 @@
        [N :- s/Int] (str/join (random-hex-chars N)))
 
      (defn ^:no-doc instant-now [] (Instant/now)) ; wrapper for ease of testing
-     (defn tuid
+     (s/defn tuid-str :- s/Str
        "Returns a 'Time Unique ID' (TUID), a 128-bit human-readable UUID-cousin based on the current
         java.time.Instant. From MSB->LSB, it is composed of a 34-bit epoch second field
         (valid years: 1970-2514), a 10-bit nanosecond field, and a 64-bit random field.
@@ -323,7 +323,23 @@
                                   (str nanos)
                                   (random-hex-str 8)
                                   (random-hex-str 8))]
-         result))))
+         result))
+
+     (def ^:no-doc tuid-str-regex
+       #"(?x)           # expanded mode
+       \p{Digit}{4}-    # YYYY
+       \p{Digit}{4}-    # MMDD
+       \p{Digit}{6}-    # HHMMSS
+       \p{Digit}{9}-    # nanos*9
+       \p{XDigit}{8}-   # rndhex*8
+       \p{XDigit}{8}    # rndhex*8
+       "
+       )
+     (s/defn tuid-str? :- s/Bool
+       "Returns true if a string is a valid TUID"
+       [s :- s/Str]
+       (t/truthy? (re-matches tuid-str-regex s)))
+     ))
 
 (s/defn hid? :- s/Bool
   "Returns true if the arg is a legal HexID"
