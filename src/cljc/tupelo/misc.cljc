@@ -336,7 +336,7 @@
        "
        )
      (s/defn tuid-str? :- s/Bool
-       "Returns true if a string is a valid TUID"
+       "Returns true if a string is a valid TUID regex pattern"
        [s :- s/Str]
        (t/truthy? (re-matches tuid-str-regex s)))
      ))
