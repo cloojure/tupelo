@@ -39,31 +39,31 @@
 (s/defn new
   "Creates a new generic Interval record using the `->Interval` constructor function."
   [lower upper]
-  (assert (t/compare-less-equal lower upper))
+  (assert (t/compare-increasing-or-equal lower upper))
   (->Interval :generic lower upper))
 
 (s/defn new-closed
   "Creates a new closed Interval record using the `->Interval` constructor function."
   [lower upper]
-  (assert (t/compare-less-equal lower upper))
+  (assert (t/compare-increasing-or-equal lower upper))
   (->Interval :closed lower upper))
 
 (s/defn new-slice
   "Creates a new slice Interval record using the `->Interval` constructor function."
   [lower upper]
-  (assert (t/compare-less-equal lower upper))
+  (assert (t/compare-increasing-or-equal lower upper))
   (->Interval :slice lower upper))
 
 (s/defn new-open
   "Creates a new open Interval record using the `->Interval` constructor function."
   [lower upper]
-  (assert (t/compare-less-equal lower upper))
+  (assert (t/compare-increasing-or-equal lower upper))
   (->Interval :open lower upper))
 
 (s/defn new-anti-slice
   "Creates a new anti-slice Interval record using the `->Interval` constructor function."
   [lower upper]
-  (assert (t/compare-less-equal lower upper))
+  (assert (t/compare-increasing-or-equal lower upper))
   (->Interval :anti-slice lower upper))
 
 ; #todo maybe add Interval coercion functions ->closed ->slice ->open ->anti-slice
@@ -75,14 +75,14 @@
    val :- s/Any]
   (t/with-map-vals interval [type lower upper]
     (cond
-      (= type :closed) (t/compare-less-equal lower val upper)
+      (= type :closed) (t/compare-increasing-or-equal lower val upper)
       (= type :slice) (and
-                        (t/compare-less-equal lower val)
-                        (t/compare-less val upper))
-      (= type :open) (t/compare-less lower val upper)
+                        (t/compare-increasing-or-equal lower val)
+                        (t/compare-increasing val upper))
+      (= type :open) (t/compare-increasing lower val upper)
       (= type :anti-slice) (and
-                             (t/compare-less lower val)
-                             (t/compare-less-equal val upper))
+                             (t/compare-increasing lower val)
+                             (t/compare-increasing-or-equal val upper))
       :else (throw (ex-info "Invalid Interval type" {:interval interval})))))
 
 (s/defn ->integers :- [s/Int] ; #todo => tupelo.interval

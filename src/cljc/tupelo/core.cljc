@@ -1682,14 +1682,16 @@
 ;-----------------------------------------------------------------------------
 ; Clojure version stuff
 
-(s/defn compare-less :- s/Bool
+(s/defn compare-increasing :- s/Bool
+  "Returns true if each item is larger than its predecessor"
   [& xs :- [s/Any]]
   (assert (< 1 (count xs)))
   (every? neg?
     (for [[a b] (partition 2 1 xs)]
       (compare a b))))
 
-(s/defn compare-less-equal :- s/Bool
+(s/defn compare-increasing-or-equal :- s/Bool
+  "Returns true if each item is larger or equal to its predecessor"
   [& xs :- [s/Any]]
   (assert (< 1 (count xs)))
   (every? nonpos?

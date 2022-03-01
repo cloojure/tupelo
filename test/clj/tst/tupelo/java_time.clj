@@ -92,11 +92,11 @@
     (let [d1 (nth localdates-30 0)
           d2 (nth localdates-30 1)
           d3 (nth localdates-30 2)]
-      (is (t/compare-less d1 d2 d3))
-      (isnt (t/compare-less d2 d2 d3))
-      (is (t/compare-less-equal d1 d2 d3))
-      (is (t/compare-less-equal d2 d2 d3))
-      (isnt (t/compare-less-equal d3 d2 d3))
+      (is (t/compare-increasing d1 d2 d3))
+      (isnt (t/compare-increasing d2 d2 d3))
+      (is (t/compare-increasing-or-equal d1 d2 d3))
+      (is (t/compare-increasing-or-equal d2 d2 d3))
+      (isnt (t/compare-increasing-or-equal d3 d2 d3))
 
       (is= 1 (LocalDate-interval->days (interval/new d1 d2)))
       (is= [0 1 2 3 4]
