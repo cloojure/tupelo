@@ -275,11 +275,20 @@
   []
   (keyword (sha-uuid)))
 
+(s/defn hid? :- s/Bool
+  "Returns true if the arg is a legal HexID"
+  [arg]
+  (and (keyword? arg)
+    (let [name-str (kw->str arg)]
+      (and (ts/hex? name-str)
+        ; (= 40 (count name-str)) ; #todo make more robust re. with-debug-hid
+        ))))
+
 #?(:clj
    (do
      (def ^:no-doc TWO_POW_34 (Math/round (Math/pow 2 34)))
      (def ^:no-doc TWO_POW_30 (Math/round (Math/pow 2 30)))
-     (def ^:no-doc HEX_CHARS "0123456789abcdef")
+     (def ^:no-doc HEX_CHARS (vec "0123456789abcdef"))
 
      (s/defn ^:no-doc random-hex-chars
        "Returns a random vector of hex chars of length N"
@@ -317,10 +326,10 @@
              hr2          (subs iso-8601-str 11 13)
              min2         (subs iso-8601-str 14 16)
              sec2         (subs iso-8601-str 17 19)
-             result       (format "%4s-%2s%2s-%2s%2s%2s-%9s-%8s-%8s"
+             result       (format "%4s-%2s%2s-%2s%2s%2s-%09d-%8s-%8s"
                                   yr4 mo2 day2
                                   hr2 min2 sec2
-                                  (str nanos)
+                                  nanos
                                   (random-hex-str 8)
                                   (random-hex-str 8))]
          result))
@@ -340,15 +349,6 @@
        [s :- s/Str]
        (t/truthy? (re-matches tuid-str-regex s)))
      ))
-
-(s/defn hid? :- s/Bool
-  "Returns true if the arg is a legal HexID"
-  [arg]
-  (and (keyword? arg)
-    (let [name-str (kw->str arg)]
-      (and (ts/hex? name-str)
-        ; (= 40 (count name-str)) ; #todo make more robust re. with-debug-hid
-        ))))
 
 (defn normalized-sorted ; #todo need tests & docs. Use for datomic Entity?
   "Walks EDN data, converting all collections to vector, sorted-map-generic, or sorted-set-generic"

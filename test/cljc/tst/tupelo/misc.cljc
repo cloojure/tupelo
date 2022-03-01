@@ -201,6 +201,8 @@
        (is (misc/tuid-str?  "2037-0714-191716-123456789-88d43adf-efc8b8ce"))
        (isnt (misc/tuid-str?  "X037-0714-191716-123456789-88d43adf-efc8b8ce"))
        (isnt (misc/tuid-str?  "20370-714-191716-123456789-88d43adf-efc8b8ce"))
+       (is (every? misc/tuid-str?
+             (repeatedly 33 misc/tuid-str)))
 
        ; sample output:  "2037-0714-191716-123456789-88d43adf-efc8b8ce"
        ; tens             00000000001111111111222222222233333333334444
