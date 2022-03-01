@@ -6,7 +6,7 @@
 ;   software.
 (ns tupelo.string
   "A superset of `clojure.string` with many added functions."
-  (:refer-clojure :exclude [drop take contains? format replace reverse ])
+  (:refer-clojure :exclude [drop take contains? format replace reverse uuid? ])
   (:require
     [clojure.string]
     [clojure.walk :as walk]
