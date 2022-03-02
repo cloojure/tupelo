@@ -15,22 +15,22 @@
     ))
 
 (dotest
-  (is= 3600 HOUR->SECONDS)
-  (is= 86400 DAY->SECONDS)
-  (is= (* 86400 1000) DAY->MILLIS)
+  (is= 3600 HOUR->SECOND)
+  (is= 86400 DAY->SECOND)
+  (is= (* 86400 1000) DAY->MILLI)
 
-  (is= (sec->millis 1) SECOND->MILLIS)
-  (is= (min->sec 1) MINUTE->SECONDS)
-  (is= (hours->min 1) HOUR->MINUTES)
-  (is= (hours->sec 1) HOUR->SECONDS)
-  (is= (days->sec 1) DAY->SECONDS)
+  (is= (sec->milli 1) SECOND->MILLI)
+  (is= (min->sec 1) MINUTE->SECOND)
+  (is= (hour->min 1) HOUR->MINUTE)
+  (is= (hour->sec 1) HOUR->SECOND)
+  (is= (day->sec 1) DAY->SECOND)
 
   ; verify truncation
-  (is= (millis->sec (inc SECOND->MILLIS)) 1)
-  (is= (sec->min (inc MINUTE->SECONDS)) 1)
-  (is= (min->hours (inc HOUR->MINUTES)) 1)
-  (is= (sec->hours (inc HOUR->SECONDS)) 1)
-  (is= (sec->days (inc DAY->SECONDS)) 1)
+  (is= (milli->sec (inc SECOND->MILLI)) 1)
+  (is= (sec->min (inc MINUTE->SECOND)) 1)
+  (is= (min->hour (inc HOUR->MINUTE)) 1)
+  (is= (sec->hour (inc HOUR->SECOND)) 1)
+  (is= (sec->day (inc DAY->SECOND)) 1)
 
   )
 
@@ -91,7 +91,14 @@
     (is= {:eday 6534}
       (->eday inst)
       (->eday zdt)
-      (->eday ld))))
+      (->eday ld)))
+  (is= (esec->emilli {:esec 1})  {:emilli 1000})
+  (is= (eday->esec {:eday 1})  {:esec 86400})
+
+  (is= (emilli->esec {:emilli 1000}) {:esec 1})
+  (is= (emilli->esec {:emilli 1001}) {:esec 1})
+  (is= (esec->eday {:esec 86400}) {:eday 1})
+  (is= (esec->eday {:esec 86401}) {:eday 1}))
 
 ;-----------------------------------------------------------------------------
 (dotest

@@ -16,64 +16,6 @@
     ))
 
 ;-----------------------------------------------------------------------------
-; Remember, in java.time there are no leap seconds!
-(def SECOND->MILLIS 1000)
-(def MINUTE->SECONDS 60)
-(def HOUR->MINUTES 60)
-(def DAY->HOURS 24)
-(def YEAR->MONTHS 12)
-
-(def HOUR->SECONDS (* HOUR->MINUTES MINUTE->SECONDS) )
-(def DAY->SECONDS (* DAY->HOURS HOUR->MINUTES MINUTE->SECONDS) )
-(def DAY->MILLIS (* DAY->HOURS HOUR->MINUTES MINUTE->SECONDS SECOND->MILLIS) )
-
-;-----------------------------------------------------------------------------
-; larger to smaller units => exact calculation
-
-(s/defn sec->millis :- s/Int
-  "Converts integer seconds to milliseconds"
-  [sec :- s/Int] (* sec SECOND->MILLIS))
-
-(s/defn min->sec :- s/Int
-  "Converts integer minutes to seconds"
-  [min :- s/Int] (* min MINUTE->SECONDS))
-
-(s/defn hours->min :- s/Int
-  "Converts integer hours to minutes"
-  [hours :- s/Int] (* hours HOUR->MINUTES))
-
-(s/defn hours->sec :- s/Int
-  "Converts integer hours to seconds"
-  [hours :- s/Int] (* hours HOUR->SECONDS))
-
-(s/defn days->sec :- s/Int
-  "Converts integer hours to seconds"
-  [days :- s/Int] (* days DAY->SECONDS))
-
-;-----------------------------------------------------------------------------
-; smaller to larger units => truncation
-
-(s/defn millis->sec :- s/Int
-  "Converts integer milliseconds to seconds, with truncation"
-  [millis :- s/Int] (quot millis SECOND->MILLIS))
-
-(s/defn sec->min :- s/Int
-  "Converts integer seconds to minutes, with truncation"
-  [sec :- s/Int] (quot sec MINUTE->SECONDS))
-
-(s/defn min->hours :- s/Int
-  "Converts integer minutes to hours, with truncation"
-  [min :- s/Int] (quot min HOUR->MINUTES))
-
-(s/defn sec->hours :- s/Int
-  "Converts integer seconds to hours, with truncation"
-  [sec :- s/Int] (quot sec HOUR->SECONDS))
-
-(s/defn sec->days :- s/Int
-  "Converts integer seconds to hours, with truncation"
-  [sec :- s/Int] (quot sec DAY->SECONDS))
-
-;-----------------------------------------------------------------------------
 ; All "epoch time" quantities expressed as a tupelo.tagval so that one knows what "type" the integer represents
 (def ENano {:enano s/Int})
 (def EMilli {:emilli s/Int})
@@ -95,6 +37,84 @@
   [arg :- s/Any] (and (tv/tagval? arg) (= :emonth (tv/tag arg)) (int? (tv/val arg))))
 (s/defn eqtr? :- s/Bool
   [arg :- s/Any] (and (tv/tagval? arg) (= :eqtr (tv/tag arg)) (int? (tv/val arg))))
+
+;-----------------------------------------------------------------------------
+; Remember, in java.time there are no leap seconds!
+(def SECOND->NANO (* 1000 1000 1000))
+(def SECOND->MILLI 1000)
+(def MINUTE->SECOND 60)
+(def HOUR->MINUTE 60)
+(def DAY->HOUR 24)
+(def WEEK->DAY 7)
+(def YEAR->MONTH 12)
+
+(def HOUR->SECOND (* HOUR->MINUTE MINUTE->SECOND) )
+(def DAY->SECOND (* DAY->HOUR HOUR->SECOND) )
+(def WEEK->SECOND (* WEEK->DAY DAY->SECOND) )
+
+(def DAY->MILLI (* DAY->SECOND SECOND->MILLI) )
+(def WEEK->MILLI (* WEEK->DAY DAY->MILLI) )
+
+; *->MINUTE
+; *->HOUR
+
+;-----------------------------------------------------------------------------
+; larger to smaller units => exact calculation
+
+(s/defn sec->milli :- s/Int
+  "Converts integer seconds to milliseconds"
+  [sec :- s/Int] (* sec SECOND->MILLI))
+(s/defn esec->emilli :- EMilli
+  "Converts tagval esec to emilli"
+  [esec :- ESec] {:emilli (sec->milli (tv/val esec))})
+
+(s/defn min->sec :- s/Int
+  "Converts integer minutes to seconds"
+  [min :- s/Int] (* min MINUTE->SECOND))
+
+(s/defn hour->min :- s/Int
+  "Converts integer hours to minutes"
+  [hour :- s/Int] (* hour HOUR->MINUTE))
+
+(s/defn hour->sec :- s/Int
+  "Converts integer hours to seconds"
+  [hour :- s/Int] (* hour HOUR->SECOND))
+
+(s/defn day->sec :- s/Int
+  "Converts integer hours to seconds"
+  [day :- s/Int] (* day DAY->SECOND))
+(s/defn eday->esec :- ESec
+  "Converts tagval eday to esec"
+  [eday :- EDay] {:esec (day->sec (tv/val eday))} )
+
+;-----------------------------------------------------------------------------
+; smaller to larger units => truncation
+
+(s/defn milli->sec :- s/Int
+  "Converts integer milliseconds to seconds, with truncation"
+  [milli :- s/Int] (quot milli SECOND->MILLI))
+(s/defn emilli->esec :- ESec
+  "Converts tagval emilli to esec with truncation"
+  [emilli :- EMilli] {:esec (quot (tv/val emilli) SECOND->MILLI)})
+
+(s/defn sec->min :- s/Int
+  "Converts integer seconds to minutes, with truncation"
+  [sec :- s/Int] (quot sec MINUTE->SECOND))
+
+(s/defn min->hour :- s/Int
+  "Converts integer minutes to hours, with truncation"
+  [min :- s/Int] (quot min HOUR->MINUTE))
+
+(s/defn sec->hour :- s/Int
+  "Converts integer seconds to hours, with truncation"
+  [sec :- s/Int] (quot sec HOUR->SECOND))
+
+(s/defn sec->day :- s/Int
+  "Converts integer seconds to hours, with truncation"
+  [sec :- s/Int] (quot sec DAY->SECOND))
+(s/defn esec->eday :- EDay
+  "Converts tagval esec to eday with truncation"
+  [esec :- ESec] {:eday (quot (tv/val esec) DAY->SECOND)})
 
 ;-----------------------------------------------------------------------------
 (def ^:no-doc epoch-Year-int 1970)
@@ -125,22 +145,6 @@
 (defn esec->Instant
   "Wrapper for java.time.Instant/ofEpochSecs "
   [esec] (java.time.Instant/ofEpochSecond esec))
-
-;(s/defn eday->Instant :- LocalDate
-;  "Given an eday, returns a LocalDate "
-;  [arg :- EDay] (.plusDays epoch-LocalDate (tv/val arg)))
-
-;(s/defn eday->monthValue :- s/Int
-;  "Given an eday, returns a monthValue in [1..12]"
-;  [arg :- EDay] (.getMonthValue (eday->LocalDate arg)))
-;
-;(s/defn LocalDateStr->eday :- EDay
-;  "Parses a LocalDate string like `1999-12-31` into an integer eday (rel to epoch) like 10956"
-;  [arg :- s/Str] (-> arg (LocalDate/parse) (LocalDate->eday)))
-;
-;(s/defn eday->LocalDateStr :- s/Str
-;  "Converts an integer eday like 10956 (rel to epoch) into a LocalDate string like `1999-12-31` "
-;  [arg :- EDay] (-> arg (eday->LocalDate) (str)))
 
 (s/defn eday->year :- s/Int
   "Given an eday, returns a year like 2013"
