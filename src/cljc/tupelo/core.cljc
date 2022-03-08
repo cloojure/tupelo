@@ -1789,7 +1789,7 @@
        "Returns the java version as a semantic vector of integers, like `11.0.17` => [11 0 17]"
        [s :- s/Str]
        (let [v1 (str/trim s)
-             v2 (str/replace v1 #"[-_].*" "") ; remove any suffix like on `1.8.0-b097` or `1.8.0_234`
+             v2 (xsecond (re-matches #"([.0-9]+).*" v1)) ; remove any suffix like on `1.8.0-b097` or `1.8.0_234`
              v3 (str/split v2 #"\.")
              v4 (mapv #(Integer/parseInt %) v3)]
          v4))

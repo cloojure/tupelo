@@ -3080,13 +3080,38 @@
 
      (dotest
        #_(when (t/is-java-1-7?)
-         (throws? (fn8)))
-
+           (throws? (fn8)))
        (when (t/is-java-8-plus?)
          (is= 8 (fn8)))
-
        (is= 7 (fn7))
        (is= 42 (fn-any))
+
+       (do
+         ; regex capture groups demo
+         (is= (re-matches #"([.0-9]+).*" "1.8.0_234") ["1.8.0_234" "1.8.0"])
+         (is= (t/xsecond (re-matches #"([.0-9]+).*" "1.8.0_234")) "1.8.0")
+
+         (is= [1 7] (t/version-str->semantic-vec "1.7"))
+         (is= [1 7 2] (t/version-str->semantic-vec "1.7.2"))
+         (is= [1 7 2] (t/version-str->semantic-vec "1.7.2-b097"))
+         (is= [11] (t/version-str->semantic-vec "11"))
+         (is= [11 0] (t/version-str->semantic-vec "11.0"))
+         (is= [11 0 17] (t/version-str->semantic-vec "11.0.17"))
+         (is= [17] (t/version-str->semantic-vec "17"))
+         (is= [17 0 1] (t/version-str->semantic-vec "17.0.1"))
+
+         (is (pos? (lex/compare-lex [11 0] (t/version-str->semantic-vec "1.8"))))
+         (is (pos? (lex/compare-lex [11 0] (t/version-str->semantic-vec "11"))))
+         (is (zero? (lex/compare-lex [11 0] (t/version-str->semantic-vec "11.0"))))
+         (is (neg? (lex/compare-lex [11 0] (t/version-str->semantic-vec "11.0.17"))))
+         (is (neg? (lex/compare-lex [11 0] (t/version-str->semantic-vec "17"))))
+         (is (neg? (lex/compare-lex [11 0] (t/version-str->semantic-vec "17.0.1"))))
+
+         (with-redefs [t/java-version (constantly " 11.0.99-b666 ")]
+           (is (t/is-java-1-7-plus?))
+           (is (t/is-java-8-plus?))
+           (is (t/is-java-11-plus?))
+           (isnt (t/is-java-17-plus?))))
 
        (with-redefs [t/java-version (constantly "1.7")]
          (is (t/java-version-min? "1.7"))
@@ -3103,37 +3128,12 @@
          (is (t/java-version-min? " 1.7.0 "))
          (is (t/java-version-min? " 1.7.0-b1234 "))
          (isnt (t/java-version-min? " 1.8 ")))
-
        (with-redefs [t/java-version (constantly " 1.7 ")]
          (is (t/is-java-1-7-plus?))
          (isnt (t/is-java-8-plus?)))
-
        (with-redefs [t/java-version (constantly " 1.8 ")]
          (is (t/is-java-1-7-plus?))
-         (is (t/is-java-8-plus?)))
-
-       (is= [1 7] (t/version-str->semantic-vec "1.7"))
-       (is= [1 7 2] (t/version-str->semantic-vec "1.7.2"))
-       (is= [1 7 2] (t/version-str->semantic-vec "1.7.2-b097"))
-
-       (is= [11] (t/version-str->semantic-vec "11"))
-       (is= [11 0] (t/version-str->semantic-vec "11.0"))
-       (is= [11 0 17] (t/version-str->semantic-vec "11.0.17"))
-       (is= [17] (t/version-str->semantic-vec "17"))
-       (is= [17 0 1] (t/version-str->semantic-vec "17.0.1"))
-
-       (is (pos? (lex/compare-lex [11 0] (t/version-str->semantic-vec "1.8"))))
-       (is (pos? (lex/compare-lex [11 0] (t/version-str->semantic-vec "11"))))
-       (is (zero? (lex/compare-lex [11 0] (t/version-str->semantic-vec "11.0"))))
-       (is (neg? (lex/compare-lex [11 0] (t/version-str->semantic-vec "11.0.17"))))
-       (is (neg? (lex/compare-lex [11 0] (t/version-str->semantic-vec "17"))))
-       (is (neg? (lex/compare-lex [11 0] (t/version-str->semantic-vec "17.0.1"))))
-
-       (with-redefs [t/java-version (constantly " 11.0.99-b666 ")]
-         (is (t/is-java-1-7-plus?))
-         (is (t/is-java-8-plus?))
-         (is (t/is-java-11-plus?))
-         (isnt (t/is-java-17-plus?))))
+         (is (t/is-java-8-plus?))))
 
      (dotest
        (let [tst-fn (fn [vals5]
