@@ -929,7 +929,7 @@
      (try
        (throw (Exception. "Boom!"))
        (catch Exception ex
-         (is= "Boom!" (spyx (t/exception-message ex)))
+         (is= "Boom!" (t/exception-message ex))
          (let [strace (t/exception-stacktrace ex)]
            (is (str/starts-with? strace "java.lang.Exception"))
            (is (ts/contains-str? strace "Boom!"))

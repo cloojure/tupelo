@@ -1800,7 +1800,7 @@
        [tgt-version-str :- s/Str]
        (let [tgt-version-vec    (version-str->semantic-vec tgt-version-str)
              actual-version-vec (version-str->semantic-vec (java-version))
-             result             (nonpos? (lex/compare-lex tgt-version-vec actual-version-vec))]
+             result             (increasing-or-equal? tgt-version-vec actual-version-vec)]
          result))
 
      ; #todo need min-java-1-8  ???
