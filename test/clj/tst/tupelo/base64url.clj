@@ -17,7 +17,7 @@
             [tupelo.misc                            :as misc]
             [tupelo.types                           :as types] ) )
 
-(when (t/is-java-1-8-plus?)
+(when (t/is-java-8-plus?)
   (dotest
     (let [orig     (byte-array [(byte \A)])
           code-str (b64url/encode-byte-array->str orig)

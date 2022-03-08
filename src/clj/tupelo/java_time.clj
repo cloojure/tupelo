@@ -230,7 +230,9 @@
   [arg]
   (cond
     (string? arg) (LocalDate/parse arg)
-    (instance? Instant arg) (LocalDate/ofInstant arg zoneid-utc)
+    (instance? Instant arg) (t/if-java-1-11-plus
+                              (LocalDate/ofInstant arg zoneid-utc)
+                              (throw (RuntimeException. "Unimplemented prior to Java 1.9")))
     (instance? ZonedDateTime arg) (->LocalDate (->Instant arg))
     ; #todo LocalDateTime
     (instance? org.joda.time.ReadableInstant arg) (->LocalDate (->Instant arg)) ; #todo need test

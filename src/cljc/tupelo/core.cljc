@@ -1473,7 +1473,35 @@
             [sym (list `tupelo.core/grab strkey the-map)]))
        ~@forms)))
 
-(defn ^:no-doc   construct-impl
+(s/defn select-paths :- {tsk/Vec s/Any}
+  "Like clojure.core/select-keys, but takes a sequence of datastructure paths as input:
+      (let [m {:a 1
+               :b {:c 2}
+               :d [0 1 {:e 5}]}]
+        (is= (t/select-paths m [[:a]
+                                [:b :c]
+                                [:d 2 :e]])
+          {[:a]      1
+           [:b :c]   2
+           [:d 2 :e] 5}))
+   See also `elide-paths` to remove unwanted sub-trees."
+  [m :- tsk/Map
+   paths :- [tsk/Vec]]
+  (apply glue
+    (forv [path paths]
+      {path (fetch-in m path)})))
+
+(s/defn elide-paths :- tsk/Map
+  "Inverse of `select-paths`. removes subtrees of a data structure as specified by paths
+  via successive calls to `tupelo.core/dissoc-in` "
+  [m :- tsk/Map
+   paths :- [tsk/Vec]]
+  (reduce
+    (fn [result path] (dissoc-in result path))
+    m
+    paths))
+
+(defn ^:no-doc   construct-impl ; #todo what is this???
   [template]
   ;(spyx template)
   ;(spy :impl-out)
@@ -1701,6 +1729,7 @@
 ; #todo => tupelo.tuple/less-than?
 ; #todo re-home lexical increasing/equal fns
 
+; #todo already in tupelo.lexical - UNIFY!
 ; #todo => tupelo.tuple/compare
 (defn ^:no-doc cmp-seq-lexi ; from generic compare from clojure.org
   [x y]
@@ -1749,33 +1778,37 @@
   (nonpos? (cmp-seq-lexi a b)))
 
 ;---------------------------------------------------------------------------------------------------
-
-#?(:clj
+#?(:clj ; JVM stuff
    (do
      ;-----------------------------------------------------------------------------
      ; Java version stuff
      (s/defn java-version :- s/Str
-       []
-       (System/getProperty "java.version"))
+       [] (System/getProperty "java.version"))
 
-     (s/defn java-version-matches? :- s/Bool
-       "Returns true if Java version exactly matches supplied string."
-       [version-str :- s/Str]
-       (str/starts-with? (str/trim (java-version)) (str/trim version-str)))
+     (s/defn version-str->semantic-vec :- [s/Int]
+       "Returns the java version as a semantic vector of integers, like `11.0.17` => [11 0 17]"
+       [s :- s/Str]
+       (let [v1 (str/trim s)
+             v2 (str/replace v1 #"[-_].*" "") ; remove any suffix like on `1.8.0-b097` or `1.8.0_234`
+             v3 (str/split v2 #"\.")
+             v4 (mapv #(Integer/parseInt %) v3)]
+         v4))
 
      (s/defn java-version-min? :- s/Bool
        "Returns true if Java version is at least as great as supplied string.
        Sort is by lexicographic (alphabetic) order."
-       [version-str :- s/Str]
-       (string-increasing-or-equal? (str/trim version-str) (str/trim (java-version))))
+       [tgt-version-str :- s/Str]
+       (let [tgt-version-vec    (version-str->semantic-vec tgt-version-str)
+             actual-version-vec (version-str->semantic-vec (java-version))
+             result             (nonpos? (lex/compare-lex tgt-version-vec actual-version-vec))]
+         result))
 
      ; #todo need min-java-1-8  ???
 
-     (defn is-java-1-7? [] (java-version-matches? "1.7"))
-     (defn is-java-1-8? [] (java-version-matches? "1.8"))
-
-     (defn is-java-1-7-plus? [] (java-version-min? "1.7"))
-     (defn is-java-1-8-plus? [] (java-version-min? "1.8"))
+     (defn is-java-1-7-plus? [] (java-version-min? "1.7")) ; #todo remove?
+     (defn is-java-8-plus? [] (java-version-min? "1.8")) ; ***** NOTE: version string is still `1.8` *****
+     (defn is-java-11-plus? [] (java-version-min? "11")) ; #todo need test
+     (defn is-java-17-plus? [] (java-version-min? "17")) ; #todo need test
 
      (defmacro if-java-1-7-plus
        "If JVM is Java 1.7 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
@@ -1787,9 +1820,29 @@
      (defmacro if-java-1-8-plus ; #todo need for java 9, 10, 11, ...
        "If JVM is Java 1.8 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
        [if-form else-form]
-       (if (is-java-1-8-plus?)
+       (if (is-java-8-plus?)
          `(do ~if-form)
          `(do ~else-form)))
+
+     (defmacro if-java-1-11-plus ; #todo need test
+       "If JVM is Java 1.11 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
+       [if-form else-form]
+       (if (is-java-11-plus?)
+         `(do ~if-form)
+         `(do ~else-form)))
+
+     (defmacro if-java-1-17-plus ; #todo need test
+       "If JVM is Java 1.17 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
+       [if-form else-form]
+       (if (is-java-17-plus?)
+         `(do ~if-form)
+         `(do ~else-form)))
+
+     (defmacro when-java-1-11-plus ; #todo need test
+       "If JVM is Java 1.11 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
+       [& forms]
+       (when (is-java-11-plus?)
+         `(do ~@forms)))
 
      ;-----------------------------------------------------------------------------
      ; Clojure version stuff

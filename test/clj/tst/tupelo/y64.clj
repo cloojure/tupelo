@@ -16,7 +16,7 @@
             [tupelo.types :as types]
             [tupelo.y64 :as y64]) )
 
-(when (is-java-1-8-plus?)
+(when (is-java-8-plus?)
   (dotest
     (let [orig      (byte-array [(byte \A)])
           y64-bytes (y64/encode-byte-array orig)

@@ -23,9 +23,13 @@
   "Converts LocalDateTime -> ZonedDateTime in UTC time zone"
   [ldt :- LocalDateTime] (.atZone ldt zoneid-utc))
 
-(s/defn  Instant->LocalDate :- LocalDate
+(s/defn Instant->LocalDate :- LocalDate
   "Converts an Instant to a LocalDate using the UTC timezone."
-  [inst :- Instant] (LocalDate/ofInstant inst, zoneid-utc))
+  [inst :- Instant]
+  (if-java-1-11-plus
+    (LocalDate/ofInstant ^Instant inst, ^ZoneId zoneid-utc)
+    (throw (RuntimeException. "Unimplemented prior to Java 1.9"))))
+
 (s/defn LocalDate->Instant :- Instant
   "Converts a LocalDate to an Instant at start-of-day in the UTC timezone."
   [ld :- LocalDate]
@@ -35,7 +39,11 @@
 
 (s/defn Instant->LocalDateTime :- LocalDateTime
   "Converts an Instant to a LocalDateTime in the UTC timezone."
-  [inst :- Instant] (LocalDateTime/ofInstant inst zoneid-utc))
+  [inst :- Instant]
+  (if-java-1-11-plus
+    (LocalDateTime/ofInstant inst zoneid-utc)
+    (throw (RuntimeException. "Unimplemented prior to Java 1.9"))))
+
 (s/defn LocalDateTime->Instant :- Instant
   "Converts a LocalDateTime to an Instant at start-of-day in the UTC timezone."
   [ldt :- LocalDateTime] (.toInstant ldt ZoneOffset/UTC))

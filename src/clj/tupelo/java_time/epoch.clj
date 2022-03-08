@@ -120,7 +120,7 @@
 (def ^:no-doc epoch-Year-int 1970)
 (def ^:no-doc epoch-Year (Year/parse "1970"))
 (def ^:no-doc epoch-YearMonth (YearMonth/parse "1970-01"))
-(def ^:no-doc epoch-LocalDate  LocalDate/EPOCH)
+(def ^:no-doc epoch-LocalDate (LocalDate/parse "1970-01-01")) ; modern: LocalDate/EPOCH
 (def ^:no-doc epoch-LocalDateTime (LocalDateTime/parse "1970-01-01T00:00")) ; seconds optional here
 (def ^:no-doc epoch-Instant  Instant/EPOCH)
 
