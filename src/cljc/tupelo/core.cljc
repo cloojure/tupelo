@@ -1748,7 +1748,7 @@
 
 ; #todo make variadic versions of these?
 (s/defn increasing? :- s/Bool ; #todo => tupelo.tuple/less-than?
-  "Returns true iff the vectors are in (strictly) lexicographically increasing order
+  "Returns true iff vector elements are in lexicographic increasing order:
 
         [1 2]  [1]        -> false
         [1 2]  [1 1]      -> false
@@ -1763,7 +1763,7 @@
   (neg? (cmp-seq-lexi a b)))
 
 (s/defn increasing-or-equal? :- s/Bool ; #todo => tupelo.tuple/less-equal-than?
-  "Returns true iff the vectors are in (strictly) lexicographically increasing-or-equal order
+  "Returns true iff vector elements are equal or are in lexicographic increasing order:
 
         [1 2]  [1]        -> false
         [1 2]  [1 1]      -> false
