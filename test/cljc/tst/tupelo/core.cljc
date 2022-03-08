@@ -2151,11 +2151,8 @@
 
 ;---------------------------------------------------------------------------------------------------
 ; demo and poc for td/construct
-(def a-1400 1401)
-(def b-1400 1402)
-
-(def c 3)
-(dotest
+(dotest             ; #todo do we need this at all?  maybe delete?
+  (def c 3)
   (let [env {:a 1 :b 2}]
     (t/with-map-vals env [a b]
       (is= {:likes {:a a :b b}} ; normal
@@ -3133,7 +3130,19 @@
          (isnt (t/is-java-8-plus?)))
        (with-redefs [t/java-version (constantly " 1.8 ")]
          (is (t/is-java-1-7-plus?))
-         (is (t/is-java-8-plus?))))
+         (is (t/is-java-8-plus?))
+         (isnt (t/is-java-11-plus?))
+         (isnt (t/is-java-17-plus?)))
+       (with-redefs [t/java-version (constantly " 11.0.9 ")]
+         (is (t/is-java-1-7-plus?))
+         (is (t/is-java-8-plus?))
+         (is (t/is-java-11-plus?))
+         (isnt (t/is-java-17-plus?)))
+       (with-redefs [t/java-version (constantly " 17.0.39 ")]
+         (is (t/is-java-1-7-plus?))
+         (is (t/is-java-8-plus?))
+         (is (t/is-java-11-plus?))
+         (is (t/is-java-17-plus?))))
 
      (dotest
        (let [tst-fn (fn [vals5]
