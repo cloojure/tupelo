@@ -1484,14 +1484,14 @@
           {[:a]      1
            [:b :c]   2
            [:d 2 :e] 5}))
-   See also `elide-paths` to remove unwanted sub-trees."
+   See also `dissoc-paths` to remove unwanted sub-trees."
   [m :- tsk/Map
    paths :- [tsk/Vec]]
   (apply glue
     (forv [path paths]
       {path (fetch-in m path)})))
 
-(s/defn elide-paths :- tsk/Map
+(s/defn dissoc-paths :- tsk/Map
   "Inverse of `select-paths`. removes subtrees of a data structure as specified by paths
   via successive calls to `tupelo.core/dissoc-in` "
   [m :- tsk/Map

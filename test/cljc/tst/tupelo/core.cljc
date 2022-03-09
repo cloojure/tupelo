@@ -2141,11 +2141,11 @@
        [:b :c]   2
        [:d 2 :e] 5})
 
-    (is= (t/elide-paths m [[:b :c]])
+    (is= (t/dissoc-paths m [[:b :c]])
       {:a 1
        :b {}
        :d [0 1 {:e 5}]})
-    (is= (t/elide-paths m [[:a] [:d 2 :e]])
+    (is= (t/dissoc-paths m [[:a] [:d 2 :e]])
       {:b {:c 2}
        :d [0 1 {}]})))
 
