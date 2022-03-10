@@ -18,7 +18,7 @@
                             with-spy-indent spyx spyxx spy-pretty spyx-pretty
                             let-spy let-spy-pretty let-some map-let* map-let lazy-cons
                             try-catchall with-exception-default verify
-                            if-java-1-7-plus if-java-1-8-plus
+                            if-java-1-8-plus
                             when-clojure-1-8-plus when-clojure-1-9-plus when-not-clojure-1-9-plus
                             destruct lazy-gen yield yield-all matches?]]))
   (:require
@@ -1484,14 +1484,14 @@
           {[:a]      1
            [:b :c]   2
            [:d 2 :e] 5}))
-   See also `elide-paths` to remove unwanted sub-trees."
+   See also `dissoc-paths` to remove unwanted sub-trees."
   [m :- tsk/Map
    paths :- [tsk/Vec]]
   (apply glue
     (forv [path paths]
       {path (fetch-in m path)})))
 
-(s/defn elide-paths :- tsk/Map
+(s/defn dissoc-paths :- tsk/Map
   "Inverse of `select-paths`. removes subtrees of a data structure as specified by paths
   via successive calls to `tupelo.core/dissoc-in` "
   [m :- tsk/Map
@@ -1782,9 +1782,6 @@
    (do
      ;-----------------------------------------------------------------------------
      ; Java version stuff
-     (s/defn java-version :- s/Str
-       [] (System/getProperty "java.version"))
-
      (s/defn version-str->semantic-vec :- [s/Int]
        "Returns the java version as a semantic vector of integers, like `11.0.17` => [11 0 17]"
        [s :- s/Str]
@@ -1794,28 +1791,28 @@
              v4 (mapv #(Integer/parseInt %) v3)]
          v4))
 
+     (s/defn java-version-str :- s/Str
+       [] (System/getProperty "java.version"))
+
+     (s/defn java-version-semantic :- [s/Int]
+       [] (version-str->semantic-vec (java-version-str)))
+
      (s/defn java-version-min? :- s/Bool
        "Returns true if Java version is at least as great as supplied string.
        Sort is by lexicographic (alphabetic) order."
        [tgt-version-str :- s/Str]
        (let [tgt-version-vec    (version-str->semantic-vec tgt-version-str)
-             actual-version-vec (version-str->semantic-vec (java-version))
+             actual-version-vec  (java-version-semantic)
              result             (increasing-or-equal? tgt-version-vec actual-version-vec)]
          result))
 
-     ; #todo need min-java-1-8  ???
+    (when-not (java-version-min? "1.7")
+      (throw (ex-info "Must have at least Java 1.7" {:java-version (java-version-str)})))
 
-     (defn is-java-1-7-plus? [] (java-version-min? "1.7")) ; #todo remove?
+
      (defn is-java-8-plus? [] (java-version-min? "1.8")) ; ***** NOTE: version string is still `1.8` *****
      (defn is-java-11-plus? [] (java-version-min? "11")) ; #todo need test
      (defn is-java-17-plus? [] (java-version-min? "17")) ; #todo need test
-
-     (defmacro if-java-1-7-plus
-       "If JVM is Java 1.7 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
-       [if-form else-form]
-       (if (is-java-1-7-plus?)
-         `(do ~if-form)
-         `(do ~else-form)))
 
      (defmacro if-java-1-8-plus ; #todo need for java 9, 10, 11, ...
        "If JVM is Java 1.8 or higher, evaluates if-form into code. Otherwise, evaluates else-form."

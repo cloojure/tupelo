@@ -2141,11 +2141,11 @@
        [:b :c]   2
        [:d 2 :e] 5})
 
-    (is= (t/elide-paths m [[:b :c]])
+    (is= (t/dissoc-paths m [[:b :c]])
       {:a 1
        :b {}
        :d [0 1 {:e 5}]})
-    (is= (t/elide-paths m [[:a] [:d 2 :e]])
+    (is= (t/dissoc-paths m [[:a] [:d 2 :e]])
       {:b {:c 2}
        :d [0 1 {}]})))
 
@@ -3068,19 +3068,13 @@
      ; Java version stuff
 
      (defn fn-any [] 42)
-     (defn fn7 [] (t/if-java-1-7-plus
-                    7
-                    (throw (ex-info " Unimplemented prior to Java 1.7: " nil))))
      (defn fn8 [] (t/if-java-1-8-plus
                     8
                     (throw (ex-info " Unimplemented prior to Java 1.8: " nil))))
 
      (dotest
-       #_(when (t/is-java-1-7?)
-           (throws? (fn8)))
        (when (t/is-java-8-plus?)
          (is= 8 (fn8)))
-       (is= 7 (fn7))
        (is= 42 (fn-any))
 
        (do
@@ -3104,42 +3098,41 @@
          (is (neg? (lex/compare-lex [11 0] (t/version-str->semantic-vec "17"))))
          (is (neg? (lex/compare-lex [11 0] (t/version-str->semantic-vec "17.0.1"))))
 
-         (with-redefs [t/java-version (constantly " 11.0.99-b666 ")]
-           (is (t/is-java-1-7-plus?))
+         (with-redefs [t/java-version-str (constantly " 11.0.99-b666 ")]
            (is (t/is-java-8-plus?))
            (is (t/is-java-11-plus?))
            (isnt (t/is-java-17-plus?))))
 
-       (with-redefs [t/java-version (constantly "1.7")]
+       (with-redefs [t/java-version-str (constantly "1.7")]
          (is (t/java-version-min? "1.7"))
          (isnt (t/java-version-min? "1.7.0"))
          (isnt (t/java-version-min? "1.7.0-b1234"))
          (isnt (t/java-version-min? "1.8")))
-       (with-redefs [t/java-version (constantly " 1.7.0 ")]
+       (with-redefs [t/java-version-str (constantly " 1.7.0 ")]
          (is (t/java-version-min? " 1.7 "))
          (is (t/java-version-min? "1.7.0"))
          (is (t/java-version-min? "1.7.0-b1234")) ; ignores build stuff
          (isnt (t/java-version-min? " 1.8 ")))
-       (with-redefs [t/java-version (constantly " 1.7.0-b1234 ")]
+       (with-redefs [t/java-version-str (constantly " 1.7.0-b1234 ")]
          (is (t/java-version-min? "1.7"))
          (is (t/java-version-min? " 1.7.0 "))
          (is (t/java-version-min? " 1.7.0-b1234 "))
          (isnt (t/java-version-min? " 1.8 ")))
-       (with-redefs [t/java-version (constantly " 1.7 ")]
-         (is (t/is-java-1-7-plus?))
+       (with-redefs [t/java-version-str (constantly " 1.7 ")]
          (isnt (t/is-java-8-plus?)))
-       (with-redefs [t/java-version (constantly " 1.8 ")]
-         (is (t/is-java-1-7-plus?))
+       (with-redefs [t/java-version-str (constantly " 1.8 ")]
          (is (t/is-java-8-plus?))
          (isnt (t/is-java-11-plus?))
          (isnt (t/is-java-17-plus?)))
-       (with-redefs [t/java-version (constantly " 11.0.9 ")]
-         (is (t/is-java-1-7-plus?))
+       (with-redefs [t/java-version-str (constantly " 1.8.1_234 ")]
+         (is (t/is-java-8-plus?))
+         (isnt (t/is-java-11-plus?))
+         (isnt (t/is-java-17-plus?)))
+       (with-redefs [t/java-version-str (constantly " 11.0.9 ")]
          (is (t/is-java-8-plus?))
          (is (t/is-java-11-plus?))
          (isnt (t/is-java-17-plus?)))
-       (with-redefs [t/java-version (constantly " 17.0.39 ")]
-         (is (t/is-java-1-7-plus?))
+       (with-redefs [t/java-version-str (constantly " 17.0.39 ")]
          (is (t/is-java-8-plus?))
          (is (t/is-java-11-plus?))
          (is (t/is-java-17-plus?))))
