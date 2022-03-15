@@ -195,6 +195,8 @@
 #?(:clj
    (do
      (dotest
+       (is (vector? (misc/random-hex-chars 20)))
+       (is (string? (misc/random-hex-str 20)))
        (is (every? chars/hex? (seq (misc/random-hex-chars 20))))
        (is (every? chars/hex? (seq (misc/random-hex-str 20))))
 

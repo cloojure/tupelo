@@ -294,7 +294,7 @@
        "Returns a random vector of hex chars of length N"
        [N :- s/Int]
        (assert (pos? N))
-       (vec (str/join (repeatedly N #(rand-nth HEX_CHARS)))))
+       (vec (repeatedly N #(rand-nth HEX_CHARS))))
 
      (s/defn ^:no-doc random-hex-str
        "Returns a random hex string of length N"
