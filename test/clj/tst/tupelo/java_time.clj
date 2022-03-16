@@ -16,9 +16,15 @@
     [java.time Duration Instant MonthDay YearMonth LocalDate LocalDateTime Period
                ZoneId ZoneId ZonedDateTime DayOfWeek]
     [java.util Date]
-    [java.time.temporal ChronoUnit]))
+    [java.time.temporal ChronoUnit ChronoField TemporalField]))
 
 (t/when-java-1-11-plus
+
+  (dotest
+    (let [inst (Instant/parse "2019-11-22T11:22:33.456Z")]
+      (t/spyx inst)
+      (t/spyx (.get inst ^TemporalField ChronoField/EPOCH_DAY))
+      ))
 
   (dotest
     (throws-not? (Instant/parse "2019-02-14T02:03:04.334Z"))
