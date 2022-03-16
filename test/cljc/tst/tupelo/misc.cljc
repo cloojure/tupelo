@@ -211,6 +211,29 @@
        (let [sample-inst (Instant/parse "2037-07-14t19:17:16.123456789Z")
              clock       (Clock/fixed sample-inst tjt/zoneid-utc)]
          (with-redefs [misc/instant-now #(Instant/now clock)]
+           (is= (misc/instant->field-strs sample-inst)
+             {:day-2    "14"
+              :hour-2   "19"
+              :micros-6 "123456"
+              :millis-3 "123"
+              :min-2    "17"
+              :month-2  "07"
+              :nanos-9  "123456789"
+              :sec-2    "16"
+              :year-2   "37"
+              :year-4   "2037"})
+           (is= (misc/instant->field-strs (Instant/parse "2037-07-14t01:02:03.012345678Z"))
+             {:day-2    "14"
+              :hour-2   "01"
+              :micros-6 "012345"
+              :millis-3 "012"
+              :min-2    "02"
+              :month-2  "07"
+              :nanos-9  "012345678"
+              :sec-2    "03"
+              :year-2   "37"
+              :year-4   "2037"})
+
            (let [result     (misc/tuid-str)
                  fixed-part (subs result 0 27)
                  rnd1-str   (subs result 27 35)

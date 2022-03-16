@@ -301,6 +301,34 @@
        [N :- s/Int] (str/join (random-hex-chars N)))
 
      (defn ^:no-doc instant-now [] (Instant/now)) ; wrapper for ease of testing
+
+     (s/defn instant->field-strs :- {s/Keyword s/Str}
+       "Given an Instant, returns a map with string values for the various fields.
+        "
+       [inst :- Instant]
+       (let [esec         (.getEpochSecond inst)
+             nanos        (.getNano inst)
+             >>           (assert (and (<= 0 esec) (< esec TWO_POW_34)))
+             >>           (assert (and (<= 0 nanos) (< nanos TWO_POW_30)))
+
+             ; tens                                000000000011111111112222222222
+             ; ones                                012345678901234567890123456789
+             iso-8601-str (.toString inst) ; like "2021-05-18T00:32:45.196101Z"
+             year-4       (subs iso-8601-str 0 4)
+             year-2       (subs iso-8601-str 2 4)
+             month-2      (subs iso-8601-str 5 7)
+             day-2        (subs iso-8601-str 8 10)
+             hour-2       (subs iso-8601-str 11 13)
+             min-2        (subs iso-8601-str 14 16)
+             sec-2        (subs iso-8601-str 17 19)
+             millis-3     (format "%03d" (quot nanos (* 1000 1000)))
+             micros-6     (format "%06d" (quot nanos 1000))
+             nanos-9      (format "%09d" nanos)
+             result       (vals->map year-4 year-2 month-2 day-2 hour-2 min-2 sec-2
+                            millis-3 micros-6 nanos-9)
+             ]
+         result))
+
      (s/defn tuid-str :- s/Str
        "Returns a 'Time Unique ID' (TUID), a 128-bit human-readable UUID-cousin based on the current
         java.time.Instant. From MSB->LSB, it is composed of a 34-bit epoch second field
@@ -311,28 +339,15 @@
              Sample:  2021-0714-191716-123456789-da39a3ee-5e6b4b0d  ; sample value
         "
        []
-       (let [inst         (instant-now)
-             esec         (.getEpochSecond inst)
-             nanos        (.getNano inst)
-             >>           (assert (and (<= 0 esec) (< esec TWO_POW_34)))
-             >>           (assert (and (<= 0 nanos) (< nanos TWO_POW_30)))
-
-             iso-8601-str (.toString inst) ; like "2021-05-18T00:32:45.196101Z"
-             ; tens                                000000000011111111112222222222
-             ; ones                                012345678901234567890123456789
-             yr4          (subs iso-8601-str 0 4)
-             mo2          (subs iso-8601-str 5 7)
-             day2         (subs iso-8601-str 8 10)
-             hr2          (subs iso-8601-str 11 13)
-             min2         (subs iso-8601-str 14 16)
-             sec2         (subs iso-8601-str 17 19)
-             result       (format "%4s-%2s%2s-%2s%2s%2s-%09d-%8s-%8s"
-                                  yr4 mo2 day2
-                                  hr2 min2 sec2
-                                  nanos
-                                  (random-hex-str 8)
-                                  (random-hex-str 8))]
-         result))
+       (let [inst-fields (instant->field-strs (instant-now))]
+         (t/with-map-vals inst-fields [year-4 month-2 day-2 hour-2 min-2 sec-2 nanos-9]
+           (let [result (format "%4s-%2s%2s-%2s%2s%2s-%9s-%8s-%8s"
+                          year-4 month-2  day-2
+                          hour-2 min-2 sec-2
+                          nanos-9
+                          (random-hex-str 8)
+                          (random-hex-str 8))]
+             result))))
 
      (def ^:no-doc tuid-str-regex
        #"(?x)           # expanded mode

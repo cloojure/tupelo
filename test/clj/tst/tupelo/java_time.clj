@@ -21,12 +21,6 @@
 (t/when-java-1-11-plus
 
   (dotest
-    (let [inst (Instant/parse "2019-11-22T11:22:33.456Z")]
-      (t/spyx inst)
-      (t/spyx (.get inst ^TemporalField ChronoField/EPOCH_DAY))
-      ))
-
-  (dotest
     (throws-not? (Instant/parse "2019-02-14T02:03:04.334Z"))
     (throws-not? (Instant/parse "2019-02-14T02:03:04Z"))
     (throws-not? (Instant/parse "0019-02-14T02:03:04Z")) ; can handle really old dates w/o throwing
