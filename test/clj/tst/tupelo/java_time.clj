@@ -4,16 +4,21 @@
   (:use tupelo.java-time tupelo.test)
   (:require
     [clj-time.core :as joda]
-    [tupelo.core :as t]
-    [tupelo.java-time :as tjt]
-    [tupelo.interval :as interval]
-    [tupelo.string :as str]
     [schema.core :as s]
+    [tupelo.chars :as chars]
+    [tupelo.core :as t]
+    [tupelo.interval :as interval]
+    [tupelo.java-time :as tjt]
+    [tupelo.misc :as misc]
     [tupelo.schema :as tsk]
+    [tupelo.string :as str]
     [tupelo.tagstr :as tagstr]
-    [tupelo.misc :as misc])
+    )
   (:import
-    [java.time Duration Instant MonthDay YearMonth LocalDate LocalDateTime Period
+    [java.lang Byte Integer]
+    [java.sql Timestamp]
+    [java.util Date UUID]
+    [java.time  Clock Instant Duration Instant MonthDay YearMonth LocalDate LocalDateTime Period
                ZoneId ZoneId ZonedDateTime DayOfWeek]
     [java.util Date]
     [java.time.temporal ChronoUnit ChronoField TemporalField]))
@@ -553,5 +558,63 @@
       (is (same-instant? ref (str->Instant "1999-11-22t00:00:00+00:00")))
       (is (same-instant? ref (str->Instant "1999-11-22t00:00:00.000+00:00")))
       (is (same-instant? ref (str->Instant "1999-11-22t00:00:00+00:00[UTC]")))))
+
+  (dotest-focus
+    (is (every? chars/hex? (seq (random-hex-chars 20))))
+    (is (every? chars/hex? (seq (random-hex-str 20))))
+
+    (is (tuid-str? "2037-0714-191716-123456789-88d43adf-efc8b8ce"))
+    (isnt (tuid-str? "X037-0714-191716-123456789-88d43adf-efc8b8ce"))
+    (isnt (tuid-str? "20370-714-191716-123456789-88d43adf-efc8b8ce"))
+    (is (every? tuid-str?
+          (repeatedly 33 tuid-str)))
+
+    ; sample output:  "2037-0714-191716-123456789-88d43adf-efc8b8ce"
+    ; tens             00000000001111111111222222222233333333334444
+    ; ones             01234567890123456789012345678901234567890123
+    (is= 44 (count (tuid-str)))
+    (let [sample-inst (Instant/parse "2037-07-14t19:17:16.123456789Z")
+          clock       (Clock/fixed sample-inst tjt/zoneid-utc)]
+      (with-redefs [instant-now #(Instant/now clock)]
+        (is= (temporal->field-strs sample-inst)
+          {:day-2    "14"
+           :hour-2   "19"
+           :micros-6 "123456"
+           :millis-3 "123"
+           :min-2    "17"
+           :month-2  "07"
+           :nanos-9  "123456789"
+           :sec-2    "16"
+           :year-2   "37"
+           :year-4   "2037"})
+        (is= (temporal->field-strs (Instant/parse "2037-07-14t01:02:03.012345678Z"))
+          {:day-2    "14"
+           :hour-2   "01"
+           :micros-6 "012345"
+           :millis-3 "012"
+           :min-2    "02"
+           :month-2  "07"
+           :nanos-9  "012345678"
+           :sec-2    "03"
+           :year-2   "37"
+           :year-4   "2037"})
+
+        (let [result     (tuid-str)
+              fixed-part (subs result 0 27)
+              rnd1-str   (subs result 27 35)
+              rnd2-str   (subs result 36)]
+          (is= fixed-part "2037-0714-191716-123456789-")
+          (is (every? chars/hex? rnd1-str))
+          (is (every? chars/hex? rnd2-str)))
+        ))
+
+    (let [inst (Instant/parse "2037-07-14t01:02:03.012345678Z")
+          zdt (->ZonedDateTime inst)]
+      (is= "20370714"
+        (temporal->YYYYMMDD inst)
+        (temporal->YYYYMMDD zdt))
+      (is= "010203"
+        (temporal->HHMMSS inst)
+        (temporal->HHMMSS zdt))))
 
   )
