@@ -16,7 +16,6 @@
     [tupelo.tagstr :as tagstr]
     )
   (:import
-    [java.lang Byte Integer]
     [java.sql Timestamp]
     [java.util Date UUID]
     [java.time  Clock Instant Duration Instant MonthDay YearMonth LocalDate LocalDateTime Period
@@ -137,15 +136,7 @@
     (is (Period? (Period/ofDays 3)))
     (is (Period? (Period/ofWeeks 3)))
     (is (Period? (Period/ofMonths 3)))
-    (is (Period? (Period/ofYears 3)))
-
-    (is= {:zdt     "2018-09-01T00:00:00Z",
-          :instant "2018-09-01T00:00:00Z",
-          :joda-dt "2018-09-01T00:00:00Z"}
-      (stringify-times
-        {:zdt     (zoned-date-time 2018 9 1)
-         :instant (->Instant (zoned-date-time 2018 9 1))
-         :joda-dt (->Instant (joda/date-time 2018 9 1))})))
+    (is (Period? (Period/ofYears 3))))
 
   (dotest
     (isnt (LocalDate-str? "12-31-1999"))
@@ -414,20 +405,7 @@
         (is (interval/contains? itvl-closed mid))
         (is (interval/contains? itvl-closed ub))
         )
-      )
-
-    (is= (stringify-times [:something
-                           {:ambassador-id 13590,
-                            :created-at    (with-zoneid zoneid-us-pacific
-                                             (zoned-date-time 2018 1 2, 7))
-                            :team-id       45,}
-                           #{:some :more :stuff}])
-      [:something
-       {:ambassador-id 13590
-        :created-at    "2018-01-02T15:00:00Z"
-        :team-id       45}
-       #{:stuff :some :more}])
-    )
+      ))
 
   (dotest
     (let [now-instant-1          (now->Instant)

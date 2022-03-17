@@ -10,10 +10,10 @@
     [tupelo.string :as str]
     )
   (:import
-    [java.time LocalDate LocalDateTime DayOfWeek ZoneId ZonedDateTime Instant Period
-               Year YearMonth]
+    [java.time LocalDate LocalDateTime DayOfWeek ZoneId ZonedDateTime Instant Period Year YearMonth]
     [java.time.format DateTimeFormatter]
     [java.time.temporal Temporal TemporalUnit TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit]
+    [org.joda.time ReadableInstant]
     [tupelo.interval Interval]
     ))
 
@@ -186,14 +186,11 @@
 
 (defn Temporal?
   "Returns true iff arg is an instance of java.time.temporal.Temporal "
-  [it]
-  (instance? Temporal it))
+  [it] (instance? Temporal it))
 
 (defn Period?
-  "Returns true iff arg is an instance of org.joda.time.ReadablePeriod.
-  Example:  (period (days 3)) => true "
-  [it]
-  (instance? Period it))
+  "Returns true iff arg is an instance of Period. "
+  [it] (instance? Period it))
 
 (defn ->Instant
   "Coerces an Instant, ZonedDateTime, or org.joda.time.ReadableInstant => Instant "
@@ -635,16 +632,6 @@
     tree))
 
 ;-----------------------------------------------------------------------------
-
-; #todo make work for relative times (LocalDate, LocalDateTime, etc)
-(defn stringify-times
-  "Will recursively walk any data structure, converting any `fixed-point?` object to a string"
-  [form]
-  (walk/postwalk (fn [item]
-                   (t/cond-it-> item
-                     (fixed-point? it) (->str-iso it)))
-    form))
-
 (s/defn slice :- [Temporal]
   "Returns a vector of instants in the half-open interval [start stop) (both instants)
   with increment <step> (a period). Not lazy.  Example:
