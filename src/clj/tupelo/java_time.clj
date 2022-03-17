@@ -13,7 +13,7 @@
     [java.time LocalDate LocalDateTime DayOfWeek ZoneId ZonedDateTime Instant Period
                Year YearMonth]
     [java.time.format DateTimeFormatter]
-    [java.time.temporal Temporal TemporalUnit TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit ]
+    [java.time.temporal Temporal TemporalUnit TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit]
     [tupelo.interval Interval]
     ))
 
@@ -48,15 +48,6 @@
 (def zoneid-us-hawaii (ZoneId/of "US/Hawaii"))
 (def zoneid-us-mountain (ZoneId/of "US/Mountain"))
 (def zoneid-us-pacific (ZoneId/of "US/Pacific"))
-
-;-----------------------------------------------------------------------------
-(def ^:no-doc iso-date-regex #"(\d\d\d\d)-(\d\d)-(\d\d)")
-(def ^:no-doc iso-date-bounds-default {:year   {:min 1776 :max 2112}
-                                       :month  {:min 1 :max 12}
-                                       :day    {:min 1 :max 31}
-                                       :hour   {:min 0 :max 23}
-                                       :minute {:min 0 :max 59}
-                                       :second {:min 0 :max 60}})
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn LocalDate? :- s/Bool
@@ -113,36 +104,36 @@
     (mapv #(LocalDate-interval->days (interval/new first-date %)) ld-vals)))
 
 ;---------------------------------------------------------------------------------------------------
-(def time-str-patterns
-  {:LocalDate     #"(?x)\d{4}-\d{2}-\d{2}"    ; 1999-12-31   (maybe allow sloppy like '1999-4-2' ?)
+(def ^:no-doc time-str-patterns
+  {:LocalDate     #"(?x)\d{4}-\d{2}-\d{2}" ; 1999-12-31   (maybe allow sloppy like '1999-4-2' ?)
 
    :Timestamp     #"(?x)\d{4}-\d{2}-\d{2}     # 1999-12-31
                    \s{1}                      # single space
-                   \d{2}:\d{2}:\d{2}"         ; 11:22:33
+                   \d{2}:\d{2}:\d{2}" ; 11:22:33
 
    :LocalDateTime #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
                    t                          # separator
                    \d{2}:\d{2}:\d{2}          # 11:22:33
-                   (\.\d+)?"                  ; fractional seconds optional
+                   (\.\d+)?" ; fractional seconds optional
 
    :iso-str-nice  #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
                    \s{1}                      # space as separator
                    \d{2}:\d{2}:\d{2}          # 11:22:33
                    (\.\d+)?                   # fractional seconds optional
-                   z"                         ; always utc or "zulu" time zone
+                   z" ; always utc or "zulu" time zone
 
    :Instant       #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
                    t                          # separator
                    \d{2}:\d{2}:\d{2}          # 11:22:33
                    (\.\d+)?                   # fractional seconds optional
-                   z"                         ; always utc or "zulu" time zone
+                   z" ; always utc or "zulu" time zone
 
    :ZonedDateTime #"(?ix)\d{4}-\d{2}-\d{2}    # 1999-12-31
                    t                          # separator
                    \d{2}:\d{2}:\d{2}          # 11:22:33
                    (\.\d+)?                   # fractional seconds optional
                    \+\d{2}:\d{2}              # +01:00
-                   (\[\w+\])?"                ; timezone label like '[UTC]' optional
+                   (\[\w+\])?" ; timezone label like '[UTC]' optional
    })
 
 (s/defn LocalDate-str? :- s/Bool
@@ -211,7 +202,7 @@
     (instance? Instant arg) arg
     (instance? ZonedDateTime arg) (.toInstant arg)
     (instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli)
-    (instance? String arg)  (parse-iso-str-nice->Instant arg) ; #todo need unit test
+    (instance? String arg) (parse-iso-str-nice->Instant arg) ; #todo need unit test
     :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
 (defn ->ZonedDateTime ; #todo -> protocol?
@@ -399,43 +390,155 @@
 
         (previous-or-same t DayOfWeek/SUNDAY)
   "
-  [temporal  :- Temporal
+  [temporal :- Temporal
    tgt-dow :- DayOfWeek]
   (.with temporal (TemporalAdjusters/previousOrSame tgt-dow)))
 
 ;-----------------------------------------------------------------------------
-(s/defn format->LocalDate-iso :- s/Str ; won't work for Instant
-  "Given an Instant or ZonedDateTime, returns a string like `2018-09-05`"
-  [zdt :- Temporal]
-  (.format (->ZonedDateTime zdt) DateTimeFormatter/ISO_LOCAL_DATE))
+(def ^:no-doc TWO_POW_34 (Math/round (Math/pow 2 34)))
+(def ^:no-doc TWO_POW_30 (Math/round (Math/pow 2 30)))
+(def ^:no-doc HEX_CHARS (vec "0123456789abcdef"))
 
-(s/defn format->LocalDate-compact :- s/Str ; won't work for Instant
+(s/defn ^:no-doc random-hex-chars
+  "Returns a random vector of hex chars of length N"
+  [N :- s/Int]
+  (assert (pos? N))
+  (vec (str/join (repeatedly N #(rand-nth HEX_CHARS)))))
+
+(s/defn ^:no-doc random-hex-str
+  "Returns a random hex string of length N"
+  [N :- s/Int] (str/join (random-hex-chars N)))
+
+(defn ^:no-doc instant-now [] (Instant/now)) ; wrapper for ease of testing
+
+(s/defn temporal->field-strs :- {s/Keyword s/Str}
+  "Given an Instant, returns a map with string values for the component fields.
+
+      (instant->field-strs (Instant/parse '2037-07-14t01:02:03.012345678Z')) =>
+        {:year-4   '2037'
+         :year-2   '37'
+         :month-2  '07'
+         :day-2    '14'
+         :hour-2   '01'
+         :min-2    '02'
+         :sec-2    '03'
+         :micros-6 '012345'
+         :millis-3 '012'
+         :nanos-9  '012345678'
+         }
+   "
+  [temporal :- Temporal]
+  (let [inst         (->Instant temporal)
+        esec         (.getEpochSecond inst)
+        nanos        (.getNano inst)
+        >>           (assert (and (<= 0 esec) (< esec TWO_POW_34)))
+        >>           (assert (and (<= 0 nanos) (< nanos TWO_POW_30)))
+
+        ; tens                                000000000011111111112222222222
+        ; ones                                012345678901234567890123456789
+        iso-8601-str (.toString inst) ; like "2021-05-18T00:32:45.196101Z"
+        year-4       (subs iso-8601-str 0 4)
+        year-2       (subs iso-8601-str 2 4)
+        month-2      (subs iso-8601-str 5 7)
+        day-2        (subs iso-8601-str 8 10)
+        hour-2       (subs iso-8601-str 11 13)
+        min-2        (subs iso-8601-str 14 16)
+        sec-2        (subs iso-8601-str 17 19)
+        millis-3     (format "%03d" (quot nanos (* 1000 1000)))
+        micros-6     (format "%06d" (quot nanos 1000))
+        nanos-9      (format "%09d" nanos)
+        result       (t/vals->map year-4 year-2 month-2 day-2 hour-2 min-2 sec-2
+                       millis-3 micros-6 nanos-9)
+        ]
+    result))
+
+(s/defn tuid-str :- s/Str
+  "Returns a 'Time Unique ID' (TUID), a 128-bit human-readable UUID-cousin based on the current
+   java.time.Instant. From MSB->LSB, it is composed of a 34-bit epoch second field
+   (valid years: 1970-2514), a 10-bit nanosecond field, and a 64-bit random field.
+
+        128 bits total:  <34-bit-unix-sec> + <30 bit nanos> + <64 bits rand>
+        Format:  YYYY-MMDD-HHMMSS-nanosec*9-rndhex*8-rndhex*8  ; string format
+        Sample:  2021-0714-191716-123456789-da39a3ee-5e6b4b0d  ; sample value
+   "
+  []
+  (let [inst-fields (temporal->field-strs (instant-now))]
+    (t/with-map-vals inst-fields [year-4 month-2 day-2 hour-2 min-2 sec-2 nanos-9]
+      (let [result (format "%4s-%2s%2s-%2s%2s%2s-%9s-%8s-%8s"
+                     year-4 month-2 day-2
+                     hour-2 min-2 sec-2
+                     nanos-9
+                     (random-hex-str 8)
+                     (random-hex-str 8))]
+        result))))
+
+(def ^:no-doc tuid-str-regex
+  #"(?x)           # expanded mode
+       \p{Digit}{4}-    # YYYY
+       \p{Digit}{4}-    # MMDD
+       \p{Digit}{6}-    # HHMMSS
+       \p{Digit}{9}-    # nanos*9
+       \p{XDigit}{8}-   # rndhex*8
+       \p{XDigit}{8}    # rndhex*8
+       "
+  )
+(s/defn tuid-str? :- s/Bool
+  "Returns true if a string is a valid TUID regex pattern"
+  [s :- s/Str]
+  (t/truthy? (re-matches tuid-str-regex s)))
+
+;-----------------------------------------------------------------------------
+; #todo remove? reduntant with ->str-YYYYMMDD
+(s/defn ^:no-doc temporal->YYYYMMDD :- s/Str
+  "Given an Instant like '2037-07-14t33:44:55.123456789Z', returns a string with the
+  YYYYMMDD format like '20370714' "
+  [temporal :- Temporal]
+  (let [field-strs (temporal->field-strs temporal)]
+    (t/with-map-vals field-strs [year-4 month-2 day-2 hour-2 min-2 sec-2 nanos-9]
+      (str year-4 month-2 day-2))))
+
+(s/defn ->str-HHMMSS :- s/Str
+  "Given an Instant like '2037-07-14t11:22:33.123456789Z', returns a string with the
+  HHMMSS format like '112233' "
+  [temporal :- Temporal]
+  (let [field-strs (temporal->field-strs temporal)]
+    (t/with-map-vals field-strs [year-4 month-2 day-2 hour-2 min-2 sec-2 nanos-9]
+      (str  hour-2 min-2 sec-2 ))))
+
+;-----------------------------------------------------------------------------
+(s/defn ->str-YYYY-MM-DD :- s/Str ; won't work for Instant
+  "Given an Instant or ZonedDateTime, returns a string like `2018-09-05`"
+  [temporal :- Temporal]
+  (.format (->ZonedDateTime temporal) DateTimeFormatter/ISO_LOCAL_DATE))
+
+(s/defn ->str-YYYYMMDD :- s/Str ; won't work for Instant
   "Given an Instant or ZonedDateTime, returns a compact date-time string like
     `2018-09-05 23:05:19.123Z` => `20180905` "
-  [inst :- Temporal]
+  [temporal :- Temporal]
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd")]
-    (.format (->ZonedDateTime inst) formatter)))
+    (.format (->ZonedDateTime temporal) formatter)))
 
-(s/defn format->iso-str :- s/Str ; #todo maybe inst->iso-date-time
+(s/defn ->str-iso :- s/Str
   "Given an Instant or ZonedDateTime, returns a ISO 8601 datetime string like `2018-09-05T23:05:19.123Z`"
-  [inst :- Temporal]
-  (str (->Instant inst))) ; uses DateTimeFormatter/ISO_INSTANT
+  [temporal :- Temporal]
+  (str (->Instant temporal))) ; uses DateTimeFormatter/ISO_INSTANT
 
-(s/defn format->iso-str-nice :- s/Str
+(s/defn ->str-iso-nice :- s/Str
   "Given an Instant or ZonedDateTime, returns an ISO date-time string like
   `2018-09-05 23:05:19.123Z` (with a space instead of `T`)"
-  [inst :- Temporal]
-  (let [sb (StringBuffer. (format->iso-str inst))]
-    (.setCharAt sb 10 \space)
-    (str sb)))
+  [temporal :- Temporal]
+  (let [str-buff (StringBuffer. (->str-iso temporal))]
+    (.setCharAt str-buff 10 \space)
+    (str str-buff)))
 
-(s/defn format->timestamp-compact :- s/Str ; won't work for Instant
+(s/defn ->str-YYYYMMDD-HHMMSS :- s/Str ; won't work for Instant
   "Given an Instant or ZonedDateTime, returns a compact date-time string like
   `2018-09-05 23:05:19.123Z` => `20180905-230519` "
-  [inst :- Temporal]
+  [temporal :- Temporal]
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd-HHmmss")]
-    (.format (->ZonedDateTime inst) formatter)))
+    (.format (->ZonedDateTime temporal) formatter)))
 
+;-----------------------------------------------------------------------------
 (s/defn parse-iso-str->Instant :- Instant
   "Convert an ISO 8601 string to epoch milliseconds. Will collapse excess whitespace."
   [iso-datetime-str :- s/Str]
@@ -444,7 +547,7 @@
     (Instant/parse)))
 
 
-(s/defn parse-iso-str->millis :- s/Int ; #todo => convert/Instant->millis
+(s/defn parse-iso-str->millis :- s/Int
   "Convert an ISO 8601 string to epoch milliseconds. Will collapse excess whitespace."
   [iso-datetime-str :- s/Str]
   (-> iso-datetime-str
@@ -458,27 +561,27 @@
     (parse-iso-str->millis)
     (java.sql.Timestamp.)))
 
-(s/defn parse-iso-str-nice->Instant :- Instant ; #todo => parse-iso-str-nice->Instant
+(s/defn parse-iso-str-nice->Instant :- Instant
   "Parse a near-iso string like '2019-09-19 18:09:35Z' (it is missing the 'T' between the
   date & time fields) into an Instant. Will collapse excess whitespace."
   [iso-str :- s/Str]
   (t/it-> iso-str
     (str/whitespace-collapse it)
-    (vec it) ; convert to vector of chars
+    (vec it)        ; convert to vector of chars
     (assoc it 10 \T) ; set index 10 to a "T" char
-    (str/join it) ; convert back to a string
+    (str/join it)   ; convert back to a string
     (Instant/parse it)))
 
-(s/defn parse-sql-timestamp-str->Instant-utc :- Instant ; #todo => parse-sql-timestamp->Instant-utc
+(s/defn parse-sql-timestamp-str->Instant-utc :- Instant
   "Parse a near-Timestamp string like '  2019-09-19 18:09:35 ' (sloppy spacing) into an Instant.
   Assumes UTC timezone. Will collapse excess whitespace."
   [sql-timestamp-str :- s/Str]
   (t/it-> sql-timestamp-str
     (str/whitespace-collapse it)
-    (vec it) ; convert to vector of chars
+    (vec it)        ; convert to vector of chars
     (assoc it 10 \T) ; set index 10 to a "T" char
     (t/append it \Z)
-    (str/join it) ; convert back to a string
+    (str/join it)   ; convert back to a string
     (Instant/parse it)))
 
 ;-----------------------------------------------------------------------------
@@ -549,14 +652,14 @@
 
 ; #todo make work for relative times (LocalDate, LocalDateTime, etc)
 (defn stringify-times
-  "Will recursively walk any data structure, converting any `fixed-time-point?` object to a string"
+  "Will recursively walk any data structure, converting any `fixed-point?` object to a string"
   [form]
   (walk/postwalk (fn [item]
                    (t/cond-it-> item
-                     (fixed-point? it) (format->iso-str it)))
+                     (fixed-point? it) (->str-iso it)))
     form))
 
-(s/defn range :- [Temporal]
+(s/defn slice :- [Temporal]
   "Returns a vector of instants in the half-open interval [start stop) (both instants)
   with increment <step> (a period). Not lazy.  Example:
 
@@ -573,8 +676,8 @@
   (loop [result    []
          curr-inst start-inst]
     (if (.isBefore ^Temporal curr-inst stop-inst)
-      (recur (conj result curr-inst)
-        (.plus curr-inst step-dur))
+      (recur
+        (t/append result curr-inst) ; next result
+        (.plus curr-inst step-dur)) ; next curr-inst
+      ; else
       result)))
-
-

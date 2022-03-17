@@ -4,19 +4,24 @@
   (:use tupelo.java-time tupelo.test)
   (:require
     [clj-time.core :as joda]
-    [tupelo.core :as t]
-    [tupelo.java-time :as tjt]
-    [tupelo.interval :as interval]
-    [tupelo.string :as str]
     [schema.core :as s]
+    [tupelo.chars :as chars]
+    [tupelo.core :as t]
+    [tupelo.interval :as interval]
+    [tupelo.java-time :as tjt]
+    [tupelo.misc :as misc]
     [tupelo.schema :as tsk]
+    [tupelo.string :as str]
     [tupelo.tagstr :as tagstr]
-    [tupelo.misc :as misc])
+    )
   (:import
-    [java.time Duration Instant MonthDay YearMonth LocalDate LocalDateTime Period
+    [java.lang Byte Integer]
+    [java.sql Timestamp]
+    [java.util Date UUID]
+    [java.time  Clock Instant Duration Instant MonthDay YearMonth LocalDate LocalDateTime Period
                ZoneId ZoneId ZonedDateTime DayOfWeek]
     [java.util Date]
-    [java.time.temporal ChronoUnit]))
+    [java.time.temporal ChronoUnit ChronoField TemporalField]))
 
 (t/when-java-1-11-plus
 
@@ -273,28 +278,37 @@
     (let [zdt  (zoned-date-time 2018 9 8,, 2 3 4)
           inst (->Instant zdt)]
       (is= "2018-09-08"
-        (format->LocalDate-iso zdt)
-        (format->LocalDate-iso inst))
+        (->str-YYYY-MM-DD zdt)
+        (->str-YYYY-MM-DD inst))
       (is= "2018-09-08T02:03:04Z"
-        (format->iso-str zdt)
-        (format->iso-str inst))
+        (->str-iso zdt)
+        (->str-iso inst))
       (is= "2018-09-08 02:03:04Z"
-        (format->iso-str-nice zdt)
-        (format->iso-str-nice inst))
+        (->str-iso-nice zdt)
+        (->str-iso-nice inst))
       (is= "2018-09-08T02:03:04Z" (str (->Instant "2018-09-08T02:03:04Z")))
       (is= (str (->ZonedDateTime "2018-09-08T02:03:04Z")) "2018-09-08T02:03:04Z[UTC]"))
 
-    (let [zdt  (zoned-date-time 2018 9 8,, 2 3 4,, 123456789)
-          inst (->Instant zdt)]
-      (is= "20180908"
-        (format->LocalDate-compact zdt)
-        (format->LocalDate-compact inst))
-      (is= "2018-09-08 02:03:04.123456789Z"
-        (format->iso-str-nice zdt)
-        (format->iso-str-nice inst))
-      (is= "20180908-020304"
-        (format->timestamp-compact zdt)
-        (format->timestamp-compact inst))))
+    (let [inst (Instant/parse "2037-07-14t01:02:03.012345678Z")
+          zdt  (->ZonedDateTime inst)]
+      (is= "20370714"
+        (temporal->YYYYMMDD inst)
+        (temporal->YYYYMMDD zdt)
+        (->str-YYYYMMDD zdt)
+        (->str-YYYYMMDD inst))
+      (is= "010203"
+        (->str-HHMMSS inst)
+        (->str-HHMMSS zdt))
+      (is= "20370714-010203"
+        (->str-YYYYMMDD-HHMMSS zdt)
+        (->str-YYYYMMDD-HHMMSS inst))
+
+      (is= "2037-07-14T01:02:03.012345678Z"
+        (->str-iso zdt)
+        (->str-iso inst))
+      (is= "2037-07-14 01:02:03.012345678Z"
+        (->str-iso-nice zdt)
+        (->str-iso-nice inst))))
 
   (dotest
     (is (re-matches #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3,}Z" (now->iso-str))) ; at least 3 decimal seconds
@@ -305,7 +319,7 @@
           (zoned-date-time 2018 9 2)
           (zoned-date-time 2018 9 3)
           (zoned-date-time 2018 9 4)]
-      (range
+      (slice
         (zoned-date-time 2018 9 1)
         (zoned-date-time 2018 9 5)
         (Duration/ofDays 1)))
@@ -314,7 +328,7 @@
           (zoned-date-time 2018 9 2 2 3 4)
           (zoned-date-time 2018 9 3 2 3 4)
           (zoned-date-time 2018 9 4 2 3 4)]
-      (range
+      (slice
         (zoned-date-time 2018 9 1 2 3 4)
         (zoned-date-time 2018 9 5 2 3 4)
         (Duration/ofDays 1)))
@@ -323,7 +337,7 @@
           (zoned-date-time 2018 9 1 2)
           (zoned-date-time 2018 9 1 3)
           (zoned-date-time 2018 9 1 4)]
-      (range
+      (slice
         (zoned-date-time 2018 9 1 1)
         (zoned-date-time 2018 9 1 5)
         (Duration/ofHours 1))))
@@ -332,7 +346,7 @@
   (dotest
     (let [start-sunday   (previous-or-same (zoned-date-time 2018 9 1) DayOfWeek/SUNDAY)
           stop-inst      (zoned-date-time 2018 9 17)
-          start-instants (range start-sunday stop-inst (Duration/ofDays 7))]
+          start-instants (slice start-sunday stop-inst (Duration/ofDays 7))]
       (is= start-instants
         [(zoned-date-time 2018 8 26)
          (zoned-date-time 2018 9 2)
@@ -476,8 +490,8 @@
       (is= zdt-str "2019-02-03T04:05:06.789Z")
       (is= (.toString jud) "Sat Feb 02 20:05:06 PST 2019")
 
-      (is= "2019-02-03T04:05:06.789Z" (format->iso-str zdt))
-      (is= "2019-02-03T04:05:06.789Z" (format->iso-str instant))
+      (is= "2019-02-03T04:05:06.789Z" (->str-iso zdt))
+      (is= "2019-02-03T04:05:06.789Z" (->str-iso instant))
 
       (is= instant (parse-iso-str->Instant iso-str))
       (is= millis
@@ -504,7 +518,7 @@
           result     (parse-iso-str-nice->Instant str-sloppy)]
       (is (instance? Instant result))
       (is= (str result) "2019-09-19T18:09:35Z")
-      (is= str-nice (format->iso-str-nice result))
+      (is= str-nice (->str-iso-nice result))
 
       ; also works if fractional seconds are present
       (is= "2019-09-19T18:09:35.123Z" (str (parse-iso-str-nice->Instant "  2019-09-19  18:09:35.123Z  "))))
@@ -553,5 +567,54 @@
       (is (same-instant? ref (str->Instant "1999-11-22t00:00:00+00:00")))
       (is (same-instant? ref (str->Instant "1999-11-22t00:00:00.000+00:00")))
       (is (same-instant? ref (str->Instant "1999-11-22t00:00:00+00:00[UTC]")))))
+
+  (dotest
+    (is= (temporal->field-strs (Instant/parse "2037-07-14t19:17:16.123456789Z"))
+      {:day-2    "14"
+       :hour-2   "19"
+       :micros-6 "123456"
+       :millis-3 "123"
+       :min-2    "17"
+       :month-2  "07"
+       :nanos-9  "123456789"
+       :sec-2    "16"
+       :year-2   "37"
+       :year-4   "2037"})
+    (is= (temporal->field-strs (Instant/parse "2037-07-14t01:02:03.012345678Z"))
+      {:day-2    "14"
+       :hour-2   "01"
+       :micros-6 "012345"
+       :millis-3 "012"
+       :min-2    "02"
+       :month-2  "07"
+       :nanos-9  "012345678"
+       :sec-2    "03"
+       :year-2   "37"
+       :year-4   "2037"})
+
+    ;-----------------------------------------------------------------------------
+    (is (every? chars/hex? (seq (random-hex-chars 20))))
+    (is (every? chars/hex? (seq (random-hex-str 20))))
+
+    (is (tuid-str? "2037-0714-191716-123456789-88d43adf-efc8b8ce"))
+    (isnt (tuid-str? "X037-0714-191716-123456789-88d43adf-efc8b8ce"))
+    (isnt (tuid-str? "20370-714-191716-123456789-88d43adf-efc8b8ce"))
+    (is (every? tuid-str?
+          (repeatedly 33 tuid-str)))
+
+    ; sample output:  "2037-0714-191716-123456789-88d43adf-efc8b8ce"
+    ; tens             00000000001111111111222222222233333333334444
+    ; ones             01234567890123456789012345678901234567890123
+    (is= 44 (count (tuid-str)))
+    (let [sample-inst (Instant/parse "2037-07-14t19:17:16.123456789Z")
+          clock       (Clock/fixed sample-inst tjt/zoneid-utc)]
+      (with-redefs [instant-now (fn [] (Instant/now clock))]
+        (let [result     (tuid-str)
+              fixed-part (subs result 0 27)
+              rnd1-str   (subs result 27 35)
+              rnd2-str   (subs result 36)]
+          (is= fixed-part "2037-0714-191716-123456789-")
+          (is (every? chars/hex? rnd1-str))
+          (is (every? chars/hex? rnd2-str))))))
 
   )

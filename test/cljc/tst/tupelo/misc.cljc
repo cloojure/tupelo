@@ -18,7 +18,6 @@
     [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
-    [tupelo.chars :as chars]
     [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture]]
 
@@ -191,36 +190,6 @@
     (is= (type uuid-val) (do #?(:clj java.util.UUID)
                              #?(:cljs cljs.core/UUID)))
     (is= (misc/uuid->sha uuid-val) "03a49d4729c971a0dc8ddf8d8847290416ad58d2")))
-
-#?(:clj
-   (do
-     (dotest
-       (is (vector? (misc/random-hex-chars 20)))
-       (is (string? (misc/random-hex-str 20)))
-       (is (every? chars/hex? (seq (misc/random-hex-chars 20))))
-       (is (every? chars/hex? (seq (misc/random-hex-str 20))))
-
-       (is (misc/tuid-str?  "2037-0714-191716-123456789-88d43adf-efc8b8ce"))
-       (isnt (misc/tuid-str?  "X037-0714-191716-123456789-88d43adf-efc8b8ce"))
-       (isnt (misc/tuid-str?  "20370-714-191716-123456789-88d43adf-efc8b8ce"))
-       (is (every? misc/tuid-str?
-             (repeatedly 33 misc/tuid-str)))
-
-       ; sample output:  "2037-0714-191716-123456789-88d43adf-efc8b8ce"
-       ; tens             00000000001111111111222222222233333333334444
-       ; ones             01234567890123456789012345678901234567890123
-       (is= 44 (count (misc/tuid-str)))
-       (let [sample-inst (Instant/parse "2037-07-14t19:17:16.123456789Z")
-             clock       (Clock/fixed sample-inst tjt/zoneid-utc)]
-         (with-redefs [misc/instant-now #(Instant/now clock)]
-           (let [result     (misc/tuid-str)
-                 fixed-part (subs result 0 27)
-                 rnd1-str   (subs result 27 35)
-                 rnd2-str   (subs result 36)]
-             (is= fixed-part "2037-0714-191716-123456789-")
-             (is (every? chars/hex? rnd1-str))
-             (is (every? chars/hex? rnd2-str)))
-           )))))
 
 (dotest
   (let [mm (t/unlazy {:a 1
