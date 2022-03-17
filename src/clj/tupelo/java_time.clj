@@ -496,7 +496,9 @@
   [s :- s/Str]
   (t/truthy? (re-matches tuid-str-regex s)))
 
-(s/defn temporal->YYYYMMDD :- s/Str
+;-----------------------------------------------------------------------------
+; #todo remove? reduntant with ->str-YYYYMMDD
+(s/defn ^:no-doc temporal->YYYYMMDD :- s/Str
   "Given an Instant like '2037-07-14t33:44:55.123456789Z', returns a string with the
   YYYYMMDD format like '20370714' "
   [temporal :- Temporal]
@@ -504,47 +506,48 @@
     (t/with-map-vals field-strs [year-4 month-2 day-2 hour-2 min-2 sec-2 nanos-9]
       (str year-4 month-2 day-2))))
 
-(s/defn temporal->HHMMSS :- s/Str
-  "Given an Instant like '2037-07-14t33:44:55.123456789Z', returns a string with the
-  HHMMSS format like '334455' "
+(s/defn ->str-HHMMSS :- s/Str
+  "Given an Instant like '2037-07-14t11:22:33.123456789Z', returns a string with the
+  HHMMSS format like '112233' "
   [temporal :- Temporal]
   (let [field-strs (temporal->field-strs temporal)]
     (t/with-map-vals field-strs [year-4 month-2 day-2 hour-2 min-2 sec-2 nanos-9]
       (str  hour-2 min-2 sec-2 ))))
 
 ;-----------------------------------------------------------------------------
-(s/defn format->LocalDate-iso :- s/Str ; won't work for Instant
+(s/defn ->str-YYYY-MM-DD :- s/Str ; won't work for Instant
   "Given an Instant or ZonedDateTime, returns a string like `2018-09-05`"
   [temporal :- Temporal]
   (.format (->ZonedDateTime temporal) DateTimeFormatter/ISO_LOCAL_DATE))
 
-(s/defn format->LocalDate-compact :- s/Str ; won't work for Instant
+(s/defn ->str-YYYYMMDD :- s/Str ; won't work for Instant
   "Given an Instant or ZonedDateTime, returns a compact date-time string like
     `2018-09-05 23:05:19.123Z` => `20180905` "
   [temporal :- Temporal]
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd")]
     (.format (->ZonedDateTime temporal) formatter)))
 
-(s/defn format->iso-str :- s/Str ; #todo maybe inst->iso-date-time
+(s/defn ->str-iso :- s/Str ; #todo maybe inst->iso-date-time
   "Given an Instant or ZonedDateTime, returns a ISO 8601 datetime string like `2018-09-05T23:05:19.123Z`"
   [temporal :- Temporal]
   (str (->Instant temporal))) ; uses DateTimeFormatter/ISO_INSTANT
 
-(s/defn format->iso-str-nice :- s/Str
+(s/defn ->str-iso-nice :- s/Str
   "Given an Instant or ZonedDateTime, returns an ISO date-time string like
   `2018-09-05 23:05:19.123Z` (with a space instead of `T`)"
   [temporal :- Temporal]
-  (let [str-buff (StringBuffer. (format->iso-str temporal))]
+  (let [str-buff (StringBuffer. (->str-iso temporal))]
     (.setCharAt str-buff 10 \space)
     (str str-buff)))
 
-(s/defn format->timestamp-compact :- s/Str ; won't work for Instant
+(s/defn ->str-YYYYMMDD-HHMMSS :- s/Str ; won't work for Instant
   "Given an Instant or ZonedDateTime, returns a compact date-time string like
   `2018-09-05 23:05:19.123Z` => `20180905-230519` "
   [temporal :- Temporal]
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd-HHmmss")]
     (.format (->ZonedDateTime temporal) formatter)))
 
+;-----------------------------------------------------------------------------
 (s/defn parse-iso-str->Instant :- Instant
   "Convert an ISO 8601 string to epoch milliseconds. Will collapse excess whitespace."
   [iso-datetime-str :- s/Str]
@@ -658,14 +661,14 @@
 
 ; #todo make work for relative times (LocalDate, LocalDateTime, etc)
 (defn stringify-times
-  "Will recursively walk any data structure, converting any `fixed-time-point?` object to a string"
+  "Will recursively walk any data structure, converting any `fixed-point?` object to a string"
   [form]
   (walk/postwalk (fn [item]
                    (t/cond-it-> item
-                     (fixed-point? it) (format->iso-str it)))
+                     (fixed-point? it) (->str-iso it)))
     form))
 
-(s/defn range :- [Temporal]
+(s/defn slice :- [Temporal]
   "Returns a vector of instants in the half-open interval [start stop) (both instants)
   with increment <step> (a period). Not lazy.  Example:
 
@@ -682,8 +685,8 @@
   (loop [result    []
          curr-inst start-inst]
     (if (.isBefore ^Temporal curr-inst stop-inst)
-      (recur (conj result curr-inst)
-        (.plus curr-inst step-dur))
+      (recur
+        (t/append result curr-inst) ; next result
+        (.plus curr-inst step-dur)) ; next curr-inst
+      ; else
       result)))
-
-
