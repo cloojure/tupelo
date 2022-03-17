@@ -286,20 +286,6 @@
   "Returns the current time as a java.lang.ZonedDateTime (UTC)"
   [] (with-zoneid zoneid-utc (ZonedDateTime/now)))
 
-(defn now->iso-str
-  "Returns an ISO string representation of the current time,
-  like '2019-02-19T18:44:01.123456Z' "
-  [] (str (Instant/now)))
-
-(defn now->iso-str-simple
-  "Returns a canonical string representation of the current time truncated to the current second,
-  like '2019-02-19 18:44:01Z' "
-  []
-  (-> (java.time.Instant/now)
-    (.truncatedTo ChronoUnit/SECONDS)
-    (str/replace-first \T \space)
-    (.toString)))
-
 ;----------------------------------------------------------------------------------------
 ; #todo: Make all use protocol for all Temporal's (ZonedDateTime, OffsetDateTime, Instant, ...?)
 
