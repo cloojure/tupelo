@@ -4,6 +4,7 @@
   (:use tupelo.java-time tupelo.test)
   (:require
     [clj-time.core :as joda]
+    [clj-time.coerce :as joda.coerce]
     [schema.core :as s]
     [tupelo.chars :as chars]
     [tupelo.core :as t]

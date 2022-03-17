@@ -1,19 +1,30 @@
 (ns tupelo.java-time.convert
   (:use tupelo.core)
   (:require
+    [clj-time.coerce :as joda.coerce]
     [schema.core :as s]
-    [tupelo.schema :as tsk]
-    [tupelo.string :as str]
-    )
+    [tupelo.schema :as tsk])
   (:import
-    [java.time LocalDate LocalDateTime Instant LocalDateTime YearMonth Year
-               ZoneId ZonedDateTime ZoneOffset]
+    [java.sql Timestamp]
+    [java.time LocalDate LocalDateTime Instant LocalDateTime YearMonth Year ZoneId ZonedDateTime ZoneOffset]
     [java.util Date]
-    [java.sql Timestamp]))
+    [org.joda.time ReadableInstant]
+    ))
 
 ; #todo fix all docstrings
 
-(def zoneid-utc (ZoneId/of "UTC"))
+;-----------------------------------------------------------------------------
+(s/defn joda->Instant :- Instant
+  "Converts a joda DateTime or similar to a java.time.Instant"
+  [joda-inst :- org.joda.time.ReadableInstant]
+  (Instant/ofEpochMilli (joda.coerce/to-long joda-inst)))
+
+(s/defn Instant->joda :- org.joda.time.ReadableInstant
+  "Converts a java.time.Instant to a joda DateTime"
+  [inst :- Instant] (joda.coerce/from-long (.toEpochMilli inst)))
+
+;-----------------------------------------------------------------------------
+(def ^:no-doc zoneid-utc (ZoneId/of "UTC"))
 
 (s/defn LocalDate->LocalDateTime :- LocalDateTime
   "Converts LocalDate -> LocalDateTime at start-of-day "

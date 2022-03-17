@@ -104,7 +104,13 @@
    ZonedDateTime      ZonedDateTime-encode
    java.util.Date     Date-encode
    java.sql.Date      sql-Date-encode
-   java.sql.Timestamp sql-Timestamp-encode})
+   java.sql.Timestamp sql-Timestamp-encode
+   }
+  #_(defn joda-instant? ; #todo add Joda
+      "Returns true iff arg is an instance of org.joda.time.Instant "
+      [it] (instance? org.joda.time.Instant it))
+
+  )
 
 (def tag->parse-fn
   "A map from tag to object parse fn"
@@ -113,7 +119,8 @@
    "#ZonedDateTime"      ZonedDateTime-parse
    "#java.util.Date"     Date-parse
    "#java.sql.Date"      sql-Date-parse
-   "#java.sql.Timestamp" sql-Timestamp-parse})
+   "#java.sql.Timestamp" sql-Timestamp-parse
+   })
 
 (s/defn walk-encode :- s/Any
   "Walk a data structure and convert objects to tagged strings like:

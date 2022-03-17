@@ -2,8 +2,8 @@
   tst.tupelo.java-time.convert
   (:use tupelo.java-time.convert tupelo.core tupelo.test)
   (:require
-    [tupelo.string :as str]
-    [schema.core :as s]
+    [clj-time.coerce :as joda.coerce]
+    [clj-time.core :as joda]
     [tupelo.java-time :as tjt])
   (:import
     [java.time Instant LocalDate LocalDateTime Year
@@ -13,6 +13,26 @@
     ))
 
 (when-java-1-11-plus
+
+  (dotest
+    ; NOTE:
+    ;  (type jdt) => org.joda.time.DateTime
+    ;  (supers (type jdt))
+    ;      => #{java.io.Serializable
+    ;           java.lang.Comparable
+    ;           java.lang.Object
+    ;           org.joda.time.ReadableDateTime
+    ;           org.joda.time.ReadableInstant
+    ;           org.joda.time.base.AbstractDateTime
+    ;           org.joda.time.base.AbstractInstant
+    ;           org.joda.time.base.BaseDateTime}
+    (let [jdt        (joda/date-time 2018 9 21 11 22 33 789)
+          inst       (Instant/parse "2018-09-21T11:22:33.789z")
+          jdt-milli  (joda.coerce/to-long jdt)
+          inst-milli (.toEpochMilli inst)]
+      (is= jdt-milli inst-milli)
+      (is= inst (-> inst Instant->joda joda->Instant))
+      (is= jdt (-> jdt joda->Instant Instant->joda))))
 
   (dotest
     (is= (LocalDate->LocalDateTime (LocalDate/parse "1999-11-22")) (LocalDateTime/parse "1999-11-22t00:00:00"))
