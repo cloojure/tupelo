@@ -284,7 +284,6 @@
         ; (= 40 (count name-str)) ; #todo make more robust re. with-debug-hid
         ))))
 
-
 (defn normalized-sorted ; #todo need tests & docs. Use for datomic Entity?
   "Walks EDN data, converting all collections to vector, sorted-map-generic, or sorted-set-generic"
   [edn-data]
