@@ -403,8 +403,7 @@
 
         (is (interval/contains? itvl-closed lb))
         (is (interval/contains? itvl-closed mid))
-        (is (interval/contains? itvl-closed ub))
-        )
+        (is (interval/contains? itvl-closed ub)))
       ))
 
   (dotest
@@ -481,10 +480,7 @@
         (is= timestamp-str "2019-02-02 20:05:06.789") ; uses default TZ (US/Pacific in this example)
         (is= timestamp-str-gmt "3 Feb 2019 04:05:06 GMT") ; UGLY!
         (is= timestamp timestamp-from-str)
-        (is= (walk-sql-Timestamp->Instant [1 {:j-s-ts timestamp} 2 3]) [1 {:j-s-ts instant} 2 3])
-        (is= (walk-Instant->str [1 {:j-t-inst instant} 2 3]) [1 {:j-t-inst instant-str} 2 3])
-        (is= (walk-Instant->sql-Timestamp [1 {:j-s-ts instant} 2 3]) [1 {:j-s-ts timestamp} 2 3]))
-      ))
+        )))
 
   (dotest
     ; near-ISO string (includes "Z" at end)

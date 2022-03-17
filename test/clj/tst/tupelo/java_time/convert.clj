@@ -28,11 +28,14 @@
     ;           org.joda.time.base.BaseDateTime}
     (let [jdt        (joda/date-time 2018 9 21 11 22 33 789)
           inst       (Instant/parse "2018-09-21T11:22:33.789z")
+          sql-ts  (Instant->sql-Timestamp inst)
           jdt-milli  (joda.coerce/to-long jdt)
           inst-milli (.toEpochMilli inst)]
       (is= jdt-milli inst-milli)
       (is= inst (-> inst Instant->joda joda->Instant))
-      (is= jdt (-> jdt joda->Instant Instant->joda))))
+      (is= jdt (-> jdt joda->Instant Instant->joda))
+
+      (is= sql-ts (-> sql-ts sql-Timestamp->Instant Instant->sql-Timestamp))))
 
   (dotest
     (is= (LocalDate->LocalDateTime (LocalDate/parse "1999-11-22")) (LocalDateTime/parse "1999-11-22t00:00:00"))

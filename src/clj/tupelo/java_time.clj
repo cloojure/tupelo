@@ -600,38 +600,6 @@
       :else (throw (ex-info "pattern not recognized" {:s tgt})))))
 
 ;-----------------------------------------------------------------------------
-(defn walk-sql-Timestamp->Instant
-  "Walks a tree-like data structure, converting any instances of java.sql.Timestamp => java.time.Instant"
-  [tree]
-  (walk/postwalk
-    (fn [item]
-      (if (= java.sql.Timestamp (type item))
-        (.toInstant item)
-        item))
-    tree))
-
-(defn walk-Instant->sql-Timestamp
-  "Walks a tree-like data structure, converting any instances of java.sql.Timestamp => java.time.Instant"
-  [tree]
-  (walk/postwalk
-    (fn [item]
-      (if (= java.time.Instant (type item))
-        (java.sql.Timestamp.
-          (.toEpochMilli item))
-        item))
-    tree))
-
-(defn walk-Instant->str
-  "Walks a tree-like data structure, calling `.toString` on any instances java.time.Instant"
-  [tree]
-  (walk/postwalk
-    (fn [item]
-      (if (= java.time.Instant (type item))
-        (.toString item)
-        item))
-    tree))
-
-;-----------------------------------------------------------------------------
 (s/defn slice :- [Temporal]
   "Returns a vector of instants in the half-open interval [start stop) (both instants)
   with increment <step> (a period). Not lazy.  Example:

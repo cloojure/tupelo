@@ -14,6 +14,15 @@
 ; #todo fix all docstrings
 
 ;-----------------------------------------------------------------------------
+(s/defn sql-Timestamp->Instant :- Instant
+  "Converts a java.sql.Timestamp to a java.time.Instant"
+  [sql-Timestamp :- java.sql.Timestamp] (.toInstant sql-Timestamp))
+
+(s/defn Instant->sql-Timestamp :- java.sql.Timestamp
+  "Converts a java.time.Instant to a java.sql.Timestamp"
+  [inst :- Instant] (java.sql.Timestamp. (.toEpochMilli inst)))
+
+;-----------------------------------------------------------------------------
 (s/defn joda->Instant :- Instant
   "Converts a joda DateTime or similar to a java.time.Instant"
   [joda-inst :- org.joda.time.ReadableInstant]
