@@ -1,6 +1,9 @@
 
 = Change Log
 
+.22.03.16
+ - Moved `tupelo.misc/tuid-str` => `tupelo.java-time/tuid-str`
+
 .21.09.03
  - Moved `tupelo.core/clip-str` => `tupelo.string/clip`
  - Added `is-float=` and `is-double=` to `tupelo.test`
