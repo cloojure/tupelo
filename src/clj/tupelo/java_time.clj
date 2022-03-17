@@ -49,15 +49,6 @@
 (def zoneid-us-mountain (ZoneId/of "US/Mountain"))
 (def zoneid-us-pacific (ZoneId/of "US/Pacific"))
 
-;-----------------------------------------------------------------------------
-(def ^:no-doc iso-date-regex #"(\d\d\d\d)-(\d\d)-(\d\d)")
-(def ^:no-doc iso-date-bounds-default {:year   {:min 1776 :max 2112}
-                                       :month  {:min 1 :max 12}
-                                       :day    {:min 1 :max 31}
-                                       :hour   {:min 0 :max 23}
-                                       :minute {:min 0 :max 59}
-                                       :second {:min 0 :max 60}})
-
 ;---------------------------------------------------------------------------------------------------
 (s/defn LocalDate? :- s/Bool
   "Returns true iff arg is of type LocalDate"
@@ -113,7 +104,7 @@
     (mapv #(LocalDate-interval->days (interval/new first-date %)) ld-vals)))
 
 ;---------------------------------------------------------------------------------------------------
-(def time-str-patterns
+(def ^:no-doc time-str-patterns
   {:LocalDate     #"(?x)\d{4}-\d{2}-\d{2}" ; 1999-12-31   (maybe allow sloppy like '1999-4-2' ?)
 
    :Timestamp     #"(?x)\d{4}-\d{2}-\d{2}     # 1999-12-31
@@ -527,7 +518,7 @@
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd")]
     (.format (->ZonedDateTime temporal) formatter)))
 
-(s/defn ->str-iso :- s/Str ; #todo maybe inst->iso-date-time
+(s/defn ->str-iso :- s/Str
   "Given an Instant or ZonedDateTime, returns a ISO 8601 datetime string like `2018-09-05T23:05:19.123Z`"
   [temporal :- Temporal]
   (str (->Instant temporal))) ; uses DateTimeFormatter/ISO_INSTANT
@@ -556,7 +547,7 @@
     (Instant/parse)))
 
 
-(s/defn parse-iso-str->millis :- s/Int ; #todo => convert/Instant->millis
+(s/defn parse-iso-str->millis :- s/Int
   "Convert an ISO 8601 string to epoch milliseconds. Will collapse excess whitespace."
   [iso-datetime-str :- s/Str]
   (-> iso-datetime-str
@@ -570,7 +561,7 @@
     (parse-iso-str->millis)
     (java.sql.Timestamp.)))
 
-(s/defn parse-iso-str-nice->Instant :- Instant ; #todo => parse-iso-str-nice->Instant
+(s/defn parse-iso-str-nice->Instant :- Instant
   "Parse a near-iso string like '2019-09-19 18:09:35Z' (it is missing the 'T' between the
   date & time fields) into an Instant. Will collapse excess whitespace."
   [iso-str :- s/Str]
@@ -581,7 +572,7 @@
     (str/join it)   ; convert back to a string
     (Instant/parse it)))
 
-(s/defn parse-sql-timestamp-str->Instant-utc :- Instant ; #todo => parse-sql-timestamp->Instant-utc
+(s/defn parse-sql-timestamp-str->Instant-utc :- Instant
   "Parse a near-Timestamp string like '  2019-09-19 18:09:35 ' (sloppy spacing) into an Instant.
   Assumes UTC timezone. Will collapse excess whitespace."
   [sql-timestamp-str :- s/Str]
