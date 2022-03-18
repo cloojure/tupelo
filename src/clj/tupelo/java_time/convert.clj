@@ -11,8 +11,6 @@
     [org.joda.time ReadableInstant]
     ))
 
-; #todo fix all docstrings
-
 ;-----------------------------------------------------------------------------
 (s/defn sql-Timestamp->Instant :- Instant
   "Converts a java.sql.Timestamp to a java.time.Instant"
@@ -65,7 +63,7 @@
     (throw (RuntimeException. "Unimplemented prior to Java 1.9"))))
 
 (s/defn LocalDateTime->Instant :- Instant
-  "Converts a LocalDateTime to an Instant at start-of-day in the UTC timezone."
+  "Converts a LocalDateTime to an Instant in the UTC timezone."
   [ldt :- LocalDateTime] (.toInstant ldt ZoneOffset/UTC))
 
 (s/defn LocalDate->Date :- Date
