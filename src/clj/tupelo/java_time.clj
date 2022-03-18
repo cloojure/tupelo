@@ -386,7 +386,7 @@
   "Returns a random vector of hex chars of length N"
   [N :- s/Int]
   (assert (pos? N))
-  (vec (str/join (repeatedly N #(rand-nth HEX_CHARS)))))
+  (vec (repeatedly N #(rand-nth HEX_CHARS))))
 
 (s/defn ^:no-doc random-hex-str
   "Returns a random hex string of length N"
@@ -436,9 +436,9 @@
     result))
 
 (s/defn tuid-str :- s/Str
-  "Returns a 'Time Unique ID' (TUID), a 128-bit human-readable UUID-cousin based on the current
-   java.time.Instant. From MSB->LSB, it is composed of a 34-bit epoch second field
-   (valid years: 1970-2514), a 10-bit nanosecond field, and a 64-bit random field.
+  "Returns a 'Time Unique ID' (TUID), a human-readable UUID-cousin (44-char string) based
+   on the current java.time.Instant. From MSB->LSB, it is composed of a 38-bit epoch second field
+   (valid years: 1970-9999), a 30-bit (9-digit) nanosecond field, and a 64-bit random field.
 
         128 bits total:  <34-bit-unix-sec> + <30 bit nanos> + <64 bits rand>
         Format:  YYYY-MMDD-HHMMSS-nanosec*9-rndhex*8-rndhex*8  ; string format
