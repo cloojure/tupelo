@@ -17,17 +17,9 @@
     [tupelo.interval Interval]
     ))
 
-;-----------------------------------------------------------------------------
+;---------------------------------------------------------------------------------------------------
 ; #todo study:  clojure.java.io/Coercions
 ; #todo study:  clojure.java.io/file
-
-;---------------------------------------------------------------------------------------------------
-(declare
-  parse-iso-str->Instant
-  parse-iso-str->millis
-  parse-iso-str->sql-timestamp
-  parse-iso-str-nice->Instant
-  parse-sql-timestamp-str->Instant-utc)
 
 ;---------------------------------------------------------------------------------------------------
 (comment
@@ -160,10 +152,56 @@
   "Returns true if string matches a Instant pattern like '1999-12-31T11:22:33-08:00Z' "
   [s :- s/Str] (t/truthy? (re-matches (t/grab :ZonedDateTime time-str-patterns) s)))
 
+;-----------------------------------------------------------------------------
+(s/defn parse-iso-str->Instant :- Instant
+  "Convert an ISO 8601 string to epoch milliseconds. Will collapse excess whitespace."
+  [iso-datetime-str :- s/Str]
+  (-> iso-datetime-str
+    (str/whitespace-collapse)
+    (Instant/parse)))
+
+
+(s/defn parse-iso-str->millis :- s/Int
+  "Convert an ISO 8601 string to epoch milliseconds. Will collapse excess whitespace."
+  [iso-datetime-str :- s/Str]
+  (-> iso-datetime-str
+    (parse-iso-str->Instant)
+    (.toEpochMilli)))
+
+(s/defn parse-iso-str->sql-timestamp
+  "Convert an ISO 8601 string to a java.sql.Timestamp"
+  [iso-datetime-str :- s/Str]
+  (-> iso-datetime-str
+    (parse-iso-str->millis)
+    (java.sql.Timestamp.)))
+
+(s/defn parse-iso-str-nice->Instant :- Instant
+  "Parse a near-iso string like '2019-09-19 18:09:35Z' (it is missing the 'T' between the
+  date & time fields) into an Instant. Will collapse excess whitespace."
+  [iso-str :- s/Str]
+  (t/it-> iso-str
+    (str/whitespace-collapse it)
+    (vec it)        ; convert to vector of chars
+    (assoc it 10 \T) ; set index 10 to a "T" char
+    (str/join it)   ; convert back to a string
+    (Instant/parse it)))
+
+(s/defn parse-sql-timestamp-str->Instant-utc :- Instant
+  "Parse a near-Timestamp string like '  2019-09-19 18:09:35 ' (sloppy spacing) into an Instant.
+  Assumes UTC timezone. Will collapse excess whitespace."
+  [sql-timestamp-str :- s/Str]
+  (t/it-> sql-timestamp-str
+    (str/whitespace-collapse it)
+    (vec it)        ; convert to vector of chars
+    (assoc it 10 \T) ; set index 10 to a "T" char
+    (t/append it \Z)
+    (str/join it)   ; convert back to a string
+    (Instant/parse it)))
+
 ;---------------------------------------------------------------------------------------------------
 (defn ZonedDateTime?
   "Returns true iff arg is an instance of java.time.ZonedDateTime"
-  [it] (instance? ZonedDateTime it)) ; #todo test all
+  [it] (instance? ZonedDateTime it))
 
 (defn Instant?
   "Returns true iff arg is an instance of java.time.Instant "
@@ -179,10 +217,7 @@
       [java.time       ZonedDateTime  Instant]
       [org.joda.time        DateTime  Instant  ReadableInstant]
   "
-  [it]
-  (or (ZonedDateTime? it)
-    (Instant? it)
-    (joda-instant? it)))
+  [it] (or (ZonedDateTime? it) (Instant? it) (joda-instant? it)))
 
 (defn Temporal?
   "Returns true iff arg is an instance of java.time.temporal.Temporal "
@@ -192,6 +227,7 @@
   "Returns true iff arg is an instance of Period. "
   [it] (instance? Period it))
 
+;---------------------------------------------------------------------------------------------------
 (defn ->Instant
   "Coerces an Instant, ZonedDateTime, or org.joda.time.ReadableInstant => Instant "
   [arg]
@@ -199,7 +235,7 @@
     (instance? Instant arg) arg
     (instance? ZonedDateTime arg) (.toInstant arg)
     (instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli)
-    (instance? String arg) (parse-iso-str-nice->Instant arg) ; #todo need unit test
+    (instance? String arg) (parse-iso-str-nice->Instant arg)
     :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
 (defn ->ZonedDateTime ; #todo -> protocol?
@@ -211,7 +247,7 @@
     (instance? org.joda.time.ReadableInstant arg) (t/it-> arg
                                                     (->Instant it)
                                                     (.atZone it zoneid-utc))
-    (instance? String arg) (->ZonedDateTime (parse-iso-str-nice->Instant arg)) ; #todo need unit test
+    (instance? String arg) (->ZonedDateTime (parse-iso-str-nice->Instant arg))
     :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
 (s/defn ->LocalDate :- LocalDate ; #todo need tests, => tjt
@@ -223,12 +259,11 @@
                               (throw (RuntimeException. "Unimplemented prior to Java 1.9")))
     (instance? ZonedDateTime arg) (->LocalDate (->Instant arg))
     ; #todo LocalDateTime
-    (instance? org.joda.time.ReadableInstant arg) (->LocalDate (->Instant arg)) ; #todo need test
+    (instance? org.joda.time.ReadableInstant arg) (->LocalDate (->Instant arg))
     :else (throw (ex-info "Invalid arg type" {:type (type arg) :arg arg}))))
 
 ;---------------------------------------------------------------------------------------------------
 (def ^:dynamic *zone-id* zoneid-utc)
-
 (defmacro with-zoneid
   [zone-id & forms]
   `(binding [*zone-id* ~zone-id]
@@ -520,52 +555,6 @@
   [temporal :- Temporal]
   (let [formatter (DateTimeFormatter/ofPattern "yyyyMMdd-HHmmss")]
     (.format (->ZonedDateTime temporal) formatter)))
-
-;-----------------------------------------------------------------------------
-(s/defn parse-iso-str->Instant :- Instant
-  "Convert an ISO 8601 string to epoch milliseconds. Will collapse excess whitespace."
-  [iso-datetime-str :- s/Str]
-  (-> iso-datetime-str
-    (str/whitespace-collapse)
-    (Instant/parse)))
-
-
-(s/defn parse-iso-str->millis :- s/Int
-  "Convert an ISO 8601 string to epoch milliseconds. Will collapse excess whitespace."
-  [iso-datetime-str :- s/Str]
-  (-> iso-datetime-str
-    (parse-iso-str->Instant)
-    (.toEpochMilli)))
-
-(s/defn parse-iso-str->sql-timestamp
-  "Convert an ISO 8601 string to a java.sql.Timestamp"
-  [iso-datetime-str :- s/Str]
-  (-> iso-datetime-str
-    (parse-iso-str->millis)
-    (java.sql.Timestamp.)))
-
-(s/defn parse-iso-str-nice->Instant :- Instant
-  "Parse a near-iso string like '2019-09-19 18:09:35Z' (it is missing the 'T' between the
-  date & time fields) into an Instant. Will collapse excess whitespace."
-  [iso-str :- s/Str]
-  (t/it-> iso-str
-    (str/whitespace-collapse it)
-    (vec it)        ; convert to vector of chars
-    (assoc it 10 \T) ; set index 10 to a "T" char
-    (str/join it)   ; convert back to a string
-    (Instant/parse it)))
-
-(s/defn parse-sql-timestamp-str->Instant-utc :- Instant
-  "Parse a near-Timestamp string like '  2019-09-19 18:09:35 ' (sloppy spacing) into an Instant.
-  Assumes UTC timezone. Will collapse excess whitespace."
-  [sql-timestamp-str :- s/Str]
-  (t/it-> sql-timestamp-str
-    (str/whitespace-collapse it)
-    (vec it)        ; convert to vector of chars
-    (assoc it 10 \T) ; set index 10 to a "T" char
-    (t/append it \Z)
-    (str/join it)   ; convert back to a string
-    (Instant/parse it)))
 
 ;-----------------------------------------------------------------------------
 (s/defn str->Instant :- Instant
