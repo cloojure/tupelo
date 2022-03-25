@@ -32,7 +32,7 @@
    [cheshire "5.10.2"] ; #todo switch to muuntaja/jsonista
    [clj-time "0.15.2"]
    [danlentz/clj-uuid "0.1.9"]
-   [joda-time/joda-time "2.10.13"]
+   [joda-time/joda-time "2.10.14"]
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
    [org.flatland/ordered "1.15.10"]
    [org.snakeyaml/snakeyaml-engine "2.3"]
