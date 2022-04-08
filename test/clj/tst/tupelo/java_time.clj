@@ -540,7 +540,7 @@
       (is (same-instant? ref (str->Instant "1999-11-22t00:00:00+00:00[UTC]")))))
 
   (dotest
-    (is= (temporal->field-strs (Instant/parse "2037-07-14t19:17:16.123456789Z"))
+    (is= (->field-strs (Instant/parse "2037-07-14t19:17:16.123456789Z"))
       {:day-2    "14"
        :hour-2   "19"
        :micros-6 "123456"
@@ -551,7 +551,7 @@
        :sec-2    "16"
        :year-2   "37"
        :year-4   "2037"})
-    (is= (temporal->field-strs (Instant/parse "2037-07-14t01:02:03.012345678Z"))
+    (is= (->field-strs (Instant/parse "2037-07-14t01:02:03.012345678Z"))
       {:day-2    "14"
        :hour-2   "01"
        :micros-6 "012345"

@@ -413,8 +413,12 @@
   (.with temporal (TemporalAdjusters/previousOrSame tgt-dow)))
 
 ;-----------------------------------------------------------------------------
+; #todo => tupelo.const
 (def ^:no-doc TWO_POW_34 (Math/round (Math/pow 2 34)))
 (def ^:no-doc TWO_POW_30 (Math/round (Math/pow 2 30)))
+(def ^:no-doc TEN_POW_3 (Math/round (Math/pow 10 3)))
+(def ^:no-doc TEN_POW_6 (Math/round (Math/pow 10 6)))
+(def ^:no-doc TEN_POW_9 (Math/round (Math/pow 10 9)))
 (def ^:no-doc HEX_CHARS (vec "0123456789abcdef"))
 
 (s/defn ^:no-doc random-hex-chars
@@ -429,10 +433,10 @@
 
 (defn ^:no-doc instant-now [] (Instant/now)) ; wrapper for ease of testing
 
-(s/defn temporal->field-strs :- {s/Keyword s/Str}
-  "Given an Instant, returns a map with string values for the component fields.
+(s/defn ->field-strs :- {s/Keyword s/Str}
+  "Given an Temporal value, returns a map with string values for the component fields.
 
-      (instant->field-strs (Instant/parse '2037-07-14t01:02:03.012345678Z')) =>
+      (->field-strs (Instant/parse '2037-07-14t01:02:03.012345678Z')) =>
         {:year-4   '2037'
          :year-2   '37'
          :month-2  '07'
@@ -462,8 +466,8 @@
         hour-2       (subs iso-8601-str 11 13)
         min-2        (subs iso-8601-str 14 16)
         sec-2        (subs iso-8601-str 17 19)
-        millis-3     (format "%03d" (quot nanos (* 1000 1000)))
-        micros-6     (format "%06d" (quot nanos 1000))
+        millis-3     (format "%03d" (quot nanos TEN_POW_6))
+        micros-6     (format "%06d" (quot nanos TEN_POW_3))
         nanos-9      (format "%09d" nanos)
         result       (t/vals->map year-4 year-2 month-2 day-2 hour-2 min-2 sec-2
                        millis-3 micros-6 nanos-9)
@@ -485,7 +489,7 @@
    For 2 TUIDS constructed at random in the same second, there are still ~94 bits of randomness.
    "
   []
-  (let [inst-fields (temporal->field-strs (instant-now))]
+  (let [inst-fields (->field-strs (instant-now))]
     (t/with-map-vals inst-fields [year-4 month-2 day-2 hour-2 min-2 sec-2 nanos-9]
       (let [result (format "%4s-%2s%2s-%2s%2s%2s-%9s-%8s-%8s"
                      year-4 month-2 day-2
@@ -516,7 +520,7 @@
   "Given an Instant like '2037-07-14t33:44:55.123456789Z', returns a string with the
   YYYYMMDD format like '20370714' "
   [temporal :- Temporal]
-  (let [field-strs (temporal->field-strs temporal)]
+  (let [field-strs (->field-strs temporal)]
     (t/with-map-vals field-strs [year-4 month-2 day-2 hour-2 min-2 sec-2 nanos-9]
       (str year-4 month-2 day-2))))
 
@@ -524,7 +528,7 @@
   "Given an Instant like '2037-07-14t11:22:33.123456789Z', returns a string with the
   HHMMSS format like '112233' "
   [temporal :- Temporal]
-  (let [field-strs (temporal->field-strs temporal)]
+  (let [field-strs (->field-strs temporal)]
     (t/with-map-vals field-strs [year-4 month-2 day-2 hour-2 min-2 sec-2 nanos-9]
       (str  hour-2 min-2 sec-2 ))))
 
