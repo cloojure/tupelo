@@ -2,28 +2,28 @@
   (:use tupelo.core tupelo.test)
   (:refer-clojure :exclude [rand])
   (:require
-    [tupelo.uuid :as uuid]
-    ))
+    [tupelo.uuid :as uuid]))
 
 (dotest-focus
   (is= "00000000-0000-0000-0000-000000000000"
-       uuid/null-str
-       (uuid/null))
-  (is= "cafebabe-0867-5309-0666-0123456789ff"
-       uuid/dummy-str
-       (uuid/dummy))
+    (uuid/null-str)
+    (str (uuid/null)))
+  (is= "cafebabe-1953-0510-0970-0123456789ff"
+    (uuid/dummy-str)
+    (str (uuid/dummy)))
 
-  (is (uuid/uuid-str? uuid/null-str))
-  (is (uuid/uuid-str? uuid/dummy-str))
+  (is (uuid? (uuid/null)))
+  (is (uuid? (uuid/dummy)))
+  (is (uuid/uuid-str? (uuid/null-str)))
+  (is (uuid/uuid-str? (uuid/dummy-str)))
 
-  (isnt (uuid/uuid-str? "cafebabe-0867-5309-0666-0123456789fff"))
-  (isnt (uuid/uuid-str? "cafebabe-0867-5309-06660-123456789ff"))
-  (isnt (uuid/uuid-str? "cafebabe-0867-5309-066x-0123456789ff"))
-  (isnt (uuid/uuid-str? "cafebabe-0867-5309-0123456789ff"))
-  (isnt (uuid/uuid-str? "cafebabe-0867-5309|0666-0123456789ff"))
+  (isnt (uuid/uuid-str? "cafebabe-1953-0510-0970-0123456789fff"))
+  (isnt (uuid/uuid-str? "cafebabe-1953-0510-09700-123456789ff"))
+  (isnt (uuid/uuid-str? "cafebabe-1953-0510-066x-0123456789ff"))
+  (isnt (uuid/uuid-str? "cafebabe-1953-0510-0123456789ff"))
+  (isnt (uuid/uuid-str? "cafebabe-1953-0510|0970-0123456789ff"))
   (isnt (uuid/uuid-str? 5))
   (isnt (uuid/uuid-str? :nope))
-  (isnt (uuid/uuid-str? nil))
   (isnt (uuid/uuid-str? nil))
 
   ; we return uuids as an object or a string
