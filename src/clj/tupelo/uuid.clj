@@ -2,12 +2,13 @@
   (:use tupelo.core)
   (:refer-clojure :exclude [rand])
   (:require
-    [clojure.core :exclude [rand]]
     [clj-uuid :as uuid]
+    [clojure.core :exclude [rand]]
     [schema.core :as s]
     [tupelo.schema :as tsk]
-    [tupelo.string :as str]
-    ))
+    [tupelo.string :as str])
+  (:import
+    [java.util UUID]))
 
 (def null-str "00000000-0000-0000-0000-000000000000")
 (def null (constantly null-str))
@@ -35,24 +36,33 @@
     (when (string? arg)
       (re-matches uuid-regex-pattern arg))))
 
-(s/defn rand :- s/Str
-  "Returns a random uuid"
-  [] (str (uuid/v4)))
+;-----------------------------------------------------------------------------
+(s/defn rand :- UUID
+  "Returns a random uuid as a String"
+  [] (uuid/v4))
 
+(s/defn rand-str :- s/Str
+  "Returns a random uuid object"
+  [] (str (tupelo.uuid/rand)))
+
+;-----------------------------------------------------------------------------
 (def ^:no-doc uuid-counter (atom nil)); uninitialized
-(defn counted-reset!
-  []
-  (reset! uuid-counter (Long/parseLong "abcd0000" 16))); count in hex
-(defn counted
-  []
-  (let [cnt (swap-out! uuid-counter inc)]
-    (format "%08x-aaaa-bbbb-cccc-0123456789ff" cnt)))
+(defn counted-reset! [] (reset! uuid-counter 0))
 (counted-reset!); initialize
 
+(defn counted-str []
+  (let [cnt (swap-out! uuid-counter inc)
+        uuid-str  (format "%08x-aaaa-bbbb-cccc-ddddeeeeffff" cnt)]
+    uuid-str ))
+
+(defn counted []
+  (UUID/fromString (counted-str)))
+
+;-----------------------------------------------------------------------------
 (defmacro with-null
   "For testing, replace all calls to uuid/rand with uuid/null"
   [& forms]
-  `(with-redefs [rand null]
+  `(with-redefs [rand-str null]
      ~@forms))
 
 (defmacro with-counted

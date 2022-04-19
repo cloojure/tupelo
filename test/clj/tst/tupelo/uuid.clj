@@ -5,7 +5,7 @@
     [tupelo.uuid :as uuid]
     ))
 
-(dotest
+(dotest-focus
   (is= "00000000-0000-0000-0000-000000000000"
        uuid/null-str
        (uuid/null))
@@ -26,31 +26,40 @@
   (isnt (uuid/uuid-str? nil))
   (isnt (uuid/uuid-str? nil))
 
-  ; we return uuids as a string
-  (is (string? (uuid/rand)))
+  ; we return uuids as an object or a string
+  (is= java.util.UUID (type (uuid/rand)))
+  (is (string? (uuid/rand-str)))
   (is (with-exception-default false
         (dotimes [i 99] ; 2 uuids are never equal
-          (assert (not= (uuid/rand) (uuid/rand))))
-        true))
+          (assert (not= (uuid/rand) (uuid/rand)))
+          (assert (not= (uuid/rand-str) (uuid/rand-str))))
+        true)) ; if no failures, we pass the test
 
   ; demonstrate uuid/with-null usage for testing
   (uuid/with-null
-    (is= (uuid/rand) "00000000-0000-0000-0000-000000000000")
-    (is= (uuid/rand) "00000000-0000-0000-0000-000000000000")
-    (is= (uuid/rand) "00000000-0000-0000-0000-000000000000"))
+    (is= (uuid/rand-str) "00000000-0000-0000-0000-000000000000")
+    (is= (uuid/rand-str) "00000000-0000-0000-0000-000000000000")
+    (is= (uuid/rand-str) "00000000-0000-0000-0000-000000000000"))
 
   ; demonstrate uuid/with-counted for testing
   (uuid/with-counted
-    (is= (uuid/rand) "abcd0000-aaaa-bbbb-cccc-0123456789ff")
-    (is= (uuid/rand) "abcd0001-aaaa-bbbb-cccc-0123456789ff")
-    (is= (uuid/rand) "abcd0002-aaaa-bbbb-cccc-0123456789ff"))
+    (is= (uuid/rand-str) "00000000-aaaa-bbbb-cccc-ddddeeeeffff")
+    (is= (uuid/rand-str) "00000001-aaaa-bbbb-cccc-ddddeeeeffff")
+    (is= (uuid/rand-str) "00000002-aaaa-bbbb-cccc-ddddeeeeffff")
+    (let [r1 (uuid/rand)
+          r2 (uuid/rand-str)]
+      (is= (type r1) java.util.UUID)
+      (is= (type r2) java.lang.String)
+      (is= (str r1) "00000003-aaaa-bbbb-cccc-ddddeeeeffff")
+      (is= r2 "00000004-aaaa-bbbb-cccc-ddddeeeeffff")
+      (is (uuid/uuid-str? r2))))
 
   ; demonstrate uuid/counted (manual)
   (uuid/counted-reset!)
-  (is= (uuid/counted) "abcd0000-aaaa-bbbb-cccc-0123456789ff")
-  (is= (uuid/counted) "abcd0001-aaaa-bbbb-cccc-0123456789ff")
-  (is= (uuid/counted) "abcd0002-aaaa-bbbb-cccc-0123456789ff")
+  (is= (uuid/counted-str) "00000000-aaaa-bbbb-cccc-ddddeeeeffff")
+  (is= (uuid/counted-str) "00000001-aaaa-bbbb-cccc-ddddeeeeffff")
+  (is= (uuid/counted-str) "00000002-aaaa-bbbb-cccc-ddddeeeeffff")
   (uuid/counted-reset!)
-  (is= (uuid/counted) "abcd0000-aaaa-bbbb-cccc-0123456789ff")
-  (is= (uuid/counted) "abcd0001-aaaa-bbbb-cccc-0123456789ff")
+  (is= (uuid/counted-str) "00000000-aaaa-bbbb-cccc-ddddeeeeffff")
+  (is= (uuid/counted-str) "00000001-aaaa-bbbb-cccc-ddddeeeeffff")
 )
