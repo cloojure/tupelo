@@ -58,6 +58,7 @@
           :exclude-vars              #".*IntervalClosed|.*SpliceItem|map->[A-Z].*"
           }
 
+  ; Usage: > lein with-profile XXX test
   :profiles {:provided {:dependencies [[org.clojure/clojure "1.8.0" :scope "provided"]
                                        [org.clojure/clojurescript "1.10.597" :scope "provided"]
                                        ]}
@@ -69,9 +70,10 @@
                                        ; [org.clojure/clojure "1.10.3"]
                                        [org.clojure/clojure "1.11.1"]
                                       ;[org.clojure/clojurescript  "1.10.764"] ; "1.10.597"
-                                       ]
-                        }
-             :test     {:dependencies [[overtone/at-at "1.2.0"]]}
+                                       ]}
+             :test     {:dependencies [[overtone/at-at "1.2.0"]]
+                        :resource-paths ["test/resources"]}
+
              :1.8      {:dependencies [[org.clojure/clojure "1.8.0"]]}
              :1.9      {:dependencies [[org.clojure/clojure "1.9.0"]]}
              :1.10      {:dependencies [[org.clojure/clojure "1.10.3"]]}
@@ -79,6 +81,7 @@
              }
   :source-paths ["src/clj" "src/cljc"]
   :test-paths ["test/clj" "test/cljc"]
+  :resource-paths ["resources" "test/resource"]
   :target-path "target/%s"
 
   ; need to add the compliled assets to the :clean-targets

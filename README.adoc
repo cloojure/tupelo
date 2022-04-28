@@ -1284,9 +1284,9 @@ Distributed under the link:https://www.eclipse.org/legal/epl-v10.html[Eclipse Pu
 Developed using link:https://www.jetbrains.com/idea/[*IntelliJ IDEA*] 
 with the link:https://cursive-ide.com/[*Cursive* Clojure plugin].
 
-image:resources/intellij-idea-logo-400.png[IntelliJ,200,200]
+image:images/intellij-idea-logo-400.png[IntelliJ,200,200]
 
-image:resources/cursive-logo-300.png[Cursive]
+image:images/cursive-logo-300.png[Cursive]
 
 YourKit supports open source projects with its full-featured Java Profiler.
 YourKit, LLC is the creator of
