@@ -2018,6 +2018,25 @@
       [[1 2] [3] [6 7 8] [9] [12 13] [15 16 17] [18] [18] [18] [3 4 5]]))
   (throws? (t/partition-using even? 5)))
 
+(dotest   ; just read down by columns to get output
+  (is= [1 :a 2 :b :c] (t/interleave-all
+                        [1 2]
+                        [:a :b :c]))
+  (is= [:a 1 :b 2 :c] (t/interleave-all
+                        [:a :b :c]
+                        [1 2]))
+  (is= [:a 1 :solo :b 2 :c] (t/interleave-all
+                              [:a :b :c]
+                              [1 2]
+                              [:solo]))
+  (is= [1 :solo :a 2 :b :c] (t/interleave-all
+                              [1 2]
+                              [:solo]
+                              [:a :b :c]))
+  (is= [1 :a 2 :b :c] (t/interleave-all
+                        [1 2]
+                        []
+                        [:a :b :c])))
 (dotest
   (let [items     [{:name :a :count 1}
                    {:name :b :count 2}

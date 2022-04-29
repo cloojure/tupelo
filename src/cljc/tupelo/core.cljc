@@ -2838,6 +2838,24 @@
             new-result (append result out-vals)]
         (recur unprocessed new-result)))))
 
+(s/defn interleave-all :- tsk/List ; #todo => tupelo.core
+  "Interleave all items from input collections, without discarding any values"
+  [& colls :- [tsk/List]]
+  (assert (every? sequential? colls))
+  (let [vecs          (mapv vec colls)
+        num-vecs      (count colls)
+        lengths       (mapv count colls)
+        max-len       (apply max lengths)
+        total-items   (apply + lengths)
+        result-padded (forv [idx  (range max-len)
+                             ivec (range num-vecs)]
+                        (let [curr-vec (get vecs ivec)
+                              value    (get curr-vec idx ::dummy)]
+                          value))
+        result        (drop-if #(= ::dummy %) result-padded)]
+    (assert (= (count result) total-items))
+    result))
+
 ; #todo readme
 (s/defn take-while-result :- tsk/List
   "Takes from a collection based on a predicate with a collection argument.
