@@ -33,10 +33,11 @@
     1
     (apply * (thru 1 n))))
 
-(defn round-decimals
+(defn round-N
   "Round a floating point number to N decimal places, returning a double.
 
-        (round-decimals 3.14156 2) => 3.14
+        (round-decimals 3.14156  2) => 3.14
+        (round-decimals 1234567 -2) => 1234500
   "
   [val N]
   (let [factor (Math/pow 10.0 (double N))]
