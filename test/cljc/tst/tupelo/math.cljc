@@ -21,10 +21,7 @@
     [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture ]]
 
-    #?(:cljs [goog.string.format] )
-
-     )
-  )
+    #?(:cljs [goog.string.format] )))
 
 ;---------------------------------------------------------------------------------------------------
 #?(:cljs (enable-console-print!))
@@ -190,7 +187,7 @@
      (defn long-equals? [a b] (and (types/long? a) (types/long? b) (= a b)))
 
      (dotest
-       (is (biginteger-equals? (math/pow-BigInteger 2 5) (math/->BigInteger 32)))
+       (is (biginteger-equals? (math/pow-BigInteger 2 5) (biginteger 32)))
        (throws? (math/pow-BigInteger 2 -5) )
 
        (is (long-equals? (math/pow-long 2 5) 32))
@@ -205,17 +202,17 @@
          (isnt (biginteger-equals? bi-5 5N))
          (isnt (biginteger-equals? bi-5 5M))
 
-         (is (biginteger-equals? bi-5 (math/->BigInteger (int 5))))
-         (is (biginteger-equals? bi-5 (math/->BigInteger (long 5))))
-         (is (biginteger-equals? bi-5 (math/->BigInteger (float 5))))
-         (is (biginteger-equals? bi-5 (math/->BigInteger (double 5))))
-         (is (biginteger-equals? bi-5 (math/->BigInteger (bigint 5))))
-         (is (biginteger-equals? bi-5 (math/->BigInteger (bigdec 5))))
-         (is (biginteger-equals? bi-5 (math/->BigInteger bi-5))) ; idempotent
+         (is (biginteger-equals? bi-5 (biginteger (int 5))))
+         (is (biginteger-equals? bi-5 (biginteger (long 5))))
+         (is (biginteger-equals? bi-5 (biginteger (float 5))))
+         (is (biginteger-equals? bi-5 (biginteger (double 5))))
+         (is (biginteger-equals? bi-5 (biginteger (bigint 5))))
+         (is (biginteger-equals? bi-5 (biginteger (bigdec 5))))
+         (is (biginteger-equals? bi-5 (biginteger bi-5))) ; idempotent
 
-         (throws? (math/->BigInteger "abc"))
-         (throws? (math/->BigInteger nil))
-         (throws? (math/->BigInteger -666))))
+         (throws? (biginteger "abc"))
+         (throws? (biginteger nil))
+         (is= -666 (biginteger -666))))
 
      (dotest   ; BigInteger parsing/formatting
        (is= 42 (s/validate s/Int (BigInteger/valueOf 42.1))) ; truncates! #todo not good!
@@ -236,9 +233,9 @@
          (is= [\1 \1 \0 \1] (math/BigInteger->binary-chars bi-13))
          (is= 13 (math/binary-chars->BigInteger [\1 \1 \0 \1]))
 
-         (let [bi-10   (math/->BigInteger 10)
-               bi-cafe (math/->BigInteger 51966)
-               bi-babe (math/->BigInteger 47806)]
+         (let [bi-10   (biginteger 10)
+               bi-cafe (biginteger 51966)
+               bi-babe (biginteger 47806)]
            (is= "000a" (math/BigInteger->hex-str bi-10 4))
            (is= "cafe" (math/BigInteger->hex-str bi-cafe 4))
            (is= "babe" (math/BigInteger->hex-str bi-babe 2)))))
@@ -255,9 +252,10 @@
      (is= (type 5.0) (type (double 5)) java.lang.Double)
      (is= (type 5M) (type (bigdec 5)) (type (java.math.BigDecimal. "5")) java.math.BigDecimal)
      (is= (type 5N) (type (bigint 5)) (type (bigint 5.0)) clojure.lang.BigInt)
-     (is= (type (biginteger 5))
-       (type (clojure.core/biginteger (bigint 5)))
-       (type (clojure.core/biginteger (bigdec 5)))
+     (is= (type (clojure.core/biginteger 5))
+       (type (biginteger (bigint 5)))
+       (type (biginteger (bigdec 5)))
+       (type (biginteger "5"))
        (type (biginteger 5.0)) (type (java.math.BigInteger. "5"))
        java.math.BigInteger) ; clojure.core/BigInt <> java.math.BigInteger
 

@@ -4,7 +4,7 @@
   (:require
     [tupelo.uuid :as uuid]))
 
-(dotest-focus
+(dotest
   (is= "00000000-0000-0000-0000-000000000000"
     (uuid/null-str)
     (str (uuid/null)))

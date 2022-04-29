@@ -21,8 +21,7 @@
             )
   #?(:clj
      (:import
-       [java.math RoundingMode]))
-  )
+       [java.math RoundingMode])))
 
 (s/defn factorial :- s/Int
   "Computes the factorial of N"
@@ -75,19 +74,19 @@
        (it-> (Math/log (double x))
          (/ it ln-2)))
 
-     ; #todo OBE via clojure.core/biginteger ???
-     (s/defn ->BigInteger :- BigInteger
-       "Converts a numeric value into a (positive) BigInteger (with truncation for Double and BigDecimal)"
-       [arg :- s/Num]
-       (assert (t/nonneg? arg))
-       (cond
-         (t/biginteger? arg) arg ; noop
-         (int? arg) (BigInteger/valueOf (long arg)) ; any integer type, coerce to long
-         (float? arg) (recur (bigdec arg)) ; any floating-point (Float & Double)
-         (t/bigint? arg) (recur (bigdec arg)) ; clojure.core/BigInt <> java.math.BigInteger
-         (t/bigdecimal? arg) (.toBigInteger ^BigDecimal arg) ; *** truncation ***
-         :else (let [arg-type (type arg)]
-                 (throw (ex-info "invalid arg type" (vals->map arg arg-type))))))
+     (comment ; #todo OBE via clojure.core/biginteger   *** delete! ***
+       (s/defn ->BigInteger :- BigInteger
+         "Converts a numeric value into a (positive) BigInteger (with truncation for Double and BigDecimal)"
+         [arg :- s/Num]
+         (assert (t/nonneg? arg))
+         (cond
+           (t/biginteger? arg) arg ; noop
+           (int? arg) (BigInteger/valueOf (long arg)) ; any integer type, coerce to long
+           (float? arg) (recur (bigdec arg)) ; any floating-point (Float & Double)
+           (t/bigint? arg) (recur (bigdec arg)) ; clojure.core/BigInt <> java.math.BigInteger
+           (t/bigdecimal? arg) (.toBigInteger ^BigDecimal arg) ; *** truncation ***
+           :else (let [arg-type (type arg)]
+                   (throw (ex-info "invalid arg type" (vals->map arg arg-type)))))))
 
      (s/defn pow-BigInteger :- BigInteger
        "An BigInteger version of java.Math/pow( base, exp )"
@@ -97,7 +96,7 @@
        (when-not (int? exp) (throw (ex-info "exp must be an integer" (vals->map exp))))
        (when-not (t/nonneg? base) (throw (ex-info "base must be nonneg" (vals->map base))))
        (when-not (t/nonneg? exp) (throw (ex-info "exp must be nonneg" (vals->map exp))))
-       (.pow ^BigInteger (->BigInteger base) exp))
+       (.pow ^BigInteger (biginteger base) exp))
 
      (s/defn pow-long :- s/Int
        "An Long (integer) version of java.Math/pow( base, exp )"
