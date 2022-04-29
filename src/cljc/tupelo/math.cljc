@@ -47,7 +47,7 @@
 
 #?(:clj
    (do
-     (s/defn ->bigdec-decimals :- BigDecimal
+     (s/defn ->bigdec-N :- BigDecimal
        "Coerces a numeric value to a BigDecimal with N decimal digits. Also accepts
        a numeric value encoded as a String."
        [val :- (s/cond-pre s/Num s/Str)
@@ -63,7 +63,7 @@
        "Coerces a numeric value to a BigDecimal with 2 decimal digits. Also accepts
        a numeric value encoded as a String."
        [val :- (s/cond-pre s/Num s/Str)]
-       (->bigdec-decimals val 2))
+       (->bigdec-N val 2))
 ))
 
 ;---------------------------------------------------------------------------------------------------
