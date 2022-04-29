@@ -4,7 +4,7 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns tst.tupelo.math
+(ns ^:test-refresh/focus  tst.tupelo.math
   ;---------------------------------------------------------------------------------------------------
   ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
@@ -14,7 +14,9 @@
              ))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
+    [schema.core :as s]
     [tupelo.math :as math]
+    [tupelo.types :as types]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
     [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture ]]
@@ -41,12 +43,13 @@
   (is= (math/factorial 9) 362880)
   (is= (math/factorial 10) 3628800)
   (is (t/rel= (math/factorial 15) 1.307674368e+12 :digits 10))
-  (newline)
-  (println :factorial-fail--start)
+
+  ;(newline)
+  ;(println :factorial-fail--start)
   (throws? (math/factorial 1.5))
   (throws? (math/factorial -1))
   (throws? (math/factorial -1))
-  (println :factorial-fail--end)
+  ; (println :factorial-fail--end)
   )
 
 (dotest
@@ -140,6 +143,107 @@
            (math/->bigdec-2 (bigdec b2))
            (math/->bigdec-2 (str b2)))))
 
+     ;---------------------------------------------------------------------------------------------------
+     (set! *warn-on-reflection* true)
+
+     ;---------------------------------------------------------------------------------------------------
+     (dotest   ; mod works for bigint, always positive
+       (is= 1 (mod 1N 2N))
+       (is= 0 (mod 2N 2N))
+       (is= 1 (mod 3N 2N))
+       (is= 0 (mod 0N 2N))
+       (is= 1 (mod -1N 2N))
+       (is= 0 (mod -2N 2N))
+       (is= 1 (mod -3N 2N)))
+
+     (dotest   ; rem works for bigint, sgn(result)==sgn(numerator)
+       (is= 1 (rem 1N 2N))
+       (is= 0 (rem 2N 2N))
+       (is= 1 (rem 3N 2N))
+       (is= 0 (rem 0N 2N))
+       (is= -1 (rem -1N 2N))
+       (is= 0 (rem -2N 2N))
+       (is= -1 (rem -3N 2N)))
+
+     ;---------------------------------------------------------------------------------------------------
+     (defn mod-biginteger [a b] (mod (BigInteger/valueOf a) (BigInteger/valueOf b)))
+     (defn rem-biginteger [a b] (rem (BigInteger/valueOf a) (BigInteger/valueOf b)))
+     (dotest   ; mod works for biginteger, always positive
+       (is= 1 (mod-biginteger 1 2))
+       (is= 0 (mod-biginteger 2 2))
+       (is= 1 (mod-biginteger 3 2))
+       (is= 0 (mod-biginteger 0 2))
+       (is= 1 (mod-biginteger -1 2))
+       (is= 0 (mod-biginteger -2 2))
+       (is= 1 (mod-biginteger -3 2)))
+
+     (dotest   ; rem works for biginteger, sgn(result)==sgn(numerator)
+       (is= 1 (rem-biginteger 1 2))
+       (is= 0 (rem-biginteger 2 2))
+       (is= 1 (rem-biginteger 3 2))
+       (is= 0 (rem-biginteger 0 2))
+       (is= -1 (rem-biginteger -1 2))
+       (is= 0 (rem-biginteger -2 2))
+       (is= -1 (rem-biginteger -3 2)))
+
+     (defn biginteger-equals? [a b] (and (t/biginteger? a) (t/biginteger? b) (= a b)))
+     (defn long-equals? [a b] (and (types/long? a) (types/long? b) (= a b)))
+
+     (dotest
+       (is (biginteger-equals? (math/pow-BigInteger 2 5) (math/->BigInteger 32)))
+       (throws? (math/pow-BigInteger 2 -5) )
+
+       (is (long-equals? (math/pow-long 2 5) 32))
+       (throws? (math/pow-long 2 77))
+       (throws? (math/pow-long 2 -5)))
+
+     (dotest
+       (let [bi-5               (BigInteger/valueOf 5)]
+         (is (biginteger-equals? bi-5 bi-5))
+         (isnt (biginteger-equals? bi-5 5))
+         (isnt (biginteger-equals? bi-5 5.0))
+         (isnt (biginteger-equals? bi-5 5N))
+         (isnt (biginteger-equals? bi-5 5M))
+
+         (is (biginteger-equals? bi-5 (math/->BigInteger (int 5))))
+         (is (biginteger-equals? bi-5 (math/->BigInteger (long 5))))
+         (is (biginteger-equals? bi-5 (math/->BigInteger (float 5))))
+         (is (biginteger-equals? bi-5 (math/->BigInteger (double 5))))
+         (is (biginteger-equals? bi-5 (math/->BigInteger (bigint 5))))
+         (is (biginteger-equals? bi-5 (math/->BigInteger (bigdec 5))))
+         (is (biginteger-equals? bi-5 (math/->BigInteger bi-5))) ; idempotent
+
+         (throws? (math/->BigInteger "abc"))
+         (throws? (math/->BigInteger nil))
+         (throws? (math/->BigInteger -666))))
+
+     (dotest   ; BigInteger parsing/formatting
+       (is= 42 (s/validate s/Int (BigInteger/valueOf 42.1))) ; truncates! #todo not good!
+       (isnt (int? (BigInteger/valueOf 42))) ; works for Schema, but not clojure.core/int?
+
+       (let [bi-13 (BigInteger/valueOf 13)
+             s1    (.toString bi-13 2)
+             bi2   (BigInteger. s1 2)
+             s2    (.toString bi2 16)]
+         (is= bi-13 13)
+         (is= s1 "1101")
+         (is= bi2 13)
+         (is= s2 "d")
+
+         (is= "1101" (math/BigInteger->binary-str bi-13))
+         (is= bi-13 (math/binary-str->BigInteger "1101"))
+
+         (is= [\1 \1 \0 \1] (math/BigInteger->binary-chars bi-13))
+         (is= 13 (math/binary-chars->BigInteger [\1 \1 \0 \1]))
+
+         (let [bi-10   (math/->BigInteger 10)
+               bi-cafe (math/->BigInteger 51966)
+               bi-babe (math/->BigInteger 47806)]
+           (is= "000a" (math/BigInteger->hex-str bi-10 4))
+           (is= "cafe" (math/BigInteger->hex-str bi-cafe 4))
+           (is= "babe" (math/BigInteger->hex-str bi-babe 2)))))
+
+     ;
      ))
 
 #?(:clj
@@ -151,7 +255,11 @@
      (is= (type 5.0) (type (double 5)) java.lang.Double)
      (is= (type 5M) (type (bigdec 5)) (type (java.math.BigDecimal. "5")) java.math.BigDecimal)
      (is= (type 5N) (type (bigint 5)) (type (bigint 5.0)) clojure.lang.BigInt)
-     (is= (type (biginteger 5)) (type (biginteger 5.0)) (type (java.math.BigInteger. "5")) java.math.BigInteger)
+     (is= (type (biginteger 5))
+       (type (clojure.core/biginteger (bigint 5)))
+       (type (clojure.core/biginteger (bigdec 5)))
+       (type (biginteger 5.0)) (type (java.math.BigInteger. "5"))
+       java.math.BigInteger) ; clojure.core/BigInt <> java.math.BigInteger
 
      ; type testing
      (is (t/bigdecimal? (bigdec 5)))
