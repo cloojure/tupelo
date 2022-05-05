@@ -205,6 +205,31 @@
     ))
 
 ;---------------------------------------------------------------------------------------------------
+(dotest
+  (defn probe-state []
+    (let [result (atom #{})]
+      (misc/when-debug-flag :a1 (swap! result conj :a1))
+      (misc/when-debug-flag :a2 (swap! result conj :a2))
+      (misc/when-debug-flag :b2 (swap! result conj :b2))
+      (misc/when-debug-flag :b3 (swap! result conj :b3))
+      @result))
+
+  (dotest
+    ; (t/spyx :awt01-enter misc/*debug-flags*)
+    (is= #{} (probe-state))
+    (misc/with-debug-flag :a1
+      ; (t/spyx :awt01-m1 misc/*debug-flags*)
+      (is= #{:a1} (probe-state))
+      (misc/with-debug-flag :a2
+        ; (t/spyx :awt01-m2 misc/*debug-flags*)
+        (is= #{:a1 :a2} (probe-state))
+        (misc/with-debug-flag :b2
+          ; (t/spyx :awt01-m3 misc/*debug-flags*)
+          (is= #{:a1 :a2 :b2} (probe-state)))))
+    ; (t/spyx :awt01-exit misc/*debug-flags*)
+    (is= #{} (probe-state))))
+
+;---------------------------------------------------------------------------------------------------
 #?(:clj
    (do
      (dotest

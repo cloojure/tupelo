@@ -301,9 +301,23 @@
   [edn-data]
   (str->sha (pr-str (normalized-sorted edn-data))))
 
+;---------------------------------------------------------------------------------------------------
+(def ^:no-doc ^:dynamic *debug-flags* #{}) ; ***** for debugging use only *****
+
+(defmacro with-debug-flag
+  "Merges `flag` into a global state map for the duration of `forms`"
+  [flag & forms]
+  `(let [dbg-flags-new# (conj *debug-flags* ~flag)]
+     (binding [*debug-flags* dbg-flags-new#]
+       ~@forms)))
+
+(defmacro when-debug-flag
+  "Merges `flag` into a global state map for the duration of `forms`"
+  [flag & forms]
+  `(when (contains? *debug-flags* ~flag)
+     ~@forms))
 
 ;----- toptop -----------------------------------------------------------------------------
-
 #?(:clj
    (do
      ;  #todo Make clojure versions of all pcapng stuff
