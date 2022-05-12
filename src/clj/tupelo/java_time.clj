@@ -484,7 +484,7 @@
         Sample:  2021-0714-191716-123456789-da39a3ee-5e6b4b0d  ; sample value
 
    For 2 TUIDs constructed at random on the same day, there are approx 110 bits of randomness:
-      seconds ~ 16 bits, nanosec ~ 30 bits, rndhex = 2*8*4 = 64 bits.
+      seconds ~ 16 bits, nanosec ~ 30 bits, rndhex = 64 bits.
 
    For 2 TUIDS constructed at random in the same second, there are still ~94 bits of randomness.
    "

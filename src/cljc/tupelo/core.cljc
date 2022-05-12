@@ -970,7 +970,6 @@
 
 (def ^:dynamic *spy-enabled-map* {})
 
-
 (defmacro with-spy-enabled ; #todo README & test
   [tag ; :- s/Keyword #todo schema for macros?
    & forms ]
