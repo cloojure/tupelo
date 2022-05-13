@@ -13,6 +13,7 @@
     [java.time LocalDate LocalDateTime DayOfWeek ZoneId ZonedDateTime Instant Period Year YearMonth]
     [java.time.format DateTimeFormatter]
     [java.time.temporal Temporal TemporalUnit TemporalAdjusters TemporalAccessor TemporalAmount ChronoUnit]
+    [java.util Date]
     [org.joda.time ReadableInstant]
     [tupelo.interval Interval]
     ))
@@ -233,6 +234,7 @@
   [arg]
   (cond
     (instance? Instant arg) arg
+    (instance? Date arg) (convert/Date->Instant arg)
     (instance? ZonedDateTime arg) (.toInstant arg)
     (instance? org.joda.time.ReadableInstant arg) (-> arg .getMillis Instant/ofEpochMilli)
     (instance? String arg) (parse-iso-str-nice->Instant arg)
@@ -317,6 +319,10 @@
 (defn now->ZonedDateTime
   "Returns the current time as a java.lang.ZonedDateTime (UTC)"
   [] (with-zoneid zoneid-utc (ZonedDateTime/now)))
+
+(defn now->Date ; #todo  add test
+  "Returns the current time as a java.util.Date"
+  [] (Date.))
 
 ;----------------------------------------------------------------------------------------
 ; #todo: Make all use protocol for all Temporal's (ZonedDateTime, OffsetDateTime, Instant, ...?)

@@ -1,20 +1,15 @@
-(ns ^:test-refresh/focus
+(ns       ; ^:test-refresh/focus
   tst.tupelo.java-time
   (:refer-clojure :exclude [range])
   (:use tupelo.java-time tupelo.test)
   (:require
     [clj-time.core :as joda]
-    [clj-time.coerce :as joda.coerce]
-    [schema.core :as s]
     [tupelo.chars :as chars]
-    [tupelo.core :as t]
+    [tupelo.core :as t :refer [spyx spyx-pretty]]
     [tupelo.interval :as interval]
     [tupelo.java-time :as tjt]
-    [tupelo.misc :as misc]
-    [tupelo.schema :as tsk]
     [tupelo.string :as str]
-    [tupelo.tagstr :as tagstr]
-    )
+    [tupelo.java-time.convert :as convert])
   (:import
     [java.sql Timestamp]
     [java.util Date UUID]
@@ -407,22 +402,27 @@
       ))
 
   (dotest
-    (let [now-instant-1          (now->Instant)
+    (let [now-date-1             (now->Date)
+          now-instant-1          (now->Instant)
           now-zdt-1a             (now->ZonedDateTime)
           now-zdt-1b             (now->ZonedDateTime)
           >>                     (Thread/sleep 100)
           now-instant-2          (now->Instant)
+          now-date-2             (now->Date)
 
+          instant-interval-date     (interval/new-closed (->Instant now-date-1) (->Instant now-date-2))
           instant-interval-short (interval/new-closed now-instant-1 now-instant-2)
           instant-interval-11    (interval/new-closed (.minusSeconds now-instant-1 1) now-instant-2)
 
           millis-1               (.toEpochMilli now-instant-1)
-          instant-1c             (millis->Instant millis-1)
-          ]
+          instant-1c             (millis->Instant millis-1)]
+      (is (interval/contains? instant-interval-date (->Instant now-zdt-1a)))
+      (is (interval/contains? instant-interval-date (->Instant now-zdt-1b)))
+
       (is (interval/contains? instant-interval-short (->Instant now-zdt-1a)))
       (is (interval/contains? instant-interval-short (->Instant now-zdt-1b)))
-      (is (interval/contains? instant-interval-11 instant-1c))
-      ))
+
+      (is (interval/contains? instant-interval-11 instant-1c))))
 
   (dotest
     ; note that instants are in DESCENDING order
@@ -453,6 +453,9 @@
           instant-str (.toString instant)
           zdt-str     (.toString instant)]
       (is= 1549166706789 millis)
+      (is= instant (->Instant jud))
+      (is= jud (convert/Instant->Date instant))
+
       (let [result (str/quotes->single (pr-str instant))]
         (is (str/contains-match? result #"#object\[java.time.Instant \p{Alnum}* '2019-02-03T04:05:06.789Z'\]"))
         (is (str/contains-str? result "#object[java.time.Instant"))
