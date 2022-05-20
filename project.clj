@@ -1,4 +1,4 @@
-(defproject tupelo "22.05.04"
+(defproject tupelo "22.05.20"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -20,7 +20,7 @@
    [org.clojure/core.async "1.5.648"]
    [org.clojure/core.match "1.0.0"]
    [org.clojure/data.avl "0.1.0"]
-   [org.clojure/data.csv "1.0.0"]
+   [org.clojure/data.csv "1.0.1"]
    [org.clojure/data.xml "0.2.0-alpha6"]
    [org.clojure/math.combinatorics "0.1.6"]
    [org.clojure/spec.alpha "0.3.218"]
