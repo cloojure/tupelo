@@ -7,7 +7,9 @@
 (ns tupelo.schema
   "Prismatic Schema type definitions"
   (:refer-clojure :exclude [Fn List Single MapEntry])
-  (:require [schema.core :as s])
+  (:require
+    [schema.core :as s]
+    [tupelo.core.impl :as impl])
   #?(:clj
      (:import [java.util HashSet])))
 
@@ -70,6 +72,8 @@
 (def MapList [Map]) ; a list of Maps
 (def TupleMap [Map]) ; a single  result  returned by Datomic pull api  ; #todo needs (s/one ...) ??? or MapList?
 (def TupleMaps [TupleMap]) ; a list of results returned by Datomic pull api
+
+(def UuidStr (s/constrained s/Str impl/uuid-str?))
 
 (def Collection
   "Any collection type of Vec (& List), Map, or Set"

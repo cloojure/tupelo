@@ -56,3 +56,25 @@
     #?(:clj  (.isArray (class arg))
        :cljs (cljs.core/array? arg))))
 
+
+(def ^:no-doc uuid-regex-pattern
+  #"(?x)            # expanded mode
+  \p{XDigit}{8}     # 8 hex digits
+  -                 # hyphen
+  \p{XDigit}{4}     # 4 hex digits
+  -                 # hyphen
+  \p{XDigit}{4}     # 4 hex digits
+  -                 # hyphen
+  \p{XDigit}{4}     # 4 hex digits
+  -                 # hyphen
+  \p{XDigit}{12}    # 12 hex digits
+  ")
+(s/defn uuid-str? :- s/Bool
+  "Returns true iff the string shows a valid UUID-like pattern of hex digits. Does not
+  distinguish between UUID subtypes."
+  [arg]
+  (boolean
+    (when (string? arg)
+      (re-matches uuid-regex-pattern arg))))
+
+

@@ -1835,7 +1835,7 @@
          `(do ~else-form)))
 
      (defmacro when-java-1-11-plus ; #todo need test
-       "If JVM is Java 1.11 or higher, evaluates if-form into code. Otherwise, evaluates else-form."
+       "If JVM is Java 1.11 or higher, evaluates forms into code. Otherwise, elide forms."
        [& forms]
        (when (is-java-11-plus?)
          `(do ~@forms)))

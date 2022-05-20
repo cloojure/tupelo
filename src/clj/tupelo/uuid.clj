@@ -6,7 +6,8 @@
     [clojure.core :exclude [rand]]
     [schema.core :as s]
     [tupelo.schema :as tsk]
-    [tupelo.string :as str])
+    [tupelo.string :as str]
+    [tupelo.core.impl :as impl])
   (:import
     [java.util UUID]))
 
@@ -30,25 +31,11 @@
   "Returns a dummy UUID object 'cafebabe-1953-0510-0970-0123456789ff'"
   (const->fn const-dummy-obj))
 
-(def ^:no-doc uuid-regex-pattern
-  #"(?x)            # expanded mode
-  \p{XDigit}{8}     # 8 hex digits
-  -                 # hyphen
-  \p{XDigit}{4}     # 4 hex digits
-  -                 # hyphen
-  \p{XDigit}{4}     # 4 hex digits
-  -                 # hyphen
-  \p{XDigit}{4}     # 4 hex digits
-  -                 # hyphen
-  \p{XDigit}{12}    # 12 hex digits
-  ")
-(s/defn uuid-str? :- s/Bool
+(def ^:no-doc uuid-regex-pattern impl/uuid-regex-pattern)
+(def uuid-str?
   "Returns true iff the string shows a valid UUID-like pattern of hex digits. Does not
   distinguish between UUID subtypes."
-  [arg]
-  (truthy?
-    (when (string? arg)
-      (re-matches uuid-regex-pattern arg))))
+  impl/uuid-str?)
 
 ;-----------------------------------------------------------------------------
 (s/defn rand :- UUID
