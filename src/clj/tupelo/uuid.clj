@@ -11,17 +11,25 @@
   (:import
     [java.util UUID]))
 
-(def const-null-str "00000000-0000-0000-0000-000000000000")
-(def const-null-obj (UUID/fromString const-null-str))
+(def const-null-str
+  "A null UUID string '00000000-0000-0000-0000-000000000000' "
+  "00000000-0000-0000-0000-000000000000")
+(def const-null-obj
+  "A null UUID object '00000000-0000-0000-0000-000000000000' "
+  (UUID/fromString const-null-str))
 
-(def const-dummy-str "cafebabe-1953-0510-0970-0123456789ff")
-(def const-dummy-obj (UUID/fromString const-dummy-str))
+(def const-dummy-str
+  "A dummy UUID string '00000000-0000-0000-0000-000000000000' "
+  "cafebabe-1953-0510-0970-0123456789ff")
+(def const-dummy-obj
+  "A dummy UUID object '00000000-0000-0000-0000-000000000000' "
+  (UUID/fromString const-dummy-str))
 
 (def null-str
-  "Returns a dummy UUID string '00000000-0000-0000-0000-000000000000' "
+  "Returns a null UUID string '00000000-0000-0000-0000-000000000000' "
   (const->fn const-null-str))
 (def null
-  "Returns a dummy UUID object '00000000-0000-0000-0000-000000000000' "
+  "Returns a null UUID object '00000000-0000-0000-0000-000000000000' "
   (const->fn const-null-obj))
 
 (def dummy-str
