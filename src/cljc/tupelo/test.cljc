@@ -8,14 +8,22 @@
   "Testing functions."
   #?(:cljs (:require-macros [tupelo.test]))
   (:require
-    #?(:clj [clojure.test :as test]
+    #?(:clj [clojure.test]
        :cljs [cljs.test :as test] )
      [tupelo.core :as t ]
      [tupelo.string :as ts]
   ))
 
-(defmacro deftest [& forms] `(test/deftest ~@forms))
-(defmacro testing [& forms] `(test/testing ~@forms))
+;-----------------------------------------------------------------------------
+(defmacro deftest
+  "Alias for clojure.test/deftest"
+  [& forms] `(clojure.test/deftest ~@forms))
+(defmacro testing
+  "Alias for clojure.test/testing"
+  [& forms] `(clojure.test/testing ~@forms))
+(defmacro use-fixtures
+  "Alias for clojure.test/use-fixtures"
+  [& forms] `(clojure.test/use-fixturesg ~@forms))
 
 ;-----------------------------------------------------------------------------
 (defmacro dotest ; #todo README & tests
@@ -34,7 +42,7 @@
   (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
     `(def ~(vary-meta test-name-sym assoc
              :test `(fn [] ~@body))
-       (fn [] (test/test-var (var ~test-name-sym))))))
+       (fn [] (clojure.test/test-var (var ~test-name-sym))))))
 
 (defmacro dotest-focus ; #todo README & tests
   "Alias for tupelo.test/deftest-focus "
@@ -43,7 +51,7 @@
     `(def ~(vary-meta test-name-sym assoc
              :test `(fn [] ~@body)
              :test-refresh/focus true)
-       (fn [] (test/test-var (var ~test-name-sym))))))
+       (fn [] (clojure.test/test-var (var ~test-name-sym))))))
 
 ;-----------------------------------------------------------------------------
 ; For all the following arity tests, we use an `if` statement so the exception is thrown during
@@ -54,7 +62,7 @@
   (if (not= (count forms) 1)
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
       `(throw (ex-info "tupelo.test/is requires exactly 1 form " {:line-str ~line-str })))
-    `(test/is ~@forms)))
+    `(clojure.test/is ~@forms)))
 
 (defmacro isnt      ; #todo readme/test
   "Use (isnt ...) instead of (is (not ...)) for clojure.test"
@@ -62,7 +70,7 @@
   (if (not= (count forms) 1)
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
       `(throw (ex-info "tupelo.test/isnt requires exactly 1 form " {:line-str ~line-str })))
-    `(test/is (not ~@forms))))
+    `(clojure.test/is (not ~@forms))))
 
 ;-----------------------------------------------------------------------------
 (defmacro is=  ; #todo readme/test
@@ -71,7 +79,7 @@
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
      `(throw (ex-info "tupelo.test/is= requires at least 2 forms " {:line-str ~line-str })))
-     `(test/is (= ~@forms))))
+    `(clojure.test/is (= ~@forms))))
 
 (defmacro isnt=         ; #todo readme/test
   "Use (isnt= ...) instead of (is (not= ...)) for clojure.test"
@@ -79,7 +87,7 @@
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
       `(throw (ex-info "tupelo.test/isnt= requires at least 2 forms " {:line-str ~line-str })))
-    `(test/is (not (= ~@forms)))))
+    `(clojure.test/is (not (= ~@forms)))))
 
 ; #todo use t/set=
 (defmacro is-set=  ; #todo readme/test
@@ -88,7 +96,7 @@
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
       `(throw (ex-info  "tupelo is-set= requires at least 2 forms " ~line-str)))
-    `(test/is (= ~@(mapv #(list 'set %) forms)))))
+    `(clojure.test/is (= ~@(mapv #(list 'set %) forms)))))
 
 ; #todo use tstr/nonblank=
 (defmacro is-nonblank=  ; #todo readme/test
@@ -97,7 +105,7 @@
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
       `(throw (ex-info (str "tupelo is-nonblank= requires at least 2 forms " ~line-str))))
-    `(test/is (ts/nonblank= ~@forms) )))
+    `(clojure.test/is (ts/nonblank= ~@forms) )))
 
 ; #todo use tstr/nonblank=
 (defmacro is-nonblank-lines=  ; #todo readme/test
@@ -106,7 +114,7 @@
   (if (<= (count forms) 1 )
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
       `(throw (ex-info (str "tupelo is-nonblank-lines= requires at least 2 forms " ~line-str))))
-    `(test/is (ts/nonblank-lines= ~@forms) )))
+    `(clojure.test/is (ts/nonblank-lines= ~@forms) )))
 
 ;-----------------------------------------------------------------------------
 (def ^:dynamic *equality-digits-float=*
@@ -120,7 +128,7 @@
     ; #todo make `throw-macro-error` helper function...???
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
       `(throw (ex-info "tupelo.test/is-float= requires at least 2 forms " {:line-str ~line-str })))
-    `(test/is (tupelo.core/rel= ~@forms :digits *equality-digits-float=*))))
+    `(clojure.test/is (tupelo.core/rel= ~@forms :digits *equality-digits-float=*))))
 (defmacro isnt-float=  ; #todo readme/test
   "Use (isnt-float= ...) instead of (is (rel= ... :digits *digits-float=*))"
   [& forms]
@@ -128,7 +136,7 @@
     ; #todo make `throw-macro-error` helper function...???
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
       `(throw (ex-info "tupelo.test/isnt-float= requires at least 2 forms " {:line-str ~line-str })))
-    `(test/is (not (tupelo.core/rel= ~@forms :digits *equality-digits-float=*)))))
+    `(clojure.test/is (not (tupelo.core/rel= ~@forms :digits *equality-digits-float=*)))))
 
 (def ^:dynamic *equality-digits-double=*
   "Default number of digits that must match for 2 Double values to be considerd 'equal'."
@@ -141,7 +149,7 @@
     ; #todo make `throw-macro-error` helper function...???
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
       `(throw (ex-info "tupelo.test/is-double= requires at least 2 forms " {:line-str ~line-str })))
-    `(test/is (tupelo.core/rel= ~@forms :digits *equality-digits-double=*))))
+    `(clojure.test/is (tupelo.core/rel= ~@forms :digits *equality-digits-double=*))))
 (defmacro isnt-double=  ; #todo readme/test
   "Use (isnt-double= ...) instead of (is (rel= ... :digits *digits-double=*))"
   [& forms]
@@ -149,14 +157,14 @@
     ; #todo make `throw-macro-error` helper function...???
     (let [line-str (str "[source line=" (:line (meta &form))  "]")]
       `(throw (ex-info "tupelo.test/isnt-double= requires at least 2 forms " {:line-str ~line-str })))
-    `(test/is (not (tupelo.core/rel= ~@forms :digits *equality-digits-double=*)))))
+    `(clojure.test/is (not (tupelo.core/rel= ~@forms :digits *equality-digits-double=*)))))
 
 ;-----------------------------------------------------------------------------
 (defmacro throws? ; #todo document in readme
   "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
      (throws? (/ 1 0))                      ; catches any Throwable"
   [& forms]
-  `(test/is
+  `(clojure.test/is
      (try
        ~@forms
        false ; fail if no exception thrown
@@ -167,7 +175,7 @@
 (defmacro throws-not?   ; #todo document in readme
   "The opposite of (throws? ...)"
   [& forms]
-  `(test/is
+  `(clojure.test/is
      (try
        ~@forms
        true    ; succeed if no exception thrown
@@ -183,7 +191,7 @@
   [ctx mode interceptor-map]
   (let [enter-fn (or (:enter interceptor-map) `identity)
         leave-fn (or (:leave interceptor-map) `identity) ]
-    `(test/use-fixtures ~mode
+    `(clojure.test/use-fixtures ~mode
        (fn ~'fixture-fn [tgt-fn#] ; #todo
          (~enter-fn ~ctx)
          (tgt-fn#)
@@ -205,10 +213,10 @@
     `(clojure.test.check.clojure-test/defspec ^:slow ~test-name-sym ~@body)))
 
 (defmacro check-is [& body] ; #todo README & tests
-  `(test/is (t/grab :result (clojure.test.check/quick-check ~@body))))
+  `(clojure.test/is (t/grab :result (clojure.test.check/quick-check ~@body))))
 
 (defmacro check-isnt [& body] ; #todo README & tests
-  `(test/is (not (t/grab :result (clojure.test.check/quick-check ~@body)))))
+  `(clojure.test/is (not (t/grab :result (clojure.test.check/quick-check ~@body)))))
 
 ; #todo: gen/elements -> clojure.check/rand-nth
 

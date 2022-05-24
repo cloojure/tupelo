@@ -1,4 +1,4 @@
-(defproject tupelo "22.05.20"
+(defproject tupelo "22.05.24"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -28,7 +28,7 @@
    [org.clojure/tools.reader "1.3.6"]
 
    ; other libs
-   [camel-snake-kebab "0.4.2"]
+   [camel-snake-kebab "0.4.3"]
    [cheshire "5.10.2"] ; #todo switch to muuntaja/jsonista
    [clj-time "0.15.2"]
    [danlentz/clj-uuid "0.1.9"]
