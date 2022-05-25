@@ -23,7 +23,7 @@
   [& forms] `(clojure.test/testing ~@forms))
 (defmacro use-fixtures
   "Alias for clojure.test/use-fixtures"
-  [& forms] `(clojure.test/use-fixturesg ~@forms))
+  [& forms] `(clojure.test/use-fixtures ~@forms))
 
 ;-----------------------------------------------------------------------------
 (defmacro dotest ; #todo README & tests
