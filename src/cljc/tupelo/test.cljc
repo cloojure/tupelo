@@ -26,13 +26,13 @@
   [& forms] `(clojure.test/use-fixtures ~@forms))
 
 ;-----------------------------------------------------------------------------
-(defmacro ensure ; #todo README & tests
+(defmacro verify ; #todo README & tests
   "Like clojure.test/deftest, but doesn't require a test name. Usage:
 
       (ns xyz..
         (:use tupelo.test))
 
-      (ensure
+      (verify
         (is= 5 (+ 2 3))          ; contraction of (is (= ...))
         (isnt false)             ; contraction of (is (not ...))
         (set= [1 2 3] [3 2 1])   ; set equality semantics
@@ -44,8 +44,8 @@
              :test `(fn [] ~@body))
        (fn [] (clojure.test/test-var (var ~test-name-sym))))))
 
-(defmacro ensure-focus ; #todo README & tests
-  "Adds metadata `^:test-refresh/focus` to tupelo.test/ensure. "
+(defmacro verify-focus ; #todo README & tests
+  "Adds metadata `^:test-refresh/focus` to tupelo.test/verify. "
   [& body]
   (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
     `(def ~(vary-meta test-name-sym assoc

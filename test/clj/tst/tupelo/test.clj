@@ -9,7 +9,7 @@
   (:require
     [clojure.string :as str]) )
 
-(ensure
+(verify
   (is true)         ; basic functionality
   (throws? (is))    ; must have exactly 1 arg
   (throws? (is true true)) ; must have exactly 1 arg
@@ -45,7 +45,7 @@
     (isnt-double= 1.2345678 1.234))
   )
 
-(ensure
+(verify
   (throws? (is-set= [1]))
   (is-set= [1] [1])
   (is-set= [1 2] [2 1])
