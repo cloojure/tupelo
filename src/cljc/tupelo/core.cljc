@@ -17,7 +17,7 @@
                             vals->map with-map-vals forv
                             with-spy-indent spyx spyxx spy-pretty spyx-pretty
                             let-spy let-spy-pretty let-some map-let* map-let lazy-cons
-                            try-catchall with-exception-default verify
+                            try-catchall with-exception-default verify-form
                             if-java-1-8-plus
                             when-clojure-1-8-plus when-clojure-1-9-plus when-not-clojure-1-9-plus
                             destruct lazy-gen yield yield-all matches?]]))
@@ -2536,7 +2536,7 @@
   [default-val sample-val]
   (validate-or-default not-nil? sample-val default-val))
 
-(defmacro verify
+(defmacro verify-form
   "
          (verify <some-expr>)
 
@@ -2555,7 +2555,7 @@
 (defn rand-elem
   "Returns a random element from a collection"
   [coll]
-  (verify (not-nil? coll))
+  (verify-form (not-nil? coll))
   (rand-nth (vec coll)))
 
 ; #todo convert to (submap-by-keys ctx m ks) & (submap-by-vals ctx m ks) variants
@@ -3221,7 +3221,7 @@
 
 (defmethod wild-match? :classic
   [pattern & values]
-  (verify #(pos? (count values)))
+  (verify-form #(pos? (count values)))
   (wild-match-root?
     (vals->map pattern values)))
 

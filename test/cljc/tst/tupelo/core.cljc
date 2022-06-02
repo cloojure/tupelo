@@ -1309,8 +1309,8 @@
   (throws? (t/validate t/truthy? nil)))
 
 (dotest
-  (throws? (t/verify (= 1 2)))
-  (is= 333 (t/verify (* 3 111))))
+  (throws? (t/verify-form (= 1 2)))
+  (is= 333 (t/verify-form (* 3 111))))
 
 ; #todo add test.check
 (dotest

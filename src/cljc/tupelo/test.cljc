@@ -26,7 +26,37 @@
   [& forms] `(clojure.test/use-fixtures ~@forms))
 
 ;-----------------------------------------------------------------------------
-(defmacro dotest ; #todo README & tests
+(defmacro ensure ; #todo README & tests
+  "Like clojure.test/deftest, but doesn't require a test name. Usage:
+
+      (ns xyz..
+        (:use tupelo.test))
+
+      (ensure
+        (is= 5 (+ 2 3))          ; contraction of (is (= ...))
+        (isnt false)             ; contraction of (is (not ...))
+        (set= [1 2 3] [3 2 1])   ; set equality semantics
+        (throws? (/ 1 0)))
+  "
+  [& body]
+  (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
+    `(def ~(vary-meta test-name-sym assoc
+             :test `(fn [] ~@body))
+       (fn [] (clojure.test/test-var (var ~test-name-sym))))))
+
+(defmacro ensure-focus ; #todo README & tests
+  "Adds metadata `^:test-refresh/focus` to tupelo.test/ensure. "
+  [& body]
+  (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]
+    `(def ~(vary-meta test-name-sym assoc
+             :test `(fn [] ~@body)
+             :test-refresh/focus true)
+       (fn [] (clojure.test/test-var (var ~test-name-sym))))))
+
+;---------------------------------------------------------------------------------------------------
+; old way
+
+(defmacro ^:deprecated dotest ; #todo README & tests
   "Like clojure.test/deftest, but doesn't require a test name. Usage:
 
       (ns xyz..
@@ -44,7 +74,7 @@
              :test `(fn [] ~@body))
        (fn [] (clojure.test/test-var (var ~test-name-sym))))))
 
-(defmacro dotest-focus ; #todo README & tests
+(defmacro ^:deprecated dotest-focus ; #todo README & tests
   "Alias for tupelo.test/deftest-focus "
   [& body]
   (let [test-name-sym (symbol (str "dotest-line-" (:line (meta &form))))]

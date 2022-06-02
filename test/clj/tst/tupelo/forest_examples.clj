@@ -1190,8 +1190,8 @@
         arity          (grab op op->arity)
         kid-slots-used (count (hid->kids hid))
         num-empties    (- arity kid-slots-used)]
-    (verify (= 2 arity))
-    (verify (not (neg? num-empties)))
+    (verify-form (= 2 arity))
+    (verify-form (not (neg? num-empties)))
     num-empties))
 
 (s/defn node-has-empty-slot? :- s/Bool
@@ -1221,7 +1221,7 @@
 
 (s/defn build-rand-ast :- tsk/Vec ; bush result
   [ast-size]
-  (verify (<= 3 ast-size)) ; 1 op & 2 args minimum;  #todo refine this
+  (verify-form (<= 3 ast-size)) ; 1 op & 2 args minimum;  #todo refine this
   (with-forest (new-forest)
     (let [root-hid (add-op-node (choose-rand-op))] ; root of AST
       ; Fill in random op nodes into the tree
