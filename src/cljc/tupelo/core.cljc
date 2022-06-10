@@ -640,7 +640,9 @@
   (try
     (walk-data->pretty (unlazy data))
     (catch Throwable t
-      (prn :*****--unlazy-pretty--Throwable--*****)
+      (prn :*****************************************************************************)
+      (prn :**********--error--**********--unlazy-pretty--Throwable--********************)
+      (prn :*****************************************************************************)
       (.printStackTrace t)
       data)))
 
