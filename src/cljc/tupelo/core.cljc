@@ -636,7 +636,13 @@
 
 (defn unlazy-pretty
   "Shorthand for (walk-data->pretty (unlazy data))."
-  [data]  (walk-data->pretty (unlazy data)))
+  [data]
+  (try
+    (walk-data->pretty (unlazy data))
+    (catch Throwable t
+      (prn :*****--unlazy-pretty--Throwable--*****)
+      (.printStackTrace t)
+      data)))
 
 ; #todo impl-merge *****************************************************************************
 
