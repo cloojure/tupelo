@@ -158,9 +158,11 @@
 (defmacro type-name-str
   "Returns the type/class name of a value as a string.  Works for both CLJ and CLJS."
   [arg]
-  `(tupelo.core.impl/if-cljs
-     (cljs.core/type->str (cljs.core/type ~arg))
-     (.getName (clojure.core/class ~arg))))
+  `(if (nil? ~arg)
+     "nil"
+     (tupelo.core.impl/if-cljs
+       (cljs.core/type->str (cljs.core/type ~arg))
+       (.getName (clojure.core/class ~arg)))))
 
 ;-----------------------------------------------------------------------------
 ; for tupelo.string
@@ -617,7 +619,12 @@
 (defn unlazy ; #todo need tests & docs. Use for datomic Entity?
   "Converts a lazy collection to a concrete (eager) collection of the same type."
   [coll]
-  (let [unlazy-item (fn [item]
+  (let [unlazy-item (fn unlazy-item-fn
+                      [item]
+                      ;(newline)
+                      ;(prn :awt--unlazy-item-fn---------------------------------------------------------------------------)
+                      ;(prn "(type item) => " (type item))
+                      ;(prn "item => " item)
                       (cond
                         (sequential? item) (vec item)
                         (map? item) (into {} item)
@@ -625,6 +632,7 @@
 
                         #?@(:clj [
                                   (instance? java.io.InputStream item) (slurp item) ; #todo need test
+                                  (= "datomic.query.EntityMap" (type-name-str item)) (into {} item) ; type-free test (doesn't need datomic)
                                   (instance? java.util.List item) (vec item) ; #todo need test
                                   (instance? java.util.Map item) (into {} item) ; #todo need test
                                   (instance? java.lang.Iterable item) (into [] item) ; #todo need test
@@ -641,7 +649,7 @@
     (walk-data->pretty (unlazy data))
     (catch Throwable t
       (prn :*****************************************************************************)
-      (prn :**********--error--**********--unlazy-pretty--Throwable--********************)
+      (prn :**********--error--**********--tupelo.core/unlazy-pretty--Throwable--********)
       (prn :*****************************************************************************)
       (.printStackTrace t)
       data)))

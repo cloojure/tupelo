@@ -1,4 +1,4 @@
-(defproject tupelo "22.05.24f"
+(defproject tupelo "22.05.24g"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :url "https://github.com/cloojure/tupelo"
   :scm "https://github.com/cloojure/tupelo"
@@ -44,8 +44,9 @@
   ; Using `lein-ancient check :all` checks plugins
   :plugins [
             [lein-codox "0.10.8"]
+            [com.jakemccrary/lein-test-refresh "0.25.0"]
             ;[lein-nomis-ns-graph "0.14.2"]
-            [com.jakemccrary/lein-test-refresh "0.25.0"]]
+            ]
 
   :test-refresh {:quiet true ; true => suppress printing namespaces when testing
                  }
