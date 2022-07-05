@@ -276,6 +276,7 @@
   glue xfirst xrest append prepend grab fetch-in indexed -str validate
   walk-with-parents with-nil-default vals->map snip snip* map-let  map-let*
   spy spyx spy-pretty spyx-pretty let-spy let-spy-pretty unlazy
+  atom?
   )
 
 ;-----------------------------------------------------------------------------
@@ -602,12 +603,21 @@
   "Recursively walks a data structure, converting all maps & sets to (generic) sorted versions,
    and all sequences to vectors. "
   [data]
-  (let [pretty-item (fn [item]
+  (let [pretty-item (fn pretty-item-fn
+                      [item]
+                      ;(spyx :awt--607 (type item))
+                      ;(spyx :awt--607 (class item))
                       (cond
                         (sequential? item) (vec item)
 
                         #?@(:clj  [(map? item) (into (sorted-map-generic) item)
-                                   (set? item) (into (sorted-set-generic) item) ]
+                                   (set? item) (into (sorted-set-generic) item)
+
+                                   ;(comment ; #todo #awt 22-7-05 fix this!
+                                   ;  (atom? item) item
+                                   ;  (= datomic.db.Datum (type item)) item
+                                   ;  )
+                                   ]
                             :cljs [(map? item) (into (sorted-map) item) ; #todo => (sorted-map-generic)
                                    (set? item) (into (sorted-set) item) ; #todo => (sorted-map-generic)
                                   ])
@@ -1912,6 +1922,10 @@
          (let [[old -new-] (apply swap-vals! tgt-atom swap-fn args)]
            old)))
    ))
+
+(defn atom?
+  "Returns true if x is a clojure.lang.BigInt"
+  [x] (= (type x) clojure.lang.Atom))
 
 ;-----------------------------------------------------------------------------
 #?(:clj   ; JVM type testing stuff

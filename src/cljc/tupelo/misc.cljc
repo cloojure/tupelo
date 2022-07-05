@@ -536,6 +536,26 @@
                                    (vals->map class-name file-name method-name line-num ns-name fn-name))))]
          stacktrace-info))
 
+     ; #todo #awt pretty-str:  if find Atom, just (pr-str ...)
+     (defn fn-callers
+       "Returns the stack trace of calling functions as a vector of strings like
+
+             ['my.namespace$some_fn_2'
+              'my.namespace$some_fn_1'
+              'clojure.main$load_script'
+              'clojure.main$init_opt'
+              'clojure.main$initialize'
+              'clojure.main$main'
+              'clojure.lang.Var'
+              'clojure.main']
+       "
+       ([] (fn-callers 30))
+       ([num-stack-frames]
+        (let [stacktrace-info (stacktrace-info (RuntimeException. "dummy"))
+              class-names     (mapv :class-name (rest stacktrace-info)) ; drop this fn name - 1st item
+              result          (vec (take num-stack-frames class-names))]
+          result)))
+
      (s/defn fn-info :- tsk/KeyMap ; #todo make cljs version
        "Returns a map of info about the current function, like:
 
