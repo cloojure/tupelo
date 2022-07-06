@@ -66,8 +66,8 @@
                                        ;[binaryage/dirac "1.4.3"]
                                        ;[com.cemerick/piggieback "0.2.2"]
                                        [criterium "0.4.6"]
-                                       ; [org.clojure/clojure "1.10.3"]
-                                       [org.clojure/clojure "1.11.1"]
+                                       ; [org.clojure/clojure "1.11.1"]
+                                       [org.clojure/clojure "1.12.0-alpha1"]
                                       ;[org.clojure/clojurescript  "1.10.764"] ; "1.10.597"
                                        ]}
              :test     {:dependencies [[overtone/at-at "1.2.0"]]
