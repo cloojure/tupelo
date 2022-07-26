@@ -540,14 +540,14 @@
      (defn fn-callers
        "Returns the stack trace of calling functions as a vector of strings like
 
-             ['my.namespace$some_fn_2'
-              'my.namespace$some_fn_1'
-              'clojure.main$load_script'
-              'clojure.main$init_opt'
-              'clojure.main$initialize'
-              'clojure.main$main'
-              'clojure.lang.Var'
-              'clojure.main']
+               ['my.namespace$some_fn_2'
+                'my.namespace$some_fn_1'
+                'clojure.main$load_script'
+                'clojure.main$init_opt'
+                'clojure.main$initialize'
+                'clojure.main$main'
+                'clojure.lang.Var'
+                'clojure.main']
        "
        ([] (fn-callers 30))
        ([num-stack-frames]
