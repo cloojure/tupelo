@@ -26,7 +26,6 @@
   #?(:clj (:require ; #todo fix all #?(:clj[s]) requires to be like this
             [clj-uuid :as clj-uuid]
             [clojure.java.shell :as shell]
-            [tupelo.java-time :as time]
             ))
   #?(:clj (:import
             [java.lang Byte Integer]
