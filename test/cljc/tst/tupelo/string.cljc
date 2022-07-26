@@ -226,8 +226,7 @@
   (is= ""
     (str/whitespace-remove "")
     (str/whitespace-remove "  ")
-    (str/whitespace-remove (str "  " \newline "   ")))
-  )
+    (str/whitespace-remove (str "  " \newline "   "))))
 
 (dotest
   (is (str/nonblank= "a"))

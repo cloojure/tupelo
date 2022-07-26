@@ -49,6 +49,16 @@
   (is= "14e51713" (misc/hash->hex ["xyz2" "abc"])))
 
 ;---------------------------------------------------------------------------------------------------
+(dotest
+  (is= 5 (misc/namespace-strip 5))
+  (is= "abc" (misc/namespace-strip "abc"))
+  (is= :item (misc/namespace-strip :something.really.big/item))
+  (is= 'item (misc/namespace-strip 'something.really.big/item))
+  (is= (misc/walk-namespace-strip
+         {:a 1 :my/b [1 'her/c 3] :his/d {:e 5 :other/f :very.last/one}})
+    {:a 1 :b [1 'c 3] :d {:e 5 :f :one}}))
+
+;---------------------------------------------------------------------------------------------------
 (defrecord Dummy [a b c])
 (dotest
   (let [arec  (->Dummy 1 2 3)

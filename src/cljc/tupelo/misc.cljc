@@ -18,7 +18,6 @@
     [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map]]
-    [tupelo.chars :as chars]
     [tupelo.schema :as tsk]
     [tupelo.string :as ts]
     #?(:cljs [goog.crypt :as crypt])
@@ -38,6 +37,19 @@
             [java.util UUID]))
   )
 
+;---------------------------------------------------------------------------------------------------
+(defn namespace-strip
+  "Removes the namespace part from any keyword or symbol, otherwise noop."
+  [item]
+  (t/cond-it-> item
+    (keyword? it) (keyword (name it))
+    (symbol? it) (symbol (name it))))
+
+(defn walk-namespace-strip
+  "Recursively walks a datastructure, removing the namespace from any keyword or symbol"
+  [data] (walk/postwalk namespace-strip data))
+
+;---------------------------------------------------------------------------------------------------
 (s/defn find-pattern :- [s/Int]
   "Searches for pattern-vec within data-vec, returning a lazy seq of indexes into data-vec."
   [pattern-vec :- tsk/List
