@@ -1848,12 +1848,51 @@
         )))
 
 
+;-----------------------------------------------------------------------------
+(verify
+  (let [html-data "<html>
+                      <head><title>Test page</title>  </head>
+                      <body>
+                          <div>
+                              <nav>
+                                  <ul>
+                                      <li>
+                                          skip these navs-li
+                                      </li>
 
+                                  </ul>
+                              </nav>
+                              <h1>Hello World<h1>
+                              <ul><li>get only these li's</li>
+                              </ul>
+                          </div>
+                      </body>
+                  </html> "]
 
+    (hid-count-reset)
+    (with-forest (new-forest)
+      (let [root-hid                        (add-tree-html html-data)
+            remove-empty-leaves-interceptor {:leave (fn [path]
+                                                      (when (leaf-path? path)
+                                                        (let [leaf-hid (xlast path)]
+                                                          (when-not (contains-key? (hid->node leaf-hid) :value)
+                                                            (remove-path-subtree path)))))}
+            >>                              (walk-tree root-hid remove-empty-leaves-interceptor)
+            out-hiccup                      (hid->hiccup root-hid)
 
-
-
-
-
-
-
+            result-1 (find-paths root-hid [:html :body :div :ul :li ])
+            li-hid                        (last (only result-1))
+            li-hiccup (hid->hiccup li-hid)]
+        (is= out-hiccup [:html
+                         [:head [:title "Test page"]]
+                         [:body
+                          [:div
+                           [:nav
+                            [:ul
+                             [:li
+                              "\n                                          skip these navs-li\n                                      "]]]
+                           [:h1 "Hello World"]
+                           [:ul [:li "get only these li's"]]]]])
+        (is= result-1 [[1012 1011 1010 1009 1008]])
+        (is= li-hid 1008)
+        (is= li-hiccup [:li "get only these li's"])))))
