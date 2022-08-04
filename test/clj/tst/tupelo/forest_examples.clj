@@ -5,7 +5,9 @@
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
 (ns tst.tupelo.forest-examples
-  (:use tupelo.core tupelo.forest tupelo.test)
+  (:use tupelo.core
+        tupelo.forest
+        tupelo.test)
   (:require
     [clojure.data.xml :as xml]
     [clojure.java.io :as io]
@@ -38,9 +40,9 @@
       (is= c-paths
         [[1007 1005 1003]
          [1007 1005 1004]
-         [1007 1006]] )
+         [1007 1006]])
       (is= (hid->hiccup 1006) [:c 9])
-      (is= c4-paths [[1007 1005 1003]] )
+      (is= c4-paths [[1007 1005 1003]])
       (is= 1005 c4-parent)
       (is= (hid->hiccup c4-parent) [:b [:c 4] [:c 5]])
       (is= (hid->node c4-parent) {:tag :b, :tupelo.forest/khids [1003 1004]})
@@ -67,9 +69,9 @@
            [{:tag :c, :value 5}]]
           [{:tag :c, :value 9}]]])
       (is= (find-paths root-hid [:a :b])
-       [[1007 1001]
-        [1007 1002]
-        [1007 1005]] )
+        [[1007 1001]
+         [1007 1002]
+         [1007 1005]])
       (is= (format-paths (find-paths root-hid [:a :b]))
         [[{:tag :a}
           [{:tag :b, :value 1}]]
@@ -107,23 +109,23 @@
       ))
 
   (with-forest (new-forest)
-               (let [root-hid (add-tree-hiccup [:a
-                                                [:b 1]
-                                                [:b 2]
-                                                [:b
-                                                 [:c 4]
-                                                 [:c 5]]
-                                                [:c 9]])
-                     ab1-hid (last (only (find-paths root-hid [:** {:tag :b :value 1}])))]
-                 (is= (hid->bush ab1-hid) [{:tag :b :value 1}])
-                 (attr-update ab1-hid :value inc)
-                 (is= (hid->bush ab1-hid) [{:tag :b :value 2}])
-                 (is= (hid->bush root-hid)
-                      [{:tag :a}
-                       [{:tag :b, :value 2}]
-                       [{:tag :b, :value 2}]
-                       [{:tag :b} [{:tag :c, :value 4}] [{:tag :c, :value 5}]]
-                       [{:tag :c, :value 9}]]))))
+    (let [root-hid (add-tree-hiccup [:a
+                                     [:b 1]
+                                     [:b 2]
+                                     [:b
+                                      [:c 4]
+                                      [:c 5]]
+                                     [:c 9]])
+          ab1-hid  (last (only (find-paths root-hid [:** {:tag :b :value 1}])))]
+      (is= (hid->bush ab1-hid) [{:tag :b :value 1}])
+      (attr-update ab1-hid :value inc)
+      (is= (hid->bush ab1-hid) [{:tag :b :value 2}])
+      (is= (hid->bush root-hid)
+        [{:tag :a}
+         [{:tag :b, :value 2}]
+         [{:tag :b, :value 2}]
+         [{:tag :b} [{:tag :c, :value 4}] [{:tag :c, :value 5}]]
+         [{:tag :c, :value 9}]]))))
 
 ;-----------------------------------------------------------------------------
 
@@ -136,7 +138,7 @@
 ;-----------------------------------------------------------------------------
 ; t0-data
 (def t0-data
-  [1 [:a :b] 2 3 [40 50 60]] )
+  [1 [:a :b] 2 3 [40 50 60]])
 
 ;(dotest
 ;  (with-forest (new-forest)
@@ -180,31 +182,31 @@
    [:item
     [:item 40]
     [:item 50]
-    [:item 60]]] )
+    [:item 60]]])
 
 (dotest
   (with-forest (new-forest)
     (let [root-hid (add-tree-hiccup t0-hiccup)
-          tree (hid->tree root-hid)
-          bush (hid->bush root-hid)]
+          tree     (hid->tree root-hid)
+          bush     (hid->bush root-hid)]
       ; #todo *REWORK*  so [:item 1] => {:tag :item ::kids [ {:tag ::primative :value 1 ::kids []} ]
       ; #todo primative must have empty ::khids
       ; #todo only ::primative can have ::value
-       (is= tree
-         {:tag :item,
-          ::tf/kids
-               [{::tf/kids [], :tag :item, :value 1}
-                {:tag :item,
-                 ::tf/kids
-                      [{::tf/kids [], :tag :item, :value :a}
-                       {::tf/kids [], :tag :item, :value :b}]}
-                {::tf/kids [], :tag :item, :value 2}
-                {::tf/kids [], :tag :item, :value 3}
-                {:tag :item,
-                 ::tf/kids
-                      [{::tf/kids [], :tag :item, :value 40}
-                       {::tf/kids [], :tag :item, :value 50}
-                       {::tf/kids [], :tag :item, :value 60}]}]})
+      (is= tree
+        {:tag :item,
+         ::tf/kids
+         [{::tf/kids [], :tag :item, :value 1}
+          {:tag :item,
+           ::tf/kids
+           [{::tf/kids [], :tag :item, :value :a}
+            {::tf/kids [], :tag :item, :value :b}]}
+          {::tf/kids [], :tag :item, :value 2}
+          {::tf/kids [], :tag :item, :value 3}
+          {:tag :item,
+           ::tf/kids
+           [{::tf/kids [], :tag :item, :value 40}
+            {::tf/kids [], :tag :item, :value 50}
+            {::tf/kids [], :tag :item, :value 60}]}]})
       (is= bush
         [{:tag :item}
          [{:tag :item, :value 1}]
@@ -225,7 +227,7 @@
         (is-set= leaf-hids-1 leaf-hids-2)
         (is= leaves
           [{::tf/khids [], :tag :item, :value :a}
-           {::tf/khids [], :tag :item, :value :b}])) )))
+           {::tf/khids [], :tag :item, :value :b}])))))
 
 ; update the first child of the root using `inc`
 (dotest
@@ -234,14 +236,14 @@
           child-1-hid (first (hid->kids root-hid))
           >>          (attr-update child-1-hid :value inc)
           result      (hid->node child-1-hid)]
-         (is= result {::tf/khids [], :tag :item, :value 2} )
+      (is= result {::tf/khids [], :tag :item, :value 2})
       (is= (hid->hiccup root-hid)
         [:item
          [:item 2]
          [:item [:item :a] [:item :b]]
          [:item 2]
          [:item 3]
-         [:item [:item 40] [:item 50] [:item 60]]] ))))
+         [:item [:item 40] [:item 50] [:item 60]]]))))
 
 ; update the 2nd child of the root by appending :c
 (dotest
@@ -276,8 +278,8 @@
   (let [hid     (last path)
         keeper? (and (leaf-hid? hid)
                   (let [leaf-val (grab :value (hid->node hid))]
-                       (and (integer? leaf-val) (< 10 leaf-val))))]
-     keeper?))
+                    (and (integer? leaf-val) (< 10 leaf-val))))]
+    keeper?))
 
 ; delete any numbers (< 10 n)
 (dotest
@@ -308,7 +310,7 @@
     [:item :c]
     [:item :d]
     [:item 5]]
-   [:item :e]] )
+   [:item :e]])
 
 (defn leaf-kw-hid? [hid]
   (and (leaf-hid? hid)
@@ -322,7 +324,7 @@
   (let [kid-hids            (hid->kids hid)
         kid-partitions      (partition-by leaf-kw-hid? kid-hids)
         kid-partitions-flgs (mapv kw-partition? kid-partitions)
-        kid-partitions-new  (map-let [partition    kid-partitions
+        kid-partitions-new  (map-let [partition kid-partitions
                                       kw-part-flag kid-partitions-flgs]
                               (if kw-part-flag
                                 [(add-node :item partition)]
@@ -332,15 +334,15 @@
 
 (dotest
   (with-forest (new-forest)
-    (let [root-hid  (add-tree-hiccup z2-hiccup) ]
-       (is= (hid->hiccup root-hid)
-         [:item
-          [:item 1]
-          [:item 2]
-          [:item :a]
-          [:item :b]
-          [:item [:item 3] [:item 4] [:item :c] [:item :d] [:item 5]]
-          [:item :e]] )
+    (let [root-hid (add-tree-hiccup z2-hiccup)]
+      (is= (hid->hiccup root-hid)
+        [:item
+         [:item 1]
+         [:item 2]
+         [:item :a]
+         [:item :b]
+         [:item [:item 3] [:item 4] [:item :c] [:item :d] [:item 5]]
+         [:item :e]])
       (mapv wrap-adjacent-kw-kids (all-hids))
       (is= (hid->hiccup root-hid)
         [:item
@@ -358,7 +360,7 @@
           [:item 5]]
          [:item
           [:item :e]]])
-       )))
+      )))
 
 ;-----------------------------------------------------------------------------
 (def z3-hiccup
@@ -375,16 +377,16 @@
 (dotest
   (with-forest (new-forest)
     (let [root-hid (add-tree-hiccup z3-hiccup)]
-         (is= (hid->hiccup root-hid)
-           [:item
-            [:item 1]
-            [:item 2]
-            [:item :a]
-            [:item :b]
-            [:item :c]
-            [:item :d]
-            [:item :e]
-            [:item 3]])
+      (is= (hid->hiccup root-hid)
+        [:item
+         [:item 1]
+         [:item 2]
+         [:item :a]
+         [:item :b]
+         [:item :c]
+         [:item :d]
+         [:item :e]
+         [:item 3]])
       (mapv wrap-adjacent-kw-kids (all-hids))
       (is= (hid->hiccup root-hid)
         [:item
@@ -411,10 +413,10 @@
         ;     (println "*****************************************************************************")
         ;     (nl))
 
-       ;>> (println "xml/parse - BEFORE")
+        ;>> (println "xml/parse - BEFORE")
         v3 (xml/parse v2)
-       ;>> (println "xml/parse - AFTER")
-      ]
+        ;>> (println "xml/parse - AFTER")
+        ]
     v3))
 
 ;(dotest
@@ -436,39 +438,39 @@
                                     curr-tree (hid->tree hid)
                                     num-hids  (with-forest (new-forest)
                                                 (let [tmp-root (add-tree curr-tree)]
-                                                     (count (all-hids))))]
-                                   (vals->map href depth num-hids)))
+                                                  (count (all-hids))))]
+                                (vals->map href depth num-hids)))
           result-data       (mapv extract-href-info a-node-paths)]
-         (is (cs/subset?
-               (set [{:href "index.html", :depth 5, :num-hids 2}
-                     {:href "index.html", :depth 6, :num-hids 1}
-                     {:href "index.html", :depth 9, :num-hids 1}
-                     {:href "api-index.html", :depth 9, :num-hids 1}
-                     {:href "clojure.core-api.html", :depth 10, :num-hids 1}
-                     {:href "clojure.data-api.html", :depth 10, :num-hids 1}
-                     {:href "clojure.edn-api.html", :depth 10, :num-hids 1}
-                     {:href "clojure.inspector-api.html", :depth 10, :num-hids 1}
-                     {:href "clojure.instant-api.html", :depth 10, :num-hids 1}
-                     {:href "clojure.java.browse-api.html", :depth 10, :num-hids 1}
-                     {:href "clojure.java.io-api.html", :depth 10, :num-hids 1}
-                     {:href "clojure.java.javadoc-api.html", :depth 10, :num-hids 1}
-                     {:href "http://clojure.org", :depth 7, :num-hids 1}
-                     {:href "#toc0", :depth 12, :num-hids 1}
-                     {:href "#", :depth 12, :num-hids 1}
-                     {:href "#var-section", :depth 12, :num-hids 1}
-                     {:href "#clojure.zip/append-child", :depth 13, :num-hids 1}
-                     {:href "#clojure.zip/branch?", :depth 13, :num-hids 1}
-                     {:href "#clojure.zip/children", :depth 13, :num-hids 1}
-                     {:href "#clojure.zip/down", :depth 13, :num-hids 1}
-                     {:href "#clojure.zip/edit", :depth 13, :num-hids 1}
-                     {:href "#clojure.zip/end?", :depth 13, :num-hids 1}
-                     {:href "#clojure.zip/root", :depth 13, :num-hids 1}
-                     {:href "#clojure.zip/seq-zip", :depth 13, :num-hids 1}
-                     {:href "#clojure.zip/up", :depth 13, :num-hids 1}
-                     {:href "#clojure.zip/vector-zip", :depth 13, :num-hids 1}
-                     {:href "#clojure.zip/xml-zip", :depth 13, :num-hids 1}
-                     {:href "#clojure.zip/zipper", :depth 13, :num-hids 1}])
-               (set result-data))))))
+      (is (cs/subset?
+            (set [{:href "index.html", :depth 5, :num-hids 2}
+                  {:href "index.html", :depth 6, :num-hids 1}
+                  {:href "index.html", :depth 9, :num-hids 1}
+                  {:href "api-index.html", :depth 9, :num-hids 1}
+                  {:href "clojure.core-api.html", :depth 10, :num-hids 1}
+                  {:href "clojure.data-api.html", :depth 10, :num-hids 1}
+                  {:href "clojure.edn-api.html", :depth 10, :num-hids 1}
+                  {:href "clojure.inspector-api.html", :depth 10, :num-hids 1}
+                  {:href "clojure.instant-api.html", :depth 10, :num-hids 1}
+                  {:href "clojure.java.browse-api.html", :depth 10, :num-hids 1}
+                  {:href "clojure.java.io-api.html", :depth 10, :num-hids 1}
+                  {:href "clojure.java.javadoc-api.html", :depth 10, :num-hids 1}
+                  {:href "http://clojure.org", :depth 7, :num-hids 1}
+                  {:href "#toc0", :depth 12, :num-hids 1}
+                  {:href "#", :depth 12, :num-hids 1}
+                  {:href "#var-section", :depth 12, :num-hids 1}
+                  {:href "#clojure.zip/append-child", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/branch?", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/children", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/down", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/edit", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/end?", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/root", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/seq-zip", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/up", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/vector-zip", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/xml-zip", :depth 13, :num-hids 1}
+                  {:href "#clojure.zip/zipper", :depth 13, :num-hids 1}])
+            (set result-data))))))
 
 ;-----------------------------------------------------------------------------
 (dotest
@@ -477,11 +479,11 @@
           root-hid    (add-tree-enlive enlive-tree)
           leaf-hids   (keep-if leaf-hid? (find-hids root-hid [:** :*]))
           leaf-values (mapv #(grab :value (hid->node %)) leaf-hids)
-          result      (apply glue leaf-values) ]
+          result      (apply glue leaf-values)]
       (is= enlive-tree {:tag   :p,
                         :attrs {},
                         :content
-                               ["sample " {:tag :em, :attrs {}, :content ["text"]} " with words."]})
+                        ["sample " {:tag :em, :attrs {}, :content ["text"]} " with words."]})
 
       (is= (hid->tree root-hid)
         {:tag      :p,
@@ -500,7 +502,7 @@
 ; Discard any xml nodes of Type="A" or Type="B" (plus blank string nodes)
 (dotest
   (with-forest (new-forest)
-    (let [xml-str         "<ROOT>
+    (let [xml-str       "<ROOT>
                             <Items>
                               <Item><Type>A</Type><Note>AA1</Note></Item>
                               <Item><Type>B</Type><Note>BB1</Note></Item>
@@ -508,77 +510,77 @@
                               <Item><Type>A</Type><Note>AA2</Note></Item>
                             </Items>
                           </ROOT>"
-          root-hid        (add-tree-xml xml-str )
-          tree-1          (hid->tree root-hid)
-          tree-2          (hid->tree root-hid)
+          root-hid      (add-tree-xml xml-str)
+          tree-1        (hid->tree root-hid)
+          tree-2        (hid->tree root-hid)
 
-          type-bc-path?   (s/fn [path :- [HID]]
-                            (let [hid (last path)]
-                              (or
-                                (has-descendant? hid [:** {:tag :Type :value "B"}])
-                                (has-descendant? hid [:** {:tag :Type :value "C"}]))))
+          type-bc-path? (s/fn [path :- [HID]]
+                          (let [hid (last path)]
+                            (or
+                              (has-descendant? hid [:** {:tag :Type :value "B"}])
+                              (has-descendant? hid [:** {:tag :Type :value "C"}]))))
 
-          type-bc-paths   (find-paths-with root-hid [:** :Item] type-bc-path?)
-          >>              (doseq [path type-bc-paths]
-                            (remove-path-subtree path))
-          tree-3          (hid->tree root-hid)
-          tree-3-hiccup   (hid->hiccup root-hid)]
+          type-bc-paths (find-paths-with root-hid [:** :Item] type-bc-path?)
+          >>            (doseq [path type-bc-paths]
+                          (remove-path-subtree path))
+          tree-3        (hid->tree root-hid)
+          tree-3-hiccup (hid->hiccup root-hid)]
       (is= tree-1
         {:tag      :ROOT,
          ::tf/kids [{:tag      :Items,
                      ::tf/kids [{:tag :Item,
                                  ::tf/kids
-                                      [{::tf/kids [], :tag :Type, :value "A"}
-                                       {::tf/kids [], :tag :Note, :value "AA1"}]}
+                                 [{::tf/kids [], :tag :Type, :value "A"}
+                                  {::tf/kids [], :tag :Note, :value "AA1"}]}
                                 {:tag :Item,
                                  ::tf/kids
-                                      [{::tf/kids [], :tag :Type, :value "B"}
-                                       {::tf/kids [], :tag :Note, :value "BB1"}]}
+                                 [{::tf/kids [], :tag :Type, :value "B"}
+                                  {::tf/kids [], :tag :Note, :value "BB1"}]}
                                 {:tag :Item,
                                  ::tf/kids
-                                      [{::tf/kids [], :tag :Type, :value "C"}
-                                       {::tf/kids [], :tag :Note, :value "CC1"}]}
+                                 [{::tf/kids [], :tag :Type, :value "C"}
+                                  {::tf/kids [], :tag :Note, :value "CC1"}]}
                                 {:tag :Item,
                                  ::tf/kids
-                                      [{::tf/kids [], :tag :Type, :value "A"}
-                                       {::tf/kids [], :tag :Note, :value "AA2"}]} ]}]})
+                                 [{::tf/kids [], :tag :Type, :value "A"}
+                                  {::tf/kids [], :tag :Note, :value "AA2"}]}]}]})
 
       (is= tree-2
         {:tag      :ROOT,
          ::tf/kids [{:tag :Items,
                      ::tf/kids
-                          [{:tag :Item,
-                            ::tf/kids
+                     [{:tag :Item,
+                       ::tf/kids
+                       [{::tf/kids [], :tag :Type, :value "A"}
+                        {::tf/kids [], :tag :Note, :value "AA1"}]}
+                      {:tag :Item,
+                       ::tf/kids
+                       [{::tf/kids [], :tag :Type, :value "B"}
+                        {::tf/kids [], :tag :Note, :value "BB1"}]}
+                      {:tag :Item,
+                       ::tf/kids
+                       [{::tf/kids [], :tag :Type, :value "C"}
+                        {::tf/kids [], :tag :Note, :value "CC1"}]}
+                      {:tag :Item,
+                       ::tf/kids
+                       [{::tf/kids [], :tag :Type, :value "A"}
+                        {::tf/kids [], :tag :Note, :value "AA2"}]}]}]})
+      (is= tree-3
+        {:tag      :ROOT,
+         ::tf/kids [{:tag      :Items,
+                     ::tf/kids [{:tag :Item,
+                                 ::tf/kids
                                  [{::tf/kids [], :tag :Type, :value "A"}
                                   {::tf/kids [], :tag :Note, :value "AA1"}]}
-                           {:tag :Item,
-                            ::tf/kids
-                                 [{::tf/kids [], :tag :Type, :value "B"}
-                                  {::tf/kids [], :tag :Note, :value "BB1"}]}
-                           {:tag :Item,
-                            ::tf/kids
-                                 [{::tf/kids [], :tag :Type, :value "C"}
-                                  {::tf/kids [], :tag :Note, :value "CC1"}]}
-                           {:tag :Item,
-                            ::tf/kids
+                                {:tag :Item,
+                                 ::tf/kids
                                  [{::tf/kids [], :tag :Type, :value "A"}
                                   {::tf/kids [], :tag :Note, :value "AA2"}]}]}]})
-    (is= tree-3
-      {:tag      :ROOT,
-       ::tf/kids [{:tag      :Items,
-                   ::tf/kids [{:tag :Item,
-                               ::tf/kids
-                                    [{::tf/kids [], :tag :Type, :value "A"}
-                                     {::tf/kids [], :tag :Note, :value "AA1"}]}
-                              {:tag :Item,
-                               ::tf/kids
-                                    [{::tf/kids [], :tag :Type, :value "A"}
-                                     {::tf/kids [], :tag :Note, :value "AA2"}]}]}]} )
-    (is= tree-3-hiccup
-      [:ROOT
-       [:Items
-        [:Item [:Type "A"] [:Note "AA1"]]
-        [:Item [:Type "A"] [:Note "AA2"]]]]))))
+      (is= tree-3-hiccup
+        [:ROOT
+         [:Items
+          [:Item [:Type "A"] [:Note "AA1"]]
+          [:Item [:Type "A"] [:Note "AA2"]]]]))))
 
 ;-----------------------------------------------------------------------------
 ; shorter version w/o extra features
@@ -635,7 +637,7 @@
                         </images>
                       </product>
                     </products>
-                  </data> " )
+                  </data> ")
 (dotest
   (with-forest (new-forest)
     (let [root-hid             (add-tree-xml xml-str-prod)
@@ -719,14 +721,14 @@
             [{:class "two", :tag :div}]]]]])
 
       (is (= (hid->node (last (only result-1)))
-            {::tf/khids [], :class "two", :tag :div})) )))
+            {::tf/khids [], :class "two", :tag :div})))))
 
 ;-----------------------------------------------------------------------------
 
 (dotest
   (with-forest (new-forest)
     ; #todo re-work to fix "special" double-quotes
-    (let [html-str        "<div class=“group”>
+    (let [html-str     "<div class=“group”>
                               <h2>title1</h2>
                               <div class=“subgroup”>
                                 <p>unused</p>
@@ -747,58 +749,58 @@
                                 <a href=“path3” />
                               </div>
                             </div>"
-          root-hid        (add-tree-html html-str) ; html is a subset of xml
+          root-hid     (add-tree-html html-str) ; html is a subset of xml
 
-          tree-2          (hid->hiccup root-hid)
-          >>              (is= tree-2 [:html
-                                       [:body
-                                        [:div {:class "“group”"}
-                                         [:h2 "title1"]
-                                         [:div {:class "“subgroup”"}
-                                          [:p "unused"]
-                                          [:h3 "subheading1"]
-                                          [:a {:href "“path1”"}]]
-                                         [:div {:class "“subgroup”"}
-                                          [:p "unused"]
-                                          [:h3 "subheading2"]
-                                          [:a {:href "“path2”"}]]]
-                                        [:div {:class "“group”"}
-                                         [:h2 "title2"]
-                                         [:div {:class "“subgroup”"}
-                                          [:p "unused"]
-                                          [:h3 "subheading3"]
-                                          [:a {:href "“path3”"}]]]]])
+          tree-2       (hid->hiccup root-hid)
+          >>           (is= tree-2 [:html
+                                    [:body
+                                     [:div {:class "“group”"}
+                                      [:h2 "title1"]
+                                      [:div {:class "“subgroup”"}
+                                       [:p "unused"]
+                                       [:h3 "subheading1"]
+                                       [:a {:href "“path1”"}]]
+                                      [:div {:class "“subgroup”"}
+                                       [:p "unused"]
+                                       [:h3 "subheading2"]
+                                       [:a {:href "“path2”"}]]]
+                                     [:div {:class "“group”"}
+                                      [:h2 "title2"]
+                                      [:div {:class "“subgroup”"}
+                                       [:p "unused"]
+                                       [:h3 "subheading3"]
+                                       [:a {:href "“path3”"}]]]]])
 
           ; find consectutive nested [:div :h2] pairs at any depth in the tree
-          div-h2-paths    (find-paths root-hid [:** :div :h2])
-          >>              (is= (format-paths div-h2-paths)
-                            [[{:tag :html}
-                              [{:tag :body}
-                               [{:class "“group”", :tag :div}
-                                [{:tag :h2, :value "title1"}]]]]
-                             [{:tag :html}
-                              [{:tag :body}
-                               [{:class "“group”", :tag :div}
-                                [{:tag :h2, :value "title2"}]]]]])
+          div-h2-paths (find-paths root-hid [:** :div :h2])
+          >>           (is= (format-paths div-h2-paths)
+                         [[{:tag :html}
+                           [{:tag :body}
+                            [{:class "“group”", :tag :div}
+                             [{:tag :h2, :value "title1"}]]]]
+                          [{:tag :html}
+                           [{:tag :body}
+                            [{:class "“group”", :tag :div}
+                             [{:tag :h2, :value "title2"}]]]]])
 
           ; find the hid for each top-level :div (i.e. "group"); the next-to-last (-2) hid in each vector
-          div-hids        (mapv #(idx % -2) div-h2-paths)
+          div-hids     (mapv #(idx % -2) div-h2-paths)
           ; for each of div-hids, find and collect nested :h3 values
-          dif-h3-paths    (glue-rows
-                            (forv [div-hid div-hids]
-                              (let [h2-value (grab :value (hid->node (find-hid div-hid [:div :h2])))
-                                    h3-paths  (find-paths div-hid [:** :h3])
-                                    h3-values (it-> h3-paths
-                                                (mapv last it)
-                                                (mapv hid->node it)
-                                                (mapv #(grab :value %) it))]
-                                (forv [h3-value h3-values]
-                                  [h2-value h3-value]))))
+          dif-h3-paths (glue-rows
+                         (forv [div-hid div-hids]
+                           (let [h2-value  (grab :value (hid->node (find-hid div-hid [:div :h2])))
+                                 h3-paths  (find-paths div-hid [:** :h3])
+                                 h3-values (it-> h3-paths
+                                             (mapv last it)
+                                             (mapv hid->node it)
+                                             (mapv #(grab :value %) it))]
+                             (forv [h3-value h3-values]
+                               [h2-value h3-value]))))
           ]
       (is= dif-h3-paths
         [["title1" "subheading1"]
          ["title1" "subheading2"]
-         ["title2" "subheading3"]]) )))
+         ["title2" "subheading3"]]))))
 
 ;-----------------------------------------------------------------------------
 (dotest
@@ -867,32 +869,32 @@
 
 (dotest
   (with-forest (new-forest)
-    (let [root-hid   (add-tree-enlive
-                       {:tag     :eSearchResult,
-                        :attrs   {},
-                        :content [
-                            {:tag :Count, :attrs {}, :content ["16"]}
-                            {:tag :RetMax, :attrs {}, :content ["16"]}
-                            {:tag :RetStart, :attrs {}, :content ["0"]}
-                            {:tag     :IdList,
-                             :attrs   {},
-                             :content [
-                                 {:tag :Id, :attrs {}, :content ["28911150"]}
-                                 {:tag :Id, :attrs {}, :content ["28899394"]}
-                                 {:tag :Id, :attrs {}, :content ["28597238"]}
-                                 {:tag :Id, :attrs {}, :content ["28263281"]}
-                                 {:tag :Id, :attrs {}, :content ["28125459"]}
-                                 {:tag :Id, :attrs {}, :content ["26911135"]}
-                                 {:tag :Id, :attrs {}, :content ["26699345"]}
-                                 {:tag :Id, :attrs {}, :content ["26297102"]}
-                                 {:tag :Id, :attrs {}, :content ["26004019"]}
-                                 {:tag :Id, :attrs {}, :content ["25995331"]}
-                                 {:tag :Id, :attrs {}, :content ["25429093"]}
-                                 {:tag :Id, :attrs {}, :content ["25355095"]}
-                                 {:tag :Id, :attrs {}, :content ["25224593"]}
-                                 {:tag :Id, :attrs {}, :content ["24816246"]}
-                                 {:tag :Id, :attrs {}, :content ["24779721"]}
-                                 {:tag :Id, :attrs {}, :content ["24740865"]} ]}]})
+    (let [root-hid         (add-tree-enlive
+                             {:tag     :eSearchResult,
+                              :attrs   {},
+                              :content [
+                                        {:tag :Count, :attrs {}, :content ["16"]}
+                                        {:tag :RetMax, :attrs {}, :content ["16"]}
+                                        {:tag :RetStart, :attrs {}, :content ["0"]}
+                                        {:tag     :IdList,
+                                         :attrs   {},
+                                         :content [
+                                                   {:tag :Id, :attrs {}, :content ["28911150"]}
+                                                   {:tag :Id, :attrs {}, :content ["28899394"]}
+                                                   {:tag :Id, :attrs {}, :content ["28597238"]}
+                                                   {:tag :Id, :attrs {}, :content ["28263281"]}
+                                                   {:tag :Id, :attrs {}, :content ["28125459"]}
+                                                   {:tag :Id, :attrs {}, :content ["26911135"]}
+                                                   {:tag :Id, :attrs {}, :content ["26699345"]}
+                                                   {:tag :Id, :attrs {}, :content ["26297102"]}
+                                                   {:tag :Id, :attrs {}, :content ["26004019"]}
+                                                   {:tag :Id, :attrs {}, :content ["25995331"]}
+                                                   {:tag :Id, :attrs {}, :content ["25429093"]}
+                                                   {:tag :Id, :attrs {}, :content ["25355095"]}
+                                                   {:tag :Id, :attrs {}, :content ["25224593"]}
+                                                   {:tag :Id, :attrs {}, :content ["24816246"]}
+                                                   {:tag :Id, :attrs {}, :content ["24779721"]}
+                                                   {:tag :Id, :attrs {}, :content ["24740865"]}]}]})
           id-content-paths (find-paths root-hid [:eSearchResult :IdList :Id])
           id-strings       (forv [path id-content-paths]
                              (grab :value (hid->node (last path))))]
@@ -951,7 +953,7 @@
          "25224593"
          "24816246"
          "24779721"
-         "24740865"]) )))
+         "24740865"]))))
 
 ;------------------------------------------o---------------------------------
 (t/when-clojure-1-9-plus
@@ -963,22 +965,22 @@
                              {:buckets
                               [{:key "outer_bucket"
                                 :bucket-aggregation
-                                     {:buckets
-                                      [{:key "inner_bucket_1"
-                                        :bucket-aggregation
-                                             {:buckets
-                                              [{:key 1510657200000, :sum {:value 25}}
-                                               {:key 1510660800000, :sum {:value 50}}]}}
-                                       {:key "inner_bucket_2"
-                                        :bucket-aggregation
-                                             {:buckets
-                                              [{:key 1510657200000, :sum {:value 30}}
-                                               {:key 1510660800000, :sum {:value 35}}]}}
-                                       {:key "inner_bucket_3"
-                                        :bucket-aggregation
-                                             {:buckets
-                                              [{:key 1510657200000, :sum {:value 40}}
-                                               {:key 1510660800000, :sum {:value 45}}]}}]}}]}}
+                                {:buckets
+                                 [{:key "inner_bucket_1"
+                                   :bucket-aggregation
+                                   {:buckets
+                                    [{:key 1510657200000, :sum {:value 25}}
+                                     {:key 1510660800000, :sum {:value 50}}]}}
+                                  {:key "inner_bucket_2"
+                                   :bucket-aggregation
+                                   {:buckets
+                                    [{:key 1510657200000, :sum {:value 30}}
+                                     {:key 1510660800000, :sum {:value 35}}]}}
+                                  {:key "inner_bucket_3"
+                                   :bucket-aggregation
+                                   {:buckets
+                                    [{:key 1510657200000, :sum {:value 40}}
+                                     {:key 1510660800000, :sum {:value 45}}]}}]}}]}}
                             )
                           )
             value-paths (find-paths root-hid [:** {::tf/key :value} {::tf/value :*}])
@@ -1025,17 +1027,17 @@
 ;-----------------------------------------------------------------------------
 (dotest
   (with-forest (new-forest)
-    (let [xml-str         "<?xml version=\"1.0\"?>
+    (let [xml-str     "<?xml version=\"1.0\"?>
                             <root>
                               <a>1</a>
                               <b>2</b>
                            </root>"
-          root-hid        (add-tree-xml xml-str)
-          bush-blanks     (hid->bush root-hid)
-          leaf-hids       (keep-if leaf-hid? (find-hids root-hid [:** :*]))]
+          root-hid    (add-tree-xml xml-str)
+          bush-blanks (hid->bush root-hid)
+          leaf-hids   (keep-if leaf-hid? (find-hids root-hid [:** :*]))]
       (is= bush-blanks [{:tag :root}
                         [{:tag :a, :value "1"}]
-                        [{:tag :b, :value "2"}] ])
+                        [{:tag :b, :value "2"}]])
       (is= (mapv hid->node leaf-hids)
         [{:tupelo.forest/khids [], :tag :a, :value "1"}
          {:tupelo.forest/khids [], :tag :b, :value "2"}]))))
@@ -1142,11 +1144,11 @@
     (tagsoup/parse)))
 
 (dotest
-  (when false       ; manually enable to grab a new copy of the webpage
+  (when false ; manually enable to grab a new copy of the webpage
     (spit "xkcd-sample.html"
       (slurp "https://xkcd.com")))
   (with-forest (new-forest)
-    (let [xkcd-enlive  (get-xkcd-enlive)
+    (let [xkcd-enlive (get-xkcd-enlive)
           root-hid    (add-tree-enlive xkcd-enlive)
           hid-keep-fn (fn [hid]
                         (let [node       (hid->node hid)
@@ -1260,28 +1262,28 @@
         {:tag   :root
          :attrs nil
          :content
-            [{:tag     :SoapObject, :attrs nil,
-              :content
-                 [{:tag     :ObjectData, :attrs nil,
-                   :content [{:tag :FieldName, :attrs nil, :content ["ID"]}
-                             {:tag :FieldValue, :attrs nil, :content ["8d8edbb6-cb0f-11e8-a8d5-f2801f1b9fd1"]}]}
-                  {:tag     :ObjectData, :attrs nil,
-                   :content [{:tag :FieldName, :attrs nil, :content ["Attribute_1"]}
-                             {:tag :FieldValue, :attrs nil, :content ["Value_1a"]}]}
-                  {:tag     :ObjectData, :attrs nil,
-                   :content [{:tag :FieldName, :attrs nil, :content ["Attribute_2"]}
-                             {:tag :FieldValue, :attrs nil, :content ["Value_2a"]}]}]}
-             {:tag     :SoapObject, :attrs nil,
-              :content
-                 [{:tag     :ObjectData, :attrs nil,
-                   :content [{:tag :FieldName, :attrs nil, :content ["ID"]}
-                             {:tag :FieldValue, :attrs nil, :content ["90e39036-cb0f-11e8-a8d5-f2801f1b9fd1"]}]}
-                  {:tag     :ObjectData, :attrs nil,
-                   :content [{:tag :FieldName, :attrs nil, :content ["Attribute_1"]}
-                             {:tag :FieldValue, :attrs nil, :content ["Value_1b"]}]}
-                  {:tag     :ObjectData, :attrs nil,
-                   :content [{:tag :FieldName, :attrs nil, :content ["Attribute_2"]}
-                             {:tag :FieldValue, :attrs nil, :content ["Value_2b"]}]}]}]}]
+         [{:tag :SoapObject, :attrs nil,
+           :content
+           [{:tag     :ObjectData, :attrs nil,
+             :content [{:tag :FieldName, :attrs nil, :content ["ID"]}
+                       {:tag :FieldValue, :attrs nil, :content ["8d8edbb6-cb0f-11e8-a8d5-f2801f1b9fd1"]}]}
+            {:tag     :ObjectData, :attrs nil,
+             :content [{:tag :FieldName, :attrs nil, :content ["Attribute_1"]}
+                       {:tag :FieldValue, :attrs nil, :content ["Value_1a"]}]}
+            {:tag     :ObjectData, :attrs nil,
+             :content [{:tag :FieldName, :attrs nil, :content ["Attribute_2"]}
+                       {:tag :FieldValue, :attrs nil, :content ["Value_2a"]}]}]}
+          {:tag :SoapObject, :attrs nil,
+           :content
+           [{:tag     :ObjectData, :attrs nil,
+             :content [{:tag :FieldName, :attrs nil, :content ["ID"]}
+                       {:tag :FieldValue, :attrs nil, :content ["90e39036-cb0f-11e8-a8d5-f2801f1b9fd1"]}]}
+            {:tag     :ObjectData, :attrs nil,
+             :content [{:tag :FieldName, :attrs nil, :content ["Attribute_1"]}
+                       {:tag :FieldValue, :attrs nil, :content ["Value_1b"]}]}
+            {:tag     :ObjectData, :attrs nil,
+             :content [{:tag :FieldName, :attrs nil, :content ["Attribute_2"]}
+                       {:tag :FieldValue, :attrs nil, :content ["Value_2b"]}]}]}]}]
     (hid-count-reset)
     (with-forest (new-forest)
       (let [root-hid     (add-tree-enlive data-enlive)
@@ -1399,7 +1401,7 @@
                                  :C []
                                  :D []
                                  :E [:F]
-                                 :F []} ]
+                                 :F []}]
     (with-forest (new-forest)
       (let [root-hid (tf/add-tree-hiccup relationhip-data-hiccup)
             result   (apply glue (sorted-map)
@@ -1460,7 +1462,7 @@
       {:job-step-template-id "55099ebdcca58a0c717df91d",
        :_id                  "56044a42a27847d11d61bfd3"})
 
-    (is (nil? (find-step "invalid-id"))) ))
+    (is (nil? (find-step "invalid-id")))))
 
 ;-----------------------------------------------------------------------------
 (dotest
@@ -1569,19 +1571,19 @@
           subtree-edn-final (-> hid hid->tree tree->edn)
           edn-final         (-> root-hid hid->tree tree->edn)]
 
-      (is= subtree-edn-orig      [[2] 3])
-      (is= subtree-edn-final     [[2]])
-      (is= edn-final          [1 [[2]]]  )
+      (is= subtree-edn-orig [[2] 3])
+      (is= subtree-edn-final [[2]])
+      (is= edn-final [1 [[2]]])
 
       (is= (hid->bush root-hid)
         [{:tag :tupelo.forest/vec, :tupelo.forest/index nil}
          [#:tupelo.forest{:value 1, :index 0}]
          [{:tag :tupelo.forest/vec, :tupelo.forest/index 1}
           [{:tag :tupelo.forest/vec, :tupelo.forest/index 0}
-           [#:tupelo.forest{:value 2, :index 0}]]]] ) )))
+           [#:tupelo.forest{:value 2, :index 0}]]]]))))
 
 ;-----------------------------------------------------------------------------
-(dotest ; #todo can we run this as hiccup even without :tag entries???
+(dotest   ; #todo can we run this as hiccup even without :tag entries???
   (with-forest (new-forest)
     (let [data          {:tag      "program"
                          :state    "here"
@@ -1615,7 +1617,7 @@
       ;  (println "-----------------------------------------------------------------------------")
       ;  (spy-pretty :node (hid->node hid))
       ;  (spy-pretty :bush (hid->bush hid)))
-      ) ) )
+      )))
 
 ;-----------------------------------------------------------------------------
 (dotest
@@ -1661,17 +1663,17 @@
 (dotest   ; find all the leaf paths
   (hid-count-reset)
   (with-forest (new-forest)
-    (let [data          ["root"
-                         ["level_a_node3" ["leaf"]]
-                         ["level_a_node2"
-                          ["level_b_node2"
-                           ["level_c_node1"
-                            ["leaf"]]]
-                          ["level_b_node1" ["leaf"]]]
-                         ["level_a_node1" ["leaf"]]
-                         ["leaf"]]
-          root-hid      (add-tree-hiccup data)
-          leaf-paths    (find-paths-with root-hid [:** :*] leaf-path?)]
+    (let [data       ["root"
+                      ["level_a_node3" ["leaf"]]
+                      ["level_a_node2"
+                       ["level_b_node2"
+                        ["level_c_node1"
+                         ["leaf"]]]
+                       ["level_b_node1" ["leaf"]]]
+                      ["level_a_node1" ["leaf"]]
+                      ["leaf"]]
+          root-hid   (add-tree-hiccup data)
+          leaf-paths (find-paths-with root-hid [:** :*] leaf-path?)]
       (is= (hid->bush root-hid)
         [{:tag "root"}
          [{:tag "level_a_node3"}
@@ -1693,7 +1695,7 @@
          [{:tag "root"} [{:tag "leaf"}]]]))))
 
 ;-----------------------------------------------------------------------------
-(dotest ; find the grandparent of each leaf
+(dotest   ; find the grandparent of each leaf
   (hid-count-reset)
   (with-forest (new-forest)
     (let [data              [:root
@@ -1719,28 +1721,28 @@
          [{:tag :root} [{:tag :b} [{:tag :c} [{:tag :d} [{:tag :l4}]]]]]
          [{:tag :root} [{:tag :b} [{:tag :c} [{:tag :e} [{:tag :l5}]]]]]])
       (is= grandparent-tags
-          #{[:root :a :x] [:root :a :x :y] [:root :b :c]} ))))
+        #{[:root :a :x] [:root :a :x :y] [:root :b :c]}))))
 
 ;-----------------------------------------------------------------------------
 (dotest   ; walk the tree and keep track of all the visited nodes
   (hid-count-reset)
   (with-forest (new-forest)
     ; an "hid" is like a pointer to the node
-    (let [root-hid (add-tree-hiccup [:a
-                                     [:b
-                                      [:c 1]]
-                                     [:d
-                                      [:e 2]]])
-          tgt-hid  (find-hid root-hid [:** :c]) ; hid of the :c node we want to stop at
-          state-atom    (atom {:visited-hids []
-                               :found-tgt?   false})
-          enter-fn (fn [path] ; path is from root
-                     (let [curr-hid (xlast path)] ; curr node is last elem in path
-                       (swap! state-atom
-                         (fn [curr-state]
-                           (cond-it-> curr-state
-                             (falsey? (grab :found-tgt? it)) (update it :visited-hids append curr-hid)
-                             (= curr-hid tgt-hid) (assoc it :found-tgt? true))))))]
+    (let [root-hid   (add-tree-hiccup [:a
+                                       [:b
+                                        [:c 1]]
+                                       [:d
+                                        [:e 2]]])
+          tgt-hid    (find-hid root-hid [:** :c]) ; hid of the :c node we want to stop at
+          state-atom (atom {:visited-hids []
+                            :found-tgt?   false})
+          enter-fn   (fn [path] ; path is from root
+                       (let [curr-hid (xlast path)] ; curr node is last elem in path
+                         (swap! state-atom
+                           (fn [curr-state]
+                             (cond-it-> curr-state
+                               (falsey? (grab :found-tgt? it)) (update it :visited-hids append curr-hid)
+                               (= curr-hid tgt-hid) (assoc it :found-tgt? true))))))]
       (when false
         (newline)
         (println "Overall Tree Structure:")
@@ -1821,35 +1823,34 @@
 (dotest
   (hid-count-reset)
   (with-forest (new-forest)
-    (let [edn-data        {:a [{:x 2 :y 3} ]
-                           :b {:c 3
-                               :d {:e 5} }}
-          root-hid        (add-tree-edn edn-data) ; add edn data to a single forest tree
+    (let [edn-data {:a [{:x 2 :y 3}]
+                    :b {:c 3
+                        :d {:e 5}}}
+          root-hid (add-tree-edn edn-data) ; add edn data to a single forest tree
           ]
-        ;(nl) (spyx-pretty (hid->tree root-hid))
-        (is= (hid->bush root-hid)
+      ;(nl) (spyx-pretty (hid->tree root-hid))
+      (is= (hid->bush root-hid)
+        [{:tag ::tf/entity, ::tf/index nil}
+         [{:tag ::tf/entry, ::tf/key :a}
+          [{:tag ::tf/vec, ::tf/index nil}
+           [{:tag ::tf/entity, ::tf/index 0}
+            [{:tag ::tf/entry, ::tf/key :x}
+             [#::tf{:value 2, :index nil}]]
+            [{:tag ::tf/entry, ::tf/key :y}
+             [#::tf{:value 3, :index nil}]]]]]
+         [{:tag ::tf/entry, ::tf/key :b}
           [{:tag ::tf/entity, ::tf/index nil}
-           [{:tag ::tf/entry, ::tf/key :a}
-            [{:tag ::tf/vec, ::tf/index nil}
-             [{:tag ::tf/entity, ::tf/index 0}
-              [{:tag ::tf/entry, ::tf/key :x}
-               [#::tf{:value 2, :index nil}]]
-              [{:tag ::tf/entry, ::tf/key :y}
-               [#::tf{:value 3, :index nil}]]]]]
-           [{:tag ::tf/entry, ::tf/key :b}
+           [{:tag ::tf/entry, ::tf/key :c}
+            [#::tf{:value 3, :index nil}]]
+           [{:tag ::tf/entry, ::tf/key :d}
             [{:tag ::tf/entity, ::tf/index nil}
-             [{:tag ::tf/entry, ::tf/key :c}
-              [#::tf{:value 3, :index nil}]]
-             [{:tag ::tf/entry, ::tf/key :d}
-              [{:tag ::tf/entity, ::tf/index nil}
-               [{:tag ::tf/entry, ::tf/key :e}
-                [#::tf{:value 5, :index nil}]]]]]]] )
-        (is= edn-data (hid->edn root-hid))
-        )))
-
+             [{:tag ::tf/entry, ::tf/key :e}
+              [#::tf{:value 5, :index nil}]]]]]]])
+      (is= edn-data (hid->edn root-hid))
+      )))
 
 ;-----------------------------------------------------------------------------
-(verify
+(verify-focus
   (let [html-data "<html>
                       <head><title>Test page</title>  </head>
                       <body>
@@ -1862,7 +1863,7 @@
 
                                   </ul>
                               </nav>
-                              <h1>Hello World<h1>
+                              <h1>Hello World</h1>
                               <ul><li>get only these li's</li>
                               </ul>
                           </div>
@@ -1871,18 +1872,11 @@
 
     (hid-count-reset)
     (with-forest (new-forest)
-      (let [root-hid                        (add-tree-html html-data)
-            remove-empty-leaves-interceptor {:leave (fn [path]
-                                                      (when (leaf-path? path)
-                                                        (let [leaf-hid (xlast path)]
-                                                          (when-not (contains-key? (hid->node leaf-hid) :value)
-                                                            (remove-path-subtree path)))))}
-            >>                              (walk-tree root-hid remove-empty-leaves-interceptor)
-            out-hiccup                      (hid->hiccup root-hid)
-
-            result-1 (find-paths root-hid [:html :body :div :ul :li ])
-            li-hid                        (last (only result-1))
-            li-hiccup (hid->hiccup li-hid)]
+      (let [root-hid   (add-tree-html html-data)
+            out-hiccup (hid->hiccup root-hid)
+            result-1   (find-paths root-hid [:html :body :div :ul :li])
+            li-hid     (last (only result-1))
+            li-hiccup  (hid->hiccup li-hid)]
         (is= out-hiccup [:html
                          [:head [:title "Test page"]]
                          [:body
@@ -1893,6 +1887,6 @@
                               "\n                                          skip these navs-li\n                                      "]]]
                            [:h1 "Hello World"]
                            [:ul [:li "get only these li's"]]]]])
-        (is= result-1 [[1012 1011 1010 1009 1008]])
-        (is= li-hid 1008)
+        (is= result-1 [[1011 1010 1009 1008 1007]])
+        (is= li-hid 1007)
         (is= li-hiccup [:li "get only these li's"])))))
