@@ -9,6 +9,13 @@
   :excludes [org.clojure/clojure
              org.clojure/clojurescript]
 
+  :deploy-repositories {"releases"  {:url           "https://repo.clojars.org"
+                                     :creds         :gpg
+                                     :sign-releases false}
+                        "shapshots" {:url           "https://repo.clojars.org"
+                                     :creds         :gpg
+                                     :sign-releases false}}
+
   :dependencies
   [
    ; temp dev libs
