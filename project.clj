@@ -1,4 +1,4 @@
-(defproject tupelo "22.07.25a"
+(defproject tupelo "22.08.03"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
@@ -34,7 +34,7 @@
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
    [org.flatland/ordered "1.15.10"]
    [org.snakeyaml/snakeyaml-engine "2.3"]
-   [prismatic/schema "1.3.0"]
+   [prismatic/schema "1.3.5"]
 
    ; #todo clojures pprint doesn't work under graal native-image
    ]

@@ -14,13 +14,13 @@
     [clojure.zip :as zip]
     [schema.core :as s]
     [tupelo.string :as ts]
-    [tupelo.schema :as tsk])
+    )
   (:import
     [java.io Reader InputStream]
     [javax.xml.parsers SAXParserFactory]
     [org.xml.sax Attributes]
     [org.xml.sax.ext DefaultHandler2]
-  ))
+    ))
 
 (defstruct Element :tag :attrs :content)
 
@@ -31,7 +31,7 @@
   [x] (= :document (:type x)))
 
 (defn- comment? [x] (= (:type x) :comment))
-(defn- dtd?     [x] (= (:type x) :dtd))
+(defn- dtd? [x] (= (:type x) :dtd))
 
 (defn- xml-zip
   "Returns a zipper for xml elements (as from xml/parse), given a root element"
@@ -120,8 +120,8 @@
   [xml-input content-handler]
   (let [input-source (cond
                        (or (instance? InputStream xml-input)
-                           (instance? Reader xml-input))              (org.xml.sax.InputSource. xml-input)
-                       (instance? org.xml.sax.InputSource xml-input)  xml-input
+                         (instance? Reader xml-input)) (org.xml.sax.InputSource. xml-input)
+                       (instance? org.xml.sax.InputSource xml-input) xml-input
                        :else (throw (ex-info "sax-parse-fn: xml-input must be one of InputStream, Reader, or org.xml.sax.InputSource"
                                       {:type  (type xml-input)
                                        :class (class xml-input)})))]
@@ -134,33 +134,34 @@
       (doto it
         (.setProperty "http://xml.org/sax/properties/lexical-handler" content-handler))
       (.parse it
-        ^org.xml.sax.InputSource             input-source
-        ^org.xml.sax.helpers.DefaultHandler  content-handler))))
+        ^org.xml.sax.InputSource input-source
+        ^org.xml.sax.helpers.DefaultHandler content-handler))))
 
-(s/defn parse-raw-streaming       ; #todo fix docstring
+(s/defn parse-raw-streaming ; #todo fix docstring
   "Parses XML data from an input-stream or Reader, returning Enlive-format data.
   Does not include whitespace removal or enlive normalization."
   ([xml-input] (parse-raw-streaming xml-input sax-parse-fn))
   ([xml-input parse-fn]
-    (let [result-atom     (atom (xml-zip {:type :document :content nil}))
-          content-handler (handler result-atom)]
-      (parse-fn xml-input content-handler)
-      ; #todo document logic vvv using xkcd & plain xml example
-      (let [parsed-data (it-> @result-atom
-                          (first it)
-                          (:content it)
-                          (drop-if #(= :dtd (:type %)) it)
-                          (drop-if #(string? %) it)
-                          (only it) )]
-        parsed-data))))
+   (let [result-atom     (atom (xml-zip {:type :document :content nil}))
+         content-handler (handler result-atom)]
+     (parse-fn xml-input content-handler)
+     ; #todo document logic vvv using xkcd & plain xml example
+     (let [parsed-data (it-> @result-atom
+                         (first it)
+                         (:content it)
+                         (drop-if #(= :dtd (:type %)) it)
+                         (drop-if #(= :comment (:type %)) it)
+                         (drop-if #(string? %) it)
+                         (only it))]
+       parsed-data))))
 
-(s/defn parse-streaming       ; #todo fix docstring
+(s/defn parse-streaming ; #todo fix docstring
   "Parses XML data from an input-stream or Reader, returning Enlive-format data"
   ([xml-input] (parse-streaming xml-input sax-parse-fn))
   ([xml-input parse-fn]
-    (enlive-remove-whitespace
-      (enlive-normalize
-        (parse-raw-streaming xml-input parse-fn)))))
+   (enlive-remove-whitespace
+     (enlive-normalize
+       (parse-raw-streaming xml-input parse-fn)))))
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn parse-raw ; #todo fix docstring

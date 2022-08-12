@@ -1850,7 +1850,7 @@
       )))
 
 ;-----------------------------------------------------------------------------
-(verify-focus
+(verify
   (let [html-data "<html>
                       <head><title>Test page</title>  </head>
                       <body>

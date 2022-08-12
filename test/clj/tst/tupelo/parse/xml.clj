@@ -1,5 +1,6 @@
 (ns tst.tupelo.parse.xml
-  (:use tupelo.core tupelo.test)
+  (:use tupelo.core
+        tupelo.test)
   (:require
     [clojure.data.xml :as clj-xml]
     [tupelo.parse.tagsoup :as parse-tagsoup]
@@ -83,7 +84,7 @@
                                                   "\n                    "
                                                   {:tag :state, :attrs {}, :content ["Denial"]}
                                                   "\n                "]}
-                                       "\n              " ]})
+                                       "\n              "]})
 
 (def enlive-tree-normalized-nonblank
   {:tag     :foo,
@@ -103,7 +104,7 @@
                         {:tag :state, :attrs {}, :content ["Denial"]}]}]})
 
 
-(dotest
+(verify
   ; verify auto conversion does what we want
   (is= {} (into {} nil))
   (is= {:a 1 :b 2} (into {} {:a 1 :b 2}))
@@ -126,7 +127,7 @@
     (is= enlive-tree-normalized-nonblank tf-xml-data-reader)
     (is= enlive-tree-normalized-nonblank tf-tagsoup-data)))
 
-(dotest
+(verify
   (let [xml-str-out (clj-xml/indent-str enlive-tree-normalized-nonblank)]
     (is-nonblank= xml-str-out
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
@@ -147,8 +148,23 @@
       </foo> "
       )))
 
-
-
-
-
-
+(verify
+  ; NOTE: if present, the `<?xml ... ?>` element must have NO LEADING SPACES! (else get org.xml.sax.SAXParseException)
+  (let [xml-str "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+                  <note>
+                    <to>Tove</to>
+                    <from>Jani</from>
+                    <heading>Reminder</heading>
+                    <body>Don't forget me this weekend!</body>
+                  </note>"]
+    (spyx xml-str)
+    (is= (parse-xml/parse xml-str)
+      {:attrs   {},
+       :content [{:attrs {}, :content ["Tove"], :tag :to}
+                 {:attrs {}, :content ["Jani"], :tag :from}
+                 {:attrs {}, :content ["Reminder"], :tag :heading}
+                 {:attrs {}, :content ["Don't forget me this weekend!"], :tag :body}],
+       :tag     :note}))
+  (let [xml-str "<?xml version=\"1.0\"?><!-- a comment --><xyz/>"]
+    (is= (parse-xml/parse xml-str)
+      {:attrs {}, :content [], :tag :xyz})))
