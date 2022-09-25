@@ -146,6 +146,27 @@
   "Wrapper for java.time.Instant/ofEpochSecs "
   [esec] (java.time.Instant/ofEpochSecond esec))
 
+(comment  ; #todo conversion for floating point epoch-seconds->Instant
+  (def SECOND->NANOS 1.0e9)
+
+  (s/defn epoch-sec->Instant :- Instant
+    "Accepts a floating point value of epoch second and converts to a java.time.Instant"
+    [epoch-seconds :- s/Num]
+    (assert (<= 0 epoch-seconds)) ; throw for negative times for simplicity
+    (let [esec-dbl      (double epoch-seconds)
+          esec-whole    (Math/floor esec-dbl)
+          esec-fraction (- esec-dbl esec-whole)
+          esec-nanos    (Math/round (* esec-fraction SECOND->NANOS))
+          result        (Instant/ofEpochSecond (long esec-whole) (long esec-nanos))]
+      result))
+
+  (verify
+    (throws? (epoch-sec->Instant -1))
+    (is= "1970-01-01T00:00:00Z" (str (epoch-sec->Instant 0.0)))
+    (is= "1970-01-01T00:00:00.100Z" (str (epoch-sec->Instant 0.1)))
+    (is= "1970-01-01T00:00:00.999990Z" (str (epoch-sec->Instant 0.99999)))
+    (is= "1970-01-01T00:00:00.999999900Z" (str (epoch-sec->Instant 0.9999999)))))
+
 (s/defn eday->year :- s/Int
   "Given an eday, returns a year like 2013"
   [arg :- EDay] (.getYear (eday->LocalDate arg)))
