@@ -1,31 +1,30 @@
-(ns tst.tupelo.x.splat-1
+(ns ^:test-refresh/focus tst.tupelo.x.splat-1
   (:use tupelo.x.splat-1 tupelo.core tupelo.test)
   (:require
     [tupelo.core :as t]
-    ))
+    [clojure.walk :as walk]))
 
-
-(defn  splatter-dispatch-stub
-  [arg] {:splatter-dispatch-stub arg})
+(defn splatter-stub
+  [arg] {:splatter-stub arg})
 
 (verify
-  (with-redefs [splatter-dispatch  splatter-dispatch-stub]
-    (is= (splat-primative 1)  {:type :prim :data 1})
-    (is= (splat-list [1])
+  (with-redefs [splatter  splatter-stub]
+    (is= (splatter-impl 1)  {:type :prim :data 1})
+    (is= (splatter-impl [1])
       {:entries #{{:type :list-entry
                    :idx  0
-                   :val  {:splatter-dispatch-stub 1}}}
+                   :val  {:splatter-stub 1}}}
        :type    :list})
-    (is= (splat-map {:a 1})
+    (is= (splatter-impl {:a 1})
       {:entries #{
                   {:type :map-entry
-                   :key  {:splatter-dispatch-stub :a}
-                   :val  {:splatter-dispatch-stub 1}}}
+                   :key  {:splatter-stub :a}
+                   :val  {:splatter-stub 1}}}
        :type    :map})
-    (is= (splat-set #{1 2})
+    (is= (splatter-impl #{1 2})
       {:entries #{
-                  {:type :set-entry :val {:splatter-dispatch-stub 1}}
-                  {:type :set-entry :val {:splatter-dispatch-stub 2}}}
+                  {:type :set-entry :val {:splatter-stub 1}}
+                  {:type :set-entry :val {:splatter-stub 2}}}
        :type    :set})))
 
 ;---------------------------------------------------------------------------------------------------
@@ -101,7 +100,18 @@
                                       :idx  1
                                       :val  {:type :prim :data 3}}
                                      }}}}})
-    (is= data (unsplatter splat)))
+
+    ; delete some entries (replace with "tombstone" `nil` and then reconstruct the remainder
+    (let [trimmed (walk/postwalk (fn [item]
+                                   (if (and (map? item)
+                                         (or (submap? {:val  {:type :prim :data 1}}  item)
+                                           (submap? {:idx 1} item)))
+                                     nil
+                                     item))
+                    splat)
+          >> (spyx-pretty trimmed)
+          result  (unsplatter trimmed)]
+      (is= result {:b [2]})))
 
   (let [data     {:a 1 :b #{4 5 "six"}}
         splat    (splatter data)
@@ -143,4 +153,5 @@
                          )}]
       (spyx-pretty (walk-splatter #{2 3} intc))
       )))
+
 

@@ -13,7 +13,7 @@
     ))
 
 ;---------------------------------------------------------------------------------------------------
-(declare splatter splatter-dispatch)
+(declare splatter)
 
 (s/defn ^:no-doc splat-list :- tsk/KeyMap
   [the-list :- tsk/List]
@@ -22,7 +22,7 @@
               (forv [[idx item] (indexed the-list)]
                 {:type :list-entry
                  :idx  idx
-                 :val  (splatter-dispatch item)}))})
+                 :val  (splatter item)}))})
 
 (s/defn ^:no-doc splat-map :- tsk/KeyMap
   [the-map :- tsk/Map]
@@ -30,8 +30,8 @@
    :entries (set ; must be a set so can unit test w/o regard to order
               (forv [me the-map]
                 {:type :map-entry
-                 :key  (splatter-dispatch (key me))
-                 :val  (splatter-dispatch (val me))}))})
+                 :key  (splatter (key me))
+                 :val  (splatter (val me))}))})
 
 (s/defn ^:no-doc splat-set :- tsk/KeyMap
   [the-set :- tsk/Set]
@@ -39,7 +39,7 @@
    :entries (set ; must be a set so can unit test w/o regard to order
               (forv [item the-set]
                 {:type :set-entry
-                 :val  (splatter-dispatch item)}))})
+                 :val  (splatter item)}))})
 
 (s/defn ^:no-doc splat-primative :- tsk/KeyMap
   [item :- s/Any]
@@ -47,7 +47,7 @@
    :data item})
 
 ; #todo add :depth to each map
-(s/defn ^:no-doc splatter-dispatch
+(s/defn ^:no-doc splatter-impl
   [arg]
   (cond
     (xmap? arg) (splat-map arg)
@@ -56,7 +56,7 @@
     :else (splat-primative arg)))
 
 (s/defn splatter
-  [arg] (splatter-dispatch arg))
+  [arg] (splatter-impl arg))
 
 ;---------------------------------------------------------------------------------------------------
 ; #todo add :depth to each map
@@ -69,7 +69,8 @@
     (cond
       (= :map splat-type) (apply glue
                             (forv [me-splat (non-nil-entries-fn splat)]
-                              {(unsplatter (grab :key me-splat)) (unsplatter (grab :val me-splat))}))
+                              {(unsplatter (grab :key me-splat))
+                               (unsplatter (grab :val me-splat))}))
 
       (= :list splat-type) (let [list-vals-sorted-map (into (sorted-map)
                                                         (apply glue
