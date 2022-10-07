@@ -142,30 +142,21 @@
   "Converts an Instant to whole epoch seconds"
   [arg :- Instant] {:esec (.getEpochSecond arg)})
 
-(defn esec->Instant
-  "Wrapper for java.time.Instant/ofEpochSecs "
-  [esec] (java.time.Instant/ofEpochSecond esec))
+(def SECOND->NANOS 1.0e9)
 
-(comment  ; #todo conversion for floating point epoch-seconds->Instant
-  (def SECOND->NANOS 1.0e9)
+(s/defn esec->Instant :- Instant
+  "Accepts an integer or floating point value of epoch second and converts to a java.time.Instant"
+  [epoch-seconds :- s/Num]
+  (cond
+    (int? epoch-seconds) (Instant/ofEpochSecond epoch-seconds)
 
-  (s/defn epoch-sec->Instant :- Instant
-    "Accepts a floating point value of epoch second and converts to a java.time.Instant"
-    [epoch-seconds :- s/Num]
-    (assert (<= 0 epoch-seconds)) ; throw for negative times for simplicity
-    (let [esec-dbl      (double epoch-seconds)
-          esec-whole    (Math/floor esec-dbl)
-          esec-fraction (- esec-dbl esec-whole)
-          esec-nanos    (Math/round (* esec-fraction SECOND->NANOS))
-          result        (Instant/ofEpochSecond (long esec-whole) (long esec-nanos))]
-      result))
-
-  (verify
-    (throws? (epoch-sec->Instant -1))
-    (is= "1970-01-01T00:00:00Z" (str (epoch-sec->Instant 0.0)))
-    (is= "1970-01-01T00:00:00.100Z" (str (epoch-sec->Instant 0.1)))
-    (is= "1970-01-01T00:00:00.999990Z" (str (epoch-sec->Instant 0.99999)))
-    (is= "1970-01-01T00:00:00.999999900Z" (str (epoch-sec->Instant 0.9999999)))))
+    (float? epoch-seconds) (let [esec-dbl          (double epoch-seconds)
+                                 esec-dbl-whole    (Math/floor esec-dbl) ; always rounds toward negative infinity
+                                 esec-dbl-fraction (- esec-dbl esec-dbl-whole)
+                                 esec-dbl-nanos    (Math/floor (* esec-dbl-fraction SECOND->NANOS))
+                                 result            (Instant/ofEpochSecond (long esec-dbl-whole) (long esec-dbl-nanos))]
+                             result)
+    :else (throw (ex-info "invalid value" (vals->map epoch-seconds)))))
 
 (s/defn eday->year :- s/Int
   "Given an eday, returns a year like 2013"

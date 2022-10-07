@@ -13,16 +13,7 @@
     ))
 
 ;---------------------------------------------------------------------------------------------------
-(declare splatter)
-
-(s/defn ^:no-doc splat-map :- tsk/KeyMap
-  [the-map :- tsk/Map]
-  {:type    :map
-   :entries (set ; must be a set so can unit test w/o regard to order
-              (forv [me the-map]
-                {:type :map-entry
-                 :key  (splatter (key me))
-                 :val  (splatter (val me))}))})
+(declare splatter splatter-dispatch)
 
 (s/defn ^:no-doc splat-list :- tsk/KeyMap
   [the-list :- tsk/List]
@@ -31,7 +22,16 @@
               (forv [[idx item] (indexed the-list)]
                 {:type :list-entry
                  :idx  idx
-                 :val  (splatter item)}))})
+                 :val  (splatter-dispatch item)}))})
+
+(s/defn ^:no-doc splat-map :- tsk/KeyMap
+  [the-map :- tsk/Map]
+  {:type    :map
+   :entries (set ; must be a set so can unit test w/o regard to order
+              (forv [me the-map]
+                {:type :map-entry
+                 :key  (splatter-dispatch (key me))
+                 :val  (splatter-dispatch (val me))}))})
 
 (s/defn ^:no-doc splat-set :- tsk/KeyMap
   [the-set :- tsk/Set]
@@ -39,20 +39,24 @@
    :entries (set ; must be a set so can unit test w/o regard to order
               (forv [item the-set]
                 {:type :set-entry
-                 :val  (splatter item)}))})
+                 :val  (splatter-dispatch item)}))})
 
-(s/defn ^:no-doc splat-prim :- tsk/KeyMap
+(s/defn ^:no-doc splat-primative :- tsk/KeyMap
   [item :- s/Any]
-  {:type :prim :data item})
+  {:type :prim
+   :data item})
 
 ; #todo add :depth to each map
-(s/defn splatter
+(s/defn ^:no-doc splatter-dispatch
   [arg]
   (cond
     (xmap? arg) (splat-map arg)
     (xsequential? arg) (splat-list arg)
     (set? arg) (splat-set arg)
-    :else (splat-prim arg)))
+    :else (splat-primative arg)))
+
+(s/defn splatter
+  [arg] (splatter-dispatch arg))
 
 ;---------------------------------------------------------------------------------------------------
 ; #todo add :depth to each map
