@@ -89,42 +89,94 @@
 
       :else (throw (ex-info "invalid splat found" (vals->map splat))))))
 
-;-----------------------------------------------------------------------------
-(s/defn ^:no-doc walk-splatter-dispatch ; dispatch fn
-  [ctx-in :- tsk/KeyMap
-   interceptor :- tsk/KeyMap]
-  (t/with-spy-indent
-    (nl) (spyq :dispatch-enter---------------------------------)
-    (let [enter-fn (or (:enter interceptor) identity)
-          leave-fn (or (:leave interceptor) identity)
-          ]
-      (spyx-pretty ctx-in)
-      (let-spy-pretty
-        [ctx-post-enter (enter-fn ctx-in)
-         splat-pre-recurse (grab :splat ctx-post-enter)
-         ]
-        (let [ctx-post-leave (leave-fn ctx-post-enter)]
-          (spyq :other-leave---------------------------------)
-          (nl)
-          ctx-post-leave)))))
+;---------------------------------------------------------------------------------------------------
+(declare walk-recurse-dispatch)
 
-;-----------------------------------------------------------------------------
-(s/defn walk-splatter :- s/Any
-  [data :- s/Any
-   interceptor :- tsk/KeyMap]
-  (spyq :walk-enter---------------------------------)
-  (let [enter-fn (:enter interceptor) ; may be nil
-        leave-fn (:leave interceptor)] ; may be nil
+(s/defn ^:no-doc walk-recurse-listentry :- tsk/KeyMap
+  [intc :- tsk/KeyMap
+   le :- tsk/Map]
+  ; (spyx-pretty :walk-recurse-listentry--enter le)
+  (let [le-out (update-in le [:val] #(walk-recurse-dispatch intc %))]
+    ; (spyx-pretty :walk-recurse-listentry--leave le-out)
+    le-out))
+
+(s/defn ^:no-doc walk-recurse-setentry :- tsk/KeyMap
+  [intc :- tsk/KeyMap
+   se :- tsk/Map]
+  ; (spyx-pretty :walk-recurse-setentry--enter se)
+  (let [se-out (update-in se [:val] #(walk-recurse-dispatch intc %))]
+    ; (spyx-pretty :walk-recurse-setentry--leave se-out)
+    se-out))
+
+(s/defn ^:no-doc walk-recurse-mapentry :- tsk/KeyMap
+  [intc :- tsk/KeyMap
+   me :- tsk/Map]
+  ; (spyx-pretty :walk-recurse-mapentry--enter me)
+  (let [me-out {:type :map-entry
+                :key  (walk-recurse-dispatch intc (grab :key me))
+                :val  (walk-recurse-dispatch intc (grab :val me))}]
+    ; (spyx-pretty :walk-recurse-mapentry--leave me-out)
+    me-out))
+
+(s/defn ^:no-doc walk-recurse-collection :- tsk/KeyMap
+  [intc :- tsk/KeyMap
+   node :- tsk/KeyMap]
+  ; (spyx-pretty :walk-recurse-collection--enter node)
+  (let [node-out (glue node
+                   {:entries (forv [item (grab :entries node)]
+                               (walk-recurse-dispatch intc item))})]
+    ; (spyx-pretty :walk-recurse-collection--leave node-out)
+    node-out))
+
+(s/defn ^:no-doc walk-recurse-dispatch ; dispatch fn
+  [intc :- tsk/KeyMap
+   node :- tsk/KeyMap]
+  (t/with-spy-indent
+    ; (nl) (spyq :dispatch-enter---------------------------------)
+    ; (spyx-pretty node)
+    (let [enter-fn (:enter intc)
+          leave-fn (:leave intc)]
+      (let ; -spy-pretty
+        [node-type         (grab :type node)
+         data-post-enter   (enter-fn node)
+         data-post-recurse (cond
+                             (= node-type :prim) data-post-enter ; no recursion for primitives
+
+                             (t/contains-key? #{:list :map :set} node-type) (walk-recurse-collection intc data-post-enter)
+
+                             (= node-type :list-entry) (walk-recurse-listentry intc data-post-enter)
+                             (= node-type :set-entry) (walk-recurse-setentry intc data-post-enter)
+                             (= node-type :map-entry) (walk-recurse-mapentry intc data-post-enter)
+
+                             :else (throw (ex-info "unrecognized :type" (vals->map data-post-enter type))))
+         data-post-leave   (leave-fn data-post-recurse)]
+        ; (spyq :dispatch-leave---------------------------------)
+        data-post-leave))))
+
+;---------------------------------------------------------------------------------------------------
+(s/defn walk-interceptor :- s/Any
+  [interceptor :- tsk/KeyMap
+   splatter :- tsk/KeyMap] ; a splatter node
+  ; (spyq :walk-enter---------------------------------)
+
+  ; a top-level splatter node must have both keys :type and :entries
+  (assert (not-nil? (grab :type splatter)))
+  (assert (not-nil? (grab :entries splatter)))
+
+  ; throw if both be tx functions nil or missing
+  (let [enter-fn (:enter interceptor)
+        leave-fn (:leave interceptor)]
     (when (and (nil? enter-fn) (nil? leave-fn))
       (throw (ex-info "Invalid interceptor. :enter and :leave functions cannot both be nil." (vals->map interceptor))))
-    (let-spy-pretty
-      [splat-in    (splatter data)
-       ctx-out  (walk-splatter-dispatch {:parents [] :splat splat-in} interceptor)
-       splat-out (grab :splat ctx-out)
-       data-out (unsplatter splat-out)
-       ]
-      (spyq :walk-leave---------------------------------)
-      data-out
-      )))
+
+    ; set identify as default in case of nil, and verify both are functions
+    (let [enter-fn (s/validate tsk/Fn (or enter-fn identity))
+          leave-fn (s/validate tsk/Fn (or leave-fn identity))
+          intc     {:enter enter-fn
+                    :leave leave-fn}
+
+          data-out (walk-recurse-dispatch intc splatter)]
+      ; (spyq :walk-leave---------------------------------)
+      data-out)))
 
 
