@@ -160,14 +160,14 @@
     {:type :prim :data 2}))
 
 (verify
-    (let  ; -spy-pretty
-      [data       [1 2]
-       splat-orig (splatter data)
-       intc       {:enter identity
-                   :leave identity}
-       splat-out  (walk-interceptor intc splat-orig)
-       data-out   (unsplatter splat-out)]
-      (is= data data-out)))
+  (let    ; -spy-pretty
+    [data       [1 2]
+     splat-orig (splatter data)
+     intc       {:enter identity
+                 :leave identity}
+     splat-out  (walk-interceptor intc splat-orig)
+     data-out   (unsplatter splat-out)]
+    (is= data data-out)))
 
 (verify
   (let [intc     {:enter inc-prim-odd
@@ -196,22 +196,16 @@
                    (unsplatter it))]
     (is= #{:a 2 22} data-out)))
 
-(comment  ; #todo finish this or replace with tupelo.data ???
+; enable this to see how the recursion proceeds through a splattered piece of data
+(when true
   (verify
-    (let [intc {:enter (fn [data]
-                         (spy-pretty :enter data)
-                         ;(cond-it-> data
-                         ;  (and (= :set-entry/elem (grab :branch it))
-                         ;    (int? (grab :data it)))
-                         ;  (update-in it [:data] #(* % 10)))
-                         )
-                :leave (fn [data]
-                         (spy-pretty :leave data)
-                         ;(cond-it-> data
-                         ;  (and (= :set-entry/elem (grab :branch it))
-                         ;    (int? (grab :data it)))
-                         ;  (update-in it [:data] #(inc %)))
-                         )}]
-      (spyx-pretty (walk-interceptor intc (splatter {:a 1 :b #{2 3}})))
-      )))
+    (let [data  {:a 1 :b #{2 3}}
+          splat (splatter data)
+
+          ; :leave will default to `identity`
+          intc  {:enter (fn [data]
+                          (newline)
+                          (prn :-----------------------------------------------------------------------------)
+                          (spy-pretty :enter data))}]
+      (walk-interceptor intc splat))))
 
