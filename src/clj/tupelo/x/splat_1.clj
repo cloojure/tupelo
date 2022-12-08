@@ -17,28 +17,28 @@
 
 (s/defn ^:no-doc splat-list :- tsk/KeyMap
   [the-list :- tsk/List]
-  {:type    :list
+  {:type    :coll/list
    :entries (set ; must be a set so can unit test w/o regard to order
               (forv [[idx item] (indexed the-list)]
-                {:type :list-entry
+                {:type :entry/list
                  :idx  idx
                  :val  (splatter item)}))})
 
 (s/defn ^:no-doc splat-map :- tsk/KeyMap
   [the-map :- tsk/Map]
-  {:type    :map
+  {:type    :coll/map
    :entries (set ; must be a set so can unit test w/o regard to order
               (forv [me the-map]
-                {:type :map-entry
+                {:type :entry/map
                  :key  (splatter (key me))
                  :val  (splatter (val me))}))})
 
 (s/defn ^:no-doc splat-set :- tsk/KeyMap
   [the-set :- tsk/Set]
-  {:type    :set
+  {:type    :coll/set
    :entries (set ; must be a set so can unit test w/o regard to order
               (forv [item the-set]
-                {:type :set-entry
+                {:type :entry/set
                  :val  (splatter item)}))})
 
 (s/defn ^:no-doc splat-primative :- tsk/KeyMap
@@ -67,12 +67,12 @@
                              (drop-if nil?
                                (grab :entries coll)))]
     (cond
-      (= :map splat-type) (apply glue
+      (= :coll/map splat-type) (apply glue
                             (forv [me-splat (non-nil-entries-fn splat)]
                               {(unsplatter (grab :key me-splat))
                                (unsplatter (grab :val me-splat))}))
 
-      (= :list splat-type) (let [list-vals-sorted-map (into (sorted-map)
+      (= :coll/list splat-type) (let [list-vals-sorted-map (into (sorted-map)
                                                         (apply glue
                                                           (forv [le-splat (non-nil-entries-fn splat)]
                                                             {(grab :idx le-splat)
@@ -81,13 +81,24 @@
                                                         (vals list-vals-sorted-map))]
                              list-vals)
 
-      (= :set splat-type) (into #{}
+      (= :coll/set splat-type) (into #{}
                             (forv [se-splat (non-nil-entries-fn splat)]
                               (unsplatter (grab :val se-splat))))
 
       (= :prim splat-type) (grab :data splat)
 
       :else (throw (ex-info "invalid splat found" (vals->map splat))))))
+
+;---------------------------------------------------------------------------------------------------
+(s/defn coll-node? :- s/Bool
+  [node   :- tsk/KeyMap]
+  (let [node-type (grab :type node)]
+    (t/contains-key? #{:coll/list :coll/map :coll/set} node-type)))
+
+(s/defn entry-node? :- s/Bool
+  [node :- tsk/KeyMap]
+  (let [node-type (grab :type node)]
+    (t/contains-key? #{:entry/list :entry/set :entry/map} node-type)))
 
 ;---------------------------------------------------------------------------------------------------
 (declare walk-recurse-dispatch)
@@ -112,7 +123,7 @@
   [intc :- tsk/KeyMap
    me :- tsk/Map]
   ; (spyx-pretty :walk-recurse-mapentry--enter me)
-  (let [me-out {:type :map-entry
+  (let [me-out {:type :entry/map
                 :key  (walk-recurse-dispatch intc (grab :key me))
                 :val  (walk-recurse-dispatch intc (grab :val me))}]
     ; (spyx-pretty :walk-recurse-mapentry--leave me-out)
@@ -136,17 +147,17 @@
     ; (spyx-pretty node)
     (let [enter-fn (:enter intc)
           leave-fn (:leave intc)]
-      (let ; -spy-pretty
+      (let-spy-pretty
         [node-type         (grab :type node)
          data-post-enter   (enter-fn node)
          data-post-recurse (cond
                              (= node-type :prim) data-post-enter ; no recursion for primitives
 
-                             (t/contains-key? #{:list :map :set} node-type) (walk-recurse-collection intc data-post-enter)
+                             (coll-node? node) (walk-recurse-collection intc data-post-enter)
 
-                             (= node-type :list-entry) (walk-recurse-listentry intc data-post-enter)
-                             (= node-type :set-entry) (walk-recurse-setentry intc data-post-enter)
-                             (= node-type :map-entry) (walk-recurse-mapentry intc data-post-enter)
+                             (= node-type :entry/list) (walk-recurse-listentry intc data-post-enter)
+                             (= node-type :entry/set) (walk-recurse-setentry intc data-post-enter)
+                             (= node-type :entry/map) (walk-recurse-mapentry intc data-post-enter)
 
                              :else (throw (ex-info "unrecognized :type" (vals->map data-post-enter type))))
          data-post-leave   (leave-fn data-post-recurse)]

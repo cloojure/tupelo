@@ -1,4 +1,5 @@
-(ns ^:test-refresh/focus tst.tupelo.x.splat-1
+(ns       ; ^:test-refresh/focus
+  tst.tupelo.x.splat-1
   (:use tupelo.x.splat-1
         tupelo.core
         tupelo.test)
@@ -13,21 +14,21 @@
   (with-redefs [splatter splatter-stub]
     (is= (splatter-impl 1) {:type :prim :data 1})
     (is= (splatter-impl [1])
-      {:entries #{{:type :list-entry
+      {:entries #{{:type :entry/list
                    :idx  0
                    :val  {:splatter-stub 1}}}
-       :type    :list})
+       :type    :coll/list})
     (is= (splatter-impl {:a 1})
       {:entries #{
-                  {:type :map-entry
+                  {:type :entry/map
                    :key  {:splatter-stub :a}
                    :val  {:splatter-stub 1}}}
-       :type    :map})
+       :type    :coll/map})
     (is= (splatter-impl #{1 2})
       {:entries #{
-                  {:type :set-entry :val {:splatter-stub 1}}
-                  {:type :set-entry :val {:splatter-stub 2}}}
-       :type    :set})))
+                  {:type :entry/set :val {:splatter-stub 1}}
+                  {:type :entry/set :val {:splatter-stub 2}}}
+       :type    :coll/set})))
 
 ;---------------------------------------------------------------------------------------------------
 (verify
@@ -39,46 +40,46 @@
     {:data "abc" :type :prim})
 
   (is= (splatter [1])
-    {:type    :list
-     :entries #{{:type :list-entry
+    {:type    :coll/list
+     :entries #{{:type :entry/list
                  :idx  0
                  :val  {:data 1 :type :prim}}}})
   (is= (splatter [1 2])
-    {:type    :list
+    {:type    :coll/list
      :entries #{
-                {:type :list-entry
+                {:type :entry/list
                  :idx  0
                  :val  {:data 1 :type :prim}}
-                {:type :list-entry
+                {:type :entry/list
                  :idx  1
                  :val  {:data 2 :type :prim}}}})
 
   (is= (splatter {:a 1})
-    {:type    :map
+    {:type    :coll/map
      :entries #{{:key  {:data :a :type :prim}
-                 :type :map-entry
+                 :type :entry/map
                  :val  {:data 1 :type :prim}}}})
   (is= (splatter {:a 1 :b 2})
-    {:type    :map
+    {:type    :coll/map
      :entries #{
-                {:type :map-entry
+                {:type :entry/map
                  :key  {:data :a :type :prim}
                  :val  {:data 1 :type :prim}}
-                {:type :map-entry
+                {:type :entry/map
                  :key  {:data :b :type :prim}
                  :val  {:data 2 :type :prim}}}})
 
   (is= (splatter #{1})
-    {:type    :set
+    {:type    :coll/set
      :entries #{
-                {:type :set-entry
+                {:type :entry/set
                  :val  {:data 1 :type :prim}}}})
   (is= (splatter #{1 2})
-    {:type    :set
+    {:type    :coll/set
      :entries #{
-                {:type :set-entry
+                {:type :entry/set
                  :val  {:data 1 :type :prim}}
-                {:type :set-entry
+                {:type :entry/set
                  :val  {:data 2 :type :prim}}}}))
 
 ;---------------------------------------------------------------------------------------------------
@@ -86,19 +87,19 @@
   (let [data  {:a 1 :b [2 3]}
         splat (splatter data)]
     (is= splat
-      {:type    :map
+      {:type    :coll/map
        :entries #{
-                  {:type :map-entry
+                  {:type :entry/map
                    :key  {:type :prim :data :a}
                    :val  {:type :prim :data 1}}
-                  {:type :map-entry
+                  {:type :entry/map
                    :key  {:type :prim :data :b}
-                   :val  {:type    :list
+                   :val  {:type    :coll/list
                           :entries #{
-                                     {:type :list-entry
+                                     {:type :entry/list
                                       :idx  0
                                       :val  {:type :prim :data 2}}
-                                     {:type :list-entry
+                                     {:type :entry/list
                                       :idx  1
                                       :val  {:type :prim :data 3}}
                                      }}}}})
@@ -114,30 +115,30 @@
           result  (unsplatter trimmed)]
       (is= trimmed {:entries #{nil ; tombstone for {:a 1} map-entry
                                {:key  {:data :b, :type :prim},
-                                :type :map-entry,
+                                :type :entry/map,
                                 :val  {:entries
                                              #{nil ; tombstone for {:idx 1} list-entry
-                                               {:idx 0, :type :list-entry, :val {:data 2, :type :prim}}},
-                                       :type :list}}},
-                    :type    :map})
+                                               {:idx 0, :type :entry/list, :val {:data 2, :type :prim}}},
+                                       :type :coll/list}}},
+                    :type    :coll/map})
       (is= result {:b [2]})))
 
   (let [data     {:a 1 :b #{4 5 "six"}}
         splat    (splatter data)
-        expected {:type    :map
+        expected {:type    :coll/map
                   :entries #{
-                             {:type :map-entry
+                             {:type :entry/map
                               :key  {:type :prim :data :a}
                               :val  {:type :prim :data 1}}
-                             {:type :map-entry
+                             {:type :entry/map
                               :key  {:type :prim :data :b}
-                              :val  {:type    :set
+                              :val  {:type    :coll/set
                                      :entries #{
-                                                {:type :set-entry
+                                                {:type :entry/set
                                                  :val  {:type :prim :data 4}}
-                                                {:type :set-entry
+                                                {:type :entry/set
                                                  :val  {:type :prim :data 5}}
-                                                {:type :set-entry
+                                                {:type :entry/set
                                                  :val  {:type :prim :data "six"}}}}}}}]
     (is= splat expected)
     (is= data (unsplatter splat))))
