@@ -1,4 +1,4 @@
-(ns       ; ^:test-refresh/focus
+(ns       ^:test-refresh/focus
   tst.tupelo.x.splat-1
   (:use tupelo.x.splat-1
         tupelo.core
@@ -144,61 +144,59 @@
     (is= data (unsplatter splat))))
 
 ;---------------------------------------------------------------------------------------------------
-(defn inc-prim-odd
-  [arg]
-  (let [type (:type arg)
-        data (:data arg)]
-    ; (spyx arg)
-    (let [arg-out (cond-it-> arg
-                    (and (= :prim type) (number? data) (odd? data))
-                    (update arg :data inc))]
-      ; (spyx arg-out)
-      arg-out)))
-(verify
-  (is= (inc-prim-odd {:type :prim :data :a})
-    {:type :prim :data :a})
-  (is= (inc-prim-odd {:type :prim :data 1})
-    {:type :prim :data 2}))
+(let [inc-prim-odd (fn [arg]
+                     (let [type (:type arg)
+                           data (:data arg)]
+                       (let [arg-out (cond-it-> arg
+                                       (and (= :prim type) (number? data) (odd? data))
+                                       (update arg :data inc))]
+                         arg-out)))]
 
-(verify
-  (let    ; -spy-pretty
-    [data       [1 2]
-     splat-orig (splatter data)
-     intc       {:enter identity
-                 :leave identity}
-     splat-out  (walk intc splat-orig)
-     data-out   (unsplatter splat-out)]
-    (is= data data-out)))
+  (verify
+    (is= (inc-prim-odd {:type :prim :data :a})
+      {:type :prim :data :a})
+    (is= (inc-prim-odd {:type :prim :data 1})
+      {:type :prim :data 2}))
 
-(verify
-  (let [intc     {:enter inc-prim-odd
-                  :leave identity}
-        data-out (it-> [1 2]
-                   (splatter it)
-                   (walk intc it)
-                   (unsplatter it))]
-    (is= [2 2] data-out)))
+  (verify
+    (let  ; -spy-pretty
+      [data       [1 2]
+       splat-orig (splatter data)
+       intc       {:enter identity
+                   :leave identity}
+       splat-out  (walk intc splat-orig)
+       data-out   (unsplatter splat-out)]
+      (is= data data-out)))
 
-(verify
-  (let [intc     {:enter inc-prim-odd
-                  :leave identity}
-        data-out (it-> {:a 1 :b 2}
-                   (splatter it)
-                   (walk intc it)
-                   (unsplatter it))]
-    (is= {:a 2 :b 2} data-out)))
+  (verify
+    (let [intc     {:enter inc-prim-odd
+                    :leave identity}
+          data-out (it-> [1 2]
+                     (splatter it)
+                     (walk intc it)
+                     (unsplatter it))]
+      (is= [2 2] data-out)))
 
-(verify
-  (let [intc     {:enter inc-prim-odd
-                  :leave identity}
-        data-out (it-> #{:a 1 22}
-                   (splatter it)
-                   (walk intc it)
-                   (unsplatter it))]
-    (is= #{:a 2 22} data-out)))
+  (verify
+    (let [intc     {:enter inc-prim-odd
+                    :leave identity}
+          data-out (it-> {:a 1 :b 2}
+                     (splatter it)
+                     (walk intc it)
+                     (unsplatter it))]
+      (is= {:a 2 :b 2} data-out)))
+
+  (verify
+    (let [intc     {:enter inc-prim-odd
+                    :leave identity}
+          data-out (it-> #{:a 1 22}
+                     (splatter it)
+                     (walk intc it)
+                     (unsplatter it))]
+      (is= #{:a 2 22} data-out))))
 
 ; enable this to see how the recursion proceeds through a splattered piece of data
-(when true
+(when false
   (verify
     (let [data  {:a 1 :b #{2 3}}
           splat (splatter data)

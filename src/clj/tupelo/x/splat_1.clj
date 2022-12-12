@@ -131,7 +131,7 @@
   (t/with-spy-indent
     (let [enter-fn (:enter intc)
           leave-fn (:leave intc)]
-      (let-spy-pretty
+      (let ; -spy-pretty
         [node-type         (grab :type node)
          data-post-enter   (enter-fn node)
          data-post-recurse (cond
