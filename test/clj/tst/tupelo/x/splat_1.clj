@@ -166,7 +166,7 @@
      splat-orig (splatter data)
      intc       {:enter identity
                  :leave identity}
-     splat-out  (walk-interceptor intc splat-orig)
+     splat-out  (walk intc splat-orig)
      data-out   (unsplatter splat-out)]
     (is= data data-out)))
 
@@ -175,7 +175,7 @@
                   :leave identity}
         data-out (it-> [1 2]
                    (splatter it)
-                   (walk-interceptor intc it)
+                   (walk intc it)
                    (unsplatter it))]
     (is= [2 2] data-out)))
 
@@ -184,7 +184,7 @@
                   :leave identity}
         data-out (it-> {:a 1 :b 2}
                    (splatter it)
-                   (walk-interceptor intc it)
+                   (walk intc it)
                    (unsplatter it))]
     (is= {:a 2 :b 2} data-out)))
 
@@ -193,7 +193,7 @@
                   :leave identity}
         data-out (it-> #{:a 1 22}
                    (splatter it)
-                   (walk-interceptor intc it)
+                   (walk intc it)
                    (unsplatter it))]
     (is= #{:a 2 22} data-out)))
 
@@ -208,5 +208,5 @@
                           (newline)
                           (prn :-----------------------------------------------------------------------------)
                           (spy-pretty :enter data))}]
-      (walk-interceptor intc splat))))
+      (walk intc splat))))
 
