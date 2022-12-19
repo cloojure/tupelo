@@ -14,7 +14,7 @@
 
 (when-java-1-11-plus
 
-  (dotest
+  (verify
     ; NOTE:
     ;  (type jdt) => org.joda.time.DateTime
     ;  (supers (type jdt))
@@ -37,7 +37,7 @@
 
       (is= sql-ts (-> sql-ts sql-Timestamp->Instant Instant->sql-Timestamp))))
 
-  (dotest
+  (verify
     (is= (LocalDate->LocalDateTime (LocalDate/parse "1999-11-22")) (LocalDateTime/parse "1999-11-22t00:00:00"))
 
     ; note that equivalent ZonedDateTime values are not always equal
@@ -65,7 +65,7 @@
 
     )
 
-  (dotest
+  (verify
     (let [date (LocalDate->Date (LocalDate/parse "1999-12-31"))]
       (is (instance? java.util.Date date))
       (is= "1999-12-31T00:00:00Z" (str (.toInstant date))))
@@ -78,7 +78,7 @@
       )
     )
 
-  (dotest
+  (verify
     (let [inst-str      "1999-12-31T01:02:03.456Z" ; "Thu Dec 30 17:02:03 PST 1999"
           instant       (Instant/parse inst-str)
 

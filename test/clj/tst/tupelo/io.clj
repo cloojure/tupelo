@@ -21,7 +21,7 @@
 
 (def dummy-file (create-temp-file "tst-tupelo-io" ".tmp"))
 
-(dotest
+(verify
   (let [path-str "/tmp/tupelo/a/b/c/x.txt"
         path     (->Path path-str)
         file     (->File path-str)
@@ -114,7 +114,7 @@
     (is= 0 (delete-directory-recursive tmp-name)) ; idempotent
     ))
 
-(dotest
+(verify
   (is= types/BYTE_UNSIGNED_MAX_VALUE 255)
   (is= types/SHORT_UNSIGNED_MAX_VALUE 65535)
 
@@ -132,7 +132,7 @@
     (is (output-stream? dos))
     (is (data-output-stream? dos))))
 
-(dotest
+(verify
   (with-open [dos (DataOutputStream.
                     (FileOutputStream. dummy-file))]
     ;-----------------------------------------------------------------------------
@@ -187,7 +187,7 @@
     (throws? (write-long-unsigned dos (inc types/LONG_UNSIGNED_MAX_VALUE)))
     (throws? (write-long-unsigned dos (dec types/LONG_UNSIGNED_MIN_VALUE)))))
 
-(dotest
+(verify
   (with-open [dos (DataOutputStream.
                     (FileOutputStream. dummy-file))]
     (doto dos

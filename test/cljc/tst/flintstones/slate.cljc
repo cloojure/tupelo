@@ -7,7 +7,7 @@
        :cljs [tupelo.core :as t :include-macros true])
 
     #?(:clj [clojure.test] :cljs [cljs.test] )
-    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
+    #?(:clj  [tupelo.test :refer [deftest testing is verify dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
        :cljs [tupelo.test-cljs ; :include-macros true
               :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]])
 
@@ -27,7 +27,7 @@
             ; (println "*** TEST ONCE *** - slate leave ctx=" ctx)
             )})
 
-(dotest
+(verify
   (is= 2 (+ 1 1)) ; this works
   (is= 5 (slate/add2 2 3)) ; this works
 

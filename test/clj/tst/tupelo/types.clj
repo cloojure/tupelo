@@ -10,7 +10,7 @@
   (:require [tupelo.core :as t] ) )
 
 ; As of Clojure 1.9.0-alpha5, boolean? is native to clojure
-#_(dotest
+#_(verify
   (is (boolean? true))
   (is (boolean? false))
   (is (not (boolean? :hello)))
@@ -22,7 +22,7 @@
   (is (not (boolean? \K)))
 )
 
-(dotest
+(verify
   (is (identity (boolean-array? (boolean-array  [true false]))))
   (is (not      (boolean-array? (byte-array     (range 3)))))
   (is (not      (boolean-array? (char-array     [\a \b \c]))))
@@ -33,7 +33,7 @@
   (is (not      (boolean-array? (object-array   ["hello" 5 nil]))))
   (is (not      (boolean-array? (short-array    (range 3))))))
 
-(dotest
+(verify
   (is (not      (byte-array? (boolean-array  [true false]))))
   (is (identity (byte-array? (byte-array     (range 3)))))
   (is (not      (byte-array? (char-array     [\a \b \c]))))
@@ -44,7 +44,7 @@
   (is (not      (byte-array? (object-array   ["hello" 5 nil]))))
   (is (not      (byte-array? (short-array    (range 3))))))
 
-(dotest
+(verify
   (is (not      (char-array? (boolean-array  [true false]))))
   (is (not      (char-array? (byte-array     (range 3)))))
   (is (identity (char-array? (char-array     [\a \b \c]))))
@@ -55,7 +55,7 @@
   (is (not      (char-array? (object-array   ["hello" 5 nil]))))
   (is (not      (char-array? (short-array    (range 3))))))
 
-(dotest
+(verify
   (is (not      (double-array? (boolean-array  [true false]))))
   (is (not      (double-array? (byte-array     (range 3)))))
   (is (not      (double-array? (char-array     [\a \b \c]))))
@@ -66,7 +66,7 @@
   (is (not      (double-array? (object-array   ["hello" 5 nil]))))
   (is (not      (double-array? (short-array    (range 3))))))
 
-(dotest
+(verify
   (is (not      (float-array? (boolean-array  [true false]))))
   (is (not      (float-array? (byte-array     (range 3)))))
   (is (not      (float-array? (char-array     [\a \b \c]))))
@@ -77,7 +77,7 @@
   (is (not      (float-array? (object-array   ["hello" 5 nil]))))
   (is (not      (float-array? (short-array    (range 3))))))
 
-(dotest
+(verify
   (is (not      (int-array? (boolean-array  [true false]))))
   (is (not      (int-array? (byte-array     (range 3)))))
   (is (not      (int-array? (char-array     [\a \b \c]))))
@@ -88,7 +88,7 @@
   (is (not      (int-array? (object-array   ["hello" 5 nil]))))
   (is (not      (int-array? (short-array    (range 3))))))
 
-(dotest
+(verify
   (is (not      (long-array? (boolean-array  [true false]))))
   (is (not      (long-array? (byte-array     (range 3)))))
   (is (not      (long-array? (char-array     [\a \b \c]))))
@@ -99,7 +99,7 @@
   (is (not      (long-array? (object-array   ["hello" 5 nil]))))
   (is (not      (long-array? (short-array    (range 3))))))
 
-(dotest
+(verify
   (is (not      (object-array? (boolean-array  [true false]))))
   (is (not      (object-array? (byte-array     (range 3)))))
   (is (not      (object-array? (char-array     [\a \b \c]))))
@@ -110,7 +110,7 @@
   (is (identity (object-array? (object-array   ["hello" 5 nil]))))
   (is (not      (object-array? (short-array    (range 3))))))
 
-(dotest
+(verify
   (is (not      (short-array? (boolean-array  [true false]))))
   (is (not      (short-array? (byte-array     (range 3)))))
   (is (not      (short-array? (char-array     [\a \b \c]))))
@@ -121,7 +121,7 @@
   (is (not      (short-array? (object-array   ["hello" 5 nil]))))
   (is (identity (short-array? (short-array    (range 3))))))
 
-(dotest
+(verify
   (do
     (is (byte? (Byte. (byte 42))))
     (is (short? (Short. (short 42))))

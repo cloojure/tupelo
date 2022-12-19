@@ -6,7 +6,7 @@
     [tupelo.parse.yaml :as yaml]
     ))
 
-(dotest
+(verify
   (let [document "\n- Hesperiidae\n- Papilionidae\n- Apatelodidae\n- Epiplemidae"]
     (is= (yaml/parse document)
       ["Hesperiidae" "Papilionidae" "Apatelodidae" "Epiplemidae"]))
@@ -26,18 +26,18 @@
                    (str/join \newline it))]
     (is= (yaml/parse doc-src) {:a 1 :c true :z 3})))
 
-(dotest
+(verify
   (is= (yaml/parse-all "bbb\n---\nccc\n---\nddd")
     ["bbb" "ccc" "ddd"]))
 
-(dotest
+(verify
   (is= (yaml/parse "[]") [])
   (is= (yaml/parse "[2]") [2])
   (is= (yaml/parse "[2,3]") [2 3])
   (is= (yaml/parse "[2,a,true]") [2 "a" true]) )
 
 ;----------------------------------------------------------------------------
-(dotest
+(verify
   (is-nonblank= "a" (yaml/edn->yaml "a"))
   (is-nonblank= "1" (yaml/edn->yaml 1))
   (is-nonblank= "true" (yaml/edn->yaml true))
@@ -69,7 +69,7 @@ tupelo:
   platforms: [clj, cljs]
 " )
 
-(dotest
+(verify
   (let [edn-data   {:tupelo
                     {:name       "Tupelo"
                      :url        "https://github.com/cloojure/tupelo"

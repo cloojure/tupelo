@@ -6,7 +6,7 @@
 ;     an Var object, that points to
 ;         a java.lang.Long object of value `3`
 
-(dotest
+(verify
   (is= java.lang.Long (type wilma))
 
   (is= 3 (var-get (var wilma)))
@@ -25,7 +25,7 @@
 ;     an Var object, that points to
 ;         an function object.
 
-(dotest
+(verify
   (let [add-3-fn  add-3 ; a local pointer to the fn object
         add-3-var (var add-3)] ; a local pointer to the Var object
     (is= 42 (add-3 39)) ; double deref from global symbol to fn object
@@ -49,7 +49,7 @@
     (deref value-or-var) ; or var-get
     value-or-var))
 
-(dotest
+(verify
   (let [wilma-long wilma ; a local pointer to the long object
         wilma-var  (var wilma)] ; a local pointer to the Var object
     (is= 42 (+ 39 (unvar wilma))

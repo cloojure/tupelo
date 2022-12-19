@@ -5,7 +5,7 @@
        :cljs [tupelo.core :as t :include-macros true])
 
     #?(:clj [clojure.test] :cljs [cljs.test] )
-    #?(:clj  [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
+    #?(:clj  [tupelo.test :refer [deftest testing is verify dotest-focus isnt is= isnt= is-set= is-nonblank= throws? define-fixture]]
        :cljs [tupelo.test-cljs :include-macros true
               :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank= throws? define-fixture]])
 
@@ -25,7 +25,7 @@
 
 (defn tosser [] (throw (ex-info "It threw!" {:a 1})))
 
-(dotest
+(verify
   (println "tst.flintstones.bambam - test 1 - enter")
   (is (= 2 (+ 1 1)))
 
@@ -33,7 +33,7 @@
   (println "tst.flintstones.bambam - test 1 - leave")
   )
 
-(dotest
+(verify
   (println "tst.flintstones.bambam - test 2 - enter")
   (is (= 5 (bam/add2 2 3))) ; this works
   (is (= 3 (bam/logr-bambam

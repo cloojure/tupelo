@@ -21,7 +21,7 @@
     [tupelo.y64                        :as y64]
   ) )
 
-(dotest
+(verify
   (when (t/is-java-8-plus?)
     (let [orig    (byte-array [(byte \A)])
           b64-str (b64/encode-byte-array->str orig)
@@ -29,7 +29,7 @@
       (is (every? b64/base64-chars (seq b64-str)))
       (is (= (seq orig) (seq result))))))
 
-(dotest
+(verify
   (when (t/is-java-8-plus?)
     ; bytes
     (doseq [step [50 20 7]]
@@ -63,7 +63,7 @@
         (assert (string? result))
         (= orig result)))) )
 
-(dotest
+(verify
   (is= "jack+base64@ladderlife.com or 6a61636b2b686578406c61646465726c6966652e636f6d206f72206d64353a6330373761363662383137643733623536636130623665373265303239396132"
 
     (b64/decode-str

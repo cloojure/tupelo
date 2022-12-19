@@ -17,14 +17,14 @@
             [tupelo.y64 :as y64]) )
 
 (when (is-java-8-plus?)
-  (dotest
+  (verify
     (let [orig      (byte-array [(byte \A)])
           y64-bytes (y64/encode-byte-array orig)
           result    (y64/decode-byte-array y64-bytes)]
       (is (every? y64/encoding-char-set (map char y64-bytes)))
       (is (= (seq orig) (seq result)))))
 
-  (dotest
+  (verify
     ;byte
     (doseq [step [50 20 7]]
       (let [orig      (byte-array (mapv #(.byteValue %) (range 0 400 step)))

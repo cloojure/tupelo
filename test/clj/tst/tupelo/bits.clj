@@ -7,7 +7,7 @@
 (ns   tst.tupelo.bits
   (:use tupelo.bits tupelo.core tupelo.test))
 
-(dotest
+(verify
   (is= (char->bit \0) 0)
   (is= (char->bit \1) 1)
   (throws? (char->bit \2))

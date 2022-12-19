@@ -6,7 +6,7 @@
 ; Deprecated functions
 
 ; As of Clojure 1.9.0-alpha5, seqable? is native to clojure
-(dotest
+(verify
   ; ^{:deprecated "1.9.0-alpha5" }
   (when-not-clojure-1-9-plus
     (is   (seqable?   "abc"))
@@ -18,7 +18,7 @@
     (isnt (seqable?  1 ))
     (isnt (seqable? \a ))))
 
-(dotest
+(verify
   ; ^:deprecated ^:no-doc
   (let [s1    "  hello there
                  again

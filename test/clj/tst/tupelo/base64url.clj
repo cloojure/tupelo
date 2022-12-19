@@ -18,14 +18,14 @@
             [tupelo.types                           :as types] ) )
 
 (when (t/is-java-8-plus?)
-  (dotest
+  (verify
     (let [orig     (byte-array [(byte \A)])
           code-str (b64url/encode-byte-array->str orig)
           result   (b64url/decode-str->byte-array code-str)]
       (is (every? b64url/encoding-char-set (seq code-str)))
       (is (= (seq orig) (seq result)))))
 
-  (dotest
+  (verify
     ;base64 - bytes "
     (doseq [step [50 20 7]]
       (let [orig     (byte-array (mapv #(.byteValue %) (range 0 400 step)))

@@ -15,7 +15,7 @@
     [java.util Date UUID]
     ))
 
-(dotest
+(verify
   ; demo how to augment an existing character class like `\w`
   (let [alnum+dot-plus #"[\.\w]+"] ; [dot or word chars], 1 or more
     (is (nil? (re-matches #"\w+" "java.util.Date"))) ; word chars, 1 or more
@@ -49,7 +49,7 @@
   (is= (extract-data-str  "<#uuid 605ca9b3-219b-44b3-9c91-238dba64a3f8>") "605ca9b3-219b-44b3-9c91-238dba64a3f8")
   (is= (extract-data-str  "<#java.util.Date 1999-12-31T01:02:03.456Z>") "1999-12-31T01:02:03.456Z"))
 
-(dotest
+(verify
   (let [uuid          (UUID/fromString "605ca9b3-219b-44b3-9c91-238dba64a3f8")
         instant       (Instant/parse "1999-12-31t01:02:03.456Z")
         millis        (.toEpochMilli instant)

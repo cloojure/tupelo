@@ -61,7 +61,7 @@
   {:zipcode  ["01002" "01002" "01003" "01008" "01009" "01020"]
    :store-id [6 277 277 1217 439 1193]})
 
-(dotest
+(verify
   (is= {} (entities->attrs []))
   (is= [] (attrs->entities {}))
 
@@ -71,7 +71,7 @@
   (is= csv1-entity (-> csv1-entity entities->attrs attrs->entities))
   (is= psv2-entity (-> psv2-entity entities->attrs attrs->entities)))
 
-(dotest
+(verify
   (is= (csv->table csv1-str-hdr)
     [["zip_postal_code" "store$num" "chain#rank"]
      ["01002" "00006" " 4"]
@@ -90,7 +90,7 @@
      ["  01009" "00439" "5"]
      ["  01020" "01193" "5"]]))
 
-(dotest
+(verify
   (is= (csv->entities csv1-str-hdr)
     [{:zip-postal-code "01002" :store-num "00006" :chain-rank "4"}
      {:zip-postal-code "01002" :store-num "00277" :chain-rank "5"}
@@ -124,7 +124,7 @@
      {0 "01009" 1 "00439" 2 "5"}
      {0 "01020" 1 "01193" 2 "5"}]))
 
-(dotest
+(verify
   (is= (csv->entities psv2-str-hdr {:separator \|})
     [{:zip-postal-code "01002" :store-num "00006" :chain-rank "4"}
      {:zip-postal-code "01002" :store-num "00277" :chain-rank "5"}
@@ -133,20 +133,20 @@
      {:zip-postal-code "01009" :store-num "00439" :chain-rank "5"}
      {:zip-postal-code "01020" :store-num "01193" :chain-rank "5"}]))
 
-(dotest
+(verify
   (let [attr-map (csv->attrs psv2-str-hdr {:separator \|})
         result   {:store-id (mapv parse/parse-long (grab :store-num attr-map))
                   :zipcode  (:zip-postal-code attr-map)}]
     (is= result psv2-attr)))
 
-(dotest
+(verify
   (let [test2-str-label-error "zipcode, store_num, chain_rank
                                   01002,00006,4
                                   01002,00277,5
                                   01003,00277"]
     (throws? (csv->entities test2-str-label-error))))
 
-(dotest
+(verify
   ; basic parse-csv->rows test, using String
   (let [result (csv->entities csv1-str-hdr)]
     (is= result csv1-entity))
@@ -177,7 +177,7 @@
     (is= result psv2-entity))
   )
 
-(dotest
+(verify
   (let [sample-edn [{:aa-key "aaa" :bb-key "b,b"} ; 2nd val needs to be quoted
                     {:aa-key "aa2" :bb-key "bb2"}]]
     ; is verified-keys working?
@@ -207,7 +207,7 @@
                     'aa2','bb2'  "]
       (is (str/nonblank-lines= result expected)))))
 
-(dotest
+(verify
   (is-nonblank-lines=
     (entities->csv
       [{:zip-postal-code "01002" :store-num 6 :chain-rank 4}

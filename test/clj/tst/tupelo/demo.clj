@@ -16,7 +16,7 @@
 ; #todo add generative testing?
 ; #todo add clojure.spec testing?
 
-(dotest
+(verify
   (is (.isAfter (Instant/now) ; create clojure.java.time ns
         (Instant/parse "2017-12-31T13:14:15z")))
   (is (= 5 (+ 2 3))))
@@ -26,7 +26,7 @@
 ; Note that '5 is just shorthand for (quote 5), where `quote` is a "special form"
 ; (i.e compiler built-in function, not a normal function). Using the (quote ...)
 ; form "turns off" the normal behavior of evaluating (substituting) symbols & function calls.
-(dotest
+(verify
   (is= 5 '5 (quote 5))
   (is= [1 2 3] '[1 2 3] (quote [1 2 3]))
   (is= [1 2 3] '(1 2 3) (quote (1 2 3)))
@@ -45,14 +45,14 @@
     [1 2 '(quote 3)]
     [1 2 ''3] ))
 
-(dotest             ; empty lists/vectors
+(verify             ; empty lists/vectors
   (is= ()           ; should be error! parens => function call (here with missing function)
     []              ; preferred
     `() `[]         ; redundant quoting
     (list)))        ; build an empty list
 
 
-(dotest
+(verify
   (is= nil        (seq []))
 
   (is= []         (take 1 nil))
@@ -70,7 +70,7 @@
   (is= [\a \b \c] (take 3 "abc"))
   (is= [\a \b \c] (take 4 "abc")))
 
-(dotest
+(verify
   (is= []         (drop 1 nil))
   (is= []         (drop 1 []))
   (is= []         (drop 2 []))
@@ -86,7 +86,7 @@
   (is= [        ] (drop 3 "abc"))
   (is= [        ] (drop 4 "abc")))
 
-(dotest
+(verify
   (is= [\a \b \c] (seq "abc"))
   (is= [\a \b \c] (vec "abc"))
 
@@ -99,7 +99,7 @@
   (is= "abc" (str/join ["ab" \c ] ))
 )
 
-(dotest
+(verify
   (is   (sequential?  []     ))
   (is   (sequential?  [1 2 3]))
   (is   (sequential? '(1 2 3)))
@@ -109,16 +109,16 @@
   (isnt (sequential?  {:a 1} ))
   (isnt (sequential? #{:a 1} )) )
 
-(dotest
+(verify
   (is (every? odd? [1 3 5])))
 
-(dotest
+(verify
   (is= [] (range 0 -1))
   (is= [] (range 0 0))
   (is= [0] (range 0 1))
   (is= [0 1] (range 0 2)))
 
-(dotest
+(verify
   (is= #{} (empty #{1 2 3}))
   (is= [] (empty [1 2 3]))
   (is= {} (empty {:a 1 :b 2})) )

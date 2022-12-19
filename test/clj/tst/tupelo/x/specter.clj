@@ -37,7 +37,7 @@
   (if (selector-fn val-in)
     (tx-fn val-in)
     val-in))
-(dotest
+(verify
   (is= 3 (tx-val 2 even? inc))
   (is= 3 (tx-val 3 even? inc)))
 
@@ -53,7 +53,7 @@
                         (tx-val solo-map selector-fn tx-fn)))))]
     map-out))
 
-(dotest
+(verify
   (let [tx-val-fn            (fn [val] (tx-val val even? inc))
         solo-map-selector-fn ->true
         solo-map-selector-fn (fn [solo-map]
@@ -80,7 +80,7 @@
                     (s/validate tsk/Single
                       (tx-val indexed-elem selector-fn tx-fn))))]
     vec-out))
-(dotest
+(verify
   (let [tx-val-fn        (fn [val] [(tx-val val even? inc)])
         pair-selector-fn ->true
         pair-selector-fn (fn [pair]
@@ -97,7 +97,7 @@
     ; (spyx vec-data)
     (is= [1 1 3 3 5] vec-result)))
 
-(dotest
+(verify
   (let [hand-data   [{:a 2 :b 3} {:a 1} {:a 4}]
         hand-result (t/forv [it hand-data]
                       (t/glue it

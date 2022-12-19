@@ -88,7 +88,7 @@
 
   )
 
-(dotest
+(verify
   (let [xml-data  (parse-tagsoup/parse xml-str)
         html-data (parse-tagsoup/parse html-str) ]
     (is= xml-data xml-data-expected)

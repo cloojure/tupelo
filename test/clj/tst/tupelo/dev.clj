@@ -10,14 +10,14 @@
     [clojure.string :as str] 
   ))
 
-(dotest ; #todo move
+(verify ; #todo move
   (is= {0 :a 1 :b 2 :c} (sequential->idx-map [:a :b :c]))
   (is= {0 :x 1 :y 2 :z} (sequential->idx-map [:x :y :z]))
   (is= 'a (char->sym \a))
   (is= '? (char->sym \?)))
 
 ;-----------------------------------------------------------------------------
-(dotest
+(verify
   (let [data-1  [1 2 3]
         data-2  [[1 2 3]
                  [10 11]
@@ -69,14 +69,14 @@
                                {:idxs [4 0 0], :val 2}])
     ))
 
-(dotest
+(verify
   (is= (combinations-duplicate [1 1 2] 2)
     [[1 1] [1 2] [1 2]])
   (is= (combinations-duplicate [1 1 1 2 2] 3)
     [[1 1 1] [1 1 2] [1 1 2] [1 1 2] [1 1 2]
      [1 2 2] [1 1 2] [1 1 2] [1 2 2] [1 2 2]]))
 
-(dotest
+(verify
   (is= [2 3 :x] (parse-string "2 3 :x"))
   (is= [2 3 :x] (with-in-str "2 3 :x"
                   (parse-string (read-line)))))
@@ -95,7 +95,7 @@
       (recur (inc i) (conj! v i))
       (persistent! v))))
 
-(dotest
+(verify
   (when false
     (with-timer-x (vrange-1 100000))
     (with-timer-x (vrange-2 100000))))

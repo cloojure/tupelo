@@ -15,7 +15,7 @@
                          [arg] ))]
     (unlazy (apply combo/cartesian-product wrapped-args))))
 
-(dotest
+(verify
   (is= [[:a 1 :b] [:a 2 :b] [:a 3 :b]]
     (unlazy (combo/cartesian-product [:a] [1 2 3] [:b]))
     (combo-all :a [1 2 3] :b)))
@@ -201,7 +201,7 @@
                 (spy :object ctx)
                 FAILURE)))))
 
-(dotest
+(verify
   (spy-indent-reset)
   (with-fracture (new-fracture)
     (let [ctx      {:path [] :vals {}}

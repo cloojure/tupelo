@@ -11,7 +11,7 @@
     [tupelo.string :as ts]
   ))
 
-(dotest
+(verify
   (is= "0013" (format "%04x" 19))
   (is= "000a" (format "%04x" 10))
   (is= "ffff" (format "%04x" (dec (long (Math/pow 2 16)))))
@@ -29,7 +29,7 @@
   (is= 1010 (new-hid))
   (is= 1011 (new-hid)))
 
-(dotest
+(verify
   (let [hiccup-data [:a
                      [:b 2]
                      [:c 3]]]
@@ -44,7 +44,7 @@
       (let [root-hid (add-tree-hiccup hiccup-data)]
         (is= hiccup-data (hid->hiccup root-hid))))))
 
-(dotest
+(verify
   (let [tree-2 [:a
                 [:b 2]
                 [:c 3]]
@@ -136,7 +136,7 @@
     ))
 
 
-(dotest
+(verify
   (let [tree-2 {:tag   :a,
                 :attrs {},
                 :content
@@ -232,7 +232,7 @@
 ))
 
 
-(dotest
+(verify
   (let [tree-2 [:a
                 [:b 2]
                 [:c 3]]
@@ -281,7 +281,7 @@
       (-> tree-4 hiccup->tree)
       (-> tree-4 hiccup->tree tree->hiccup hiccup->tree))))
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [x-hid  (add-node {:tag :char :color :red :value "x"})
           y-hid  (add-node {:tag :char :color :red :value "y"})
@@ -364,7 +364,7 @@
     )))
 
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [x (add-node {:tag :char :color :red :cnt 0 :value "x"})
           r (add-node {:tag :root :color :white :cnt 0} [x])
@@ -408,7 +408,7 @@
                   :cnt       2,
                   :value "x"}]}))))
 
-(dotest
+(verify
   (let [state    (atom {})
         forest-1 (with-forest-result (new-forest)
                    (let [x (add-node {:tag :char :color :red :value "x"})
@@ -538,7 +538,7 @@
       (is= (hid->tree a)
         {::tf/kids [], :tag :r1, :color :white}))) )
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [x (add-node {:a 1 :b 2 :value "x"})]
       (is= #{x} (root-hids))
@@ -579,7 +579,7 @@
       (is (hid-matches? root-hid :a))
       (is (hid-matches? root-hid {:tag :a})) )))
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [hiccup-1 [:a
                   [:b 1]
@@ -641,7 +641,7 @@
                {::tf/kids [], :tag :c, :value 9}]} )
     )))
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [enlive-tree {:tag   :a,
                        :attrs {},
@@ -670,7 +670,7 @@
              [{:tag ::tf/raw, :value "Third-String"}]]
             [{:tag :c, :value 9}]]))))
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [hiccup-tree [:a
                        [:b 1]
@@ -696,7 +696,7 @@
             [{:tag :c, :value 9}]]
          ))))
 
-(dotest
+(verify
   (hid-count-reset)
   (with-forest (new-forest)
     (let [root-hid (add-tree-hiccup [:a
@@ -770,7 +770,7 @@
          [{:tag :a} [{:tag :b} [{:tag :c :value 5}]]]])
       )))
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [aa (add-node :a
                [(add-node {:b :b1 :value 1})
@@ -871,7 +871,7 @@
                [(add-node {:b :** :value 2})
                 (add-node {:c :c3 :value 3})]))))
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [x (add-node {:a :a1}
               [(add-node {:b :b1 :color :red :value 2})
@@ -922,7 +922,7 @@
     )))
 
 ; #todo need to test find-paths using attrs
-(dotest
+(verify
   (with-forest (new-forest)
     (let [aa (add-node {:color :red}
                [(add-node {:color :green :value 2})
@@ -938,7 +938,7 @@
         [[{:color :red}
           [{:color :green, :value 2}]]] ))))
 
-(dotest
+(verify
   (hid-count-reset)
   (with-forest (new-forest)
     (let [x (add-node {:tag :a :id :a1}
@@ -1008,7 +1008,7 @@
         [[1009 1007]
          [1009 1008]]))))
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [data-1     [1 2 3]
           data-2     [[1 2 3]
@@ -1259,7 +1259,7 @@
 
     )))
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [data-1     {:a 1 :b 2}
           tree-1     (edn->tree data-1)
@@ -1281,7 +1281,7 @@
       ;    [#:tupelo.forest{:value 2, :index nil}]]])
       (is= data-1 return-1) )))
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [data-2     {:a 1 :b [2 3 4]}
           tree-2     (edn->tree data-2)
@@ -1311,7 +1311,7 @@
 
     )))
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [data-3     {:a 1 :b {:c 3}}
           tree-3     (edn->tree data-3)
@@ -1352,7 +1352,7 @@
 ;       #:tupelo.forest{:value 4, :index 2, :kids []}])
 ;    ))
 
-(dotest
+(verify
   (let [data-1   {:a 1 :b 2}
         tree-1   (edn->tree data-1)
         return-1 (tree->edn tree-1)]
@@ -1366,7 +1366,7 @@
         return-3 (tree->edn tree-3)]
     (is= return-3 data-3)) )
 
-(dotest
+(verify
   (throws? (nest-enlive-nodes []))
   (is= (nest-enlive-nodes [{:tag :a, :attrs {:a 1}, :content [1 1]}])
     {:tag :a, :attrs {:a 1}, :content [1 1]})

@@ -13,7 +13,7 @@
 #?(:clj
    (do
 
-     (dotest
+     (verify
        (let [r10     (range 10)
              m10     {:a 1 :b 2 :c 3 :d 4 :e 5 :f 6 :g 7 :h 8 :i 9 :j 10}
              m10-seq (seq (t/->sorted-map-generic m10))
@@ -101,7 +101,7 @@
              (spyx :plain-set (into #{} os10))))
          ))
 
-     (dotest
+     (verify
        (let [e1  [{:date "2020-10-01", :value 116.5888}
                   {:date "2020-10-02", :value 112.8253}
                   {:date "2020-10-05", :value 116.2993}
@@ -139,7 +139,7 @@
          (is (deep-rel= e1 e2))
          (is (deep-rel= sn1 sn2))))
 
-     (dotest
+     (verify
        (let [v312      (forv [i (thru 1 9)]
                          (forv [j (thru 1 12)]
                            (->kw (format "%d-%d" i j))))
@@ -165,7 +165,7 @@
             [:8-1 :8-2 :8-3 :8-4 t/SNIP-TOKEN :8-10 :8-11 :8-12]
             [:9-1 :9-2 :9-3 :9-4 t/SNIP-TOKEN :9-10 :9-11 :9-12]])))
 
-     (dotest
+     (verify
        (let [data      (apply glue
                          (forv [x (chars-thru \a \k)]
                            {(->kw (str x))
@@ -194,7 +194,7 @@
             :j            [:j-1 :j-2 :j-3 :j-4 t/SNIP-TOKEN :j-10 :j-11 :j-12],
             :k            [:k-1 :k-2 :k-3 :k-4 t/SNIP-TOKEN :k-10 :k-11 :k-12]})))
 
-     (dotest
+     (verify
        (let [data      (apply glue
                          (forv [x (chars-thru \a \c)]
                            {(->kw (str x))

@@ -20,7 +20,7 @@
 
 (t/when-java-1-11-plus
 
-  (dotest
+  (verify
     (throws-not? (Instant/parse "2019-02-14T02:03:04.334Z"))
     (throws-not? (Instant/parse "2019-02-14T02:03:04Z"))
     (throws-not? (Instant/parse "0019-02-14T02:03:04Z")) ; can handle really old dates w/o throwing
@@ -35,7 +35,7 @@
     (throws? (Instant/parse "2019-2-14T02:03:04Z"))
     (throws? (Instant/parse "2019-02-31T02:03:04Z")))
 
-  (dotest
+  (verify
     (let [ld    (LocalDate/parse (format "2013-12-19"))
           ldstr "2013-12-19"]
       (is (LocalDate? ld))
@@ -44,7 +44,7 @@
       (is (LocalDate-str? ldstr))))
 
   (comment          ; #todo update/fix
-    (dotest
+    (verify
       (let [month->quarter [:Q1 :Q1 :Q1 :Q2 :Q2 :Q2 :Q3 :Q3 :Q3 :Q4 :Q4 :Q4]
             quarters-set   (set month->quarter)]
         (is-set= quarters-set [:Q1 :Q2 :Q3 :Q4])
@@ -73,7 +73,7 @@
         (isnt= dnum-q1-quarter dnum-q2-quarter))))
 
   (comment          ; #todo kill this?
-    (dotest
+    (verify
       (let [ld (LocalDate/parse "1995-01-04")]
         (is= {:LocalDate "1995-01-04"} (LocalDate->tagval ld))
         (is= (walk-LocalDate->tagval (LocalDate->trailing-interval ld 5))
@@ -81,7 +81,7 @@
                                     :lower {:LocalDate "1994-12-30"},
                                     :upper {:LocalDate "1995-01-04"}}))))
 
-  (dotest
+  (verify
     (let [localdates-30 (t/forv [day (t/thru 1 30)]
                           (LocalDate/parse (format "2019-12-%02d" day)))]
       ; LocalDate-str (ISO text string) sorts correctly
@@ -119,7 +119,7 @@
         (is= (mapv str slice-5-9) ["2019-12-05" "2019-12-06" "2019-12-07" "2019-12-08"])
         (is= (mapv str thru-5-9) ["2019-12-05" "2019-12-06" "2019-12-07" "2019-12-08" "2019-12-09"]))))
 
-  (dotest
+  (verify
     (is (Temporal? (ZonedDateTime/parse "2018-09-08T13:03:04.500Z")))
     (is (Temporal? (ZonedDateTime/parse "2018-09-08T13:03:04Z")))
     (is (Temporal? (ZonedDateTime/parse "2018-09-08T00:00Z")))
@@ -133,7 +133,7 @@
     (is (Period? (Period/ofMonths 3)))
     (is (Period? (Period/ofYears 3))))
 
-  (dotest
+  (verify
     (isnt (LocalDate-str? "12-31-1999"))
     (isnt (LocalDate-str? "12-31-99"))
     (is (LocalDate-str? "1999-12-31"))
@@ -149,7 +149,7 @@
         (is= ld (-> ld (LocalDate->tagval) (tagval->LocalDate)))
         (is= tv (-> tv (tagval->LocalDate) (LocalDate->tagval))))))
 
-  (dotest
+  (verify
     (let [zone-ids         (vec (sort (ZoneId/getAvailableZoneIds))) ; all ZoneId String values
           zone-ids-america (vec (t/keep-if #(str/starts-with? % "America/") zone-ids))
           zone-ids-europe  (vec (t/keep-if #(str/starts-with? % "Europe/") zone-ids))
@@ -209,7 +209,7 @@
           (previous-or-same (zoned-date-time 2018 9 9) DayOfWeek/SUNDAY)
           (previous-or-same (zoned-date-time 2018 9 10) DayOfWeek/SUNDAY))))
 
-  (dotest
+  (verify
     (is= 1 (between->units ChronoUnit/HOURS
              (->Instant "1987-11-22t01:30:00z")
              (->Instant "1987-11-22t03:29:00z")))
@@ -243,7 +243,7 @@
               (->LocalDate "1987-01-22")
               (->LocalDate "1999-11-23"))))
 
-  (dotest
+  (verify
     (let [i1 (str->Instant "1987-01-22")
           i2 (str->Instant "1987-01-23")
           i3 (str->Instant "1987-01-24")]
@@ -261,7 +261,7 @@
       (isnt (tjt/increasing-or-equal? i1 i3 i2))
       (isnt (tjt/increasing-or-equal? i3 i2 i1))))
 
-  (dotest
+  (verify
     (let [zdt  (zoned-date-time 2018 9 8,, 2 3 4)
           inst (->Instant zdt)]
       (is= "2018-09-08"
@@ -297,7 +297,7 @@
         (->str-iso-nice zdt)
         (->str-iso-nice inst))))
 
-  (dotest
+  (verify
     (is= [(zoned-date-time 2018 9 1)
           (zoned-date-time 2018 9 2)
           (zoned-date-time 2018 9 3)
@@ -326,7 +326,7 @@
         (Duration/ofHours 1))))
 
   ; (previous-or-same  (zoned-date-time 2018 9 9) DayOfWeek/SUNDAY)
-  (dotest
+  (verify
     (let [start-sunday   (previous-or-same (zoned-date-time 2018 9 1) DayOfWeek/SUNDAY)
           stop-inst      (zoned-date-time 2018 9 17)
           start-instants (slice start-sunday stop-inst (Duration/ofDays 7))]
@@ -336,7 +336,7 @@
          (zoned-date-time 2018 9 9)
          (zoned-date-time 2018 9 16)])))
 
-  (dotest
+  (verify
     (is= (zoned-date-time 2018 9 1) (->ZonedDateTime (joda/date-time 2018 9 1)))
     (is= (zoned-date-time 2018 9 1) (->ZonedDateTime (joda/date-time 2018 9 1,, 0 0 0)))
     (is= (zoned-date-time 2018 9 1,, 2 3 4) (->ZonedDateTime (joda/date-time 2018 9 1,, 2 3 4)))
@@ -357,7 +357,7 @@
           (->Instant (->ZonedDateTime (zoned-date-time 2018 9 1)))
           (->Instant (->ZonedDateTime (joda/date-time 2018 9 1))))))
 
-  (dotest
+  (verify
     (let [out-low     (zoned-date-time 2018 8 30)
           lb          (zoned-date-time 2018 9 1)
           mid         (zoned-date-time 2018 9 1, 1 2 3)
@@ -401,7 +401,7 @@
         (is (interval/contains? itvl-closed ub)))
       ))
 
-  (dotest
+  (verify
     (let [now-date-1             (now->Date)
           now-instant-1          (now->Instant)
           now-zdt-1a             (now->ZonedDateTime)
@@ -424,7 +424,7 @@
 
       (is (interval/contains? instant-interval-11 instant-1c))))
 
-  (dotest
+  (verify
     ; note that instants are in DESCENDING order
     (let [instants         ["2016-04-30T10:29:17.000-00:00"
                             "2016-03-24T12:13:12.000-00:00"
@@ -444,7 +444,7 @@
           zdt     (ZonedDateTime/parse "2016-03-24T12:13:12.000-00:00")] ; String
       (is (zero? (.toMillis (Duration/between instant zdt))))))
 
-  (dotest
+  (verify
     (let [iso-str     "2019-02-03T04:05:06.789Z"
           instant     (Instant/parse iso-str)
           millis      (.toEpochMilli instant)
@@ -485,7 +485,7 @@
         (is= timestamp timestamp-from-str)
         )))
 
-  (dotest
+  (verify
     ; near-ISO string (includes "Z" at end)
     (let [str-sloppy "  2019-09-19   18:09:35Z  "
           str-nice   (str/whitespace-collapse str-sloppy)
@@ -502,7 +502,7 @@
     (is= "2019-09-19T18:09:35.123Z" (str (parse-sql-timestamp-str->Instant-utc "  2019-09-19  18:09:35.123  "))))
 
   ;-----------------------------------------------------------------------------
-  (dotest
+  (verify
     (let [pat (t/grab :LocalDate time-str-patterns)]
       (is (re-matches pat "1999-12-31"))
       (isnt (re-matches pat "1999-2-31")))
@@ -519,7 +519,7 @@
       (is (re-matches pat "1999-12-31t11:22:33+00:00"))
       (is (re-matches pat "1999-12-31t11:22:33+00:00[UTC]"))))
 
-  (dotest
+  (verify
     (is (LocalDate-str? "1999-11-22"))
     (is (Timestamp-str? "1999-11-22 00:00:00"))
     (is (LocalDateTime-str? "1999-11-22t00:00:00"))
@@ -542,7 +542,7 @@
       (is (same-instant? ref (str->Instant "1999-11-22t00:00:00.000+00:00")))
       (is (same-instant? ref (str->Instant "1999-11-22t00:00:00+00:00[UTC]")))))
 
-  (dotest
+  (verify
     (is= (->field-strs (Instant/parse "2037-07-14t19:17:16.123456789Z"))
       {:day-2    "14"
        :hour-2   "19"

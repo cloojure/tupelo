@@ -14,7 +14,7 @@
     '[clojure.spec.alpha :as s]
     '[clojure.spec.gen.alpha :as gen]
     '[clojure.spec.test.alpha :as stest] )
-  (dotest
+  (verify
     (is (s/valid? ::t/anything 5))
     (is (s/valid? ::t/anything "joe"))
     (is (s/valid? ::t/anything #{{:blah 42} [:blue 66] :hut! 'hut! "hut!"}))

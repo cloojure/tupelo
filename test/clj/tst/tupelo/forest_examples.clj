@@ -23,7 +23,7 @@
     )
   (:import [java.io StringReader]))
 
-(dotest
+(verify
   (hid-count-reset)
   (with-forest (new-forest)
     (let [root-hid  (add-tree-hiccup [:a
@@ -50,7 +50,7 @@
       (attr-update c4-hid :value inc)
       (is= (hid->node c4-hid) {:tupelo.forest/khids [], :tag :c, :value 5}))))
 
-(dotest
+(verify
   (hid-count-reset)
   (with-forest (new-forest)
     (let [root-hid (add-tree-hiccup [:a
@@ -184,7 +184,7 @@
     [:item 50]
     [:item 60]]])
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [root-hid (add-tree-hiccup t0-hiccup)
           tree     (hid->tree root-hid)
@@ -230,7 +230,7 @@
            {::tf/khids [], :tag :item, :value :b}])))))
 
 ; update the first child of the root using `inc`
-(dotest
+(verify
   (with-forest (new-forest)
     (let [root-hid    (add-tree-hiccup t0-hiccup)
           child-1-hid (first (hid->kids root-hid))
@@ -246,7 +246,7 @@
          [:item [:item 40] [:item 50] [:item 60]]]))))
 
 ; update the 2nd child of the root by appending :c
-(dotest
+(verify
   (with-forest (new-forest)
     (let [root-hid  (add-tree-hiccup t0-hiccup)
           kid-2-hid (xsecond (hid->kids root-hid))]
@@ -260,7 +260,7 @@
          [:item [:item 40] [:item 50] [:item 60]]]))))
 
 ; update the 2nd child of the root by pre-pending :aa
-(dotest
+(verify
   (with-forest (new-forest)
     (let [root-hid  (add-tree-hiccup t0-hiccup)
           kid-2-hid (xsecond (hid->kids root-hid))]
@@ -282,7 +282,7 @@
     keeper?))
 
 ; delete any numbers (< 10 n)
-(dotest
+(verify
   (with-forest (new-forest)
     (let [root-hid  (add-tree-hiccup t0-hiccup)
           big-paths (find-paths-with root-hid [:** :*] leaf-gt-10?)]
@@ -332,7 +332,7 @@
     (if (not-empty? kid-partitions-new)
       (kids-set hid (apply glue kid-partitions-new)))))
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [root-hid (add-tree-hiccup z2-hiccup)]
       (is= (hid->hiccup root-hid)
@@ -374,7 +374,7 @@
    [:item :e]
    [:item 3]])
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [root-hid (add-tree-hiccup z3-hiccup)]
       (is= (hid->hiccup root-hid)
@@ -424,7 +424,7 @@
 ;  (zappy)
 ;  (println "zappy - AFTER"))
 
-(dotest
+(verify
   (when false ; manually enable to grab a new copy of the webpage
     (spit "clojure-sample.html"
       (slurp "http://clojure.github.io/clojure/clojure.zip-api.html")))
@@ -473,7 +473,7 @@
             (set result-data))))))
 
 ;-----------------------------------------------------------------------------
-(dotest
+(verify
   (with-forest (new-forest)
     (let [enlive-tree (xml->enlive "<p>sample <em>text</em> with words.</p>")
           root-hid    (add-tree-enlive enlive-tree)
@@ -500,7 +500,7 @@
 
 ;-----------------------------------------------------------------------------
 ; Discard any xml nodes of Type="A" or Type="B" (plus blank string nodes)
-(dotest
+(verify
   (with-forest (new-forest)
     (let [xml-str       "<ROOT>
                             <Items>
@@ -584,7 +584,7 @@
 
 ;-----------------------------------------------------------------------------
 ; shorter version w/o extra features
-(dotest
+(verify
   (with-forest (new-forest)
     (let [xml-str       "<ROOT>
                             <Items>
@@ -638,7 +638,7 @@
                       </product>
                     </products>
                   </data> ")
-(dotest
+(verify
   (with-forest (new-forest)
     (let [root-hid             (add-tree-xml xml-str-prod)
 
@@ -691,7 +691,7 @@
            [:image "img2.jpg"]]]]))))
 
 ;-----------------------------------------------------------------------------
-(dotest
+(verify
   (with-forest (new-forest)
     (let [xml-str  "<html>
                      <body>
@@ -725,7 +725,7 @@
 
 ;-----------------------------------------------------------------------------
 
-(dotest
+(verify
   (with-forest (new-forest)
     ; #todo re-work to fix "special" double-quotes
     (let [html-str     "<div class=“group”>
@@ -803,7 +803,7 @@
          ["title2" "subheading3"]]))))
 
 ;-----------------------------------------------------------------------------
-(dotest
+(verify
   (hid-count-reset)
   (with-forest (new-forest)
     (let [xml-str  "<top>
@@ -867,7 +867,7 @@
             [{:tag :group}
              [{:tag :group} [{:tag :item} [{:tag :number, :value "3"}]]]]]])))))
 
-(dotest
+(verify
   (with-forest (new-forest)
     (let [root-hid         (add-tree-enlive
                              {:tag     :eSearchResult,
@@ -957,7 +957,7 @@
 
 ;------------------------------------------o---------------------------------
 (t/when-clojure-1-9-plus
-  (dotest
+  (verify
     (with-forest (new-forest)
       (let [root-hid    (add-tree
                           (edn->tree
@@ -1025,7 +1025,7 @@
           )))))
 
 ;-----------------------------------------------------------------------------
-(dotest
+(verify
   (with-forest (new-forest)
     (let [xml-str     "<?xml version=\"1.0\"?>
                             <root>
@@ -1043,7 +1043,7 @@
          {:tupelo.forest/khids [], :tag :b, :value "2"}]))))
 
 ;-----------------------------------------------------------------------------
-(dotest
+(verify
   (let [xml-str (str/quotes->double
                   "<document>
                      <sentence id='1'>
@@ -1143,7 +1143,7 @@
     (slurp)
     (tagsoup/parse)))
 
-(dotest
+(verify
   (when false ; manually enable to grab a new copy of the webpage
     (spit "xkcd-sample.html"
       (slurp "https://xkcd.com")))
@@ -1247,7 +1247,7 @@
         (bush->form (xthird it)))
       (kw->sym (grab :arg head)))))
 
-(dotest
+(verify
   (let [tgt-size 13]
     (dotimes [i 3]
       (let [ast (build-rand-ast tgt-size)]
@@ -1257,7 +1257,7 @@
           (println (pretty-str (bush->form ast))))))))
 
 ;-----------------------------------------------------------------------------
-(dotest
+(verify
   (let [data-enlive
         {:tag   :root
          :attrs nil
@@ -1329,7 +1329,7 @@
             "Attribute_1" "Value_1b",
             "Attribute_2" "Value_2b"}])))))
 
-(dotest
+(verify
   (hid-count-reset)
   (with-forest (new-forest)
     (let [root-hid                   (add-tree-hiccup
@@ -1389,7 +1389,7 @@
 ;  :E [:F]
 ;  :F}
 
-(dotest
+(verify
   (let [relationhip-data-hiccup [:A
                                  [:B
                                   [:C]
@@ -1418,7 +1418,7 @@
         (is= result expected-result)))))
 
 ;---------------------------------------------------------------------------------------------------
-(dotest
+(verify
   (let [job-data  {:_id                  "56044a42a27847d11d61bfc0"
                    :schedule-template-id "55099ebdcca58a0c717df912"
                    :jobs                 [{:job-template-id "55099ebdcca58a0c717df91f"
@@ -1465,7 +1465,7 @@
     (is (nil? (find-step "invalid-id")))))
 
 ;-----------------------------------------------------------------------------
-(dotest
+(verify
   (let [xml-data "<foo>
                     <name>John</name>
                     <address>1 hacker way</address>
@@ -1506,7 +1506,7 @@
             [:name "mit"]]])))))
 
 ;-----------------------------------------------------------------------------
-(dotest
+(verify
   (with-forest (new-forest)
     (let [data-hiccup  [:LangIF
                         [:before_if "676767; "]
@@ -1522,7 +1522,7 @@
       (is= before-value "676767; "))))
 
 ;-----------------------------------------------------------------------------
-(dotest
+(verify
   (with-forest (new-forest)
     (let [data-hiccup      [:rpc
                             [:fn {:type :+}
@@ -1561,7 +1561,7 @@
                                  [{:tag :value, :value 5}]]))))
 
 ;-----------------------------------------------------------------------------
-(dotest
+(verify
   (with-forest (new-forest)
     (let [edn-orig          [1 [[2] 3]]
           root-hid          (add-tree (edn->tree edn-orig))
@@ -1583,7 +1583,7 @@
            [#:tupelo.forest{:value 2, :index 0}]]]]))))
 
 ;-----------------------------------------------------------------------------
-(dotest   ; #todo can we run this as hiccup even without :tag entries???
+(verify   ; #todo can we run this as hiccup even without :tag entries???
   (with-forest (new-forest)
     (let [data          {:tag      "program"
                          :state    "here"
@@ -1620,7 +1620,7 @@
       )))
 
 ;-----------------------------------------------------------------------------
-(dotest
+(verify
   (hid-count-reset)
   (with-forest (new-forest)
     (let [data-orig     (quote (def a (do (+ 1 2) 3)))
@@ -1660,7 +1660,7 @@
       )))
 
 ;-----------------------------------------------------------------------------
-(dotest   ; find all the leaf paths
+(verify   ; find all the leaf paths
   (hid-count-reset)
   (with-forest (new-forest)
     (let [data       ["root"
@@ -1695,7 +1695,7 @@
          [{:tag "root"} [{:tag "leaf"}]]]))))
 
 ;-----------------------------------------------------------------------------
-(dotest   ; find the grandparent of each leaf
+(verify   ; find the grandparent of each leaf
   (hid-count-reset)
   (with-forest (new-forest)
     (let [data              [:root
@@ -1724,7 +1724,7 @@
         #{[:root :a :x] [:root :a :x :y] [:root :b :c]}))))
 
 ;-----------------------------------------------------------------------------
-(dotest   ; walk the tree and keep track of all the visited nodes
+(verify   ; walk the tree and keep track of all the visited nodes
   (hid-count-reset)
   (with-forest (new-forest)
     ; an "hid" is like a pointer to the node
@@ -1755,7 +1755,7 @@
         (is= depth-first-tags [:a :b :c])))))
 
 ;-----------------------------------------------------------------------------
-(dotest
+(verify
   (hid-count-reset)
   (with-forest (new-forest)
     (let [debug-flg       false
@@ -1820,7 +1820,7 @@
         (is-nonblank= modified-src expected-result)))))
 
 ;-----------------------------------------------------------------------------
-(dotest
+(verify
   (hid-count-reset)
   (with-forest (new-forest)
     (let [edn-data {:a [{:x 2 :y 3}]

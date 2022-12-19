@@ -41,7 +41,7 @@
              (i/spyx it)
            )))
 
-(dotest
+(verify
   (binding [i/*spy-enabled* false]
     (println \newline "-----------------------------------------------------------------------------")
     (let [d1 {:a 1 :b {:x 11} :c [31 32] :d #{41 42}}]
