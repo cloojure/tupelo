@@ -104,47 +104,73 @@
 (declare walk-recurse-dispatch)
 
 (s/defn ^:no-doc walk-recurse-entry :- tsk/KeyMap
-  [intc :- tsk/KeyMap
+  [stack :- tsk/Vec
+   intc :- tsk/KeyMap
    entry :- tsk/KeyMap]
   (let [entry-type (grab :type entry)
         result     (cond
-                     (= entry-type :entry/map) (it-> entry
-                                                 (update-in it [:key] #(walk-recurse-dispatch intc %))
-                                                 (update-in it [:val] #(walk-recurse-dispatch intc %)))
+                     (= entry-type :entry/map) (let [entry-key (it-> entry
+                                                               (grab :key it)
+                                                               (glue it {:branch :map/key}))
+                                                     entry-val (it-> entry
+                                                               (grab :val it)
+                                                               (glue it {:branch :map/val}))
+                                                     result (it-> entry
+                                                              (glue it {:key (walk-recurse-dispatch stack intc entry-key)})
+                                                              (glue it {:val (walk-recurse-dispatch stack intc entry-val)}))]
+                                                 result)
 
-                     (or (= entry-type :entry/list) ; retain existing :idx value
-                       (= entry-type :entry/set)) ; has no :key
-                     (update-in entry [:val] #(walk-recurse-dispatch intc %)))]
+                     (= entry-type :entry/list) ; retain existing :idx value
+                     (let [entry-val (it-> entry
+                                       (grab :val it)
+                                       (glue it {:branch :list/val}))
+                           result (glue entry {:val (walk-recurse-dispatch stack intc entry-val)})]
+                       result)
+
+                     (= entry-type :entry/set) ; has no :key
+                     (let [entry-val (it-> entry
+                                       (grab :val it)
+                                       (glue it {:branch :set/val}))
+                           result (glue entry {:val (walk-recurse-dispatch stack intc entry-val)})]
+                       result)
+
+                     :else (throw (ex-info "unrecognized :type" (vals->map stack entry )))
+                     )]
     result))
 
 (s/defn ^:no-doc walk-recurse-collection :- tsk/KeyMap
-  [intc :- tsk/KeyMap
+  [stack :- tsk/Vec
+   intc :- tsk/KeyMap
    node :- tsk/KeyMap]
-  (let [node-out (glue node
-                   {:entries (forv [item (grab :entries node)]
-                               (walk-recurse-dispatch intc item))})]
+  (let [node-out   (glue node
+                     {:entries (forv [item (grab :entries node)]
+                                 (walk-recurse-dispatch stack intc item))})]
     node-out))
 
 (s/defn ^:no-doc walk-recurse-dispatch ; dispatch fn
-  [intc :- tsk/KeyMap
+  [stack :- tsk/Vec
+   intc :- tsk/KeyMap
    node :- tsk/KeyMap]
   (t/with-spy-indent
     (let [enter-fn (:enter intc)
           leave-fn (:leave intc)]
       (let ; -spy-pretty
         [node-type         (grab :type node)
-         data-post-enter   (enter-fn node)
+         stack-next        (prepend (dissoc node :entries) stack)
+         data-post-enter   (enter-fn stack-next node)
          data-post-recurse (cond
                              (= node-type :prim) data-post-enter ; no recursion for primitives
 
-                             (coll-node? node) (walk-recurse-collection intc data-post-enter)
-                             (entry-node? node) (walk-recurse-entry intc data-post-enter)
+                             (coll-node? node) (walk-recurse-collection stack-next intc data-post-enter)
+                             (entry-node? node) (walk-recurse-entry stack-next intc data-post-enter)
 
                              :else (throw (ex-info "unrecognized :type" (vals->map data-post-enter type))))
-         data-post-leave   (leave-fn data-post-recurse)]
+         data-post-leave   (leave-fn stack-next data-post-recurse)]
         data-post-leave))))
 
 ;---------------------------------------------------------------------------------------------------
+(s/defn walk-identity-fn [stack arg] arg)
+
 (s/defn walk :- s/Any
   [interceptor :- tsk/KeyMap
    splatter :- tsk/KeyMap] ; a splatter node
@@ -160,11 +186,11 @@
       (throw (ex-info "Invalid interceptor. :enter and :leave functions cannot both be nil." (vals->map interceptor))))
 
     ; set identify as default in case of nil, and verify both are functions
-    (let [enter-fn (s/validate tsk/Fn (or enter-fn identity))
-          leave-fn (s/validate tsk/Fn (or leave-fn identity))
+    (let [enter-fn (s/validate tsk/Fn (or enter-fn walk-identity-fn))
+          leave-fn (s/validate tsk/Fn (or leave-fn walk-identity-fn))
           intc     {:enter enter-fn
                     :leave leave-fn}
 
-          data-out (walk-recurse-dispatch intc splatter)]
+          data-out (walk-recurse-dispatch [] intc splatter)]
       data-out)))
 

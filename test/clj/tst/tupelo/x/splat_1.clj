@@ -1,4 +1,4 @@
-(ns       ^:test-refresh/focus
+(ns       ; ^:test-refresh/focus
   tst.tupelo.x.splat-1
   (:use tupelo.x.splat-1 tupelo.core tupelo.test)
   (:require
@@ -141,33 +141,38 @@
     (is= data (unsplatter splat))))
 
 ;---------------------------------------------------------------------------------------------------
-(let [inc-prim-odd (fn [arg]
-                     (let [type (:type arg)
-                           data (:data arg)]
-                       (let [arg-out (cond-it-> arg
-                                       (and (= :prim type) (number? data) (odd? data))
-                                       (update arg :data inc))]
-                         arg-out)))]
+(let [inc-prim-odd (fn [stack arg]
+                     (with-spy-indent
+                       ;(nl)
+                       ;(spyq :inc-prim-odd--enter )
+                       ;(spyx-pretty arg )
+                       ;(spyx-pretty stack)
+                       (let [type (:type arg)
+                             data (:data arg)]
+                         (let [arg-out (cond-it-> arg
+                                         (and (= :prim type) (number? data) (odd? data))
+                                         (update arg :data inc))]
+                           arg-out))))]
 
   (verify
-    (is= (inc-prim-odd {:type :prim :data :a})
+    (is= (inc-prim-odd [] {:type :prim :data :a})
       {:type :prim :data :a})
-    (is= (inc-prim-odd {:type :prim :data 1})
+    (is= (inc-prim-odd [] {:type :prim :data 1})
       {:type :prim :data 2}))
 
   (verify
     (let  ; -spy-pretty
       [data       [1 2]
        splat-orig (splatter data)
-       intc       {:enter identity
-                   :leave identity}
+       intc       {:enter walk-identity-fn
+                   :leave walk-identity-fn}
        splat-out  (splat/walk intc splat-orig)
        data-out   (unsplatter splat-out)]
       (is= data data-out)))
 
   (verify
     (let [intc     {:enter inc-prim-odd
-                    :leave identity}
+                    :leave walk-identity-fn}
           data-out (it-> [1 2]
                      (splatter it)
                      (splat/walk intc it)
@@ -176,16 +181,16 @@
 
   (verify
     (let [intc     {:enter inc-prim-odd
-                    :leave identity}
+                    :leave walk-identity-fn}
           data-out (it-> {:a 1 :b 2}
                      (splatter it)
                      (splat/walk intc it)
                      (unsplatter it))]
       (is= {:a 2 :b 2} data-out)))
 
-  (verify
+  (verify-focus
     (let [intc     {:enter inc-prim-odd
-                    :leave identity}
+                    :leave walk-identity-fn}
           data-out (it-> #{:a 1 22}
                      (splatter it)
                      (splat/walk intc it)
@@ -198,10 +203,12 @@
     (let [data  {:a 1 :b #{2 3}}
           splat (splatter data)
 
-          ; :leave will default to `identity`
-          intc  {:enter (fn [data]
-                          (newline)
-                          (prn :-----------------------------------------------------------------------------)
-                          (spy-pretty :enter data))}]
+          ; :leave will default to `walk-identity-fn`
+          intc  {:enter (fn [stack arg]
+                          (with-result arg
+                            (newline)
+                            (prn :-----------------------------------------------------------------------------)
+                            (spyx-pretty arg)
+                            (spyx-pretty stack)))}]
       (splat/walk intc splat))))
 
