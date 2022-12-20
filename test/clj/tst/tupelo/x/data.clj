@@ -1,5 +1,6 @@
 (ns tst.tupelo.x.data
-  (:use tupelo.core tupelo.test )
+  (:use tupelo.core
+        tupelo.test)
   (:require
     [clojure.math.combinatorics :as combo]
     [schema.core :as s]
@@ -12,7 +13,7 @@
   (let [wrapped-args (forv [arg args]
                        (if (sequential? arg)
                          arg
-                         [arg] ))]
+                         [arg]))]
     (unlazy (apply combo/cartesian-product wrapped-args))))
 
 (verify
@@ -75,11 +76,10 @@
 ;(defrecord MapEntry     [key val-hid])
 ;(defrecord VecElement   [idx val-hid])
 
-(defrecord MapEntity    [content])
-(defrecord VecEntity    [content])
-(defrecord Value        [content])
+(defrecord MapEntity [content])
+(defrecord VecEntity [content])
+(defrecord Value [content])
 
-(comment
 ;-----------------------------------------------------------------------------
 (defprotocol Edn->Fracture ; shatter, shard, sharder, destruct, destructure
   (edn->fracture [data]))
@@ -88,11 +88,11 @@
   Edn->Fracture (edn->fracture [data]
                   (with-spy-indent
                     (let [map-entries (forv [[k v] data]
-                                        (let [value-hid   (edn->fracture v)
-                                              map-entry   {k value-hid}]
+                                        (let [value-hid (edn->fracture v)
+                                              map-entry {k value-hid}]
                                           map-entry))
-                          map-entity (->MapEntity (apply glue map-entries))
-                          hid        (add-entity map-entity)]
+                          map-entity  (->MapEntity (apply glue map-entries))
+                          hid         (add-entity map-entity)]
                       hid))))
 
 (extend-type clojure.lang.IPersistentVector ; #todo add for Set
@@ -149,12 +149,12 @@
   (match [query hid ctx]))
 
 (extend-type clojure.lang.Symbol
-  Match (match [query hid ctx ]
+  Match (match [query hid ctx]
           (assert (query-variable? query)) ; found match
           (assert (keyword? hid)) (assert (map? ctx))
           (with-spy-indent
-            (spyx [query hid ctx ])
-            (let-spy [edn-val (fracture->edn hid)
+            (spyx [query hid ctx])
+            (let-spy [edn-val    (fracture->edn hid)
                       result-ctx (glue ctx {query edn-val})]
               (spy :found result-ctx)))))
 
@@ -164,31 +164,31 @@
           (assert (map? query)) (assert (keyword? hid)) (assert (map? ctx))
           (with-spy-indent
             (spyx [query hid ctx])
-            (let-spy [shard (grab :content (get-entity hid))
-                      >> (assert (map? shard))
-                      sub-results (forv [[query-key query-val] (vec query)]
-                                    (do
-                                      (spyx [query-key query-val])
-                                      (cond
-                                        (spyx (query-variable? query-key))
-                                        (let-spy [sub-results (forv [[shard-key shard-hid] (vec shard)]
-                                                                (let [ctx-inner (glue ctx {query-key shard-key})]
-                                                                  (spyx :inner2 [query-key query-val shard-key shard-hid ctx-inner])
-                                                                  (match query-val shard-hid ctx-inner)))]
-                                          sub-results)
+            (let-spy [shard                (grab :content (get-entity hid))
+                      >>                   (assert (map? shard))
+                      sub-results          (forv [[query-key query-val] (vec query)]
+                                             (do
+                                               (spyx [query-key query-val])
+                                               (cond
+                                                 (spyx (query-variable? query-key))
+                                                 (let-spy [sub-results (forv [[shard-key shard-hid] (vec shard)]
+                                                                         (let [ctx-inner (glue ctx {query-key shard-key})]
+                                                                           (spyx :inner2 [query-key query-val shard-key shard-hid ctx-inner])
+                                                                           (match query-val shard-hid ctx-inner)))]
+                                                   sub-results)
 
-                                        (spyx (contains? shard query-key))
-                                        (let [shard-hid (grab query-key shard)]
-                                          (spyx :inner [query-val shard-hid ctx])
-                                          (match query-val shard-hid ctx))
+                                                 (spyx (contains? shard query-key))
+                                                 (let [shard-hid (grab query-key shard)]
+                                                   (spyx :inner [query-val shard-hid ctx])
+                                                   (match query-val shard-hid ctx))
 
-                                        :else FAILURE)))
-                      sub-result-combos (apply combo-all sub-results)
+                                                 :else FAILURE)))
+                      sub-result-combos    (apply combo-all sub-results)
                       sub-result-combos-ok (drop-if #(has-some? failure? %) sub-result-combos)
-                      result-ctx-list (if (empty? sub-result-combos-ok)
-                                        FAILURE
-                                        (forv [sub-result sub-result-combos-ok]
-                                          (apply glue sub-result)))]
+                      result-ctx-list      (if (empty? sub-result-combos-ok)
+                                             FAILURE
+                                             (forv [sub-result sub-result-combos-ok]
+                                               (apply glue sub-result)))]
               result-ctx-list))))
 
 (extend-type java.lang.Object
@@ -201,24 +201,28 @@
                 (spy :object ctx)
                 FAILURE)))))
 
-(verify
-  (spy-indent-reset)
-  (with-fracture (new-fracture)
-    (let [ctx      {:path [] :vals {}}
-         ;data-1   {:a 1 :b {:x 11}}
-          data-1    {:a 1 :b {:x 11} :c [31 32]}
-          query-1  '{:a ?v :b {:x 11}}
-          query-1  '{?k 1 :b {:x 11}}
-          query-1  '{:a ?v :b {:x 11} :c ?c}
-          query-1  '{:a ?a :b {:x ?x}}
-          root-hid (edn->fracture data-1) ]
+(comment
+  (verify-focus
+    (spy :tst.tupelo.x.data--enter)
+    (spy-indent-reset)
+    (with-fracture (new-fracture)
+      (let [ctx      {:path [] :vals {}}
+            ;data-1   {:a 1 :b {:x 11}}
+            data-1   {:a 1 :b {:x 11} :c [31 32]}
+            query-1  '{:a ?v :b {:x 11}}
+            query-1  '{?k 1 :b {:x 11}}
+            query-1  '{:a ?v :b {:x 11} :c ?c}
+            query-1  '{:a ?a :b {:x ?x}}
+            root-hid (edn->fracture data-1)]
+        (spyx-pretty root-hid)
 
-      ; #todo continue here! (2018)
-      ;(nl) (print-fracture *fracture*)
-      ;(nl) (spyx (fracture->edn root-hid))
-      ;(nl) (spy :result (match query-1 root-hid {}))
+        ; #todo continue here! (2018)
+        ;(nl) (print-fracture *fracture*)
+        ;(nl) (spyx (fracture->edn root-hid))
+        ;(nl) (spy :result (match query-1 root-hid {}))
 
-
-  )))
+        ))
+    (spy :tst.tupelo.x.data--leave))
 
   )
+

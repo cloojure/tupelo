@@ -1,34 +1,31 @@
 (ns       ^:test-refresh/focus
   tst.tupelo.x.splat-1
-  (:use tupelo.x.splat-1
-        tupelo.core
-        tupelo.test)
+  (:use tupelo.x.splat-1 tupelo.core tupelo.test)
   (:require
-    [tupelo.core :as t]
+    [tupelo.x.splat-1 :as splat]
     [clojure.walk :as walk]))
 
-(defn splatter-stub
-  [arg] {:splatter-stub arg})
-
-(verify
-  (with-redefs [splatter splatter-stub]
-    (is= (splatter-impl 1) {:type :prim :data 1})
-    (is= (splatter-impl [1])
-      {:entries #{{:type :entry/list
-                   :idx  0
-                   :val  {:splatter-stub 1}}}
-       :type    :coll/list})
-    (is= (splatter-impl {:a 1})
-      {:entries #{
-                  {:type :entry/map
-                   :key  {:splatter-stub :a}
-                   :val  {:splatter-stub 1}}}
-       :type    :coll/map})
-    (is= (splatter-impl #{1 2})
-      {:entries #{
-                  {:type :entry/set :val {:splatter-stub 1}}
-                  {:type :entry/set :val {:splatter-stub 2}}}
-       :type    :coll/set})))
+(let [splatter-stub (fn [arg]
+                      {:splatter-stub arg})]
+  (verify
+    (with-redefs [splatter splatter-stub]
+      (is= (splatter-impl 1) {:type :prim :data 1})
+      (is= (splatter-impl [1])
+        {:entries #{{:type :entry/list
+                     :idx  0
+                     :val  {:splatter-stub 1}}}
+         :type    :coll/list})
+      (is= (splatter-impl {:a 1})
+        {:entries #{
+                    {:type :entry/map
+                     :key  {:splatter-stub :a}
+                     :val  {:splatter-stub 1}}}
+         :type    :coll/map})
+      (is= (splatter-impl #{1 2})
+        {:entries #{
+                    {:type :entry/set :val {:splatter-stub 1}}
+                    {:type :entry/set :val {:splatter-stub 2}}}
+         :type    :coll/set}))))
 
 ;---------------------------------------------------------------------------------------------------
 (verify
@@ -164,7 +161,7 @@
        splat-orig (splatter data)
        intc       {:enter identity
                    :leave identity}
-       splat-out  (walk intc splat-orig)
+       splat-out  (splat/walk intc splat-orig)
        data-out   (unsplatter splat-out)]
       (is= data data-out)))
 
@@ -173,7 +170,7 @@
                     :leave identity}
           data-out (it-> [1 2]
                      (splatter it)
-                     (walk intc it)
+                     (splat/walk intc it)
                      (unsplatter it))]
       (is= [2 2] data-out)))
 
@@ -182,7 +179,7 @@
                     :leave identity}
           data-out (it-> {:a 1 :b 2}
                      (splatter it)
-                     (walk intc it)
+                     (splat/walk intc it)
                      (unsplatter it))]
       (is= {:a 2 :b 2} data-out)))
 
@@ -191,7 +188,7 @@
                     :leave identity}
           data-out (it-> #{:a 1 22}
                      (splatter it)
-                     (walk intc it)
+                     (splat/walk intc it)
                      (unsplatter it))]
       (is= #{:a 2 22} data-out))))
 
@@ -206,5 +203,5 @@
                           (newline)
                           (prn :-----------------------------------------------------------------------------)
                           (spy-pretty :enter data))}]
-      (walk intc splat))))
+      (splat/walk intc splat))))
 
