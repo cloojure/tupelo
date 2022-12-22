@@ -157,7 +157,6 @@
                     <heading>Reminder</heading>
                     <body>Don't forget me this weekend!</body>
                   </note>"]
-    (spyx xml-str)
     (is= (parse-xml/parse xml-str)
       {:attrs   {},
        :content [{:attrs {}, :content ["Tove"], :tag :to}

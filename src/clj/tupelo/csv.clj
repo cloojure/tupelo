@@ -72,7 +72,6 @@
   ([csv-input :- CsvInput] (csv->table csv-input {}))
   ([csv-input :- CsvInput
     opts :- tsk/KeyMap]
-   ; (nl) (spyx :table opts)
    (let [opts-default {:separator \,
                        :quote     \"}
          opts         (glue opts-default opts)
@@ -128,7 +127,6 @@
   ([csv-input :- CsvInput] (csv->entities csv-input {}))
   ([csv-input :- CsvInput
     opts :- tsk/KeyMap]
-   ; (nl) (spyx :csv->entities opts)
    (let [opts-default
                    {:key-fn           str/trim
                     :val-fn           str/trim
@@ -139,7 +137,6 @@
                     :quote            \"}
       options         (glue opts-default opts)
       parsed-lines (csv->table csv-input options)]
-     ; (spyx-pretty options)
      (with-map-vals options [key-fn val-fn headers? headers-to-use keywordize-keys?]
        (let [parsed-first-row (first parsed-lines)
              keys-vec         (if (not-nil? headers-to-use)
@@ -217,7 +214,7 @@
              string-table-2d (prepend hdr-vec data-vecs)
              string-writer   (StringWriter.)
              >>              (apply csv/write-csv string-writer string-table-2d
-                               (spyx (keyvals lib-opts)))
+                                (keyvals lib-opts))
              result          (.toString string-writer)
 
              ]

@@ -638,6 +638,7 @@
                       </product>
                     </products>
                   </data> ")
+
 (verify
   (with-forest (new-forest)
     (let [root-hid             (add-tree-xml xml-str-prod)
@@ -724,7 +725,6 @@
             {::tf/khids [], :class "two", :tag :div})))))
 
 ;-----------------------------------------------------------------------------
-
 (verify
   (with-forest (new-forest)
     ; #todo re-work to fix "special" double-quotes
@@ -1650,7 +1650,6 @@
       (is= paths-max-len
         [[1007 1006 1004 1002]
          [1007 1006 1004 1003]])
-      (nl)
       (is= (format-paths paths-max-len)
         (quote [[{:tag def}
                  [{:tag do} [{:tag +} [{:tag :tupelo.forest/raw, :value 1}]]]]
@@ -1889,4 +1888,6 @@
                            [:ul [:li "get only these li's"]]]]])
         (is= result-1 [[1011 1010 1009 1008 1007]])
         (is= li-hid 1007)
-        (is= li-hiccup [:li "get only these li's"])))))
+        (is= li-hiccup [:li "get only these li's"]))))
+  )
+
