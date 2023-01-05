@@ -1,4 +1,4 @@
-(ns        ^:test-refresh/focus
+(ns          ^:test-refresh/focus
   tst.tupelo.x.splat-1
   (:use tupelo.x.splat-1 tupelo.core tupelo.test)
   (:require
@@ -181,18 +181,11 @@
       (is= (splat/splatter-walk intc #{:a 1 22})
         #{:a 2 22}))))
 
-; enable this to see how the recursion proceeds through a splattered piece of data
-(when false
-  (verify
-    (let [data  {:a 1 :b #{2 3}}
-          splat (splatter data)
+(verify
+  ; uncomment one of these lines to see how the recursion proceeds through a splattered piece of data
+  ; (splatter-walk-spy [1 2])
+  ; (splatter-walk-spy {:a 1 :b #{2 3}})
+  )
 
-          ; :leave will default to `walk-identity-fn`
-          intc  {:enter (fn [stack arg]
-                          (with-result arg
-                            (newline)
-                            (prn :-----------------------------------------------------------------------------)
-                            (spyx-pretty arg)
-                            (spyx-pretty stack)))}]
-      (splat/stack-walk intc splat))))
+
 

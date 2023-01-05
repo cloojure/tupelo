@@ -170,8 +170,8 @@
 
 ;---------------------------------------------------------------------------------------------------
 (s/defn stack-walk-identity
-  "An identity function for use with `stack-walk`. It ignores the stack and returns the supplied data value."
-  [stack data] data)
+  "An identity function for use with `stack-walk`. It ignores the stack and returns the supplied node value."
+  [stack node] node)
 
 (s/defn stack-walk :- s/Any
   "Uses an interceptor (with `:enter` and `:leave` functions) to walk a Splatter data structure.  Each interceptor
@@ -212,5 +212,25 @@
     (splatter it)
     (stack-walk intc it)
     (unsplatter it)))
+
+(s/defn splatter-walk-spy :- s/Any
+  "LIke splatter-walk, but prints both node-history stack and subtree at each step. "
+  [data :- s/Any]
+  (let [intc {:enter (fn [stack node]
+                       (with-result node
+                         (newline)
+                         (spyq :enter-----------------------------------------------------------------------------)
+                         (spyx-pretty node)
+                         (spyx-pretty stack)))
+              :leave (fn [stack node]
+                       (with-result node
+                         (newline)
+                         (spyq :leave-----------------------------------------------------------------------------)
+                         (spyx-pretty node)
+                         (spyx-pretty stack)))}]
+    (it-> data
+      (splatter it)
+      (stack-walk intc it)
+      (unsplatter it))))
 
 
