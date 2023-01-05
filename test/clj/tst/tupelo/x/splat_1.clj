@@ -1,4 +1,4 @@
-(ns       ; ^:test-refresh/focus
+(ns        ^:test-refresh/focus
   tst.tupelo.x.splat-1
   (:use tupelo.x.splat-1 tupelo.core tupelo.test)
   (:require
@@ -161,41 +161,25 @@
       {:type :prim :data 2}))
 
   (verify
-    (let  ; -spy-pretty
-      [data       [1 2]
-       splat-orig (splatter data)
-       intc       {:enter walk-identity-fn
-                   :leave walk-identity-fn}
-       splat-out  (splat/walk intc splat-orig)
-       data-out   (unsplatter splat-out)]
-      (is= data data-out)))
-
-  (verify
-    (let [intc     {:enter inc-prim-odd
-                    :leave walk-identity-fn}
+    (let [intc     {:enter stack-walk-identity
+                    :leave stack-walk-identity}
           data-out (it-> [1 2]
                      (splatter it)
-                     (splat/walk intc it)
+                     (stack-walk intc it)
                      (unsplatter it))]
-      (is= [2 2] data-out)))
+      (is= [1 2] data-out)))
 
-  (verify
-    (let [intc     {:enter inc-prim-odd
-                    :leave walk-identity-fn}
-          data-out (it-> {:a 1 :b 2}
-                     (splatter it)
-                     (splat/walk intc it)
-                     (unsplatter it))]
-      (is= {:a 2 :b 2} data-out)))
+  (let [intc {:enter inc-prim-odd
+              :leave stack-walk-identity}]
+    (verify
+      (is= (splat/splatter-walk intc [1 2])
+        [2 2])
 
-  (verify-focus
-    (let [intc     {:enter inc-prim-odd
-                    :leave walk-identity-fn}
-          data-out (it-> #{:a 1 22}
-                     (splatter it)
-                     (splat/walk intc it)
-                     (unsplatter it))]
-      (is= #{:a 2 22} data-out))))
+      (is= (splat/splatter-walk intc {:a 1 :b 2})
+        {:a 2 :b 2})
+
+      (is= (splat/splatter-walk intc #{:a 1 22})
+        #{:a 2 22}))))
 
 ; enable this to see how the recursion proceeds through a splattered piece of data
 (when false
@@ -210,5 +194,5 @@
                             (prn :-----------------------------------------------------------------------------)
                             (spyx-pretty arg)
                             (spyx-pretty stack)))}]
-      (splat/walk intc splat))))
+      (splat/stack-walk intc splat))))
 

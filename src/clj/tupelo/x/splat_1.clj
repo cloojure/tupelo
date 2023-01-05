@@ -169,9 +169,13 @@
         data-post-leave))))
 
 ;---------------------------------------------------------------------------------------------------
-(s/defn walk-identity-fn [stack arg] arg)
+(s/defn stack-walk-identity
+  "An identity function for use with `stack-walk`. It ignores the stack and returns the supplied data value."
+  [stack data] data)
 
-(s/defn walk :- s/Any
+(s/defn stack-walk :- s/Any
+  "Uses an interceptor (with `:enter` and `:leave` functions) to walk a Splatter data structure.  Each interceptor
+  function call receives a node-history stack as the first argument (current node => index 0) "
   [interceptor :- tsk/KeyMap
    splatter :- tsk/KeyMap] ; a splatter node
 
@@ -186,11 +190,27 @@
       (throw (ex-info "Invalid interceptor. :enter and :leave functions cannot both be nil." (vals->map interceptor))))
 
     ; set identify as default in case of nil, and verify both are functions
-    (let [enter-fn (s/validate tsk/Fn (or enter-fn walk-identity-fn))
-          leave-fn (s/validate tsk/Fn (or leave-fn walk-identity-fn))
-          intc     {:enter enter-fn
-                    :leave leave-fn}
-
-          data-out (walk-recurse-dispatch [] intc splatter)]
+    (let [enter-fn   (s/validate tsk/Fn (or enter-fn stack-walk-identity))
+          leave-fn   (s/validate tsk/Fn (or leave-fn stack-walk-identity))
+          intc       {:enter enter-fn
+                      :leave leave-fn}
+          stack-init []
+          data-out   (walk-recurse-dispatch stack-init intc splatter)]
       data-out)))
+
+(s/defn splatter-walk :- s/Any
+  "Convenience function for performing a `stack-walk` using splattered data:
+
+        (it-> <data>
+          (splatter it)
+          (stack-walk <interceptor> it)
+          (unsplatter it))
+  "
+  [intc :- tsk/KeyMap
+   data :- s/Any]
+  (it-> data
+    (splatter it)
+    (stack-walk intc it)
+    (unsplatter it)))
+
 
