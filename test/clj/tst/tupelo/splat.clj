@@ -1,8 +1,7 @@
-(ns          ^:test-refresh/focus
-  tst.tupelo.x.splat-1
-  (:use tupelo.x.splat-1 tupelo.core tupelo.test)
+(ns tst.tupelo.splat
+  (:use tupelo.splat tupelo.core tupelo.test)
   (:require
-    [tupelo.x.splat-1 :as splat]
+    [tupelo.splat :as splat]
     [clojure.walk :as walk]))
 
 (let [splatter-stub (fn [arg]
