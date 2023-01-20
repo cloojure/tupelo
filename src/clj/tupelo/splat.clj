@@ -67,11 +67,18 @@
     :else (splat-primative arg)))
 
 (s/defn splatter
-  [arg] (splatter-impl arg))
+  "Given arbitrary EDN data, returns a `splat` that wraps and annotates each level for
+   collections (map/list/set), collection entries (map entries/list elements/set elements),
+   and primitive values (numbers/strings/keywords/symbols/nil/etc)."
+  [data] (splatter-impl data))
 
 ;---------------------------------------------------------------------------------------------------
 ; #todo add :depth to each map
 (s/defn unsplatter :- s/Any
+  "Remove annotations from a `splat`, eliding any `nil` values. Since the `splatter`
+   annotation never includes raw `nil` values, any `nil` detected by `unsplatter`
+   indicates a node or subtree has been deleted during prior processing
+   (eg via `stack-walk` or `splatter-walk`)."
   [splat :- tsk/KeyMap]
   (let [splat-type         (grab :type splat)
         non-nil-entries-fn (fn [coll]

@@ -4,8 +4,10 @@
     [tupelo.splat :as splat]
     [clojure.walk :as walk]))
 
-(let [splatter-stub (fn [arg]
-                      {:splatter-stub arg})]
+;---------------------------------------------------------------------------------------------------
+; test the dispatch process using a stub to stop recursion but return the dispatch result as data
+(let [splatter-stub (fn [data]
+                      {:splatter-stub data})]
   (verify
     (with-redefs [splatter splatter-stub]
       (is= (splatter-impl 1) {:type :prim :data 1})
