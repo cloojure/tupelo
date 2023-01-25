@@ -1,4 +1,4 @@
-(defproject tupelo "22.08.03"
+(defproject tupelo "23.01.23a"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
@@ -22,26 +22,26 @@
    ; [org.clojure/clojure "1.11.1"]
 
    ; top-priority libs
-   [org.clojure/core.async "1.5.648"]
-   [org.clojure/core.match "1.0.0"]
+   [org.clojure/core.async "1.6.673"]
+   [org.clojure/core.match "1.0.1"]
    [org.clojure/data.avl "0.1.0"]
    [org.clojure/data.csv "1.0.1"]
-   [org.clojure/data.xml "0.2.0-alpha6"]
+   [org.clojure/data.xml "0.2.0-alpha8"]
    [org.clojure/math.combinatorics "0.1.6"]
    [org.clojure/spec.alpha "0.3.218"]
    [org.clojure/test.check "1.1.1"]
    [org.clojure/tools.reader "1.3.6"]
 
    ; other libs
-   [camel-snake-kebab "0.4.3"]
-   [cheshire "5.11.0"] ; #todo switch to muuntaja/jsonista
-   [clj-time "0.15.2"]
+   [camel-snake-kebab/camel-snake-kebab "0.4.3"]
+   [cheshire/cheshire "5.11.0"] ; #todo switch to muuntaja/jsonista
+   [clj-time/clj-time "0.15.2"]
    [danlentz/clj-uuid "0.1.9"]
-   [joda-time/joda-time "2.10.14"]
+   [joda-time/joda-time "2.12.2"]
    [org.ccil.cowan.tagsoup/tagsoup "1.2.1"]
    [org.flatland/ordered "1.15.10"]
-   [org.snakeyaml/snakeyaml-engine "2.3"]
-   [prismatic/schema "1.3.5"]
+   [org.snakeyaml/snakeyaml-engine "2.6"]
+   [prismatic/schema "1.4.1"]
 
    ; #todo clojures pprint doesn't work under graal native-image
    ]
