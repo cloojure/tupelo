@@ -1,5 +1,4 @@
-(ns ^:test-refresh/focus
-  tst.tupelo.java-time.convert
+(ns tst.tupelo.java-time.convert
   (:use tupelo.java-time.convert tupelo.core tupelo.test)
   (:require
     [clj-time.coerce :as joda.coerce]

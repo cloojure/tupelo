@@ -33,8 +33,9 @@
  :aliases {
            :run          {:exec-fn demo.core/-main
                           }
-           :test         {:extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+           :test         {
                           :extra-paths ["test/resources"]
+                          :extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
                           :main-opts  ["-m" "cognitect.test-runner"]
                           :exec-fn    cognitect.test-runner.api/test
                           :exec-args  {:dirs     [; mandatory to control test dirs searched
@@ -46,8 +47,10 @@
                                        :patterns ["tst.*"] ; mandatory to detect testing ns's like `tst.demo.core`
                                        }
                           }
-           :test-refresh {:extra-deps {com.jakemccrary/test-refresh {:mvn/version "0.25.0"}}
-                          :main-opts  ["-m" "com.jakemccrary.test-refresh" "--dir" "src"]
+           :test-refresh {
+                          :extra-paths ["test/resources"]
+                          :extra-deps {com.jakemccrary/test-refresh {:mvn/version "0.25.0"}}
+                          :main-opts  ["-m" "com.jakemccrary.test-refresh" "--dir" "test"]
                           }
            ; This target finds dependencies with outdated version numbers
            :old          {:deps      {com.github.liquidz/antq {:mvn/version "RELEASE"}} ; NOT `:extra-deps` !!!

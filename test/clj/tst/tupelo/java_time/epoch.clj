@@ -1,5 +1,4 @@
-(ns ^:test-refresh/focus
-  tst.tupelo.java-time.epoch
+(ns tst.tupelo.java-time.epoch
   (:refer-clojure :exclude [range])
   (:use tupelo.java-time.epoch tupelo.core tupelo.test)
   (:require

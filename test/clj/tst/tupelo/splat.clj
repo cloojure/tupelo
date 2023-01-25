@@ -188,5 +188,3 @@
   ; (splatter-walk-spy {:a 1 :b #{2 3}})
   )
 
-
-

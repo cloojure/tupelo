@@ -202,7 +202,7 @@
                 FAILURE)))))
 
 (comment
-  (verify-focus
+  (verify
     (spy :tst.tupelo.x.data--enter)
     (spy-indent-reset)
     (with-fracture (new-fracture)
