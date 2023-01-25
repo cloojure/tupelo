@@ -1,8 +1,9 @@
 {:paths   [
            "src/clj" ; Clojure source files
            "src/cljc" ; Clojure source files
-           "src/cljs" ; ClojureScript source files
-           "target/java" ; compiled Java *.class files
+           ; "src/cljs" ; ClojureScript source files
+           "test/clj" ; Clojure source files
+           "test/cljc" ; Clojure source files
            ]
  :deps    {
            org.clojure/clojure                 {:mvn/version "1.11.1"}
@@ -19,11 +20,13 @@
            camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
            cheshire/cheshire                   {:mvn/version "5.11.0"} ; #todo switch to muuntaja/jsonista
            clj-time/clj-time                   {:mvn/version "0.15.2"}
+           criterium/criterium                 {:mvn/version "0.4.6"}
            danlentz/clj-uuid                   {:mvn/version "0.1.9"}
            joda-time/joda-time                 {:mvn/version "2.12.2"}
            org.ccil.cowan.tagsoup/tagsoup      {:mvn/version "1.2.1"}
            org.flatland/ordered                {:mvn/version "1.15.10"}
            org.snakeyaml/snakeyaml-engine      {:mvn/version "2.6"}
+           overtone/at-at                      {:mvn/version "1.2.0"}
            prismatic/schema                    {:mvn/version "1.4.1"}
            }
 
@@ -31,9 +34,15 @@
            :run          {:exec-fn demo.core/-main
                           }
            :test         {:extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+                          :extra-paths ["test/resources"]
                           :main-opts  ["-m" "cognitect.test-runner"]
                           :exec-fn    cognitect.test-runner.api/test
-                          :exec-args  {:dirs     ["src/clj"] ; mandatory to control test dirs searched
+                          :exec-args  {:dirs     [; mandatory to control test dirs searched
+                                                  "src/clj"
+                                                  "src/cljc"
+                                                  "test/clj"
+                                                  "test/cljc"
+                                                  ]
                                        :patterns ["tst.*"] ; mandatory to detect testing ns's like `tst.demo.core`
                                        }
                           }
