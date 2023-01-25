@@ -12,20 +12,20 @@
     (with-redefs [splatter splatter-stub]
       (is= (splatter-impl 1) {:type :prim :data 1})
       (is= (splatter-impl [1])
-        {:entries #{{:type :entry/list
+        {:entries #{{:type :list/entry
                      :idx  0
                      :val  {:splatter-stub 1}}}
          :type    :coll/list})
       (is= (splatter-impl {:a 1})
         {:entries #{
-                    {:type :entry/map
+                    {:type :map/entry
                      :key  {:splatter-stub :a}
                      :val  {:splatter-stub 1}}}
          :type    :coll/map})
       (is= (splatter-impl #{1 2})
         {:entries #{
-                    {:type :entry/set :val {:splatter-stub 1}}
-                    {:type :entry/set :val {:splatter-stub 2}}}
+                    {:type :set/entry :val {:splatter-stub 1}}
+                    {:type :set/entry :val {:splatter-stub 2}}}
          :type    :coll/set}))))
 
 ;---------------------------------------------------------------------------------------------------
@@ -39,45 +39,45 @@
 
   (is= (splatter [1])
     {:type    :coll/list
-     :entries #{{:type :entry/list
+     :entries #{{:type :list/entry
                  :idx  0
                  :val  {:data 1 :type :prim}}}})
   (is= (splatter [1 2])
     {:type    :coll/list
      :entries #{
-                {:type :entry/list
+                {:type :list/entry
                  :idx  0
                  :val  {:data 1 :type :prim}}
-                {:type :entry/list
+                {:type :list/entry
                  :idx  1
                  :val  {:data 2 :type :prim}}}})
 
   (is= (splatter {:a 1})
     {:type    :coll/map
      :entries #{{:key  {:data :a :type :prim}
-                 :type :entry/map
+                 :type :map/entry
                  :val  {:data 1 :type :prim}}}})
   (is= (splatter {:a 1 :b 2})
     {:type    :coll/map
      :entries #{
-                {:type :entry/map
+                {:type :map/entry
                  :key  {:data :a :type :prim}
                  :val  {:data 1 :type :prim}}
-                {:type :entry/map
+                {:type :map/entry
                  :key  {:data :b :type :prim}
                  :val  {:data 2 :type :prim}}}})
 
   (is= (splatter #{1})
     {:type    :coll/set
      :entries #{
-                {:type :entry/set
+                {:type :set/entry
                  :val  {:data 1 :type :prim}}}})
   (is= (splatter #{1 2})
     {:type    :coll/set
      :entries #{
-                {:type :entry/set
+                {:type :set/entry
                  :val  {:data 1 :type :prim}}
-                {:type :entry/set
+                {:type :set/entry
                  :val  {:data 2 :type :prim}}}}))
 
 ;---------------------------------------------------------------------------------------------------
@@ -87,17 +87,17 @@
     (is= splat
       {:type    :coll/map
        :entries #{
-                  {:type :entry/map
+                  {:type :map/entry
                    :key  {:type :prim :data :a}
                    :val  {:type :prim :data 1}}
-                  {:type :entry/map
+                  {:type :map/entry
                    :key  {:type :prim :data :b}
                    :val  {:type    :coll/list
                           :entries #{
-                                     {:type :entry/list
+                                     {:type :list/entry
                                       :idx  0
                                       :val  {:type :prim :data 2}}
-                                     {:type :entry/list
+                                     {:type :list/entry
                                       :idx  1
                                       :val  {:type :prim :data 3}}
                                      }}}}})
@@ -113,10 +113,10 @@
           result  (unsplatter trimmed)]
       (is= trimmed {:entries #{nil ; tombstone for {:a 1} map-entry
                                {:key  {:data :b, :type :prim},
-                                :type :entry/map,
+                                :type :map/entry,
                                 :val  {:entries
                                              #{nil ; tombstone for {:idx 1} list-entry
-                                               {:idx 0, :type :entry/list, :val {:data 2, :type :prim}}},
+                                               {:idx 0, :type :list/entry, :val {:data 2, :type :prim}}},
                                        :type :coll/list}}},
                     :type    :coll/map})
       (is= result {:b [2]})))
@@ -125,18 +125,18 @@
         splat    (splatter data)
         expected {:type    :coll/map
                   :entries #{
-                             {:type :entry/map
+                             {:type :map/entry
                               :key  {:type :prim :data :a}
                               :val  {:type :prim :data 1}}
-                             {:type :entry/map
+                             {:type :map/entry
                               :key  {:type :prim :data :b}
                               :val  {:type    :coll/set
                                      :entries #{
-                                                {:type :entry/set
+                                                {:type :set/entry
                                                  :val  {:type :prim :data 4}}
-                                                {:type :entry/set
+                                                {:type :set/entry
                                                  :val  {:type :prim :data 5}}
-                                                {:type :entry/set
+                                                {:type :set/entry
                                                  :val  {:type :prim :data "six"}}}}}}}]
     (is= splat expected)
     (is= data (unsplatter splat))))
@@ -162,8 +162,8 @@
       {:type :prim :data 2}))
 
   (verify
-    (let [intc     {:enter stack-walk-identity
-                    :leave stack-walk-identity}
+    (let [intc     {:enter stack-identity
+                    :leave stack-identity}
           data-out (it-> [1 2]
                      (splatter it)
                      (stack-walk intc it)
@@ -171,7 +171,7 @@
       (is= [1 2] data-out)))
 
   (let [intc {:enter inc-prim-odd
-              :leave stack-walk-identity}]
+              :leave stack-identity}]
     (verify
       (is= (splat/splatter-walk intc [1 2])
         [2 2])
@@ -185,6 +185,6 @@
 ; Uncomment one of these lines to see how the recursion proceeds through a splattered piece of data
 (verify-focus
   ; (splatter-walk-spy [1 2])
-  (splatter-walk-spy {:a 1 :b #{2 3}})
+  ; (splatter-walk-spy {:a 1 :b #{2 3}})
   )
 

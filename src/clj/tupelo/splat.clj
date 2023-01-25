@@ -22,7 +22,7 @@
 (s/defn entry-node? :- s/Bool
   [node :- tsk/KeyMap]
   (let [node-type (grab :type node)]
-    (t/contains-key? #{:entry/list :entry/set :entry/map} node-type)))
+    (t/contains-key? #{:list/entry :set/entry :map/entry} node-type)))
 
 ;---------------------------------------------------------------------------------------------------
 (declare splatter)
@@ -32,7 +32,7 @@
   {:type    :coll/list
    :entries (set ; must be a set so can unit test w/o regard to order
               (forv [[idx item] (indexed the-list)]
-                {:type :entry/list
+                {:type :list/entry
                  :idx  idx
                  :val  (splatter item)}))})
 
@@ -41,7 +41,7 @@
   {:type    :coll/map
    :entries (set ; must be a set so can unit test w/o regard to order
               (forv [me the-map]
-                {:type :entry/map
+                {:type :map/entry
                  :key  (splatter (key me))
                  :val  (splatter (val me))}))})
 
@@ -50,7 +50,7 @@
   {:type    :coll/set
    :entries (set ; must be a set so can unit test w/o regard to order
               (forv [item the-set]
-                {:type :entry/set
+                {:type :set/entry
                  :val  (splatter item)}))})
 
 (s/defn ^:no-doc splat-primative :- tsk/KeyMap
@@ -118,6 +118,7 @@
 
 ;---------------------------------------------------------------------------------------------------
 (declare walk-recurse-dispatch)
+(def ^:dynamic stack-walk-noop? false)
 
 (s/defn ^:no-doc walk-recurse-entry :- tsk/KeyMap
   [stack :- tsk/Vec
@@ -126,7 +127,7 @@
   (let [entry-type (grab :type entry)
         stack-next (prepend (prewalk-remove-entries entry) stack)
         result     (cond
-                     (= entry-type :entry/map) (let [entry-key (it-> entry
+                     (= entry-type :map/entry) (let [entry-key (it-> entry
                                                                  (grab :key it)
                                                                  (glue it {:branch :map/key}))
                                                      entry-val (it-> entry
@@ -137,14 +138,14 @@
                                                                  (glue it {:val (walk-recurse-dispatch stack-next intc entry-val)}))]
                                                  result)
 
-                     (= entry-type :entry/list) ; retain existing :idx value
+                     (= entry-type :list/entry) ; retain existing :idx value
                      (let [entry-val (it-> entry
                                        (grab :val it)
                                        (glue it {:branch :list/val}))
                            result    (glue entry {:val (walk-recurse-dispatch stack-next intc entry-val)})]
                        result)
 
-                     (= entry-type :entry/set) ; has no :key
+                     (= entry-type :set/entry) ; has no :key
                      (let [entry-val (it-> entry
                                        (grab :val it)
                                        (glue it {:branch :set/val}))
@@ -174,21 +175,41 @@
           leave-fn (:leave intc)]
       (let ; -spy-pretty
         [node-type         (grab :type node)
+
          data-post-enter   (enter-fn stack node)
+         data-to-recurse   (if stack-walk-noop?
+                             node
+                             data-post-enter)
+
          data-post-recurse (cond
-                             (= node-type :prim) data-post-enter ; no recursion for primitives
+                             (= node-type :prim) data-to-recurse ; no recursion for primitives
 
-                             (coll-node? node) (walk-recurse-collection stack intc data-post-enter)
-                             (entry-node? node) (walk-recurse-entry stack intc data-post-enter)
+                             (coll-node? node) (walk-recurse-collection stack intc data-to-recurse)
+                             (entry-node? node) (walk-recurse-entry stack intc data-to-recurse)
 
-                             :else (throw (ex-info "unrecognized :type" (vals->map data-post-enter type))))
-         data-post-leave   (leave-fn stack data-post-recurse)]
-        data-post-leave))))
+                             :else (throw (ex-info "unrecognized :type" (vals->map data-to-recurse type))))
+         data-for-leave    (if stack-walk-noop?
+                             node
+                             data-post-recurse)
+
+         data-post-leave   (leave-fn stack data-for-leave)
+         data-to-return    (if stack-walk-noop?
+                             node
+                             data-post-leave)]
+        data-to-return))))
 
 ;---------------------------------------------------------------------------------------------------
-(s/defn stack-walk-identity
+(s/defn stack-identity
   "An identity function for use with `stack-walk`. It ignores the stack and returns the supplied node value."
   [stack node] node)
+
+(s/defn stack-spy
+  [stack node]
+  (with-result node
+    (newline)
+    (spyq :-----------------------------------------------------------------------------)
+    (spyx-pretty node)
+    (spyx-pretty stack)))
 
 (s/defn stack-walk :- s/Any
   "Uses an interceptor (with `:enter` and `:leave` functions) to walk a Splatter data structure.  Each interceptor
@@ -207,14 +228,15 @@
       (throw (ex-info "Invalid interceptor. :enter and :leave functions cannot both be nil." (vals->map interceptor))))
 
     ; set identify as default in case of nil, and verify both are functions
-    (let [enter-fn   (s/validate tsk/Fn (or enter-fn stack-walk-identity))
-          leave-fn   (s/validate tsk/Fn (or leave-fn stack-walk-identity))
+    (let [enter-fn   (s/validate tsk/Fn (or enter-fn stack-identity))
+          leave-fn   (s/validate tsk/Fn (or leave-fn stack-identity))
           intc       {:enter enter-fn
                       :leave leave-fn}
           stack-init []
           data-out   (walk-recurse-dispatch stack-init intc splatter)]
       data-out)))
 
+;---------------------------------------------------------------------------------------------------
 (s/defn splatter-walk :- s/Any
   "Convenience function for performing a `stack-walk` using splattered data:
 
@@ -229,6 +251,16 @@
     (splatter it)
     (stack-walk intc it)
     (unsplatter it)))
+
+(s/defn splatter-walk-noop :- s/Any ; #todo need unit test
+  "Same as `splatter-walk` but discards the result of each interceptor `:enter` and `:leave` function. "
+  [intc :- tsk/KeyMap
+   data :- s/Any]
+  (binding [stack-walk-noop? true]
+    (with-result data
+      (it-> data
+        (splatter it)
+        (stack-walk intc it)))))
 
 (s/defn splatter-walk-spy :- s/Any
   "LIke splatter-walk, but prints both node-history stack and subtree at each step. "
