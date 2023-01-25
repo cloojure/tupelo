@@ -75,6 +75,25 @@
 
 ;---------------------------------------------------------------------------------------------------
 ; #todo add :depth to each map
+
+(s/defn non-nil-entries-fn
+  [coll :- (s/maybe tsk/KeyMap)]
+  (when (not-nil? coll)
+    (drop-if #(or
+                (nil? %) ; entry is nil
+                (nil? (:idx %)) ; list/entry idx is nil
+                (nil? (:key %)) ; map/entry key is nil
+                (nil? (:val %))) ; val for list, map, or set is nil
+      (:entries coll))))
+
+(declare unsplatter)
+(s/defn ^:no-doc unsplatter-list
+  [node :- tsk/KeyMap])
+(s/defn ^:no-doc unsplatter-map
+  [node :- tsk/KeyMap])
+(s/defn ^:no-doc unsplatter-set
+  [node :- tsk/KeyMap])
+
 (s/defn unsplatter :- s/Any
   "Remove annotations from a `splat`, eliding any `nil` values. Since the `splatter`
    annotation never includes raw `nil` values, any `nil` detected by `unsplatter`
@@ -82,9 +101,7 @@
    (eg via `stack-walk` or `splatter-walk`)."
   [splat :- tsk/KeyMap]
   (let [splat-type         (grab :type splat)
-        non-nil-entries-fn (fn [coll]
-                             (drop-if nil?
-                               (grab :entries coll)))]
+        ]
     (cond
       (= :coll/map splat-type) (apply glue
                                  (forv [me-splat (non-nil-entries-fn splat)]
@@ -94,8 +111,9 @@
       (= :coll/list splat-type) (let [list-vals-sorted-map (into (sorted-map)
                                                              (apply glue
                                                                (forv [le-splat (non-nil-entries-fn splat)]
-                                                                 {(grab :idx le-splat)
-                                                                  (grab :val le-splat)})))
+                                                                 (let [le-idx (grab :idx le-splat)
+                                                                       le-val (grab :val le-splat)]
+                                                                   {le-idx le-val}))))
                                       list-vals            (mapv unsplatter
                                                              (vals list-vals-sorted-map))]
                                   list-vals)
@@ -177,17 +195,17 @@
         [node-type         (grab :type node)
 
          data-post-enter   (enter-fn stack node)
-         data-to-recurse   (if stack-walk-noop?
+         data-for-recurse  (if stack-walk-noop?
                              node
                              data-post-enter)
 
          data-post-recurse (cond
-                             (= node-type :prim) data-to-recurse ; no recursion for primitives
+                             (= node-type :prim) data-for-recurse ; no recursion for primitives
 
-                             (coll-node? node) (walk-recurse-collection stack intc data-to-recurse)
-                             (entry-node? node) (walk-recurse-entry stack intc data-to-recurse)
+                             (coll-node? node) (walk-recurse-collection stack intc data-for-recurse)
+                             (entry-node? node) (walk-recurse-entry stack intc data-for-recurse)
 
-                             :else (throw (ex-info "unrecognized :type" (vals->map data-to-recurse type))))
+                             :else (throw (ex-info "unrecognized :type" (vals->map data-for-recurse type))))
          data-for-leave    (if stack-walk-noop?
                              node
                              data-post-recurse)
