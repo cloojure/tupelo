@@ -183,8 +183,8 @@
         #{:a 2 22}))))
 
 ; Uncomment one of these lines to see how the recursion proceeds through a splattered piece of data
-(verify
+(verify-focus
   ; (splatter-walk-spy [1 2])
-  ; (splatter-walk-spy {:a 1 :b #{2 3}})
+  (splatter-walk-spy {:a 1 :b #{2 3}})
   )
 
