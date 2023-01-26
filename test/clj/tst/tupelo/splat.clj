@@ -120,6 +120,56 @@
     (is= {:a 1} (unsplatter-map map-a))))
 
 (verify
+  (is= nil (unsplatter-map {:type    :coll/map
+                            :entries #{}}))
+  )
+(verify-focus
+  (is= (splatter {:a {:b 9}})
+    {:entries
+     #{{:key  {:data :a, :type :prim},
+        :type :map/entry,
+        :val  {:entries #{{:key  {:data :b, :type :prim},
+                           :type :map/entry,
+                           :val  {:data 9, :type :prim}}},
+               :type    :coll/map}}},
+     :type :coll/map})
+
+  ; Setting to `nil` will recurse back to root if no other map entries are present
+  (is= nil (unsplatter-map {:entries #{{:key  {:data :a, :type :prim},
+                                        :type :map/entry,
+                                        :val  {:entries #{{:key  {:data :b, :type :prim},
+                                                           :type :map/entry,
+                                                           :val  nil}},
+                                               :type    :coll/map}}},
+                            :type    :coll/map}))
+
+
+  ; Since the sub-map {:a 1} is present, setting the `9` value to `nil` does
+  ; not result in the whole map begin deleted.
+  (is= (splatter {:a 1 :b {:c 9}})
+    {:entries #{{:key  {:data :a, :type :prim},
+                 :type :map/entry,
+                 :val  {:data 1, :type :prim}}
+                {:key  {:data :b, :type :prim},
+                 :type :map/entry,
+                 :val  {:entries #{{:key  {:data :c, :type :prim},
+                                    :type :map/entry,
+                                    :val  {:data 9, :type :prim}}},
+                        :type    :coll/map}}},
+     :type    :coll/map})
+  (is= {:a 1}
+    (unsplatter-map {:entries #{{:key  {:data :a, :type :prim},
+                                 :type :map/entry,
+                                 :val  {:data 1, :type :prim}}
+                                {:key  {:data :b, :type :prim},
+                                 :type :map/entry,
+                                 :val  {:entries #{{:key  {:data :c, :type :prim},
+                                                    :type :map/entry,
+                                                    :val  nil}},
+                                        :type    :coll/map}}},
+                     :type    :coll/map})))
+
+(verify
   (let [
         orig   {:type    :coll/list
                 :entries #{

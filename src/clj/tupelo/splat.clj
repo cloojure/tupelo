@@ -96,12 +96,23 @@
                                          (nil? entry)
                                          (nil? (:key entry))
                                          (nil? (:val entry)))) it)))))
-(s/defn ^:no-doc unsplatter-map :- tsk/Map
+(s/defn ^:no-doc unsplatter-map :- (s/maybe tsk/Map)
   [splat :- tsk/KeyMap]
-  (apply glue
-    (forv [me-splat (grab :entries (remove-nils-map splat))]
-      {(unsplatter (grab :key me-splat))
-       (unsplatter (grab :val me-splat))})))
+  (spyx-pretty :awt01 splat)
+  (let [map-entries (drop-if nil?
+                      (forv [me-splat (grab :entries (remove-nils-map splat))]
+                        (let [me-key    (unsplatter (grab :key me-splat))
+                              me-val    (unsplatter (grab :val me-splat))
+                              me-result (if (or (nil? me-key) (nil? me-val))
+                                          nil
+                                          (map-entry me-key me-val))]
+                          me-result)))
+        >> (spyx-pretty :awt05 map-entries)
+        result      (if (pos? (count map-entries))
+                      (into {} map-entries)
+                      nil)]
+    (spyx-pretty :awt09 result)
+    result))
 
 (s/defn ^:no-doc remove-nils-list :- tsk/KeyMap
   [splat :- tsk/KeyMap]
@@ -145,13 +156,14 @@
    indicates a node or subtree has been deleted during prior processing
    (eg via `stack-walk` or `splatter-walk`)."
   [splat :- tsk/KeyMap]
-  (let [splat-type (grab :type splat)]
-    (cond
-      (= :coll/map splat-type) (unsplatter-map splat)
-      (= :coll/list splat-type) (unsplatter-list splat)
-      (= :coll/set splat-type) (unsplatter-set splat)
-      (= :prim splat-type) (grab :data splat)
-      :else (throw (ex-info "invalid splat found" (vals->map splat))))))
+  (with-spy-indent
+    (let [splat-type (grab :type splat)]
+      (cond
+        (= :coll/map splat-type) (unsplatter-map splat)
+        (= :coll/list splat-type) (unsplatter-list splat)
+        (= :coll/set splat-type) (unsplatter-set splat)
+        (= :prim splat-type) (grab :data splat)
+        :else (throw (ex-info "invalid splat found" (vals->map splat)))))))
 
 ;---------------------------------------------------------------------------------------------------
 (defn ^:no-doc prewalk-remove-entries
