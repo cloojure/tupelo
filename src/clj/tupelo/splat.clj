@@ -85,26 +85,59 @@
 
 ;---------------------------------------------------------------------------------------------------
 (declare unsplatter)
-(defn ^:no-doc remove-nils-map
-  [node]
-  (let [entries-keep (set
-                       (drop-if (fn [entry]
-                                  (or
-                                    (nil? entry)
-                                    (nil? (:key entry))
-                                    (nil? (:val entry))))
-                         (grab :entries node)))
-        result       (assoc node :entries entries-keep)]
-    result))
 
-(s/defn ^:no-doc unsplatter-list
-  [node :- tsk/KeyMap]
-  (let [])
-  )
-(s/defn ^:no-doc unsplatter-map
-  [node :- tsk/KeyMap])
-(s/defn ^:no-doc unsplatter-set
-  [node :- tsk/KeyMap])
+(s/defn ^:no-doc remove-nils-map
+  [splat :- tsk/KeyMap]
+  (assert (= :coll/map (grab :type splat)))
+  (assoc splat :entries (it-> (grab :entries splat)
+                          (set
+                            (drop-if (fn [entry]
+                                       (or
+                                         (nil? entry)
+                                         (nil? (:key entry))
+                                         (nil? (:val entry)))) it)))))
+(s/defn ^:no-doc unsplatter-map :- tsk/Map
+  [splat :- tsk/KeyMap]
+  (apply glue
+    (forv [me-splat (grab :entries (remove-nils-map splat))]
+      {(unsplatter (grab :key me-splat))
+       (unsplatter (grab :val me-splat))})))
+
+(s/defn ^:no-doc remove-nils-list :- tsk/KeyMap
+  [splat :- tsk/KeyMap]
+  (assert (= :coll/list (grab :type splat)))
+  (assoc splat :entries (it-> (grab :entries splat)
+                          (set
+                            (drop-if (fn [entry]
+                                       (or
+                                         (nil? entry)
+                                         (nil? (:idx entry))
+                                         (nil? (:val entry)))) it)))))
+(s/defn ^:no-doc unsplatter-list :- tsk/Vec
+  [splat :- tsk/KeyMap]
+  (let [list-vals-sorted-map (apply glue (sorted-map)
+                               (forv [le-splat (grab :entries (remove-nils-list splat))]
+                                 (let [le-idx (grab :idx le-splat)
+                                       le-val (grab :val le-splat)]
+                                   {le-idx le-val})))
+        list-vals            (mapv unsplatter
+                               (vals list-vals-sorted-map))]
+    list-vals))
+
+(s/defn ^:no-doc remove-nils-set :- tsk/KeyMap
+  [splat :- tsk/KeyMap]
+  (assert (= :coll/set (grab :type splat)))
+  (assoc splat :entries (it-> (grab :entries splat)
+                          (set
+                            (drop-if (fn [entry]
+                                       (or
+                                         (nil? entry)
+                                         (nil? (:val entry)))) it)))))
+(s/defn ^:no-doc unsplatter-set :- tsk/Set
+  [splat :- tsk/KeyMap]
+  (set
+    (forv [se-splat (grab :entries (remove-nils-set splat))]
+      (unsplatter (grab :val se-splat)))))
 
 (s/defn unsplatter :- s/Any
   "Remove annotations from a `splat`, eliding any `nil` values. Since the `splatter`
@@ -112,30 +145,12 @@
    indicates a node or subtree has been deleted during prior processing
    (eg via `stack-walk` or `splatter-walk`)."
   [splat :- tsk/KeyMap]
-  (let [splat-type (grab :type splat)
-        ]
+  (let [splat-type (grab :type splat)]
     (cond
-      (= :coll/map splat-type) (apply glue
-                                 (forv [me-splat (non-nil-entries-fn splat)]
-                                   {(unsplatter (grab :key me-splat))
-                                    (unsplatter (grab :val me-splat))}))
-
-      (= :coll/list splat-type) (let [list-vals-sorted-map (into (sorted-map)
-                                                             (apply glue
-                                                               (forv [le-splat (non-nil-entries-fn splat)]
-                                                                 (let [le-idx (grab :idx le-splat)
-                                                                       le-val (grab :val le-splat)]
-                                                                   {le-idx le-val}))))
-                                      list-vals            (mapv unsplatter
-                                                             (vals list-vals-sorted-map))]
-                                  list-vals)
-
-      (= :coll/set splat-type) (into #{}
-                                 (forv [se-splat (non-nil-entries-fn splat)]
-                                   (unsplatter (grab :val se-splat))))
-
+      (= :coll/map splat-type) (unsplatter-map splat)
+      (= :coll/list splat-type) (unsplatter-list splat)
+      (= :coll/set splat-type) (unsplatter-set splat)
       (= :prim splat-type) (grab :data splat)
-
       :else (throw (ex-info "invalid splat found" (vals->map splat))))))
 
 ;---------------------------------------------------------------------------------------------------
