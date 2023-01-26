@@ -119,54 +119,52 @@
     (is= {:a 1 :b 2} (unsplatter-map orig))
     (is= {:a 1} (unsplatter-map map-a))))
 
+; A map with no valid entries will be empty
 (verify
-  (is= nil (unsplatter-map {:type    :coll/map
+  (is= {} (unsplatter-map {:type    :coll/map
                             :entries #{}}))
-  )
-(verify-focus
+
   (is= (splatter {:a {:b 9}})
     {:entries
-     #{{:key  {:data :a, :type :prim},
-        :type :map/entry,
-        :val  {:entries #{{:key  {:data :b, :type :prim},
-                           :type :map/entry,
-                           :val  {:data 9, :type :prim}}},
-               :type    :coll/map}}},
+     #{{:key  {:data :a :type :prim}
+        :type :map/entry
+        :val  {:entries #{{:key  {:data :b :type :prim}
+                           :type :map/entry
+                           :val  {:data 9 :type :prim}}}
+               :type    :coll/map}}}
      :type :coll/map})
 
-  ; Setting to `nil` will recurse back to root if no other map entries are present
-  (is= nil (unsplatter-map {:entries #{{:key  {:data :a, :type :prim},
-                                        :type :map/entry,
-                                        :val  {:entries #{{:key  {:data :b, :type :prim},
-                                                           :type :map/entry,
-                                                           :val  nil}},
-                                               :type    :coll/map}}},
-                            :type    :coll/map}))
+  (is= {:a {}}  (unsplatter-map {:entries #{{:key  {:data :a :type :prim}
+                                                     :type :map/entry
+                                                     :val  {:entries #{{:key  {:data :b :type :prim}
+                                                                        :type :map/entry
+                                                                        :val  nil}}
+                                                            :type    :coll/map}}}
+                                         :type    :coll/map}))
 
 
-  ; Since the sub-map {:a 1} is present, setting the `9` value to `nil` does
-  ; not result in the whole map begin deleted.
+  ; Deleting the `9` via `nil` will cause that map to become empty
   (is= (splatter {:a 1 :b {:c 9}})
-    {:entries #{{:key  {:data :a, :type :prim},
-                 :type :map/entry,
-                 :val  {:data 1, :type :prim}}
-                {:key  {:data :b, :type :prim},
-                 :type :map/entry,
-                 :val  {:entries #{{:key  {:data :c, :type :prim},
-                                    :type :map/entry,
-                                    :val  {:data 9, :type :prim}}},
-                        :type    :coll/map}}},
+    {:entries #{{:key  {:data :a :type :prim}
+                 :type :map/entry
+                 :val  {:data 1 :type :prim}}
+                {:key  {:data :b :type :prim}
+                 :type :map/entry
+                 :val  {:entries #{{:key  {:data :c :type :prim}
+                                    :type :map/entry
+                                    :val  {:data 9 :type :prim}}}
+                        :type    :coll/map}}}
      :type    :coll/map})
-  (is= {:a 1}
-    (unsplatter-map {:entries #{{:key  {:data :a, :type :prim},
-                                 :type :map/entry,
-                                 :val  {:data 1, :type :prim}}
-                                {:key  {:data :b, :type :prim},
-                                 :type :map/entry,
-                                 :val  {:entries #{{:key  {:data :c, :type :prim},
-                                                    :type :map/entry,
-                                                    :val  nil}},
-                                        :type    :coll/map}}},
+  (is= {:a 1 :b {}}
+    (unsplatter-map {:entries #{{:key  {:data :a :type :prim}
+                                 :type :map/entry
+                                 :val  {:data 1 :type :prim}}
+                                {:key  {:data :b :type :prim}
+                                 :type :map/entry
+                                 :val  {:entries #{{:key  {:data :c :type :prim}
+                                                    :type :map/entry
+                                                    :val  nil}}
+                                        :type    :coll/map}}}
                      :type    :coll/map})))
 
 (verify
@@ -301,12 +299,12 @@
                     splat)
           result  (unsplatter trimmed)]
       (is= trimmed {:entries #{nil ; tombstone for {:a 1} map-entry
-                               {:key  {:data :b, :type :prim},
-                                :type :map/entry,
+                               {:key  {:data :b :type :prim}
+                                :type :map/entry
                                 :val  {:entries
                                        #{nil ; tombstone for {:idx 1} list-entry
-                                         {:idx 0, :type :list/entry, :val {:data 2, :type :prim}}},
-                                       :type :coll/list}}},
+                                         {:idx 0 :type :list/entry :val {:data 2 :type :prim}}}
+                                       :type :coll/list}}}
                     :type    :coll/map})
       (is= result {:b [2]})))
 

@@ -96,23 +96,13 @@
                                          (nil? entry)
                                          (nil? (:key entry))
                                          (nil? (:val entry)))) it)))))
-(s/defn ^:no-doc unsplatter-map :- (s/maybe tsk/Map)
+(s/defn ^:no-doc unsplatter-map :- tsk/Map
   [splat :- tsk/KeyMap]
-  (spyx-pretty :awt01 splat)
-  (let [map-entries (drop-if nil?
-                      (forv [me-splat (grab :entries (remove-nils-map splat))]
-                        (let [me-key    (unsplatter (grab :key me-splat))
-                              me-val    (unsplatter (grab :val me-splat))
-                              me-result (if (or (nil? me-key) (nil? me-val))
-                                          nil
-                                          (map-entry me-key me-val))]
-                          me-result)))
-        >> (spyx-pretty :awt05 map-entries)
-        result      (if (pos? (count map-entries))
-                      (into {} map-entries)
-                      nil)]
-    (spyx-pretty :awt09 result)
-    result))
+  (into {} (forv [me-splat (grab :entries (remove-nils-map splat))]
+             (let [me-key    (unsplatter (grab :key me-splat))
+                   me-val    (unsplatter (grab :val me-splat))
+                   me-result (map-entry me-key me-val)]
+               me-result))))
 
 (s/defn ^:no-doc remove-nils-list :- tsk/KeyMap
   [splat :- tsk/KeyMap]
