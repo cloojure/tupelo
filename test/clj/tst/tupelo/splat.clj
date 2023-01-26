@@ -1,4 +1,4 @@
-(ns ^:test-refresh/focus tst.tupelo.splat
+(ns tst.tupelo.splat
   (:use tupelo.splat
         tupelo.core
         tupelo.test)
@@ -188,6 +188,14 @@
                                                :val  {:data 2 :type :prim}}}}))))
 
 (verify
+  (let [data [1 2 [3 4]]]
+    (is= data (unsplatter (splatter data))))
+  (let [data {:a 1 :b [2 3 [4 5]]}]
+    (is= data (unsplatter (splatter data))))
+  (let [data #{:a :b [2 3 [4 {:x 1 :y 2}]]}]
+    (is= data (unsplatter (splatter data)))))
+
+(verify
   (let [orig  {:type    :coll/set
                :entries #{{:type :set/entry
                            :val  {:data 1 :type :prim}}
@@ -211,111 +219,111 @@
                                :entries #{{:type :set/entry
                                            :val  {:data 1 :type :prim}}}}))))
 
-  ;---------------------------------------------------------------------------------------------------
+;---------------------------------------------------------------------------------------------------
+(verify
+  (let [data  {:a 1 :b [2 3]}
+        splat (splatter data)]
+    (is= splat
+      {:type    :coll/map
+       :entries #{
+                  {:type :map/entry
+                   :key  {:type :prim :data :a}
+                   :val  {:type :prim :data 1}}
+                  {:type :map/entry
+                   :key  {:type :prim :data :b}
+                   :val  {:type    :coll/list
+                          :entries #{
+                                     {:type :list/entry
+                                      :idx  0
+                                      :val  {:type :prim :data 2}}
+                                     {:type :list/entry
+                                      :idx  1
+                                      :val  {:type :prim :data 3}}
+                                     }}}}})
+
+    ; delete some entries (replace with "tombstone" `nil` and then reconstruct the remainder)
+    (let [trimmed (walk/postwalk (fn [item]
+                                   (if (and (map? item)
+                                         (or (submap? {:val {:type :prim :data 1}} item)
+                                           (submap? {:idx 1} item)))
+                                     nil
+                                     item))
+                    splat)
+          result  (unsplatter trimmed)]
+      (is= trimmed {:entries #{nil ; tombstone for {:a 1} map-entry
+                               {:key  {:data :b, :type :prim},
+                                :type :map/entry,
+                                :val  {:entries
+                                       #{nil ; tombstone for {:idx 1} list-entry
+                                         {:idx 0, :type :list/entry, :val {:data 2, :type :prim}}},
+                                       :type :coll/list}}},
+                    :type    :coll/map})
+      (is= result {:b [2]})))
+
+  (let [data     {:a 1 :b #{4 5 "six"}}
+        splat    (splatter data)
+        expected {:type    :coll/map
+                  :entries #{
+                             {:type :map/entry
+                              :key  {:type :prim :data :a}
+                              :val  {:type :prim :data 1}}
+                             {:type :map/entry
+                              :key  {:type :prim :data :b}
+                              :val  {:type    :coll/set
+                                     :entries #{
+                                                {:type :set/entry
+                                                 :val  {:type :prim :data 4}}
+                                                {:type :set/entry
+                                                 :val  {:type :prim :data 5}}
+                                                {:type :set/entry
+                                                 :val  {:type :prim :data "six"}}}}}}}]
+    (is= splat expected)
+    (is= data (unsplatter splat))))
+
+;---------------------------------------------------------------------------------------------------
+(let [inc-prim-odd (fn [stack arg]
+                     (with-spy-indent
+                       ;(nl)
+                       ;(spyq :inc-prim-odd--enter )
+                       ;(spyx-pretty arg )
+                       ;(spyx-pretty stack)
+                       (let [type (:type arg)
+                             data (:data arg)]
+                         (let [arg-out (cond-it-> arg
+                                         (and (= :prim type) (number? data) (odd? data))
+                                         (update arg :data inc))]
+                           arg-out))))]
+
   (verify
-    (let [data  {:a 1 :b [2 3]}
-          splat (splatter data)]
-      (is= splat
-        {:type    :coll/map
-         :entries #{
-                    {:type :map/entry
-                     :key  {:type :prim :data :a}
-                     :val  {:type :prim :data 1}}
-                    {:type :map/entry
-                     :key  {:type :prim :data :b}
-                     :val  {:type    :coll/list
-                            :entries #{
-                                       {:type :list/entry
-                                        :idx  0
-                                        :val  {:type :prim :data 2}}
-                                       {:type :list/entry
-                                        :idx  1
-                                        :val  {:type :prim :data 3}}
-                                       }}}}})
+    (is= (inc-prim-odd [] {:type :prim :data :a})
+      {:type :prim :data :a})
+    (is= (inc-prim-odd [] {:type :prim :data 1})
+      {:type :prim :data 2}))
 
-      ; delete some entries (replace with "tombstone" `nil` and then reconstruct the remainder)
-      (let [trimmed (walk/postwalk (fn [item]
-                                     (if (and (map? item)
-                                           (or (submap? {:val {:type :prim :data 1}} item)
-                                             (submap? {:idx 1} item)))
-                                       nil
-                                       item))
-                      splat)
-            result  (unsplatter trimmed)]
-        (is= trimmed {:entries #{nil ; tombstone for {:a 1} map-entry
-                                 {:key  {:data :b, :type :prim},
-                                  :type :map/entry,
-                                  :val  {:entries
-                                         #{nil ; tombstone for {:idx 1} list-entry
-                                           {:idx 0, :type :list/entry, :val {:data 2, :type :prim}}},
-                                         :type :coll/list}}},
-                      :type    :coll/map})
-        (is= result {:b [2]})))
+  (verify
+    (let [intc     {:enter stack-identity
+                    :leave stack-identity}
+          data-out (it-> [1 2]
+                     (splatter it)
+                     (stack-walk intc it)
+                     (unsplatter it))]
+      (is= [1 2] data-out)))
 
-    (let [data     {:a 1 :b #{4 5 "six"}}
-          splat    (splatter data)
-          expected {:type    :coll/map
-                    :entries #{
-                               {:type :map/entry
-                                :key  {:type :prim :data :a}
-                                :val  {:type :prim :data 1}}
-                               {:type :map/entry
-                                :key  {:type :prim :data :b}
-                                :val  {:type    :coll/set
-                                       :entries #{
-                                                  {:type :set/entry
-                                                   :val  {:type :prim :data 4}}
-                                                  {:type :set/entry
-                                                   :val  {:type :prim :data 5}}
-                                                  {:type :set/entry
-                                                   :val  {:type :prim :data "six"}}}}}}}]
-      (is= splat expected)
-      (is= data (unsplatter splat))))
-
-  ;---------------------------------------------------------------------------------------------------
-  (let [inc-prim-odd (fn [stack arg]
-                       (with-spy-indent
-                         ;(nl)
-                         ;(spyq :inc-prim-odd--enter )
-                         ;(spyx-pretty arg )
-                         ;(spyx-pretty stack)
-                         (let [type (:type arg)
-                               data (:data arg)]
-                           (let [arg-out (cond-it-> arg
-                                           (and (= :prim type) (number? data) (odd? data))
-                                           (update arg :data inc))]
-                             arg-out))))]
-
+  (let [intc {:enter inc-prim-odd
+              :leave stack-identity}]
     (verify
-      (is= (inc-prim-odd [] {:type :prim :data :a})
-        {:type :prim :data :a})
-      (is= (inc-prim-odd [] {:type :prim :data 1})
-        {:type :prim :data 2}))
+      (is= (splat/splatter-walk intc [1 2])
+        [2 2])
 
-    (verify
-      (let [intc     {:enter stack-identity
-                      :leave stack-identity}
-            data-out (it-> [1 2]
-                       (splatter it)
-                       (stack-walk intc it)
-                       (unsplatter it))]
-        (is= [1 2] data-out)))
+      (is= (splat/splatter-walk intc {:a 1 :b 2})
+        {:a 2 :b 2})
 
-    (let [intc {:enter inc-prim-odd
-                :leave stack-identity}]
-      (verify
-        (is= (splat/splatter-walk intc [1 2])
-          [2 2])
+      (is= (splat/splatter-walk intc #{:a 1 22})
+        #{:a 2 22}))))
 
-        (is= (splat/splatter-walk intc {:a 1 :b 2})
-          {:a 2 :b 2})
-
-        (is= (splat/splatter-walk intc #{:a 1 22})
-          #{:a 2 22}))))
-
-  ; Uncomment one of these lines to see how the recursion proceeds through a splattered piece of data
-  (verify ; -focus
-    ; (splatter-walk-spy [1 2])
-    ; (splatter-walk-spy {:a 1 :b #{2 3}})
-    )
+; Uncomment one of these lines to see how the recursion proceeds through a splattered piece of data
+(verify   ; -focus
+  ; (splatter-walk-spy [1 2])
+  ; (splatter-walk-spy {:a 1 :b #{2 3}})
+  )
 
