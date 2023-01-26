@@ -79,16 +79,28 @@
 (s/defn non-nil-entries-fn
   [coll :- (s/maybe tsk/KeyMap)]
   (when (not-nil? coll)
-    (drop-if #(or
-                (nil? %) ; entry is nil
-                (nil? (:idx %)) ; list/entry idx is nil
-                (nil? (:key %)) ; map/entry key is nil
+    (drop-if #(or (nil? %) ; entry is nil
                 (nil? (:val %))) ; val for list, map, or set is nil
       (:entries coll))))
 
+;---------------------------------------------------------------------------------------------------
 (declare unsplatter)
+(defn ^:no-doc remove-nils-map
+  [node]
+  (let [entries-keep (set
+                       (drop-if (fn [entry]
+                                  (or
+                                    (nil? entry)
+                                    (nil? (:key entry))
+                                    (nil? (:val entry))))
+                         (grab :entries node)))
+        result       (assoc node :entries entries-keep)]
+    result))
+
 (s/defn ^:no-doc unsplatter-list
-  [node :- tsk/KeyMap])
+  [node :- tsk/KeyMap]
+  (let [])
+  )
 (s/defn ^:no-doc unsplatter-map
   [node :- tsk/KeyMap])
 (s/defn ^:no-doc unsplatter-set
@@ -100,7 +112,7 @@
    indicates a node or subtree has been deleted during prior processing
    (eg via `stack-walk` or `splatter-walk`)."
   [splat :- tsk/KeyMap]
-  (let [splat-type         (grab :type splat)
+  (let [splat-type (grab :type splat)
         ]
     (cond
       (= :coll/map splat-type) (apply glue

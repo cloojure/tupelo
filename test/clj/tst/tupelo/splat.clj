@@ -1,4 +1,4 @@
-(ns tst.tupelo.splat
+(ns ^:test-refresh/focus tst.tupelo.splat
   (:use tupelo.splat tupelo.core tupelo.test)
   (:require
     [tupelo.splat :as splat]
@@ -79,6 +79,19 @@
                  :val  {:data 1 :type :prim}}
                 {:type :set/entry
                  :val  {:data 2 :type :prim}}}}))
+
+(verify
+  (let [orig {:type    :coll/map
+              :entries #{
+                         {:type :map/entry
+                          :key  {:data :a :type :prim}
+                          :val  {:data 1 :type :prim}}
+                         {:type :map/entry
+                          :key  {:data :b :type :prim}
+                          :val  {:data 2 :type :prim}}}}]
+    (is= orig (remove-nils-map orig)))
+  )
+(comment
 
 ;---------------------------------------------------------------------------------------------------
 (verify
@@ -188,3 +201,4 @@
   ; (splatter-walk-spy {:a 1 :b #{2 3}})
   )
 
+  )
