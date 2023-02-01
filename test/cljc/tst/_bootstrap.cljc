@@ -4,7 +4,7 @@
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
-(ns _bootstrap
+(ns tst._bootstrap
   "This namespace is used to perform one-time tasks during testing, such as printing the
   Clojure version."
   (:require
