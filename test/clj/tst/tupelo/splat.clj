@@ -1,7 +1,5 @@
 (ns tst.tupelo.splat
-  (:use tupelo.splat
-        tupelo.core
-        tupelo.test)
+  (:use tupelo.splat tupelo.core tupelo.test)
   (:require
     [tupelo.splat :as splat]
     [clojure.walk :as walk]))
@@ -374,4 +372,5 @@
   ; (splatter-walk-spy [1 2])
   ; (splatter-walk-spy {:a 1 :b #{2 3}})
   )
+
 

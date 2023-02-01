@@ -16,7 +16,7 @@
  ; If this is specified then only tests in namespaces that were just reloaded by tools.namespace
  ; (namespaces where a change was detected in it or a dependent namespace) are run. This can also be
  ; passed as a command line option: lein test-refresh :changes-only.
- :changes-only true
+ ; :changes-only true
 
  ; If specified, binds value to clojure.test/*stack-trace-depth*
  :stack-trace-depth nil
@@ -30,7 +30,7 @@
  ; If set to a truthy value, then lein test-refresh will only run your tests once. Also supported as a
  ; command line option. Reasoning for feature can be found in PR:
  ; https://github.com/jakemcc/lein-test-refresh/pull/48
- :run-once true
+ ; :run-once true
 
  ; If given, watch for changes only in the given folders. By default, watches for changes on entire
  ; classpath.
