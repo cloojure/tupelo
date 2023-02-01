@@ -11,7 +11,7 @@
 
  ; Stop clojure.test from printing ; "Testing namespace.being.tested". Very useful on
  ; codebases with many test namespaces.  Defaults to false.
- :quiet true
+ ;; :quiet true
 
  ; If this is specified then only tests in namespaces that were just reloaded by tools.namespace
  ; (namespaces where a change was detected in it or a dependent namespace) are run. This can also be
