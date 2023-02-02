@@ -50,7 +50,7 @@
            :test-refresh {:extra-paths ["test/resources"]
                           :extra-deps {com.jakemccrary/test-refresh {:mvn/version "0.25.0"}}
                           :main-opts  ["-m" "com.jakemccrary.test-refresh" 
-                                       "--dir" "test"
+                                       ; "--dir" "test"
                                        ]
                           }
            ; This target finds dependencies with outdated version numbers
