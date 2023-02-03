@@ -84,8 +84,6 @@
       (:entries coll))))
 
 ;---------------------------------------------------------------------------------------------------
-(declare unsplatter)
-
 (s/defn ^:no-doc remove-nils-map
   [splat :- tsk/KeyMap]
   (assert (= :coll/map (grab :type splat)))
@@ -96,14 +94,6 @@
                                          (nil? entry)
                                          (nil? (:key entry))
                                          (nil? (:val entry)))) it)))))
-
-(s/defn ^:no-doc unsplatter-map :- tsk/Map
-  [splat :- tsk/KeyMap]
-  (into {} (forv [me-splat (grab :entries (remove-nils-map splat))]
-             (let [me-key    (unsplatter (grab :key me-splat))
-                   me-val    (unsplatter (grab :val me-splat))
-                   me-result (map-entry me-key me-val)]
-               me-result))))
 
 (s/defn ^:no-doc remove-nils-list :- tsk/KeyMap
   [splat :- tsk/KeyMap]
@@ -116,6 +106,37 @@
                                          (nil? (:idx entry))
                                          (nil? (:val entry)))) it)))))
 
+(s/defn ^:no-doc remove-nils-set :- tsk/KeyMap
+  [splat :- tsk/KeyMap]
+  (assert (= :coll/set (grab :type splat)))
+  (assoc splat :entries (it-> (grab :entries splat)
+                          (set
+                            (drop-if (fn [entry]
+                                       (or
+                                         (nil? entry)
+                                         (nil? (:val entry)))) it)))))
+
+(s/defn ^:no-doc remove-nils-collection :- tsk/KeyMap
+  [splat :- tsk/KeyMap]
+  (with-spy-indent
+    (let [splat-type (grab :type splat)]
+      (cond
+        (= :coll/map splat-type) (remove-nils-map splat)
+        (= :coll/list splat-type) (remove-nils-list splat)
+        (= :coll/set splat-type) (remove-nils-set splat)
+        :else (throw (ex-info "invalid splat found" (vals->map splat)))))))
+
+;----------------------------------------------------------------------------------------------------
+(declare unsplatter)
+
+(s/defn ^:no-doc unsplatter-map :- tsk/Map
+  [splat :- tsk/KeyMap]
+  (into {} (forv [me-splat (grab :entries (remove-nils-map splat))]
+             (let [me-key    (unsplatter (grab :key me-splat))
+                   me-val    (unsplatter (grab :val me-splat))
+                   me-result (map-entry me-key me-val)]
+               me-result))))
+
 (s/defn ^:no-doc unsplatter-list :- tsk/Vec
   [splat :- tsk/KeyMap]
   (let [list-vals-sorted-map (apply glue (sorted-map)
@@ -127,15 +148,6 @@
                                (vals list-vals-sorted-map))]
     list-vals))
 
-(s/defn ^:no-doc remove-nils-set :- tsk/KeyMap
-  [splat :- tsk/KeyMap]
-  (assert (= :coll/set (grab :type splat)))
-  (assoc splat :entries (it-> (grab :entries splat)
-                          (set
-                            (drop-if (fn [entry]
-                                       (or
-                                         (nil? entry)
-                                         (nil? (:val entry)))) it)))))
 (s/defn ^:no-doc unsplatter-set :- tsk/Set
   [splat :- tsk/KeyMap]
   (set
@@ -209,10 +221,11 @@
   [stack :- tsk/Vec
    intc :- tsk/KeyMap
    node :- tsk/KeyMap]
-  (let [stack-next (prepend (prewalk-remove-entries node) stack)
-        node-out   (glue node
-                     {:entries (forv [item (grab :entries node)]
-                                 (walk-recurse-dispatch stack-next intc item))})]
+  (let [stack-next        (prepend (prewalk-remove-entries node) stack)
+        node-post-recurse (glue node
+                            {:entries (set (forv [item (grab :entries node)]
+                                             (walk-recurse-dispatch stack-next intc item)))})
+        node-out          (remove-nils-collection node-post-recurse)]
     node-out))
 
 (s/defn ^:no-doc walk-recurse-dispatch ; dispatch fn

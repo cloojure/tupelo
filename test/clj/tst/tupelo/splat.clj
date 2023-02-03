@@ -380,12 +380,12 @@
 ;---------------------------------------------------------------------------------------------------
 ; remove empty leaves like `state`, etc
 (verify
-  (let [data-hiccup  [:foo
-                      [:name "John"]
-                      [:address "1 hacker way"]
-                      [:phone]
-                      [:school [:name] [:state] [:type]]
-                      [:college [:name "mit"] [:address] [:state]]]]
+  (let [data-hiccup [:foo
+                     [:name "John"]
+                     [:address "1 hacker way"]
+                     [:phone]
+                     [:school [:name] [:state] [:type]]
+                     [:college [:name "mit"] [:address] [:state]]]]
     (when false
       (spyx-pretty (splat/splatter data-hiccup))
       (comment ; sample subtree for `state`
@@ -395,21 +395,14 @@
                       :val  {:data :state :type :prim}}}
           :type    :coll/list}}))
 
-    (let [intc      {:leave (fn [stack node]
-                              (cond-it-> node
-
-                                (= :coll/list (:type it))
-                                (let [denilled (remove-nils-list node)] ; #todo #awt This is an ugly hack. How to improve?
-                                  (if (= 1 (count (:entries denilled)))
-                                    nil
-                                    denilled))
-
-                                (and (= :list/entry (:type it))
-                                  (= nil (:val it)))
-                                nil
-
-                                ))}
-          result    (splat/splatter-walk intc data-hiccup)]
+    (let [intc   {:leave (fn [stack node]
+                           (cond-it-> node
+                             ; If a node is of type `:coll/list` has only the initial keyword and
+                             ; nothing else, it is "empty" and we remove it by setting to `nil`
+                             (= :coll/list (:type it)) (if (= 1 (count (:entries node)))
+                                                         nil
+                                                         node)))}
+          result (splat/splatter-walk intc data-hiccup)]
       (is= result
         [:foo
          [:name "John"]
