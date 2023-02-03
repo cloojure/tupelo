@@ -2485,7 +2485,7 @@
 
   Works with the `->vector` function to splice vectors/lists and insert
   their elements as with the unquote-spicing operator (~@).  Modeled
-  on the Javascript React splice operatoe `<>`. Examples:
+  on the Javascript React splice operator `<>`. Examples:
 
         (->vector 1 2 3      4 5 6   7 8 9)   =>  [1 2 3 4 5 6 7 8 9]
         (->vector 1 2 3 (<> [4 5 6]) 7 8 9)   =>  [1 2 3 4 5 6 7 8 9] "

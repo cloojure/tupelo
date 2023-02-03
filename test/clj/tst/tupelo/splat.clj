@@ -329,10 +329,6 @@
 ;---------------------------------------------------------------------------------------------------
 (let [inc-prim-odd (fn [stack arg]
                      (with-spy-indent
-                       ;(nl)
-                       ;(spyq :inc-prim-odd--enter )
-                       ;(spyx-pretty arg )
-                       ;(spyx-pretty stack)
                        (let [type (:type arg)
                              data (:data arg)]
                          (let [arg-out (cond-it-> arg

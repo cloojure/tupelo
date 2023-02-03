@@ -4,7 +4,7 @@
 ;   the root of this distribution.  By using this software in any fashion, you are agreeing to be
 ;   bound by the terms of this license.  You must not remove this notice, or any other, from this
 ;   software.
-(ns tst.tupelo.forest-examples
+(ns ^:test-refresh/focus tst.tupelo.forest-examples
   (:use tupelo.core
         tupelo.forest
         tupelo.test)
