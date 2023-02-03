@@ -1,5 +1,7 @@
 (ns tst.tupelo.splat
-  (:use tupelo.splat tupelo.core tupelo.test)
+  (:use tupelo.splat
+        tupelo.core
+        tupelo.test)
   (:require
     [tupelo.splat :as splat]
     [clojure.walk :as walk]))
@@ -120,7 +122,7 @@
 ; A map with no valid entries will be empty
 (verify
   (is= {} (unsplatter-map {:type    :coll/map
-                            :entries #{}}))
+                           :entries #{}}))
 
   (is= (splatter {:a {:b 9}})
     {:entries
@@ -132,13 +134,13 @@
                :type    :coll/map}}}
      :type :coll/map})
 
-  (is= {:a {}}  (unsplatter-map {:entries #{{:key  {:data :a :type :prim}
-                                                     :type :map/entry
-                                                     :val  {:entries #{{:key  {:data :b :type :prim}
-                                                                        :type :map/entry
-                                                                        :val  nil}}
-                                                            :type    :coll/map}}}
-                                         :type    :coll/map}))
+  (is= {:a {}} (unsplatter-map {:entries #{{:key  {:data :a :type :prim}
+                                            :type :map/entry
+                                            :val  {:entries #{{:key  {:data :b :type :prim}
+                                                               :type :map/entry
+                                                               :val  nil}}
+                                                   :type    :coll/map}}}
+                                :type    :coll/map}))
 
 
   ; Deleting the `9` via `nil` will cause that map to become empty
@@ -232,6 +234,18 @@
                                               {:type :list/entry
                                                :idx  9
                                                :val  {:data 2 :type :prim}}}}))))
+
+(verify
+  (let [data {:entries [{:idx 1, :type :list/entry, :val nil}
+                        {:idx 2, :type :list/entry, :val nil}
+                        {:idx 3, :type :list/entry, :val nil}
+                        {:idx  0,
+                         :type :list/entry,
+                         :val  {:branch :list/val, :data :school, :type :prim}}],
+              :type    :coll/list}
+        ]
+    (is= (unsplatter-list data)
+      [:school])))
 
 (verify
   (let [data [1 2 [3 4]]]
@@ -363,6 +377,47 @@
       (is= (splat/splatter-walk intc #{:a 1 22})
         #{:a 2 22}))))
 
+;---------------------------------------------------------------------------------------------------
+; remove empty leaves like `state`, etc
+(verify
+  (let [data-hiccup  [:foo
+                      [:name "John"]
+                      [:address "1 hacker way"]
+                      [:phone]
+                      [:school [:name] [:state] [:type]]
+                      [:college [:name "mit"] [:address] [:state]]]]
+    (when false
+      (spyx-pretty (splat/splatter data-hiccup))
+      (comment ; sample subtree for `state`
+        {:idx 2 :type :list/entry :val
+         {:entries #{{:idx  0
+                      :type :list/entry
+                      :val  {:data :state :type :prim}}}
+          :type    :coll/list}}))
+
+    (let [intc      {:leave (fn [stack node]
+                              (cond-it-> node
+
+                                (= :coll/list (:type it))
+                                (let [denilled (remove-nils-list node)] ; #todo #awt This is an ugly hack. How to improve?
+                                  (if (= 1 (count (:entries denilled)))
+                                    nil
+                                    denilled))
+
+                                (and (= :list/entry (:type it))
+                                  (= nil (:val it)))
+                                nil
+
+                                ))}
+          result    (splat/splatter-walk intc data-hiccup)]
+      (is= result
+        [:foo
+         [:name "John"]
+         [:address "1 hacker way"]
+         [:college
+          [:name "mit"]]]))))
+
+;-----------------------------------------------------------------------------
 ; Uncomment one of these lines to see how the recursion proceeds through a splattered piece of data
 (verify   ; -focus
   ; (splatter-walk-spy [1 2])

@@ -96,6 +96,7 @@
                                          (nil? entry)
                                          (nil? (:key entry))
                                          (nil? (:val entry)))) it)))))
+
 (s/defn ^:no-doc unsplatter-map :- tsk/Map
   [splat :- tsk/KeyMap]
   (into {} (forv [me-splat (grab :entries (remove-nils-map splat))]
@@ -114,6 +115,7 @@
                                          (nil? entry)
                                          (nil? (:idx entry))
                                          (nil? (:val entry)))) it)))))
+
 (s/defn ^:no-doc unsplatter-list :- tsk/Vec
   [splat :- tsk/KeyMap]
   (let [list-vals-sorted-map (apply glue (sorted-map)
