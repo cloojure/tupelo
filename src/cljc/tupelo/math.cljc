@@ -74,20 +74,6 @@
        (it-> (Math/log (double x))
          (/ it ln-2)))
 
-     (comment ; #todo OBE via clojure.core/biginteger   *** delete! ***
-       (s/defn ->BigInteger :- BigInteger
-         "Converts a numeric value into a (positive) BigInteger (with truncation for Double and BigDecimal)"
-         [arg :- s/Num]
-         (assert (t/nonneg? arg))
-         (cond
-           (t/biginteger? arg) arg ; noop
-           (int? arg) (BigInteger/valueOf (long arg)) ; any integer type, coerce to long
-           (float? arg) (recur (bigdec arg)) ; any floating-point (Float & Double)
-           (t/bigint? arg) (recur (bigdec arg)) ; clojure.core/BigInt <> java.math.BigInteger
-           (t/bigdecimal? arg) (.toBigInteger ^BigDecimal arg) ; *** truncation ***
-           :else (let [arg-type (type arg)]
-                   (throw (ex-info "invalid arg type" (vals->map arg arg-type)))))))
-
      (s/defn pow-BigInteger :- BigInteger
        "An BigInteger version of java.Math/pow( base, exp )"
        [base :- s/Int
@@ -108,6 +94,7 @@
              result-long    (.longValueExact result-bi)]
          result-long))
 
+     ; #todo int->binary-str with cast
      (s/defn BigInteger->binary-str :- s/Str
        "Converts a (positive) BigInteger into a binary String"
        [bi :- BigInteger]
@@ -121,6 +108,7 @@
          (assert (t/nonneg? result))
          result))
 
+     ; #todo int->binary-chars with cast
      (s/defn BigInteger->binary-chars :- [Character]
        "Converts a (positive) BigInteger into a binary char sequence"
        [bi :- BigInteger] (vec (BigInteger->binary-str bi)))
@@ -129,6 +117,7 @@
        "Converts a binary char sequence into a (positive) BigInteger"
        [bin-chars :- [Character]] (binary-str->BigInteger (str/join bin-chars)))
 
+     ; #todo int->hex-str with cast
      (s/defn BigInteger->hex-str :- s/Str
        "Converts a (positive) BigInteger into a hex string of `min-width` chars"
        [bi :- BigInteger

@@ -10,9 +10,9 @@
   (:require
     [clojure.set]
     [schema.core :as s]
-    [tupelo.core :as t]
     ))
 
+; #todo wrap these functions and throw if non-set argument found!
 ;-----------------------------------------------------------------------------
 ; for convenience of requiring only 1 ns
 (def difference            clojure.set/difference)

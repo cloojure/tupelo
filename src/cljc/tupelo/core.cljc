@@ -846,6 +846,8 @@
   (when (or (nil? coll) (empty? coll)) (throw (ex-info "xbutlast: invalid coll: " {:coll coll})))
   (vec (clojure.core/butlast coll)))
 
+; #todo need xnext
+
 ; #todo fix up for maps
 (defn xrest ; #todo -> tests
   "Returns the last value in a list or vector. Throws if empty."
@@ -2774,8 +2776,9 @@
         map-out        (into {} tuple-seq-out) ]
     map-out))
 
-(def MapKeySpec (s/if set? #{s/Any} [s/Any]))
+(def MapKeySpec (s/if set? #{s/Any} [s/Any])) ; #todo fix this...?
 (s/defn validate-map-keys :- s/Any ; #todo docstring, README
+  "Throws if any map key is not in the valid list. Returns the map."
   [tst-map :- tsk/Map
    valid-keys :- MapKeySpec]
   (let [valid-keys (set valid-keys)
