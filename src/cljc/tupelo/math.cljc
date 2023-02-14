@@ -74,7 +74,7 @@
        (it-> (Math/log (double x))
          (/ it ln-2)))
 
-     (s/defn pow-BigInteger :- BigInteger
+     (s/defn pow->BigInteger :- BigInteger
        "An BigInteger version of java.Math/pow( base, exp )"
        [base :- s/Int
         exp :- s/Int]
@@ -84,11 +84,11 @@
        (when-not (t/nonneg? exp) (throw (ex-info "exp must be nonneg" (vals->map exp))))
        (.pow ^BigInteger (biginteger base) exp))
 
-     (s/defn pow-long :- s/Int
+     (s/defn pow->Long :- s/Int
        "An Long (integer) version of java.Math/pow( base, exp )"
        [base :- s/Int
         exp :- s/Int]
-       (let [result-bi (pow-BigInteger base exp)
+       (let [result-bi (pow->BigInteger base exp)
              >>        (when (< Long/MAX_VALUE result-bi)
                          (throw (ex-info "Long overflow" (vals->map result-bi))))
              result-long    (.longValueExact result-bi)]
@@ -124,14 +124,13 @@
         min-width :- s/Int] ; #todo test min-width & all
        (assert (t/biginteger? bi))
        (assert (t/nonneg? bi))
-       (let [hex-chars       (vec (.toString ^BigInteger bi 16))
+       (let [hex-chars       (vec (.toString (biginteger bi) 16))
              hex-chars-num   (count hex-chars)
              chars-needed    (max 0 (- min-width hex-chars-num)) ; soft overflow
              hex-chars-final (glue (repeat chars-needed \0) hex-chars)
              result          (str/join hex-chars-final)]
          (assert (<= min-width (count hex-chars-final)))
          result))
-
 
      ))
 

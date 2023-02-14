@@ -187,12 +187,12 @@
      (defn long-equals? [a b] (and (types/long? a) (types/long? b) (= a b)))
 
      (dotest
-       (is (biginteger-equals? (math/pow-BigInteger 2 5) (biginteger 32)))
-       (throws? (math/pow-BigInteger 2 -5) )
+       (is (biginteger-equals? (math/pow->BigInteger 2 5) (biginteger 32)))
+       (throws? (math/pow->BigInteger 2 -5) )
 
-       (is (long-equals? (math/pow-long 2 5) 32))
-       (throws? (math/pow-long 2 77))
-       (throws? (math/pow-long 2 -5)))
+       (is (long-equals? (math/pow->Long 2 5) 32))
+       (throws? (math/pow->Long 2 77))
+       (throws? (math/pow->Long 2 -5)))
 
      (dotest
        (let [bi-5               (BigInteger/valueOf 5)]
