@@ -14,11 +14,11 @@
      (:require-macros
        [tupelo.misc :refer [with-dots]]))
   (:require
-            [schema.core :as s]
-            [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map]]
-            [tupelo.schema :as tsk]
-            [tupelo.string :as str]
-            )
+    [schema.core :as s]
+    [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map]]
+    [tupelo.schema :as tsk]
+    [tupelo.string :as str]
+    )
   #?(:clj
      (:import
        [java.math RoundingMode])))
@@ -88,18 +88,17 @@
        "An Long (integer) version of java.Math/pow( base, exp )"
        [base :- s/Int
         exp :- s/Int]
-       (let [result-bi (pow->BigInteger base exp)
-             >>        (when (< Long/MAX_VALUE result-bi)
-                         (throw (ex-info "Long overflow" (vals->map result-bi))))
-             result-long    (.longValueExact result-bi)]
+       (let [result-bi   (pow->BigInteger base exp)
+             >>          (when (< Long/MAX_VALUE result-bi)
+                           (throw (ex-info "Long overflow" (vals->map result-bi))))
+             result-long (.longValueExact result-bi)]
          result-long))
 
-     ; #todo int->binary-str with cast
-     (s/defn BigInteger->binary-str :- s/Str
+     (s/defn BigInteger->binary-str :- s/Str ; #todo rename int->binary-str
        "Converts a (positive) BigInteger into a binary String"
-       [bi :- BigInteger]
-       (assert (t/nonneg? bi))
-       (.toString ^BigInteger bi 2))
+       [ival :- s/Int]
+       (assert (t/nonneg? ival))
+       (.toString (biginteger ival) 2))
 
      (s/defn binary-str->BigInteger :- BigInteger
        "Converts a binary char sequence into a (positive) BigInteger"
@@ -108,10 +107,9 @@
          (assert (t/nonneg? result))
          result))
 
-     ; #todo int->binary-chars with cast
-     (s/defn BigInteger->binary-chars :- [Character]
+     (s/defn BigInteger->binary-chars :- [Character] ; #todo rename int->binary-chars
        "Converts a (positive) BigInteger into a binary char sequence"
-       [bi :- BigInteger] (vec (BigInteger->binary-str bi)))
+       [bi :- s/Int] (vec (BigInteger->binary-str bi)))
 
      (s/defn binary-chars->BigInteger :- BigInteger
        "Converts a binary char sequence into a (positive) BigInteger"
@@ -120,16 +118,16 @@
      ; #todo int->hex-str with cast
      (s/defn BigInteger->hex-str :- s/Str
        "Converts a (positive) BigInteger into a hex string of `min-width` chars"
-       [bi :- BigInteger
+       [ival :- s/Int
         min-width :- s/Int] ; #todo test min-width & all
-       (assert (t/biginteger? bi))
-       (assert (t/nonneg? bi))
-       (let [hex-chars       (vec (.toString (biginteger bi) 16))
-             hex-chars-num   (count hex-chars)
-             chars-needed    (max 0 (- min-width hex-chars-num)) ; soft overflow
-             hex-chars-final (glue (repeat chars-needed \0) hex-chars)
-             result          (str/join hex-chars-final)]
-         (assert (<= min-width (count hex-chars-final)))
-         result))
+       (assert (t/nonneg? ival))
+       (let [hexchars-orig     (vec (.toString (biginteger ival) 16))
+             num-hexchars      (count hexchars-orig)
+             num-leading-zeros (max 0 (- min-width num-hexchars)) ; soft overflow
+             >>                (assert (t/int-nonneg? num-leading-zeros))
+             hexchars-final    (glue (repeat num-leading-zeros \0) hexchars-orig)
+             hex-str            (str/join hexchars-final)]
+         (assert (<= min-width (count hexchars-final)))
+         hex-str))
 
      ))
