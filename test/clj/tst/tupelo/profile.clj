@@ -26,13 +26,17 @@
     ; stop all jobs
     (doseq [job jobs] (at/stop job))
 
-    (when false
-      (nl)
-      (spyx-pretty (prof/profile-map))
-      (nl)
-      (prof/print-profile-stats!)
-      (nl))
-    ;
+    ; automate this testing & always enable.  Need a macro to autogenerate functions like `sleep-05`
+    ; with delay 5 millis and id :sleep-05, then loop over result map & verify bounds like
+    ; (is (<= <abs relative error> 30%))
+    (let [prof-map-str       (with-out-str (spyx-pretty (prof/profile-map)))
+          printed-prof-stats (with-out-str (prof/print-profile-stats!))]
+
+      (when false ; ***** ENABLE TO SEE PRINTOUT *****
+        (print prof-map-str)
+        (print printed-prof-stats)
+        ))
+
     ; Sample output:
     ;
     ; (prof/profile-map) =>
@@ -76,4 +80,3 @@
             pass-flgs  (mapv #(< % 0.002) sigma-vals)]
         (is (every? truthy? pass-flgs))))
     ))
-
