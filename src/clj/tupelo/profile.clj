@@ -1,14 +1,13 @@
 (ns tupelo.profile
   (:use tupelo.core))
 
-(def      ; ^:private   ; #todo #awt finish
-  timer-stats (atom {}))
+(def ^:no-doc timer-stats (atom {}))
 
-(defn timer-stats-reset
+(defn timer-stats-reset!
   "Reset all timer statistics to empty"
   [] (reset! timer-stats {}))
 
-(defn stats-update
+(defn stats-update!
   "Updates timing stats for a given key & elapsed time"
   [id seconds]
   (swap! timer-stats
@@ -53,7 +52,7 @@
   (when-not (keyword? id)
     (throw (ex-info "id must be a keyword" (vals->map id))))
   `(let [result-map# (with-timer-result ~@forms)]
-     (stats-update ~id (grab :seconds result-map#))
+     (stats-update! ~id (grab :seconds result-map#))
      (grab :result result-map#)))
 
 (defmacro defnp
@@ -101,10 +100,10 @@
 (defn profile-map
   "Returns a map of all profile stats, keyed by ID."
   []
-  (let [stats-map     @timer-stats
-        result        (apply glue (sorted-map)
-                        (forv [stats-id (keys stats-map)]
-                          {stats-id (stats-get stats-id)}))]
+  (let [stats-map @timer-stats
+        result    (apply glue (sorted-map)
+                    (forv [stats-id (keys stats-map)]
+                      {stats-id (stats-get stats-id)}))]
     result))
 
 (defn profile-data-sorted
@@ -115,7 +114,7 @@
                               (glue {:id stats-id} stats-data))))]
     stats-sorted))
 
-(defn print-profile-stats
+(defn print-profile-stats!
   "Prints profile stats to stdout."
   []
   (newline)
