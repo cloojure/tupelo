@@ -1,4 +1,4 @@
-(defproject tupelo "23.01.23a"
+(defproject tupelo "23.02.29a"
   :description "Tupelo:  Clojure With A Spoonful of Honey"
   :license {:name "Eclipse Public License"
             :url  "http://www.eclipse.org/legal/epl-v10.html"}
