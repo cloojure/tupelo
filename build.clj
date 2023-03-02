@@ -16,8 +16,8 @@
   (b/delete {:path build-folder})
   (println (format "Build folder \"%s\" removed" build-folder)))
 
-(defn jar [& args]
-  (clean nil) ; clean leftovers
+(defn build-jar [& args]
+  (clean) ; clean leftovers
 
   (b/copy-dir {:src-dirs   ["src/clj"
                             "src/cljc"
@@ -34,8 +34,9 @@
           :jar-file  jar-file-name})
   (println (format "Jar file created: \"%s\"" jar-file-name)))
 
-(defn deploy [& args]
-  (dd/deploy {:installer  :remote
-              :artifact jar-file-name
-              :pom-file (b/pom-path {:lib       lib-name
-                                     :class-dir jar-content})}))
+(defn deploy-clojars [& args]
+  (build-jar)
+  (dd/deploy {:installer :remote
+              :artifact  jar-file-name
+              :pom-file  (b/pom-path {:lib       lib-name
+                                      :class-dir jar-content})}))
