@@ -5,7 +5,8 @@
     ))
 
 (def lib-name 'tupelo/tupelo) ; must be a qualified symbol
-(def version "23.03.03a")
+(def version "23.03.03b-SHAPSHOT")
+(def tag (str "v" version))
 
 (def build-folder "target")
 (def jar-content (str build-folder "/classes")) ; folder where we collect files to pack in a jar
@@ -28,7 +29,14 @@
                 :lib       lib-name
                 :version   version
                 :basis     basis
-                :src-dirs  ["src"]})
+                :src-dirs  ["src"]
+                :scm       {
+
+                            :url                 "https://github.com/cloojure/tupelo"
+                            :connection          "scm:git:git://github.com/cloojure/tupelo.git"
+                            :developerConnection "scm:git:ssh://git@github.com/cloojure/tupelo.git"
+                            }
+                })
 
   (b/jar {:class-dir jar-content ; create jar
           :jar-file  jar-file-name})
