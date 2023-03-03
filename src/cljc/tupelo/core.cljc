@@ -2870,6 +2870,39 @@
             new-result (append result out-vals)]
         (recur unprocessed new-result)))))
 
+(defn partition-when
+  [pred coll]
+  (let [data       (vec coll)
+        N          (count data)
+        N-1        (dec N)
+        ; We use `split-at` to partition the coll. Given a coll like [0 1 2], it makes
+        ; no sense to give degenerate splits like {:data1 [] :data2 [0 1 2]}
+        ; or {:data1 [0 1 2] :data2 []}. So, we need the split point in the range [1..(N-1)]
+        split-idxs (loop [i    1
+                          idxs []]
+                     (if-not (<= i N-1)
+                       idxs
+                       (let [[data1 data2] (split-at i data)
+                             split?      (pred data1 data2)
+                             result-next (if split?
+                                           (append idxs i)
+                                           idxs)
+                             i-next      (inc i)]
+                         (recur i-next result-next))))
+        ; Since we are using `subvec`, we must add in the "default" values at the
+        ; start/end of the vector
+        split-idxs (glue [0] split-idxs [N])
+        idx-pairs  (partition 2 1 split-idxs)
+        subvecs    (reduce (fn [cum [start end]]
+                             (let [next-part (subvec data start end)
+                                   next-cum  (append cum next-part)]
+                               next-cum))
+                     []
+                     idx-pairs)]
+    subvecs))
+
+
+
 (s/defn interleave-all :- tsk/List ; #todo => tupelo.core
   "Interleave all items from input collections, without discarding any values"
   [& colls :- [tsk/List]]

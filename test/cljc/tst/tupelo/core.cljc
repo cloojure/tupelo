@@ -21,7 +21,8 @@
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty nl
                                vals->map xmap? forv glue keep-if]]
     [tupelo.string :as ts]
-    [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
+    [tupelo.testy :refer [deftest testing is dotest dotest-focus
+                          isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture]])
   #?(:clj (:require [tupelo.types :as types]
                     [tupelo.lexical :as lex]))
@@ -2018,6 +2019,32 @@
       [[1 2] [3] [6 7 8] [9] [12 13] [15 16 17] [18] [18] [18] [3 4 5]]))
   (throws? (t/partition-using even? 5)))
 
+(dotest   ; #todo fix so use `verify` for both clj and cljs
+
+  ; We use `split-at` to partition the coll. Given a coll like [0 1 2], it makes
+  ; no sense to give degenerate splits like {:data1 [] :data2 [0 1 2]}
+  ; or {:data1 [0 1 2] :data2 []}. So, we need the split point in the range [1..(N-1)]
+  (let [data   [0 1 2]
+        N      (count data)
+        result (forv [i (t/thru N)]
+                 (let [[data1 data2] (split-at i data)]
+                   (vals->map i data1 data2)))]
+    (is= result
+      [{:i 0 :data1 [] :data2 [0 1 2]}
+       {:i 1 :data1 [0] :data2 [1 2]}
+       {:i 2 :data1 [0 1] :data2 [2]}
+       {:i 3 :data1 [0 1 2] :data2 []}]))
+
+  (let [split-fn (fn [data1 data2]
+                   (let [x (last data1)
+                         y (first data2)]
+                     (< (inc x) y)))]
+    (is= [[1 2 3] [8 9 10] [99]]
+      (t/partition-when split-fn
+        [1 2 3 8 9 10 99])))
+  ; #todo add more tests
+  )
+
 (dotest   ; just read down by columns to get output
   (is= [1 :a 2 :b :c] (t/interleave-all
                         [1 2]
@@ -2170,7 +2197,7 @@
 
 ;---------------------------------------------------------------------------------------------------
 ; demo and poc for td/construct
-(dotest             ; #todo do we need this at all?  maybe delete?
+(dotest   ; #todo do we need this at all?  maybe delete?
   (def c 3)
   (let [env {:a 1 :b 2}]
     (t/with-map-vals env [a b]

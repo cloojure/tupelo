@@ -4,11 +4,11 @@
     [deps-deploy.deps-deploy :as dd]
     ))
 
+(def lib-name 'tupelo/tupelo) ; must be a qualified symbol
+(def version "23.03.01")
+
 (def build-folder "target")
 (def jar-content (str build-folder "/classes")) ; folder where we collect files to pack in a jar
-
-(def lib-name 'tupelo/tupelo) ; library name
-(def version "23.02.29a-SNAPSHOT") ; library version
 (def basis (b/create-basis {:project "deps.edn"})) ; basis structure (read details in the article)
 (def jar-file-name (format "%s/%s-%s.jar" build-folder (name lib-name) version)) ; path for result jar file
 
