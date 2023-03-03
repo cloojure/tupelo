@@ -1,5 +1,7 @@
 (ns tst.tupelo.cuid.prng
-  (:use tupelo.cuid.prng tupelo.core tupelo.test)
+  (:use tupelo.cuid.prng
+        tupelo.core
+        tupelo.test)
   (:require
     [com.climate.claypoole :as cp]
     [criterium.core :as crit]
@@ -113,37 +115,38 @@
                 nums-shuffled (cp/pmap :builtin #(randomize ctx %) nums-orig)]
             (is-set= nums-orig nums-shuffled)))))))
 
-(verify
-  (when false ; ***** ENABLE TO SEE TIMING PRINTOUTS *****k
-    (tsk/with-validation-disabled
-      (prof/timer-stats-reset!)
-      (let [ctx (new-ctx {:num-bits 32})]
-        (prn :timing-1000-32)
-        (dotimes [i 1000] ; timing for 1000 CRIDX values
-          (is= i (derandomize ctx
-                   (randomize ctx i)))))
-      (prof/print-profile-stats!)
+(verify-focus
+  (when true ; ***** ENABLE TO SEE TIMING PRINTOUTS *****k
+    (let [ivals  (range 1000)]
+      (tsk/with-validation-disabled
+        (prof/timer-stats-reset!)
+        (let [ctx (new-ctx {:num-bits 32})]
+          (prn :timing-1000-32)
+          (doseq [i ivals] ; timing for 1000 CRIDX values
+            (is= i (derandomize ctx
+                     (randomize ctx i)))))
+        (prof/print-profile-stats!)
 
-      (prof/timer-stats-reset!)
-      (let [ctx (new-ctx {:num-bits 64})]
-        (prn :timing-1000-64)
-        (dotimes [i 1000] ; timing for 1000 CRIDX values
-          (is= i (derandomize ctx
-                   (randomize ctx i)))))
-      (prof/print-profile-stats!)
+        (prof/timer-stats-reset!)
+        (let [ctx (new-ctx {:num-bits 64})]
+          (prn :timing-1000-64)
+          (doseq [i ivals] ; timing for 1000 CRIDX values
+            (is= i (derandomize ctx
+                     (randomize ctx i)))))
+        (prof/print-profile-stats!)
 
-      (prof/timer-stats-reset!)
-      (let [ctx (new-ctx {:num-bits 128})]
-        (prn :timing-1000-128)
-        (dotimes [i 1000] ; timing for 1000 CRIDX values
-          (is= i (derandomize ctx
-                   (randomize ctx i)))))
-      (prof/print-profile-stats!)
+        (prof/timer-stats-reset!)
+        (let [ctx (new-ctx {:num-bits 128})]
+          (prn :timing-1000-128)
+          (doseq [i ivals] ; timing for 1000 CRIDX values
+            (is= i (derandomize ctx
+                     (randomize ctx i)))))
+        (prof/print-profile-stats!)
 
-      (prof/timer-stats-reset!)
-      (let [ctx (new-ctx {:num-bits 256})]
-        (prn :timing-1000-256)
-        (dotimes [i 1000] ; timing for 1000 CRIDX values
-          (is= i (derandomize ctx
-                   (randomize ctx i)))))
-      (prof/print-profile-stats!))))
+        (prof/timer-stats-reset!)
+        (let [ctx (new-ctx {:num-bits 256})]
+          (prn :timing-1000-256)
+          (doseq [i ivals] ; timing for 1000 CRIDX values
+            (is= i (derandomize ctx
+                     (randomize ctx i)))))
+        (prof/print-profile-stats!)))))

@@ -35,27 +35,7 @@
 ; 5000        0.155     0.000031   0.000017   :unshuffle-bits-BigInteger-b
 ; 5000        0.029     0.000006   0.000002   :unshuffle-bits-BigInteger-c
 ;---------------------------------------------------------------------------------------------------
-
-;-----------------------------------------------------------------------------
-(def ^:no-doc min-bits 4) ; NOTE! IMPORTANT! 4 bits minimum due to shuffle step
-(def ^:no-doc max-bits 1024) ; No real upper limit.  Just process in blocks if desired.
-
-;-----------------------------------------------------------------------------
-(s/defn int->bitchars :- tsk/Vec ; #todo => tupelo.math
-  [ival :- s/Int
-   bits-width :- s/Int]
-  (let [bitchars-orig     (math/BigInteger->binary-chars (biginteger ival)) ; does not include leading zeros
-        num-bitchars      (count bitchars-orig)
-        num-leading-zeros (- bits-width num-bitchars)
-        >>                (assert (int-nonneg? num-leading-zeros))
-        bitchars-final    (glue (repeat num-leading-zeros \0) bitchars-orig)]
-    bitchars-final))
-
-(s/defn int->bitstr :- s/Str ; #todo => tupelo.math
-  [ival :- s/Int
-   bits-width :- s/Int]
-  (str/join (int->bitchars ival bits-width)))
-
+; #todo move to tupelo.core
 (s/defn iterate-n :- s/Any
   "Calls `(iterate f x)` n times, returning that result (indexed from 0); i.e.
         n=0   => x
@@ -69,6 +49,26 @@
   (last
     (take (inc N) ; (take 0 <seq>) returns [], so we need (inc N) here to get a result
       (iterate f x))))
+
+;-----------------------------------------------------------------------------
+(def ^:no-doc min-bits 4) ; NOTE! IMPORTANT! 4 bits minimum due to shuffle step
+(def ^:no-doc max-bits 1024) ; No real upper limit.  Just process in blocks if desired.
+
+;-----------------------------------------------------------------------------
+(s/defn int->bitchars :- tsk/Vec ; #todo => tupelo.math
+  [ival :- s/Int
+   bits-width :- s/Int]
+  (let [bitchars-orig     (math/BigInteger->binary-chars ival) ; does not include leading zeros
+        num-bitchars      (count bitchars-orig)
+        num-leading-zeros (- bits-width num-bitchars)
+        >>                (assert (int-nonneg? num-leading-zeros))
+        bitchars-final    (glue (repeat num-leading-zeros \0) bitchars-orig)]
+    bitchars-final))
+
+(s/defn int->bitstr :- s/Str ; #todo => tupelo.math
+  [ival :- s/Int
+   bits-width :- s/Int]
+  (str/join (int->bitchars ival bits-width)))
 
 ;-----------------------------------------------------------------------------
 ; #todo: maybe make more general version?
@@ -87,48 +87,54 @@
   [num-bits :- s/Int
    bit-shuffle-idxs :- [s/Int]
    ival :- s/Int]
-  (it-> ival
-    (int->bitchars it num-bits)
-    (vec-shuffle it bit-shuffle-idxs)
-    (math/binary-chars->BigInteger it)))
+  (prof/with-timer-accum :shuffle-bits-BigInteger
+    (it-> ival
+      (prof/with-timer-accum :shuffle-bits-BigInteger--1
+        (int->bitchars it num-bits))
+      (prof/with-timer-accum :shuffle-bits-BigInteger--2
+        (vec-shuffle it bit-shuffle-idxs))
+      (prof/with-timer-accum :shuffle-bits-BigInteger--3
+        (math/binary-chars->BigInteger it)))))
 
 ;-----------------------------------------------------------------------------
 (s/defn ^:no-doc randomize-frame :- BigInteger
   [ctx :- tsk/KeyMap
    iround :- s/Int
    ival :- s/Int]
-  (with-map-vals ctx [num-bits N-max slopes offsets shuffle-bits? bit-shuffle-idxs-orig]
-    (when-not (and (<= 0 ival) (< ival N-max))
-      (throw (ex-info "ival out of range" (vals->map ival N-max))))
-    ; calculate mod( y = mx + b ), then shuffle bits
-    (let [slope  (get slopes iround)
-          offset (get offsets iround)
-          ival   (biginteger ival)
-          r1     (it-> ival
-                   (.multiply ^BigInteger it slope)
-                   (.add ^BigInteger it offset)
-                   (mod/mod-BigInteger it N-max))
-          r2     (cond-it-> r1
-                   shuffle-bits? (shuffle-bits-BigInteger num-bits bit-shuffle-idxs-orig it))]
-      r2)))
+  (prof/with-timer-accum :randomize-frame
+    (with-map-vals ctx [num-bits N-max slopes offsets shuffle-bits? bit-shuffle-idxs-orig]
+      (when-not (and (<= 0 ival) (< ival N-max))
+        (throw (ex-info "ival out of range" (vals->map ival N-max))))
+      ; calculate mod( y = mx + b ), then shuffle bits
+      (let [slope  (get slopes iround)
+            offset (get offsets iround)
+            ival   (biginteger ival)
+            r1     (it-> ival
+                     (.multiply ^BigInteger it slope)
+                     (.add ^BigInteger it offset)
+                     (mod/mod-BigInteger it N-max))
+            r2     (cond-it-> r1
+                     shuffle-bits? (shuffle-bits-BigInteger num-bits bit-shuffle-idxs-orig it))]
+        r2))))
 
 (s/defn ^:no-doc derandomize-frame :- BigInteger
   [ctx :- tsk/KeyMap
    iround :- s/Int
    cuid :- s/Int]
-  (with-map-vals ctx [num-bits N-max slopes-inv offsets shuffle-bits? bit-shuffle-idxs-prng]
-    (when-not (and (<= 0 cuid) (< cuid N-max))
-      (throw (ex-info "cuid out of range" (vals->map cuid N-max))))
-    (let [slope-inv (get slopes-inv iround)
-          offset    (get offsets iround)
-          cuid      (biginteger cuid)
-          r1        (cond-it-> cuid
-                      shuffle-bits? (shuffle-bits-BigInteger num-bits bit-shuffle-idxs-prng it))
-          r2        (it-> r1
-                      (.subtract ^BigInteger it ^BigInteger offset)
-                      (.multiply ^BigInteger it ^BigInteger slope-inv)
-                      (mod/mod-BigInteger it N-max))]
-      r2)))
+  (prof/with-timer-accum :derandomize-frame
+    (with-map-vals ctx [num-bits N-max slopes-inv offsets shuffle-bits? bit-shuffle-idxs-prng]
+      (when-not (and (<= 0 cuid) (< cuid N-max))
+        (throw (ex-info "cuid out of range" (vals->map cuid N-max))))
+      (let [slope-inv (get slopes-inv iround)
+            offset    (get offsets iround)
+            cuid      (biginteger cuid)
+            r1        (cond-it-> cuid
+                        shuffle-bits? (shuffle-bits-BigInteger num-bits bit-shuffle-idxs-prng it))
+            r2        (it-> r1
+                        (.subtract ^BigInteger it ^BigInteger offset)
+                        (.multiply ^BigInteger it ^BigInteger slope-inv)
+                        (mod/mod-BigInteger it N-max))]
+        r2))))
 
 (s/defn gen-slope :- BigInteger
   "Generate a positive, odd slope value"
@@ -255,21 +261,21 @@
   "Given an PRNG context, converts an N-bit index to a unique N-bit 'randomized' value."
   [ctx :- tsk/KeyMap
    idx :- s/Int]
-  ; (prof/with-timer-accum :randomize)
-  (reduce
-    (fn [result round]
-      (randomize-frame ctx round result))
-    (biginteger idx)
-    (grab :round-idxs ctx)))
+  (prof/with-timer-accum :randomize
+    (reduce
+      (fn [result round]
+        (randomize-frame ctx round result))
+      (biginteger idx)
+      (grab :round-idxs ctx))))
 
 (s/defn derandomize :- BigInteger
   "Given an PRNG context, reverts an N-bit 'randomized' integer to the original N-bit index."
   [ctx :- tsk/KeyMap
    prng-val :- s/Int]
-  ; (prof/with-timer-accum :derandomize)
-  (reduce
-    (fn [result round]
-      (derandomize-frame ctx round result))
-    (biginteger prng-val)
-    (grab :round-idxs-rev ctx)))
+  (prof/with-timer-accum :derandomize
+    (reduce
+      (fn [result round]
+        (derandomize-frame ctx round result))
+      (biginteger prng-val)
+      (grab :round-idxs-rev ctx))))
 
