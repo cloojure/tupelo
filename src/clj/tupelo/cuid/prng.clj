@@ -87,54 +87,54 @@
   [num-bits :- s/Int
    bit-shuffle-idxs :- [s/Int]
    ival :- s/Int]
-  (prof/with-timer-accum :shuffle-bits-BigInteger
-    (it-> ival
-      (prof/with-timer-accum :shuffle-bits-BigInteger--1
-        (int->bitchars it num-bits))
-      (prof/with-timer-accum :shuffle-bits-BigInteger--2
-        (vec-shuffle it bit-shuffle-idxs))
-      (prof/with-timer-accum :shuffle-bits-BigInteger--3
-        (math/binary-chars->BigInteger it)))))
+  ; (prof/with-timer-accum :shuffle-bits-BigInteger)
+  (it-> ival
+    ; (prof/with-timer-accum :shuffle-bits-BigInteger--1)
+    (int->bitchars it num-bits)
+    ; (prof/with-timer-accum :shuffle-bits-BigInteger--2)
+    (vec-shuffle it bit-shuffle-idxs)
+    ; (prof/with-timer-accum :shuffle-bits-BigInteger--3)
+    (math/binary-chars->BigInteger it)))
 
 ;-----------------------------------------------------------------------------
 (s/defn ^:no-doc randomize-frame :- BigInteger
   [ctx :- tsk/KeyMap
    iround :- s/Int
    ival :- s/Int]
-  (prof/with-timer-accum :randomize-frame
-    (with-map-vals ctx [num-bits N-max slopes offsets shuffle-bits? bit-shuffle-idxs-orig]
-      (when-not (and (<= 0 ival) (< ival N-max))
-        (throw (ex-info "ival out of range" (vals->map ival N-max))))
-      ; calculate mod( y = mx + b ), then shuffle bits
-      (let [slope  (get slopes iround)
-            offset (get offsets iround)
-            ival   (biginteger ival)
-            r1     (it-> ival
-                     (.multiply ^BigInteger it slope)
-                     (.add ^BigInteger it offset)
-                     (mod/mod-BigInteger it N-max))
-            r2     (cond-it-> r1
-                     shuffle-bits? (shuffle-bits-BigInteger num-bits bit-shuffle-idxs-orig it))]
-        r2))))
+  ; (prof/with-timer-accum :randomize-frame)
+  (with-map-vals ctx [num-bits N-max slopes offsets shuffle-bits? bit-shuffle-idxs-orig]
+    (when-not (and (<= 0 ival) (< ival N-max))
+      (throw (ex-info "ival out of range" (vals->map ival N-max))))
+    ; calculate mod( y = mx + b ), then shuffle bits
+    (let [slope  (get slopes iround)
+          offset (get offsets iround)
+          ival   (biginteger ival)
+          r1     (it-> ival
+                   (.multiply ^BigInteger it slope)
+                   (.add ^BigInteger it offset)
+                   (mod/mod-BigInteger it N-max))
+          r2     (cond-it-> r1
+                   shuffle-bits? (shuffle-bits-BigInteger num-bits bit-shuffle-idxs-orig it))]
+      r2)))
 
 (s/defn ^:no-doc derandomize-frame :- BigInteger
   [ctx :- tsk/KeyMap
    iround :- s/Int
    cuid :- s/Int]
-  (prof/with-timer-accum :derandomize-frame
-    (with-map-vals ctx [num-bits N-max slopes-inv offsets shuffle-bits? bit-shuffle-idxs-prng]
-      (when-not (and (<= 0 cuid) (< cuid N-max))
-        (throw (ex-info "cuid out of range" (vals->map cuid N-max))))
-      (let [slope-inv (get slopes-inv iround)
-            offset    (get offsets iround)
-            cuid      (biginteger cuid)
-            r1        (cond-it-> cuid
-                        shuffle-bits? (shuffle-bits-BigInteger num-bits bit-shuffle-idxs-prng it))
-            r2        (it-> r1
-                        (.subtract ^BigInteger it ^BigInteger offset)
-                        (.multiply ^BigInteger it ^BigInteger slope-inv)
-                        (mod/mod-BigInteger it N-max))]
-        r2))))
+  ; (prof/with-timer-accum :derandomize-frame)
+  (with-map-vals ctx [num-bits N-max slopes-inv offsets shuffle-bits? bit-shuffle-idxs-prng]
+    (when-not (and (<= 0 cuid) (< cuid N-max))
+      (throw (ex-info "cuid out of range" (vals->map cuid N-max))))
+    (let [slope-inv (get slopes-inv iround)
+          offset    (get offsets iround)
+          cuid      (biginteger cuid)
+          r1        (cond-it-> cuid
+                      shuffle-bits? (shuffle-bits-BigInteger num-bits bit-shuffle-idxs-prng it))
+          r2        (it-> r1
+                      (.subtract ^BigInteger it ^BigInteger offset)
+                      (.multiply ^BigInteger it ^BigInteger slope-inv)
+                      (mod/mod-BigInteger it N-max))]
+      r2)))
 
 (s/defn gen-slope :- BigInteger
   "Generate a positive, odd slope value"
@@ -261,21 +261,21 @@
   "Given an PRNG context, converts an N-bit index to a unique N-bit 'randomized' value."
   [ctx :- tsk/KeyMap
    idx :- s/Int]
-  (prof/with-timer-accum :randomize
-    (reduce
-      (fn [result round]
-        (randomize-frame ctx round result))
-      (biginteger idx)
-      (grab :round-idxs ctx))))
+  ; (prof/with-timer-accum :randomize)
+  (reduce
+    (fn [result round]
+      (randomize-frame ctx round result))
+    (biginteger idx)
+    (grab :round-idxs ctx)))
 
 (s/defn derandomize :- BigInteger
   "Given an PRNG context, reverts an N-bit 'randomized' integer to the original N-bit index."
   [ctx :- tsk/KeyMap
    prng-val :- s/Int]
-  (prof/with-timer-accum :derandomize
-    (reduce
-      (fn [result round]
-        (derandomize-frame ctx round result))
-      (biginteger prng-val)
-      (grab :round-idxs-rev ctx))))
+  ; (prof/with-timer-accum :derandomize)
+  (reduce
+    (fn [result round]
+      (derandomize-frame ctx round result))
+    (biginteger prng-val)
+    (grab :round-idxs-rev ctx)))
 
