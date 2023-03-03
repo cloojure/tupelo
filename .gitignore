@@ -23,6 +23,5 @@ TESTS-Chrome*.xml
 classes
 figwheel_server.log
 package-lock.json
-pom.xml
 pom.xml.asc
 .cpcache

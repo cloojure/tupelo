@@ -5,7 +5,7 @@
     ))
 
 (def lib-name 'tupelo/tupelo) ; must be a qualified symbol
-(def version "23.03.01")
+(def version "23.03.03a")
 
 (def build-folder "target")
 (def jar-content (str build-folder "/classes")) ; folder where we collect files to pack in a jar

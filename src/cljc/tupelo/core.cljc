@@ -2870,9 +2870,22 @@
             new-result (append result out-vals)]
         (recur unprocessed new-result)))))
 
-(defn partition-when
-  [pred coll]
-  (let [data       (vec coll)
+(s/defn partition-when :- [tsk/Vec]
+  "Given a data vector, calls `split-at` for all non-degenerate points to generate vector pairs
+  `[data1 data2]`.  Presents these pairs to the predicate function `pred`, and partitions the data
+   where indicated by a truthy result.  Example:
+
+        (let [split-fn (fn [data1 data2]
+                         (let [x (last data1)
+                               y (first data2)]
+                           (< (inc x) y)))]
+          (is= [[1 2 3] [8 9 10] [99]]
+            (t/partition-when split-fn
+              [1 2 3 8 9 10 99])))
+  "
+  [pred  :- tsk/Fn
+   data :- tsk/Vec]
+  (let [data       (vec data)
         N          (count data)
         N-1        (dec N)
         ; We use `split-at` to partition the coll. Given a coll like [0 1 2], it makes
@@ -2893,8 +2906,8 @@
         ; start/end of the vector
         split-idxs (glue [0] split-idxs [N])
         idx-pairs  (partition 2 1 split-idxs)
-        subvecs    (reduce (fn [cum [start end]]
-                             (let [next-part (subvec data start end)
+        subvecs    (reduce (fn [cum [i-start i-end]]
+                             (let [next-part (subvec data i-start i-end)
                                    next-cum  (append cum next-part)]
                                next-cum))
                      []
