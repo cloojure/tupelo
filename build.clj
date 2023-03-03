@@ -5,7 +5,7 @@
     ))
 
 (def lib-name 'tupelo/tupelo) ; must be a qualified symbol
-(def version "23.03.03d")
+(def version "23.03.03f")
 (def tag (str "v" version))
 (def scm-root "github.com/cloojure/tupelo")
 

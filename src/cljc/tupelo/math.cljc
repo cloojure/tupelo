@@ -23,6 +23,7 @@
      (:import
        [java.math RoundingMode])))
 
+;-----------------------------------------------------------------------------
 (s/defn factorial :- s/Int
   "Computes the factorial of N"
   [n :- s/Int]
@@ -33,21 +34,24 @@
     1
     (apply * (thru 1 n))))
 
-(defn round-N
-  "Round a floating point number to N decimal places, returning a double.
-
-        (round-decimals 3.14156  2) => 3.14
-        (round-decimals 1234567 -2) => 1234500
-  "
-  [val N]
-  (let [factor (Math/pow 10.0 (double N))]
-    (it-> (double val)
-      (* it factor)
-      (Math/round it)
-      (/ it factor))))
-
 #?(:clj
    (do
+
+     ;-----------------------------------------------------------------------------
+     (defn round-N
+       "Round a floating point number to N decimal places, returning a double.
+
+             (round-decimals 3.14156  2) => 3.14
+             (round-decimals 1234567 -2) => 1234500
+       "
+       [val N]
+       (let [factor (Math/pow 10.0 (double N))]
+         (it-> (double val)
+           (* it factor)
+           (Math/round it)
+           (/ it factor))))
+
+     ;-----------------------------------------------------------------------------
      (s/defn ->bigdec-N :- BigDecimal
        "Coerces a numeric value to a BigDecimal with N decimal digits. Also accepts
        a numeric value encoded as a String."
@@ -68,12 +72,13 @@
 
      ;---------------------------------------------------------------------------------------------------
      (def ^:no-doc ln-2 (Math/log 2.0))
-     (defn log2 ; #todo need test
+     (s/defn log2 :- Double ; #todo need test
        "Returns the log base-2 of x"
-       [x]
+       [x :- s/Num]
        (it-> (Math/log (double x))
          (/ it ln-2)))
 
+     ;---------------------------------------------------------------------------------------------------
      (s/defn pow->BigInteger :- BigInteger
        "An BigInteger version of java.Math/pow( base, exp )"
        [base :- s/Int
@@ -94,27 +99,29 @@
              result-long (.longValueExact result-bi)]
          result-long))
 
+     ;---------------------------------------------------------------------------------------------------
      (s/defn BigInteger->binary-str :- s/Str ; #todo rename int->binary-str
        "Converts a (positive) BigInteger into a binary String"
        [ival :- s/Int]
        (assert (t/nonneg? ival))
        (.toString (biginteger ival) 2))
 
+     (s/defn BigInteger->binary-chars :- [Character] ; #todo rename int->binary-chars
+       "Converts a (positive) BigInteger into a binary char sequence"
+       [bi :- s/Int] (vec (BigInteger->binary-str bi)))
+
      (s/defn binary-str->BigInteger :- BigInteger
        "Converts a binary char sequence into a (positive) BigInteger"
        [bin-str :- s/Str]
        (let [result (BigInteger. ^String bin-str 2)]
-         (assert (t/nonneg? result))
+         (assert (t/nonneg? result)) ; #todo kill this?
          result))
-
-     (s/defn BigInteger->binary-chars :- [Character] ; #todo rename int->binary-chars
-       "Converts a (positive) BigInteger into a binary char sequence"
-       [bi :- s/Int] (vec (BigInteger->binary-str bi)))
 
      (s/defn binary-chars->BigInteger :- BigInteger
        "Converts a binary char sequence into a (positive) BigInteger"
        [bin-chars :- [Character]] (binary-str->BigInteger (str/join bin-chars)))
 
+     ;---------------------------------------------------------------------------------------------------
      ; #todo int->hex-str with cast
      (s/defn BigInteger->hex-str :- s/Str
        "Converts a (positive) BigInteger into a hex string of `min-width` chars"
