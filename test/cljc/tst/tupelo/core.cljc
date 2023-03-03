@@ -2019,7 +2019,9 @@
       [[1 2] [3] [6 7 8] [9] [12 13] [15 16 17] [18] [18] [18] [3 4 5]]))
   (throws? (t/partition-using even? 5)))
 
-(dotest   ; #todo fix so use `verify` for both clj and cljs
+
+; #todo fix so use `verify` for both clj and cljs
+(dotest-focus
 
   ; We use `split-at` to partition the coll. Given a coll like [0 1 2], it makes
   ; no sense to give degenerate splits like {:data1 [] :data2 [0 1 2]}

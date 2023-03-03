@@ -2895,7 +2895,8 @@
                           idxs []]
                      (if-not (<= i N-1)
                        idxs
-                       (let [[data1 data2] (split-at i data)
+                       (let [data1 (subvec data 0 i)
+                             data2 (subvec data i N)
                              split?      (pred data1 data2)
                              result-next (if split?
                                            (append idxs i)
