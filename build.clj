@@ -12,12 +12,12 @@
 (def basis (b/create-basis {:project "deps.edn"})) ; basis structure (read details in the article)
 (def jar-file-name (format "%s/%s-%s.jar" build-folder (name lib-name) version)) ; path for result jar file
 
-(defn clean [& args]
+(defn clean-files [& args]
   (b/delete {:path build-folder})
   (println (format "Build folder \"%s\" removed" build-folder)))
 
 (defn build-jar [& args]
-  (clean) ; clean leftovers
+  (clean-files) ; clean leftovers
 
   (b/copy-dir {:src-dirs   ["src/clj"
                             "src/cljc"
