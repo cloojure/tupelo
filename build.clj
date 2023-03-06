@@ -4,7 +4,7 @@
     [deps-deploy.deps-deploy :as dd]
     ))
 
-(def lib-name 'tupelo/tupelo) ; must be a qualified symbol
+(def lib-name 'tupelo/tupelo) ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
 (def version "23.03.03f") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
 (def tag (str "v" version)) ; ***** ASSUMES YOU CREATE A GIT TAG LIKE `v23.01.31` *****
 (def scm-root "github.com/cloojure/tupelo")
@@ -14,11 +14,15 @@
 (def basis (b/create-basis {:project "deps.edn"})) ; basis structure (read details in the article)
 (def jar-file-name (format "%s/%s-%s.jar" build-folder (name lib-name) version)) ; path for result jar file
 
-(defn clean-files [& args]
+(defn clean-files
+  "Delete all compiler output files (i.e. `.target/**/*`)"
+  [& args]
   (b/delete {:path build-folder})
   (println (format "Build folder \"%s\" removed" build-folder)))
 
-(defn build-jar [& args]
+(defn build-jar
+  "Build a new, clean JAR file from source-code."
+  [& args]
   (clean-files) ; clean leftovers
 
   (b/copy-dir {:src-dirs   ["src/clj"
@@ -40,7 +44,9 @@
           :jar-file  jar-file-name})
   (println (format "Jar file created: \"%s\"" jar-file-name)))
 
-(defn deploy-clojars [& args]
+(defn deploy-clojars
+  "Build & deploy a source-code JAR file to clojars.org"
+  [& args]
   (build-jar)
   (dd/deploy {:installer :remote
               :artifact  jar-file-name
