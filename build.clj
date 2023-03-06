@@ -5,8 +5,8 @@
     ))
 
 (def lib-name 'tupelo/tupelo) ; must be a qualified symbol
-(def version "23.03.03f")
-(def tag (str "v" version))
+(def version "23.03.03f") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
+(def tag (str "v" version)) ; ***** ASSUMES YOU CREATE A GIT TAG LIKE `v23.01.31` *****
 (def scm-root "github.com/cloojure/tupelo")
 
 (def build-folder "target")
@@ -31,10 +31,10 @@
                 :version   version
                 :basis     basis
                 :src-dirs  ["src"]
-                :scm       {:url                 (str "https://" scm-root)
+                :scm       {:tag                 tag
+                            :url                 (str "https://" scm-root)
                             :connection          (str "scm:git:git://" scm-root ".git")
-                            :developerConnection (str "scm:git:ssh://git@" scm-root ".git")
-                            :tag                 tag}})
+                            :developerConnection (str "scm:git:ssh://git@" scm-root ".git")}})
 
   (b/jar {:class-dir jar-content ; create jar
           :jar-file  jar-file-name})
