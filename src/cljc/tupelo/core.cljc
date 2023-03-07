@@ -2940,7 +2940,7 @@
     (take (inc N) ; (take 0 <seq>) returns [], so we need (inc N) here to get a result
       (iterate f x))))
 
-(s/defn interleave-all :- tsk/List ; #todo => tupelo.core
+(s/defn interleave-all :- tsk/List
   "Interleave all items from input collections, without discarding any values"
   [& colls :- [tsk/List]]
   (assert (every? sequential? colls))
