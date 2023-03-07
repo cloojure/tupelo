@@ -283,10 +283,7 @@
                bi-babe (biginteger 47806)]
            (is= "000a" (math/int->hex-str bi-10 4))
            (is= "cafe" (math/int->hex-str bi-cafe 4))
-           (is= "babe" (math/int->hex-str bi-babe 2)))))
-
-     ;
-     ))
+           (is= "babe" (math/int->hex-str bi-babe 2)))))))
 
 #?(:clj
    ; #todo review - old stuff from clj/tupelo/math.clj
@@ -325,6 +322,5 @@
      (is= (biginteger 5) 5N)
      (is= (biginteger 5) 5)
      (is= (biginteger 5) (bigint 5))
-     (isnt= (biginteger 5) 5.0)
+     (isnt= (biginteger 5) 5.0)))
 
-     ))
