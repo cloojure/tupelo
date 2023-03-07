@@ -52,3 +52,5 @@
               :artifact  jar-file-name
               :pom-file  (b/pom-path {:lib       lib-name
                                       :class-dir jar-content})}))
+
+
