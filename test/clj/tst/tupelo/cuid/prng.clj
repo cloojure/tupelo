@@ -28,29 +28,7 @@
     (s/validate BigInteger bi-five)
     (s/validate s/Int bi-five)
     (s/validate s/Int 5)
-
-    ; verify `bitstr` gives expected result
-    (throws? (int->bitstr 5 2))
-    (is= "101" (int->bitstr 5 3))
-    (is= "0101" (int->bitstr 5 4))
-    (is= "00000101" (int->bitstr 5 8))))
-
-(verify   ; simple tests
-  (let [times-2 #(* 2 %)]
-    (is= [] (take 0 (range 9)))
-    (is= 1 (iterate-n 0 times-2 1))
-    (is= 2 (iterate-n 1 times-2 1))
-    (is= 4 (iterate-n 2 times-2 1))
-    (is= 8 (iterate-n 3 times-2 1))
-    (is= 256 (iterate-n 8 times-2 1))))
-
-;-----------------------------------------------------------------------------
-; simple verification of vec-shuffle
-(verify
-  (is= [:b :c :d :a] (vec-shuffle [:a :b :c :d] [1 2 3 0]))
-  (is= [:d :c :b :a] (vec-shuffle [:a :b :c :d] [3 2 1 0]))
-  (is= [:c :b :d :a] (vec-shuffle [:a :b :c :d] [2 1 3 0]))
-  (throws? (vec-shuffle [:a :b :c :d] [2 1 0])))
+    ))
 
 ;-----------------------------------------------------------------------------
 (verify
@@ -86,8 +64,8 @@
             (when (neg? cuid)
               (throw (ex-info "found-negative" (vals->map cuid))))
             (let [fmt-str (str "%7d   %0" num-digits-dec "d   %s   %s  %7d")
-                  hex-str (math/BigInteger->hex-str cuid num-digits-hex)
-                  bit-str (int->bitstr cuid num-bits)]
+                  hex-str (math/int->hex-str cuid num-digits-hex)
+                  bit-str (math/int->bitstr cuid num-bits)]
               (println (format fmt-str i cuid hex-str bit-str (nth idx-deprng i)))))
           (isnt= idx-vals cuid-vals) ; but not same order (random chance 1 in N!)
           (is= idx-vals idx-deprng))))

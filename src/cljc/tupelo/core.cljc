@@ -2590,6 +2590,18 @@
   (verify-form (not-nil? coll))
   (rand-nth (vec coll)))
 
+; #todo: maybe make more general version?
+(s/defn ^:no-doc vec-shuffle :- tsk/Vec
+  "Given a data vector, returns a new vector consisting of elements from the supplied indexs."
+  [data :- tsk/Vec
+   idxs :- [s/Int]]
+  (assert (= (count idxs) (count data))) ; #todo maybe remove this restriction?
+  (let [data (it-> data ; ensure it is a vector for random access performance
+               (not (vector? data)) (vec data))]
+    (forv [idx idxs]
+      (nth data idx))))
+
+;-----------------------------------------------------------------------------
 ; #todo convert to (submap-by-keys ctx m ks) & (submap-by-vals ctx m ks) variants
 ; #todo filter by pred in addition to set/list?
 ; #todo -> README
@@ -2915,7 +2927,19 @@
                      idx-pairs)]
     subvecs))
 
-
+(s/defn iterate-n :- s/Any
+  "Calls `(iterate f x)` n times, returning that result (indexed from 0); i.e.
+        n=0   => x
+        n=1   => (f x)
+        n=2   => (f (f x))
+  "
+  [N :- s/Int
+   f :- tsk/Fn
+   x :- s/Any]
+  (assert (int-nonneg? N))
+  (last
+    (take (inc N) ; (take 0 <seq>) returns [], so we need (inc N) here to get a result
+      (iterate f x))))
 
 (s/defn interleave-all :- tsk/List ; #todo => tupelo.core
   "Interleave all items from input collections, without discarding any values"

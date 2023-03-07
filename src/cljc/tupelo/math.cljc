@@ -34,22 +34,32 @@
     1
     (apply * (thru 1 n))))
 
+(s/defn signum :- s/Int
+  "Returns either -1, 0, or +1, to indicate the sign of the input. "
+  [x :- s/Num]
+  (cond
+    (pos? x) +1
+    (neg? x) -1
+    :else 0))
+
+(s/defn same-sign :- s/Bool
+  "Returns `true` iff x and y have the same sign, or are both zero."
+  [x :- s/Num
+   y :- s/Num]
+  (t/truthy?
+    (or
+      (and (pos? x) (pos? y))
+      (and (neg? x) (neg? y))
+      (and (zero? x) (zero? y)))))
+
 #?(:clj
    (do
-
      ;-----------------------------------------------------------------------------
-     (defn round-N
-       "Round a floating point number to N decimal places, returning a double.
-
-             (round-decimals 3.14156  2) => 3.14
-             (round-decimals 1234567 -2) => 1234500
-       "
-       [val N]
-       (let [factor (Math/pow 10.0 (double N))]
-         (it-> (double val)
-           (* it factor)
-           (Math/round it)
-           (/ it factor))))
+     ; #todo need BigInt version?
+     (defn ceil-long [x] (long (Math/ceil (double x))))
+     (defn floor-long [x] (long (Math/floor (double x))))
+     (defn round-long [x] (long (Math/round (double x))))
+     (defn trunc-long [x] (long (.longValue (double x))))
 
      ;-----------------------------------------------------------------------------
      (s/defn ->bigdec-N :- BigDecimal
@@ -60,15 +70,28 @@
        (it-> val
          (bigdec it)
          (.setScale
-           ^BigDecimal it ; need type hint to avoid IDEA deprecation warning
+           ^BigDecimal it ; need type hint to avoid IntelliJ/IDEA deprecation warning
            N
-           RoundingMode/HALF_UP))) ; must include RoundingMode arg!!!
+           RoundingMode/HALF_UP ; must include RoundingMode arg!!!
+           )))
 
      (s/defn ->bigdec-2 :- BigDecimal
        "Coerces a numeric value to a BigDecimal with 2 decimal digits. Also accepts
        a numeric value encoded as a String."
        [val :- (s/cond-pre s/Num s/Str)]
        (->bigdec-N val 2))
+
+     (s/defn round-N :- Double
+       "Round a floating point number to N decimal places, returning a double.
+
+             (round-decimals 3.14156  2) => 3.14
+             (round-decimals 1234567 -2) => 1234500
+       "
+       [val :- s/Num
+        N :- s/Int]
+       (it-> val
+         (->bigdec-N it N)
+         (double it)))
 
      ;---------------------------------------------------------------------------------------------------
      (def ^:no-doc ln-2 (Math/log 2.0))
@@ -100,30 +123,33 @@
          result-long))
 
      ;---------------------------------------------------------------------------------------------------
-     (s/defn BigInteger->binary-str :- s/Str ; #todo rename int->binary-str
-       "Converts a (positive) BigInteger into a binary String"
+     (s/defn int->binary-str :- s/Str
+       "Converts an integer into a binary String"
        [ival :- s/Int]
        (assert (t/nonneg? ival))
        (.toString (biginteger ival) 2))
 
-     (s/defn BigInteger->binary-chars :- [Character] ; #todo rename int->binary-chars
+     (s/defn int->binary-chars :- [Character]
        "Converts a (positive) BigInteger into a binary char sequence"
-       [bi :- s/Int] (vec (BigInteger->binary-str bi)))
+       [bi :- s/Int] (vec (int->binary-str bi)))
 
-     (s/defn binary-str->BigInteger :- BigInteger
-       "Converts a binary char sequence into a (positive) BigInteger"
-       [bin-str :- s/Str]
-       (let [result (BigInteger. ^String bin-str 2)]
-         (assert (t/nonneg? result)) ; #todo kill this?
-         result))
+     ;-----------------------------------------------------------------------------
+     (s/defn int->bitchars :- tsk/Vec ; #todo => tupelo.math
+       [ival :- s/Int
+        bits-width :- s/Int]
+       (let [bitchars-orig     (int->binary-chars ival) ; does not include leading zeros
+             num-bitchars      (count bitchars-orig)
+             num-leading-zeros (- bits-width num-bitchars)
+             >>                (assert (t/int-nonneg? num-leading-zeros))
+             bitchars-final    (glue (repeat num-leading-zeros \0) bitchars-orig)]
+         bitchars-final))
 
-     (s/defn binary-chars->BigInteger :- BigInteger
-       "Converts a binary char sequence into a (positive) BigInteger"
-       [bin-chars :- [Character]] (binary-str->BigInteger (str/join bin-chars)))
+     (s/defn int->bitstr :- s/Str ; #todo => tupelo.math
+       [ival :- s/Int
+        bits-width :- s/Int]
+       (str/join (int->bitchars ival bits-width)))
 
-     ;---------------------------------------------------------------------------------------------------
-     ; #todo int->hex-str with cast
-     (s/defn BigInteger->hex-str :- s/Str
+     (s/defn int->hex-str :- s/Str
        "Converts a (positive) BigInteger into a hex string of `min-width` chars"
        [ival :- s/Int
         min-width :- s/Int] ; #todo test min-width & all
@@ -133,8 +159,20 @@
              num-leading-zeros (max 0 (- min-width num-hexchars)) ; soft overflow
              >>                (assert (t/int-nonneg? num-leading-zeros))
              hexchars-final    (glue (repeat num-leading-zeros \0) hexchars-orig)
-             hex-str            (str/join hexchars-final)]
+             hex-str           (str/join hexchars-final)]
          (assert (<= min-width (count hexchars-final)))
          hex-str))
 
+     ;---------------------------------------------------------------------------------------------------
+     (s/defn binary-str->BigInteger :- BigInteger
+       "Converts a binary char sequence into a (positive) BigInteger"
+       [bin-str :- s/Str] (BigInteger. ^String bin-str 2))
+
+     (s/defn binary-chars->BigInteger :- BigInteger
+       "Converts a binary char sequence into a (positive) BigInteger"
+       [bin-chars :- [Character]] (binary-str->BigInteger (str/join bin-chars)))
+
+     ; #todo add hex-str->BigInteger
+
      ))
+

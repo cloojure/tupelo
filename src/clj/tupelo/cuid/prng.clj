@@ -2,8 +2,8 @@
   (:use tupelo.core)
   (:require
     [schema.core :as s]
-    [tupelo.math.modular-arithmetic :as mod]
     [tupelo.math :as math]
+    [tupelo.math.modular-arithmetic :as mod]
     [tupelo.profile :as prof]
     [tupelo.schema :as tsk]
     [tupelo.string :as str])
@@ -35,52 +35,10 @@
 ; 5000        0.155     0.000031   0.000017   :unshuffle-bits-BigInteger-b
 ; 5000        0.029     0.000006   0.000002   :unshuffle-bits-BigInteger-c
 ;---------------------------------------------------------------------------------------------------
-; #todo move to tupelo.core
-(s/defn iterate-n :- s/Any
-  "Calls `(iterate f x)` n times, returning that result (indexed from 0); i.e.
-        n=0   => x
-        n=1   => (f x)
-        n=2   => (f (f x))
-  "
-  [N :- s/Int
-   f :- tsk/Fn
-   x :- s/Any]
-  (assert (int-nonneg? N))
-  (last
-    (take (inc N) ; (take 0 <seq>) returns [], so we need (inc N) here to get a result
-      (iterate f x))))
 
 ;-----------------------------------------------------------------------------
 (def ^:no-doc min-bits 4) ; NOTE! IMPORTANT! 4 bits minimum due to shuffle step
 (def ^:no-doc max-bits 1024) ; No real upper limit.  Just process in blocks if desired.
-
-;-----------------------------------------------------------------------------
-(s/defn int->bitchars :- tsk/Vec ; #todo => tupelo.math
-  [ival :- s/Int
-   bits-width :- s/Int]
-  (let [bitchars-orig     (math/BigInteger->binary-chars ival) ; does not include leading zeros
-        num-bitchars      (count bitchars-orig)
-        num-leading-zeros (- bits-width num-bitchars)
-        >>                (assert (int-nonneg? num-leading-zeros))
-        bitchars-final    (glue (repeat num-leading-zeros \0) bitchars-orig)]
-    bitchars-final))
-
-(s/defn int->bitstr :- s/Str ; #todo => tupelo.math
-  [ival :- s/Int
-   bits-width :- s/Int]
-  (str/join (int->bitchars ival bits-width)))
-
-;-----------------------------------------------------------------------------
-; #todo: maybe make more general version?
-(s/defn ^:no-doc vec-shuffle :- tsk/Vec
-  "Given a data vector, returns a new vector consisting of elements from the supplied indexs."
-  [data :- tsk/Vec
-   idxs :- [s/Int]]
-  (assert (= (count idxs) (count data))) ; #todo maybe remove this restriction?
-  (let [data (it-> data ; ensure it is a vector for random access performance
-               (not (vector? data)) (vec data))]
-    (forv [idx idxs]
-      (nth data idx))))
 
 ;-----------------------------------------------------------------------------
 (s/defn ^:no-doc shuffle-bits-BigInteger :- BigInteger
@@ -90,7 +48,7 @@
   ; (prof/with-timer-accum :shuffle-bits-BigInteger)
   (it-> ival
     ; (prof/with-timer-accum :shuffle-bits-BigInteger--1)
-    (int->bitchars it num-bits)
+    (math/int->bitchars it num-bits)
     ; (prof/with-timer-accum :shuffle-bits-BigInteger--2)
     (vec-shuffle it bit-shuffle-idxs)
     ; (prof/with-timer-accum :shuffle-bits-BigInteger--3)
@@ -258,7 +216,7 @@
 ;  128 bits:  60 usec/call
 ;  256 bits: 120 usec/call
 (s/defn randomize :- BigInteger
-  "Given an PRNG context, converts an N-bit index to a unique N-bit 'randomized' value."
+  "Given a PRNG context, converts an N-bit index to a unique N-bit 'randomized' value."
   [ctx :- tsk/KeyMap
    idx :- s/Int]
   ; (prof/with-timer-accum :randomize)
@@ -269,7 +227,7 @@
     (grab :round-idxs ctx)))
 
 (s/defn derandomize :- BigInteger
-  "Given an PRNG context, reverts an N-bit 'randomized' integer to the original N-bit index."
+  "Given a PRNG context, reverts an N-bit 'randomized' integer to the original N-bit index."
   [ctx :- tsk/KeyMap
    prng-val :- s/Int]
   ; (prof/with-timer-accum :derandomize)

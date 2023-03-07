@@ -47,7 +47,15 @@
   (throws? (math/factorial -1))
   (throws? (math/factorial -1))
   ; (println :factorial-fail--end)
-  )
+
+  (is= 1 (math/signum 4.4))
+  (is= 0 (math/signum 0))
+  (is= -1 (math/signum -4.4))
+
+  (is (math/same-sign 1 1))
+  (is (math/same-sign -1 -1))
+  (isnt (math/same-sign 1 -1))
+  (isnt (math/same-sign -1 1)))
 
 (dotest
   (let [sqrt-2     1.414213562
@@ -65,6 +73,35 @@
 
 #?(:clj
    (do
+
+     (dotest   ; math operations with Long result
+       ; shift toward +infinity
+       (is= 5 (math/ceil-long 4.5))
+       (is= -4 (math/ceil-long -4.5))
+
+       ; shift toward -infinity
+       (is= 4 (math/floor-long 4.5))
+       (is= -5 (math/floor-long -4.5))
+
+       ; truncate toward zero
+       (is= 4 (math/trunc-long 4.4))
+       (is= -4 (math/trunc-long -4.4))
+
+       ; round toward nearest integer
+       (is= 5 (math/round-long 4.6))
+       (is= 5 (math/round-long 4.5))
+       (is= 4 (math/round-long 4.4))
+       (is= -5 (math/round-long -4.6))
+       (is= -4 (math/round-long -4.5))
+       (is= -4 (math/round-long -4.4))
+
+       ; NOTE: looses precision big-time, but does not throw!!!
+       (let [ll (math/round-long 4.4e99)]
+         (is= Long (type ll))
+         (is (<= 18 (Math/log10 ll) 19))
+         (is= 63.0 (math/log2 ll))) ; *** truncated to 63 bits! ***
+       )
+
      ; Works correctly using BigDecimal/setScale & RoundingMode arg
      (dotest
        (let [a6 1.112233
@@ -227,18 +264,26 @@
          (is= bi2 13)
          (is= s2 "d")
 
-         (is= "1101" (math/BigInteger->binary-str bi-13))
+         ; #todo need examples for negative numbers
+
+         (is= "1101" (math/int->binary-str bi-13))
          (is= bi-13 (math/binary-str->BigInteger "1101"))
 
-         (is= [\1 \1 \0 \1] (math/BigInteger->binary-chars bi-13))
+         (is= [\1 \1 \0 \1] (math/int->binary-chars bi-13))
          (is= 13 (math/binary-chars->BigInteger [\1 \1 \0 \1]))
+
+         ; verify `bitstr` gives expected result
+         (throws? (math/int->bitstr 5 2))
+         (is= "101" (math/int->bitstr 5 3))
+         (is= "0101" (math/int->bitstr 5 4))
+         (is= "00000101" (math/int->bitstr 5 8))
 
          (let [bi-10   (biginteger 10)
                bi-cafe (biginteger 51966)
                bi-babe (biginteger 47806)]
-           (is= "000a" (math/BigInteger->hex-str bi-10 4))
-           (is= "cafe" (math/BigInteger->hex-str bi-cafe 4))
-           (is= "babe" (math/BigInteger->hex-str bi-babe 2)))))
+           (is= "000a" (math/int->hex-str bi-10 4))
+           (is= "cafe" (math/int->hex-str bi-cafe 4))
+           (is= "babe" (math/int->hex-str bi-babe 2)))))
 
      ;
      ))

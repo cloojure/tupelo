@@ -6,37 +6,11 @@
   (:import
     [clojure.lang BigInt]))
 
-; #todo move to i
+; #todo maybe move to:
 ;   tupelo.math.mod.long
 ;   tupelo.math.mod.BigInteger
 ;   tupelo.math.mod.BigInt
 ;
-;-----------------------------------------------------------------------------
-; #todo need BigInt version?
-
-(defn ceil-long [x] (long (Math/ceil (double x))))
-(defn floor-long [x] (long (Math/floor (double x))))
-(defn round-long [x] (long (Math/round (double x))))
-(defn trunc-long [x] (long (.longValue (double x))))
-
-(s/defn signum :- s/Int
-  "Returns either -1, 0, or +1, to indicate the sign of the input. "
-  [x :- s/Num]
-  (cond
-    (pos? x) +1
-    (neg? x) -1
-    :else 0))
-
-(s/defn same-sign :- s/Bool
-  "Returns `true` iff x and y have the same sign, or are both zero."
-  [x :- s/Num
-   y :- s/Num]
-  (truthy?
-    (or
-      (and (pos? x) (pos? y))
-      (and (neg? x) (neg? y))
-      (and (zero? x) (zero? y)))))
-
 ;-----------------------------------------------------------------------------
 ; shortcuts for quot/mod with different return types
 (s/defn mod-Long :- Long
@@ -126,16 +100,6 @@
     (mod-BigInt it N)))
 
 ;-----------------------------------------------------------------------------
-(s/defn mod-symmetric :- s/Int
-  "Like clojure.core/mod, but returns a result symmetric around zero [-N/2..N/2). N must be even and positive."
-  [i :- s/Int
-   N :- s/Int]
-  (assert (and (int? i) (int-pos? N) (even? N)))
-  (let [d-ovr-2 (/ N 2)
-        result  (cond-it-> (mod i N)
-                  (<= d-ovr-2 it) (- it N))]
-    result))
-
 (s/defn mod-inverse :- s/Int
   "Computes the 'inverse` y of a number x (mod N), such that `x*y (mod N)` = 1.
    Uses the extended Euclid algorithm (iterative version). Assumes x and N are relatively prime. "
@@ -161,3 +125,15 @@
           (if (neg? a)
             (+ a N-orig)
             a))))))
+
+;-----------------------------------------------------------------------------
+(s/defn mod-symmetric :- s/Int
+  "Like clojure.core/mod, but returns a result symmetric around zero [-N/2..N/2). N must be even and positive."
+  [i :- s/Int
+   N :- s/Int]
+  (assert (and (int? i) (int-pos? N) (even? N)))
+  (let [d-ovr-2 (/ N 2)
+        result  (cond-it-> (mod i N)
+                  (<= d-ovr-2 it) (- it N))]
+    result))
+

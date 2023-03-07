@@ -1427,6 +1427,15 @@
          [0 1 "" [] nil true false])
     [0 1 "" [] :some-default true false]))
 
+;-----------------------------------------------------------------------------
+; simple verification of vec-shuffle
+(dotest
+  (is= [:b :c :d :a] (t/vec-shuffle [:a :b :c :d] [1 2 3 0]))
+  (is= [:d :c :b :a] (t/vec-shuffle [:a :b :c :d] [3 2 1 0]))
+  (is= [:c :b :d :a] (t/vec-shuffle [:a :b :c :d] [2 1 3 0]))
+  (throws? (t/vec-shuffle [:a :b :c :d] [2 1 0])))
+
+;-----------------------------------------------------------------------------
 (dotest
   (is (t/rel= 1 1 :digits 4))
   (is (t/rel= 1 1 :tol 0.01))
@@ -2021,7 +2030,7 @@
 
 
 ; #todo fix so use `verify` for both clj and cljs
-(dotest-focus
+(dotest
 
   ; We use `split-at` to partition the coll. Given a coll like [0 1 2], it makes
   ; no sense to give degenerate splits like {:data1 [] :data2 [0 1 2]}
@@ -2046,6 +2055,16 @@
         [1 2 3 8 9 10 99])))
   ; #todo add more tests
   )
+
+(dotest
+  (let [times-2 #(* 2 %)]
+    (is= [] (take 0 (range 9)))
+    (is= 1 (t/iterate-n 0 times-2 1))
+    (is= 2 (t/iterate-n 1 times-2 1))
+    (is= 4 (t/iterate-n 2 times-2 1))
+    (is= 8 (t/iterate-n 3 times-2 1))
+    (is= 256 (t/iterate-n 8 times-2 1))))
+
 
 (dotest   ; just read down by columns to get output
   (is= [1 :a 2 :b :c] (t/interleave-all

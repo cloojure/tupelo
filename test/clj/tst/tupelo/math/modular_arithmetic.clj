@@ -30,26 +30,6 @@
   (is= java.math.BigInteger (type (mod-BigInteger bi-10 bi-3)))
   )
 
-(verify   ; math operations with Long result
-  (is= 5 (ceil-long 4.5))
-  (is= 4 (floor-long 4.5))
-
-  (is= 5 (round-long 4.6))
-  (is= 5 (round-long 4.5))
-  (is= 4 (round-long 4.4))
-
-  (is= 4 (trunc-long 4.4))
-  (is= -4 (trunc-long -4.4))
-
-  (is= 1 (signum 4.4))
-  (is= 0 (signum 0))
-  (is= -1 (signum -4.4))
-
-  (is (same-sign 1 1))
-  (is (same-sign -1 -1))
-  (isnt (same-sign 1 -1))
-  (isnt (same-sign -1 1)))
-
 (verify
   ; verify result sign for quot/mod with positive denom
   (is= (forv [i (thru -5 5)]

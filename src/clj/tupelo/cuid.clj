@@ -21,7 +21,7 @@
 
 ;-----------------------------------------------------------------------------
 (def ^:no-doc min-bits 4) ; NOTE! IMPORTANT! 4 bits minimum due to shuffle step
-(def ^:no-doc max-bits 128) ; No real upper limit.  Just process in blocks if desired.
+(def ^:no-doc max-bits 128) ; No real upper limit, but don't need any more for a CUID
 
 ;-----------------------------------------------------------------------------
 

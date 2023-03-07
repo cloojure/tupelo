@@ -39,8 +39,8 @@
             (when (neg? cuid)
               (throw (ex-info "found-negative" (vals->map cuid))))
             (let [fmt-str (str "%7d   %0" num-digits-dec "d   %s   %s  %7d")
-                  hex-str (math/BigInteger->hex-str cuid num-digits-hex)
-                  bit-str (prng/int->bitstr cuid num-bits)]
+                  hex-str (math/int->hex-str cuid num-digits-hex)
+                  bit-str (math/int->bitstr cuid num-bits)]
               (println (format fmt-str i cuid hex-str bit-str (nth idx-deprng i)))))
           (isnt= idx-vals cuid-vals) ; but not same order (random chance 1 in N!)
           (is= idx-vals idx-deprng))))
@@ -109,3 +109,4 @@
       (prof/print-profile-stats!)
 
       )))
+
