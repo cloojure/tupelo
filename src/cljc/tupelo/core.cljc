@@ -2976,10 +2976,11 @@
           taken
           (recur taken-next remaining-next))))))
 
-(defn distinct-using
+(s/defn distinct-using :- tsk/List
   "Removes elements from a collection so that the result has no duplicates of `(keyfn <elem>)`.
   Employs a first-one-wins strategy. Not lazy."
-  [keyfn coll]
+  [keyfn :- tsk/Fn
+   coll :- tsk/List]
   (loop [seen    #{}
          waiting coll
          keepers []]
@@ -2996,7 +2997,7 @@
 
         (defrecord SampleRec [a b])
         (assert (val= (->SampleRec 1 2) {:a 1 :b 2}))   ; fails for clojure.core/= "
-  [& vals]
+  [& vals :- [s/Any]]
   (let [mapify   (fn [arg]
                    (if (map? arg)
                      (into {} arg)
@@ -3008,7 +3009,7 @@
 
 (s/defn set= :- s/Bool
   "Returns true if the collections are equal when converted to sets."
-  [& colls]
+  [& colls :- [s/Any]]
   (apply = (mapv set colls)))
 
 

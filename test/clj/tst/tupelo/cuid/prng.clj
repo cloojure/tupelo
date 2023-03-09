@@ -45,7 +45,7 @@
 ;-----------------------------------------------------------------------------
 (verify
   (when false ; ***** ENABLE TO SEE PRINTOUT *****
-    (let [ctx (new-ctx {:num-bits   32})]
+    (let [ctx (new-ctx {:num-bits 32})]
       (with-map-vals ctx [num-bits N-max num-digits-dec num-digits-hex]
         ; arg must be in slice 0..(dec N-max)
         (throws-not? (randomize-frame ctx 1 0))
@@ -105,7 +105,7 @@
            31   3847355345   e551fbd1   11100101010100011111101111010001       31 "
       ))
 
-  ; Fast coverage tests
+  ; Exhaustive coverage tests for small N
   (doseq [nbits (thru 4 12)]
     (let [ctx (new-ctx {:num-bits nbits})]
       (with-map-vals ctx [N-max]
@@ -127,6 +127,20 @@
           (let [nums-orig     (range N-max)
                 nums-shuffled (cp/pmap :builtin #(randomize ctx %) nums-orig)]
             (is-set= nums-orig nums-shuffled)))))))
+
+; Sampling tests for larger N
+(verify
+  (cp/pdoseq :builtin [nbits (thru 32 128)] ; about 300 ms
+    (let [ctx   (new-ctx {:num-bits nbits})
+          nvals 20]
+      (with-map-vals ctx [N-max]
+        (let [idx-vals   (range nvals)
+              cuid-vals  (mapv #(randomize ctx %) idx-vals)
+              idx-deprng (mapv #(derandomize ctx %) cuid-vals)]
+          (is (every? nonneg? cuid-vals))
+          (is (every? #(< % N-max) cuid-vals))
+          (is= idx-vals idx-deprng) ; derand recovers original vals, in order
+          )))))
 
 (verify
   (when false ; ***** ENABLE TO SEE TIMING PRINTOUTS *****k

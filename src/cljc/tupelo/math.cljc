@@ -117,8 +117,8 @@
        [base :- s/Int
         exp :- s/Int]
        (let [result-bi   (pow->BigInteger base exp)
-             >>          (when (< Long/MAX_VALUE result-bi)
-                           (throw (ex-info "Long overflow" (vals->map result-bi))))
+             >>          (when-not (<= Long/MIN_VALUE result-bi Long/MAX_VALUE)
+                           (throw (ex-info "Long overflow" (vals->map base exp result-bi))))
              result-long (.longValueExact result-bi)]
          result-long))
 
