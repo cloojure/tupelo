@@ -129,7 +129,7 @@
             (is-set= nums-orig nums-shuffled)))))))
 
 ; Sampling tests for larger N
-(verify
+(verify-focus
   (cp/pdoseq :builtin [nbits (thru 32 128)] ; about 300 ms
     (let [ctx   (new-ctx {:num-bits nbits})
           nvals 20]
@@ -137,6 +137,7 @@
         (let [idx-vals   (range nvals)
               cuid-vals  (mapv #(randomize ctx %) idx-vals)
               idx-deprng (mapv #(derandomize ctx %) cuid-vals)]
+          (isnt= idx-vals cuid-vals) ; prob of failure near zero
           (is (every? nonneg? cuid-vals))
           (is (every? #(< % N-max) cuid-vals))
           (is= idx-vals idx-deprng) ; derand recovers original vals, in order
