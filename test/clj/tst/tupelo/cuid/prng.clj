@@ -129,7 +129,7 @@
             (is-set= nums-orig nums-shuffled)))))))
 
 ; Sampling tests for larger N
-(verify-focus
+(verify
   (cp/pdoseq :builtin [nbits (thru 32 128)] ; about 300 ms
     (let [ctx   (new-ctx {:num-bits nbits})
           nvals 20]
