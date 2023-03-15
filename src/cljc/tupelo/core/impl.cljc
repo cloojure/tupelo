@@ -11,18 +11,18 @@
     [clojure.string :as str]
     [schema.core :as s]))
 
-(defn cljs-env?     ; from plumatic schema/macros.clj
+(defn cljs-env? ; from plumatic schema/macros.clj
   "Take the &env from a macro, and tell whether we are expanding into cljs."
   [env]
   (boolean (:ns env)))
 
-(defmacro if-cljs     ; from plumatic schema/macros.clj
+(defmacro if-cljs ; from plumatic schema/macros.clj
   "Return then if we are generating cljs code and else for Clojure code.
    https://groups.google.com/d/msg/clojurescript/iBY5HaQda4A/w1lAQi9_AwsJ"
   [then else]
   (if (cljs-env? &env) then else))
 
-(defmacro try-catchall     ; from plumatic schema/macros.clj
+(defmacro try-catchall ; from plumatic schema/macros.clj
   "A cross-platform variant of try-catch that catches all exceptions.
    Does not (yet) support finally, and does not need or want an exception class."
   [& body]
@@ -58,23 +58,30 @@
 
 
 (def ^:no-doc uuid-regex-pattern
-  #"(?x)            # expanded mode
-  \p{XDigit}{8}     # 8 hex digits
-  -                 # hyphen
-  \p{XDigit}{4}     # 4 hex digits
-  -                 # hyphen
-  \p{XDigit}{4}     # 4 hex digits
-  -                 # hyphen
-  \p{XDigit}{4}     # 4 hex digits
-  -                 # hyphen
-  \p{XDigit}{12}    # 12 hex digits
-  ")
-(s/defn uuid-str? :- s/Bool
-  "Returns true iff the string shows a valid UUID-like pattern of hex digits. Does not
-  distinguish between UUID subtypes."
-  [arg]
-  (boolean
-    (when (string? arg)
-      (re-matches uuid-regex-pattern arg))))
+  #?(:clj  #"(?x)            # expanded mode
+            \p{XDigit}{8}     # 8 hex digits
+            -                 # hyphen
+            \p{XDigit}{4}     # 4 hex digits
+            -                 # hyphen
+            \p{XDigit}{4}     # 4 hex digits
+            -                 # hyphen
+            \p{XDigit}{4}     # 4 hex digits
+            -                 # hyphen
+            \p{XDigit}{12}    # 12 hex digits
+            "
+     :cljs #"[0-9a-fA-f]{8}-[0-9a-fA-f]{4}-[0-9a-fA-f]{4}-[0-9a-fA-f]{4}-[0-9a-fA-f]{12}"
+     ))
 
+; #todo fix for cljs
+#?(:clj
+
+   (s/defn uuid-str? :- s/Bool
+     "Returns true iff the string shows a valid UUID-like pattern of hex digits. Does not
+     distinguish between UUID subtypes."
+     [arg]
+     (boolean
+       (when (string? arg)
+         (re-matches uuid-regex-pattern arg))))
+
+   )
 
