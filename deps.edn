@@ -1,9 +1,7 @@
 {:paths   [
-           "src/clj" ; Clojure source files
-           "src/cljc" ; Clojure source files
+           "src" ; impl source files
            ; "src/cljs" ; ClojureScript source files
-           "test" ; Clojure source files
-           "test" ; Clojure source files
+           "test" ; testing source files
            ]
  :deps    {
            org.clojure/clojure                 {:mvn/version "1.11.1"}

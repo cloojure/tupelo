@@ -1,0 +1,16 @@
+16	./clj/tupelo/cuid
+20	./clj/tupelo/parse
+8	./clj/tupelo/math
+4	./clj/tupelo/dev
+24	./clj/tupelo/java_time
+4	./clj/tupelo/x
+252	./clj/tupelo
+256	./clj
+4	./cljc
+8	./tupelo/string
+20	./tupelo/array
+4	./tupelo/math
+12	./tupelo/types
+8	./tupelo/core
+400	./tupelo
+668	.
