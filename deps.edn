@@ -2,8 +2,8 @@
            "src/clj" ; Clojure source files
            "src/cljc" ; Clojure source files
            ; "src/cljs" ; ClojureScript source files
-           "test/clj" ; Clojure source files
-           "test/cljc" ; Clojure source files
+           "test" ; Clojure source files
+           "test" ; Clojure source files
            ]
  :deps    {
            org.clojure/clojure                 {:mvn/version "1.11.1"}
