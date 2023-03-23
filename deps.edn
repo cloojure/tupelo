@@ -38,10 +38,8 @@
                           :exec-fn     cognitect.test-runner.api/test
                           :exec-args   {
                                         ;  :dirs     [; mandatory to control test dirs searched
-                                        ;             "src/clj"
-                                        ;             "src/cljc"
-                                        ;             "test/clj"
-                                        ;             "test/cljc"
+                                        ;             "src"
+                                        ;             "test"
                                         ;             ]
                                         :patterns ["tst.*"] ; mandatory to detect testing ns's like `tst.demo.core`
                                         }
