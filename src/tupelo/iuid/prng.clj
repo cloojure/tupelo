@@ -1,4 +1,4 @@
-(ns tupelo.cuid.prng
+(ns tupelo.iuid.prng
   (:use tupelo.core)
   (:require
     [schema.core :as s]
@@ -16,16 +16,16 @@
 ;
 ; Profile Stats:
 ; Samples       TOTAL        MEAN      SIGMA           ID
-; 1000        0.011     0.000011   0.000003   :cuid->idx
-; 1000        0.010     0.000010   0.000003   :idx->cuid
+; 1000        0.011     0.000011   0.000003   :uid->idx
+; 1000        0.010     0.000010   0.000003   :idx->uid
 ;
 ;-----------------------------------------------------------------------------
 ; :timing-1000-128 {:num-rounds 5  :shuffle-bits? true}
 ;
 ; Profile Stats:
 ; Samples       TOTAL        MEAN      SIGMA           ID
-; 1000        0.264     0.000264   0.000055   :cuid->idx
-; 1000        0.238     0.000238   0.000061   :idx->cuid
+; 1000        0.264     0.000264   0.000055   :uid->idx
+; 1000        0.238     0.000238   0.000061   :idx->uid
 ; 5000        0.221     0.000044   0.000024   :shuffle-bits-BigInteger
 ; 5000        0.043     0.000009   0.000002   :shuffle-bits-BigInteger-a
 ; 5000        0.129     0.000026   0.000017   :shuffle-bits-BigInteger-b
@@ -78,15 +78,15 @@
 (s/defn ^:no-doc derandomize-frame :- BigInteger
   [ctx :- tsk/KeyMap
    iround :- s/Int
-   cuid :- s/Int]
+   iuid :- s/Int]
   ; (prof/with-timer-accum :derandomize-frame)
   (with-map-vals ctx [num-bits N-max slopes-inv offsets shuffle-bits? bit-shuffle-idxs-prng]
-    (when-not (and (<= 0 cuid) (< cuid N-max))
-      (throw (ex-info "cuid out of range" (vals->map cuid N-max))))
+    (when-not (and (<= 0 iuid) (< iuid N-max))
+      (throw (ex-info "iuid out of range" (vals->map iuid N-max))))
     (let [slope-inv (get slopes-inv iround)
           offset    (get offsets iround)
-          cuid      (biginteger cuid)
-          r1        (cond-it-> cuid
+          iuid      (biginteger iuid)
+          r1        (cond-it-> iuid
                       shuffle-bits? (shuffle-bits-BigInteger num-bits bit-shuffle-idxs-prng it))
           r2        (it-> r1
                       (.subtract ^BigInteger it ^BigInteger offset)

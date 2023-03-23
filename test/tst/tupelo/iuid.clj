@@ -1,8 +1,8 @@
-(ns tst.tupelo.cuid
-  (:use tupelo.cuid tupelo.core tupelo.test)
+(ns tst.tupelo.iuid
+  (:use tupelo.iuid tupelo.core tupelo.test)
   (:require
     [com.climate.claypoole :as cp]
-    [tupelo.cuid.prng :as prng]
+    [tupelo.iuid.prng :as prng]
     [tupelo.math :as math]
     [tupelo.profile :as prof]
     [tupelo.schema :as tsk]
@@ -16,10 +16,10 @@
     (let [ctx (new-ctx {:num-bits nbits})]
       (with-map-vals ctx [N-max]
         (let [idx-vals   (range N-max)
-              cuid-vals  (cp/pmap :builtin #(idx->cuid ctx %) idx-vals)
-              idx-deprng (cp/pmap :builtin #(cuid->idx ctx %) cuid-vals)]
-          (is-set= idx-vals cuid-vals) ; all vals present
-          (isnt= idx-vals cuid-vals) ; but not same order (random chance: 1 in N!)
+              iuid-vals  (cp/pmap :builtin #(idx->uid ctx %) idx-vals)
+              idx-deprng (cp/pmap :builtin #(uid->idx ctx %) iuid-vals)]
+          (is-set= idx-vals iuid-vals) ; all vals present
+          (isnt= idx-vals iuid-vals) ; but not same order (random chance: 1 in N!)
           (is= idx-vals idx-deprng) ; recovers original vals, in order
           )))))
 
@@ -29,24 +29,24 @@
       ; (spyx ctx)
       (with-map-vals ctx [num-bits N-max num-digits-dec num-digits-hex]
         (let [idx-vals   (take 32 (range N-max))
-              cuid-vals  (mapv #(idx->cuid ctx %) idx-vals)
-              idx-deprng (mapv #(cuid->idx ctx %) cuid-vals)]
+              iuid-vals  (mapv #(idx->uid ctx %) idx-vals)
+              idx-deprng (mapv #(uid->idx ctx %) iuid-vals)]
           (nl)
-          (println (strcat "    idx      CUID        hex"
+          (println (strcat "    idx      IUID        hex"
                      (repeat 16 \space) "binary"
                      (repeat 22 \space) "orig"))
-          (doseq [[i cuid] (indexed cuid-vals)]
-            (when (neg? cuid)
-              (throw (ex-info "found-negative" (vals->map cuid))))
+          (doseq [[i uid] (indexed iuid-vals)]
+            (when (neg? uid)
+              (throw (ex-info "found-negative" (vals->map uid))))
             (let [fmt-str (str "%7d   %0" num-digits-dec "d   %s   %s  %7d")
-                  hex-str (math/int->hex-str cuid num-digits-hex)
-                  bit-str (math/int->bitstr cuid num-bits)]
-              (println (format fmt-str i cuid hex-str bit-str (nth idx-deprng i)))))
-          (isnt= idx-vals cuid-vals) ; but not same order (random chance 1 in N!)
+                  hex-str (math/int->hex-str uid num-digits-hex)
+                  bit-str (math/int->bitstr uid num-bits)]
+              (println (format fmt-str i uid hex-str bit-str (nth idx-deprng i)))))
+          (isnt= idx-vals iuid-vals) ; but not same order (random chance 1 in N!)
           (is= idx-vals idx-deprng))))
   ; sample output
   (comment
-    "   idx      CUID        hex                 binary                    orig
+    "   idx      IUID        hex                 binary                    orig
           0   2938486314   af25be2a   10101111001001011011111000101010        0
           1   0573692738   2231db42   00100010001100011101101101000010        1
           2   2829576266   a8a7e84a   10101000101001111110100001001010        2
@@ -88,24 +88,24 @@
       (let [ctx (new-ctx {:num-bits 32})]
         (prn :timing-1000-32)
         (dotimes [i 1000] ; timing for 1000 CRIDX values
-          (is= i (cuid->idx ctx
-                   (idx->cuid ctx i)))))
+          (is= i (uid->idx ctx
+                   (idx->uid ctx i)))))
       (prof/print-profile-stats!)
 
       (prof/timer-stats-reset!)
       (let [ctx (new-ctx {:num-bits 64})]
         (prn :timing-1000-64)
         (dotimes [i 1000] ; timing for 1000 CRIDX values
-          (is= i (cuid->idx ctx
-                   (idx->cuid ctx i)))))
+          (is= i (uid->idx ctx
+                   (idx->uid ctx i)))))
       (prof/print-profile-stats!)
 
       (prof/timer-stats-reset!)
       (let [ctx (new-ctx {:num-bits 128})]
         (prn :timing-1000-128)
         (dotimes [i 1000] ; timing for 1000 CRIDX values
-          (is= i (cuid->idx ctx
-                   (idx->cuid ctx i)))))
+          (is= i (uid->idx ctx
+                   (idx->uid ctx i)))))
       (prof/print-profile-stats!)
 
       )))

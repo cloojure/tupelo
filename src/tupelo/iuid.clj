@@ -1,15 +1,15 @@
-(ns tupelo.cuid
+(ns tupelo.iuid
   (:use tupelo.core)
   (:require
     [schema.core :as s]
-    [tupelo.cuid.prng :as prng]
+    [tupelo.iuid.prng :as prng]
     [tupelo.profile :as prof]
     [tupelo.schema :as tsk])
   (:import
     [java.util Random]))
 
 ;-----------------------------------------------------------------------------
-; new:  CUID - Cipher Unique ID
+; new:  IUID - Cipher Unique ID
 ;
 ; BitScrambler
 ;  - idx->int
@@ -21,12 +21,12 @@
 
 ;-----------------------------------------------------------------------------
 (def ^:no-doc min-bits 4) ; NOTE! IMPORTANT! 4 bits minimum due to shuffle step
-(def ^:no-doc max-bits 128) ; No real upper limit, but don't need any more for a CUID
+(def ^:no-doc max-bits 128) ; No real upper limit, but don't need any more for a IUID
 
 ;-----------------------------------------------------------------------------
 
 (s/defn new-ctx :- tsk/KeyMap
-  "Creates a new Cryptographic Unique ID (CUID) context map. Usage:
+  "Creates a new Indexed Unique ID (IUID) context map. Usage:
 
         (new-ctx <params-map>)
 
@@ -56,19 +56,19 @@
 ;   32 bits:  12 usec/call
 ;   64 bits:  12 usec/call
 ;  128 bits:  12 usec/call
-(s/defn idx->cuid :- BigInteger
+(s/defn idx->uid :- BigInteger
   "Given a context map and an index value [0..2^N), returns the corresponding
-  CUID value (Cryptographic Unique ID), also in [0..2^N). CUID values are guaranteed
+  IUID value (Cryptographic Unique ID), also in [0..2^N). IUID values are guaranteed
   to be unique for each index and pseudo-random within the interval [0..2^N)."
   [ctx :- tsk/KeyMap
    ival :- s/Int]
-  ; (prof/with-timer-accum :idx->cuid)
+  ; (prof/with-timer-accum :idx->uid)
   (prng/randomize ctx ival))
 
-(s/defn cuid->idx :- BigInteger
-  "Given a context map and a CUID value (Cryptographic Unique ID) in [0..2^N),
+(s/defn uid->idx :- BigInteger
+  "Given a context map and a IUID value (Cryptographic Unique ID) in [0..2^N),
    returns the corresponding index value, also in [0..2^N)."
   [ctx :- tsk/KeyMap
-   cuid :- s/Int]
+   iuid :- s/Int]
   ; (prof/with-timer-accum :cuid->idx)
-  (prng/derandomize ctx cuid))
+  (prng/derandomize ctx iuid))

@@ -1,5 +1,5 @@
-(ns tst.tupelo.cuid.prng
-  (:use tupelo.cuid.prng
+(ns tst.tupelo.iuid.prng
+  (:use tupelo.iuid.prng
         tupelo.core
         tupelo.test)
   (:require
@@ -54,23 +54,23 @@
         (throws? (randomize-frame ctx 1 N-max))
 
         (let [idx-vals   (take 32 (range N-max))
-              cuid-vals  (mapv #(randomize ctx %) idx-vals)
-              idx-deprng (mapv #(derandomize ctx %) cuid-vals)]
+              iuid-vals  (mapv #(randomize ctx %) idx-vals)
+              idx-deprng (mapv #(derandomize ctx %) iuid-vals)]
           (nl)
-          (println "    idx      CUID        hex                 binary                    orig")
-          (doseq [[i cuid] (indexed cuid-vals)]
-            (when (neg? cuid)
-              (throw (ex-info "found-negative" (vals->map cuid))))
+          (println "    idx      IUID        hex                 binary                    orig")
+          (doseq [[i uid] (indexed iuid-vals)]
+            (when (neg? uid)
+              (throw (ex-info "found-negative" (vals->map uid))))
             (let [fmt-str (str "%7d   %0" num-digits-dec "d   %s   %s  %7d")
-                  hex-str (math/int->hex-str cuid num-digits-hex)
-                  bit-str (math/int->bitstr cuid num-bits)]
-              (println (format fmt-str i cuid hex-str bit-str (nth idx-deprng i)))))
-          (isnt= idx-vals cuid-vals) ; but not same order (random chance 1 in N!)
+                  hex-str (math/int->hex-str uid num-digits-hex)
+                  bit-str (math/int->bitstr uid num-bits)]
+              (println (format fmt-str i uid hex-str bit-str (nth idx-deprng i)))))
+          (isnt= idx-vals iuid-vals) ; but not same order (random chance 1 in N!)
           (is= idx-vals idx-deprng))))
 
     ; sample output
     (comment
-      "   idx      CUID        hex                 binary                    orig
+      "   idx      IUID        hex                 binary                    orig
             0   1797252525   6b1fe5ad   01101011000111111110010110101101        0
             1   3193035598   be51db4e   10111110010100011101101101001110        1
             2   0411151101   1881aafd   00011000100000011010101011111101        2
@@ -110,10 +110,10 @@
     (let [ctx (new-ctx {:num-bits nbits})]
       (with-map-vals ctx [N-max]
         (let [idx-vals   (range N-max)
-              cuid-vals  (cp/pmap :builtin #(randomize ctx %) idx-vals)
-              idx-deprng (cp/pmap :builtin #(derandomize ctx %) cuid-vals)]
-          (is-set= idx-vals cuid-vals) ; all vals present
-          (isnt= idx-vals cuid-vals) ; but not same order (random chance 1 in N!)
+              uid-vals   (cp/pmap :builtin #(randomize ctx %) idx-vals)
+              idx-deprng (cp/pmap :builtin #(derandomize ctx %) uid-vals)]
+          (is-set= idx-vals uid-vals) ; all vals present
+          (isnt= idx-vals uid-vals) ; but not same order (random chance 1 in N!)
           (is= idx-vals idx-deprng) ; derand recovers original vals, in order
           ))))
 
@@ -135,11 +135,11 @@
           nvals 20]
       (with-map-vals ctx [N-max]
         (let [idx-vals   (range nvals)
-              cuid-vals  (mapv #(randomize ctx %) idx-vals)
-              idx-deprng (mapv #(derandomize ctx %) cuid-vals)]
-          (isnt= idx-vals cuid-vals) ; prob of failure near zero
-          (is (every? nonneg? cuid-vals))
-          (is (every? #(< % N-max) cuid-vals))
+              uid-vals   (mapv #(randomize ctx %) idx-vals)
+              idx-deprng (mapv #(derandomize ctx %) uid-vals)]
+          (isnt= idx-vals uid-vals) ; prob of failure near zero
+          (is (every? nonneg? uid-vals))
+          (is (every? #(< % N-max) uid-vals))
           (is= idx-vals idx-deprng) ; derand recovers original vals, in order
           )))))
 
