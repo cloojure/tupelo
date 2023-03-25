@@ -64,16 +64,16 @@
     (when-not (and (<= 0 ival) (< ival N-max))
       (throw (ex-info "ival out of range" (vals->map ival N-max))))
     ; calculate mod( y = mx + b ), then shuffle bits
-    (let [slope  (get slopes iround)
-          offset (get offsets iround)
-          ival   (biginteger ival)
-          r1     (it-> ival
-                   (.multiply ^BigInteger it slope)
-                   (.add ^BigInteger it offset)
-                   (mod/mod-BigInteger it N-max))
-          r2     (cond-it-> r1
-                   shuffle-bits? (shuffle-bits-BigInteger num-bits bit-shuffle-idxs-orig it))]
-      r2)))
+    (let [slope      (get slopes iround)
+          offset     (get offsets iround)
+          ival       (biginteger ival)
+          randomized (it-> ival
+                       (.multiply ^BigInteger it slope)
+                       (.add ^BigInteger it offset)
+                       (mod/mod-BigInteger it N-max))
+          shuffled   (cond-it-> randomized
+                       shuffle-bits? (shuffle-bits-BigInteger num-bits bit-shuffle-idxs-orig it))]
+      shuffled)))
 
 (s/defn ^:no-doc derandomize-frame :- BigInteger
   [ctx :- tsk/KeyMap
@@ -83,16 +83,16 @@
   (with-map-vals ctx [num-bits N-max slopes-inv offsets shuffle-bits? bit-shuffle-idxs-prng]
     (when-not (and (<= 0 iuid) (< iuid N-max))
       (throw (ex-info "iuid out of range" (vals->map iuid N-max))))
-    (let [slope-inv (get slopes-inv iround)
-          offset    (get offsets iround)
-          iuid      (biginteger iuid)
-          r1        (cond-it-> iuid
-                      shuffle-bits? (shuffle-bits-BigInteger num-bits bit-shuffle-idxs-prng it))
-          r2        (it-> r1
-                      (.subtract ^BigInteger it ^BigInteger offset)
-                      (.multiply ^BigInteger it ^BigInteger slope-inv)
-                      (mod/mod-BigInteger it N-max))]
-      r2)))
+    (let [slope-inv    (get slopes-inv iround)
+          offset       (get offsets iround)
+          iuid         (biginteger iuid)
+          unshuffled   (cond-it-> iuid
+                         shuffle-bits? (shuffle-bits-BigInteger num-bits bit-shuffle-idxs-prng it))
+          unrandomized (it-> unshuffled
+                         (.subtract ^BigInteger it ^BigInteger offset)
+                         (.multiply ^BigInteger it ^BigInteger slope-inv)
+                         (mod/mod-BigInteger it N-max))]
+      unrandomized)))
 
 (s/defn gen-slope :- BigInteger
   "Generate a positive, odd slope value"
