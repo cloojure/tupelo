@@ -73,7 +73,6 @@
      ))
 
 ; #todo fix for cljs
-; #?(:clj)
 (s/defn uuid-str? :- s/Bool
   "Returns true iff the string shows a valid UUID-like pattern of hex digits. Does not
   distinguish between UUID subtypes."

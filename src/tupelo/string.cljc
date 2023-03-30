@@ -65,14 +65,6 @@
     :v "victor"   :w "whiskey"  :x "x-ray"    :y "yankee"   :z "zulu" } )
 
 ;-----------------------------------------------------------------------------
-(def ^:no-doc uuid-regex
-  #?(:clj  #"\p{XDigit}{8}-\p{XDigit}{4}-\p{XDigit}{4}-\p{XDigit}{4}-\p{XDigit}{12}"
-     :cljs #"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"))
-(s/defn uuid? :- s/Bool
-  "Returns true if the arg is a UUID-format string like '123e4567-e89b-12d3-a456-426614174000'"
-  [arg :- s/Str] (t/truthy? (re-matches uuid-regex arg)))
-
-;-----------------------------------------------------------------------------
 (s/defn quotes->single :- s/Str ; #todo readme & blog
   "Converts all double-quotes in a string to single-quotes"
   [arg :- s/Str]
