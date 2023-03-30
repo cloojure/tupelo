@@ -1927,7 +1927,7 @@
 
      ;-----------------------------------------------------------------------------
      (when-clojure-1-9-plus
-       (defn swap-out! ; #todo => tupelo/core.cljc
+       (defn swap-out!
          "Just like clojure.core/swap!, but returns the old value"
          [tgt-atom swap-fn & args]
          (let [[old -new-] (apply swap-vals! tgt-atom swap-fn args)]

@@ -73,15 +73,14 @@
      ))
 
 ; #todo fix for cljs
-#?(:clj
+; #?(:clj)
+(s/defn uuid-str? :- s/Bool
+  "Returns true iff the string shows a valid UUID-like pattern of hex digits. Does not
+  distinguish between UUID subtypes."
+  [arg]
+  (boolean
+    (when (string? arg)
+      (re-matches uuid-regex-pattern arg))))
 
-   (s/defn uuid-str? :- s/Bool
-     "Returns true iff the string shows a valid UUID-like pattern of hex digits. Does not
-     distinguish between UUID subtypes."
-     [arg]
-     (boolean
-       (when (string? arg)
-         (re-matches uuid-regex-pattern arg))))
 
-   )
 
