@@ -2,11 +2,10 @@
   (:refer-clojure :exclude [rand])
   (:require
     [clj-uuid :as uuid]
-    [clojure.core :exclude [rand]]
+    ; [clojure.core :exclude [rand]]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.schema :as tsk]
-    [tupelo.string :as str]
     [tupelo.core.impl :as impl])
   (:import
     [java.util UUID]))
@@ -61,16 +60,17 @@
 
 ;-----------------------------------------------------------------------------
 (def ^:no-doc uuid-counter (atom nil)) ; uninitialized
-(defn ^:no-doc counted->nil! [] (reset! uuid-counter nil))
 (defn counted-reset! [] (reset! uuid-counter 0))
 (counted-reset!) ; initialize upon load
 
-(defn counted-str []
+(s/defn counted-str :- s/Str
+  []
   (let [cnt      (t/swap-out! uuid-counter inc)
         uuid-str (format "%08x-aaaa-bbbb-cccc-ddddeeeeffff" cnt)]
     (t/validate uuid-str? uuid-str)))
 
-(defn counted []
+(s/defn counted :- UUID
+  []
   (UUID/fromString (counted-str)))
 
 ;-----------------------------------------------------------------------------

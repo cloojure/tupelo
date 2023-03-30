@@ -56,12 +56,6 @@
       (is= r2 "00000004-aaaa-bbbb-cccc-ddddeeeeffff")
       (is (uuid/uuid-str? r2))))
 
-  ; When counter is initialized to nil, invalid uuid results
-  (uuid/counted->nil!)
-  (throws? (uuid/counted-str) )
-  (uuid/counted-reset!) ; must be called before 1st usage of counted-str
-  (throws-not? (uuid/counted-str) )
-
   ; demonstrate uuid/counted-str (manual reset)
   (uuid/counted-reset!)
   (is= (uuid/counted-str) "00000000-aaaa-bbbb-cccc-ddddeeeeffff")
