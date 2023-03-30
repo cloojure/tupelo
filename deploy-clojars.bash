@@ -1,4 +1,5 @@
-#!/bin/bash 
+#!/bin/bash
+set -v
 
 env  \
   CLOJARS_USERNAME=cloojure  \

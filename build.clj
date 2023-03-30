@@ -4,7 +4,7 @@
     [deps-deploy.deps-deploy :as dd]
     ))
 
-(def version "23.03.14") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
+(def version "23.03.28-SNAPSHOT") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
 (def tag (str "v" version)) ; ***** ASSUMES YOU CREATE A GIT TAG LIKE `v23.01.31` *****
 (def lib-name 'tupelo/tupelo) ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
 (def scm-root "github.com/cloojure/tupelo")
