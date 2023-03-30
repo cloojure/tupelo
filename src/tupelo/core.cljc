@@ -261,7 +261,7 @@
   `(when-not ~pred-expr
      (throw (ex-info ~err-str ~info-expr))))
 
-(defmacro assert-info
+(defmacro assert-info ; #todo keep or discard???  Needs CLJS macro support
   "Like `assert` but accepts a map like `ex-info`:
 
         (assert-info (sequential? listy)
@@ -658,14 +658,16 @@
 (defn unlazy-pretty
   "Shorthand for (walk-data->pretty (unlazy data))."
   [data]
-  (try
-    (walk-data->pretty (unlazy data))
-    (catch Throwable t
-      (prn :*****************************************************************************)
-      (prn :**********--error--**********--tupelo.core/unlazy-pretty--Throwable--********)
-      (prn :*****************************************************************************)
-      (.printStackTrace t)
-      data)))
+  #?(:clj (try
+            (walk-data->pretty (unlazy data))
+            (catch Throwable t
+              (prn :*****************************************************************************)
+              (prn :**********--error--**********--tupelo.core/unlazy-pretty--Throwable--********)
+              (prn :*****************************************************************************)
+              (.printStackTrace t)
+              data))
+     :cljs (walk-data->pretty (unlazy data))
+     ))
 
 ; #todo impl-merge *****************************************************************************
 
@@ -972,10 +974,10 @@
   "Given a sequential object (vector or list), add one or more elements to the end."
   [listy :- tsk/List
    & elems :- [s/Any]]
-  (assert-info (sequential? listy)
-    "append: Sequential collection required, found=" {:listy listy})
-  (assert-info (not-empty? elems)
-    "Nothing to append! elems=" {:elems elems})
+  (when-not (sequential? listy)
+    (throw (ex-info "append: Sequential collection required, found=" {:listy listy})))
+  (when-not (not-empty? elems)
+    (throw (ex-info "Nothing to append! elems=" {:elems elems})))
   ; (vec (concat listy elems))  ; #TODO ***WARNING*** never use `concat`!!! 1000x slower!
   (into (vec listy) elems)) ; #todo measure & write blog re TPX/TigerGraph data
 
@@ -984,10 +986,10 @@
   [& args]
   (let [elems (butlast args)
         listy (xlast args)]
-    (assert-info (sequential? listy)
-      "prepend: Sequential collection required, found=" {:listy listy})
-    (assert-info (not-empty? elems)
-      "Nothing to prepend! elems=" {:elems elems})
+    (when-not (sequential? listy)
+      (throw (ex-info "prepend: Sequential collection required, found=" {:listy listy})))
+    (when-not (not-empty? elems)
+      (throw (ex-info "Nothing to prepend! elems=" {:elems elems})))
     (into (vec elems) listy)))
 
 ;-----------------------------------------------------------------------------
@@ -1320,7 +1322,7 @@
   "Returns a clojure.lang.MapEntry constructed from the given key and val"
   [key val]
   #?(:clj  (clojure.lang.MapEntry/create key val)
-     :cljs (cljs.core.MapEntry. key val)))
+     :cljs (first {key val}))) ; #todo is this really used?  Maybe use 2-vector?
 
 (defn list-entry
   "Constructs a list-entry map given an index and value"
@@ -1549,56 +1551,60 @@
   [template] (construct-impl template))
 
 ;-----------------------------------------------------------------------------
-(def ^:dynamic *dynamic-atom*
-  "A dynamic Var pointing to an `atom`. Used by `with-cynamic-val` to accumulate state,
-  such as in a vector or map.  Typically manipulated via helper functions such as
-  `cum-val-set-it` or `cum-vector-append`. Can also be manipulated directly via `swap!` et al."
-  nil)
+#?(:clj
+   (do
 
-(defmacro with-mutable-var
-  "Works with `(dynval-set-it ...)` to simulate a mutable variable.
+     (def ^:dynamic *dynamic-atom*
+       "A dynamic Var pointing to an `atom`. Used by `with-cynamic-val` to accumulate state,
+       such as in a vector or map.  Typically manipulated via helper functions such as
+       `cum-val-set-it` or `cum-vector-append`. Can also be manipulated directly via `swap!` et al."
+       nil)
 
-        (is= 15 (with-mutable-var 9           ; <= initial value
-                  (dynval-set-it! (+ it 1)    ; `it` refers to old value
-                  (dynval-set-it! (+ it 2))   ; `it` refers to old value
-                  (dynval-set-it! (+ it 3)))) ; `it` refers to old value
+     (defmacro with-mutable-var
+       "Works with `(dynval-set-it ...)` to simulate a mutable variable.
 
-        (is= true (with-mutable-var false     ; <= initial value
-                    (dynval-set-it! true)))   ; can ignore old value if desired
-  "
-  [init-val & forms]
-  `(binding [tupelo.core/*dynamic-atom* (atom ~init-val)]
-     (do ~@forms)
-     (deref tupelo.core/*dynamic-atom*)))
+             (is= 15 (with-mutable-var 9           ; <= initial value
+                       (dynval-set-it! (+ it 1)    ; `it` refers to old value
+                       (dynval-set-it! (+ it 2))   ; `it` refers to old value
+                       (dynval-set-it! (+ it 3)))) ; `it` refers to old value
 
-(defn ^:no-doc mutable-var-set-it-impl
-  [forms]
-  `(swap! *dynamic-atom*
-     (fn [~'it] ~@forms)))
+             (is= true (with-mutable-var false     ; <= initial value
+                         (dynval-set-it! true)))   ; can ignore old value if desired
+       "
+       [init-val & forms]
+       `(binding [tupelo.core/*dynamic-atom* (atom ~init-val)]
+          (do ~@forms)
+          (deref tupelo.core/*dynamic-atom*)))
 
-(defmacro mutable-var-set-it!
-  "Within `(with-dynamic-val ...)`, replaces value."
-  [& forms]
-  (mutable-var-set-it-impl forms))
+     (defn ^:no-doc mutable-var-set-it-impl
+       [forms]
+       `(swap! *dynamic-atom*
+          (fn [~'it] ~@forms)))
 
-(defmacro with-cum-vector
-  "Works with `(cum-vector-append ...)` to accumulate values into a vector.
+     (defmacro mutable-var-set-it!
+       "Within `(with-dynamic-val ...)`, replaces value."
+       [& forms]
+       (mutable-var-set-it-impl forms))
 
-        (is= [1 2 3]
-          (with-cum-vector
-            (cum-vector-append! 1)
-            (cum-vector-append! 2)
-            (cum-vector-append! 3)))
-  "
-  [& forms]
-  `(with-mutable-var []
-     ~@forms))
+     (defmacro with-cum-vector
+       "Works with `(cum-vector-append ...)` to accumulate values into a vector.
 
-(defn cum-vector-append! ; #todo file bug report for CLJS
-  "Within `(with-cum-vector ...)`, appends a new value."
-  [value]
-  (mutable-var-set-it! (append it value)))
+             (is= [1 2 3]
+               (with-cum-vector
+                 (cum-vector-append! 1)
+                 (cum-vector-append! 2)
+                 (cum-vector-append! 3)))
+       "
+       [& forms]
+       `(with-mutable-var []
+          ~@forms))
 
+     (defn cum-vector-append! ; #todo file bug report for CLJS
+       "Within `(with-cum-vector ...)`, appends a new value."
+       [value]
+       (mutable-var-set-it! (append it value)))
+
+     ))
 ;-----------------------------------------------------------------------------
 (defmacro source-code-env
   "A macro that returns information about the calling source code location like:
@@ -1928,13 +1934,14 @@
            old)))
      ))
 
-(defn atom?
-  "Returns true if x is a clojure.lang.BigInt"
-  [x] (= (type x) clojure.lang.Atom))
-
 ;-----------------------------------------------------------------------------
 #?(:clj   ; JVM type testing stuff
    (do
+
+     (defn atom?
+       "Returns true if x is a clojure.lang.BigInt"
+       [x] (= (type x) clojure.lang.Atom))
+
      (defn bigint?
        "Returns true if x is a clojure.lang.BigInt"
        [x] (= (type x) clojure.lang.BigInt))

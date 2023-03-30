@@ -40,9 +40,11 @@
   (is= "Type/Clojure-Symbol" (lex/comparison-class (symbol "hello")))
   (is= "Type/Clojure-Number" (lex/comparison-class 3))
   (is= "Type/Clojure-Number" (lex/comparison-class 3.14159))
-  (is= "Type/Clojure-Character" (lex/comparison-class \X))
   (is= "Type/Clojure-String" (lex/comparison-class "hello"))
   (is= "Type/Clojure-Boolean" (lex/comparison-class true))
+
+  #?(:clj
+     (is= "Type/Clojure-Character" (lex/comparison-class \X)))
 
   #?(:clj (do
        (is= "tst.tupelo.lexical.DummyEid" (impl/type-name-str eid-0))

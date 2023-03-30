@@ -8,11 +8,12 @@
   ;---------------------------------------------------------------------------------------------------
   ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
-  #?(:cljs (:require-macros
-             ; [tupelo.core]
-             [tupelo.quote]
-             [tupelo.testy]
-             ))
+  ;#?(:cljs (:require-macros
+  ;           ; [tupelo.core]
+  ;           [tupelo.quote]
+  ;           [tupelo.testy]
+  ;           ))
+
   (:require
     [clojure.test] ; sometimes this is required - not sure why
     [clojure.walk :as walk]
@@ -23,7 +24,7 @@
                           throws? throws-not? define-fixture]]
     ))
 
-#?(:cljs (enable-console-print!))
+; #?(:cljs (enable-console-print!))
 
 (dotest
   (is= (q/tmpl-fn (quote [a b (insert (+ 2 3))]))

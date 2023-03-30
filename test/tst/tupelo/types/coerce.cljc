@@ -98,32 +98,32 @@
        (is (t/rel= 1/10 (coerce/->double "0.1") :digits 9)))
      ))
 
-#?(:cljs
-   #_(do
-       (dotest
-         (is= 0 (tpar/->int "0"))
-         (is= 15 (tpar/->int "15"))
-         (is= -5 (tpar/->int "-5"))
-         (is= 99999 (tpar/->int "99999"))
-
-         (throws? (tpar/->int ""))
-         (throws? (tpar/->int "05"))
-         (throws? (tpar/->int "123xxx"))
-         (throws? (tpar/->int "12x3"))
-         (throws? (tpar/->int "12.3"))
-         (throws? (tpar/->int "xxx123")))
-
-       (dotest
-         (is= 0 (tpar/->float "0"))
-         (is= 0 (tpar/->float "0.0"))
-         (is= 12.345 (tpar/->float "12.345"))
-         (is= -5.1 (tpar/->float "-5.1"))
-         (is= 42 (tpar/->float "42.0"))
-         (is= 42 (tpar/->float "42"))
-         (is= 123.45 (tpar/->float "1.2345e2"))
-
-         (throws? (tpar/->float ""))
-         (throws? (tpar/->float "xxx1.23"))
-         (throws? (tpar/->float "1.23xxx"))
-         (throws? (tpar/->float "1.2xx34")))
-       ))
+;#?(:cljs
+;   (do
+;       (dotest
+;         (is= 0 (tpar/->int "0"))
+;         (is= 15 (tpar/->int "15"))
+;         (is= -5 (tpar/->int "-5"))
+;         (is= 99999 (tpar/->int "99999"))
+;
+;         (throws? (tpar/->int ""))
+;         (throws? (tpar/->int "05"))
+;         (throws? (tpar/->int "123xxx"))
+;         (throws? (tpar/->int "12x3"))
+;         (throws? (tpar/->int "12.3"))
+;         (throws? (tpar/->int "xxx123")))
+;
+;       (dotest
+;         (is= 0 (tpar/->float "0"))
+;         (is= 0 (tpar/->float "0.0"))
+;         (is= 12.345 (tpar/->float "12.345"))
+;         (is= -5.1 (tpar/->float "-5.1"))
+;         (is= 42 (tpar/->float "42.0"))
+;         (is= 42 (tpar/->float "42"))
+;         (is= 123.45 (tpar/->float "1.2345e2"))
+;
+;         (throws? (tpar/->float ""))
+;         (throws? (tpar/->float "xxx1.23"))
+;         (throws? (tpar/->float "1.23xxx"))
+;         (throws? (tpar/->float "1.2xx34")))
+;       ))

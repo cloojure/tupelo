@@ -253,17 +253,18 @@
     (is= [1] (t/xvec '(1)))
     (is= [1 2] (t/xvec [1 2]))))
 
-(dotest
-  ; clojure.lang.MapEntry passes sequential?  (argh!!!)
-  (let [m    {:a 1 :b 2}
-        me   (first m)
-        avec [1 2 3]
-        alst (list 1 2 3)]
-    (is= clojure.lang.MapEntry (type me))
-    (is (sequential? me))
-    (isnt (t/xsequential? me))
-    (is (t/xsequential? avec))
-    (is (t/xsequential? alst))))
+#?(:clj   ; #todo fix for cljs
+   (dotest
+     ; clojure.lang.MapEntry passes sequential?  (argh!!!)
+     (let [m    {:a 1 :b 2}
+           me   (first m)
+           avec [1 2 3]
+           alst (list 1 2 3)]
+       (is= clojure.lang.MapEntry (type me))
+       (is (sequential? me))
+       (isnt (t/xsequential? me))
+       (is (t/xsequential? avec))
+       (is (t/xsequential? alst)))))
 
 (dotest
   (let [inf-rng-1 (map inc (range))]
@@ -3101,15 +3102,15 @@
 ;  (spyxx {:a 1})
 ;  )
 
-(dotest
-  (is (t/atom? (atom 5)))
-  (isnt (t/atom? 5)))
-
 ;***************************************************************************************************
 ;***************************************************************************************************
 ;***************************************************************************************************
 #?(:clj
    (do
+
+     (dotest
+       (is (t/atom? (atom 5)))
+       (isnt (t/atom? 5)))
 
      (dotest
        (binding [*clojure-version* {:major 1 :minor 7}]

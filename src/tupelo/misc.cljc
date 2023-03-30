@@ -226,9 +226,10 @@
              hex-result (bytes-unsigned->hex-str bytes)]
          hex-result))))
 
-(s/defn hash->hex :- s/Str
-  "Given arbitrary arguments, uses clojure.lang/hash to generate a 32-bit hex hashcode."
-  [& args] (format "%08x" (hash args)))
+#?(:clj
+   (s/defn hash->hex :- s/Str
+     "Given arbitrary arguments, uses clojure.lang/hash to generate a 32-bit hex hashcode."
+     [& args] (format "%08x" (hash args))))
 
 ;---------------------------------------------------------------------------------------------------
 ;#?(:clj  ; #todo old way; delete?
@@ -266,7 +267,9 @@
          (throw (ex-info "arg must be a uuid" (t/vals->map uuid)))))
      (let [uuid-str (do
                       #?(:clj (str uuid))
-                      #?(:cljs (.-uuid uuid)))
+                      #?(:cljs ; (.-uuid uuid) ; #todo fix for CLJS
+                         (throw "Unimplemented"))
+                      )
            usha     (str->sha uuid-str)]
        usha))
 

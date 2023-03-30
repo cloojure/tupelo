@@ -1,6 +1,5 @@
 {:paths   [
            "src" ; impl source files
-           ; "src/cljs" ; ClojureScript source files
            "test" ; testing source files
            ]
  :deps    {
@@ -30,6 +29,10 @@
            }
 
  :aliases {
+           :shadow-cljs  {:extra-deps {thheller/shadow-cljs {:mvn/version "2.22.8"}}
+                          :main-opts  ["-m" "shadow.cljs.devtools.cli"]
+                          }
+
            :run          {:exec-fn demo.core/-main
                           }
            :test         {:extra-deps  {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}}

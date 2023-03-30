@@ -1,0 +1,28 @@
+{
+ :deps         {:aliases [:shadow-cljs] ; <= use this alias in deps.edn
+                          }
+
+ ; :source-paths ["src" "test"]
+ ; :dependencies []
+
+ :dev-http     {8080 "public"
+                8021 "out/test"}
+
+ :builds       {:frontend   {:target  :browser
+                             :modules {:main {:init-fn acme.frontend.app/init}}}
+
+                :test-node  {:target    :node-test
+                             :output-to "out/node-tests.js"
+                             :ns-regexp "^tst\\."
+                             :autorun   true}
+
+                :test-karma {:target    :karma
+                             :output-to "out/karma-tests.js"
+                             :ns-regexp "^tst\\."
+                             :autorun   true}
+
+                :test       {:target    :browser-test
+                             :test-dir  "out/test"
+                             :ns-regexp "^tst\\."}
+                }
+ }

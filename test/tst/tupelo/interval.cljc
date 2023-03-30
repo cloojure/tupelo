@@ -24,20 +24,24 @@
 
 #?(:cljs (enable-console-print!))
 
+#?(:clj
+   (dotest
+
+     (is= (< 0 1.0) true)
+     (is= (= 0 1.0) false)
+     (is= (> 0 1.0) false)
+
+     (is= (< 1 1.0) false)
+     (is= (= 1 1.0) false) ; *****  single-equals `=` doesn't work for integer and floating point values (never!) *****
+     (is= (== 1 1.0) true) ; *****  double-equals `==` works for numbers (only) in different categories *****
+     (is= (> 1 1.0) false)
+
+     (is= (< 2 1.0) false)
+     (is= (= 2 1.0) false)
+     (is= (> 2 1.0) true)
+     ))
+
 (dotest
-  (is= (< 0 1.0) true)
-  (is= (= 0 1.0) false)
-  (is= (> 0 1.0) false)
-
-  (is= (< 1 1.0) false)
-  (is= (= 1 1.0) false) ; *****  single-equals `=` doesn't work for integer and floating point values (never!) *****
-  (is= (== 1 1.0) true) ; *****  double-equals `==` works for numbers (only) in different categories *****
-  (is= (> 1 1.0) false)
-
-  (is= (< 2 1.0) false)
-  (is= (= 2 1.0) false)
-  (is= (> 2 1.0) true)
-
   ; `compare` works correctly for numbers in different categories (eg int vs float)
   (is= (compare 0 1.0) -1)
   (is= (compare 1 1.0) 0)
@@ -90,17 +94,17 @@
   (is= [3 5 7] (interval/->integers (interval/new-open 1 8) 2))
   (is= [1 3 5 7] (interval/->integers (interval/new-slice 1 8) 2))
   (is= [3 5 7] (interval/->integers (interval/new-anti-slice 1 8) 2))
-  (is= [1 3 5 7] (interval/->integers (interval/new-closed 1 8) 2))
+  (is= [1 3 5 7] (interval/->integers (interval/new-closed 1 8) 2)))
 
-  (is= [2.0 3.0] (interval/->doubles (interval/new-open 1 4)))
-  (is= [1.0 2.0 3.0] (interval/->doubles (interval/new-slice 1 4)))
-  (is= [2.0 3.0 4.0] (interval/->doubles (interval/new-anti-slice 1 4)))
-  (is= [1.0 2.0 3.0 4.0] (interval/->doubles (interval/new-closed 1 4)))
+#?(:clj
+   (dotest
+     (is= [2.0 3.0] (interval/->doubles (interval/new-open 1 4)))
+     (is= [1.0 2.0 3.0] (interval/->doubles (interval/new-slice 1 4)))
+     (is= [2.0 3.0 4.0] (interval/->doubles (interval/new-anti-slice 1 4)))
+     (is= [1.0 2.0 3.0 4.0] (interval/->doubles (interval/new-closed 1 4)))
 
-  (is= [1.5 2.0 2.5 3.0 3.5] (interval/->doubles (interval/new-open 1 4) 0.5))
-  (is= [1.0 1.5 2.0 2.5 3.0 3.5] (interval/->doubles (interval/new-slice 1 4) 0.5))
-  (is= [1.5 2.0 2.5 3.0 3.5 4.0] (interval/->doubles (interval/new-anti-slice 1 4) 0.5))
-  (is= [1.0 1.5 2.0 2.5 3.0 3.5 4.0] (interval/->doubles (interval/new-closed 1 4) 0.5))
-
-  )
+     (is= [1.5 2.0 2.5 3.0 3.5] (interval/->doubles (interval/new-open 1 4) 0.5))
+     (is= [1.0 1.5 2.0 2.5 3.0 3.5] (interval/->doubles (interval/new-slice 1 4) 0.5))
+     (is= [1.5 2.0 2.5 3.0 3.5 4.0] (interval/->doubles (interval/new-anti-slice 1 4) 0.5))
+     (is= [1.0 1.5 2.0 2.5 3.0 3.5 4.0] (interval/->doubles (interval/new-closed 1 4) 0.5))))
 

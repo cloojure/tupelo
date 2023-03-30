@@ -95,14 +95,15 @@
      (t/keep-if #(contains? itvl %)
        (range lower (inc upper) step)))))
 
-(s/defn ->doubles :- [java.lang.Double] ; #todo => tupelo.interval
-  "For an Interval with integer bounds, returns a vector of all integers within the Interval"
-  ([itvl :- Interval] (->doubles itvl 1))
-  ([itvl :- Interval
-    step :- s/Num]
-   (t/with-map-vals itvl [lower upper]
-     (mapv double
-       (t/keep-if #(contains? itvl %)
-         (range lower (inc upper) step))))))
+#?(:clj
+   (s/defn ->doubles :- [java.lang.Double] ; #todo => tupelo.interval
+     "For an Interval with integer bounds, returns a vector of all integers within the Interval"
+     ([itvl :- Interval] (->doubles itvl 1))
+     ([itvl :- Interval
+       step :- s/Num]
+      (t/with-map-vals itvl [lower upper]
+        (mapv double
+          (t/keep-if #(contains? itvl %)
+            (range lower (inc upper) step)))))))
 
 

@@ -16,7 +16,8 @@
     [clojure.test] ; sometimes this is required - not sure why
     [schema.core :as s]
     [tupelo.math :as math]
-    [tupelo.types :as types]
+    #?(:clj
+       [tupelo.types :as types])
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
     [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture ]]
@@ -57,22 +58,22 @@
   (isnt (math/same-sign 1 -1))
   (isnt (math/same-sign -1 1)))
 
-(dotest
-  (let [sqrt-2     1.414213562
-        sqrt-2-rnd (math/round-N sqrt-2 2)
-        error      (- 1.414 sqrt-2-rnd)]
-    (is (<= 0 (Math/abs error) 0.01))
-    (is (t/rel= sqrt-2-rnd sqrt-2 :tol 0.01)))
-  (let [val     12345
-        val-rnd (math/round-N val -2)
-        error   (- val val-rnd)]
-    (is (<= 0 (Math/abs error) 100))
-    (is (t/rel= val-rnd val :tol 100))
-    (is (t/rel= val-rnd val :digits 2))
-    (isnt (t/rel= val-rnd val :digits 4))))
-
 #?(:clj
    (do
+
+     (dotest
+       (let [sqrt-2     1.414213562
+             sqrt-2-rnd (math/round-N sqrt-2 2)
+             error      (- 1.414 sqrt-2-rnd)]
+         (is (<= 0 (Math/abs error) 0.01))
+         (is (t/rel= sqrt-2-rnd sqrt-2 :tol 0.01)))
+       (let [val     12345
+             val-rnd (math/round-N val -2)
+             error   (- val val-rnd)]
+         (is (<= 0 (Math/abs error) 100))
+         (is (t/rel= val-rnd val :tol 100))
+         (is (t/rel= val-rnd val :digits 2))
+         (isnt (t/rel= val-rnd val :digits 4))))
 
      (dotest   ; math operations with Long result
        ; shift toward +infinity

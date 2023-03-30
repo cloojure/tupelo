@@ -9,7 +9,7 @@
   ; See "ClojureScript Macro Tower & Loop" by Mike Fikes (2015-12-18)
   ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
-  #?(:cljs (:require-macros [tupelo.quote]))
+  ; #?(:cljs (:require-macros [tupelo.quote]))
   (:require
     [clojure.walk :as walk]
     [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map
