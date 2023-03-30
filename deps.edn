@@ -20,9 +20,9 @@
            criterium/criterium                 {:mvn/version "0.4.6"}
            org.clj-commons/claypoole           {:mvn/version "1.2.2"}
            danlentz/clj-uuid                   {:mvn/version "0.1.9"}
-           joda-time/joda-time                 {:mvn/version "2.12.3"}
+           joda-time/joda-time                 {:mvn/version "2.12.4"}
            org.ccil.cowan.tagsoup/tagsoup      {:mvn/version "1.2.1"}
-           org.flatland/ordered                {:mvn/version "1.15.10"}
+           org.flatland/ordered                {:mvn/version "1.15.11"}
            org.snakeyaml/snakeyaml-engine      {:mvn/version "2.6"}
            overtone/at-at                      {:mvn/version "1.2.0"}
            prismatic/schema                    {:mvn/version "1.4.1"}
@@ -50,7 +50,9 @@
            :build        {:deps       {io.github.clojure/tools.build {:mvn/version "0.9.4"}
                                        slipset/deps-deploy           {:mvn/version "RELEASE"}}
                           :ns-default build}
-           :shadow-cljs  {:extra-deps {thheller/shadow-cljs {:mvn/version "2.22.8"}}
+
+           ; vvv Implicitly controls ClojureScript version
+           :shadow-cljs  {:extra-deps {thheller/shadow-cljs {:mvn/version "2.22.9"}}
                           :main-opts  ["-m" "shadow.cljs.devtools.cli"]
                           }
            }
