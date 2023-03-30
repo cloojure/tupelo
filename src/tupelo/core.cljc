@@ -400,34 +400,38 @@
 ; #todo make coercing versions of these ->long
 (s/defn ->kw :- s/Keyword
   "Coerce arg to a keyword"
-  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol s/Num Character)]
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol s/Num #?(:clj Character))]
   (cond
     (keyword? arg) arg
     (symbol? arg) (sym->kw arg)
     (string? arg) (str->kw arg)
-    (char? arg) (str->kw (str arg))
     (number? arg) (str->kw (str arg))
+    #?@(:clj [
+              (char? arg) (str->kw (str arg))])
+
     :else (throw (ex-info "bad arg" {:arg arg}))))
 
 (s/defn ->str :- s/Str
   "Coerce arg to a string"
-  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol s/Num Character)]
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol s/Num #?(:clj Character))]
   (cond
     (string? arg) arg
     (symbol? arg) (sym->str arg)
     (keyword? arg) (kw->str arg)
-    (char? arg) (str arg)
     (number? arg) (str arg)
+    #?@(:clj [
+              (char? arg) (str arg)])
     :else (throw (ex-info "bad arg" {:arg arg}))))
 
 (s/defn ->sym :- s/Symbol
   "Coerce arg to a symbol"
-  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol Character)]
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol #?(:clj Character))]
   (cond
     (symbol? arg) arg
     (keyword? arg) (kw->sym arg)
     (string? arg) (str->sym arg)
-    (char? arg) (str->sym (str arg))
+    #?@(:clj [
+              (char? arg) (str->sym (str arg))])
     :else (throw (ex-info "bad arg" {:arg arg}))))
 
 (s/defn codepoint->char :- s/Any ; #todo need clj/cljs char? test
@@ -437,8 +441,7 @@
   #?(:cljs
      (do
        (assert (int? arg))
-       (.fromCharCode js/String arg) ; #todo just use cljs.core/char  ???
-       )))
+       (.fromCharCode js/String arg)))) ; #todo just use cljs.core/char  ???
 
 (s/defn char->codepoint :- s/Int
   "Convert a char to an unicode int"

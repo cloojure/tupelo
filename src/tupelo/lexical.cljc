@@ -28,10 +28,12 @@
     (number? x) "Type/Clojure-Number"
 
     (keyword? x) "Type/Clojure-Keyword"
-    (char? x) "Type/Clojure-Character" ; #todo does this ever fire?
     (string? x) "Type/Clojure-String"
     (boolean? x) "Type/Clojure-Boolean"
     (symbol? x) "Type/Clojure-Symbol"
+
+    #?@(:clj [ ; #todo does this ever fire?
+              (char? x) "Type/Clojure-Character"])
 
     ; sequential? includes lists, conses, vectors, and seqs of just about any collection, although it is recommended not
     ; to use this to compare seqs of unordered collections like sets or maps (vectors should be OK).  This should be
