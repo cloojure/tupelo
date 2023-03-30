@@ -62,13 +62,14 @@
 
 ;-----------------------------------------------------------------------------
 (def ^:no-doc uuid-counter (atom nil)) ; uninitialized
+(defn ^:no-doc counted->nil! [] (reset! uuid-counter nil))
 (defn counted-reset! [] (reset! uuid-counter 0))
 (counted-reset!) ; initialize upon load
 
 (defn counted-str []
   (let [cnt      (t/swap-out! uuid-counter inc)
         uuid-str (format "%08x-aaaa-bbbb-cccc-ddddeeeeffff" cnt)]
-    uuid-str))
+    (t/validate uuid-str? uuid-str)))
 
 (defn counted []
   (UUID/fromString (counted-str)))

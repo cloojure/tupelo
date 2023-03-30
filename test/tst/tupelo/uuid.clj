@@ -19,14 +19,14 @@
   (is (uuid/uuid-str? (uuid/null-str)))
   (is (uuid/uuid-str? (uuid/dummy-str)))
 
-  (isnt (uuid/uuid-str? "cafebabe-1953-0510-0970-0123456789fff"))
-  (isnt (uuid/uuid-str? "cafebabe-1953-0510-09700-123456789ff"))
-  (isnt (uuid/uuid-str? "cafebabe-1953-0510-066x-0123456789ff"))
-  (isnt (uuid/uuid-str? "cafebabe-1953-0510-0123456789ff"))
-  (isnt (uuid/uuid-str? "cafebabe-1953-0510|0970-0123456789ff"))
-  (isnt (uuid/uuid-str? 5))
-  (isnt (uuid/uuid-str? :nope))
-  (isnt (uuid/uuid-str? nil))
+  (isnt (uuid/uuid-str? "cafebabe-1953-0510-0970-0123456789fff")) ; too long
+  (isnt (uuid/uuid-str? "cafebabe-1953-0510-09700-123456789ff")) ; wrong shape
+  (isnt (uuid/uuid-str? "cafebabe-1953-0510-066x-0123456789ff")) ; illegal char
+  (isnt (uuid/uuid-str? "cafebabe-1953-0510-0123456789ff")) ; wrong shape
+  (isnt (uuid/uuid-str? "cafebabe-1953-0510|0970-0123456789ff")) ; illegal char
+  (isnt (uuid/uuid-str? 5)) ; wrong type
+  (isnt (uuid/uuid-str? :nope)) ; wrong type
+  (isnt (uuid/uuid-str? nil)) ; wrong type
 
   ; we return uuids as an object or a string
   (is= java.util.UUID (type (uuid/rand)))
@@ -38,13 +38,13 @@
         true)) ; if no failures, we pass the test
 
   ; demonstrate uuid/with-null usage for testing
-  (uuid/with-null
+  (uuid/with-null ; force to always return null UUID for testing
     (is= (uuid/rand-str) "00000000-0000-0000-0000-000000000000")
     (is= (uuid/rand-str) "00000000-0000-0000-0000-000000000000")
     (is= (uuid/rand-str) "00000000-0000-0000-0000-000000000000"))
 
   ; demonstrate uuid/with-counted for testing
-  (uuid/with-counted
+  (uuid/with-counted ; force to always return counted UUID for testing
     (is= (uuid/rand-str) "00000000-aaaa-bbbb-cccc-ddddeeeeffff")
     (is= (uuid/rand-str) "00000001-aaaa-bbbb-cccc-ddddeeeeffff")
     (is= (uuid/rand-str) "00000002-aaaa-bbbb-cccc-ddddeeeeffff")
@@ -56,11 +56,18 @@
       (is= r2 "00000004-aaaa-bbbb-cccc-ddddeeeeffff")
       (is (uuid/uuid-str? r2))))
 
-  ; demonstrate uuid/counted (manual)
+  ; When counter is initialized to nil, invalid uuid results
+  (uuid/counted->nil!)
+  (throws? (uuid/counted-str) )
+  (uuid/counted-reset!) ; must be called before 1st usage of counted-str
+  (throws-not? (uuid/counted-str) )
+
+  ; demonstrate uuid/counted-str (manual reset)
   (uuid/counted-reset!)
   (is= (uuid/counted-str) "00000000-aaaa-bbbb-cccc-ddddeeeeffff")
   (is= (uuid/counted-str) "00000001-aaaa-bbbb-cccc-ddddeeeeffff")
   (is= (uuid/counted-str) "00000002-aaaa-bbbb-cccc-ddddeeeeffff")
+  (is= (str (uuid/counted)) "00000003-aaaa-bbbb-cccc-ddddeeeeffff")
   (uuid/counted-reset!)
   (is= (uuid/counted-str) "00000000-aaaa-bbbb-cccc-ddddeeeeffff")
   (is= (uuid/counted-str) "00000001-aaaa-bbbb-cccc-ddddeeeeffff")
