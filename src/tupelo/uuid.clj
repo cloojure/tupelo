@@ -51,7 +51,6 @@
   "Returns a dummy UUID object 'cafebabe-1953-0510-0970-0123456789ff'"
   (t/const->fn const-dummy-obj))
 
-;-----------------------------------------------------------------------------
 (s/defn rand :- UUID
   "Returns a random uuid as a UUID object"
   [] (uuid/v4))
@@ -74,7 +73,6 @@
 (defn counted []
   (UUID/fromString (counted-str)))
 
-
 ;-----------------------------------------------------------------------------
 (defmacro with-null
   "For testing, replace all calls to uuid/rand with uuid/null"
@@ -88,4 +86,3 @@
   `(with-redefs [rand counted]
      (counted-reset!)
      ~@forms))
-
