@@ -29,37 +29,29 @@
            }
 
  :aliases {
-           :shadow-cljs  {:extra-deps {thheller/shadow-cljs {:mvn/version "2.22.8"}}
-                          :main-opts  ["-m" "shadow.cljs.devtools.cli"]
-                          }
-
-           :run          {:exec-fn demo.core/-main
-                          }
            :test         {:extra-deps  {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
                           :extra-paths ["test/resources"]
                           :main-opts   ["-m" "cognitect.test-runner"]
                           :exec-fn     cognitect.test-runner.api/test
-                          :exec-args   {
-                                        ;  :dirs     [; mandatory to control test dirs searched
-                                        ;             "src"
-                                        ;             "test"
-                                        ;             ]
-                                        :patterns ["tst.*"] ; mandatory to detect testing ns's like `tst.demo.core`
+                          :exec-args   {:patterns ["^tst.*"] ; mandatory to detect testing ns's like `tst.demo.core`
                                         }
                           }
            :test-refresh {:extra-paths ["test/resources"]
                           :extra-deps  {com.jakemccrary/test-refresh {:mvn/version "0.25.0"}}
                           :main-opts   ["-m" "com.jakemccrary.test-refresh"
-                                        ; "--dir" "test"
+                                        ; "--dir" "test"  ; <= default
                                         ]
                           }
            ; This target finds dependencies with outdated version numbers
            :old          {:deps      {com.github.liquidz/antq {:mvn/version "RELEASE"}} ; NOT `:extra-deps` !!!
                           :main-opts ["-m" "antq.core"]
                           }
-           ; build alias:
+           ; build alias (for deployment)
            :build        {:deps       {io.github.clojure/tools.build {:mvn/version "0.9.4"}
                                        slipset/deps-deploy           {:mvn/version "RELEASE"}}
                           :ns-default build}
+           :shadow-cljs  {:extra-deps {thheller/shadow-cljs {:mvn/version "2.22.8"}}
+                          :main-opts  ["-m" "shadow.cljs.devtools.cli"]
+                          }
            }
  }
