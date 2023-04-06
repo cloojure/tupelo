@@ -2,11 +2,11 @@
   (:use tupelo.core)
   (:require
     [schema.core :as s]
+    [tupelo.bits :as bits]
     [tupelo.math :as math]
     [tupelo.math.modular-arithmetic :as mod]
     [tupelo.profile :as prof]
-    [tupelo.schema :as tsk]
-    [tupelo.string :as str])
+    [tupelo.schema :as tsk])
   (:import
     [java.util Random]
     ))
@@ -48,11 +48,11 @@
   ; (prof/with-timer-accum :shuffle-bits-BigInteger)
   (it-> ival
     ; (prof/with-timer-accum :shuffle-bits-BigInteger--1)
-    (math/intval->bitchars it num-bits)
+    (bits/intval->bitchars it num-bits)
     ; (prof/with-timer-accum :shuffle-bits-BigInteger--2)
     (vec-shuffle it bit-shuffle-idxs)
     ; (prof/with-timer-accum :shuffle-bits-BigInteger--3)
-    (math/binary-chars->BigInteger it)))
+    (bits/binary-chars->BigInteger it)))
 
 ;-----------------------------------------------------------------------------
 (s/defn ^:no-doc randomize-frame :- BigInteger

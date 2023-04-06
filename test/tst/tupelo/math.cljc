@@ -14,7 +14,6 @@
              ))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
-    [schema.core :as s]
     [tupelo.math :as math]
     #?(:clj
        [tupelo.types :as types])
@@ -252,76 +251,6 @@
          (throws? (biginteger nil))
          (is= -666 (biginteger -666))))
 
-     (dotest   ; BigInteger parsing/formatting
-       (is= 42 (s/validate s/Int (BigInteger/valueOf 42.1))) ; truncates! #todo not good!
-       (isnt (int? (BigInteger/valueOf 42))) ; works for Schema, but not clojure.core/int?
-
-       (let [bi-13 (BigInteger/valueOf 13)
-             s1    (.toString bi-13 2)
-             bi2   (BigInteger. s1 2)
-             s2    (.toString bi2 16)]
-         (is= bi-13 13)
-         (is= s1 "1101")
-         (is= bi2 13)
-         (is= s2 "d")
-
-         ; #todo need examples for negative numbers
-
-         (is= "1101" (math/intval->binary-str bi-13))
-         (is= bi-13 (math/binary-str->BigInteger "1101"))
-
-         (is= [\1 \1 \0 \1] (math/intval->binary-chars bi-13))
-         (is= 13 (math/binary-chars->BigInteger [\1 \1 \0 \1]))
-
-         ; verify `bitstr` gives expected result
-         (throws? (math/intval->bitstr 5 2))
-         (is= "101" (math/intval->bitstr 5 3))
-         (is= "0101" (math/intval->bitstr 5 4))
-         (is= "00000101" (math/intval->bitstr 5 8))
-
-         (let [bi-10   (biginteger 10)
-               bi-cafe (biginteger 51966)
-               bi-babe (biginteger 47806)]
-           (is= "000a" (math/intval->hex-str bi-10 4))
-           (is= "cafe" (math/intval->hex-str bi-cafe 4))
-           (is= "babe" (math/intval->hex-str bi-babe 2)))))))
-
-#?(:clj
-   ; #todo review - old stuff from clj/tupelo/math.clj
-   (dotest
-     ; Java Class
-     (is= (type 5) (type (long 5.0)) java.lang.Long)
-     (is= (type (int 5)) (type (int 5.0)) java.lang.Integer)
-     (is= (type 5.0) (type (double 5)) java.lang.Double)
-     (is= (type 5M) (type (bigdec 5)) (type (java.math.BigDecimal. "5")) java.math.BigDecimal)
-     (is= (type 5N) (type (bigint 5)) (type (bigint 5.0)) clojure.lang.BigInt)
-     (is= (type (clojure.core/biginteger 5))
-       (type (biginteger (bigint 5)))
-       (type (biginteger (bigdec 5)))
-       (type (biginteger "5"))
-       (type (biginteger 5.0)) (type (java.math.BigInteger. "5"))
-       java.math.BigInteger) ; clojure.core/BigInt <> java.math.BigInteger
-
-     ; type testing
-     (is (t/bigdecimal? (bigdec 5)))
-     (is (t/bigdecimal? 5M))
-     (is (t/bigint? (bigint 5)))
-     (is (t/bigint? 5N))
-     (is (t/biginteger? (biginteger 5)))
-     (isnt (t/biginteger? 5N))
-
-     ; equivalence of values
-     (is= (bigdec 5) 5M)
-     (isnt= (bigdec 5) 5)
-     (isnt= (bigdec 5) 5.0)
-
-     (is= (bigint 5) 5N)
-     (is= (bigint 5) 5)
-     (is= (bigint 5) (biginteger 5))
-     (isnt= (bigint 5) 5.0)
-
-     (is= (biginteger 5) 5N)
-     (is= (biginteger 5) 5)
-     (is= (biginteger 5) (bigint 5))
-     (isnt= (biginteger 5) 5.0)))
+     )
+   )
 

@@ -16,8 +16,6 @@
   (:require
     [schema.core :as s]
     [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map]]
-    [tupelo.schema :as tsk]
-    [tupelo.string :as str]
     )
   #?(:clj
      (:import
@@ -122,57 +120,6 @@
              result-long (.longValueExact result-bi)]
          result-long))
 
-     ;---------------------------------------------------------------------------------------------------
-     (s/defn intval->binary-str :- s/Str
-       "Converts an integer into a binary String"
-       [ival :- s/Int]
-       (assert (t/nonneg? ival))
-       (.toString (biginteger ival) 2))
-
-     (s/defn intval->binary-chars :- [Character]
-       "Converts a (positive) BigInteger into a binary char sequence"
-       [bi :- s/Int] (vec (intval->binary-str bi)))
-
-     ;-----------------------------------------------------------------------------
-     (s/defn intval->bitchars :- tsk/Vec ; #todo => tupelo.math
-       [ival :- s/Int
-        bits-width :- s/Int]
-       (let [bitchars-orig     (intval->binary-chars ival) ; does not include leading zeros
-             num-bitchars      (count bitchars-orig)
-             num-leading-zeros (- bits-width num-bitchars)
-             >>                (assert (t/int-nonneg? num-leading-zeros))
-             bitchars-final    (glue (repeat num-leading-zeros \0) bitchars-orig)]
-         bitchars-final))
-
-     (s/defn intval->bitstr :- s/Str ; #todo => tupelo.math
-       [ival :- s/Int
-        bits-width :- s/Int]
-       (str/join (intval->bitchars ival bits-width)))
-
-     (s/defn intval->hex-str :- s/Str
-       "Converts a (positive) BigInteger into a hex string of `min-width` chars"
-       [ival :- s/Int
-        min-width :- s/Int] ; #todo test min-width & all
-       (assert (t/nonneg? ival))
-       (let [hexchars-orig     (vec (.toString (biginteger ival) 16))
-             num-hexchars      (count hexchars-orig)
-             num-leading-zeros (max 0 (- min-width num-hexchars)) ; soft overflow
-             >>                (assert (t/int-nonneg? num-leading-zeros))
-             hexchars-final    (glue (repeat num-leading-zeros \0) hexchars-orig)
-             hex-str           (str/join hexchars-final)]
-         (assert (<= min-width (count hexchars-final)))
-         hex-str))
-
-     ;---------------------------------------------------------------------------------------------------
-     (s/defn binary-str->BigInteger :- BigInteger
-       "Converts a binary char sequence into a (positive) BigInteger"
-       [bin-str :- s/Str] (BigInteger. ^String bin-str 2))
-
-     (s/defn binary-chars->BigInteger :- BigInteger
-       "Converts a binary char sequence into a (positive) BigInteger"
-       [bin-chars :- [Character]] (binary-str->BigInteger (str/join bin-chars)))
-
-     ; #todo add hex-str->BigInteger
 
      ))
 
