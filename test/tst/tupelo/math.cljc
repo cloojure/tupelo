@@ -267,24 +267,24 @@
 
          ; #todo need examples for negative numbers
 
-         (is= "1101" (math/int->binary-str bi-13))
+         (is= "1101" (math/intval->binary-str bi-13))
          (is= bi-13 (math/binary-str->BigInteger "1101"))
 
-         (is= [\1 \1 \0 \1] (math/int->binary-chars bi-13))
+         (is= [\1 \1 \0 \1] (math/intval->binary-chars bi-13))
          (is= 13 (math/binary-chars->BigInteger [\1 \1 \0 \1]))
 
          ; verify `bitstr` gives expected result
-         (throws? (math/int->bitstr 5 2))
-         (is= "101" (math/int->bitstr 5 3))
-         (is= "0101" (math/int->bitstr 5 4))
-         (is= "00000101" (math/int->bitstr 5 8))
+         (throws? (math/intval->bitstr 5 2))
+         (is= "101" (math/intval->bitstr 5 3))
+         (is= "0101" (math/intval->bitstr 5 4))
+         (is= "00000101" (math/intval->bitstr 5 8))
 
          (let [bi-10   (biginteger 10)
                bi-cafe (biginteger 51966)
                bi-babe (biginteger 47806)]
-           (is= "000a" (math/int->hex-str bi-10 4))
-           (is= "cafe" (math/int->hex-str bi-cafe 4))
-           (is= "babe" (math/int->hex-str bi-babe 2)))))))
+           (is= "000a" (math/intval->hex-str bi-10 4))
+           (is= "cafe" (math/intval->hex-str bi-cafe 4))
+           (is= "babe" (math/intval->hex-str bi-babe 2)))))))
 
 #?(:clj
    ; #todo review - old stuff from clj/tupelo/math.clj

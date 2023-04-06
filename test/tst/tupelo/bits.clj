@@ -8,13 +8,13 @@
   (:use tupelo.bits tupelo.core tupelo.test))
 
 (verify
-  (is= (char->bit \0) 0)
-  (is= (char->bit \1) 1)
-  (throws? (char->bit \2))
+  (is= (charval->bitval \0) 0)
+  (is= (charval->bitval \1) 1)
+  (throws? (charval->bitval \2))
 
-  (is= (bit->char 0) \0)
-  (is= (bit->char 1) \1)
-  (throws? (bit->char 2))
+  (is= (bitval->bitchar 0) \0)
+  (is= (bitval->bitchar 1) \1)
+  (throws? (bitval->bitchar 2))
 
   ;-----------------------------------------------------------------------------
   ; Byte/valueOf & friends do not accept twos-complement strings, only strings with an optional +/- sign:

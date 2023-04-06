@@ -48,7 +48,7 @@
   ; (prof/with-timer-accum :shuffle-bits-BigInteger)
   (it-> ival
     ; (prof/with-timer-accum :shuffle-bits-BigInteger--1)
-    (math/int->bitchars it num-bits)
+    (math/intval->bitchars it num-bits)
     ; (prof/with-timer-accum :shuffle-bits-BigInteger--2)
     (vec-shuffle it bit-shuffle-idxs)
     ; (prof/with-timer-accum :shuffle-bits-BigInteger--3)

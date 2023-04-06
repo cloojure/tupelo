@@ -7,7 +7,8 @@
     [schema.core :as s]
     [tupelo.iuid.prng :as prng]
     [tupelo.profile :as prof]
-    [tupelo.schema :as tsk]))
+    [tupelo.schema :as tsk]
+    ))
 
 ;-----------------------------------------------------------------------------
 ; new:  IUID - Indexed Unique ID

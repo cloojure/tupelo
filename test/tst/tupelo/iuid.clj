@@ -39,8 +39,8 @@
             (when (neg? uid)
               (throw (ex-info "found-negative" (vals->map uid))))
             (let [fmt-str (str "%7d   %0" num-digits-dec "d   %s   %s  %7d")
-                  hex-str (math/int->hex-str uid num-digits-hex)
-                  bit-str (math/int->bitstr uid num-bits)]
+                  hex-str (math/intval->hex-str uid num-digits-hex)
+                  bit-str (math/intval->bitstr uid num-bits)]
               (println (format fmt-str i uid hex-str bit-str (nth idx-deprng i)))))
           (isnt= idx-vals iuid-vals) ; but not same order (random chance 1 in N!)
           (is= idx-vals idx-deprng))))

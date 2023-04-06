@@ -123,33 +123,33 @@
          result-long))
 
      ;---------------------------------------------------------------------------------------------------
-     (s/defn int->binary-str :- s/Str
+     (s/defn intval->binary-str :- s/Str
        "Converts an integer into a binary String"
        [ival :- s/Int]
        (assert (t/nonneg? ival))
        (.toString (biginteger ival) 2))
 
-     (s/defn int->binary-chars :- [Character]
+     (s/defn intval->binary-chars :- [Character]
        "Converts a (positive) BigInteger into a binary char sequence"
-       [bi :- s/Int] (vec (int->binary-str bi)))
+       [bi :- s/Int] (vec (intval->binary-str bi)))
 
      ;-----------------------------------------------------------------------------
-     (s/defn int->bitchars :- tsk/Vec ; #todo => tupelo.math
+     (s/defn intval->bitchars :- tsk/Vec ; #todo => tupelo.math
        [ival :- s/Int
         bits-width :- s/Int]
-       (let [bitchars-orig     (int->binary-chars ival) ; does not include leading zeros
+       (let [bitchars-orig     (intval->binary-chars ival) ; does not include leading zeros
              num-bitchars      (count bitchars-orig)
              num-leading-zeros (- bits-width num-bitchars)
              >>                (assert (t/int-nonneg? num-leading-zeros))
              bitchars-final    (glue (repeat num-leading-zeros \0) bitchars-orig)]
          bitchars-final))
 
-     (s/defn int->bitstr :- s/Str ; #todo => tupelo.math
+     (s/defn intval->bitstr :- s/Str ; #todo => tupelo.math
        [ival :- s/Int
         bits-width :- s/Int]
-       (str/join (int->bitchars ival bits-width)))
+       (str/join (intval->bitchars ival bits-width)))
 
-     (s/defn int->hex-str :- s/Str
+     (s/defn intval->hex-str :- s/Str
        "Converts a (positive) BigInteger into a hex string of `min-width` chars"
        [ival :- s/Int
         min-width :- s/Int] ; #todo test min-width & all
