@@ -1,15 +1,16 @@
 (ns tupelo.iuid
+  "Given a user-selected number of bits (currently [4..128]), creates a
+   reversible mapping from integer index to a Unique ID (UID). Both
+   the index and the UID are in the range of [0..N), where N = 2^num-bits. "
   (:use tupelo.core)
   (:require
     [schema.core :as s]
     [tupelo.iuid.prng :as prng]
     [tupelo.profile :as prof]
-    [tupelo.schema :as tsk])
-  (:import
-    [java.util Random]))
+    [tupelo.schema :as tsk]))
 
 ;-----------------------------------------------------------------------------
-; new:  IUID - Cipher Unique ID
+; new:  IUID - Indexed Unique ID
 ;
 ; BitScrambler
 ;  - idx->int
@@ -58,7 +59,7 @@
 ;  128 bits:  12 usec/call
 (s/defn idx->uid :- BigInteger
   "Given a context map and an index value [0..2^N), returns the corresponding
-  IUID value (Cryptographic Unique ID), also in [0..2^N). IUID values are guaranteed
+  UID value (Cryptographic Unique ID), also in [0..2^N). UID values are guaranteed
   to be unique for each index and pseudo-random within the interval [0..2^N)."
   [ctx :- tsk/KeyMap
    ival :- s/Int]
@@ -66,9 +67,9 @@
   (prng/randomize ctx ival))
 
 (s/defn uid->idx :- BigInteger
-  "Given a context map and a IUID value (Cryptographic Unique ID) in [0..2^N),
+  "Given a context map and a UID value (Cryptographic Unique ID) in [0..2^N),
    returns the corresponding index value, also in [0..2^N)."
   [ctx :- tsk/KeyMap
-   iuid :- s/Int]
+   uid :- s/Int]
   ; (prof/with-timer-accum :cuid->idx)
-  (prng/derandomize ctx iuid))
+  (prng/derandomize ctx uid))
