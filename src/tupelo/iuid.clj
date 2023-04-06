@@ -32,7 +32,7 @@
 
         (new-ctx <params-map>)
 
-  where <params-map> is of the form:
+   where <params-map> is of the form:
 
         {:num-bits     <long>  ; REQUIRED:  (minimum: 4): input/output integers in [0..2^n)
          :rand-seed    <long>  ; optional:  PRNG seed (default: randomized)

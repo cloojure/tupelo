@@ -105,7 +105,5 @@
         (dotimes [i 1000] ; timing for 1000 CRIDX values
           (is= i (uid->idx ctx
                    (idx->uid ctx i)))))
-      (prof/print-profile-stats!)
-
-      )))
-
+      (prof/print-profile-stats!))
+    ))
