@@ -34,7 +34,7 @@
 
    where <params-map> is of the form:
 
-        {:num-bits     <long>  ; REQUIRED:  (minimum: 4): input/output integers in [0..2^n)
+        {:num-bits     <long>  ; REQUIRED:  input/output integers in range [0..2^n) (min=4  max=128):
          :rand-seed    <long>  ; optional:  PRNG seed (default: randomized)
          :num-rounds   <long>  ; optional:  positive int (default: 7)
         } "
