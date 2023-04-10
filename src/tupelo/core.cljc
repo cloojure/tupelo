@@ -22,8 +22,6 @@
                             when-clojure-1-8-plus when-clojure-1-9-plus when-not-clojure-1-9-plus
                             destruct lazy-gen yield yield-all matches?]]))
   (:require
-    ; [tupelo.core.impl :as impl]
-
     [clojure.core :as cc]
     [clojure.core.async :as async]
     [clojure.data.avl :as avl]
@@ -658,14 +656,14 @@
 (defn unlazy-pretty
   "Shorthand for (walk-data->pretty (unlazy data))."
   [data]
-  #?(:clj (try
-            (walk-data->pretty (unlazy data))
-            (catch Throwable t
-              (prn :*****************************************************************************)
-              (prn :**********--error--**********--tupelo.core/unlazy-pretty--Throwable--********)
-              (prn :*****************************************************************************)
-              (.printStackTrace t)
-              data))
+  #?(:clj  (try
+             (walk-data->pretty (unlazy data))
+             (catch Throwable t
+               (prn :*****************************************************************************)
+               (prn :**********--error--**********--tupelo.core/unlazy-pretty--Throwable--********)
+               (prn :*****************************************************************************)
+               (.printStackTrace t)
+               data))
      :cljs (walk-data->pretty (unlazy data))
      ))
 
@@ -1744,8 +1742,6 @@
      sorted-map)))
 
 ;-----------------------------------------------------------------------------
-; Clojure version stuff
-
 (s/defn compare-increasing :- s/Bool
   "Returns true if each item is larger than its predecessor"
   [& xs :- [s/Any]]
@@ -1932,14 +1928,12 @@
          [tgt-atom swap-fn & args]
          (let [[old -new-] (apply swap-vals! tgt-atom swap-fn args)]
            old)))
-     ))
 
-;-----------------------------------------------------------------------------
-#?(:clj   ; JVM type testing stuff
-   (do
+     ;-----------------------------------------------------------------------------
+     ; JVM type testing stuff
 
      (defn atom?
-       "Returns true if x is a clojure.lang.BigInt"
+       "Returns true if x is a clojure.lang.Atom"
        [x] (= (type x) clojure.lang.Atom))
 
      (defn bigint?
@@ -2042,8 +2036,8 @@
        (println hyphens)))
   #?(:cljs
      (let [version-str (str "ClojureScript " *clojurescript-version*)
-           num-hyphen  (+ 6 (count version-str))
-           hyphens     (strcat (repeat num-hyphen \-))
+           num-hyphen (+ 6 (count version-str))
+           hyphens (strcat (repeat num-hyphen \-))
            version-str (strcat "   " version-str)]
        (newline)
        (println hyphens)

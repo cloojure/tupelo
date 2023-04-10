@@ -14,10 +14,9 @@
              [tupelo.testy]
              ))
   (:require
-    [clojure.test] ; sometimes this is required - not sure why
+    [clojure.test] ; sometimes this is required for cljs - not sure why
     [clojure.string :as str]
     [clojure.walk :as walk]
-    [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty nl
                                vals->map xmap? forv glue keep-if]]
     [tupelo.string :as ts]
