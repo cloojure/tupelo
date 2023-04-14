@@ -7,15 +7,20 @@
     [tupelo.string :as str]
     ))
 
-(def version-str "23.03.14c") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
-(def git-tag-str (str "v" version-str)) ; ***** ASSUMES YOU CREATE A GIT TAG LIKE `v23.01.31` *****
+; User-supplied values
+(def version-str "23.03.14d") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
 (def lib-name 'tupelo/tupelo) ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
 (def scm-root "github.com/cloojure/tupelo")
-
 (def build-folder "target")
+
+; Derived values
+(def git-tag-str (str "v" version-str)) ; ***** ASSUMES YOU CREATE A GIT TAG LIKE `v23.01.31` *****
 (def jar-content (str build-folder "/classes")) ; folder where we collect files to pack in a jar
 (def basis (b/create-basis {:project "deps.edn"})) ; basis structure (read details in the article)
 (def jar-file-name (format "%s/%s-%s.jar" build-folder (name lib-name) version-str)) ; path for result jar file
+
+;---------------------------------------------------------------------------------------------------
+; code
 
 (defn clean-files
   "Delete all compiler output files (i.e. `.target/**/*`)"
@@ -33,14 +38,14 @@
     ; git always returns the branch as the first line like "## master...origin/master"
     ; So, there are modified uncommitted files if count is larger than 1
     (when (< 1 out-lines-num)
-      (throw (ex-info "Uncommitted files detected" r1)))))
+      (throw (ex-info "Error: Uncommitted files detected" r1)))))
 
 (defn tag-release
   "Tag release by prepending a `v` char to the version string and calling `git tag`
     (eg version `23.03.15` => tag `v23.03.15`)."
   [& args] ; ignore `nil` arg
   (verify-all-committed)
-  (println "Tagging release: " git-tag-str)
+  (println "Tagging release: \"" git-tag-str "\"")
   (let [cmd-str-1 (str/quotes->double
                     (format "git tag --force '%s' -m'%s'" git-tag-str git-tag-str))
         r1        (misc/shell-cmd cmd-str-1)]
