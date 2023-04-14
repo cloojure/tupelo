@@ -1,16 +1,16 @@
 (ns tupelo.uuid
   (:refer-clojure :exclude [rand])
   (:require
-    #?(:clj
-       [clj-uuid :as uuid])
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.schema :as tsk]
     [tupelo.core.impl :as impl])
-  #?(:clj
-     (:import
-       [java.util UUID]))
-  )
+  #?@(:clj
+     [
+      (:require
+        [clj-uuid :as uuid])
+      (:import
+        [java.util UUID])]))
 
 ; #TODO add code & tests for cljs
 
