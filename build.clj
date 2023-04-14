@@ -7,7 +7,7 @@
     [tupelo.string :as str]
     ))
 
-(def version-str "23.03.14a") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
+(def version-str "23.03.14c") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
 (def git-tag-str (str "v" version-str)) ; ***** ASSUMES YOU CREATE A GIT TAG LIKE `v23.01.31` *****
 (def lib-name 'tupelo/tupelo) ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
 (def scm-root "github.com/cloojure/tupelo")
@@ -46,7 +46,7 @@
         r1        (misc/shell-cmd cmd-str-1)]
     (when (not= 0 (t/grab :exit r1))
       (throw (ex-info "git tag failed " r1))))
-  (println "Pushing release & tags..." )
+  (println "Pushing release & tags...")
   (let [cmd-str-2 "git pull ; git push ; git push --tags --force"
         r2        (misc/shell-cmd cmd-str-2)]
     (when (not= 0 (t/grab :exit r2))
@@ -56,6 +56,7 @@
   "Build a new, clean JAR file from source-code."
   [& args] ; ignore `nil` arg
   (clean-files) ; clean leftovers
+  (tag-release)
 
   (b/copy-dir {:src-dirs   ["src/clj"
                             "src/cljc"
