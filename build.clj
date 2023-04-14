@@ -45,14 +45,12 @@
                     (format "git tag --force '%s' -m'%s'" git-tag-str git-tag-str))
         r1        (misc/shell-cmd cmd-str-1)]
     (when (not= 0 (t/grab :exit r1))
-      (throw (ex-info "git tag failed " r1)))
-    (println "  done."))
+      (throw (ex-info "git tag failed " r1))))
   (println "Pushing release & tags..." )
   (let [cmd-str-2 "git pull ; git push ; git push --tags --force"
         r2        (misc/shell-cmd cmd-str-2)]
     (when (not= 0 (t/grab :exit r2))
-      (throw (ex-info "git push failed " r2)))
-    (println "  done.")))
+      (throw (ex-info "git push failed " r2)))))
 
 (defn build-jar
   "Build a new, clean JAR file from source-code."
