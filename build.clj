@@ -8,7 +8,7 @@
     ))
 
 (def version-str "23.03.14a") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
-(def tag-str (str "v" version-str)) ; ***** ASSUMES YOU CREATE A GIT TAG LIKE `v23.01.31` *****
+(def git-tag-str (str "v" version-str)) ; ***** ASSUMES YOU CREATE A GIT TAG LIKE `v23.01.31` *****
 (def lib-name 'tupelo/tupelo) ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
 (def scm-root "github.com/cloojure/tupelo")
 
@@ -40,17 +40,19 @@
     (eg version `23.03.15` => tag `v23.03.15`)."
   [& args] ; ignore `nil` arg
   (verify-all-committed)
+  (println "Tagging release: " git-tag-str)
   (let [cmd-str-1 (str/quotes->double
-                    (format "git tag --force '%s' -m'%s'" tag-str tag-str))
-        r1        (misc/shell-cmd cmd-str-1)
-        >>        (when (not= 0 (t/grab :exit r1))
-                    (throw (ex-info "git tag failed " r1)))
-        cmd-str-2 "git pull ; git push ; git push --tags --force"
-        r2        (misc/shell-cmd cmd-str-2)
-        >>        (when (not= 0 (t/grab :exit r2))
-                    (throw (ex-info "git push failed " r2)))
-        ]
-    ))
+                    (format "git tag --force '%s' -m'%s'" git-tag-str git-tag-str))
+        r1        (misc/shell-cmd cmd-str-1)]
+    (when (not= 0 (t/grab :exit r1))
+      (throw (ex-info "git tag failed " r1)))
+    (println "  done."))
+  (println "Pushing release & tags..." git-tag-str)
+  (let [cmd-str-2 "git pull ; git push ; git push --tags --force"
+        r2        (misc/shell-cmd cmd-str-2)]
+    (when (not= 0 (t/grab :exit r2))
+      (throw (ex-info "git push failed " r2)))
+    (println "  done.")))
 
 (defn build-jar
   "Build a new, clean JAR file from source-code."
@@ -67,7 +69,7 @@
                 :version   version-str
                 :basis     basis
                 :src-dirs  ["src"]
-                :scm       {:tag                 tag-str
+                :scm       {:tag                 git-tag-str
                             :url                 (str "https://" scm-root)
                             :connection          (str "scm:git:git://" scm-root ".git")
                             :developerConnection (str "scm:git:ssh://git@" scm-root ".git")}})
