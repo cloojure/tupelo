@@ -16,7 +16,7 @@
 (def build-folder "target")
 
 
-;---------------------------------------------------------------------------------------------------
+;===================================================================================================
 ; Derived values
 (def git-tag-str (str "v" version-str)) ; ***** ASSUMES YOU CREATE A GIT TAG LIKE `v23.01.31` *****
 (def jar-content (str build-folder "/classes")) ; folder where we collect files to pack in a jar

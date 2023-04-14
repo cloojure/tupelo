@@ -374,6 +374,8 @@
      ;   fibonacci-list-bounded(maxVal)    - list of fibo's <= maxVal
      ;   prime-list(n)                     - 1ist n  fibo's
      ;   prime-list-bounded(maxVal)        - list of fibo's <= maxVal
+     ;   pow2-list(n)                      - 1ist n  powers of 2
+     ;   pow2-list-bounded(maxVal)         - list of powers of 2 <= maxVal
 
      ; #todo
      ; (defn instaparse-failure? [result] (= (class result) instaparse.gll.Failure))
