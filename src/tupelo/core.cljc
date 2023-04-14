@@ -28,7 +28,6 @@
     [clojure.pprint :as pprint]
     [clojure.set :as set]
     [clojure.string :as str]
-    [clojure.test]
     [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.lexical :as lex]

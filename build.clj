@@ -26,13 +26,13 @@
 ;---------------------------------------------------------------------------------------------------
 ; code
 
-(defn clean-files
+(defn clean-files!
   "Delete all compiler output files (i.e. `.target/**/*`)"
   [& args] ; ignore `nil` arg
   (b/delete {:path build-folder})
   (println (format "Build folder \"%s\" removed" build-folder)))
 
-(defn verify-all-committed
+(defn verify-all-committed!
   "Use git to verify there are no uncommitted files present"
   [& args] ; ignore `nil` arg
   (let [cmd-str-1     "git status --short --branch"
@@ -44,11 +44,11 @@
     (when (< 1 out-lines-num)
       (throw (ex-info "Error: Uncommitted files detected" r1)))))
 
-(defn tag-release
+(defn tag-release!
   "Tag release by prepending a `v` char to the version string and calling `git tag`
     (eg version `23.03.15` => tag `v23.03.15`)."
   [& args] ; ignore `nil` arg
-  (verify-all-committed)
+  (verify-all-committed!)
   (println (str/quotes->double
              (format "Tagging release: '%s'" git-tag-str)))
   (let [cmd-str-1 (str/quotes->double
@@ -62,11 +62,11 @@
     (when (not= 0 (t/grab :exit r2))
       (throw (ex-info "git push failed " r2)))))
 
-(defn build-jar
+(defn build-jar!
   "Build a new, clean JAR file from source-code."
   [& args] ; ignore `nil` arg
-  (clean-files) ; clean leftovers
-  (tag-release)
+  (clean-files!)
+  (tag-release!)
 
   (b/copy-dir {:src-dirs   ["src/clj"
                             "src/cljc"
@@ -87,10 +87,10 @@
           :jar-file  jar-file-name})
   (println (format "Jar file created: \"%s\"" jar-file-name)))
 
-(defn deploy-clojars
+(defn deploy-clojars!
   "Build & deploy a source-code JAR file to clojars.org"
   [& args] ; ignore `nil` arg
-  (build-jar)
+  (build-jar!)
   (dd/deploy {:installer :remote
               :artifact  jar-file-name
               :pom-file  (b/pom-path {:lib       lib-name
