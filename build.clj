@@ -47,7 +47,7 @@
     (when (not= 0 (t/grab :exit r1))
       (throw (ex-info "git tag failed " r1)))
     (println "  done."))
-  (println "Pushing release & tags..." git-tag-str)
+  (println "Pushing release & tags..." )
   (let [cmd-str-2 "git pull ; git push ; git push --tags --force"
         r2        (misc/shell-cmd cmd-str-2)]
     (when (not= 0 (t/grab :exit r2))
