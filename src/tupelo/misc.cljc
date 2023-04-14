@@ -53,12 +53,12 @@
   "Searches for pattern-vec within data-vec, returning a lazy seq of indexes into data-vec."
   [pattern-vec :- tsk/List
    data-vec :- tsk/List]
-  (let [parts         (partition (count pattern-vec) 1 data-vec)
-        idxs          (keep-indexed
-                        (fn [idx candidate]
-                          (when (= candidate pattern-vec)
-                            idx))
-                        parts)]
+  (let [parts (partition (count pattern-vec) 1 data-vec)
+        idxs  (keep-indexed
+                (fn [idx candidate]
+                  (when (= candidate pattern-vec)
+                    idx))
+                parts)]
     idxs))
 
 (defn take-dist
@@ -66,10 +66,10 @@
    evenly between first & last elements, which are always included."
   ; #todo write tests, incl degenerate cases of N=0,1,2, etc
   [n coll]
-  {:pre [(pos? n)] }
+  {:pre [(pos? n)]}
   (let [coll (vec coll)]
     (if (= n 1)
-      [ (first coll) ]
+      [(first coll)]
       (let [interval (Math/round (double (/ (count coll) (- n 1))))
             result   (flatten [(take (- n 1) (take-nth interval coll))
                                (last coll)])]
@@ -145,7 +145,7 @@
 (def hex->int (zipmap hex-chars (range 16)))
 (s/defn byte-unsigned->hex :- s/Str
   "Converts a sequence of unsigned bytes [0..255] to a hex string, where each byte becomes 2 hex digits."
-  [unsigned-byte  :- s/Int]
+  [unsigned-byte :- s/Int]
   (t/when-clojure-1-9-plus
     (when-not (int? unsigned-byte)
       (throw (ex-info "unsigned-byte->hex value must be an int" (t/vals->map unsigned-byte)))))
@@ -173,9 +173,9 @@
                                char-low  (second hex-pair)
                                val-high  (grab char-high hex->int)
                                val-low   (grab char-low hex->int)
-                               byte-val  (+ val-low (* 16 val-high)) ]
-                           byte-val)) ]
-    bytes-unsigned) )
+                               byte-val  (+ val-low (* 16 val-high))]
+                           byte-val))]
+    bytes-unsigned))
 
 (s/defn hex-str->signed-bytes
   "Converts a hex string to a vector of unsigned bytes"
@@ -203,7 +203,7 @@
     byte-arr))
 
 ; #todo update using helper fn byte-arr->hex-str:  (mapv  #(format "%02x"   Byte.toIntValue( % ) )), then (str/join ...)
-#?(:clj ; #todo: move to tupelo.string
+#?(:clj   ; #todo: move to tupelo.string
    (def str->sha
      "Returns the SHA-1 hex string for a string"
      (let [sha-1-instance (MessageDigest/getInstance "SHA")]
@@ -215,14 +215,14 @@
            (let [bytes      (vec (.digest sha-1-instance))
                  hex-result (bytes-signed->hex-str bytes)]
              hex-result))))))
-#?(:cljs ; #todo: move to tupelo.string
+#?(:cljs  ; #todo: move to tupelo.string
    (s/defn str->sha ; modeled after reagent-utils reagent.crypt
      "Returns the SHA-1 hex string for a string"
      [str-val :- s/Str]
      (let [sha-1-instance (goog.crypt.Sha1.)]
        (let [byte-arr (str->byte-array str-val)]
          (.update sha-1-instance byte-arr))
-       (let [bytes      (vec (.digest sha-1-instance))
+       (let [bytes (vec (.digest sha-1-instance))
              hex-result (bytes-unsigned->hex-str bytes)]
          hex-result))))
 
@@ -259,19 +259,19 @@
 ;             (let [bytes (.digest sha-1-instance)]
 ;               (signed-bytes->hex-str (vec bytes)))))))))
 
-   (defn uuid->sha
-     "Returns the SHA-1 hex string for a UUID's string representation"
-     [uuid]
-     (t/when-clojure-1-9-plus
-       (when-not (uuid? uuid)
-         (throw (ex-info "arg must be a uuid" (t/vals->map uuid)))))
-     (let [uuid-str (do
-                      #?(:clj (str uuid))
-                      #?(:cljs ; (.-uuid uuid) ; #todo fix for CLJS
-                         (throw "Unimplemented"))
-                      )
-           usha     (str->sha uuid-str)]
-       usha))
+(defn uuid->sha
+  "Returns the SHA-1 hex string for a UUID's string representation"
+  [uuid]
+  (t/when-clojure-1-9-plus
+    (when-not (uuid? uuid)
+      (throw (ex-info "arg must be a uuid" (t/vals->map uuid)))))
+  (let [uuid-str (do
+                   #?(:clj (str uuid))
+                   #?(:cljs ; (.-uuid uuid) ; #todo fix for CLJS
+                      (throw "Unimplemented"))
+                   )
+        usha     (str->sha uuid-str)]
+    usha))
 
 (s/defn sha-uuid :- s/Str
   "Returns a string that is the SHA-1 hash of the
@@ -282,7 +282,7 @@
   []
   (uuid->sha
     #?(:clj (clj-uuid/v1))
-    #?(:cljs (random-uuid)) ))
+    #?(:cljs (random-uuid))))
 
 (def HID s/Keyword) ; #todo find way to validate
 (s/defn new-hid :- HID
@@ -395,8 +395,8 @@
        [cmd-str]
        (let [shell-result (shell/sh *os-shell* "-c" cmd-str)]
          (if (= 0 (:exit shell-result))
-           (let [result (t/glue shell-result {:cmd-str cmd-str
-                                            :os-shell *os-shell*})]
+           (let [result (t/glue shell-result {:cmd-str  cmd-str
+                                              :os-shell *os-shell*})]
              result)
            (throw (ex-info "shell-cmd: clojure.java.shell/sh failed, cmd-str:" (vals->map cmd-str shell-result))))))
 
@@ -460,7 +460,7 @@
        [ctx :- tsk/KeyMap]
        (swap! dots-ctx glue ctx))
 
-       (defn dot
+     (defn dot
        "Prints a single dot (flushed) to the console, keeping a running count of dots printed.  Wraps to a
         newline when 100 dots have been printed. Displays the running dot count at the beginning of each line.
         Usage:
@@ -476,9 +476,9 @@
        []
        (locking dots-lock ; must serialize all printing code
          (let [[old-count new-count] (swap-vals! dots-counter inc)
-                 decimation (grab :decimation @dots-ctx)
-                 enabled? (grab :enabled? @dots-ctx)
-                 counts-per-row (* decimation (grab :dots-per-row @dots-ctx))]
+               decimation     (grab :decimation @dots-ctx)
+               enabled?       (grab :enabled? @dots-ctx)
+               counts-per-row (* decimation (grab :dots-per-row @dots-ctx))]
            (when enabled?
              (when (zero? (rem old-count counts-per-row))
                (it-> old-count
@@ -512,7 +512,7 @@
        "Uses an HID to look up a human-friendly Word-ID (WID) from an English dictionary.
        Useful for debugging purposes."
        [hid :- HID]
-       nil)         ; #todo
+       nil) ; #todo
 
      ;-----------------------------------------------------------------------------
      ; -> tupelo.files ?
@@ -546,7 +546,7 @@
 
                                        ; class-name-caller is (usually) like "tst.demo.core$funky".
                                        ; if no `$` is present, don't crash!
-                                       idx        (str/index-of class-name \$)
+                                       idx         (str/index-of class-name \$)
                                        ns-name     (t/cond-it-> class-name
                                                      (t/not-nil? idx) (subs class-name 0 idx))
                                        fn-name     (if (t/not-nil? idx)
@@ -617,7 +617,6 @@
                                stacktrace-info)]
          (t/xsecond info-keep)))
 
-
      ))
 
 #?(:cljs
@@ -640,7 +639,7 @@
        (let [re-src (.-source re)] ; the source string from the regexp arg
          (loop [groups []
                 regexp (js/RegExp. re-src "g")] ; 'g' => global search
-           (let [res-js  (.exec regexp input-str)
+           (let [res-js (.exec regexp input-str)
                  res-clj (js->clj res-js)]
              (if (nil? res-js)
                groups

@@ -6,8 +6,7 @@
     [tupelo.schema :as tsk]
     [tupelo.core.impl :as impl])
   #?@(:clj
-     [
-      (:require
+     [(:require
         [clj-uuid :as uuid])
       (:import
         [java.util UUID])]))
