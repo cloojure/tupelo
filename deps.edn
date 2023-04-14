@@ -26,6 +26,7 @@
            org.snakeyaml/snakeyaml-engine      {:mvn/version "2.6"}
            overtone/at-at                      {:mvn/version "1.2.0"}
            prismatic/schema                    {:mvn/version "1.4.1"}
+
            }
 
  :aliases {
@@ -48,7 +49,10 @@
                           }
            ; build alias (for deployment)
            :build        {:deps       {io.github.clojure/tools.build {:mvn/version "0.9.4"}
-                                       slipset/deps-deploy           {:mvn/version "RELEASE"}}
+                                       slipset/deps-deploy           {:mvn/version "RELEASE"}
+
+                                       tupelo/tupelo                       {:local/root "."}
+                                       }
                           :ns-default build}
 
            ; vvv Implicitly controls ClojureScript version

@@ -384,16 +384,19 @@
 
              (shell-cmd \"ls -ldF *\")
 
-               ;=>   {:exit    0     ; unix exit status (0 -> normal)
-                      :err    ''     ; text from any errors
-                      :out    '...'  ; text output as would printed to console
+               ;=>   {:exit      0       ; unix exit status (0 -> normal)
+                      :err      ``       ; text from any errors
+                      :out      `...`    ; text output as would printed to console
+                      :cmd-str  `...`    ; original command string
                      }
        "
        [cmd-str]
-       (let [result (shell/sh *os-shell* "-c" cmd-str)]
-         (if (= 0 (grab :exit result))
-           result
-           (throw (ex-info "shell-cmd: clojure.java.shell/sh failed, cmd-str:" (vals->map cmd-str result))))))
+       (let [shell-result (shell/sh *os-shell* "-c" cmd-str)]
+         (if (= 0 (:exit shell-result))
+           (let [result (t/glue shell-result {:cmd-str cmd-str
+                                            :os-shell *os-shell*})]
+             result)
+           (throw (ex-info "shell-cmd: clojure.java.shell/sh failed, cmd-str:" (vals->map cmd-str shell-result))))))
 
      (defn get-os []
        (let [os-name (System/getProperty "os.name")]

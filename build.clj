@@ -2,7 +2,9 @@
   (:require
     [clojure.tools.build.api :as b]
     [deps-deploy.deps-deploy :as dd]
+    [tupelo.core :as t]
     [tupelo.misc :as misc]
+    [tupelo.string :as str]
     ))
 
 (def version-str "23.03.14a") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
@@ -17,21 +19,35 @@
 
 (defn clean-files
   "Delete all compiler output files (i.e. `.target/**/*`)"
-  [& args]
+  [& args] ; ignore `nil` arg
   (b/delete {:path build-folder})
   (println (format "Build folder \"%s\" removed" build-folder)))
 
 (defn tag-release
   "Tag release by prepending a `v` char to the version string and calling `git tag`
     (eg version `23.03.15` => tag `v23.03.15`)."
-  []
-  (def  tag-str (str \v version-str))
-  (let [])
+  [& args] ; ignore `nil` arg
+  ; (prn :args args)
+  (let [cmd-str-1 (str/quotes->double
+                  (format "git tag --force '%s' -m'%s'" tag-str tag-str))
+        >> (println :cmd-str cmd-str-1)
+        r1 (misc/shell-cmd cmd-str-1)
+        >> (prn r1)
+        >> (when (not= 0 (t/grab :exit r1))
+             (throw (ex-info "git tag failed " r1)))
+        cmd-str-2 "git pull ; git push ; git push --tags --force"
+        r2 (misc/shell-cmd  cmd-str-2)
+        >> (prn r2)
+        >> (when (not= 0 (t/grab :exit r2))
+             (throw (ex-info "git push failed " r2)))
+        ]
+    )
+
   )
 
 (defn build-jar
   "Build a new, clean JAR file from source-code."
-  [& args]
+  [& args] ; ignore `nil` arg
   (clean-files) ; clean leftovers
 
   (b/copy-dir {:src-dirs   ["src/clj"
@@ -55,7 +71,7 @@
 
 (defn deploy-clojars
   "Build & deploy a source-code JAR file to clojars.org"
-  [& args]
+  [& args] ; ignore `nil` arg
   (build-jar)
   (dd/deploy {:installer :remote
               :artifact  jar-file-name
