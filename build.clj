@@ -7,12 +7,16 @@
     [tupelo.string :as str]
     ))
 
+;---------------------------------------------------------------------------------------------------
 ; User-supplied values
+
 (def version-str "23.03.15") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
 (def lib-name 'tupelo/tupelo) ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
 (def scm-root "github.com/cloojure/tupelo")
 (def build-folder "target")
 
+
+;---------------------------------------------------------------------------------------------------
 ; Derived values
 (def git-tag-str (str "v" version-str)) ; ***** ASSUMES YOU CREATE A GIT TAG LIKE `v23.01.31` *****
 (def jar-content (str build-folder "/classes")) ; folder where we collect files to pack in a jar
@@ -21,7 +25,6 @@
 
 ;---------------------------------------------------------------------------------------------------
 ; code
-
 (defn clean-files
   "Delete all compiler output files (i.e. `.target/**/*`)"
   [& args] ; ignore `nil` arg
