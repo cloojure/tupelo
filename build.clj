@@ -23,27 +23,34 @@
   (b/delete {:path build-folder})
   (println (format "Build folder \"%s\" removed" build-folder)))
 
+(defn verify-all-committed
+  "Use git to verify there are no uncommitted files present"
+  [& args] ; ignore `nil` arg
+  (let [cmd-str-1     "git status --short --branch"
+        r1            (misc/shell-cmd cmd-str-1)
+        out-lines     (str/split-lines (t/grab :out r1))
+        out-lines-num (count out-lines)]
+    ; git always returns the branch as the first line like "## master...origin/master"
+    ; So, there are modified uncommitted files if count is larger than 1
+    (when (< 1 out-lines-num)
+      (throw (ex-info "Uncommitted files detected" r1)))))
+
 (defn tag-release
   "Tag release by prepending a `v` char to the version string and calling `git tag`
     (eg version `23.03.15` => tag `v23.03.15`)."
   [& args] ; ignore `nil` arg
-  ; (prn :args args)
+  (verify-all-committed)
   (let [cmd-str-1 (str/quotes->double
-                  (format "git tag --force '%s' -m'%s'" tag-str tag-str))
-        >> (println :cmd-str cmd-str-1)
-        r1 (misc/shell-cmd cmd-str-1)
-        >> (prn r1)
-        >> (when (not= 0 (t/grab :exit r1))
-             (throw (ex-info "git tag failed " r1)))
+                    (format "git tag --force '%s' -m'%s'" tag-str tag-str))
+        r1        (misc/shell-cmd cmd-str-1)
+        >>        (when (not= 0 (t/grab :exit r1))
+                    (throw (ex-info "git tag failed " r1)))
         cmd-str-2 "git pull ; git push ; git push --tags --force"
-        r2 (misc/shell-cmd  cmd-str-2)
-        >> (prn r2)
-        >> (when (not= 0 (t/grab :exit r2))
-             (throw (ex-info "git push failed " r2)))
+        r2        (misc/shell-cmd cmd-str-2)
+        >>        (when (not= 0 (t/grab :exit r2))
+                    (throw (ex-info "git push failed " r2)))
         ]
-    )
-
-  )
+    ))
 
 (defn build-jar
   "Build a new, clean JAR file from source-code."
