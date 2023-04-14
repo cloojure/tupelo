@@ -45,7 +45,8 @@
     (eg version `23.03.15` => tag `v23.03.15`)."
   [& args] ; ignore `nil` arg
   (verify-all-committed)
-  (println "Tagging release: \"" git-tag-str "\"")
+  (println (str/quotes->double
+             (format "Tagging release: '%s'" git-tag-str)))
   (let [cmd-str-1 (str/quotes->double
                     (format "git tag --force '%s' -m'%s'" git-tag-str git-tag-str))
         r1        (misc/shell-cmd cmd-str-1)]
