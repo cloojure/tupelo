@@ -51,7 +51,7 @@
            :build        {:deps       {io.github.clojure/tools.build {:mvn/version "0.9.4"}
                                        slipset/deps-deploy           {:mvn/version "RELEASE"}
 
-                                       tupelo/tupelo                       {:local/root "."}
+                                       tupelo/tupelo                 {:local/root "."}
                                        }
                           :ns-default build}
 
