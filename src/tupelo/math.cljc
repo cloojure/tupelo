@@ -54,10 +54,31 @@
    (do
      ;-----------------------------------------------------------------------------
      ; #todo need BigInt version?
-     (defn ceil-long [x] (long (Math/ceil (double x))))
-     (defn floor-long [x] (long (Math/floor (double x))))
-     (defn round-long [x] (long (Math/round (double x))))
-     (defn trunc-long [x] (long (.longValue (double x))))
+     (defn ceil->Long [x] (long (Math/ceil (double x))))
+     (defn floor->Long [x] (long (Math/floor (double x))))
+     (defn round->Long [x] (long (Math/round (double x))))
+     (defn trunc->Long [x] (long (.longValue (double x))))
+
+     ;---------------------------------------------------------------------------------------------------
+     (s/defn pow->BigInteger :- BigInteger
+       "An BigInteger version of java.Math/pow( base, exp )"
+       [base :- s/Int
+        exp :- s/Int]
+       (when-not (int? base) (throw (ex-info "base must be an integer" (vals->map base))))
+       (when-not (int? exp) (throw (ex-info "exp must be an integer" (vals->map exp))))
+       (when-not (t/nonneg? base) (throw (ex-info "base must be nonneg" (vals->map base))))
+       (when-not (t/nonneg? exp) (throw (ex-info "exp must be nonneg" (vals->map exp))))
+       (.pow ^BigInteger (biginteger base) exp))
+
+     (s/defn pow->Long :- s/Int
+       "An Long (integer) version of java.Math/pow( base, exp )"
+       [base :- s/Int
+        exp :- s/Int]
+       (let [result-bi   (pow->BigInteger base exp)
+             >>          (when-not (<= Long/MIN_VALUE result-bi Long/MAX_VALUE)
+                           (throw (ex-info "Long overflow" (vals->map base exp result-bi))))
+             result-long (.longValueExact result-bi)]
+         result-long))
 
      ;-----------------------------------------------------------------------------
      (s/defn ->bigdec-N :- BigDecimal
@@ -99,27 +120,4 @@
        (it-> (Math/log (double x))
          (/ it ln-2)))
 
-     ;---------------------------------------------------------------------------------------------------
-     (s/defn pow->BigInteger :- BigInteger
-       "An BigInteger version of java.Math/pow( base, exp )"
-       [base :- s/Int
-        exp :- s/Int]
-       (when-not (int? base) (throw (ex-info "base must be an integer" (vals->map base))))
-       (when-not (int? exp) (throw (ex-info "exp must be an integer" (vals->map exp))))
-       (when-not (t/nonneg? base) (throw (ex-info "base must be nonneg" (vals->map base))))
-       (when-not (t/nonneg? exp) (throw (ex-info "exp must be nonneg" (vals->map exp))))
-       (.pow ^BigInteger (biginteger base) exp))
-
-     (s/defn pow->Long :- s/Int
-       "An Long (integer) version of java.Math/pow( base, exp )"
-       [base :- s/Int
-        exp :- s/Int]
-       (let [result-bi   (pow->BigInteger base exp)
-             >>          (when-not (<= Long/MIN_VALUE result-bi Long/MAX_VALUE)
-                           (throw (ex-info "Long overflow" (vals->map base exp result-bi))))
-             result-long (.longValueExact result-bi)]
-         result-long))
-
-
      ))
-

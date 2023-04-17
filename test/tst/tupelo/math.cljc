@@ -76,27 +76,27 @@
 
      (dotest   ; math operations with Long result
        ; shift toward +infinity
-       (is= 5 (math/ceil-long 4.5))
-       (is= -4 (math/ceil-long -4.5))
+       (is= 5 (math/ceil->Long 4.5))
+       (is= -4 (math/ceil->Long -4.5))
 
        ; shift toward -infinity
-       (is= 4 (math/floor-long 4.5))
-       (is= -5 (math/floor-long -4.5))
+       (is= 4 (math/floor->Long 4.5))
+       (is= -5 (math/floor->Long -4.5))
 
        ; truncate toward zero
-       (is= 4 (math/trunc-long 4.4))
-       (is= -4 (math/trunc-long -4.4))
+       (is= 4 (math/trunc->Long 4.4))
+       (is= -4 (math/trunc->Long -4.4))
 
        ; round toward nearest integer
-       (is= 5 (math/round-long 4.6))
-       (is= 5 (math/round-long 4.5))
-       (is= 4 (math/round-long 4.4))
-       (is= -5 (math/round-long -4.6))
-       (is= -4 (math/round-long -4.5))
-       (is= -4 (math/round-long -4.4))
+       (is= 5 (math/round->Long 4.6))
+       (is= 5 (math/round->Long 4.5))
+       (is= 4 (math/round->Long 4.4))
+       (is= -5 (math/round->Long -4.6))
+       (is= -4 (math/round->Long -4.5))
+       (is= -4 (math/round->Long -4.4))
 
        ; NOTE: looses precision big-time, but does not throw!!!
-       (let [ll (math/round-long 4.4e99)]
+       (let [ll (math/round->Long 4.4e99)]
          (is= Long (type ll))
          (is (<= 18 (Math/log10 ll) 19))
          (is= 63.0 (math/log2 ll))) ; *** truncated to 63 bits! ***
