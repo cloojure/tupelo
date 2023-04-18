@@ -14,11 +14,13 @@
     [clojure.java.io :as io]
     [clojure.set :as cs]
     [clojure.tools.reader.edn :as edn]
+    [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.forest :as tf]
     [tupelo.parse.tagsoup :as tagsoup]
     [tupelo.schema :as tsk]
+    [tupelo.set :as set]
     [tupelo.string :as str]
     )
   (:import [java.io StringReader]))
@@ -324,7 +326,7 @@
   (let [kid-hids            (hid->kids hid)
         kid-partitions      (partition-by leaf-kw-hid? kid-hids)
         kid-partitions-flgs (mapv kw-partition? kid-partitions)
-        kid-partitions-new  (map-let [partition kid-partitions
+        kid-partitions-new  (map-let [partition    kid-partitions
                                       kw-part-flag kid-partitions-flgs]
                               (if kw-part-flag
                                 [(add-node :item partition)]
@@ -1463,6 +1465,56 @@
        :_id                  "56044a42a27847d11d61bfd3"})
 
     (is (nil? (find-step "invalid-id")))))
+
+;---------------------------------------------------------------------------------------------------
+; Example of how to quote/unquote any reserved words in user data.  Tupelo Forest uses the keywords
+; `:*` and `:**` as special wildcard symbols.  If your data includes any of these, just  temporarily
+; encode them into a harmless version, then reverse the process
+
+(def symbol->code {:*  :quote/kw-star
+                   :** :quote/kw-star-star})
+(def code->symbol (set/map-invert symbol->code))
+
+(def reserved-symbols-set (set (keys symbol->code)))
+(def reserved-codes-set (set (keys code->symbol)))
+
+(defn reserved-symbol?
+  "Returns true if arg is a reserved symbol"
+  [arg] (t/contains-key? reserved-symbols-set arg))
+
+(defn reserved-code?
+  "Returns true if arg is a reserved symbol code"
+  [arg] (t/contains-key? reserved-codes-set arg))
+
+(defn reserved-symbol-encode
+  "Walk EDN data, encoding any reserved symbols"
+  [arg]
+  (walk/postwalk (fn [item]
+                   (cond-it-> item
+                     (reserved-symbol? it) (grab it symbol->code)))
+    arg))
+
+(defn reserved-symbol-decode
+  "Walk EDN data, decoding any reserved symbol codes"
+  [arg]
+  (walk/postwalk (fn [item]
+                   (cond-it-> item
+                     (reserved-code? it) (grab it code->symbol)))
+    arg))
+
+(verify
+  ; Ensure all symbols and codes don't clash
+  (is (apply = true (mapv reserved-symbol? reserved-symbols-set)))
+  (is (apply = true (mapv reserved-code? reserved-codes-set)))
+  (is (apply = false (mapv reserved-code? reserved-symbols-set)))
+  (is (apply = false (mapv reserved-symbol? reserved-codes-set)))
+
+  ; Verify encode/decode functions
+  (let [data-orig    {:id            1
+                      :problem-field [:*]}
+        data-encoded {:id 1, :problem-field [:quote/kw-star]}]
+    (is= data-encoded  (reserved-symbol-encode data-orig))
+    (is= data-orig (reserved-symbol-decode data-encoded))))
 
 ;-----------------------------------------------------------------------------
 (verify
