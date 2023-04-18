@@ -1511,8 +1511,8 @@
 
   ; Verify encode/decode functions
   (let [data-orig    {:id            1
-                      :problem-field [:*]}
-        data-encoded {:id 1, :problem-field [:quote/kw-star]}]
+                      :problem-field [:* :**]}
+        data-encoded {:id 1, :problem-field [:quote/kw-star :quote/kw-star-star]}]
     (is= data-encoded  (reserved-symbol-encode data-orig))
     (is= data-orig (reserved-symbol-decode data-encoded))))
 
