@@ -32,7 +32,7 @@
   (b/delete {:path build-folder})
   (println (format "Build folder \"%s\" removed" build-folder)))
 
-(defn verify-all-committed!
+(defn check-all-committed-or-throw
   "Use git to verify there are no uncommitted files present"
   [& args] ; ignore `nil` arg
   (let [cmd-str-1     "git status --short --branch"
@@ -48,7 +48,7 @@
   "Tag release by prepending a `v` char to the version string and calling `git tag`
     (eg version `23.03.15` => tag `v23.03.15`)."
   [& args] ; ignore `nil` arg
-  (verify-all-committed!)
+  (check-all-committed-or-throw)
   (println (str/quotes->double
              (format "Tagging release: '%s'" git-tag-str)))
   (let [cmd-str-1 (str/quotes->double

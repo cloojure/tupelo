@@ -30,7 +30,10 @@
            }
 
  :aliases {
-           :test         {:extra-deps  {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+           :test         {:extra-deps  {io.github.cognitect-labs/test-runner
+                                        #_{:git/tag "v0.5.1" :git/sha "dfb30dd"}
+                                        {:local/root "/home/alan/gh/test-runner"}
+                                        }
                           :extra-paths ["test/resources"]
                           :main-opts   ["-m" "cognitect.test-runner"]
                           :exec-fn     cognitect.test-runner.api/test

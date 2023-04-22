@@ -1,5 +1,6 @@
 (ns tst.tupelo.profile
-  (:use tupelo.core tupelo.test)
+  (:use tupelo.core
+        tupelo.test)
   (:require
     [overtone.at-at :as at]
     [tupelo.profile :as prof :refer [defnp]]))
@@ -79,4 +80,7 @@
                          (grab :sigma stats))
             pass-flgs  (mapv #(< % 0.002) sigma-vals)]
         (is (every? truthy? pass-flgs))))
+
+    (at/stop-and-reset-pool! atat-timer-pool :strategy :kill) ; ***** very important or tests won't terminate! *****
+
     ))

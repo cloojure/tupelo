@@ -13,7 +13,7 @@
   (:require
     [clojure.walk :as walk]
     [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map
-                               xfirst xsecond forv ]]
+                               xfirst xsecond forv]]
     ))
 
 (defn ^:no-doc insert-form? ; #todo => `run` or `live` or `unq` or `ins` or `insert`???
@@ -48,20 +48,20 @@
   ``` "
   [form]
   (let [result (walk/prewalk
-          (fn [item]
-            (cond
-              (insert-form? item) (eval (xsecond item))
-              (sequential? item) (let [unquoted-vec (apply glue
-                                                      (forv [it item]
-                                                        (if (splice-form? it)
-                                                          (eval (xsecond it))
-                                                          [it])))
-                                       final-result (if (list? item)
-                                                      (t/->list unquoted-vec)
-                                                      unquoted-vec)]
-                                   final-result)
-              :else item))
-          form)]
+                 (fn [item]
+                   (cond
+                     (insert-form? item) (eval (xsecond item))
+                     (sequential? item) (let [unquoted-vec (apply glue
+                                                             (forv [it item]
+                                                               (if (splice-form? it)
+                                                                 (eval (xsecond it))
+                                                                 [it])))
+                                              final-result (if (list? item)
+                                                             (t/->list unquoted-vec)
+                                                             unquoted-vec)]
+                                          final-result)
+                     :else item))
+                 form)]
     ; (spyx result)
     result))
 
