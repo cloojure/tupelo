@@ -16,13 +16,22 @@
 (defnp sleep-17 [] (sleep 17))
 (defnp sleep-77 [] (sleep 77))
 
+
+(def atat-timer-pool (at/mk-pool))
+
+(use-fixtures :once
+  (fn [tst-fn]
+    (tst-fn) ; invoke test fn
+
+    ; ***** very important or tests won't terminate! *****
+    (at/stop-and-reset-pool! atat-timer-pool :strategy :kill)))
+
 (verify
   (prof/timer-stats-reset!)
-  (let [fns-to-repeat   #{sleep-02 sleep-03 sleep-05 sleep-07
-                          sleep-11 sleep-13 sleep-17 sleep-77}
-        atat-timer-pool (at/mk-pool)
-        jobs            (forv [curr-fn fns-to-repeat]
-                          (at/interspaced 20 curr-fn atat-timer-pool))]
+  (let [fns-to-repeat #{sleep-02 sleep-03 sleep-05 sleep-07
+                        sleep-11 sleep-13 sleep-17 sleep-77}
+        jobs          (forv [curr-fn fns-to-repeat]
+                        (at/interspaced 20 curr-fn atat-timer-pool))]
     (sleep 300)
     ; stop all jobs
     (doseq [job jobs] (at/stop job))
@@ -80,7 +89,5 @@
                          (grab :sigma stats))
             pass-flgs  (mapv #(< % 0.002) sigma-vals)]
         (is (every? truthy? pass-flgs))))
-
-    (at/stop-and-reset-pool! atat-timer-pool :strategy :kill) ; ***** very important or tests won't terminate! *****
 
     ))
