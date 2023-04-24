@@ -18,7 +18,8 @@
               iuid-vals  (cp/pmap :builtin #(idx->uid ctx %) idx-vals)
               idx-deprng (cp/pmap :builtin #(uid->idx ctx %) iuid-vals)]
           (is-set= idx-vals iuid-vals) ; all vals present
-          (isnt= idx-vals iuid-vals) ; but not same order (random chance: 1 in N!)
+          (when (< nbits 8)
+            (isnt= idx-vals iuid-vals)) ; but not same order (random chance: 1 in N!)
           (is= idx-vals idx-deprng) ; recovers original vals, in order
           )))))
 

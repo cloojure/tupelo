@@ -10,7 +10,7 @@
 ;---------------------------------------------------------------------------------------------------
 ; User-supplied values
 
-(def version-str "23.03.15") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
+(def version-str "23.03.16") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
 (def lib-name 'tupelo/tupelo) ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
 (def scm-root "github.com/cloojure/tupelo")
 (def build-folder "target")
