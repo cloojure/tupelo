@@ -10,9 +10,11 @@
 ;---------------------------------------------------------------------------------------------------
 ; User-supplied values
 
-(def version-str "23.03.17") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
+(def version-str "23.03.17b") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
 (def lib-name 'tupelo/tupelo) ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
 (def scm-root "github.com/cloojure/tupelo")
+(def src-dirs ["src"
+               "resources"])
 (def build-folder "target")
 
 
@@ -42,8 +44,6 @@
     ; git always returns the branch as the first line like "## master...origin/master"
     ; So, there are modified uncommitted files if count is larger than 1
     (when (< 1 out-lines-num)
-      (println "Error: Uncommitted files detected")
-      (t/spyx-pretty shell-result)
       (throw (ex-info "Error: Uncommitted files detected" shell-result)))))
 
 (defn tag-release
@@ -70,8 +70,8 @@
   (clean-files)
   (tag-release)
 
-  (b/copy-dir {:src-dirs   ["src"
-                            "resources"] ; prepare jar content
+  ; prepare jar content
+  (b/copy-dir {:src-dirs   src-dirs
                :target-dir jar-content})
 
   (b/write-pom {:class-dir jar-content ; create pom.xml
