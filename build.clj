@@ -10,7 +10,7 @@
 ;---------------------------------------------------------------------------------------------------
 ; User-supplied values
 
-(def version-str "23.03.17b") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
+(def version-str "23.03.17c") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
 (def lib-name 'tupelo/tupelo) ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
 (def scm-root "github.com/cloojure/tupelo")
 (def src-dirs ["src"
@@ -78,7 +78,7 @@
                 :lib       lib-name
                 :version   version-str
                 :basis     basis
-                :src-dirs  ["src"]
+                :src-dirs  src-dirs
                 :scm       {:tag                 git-tag-str
                             :url                 (str "https://" scm-root)
                             :connection          (str "scm:git:git://" scm-root ".git")
