@@ -19,13 +19,14 @@
 (defn ^:no-doc insert-form? ; #todo => `run` or `live` or `unq` or `ins` or `insert`???
   [arg]
   (and (list? arg)
-    (= (quote insert) (first arg))))
+    (= (first arg) 'insert)))
 
 (defn ^:no-doc splice-form? ; #todo => `splat` or `splice` or `unq*` ???
   [arg]
   (and (list? arg)
-    (= (quote splice) (first arg))))
+    (= (first arg) 'splice)))
 
+; #todo review if works with recursive use
 (defn tmpl-fn
   "Template function similar to clojure.core/syntax-quote, except does not prepend current namespace to all free symbols.
   Value substitution is supported via `(insert ...)` and `(splice ...)` forms:
