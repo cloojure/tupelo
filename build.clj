@@ -36,13 +36,15 @@
   "Use git to verify there are no uncommitted files present"
   [& args] ; ignore `nil` arg
   (let [cmd-str-1     "git status --short --branch"
-        r1            (misc/shell-cmd cmd-str-1)
-        out-lines     (str/split-lines (t/grab :out r1))
+        shell-result  (misc/shell-cmd cmd-str-1)
+        out-lines     (str/split-lines (t/grab :out shell-result))
         out-lines-num (count out-lines)]
     ; git always returns the branch as the first line like "## master...origin/master"
     ; So, there are modified uncommitted files if count is larger than 1
     (when (< 1 out-lines-num)
-      (throw (ex-info "Error: Uncommitted files detected" r1)))))
+      (println "Error: Uncommitted files detected")
+      (t/spyx-pretty shell-result)
+      (throw (ex-info "Error: Uncommitted files detected" shell-result)))))
 
 (defn tag-release
   "Tag release by prepending a `v` char to the version string and calling `git tag`
