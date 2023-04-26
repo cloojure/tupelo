@@ -10,11 +10,11 @@
 ;---------------------------------------------------------------------------------------------------
 ; User-supplied values
 
-(def version-str "23.03.17c") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
+(def version-str "23.03.17d") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
 (def lib-name 'tupelo/tupelo) ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
 (def scm-root "github.com/cloojure/tupelo")
-(def src-dirs ["src"
-               "resources"])
+(def src-dirs ["src"])
+(def resource-dirs ["resources"])
 (def build-folder "target")
 
 
@@ -74,15 +74,20 @@
   (b/copy-dir {:src-dirs   src-dirs
                :target-dir jar-content})
 
-  (b/write-pom {:class-dir jar-content ; create pom.xml
-                :lib       lib-name
-                :version   version-str
-                :basis     basis
-                :src-dirs  src-dirs
-                :scm       {:tag                 git-tag-str
-                            :url                 (str "https://" scm-root)
-                            :connection          (str "scm:git:git://" scm-root ".git")
-                            :developerConnection (str "scm:git:ssh://git@" scm-root ".git")}})
+  (b/write-pom {:class-dir     jar-content ; create pom.xml
+                :lib           lib-name
+                :version       version-str
+                :basis         basis
+                :resource-dirs resource-dirs
+                :scm           {:tag                 git-tag-str
+                                :url                 (str "https://" scm-root)
+                                :connection          (str "scm:git:git://" scm-root ".git")
+                                :developerConnection (str "scm:git:ssh://git@" scm-root ".git")}
+
+                ; #todo throw if "src" is not root of project source code
+                ; #todo is this really needed?
+                :src-dirs      ["src"] ; ***** all but first dir will be discarded *****
+                })
 
   (b/jar {:class-dir jar-content ; create jar
           :jar-file  jar-file-name})
