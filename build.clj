@@ -67,6 +67,7 @@
 (defn build-jar
   "Build a new, clean JAR file from source-code."
   [& args] ; ignore `nil` arg
+  (newline)
   (clean-files)
   (tag-release)
 
