@@ -96,16 +96,18 @@
      (t/keep-if #(contains-value? itvl %)
        (range lower (inc upper) step)))))
 
-#?(:clj
-   (s/defn ->doubles :- [java.lang.Double]
-     "For an Interval, returns a vector of all Double values within the Interval for a
-     given step size (default=1)"
-     ([itvl :- Interval] (->doubles itvl 1))
-     ([itvl :- Interval
-       step :- s/Num]
-      (t/with-map-vals itvl [lower upper]
-        (mapv double
-          (t/keep-if #(contains-value? itvl %)
-            (range lower (inc upper) step)))))))
+(s/defn ->doubles :- [s/Num]
+  "For an Interval, returns a vector of all Double values within the Interval for a
+  given step size (default=1)"
+  ([itvl :- Interval] (->doubles itvl 1))
+  ([itvl :- Interval
+    step :- s/Num]
+   (t/with-map-vals itvl [lower upper]
+     (mapv double
+       (let [values  (t/keep-if #(contains-value? itvl %)
+                       (range lower (inc upper) step))
+             result #?(:clj (mapv double values)
+                       :cljs values)]
+         result)))))
 
 
