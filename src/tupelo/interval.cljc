@@ -14,7 +14,7 @@
      (:require-macros
        [tupelo.core.impl]
        [tupelo.core :refer [it-> cond-it-> some-it->
-                            vals->map with-map-vals forv
+                            vals->map with-map-vals forv thru
                             with-spy-indent spyx spyxx spy-pretty spyx-pretty
                             let-spy let-spy-pretty let-some map-let* map-let lazy-cons
                             try-catchall with-exception-default
@@ -69,7 +69,6 @@
 ; #todo maybe add Interval coercion functions ->closed ->slice ->open ->anti-slice
 ; #todo maybe add Interval predicate functions closed? slice? open? anti-slice?
 
-; #todo add other predicates from juxt/xtdb:  contains? succeeds? precedes? leads?, lags?, overlaps?
 (s/defn contains-value? :- s/Bool
   "Returns true iff an interval contains a value such that (lower < L < upper)."
   [interval :- Interval
@@ -86,6 +85,8 @@
                              (t/compare-increasing-or-equal val upper))
       :else (throw (ex-info "Invalid Interval type" {:interval interval})))))
 
+; #todo add other predicates from juxt/xtdb:  contains? contained-by? precedes? succeeds? leads?, lags?, overlaps?
+; #todo add fn (relationship i1 i2) => one of #{ :contains :contained-by :precedes :succeeds :leads :lags }
 (s/defn ->integers :- [s/Int]
   "For an Interval with integer bounds, returns a vector of all integers within the Interval"
   ([itvl :- Interval] (->integers itvl 1))
