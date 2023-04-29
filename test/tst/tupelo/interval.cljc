@@ -59,9 +59,13 @@
   (throws-not? (interval/new-open 5 5))
   (throws-not? (interval/new-anti-slice 5 5))
 
-  (let [itvl    (interval/new "aa" "cc")]
+  ; generic interval cannot be queried for membership
+  (let [itvl    (interval/new 1 9)]
     (is (interval/interval? itvl))
-    (throws? (interval/contains-value? itvl "b")))
+    (throws? (interval/contains-value? itvl 5)))
+  (let [itvl    (interval/new "aa" "xxx")] ; can accept string or char boundaries
+    (is (interval/interval? itvl))
+    (throws? (interval/contains-value? itvl "bb")))
 
   (let [itvl    (interval/new-slice 1.0 5.0) ; float interval bounds vs integer values
         members (keep-if #(interval/contains-value? itvl %) (range 10))]
@@ -82,6 +86,20 @@
         members (keep-if #(interval/contains-value? itvl %) (range 10))]
     (is (interval/interval? itvl))
     (is= members [2 3 4 5]))
+
+  (let [itvl    (interval/new-closed \d \f)
+        members (keep-if #(interval/contains-value? itvl %) (t/chars-thru \a \z))]
+    (is (interval/interval? itvl))
+    (is (interval/contains-value? itvl \e)) ; characters are comparable
+    (is= members [\d \e \f])
+    (isnt (interval/contains-value? itvl \b)))
+
+  (let [itvl    (interval/new-closed "d" "f")
+        members (keep-if #(interval/contains-value? itvl %) (mapv str (t/chars-thru \a \z)))]
+    (is (interval/interval? itvl))
+    (is (interval/contains-value? itvl "e")) ; characters are comparable
+    (is= members ["d" "e" "f"])
+    (isnt (interval/contains-value? itvl "b")))
 
   )
 

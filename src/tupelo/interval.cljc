@@ -86,7 +86,9 @@
       :else (throw (ex-info "Invalid Interval type" {:interval interval})))))
 
 ; #todo add other predicates from juxt/xtdb:  contains? contained-by? precedes? succeeds? leads?, lags?, overlaps?
+; #todo could include xxx-strict version of all functions for generic intervals
 ; #todo add fn (relationship i1 i2) => one of #{ :contains :contained-by :precedes :succeeds :leads :lags }
+
 (s/defn ->integers :- [s/Int]
   "For an Interval with integer bounds, returns a vector of all integers within the Interval"
   ([itvl :- Interval] (->integers itvl 1))
