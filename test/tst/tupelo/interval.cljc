@@ -61,25 +61,25 @@
 
   (let [itvl    (interval/new "aa" "cc")]
     (is (interval/interval? itvl))
-    (throws? (interval/contains? itvl "b")))
+    (throws? (interval/contains-value? itvl "b")))
 
   (let [itvl    (interval/new-slice 1.0 5.0) ; float interval bounds vs integer values
-        members (keep-if #(interval/contains? itvl %) (range 10))]
+        members (keep-if #(interval/contains-value? itvl %) (range 10))]
     (is (interval/interval? itvl))
     (is= members [1 2 3 4]))
 
   (let [itvl    (interval/new-closed 1.0 5.0) ; float interval bounds vs integer values
-        members (keep-if #(interval/contains? itvl %) (range 10))]
+        members (keep-if #(interval/contains-value? itvl %) (range 10))]
     (is (interval/interval? itvl))
     (is= members [1 2 3 4 5]))
 
   (let [itvl    (interval/new-open 1.0 5.0) ; float interval bounds vs integer values
-        members (keep-if #(interval/contains? itvl %) (range 10))]
+        members (keep-if #(interval/contains-value? itvl %) (range 10))]
     (is (interval/interval? itvl))
     (is= members [2 3 4]))
 
   (let [itvl    (interval/new-anti-slice 1.0 5.0) ; float interval bounds vs integer values
-        members (keep-if #(interval/contains? itvl %) (range 10))]
+        members (keep-if #(interval/contains-value? itvl %) (range 10))]
     (is (interval/interval? itvl))
     (is= members [2 3 4 5]))
 

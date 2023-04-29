@@ -110,9 +110,9 @@
             ld-itvl-slice  (interval/new-slice ld-2019-12-05 ld-2019-12-09)
             ld-itvl-closed (interval/new-closed ld-2019-12-05 ld-2019-12-09)
 
-            open-5-9       (t/keep-if #(interval/contains? ld-itvl-open %) localdates-30)
-            slice-5-9      (t/keep-if #(interval/contains? ld-itvl-slice %) localdates-30)
-            thru-5-9       (t/keep-if #(interval/contains? ld-itvl-closed %) localdates-30)]
+            open-5-9       (t/keep-if #(interval/contains-value? ld-itvl-open %) localdates-30)
+            slice-5-9      (t/keep-if #(interval/contains-value? ld-itvl-slice %) localdates-30)
+            thru-5-9       (t/keep-if #(interval/contains-value? ld-itvl-closed %) localdates-30)]
 
         (is= (mapv str open-5-9) ["2019-12-06" "2019-12-07" "2019-12-08"])
         (is= (mapv str slice-5-9) ["2019-12-05" "2019-12-06" "2019-12-07" "2019-12-08"])
@@ -367,37 +367,37 @@
           itvl-open   (interval/new-open lb ub) ; :open
           itvl-closed (interval/new-closed lb ub)] ; :closed
 
-      (isnt (interval/contains? itvl-open out-low))
-      (isnt (interval/contains? itvl-open lb))
-      (is (interval/contains? itvl-open mid))
-      (isnt (interval/contains? itvl-open ub))
-      (isnt (interval/contains? itvl-open out-high))
+      (isnt (interval/contains-value? itvl-open out-low))
+      (isnt (interval/contains-value? itvl-open lb))
+      (is (interval/contains-value? itvl-open mid))
+      (isnt (interval/contains-value? itvl-open ub))
+      (isnt (interval/contains-value? itvl-open out-high))
 
-      (isnt (interval/contains? itvl-slice out-low))
-      (is (interval/contains? itvl-slice lb))
-      (is (interval/contains? itvl-slice mid))
-      (isnt (interval/contains? itvl-slice ub))
-      (isnt (interval/contains? itvl-slice out-high))
+      (isnt (interval/contains-value? itvl-slice out-low))
+      (is (interval/contains-value? itvl-slice lb))
+      (is (interval/contains-value? itvl-slice mid))
+      (isnt (interval/contains-value? itvl-slice ub))
+      (isnt (interval/contains-value? itvl-slice out-high))
 
-      (isnt (interval/contains? itvl-closed out-low))
-      (is (interval/contains? itvl-closed lb))
-      (is (interval/contains? itvl-closed mid))
-      (is (interval/contains? itvl-closed ub))
-      (isnt (interval/contains? itvl-closed out-high))
+      (isnt (interval/contains-value? itvl-closed out-low))
+      (is (interval/contains-value? itvl-closed lb))
+      (is (interval/contains-value? itvl-closed mid))
+      (is (interval/contains-value? itvl-closed ub))
+      (isnt (interval/contains-value? itvl-closed out-high))
 
 
       (comment
-        (is (interval/contains? itvl lb))
-        (is (interval/contains? itvl mid))
-        (isnt (interval/contains? itvl ub))
+        (is (interval/contains-value? itvl lb))
+        (is (interval/contains-value? itvl mid))
+        (isnt (interval/contains-value? itvl ub))
 
-        (isnt (interval/contains? itvl-open lb))
-        (is (interval/contains? itvl-open mid))
-        (isnt (interval/contains? itvl-open ub))
+        (isnt (interval/contains-value? itvl-open lb))
+        (is (interval/contains-value? itvl-open mid))
+        (isnt (interval/contains-value? itvl-open ub))
 
-        (is (interval/contains? itvl-closed lb))
-        (is (interval/contains? itvl-closed mid))
-        (is (interval/contains? itvl-closed ub)))
+        (is (interval/contains-value? itvl-closed lb))
+        (is (interval/contains-value? itvl-closed mid))
+        (is (interval/contains-value? itvl-closed ub)))
       ))
 
   (verify
@@ -415,13 +415,13 @@
 
           millis-1               (.toEpochMilli now-instant-1)
           instant-1c             (millis->Instant millis-1)]
-      (is (interval/contains? instant-interval-date (->Instant now-zdt-1a)))
-      (is (interval/contains? instant-interval-date (->Instant now-zdt-1b)))
+      (is (interval/contains-value? instant-interval-date (->Instant now-zdt-1a)))
+      (is (interval/contains-value? instant-interval-date (->Instant now-zdt-1b)))
 
-      (is (interval/contains? instant-interval-short (->Instant now-zdt-1a)))
-      (is (interval/contains? instant-interval-short (->Instant now-zdt-1b)))
+      (is (interval/contains-value? instant-interval-short (->Instant now-zdt-1a)))
+      (is (interval/contains-value? instant-interval-short (->Instant now-zdt-1b)))
 
-      (is (interval/contains? instant-interval-11 instant-1c))))
+      (is (interval/contains-value? instant-interval-11 instant-1c))))
 
   (verify
     ; note that instants are in DESCENDING order

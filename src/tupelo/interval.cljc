@@ -69,7 +69,8 @@
 ; #todo maybe add Interval coercion functions ->closed ->slice ->open ->anti-slice
 ; #todo maybe add Interval predicate functions closed? slice? open? anti-slice?
 
-(s/defn contains? :- s/Bool
+; #todo add other predicates from juxt/xtdb:  contains? succeeds? precedes? leads?, lags?, overlaps?
+(s/defn contains-value? :- s/Bool
   "Returns true iff an interval contains a value such that (lower < L < upper)."
   [interval :- Interval
    val :- s/Any]
@@ -85,25 +86,26 @@
                              (t/compare-increasing-or-equal val upper))
       :else (throw (ex-info "Invalid Interval type" {:interval interval})))))
 
-(s/defn ->integers :- [s/Int] ; #todo => tupelo.interval
+(s/defn ->integers :- [s/Int]
   "For an Interval with integer bounds, returns a vector of all integers within the Interval"
   ([itvl :- Interval] (->integers itvl 1))
   ([itvl :- Interval
     step :- s/Int]
    (t/with-map-vals itvl [lower upper]
      (assert (every? int? [lower upper]))
-     (t/keep-if #(contains? itvl %)
+     (t/keep-if #(contains-value? itvl %)
        (range lower (inc upper) step)))))
 
 #?(:clj
-   (s/defn ->doubles :- [java.lang.Double] ; #todo => tupelo.interval
-     "For an Interval with integer bounds, returns a vector of all integers within the Interval"
+   (s/defn ->doubles :- [java.lang.Double]
+     "For an Interval, returns a vector of all Double values within the Interval for a
+     given step size (default=1)"
      ([itvl :- Interval] (->doubles itvl 1))
      ([itvl :- Interval
        step :- s/Num]
       (t/with-map-vals itvl [lower upper]
         (mapv double
-          (t/keep-if #(contains? itvl %)
+          (t/keep-if #(contains-value? itvl %)
             (range lower (inc upper) step)))))))
 
 

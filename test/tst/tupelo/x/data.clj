@@ -1,12 +1,12 @@
 (ns tst.tupelo.x.data
-  (:use tupelo.core
-        tupelo.test)
+  (:use tupelo.core tupelo.test)
   (:require
     [clojure.math.combinatorics :as combo]
     [schema.core :as s]
     [tupelo.misc :as tm :refer [HID]]
+    [tupelo.schema :as tsk]
     [tupelo.string :as str]
-    [tupelo.schema :as tsk]))
+    ))
 
 
 (defn combo-all [& args]
