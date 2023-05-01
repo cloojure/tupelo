@@ -146,7 +146,7 @@
 (verify
   (when false ; ***** ENABLE TO SEE TIMING PRINTOUTS *****k
     (let [ivals (range 1000)]
-      (tsk/with-validation-disabled
+      (s/without-fn-validation
         (prof/timer-stats-reset!)
         (let [ctx (new-ctx {:num-bits 32})]
           (prn :timing-1000-32)

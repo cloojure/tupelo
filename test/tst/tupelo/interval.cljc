@@ -100,7 +100,6 @@
     (is (interval/contains-value? itvl "e")) ; characters are comparable
     (is= members ["d" "e" "f"])
     (isnt (interval/contains-value? itvl "b")))
-
   )
 
 (dotest

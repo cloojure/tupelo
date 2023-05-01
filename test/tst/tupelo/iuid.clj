@@ -2,6 +2,7 @@
   (:use tupelo.iuid tupelo.core tupelo.test)
   (:require
     [com.climate.claypoole :as cp]
+    [schema.core :as s]
     [tupelo.bits :as bits]
     [tupelo.profile :as prof]
     [tupelo.schema :as tsk]
@@ -83,7 +84,7 @@
 
 (verify
   (when false ; ***** ENABLE TO SEE TIMING PRINTOUTS *****k
-    (tsk/with-validation-disabled
+    (s/without-fn-validation
       (prof/timer-stats-reset!)
       (let [ctx (new-ctx {:num-bits 32})]
         (prn :timing-1000-32)

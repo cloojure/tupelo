@@ -88,24 +88,14 @@
    (s/required-key :leave) s/Any
    (s/optional-key :id)    s/Keyword})
 
-(defmacro with-validation-enabled
-  "Run forms with Plumatic Schema enabled"
+(defmacro ^:deprecated with-validation-enabled
+  "Obsolete:  Replace with (schema.core/without-fn-validation ...)"
   [& forms]
-  `(let [orig-validation-state# (s/fn-validation?)]
-     (s/set-fn-validation! true)
-     (let [result# (do ~@forms)]
-       (s/set-fn-validation! orig-validation-state#)
-       result#)))
+  (throw (ex-info "Obsolete:  Replace with (schema.core/without-fn-validation ...)")))
 
-; #todo convert to try/finally
-(defmacro with-validation-disabled
-  "Run forms with Plumatic Schema disabled"
-  [& forms]
-  `(let [orig-validation-state# (s/fn-validation?)]
-     (s/set-fn-validation! false)
-     (let [result# (do ~@forms)]
-       (s/set-fn-validation! orig-validation-state#)
-       result#)))
+(defmacro ^:deprecated with-validation-disabled
+  "Obsolete:  Replace with (schema.core/without-fn-validation ...)"[& forms]
+  (throw (ex-info "Obsolete:  Replace with (schema.core/without-fn-validation ...)")))
 
 ;-----------------------------------------------------------------------------
 ; HTTP related stuff
