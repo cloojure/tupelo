@@ -10,7 +10,7 @@
 ;---------------------------------------------------------------------------------------------------
 ; User-supplied values
 
-(def version-str "23.03.17d") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
+(def version-str "23.05.04") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
 (def lib-name 'tupelo/tupelo) ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
 (def scm-root "github.com/cloojure/tupelo")
 (def src-dirs ["src"])
@@ -20,7 +20,7 @@
 
 ;===================================================================================================
 ; Derived values
-(def git-tag-str (str "v" version-str)) ; ***** ASSUMES YOU CREATE A GIT TAG LIKE `v23.01.31` *****
+(def git-tag-str (str "v" version-str)) ; a git tag like `v23.01.31` will be added
 (def jar-content (str build-folder "/classes")) ; folder where we collect files to pack in a jar
 (def basis (b/create-basis {:project "deps.edn"})) ; basis structure (read details in the article)
 (def jar-file-name (format "%s/%s-%s.jar" build-folder (name lib-name) version-str)) ; path for result jar file
