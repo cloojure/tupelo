@@ -18,10 +18,10 @@
            cheshire/cheshire                   {:mvn/version "5.11.0"} ; #todo switch to muuntaja/jsonista
            clj-time/clj-time                   {:mvn/version "0.15.2"}
            criterium/criterium                 {:mvn/version "0.4.6"}
-           org.clj-commons/claypoole           {:mvn/version "1.2.2"}
            danlentz/clj-uuid                   {:mvn/version "0.1.9"}
            joda-time/joda-time                 {:mvn/version "2.12.4"}
            org.ccil.cowan.tagsoup/tagsoup      {:mvn/version "1.2.1"}
+           org.clj-commons/claypoole           {:mvn/version "1.2.2"}
            org.flatland/ordered                {:mvn/version "1.15.11"}
            org.snakeyaml/snakeyaml-engine      {:mvn/version "2.6"}
            overtone/at-at                      {:mvn/version "1.2.0"}
