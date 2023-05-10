@@ -1,9 +1,8 @@
-{:paths   [
-           "src" ; impl source files
-           "test" ; testing source files
-           ]
+{:paths   ["src"
+           "test"]
  :deps    {
            org.clojure/clojure                 {:mvn/version "1.11.1"}
+
            org.clojure/core.async              {:mvn/version "1.6.673"}
            org.clojure/core.match              {:mvn/version "1.0.1"}
            org.clojure/data.avl                {:mvn/version "0.1.0"}
@@ -26,7 +25,6 @@
            org.snakeyaml/snakeyaml-engine      {:mvn/version "2.6"}
            overtone/at-at                      {:mvn/version "1.2.0"}
            prismatic/schema                    {:mvn/version "1.4.1"}
-
            }
 
  :aliases {
