@@ -39,19 +39,16 @@
                           :exec-args   {:patterns ["^tst.*"] ; mandatory to detect testing ns's like `tst.demo.core`
                                         }
                           }
-           :test-refresh {:extra-paths ["test/resources"]
-                          :extra-deps  {com.jakemccrary/test-refresh {:mvn/version "0.25.0"}}
-                          :main-opts   ["-m" "com.jakemccrary.test-refresh"
-                                        ; "--dir" "test"  ; <= default
-                                        ]
+           :test-refresh {:extra-deps  {com.jakemccrary/test-refresh {:mvn/version "0.25.0"}}
+                          :extra-paths ["test/resources"]
+                          :main-opts   ["-m" "com.jakemccrary.test-refresh"]
                           }
            ; This target finds dependencies with outdated version numbers
            :old          {:deps      {com.github.liquidz/antq {:mvn/version "RELEASE"}} ; NOT `:extra-deps` !!!
                           :main-opts ["-m" "antq.core"]
                           }
            ; build alias (for deployment)
-           :build        {:extra-deps {
-                                       io.github.io-tupelo/deps-build-deploy
+           :build        {:extra-deps {io.github.io-tupelo/deps-build-deploy
                                        #_{:git/sha "a8e32aefe55730119040548925cf0eba9ceacb48"}
                                        {:local/root "/home/alan/io-tupelo/deps-build-deploy"}
 
