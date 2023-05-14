@@ -16,9 +16,8 @@
 (defnp sleep-17 [] (sleep 17))
 (defnp sleep-77 [] (sleep 77))
 
-
+; create global Var
 (def atat-threadpool (at/mk-pool))
-
 (use-fixtures :once
   (fn [tst-fn]
     (tst-fn) ; invoke test fn
