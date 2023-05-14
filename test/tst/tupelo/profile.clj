@@ -3,7 +3,9 @@
         tupelo.test)
   (:require
     [overtone.at-at :as at]
-    [tupelo.profile :as prof :refer [defnp]]))
+    [tupelo.profile :as prof :refer [defnp]])
+  (:import
+    java.lang.Thread))
 
 (defn sleep [millis] (Thread/sleep millis))
 
@@ -16,14 +18,15 @@
 (defnp sleep-17 [] (sleep 17))
 (defnp sleep-77 [] (sleep 77))
 
-; create global Var
-(def atat-threadpool (at/mk-pool))
+(declare atat-threadpool) ; "declare" global Var (unbound)
 (use-fixtures :once
   (fn [tst-fn]
+    (def atat-threadpool (at/mk-pool)) ; reset global Var
+
     (tst-fn) ; invoke test fn
 
     ; ***** very important or tests won't terminate! *****
-    (at/stop-and-reset-pool! atat-threadpool :strategy :kill)))
+    (at/stop-and-reset-pool! atat-threadpool :strategy :kill))) ; use global Var
 
 (verify
   (prof/timer-stats-reset!)
