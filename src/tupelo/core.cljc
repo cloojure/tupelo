@@ -270,7 +270,7 @@
 
 ;-----------------------------------------------------------------------------
 (declare
-  glue xfirst xrest append prepend grab fetch-in indexed -str validate
+  glue xfirst xrest append prepend grab fetch-in indexed validate
   walk-with-parents with-nil-default vals->map snip snip* map-let map-let*
   spy spyx spy-pretty spyx-pretty let-spy let-spy-pretty unlazy
   atom?
