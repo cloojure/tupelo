@@ -84,7 +84,7 @@
     (is= 13 (math/fibo-nth 7))
     (is= 21 (math/fibo-nth 8))
     (is= 34 (math/fibo-nth 9))
-    (is (< (Math/pow 2 62) (math/fibo-nth 91) (Math/pow 2 63)))))
+    (is (<  (math/pow2-nth 62) (math/fibo-nth 91) (math/pow2-nth 63)))))
 
 (dotest
   (testing "pow2 stuff"
