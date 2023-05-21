@@ -52,7 +52,8 @@
 
 ;---------------------------------------------------------------------------------------------------
 (def fibonacci-seq
-  "A lazy seq of Fibonacci numbers."
+  "A lazy seq of Fibonacci numbers. Note that, in the limit of (N -> infinity), the Fibonacci
+  numbers are approximately equal to the exponential sequence (1.61803^N)."
   (let [fibo-step (fn fibo-step [[val1 val2]]
                     (let [next-val (+ val1 val2)]
                       (t/lazy-cons next-val (fibo-step [val2 next-val]))))]
