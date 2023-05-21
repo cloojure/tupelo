@@ -95,12 +95,10 @@
 (def pow2aug-seq
   "A lazy seq of (2^N) numbers, augmented with (dec (2^N)) and (inc (2^N)) ."
   (let [pow2aug-step (fn pow2aug-step [val-prev]
-                       (let [val-next  (* 2 val-prev)
-                             val-next- (dec val-next)
-                             val-next+ (inc val-next)]
-                         (t/lazy-cons val-next-
+                       (let [val-next (* 2 val-prev)]
+                         (t/lazy-cons (dec val-next)
                            (t/lazy-cons val-next
-                             (t/lazy-cons val-next+
+                             (t/lazy-cons (inc val-next)
                                (pow2aug-step val-next))))))]
     ; do the first few manually to don't get duplicates
     (cons 0 (cons 1 (cons 2 (cons 3 (cons 4 (cons 5 (pow2aug-step 4N)))))))))

@@ -111,7 +111,6 @@
     (is= 256 (math/pow2-nth 8))
     (is= 512 (math/pow2-nth 9))
 
-
     #?(:clj ; cljs has no biginteger
        (do
          ; Long/MAX_VALUE value is (2^63 - 1), so stop at 62
