@@ -19,9 +19,9 @@
        [tupelo.types :as types])
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
     [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture ]]
+                          throws? throws-not? define-fixture]]
 
-    #?(:cljs [goog.string.format] )))
+    #?(:cljs [goog.string.format])))
 
 ;---------------------------------------------------------------------------------------------------
 #?(:cljs (enable-console-print!))
@@ -57,6 +57,103 @@
   (isnt (math/same-sign 1 -1))
   (isnt (math/same-sign -1 1)))
 
+(dotest
+  (testing "fibo stuff"
+    (is= (take 0 (math/fibonacci-seq)) [])
+    (is= (take 5 (math/fibonacci-seq)) [0 1 1 2 3])
+    (is= (take 10 (math/fibonacci-seq)) [0 1 1 2 3 5 8 13 21 34])
+
+    (is= (math/fibo-thru 0) [0])
+    (is= (math/fibo-thru 1) [0 1 1])
+    (is= (math/fibo-thru 2) [0 1 1 2])
+    (is= (math/fibo-thru 3) [0 1 1 2 3])
+    (is= (math/fibo-thru 4) [0 1 1 2 3])
+    (is= (math/fibo-thru 5) [0 1 1 2 3 5])
+    (is= (math/fibo-thru 6) [0 1 1 2 3 5])
+    (is= (math/fibo-thru 7) [0 1 1 2 3 5])
+    (is= (math/fibo-thru 8) [0 1 1 2 3 5 8])
+    (is= (math/fibo-thru 34) [0 1 1 2 3 5 8 13 21 34])
+
+    (is= 0 (math/fibo-nth 0))
+    (is= 1 (math/fibo-nth 1))
+    (is= 1 (math/fibo-nth 2))
+    (is= 2 (math/fibo-nth 3))
+    (is= 3 (math/fibo-nth 4))
+    (is= 5 (math/fibo-nth 5))
+    (is= 8 (math/fibo-nth 6))
+    (is= 13 (math/fibo-nth 7))
+    (is= 21 (math/fibo-nth 8))
+    (is= 34 (math/fibo-nth 9))
+    (is (< (Math/pow 2 62) (math/fibo-nth 91) (Math/pow 2 63)))))
+
+(dotest
+  (testing "pow2 stuff"
+    (is= (take 0 (math/pow2-seq)) [])
+    (is= (take 5 (math/pow2-seq)) [1 2 4 8 16])
+    (is= (take 10 (math/pow2-seq)) [1 2 4 8 16 32 64 128 256 512])
+
+    (is= (math/pow2-thru 0) [])
+    (is= (math/pow2-thru 1) [1])
+    (is= (math/pow2-thru 10) [1 2 4 8])
+    (is= (math/pow2-thru 50) [1 2 4 8 16 32])
+    (is= (math/pow2-thru 100) [1 2 4 8 16 32 64])
+    (is= (math/pow2-thru 200) [1 2 4 8 16 32 64 128])
+    (is= (math/pow2-thru 500) [1 2 4 8 16 32 64 128 256])
+
+    (is= 1 (math/pow2-nth 0))
+    (is= 2 (math/pow2-nth 1))
+    (is= 4 (math/pow2-nth 2))
+    (is= 8 (math/pow2-nth 3))
+    (is= 16 (math/pow2-nth 4))
+    (is= 32 (math/pow2-nth 5))
+    (is= 64 (math/pow2-nth 6))
+    (is= 128 (math/pow2-nth 7))
+    (is= 256 (math/pow2-nth 8))
+    (is= 512 (math/pow2-nth 9))
+
+    ; Long/MAX_VALUE value is (2^63 - 1), so stop at 62
+
+    #?(:clj ; cljs has no biginteger
+       (do
+         (is (= (math/pow2-nth 62) (math/pow->Long 2 62)))
+         (is= 633825300114114700748351602688N (math/pow2-nth 99))))
+    ))
+
+(dotest
+  (testing "pow2aug stuff"
+    (is= (take 0 (math/pow2aug-seq)) [])
+    (is= (take 5 (math/pow2aug-seq)) [0 1 2 3 4])
+    (is= (take 10 (math/pow2aug-seq)) [0 1 2 3 4 5 7 8 9 15])
+    (is= (take 20 (math/pow2aug-seq)) [0 1 2 3 4 5 7 8 9 15 16 17 31 32 33 63 64 65 127 128])
+
+    (is= (math/pow2aug-thru 0) [0])
+    (is= (math/pow2aug-thru 1) [0 1])
+    (is= (math/pow2aug-thru 10) [0 1 2 3 4 5 7 8 9])
+    (is= (math/pow2aug-thru 50) [0 1 2 3 4 5 7 8 9 15 16 17 31 32 33])
+    (is= (math/pow2aug-thru 100) [0 1 2 3 4 5 7 8 9 15 16 17 31 32 33 63 64 65])
+    (is= (math/pow2aug-thru 200) [0 1 2 3 4 5 7 8 9 15 16 17 31 32 33 63 64 65 127 128 129])
+    (is= (math/pow2aug-thru 500) [0 1 2 3 4 5 7 8 9 15 16 17 31 32 33 63 64 65 127 128 129 255 256 257])
+
+    (is= 0 (math/pow2aug-nth 0))
+    (is= 1 (math/pow2aug-nth 1))
+    (is= 2 (math/pow2aug-nth 2))
+    (is= 3 (math/pow2aug-nth 3))
+    (is= 4 (math/pow2aug-nth 4))
+    (is= 5 (math/pow2aug-nth 5))
+    (is= 7 (math/pow2aug-nth 6))
+    (is= 8 (math/pow2aug-nth 7))
+    (is= 9 (math/pow2aug-nth 8))
+    (is= 15 (math/pow2aug-nth 9))
+    (is= 16 (math/pow2aug-nth 10))
+    (is= 17 (math/pow2aug-nth 11))
+    (is= 31 (math/pow2aug-nth 12))
+    (is= 32 (math/pow2aug-nth 13))
+    (is= 33 (math/pow2aug-nth 14))
+
+    #?(:clj ; cljs has no biginteger
+       (is= 2535301200456458802993406410751N (math/pow2aug-nth 300)))
+    ))
+
 #?(:clj
    (do
 
@@ -74,7 +171,7 @@
          (is (t/rel= val-rnd val :digits 2))
          (isnt (t/rel= val-rnd val :digits 4))))
 
-     (dotest   ; math operations with Long result
+     (dotest ; math operations with Long result
        ; shift toward +infinity
        (is= 5 (math/ceil->Long 4.5))
        (is= -4 (math/ceil->Long -4.5))
@@ -138,7 +235,7 @@
          (is= 1.67M (math/->bigdec-N (str b6) 2))
          (is= 1.67M (math/->bigdec-N (str b4) 2))
          (is= 1.66M (math/->bigdec-N (str b2) 2))
-     ))
+         ))
 
      ; Can accept value as a Double, BigDecimal, or String
      (dotest
@@ -181,7 +278,7 @@
      (set! *warn-on-reflection* true)
 
      ;---------------------------------------------------------------------------------------------------
-     (dotest   ; mod works for bigint, always positive
+     (dotest ; mod works for bigint, always positive
        (is= 1 (mod 1N 2N))
        (is= 0 (mod 2N 2N))
        (is= 1 (mod 3N 2N))
@@ -190,7 +287,7 @@
        (is= 0 (mod -2N 2N))
        (is= 1 (mod -3N 2N)))
 
-     (dotest   ; rem works for bigint, sgn(result)==sgn(numerator)
+     (dotest ; rem works for bigint, sgn(result)==sgn(numerator)
        (is= 1 (rem 1N 2N))
        (is= 0 (rem 2N 2N))
        (is= 1 (rem 3N 2N))
@@ -202,7 +299,7 @@
      ;---------------------------------------------------------------------------------------------------
      (defn mod-biginteger [a b] (mod (BigInteger/valueOf a) (BigInteger/valueOf b)))
      (defn rem-biginteger [a b] (rem (BigInteger/valueOf a) (BigInteger/valueOf b)))
-     (dotest   ; mod works for biginteger, always positive
+     (dotest ; mod works for biginteger, always positive
        (is= 1 (mod-biginteger 1 2))
        (is= 0 (mod-biginteger 2 2))
        (is= 1 (mod-biginteger 3 2))
@@ -211,7 +308,7 @@
        (is= 0 (mod-biginteger -2 2))
        (is= 1 (mod-biginteger -3 2)))
 
-     (dotest   ; rem works for biginteger, sgn(result)==sgn(numerator)
+     (dotest ; rem works for biginteger, sgn(result)==sgn(numerator)
        (is= 1 (rem-biginteger 1 2))
        (is= 0 (rem-biginteger 2 2))
        (is= 1 (rem-biginteger 3 2))
@@ -225,14 +322,14 @@
 
      (dotest
        (is (biginteger-equals? (math/pow->BigInteger 2 5) (biginteger 32)))
-       (throws? (math/pow->BigInteger 2 -5) )
+       (throws? (math/pow->BigInteger 2 -5))
 
        (is (long-equals? (math/pow->Long 2 5) 32))
        (throws? (math/pow->Long 2 77))
        (throws? (math/pow->Long 2 -5)))
 
      (dotest
-       (let [bi-5               (BigInteger/valueOf 5)]
+       (let [bi-5 (BigInteger/valueOf 5)]
          (is (biginteger-equals? bi-5 bi-5))
          (isnt (biginteger-equals? bi-5 5))
          (isnt (biginteger-equals? bi-5 5.0))
@@ -251,6 +348,5 @@
          (throws? (biginteger nil))
          (is= -666 (biginteger -666))))
 
-     )
-   )
+     ))
 

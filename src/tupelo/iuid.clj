@@ -60,16 +60,18 @@
 ;  128 bits:  12 usec/call
 (s/defn idx->uid :- BigInteger
   "Given a context map and an index value [0..2^N), returns the corresponding
-  UID value (Cryptographic Unique ID), also in [0..2^N). UID values are guaranteed
-  to be unique for each index and pseudo-random within the interval [0..2^N)."
+  UID value (Unique ID), also in [0..2^N). UID values are guaranteed
+  to be unique for each index and pseudo-random within the interval [0..2^N).
+  The context map specifies N as the value of the `:num-bits` key. "
   [ctx :- tsk/KeyMap
    ival :- s/Int]
   ; (prof/with-timer-accum :idx->uid)
   (prng/randomize ctx ival))
 
 (s/defn uid->idx :- BigInteger
-  "Given a context map and a UID value (Cryptographic Unique ID) in [0..2^N),
-   returns the corresponding index value, also in [0..2^N)."
+  "Given a context map and a UID value (Unique ID) in [0..2^N),
+   returns the corresponding index value, also in [0..2^N).
+  The context map specifies N as the value of the `:num-bits` key.   "
   [ctx :- tsk/KeyMap
    uid :- s/Int]
   ; (prof/with-timer-accum :cuid->idx)

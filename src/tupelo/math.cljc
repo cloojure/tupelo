@@ -50,6 +50,75 @@
       (and (neg? x) (neg? y))
       (and (zero? x) (zero? y)))))
 
+;---------------------------------------------------------------------------------------------------
+(defn fibonacci-seq
+  "A lazy seq of Fibonacci numbers (memoized)."
+  []
+  (let [fibo-step (fn fibo-step [[val1 val2]]
+                    (let [next-val (+ val1 val2)]
+                      (t/lazy-cons next-val (fibo-step [val2 next-val]))))]
+    (cons 0 (cons 1 (fibo-step [0N 1N])))))
+
+(defn fibo-thru
+  "Returns a vector of Fibonacci numbers up to limit (inclusive). Note that a
+  2^62  corresponds to 91'st Fibonacci number."
+  [limit]
+  (vec (take-while #(<= % limit) (fibonacci-seq))))
+
+(defn fibo-nth
+  "Returns the N'th Fibonacci number (zero-based). Note that
+  N=91 corresponds to approx 2^62"
+  [N]
+  (first (drop N (fibonacci-seq))))
+
+;---------------------------------------------------------------------------------------------------
+(defn pow2-seq
+  "A lazy seq of (2^N) numbers (memoized)."
+  []
+  (let [pow2-step (fn pow2-step [val-prev]
+                    (let [val-next (* 2 val-prev)]
+                      (t/lazy-cons val-next (pow2-step val-next))))]
+    (cons 1 (pow2-step 1N))))
+
+(defn pow2-thru
+  "Returns a vector of pow2 numbers up to limit (inclusive). Note that a
+  2^62  corresponds to 91'st pow2 number."
+  [limit]
+  (vec (take-while #(<= % limit) (pow2-seq))))
+
+(defn pow2-nth
+  "Returns the N'th pow2 number (zero-based). Note that
+  N=91 corresponds to approx 2^62"
+  [N]
+  (first (drop N (pow2-seq))))
+
+;---------------------------------------------------------------------------------------------------
+(defn pow2aug-seq
+  "A lazy seq of (2^N) numbers, augmented with (dec (2^N)) and (inc (2^N)) ."
+  []
+  (let [pow2aug-step (fn pow2aug-step [val-prev]
+                       (let [val-next  (* 2 val-prev)
+                             val-next- (dec val-next)
+                             val-next+ (inc val-next)]
+                         (t/lazy-cons val-next-
+                           (t/lazy-cons val-next
+                             (t/lazy-cons val-next+
+                               (pow2aug-step val-next))))))]
+    (distinct (cons 0 (cons 1 (cons 2 (cons 3 (cons 4 (cons 5 (pow2aug-step 4N))))))))))
+
+(defn pow2aug-thru
+  "Returns a vector of pow2aug numbers up to limit (inclusive). Note that a
+  2^62  corresponds to 91'st pow2aug number."
+  [limit]
+  (vec (take-while #(<= % limit) (pow2aug-seq))))
+
+(defn pow2aug-nth
+  "Returns the N'th pow2aug number (zero-based). Note that
+  N=91 corresponds to approx 2^62"
+  [N]
+  (first (drop N (pow2aug-seq))))
+
+;---------------------------------------------------------------------------------------------------
 #?(:clj
    (do
      ;-----------------------------------------------------------------------------
@@ -121,3 +190,4 @@
          (/ it ln-2)))
 
      ))
+

@@ -2271,26 +2271,6 @@
   [curr-val recursive-call-form]
   `(lazy-seq (cons ~curr-val ~recursive-call-form)))
 
-(defn fibonacci-seq
-  "A lazy seq of Fibonacci numbers (memoized)."
-  []
-  (let [fibo-step (fn fibo-step [[val1 val2]]
-                    (let [next-val (+ val1 val2)]
-                      (lazy-cons next-val (fibo-step [val2 next-val]))))]
-    (cons 0 (cons 1 (fibo-step [0N 1N])))))
-
-(defn fibo-thru
-  "Returns a vector of Fibonacci numbers up to limit (inclusive). Note that a
-  2^62  corresponds to 91'st Fibonacci number."
-  [limit]
-  (vec (take-while #(<= % limit) (fibonacci-seq))))
-
-(defn fibo-nth
-  "Returns the N'th Fibonacci number (zero-based). Note that
-  N=91 corresponds to approx 2^62"
-  [N]
-  (first (drop N (fibonacci-seq))))
-
 ; #todo enhance to handle BigDec
 (defn rel=
   "Returns true if 2 double-precision numbers are relatively equal, else false.  Relative equality

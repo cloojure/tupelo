@@ -1947,35 +1947,6 @@
   (is-set= [1 2 3] [3 2 1])
   )
 
-(dotest
-  (testing "fibo stuff"
-    (is= (take 0 (t/fibonacci-seq)) [])
-    (is= (take 5 (t/fibonacci-seq)) [0 1 1 2 3])
-    (is= (take 10 (t/fibonacci-seq)) [0 1 1 2 3 5 8 13 21 34])
-
-    (is= (t/fibo-thru 0) [0])
-    (is= (t/fibo-thru 1) [0 1 1])
-    (is= (t/fibo-thru 2) [0 1 1 2])
-    (is= (t/fibo-thru 3) [0 1 1 2 3])
-    (is= (t/fibo-thru 4) [0 1 1 2 3])
-    (is= (t/fibo-thru 5) [0 1 1 2 3 5])
-    (is= (t/fibo-thru 6) [0 1 1 2 3 5])
-    (is= (t/fibo-thru 7) [0 1 1 2 3 5])
-    (is= (t/fibo-thru 8) [0 1 1 2 3 5 8])
-    (is= (t/fibo-thru 34) [0 1 1 2 3 5 8 13 21 34])
-
-    (is= 0 (t/fibo-nth 0))
-    (is= 1 (t/fibo-nth 1))
-    (is= 1 (t/fibo-nth 2))
-    (is= 2 (t/fibo-nth 3))
-    (is= 3 (t/fibo-nth 4))
-    (is= 5 (t/fibo-nth 5))
-    (is= 8 (t/fibo-nth 6))
-    (is= 13 (t/fibo-nth 7))
-    (is= 21 (t/fibo-nth 8))
-    (is= 34 (t/fibo-nth 9))
-    (is (< (Math/pow 2 62) (t/fibo-nth 91) (Math/pow 2 63)))))
-
 ;---------------------------------------------------------------------------------------------------
 (dotest
   (is= [[] [\a \b \c \d \e \f]] (t/split-match "abcdef" "a"))

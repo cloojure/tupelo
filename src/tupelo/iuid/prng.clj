@@ -1,4 +1,4 @@
-(ns tupelo.iuid.prng
+(ns ^:no-doc tupelo.iuid.prng
   (:use tupelo.core)
   (:require
     [schema.core :as s]
@@ -94,7 +94,7 @@
                          (mod/mod-BigInteger it N-max))]
       unrandomized)))
 
-(s/defn gen-slope :- BigInteger
+(s/defn ^:no-doc gen-slope :- BigInteger
   "Generate a positive, odd slope value"
   [nbits :- s/Int
    random-gen :- Random]
