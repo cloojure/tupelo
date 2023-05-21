@@ -50,7 +50,14 @@
      (is (ts/contains-str? (t/with-system-err-str
                              (doto System/err
                                (.println "System.err.println")))
-           "println"))))
+           "println"))
+
+     (is (nil? (t/discarding-system-err
+                 (doto System/err
+                   (.println "System.err.println")))))
+     (is (nil? (t/discarding-system-out
+                 (doto System/out
+                   (.println "System.err.println")))))))
 
 ;-----------------------------------------------------------------------------
 

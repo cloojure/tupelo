@@ -152,6 +152,20 @@
        (try ~@try-body (catch js/Object ~ex-symbol ~@catch-body))
        (try ~@try-body (catch Throwable ~ex-symbol ~@catch-body)))))
 
+(defmacro with-exception-default
+  "Evaluates body & returns its result.  In the event of an exception, default-val is returned
+   instead of the exception."
+  [default-val & forms] ; :default
+  `(try-catchall ~@forms
+     (catch e# ~default-val)))
+
+(defmacro with-result
+  "Evaluates `result` and returns it; also evaluates `forms` for their side-effects."
+  [result & forms]
+  `(let [result# ~result]
+     (do ~@forms)
+     result#))
+
 (defmacro type-name-str
   "Returns the type/class name of a value as a string.  Works for both CLJ and CLJS."
   [arg]
@@ -199,11 +213,13 @@
        `(let [err-orig# System/err
               baos#     (ByteArrayOutputStream.)
               ps#       (PrintStream. baos#)]
-          (System/setErr ps#)
-          ~@body
-          (System/setErr err-orig#)
-          (.close ps#)
-          (.toString baos#)))
+          (try
+            (System/setErr ps#)
+            (do ~@body)
+            (.close ps#)
+            (.toString baos#)
+            (finally
+              (System/setErr err-orig#)))))
 
      (defmacro with-system-out-str
        "Evaluates exprs in a context in which JVM System/out is bound to a fresh
@@ -212,33 +228,39 @@
        `(let [out-orig# System/out
               baos#     (ByteArrayOutputStream.)
               ps#       (PrintStream. baos#)]
+          (try
           (System/setOut ps#)
-          ~@body
-          (System/setOut out-orig#)
+          (do ~@body)
           (.close ps#)
-          (.toString baos#)))
+          (.toString baos#)
+          (finally
+            (System/setOut out-orig#)))))
 
      (defmacro discarding-system-err
        "Evaluates exprs in a context in which JVM System/err is bound to a fresh PrintStream that is discarded."
        [& body]
        `(let [err-orig# System/err
               ps#       (PrintStream. (OutputStream/nullOutputStream))]
-          (System/setErr ps#)
-          (let [result# (do ~@body)]
-            (System/setErr err-orig#)
-            (.close ps#)
-            result#)))
+          (with-result nil
+            (try
+              (System/setErr ps#)
+              (do ~@body)
+              (.close ps#)
+              (finally
+                (System/setErr err-orig#))))))
 
      (defmacro discarding-system-out
        "Evaluates exprs in a context in which JVM System/out is bound to a fresh PrintStream that is discarded."
        [& body]
        `(let [out-orig# System/out
               ps#       (PrintStream. (OutputStream/nullOutputStream))]
-          (System/setOut ps#)
-          (let [result# (do ~@body)]
-            (System/setOut out-orig#)
-            (.close ps#)
-            result#)))
+          (with-result nil
+            (try
+              (System/setOut ps#)
+              (do ~@body)
+              (.close ps#)
+              (finally
+                (System/setOut out-orig#))))))
 
      (defn exception-message
        "Returns the message from an exception => (.getMessage exception)"
@@ -2514,20 +2536,6 @@
                           [item])))]
     result))
 
-(defmacro with-exception-default
-  "Evaluates body & returns its result.  In the event of an exception, default-val is returned
-   instead of the exception."
-  [default-val & forms] ; :default
-  `(try-catchall ~@forms
-     (catch e# ~default-val)))
-
-(defmacro with-result
-  "Evaluates `result` and returns it; also evaluates `forms` for their side-effects."
-  [result & forms]
-  `(let [result# ~result]
-     (do ~@forms)
-     result#))
-
 (defn validate
   "(validate tst-fn tst-val)
   Used to validate intermediate results. Returns tst-val if the result of
@@ -3836,4 +3844,5 @@
 ;
 ; #todo make it handle either tst.orig.namespace or orig.namespace-test
 ; #todo make it a macro to accept unquoted namespace values
+
 
