@@ -2250,7 +2250,7 @@
   (apply map vector colls))
 
 (defn indexed
-  "Given one or more collections, returns a sequence of indexed tuples from the collections:
+  "Given one or more collections, returns a lazy sequence of indexed tuples from the collections:
 
         (indexed xs ys zs) -> [ [0 x0 y0 z0]
                                 [1 x1 y1 z1]
