@@ -59,9 +59,9 @@
 
 (dotest
   (testing "fibo stuff"
-    (is= (take 0 (math/fibonacci-seq)) [])
-    (is= (take 5 (math/fibonacci-seq)) [0 1 1 2 3])
-    (is= (take 10 (math/fibonacci-seq)) [0 1 1 2 3 5 8 13 21 34])
+    (is= (take 0 math/fibonacci-seq) [])
+    (is= (take 5 math/fibonacci-seq) [0 1 1 2 3])
+    (is= (take 10 math/fibonacci-seq) [0 1 1 2 3 5 8 13 21 34])
 
     (is= (math/fibo-thru 0) [0])
     (is= (math/fibo-thru 1) [0 1 1])
@@ -88,9 +88,9 @@
 
 (dotest
   (testing "pow2 stuff"
-    (is= (take 0 (math/pow2-seq)) [])
-    (is= (take 5 (math/pow2-seq)) [1 2 4 8 16])
-    (is= (take 10 (math/pow2-seq)) [1 2 4 8 16 32 64 128 256 512])
+    (is= (take 0 math/pow2-seq) [])
+    (is= (take 5 math/pow2-seq) [1 2 4 8 16])
+    (is= (take 10 math/pow2-seq) [1 2 4 8 16 32 64 128 256 512])
 
     (is= (math/pow2-thru 0) [])
     (is= (math/pow2-thru 1) [1])
@@ -111,20 +111,20 @@
     (is= 256 (math/pow2-nth 8))
     (is= 512 (math/pow2-nth 9))
 
-    ; Long/MAX_VALUE value is (2^63 - 1), so stop at 62
 
     #?(:clj ; cljs has no biginteger
        (do
+         ; Long/MAX_VALUE value is (2^63 - 1), so stop at 62
          (is (= (math/pow2-nth 62) (math/pow->Long 2 62)))
          (is= 633825300114114700748351602688N (math/pow2-nth 99))))
     ))
 
 (dotest
   (testing "pow2aug stuff"
-    (is= (take 0 (math/pow2aug-seq)) [])
-    (is= (take 5 (math/pow2aug-seq)) [0 1 2 3 4])
-    (is= (take 10 (math/pow2aug-seq)) [0 1 2 3 4 5 7 8 9 15])
-    (is= (take 20 (math/pow2aug-seq)) [0 1 2 3 4 5 7 8 9 15 16 17 31 32 33 63 64 65 127 128])
+    (is= (take 0 math/pow2aug-seq) [])
+    (is= (take 5 math/pow2aug-seq) [0 1 2 3 4])
+    (is= (take 10 math/pow2aug-seq) [0 1 2 3 4 5 7 8 9 15])
+    (is= (take 20 math/pow2aug-seq) [0 1 2 3 4 5 7 8 9 15 16 17 31 32 33 63 64 65 127 128])
 
     (is= (math/pow2aug-thru 0) [0])
     (is= (math/pow2aug-thru 1) [0 1])
