@@ -52,12 +52,14 @@
                                (.println "System.err.println")))
            "println"))
 
-     (is (nil? (t/discarding-system-err
-                 (doto System/err
-                   (.println "System.err.println")))))
-     (is (nil? (t/discarding-system-out
-                 (doto System/out
-                   (.println "System.err.println")))))))
+     (is= 5 (t/discarding-system-err
+              (doto System/err
+                (.println "System.err.println"))
+              (+ 2 3)))
+     (is= 7 (t/discarding-system-out
+              (doto System/out
+                (.println "System.err.println"))
+              (+ 3 4)))))
 
 ;-----------------------------------------------------------------------------
 

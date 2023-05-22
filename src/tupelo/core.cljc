@@ -241,26 +241,26 @@
        [& body]
        `(let [err-orig# System/err
               ps#       (PrintStream. (OutputStream/nullOutputStream))]
-          (with-result nil
-            (try
-              (System/setErr ps#)
-              (do ~@body)
+          (try
+            (System/setErr ps#)
+            (let [result# (do ~@body)]
               (.close ps#)
-              (finally
-                (System/setErr err-orig#))))))
+              result#)
+            (finally
+              (System/setErr err-orig#)))))
 
      (defmacro discarding-system-out
        "Evaluates exprs in a context in which JVM System/out is bound to a fresh PrintStream that is discarded."
        [& body]
        `(let [out-orig# System/out
               ps#       (PrintStream. (OutputStream/nullOutputStream))]
-          (with-result nil
-            (try
-              (System/setOut ps#)
-              (do ~@body)
+          (try
+            (System/setOut ps#)
+            (let [result# (do ~@body)]
               (.close ps#)
-              (finally
-                (System/setOut out-orig#))))))
+              result#)
+            (finally
+              (System/setOut out-orig#)))))
 
      (defn exception-message
        "Returns the message from an exception => (.getMessage exception)"
