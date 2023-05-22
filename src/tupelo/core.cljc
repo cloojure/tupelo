@@ -196,16 +196,6 @@
 #?(:clj
    (do
 
-     (defmacro with-err-str
-       "Evaluates exprs in a context in which *err* is bound to a fresh
-       StringWriter.  Returns the string created by any nested printing
-       calls."
-       [& body]
-       `(let [s# (new java.io.StringWriter)]
-          (binding [*err* s#]
-            ~@body
-            (str s#))))
-
      (defmacro with-system-err-str
        "Evaluates exprs in a context in which JVM System/err is bound to a fresh
        PrintStream.  Returns the string created by any nested printing calls."

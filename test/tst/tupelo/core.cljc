@@ -39,44 +39,46 @@
 
 ;--------------------------------------------------------------------------------------------------
 #?(:clj
-   (dotest
-     (is-nonblank= "clojure.core/println"
-       (with-out-str
-         (println "clojure.core/println")
-         (+ 2 3)))
+   (do
 
-     (is-nonblank= "System.out.println"
-       (t/with-system-out-str
-         (doto System/out
-           (.println "System.out.println"))
-         (+ 2 3)))
-     (is-nonblank= "System.err.println"
-       (t/with-system-err-str
-         (doto System/err
-           (.println "System.err.println"))
-         (+ 2 3)))
+     (dotest
+       (is-nonblank= "clojure.core/println"
+         (with-out-str
+           (println "clojure.core/println")
+           (+ 2 3)))
 
-     (is= 7 (t/discarding-system-out ; preserves return value
-              (doto System/out
-                (.println "System.err.println"))
-              (+ 3 4)))
-     (is= 5 (t/discarding-system-err ; preserves return value
-              (doto System/err
-                (.println "System.err.println"))
-              (+ 2 3)))
-
-     (is-nonblank= ""
-       (t/with-system-out-str ; discards return value
-         (t/discarding-system-out
+       (is-nonblank= "System.out.println"
+         (t/with-system-out-str
            (doto System/out
-             (.println "System.err.println"))
-           (+ 3 4))))
-     (is-nonblank= ""
-       (t/with-system-err-str ; discards return value
-         (t/discarding-system-err
+             (.println "System.out.println"))
+           (+ 2 3)))
+       (is-nonblank= "System.err.println"
+         (t/with-system-err-str
            (doto System/err
              (.println "System.err.println"))
-           (+ 2 3))))
+           (+ 2 3)))
+
+       (is= 7 (t/discarding-system-out ; preserves return value
+                (doto System/out
+                  (.println "System.err.println"))
+                (+ 3 4)))
+       (is= 5 (t/discarding-system-err ; preserves return value
+                (doto System/err
+                  (.println "System.err.println"))
+                (+ 2 3)))
+
+       (is-nonblank= ""
+         (t/with-system-out-str ; discards return value
+           (t/discarding-system-out
+             (doto System/out
+               (.println "System.err.println"))
+             (+ 3 4))))
+       (is-nonblank= ""
+         (t/with-system-err-str ; discards return value
+           (t/discarding-system-err
+             (doto System/err
+               (.println "System.err.println"))
+             (+ 2 3)))))
 
      ))
 
