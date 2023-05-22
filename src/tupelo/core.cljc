@@ -217,7 +217,7 @@
             (System/setErr ps#)
             (do ~@body)
             (.close ps#)
-            (.toString baos#)
+            (.toString baos#) ; <= return value - finally is side-effect only!
             (finally
               (System/setErr err-orig#)))))
 
@@ -229,12 +229,12 @@
               baos#     (ByteArrayOutputStream.)
               ps#       (PrintStream. baos#)]
           (try
-          (System/setOut ps#)
-          (do ~@body)
-          (.close ps#)
-          (.toString baos#)
-          (finally
-            (System/setOut out-orig#)))))
+            (System/setOut ps#)
+            (do ~@body)
+            (.close ps#)
+            (.toString baos#) ; <= return value - finally is side-effect only!
+            (finally
+              (System/setOut out-orig#)))))
 
      (defmacro discarding-system-err
        "Evaluates exprs in a context in which JVM System/err is bound to a fresh PrintStream that is discarded."
@@ -245,7 +245,7 @@
             (System/setErr ps#)
             (let [result# (do ~@body)]
               (.close ps#)
-              result#)
+              result#) ; <= return value - finally is side-effect only!
             (finally
               (System/setErr err-orig#)))))
 
@@ -258,7 +258,7 @@
             (System/setOut ps#)
             (let [result# (do ~@body)]
               (.close ps#)
-              result#)
+              result#) ; <= return value - finally is side-effect only!
             (finally
               (System/setOut out-orig#)))))
 

@@ -40,17 +40,20 @@
 ;--------------------------------------------------------------------------------------------------
 #?(:clj
    (dotest
-     (is (ts/contains-str? (with-out-str
-                             (println "clojure.core/println"))
-           "println"))
-     (is (ts/contains-str? (t/with-system-out-str
-                             (doto System/out
-                               (.println "System.out.println")))
-           "println"))
-     (is (ts/contains-str? (t/with-system-err-str
-                             (doto System/err
-                               (.println "System.err.println")))
-           "println"))
+     (is-nonblank= "clojure.core/println"
+       (with-out-str
+         (println "clojure.core/println")
+         (+ 2 3)))
+     (is-nonblank= "System.out.println"
+       (t/with-system-out-str
+         (doto System/out
+           (.println "System.out.println"))
+         (+ 2 3)))
+     (is-nonblank= "System.err.println"
+       (t/with-system-err-str
+         (doto System/err
+           (.println "System.err.println"))
+         (+ 2 3)))
 
      (is= 5 (t/discarding-system-err
               (doto System/err
