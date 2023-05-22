@@ -55,14 +55,29 @@
            (.println "System.err.println"))
          (+ 2 3)))
 
-     (is= 5 (t/discarding-system-err
+     (is= 7 (t/discarding-system-out ; preserves return value
+              (doto System/out
+                (.println "System.err.println"))
+              (+ 3 4)))
+     (is-nonblank= ""
+       (t/with-system-out-str ; discards return value
+         (t/discarding-system-out
+           (doto System/out
+             (.println "System.err.println"))
+           (+ 3 4))))
+
+     (is= 5 (t/discarding-system-err ; preserves return value
               (doto System/err
                 (.println "System.err.println"))
               (+ 2 3)))
-     (is= 7 (t/discarding-system-out
-              (doto System/out
-                (.println "System.err.println"))
-              (+ 3 4)))))
+     (is-nonblank= ""
+       (t/with-system-err-str ; discards return value
+         (t/discarding-system-err
+           (doto System/err
+             (.println "System.err.println"))
+           (+ 2 3))))
+
+     ))
 
 ;-----------------------------------------------------------------------------
 
