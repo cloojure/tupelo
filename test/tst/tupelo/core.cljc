@@ -44,6 +44,7 @@
        (with-out-str
          (println "clojure.core/println")
          (+ 2 3)))
+
      (is-nonblank= "System.out.println"
        (t/with-system-out-str
          (doto System/out
@@ -59,17 +60,17 @@
               (doto System/out
                 (.println "System.err.println"))
               (+ 3 4)))
+     (is= 5 (t/discarding-system-err ; preserves return value
+              (doto System/err
+                (.println "System.err.println"))
+              (+ 2 3)))
+
      (is-nonblank= ""
        (t/with-system-out-str ; discards return value
          (t/discarding-system-out
            (doto System/out
              (.println "System.err.println"))
            (+ 3 4))))
-
-     (is= 5 (t/discarding-system-err ; preserves return value
-              (doto System/err
-                (.println "System.err.println"))
-              (+ 2 3)))
      (is-nonblank= ""
        (t/with-system-err-str ; discards return value
          (t/discarding-system-err
