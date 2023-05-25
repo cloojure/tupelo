@@ -30,18 +30,3 @@
   (is (= 5 (+ 2 3)))
   (isnt (= 2 3))
   )
-
-(comment
-  #?(:clj
-     (do
-       (dotest
-         (newline)
-         (let [traces       (Thread/getAllStackTraces)
-               threads      (keys traces)
-               names        (mapv #(.getName %) threads)
-               name->thread (t/->sorted-map (zipmap names threads))
-               ]
-           (spyx (count traces))
-           (doseq [[n t] name->thread]
-             (spyx [n (.isDaemon ^Thread t)]))))
-       )))

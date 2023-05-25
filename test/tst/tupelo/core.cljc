@@ -87,8 +87,8 @@
 (dotest
   (is (nil? (t/noop)))
   (is (nil? (t/noop 1)))
-  (is (nil? (t/noop 1 2 3 4))))
-(dotest
+  (is (nil? (t/noop 1 2 3 4)))
+
   (let [always-42-fn (t/const->fn 42)]
     (is= 42 (always-42-fn))
     (is= 42 (always-42-fn 1))

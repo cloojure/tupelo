@@ -315,22 +315,21 @@
   [arg]
   (or (list? arg) (seq? arg)))
 
-; #todo keep these?   at least do docstring
-(defn ->true
+(def ->true
   "A function that accepts any number of args, does nothing, and returns `true`."
-  [& args] true)
-(defn ->false
+  (constantly true))
+(def ->false
   "A function that accepts any number of args, does nothing, and returns `false`."
-  [& args] false)
-(defn ->nil
+  (constantly false))
+(def ->nil
   "A function that accepts any number of args, does nothing, and returns `nil`."
-  [& args] nil)
-(defn ->zero
+  (constantly nil))
+(def ->zero
   "A function that accepts any number of args, does nothing, and returns the number zero."
-  [& args] 0)
-(defn ->one
+  (constantly 0))
+(def ->one
   "A function that accepts any number of args, does nothing, and returns the number one."
-  [& args] 1)
+  (constantly 1))
 
 (defn nl
   "Abbreviated name for `newline`.  Accepts varargs to be printed 1 per line after initial newline. "
