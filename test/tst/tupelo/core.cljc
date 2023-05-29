@@ -85,14 +85,20 @@
 ;-----------------------------------------------------------------------------
 
 (dotest
+  (let [always-42-fn (t/const->fn 42)]
+    (is= 42 (always-42-fn))
+    (is= 42 (always-42-fn 1))
+    (is= 42 (always-42-fn 1 2 3 4)))
+
   (is (nil? (t/noop)))
   (is (nil? (t/noop 1)))
   (is (nil? (t/noop 1 2 3 4)))
 
-  (let [always-42-fn (t/const->fn 42)]
-    (is= 42 (always-42-fn))
-    (is= 42 (always-42-fn 1))
-    (is= 42 (always-42-fn 1 2 3 4))))
+  (is= true (t/->true 1 2 3 4))
+  (is= false (t/->false 1 2 3 4))
+  (is= nil (t/->nil 1 2 3 4))
+  (is= 0 (t/->zero 1 2 3 4))
+  (is= 1 (t/->one 1 2 3 4)))
 
 (dotest
   (is (t/truthy? true))

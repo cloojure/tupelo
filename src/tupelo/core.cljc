@@ -301,19 +301,16 @@
 
 (defn truthy?
   "Returns true if arg is logical true (neither nil nor false); otherwise returns false."
-  [arg]
-  (if arg true false))
+  [arg] (if arg true false))
 
 (defn falsey?
   "Returns true if arg is logical false (either nil or false); otherwise returns false. Equivalent
    to (not (truthy? arg))."
-  [arg]
-  (if arg false true))
+  [arg] (if arg false true))
 
 (defn listy?
   "Returns true if arg is a list or a seq, else false."
-  [arg]
-  (or (list? arg) (seq? arg)))
+  [arg] (or (list? arg) (seq? arg)))
 
 (def ->true
   "A function that accepts any number of args, does nothing, and returns `true`."
