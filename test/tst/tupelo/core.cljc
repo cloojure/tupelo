@@ -52,27 +52,26 @@
            (doto System/out
              (.println "System.out.println"))
            (+ 2 3)))
-       (is-nonblank= "System.err.println"
-         (t/with-system-err-str
-           (doto System/err
-             (.println "System.err.println"))
-           (+ 2 3)))
-
        (is= 7 (t/discarding-system-out ; preserves return value
                 (doto System/out
                   (.println "System.err.println"))
                 (+ 3 4)))
-       (is= 5 (t/discarding-system-err ; preserves return value
-                (doto System/err
-                  (.println "System.err.println"))
-                (+ 2 3)))
-
        (is-nonblank= ""
          (t/with-system-out-str ; discards return value
            (t/discarding-system-out
              (doto System/out
                (.println "System.err.println"))
              (+ 3 4))))
+
+       (is-nonblank= "System.err.println"
+         (t/with-system-err-str
+           (doto System/err
+             (.println "System.err.println"))
+           (+ 2 3)))
+       (is= 5 (t/discarding-system-err ; preserves return value
+                (doto System/err
+                  (.println "System.err.println"))
+                (+ 2 3)))
        (is-nonblank= ""
          (t/with-system-err-str ; discards return value
            (t/discarding-system-err
@@ -162,6 +161,15 @@
     (isnt (t/quad? [:x :y :z]))
     (isnt (t/quad? inf-rng-1))))
 
+(dotest
+  (let [arg nil]
+    (try
+      (t/assert-info (t/truthy? arg) "Must be non-nil" (t/vals->map arg))
+      (catch Exception ex
+        (is= clojure.lang.ExceptionInfo (type ex))
+        (is= nil (ex-cause ex))
+        (is= {:arg nil} (ex-data ex))
+        (is= "Must be non-nil" (ex-message ex))))))
 
 (defrecord DummyRec
   [stuff])
