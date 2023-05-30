@@ -53,7 +53,7 @@
                                        {:local/root "/home/alan/io-tupelo/deps-build-deploy"}
 
                                        io.github.clojure/tools.build {:mvn/version "0.9.4"}
-                                       slipset/deps-deploy           {:mvn/version "RELEASE"}
+                                       slipset/deps-deploy           {:mvn/version "0.2.1"} ; or "RELEASE"
                                        }
                           :ns-default build
                           :exec-args  {:version-str   "23.05.03-SNAPSHOT" ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
