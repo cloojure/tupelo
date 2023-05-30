@@ -161,16 +161,6 @@
     (isnt (t/quad? [:x :y :z]))
     (isnt (t/quad? inf-rng-1))))
 
-(dotest
-  (let [arg nil]
-    (try
-      (t/assert-info (t/truthy? arg) "Must be non-nil" (t/vals->map arg))
-      (catch Exception ex
-        (is= clojure.lang.ExceptionInfo (type ex))
-        (is= nil (ex-cause ex))
-        (is= {:arg nil} (ex-data ex))
-        (is= "Must be non-nil" (ex-message ex))))))
-
 (defrecord DummyRec
   [stuff])
 (dotest
@@ -3121,6 +3111,16 @@
 ;***************************************************************************************************
 #?(:clj
    (do
+
+     (dotest
+       (let [arg nil]
+         (try
+           (t/assert-info (t/truthy? arg) "Must be non-nil" (t/vals->map arg))
+           (catch Exception ex
+             (is= clojure.lang.ExceptionInfo (type ex))
+             (is= nil (ex-cause ex))
+             (is= {:arg nil} (ex-data ex))
+             (is= "Must be non-nil" (ex-message ex))))))
 
      (dotest
        (is (t/atom? (atom 5)))
