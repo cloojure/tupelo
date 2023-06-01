@@ -10,11 +10,16 @@
   (:require
     [tupelo.core :as t]
     [tupelo.string :as ts]
-    [clojure.test :as test]))
+    [clojure.test :as test]
+    ))
 
-(defmacro deftest [& forms] `(test/deftest ~@forms))
-(defmacro testing [& forms] `(test/testing ~@forms))
+;-----------------------------------------------------------------------------
+(defmacro deftest 
+  [& forms] `(test/deftest ~@forms))
+(defmacro testing
+  [& forms] `(test/testing ~@forms))
 
+;-----------------------------------------------------------------------------
 (defmacro dotest ; #todo README & tests
   "Like clojure.test/deftest, but doesn't require a test name. Usage:
 
@@ -42,6 +47,7 @@
              :test-refresh/focus true)
        (fn [] (test/test-var (var ~test-name-sym))))))
 
+;-----------------------------------------------------------------------------
 ; For all the following arity tests, we use an `if` statement so the exception is thrown during
 ; the test execution, not during compilation.
 (defmacro is
@@ -60,6 +66,7 @@
       `(throw (ex-info "tupelo.test/isnt requires exactly 1 form " {:line-str ~line-str })))
     `(test/is (not ~@forms))))
 
+;-----------------------------------------------------------------------------
 (defmacro is=  ; #todo readme/test
   "Use (is= ...) instead of (is (= ...)) for clojure.test"
   [& forms]

@@ -9,6 +9,9 @@
   (:require
     [tupelo.core :as t] ))
 
+; (s/instrument-all)
+; (s/instrument #'tupelo.core/truthy?)  ; instrument just one var
+
 (t/when-clojure-1-9-plus
   (require
     '[clojure.spec.alpha :as s]

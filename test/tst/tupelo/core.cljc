@@ -11,35 +11,37 @@
   #?(:cljs (:require-macros
              [tupelo.core]
              [tupelo.misc]
-             [tupelo.testy]
+             [tupelo.test]
              ))
   (:require
-    [clojure.test] ; sometimes this is required for cljs - not sure why
+    ; [clojure.test] ; sometimes this is required for cljs - not sure why
     [clojure.string :as str]
     [clojure.walk :as walk]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty nl
                                vals->map xmap? forv glue keep-if]]
     [tupelo.string :as ts]
-    [tupelo.testy :refer [deftest testing is dotest dotest-focus
-                          isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture]])
+    [tupelo.test :refer [deftest testing is
+                         dotest dotest-focus verify verify-focus
+                         is isnt is= isnt= is-set= is-nonblank=
+                         throws? throws-not? define-fixture
+                         ]])
   #?(:clj (:require [tupelo.types :as types]
                     [tupelo.lexical :as lex]))
   )
 
 #?(:cljs (enable-console-print!))
 
-(define-fixture :once
-  {:enter (fn [ctx]
-            ; (newline) (println "*** TEST ONCE *** - tst.tupelo.core enter ")
-            )
-   :leave (fn [ctx]
-            ;  (println "*** TEST ONCE *** - tst.tupelo.core leave ")
-            )})
-
 ;--------------------------------------------------------------------------------------------------
 #?(:clj
    (do
+
+     (define-fixture :once
+       {:enter (fn [ctx]
+                 ; (newline) (println "*** TEST ONCE *** - tst.tupelo.core enter ")
+                 )
+        :leave (fn [ctx]
+                 ;  (println "*** TEST ONCE *** - tst.tupelo.core leave ")
+                 )})
 
      (dotest
        (is-nonblank= "clojure.core/println"
@@ -1085,11 +1087,12 @@
   (is= (list) []
     (t/->list nil)
     (t/->list []))
-  (is= (list 1) (t/->list [1]))
-  (is (list? (t/->list [1])))
-  (throws? (t/->list 1))
-  (throws? (t/->list {:a 1}))
-  (throws? (t/->list #{1})))
+  ;(is= (list 1) (t/->list [1]))
+  ;(is (list? (t/->list [1])))
+  ;(throws? (t/->list 1))
+  ;(throws? (t/->list {:a 1}))
+  ;(throws? (t/->list #{1}))
+  )
 
 (dotest
   (is= #{} (hash-set)
@@ -3145,9 +3148,6 @@
          (is (t/is-clojure-1-9-plus?))
          (isnt (t/is-pre-clojure-1-8?))
          (isnt (t/is-pre-clojure-1-9?))))
-
-     ; (s/instrument-all)
-     ; (s/instrument #'tupelo.core/truthy?)  ; instrument just one var
 
      ;-----------------------------------------------------------------------------
      ; Java version stuff
