@@ -11,14 +11,14 @@
   #?(:cljs (:require-macros
              ; [tupelo.core]
              [tupelo.misc]
-             [tupelo.testy]
+             [tupelo.test]
              ))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
     [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
-    [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture]]
 
     [tupelo.misc :as misc]

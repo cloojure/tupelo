@@ -12,7 +12,7 @@
   #?(:cljs (:require-macros
              ; [tupelo.core]
              [tupelo.misc]
-             [tupelo.testy]
+             [tupelo.test]
              ))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
@@ -20,7 +20,7 @@
     [tupelo.vec :as tv]
     [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty unlazy let-spy only forv glue ]]
-    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture ]]
     ))
 

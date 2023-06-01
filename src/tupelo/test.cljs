@@ -4,9 +4,9 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns tupelo.testy
+(ns tupelo.test
   "Testing functions."
-  #?(:cljs (:require-macros [tupelo.testy]))
+  (:require-macros [tupelo.test])
   (:require
     [tupelo.core :as t]
     [tupelo.string :as ts]
@@ -131,41 +131,38 @@
 
 ;---------------------------------------------------------------------------------------------------
 ; non-CLJS follows ;
-#?(:clj
-   (do
 
-     ; (defn use-fixtures-all [& args] (apply test/use-fixtures args)) #todo why is this here???
-     (defn ^:no-doc define-fixture-impl
-       [ctx mode interceptor-map]
-       (let [enter-fn (or (:enter interceptor-map) `identity)
-             leave-fn (or (:leave interceptor-map) `identity)]
-         `(test/use-fixtures ~mode
-            (fn ~'fixture-fn [tgt-fn#] ; #todo
-              (~enter-fn ~ctx)
-              (tgt-fn#)
-              (~leave-fn ~ctx))))
-       )
+; (defn use-fixtures-all [& args] (apply test/use-fixtures args)) #todo why is this here???
+(defn ^:no-doc define-fixture-impl
+  [ctx mode interceptor-map]
+  (let [enter-fn (or (:enter interceptor-map) `identity)
+        leave-fn (or (:leave interceptor-map) `identity)]
+    `(test/use-fixtures ~mode
+       (fn ~'fixture-fn [tgt-fn#] ; #todo
+         (~enter-fn ~ctx)
+         (tgt-fn#)
+         (~leave-fn ~ctx))))
+  )
 
-     (defmacro define-fixture
-       [mode interceptor-map]
-       (assert (contains? #{:each :once} mode))
-       (assert (map? interceptor-map))
-       (let [ctx (meta &form)]
-         (define-fixture-impl ctx mode interceptor-map)))
+(defmacro define-fixture
+  [mode interceptor-map]
+  (assert (contains? #{:each :once} mode))
+  (assert (map? interceptor-map))
+  (let [ctx (meta &form)]
+    (define-fixture-impl ctx mode interceptor-map)))
 
-     ; #todo ^:slow not working (always executed); need to fix
-     ; #todo maybe def-anon-spec or anon-spec; maybe (gen-spec 999 ...) or (gen-test 999 ...)
-     ; #todo maybe integrate with `dotest` like:   (dotest 999 ...)  ; 999 1st item implies generative test
-     (defmacro dospec [& body] ; #todo README & tests
-       (let [test-name-sym (symbol (str "dospec-line-" (:line (meta &form))))]
-         `(clojure.test.check.clojure-test/defspec ^:slow ~test-name-sym ~@body)))
+; #todo ^:slow not working (always executed); need to fix
+; #todo maybe def-anon-spec or anon-spec; maybe (gen-spec 999 ...) or (gen-test 999 ...)
+; #todo maybe integrate with `dotest` like:   (dotest 999 ...)  ; 999 1st item implies generative test
+(defmacro dospec [& body] ; #todo README & tests
+  (let [test-name-sym (symbol (str "dospec-line-" (:line (meta &form))))]
+    `(clojure.test.check.clojure-test/defspec ^:slow ~test-name-sym ~@body)))
 
-     (defmacro check-is [& body] ; #todo README & tests
-       `(test/is (t/grab :result (clojure.test.check/quick-check ~@body))))
+(defmacro check-is [& body] ; #todo README & tests
+  `(test/is (t/grab :result (clojure.test.check/quick-check ~@body))))
 
-     (defmacro check-isnt [& body] ; #todo README & tests
-       `(test/is (not (t/grab :result (clojure.test.check/quick-check ~@body)))))
+(defmacro check-isnt [& body] ; #todo README & tests
+  `(test/is (not (t/grab :result (clojure.test.check/quick-check ~@body)))))
 
-     ; #todo: gen/elements -> clojure.check/rand-nth
+; #todo: gen/elements -> clojure.check/rand-nth
 
-))

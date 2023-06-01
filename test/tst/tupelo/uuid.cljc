@@ -5,13 +5,13 @@
   #?(:cljs (:require-macros
              [tupelo.core]
              [tupelo.misc]
-             [tupelo.testy]
+             [tupelo.test]
              ))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
     [tupelo.core :as t]
     [tupelo.uuid :as uuid]
-    [tupelo.testy :refer [deftest testing is dotest dotest-focus
+    [tupelo.test :refer [deftest testing is dotest dotest-focus
                           isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture]]
     ))

@@ -2,13 +2,13 @@
   ;---------------------------------------------------------------------------------------------------
   ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
-  #?(:cljs (:require-macros [tupelo.testy]))
+  #?(:cljs (:require-macros [tupelo.test]))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
     [schema.core :as s]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
     [tupelo.schema :as tsk]
-    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture]]
     ))
 

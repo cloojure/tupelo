@@ -10,13 +10,13 @@
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
   #?(:cljs (:require-macros
              [tupelo.misc]
-             [tupelo.testy]
+             [tupelo.test]
              ))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
     [clojure.data.avl :as avl]
     [tupelo.lexical :as lex]
-    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? define-fixture]]
     [tupelo.core.impl :as impl])
 )
