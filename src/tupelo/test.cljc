@@ -6,7 +6,7 @@
 ;   You must not remove this notice, or any other, from this software.
 (ns tupelo.test
   "Testing functions."
-  (:require-macros [tupelo.test])
+  #?(:cljs (:require-macros [tupelo.test]))
   (:require
     [tupelo.core :as t]
     [tupelo.string :as ts]

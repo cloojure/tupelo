@@ -5,7 +5,7 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.y64
-  (:use tupelo.core tupelo.test )
+  (:use tupelo.core tupelo.test-jvm )
   (:require [clojure.string :as str]
             [clojure.test.check :as tc]
             [clojure.test.check.clojure-test :as tst]
