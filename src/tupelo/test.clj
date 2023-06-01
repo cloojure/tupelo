@@ -20,7 +20,7 @@
   "Alias for clojure.test/testing"
   [& forms] `(test/testing ~@forms))
 
-;---------------------------------------------------------------------------------------------------
+;-----------------------------------------------------------------------------
 ; old way
 
 (defmacro ^:deprecated dotest ; #todo README & tests
@@ -141,29 +141,6 @@
     (let [line-str (str "[source line=" (:line (meta &form)) "]")]
       `(throw (ex-info (str "tupelo is-nonblank-lines= requires at least 2 forms " ~line-str))))
     `(test/is (ts/nonblank-lines= ~@forms))))
-
-;-----------------------------------------------------------------------------
-;(defmacro throws? ; #todo document in readme
-;  "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
-;     (throws? (/ 1 0))                      ; catches any Throwable"
-;  [& forms]
-;  `(test/is
-;     (try
-;       ~@forms
-;       false ; fail if no exception thrown
-;       (catch Throwable dummy#
-;         true)))) ; if anything is thrown, test succeeds
-;; #todo #awt #bug in cljs if use (apply throws-impl forms) and [& forms]
-;
-;(defmacro throws-not? ; #todo document in readme
-;  "The opposite of (throws? ...)"
-;  [& forms]
-;  `(test/is
-;     (try
-;       ~@forms
-;       true ; succeed if no exception thrown
-;       (catch Throwable dummy#
-;         false)))) ; if anything is thrown, test fails
 
 (defmacro throws? ; #todo document in readme
   "Use (throws? ...) instead of (is (thrown? ...)) for clojure.test. Usage:
