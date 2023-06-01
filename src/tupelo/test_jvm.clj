@@ -16,7 +16,8 @@
 ; non-CLJS follows
 
 (def ^:dynamic *equality-digits-float=*
-  "Default number of digits that must match for 2 Float values to be considerd 'equal'."
+  "Default number of digits that must match for 2 Float values to be considered 'equal'.
+  A 32-bit float has about 7 decimal digits of precision."
   4)
 
 (defmacro is-float= ; #todo readme/test
@@ -37,7 +38,8 @@
     `(test/is (not (tupelo.core/rel= ~@forms :digits *equality-digits-float=*)))))
 
 (def ^:dynamic *equality-digits-double=*
-  "Default number of digits that must match for 2 Double values to be considerd 'equal'."
+  "Default number of digits that must match for 2 Double values to be considerd 'equal'.
+    A 64-bit float has about 15 decimal digits of precision."
   10)
 
 (defmacro is-double= ; #todo readme/test
@@ -72,8 +74,7 @@
        (fn ~'fixture-fn [tgt-fn#] ; #todo
          (~enter-fn ~ctx)
          (tgt-fn#)
-         (~leave-fn ~ctx))))
-  )
+         (~leave-fn ~ctx)))))
 
 (defmacro define-fixture
   [mode interceptor-map]
