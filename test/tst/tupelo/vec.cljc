@@ -20,7 +20,7 @@
     [tupelo.vec :as tv]
     [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty unlazy let-spy only forv glue ]]
-    [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [deftest testing is verify isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not?  ]]
     ))
 
@@ -35,7 +35,7 @@
   coll)
 
 
-(dotest
+(verify
   (is= [2 1 0] (tv/validate-indexes-complete [2 1 0]))
   (throws? (tv/validate-indexes-complete [2 1 3]))
   (is= [3 2 1] (validate-unique [3 2 1]))
@@ -60,7 +60,7 @@
     (is= [1 3] (tv/del r5 [0 2 4]))
     ))
 
- (dotest
+ (verify
   (let [decades  [0 10 20 30 40 50 60 70 80]
         result   (tv/pred-index #(zero? (rem % 3)) decades)
         expected {:idxs-true  [0 3 6]

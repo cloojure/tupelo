@@ -18,7 +18,7 @@
     #?(:clj
        [tupelo.types :as types])
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
-    [tupelo.test :refer [deftest is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [deftest is verify verify-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? ]]
 
     #?(:cljs [goog.string.format])))
@@ -27,7 +27,7 @@
 #?(:cljs (enable-console-print!))
 ;---------------------------------------------------------------------------------------------------
 
-(dotest
+(verify
   (is= (math/factorial 0) 1)
   (is= (math/factorial 1) 1)
   (is= (math/factorial 2) 2)
@@ -53,7 +53,7 @@
   (isnt (math/same-sign 1 -1))
   (isnt (math/same-sign -1 1)))
 
-(dotest
+(verify
   (is= (take 0 math/fibonacci-seq) [])
   (is= (take 5 math/fibonacci-seq) [0 1 1 2 3])
   (is= (take 10 math/fibonacci-seq) [0 1 1 2 3 5 8 13 21 34])
@@ -81,7 +81,7 @@
   (is= 34 (math/fibo-nth 9))
   (is (< (math/pow2-nth 62) (math/fibo-nth 91) (math/pow2-nth 63))))
 
-(dotest
+(verify
   (is= (take 0 math/pow2-seq) [])
   (is= (take 5 math/pow2-seq) [1 2 4 8 16])
   (is= (take 10 math/pow2-seq) [1 2 4 8 16 32 64 128 256 512])
@@ -112,7 +112,7 @@
        (is= 633825300114114700748351602688N (math/pow2-nth 99))))
   )
 
-(dotest
+(verify
   (is= (take 0 math/pow2aug-seq) [])
   (is= (take 5 math/pow2aug-seq) [0 1 2 3 4])
   (is= (take 10 math/pow2aug-seq) [0 1 2 3 4 5 7 8 9 15])
@@ -149,7 +149,7 @@
 #?(:clj
    (do
 
-     (dotest
+     (verify
        (let [sqrt-2     1.414213562
              sqrt-2-rnd (math/round-N sqrt-2 2)
              error      (- 1.414 sqrt-2-rnd)]
@@ -163,7 +163,7 @@
          (is (t/rel= val-rnd val :digits 2))
          (isnt (t/rel= val-rnd val :digits 4))))
 
-     (dotest ; math operations with Long result
+     (verify ; math operations with Long result
        ; shift toward +infinity
        (is= 5 (math/ceil->Long 4.5))
        (is= -4 (math/ceil->Long -4.5))
@@ -192,7 +192,7 @@
        )
 
      ; Works correctly using BigDecimal/setScale & RoundingMode arg
-     (dotest
+     (verify
        (let [a6 1.112233
              a4 1.1122
              a2 1.11
@@ -230,7 +230,7 @@
          ))
 
      ; Can accept value as a Double, BigDecimal, or String
-     (dotest
+     (verify
        (let [a6 1.112233
              a4 1.1122
              a2 1.11
@@ -270,7 +270,7 @@
      (set! *warn-on-reflection* true)
 
      ;---------------------------------------------------------------------------------------------------
-     (dotest ; mod works for bigint, always positive
+     (verify ; mod works for bigint, always positive
        (is= 1 (mod 1N 2N))
        (is= 0 (mod 2N 2N))
        (is= 1 (mod 3N 2N))
@@ -279,7 +279,7 @@
        (is= 0 (mod -2N 2N))
        (is= 1 (mod -3N 2N)))
 
-     (dotest ; rem works for bigint, sgn(result)==sgn(numerator)
+     (verify ; rem works for bigint, sgn(result)==sgn(numerator)
        (is= 1 (rem 1N 2N))
        (is= 0 (rem 2N 2N))
        (is= 1 (rem 3N 2N))
@@ -291,7 +291,7 @@
      ;---------------------------------------------------------------------------------------------------
      (defn mod-biginteger [a b] (mod (BigInteger/valueOf a) (BigInteger/valueOf b)))
      (defn rem-biginteger [a b] (rem (BigInteger/valueOf a) (BigInteger/valueOf b)))
-     (dotest ; mod works for biginteger, always positive
+     (verify ; mod works for biginteger, always positive
        (is= 1 (mod-biginteger 1 2))
        (is= 0 (mod-biginteger 2 2))
        (is= 1 (mod-biginteger 3 2))
@@ -300,7 +300,7 @@
        (is= 0 (mod-biginteger -2 2))
        (is= 1 (mod-biginteger -3 2)))
 
-     (dotest ; rem works for biginteger, sgn(result)==sgn(numerator)
+     (verify ; rem works for biginteger, sgn(result)==sgn(numerator)
        (is= 1 (rem-biginteger 1 2))
        (is= 0 (rem-biginteger 2 2))
        (is= 1 (rem-biginteger 3 2))
@@ -312,7 +312,7 @@
      (defn biginteger-equals? [a b] (and (t/biginteger? a) (t/biginteger? b) (= a b)))
      (defn long-equals? [a b] (and (types/long? a) (types/long? b) (= a b)))
 
-     (dotest
+     (verify
        (is (biginteger-equals? (math/pow->BigInteger 2 5) (biginteger 32)))
        (throws? (math/pow->BigInteger 2 -5))
 
@@ -320,7 +320,7 @@
        (throws? (math/pow->Long 2 77))
        (throws? (math/pow->Long 2 -5)))
 
-     (dotest
+     (verify
        (let [bi-5 (BigInteger/valueOf 5)]
          (is (biginteger-equals? bi-5 bi-5))
          (isnt (biginteger-equals? bi-5 5))

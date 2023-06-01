@@ -16,7 +16,7 @@
     [clojure.test] ; sometimes this is required - not sure why
     [clojure.data.avl :as avl]
     [tupelo.lexical :as lex]
-    [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [deftest testing is verify isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? ]]
     [tupelo.core.impl :as impl])
 )
@@ -30,7 +30,7 @@
 (def leaf-0 (->DummyLeaf 0))
 (def leaf-1 (->DummyLeaf 1))
 
-(dotest
+(verify
   (is= "Type/Clojure-IPersistentMap" (lex/comparison-class {:a 1}))
   (is= "Type/Clojure-Sequential" (lex/comparison-class (first {:a 1}))) ; a MapEntry
   (is= "Type/Clojure-Sequential" (lex/comparison-class [1 2 3]))
@@ -57,7 +57,7 @@
        (is= "tst.tupelo.lexical/DummyEid" (lex/comparison-class eid-0))
        (is= "tst.tupelo.lexical/DummyLeaf" (lex/comparison-class leaf-0))) ) )
 
-(dotest
+(verify
   (is= [[:raw 0]] (seq eid-0))
   (is= [[:raw 1]] (seq leaf-1))
 
@@ -70,7 +70,7 @@
   (is (neg? (lex/compare-lex [eid-1] [leaf-0])))
   (is (neg? (lex/compare-lex [eid-1] [leaf-1]))))
 
-(dotest
+(verify
   (let [ss123 (-> (avl/sorted-set)
                 (conj 1)
                 (conj 3)
@@ -80,7 +80,7 @@
     (is= [1 2 3] (vec ss123))
     (is= #{1 3} ss13)))
 
-(dotest   ; -1 => "in order",  0 => "same", +1 => "out of order"
+(verify   ; -1 => "in order",  0 => "same", +1 => "out of order"
   ; empty list is smaller than any non-empty list
   (is (neg? -99))
   (is (neg? (lex/compare-lex [] [2])))

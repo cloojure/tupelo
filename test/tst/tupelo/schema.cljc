@@ -8,12 +8,12 @@
     [schema.core :as s]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
     [tupelo.schema :as tsk]
-    [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [deftest testing is verify isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? ]]
     ))
 
 ; #todo add more tests (& test.check for Eid, etc)
-(dotest
+(verify
   (is= [1] (s/validate tsk/Single [1]))
   (is= [1 2] (s/validate tsk/Pair [1 2]))
   (is= [1 2 3] (s/validate tsk/Triple [1 2 3]))
@@ -26,7 +26,7 @@
   (throws? (s/validate tsk/List {:a 1 :b 2}))
   (throws? (s/validate tsk/List #{:a 1 :b 2})))
 
-(dotest
+(verify
   (is= {} (s/validate tsk/Map {}))
   (is= {:a 1} (s/validate tsk/Map {:a 1}))
   (is= {:a 1 :b 2} (s/validate tsk/Map {:a 1 :b 2}))
@@ -36,7 +36,7 @@
   (throws? (s/validate tsk/Map [1 2 3]))
   (throws? (s/validate tsk/Map #{1 2 3})))
 
-(dotest
+(verify
   (is= #{} (s/validate tsk/Set #{}))
   (is= #{:a 1} (s/validate tsk/Set #{:a 1}))
   (is= #{:a 1 \b 2} (s/validate tsk/Set #{:a 1 \b 2}))

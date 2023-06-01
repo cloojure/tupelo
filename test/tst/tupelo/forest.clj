@@ -1337,7 +1337,7 @@
       ;      [#:tupelo.forest{:value 3, :index nil}]]]]])
     )))
 
-;(dotest
+;(verify
 ;  (let [tree-1   #:tupelo.forest{:tag   :tupelo.forest/list,
 ;                                 :index nil,
 ;                                 :kids  [#:tupelo.forest{:value 2, :index 0, :kids []}

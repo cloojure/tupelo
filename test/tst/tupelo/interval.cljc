@@ -18,14 +18,14 @@
       [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty nl
                                  vals->map xmap? forv glue keep-if]]
       [tupelo.interval :as interval]
-      [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
+      [tupelo.test :refer [deftest testing is verify verify-focus isnt is= isnt= is-set= is-nonblank=
                             throws? throws-not? ]])
     )
 
 #?(:cljs (enable-console-print!))
 
 #?(:clj
-   (dotest
+   (verify
 
      (is= (< 0 1.0) true)
      (is= (= 0 1.0) false)
@@ -41,7 +41,7 @@
      (is= (> 2 1.0) true)
      ))
 
-(dotest
+(verify
   ; `compare` works correctly for numbers in different categories (eg int vs float)
   (is= (compare 0 1.0) -1)
   (is= (compare 1 1.0) 0)
@@ -102,7 +102,7 @@
     (isnt (interval/contains-value? itvl "b")))
   )
 
-(dotest
+(verify
   (is= [6 7] (interval/->integers (interval/new-open 5 8)))
   (is= [5 6 7] (interval/->integers (interval/new-slice 5 8)))
   (is= [6 7 8] (interval/->integers (interval/new-anti-slice 5 8)))
@@ -113,7 +113,7 @@
   (is= [3 5 7] (interval/->integers (interval/new-anti-slice 1 8) 2))
   (is= [1 3 5 7] (interval/->integers (interval/new-closed 1 8) 2)))
 
-(dotest
+(verify
   (is= [2.0 3.0] (interval/->doubles (interval/new-open 1 4)))
   (is= [1.0 2.0 3.0] (interval/->doubles (interval/new-slice 1 4)))
   (is= [2.0 3.0 4.0] (interval/->doubles (interval/new-anti-slice 1 4)))

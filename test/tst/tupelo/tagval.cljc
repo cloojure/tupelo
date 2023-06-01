@@ -19,7 +19,7 @@
     [tupelo.core :as t :refer [spyx spyx-pretty forv unlazy
                                ]]
 
-    [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [deftest testing is verify verify-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? ]]
     ))
 
@@ -27,7 +27,7 @@
 
 (defrecord DummyRec [dum])
 
-(dotest
+(verify
   (let [tv     (tv/new :a 1)
         tv-str (with-out-str (println tv))]
     (is= {:a 1} tv)
@@ -57,7 +57,7 @@
         tv-sym-a (tv/new :sym sa)]
     (is= tv-sym-a {:sym (quote a)})))
 
-(dotest
+(verify
   (is= {:x 1} (tv/map-val inc {:x 0}))
   (let [tvs     [{:x 0}
                  {:x 1}
@@ -70,7 +70,7 @@
   (defrecord DummyRec [dum]
     IVal (<val [this] dum))
 
-  (dotest
+  (verify
     (let [tv     (tt/->TagVal :a 1)
           tv-str (with-out-str (println tv))]
       (is= {:tag :a :val 1} (unlazy tv))

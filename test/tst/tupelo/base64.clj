@@ -107,7 +107,7 @@
 
 ; #todo write auto-detector for iso-8859-1, if get neg bytes out?
 ; If the "plaintext" for a B64 string is iso-8859-1/iso-latin-1, it won't decode right with the default UTF-8 assumption
-;(dotest
+;(verify
 ;  (let [iso-latin-1-charset (java.nio.charset.Charset/forName "ISO-8859-1" ) ; aka ISO-LATIN-1
 ;        b64-str       "JVBERi0xLjENCiXi48/TDQoxIDAgb2JqDQo8PCAN"
 ;        bytes-default (vec (.getBytes b64-str))

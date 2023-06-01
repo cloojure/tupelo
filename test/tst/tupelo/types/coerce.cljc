@@ -15,7 +15,7 @@
     [clojure.test]  ; sometimes this is required - not sure why
     [tupelo.types.coerce :as coerce]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
-    [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [deftest testing is verify verify-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? ]])
   #?(:clj (:import [java.lang Math]))
   )
@@ -25,7 +25,7 @@
 #?(:clj
    (do
 
-     (dotest
+     (verify
        (is= 15
          (coerce/->byte "   15")
          (coerce/->byte "15 ")
@@ -36,7 +36,7 @@
        (throws? (coerce/->byte "fred"))
        (throws? (coerce/->byte "")))
 
-     (dotest
+     (verify
        (is= 15
          (coerce/->short "   15")
          (coerce/->short "15 ")
@@ -47,7 +47,7 @@
        (throws? (coerce/->short "fred"))
        (throws? (coerce/->short "")))
 
-     (dotest
+     (verify
        (is= 15
          (coerce/->int "   15")
          (coerce/->int "15 ")
@@ -58,7 +58,7 @@
        (throws? (coerce/->int "fred"))
        (throws? (coerce/->int "")))
 
-     (dotest
+     (verify
        (is= 15
          (coerce/->long "   15")
          (coerce/->long "15 ")
@@ -69,7 +69,7 @@
        (throws? (coerce/->long "fred"))
        (throws? (coerce/->long "")))
 
-     (dotest
+     (verify
        (is= 15.0
          (coerce/->float "15")
          (coerce/->float "15.0")
@@ -83,7 +83,7 @@
 
        (is (t/rel= 1/10 (coerce/->double "0.1") :digits 9)))
 
-     (dotest
+     (verify
        (is= 15.0
          (coerce/->double "15")
          (coerce/->double "15.0")
@@ -100,7 +100,7 @@
 
 ;#?(:cljs
 ;   (do
-;       (dotest
+;       (verify
 ;         (is= 0 (tpar/->int "0"))
 ;         (is= 15 (tpar/->int "15"))
 ;         (is= -5 (tpar/->int "-5"))
@@ -113,7 +113,7 @@
 ;         (throws? (tpar/->int "12.3"))
 ;         (throws? (tpar/->int "xxx123")))
 ;
-;       (dotest
+;       (verify
 ;         (is= 0 (tpar/->float "0"))
 ;         (is= 0 (tpar/->float "0.0"))
 ;         (is= 12.345 (tpar/->float "12.345"))

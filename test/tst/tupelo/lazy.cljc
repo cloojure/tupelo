@@ -16,14 +16,14 @@
     [schema.core :as s]
     [tupelo.lazy :as lazy]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
-    [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [deftest testing is verify isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not?  ]]
     ))
 
 ; #todo add generative testing?
 ; #todo add clojure.spec testing?
 
-(dotest
+(verify
   (is= [] (lazy/join [[]]))
   (is= [1] (lazy/join [[1]]))
   (is= [1 2 3 ] (lazy/join [[1] [2 3]]))

@@ -69,7 +69,7 @@
 
 
 ; #todo review - old stuff from clj/tupelo/math.clj
-(dotest
+(verify
   ; Java Class
   (is= (type 5) (type (long 5.0)) java.lang.Long)
   (is= (type (int 5)) (type (int 5.0)) java.lang.Integer)
@@ -106,7 +106,7 @@
   (is= (biginteger 5) (bigint 5))
   (isnt= (biginteger 5) 5.0))
 
-(dotest   ; BigInteger parsing/formatting
+(verify   ; BigInteger parsing/formatting
   (is= 42 (s/validate s/Int (BigInteger/valueOf 42.1))) ; truncates! #todo not good!
   (isnt (int? (BigInteger/valueOf 42))) ; works for Schema, but not clojure.core/int?
 

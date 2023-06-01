@@ -24,7 +24,7 @@
 #?(:cljs (enable-console-print!))
 ;---------------------------------------------------------------------------------------------------
 
-(dotest
+(verify
   (let [a34  (array/new 3 4 :a)
         a34f (flatten a34)]
     (is= 3 (count a34) (array/num-rows a34))
@@ -53,7 +53,7 @@
      [1 1]
      [1 1]]))
 
-(dotest
+(verify
   (let [a34               (atom (array/new 3 4))
         target            [[00 01 02 03]
                            [10 11 12 13]
@@ -142,7 +142,7 @@
     (is= target (-> target (array/rotate-right) (array/rotate-right) (array/rotate-right) (array/rotate-right)))
     ))
 
-(dotest
+(verify
   (let [demo [[00 01 02 03]
               [10 11 12 13]
               [20 21 22 23]]
@@ -170,7 +170,7 @@
                                    [10 11 12]
                                    [20 21 22 23]]))))
 
-(dotest
+(verify
   (let [demo [[00 01 02 03]
               [10 11 12 13]
               [20 21 22 23]]
@@ -208,7 +208,7 @@
                                    [02 12]
                                    [03 13 23]]))))
 
-(dotest
+(verify
   (is (array/symmetric? [[1 2]
                        [2 1]]))
   (isnt (array/symmetric? [[1 3]
@@ -223,7 +223,7 @@
                          [2 4 5]
                          [3 5 6]])))
 
-(dotest
+(verify
   (let [demo [[00 01 02 03]
               [10 11 12 13]
               [20 21 22 23]]]
@@ -244,7 +244,7 @@
                                     [21]])
     (throws? (array/row-drop demo :x))))
 
-(dotest
+(verify
   (let [a13 [[00 01 02]]
         a23 [[00 01 02]
              [10 11 12]]
@@ -260,7 +260,7 @@
     (is= a23 (array/rows-append a13 [10 11 12]))
     (is= a33 (array/rows-append a13 [10 11 12] [20 21 22]))))
 
-(dotest
+(verify
   (let [a22 [[00 01]
              [10 11]]
         a23 [[00 01 02]
@@ -272,7 +272,7 @@
     (is= a23 (array/cols-append a22 [2 12]))
     (is= a24 (array/cols-append a22 [2 12] [3 13]))))
 
-(dotest
+(verify
   (let [a12 [[00 01]]
         a22 [[00 01]
              [10 11]]
@@ -327,7 +327,7 @@
          [20 21]
          [30 31]]))))
 
-(dotest
+(verify
   (let [a21 [[00]
              [10]]
         a22 [[00 01]
@@ -363,7 +363,7 @@
                [[02 03]
                 [12 13]]))))
 
-(dotest
+(verify
   (let [demo
         [[1 2 3]
          [4 5 6]]]

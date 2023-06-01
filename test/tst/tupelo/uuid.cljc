@@ -11,14 +11,14 @@
     [clojure.test] ; sometimes this is required - not sure why
     [tupelo.core :as t]
     [tupelo.uuid :as uuid]
-    [tupelo.test :refer [deftest testing is dotest dotest-focus
+    [tupelo.test :refer [deftest testing is verify verify-focus
                           isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? ]]
     ))
 
 ; #todo add tests for cljs
 
-(dotest
+(verify
   (is= "00000000-0000-0000-0000-000000000000"
     (uuid/null-str))
   (is= "cafebabe-1953-0510-0970-0123456789ff"
@@ -42,7 +42,7 @@
 ; we return uuids as an object or a string
 #?(:clj
    (do
-     (dotest
+     (verify
        (is= "00000000-0000-0000-0000-000000000000"
          (str (uuid/null)))
        (is= "cafebabe-1953-0510-0970-0123456789ff"

@@ -18,7 +18,7 @@
     [clojure.string :as str]
     [schema.core :as s]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty grab]]
-    [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [deftest testing is verify verify-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? ]]
 
     [tupelo.misc :as misc]
@@ -40,7 +40,7 @@
 ;---------------------------------------------------------------------------------------------------
 
 #?(:clj
-   (dotest
+   (verify
      (is= "00c81555" (misc/hash->hex 5))
      (is= "64c47d9a" (misc/hash->hex [5]))
      (is= "7bc71a4c" (misc/hash->hex [5 6 :a "hello"]))
@@ -50,7 +50,7 @@
      (is= "14e51713" (misc/hash->hex ["xyz2" "abc"]))))
 
 ;---------------------------------------------------------------------------------------------------
-(dotest
+(verify
   (is= 5 (misc/namespace-strip 5))
   (is= "abc" (misc/namespace-strip "abc"))
   (is= :item (misc/namespace-strip :something.really.big/item))
@@ -61,7 +61,7 @@
 
 ;---------------------------------------------------------------------------------------------------
 (defrecord Dummy [a b c])
-(dotest
+(verify
   (let [arec  (->Dummy 1 2 3)
         amap  {:a 1 :b 2 :c 3}
         amap2 (misc/walk-rec->map arec)]
@@ -79,7 +79,7 @@
 
 
 ;---------------------------------------------------------------------------------------------------
-(dotest
+(verify
   (let [data [1 2 3]]
     (is= (t/type-name-str data) ; #todo => tst.tupelo.core
       #?(:clj  "clojure.lang.PersistentVector"
@@ -89,13 +89,13 @@
     (is (= (drop 2 data) [    3]))
     (is (= (drop 3 data) [     ]))))
 
-(dotest
+(verify
   (is= 1 (misc/boolean->binary true))
   (is= 0 (misc/boolean->binary false))
   (throws? (misc/boolean->binary "hello"))
   (throws? (misc/boolean->binary 234)))
 
-(dotest
+(verify
   ;              0 1 2  3    4    5    6    7   8 9]
   (let [data [0 1 2 0xAA 0xFA 0xFF 0xDA 0xDD 8 9]]
     (is= 5 (first (misc/find-pattern [0xFF 0xDA] data))))
@@ -124,7 +124,7 @@
   (is= [] (misc/find-pattern [3 4] [0 1 2 3]))
   (is= [] (misc/find-pattern [9] [0 1 2 3])) )
 
-(dotest
+(verify
   (is= (misc/str->sha "abc") "a9993e364706816aba3e25717850c26c9cd0d89d")
   (is= (misc/str->sha "abd") "cb4cc28df0fdbe0ecf9d9662e294b118092a5735")
   (is= (misc/str->sha "hello") "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d")
@@ -149,14 +149,14 @@
     (misc/edn->sha #{:a 1 :b 2})))
 
 #?(:clj
-   (dotest ; #todo FIX THIS!
+   (verify ; #todo FIX THIS!
      ; In CLJS, integer 1 is really double 1.0, so these are a problem fails
      (is= "e8dc057d3346e56aed7cf252185dbe1fa6454411" (misc/edn->sha 1.0))
      (is= "356a192b7913b04c54574d18c28d46e6395428ab" (misc/edn->sha 1))))
 
 
 
-(dotest
+(verify
   (is= misc/int->hex {0 \0, 1 \1, 2 \2, 3 \3, 4 \4, 5 \5, 6 \6, 7 \7, 8 \8, 9 \9, 10 \a, 11 \b, 12 \c, 13 \d, 14 \e, 15 \f})
   (is= misc/hex->int {\0 0, \1 1, \2 2, \3 3, \4 4, \5 5, \6 6, \7 7, \8 8, \9 9, \a 10, \b 11, \c 12, \d 13, \e 14, \f 15})
 
@@ -210,7 +210,7 @@
       (is= (misc/uuid->sha uuid-val) "03a49d4729c971a0dc8ddf8d8847290416ad58d2"))
    ))
 
-(dotest
+(verify
   (let [mm (t/unlazy {:a 1
                     :b (t/thru 21 30)
                     :c 3
@@ -224,7 +224,7 @@
     ))
 
 ;---------------------------------------------------------------------------------------------------
-(dotest
+(verify
   (defn probe-state []
     (let [result (atom #{})]
       (misc/when-debug-flag :a1 (swap! result conj :a1))
@@ -233,7 +233,7 @@
       (misc/when-debug-flag :b3 (swap! result conj :b3))
       @result))
 
-  (dotest
+  (verify
     ; (t/spyx :awt01-enter misc/*debug-flags*)
     (is= #{} (probe-state))
     (misc/with-debug-flag :a1
@@ -251,7 +251,7 @@
 ;---------------------------------------------------------------------------------------------------
 #?(:clj
    (do
-     (dotest
+     (verify
        (is (#{:windows :linux :mac} (misc/get-os))))
 
      ; #todo fixed 2019-4-13  #remove if keeps working
@@ -259,7 +259,7 @@
      ;***** WARNING!  (OBE) These tests using BASH or ZSH will cause lein test-refresh to malfunction!
      ;***** WARNING!  (OBE) We mark them as ^:slow to prevent test-refresh from attempting to run them
      ;***************************************************************************************************
-     (dotest ; was:   cljtst/deftest ^:slow t-shell-cmd-165
+     (verify ; was:   cljtst/deftest ^:slow t-shell-cmd-165
          (when (= :linux (misc/get-os))
            (let [result (misc/shell-cmd "ls -ldF *")]
              (when false ; set true -> debug print
@@ -271,7 +271,7 @@
              (is (= 1 (count (re-seq #"/bin/bash" (:out result))))))
            (throws? RuntimeException (misc/shell-cmd "LLLls -ldF *"))))
 
-     (dotest
+     (verify
        (when (= :linux (misc/get-os))
          (binding [misc/*os-shell* "/bin/sh"]
            (let [result (misc/shell-cmd "ls /bin/*sh")]
@@ -282,7 +282,7 @@
              (is= 0 (:exit result))
              (is (pos? (count (re-seq #"/bin/bash" (:out result)))))))))
 
-     (dotest
+     (verify
        (when true
          (misc/dots-reset!)
          (misc/dots-config! {:dots-per-row 10 :decimation 1})
@@ -317,7 +317,7 @@
                             (misc/dot))))]
            (is-nonblank= result ""))))
 
-     ;(dotest
+     ;(verify
      ;  (spyx-pretty (misc/stacktrace-info (RuntimeException. "dummy"))))
 
      (do
@@ -328,7 +328,7 @@
            (t/vals->map add2-info add2-caller-info sum)))
        (defn add2-parent [] (add2 2 3))
 
-       (dotest
+       (verify
          (let [result (add2-parent)]
            ; (spyx-pretty result)
            (comment ; sample results
@@ -361,7 +361,7 @@
 ;---------------------------------------------------------------------------------------------------
 #?(:cljs
    (do
-     (dotest
+     (verify
        (is= (misc/grouper #"[a-z0-9][A-Z]" "aTaTa")
          [{:groups ["aT"] :match "aT" :index 0 :last-index 2 :input "aTaTa"}
           {:groups ["aT"] :match "aT" :index 2 :last-index 4 :input "aTaTa"}])

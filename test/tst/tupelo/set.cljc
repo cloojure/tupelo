@@ -16,16 +16,16 @@
     [clojure.test] ; sometimes this is required - not sure why
     [tupelo.set :as set]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
-    [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [deftest testing is verify verify-focus isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not?  ]]
   ))
 
-(dotest
+(verify
   (is= #{1 2 3 4 5} (set/union #{1 2 3 4} #{2 3 4 5}))
   (throws? (set/union #{1 2 3 4} {2 3 4 5}))
   (throws? (set/union #{1 2 3 4} [2 3 4 5])))
 
-(dotest
+(verify
   (is= #{:a} (set/add nil :a))
   (is= #{:a :b} (set/add #{:a} :b))
   (is= #{:a :b :c} (set/add #{:a} :a :b :c))

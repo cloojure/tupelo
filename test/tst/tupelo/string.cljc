@@ -16,7 +16,7 @@
     [clojure.test] ; sometimes this is required - not sure why
     [clojure.core :as cc]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty forv]]
-    [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
+    [tupelo.test :refer [deftest testing is verify verify-focus isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
                           throws? throws-not? ]]
     [tupelo.chars :as char]
     [tupelo.string :as str]
@@ -25,7 +25,7 @@
 ; #todo add generative testing?
 ; #todo add clojure.spec testing?
 
-(dotest
+(verify
   (testing "single string"
     (is (= "" (str/clip 0 "abcdefg")))
     (is (= "a" (str/clip 1 "abcdefg")))
@@ -77,7 +77,7 @@
       (is (= "#{1 2 3 " (str/clip 8 tst-set)))
       (is (= "#{1 2 3 4 5}" (str/clip 16 tst-set))))))
 
-(dotest
+(verify
   (is= "" (str/tabs->spaces ""))
   (is= "x" (str/tabs->spaces "x"))
   ;     01234567012345670123456701234567
@@ -123,7 +123,7 @@
   ;     0123012301230123
   (is= "01  a   b" (str/tabs->spaces 4 (str/join [\0 \1 \tab \a \tab \b]))))
 
-(dotest
+(verify
   (let [text-blk (str/join \newline
                    ["one two three four five six seven eight nine ten"
                     "one two three four five six seven eight nine ten"
@@ -133,7 +133,7 @@
                               "one two three four five six se"
                               "one two three four five six se"])))))
 
-(dotest
+(verify
   (is= (str/join \newline ["    a"
                            "0   a"])
     (str/tabs->spaces 4
@@ -155,7 +155,7 @@
       (str/join [\tab \a \b \c \d \newline
                  \0 \tab \a]))))
 
-(dotest
+(verify
   ; clojure.core/str works correctly for various string combinations
   (is= "" (str ""))
   (is= "a" (str "" "a"))
@@ -205,7 +205,7 @@
   (is (= "abcde" (t/strcat ["" \a \b \c "de"])))
   (is (= "abcde" (t/strcat ["" \a \b [\c ["d" \e]]]))))
 
-(dotest
+(verify
   (is (= "abc def g hij kl"
         (str/whitespace-collapse "  abc    def			g
                                      hij kl	 ")))
@@ -228,7 +228,7 @@
     (str/whitespace-remove "  ")
     (str/whitespace-remove (str "  " \newline "   "))))
 
-(dotest
+(verify
   (is (str/nonblank= "a"))
   (is (str/nonblank= "a" "  a "))
   (is (str/nonblank= "a" "  a  " "   a" "a   "))
@@ -270,7 +270,7 @@
     "  a
        b"))
 
-(dotest
+(verify
   (is= (str/quotes->single (str \")) (str \'))
   (is= (str/quotes->double (str \')) (str \"))
   (let [s1 "I said, 'Yes, please.'"
@@ -282,7 +282,7 @@
     (is= s1 (-> s1 str/quotes->double
               str/quotes->single))))
 
-(dotest
+(verify
   (let [kabob-str "abc-de-f-ghi"
         snake-str "abc_de_f_ghi"
         kabob-kw  (keyword kabob-str)
@@ -326,7 +326,7 @@
   (is= (str/->kabob-kw :some_multiple_word_kw) :some-multiple-word-kw)
   (is= (str/->snake-kw :some-multiple-word-kw) :some_multiple_word_kw))
 
-(dotest
+(verify
   (is= :abc-def-gh-qrs (str/str->kw-normalized "abc def*gh_qrs"))
   (is= :ABC-DEF-gh-qrs (str/str->kw-normalized "ABC DEF*gh_qrs"))
   (is= :abc-def-gh-qrs
@@ -336,18 +336,18 @@
 
 ; #todo need cljs tests (or delete completely?)
 #?(:clj (do
-          (dotest
+          (verify
             (is (= [65 66 67] (into [] (str/str->byte-array "ABC"))))
             (is (= "ABC" (str/byte-array->str (byte-array [65 66 67]))))
             (is (= "Hello World!" (-> "Hello World!" (str/str->byte-array) (str/byte-array->str)))))
 
-          (dotest
+          (verify
             (is (= " :a :b 3 4" (t/seq->str [:a :b 3 4])))
             (is (= " \\a \\b \\c" (t/seq->str "abc")))
             (is (= " 1 2 3" (t/seq->str (byte-array [1 2 3])))))
           ))
 
-(dotest
+(verify
   (isnt (str/increasing? "abc" "a"))
   (isnt (str/increasing? "abc" "ab"))
   (isnt (str/increasing? "abc" "abc"))
@@ -364,7 +364,7 @@
   (is (str/increasing-or-equal? "abc" "ad"))
   (is (str/increasing-or-equal? "abc" "b")))
 
-(dotest
+(verify
   (is= (str/walk-strings->keywords {"aa" ["bb" 33 "dd"]}) {:aa [:bb 33 :dd]})
   (is= (str/walk-keywords->strings {:aa [:bb 33 :dd]}) {"aa" ["bb" 33 "dd"]})
 
@@ -375,21 +375,21 @@
      :bb "bval"
      :cc #{:ck1 "c2" "c1"}}))
 
-(dotest
+(verify
   (is (= "" (str/take 0 "abc")))
   (is (= "a" (str/take 1 "abc")))
   (is (= "ab" (str/take 2 "abc")))
   (is (= "abc" (str/take 3 "abc")))
   (is (= "abc" (str/take 4 "abc"))))
 
-(dotest
+(verify
   (is (= "abc" (str/drop 0 "abc")))
   (is (= "bc" (str/drop 1 "abc")))
   (is (= "c" (str/drop 2 "abc")))
   (is (= "" (str/drop 3 "abc")))
   (is (= "" (str/drop 4 "abc"))))
 
-(dotest
+(verify
   (is (= "abc" (str/indent 0 "abc")))
   (is (= " abc" (str/indent 1 "abc")))
   (is (= "  abc" (str/indent 2 "abc")))
@@ -410,7 +410,7 @@
   (is (= "  " (str/indent 2 "")))
   (is (= "   " (str/indent 3 ""))))
 
-(dotest
+(verify
   ; clojure accepts either CR/LF or LF (CR=/return & LF=\newline) as line-separator
   (is (= "abc" (str/indent-lines 0 "abc")))
   (is (= "abc" (str/indent-lines 0 (str "abc" \newline))))
@@ -429,7 +429,7 @@
   (is (= "   abc\n   def" (str/indent-lines 3 (str "abc" \newline "def"))))
   )
 
-(dotest
+(verify
   (is= 0 (str/index-of "abc" "a"))
   (is= 0 (str/index-of "abc" "ab"))
   (is= 0 (str/index-of "abc" "abc"))
@@ -440,7 +440,7 @@
   )
 
 ; search for successive string fragments (regex-safe)
-(dotest
+(verify
   (is (str/contains-str-frags? "abcde" "a"))
   (is (str/contains-str-frags? "abcde" "a" "e"))
   (is (str/contains-str-frags? "abcde" "a" "c"))
@@ -466,7 +466,7 @@
   (isnt (str/contains-str-frags? "abcde" "a" ".*"))
   (isnt (str/contains-str-frags? "abcde" "a" ".*")))
 
-(dotest
+(verify
   ; clojure.string
   ; (t/when-clojure-1-8-plus)
   (is (str/starts-with? "abcde" "a"))
@@ -515,13 +515,13 @@
     (is (str/nonblank= (str/grep #"today." search-str) "doing today?"))
     (is (str/nonblank= (str/fgrep "today." search-str) ""))))
 
-(dotest
+(verify
   (throws? (str/lowercase=))
   (throws? (str/lowercase= "Camel-Case"))
   (is (str/lowercase= "abc" "ABC"))
   (is (str/lowercase= "Camel-Case" "camel-case" "CAMEL-CASE")))
 
-(dotest
+(verify
   (is (str/alphanumeric? \a))
   (is (str/alphanumeric? [\a]))
   (is (str/alphanumeric? "a"))
@@ -557,7 +557,7 @@
   (is (apply str/visible? (vec char/visible)))
   (is (apply str/text? (vec char/text))))
 
-(dotest
+(verify
   (is= (str/pad-left "a" 4) "   a")
   (is= (str/pad-left "ab" 4) "  ab")
   (is= (str/pad-left "abc" 4) " abc")
@@ -582,7 +582,7 @@
   (is= (str/pad-right "abcd" 4 \-) "abcd")
   (is= (str/pad-right "abcde" 4 \-) "abcde"))
 
-(dotest
+(verify
   (let [xx 123.456789012345]
     (is= "Cost: 00123" (str/format "Cost: %05d" 123))
     (is= "Cost:   123.46" (str/format "Cost: %8.2f" xx))))

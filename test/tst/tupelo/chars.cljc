@@ -18,14 +18,14 @@
     [tupelo.chars :as chars]
     [tupelo.core :as t :refer [spyx spyx-pretty forv]]
 
-    [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [deftest testing verify is isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not?  ]]
     ))
 
 ; #todo add generative testing?
 ; #todo add clojure.spec testing?
 
-(dotest
+(verify
   (is (every? t/truthy? (mapv chars/lowercase? chars/lowercase)))
   (is (every? t/truthy? (mapv chars/uppercase? chars/uppercase)))
 
@@ -39,7 +39,7 @@
   (is (every? t/truthy? (mapv chars/visible? chars/visible)))
   (is (every? t/truthy? (mapv chars/text? chars/text))))
 
-(dotest
+(verify
   (is (chars/lowercase? \a))
   (is (chars/uppercase? \A))
   (is (every? t/truthy? (t/it-> chars/uppercase

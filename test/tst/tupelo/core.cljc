@@ -44,7 +44,7 @@
      ;            ;  (println "*** TEST ONCE *** - tst.tupelo.core leave ")
      ;            )})
 
-     (dotest
+     (verify
        (is-nonblank= "clojure.core/println"
          (with-out-str
            (println "clojure.core/println")
@@ -87,7 +87,7 @@
 ;-----------------------------------------------------------------------------
 
 
-  (dotest
+  (verify
     (let [always-42-fn (t/const->fn 42)]
       (is= 42 (always-42-fn))
       (is= 42 (always-42-fn 1))
@@ -103,7 +103,7 @@
     (is= 0 (t/->zero 1 2 3 4))
     (is= 1 (t/->one 1 2 3 4)))
 
-  (dotest
+  (verify
     (is (t/truthy? true))
     (is (t/truthy? :never))
     (is (t/truthy? 5))
@@ -115,7 +115,7 @@
     (is (t/falsey? false))
     (is (t/falsey? nil)))
 
-  (dotest
+  (verify
     (let [inf-rng-1 (map inc (range))]
       (is= 42 (t/only [42]))
       (is= :x (t/only [:x]))
@@ -167,7 +167,7 @@
 
   (defrecord DummyRec
     [stuff])
-  (dotest
+  (verify
     (let [dummyRec (->DummyRec 5)
           amap     {:stuff 5}]
       (is (map? amap)) ; expected
@@ -184,7 +184,7 @@
       (isnt (xmap? vv))))
 
 
-  (dotest ; #todo => tupelo.core
+  (verify ; #todo => tupelo.core
     (is (t/only? [1]))
     (is (t/only? {:a 1}))
     (is (t/only? #{:stuff}))
@@ -200,7 +200,7 @@
     (isnt (t/only2? [#{:stuff :more}])))
 
 
-  (dotest
+  (verify
     (let [vals [-3.14 -2 0 2 3.14]]
       (is= [false false false true false] (mapv t/int-pos? vals))
       (is= [false true false false false] (mapv t/int-neg? vals))
@@ -209,7 +209,7 @@
       (is= [false false true true true] (mapv t/nonneg? vals))
       (is= [true true true false false] (mapv t/nonpos? vals))))
 
-  (dotest
+  (verify
     (let [inf-rng-1 (map inc (range))
           tst-map   (t/glue (sorted-map) {:a 1 :b 2 :c 3 :d 4 :e 5 :f 6})
           tst-set   (t/glue (sorted-set) #{3 2 1})]
@@ -291,7 +291,7 @@
       (is= [1 2] (t/xvec [1 2]))))
 
   #?(:clj ; #todo fix for cljs
-     (dotest
+     (verify
        ; clojure.lang.MapEntry passes sequential?  (argh!!!)
        (let [m    {:a 1 :b 2}
              me   (first m)
@@ -303,7 +303,7 @@
          (is (t/xsequential? avec))
          (is (t/xsequential? alst)))))
 
-  (dotest
+  (verify
     (let [inf-rng-1 (map inc (range))]
       (is= nil (t/first-or-nil []))
       (is= 1 (t/first-or-nil [1]))
@@ -352,7 +352,7 @@
       (is= [2 3 4] (next [1 2 3 4]) (t/rest-or-nil [1 2 3 4]))
       (is= [2 3 4] (take 3 (next inf-rng-1)) (take 3 (t/rest-or-nil inf-rng-1)))))
 
-  (dotest
+  (verify
     (let [data {:a 1}]
       (is= 1 (t/get-or-nil data :a))
       (is= nil (t/get-or-nil data :x))
@@ -364,7 +364,7 @@
       (is= 1 (t/get-or-default data 1 666))
       (is= 666 (t/get-or-default data 9 666))))
 
-  (dotest
+  (verify
     (is= :23 (t/int->kw 23))
     (is= 23 (t/kw->int :23))
 
@@ -379,7 +379,7 @@
     (is= :abc (t/sym->kw 'abc))
     (is= "abc" (t/sym->str 'abc)))
 
-  (dotest
+  (verify
     (do
       (is= :abc (t/->kw (quote abc)))
       (is= :abc (t/->kw :abc))
@@ -400,7 +400,7 @@
       (is= (t/str->sym "abc") (t/->sym "abc"))
       (is= (t/str->sym "x") (t/->sym \x))))
 
-  (dotest
+  (verify
     (let [orig     {:b #{3 2 1}
                     :a [1 2 3 {5 :five 6 :six 4 :four}]
                     :c (list 4 5 6)}
@@ -414,7 +414,7 @@
                    :c  [4 5 6]} "]
       (is-nonblank= result expected)))
 
-  (dotest
+  (verify
     (let [data [true :a 'my-symbol 1 "hello" \x false nil]]
       (testing "basic usage"
         (let [truthies (t/keep-if boolean data) ; coerce to primitive type
@@ -466,7 +466,7 @@
                   (= 1 num-nil))))))))
 
 
-  (dotest
+  (verify
     (is= true (t/has-some? odd? [1 2 3]))
     (is= false (t/has-some? odd? [2 4 6]))
     (is= false (t/has-some? odd? []))
@@ -475,7 +475,7 @@
     (is= true (t/has-none? odd? [2 4 6]))
     (is= true (t/has-none? odd? [])))
 
-  (dotest
+  (verify
     (is (every? t/not-empty? ["one" [1] '(1) {:1 1} #{1}]))
     (is (t/has-none? t/not-empty? ["" [] '() {} #{} nil]))
 
@@ -497,13 +497,13 @@
 
   ;-----------------------------------------------------------------------------
   ; pretty stuff
-  (dotest
+  (verify
     (is-nonblank= "{:a [1 2 3], :d 4}" (t/pretty-str (quote {:d 4 :a (1 2 3)})))
     )
 
   ;-----------------------------------------------------------------------------
   ; spy stuff
-  (dotest
+  (verify
     (is= "(+ 2 3) => 5"
       (ts/whitespace-collapse
         (with-out-str
@@ -530,7 +530,7 @@
                    (inc 2)))))))
 
   ; #todo blog about this nested (is= ...) testing technique
-  (dotest
+  (verify
     (is=
       (ts/whitespace-collapse " a => 1
                                b => 5
@@ -553,7 +553,7 @@
               (-> b (* (inc a)) (+ 7))))))))
 
   ;-----------------------------------------------------------------------------
-  (dotest
+  (verify
     (testing "basic usage"
       (let [side-effect-cum-sum (atom 0) ; side-effect running total
 
@@ -619,7 +619,7 @@
         ; (throws? (spy :some-tag "some-str" 42))  ; #todo how test in cljs?
         )))
   (comment
-    (dotest
+    (verify
       (spy :hello)
       (spy "goodbye")
       (spy :hello 5)
@@ -635,7 +635,7 @@
         something => "something"
         )))
 
-  (dotest
+  (verify
     (let [fn2 (fn [] (t/with-spy-indent
                        (spy :msg2 (+ 2 3))))
           fn1 (fn [] (t/with-spy-indent
@@ -646,7 +646,7 @@
       (is= ":msg1 => 5 :msg2 => 5" (ts/whitespace-collapse (with-out-str (fn1))))
       (is= ":msg0 => 5" (ts/whitespace-collapse (with-out-str (fn0))))))
 
-  (dotest
+  (verify
     (is= 3 (t/let-some [a 1
                         b 2
                         c (+ a b)]
@@ -677,7 +677,7 @@
                           [x & others] (range tgt)]
                [x others])))
 
-  (dotest
+  (verify
     (testing "vecs"
       (let [coll (range 3)]
         (isnt (t/contains-elem? coll -1))
@@ -726,7 +726,7 @@
         (is (t/contains-elem? coll :yes))
         (is (t/contains-elem? coll nil)))))
 
-  (dotest
+  (verify
     (is (t/contains-key? {:a 1 :b 2} :a))
     (is (t/contains-key? {:a 1 :b 2} :b))
     (isnt (t/contains-key? {:a 1 :b 2} :x))
@@ -751,7 +751,7 @@
     (throws? (t/contains-key? [:a 1 :b 2] :a))
     (throws? (t/contains-key? [:a 1 :b 2] 1)))
 
-  (dotest
+  (verify
     (is (t/contains-val? {:a 1 :b 2} 1))
     (is (t/contains-val? {:a 1 :b 2} 2))
     (isnt (t/contains-val? {:a 1 :b 2} 0))
@@ -766,7 +766,7 @@
     (throws? (t/contains-val? [:a 1 :b 2] 1))
     (throws? (t/contains-val? #{:a 1 :b 2} 1)))
 
-  (dotest
+  (verify
     (is=
       (t/forv [x (range 4)] (* x x))
       (t/for-list [x (range 4)] (* x x))
@@ -780,7 +780,7 @@
       (t/for-list [x (range 5) y (range 2 9)] (str x y))
       (for [x (range 5) y (range 2 9)] (str x y))))
 
-  (dotest
+  (verify
     (is= (t/for-indexed [[i x] [:a :b :c]]
            ; (println (format "i=%d x=%s" i x)) ; uncomment to print to stdout :wa
            {:i i :x x})
@@ -788,7 +788,7 @@
        {:i 1 :x :b}
        {:i 2 :x :c}]))
 
-  (dotest
+  (verify
     (let [xs [1 2 3]
           ys [10 20 30]]
       (is= [11 22 33]
@@ -820,7 +820,7 @@
       (is= [0 2 4] (t/xmap (fn [x y] (+ x y)) (range 3) (range 3)))
       (throws? (t/xmap (fn [x y] (+ x y)) (range 3) (range 4)))))
 
-  (dotest
+  (verify
     (is= (vector []) [[]])
     (is= (mapv identity [] []) [])
 
@@ -864,7 +864,7 @@
     (is= (t/zip* {:strict false} [:a :b :c] [1 2 3 4]) [[:a 1] [:b 2] [:c 3]])
     (is= (t/zip* {:strict false} [:A :B :C] [:a :b :c] [1 2 3 4]) [[:A :a 1] [:B :b 2] [:C :c 3]]))
 
-  (dotest
+  (verify
     (is= (t/indexed [:a :b :c]) [[0 :a] [1 :b] [2 :c]])
     (is= [[0 0] [1 2] [2 4] [3 6] [4 8]]
       (take 5 (t/indexed (map #(* 2 %) (range))))) ; can work with infinite lazy lists
@@ -879,7 +879,7 @@
        [3 13]
        [4 14]]))
 
-  (dotest
+  (verify
     ; unexpected results
     (is (= (concat {:a 1} {:b 2} {:c 3})
           [[:a 1] [:b 2] [:c 3]]))
@@ -964,7 +964,7 @@
   ;-----------------------------------------------------------------------------
   ; #todo get strange cljs compiler errors if combine these 2 into a single #?(:clj ...)
   #?(:clj
-     (dotest
+     (verify
        (try
          (throw (Exception. "Boom!"))
          (catch Exception ex
@@ -975,7 +975,7 @@
              (is (ts/contains-str? strace "tst.tupelo.core")))))))
 
   #?(:clj ; #todo get cljs compiler strange errors if `?` is missing in '#?(:clj ...)'
-     (dotest
+     (verify
        (let [zz (byte-array 0)
              aa (byte-array 1 (byte 1))
              bb (byte-array 2 (byte 2))
@@ -997,7 +997,7 @@
   ;-----------------------------------------------------------------------------
 
 
-  (dotest
+  (verify
     (let [data [[0 1 2]
                 []
                 [3]
@@ -1006,7 +1006,7 @@
       (is= (t/thru 9) (t/glue-rows data))
       (is= (t/thru 9) (reduce into [] data))))
 
-  (dotest
+  (verify
     (throws? (t/append 1 2))
     (throws? (t/append [1 2]))
     (throws? (t/append nil 3))
@@ -1045,7 +1045,7 @@
       (is= [0 1 2 3 4 5] (t/append (range 4) 4 5))
       (is= [0 1 2 3 4 5] (apply t/append [0] (range 1 6)))))
 
-  (dotest
+  (verify
     (throws? (t/prepend [2 1]))
     (throws? (t/prepend 3 nil))
     (is= [3 2 1] (t/prepend 3 [2 1]))
@@ -1062,7 +1062,7 @@
     (throws? (t/prepend 99 #{:a 1}))
     (throws? (t/prepend #{99} #{:a 1})))
 
-  (dotest
+  (verify
     (is= [1 2 3 4 5 6 7 8 9] (t/->vector 1 2 3 4 5 6 7 8 9))
     (is= [1 2 3 4 5 6 7 8 9] (t/->vector 1 (t/<> [2 3 4 5 6 7 8]) 9))
     (is= [1 2 3 4 5 6 7 8 9] (t/->vector 1 (t/<> [2 (t/<> [3 4 5 6 7]) 8]) 9))
@@ -1085,7 +1085,7 @@
       (t/glue [1 2 3] [4 5 6] [7 8 9])
       (concat [1 2 3] [4 5 6] [7 8 9])))
 
-  (dotest
+  (verify
     (is= (list) []
       (t/->list nil)
       (t/->list []))
@@ -1096,7 +1096,7 @@
     ;(throws? (t/->list #{1}))
     )
 
-  (dotest
+  (verify
     (is= #{} (hash-set)
       (t/->set nil)
       (t/->set []))
@@ -1107,7 +1107,7 @@
     (throws? (t/->set 1))
     (throws? (t/->set {:a 1})))
 
-  (dotest
+  (verify
     (throws? (t/compare-increasing 1))
     (is (t/compare-increasing 1 2))
     (is (t/compare-increasing 1 2 3))
@@ -1130,7 +1130,7 @@
     (isnt (t/compare-increasing-or-equal 91 2 3))
     (isnt (t/compare-increasing-or-equal 91 2 3 4)))
 
-  (dotest
+  (verify
     (isnt (t/increasing? [1 2] [1]))
     (isnt (t/increasing? [1 2] [1 1]))
     (isnt (t/increasing? [1 2] [1 2]))
@@ -1149,7 +1149,7 @@
     (is (t/increasing-or-equal? [1 2] [2 1]))
     (is (t/increasing-or-equal? [1 2] [2])))
 
-  (dotest
+  (verify
     (isnt (t/increasing? [\a \b] [\a]))
     (isnt (t/increasing? [\a \b] [\a \a]))
     (isnt (t/increasing? [\a \b] [\a \b]))
@@ -1168,7 +1168,7 @@
     (is (t/increasing-or-equal? [\a \b] [\b \a]))
     (is (t/increasing-or-equal? [\a \b] [\b])))
 
-  (dotest
+  (verify
     (isnt (t/increasing? [:a :b] [:a]))
     (isnt (t/increasing? [:a :b] [:a :a]))
     (isnt (t/increasing? [:a :b] [:a :b]))
@@ -1187,7 +1187,7 @@
     (is (t/increasing-or-equal? [:a :b] [:b :a]))
     (is (t/increasing-or-equal? [:a :b] [:b])))
 
-  (dotest
+  (verify
     (isnt (t/increasing? ["a" "b"] ["a"]))
     (isnt (t/increasing? ["a" "b"] ["a" "a"]))
     (isnt (t/increasing? ["a" "b"] ["a" "b"]))
@@ -1207,7 +1207,7 @@
     (is (t/increasing-or-equal? ["a" "b"] ["b"])))
 
 
-  (dotest
+  (verify
     (let [map1 {:a   1 :b 2 :c nil
                 nil  :NIL
                 "hi" "hello"
@@ -1222,7 +1222,7 @@
       (throws? (t/grab 42 map1))
       ))
 
-  (dotest
+  (verify
     (testing "basic usage"
       (let [map1 {:a1  "a1"
                   :a2  {:b1 "b1"
@@ -1244,7 +1244,7 @@
         (is= :12 (t/fetch-in vv [1 2]))
         )))
 
-  (dotest
+  (verify
     (let [mm {:a {:b {:c "c"}}}]
       (is= (t/dissoc-in mm []) mm)
       (is= (t/dissoc-in mm [:a]) {})
@@ -1282,7 +1282,7 @@
          :a2 {:b1 "b1"
               :b2 {:c1 "c1"}}})))
 
-  (dotest
+  (verify
     (t/try-catchall
       (throw (ex-info "some-big-error" {:answer 43}))
       (catch e ; (println "Caught exception:" e)
@@ -1292,13 +1292,13 @@
                    (throw (ex-info "some-big-error" {:answer 43})))]
       (is= result :some-val)))
 
-  (dotest
+  (verify
     (is= 42 (t/with-result 42
               (with-out-str
                 (for [i (range 3)]
                   (println i))))))
 
-  (dotest
+  (verify
     (let [map1 {:a 1 :b 2 :c 3 :d 4 :e 5}]
       (is= {:a 1 :b 2 :c 3 :d 4 :e 5} (t/submap-by-keys map1 #{:a :b :c :d :e}))
       (is= {:b 2 :c 3 :d 4 :e 5} (t/submap-by-keys map1 #{:b :c :d :e}))
@@ -1338,7 +1338,7 @@
                                {0 :even 1 :odd 2 :even 3 :odd}
                                #{:even :prime} :missing-ok))))
 
-  (dotest
+  (verify
     (is= 3 (t/validate pos? 3))
     (is= 3.14 (t/validate number? 3.14))
     (is= 3.14 (t/validate #(< 3 % 4) 3.14))
@@ -1348,19 +1348,19 @@
     (throws? (t/validate number? "hello"))
     (throws? (t/validate t/truthy? nil)))
 
-  (dotest
+  (verify
     (throws? (t/verify-form (= 1 2)))
     (is= 333 (t/verify-form (* 3 111))))
 
   ; #todo add test.check
-  (dotest
+  (verify
     (let [m1 {:a 1 :b 2 :c 3}
           m2 {:a 1 :b 2 :c [3 4]}]
       (is= [:a 1 :b 2 :c 3] (t/keyvals m1))
       (is= m1 (apply hash-map (t/keyvals m1)))
       (is= m2 (apply hash-map (t/keyvals m2)))))
 
-  (dotest ; #todo delete this???
+  (verify ; #todo delete this???
     (let [m1 {:a 1 :b 2 :c 3}]
       (is= [:a 1 :b 2] (t/keyvals-seq m1 [:a :b]))
       (is= [:b 2 :a 1] (t/keyvals-seq m1 [:b :a]))
@@ -1375,7 +1375,7 @@
       (is= [:b 2 :c 3] (t/keyvals-seq {:missing-ok true
                                        :the-map    m1 :the-keys [:z :b :c]}))))
 
-  (dotest
+  (verify
     (is= 2 (t/it-> 1
              (inc it)
              (+ 3 it)
@@ -1388,7 +1388,7 @@
                    (+ x it))
               (inc it))))
 
-  (dotest
+  (verify
     #_(spy-pretty ; dbg
         (t/spy-it->-impl '[1
                            (inc it)
@@ -1405,7 +1405,7 @@
            (+ 3 it)   =>  5
            (/ 10 it)  =>  2 ")))
 
-  (dotest
+  (verify
     (let [params {:a 1 :b 1 :c nil :d nil}]
       (is= (t/cond-it-> params
              (:a it) (update it :b inc)
@@ -1427,7 +1427,7 @@
              (:c it) (assoc it :d "again"))
         {:a 1, :b 3, :c nil :d nil})))
 
-  (dotest
+  (verify
     (is= 8 (t/some-it-> 1
              (inc it)
              (* it 3)
@@ -1440,7 +1440,7 @@
                 (when false (* it 3))
                 (+ 2 it)))))
 
-  (dotest
+  (verify
     ; java way to throw
     #?(:clj
        (do (throws? (throw (RuntimeException. "bummer")))
@@ -1459,7 +1459,7 @@
         (is= nil (t/with-exception-default nil (throw (ex-info "bummer" nil))))
         (is= :dummy (t/with-exception-default :dummy (throw (ex-info "bummer " " dude"))))))
 
-  (dotest
+  (verify
     (is= (t/validate-or-default t/not-nil? nil 0) 0)
     (is= (t/validate-or-default t/not-empty? "" "How you doin?") "How you doin?")
     (is= (mapv #(t/with-nil-default :some-default %)
@@ -1468,14 +1468,14 @@
 
   ;-----------------------------------------------------------------------------
   ; simple verification of vec-shuffle
-  (dotest
+  (verify
     (is= [:b :c :d :a] (t/vec-shuffle [:a :b :c :d] [1 2 3 0]))
     (is= [:d :c :b :a] (t/vec-shuffle [:a :b :c :d] [3 2 1 0]))
     (is= [:c :b :d :a] (t/vec-shuffle [:a :b :c :d] [2 1 3 0]))
     (throws? (t/vec-shuffle [:a :b :c :d] [2 1 0])))
 
   ;-----------------------------------------------------------------------------
-  (dotest
+  (verify
     (is (t/rel= 1 1 :digits 4))
     (is (t/rel= 1 1 :tol 0.01))
 
@@ -1519,7 +1519,7 @@
       (is (t/deep-rel= base tweaked-13))))
 
 
-  (dotest
+  (verify
     (is (every? t/truthy? (t/forv [ul (range 0 4)] (vector? (t/range-vec ul)))))
 
     (is (every? t/truthy? (t/forv [ul (range 0 4)] (= (t/range-vec ul) (range ul)))))
@@ -1528,7 +1528,7 @@
                                    ub (range lb 4)]
                             (= (t/range-vec lb ub) (range lb ub))))))
 
-  (dotest
+  (verify
     (testing "positive step"
       (is= [0] (t/thru 0))
       (is= [0 1] (t/thru 1))
@@ -1722,7 +1722,7 @@
       (is (t/all-rel= [1.1 1.2 1.3 1.4] (t/thru 1.1 1.4 0.1) :digits 7)))
     (throws? (t/thru 1.1 2.1 0.3)))
 
-  (dotest
+  (verify
     ; 1-D
     (is= (t/repeat-dims [0] 9) [])
     (is= (t/repeat-dims [1] 9) [9])
@@ -1744,7 +1744,7 @@
     (throws? (t/repeat-dims [2 -3] :a))
     (throws? (t/repeat-dims [-3 0] :a)))
 
-  (dotest
+  (verify
     (is= [0 2 4 6 8] (t/keep-if even? (range 10))
       (t/drop-if odd? (range 10)))
     (is= [1 3 5 7 9] (t/keep-if odd? (range 10))
@@ -1757,7 +1757,7 @@
     (throws? (t/keep-if t/truthy? 2))
     (throws? (t/keep-if t/truthy? :some-kw)))
 
-  (dotest
+  (verify
     (let [m1 {10 0, 20 0
               11 1, 21 1
               12 2, 22 2
@@ -1805,13 +1805,13 @@
       #?(:clj (throws? (t/keep-if (fn [arg1 arg2] :dummy) #{1 2 3})))))
 
   #?(:cljs
-     (dotest ; in JS a char is just a single-char string
+     (verify ; in JS a char is just a single-char string
        (is= "a" \a (t/codepoint->char 97))
        (is= 97 (t/char->codepoint "a") (t/char->codepoint \a))
        (is= [\a \b \c] (vec "abc"))
        (is= [97 98 99] (mapv t/char->codepoint (t/str->chars "abc")))))
 
-  (dotest
+  (verify
     (is= "a" (t/strcat \a) (t/strcat [\a]))
     (is= "a" (t/strcat "a") (t/strcat ["a"]))
     (is= "a" (t/strcat 97) (t/strcat [97]))
@@ -1846,7 +1846,7 @@
       (is= 26 (count str-val))
       (is= 26 (count (re-seq #"[a-z]" str-val)))))
 
-  (dotest
+  (verify
     (is= [] (t/drop-at (range 1) 0))
 
     (is= [1] (t/drop-at (range 2) 0))
@@ -1860,7 +1860,7 @@
     (throws? (t/drop-at (range 3) -1))
     (throws? (t/drop-at (range 3) 3)))
 
-  (dotest
+  (verify
     (is= [9] (t/insert-at [] 0 9))
 
     (is= [9 0] (t/insert-at [0] 0 9))
@@ -1880,7 +1880,7 @@
     (throws? (t/insert-at [0 1] 3 9)))
 
 
-  (dotest
+  (verify
     (is= [9] (t/replace-at (range 1) 0 9))
 
     (is= [9 1] (t/replace-at (range 2) 0 9))
@@ -1894,11 +1894,11 @@
     (throws? (t/replace-at (range 3) -1 9))
     (throws? (t/replace-at (range 3) 3 9)))
 
-  (dotest ; #todo need more tests
+  (verify ; #todo need more tests
     (is= (mapv #(mod % 3) (t/thru -6 6)) [0 1 2 0 1 2 0 1 2 0 1 2 0])
     (is= (mapv #(t/idx [0 1 2] %) (t/thru -3 3)) [0 1 2 0 1 2 0]))
 
-  (dotest
+  (verify
     (is (= [\a] (t/chars-thru \a \a)))
     (is (= [\a \b] (t/chars-thru \a \b)))
     (is (= [\a \b \c] (t/chars-thru \a \c)))
@@ -1911,7 +1911,7 @@
     (throws? (t/chars-thru \c \a))
     (throws? (t/chars-thru 99 98)))
 
-  (dotest
+  (verify
     (let [map-ab  {:a 1 :b 2}
           map-abc {:a 1 :b 2 :c 3}]
       (is= map-ab (t/validate-map-keys map-ab [:a :b]))
@@ -1925,7 +1925,7 @@
       (throws? (t/validate-map-keys map-abc [:a :b]))
       (throws? (t/validate-map-keys map-abc [:a :c :x]))))
 
-  (dotest
+  (verify
     (let [map-123 {1 :a 2 :b 3 :c}
           tx-fn   {1 101 2 202 3 303}]
       (is= (t/map-keys map-123 inc) {2 :a 3 :b 4 :c})
@@ -1935,7 +1935,7 @@
       (is= (t/map-vals map-123 inc) {:a 2, :b 3, :c 4})
       (is= (t/map-vals map-123 tx-fn) {:a 101, :b 202, :c 303})))
 
-  (dotest
+  (verify
     (is (t/starts-with? (range 0 3) (range 0 0)))
 
     (is (t/starts-with? (range 0 3) (range 0 1)))
@@ -1970,7 +1970,7 @@
     (isnt (t/starts-with? (range 3 3) (range 0 3))))
 
   (defrecord SampleRec [a b])
-  (dotest
+  (verify
     (let [sr1 (->SampleRec 1 2)]
       (is (map? sr1))
       (is (t/val= sr1 {:a 1 :b 2}))
@@ -1980,7 +1980,7 @@
       (is (t/val= #{1 2 sr1} #{1 2 {:a 1 :b 2}}))
       (is (t/val= [1 2 3 #{1 2 sr1}] [1 2 3 #{1 2 {:a 1 :b 2}}]))))
 
-  (dotest
+  (verify
     (is (t/set= [1 2 3] [1 2 3]))
     (is (t/set= [1 2 3] [3 2 1]))
     (is-set= [1 2 3] [1 2 3])
@@ -1988,7 +1988,7 @@
     )
 
   ;---------------------------------------------------------------------------------------------------
-  (dotest
+  (verify
     (is= [[] [\a \b \c \d \e \f]] (t/split-match "abcdef" "a"))
     (is= [[] [\a \b \c \d \e \f]] (t/split-match "abcdef" "ab"))
     (is= [[\a] [\b \c \d \e \f]] (t/split-match "abcdef" "bc"))
@@ -2009,7 +2009,7 @@
     (is= [[0 1 2 3 4 5] []] (t/split-match (range 6) [5 6]))
     (is= [[0 1 2 3 4 5] []] (t/split-match (range 6) [6 7])))
 
-  (dotest
+  (verify
     (is= nil (t/index-using #(= [666] %) (range 5)))
     (is= 0 (t/index-using #(= [0 1 2 3 4] %) (range 5)))
     (is= 1 (t/index-using #(= [1 2 3 4] %) (range 5)))
@@ -2018,7 +2018,7 @@
     (is= 4 (t/index-using #(= [4] %) (range 5)))
     (is= nil (t/index-using #(= [] %) (range 5))))
 
-  (dotest
+  (verify
     (is= [[] [0 1 2 3 4]] (t/split-using #(= 0 (first %)) (range 5)))
     (is= [[0] [1 2 3 4]] (t/split-using #(= 1 (first %)) (range 5)))
     (is= [[0 1] [2 3 4]] (t/split-using #(= 2 (first %)) (range 5)))
@@ -2029,7 +2029,7 @@
 
     (is= [[\a \b \c] [\d \e \f]] (t/split-using #(t/starts-with? % "de") "abcdef")))
 
-  (dotest
+  (verify
     (let [start-segment? (fn [vals] (zero? (rem (first vals) 3)))]
       (is= (t/partition-using start-segment? [1 2 3 6 7 8])
         [[1 2] [3] [6 7 8]])
@@ -2040,7 +2040,7 @@
     (throws? (t/partition-using even? 5)))
 
   ; #todo fix so use `verify` for both clj and cljs
-  (dotest
+  (verify
 
     ; We use `split-at` to partition the coll. Given a coll like [0 1 2], it makes
     ; no sense to give degenerate splits like {:data1 [] :data2 [0 1 2]}
@@ -2066,7 +2066,7 @@
     ; #todo add more tests
     )
 
-  (dotest
+  (verify
     (let [times-2 #(* 2 %)]
       (is= [] (take 0 (range 9)))
       (is= 1 (t/iterate-n 0 times-2 1))
@@ -2076,7 +2076,7 @@
       (is= 256 (t/iterate-n 8 times-2 1))))
 
 
-  (dotest ; just read down by columns to get output
+  (verify ; just read down by columns to get output
     (is= [1 :a 2 :b :c] (t/interleave-all
                           [1 2]
                           [:a :b :c]))
@@ -2095,7 +2095,7 @@
                           [1 2]
                           []
                           [:a :b :c])))
-  (dotest
+  (verify
     (let [items     [{:name :a :count 1}
                      {:name :b :count 2}
                      {:name :c :count 3}
@@ -2151,7 +2151,7 @@
       (is= (t/take-while-result #(cum-within % 9) (range)) [0 1 2 3])
       (is= (t/take-while-result #(cum-within % 10) (range)) [0 1 2 3 4])))
 
-  (dotest
+  (verify
     (let [data [[:a 1]
                 [:a 2]
                 [:a 3]
@@ -2165,7 +2165,7 @@
       (is= (t/distinct-using identity data)
         [[:a 1] [:a 2] [:a 3] [:b 1] [:b 2] [:b 3]])))
 
-  (dotest
+  (verify
     (let [ctx (let [a 1
                     b 2
                     c 3
@@ -2207,7 +2207,7 @@
         (t/with-strmap-vals ctx [a b zzz] ; throws if key doesn't exist
           (println "won't ever get here")))))
 
-  (dotest
+  (verify
     (let [m {:a 1
              :b {:c 2}
              :d [0 1 {:e 5}]}]
@@ -2228,7 +2228,7 @@
 
   ;---------------------------------------------------------------------------------------------------
   ; demo and poc for td/construct
-  (dotest ; #todo do we need this at all?  maybe delete?
+  (verify ; #todo do we need this at all?  maybe delete?
     (def c 3)
     (let [env {:a 1 :b 2}]
       (t/with-map-vals env [a b]
@@ -2243,7 +2243,7 @@
           {:likes {:a 1, :b 2 :c 3}}))))
 
   ;---------------------------------------------------------------------------------------------------
-  (dotest
+  (verify
     (let [lazy-next-int (fn lazy-next-int [n]
                           (t/lazy-cons n (lazy-next-int (inc n))))
           all-ints      (lazy-next-int 0)
@@ -2271,7 +2271,7 @@
       (is= (lazy-countdown 0) [0])
       (is= (lazy-countdown -1) nil)))
 
-  (dotest
+  (verify
     (let [N                  9
           nums               (range N)
           kws                (mapv #(-> % str keyword) nums)
@@ -2333,7 +2333,7 @@
           {:0 0, :3 0, :6 0, :1 1, :4 1, :7 1, :2 2, :5 2, :8 2})))
     )
 
-  (dotest ; #todo #clojure.core/sorted-map-by bug
+  (verify ; #todo #clojure.core/sorted-map-by bug
     (when false
       (let [unsorted {:x.y/a {:rem 0}
                       :x.y/b {:rem 1}}
@@ -2345,7 +2345,7 @@
         (println :unsorted unsorted)
         (println :sorted sorted))))
 
-  (dotest
+  (verify
     (let [sample (t/->set [1 2 3])]
       (is (set? sample))
       (is= #{3 2 1} sample))
@@ -2372,7 +2372,7 @@
       (is (sorted-map? nested-sorted))))
 
   ; #todo:  finish this! 2020-10-20
-  #_(dotest
+  #_(verify
       (let [intc {:enter (fn [parents data]
                            (t/with-result data
                              (nl) (spy-pretty :enter (t/vals->map parents data))))
@@ -2411,7 +2411,7 @@
           ;    :leave => {:parents [], :data {:a 1, :b {:c 3}}} ")
           )))
 
-  #_(dotest
+  #_(verify
       (let [intc {:enter (fn [parents data]
                            (t/with-result data
                              (spy :enter (t/vals->map parents data))))}]
@@ -2430,7 +2430,7 @@
 
   (comment
     #?(:clj
-       (dotest
+       (verify
          (let [data   {:a 1 :b [20 21 22] :c {:d 4}}
                intc   {:enter t/noop
                        :leave t/->nil}
@@ -2473,7 +2473,7 @@
            (throws? (t/list-entries->vec (reverse list-entries))) ; data indexes must be in order  0..(N-1)
            ))))
 
-  #_(dotest
+  #_(verify
       ; only increment numeric mapentry values when key is :c
       (let [data   {:a 1 :b {:c 3} 41 42}
             intc   {:leave (fn [parents data]
@@ -2490,7 +2490,7 @@
             result (t/walk-with-parents data intc)]
         (is= result {:a 1 :b {:c 4} 41 42})))
 
-  #_(dotest
+  #_(verify
       ; only increment numeric values at even index
       (let [data   [0 1 :two 3 4 5]
             intc   {:leave (fn [parents data]
@@ -2503,7 +2503,7 @@
             result (t/walk-with-parents data intc)]
         (is= result [1 1 :two 3 5 5])))
 
-  (dotest
+  (verify
     (is= (range 10) ; vector/list
       (t/unnest 0 1 2 3 4 5 6 7 8 9)
       (t/unnest 0 1 2 [3 [4] 5 6] 7 [8 9])
@@ -2540,7 +2540,7 @@
 
   #?(:clj (do
 
-            (dotest
+            (verify
               (let [empty-gen-fn (fn [] (t/lazy-gen))]
                 (is (nil? (empty-gen-fn))))
 
@@ -2580,7 +2580,7 @@
                 (is= [1 2 3 4 5 6 7 8 9] (concat-gen c1 c2 c3))
                 (is= [1 -1 2 -2 3 -3 4 -4 5 -5 6 -6 7 -7 8 -8 9 -9] (concat-gen-mirror c1 c2 c3))))
 
-            (dotest
+            (verify
               (let [sq-yield   (fn [xs]
                                  (t/lazy-gen
                                    (doseq [x xs]
@@ -2628,7 +2628,7 @@
                   res-for
                   res-map)))
 
-            (dotest
+            (verify
               (let [heads-pairs (fn [flips]
                                   (reduce +
                                     (let [flips (vec flips)]
@@ -2662,7 +2662,7 @@
                     build-result-3 (build-3 3)]
                 (is= [1 1 2 1 2 3] build-result-1 build-result-2 build-result-3)))
 
-            (dotest
+            (verify
               (let [N                99
                     cat-glue-fn      (fn [coll] (t/lazy-gen
                                                   (t/yield-all (t/glue coll [1 2 3]))))
@@ -2704,13 +2704,13 @@
                 (is= flat-seq [0 1 2 3 4 10 11 12 13 14 20 21 22 23 24])))
             ))
 
-  (dotest
+  (verify
     (is (t/submap? {:a 1} {:a 1 :b 2}))
     (is (t/submap? {:b 2} {:a 1 :b 2})))
 
   #?(:clj
      (do  ; #todo fix this cljs failure
-       (dotest
+       (verify
          (is= (range 5) (t/unlazy (range 5)))
          (let [c1 {:a 1 :b (range 3) :c {:x (range 4) (range 5) " end "}}]
            (is= c1 (t/unlazy c1))) ; line 2484
@@ -2724,7 +2724,7 @@
          (is= #{1 2 3} (t/unlazy #{3 2 1})))
        ))
 
-  (dotest
+  (verify
     (let [info  {:a 1
                  :b {:c 3
                      :d 4}}
@@ -2772,7 +2772,7 @@
                   (restruct)))
         (is= it {:a 101, :b {:c 103, :d 4}}))))
 
-  (dotest
+  (verify
     (let [info  {:a 777
                  :b [2 3 4]}
           mania [{:a 11} {:b 22} {:c [7 8 9]}]]
@@ -2796,7 +2796,7 @@
             (is= info {:a 77, :b [9 3 4]})
             (is= mania [{:a 11} {:BBB 33} {:c [8 9 10]}]))))))
 
-  (dotest
+  (verify
     (let [data {:a 1
                 :b {:c 3
                     :d 4}}] ; can ignore unwanted keys like :d
@@ -2875,7 +2875,7 @@
 
   ; #todo add different lengths a/b
   ; #todo add missing entries a/b
-  (dotest
+  (verify
     (testing " vectors "
       (is (t/wild-match? [1] [1]))
       (is (t/wild-match? [1] [1] [1]))
@@ -2990,7 +2990,7 @@
               #{1 #{:a :x}}))
       ))
 
-  (dotest
+  (verify
     (isnt (t/wild-match? #{1 2} #{1 2 3 4}))
     (isnt (t/wild-match? {:pattern #{1 2}
                           :values  [#{1 2 3 4}]}))
@@ -3040,7 +3040,7 @@
       (is (t/submatch? sample-rec {:a 1 :b 2}))
       (is (t/submatch? {:a 1 :b 2} sample-rec))))
 
-  (dotest
+  (verify
     (is (t/set-match? #{1 2 3} #{1 2 3}))
     (is (t/set-match? #{:* 2 3} #{1 2 3}))
     (is (t/set-match? #{1 :* 3} #{1 2 3}))
@@ -3118,7 +3118,7 @@
   #?(:clj
      (do
 
-       (dotest
+       (verify
          (let [arg nil]
            (try
              (t/assert-info (t/truthy? arg) "Must be non-nil" (t/vals->map arg))
@@ -3128,11 +3128,11 @@
                (is= {:arg nil} (ex-data ex))
                (is= "Must be non-nil" (ex-message ex))))))
 
-       (dotest
+       (verify
          (is (t/atom? (atom 5)))
          (isnt (t/atom? 5)))
 
-       (dotest
+       (verify
          (binding [*clojure-version* {:major 1 :minor 7}]
            (is (t/is-clojure-1-7-plus?))
            (isnt (t/is-clojure-1-8-plus?))
@@ -3160,7 +3160,7 @@
                       8
                       (throw (ex-info " Unimplemented prior to Java 1.8: " nil))))
 
-       (dotest
+       (verify
          (when (t/is-java-8-plus?)
            (is= 8 (fn8)))
          (is= 42 (fn-any))
@@ -3225,7 +3225,7 @@
            (is (t/is-java-11-plus?))
            (is (t/is-java-17-plus?))))
 
-       (dotest
+       (verify
          (let [tst-fn (fn [vals5]
                         (is= 5 (count vals5))
                         ; w/o endpoint
@@ -3253,7 +3253,7 @@
          (is= [2 3] (t/sublist (seq (vec (range 5))) 2 4)))
 
 
-       (dotest
+       (verify
          (let [val1 (into (sorted-map) {:a 1 :b 2})]
            (is= "val1 => <#clojure.lang.PersistentTreeMap {:a 1, :b 2}>"
              (ts/whitespace-collapse (with-out-str (t/spyxx val1))))
@@ -3263,7 +3263,7 @@
              (ts/whitespace-collapse (with-out-str (t/spyxx (mapv inc (range 3))))))))
 
        ;(sp/def ::vector (sp/coll-of clj/any :kind vector?))
-       ;(dotest
+       ;(verify
        ;  (is   (sp/valid? ::vector [1 2 3]))
        ;  (isnt (sp/valid? ::vector '(1 2 3)))
        ;  (isnt (sp/valid? ::vector {:a 1}))
@@ -3324,7 +3324,7 @@
 
        ; #todo add different lengths a/b
        ; #todo add missing entries a/b
-       (dotest
+       (verify
          (is (t/matches? [] []))
          (is (t/matches? [1] [1]))
          (isnt (t/matches? [1] [2]))
@@ -3367,7 +3367,7 @@
                  {:a 3 :b nil :c 9}))
          )
 
-       (dotest
+       (verify
          (isnt (= 5 5.0))
          (is (== 5 5.0))
 
@@ -3403,7 +3403,7 @@
          (throws? (t/int-val? :five))
          )
 
-       (dotest
+       (verify
          (is (t/bigint? (bigint 5)))
          (is (t/biginteger? (biginteger 5)))
          (is (t/bigdecimal? (bigdec 5)))
@@ -3412,19 +3412,19 @@
          (isnt (t/biginteger? 5))
          (isnt (t/bigdecimal? 5.0)))
 
-       (dotest
+       (verify
          (throws? (/ 1 0))
          (throws? Exception (/ 1 0)) ; catches specified Throwable (or subclass) - JVM only
          (throws? ArithmeticException (/ 1 0)) ; catches specified Throwable (or subclass) - JVM only
          )
 
-       (dotest
+       (verify
          (is (t/macro? 'and))
          (is (t/macro? '->))
          (isnt (t/macro? '+))
          (isnt (t/macro? 'if)))
 
-       (dotest
+       (verify
          (is= 5 (t/with-mutable-var 0
                   (doseq [ii (t/thru 5)]
                     (t/mutable-var-set-it! ii))))

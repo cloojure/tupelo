@@ -13,11 +13,11 @@
     [clojure.test] ; sometimes this is required - not sure why
     [tupelo.array.mutable :as tam]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]]
-    [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [deftest testing is verify isnt is= isnt= is-set= is-nonblank=
                           throws? throws-not? ]]
     ))
 
-(dotest
+(verify
   (let [a34  (tam/new 3 4 :a)
         data (vec (:data a34))]
     (is= 3 (tam/num-rows a34))
@@ -37,7 +37,7 @@
                             jj (range (tam/num-cols a34))]
                        (tam/elem-get a34 ii jj))))))
 
-(dotest
+(verify
   (let [target            [[00 01 02 03]
                            [10 11 12 13]
                            [20 21 22 23]]
@@ -138,7 +138,7 @@
     (is= target-rot-left-1 (-> target tam/edn-rows->array tam/rotate-right tam/rotate-right tam/rotate-right tam/array->edn-rows))
     (is= target (-> target tam/edn-rows->array tam/rotate-right tam/rotate-right tam/rotate-right tam/rotate-right tam/array->edn-rows))))
 
-(dotest
+(verify
   (let [demo [[00 01 02 03]
               [10 11 12 13]
               [20 21 22 23]]
@@ -166,7 +166,7 @@
                                    [10 11 12]
                                    [20 21 22 23]]))))
 
-(dotest
+(verify
   (let [demo [[00 01 02 03]
               [10 11 12 13]
               [20 21 22 23]]
@@ -205,7 +205,7 @@
                                [02 12]
                                [03 13 23]]))))
 
-(dotest
+(verify
   (is (tam/symmetric? (tam/edn-rows->array [[1 2]
                                             [2 1]])))
   (isnt (tam/symmetric? (tam/edn-rows->array [[1 3]
@@ -220,7 +220,7 @@
                                               [2 4 5]
                                               [3 5 6]]))))
 
-(dotest
+(verify
   (let [demo (tam/edn-rows->array [[1 2 3]
                                    [4 5 6]])]
     (throws? (tam/row-set demo 2 [[1 2 3]]))
@@ -237,7 +237,7 @@
       [[1 7 3]
        [4 8 6]])))
 
-(dotest
+(verify
   (let [demo (tam/edn-rows->array [[00 01 02 03]
                                    [10 11 12 13]
                                    [20 21 22 23]])]
@@ -265,7 +265,7 @@
        [21]])
     (throws? (tam/row-drop demo :x))))
 
-(dotest
+(verify
   (let [a13 [[00 01 02]]
         a23 [[00 01 02]
              [10 11 12]]
@@ -281,7 +281,7 @@
     (is= a23 (tam/array->edn-rows (tam/rows-append (tam/edn-rows->array a13) [10 11 12])))
     (is= a33 (tam/array->edn-rows (tam/rows-append (tam/edn-rows->array a13) [10 11 12] [20 21 22])))))
 
-(dotest
+(verify
   (let [a22 [[00 01]
              [10 11]]
         a23 [[00 01 02]
@@ -293,7 +293,7 @@
     (is= a23 (tam/array->edn-rows (tam/cols-append (tam/edn-rows->array a22) [2 12])))
     (is= a24 (tam/array->edn-rows (tam/cols-append (tam/edn-rows->array a22) [2 12] [3 13])))))
 
-(dotest
+(verify
   (let [a12 [[00 01]]
         a22 [[00 01]
              [10 11]]
@@ -352,7 +352,7 @@
                                               [20 21]
                                               [30 31]]))))))
 
-(dotest
+(verify
   (let [a21 [[00]
              [10]]
         a22 [[00 01]
