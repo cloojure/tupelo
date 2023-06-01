@@ -4,8 +4,8 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns tst.tupelo.test-jvm
-  (:use tupelo.core tupelo.test tupelo.test-jvm )
+(ns tst.tupelo.test.jvm
+  (:use tupelo.core tupelo.test tupelo.test.jvm )
   (:require
     [clojure.string :as str]) )
 
@@ -40,7 +40,7 @@
   (isnt-double= 1.123456789012345 1.12345678)
 
   ; can redefine number of decimals required for "equality"
-  (binding [tupelo.test-jvm/*equality-digits-double=* 4]
+  (binding [tupelo.test.jvm/*equality-digits-double=* 4]
     (is-double= 1.2345678 1.2345)
     (isnt-double= 1.2345678 1.234))
   )
