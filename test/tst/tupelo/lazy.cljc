@@ -16,8 +16,9 @@
     [schema.core :as s]
     [tupelo.lazy :as lazy]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
-    [tupelo.test :refer [deftest testing is verify isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not?  ]]
+    [tupelo.test :refer [testing is verify verify-focus
+                         is isnt is= isnt= is-set= is-nonblank=
+                         throws? throws-not?]]
     ))
 
 ; #todo add generative testing?

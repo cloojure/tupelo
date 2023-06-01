@@ -18,10 +18,11 @@
     [clojure.test] ; sometimes this is required - not sure why
     [schema.core :as s]
     [tupelo.vec :as tv]
-    [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty unlazy let-spy only forv glue ]]
-    [tupelo.test :refer [deftest testing is verify isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not?  ]]
+    [tupelo.test :refer [testing is verify verify-focus
+                         is isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
+                         throws? throws-not?
+                         ]]
     ))
 
 ; #todo fix for cljs

@@ -9,17 +9,17 @@
   ;---------------------------------------------------------------------------------------------------
   ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
-  #?(:cljs (:require-macros
-             [tupelo.test]
-             ))
+  #?(:cljs (:require-macros [tupelo.test]))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
     [clojure.core :as cc]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty forv]]
-    [tupelo.test :refer [deftest testing is verify verify-focus isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
-                          throws? throws-not? ]]
     [tupelo.chars :as char]
     [tupelo.string :as str]
+    [tupelo.test :refer [testing is verify verify-focus
+                         is isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
+                         throws? throws-not?
+                         ]]
     ))
 
 ; #todo add generative testing?

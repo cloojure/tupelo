@@ -18,9 +18,10 @@
       [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty nl
                                  vals->map xmap? forv glue keep-if]]
       [tupelo.interval :as interval]
-      [tupelo.test :refer [deftest testing is verify verify-focus isnt is= isnt= is-set= is-nonblank=
-                            throws? throws-not? ]])
-    )
+      [tupelo.test :refer [testing is verify verify-focus
+                           is isnt is= isnt= is-set= is-nonblank=
+                           throws? throws-not?]]
+      ))
 
 #?(:cljs (enable-console-print!))
 

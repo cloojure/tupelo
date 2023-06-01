@@ -20,14 +20,13 @@
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty nl
                                vals->map xmap? forv glue keep-if]]
     [tupelo.string :as ts]
-    [tupelo.test :refer [deftest testing is
-                         dotest dotest-focus verify verify-focus
+    [tupelo.test :refer [testing is verify verify-focus
                          is isnt is= isnt= is-set= is-nonblank=
                          throws? throws-not?
-                         ]])
+                         ]]
+    )
   #?(:clj (:require [tupelo.types :as types]
-                    [tupelo.lexical :as lex]))
-  )
+                    [tupelo.lexical :as lex])))
 
 #?(:cljs (enable-console-print!))
 

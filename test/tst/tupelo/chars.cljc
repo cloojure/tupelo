@@ -17,9 +17,9 @@
     [clojure.test] ; sometimes this is required - not sure why
     [tupelo.chars :as chars]
     [tupelo.core :as t :refer [spyx spyx-pretty forv]]
-
-    [tupelo.test :refer [deftest testing verify is isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not?  ]]
+    [tupelo.test :refer [testing is verify verify-focus
+                         is isnt is= isnt= is-set= is-nonblank=
+                         throws? throws-not?]]
     ))
 
 ; #todo add generative testing?

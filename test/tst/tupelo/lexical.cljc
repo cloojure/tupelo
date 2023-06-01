@@ -10,16 +10,16 @@
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
   #?(:cljs (:require-macros
              [tupelo.misc]
-             [tupelo.test]
-             ))
+             [tupelo.test]))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
     [clojure.data.avl :as avl]
     [tupelo.lexical :as lex]
-    [tupelo.test :refer [deftest testing is verify isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? ]]
-    [tupelo.core.impl :as impl])
-)
+    [tupelo.core.impl :as impl]
+    [tupelo.test :refer [testing is verify verify-focus
+                         is isnt is= isnt= is-set= is-nonblank=
+                         throws? throws-not?]]
+    ))
 
 #?(:cljs (enable-console-print!))
 
@@ -46,16 +46,16 @@
   #?(:clj
      (is= "Type/Clojure-Character" (lex/comparison-class \X)))
 
-  #?(:clj (do
-       (is= "tst.tupelo.lexical.DummyEid" (impl/type-name-str eid-0))
-       (is= "tst.tupelo.lexical.DummyLeaf" (impl/type-name-str leaf-0))
-       (is= "tst.tupelo.lexical.DummyEid" (lex/comparison-class eid-0))
-       (is= "tst.tupelo.lexical.DummyLeaf" (lex/comparison-class leaf-0)))
-    :cljs (do
-       (is= "tst.tupelo.lexical/DummyEid" (impl/type-name-str eid-0))
-       (is= "tst.tupelo.lexical/DummyLeaf" (impl/type-name-str leaf-0))
-       (is= "tst.tupelo.lexical/DummyEid" (lex/comparison-class eid-0))
-       (is= "tst.tupelo.lexical/DummyLeaf" (lex/comparison-class leaf-0))) ) )
+  #?(:clj  (do
+             (is= "tst.tupelo.lexical.DummyEid" (impl/type-name-str eid-0))
+             (is= "tst.tupelo.lexical.DummyLeaf" (impl/type-name-str leaf-0))
+             (is= "tst.tupelo.lexical.DummyEid" (lex/comparison-class eid-0))
+             (is= "tst.tupelo.lexical.DummyLeaf" (lex/comparison-class leaf-0)))
+     :cljs (do
+             (is= "tst.tupelo.lexical/DummyEid" (impl/type-name-str eid-0))
+             (is= "tst.tupelo.lexical/DummyLeaf" (impl/type-name-str leaf-0))
+             (is= "tst.tupelo.lexical/DummyEid" (lex/comparison-class eid-0))
+             (is= "tst.tupelo.lexical/DummyLeaf" (lex/comparison-class leaf-0)))))
 
 (verify
   (is= [[:raw 0]] (seq eid-0))

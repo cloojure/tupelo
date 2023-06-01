@@ -16,11 +16,11 @@
     [clojure.test] ; sometimes this is required - not sure why
     [clojure.string :as str]
     [tupelo.tagval :as tv ]
-    [tupelo.core :as t :refer [spyx spyx-pretty forv unlazy
-                               ]]
-
-    [tupelo.test :refer [deftest testing is verify verify-focus isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? ]]
+    [tupelo.core :as t :refer [spyx spyx-pretty forv unlazy]]
+    [tupelo.test :refer [testing is verify verify-focus
+                         is isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
+                         throws? throws-not?
+                         ]]
     ))
 
 ; (defn tv [t v] (td/->TagVal t v))

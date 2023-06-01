@@ -16,8 +16,10 @@
     [clojure.test] ; sometimes this is required - not sure why
     [tupelo.set :as set]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
-    [tupelo.test :refer [deftest testing is verify verify-focus isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not?  ]]
+    [tupelo.test :refer [testing is verify verify-focus
+                         is isnt is= isnt= is-set= is-nonblank=
+                         throws? throws-not?
+                         ]]
   ))
 
 (verify

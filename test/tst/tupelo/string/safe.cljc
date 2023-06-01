@@ -9,11 +9,13 @@
              [tupelo.test]
              ))
   (:require
-    [clojure.test] ; sometimes this is required - not sure why
+    [clojure.test] ; sometimes this is required for cljs- not sure why
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty forv]]
-    [tupelo.test :refer [deftest testing is verify verify-focus isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
-                          throws? throws-not?  ]]
     [tupelo.string.safe :as safe]
+    [tupelo.test :refer [testing is verify verify-focus
+                         is isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
+                         throws? throws-not?
+                         ]]
     ))
 
 (verify

@@ -11,9 +11,10 @@
     [clojure.test] ; sometimes this is required - not sure why
     [tupelo.core :as t]
     [tupelo.uuid :as uuid]
-    [tupelo.test :refer [deftest testing is verify verify-focus
-                          isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? ]]
+    [tupelo.test :refer [testing is verify verify-focus
+                         is isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
+                         throws? throws-not?
+                         ]]
     ))
 
 ; #todo add tests for cljs

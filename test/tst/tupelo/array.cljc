@@ -18,8 +18,11 @@
     [tupelo.string :as ts]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?
                                ]]
-    [tupelo.test :refer [deftest testing dotest verify is isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? ]]))
+    [tupelo.test :refer [testing is verify verify-focus
+                         is isnt is= isnt= is-set= is-nonblank=
+                         throws? throws-not?
+                         ]]
+    ))
 ;---------------------------------------------------------------------------------------------------
 #?(:cljs (enable-console-print!))
 ;---------------------------------------------------------------------------------------------------

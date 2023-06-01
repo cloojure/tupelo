@@ -8,20 +8,19 @@
   ;---------------------------------------------------------------------------------------------------
   ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
-  #?(:cljs (:require-macros
-             ; [tupelo.core]
-             [tupelo.test]
-             ))
+  #?(:cljs (:require-macros [tupelo.test]))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
     [tupelo.math :as math]
-    #?(:clj
-       [tupelo.types :as types])
-    [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
-    [tupelo.test :refer [deftest is verify verify-focus isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? ]]
 
-    #?(:cljs [goog.string.format])))
+    [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
+    [tupelo.test :refer [testing is verify verify-focus
+                         is isnt is= isnt= is-set= is-nonblank=
+                         throws? throws-not?]]
+    )
+  #?(:clj  (:require [tupelo.types :as types])
+     :cljs (:require [goog.string.format]))
+  )
 
 ;---------------------------------------------------------------------------------------------------
 #?(:cljs (enable-console-print!))
