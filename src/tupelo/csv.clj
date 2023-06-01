@@ -46,9 +46,7 @@
     (let [attr-keys (keys attrs)
           attr-vecs (vals attrs)
           >>        (let [col-lens (mapv count attr-vecs)] ; #todo test this
-                      (when-not (apply = col-lens)
-                        (throw (ex-info "column lengths must be equal"
-                                 (vals->map attr-keys col-lens)))))
+                      (assert-info (apply = col-lens) "column lengths must be equal" (vals->map attr-keys col-lens)))
           row-vals  (apply mapv vector attr-vecs)
           row-maps  (mapv #(zipmap attr-keys %) row-vals)]
       row-maps)))
@@ -158,9 +156,8 @@
              entities         (forv [line data-lines]
                                 (let [data-fields (mapv val-fn line)
                                       num-fields  (count data-fields)]
-                                  (when (not= num-keys num-fields)
-                                    (throw (ex-info "Incorrect number of fields"
-                                             (vals->map num-keys num-fields keys-vec line))))
+                                  (assert-info (= num-keys num-fields)
+                                    "Incorrect number of fields" (vals->map num-keys num-fields keys-vec line))
                                   (zipmap keys-vec data-fields)))]
          entities)))))
 

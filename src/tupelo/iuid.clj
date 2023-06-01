@@ -46,8 +46,8 @@
     opts)
 
   (let [num-bits (grab :num-bits opts)]
-    (when-not (<= min-bits num-bits max-bits)
-      (throw (ex-info "num-bits out of range " (vals->map num-bits min-bits max-bits)))))
+    (assert-info  (<= min-bits num-bits max-bits)
+      "num-bits out of range " (vals->map num-bits min-bits max-bits)))
   (let [params-default {:num-rounds    7
                         :shuffle-bits? false}
         ctx            (prng/new-ctx (glue params-default opts))]

@@ -19,7 +19,7 @@
                                   assert-info try-catchall with-exception-default verify-form
                                   if-java-1-8-plus
                                   when-clojure-1-8-plus when-clojure-1-9-plus when-not-clojure-1-9-plus
-                                  destruct lazy-gen yield yield-all matches?]]))
+                                    destruct lazy-gen yield yield-all matches?]]))
 
   (:require
     [clojure.core :as cc]

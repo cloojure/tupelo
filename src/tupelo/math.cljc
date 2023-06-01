@@ -15,7 +15,7 @@
        [tupelo.misc :refer [with-dots]]))
   (:require
     [schema.core :as s]
-    [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map]]
+    [tupelo.core :as t :refer [glue grab thru kw->str validate it-> spyx spyxx vals->map  assert-info]]
     )
   #?(:clj
      (:import
@@ -25,9 +25,8 @@
 (s/defn factorial :- s/Int
   "Computes the factorial of N"
   [n :- s/Int]
-  (when (or (neg? n)
-          (not (int? n)))
-    (throw (ex-info "factorial: N must be a non-negative integer=" (vals->map n))))
+  (assert-info (and (t/nonneg? n) (int? n))
+    "factorial: N must be a non-negative integer=" (vals->map n))
   (if (zero? n)
     1
     (apply * (thru 1 n))))
@@ -130,10 +129,10 @@
        "An BigInteger version of java.Math/pow( base, exp )"
        [base :- s/Int
         exp :- s/Int]
-       (when-not (int? base) (throw (ex-info "base must be an integer" (vals->map base))))
-       (when-not (int? exp) (throw (ex-info "exp must be an integer" (vals->map exp))))
-       (when-not (t/nonneg? base) (throw (ex-info "base must be nonneg" (vals->map base))))
-       (when-not (t/nonneg? exp) (throw (ex-info "exp must be nonneg" (vals->map exp))))
+       (assert-info (int? base) "base must be an integer" (vals->map base))
+       (assert-info (int? exp) "exp must be an integer" (vals->map exp))
+       (assert-info (t/nonneg? base) "base must be nonneg" (vals->map base))
+       (assert-info (t/nonneg? exp) "exp must be nonneg" (vals->map exp))
        (.pow ^BigInteger (biginteger base) exp))
 
      (s/defn pow->Long :- s/Int

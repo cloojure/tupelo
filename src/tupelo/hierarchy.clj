@@ -4,11 +4,11 @@
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
-(ns tupelo.hierarchy 
+(ns tupelo.hierarchy
   (:require
     [clojure.set :as set]
     [schema.core :as s]
-    [tupelo.core :as t :refer [spyx spyxx it-> ] ]
+    [tupelo.core :as t :refer [spyx spyxx it-> assert-info]]
     [tupelo.schema :as tsk]))
 
 (def ^:no-doc Symbol-or-Keyword
@@ -17,10 +17,10 @@
 (s/defn ^:no-doc validate-item-types
   [items :- [Symbol-or-Keyword]]
   (let [item-types (set (mapv type items))]
-    (when-not (or
-                (= #{clojure.lang.Keyword} item-types)
-                (= #{clojure.lang.Symbol} item-types))
-      (throw (ex-info "items must be all Keyword or all Symbol" (t/vals->map items))))))
+    (assert-info (or
+                   (= #{clojure.lang.Keyword} item-types)
+                   (= #{clojure.lang.Symbol} item-types))
+      "items must be all Keyword or all Symbol" (t/vals->map items))))
 
 (s/defn lineage-to-item :- tsk/Set
   "Returns a set of an items ancestors, including the item itself."

@@ -34,8 +34,8 @@
 (s/defn long->bits-unsigned :- [s/Int]
   "Given a positive Long value, returns a 64-len vector of 0/1 integer values"
   [long-val :- s/Int]
-  (when-not (<= 0 long-val Long/MAX_VALUE)
-    (throw (ex-info "value out of range [0..Long/MAX_VALUE]" (vals->map long-val))))
+  (assert-info (<= 0 long-val Long/MAX_VALUE)
+    "value out of range [0..Long/MAX_VALUE]" (vals->map long-val))
   (let [binary-chars  (Long/toBinaryString long-val)
         bits          (mapv bitchar->bitval binary-chars)
         nbits         (count bits)
@@ -55,8 +55,8 @@
 (s/defn byte->bits-unsigned :- [s/Int]
   "Given a positive Byte value, returns an 8-len vector of 0/1 integer values"
   [byte-val :- s/Int]
-  (when-not (<= 0 byte-val Byte/MAX_VALUE)
-    (throw (ex-info "value out of range [0..Byte/MAX_VALUE]" (vals->map byte-val))))
+  (assert-info (<= 0 byte-val Byte/MAX_VALUE)
+    "value out of range [0..Byte/MAX_VALUE]" (vals->map byte-val))
   (vec (take-last 8 (long->bits-unsigned byte-val))))
 
 (s/defn bits-unsigned->byte :- s/Int

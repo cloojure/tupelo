@@ -32,8 +32,7 @@
                               (t/with-exception-default ::edn-non-parsible
                                 (let [item-str (pr-str item)
                                       item-edn (edn/read-string item-str)]
-                                  (when-not (= item item-edn)
-                                    (throw (ex-info "edn-non-parsible" {:data data})))
+                                  (t/assert-info  (= item item-edn) "edn-non-parsible" {:data data})
                                   item)))
         data-unlazy         (t/unlazy data) ; coerce to map/vector/string wherever possible
         data-parsible       (walk/postwalk edn-parse-roundtrip data-unlazy)]

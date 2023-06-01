@@ -61,8 +61,7 @@
    ival :- s/Int]
   ; (prof/with-timer-accum :randomize-frame)
   (with-map-vals ctx [num-bits N-max slopes offsets shuffle-bits? bit-shuffle-idxs-orig]
-    (when-not (and (<= 0 ival) (< ival N-max))
-      (throw (ex-info "ival out of range" (vals->map ival N-max))))
+    (assert-info  (and (<= 0 ival) (< ival N-max)) "ival out of range" (vals->map ival N-max))
     ; calculate mod( y = mx + b ), then shuffle bits
     (let [slope      (get slopes iround)
           offset     (get offsets iround)
@@ -81,8 +80,7 @@
    iuid :- s/Int]
   ; (prof/with-timer-accum :derandomize-frame)
   (with-map-vals ctx [num-bits N-max slopes-inv offsets shuffle-bits? bit-shuffle-idxs-prng]
-    (when-not (and (<= 0 iuid) (< iuid N-max))
-      (throw (ex-info "iuid out of range" (vals->map iuid N-max))))
+    (assert-info  (and (<= 0 iuid) (< iuid N-max)) "iuid out of range" (vals->map iuid N-max))
     (let [slope-inv    (get slopes-inv iround)
           offset       (get offsets iround)
           iuid         (biginteger iuid)
@@ -155,12 +153,11 @@
 
       ;-----------------------------------------------------------------------------
       ; sanity checks
-      (when-not (<= min-bits num-bits max-bits)
-        (throw (ex-info "num-bits out of range " (vals->map num-bits min-bits max-bits))))
+      (assert-info  (<= min-bits num-bits max-bits) "num-bits out of range " (vals->map num-bits min-bits max-bits))
       ; (assert (biginteger? offset))
       ; (assert (biginteger? slope))
-      #_(when-not (odd? slope) ; odd => relatively prime to 2^N
-          (throw (ex-info "slope failed even test" (vals->map slope))))
+      #_(assert-info  (odd? slope) ; odd => relatively prime to 2^N
+          "slope failed even test" (vals->map slope))
 
       (when false ; ***** ENABLE TO SEE PRINTOUT *****
         (spyx num-bits)
