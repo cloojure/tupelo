@@ -32,15 +32,13 @@
     [schema.core :as s]
     [tupelo.lexical :as lex]
     [tupelo.schema :as tsk])
-  #?(:clj
-     (:require [cheshire.core :as cheshire]
-               [clojure.core.match :as ccm]
-               [flatland.ordered.map :as omap]
-               [flatland.ordered.set :as oset]
-               [tupelo.types :as types]))
-  #?(:clj
-     (:import [java.io BufferedReader ByteArrayOutputStream PrintStream StringReader OutputStream]
-              [java.nio ByteBuffer])))
+  #?(:clj (:require [cheshire.core :as cheshire]
+                    [clojure.core.match :as ccm]
+                    [flatland.ordered.map :as omap]
+                    [flatland.ordered.set :as oset]
+                    [tupelo.types :as types]))
+  #?(:clj (:import [java.io BufferedReader ByteArrayOutputStream PrintStream StringReader OutputStream]
+                   [java.nio ByteBuffer])))
 
 ;---------------------------------------------------------------------------------------------------
 ; #todo unify terminolgy (atom/ref/agent)
@@ -2024,8 +2022,8 @@
        (println hyphens)))
   #?(:cljs
      (let [version-str (str "ClojureScript " *clojurescript-version*)
-           num-hyphen  (+ 6 (count version-str))
-           hyphens     (strcat (repeat num-hyphen \-))
+           num-hyphen (+ 6 (count version-str))
+           hyphens (strcat (repeat num-hyphen \-))
            version-str (strcat "   " version-str)]
        (newline)
        (println hyphens)
