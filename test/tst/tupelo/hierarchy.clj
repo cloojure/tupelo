@@ -5,21 +5,15 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.hierarchy
-;---------------------------------------------------------------------------------------------------
-;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
-;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
-;#?(:cljs (:require-macros
-;           [tupelo.testy]
-;           ))
 (:require
   [clojure.test] ; sometimes this is required - not sure why
   [tupelo.hierarchy :as th]
   [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?
                              ]]
-  [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
-                        throws? throws-not? define-fixture]]))
+  [tupelo.test :refer [deftest testing is verify verify-focus isnt is= isnt= is-set= is-nonblank=
+                        throws? throws-not? ]]))
 
-(dotest
+(verify
   (throws? (th/validate-item-types [:a :b 'c]))
   (throws-not? (th/validate-item-types [:a :b :c]))
   (throws-not? (th/validate-item-types ['a 'b 'c]))

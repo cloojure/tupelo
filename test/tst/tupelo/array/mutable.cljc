@@ -8,16 +8,14 @@
   ;---------------------------------------------------------------------------------------------------
   ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
-  #?(:cljs (:require-macros [tupelo.testy]))
+  #?(:cljs (:require-macros [tupelo.test]))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
     [tupelo.array.mutable :as tam]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]]
-    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture]]
+    [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? ]]
     ))
-
-; #todo restore this???  (st/use-fixtures :once st/validate-schemas)
 
 (dotest
   (let [a34  (tam/new 3 4 :a)

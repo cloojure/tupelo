@@ -1,6 +1,5 @@
 (ns tst.tupelo.profile
-  (:use tupelo.core
-        tupelo.test)
+  (:use tupelo.core tupelo.test tupelo.test-jvm)
   (:require
     [overtone.at-at :as at]
     [tupelo.profile :as prof :refer [defnp]])

@@ -6,13 +6,13 @@
 ;   software.
 (ns  tst.tupelo.string.safe
   #?(:cljs (:require-macros
-             [tupelo.testy]
+             [tupelo.test]
              ))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty forv]]
-    [tupelo.testy :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
-                          throws? throws-not? define-fixture ]]
+    [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
+                          throws? throws-not?  ]]
     [tupelo.string.safe :as safe]
     ))
 

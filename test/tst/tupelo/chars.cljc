@@ -11,15 +11,15 @@
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
   #?(:cljs (:require-macros
              [tupelo.misc]
-             [tupelo.testy]
+             [tupelo.test]
              ))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
     [tupelo.chars :as chars]
     [tupelo.core :as t :refer [spyx spyx-pretty forv]]
 
-    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture ]]
+    [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not?  ]]
     ))
 
 ; #todo add generative testing?

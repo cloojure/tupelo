@@ -11,8 +11,8 @@
     [clojure.test] ; sometimes this is required - not sure why
     [schema.core :as s]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
-    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture]])
+    [tupelo.test :refer [deftest testing dotest verify is isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? ]])
   )
 
 #?(:cljs (enable-console-print!))
@@ -23,7 +23,7 @@
 ; #todo add to Schema docs
 ; (set! *warn-on-reflection* true)  ; #todo enable?
 
-(dotest
+(verify
   (t/print-versions)
   ;(spyx (s/fn-validation?))
 

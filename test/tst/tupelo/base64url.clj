@@ -5,7 +5,7 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.base64url
-  (:use tupelo.test)
+  (:use tupelo.test tupelo.test-jvm)
   (:require [clojure.string                         :as str]
             [clojure.test.check                     :as tc]
             [clojure.test.check.generators          :as gen]

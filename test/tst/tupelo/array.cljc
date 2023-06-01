@@ -10,7 +10,7 @@
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
   #?(:cljs (:require-macros
              [tupelo.array]
-             [tupelo.testy]
+             [tupelo.test]
              ))
   (:require
     [clojure.test] ; sometimes this is required - not sure why
@@ -18,8 +18,8 @@
     [tupelo.string :as ts]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?
                                ]]
-    [tupelo.testy :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture]]))
+    [tupelo.test :refer [deftest testing dotest verify is isnt is= isnt= is-set= is-nonblank=
+                          throws? throws-not? ]]))
 ;---------------------------------------------------------------------------------------------------
 #?(:cljs (enable-console-print!))
 ;---------------------------------------------------------------------------------------------------
