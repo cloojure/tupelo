@@ -23,7 +23,7 @@
     [tupelo.test :refer [deftest testing is
                          dotest dotest-focus verify verify-focus
                          is isnt is= isnt= is-set= is-nonblank=
-                         throws? throws-not? define-fixture
+                         throws? throws-not?
                          ]])
   #?(:clj (:require [tupelo.types :as types]
                     [tupelo.lexical :as lex]))
@@ -35,13 +35,14 @@
 #?(:clj
    (do
 
-     (define-fixture :once
-       {:enter (fn [ctx]
-                 ; (newline) (println "*** TEST ONCE *** - tst.tupelo.core enter ")
-                 )
-        :leave (fn [ctx]
-                 ;  (println "*** TEST ONCE *** - tst.tupelo.core leave ")
-                 )})
+     ; #todo make this work
+     ;(define-fixture :once
+     ;  {:enter (fn [ctx]
+     ;            ; (newline) (println "*** TEST ONCE *** - tst.tupelo.core enter ")
+     ;            )
+     ;   :leave (fn [ctx]
+     ;            ;  (println "*** TEST ONCE *** - tst.tupelo.core leave ")
+     ;            )})
 
      (dotest
        (is-nonblank= "clojure.core/println"

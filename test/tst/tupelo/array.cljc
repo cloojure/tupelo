@@ -19,7 +19,7 @@
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?
                                ]]
     [tupelo.test :refer [deftest testing dotest verify is isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture]]))
+                          throws? throws-not? ]]))
 ;---------------------------------------------------------------------------------------------------
 #?(:cljs (enable-console-print!))
 ;---------------------------------------------------------------------------------------------------

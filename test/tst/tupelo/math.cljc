@@ -19,7 +19,7 @@
        [tupelo.types :as types])
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
     [tupelo.test :refer [deftest is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture]]
+                          throws? throws-not? ]]
 
     #?(:cljs [goog.string.format])))
 

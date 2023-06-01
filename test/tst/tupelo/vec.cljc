@@ -21,7 +21,7 @@
     [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty unlazy let-spy only forv glue ]]
     [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture ]]
+                          throws? throws-not?  ]]
     ))
 
 ; #todo fix for cljs

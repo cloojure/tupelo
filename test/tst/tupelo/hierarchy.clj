@@ -11,7 +11,7 @@
   [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?
                              ]]
   [tupelo.test :refer [deftest testing is verify verify-focus isnt is= isnt= is-set= is-nonblank=
-                        throws? throws-not? define-fixture]]))
+                        throws? throws-not? ]]))
 
 (verify
   (throws? (th/validate-item-types [:a :b 'c]))

@@ -9,7 +9,7 @@
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
     [tupelo.schema :as tsk]
     [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture]]
+                          throws? throws-not? ]]
     ))
 
 ; #todo add more tests (& test.check for Eid, etc)

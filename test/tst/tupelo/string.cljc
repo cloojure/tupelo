@@ -17,7 +17,7 @@
     [clojure.core :as cc]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty forv]]
     [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
-                          throws? throws-not? define-fixture]]
+                          throws? throws-not? ]]
     [tupelo.chars :as char]
     [tupelo.string :as str]
     ))

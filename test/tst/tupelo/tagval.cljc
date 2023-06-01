@@ -20,7 +20,7 @@
                                ]]
 
     [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture ]]
+                          throws? throws-not? ]]
     ))
 
 ; (defn tv [t v] (td/->TagVal t v))

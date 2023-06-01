@@ -17,7 +17,7 @@
     [clojure.data.avl :as avl]
     [tupelo.lexical :as lex]
     [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture]]
+                          throws? throws-not? ]]
     [tupelo.core.impl :as impl])
 )
 

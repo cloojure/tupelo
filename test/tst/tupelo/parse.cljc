@@ -17,7 +17,7 @@
     [tupelo.misc :as misc]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
     [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture]])
+                          throws? throws-not? ]])
   #?(:clj (:import [java.lang Math]))
   )
 

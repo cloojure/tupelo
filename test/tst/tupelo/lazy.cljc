@@ -17,7 +17,7 @@
     [tupelo.lazy :as lazy]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty ]]
     [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture ]]
+                          throws? throws-not?  ]]
     ))
 
 ; #todo add generative testing?

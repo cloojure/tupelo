@@ -19,7 +19,7 @@
                                  vals->map xmap? forv glue keep-if]]
       [tupelo.interval :as interval]
       [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank=
-                            throws? throws-not? define-fixture]])
+                            throws? throws-not? ]])
     )
 
 #?(:cljs (enable-console-print!))

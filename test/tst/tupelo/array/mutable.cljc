@@ -14,10 +14,8 @@
     [tupelo.array.mutable :as tam]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty forv vals->map glue truthy? falsey?]]
     [tupelo.test :refer [deftest testing is dotest isnt is= isnt= is-set= is-nonblank=
-                          throws? throws-not? define-fixture]]
+                          throws? throws-not? ]]
     ))
-
-; #todo restore this???  (st/use-fixtures :once st/validate-schemas)
 
 (dotest
   (let [a34  (tam/new 3 4 :a)

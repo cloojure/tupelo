@@ -12,7 +12,7 @@
     [clojure.test] ; sometimes this is required - not sure why
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty forv]]
     [tupelo.test :refer [deftest testing is dotest dotest-focus isnt is= isnt= is-set= is-nonblank= is-nonblank-lines=
-                          throws? throws-not? define-fixture ]]
+                          throws? throws-not?  ]]
     [tupelo.string.safe :as safe]
     ))
 
