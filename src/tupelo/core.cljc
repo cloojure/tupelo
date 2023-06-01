@@ -19,7 +19,7 @@
                                   assert-info try-catchall with-exception-default verify-form
                                   if-java-1-8-plus
                                   when-clojure-1-8-plus when-clojure-1-9-plus when-not-clojure-1-9-plus
-                                    destruct lazy-gen yield yield-all matches?]]))
+                                  destruct lazy-gen yield yield-all matches?]]))
 
   (:require
     [clojure.core :as cc]
@@ -679,7 +679,7 @@
 (defn has-length? ; #todo rework => (count= N coll)  ???
   "Returns true if the collection has the indicated length. Does not hang for infinite sequences."
   [coll n]
-  (assert-info (not-nil? coll)  "has-length?: coll must not be nil" {:coll coll})
+  (assert-info (not-nil? coll) "has-length?: coll must not be nil" {:coll coll})
   (let [take-items (cc/take n coll)
         rest-items (cc/drop n coll)]
     (and (= n (count take-items))
@@ -798,7 +798,7 @@
    coll :- tsk/Collection]
   (assert (number? n))
   (assert (or (sequential? coll) (map? coll) (set? coll)))
-  (assert-info  (and (not-nil? coll) (not-empty? coll))
+  (assert-info (and (not-nil? coll) (not-empty? coll))
     "xdrop: invalid coll: " {:coll coll})
   (let [taken     (cc/take n coll)
         taken-cnt (count taken)
@@ -830,7 +830,7 @@
 (defn xthird ; #todo -> tests
   "Returns the third value in a list or vector. Throws if (< len 3)."
   [coll]
-  (assert-info (and (not-nil? coll) (not-empty? coll))  "xthird: invalid coll: " {:coll coll})
+  (assert-info (and (not-nil? coll) (not-empty? coll)) "xthird: invalid coll: " {:coll coll})
   (nth coll 2))
 
 ; #todo fix up for maps
@@ -1357,9 +1357,9 @@
   (s/defn solomap->kv :- tsk/Pair ; #todo need test
     [solo-map :- tsk/Map]
     (let [map-seq (seq solo-map)
-          >>      (assert-info (= 1 (count map-seq)) "solo-map must be of length=1 " (vals->map solo-map)) ]
+          >>      (assert-info (= 1 (count map-seq)) "solo-map must be of length=1 " (vals->map solo-map))]
       (mapentry->kv (only map-seq))))
-    )
+  )
 
 (s/defn ->map-entry :- tsk/MapEntry ; #todo need test
   "Coerce arg into a clojure.lang.MapEntry"
@@ -2024,8 +2024,8 @@
        (println hyphens)))
   #?(:cljs
      (let [version-str (str "ClojureScript " *clojurescript-version*)
-           num-hyphen (+ 6 (count version-str))
-           hyphens (strcat (repeat num-hyphen \-))
+           num-hyphen  (+ 6 (count version-str))
+           hyphens     (strcat (repeat num-hyphen \-))
            version-str (strcat "   " version-str)]
        (newline)
        (println hyphens)
@@ -2997,7 +2997,7 @@
 
 (defn ^:no-doc destruct-impl
   [bindings forms]
-  (assert-info  (even? (count bindings)) "destruct: uneven number of bindings:" bindings)
+  (assert-info (even? (count bindings)) "destruct: uneven number of bindings:" bindings)
   (assert-info (not-empty? bindings) "destruct: bindings empty:" bindings)
   (let [binding-pairs (partition 2 bindings)
         datas         (mapv cc/first binding-pairs)
