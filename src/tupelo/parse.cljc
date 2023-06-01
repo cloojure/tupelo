@@ -12,12 +12,12 @@
    will be returned if there is an exception during parsing."
   (:refer-clojure :exclude [parse-long parse-double])
   (:require
-    [clojure.string :as str]
     [clojure.tools.reader.edn :as edn]
     [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.core :as t]
     [tupelo.schema :as tsk]
+    [tupelo.string :as str]
     ))
 
 ; #todo:  write doc page
