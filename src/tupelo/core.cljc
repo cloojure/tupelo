@@ -10,17 +10,17 @@
   ; See "ClojureScript Macro Tower & Loop" by Mike Fikes (2015-12-18)
   ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
-  #?(:cljs ; http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
-     (:require-macros
-       [tupelo.core.impl]
-       [tupelo.core :refer [it-> cond-it-> some-it->
-                            vals->map with-map-vals forv
-                            with-spy-indent spyx spyxx spy-pretty spyx-pretty
-                            let-spy let-spy-pretty let-some map-let* map-let lazy-cons
-                            try-catchall with-exception-default verify-form
-                            if-java-1-8-plus
-                            when-clojure-1-8-plus when-clojure-1-9-plus when-not-clojure-1-9-plus
-                            destruct lazy-gen yield yield-all matches?]]))
+  #?(:cljs (:require-macros [tupelo.core.impl]))
+  #?(:cljs (:require-macros
+             [tupelo.core :refer [it-> cond-it-> some-it->
+                                  vals->map with-map-vals forv
+                                  with-spy-indent spyx spyxx spy-pretty spyx-pretty
+                                  let-spy let-spy-pretty let-some map-let* map-let lazy-cons
+                                  assert-info try-catchall with-exception-default verify-form
+                                  if-java-1-8-plus
+                                  when-clojure-1-8-plus when-clojure-1-9-plus when-not-clojure-1-9-plus
+                                  destruct lazy-gen yield yield-all matches?]]))
+
   (:require
     [clojure.core :as cc]
     [clojure.core.async :as async]
@@ -679,7 +679,7 @@
 (defn has-length? ; #todo rework => (count= N coll)  ???
   "Returns true if the collection has the indicated length. Does not hang for infinite sequences."
   [coll n]
-  (when (nil? coll) (throw (ex-info "has-length?: coll must not be nil" {:coll coll})))
+  (assert-info (not-nil? coll)  "has-length?: coll must not be nil" {:coll coll})
   (let [take-items (cc/take n coll)
         rest-items (cc/drop n coll)]
     (and (= n (count take-items))
@@ -690,8 +690,7 @@
   Throws an exception if the length of the sequence is not one.
   Note that, for a length-1 sequence S, (first S), (last S) and (only S) are equivalent."
   [coll]
-  (when-not (has-length? coll 1)
-    (throw (ex-info "only: num-items must=1" {:coll coll})))
+  (assert-info (has-length? coll 1) "only: num-items must=1" {:coll coll})
   (clojure.core/first coll))
 
 (defn onlies
@@ -780,8 +779,8 @@
    ]
   (assert (number? n))
   (assert (or (sequential? coll) (map? coll) (set? coll)))
-  (when (or (nil? coll) (empty? coll))
-    (throw (ex-info "xtake: invalid coll: " {:coll coll})))
+  (assert-info (and (not-nil? coll) (not-empty? coll))
+    "xtake: invalid coll: " {:coll coll})
   (let [items  (cc/take n coll)
         actual (count items)]
     (when (< actual n)
@@ -799,13 +798,12 @@
    coll :- tsk/Collection]
   (assert (number? n))
   (assert (or (sequential? coll) (map? coll) (set? coll)))
-  (when (or (nil? coll) (empty? coll))
-    (throw (ex-info "xdrop: invalid coll: " {:coll coll})))
+  (assert-info  (and (not-nil? coll) (not-empty? coll))
+    "xdrop: invalid coll: " {:coll coll})
   (let [taken     (cc/take n coll)
         taken-cnt (count taken)
         remaining (cc/drop n coll)]
-    (when (not= taken-cnt n)
-      (throw (ex-info "xdrop: insufficient taken" {:n n :actual taken-cnt})))
+    (assert-info (= taken-cnt n) "xdrop: insufficient taken" {:n n :actual taken-cnt})
     (cond
       (sequential? coll) (vec remaining)
       (map? coll) (into {} remaining)
@@ -815,8 +813,8 @@
 (defn xfirst ; #todo -> tests
   "Returns the first value in a list or vector. Throws if empty."
   [coll]
-  (when (or (nil? coll) (empty? coll))
-    (throw (ex-info "xfirst: invalid coll: " {:coll coll})))
+  (assert-info (and (not-nil? coll) (not-empty? coll))
+    "xfirst: invalid coll: " {:coll coll})
   (nth coll 0))
 
 ; #todo fix up for maps
@@ -824,36 +822,36 @@
 (defn xsecond ; #todo -> tests
   "Returns the second value in a list or vector. Throws if (< len 2)."
   [coll]
-  (when (or (nil? coll) (empty? coll))
-    (throw (ex-info "xsecond: invalid coll: " {:coll coll})))
+  (assert-info (and (not-nil? coll) (not-empty? coll))
+    "xsecond: invalid coll: " {:coll coll})
   (nth coll 1))
 
 ; #todo fix up for maps
 (defn xthird ; #todo -> tests
   "Returns the third value in a list or vector. Throws if (< len 3)."
   [coll]
-  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xthird: invalid coll: " {:coll coll})))
+  (assert-info (and (not-nil? coll) (not-empty? coll))  "xthird: invalid coll: " {:coll coll})
   (nth coll 2))
 
 ; #todo fix up for maps
 (defn xfourth ; #todo -> tests
   "Returns the fourth value in a list or vector. Throws if (< len 4)."
   [coll]
-  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xfourth: invalid coll: " {:coll coll})))
+  (assert-info (and (not-nil? coll) (not-empty? coll)) "xfourth: invalid coll: " {:coll coll})
   (nth coll 3))
 
 ; #todo fix up for maps
 (s/defn xlast :- s/Any ; #todo -> tests
   "Returns the last value in a list or vector. Throws if empty."
   [coll :- [s/Any]]
-  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xlast: invalid coll: " {:coll coll})))
+  (assert-info (and (not-nil? coll) (not-empty? coll)) "xlast: invalid coll: " {:coll coll})
   (clojure.core/last coll))
 
 ; #todo fix up for maps
 (s/defn xbutlast :- s/Any ; #todo -> tests
   "Returns a vector of all but the last value in a list or vector. Throws if empty."
   [coll :- [s/Any]]
-  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xbutlast: invalid coll: " {:coll coll})))
+  (assert-info (and (not-nil? coll) (not-empty? coll)) "xbutlast: invalid coll: " {:coll coll})
   (vec (clojure.core/butlast coll)))
 
 ; #todo need xnext
@@ -862,19 +860,19 @@
 (defn xrest ; #todo -> tests
   "Returns the last value in a list or vector. Throws if empty."
   [coll]
-  (when (or (nil? coll) (empty? coll)) (throw (ex-info "xrest: invalid coll: " {:coll coll})))
+  (assert-info (and (not-nil? coll) (not-empty? coll)) "xrest: invalid coll: " {:coll coll})
   (clojure.core/rest coll))
 
 (defn xreverse ; #todo -> tests & doc
   "Returns a vector containing a sequence in reversed order. Throws if nil."
   [coll]
-  (when (nil? coll) (throw (ex-info "xreverse: invalid coll: " {:coll coll})))
+  (assert-info (not-nil? coll) "xreverse: invalid coll: " {:coll coll})
   (vec (clojure.core/reverse coll)))
 
 (s/defn xvec :- [s/Any]
   "Converts a collection into a vector. Throws if given nil."
   [coll :- [s/Any]]
-  (when (nil? coll) (throw (ex-info "xvec: invalid coll: " {:coll coll})))
+  (assert-info (not-nil? coll) "xvec: invalid coll: " {:coll coll})
   (clojure.core/vec coll))
 
 (s/defn ->list :- [s/Any]
@@ -921,8 +919,8 @@
   (let
     [bindings-vec (xfirst forms)
      body-forms   (xrest forms)
-     >>           (when-not (= 2 (count bindings-vec))
-                    (throw (ex-info "for-indexed: binding form must be len=2 " (vals->map bindings-vec))))
+     >>           (assert-info (= 2 (count bindings-vec))
+                    "for-indexed: binding form must be len=2 " (vals->map bindings-vec))
      bndg-dest    (xfirst bindings-vec)
      bndg-src     (xsecond bindings-vec)]
     `(vec
@@ -979,10 +977,8 @@
   "Given a sequential object (vector or list), add one or more elements to the end."
   [listy :- tsk/List
    & elems :- [s/Any]]
-  (when-not (sequential? listy)
-    (throw (ex-info "append: Sequential collection required, found=" {:listy listy})))
-  (when-not (not-empty? elems)
-    (throw (ex-info "Nothing to append! elems=" {:elems elems})))
+  (assert-info (sequential? listy) "append: Sequential collection required, found=" {:listy listy})
+  (assert-info (not-empty? elems) "Nothing to append! elems=" {:elems elems})
   ; (vec (concat listy elems))  ; #TODO ***WARNING*** never use `concat`!!! 1000x slower!
   (into (vec listy) elems)) ; #todo measure & write blog re TPX/TigerGraph data
 
@@ -991,10 +987,8 @@
   [& args]
   (let [elems (butlast args)
         listy (xlast args)]
-    (when-not (sequential? listy)
-      (throw (ex-info "prepend: Sequential collection required, found=" {:listy listy})))
-    (when-not (not-empty? elems)
-      (throw (ex-info "Nothing to prepend! elems=" {:elems elems})))
+    (assert-info (sequential? listy) "prepend: Sequential collection required, found=" {:listy listy})
+    (assert-info (not-empty? elems) "Nothing to prepend! elems=" {:elems elems})
     (into (vec elems) listy)))
 
 ;-----------------------------------------------------------------------------
@@ -1240,8 +1234,7 @@
    last expression."
   [& exprs]
   (let [decls      (xfirst exprs)
-        _          (when (not (even? (count decls)))
-                     (throw (ex-info "spy-let-proc: uneven number of decls:" {:decls decls})))
+        _          (assert-info (even? (count decls)) "spy-let-proc: uneven number of decls:" {:decls decls})
         forms      (xrest exprs)
         fmt-pair   (fn [[dest src]]
                      [dest src
@@ -1257,8 +1250,7 @@
    last expression."
   [& exprs]
   (let [decls      (xfirst exprs)
-        _          (when (not (even? (count decls)))
-                     (throw (ex-info "spy-let-pretty-impl: uneven number of decls:" {:decls decls})))
+        _          (assert-info (even? (count decls)) "spy-let-pretty-impl: uneven number of decls:" {:decls decls})
         forms      (xrest exprs)
         fmt-pair   (fn [[dest src]]
                      [dest src
@@ -1284,8 +1276,7 @@
    last expression."
   [& exprs]
   (let [decls      (xfirst exprs)
-        _          (when (not (even? (count decls)))
-                     (throw (ex-info "spy-let-proc: uneven number of decls:" {:decls decls})))
+        _          (assert-info (even? (count decls)) "spy-let-proc: uneven number of decls:" {:decls decls})
         forms      (xrest exprs)
         fmt-pair   (fn [[dest src]]
                      [dest src
@@ -1366,10 +1357,9 @@
   (s/defn solomap->kv :- tsk/Pair ; #todo need test
     [solo-map :- tsk/Map]
     (let [map-seq (seq solo-map)
-          >>      (when-not #(= 1 (count map-seq))
-                    (throw (ex-info "solo-map must be of length=1 " (vals->map solo-map))))]
+          >>      (assert-info (= 1 (count map-seq)) "solo-map must be of length=1 " (vals->map solo-map)) ]
       (mapentry->kv (only map-seq))))
-  )
+    )
 
 (s/defn ->map-entry :- tsk/MapEntry ; #todo need test
   "Coerce arg into a clojure.lang.MapEntry"
@@ -1378,12 +1368,10 @@
     (map-entry? arg) arg
     (or (list? arg)
       (vector? arg)) (do
-                       (when-not #(= 2 (count arg))
-                         (throw (ex-info "map-entry must be of len=2" {:arg arg})))
+                       (assert-info (= 2 (count arg)) "map-entry must be of len=2" {:arg arg})
                        (map-entry (xfirst arg) (xsecond arg)))
     (map? arg) (let [arg-seq (seq arg)]
-                 (when-not #(= 1 (count arg-seq))
-                   (throw (ex-info "map must be of len=1" {:arg arg})))
+                 (assert-info #(= 1 (count arg-seq)) "map must be of len=1" {:arg arg})
                  (xfirst arg-seq))))
 
 (defn glue
@@ -1423,10 +1411,8 @@
   Equivalent to `(apply glue ...)`"
   [coll-2d ; :- tsk/List
    ]
-  (when-not (sequential? coll-2d)
-    (throw (ex-info "Sequential collection required, found=" coll-2d)))
-  (when-not (every? sequential? coll-2d)
-    (throw (ex-info "Nested sequential collections required, found=" coll-2d)))
+  (assert-info (sequential? coll-2d) "Sequential collection required, found=" coll-2d)
+  (assert-info (every? sequential? coll-2d) "Nested sequential collections required, found=" coll-2d)
   (reduce into [] coll-2d))
 
 ; #todo rename to (map-of a b c ...)  ??? (re. potpuri)
@@ -1659,8 +1645,7 @@
 (defn ^:no-doc cond-it-impl
   [expr & forms]
   (let [num-forms (count forms)]
-    (when-not (even? num-forms)
-      (throw (ex-info "num-forms must be even; value=" (vals->map num-forms forms)))))
+    (assert-info (even? num-forms) "num-forms must be even; value=" (vals->map num-forms forms)))
   (let [cond-action-pairs (partition 2 forms)
         cond-action-forms (for [[cond-form action-form] cond-action-pairs]
                             `(if ~cond-form
@@ -1731,10 +1716,8 @@
   ([src-map :- tsk/Map
     path-vec :- tsk/Vec
     ascending? :- s/Bool]
-   (when-not (= :* (xfirst path-vec))
-     (throw (ex-info "First path element must be `:*`" (vals->map path-vec))))
-   (when-not (pos? (count path-vec))
-     (throw (ex-info "path-vec must have at least 2 elements" (vals->map path-vec))))
+   (assert-info (= :* (xfirst path-vec)) "First path element must be `:*`" (vals->map path-vec))
+   (assert-info (pos? (count path-vec)) "path-vec must have at least 2 elements" (vals->map path-vec))
    (let [path-tail       (xrest path-vec)
          sortable-unique (fn [key]
                            (let [fetch-in-path (prepend key path-tail)
@@ -1845,9 +1828,7 @@
              result             (increasing-or-equal? tgt-version-vec actual-version-vec)]
          result))
 
-     (when-not (java-version-min? "1.7")
-       (throw (ex-info "Must have at least Java 1.7" {:java-version (java-version-str)})))
-
+     (assert-info (java-version-min? "1.7") "Must have at least Java 1.7" {:java-version (java-version-str)})
 
      (defn is-java-8-plus? [] (java-version-min? "1.8")) ; ***** NOTE: version string is still `1.8` *****
      (defn is-java-11-plus? [] (java-version-min? "11")) ; #todo need test
@@ -2099,8 +2080,7 @@
   "Threads forms as with `when-some`, but allow more than 1 pair of binding forms."
   [bindings & forms]
   (let [num-bindings (count bindings)]
-    (when-not (even? num-bindings)
-      (throw (ex-info (str "num-bindings must be even; value=" num-bindings) bindings)))
+    (assert-info (even? num-bindings) (str "num-bindings must be even; value=" num-bindings) bindings)
     (if (pos? num-bindings)
       `(let [result# ~(cc/second bindings)]
          (when (not-nil? result#)
@@ -2118,18 +2098,14 @@
     {:strict true
      :lazy   false}"
   [context bindings & forms]
-  (when (empty? bindings)
-    (throw (ex-info "map-let*: bindings cannot be empty=" bindings)))
-  (when-not (even? (count bindings))
-    (throw (ex-info "map-let*: (count bindings) must be even=" bindings)))
-  (when-not (pos? (count forms))
-    (throw (ex-info "map-let*: forms cannot be empty=" forms)))
+  (assert-info (not-empty? bindings) "map-let*: bindings cannot be empty=" bindings)
+  (assert-info (even? (count bindings)) "map-let*: (count bindings) must be even=" bindings)
+  (assert-info (pos? (count forms)) "map-let*: forms cannot be empty=" forms)
   (let [binding-pairs (partition 2 bindings)
         syms          (mapv xfirst binding-pairs)
         colls         (mapv xsecond binding-pairs)]
     `(do
-       (when-not (map? ~context)
-         (throw (ex-info "map-let*: context must be a map=" ~context)))
+       (assert-info (map? ~context) "map-let*: context must be a map=" ~context)
        (let [lazy#          (get ~context :lazy false)
              strict#        (get ~context :strict true)
              lengths#       (mapv count ~colls)
@@ -2163,13 +2139,10 @@
 (s/defn xmap :- tsk/Vec
   "Like clojure.core/mapv, but throws if colls are not of equal length."
   [map-fn & colls]
-  (when (empty? colls)
-    (throw (ex-info "colls cannot be empty" {})))
+  (assert-info (not-empty? colls) "colls cannot be empty" {})
   (let [col-lens (mapv count colls)]
-    (when-not (apply = col-lens)
-      (throw (ex-info "xmap: colls must all be same length" (vals->map col-lens))))
+    (assert-info (apply = col-lens) "xmap: colls must all be same length" (vals->map col-lens))
     (apply mapv map-fn colls)))
-
 
 ; #todo rename :strict -> :trunc
 (defn zip-1*
@@ -2294,18 +2267,13 @@
   {:pre  [(number? val1) (number? val2)]
    :post [(contains? #{true false} %)]}
   (let [{:keys [digits tol]} opts]
-    (when-not (or digits tol)
-      (throw (ex-info "Must specify either :digits or :tol" opts)))
+    (assert-info (or digits tol) "Must specify either :digits or :tol" opts)
     (when tol
-      (when-not (number? tol)
-        (throw (ex-info ":tol must be a number" opts)))
-      (when-not (pos? tol)
-        (throw (ex-info ":tol must be positive" opts))))
+      (assert-info (number? tol) ":tol must be a number" opts)
+      (assert-info (pos? tol) ":tol must be positive" opts))
     (when digits
-      (when-not (integer? digits)
-        (throw (ex-info ":digits must be an integer" opts)))
-      (when-not (pos? digits)
-        (throw (ex-info ":digits must positive" opts))))
+      (assert-info (integer? digits) ":digits must be an integer" opts)
+      (assert-info (pos? digits) ":digits must positive" opts))
     ; At this point, there were no invalid args and at least one of
     ; either :tol and/or :digits was specified.  So, return the answer.
     (let [val1      (double val1)
@@ -2332,8 +2300,7 @@
   [x-vals y-vals & opts]
   (let [num-x (count x-vals)
         num-y (count y-vals)]
-    (when-not (= num-x num-y)
-      (throw (ex-info ": x-vals & y-vals must be same length" (vals->map num-x num-y)))))
+    (assert-info (= num-x num-y) ": x-vals & y-vals must be same length" (vals->map num-x num-y)))
   (every? truthy?
     (clojure.core/map #(apply rel= %1 %2 opts)
       x-vals y-vals)))
@@ -2393,8 +2360,8 @@
          nsteps-dbl     (/ (double delta) (double step))
          nsteps-int     (Math/round nsteps-dbl)
          rounding-error (Math/abs (- nsteps-dbl nsteps-int))]
-     (when (< 0.00001 rounding-error)
-       (throw (ex-info "thru: non-integer number of steps \n   args:" (vals->map start end step))))
+     (assert-info (< rounding-error 0.00001)
+       "thru: non-integer number of steps \n   args:" (vals->map start end step))
      (vec (clojure.core/map #(-> %
                                (* step)
                                (+ start))
@@ -2418,10 +2385,9 @@
         stop-int  (if (integer? stop-char) stop-char (char->codepoint stop-char))
         thru-vals (thru start-int stop-int)
         char-vals (mapv codepoint->char thru-vals)]
-    (when (< 65535 stop-int) ; #todo cleanup limit
-      (throw (ex-info "chars-thru: stop-int too large" (vals->map start-int stop-int))))
-    (when-not (<= start-int stop-int)
-      (throw (ex-info "chars-thru: start-char must come before stop-char." (vals->map start-int stop-int))))
+    (assert-info (<= stop-int 65535) ; #todo cleanup limit
+      "chars-thru: stop-int too large" (vals->map start-int stop-int))
+    (assert-info (<= start-int stop-int) "chars-thru: start-char must come before stop-char." (vals->map start-int stop-int))
     char-vals))
 
 (s/defn repeat-dims :- [s/Any]
@@ -2529,8 +2495,7 @@
   {:sample-val sample-val :tst-result tst-result}."
   [tst-fn tst-val]
   (let [tst-result (tst-fn tst-val)]
-    (when-not (truthy? tst-result)
-      (throw (ex-info "validate: " (vals->map tst-val tst-result))))
+    (assert-info (truthy? tst-result) "validate: " (vals->map tst-val tst-result))
     tst-val))
 
 (defn validate-or-default
@@ -2679,10 +2644,8 @@
   "Removes an element from a collection at the specified index."
   [coll :- tsk/List
    index :- s/Int]
-  (when (neg? index)
-    (throw (ex-info "Index cannot be negative " index)))
-  (when (<= (count coll) index)
-    (throw (ex-info "Index cannot exceed collection length: " {:length (count coll) :index index})))
+  (assert-info (nonneg? index) "Index cannot be negative " index)
+  (assert-info (< index (count coll)) "Index cannot exceed collection length: " {:length (count coll) :index index})
   (glue (take index coll)
     (drop (inc index) coll)))
 
@@ -2694,10 +2657,8 @@
   [coll :- tsk/List
    index :- s/Int
    elem :- s/Any]
-  (when (neg? index)
-    (throw (ex-info "Index cannot be negative " index)))
-  (when (< (count coll) index)
-    (throw (ex-info "Index cannot exceed collection length: " {:length (count coll) :index index})))
+  (assert-info (nonneg? index) "Index cannot be negative " index)
+  (assert-info (<= index (count coll)) "Index cannot exceed collection length: " {:length (count coll) :index index})
   (glue (take index coll) [elem]
     (drop index coll)))
 
@@ -2709,8 +2670,7 @@
   [coll :- tsk/List
    index :- s/Int
    elem :- s/Any]
-  (when (neg? index)
-    (throw (ex-info "Index cannot be negative " index)))
+  (assert-info (nonneg? index) "Index cannot be negative " index)
   (when (<= (count coll) index)
     (throw (ex-info "Index cannot exceed collection length: " {:length (count coll) :index index})))
   (glue
@@ -2726,14 +2686,12 @@
   "Indexes into a vector, allowing negative index values"
   [coll :- tsk/List
    index-val :- s/Int]
-  (when (nil? coll)
-    (throw (ex-info "idx: coll cannot be nil: " (vals->map coll))))
+  (assert-info (not-nil? coll) "idx: coll cannot be nil: " (vals->map coll))
   (let [data-vec (vec coll)
         N        (count data-vec)
         >>       (assert (pos? N))
         ii       (mod index-val N)
-        >>       (when (<= (count coll) ii)
-                   (throw (ex-info "Index cannot exceed collection length: " {:len (count coll) :index ii})))
+        >>       (assert-info (< ii (count coll)) "Index cannot exceed collection length: " {:len (count coll) :index ii})
         result   (clojure.core/get data-vec ii)]
     result))
 
@@ -2941,8 +2899,8 @@
   Continues taking from the source collection until `(pred <taken-items>)` is falsey.
   If pred is never falsey, `coll` is returned."
   [pred coll]
-  (when (or (nil? coll) (empty? coll))
-    (throw (ex-info "invalid source collection" {:coll coll})))
+  (assert-info (and (not-nil? coll) (not-empty? coll))
+    "invalid source collection" {:coll coll})
   (loop [taken     []
          remaining (seq coll)]
     (if (empty? remaining)
@@ -3039,10 +2997,8 @@
 
 (defn ^:no-doc destruct-impl
   [bindings forms]
-  (when (not (even? (count bindings)))
-    (throw (ex-info "destruct: uneven number of bindings:" bindings)))
-  (when (empty? bindings)
-    (throw (ex-info "destruct: bindings empty:" bindings)))
+  (assert-info  (even? (count bindings)) "destruct: uneven number of bindings:" bindings)
+  (assert-info (not-empty? bindings) "destruct: bindings empty:" bindings)
   (let [binding-pairs (partition 2 bindings)
         datas         (mapv cc/first binding-pairs)
         tmpls         (mapv cc/second binding-pairs)
