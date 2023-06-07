@@ -10,8 +10,8 @@
   ; See "ClojureScript Macro Tower & Loop" by Mike Fikes (2015-12-18)
   ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
-  #?(:cljs (:require-macros [tupelo.core.impl]))
   #?(:cljs (:require-macros
+             [tupelo.core.impl]
              [tupelo.core :refer [it-> cond-it-> some-it->
                                   vals->map with-map-vals forv
                                   with-spy-indent spyx spyxx spy-pretty spyx-pretty
