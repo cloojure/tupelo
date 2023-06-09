@@ -20,8 +20,7 @@
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty nl
                                vals->map xmap? forv glue keep-if]]
     [tupelo.string :as ts]
-    [tupelo.test :refer [testing is verify verify-focus
-                         is isnt is= isnt= is-set= is-nonblank=
+    [tupelo.test :refer [testing verify verify-focus is isnt is= isnt= is-set= is-nonblank=
                          throws? throws-not?
                          ]]
     )
