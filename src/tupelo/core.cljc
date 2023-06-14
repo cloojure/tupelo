@@ -53,9 +53,9 @@
 
 ; #todo replace clojure.core/map => tupelo.lazy/map if (t/refer-tupelo :strict)
 ; #todo replace clojure.core/map : not lazy; can add one of :trunc or :lazy modifiers
-; (map vector [:a :b :c] (range 9) :trunc)  ; error w/o :trunc
-;   Use (map {:trunc true} ...) if you want to truncate all inputs to the length of the shortest.
-;   Use (zip {:trunc true} ...) if you want to truncate all inputs to the length of the shortest.
+;   Use (map* {:trunc false :lazy false} ...)
+;   Use (zip* {:trunc true  :lazy true } ...)
+
 ; #todo [tupelo.lazy :as z]
 ;   #todo (z/map ...)
 ;   #todo (z/filter ...)
@@ -64,8 +64,6 @@
 ;   #todo (z/for ...)
 ;   #todo (z/concat ...)
 ;   #todo (z/zip ...)
-
-; #todo:  add in clear-nil-entries to recursively delete all k-v pairs where val is nil or empty?
 
 ;-----------------------------------------------------------------------------
 ; #todo maybe unify update & set for all state types:
