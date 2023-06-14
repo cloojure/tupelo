@@ -57,6 +57,8 @@
 ;   Use (map {:trunc true} ...) if you want to truncate all inputs to the length of the shortest.
 ;   Use (zip {:trunc true} ...) if you want to truncate all inputs to the length of the shortest.
 ; #todo [tupelo.lazy :as z]
+;   #todo (z/map ...)
+;   #todo (z/filter ...)
 ;   #todo (z/map-indexed ...)
 ;   #todo (z/mapcat ...)
 ;   #todo (z/for ...)

@@ -32,7 +32,6 @@
 ;--------------------------------------------------------------------------------------------------
 #?(:clj
    (do
-
      ; #todo make this work
      ;(define-fixture :once
      ;  {:enter (fn [ctx]
@@ -43,11 +42,15 @@
      ;            )})
 
      (verify
+       ;------------------------------------------------------------------
+       ; Clojure:  clojure.core/println
        (is-nonblank= "clojure.core/println"
          (with-out-str
-           (println "clojure.core/println")
+           (clojure.core/println "clojure.core/println")
            (+ 2 3)))
 
+       ;------------------------------------------------------------------
+       ; Java:  System.out.println
        (is-nonblank= "System.out.println"
          (t/with-system-out-str
            (doto System/out
@@ -64,6 +67,8 @@
                (.println "System.err.println"))
              (+ 3 4))))
 
+       ;------------------------------------------------------------------
+       ; Java:  System.err.println
        (is-nonblank= "System.err.println"
          (t/with-system-err-str
            (doto System/err
@@ -79,7 +84,6 @@
              (doto System/err
                (.println "System.err.println"))
              (+ 2 3)))))
-
      ))
 
 ;-----------------------------------------------------------------------------
