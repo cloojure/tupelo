@@ -52,17 +52,17 @@
        ;------------------------------------------------------------------
        ; Java:  System.out.println
        (is-nonblank= "System.out.println"
-         (t/with-system-out-str
+         (t/with-system-out-str ; discards return value, yields System.out
            (doto System/out
              (.println "System.out.println"))
            (+ 2 3)))
-       (is= 7 (t/discarding-system-out ; preserves return value
+       (is= 7 (t/discarding-system-out ; discards System.out, normal return value
                 (doto System/out
                   (.println "System.err.println"))
                 (+ 3 4)))
        (is-nonblank= ""
-         (t/with-system-out-str ; discards return value
-           (t/discarding-system-out
+         (t/with-system-out-str ; discards return value, yields System.out
+           (t/discarding-system-out ; discards System.out, normal return value
              (doto System/out
                (.println "System.err.println"))
              (+ 3 4))))
@@ -70,17 +70,17 @@
        ;------------------------------------------------------------------
        ; Java:  System.err.println
        (is-nonblank= "System.err.println"
-         (t/with-system-err-str
+         (t/with-system-err-str ; discards return value, yields System.err
            (doto System/err
              (.println "System.err.println"))
            (+ 2 3)))
-       (is= 5 (t/discarding-system-err ; preserves return value
+       (is= 5 (t/discarding-system-err ; discards System.err, normal return value
                 (doto System/err
                   (.println "System.err.println"))
                 (+ 2 3)))
        (is-nonblank= ""
-         (t/with-system-err-str ; discards return value
-           (t/discarding-system-err
+         (t/with-system-err-str ; discards return value, yields System.err
+           (t/discarding-system-err ; discards System.err, normal return value
              (doto System/err
                (.println "System.err.println"))
              (+ 2 3)))))
