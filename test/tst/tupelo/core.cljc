@@ -465,7 +465,6 @@
           (is (and (= 7 num-valid-1 num-valid-2)
                 (= 1 num-nil))))))))
 
-
 (verify
   (is= true (t/has-some? odd? [1 2 3]))
   (is= false (t/has-some? odd? [2 4 6]))
@@ -473,9 +472,11 @@
 
   (is= false (t/has-none? odd? [1 2 3]))
   (is= true (t/has-none? odd? [2 4 6]))
-  (is= true (t/has-none? odd? [])))
+  (is= true (t/has-none? odd? []))
 
-(verify
+  (is= true (t/has-some? nil? [:a 1 nil]))
+  (is= false (t/has-none? nil? [:a 1 nil]))
+
   (is (every? t/not-empty? ["one" [1] '(1) {:1 1} #{1}]))
   (is (t/has-none? t/not-empty? ["" [] '() {} #{} nil]))
 
