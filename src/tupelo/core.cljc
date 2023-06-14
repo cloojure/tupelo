@@ -41,15 +41,8 @@
                    [java.nio ByteBuffer])))
 
 ;---------------------------------------------------------------------------------------------------
-; #todo unify terminolgy (atom/ref/agent)
-;   -> reset!/ref-set => set
-;   -> swap!/alter => update
-
 ; #todo include this stuff:
 ;   git@github.com:r0man/noencore.git - noencore/src/no/en/core.cljc
-
-;(defmacro xxx [& forms]
-;  `(i/xxx ~@forms))
 
 ; #todo need (defkw :fred) and (kw :fred) to catch errors like
 ; (when (= person :frid)  ; (kw :frid) -> throws
@@ -58,53 +51,19 @@
 ; WARNING:  cannot use Plumatic schema for functions that may receive an infinite lazy sequence
 ; as input.  See:  https://groups.google.com/forum/#!topic/clojure/oM1PH4sXzoA
 
-; #todo need (dbg :awt122 (some-fn 1 2 3)) -> (spy :msg :awt122 (some-fn 1 2 3))
-
 ; #todo replace clojure.core/map => tupelo.lazy/map if (t/refer-tupelo :strict)
 ; #todo replace clojure.core/map : not lazy; can add one of :trunc or :lazy modifiers
-; (map + (range 5))
-; (map + 0 (range 5))
-; (map + (range 5) :lazy)
 ; (map vector [:a :b :c] (range 9) :trunc)  ; error w/o :trunc
-;(defn mapper [& args]   ; alts:  mapr  onto  morph  vmap
-;  "An eager version of clojure.core/map
-;   Use (zip ... :trunc) if you want to truncate all inputs to the lenght of the shortest.
-;   Use (zip ... :lazy)  if you want it to be lazy.  "
-;  (apply clojure.core/map args))
-; #todo (map-indexed ... :lazy)   vmap-indexed
-; #todo (mapcat ... :lazy)    vmapcat
-; #todo (for ... :lazy)       vfor
-; #todo (concat ... :lazy)    vconcat
-
+;   Use (map {:trunc true} ...) if you want to truncate all inputs to the length of the shortest.
+;   Use (zip {:trunc true} ...) if you want to truncate all inputs to the length of the shortest.
+; #todo [tupelo.lazy :as z]
+;   #todo (z/map-indexed ...)
+;   #todo (z/mapcat ...)
+;   #todo (z/for ...)
+;   #todo (z/concat ...)
+;   #todo (z/zip ...)
 
 ; #todo:  add in clear-nil-entries to recursively delete all k-v pairs where val is nil or empty?
-
-; #todo:  create safe-map ns with non-nil/non-dup versions of assoc-in, update-in, dissoc-in (&
-; singles). Basically like compiler-like guarentees against misspellings, duplicate entries, missing
-; entries.
-
-;(defmacro ^:private safe-> ; #todo: remove this
-;  [expr & forms]
-;  (throw (RuntimeException. "Obsolete: replace with:  (validate not-nil? (-> <expr> <forms> ))" )))
-
-
-; (defn round [dblVal :incr   (/ 1 3)]            ; #todo add
-;   (let [factor (Math/pow 10 *digits*)]
-;     (it-> dblVal
-;           (* it factor)
-;           (Math/round it)
-;           (/ it factor))))
-; (defn round [dblVal :exp -2]
-;   (round dblVal :incr (Math/pow 10 *digits*)))
-; (defn round [dblVal :digits 2]
-;   (round dblVal :exp (- *digits*)))
-
-;; #todo delete old definition
-;(defn set=
-;  "Returns true if two collections are equal when converted into sets."
-;  [& colls]
-;  (assert (< 1 (count colls))) ; #todo add msg
-;  (apply = (mapv set colls)))
 
 ;-----------------------------------------------------------------------------
 ; #todo maybe unify update & set for all state types:
@@ -116,16 +75,17 @@
 ;   xxxx-reset     /  xxxx-alter        ; other names
 ;   atom-set-old   /  atom-update-old   ; to return old value, not new
 
-;-----------------------------------------------------------------------------
+; #todo unify terminolgy (atom/ref/agent)
+;   -> reset!/ref-set => set
+;   -> swap!/alter => update
 
+;-----------------------------------------------------------------------------
 ;                                               "1234.4567.89ab.cdef"  also valid for read
 ; #todo need conversion from Long -> hex string="1234-4567-89ab-cdef" (& inverse)
 ; #todo need rand-id/randid/rid/rid-str (rand id) -> 64 bit hex string="1234-4567-89ab-cdef"
 ; i[12] = Random.nextInt(); bytes += i[12].toHexString()
 
 ; #todo fix usage docs
-
-; #todo: add (throwed? ...) for testing exceptions
 
 ;---------------------------------------------------------------------------------------------------
 ; #todo make sure works with cljdoc
@@ -2943,7 +2903,7 @@
 (s/defn set= :- s/Bool
   "Returns true if the collections are equal when converted to sets."
   [& colls :- [s/Any]]
-  (apply = (mapv set colls)))
+  (truthy? (apply = (mapv set colls))))
 
 
 (s/defn sequential->idx-map :- {s/Any s/Any} ; #todo move
