@@ -455,12 +455,6 @@
   [arg :- s/Any]
   (not (nil? arg)))
 
-;(s/defn empty? :- s/Bool
-;  "Synonym for clojure.core/empty? "
-;  ; [coll :- [s/Any]]  ; #todo extend Prismatic Schema to accept this for strings
-;  [coll]
-;  (cc/empty? coll))
-
 (s/defn not-empty? :- s/Bool
   "For any collection coll, returns true if coll contains any items; otherwise returns false.
    Equivalent to (not (empty? coll))."
