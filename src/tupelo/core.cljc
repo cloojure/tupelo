@@ -2304,7 +2304,7 @@
 ;                  (rel= curr stop :tol step) as ending criteria
 ;  #todo range version => (butlast (thru ...))
 (defn thru ; #todo make lazy: (thruz ...) -> (thru* {:lazy true} ...)
-  "Returns a sequence of integers. Like clojure.core/rng, but is inclusive of the right boundary value. Not lazy. "
+  "Returns a sequence of numbers. Like clojure.core/range, but is inclusive of the right boundary value. Not lazy. "
   ([end] (thru 0 end))
   ([start end] (thru start end 1))
   ([start end step]
