@@ -369,8 +369,7 @@
     (symbol? arg) (sym->kw arg)
     (string? arg) (str->kw arg)
     (number? arg) (str->kw (str arg))
-    #?@(:clj [
-              (char? arg) (str->kw (str arg))])
+    #?@(:clj [(char? arg) (str->kw (str arg))])
 
     :else (throw (ex-info "bad arg" {:arg arg}))))
 
@@ -382,8 +381,7 @@
     (symbol? arg) (sym->str arg)
     (keyword? arg) (kw->str arg)
     (number? arg) (str arg)
-    #?@(:clj [
-              (char? arg) (str arg)])
+    #?@(:clj [(char? arg) (str arg)])
     :else (throw (ex-info "bad arg" {:arg arg}))))
 
 (s/defn ->sym :- s/Symbol
@@ -393,8 +391,7 @@
     (symbol? arg) arg
     (keyword? arg) (kw->sym arg)
     (string? arg) (str->sym arg)
-    #?@(:clj [
-              (char? arg) (str->sym (str arg))])
+    #?@(:clj [(char? arg) (str->sym (str arg))])
     :else (throw (ex-info "bad arg" {:arg arg}))))
 
 (s/defn codepoint->char :- s/Any ; #todo need clj/cljs char? test
@@ -2319,13 +2316,10 @@
                                (+ start))
             (range (inc nsteps-int)))))))
 
-; #todo need CLJ/CLJS coercion ->kw (char/str, sym)
-; #todo need CLJ/CLJS coercion ->sym (char/str, kw, sym)
-; #todo need CLJ/CLJS coercion ->str (char/str, kw, sym, )
-
 ; #todo need CLJS coercion ->char (char/str or int)
 ; #todo need CLJS coercion ->int (char/str or int)
 ; #todo need CLJS version of char? => len-1 string
+
 ; #todo need test, readme
 ; #todo merge into `thru` using a protocol for int, double, char, string, keyword, symbol, other?
 (defn chars-thru ; #todo add schema.
