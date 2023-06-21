@@ -1519,16 +1519,6 @@
     (isnt (t/deep-rel= base tweaked-5))
     (is (t/deep-rel= base tweaked-13))))
 
-
-(verify
-  (is (every? t/truthy? (t/forv [ul (range 0 4)] (vector? (t/range-vec ul)))))
-
-  (is (every? t/truthy? (t/forv [ul (range 0 4)] (= (t/range-vec ul) (range ul)))))
-
-  (is (every? t/truthy? (t/forv [lb (range 0 4)
-                                 ub (range lb 4)]
-                          (= (t/range-vec lb ub) (range lb ub))))))
-
 (verify
   (testing "positive step"
     (is= [0] (t/thru 0))

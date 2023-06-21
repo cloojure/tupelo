@@ -397,20 +397,16 @@
 (s/defn codepoint->char :- s/Any ; #todo need clj/cljs char? test
   "Convert a unicode int to a char"
   [arg :- s/Int]
+  (assert (int? arg))
   #?(:clj (char arg))
-  #?(:cljs
-     (do
-       (assert (int? arg))
-       (.fromCharCode js/String arg)))) ; #todo just use cljs.core/char  ???
+  #?(:cljs (.fromCharCode js/String arg))) ; #todo just use cljs.core/char  ???
 
 (s/defn char->codepoint :- s/Int
   "Convert a char to an unicode int"
   [arg :- s/Any] ; #todo need clj/cljs char? test
+  (assert (char? arg))
   #?(:clj (int arg))
-  #?(:cljs
-     (do
-       (assert (= 1 (count arg)))
-       (.charCodeAt arg 0))))
+  #?(:cljs (.charCodeAt arg 0)))
 
 #?(:clj  (defn kw->int [arg]
            (Integer/parseInt (kw->str arg)))
@@ -2282,12 +2278,6 @@
     (and (sequential? a) (sequential? b) (every? truthy? (map-let [av a
                                                                    bv b]
                                                            (deep-rel= av bv))))))
-
-
-(defn range-vec ; #todo rename => slice
-  "An eager version clojure.core/range that always returns its result in a vector."
-  [& args]
-  (vec (apply range args)))
 
 ; #todo need docs & tests
 ; #todo:  add (thru a b)     -> [a..b] for integers (inclusive)
