@@ -1495,29 +1495,25 @@
   (is (t/rel= 42 42.0 :digits 99))
 
   (is (t/rel= 1 1.001 :digits 3))
-  (is (not (t/rel= 1 1.001 :digits 4)))
+  (isnt (t/rel= 1 1.001 :digits 4))
   (is (t/rel= 123450000 123456789 :digits 4))
-  (is (not (t/rel= 123450000 123456789 :digits 6)))
+  (isnt (t/rel= 123450000 123456789 :digits 6))
   (is (t/rel= 0.123450000 0.123456789 :digits 4))
-  (is (not (t/rel= 0.123450000 0.123456789 :digits 6)))
+  (isnt (t/rel= 0.123450000 0.123456789 :digits 6))
 
   (is (t/rel= 1 1.001 :tol 0.01))
-  (is (not (t/rel= 1 1.001 :tol 0.0001)))
+  (isnt (t/rel= 1 1.001 :tol 0.0001))
 
-  (let [base       {:a 1 :b [:c 3 :d [4 5 6]]}
-        tweaked-5  (walk/postwalk (fn [it]
-                                    (if-not (number? it)
-                                      it
-                                      (+ it 1.0e-2)))
-                     base)
-        tweaked-13 (walk/postwalk (fn [it]
-                                    (if-not (number? it)
-                                      it
-                                      (+ it 1.0e-9)))
-                     base)]
-    (isnt= base tweaked-5)
-    (isnt (t/deep-rel= base tweaked-5))
-    (is (t/deep-rel= base tweaked-13))))
+  (let [base      {:a 1 :b [:c 3 :d [4 5 6]]}
+        tweaked-3 (walk/postwalk #(t/cond-it-> %
+                                    (number? it) (+ it 1.0e-3))
+                    base)
+        tweaked-9 (walk/postwalk #(t/cond-it-> %
+                                    (number? it) (+ it 1.0e-9))
+                    base)]
+    (isnt= base tweaked-3)
+    (isnt (t/deep-rel= base tweaked-3))
+    (is (t/deep-rel= base tweaked-9))))
 
 (verify
   (testing "positive step"

@@ -408,10 +408,9 @@
   #?(:clj (int arg))
   #?(:cljs (.charCodeAt arg 0)))
 
-#?(:clj  (defn kw->int [arg]
-           (Integer/parseInt (kw->str arg)))
-   :cljs (defn kw->int [arg]
-           (js/parseInt (kw->str arg) 10)))
+(defn kw->int [arg]
+  #?(:clj  (Integer/parseInt (kw->str arg))
+     :cljs (js/parseInt (kw->str arg) 10)))
 
 ; #todo add edn->js
 ; #todo add js->edn (:keywordize-keys true)
