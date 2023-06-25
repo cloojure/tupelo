@@ -2328,6 +2328,12 @@
       (thru start-int stop-int))))
 
 (s/defn repeat-dims :- [s/Any]
+  "Like clojure.core/repeat, but accepts a vector of N dimensions:
+
+        (t/repeat-dims [3] 9)    =>  [9 9 9]
+
+        (t/repeat-dims [2 3] 9)  =>  [[9 9 9]
+                                      [9 9 9]] "
   [dims :- [s/Num]
    val :- s/Any]
   (assert (pos? (count dims)))
