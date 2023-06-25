@@ -2279,18 +2279,19 @@
                                                            (deep-rel= av bv))))))
 
 ; #todo need docs & tests
-; #todo:  add (thru a b)     -> [a..b] for integers (inclusive)
-;             (thru 1 3)     -> [ 1  2  3]
-;             (thru \a \c)   -> [\a \b \c]  ; only for single char
-;             (thru :a :c)   -> [:a :b :c]  ; only for single char
-;             (thru 'a 'c)   -> ['a 'b 'c]  ; only for single char
-;             (thru 1   2   0.1)     -> [1.0  1.1  1.2 ... 2.0]
-;             (thru 0.1 0.3 0.1)     -> [0.1  0.2  0.3]
-;                  (thru start stop step) uses integer steps and
-;                  (rel= curr stop :tol step) as ending criteria
+; #todo:  add
+;            (thru start stop step) uses integer steps and
+;            (rel= curr stop :tol step) as ending criteria
 ;  #todo range version => (butlast (thru ...))
 (defn thru ; #todo make lazy: (thruz ...) -> (thru* {:lazy true} ...)
-  "Returns a sequence of numbers. Like clojure.core/range, but is inclusive of the right boundary value. Not lazy. "
+  "Returns a vector of numbers. Like clojure.core/range, but is inclusive of the right boundary value.
+  Uses rounding to calculate an integer number of steps
+  Not lazy.
+
+        (thru  1  3)            -> [1  2  3]
+        (thru  1  5    2)       -> [1  3  5]
+        (thru  1  1.3  0.1)     -> [1.0  1.1  1.2  1.3]
+  "
   ([end] (thru 0 end))
   ([start end] (thru start end 1))
   ([start end step]
@@ -2298,8 +2299,8 @@
          nsteps-dbl     (/ (double delta) (double step))
          nsteps-int     (Math/round nsteps-dbl)
          rounding-error (Math/abs (- nsteps-dbl nsteps-int))]
-     (assert-info (< rounding-error 0.00001)
-       "thru: non-integer number of steps \n   args:" (vals->map start end step))
+     (assert-info (< rounding-error 1e-5)
+       "thru: non-integer number of steps \n   args:" (vals->map start end step  rounding-error))
      (vec (clojure.core/map #(-> %
                                (* step)
                                (+ start))
