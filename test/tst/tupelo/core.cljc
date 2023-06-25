@@ -1516,6 +1516,9 @@
     (is (t/deep-rel= base tweaked-9))))
 
 (verify
+  ; non-integer number of steps
+  (throws? (t/thru 1.1 2.1 0.3))
+
   (testing "positive step"
     (is= [0] (t/thru 0))
     (is= [0 1] (t/thru 1))
@@ -1537,17 +1540,7 @@
     (is= [2] (t/thru 2 2))
     (is= [2 3] (t/thru 2 3))
 
-    (is= [] (t/thru 3 0))
-    (is= [] (t/thru 3 1))
-    (is= [] (t/thru 3 2))
-    (is= [3] (t/thru 3 3))
-
-    (is= [] (t/thru 4 0))
-    (is= [] (t/thru 4 1))
-    (is= [] (t/thru 4 2))
-    (is= [] (t/thru 4 3))
-
-
+    ;--------------------------------------------
     (is= [0] (t/thru 0 0 1))
     (is= [0 1] (t/thru 0 1 1))
     (is= [0 1 2] (t/thru 0 2 1))
@@ -1563,17 +1556,7 @@
     (is= [2] (t/thru 2 2 1))
     (is= [2 3] (t/thru 2 3 1))
 
-    (is= [] (t/thru 3 0 1))
-    (is= [] (t/thru 3 1 1))
-    (is= [] (t/thru 3 2 1))
-    (is= [3] (t/thru 3 3 1))
-
-    (is= [] (t/thru 4 0 1))
-    (is= [] (t/thru 4 1 1))
-    (is= [] (t/thru 4 2 1))
-    (is= [] (t/thru 4 3 1))
-
-
+    ;--------------------------------------------
     (is= [0] (t/thru 0 0 2))
     (throws? (t/thru 0 1 2))
     (is= [0 2] (t/thru 0 2 2))
@@ -1594,7 +1577,7 @@
     (throws? (t/thru 3 2 2))
     (is= [3] (t/thru 3 3 2))
 
-
+    ;--------------------------------------------
     (is= [0] (t/thru 0 0 3))
     (throws? (t/thru 0 1 3))
     (throws? (t/thru 0 2 3))
@@ -1610,10 +1593,12 @@
     (is= [2] (t/thru 2 2 3))
     (throws? (t/thru 2 3 3))
 
+    ;--------------------------------------------
     (is= [] (t/thru 3 0 3))
     (throws? (t/thru 3 1 3))
     (throws? (t/thru 3 2 3))
     (is= [3] (t/thru 3 3 3)))
+
   (testing "negative step"
     (is= [0] (t/thru 0 0 -1))
     (is= [1 0] (t/thru 1 0 -1))
@@ -1635,7 +1620,7 @@
     (is= [] (t/thru 2 3 -1))
     (is= [3] (t/thru 3 3 -1))
 
-
+    ;--------------------------------------------
     (is= [0] (t/thru 0 0 -2))
     (throws? (t/thru 1 0 -2))
     (is= [2 0] (t/thru 2 0 -2))
@@ -1656,7 +1641,7 @@
     (throws? (t/thru 2 3 -2))
     (is= [3] (t/thru 3 3 -2))
 
-
+    ;--------------------------------------------
     (is= [0] (t/thru 0 0 -3))
     (throws? (t/thru 1 0 -3))
     (throws? (t/thru 2 0 -3))
@@ -1676,6 +1661,7 @@
     (throws? (t/thru 1 3 -3))
     (throws? (t/thru 2 3 -3))
     (is= [3] (t/thru 3 3 -3)))
+
   (testing "combinations"
     (is= [0 2 4 6 8 10] (t/thru 0 10 2))
     (is= [0 -2 -4 -6 -8 -10] (t/thru 0 -10 -2))
@@ -1704,10 +1690,23 @@
     (is= [-10 -5] (t/thru -10 -5 5))
     (is= [10 5 0 -5] (t/thru 10 -5 -5))
     (is= [-10 -5 0 5] (t/thru -10 5 5)))
+
   (testing "floats"
     (is (t/all-rel= [1.1 1.3 1.5 1.7] (t/thru 1.1 1.7 0.2) :digits 7))
-    (is (t/all-rel= [1.1 1.2 1.3 1.4] (t/thru 1.1 1.4 0.1) :digits 7)))
-  (throws? (t/thru 1.1 2.1 0.3)))
+    (is (t/all-rel= [1.1 1.2 1.3 1.4] (t/thru 1.1 1.4 0.1) :digits 7))))
+
+(verify
+  (is (= [\a] (t/chars-thru \a \a)))
+  (is (= [\a \b] (t/chars-thru \a \b)))
+  (is (= [\a \b \c] (t/chars-thru \a \c)))
+
+  (is (= [\a] (t/chars-thru 97 97)))
+  (is (= [\a \b] (t/chars-thru 97 98)))
+  (is (= [\a \b \c] (t/chars-thru 97 99)))
+
+  (throws? (t/chars-thru 987654321 987654321))
+  (throws? (t/chars-thru \c \a))
+  (throws? (t/chars-thru 99 98)))
 
 (verify
   ; 1-D
@@ -1884,19 +1883,6 @@
 (verify   ; #todo need more tests
   (is= (mapv #(mod % 3) (t/thru -6 6)) [0 1 2 0 1 2 0 1 2 0 1 2 0])
   (is= (mapv #(t/idx [0 1 2] %) (t/thru -3 3)) [0 1 2 0 1 2 0]))
-
-(verify
-  (is (= [\a] (t/chars-thru \a \a)))
-  (is (= [\a \b] (t/chars-thru \a \b)))
-  (is (= [\a \b \c] (t/chars-thru \a \c)))
-
-  (is (= [\a] (t/chars-thru 97 97)))
-  (is (= [\a \b] (t/chars-thru 97 98)))
-  (is (= [\a \b \c] (t/chars-thru 97 99)))
-
-  (throws? (t/chars-thru 987654321 987654321))
-  (throws? (t/chars-thru \c \a))
-  (throws? (t/chars-thru 99 98)))
 
 (verify
   (let [map-ab  {:a 1 :b 2}

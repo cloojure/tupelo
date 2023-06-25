@@ -2317,14 +2317,15 @@
   (inclusive) from the first to the second.  Characters must be in ascending order."
   [start-char stop-char]
   ; #todo throw if not char or int
-  (let [start-int (if (integer? start-char) start-char (char->codepoint start-char))
-        stop-int  (if (integer? stop-char) stop-char (char->codepoint stop-char))
-        thru-vals (thru start-int stop-int)
-        char-vals (mapv codepoint->char thru-vals)]
-    (assert-info (<= stop-int 65535) ; #todo cleanup limit
-      "chars-thru: stop-int too large" (vals->map start-int stop-int))
-    (assert-info (<= start-int stop-int) "chars-thru: start-char must come before stop-char." (vals->map start-int stop-int))
-    char-vals))
+  (let [start-int (cond-it-> start-char
+                    (not (integer? it)) (char->codepoint it))
+        stop-int  (cond-it-> stop-char
+                    (not (integer? it)) (char->codepoint it))]
+    (assert-info (and (nonneg? start-int) (<= stop-int 65535))
+      "chars-thru: start/stop out of range" (vals->map start-char stop-char start-int stop-int))
+    (assert-info (<= start-int stop-int) "chars-thru: start/stop out of order" (vals->map start-char stop-char start-int stop-int))
+    (mapv codepoint->char
+      (thru start-int stop-int))))
 
 (s/defn repeat-dims :- [s/Any]
   [dims :- [s/Num]
