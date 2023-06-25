@@ -200,7 +200,7 @@
 
   ; A sequence is not a string, but tupelo.core/strcat can turn a sequence into a string.
   ; Also works to flatten out all nested collections.
-  (is (not (= "abc" (seq "abc"))))
+  (isnt (= "abc" (seq "abc")))
   (is (= "abc" (t/strcat (seq "abc"))))
   (is (= "abcde" (t/strcat ["" \a \b \c "de"])))
   (is (= "abcde" (t/strcat ["" \a \b [\c ["d" \e]]]))))
@@ -473,11 +473,11 @@
   (is (str/starts-with? "abcde" "ab"))
   (is (str/starts-with? "abcde" "abc"))
 
-  (is (not (str/starts-with? "abcde" "b")))
-  (is (not (str/starts-with? "abcde" "bc")))
+  (isnt (str/starts-with? "abcde" "b"))
+  (isnt (str/starts-with? "abcde" "bc"))
 
-  (is (not (str/starts-with? "a" "ab")))
-  (is (not (str/starts-with? "ab" "abc")))
+  (isnt (str/starts-with? "a" "ab"))
+  (isnt (str/starts-with? "ab" "abc"))
 
   ;-----------------------------------------------------------------------------
   ; tupelo.string
