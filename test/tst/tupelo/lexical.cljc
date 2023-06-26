@@ -47,13 +47,13 @@
      (is= "Type/Clojure-Character" (lex/comparison-class \X)))
 
   #?(:clj  (do
-             (is= "tst.tupelo.lexical.DummyEid" (impl/type-name-str eid-0))
-             (is= "tst.tupelo.lexical.DummyLeaf" (impl/type-name-str leaf-0))
+             (is= "tst.tupelo.lexical.DummyEid" (impl/type-name->str eid-0))
+             (is= "tst.tupelo.lexical.DummyLeaf" (impl/type-name->str leaf-0))
              (is= "tst.tupelo.lexical.DummyEid" (lex/comparison-class eid-0))
              (is= "tst.tupelo.lexical.DummyLeaf" (lex/comparison-class leaf-0)))
      :cljs (do
-             (is= "tst.tupelo.lexical/DummyEid" (impl/type-name-str eid-0))
-             (is= "tst.tupelo.lexical/DummyLeaf" (impl/type-name-str leaf-0))
+             (is= "tst.tupelo.lexical/DummyEid" (impl/type-name->str eid-0))
+             (is= "tst.tupelo.lexical/DummyLeaf" (impl/type-name->str leaf-0))
              (is= "tst.tupelo.lexical/DummyEid" (lex/comparison-class eid-0))
              (is= "tst.tupelo.lexical/DummyLeaf" (lex/comparison-class leaf-0)))))
 

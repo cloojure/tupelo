@@ -17,7 +17,7 @@
                             vals->map with-map-vals forv thru
                             with-spy-indent spyx spyxx spy-pretty spyx-pretty
                             let-spy let-spy-pretty let-some map-let* map-let lazy-cons
-                            assert-info try-catchall with-exception-default
+                            assert-info
                             destruct lazy-gen yield yield-all matches?]]))
   (:require
     [schema.core :as s]

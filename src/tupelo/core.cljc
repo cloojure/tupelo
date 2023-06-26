@@ -101,9 +101,9 @@
 (defmacro try-catchall ; from plumatic schema/macros.clj
   "A cross-platform variant of try-catch that catches all exceptions.
    Does not (yet) support finally, and does not need or want an exception class."
-  [& body]
-  (let [try-body (butlast body)
-        [catch-op ex-symbol & catch-body :as catch-form] (last body)]
+  [& forms]
+  (let [try-body (butlast forms)
+        [catch-op ex-symbol & catch-body :as catch-form] (last forms)]
     (assert (= catch-op 'catch))
     (assert (symbol? ex-symbol))
     `(tupelo.core.impl/if-cljs
@@ -124,7 +124,7 @@
      (do ~@forms)
      result#))
 
-(defmacro type-name-str
+(defmacro type-name->str
   "Returns the type/class name of a value as a string.  Works for both CLJ and CLJS."
   [arg]
   `(if (nil? ~arg)
@@ -594,7 +594,7 @@
 
                         #?@(:clj [
                                   (instance? java.io.InputStream item) (slurp item) ; #todo need test
-                                  (= "datomic.query.EntityMap" (type-name-str item)) (into {} item) ; type-free test (doesn't need datomic)
+                                  (= "datomic.query.EntityMap" (type-name->str item)) (into {} item) ; type-free test (doesn't need datomic)
                                   (instance? java.util.List item) (vec item) ; #todo need test
                                   (instance? java.util.Map item) (into {} item) ; #todo need test
                                   (instance? java.lang.Iterable item) (into [] item) ; #todo need test
@@ -1209,7 +1209,7 @@
    expression, printing both the expression, its type, and its value to stdout, then returns the value."
   [expr]
   `(let [spy-val#   ~expr
-         type-name# (type-name-str spy-val#)]
+         type-name# (type-name->str spy-val#)]
      (when *spy-enabled*
        (println (str (spy-indent-spaces) '~expr " => <#" type-name# " " (pr-str spy-val#) ">")))
      spy-val#))

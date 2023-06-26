@@ -10,7 +10,6 @@
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
   #?(:cljs (:require-macros
              [tupelo.core]
-             [tupelo.misc]
              [tupelo.test]
              ))
   (:require
@@ -1286,7 +1285,8 @@
 (verify
   (t/try-catchall
     (throw (ex-info "some-big-error" {:answer 43}))
-    (catch e ; (println "Caught exception:" e)
+    (catch e
+           ; (println "Caught exception:" e)
            (is= (ex-data e) {:answer 43})))
 
   (let [result (t/with-exception-default :some-val

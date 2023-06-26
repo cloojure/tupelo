@@ -25,16 +25,16 @@
 (defmacro try-catchall ; from plumatic schema/macros.clj
   "A cross-platform variant of try-catch that catches all exceptions.
    Does not (yet) support finally, and does not need or want an exception class."
-  [& body]
-  (let [try-body (butlast body)
-        [catch-op ex-symbol & catch-body :as catch-form] (last body)]
+  [& forms]
+  (let [try-body (butlast forms)
+        [catch-op ex-symbol & catch-body :as catch-form] (last forms)]
     (assert (= catch-op 'catch))
     (assert (symbol? ex-symbol))
     `(if-cljs
        (try ~@try-body (catch js/Object ~ex-symbol ~@catch-body))
        (try ~@try-body (catch Throwable ~ex-symbol ~@catch-body)))))
 
-(defn type-name-str
+(defn type-name->str
   "Returns the type/class name of a value as a string.  Works for both CLJ and CLJS."
   [arg]
   #?(:clj  (.getName (clojure.core/class arg))

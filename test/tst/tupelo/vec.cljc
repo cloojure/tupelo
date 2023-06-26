@@ -10,8 +10,7 @@
   ;   https://code.thheller.com/blog/shadow-cljs/2019/10/12/clojurescript-macros.html
   ;   http://blog.fikesfarm.com/posts/2015-12-18-clojurescript-macro-tower-and-loop.html
   #?(:cljs (:require-macros
-             ; [tupelo.core]
-             [tupelo.misc]
+             [tupelo.core]
              [tupelo.test]
              ))
   (:require
