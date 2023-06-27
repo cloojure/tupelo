@@ -30,6 +30,7 @@
     [clojure.string :as str]
     [clojure.walk :as walk]
     [schema.core :as s]
+    [tupelo.core.impl :as impl]
     [tupelo.lexical :as lex]
     [tupelo.schema :as tsk])
   #?(:clj (:require [cheshire.core :as cheshire]
@@ -1094,7 +1095,7 @@
         r2         (let [expr (xlast exprs)]
                      `(let [spy-val# ~expr]
                         (when *spy-enabled*
-                          (println (indent-lines-with (spy-indent-spaces)
+                          (println (impl/indent-lines-with (spy-indent-spaces)
                                      (pretty-str spy-val#))))
                         spy-val#))
         final-code `(do
@@ -1131,7 +1132,7 @@
                      `(let [spy-val# ~expr]
                         (when *spy-enabled*
                           (println (str (spy-indent-spaces) '~expr " => "))
-                          (println (indent-lines-with (spy-indent-spaces)
+                          (println (impl/indent-lines-with (spy-indent-spaces)
                                      (pretty-str spy-val#))))
                         spy-val#))
         final-code `(do
@@ -1161,10 +1162,10 @@
      (let [tag-enter# ~(str debug-tag "-enter")
            tag-leave# ~(str debug-tag "-leave")]
        (try
-         (println (indent-lines-with (spy-indent-spaces) tag-enter#))
+         (println (impl/indent-lines-with (spy-indent-spaces) tag-enter#))
          ~@forms
          (finally
-           (println (indent-lines-with (spy-indent-spaces) tag-leave#)))))))
+           (println (impl/indent-lines-with (spy-indent-spaces) tag-leave#)))))))
 
 ; #todo: for all let-spy*:  if symbol is '>>' or '<>", skip display
 (defmacro let-spy
@@ -1978,17 +1979,6 @@
     (doseq [it (seq seq-in)]
       (print \space)
       (pr it))))
-
-(s/defn indent-lines-with :- s/Str ; #todo add readme ;  need test
-  "Splits out each line of txt using clojure.string/split-lines, then
-  indents each line by prepending it with the supplied string. Joins lines together into
-  a single string result, with each line terminated by a single \newline."
-  [indent-str :- s/Str
-   txt :- s/Str]
-  (str/join
-    (interpose \newline
-      (for [line (str/split-lines txt)]
-        (str indent-str line)))))
 
 ;-----------------------------------------------------------------------------
 (defmacro with-timer

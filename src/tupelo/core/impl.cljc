@@ -6,7 +6,9 @@
 ;   software.
 (ns tupelo.core.impl
   (:require
-    [schema.core :as s]))
+    [clojure.string :as str]
+    [schema.core :as s]
+    ))
 
 (defn type-name->str
   "Returns the type/class name of a value as a string.  Works for both CLJ and CLJS."
@@ -48,4 +50,15 @@
   (boolean
     (when (string? arg)
       (re-matches uuid-regex-pattern arg))))
+
+(s/defn indent-lines-with :- s/Str ; #todo add readme ;  need test
+  "Splits out each line of txt using clojure.string/split-lines, then
+  indents each line by prepending it with the supplied string. Joins lines together into
+  a single string result, with each line terminated by a single \newline."
+  [indent-str :- s/Str
+   txt :- s/Str]
+  (str/join
+    (interpose \newline
+      (for [line (str/split-lines txt)]
+        (str indent-str line)))))
 

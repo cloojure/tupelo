@@ -13,6 +13,7 @@
     [schema.core :as s]
     [tupelo.chars :as chars]
     [tupelo.core :as t]
+    [tupelo.core.impl :as impl]
     #?(:clj [tupelo.types :as types])
     #?(:clj [clojure.java.io :as io])
     #?(:cljs [goog.string.format])
@@ -357,7 +358,7 @@
   [n :- s/Int
    txt :- s/Str]
   (let [indent-str (clojure.string/join (repeat n \space))]
-    (t/indent-lines-with indent-str txt)))
+    (impl/indent-lines-with indent-str txt)))
 
 (s/defn indent-lines-with :- s/Str ; #todo delete?  else rename (prefix-lines txt prefix-str) ; add (suffix-lines txt suffix-str)
   "Splits out each line of txt using clojure.string/split-lines, then
@@ -365,7 +366,7 @@
   a single string result, with each line terminated by a single \newline."
   [indent-str :- s/Str
    txt :- s/Str]
-  (t/indent-lines-with indent-str txt))
+  (impl/indent-lines-with indent-str txt))
 
 ; #todo add undent (verify only leading whitespace removed)
 ; #todo add undent-lines
