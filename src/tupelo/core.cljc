@@ -99,12 +99,12 @@
 ; #todo    like (some-fn* (glue {0 0   1 "hello"   2 :cc} {<user args here>} ))
 
 (defn is-clj?
-  "Take the &env from a macro, and tell whether we are expanding into cljs."
+  "Returns `true` if running Clojure, `false` for ClojureScript."
   [] #?(:clj  true
         :cljs false))
 
 (defn is-cljs?
-  "Take the &env from a macro, and tell whether we are expanding into cljs."
+  "Returns `true` if running ClojureScript, `false` for Clojure."
   [] #?(:clj  false
         :cljs true))
 
@@ -114,7 +114,7 @@
   (boolean (:ns env)))
 
 (defmacro if-cljs ; from plumatic schema/macros.clj
-  "Return then if we are generating cljs code and else for Clojure code.
+  "Return `then` if we are generating cljs code and `else` for Clojure code.
    https://groups.google.com/d/msg/clojurescript/iBY5HaQda4A/w1lAQi9_AwsJ"
   [then else]
   (if (cljs-env? &env) then else))
