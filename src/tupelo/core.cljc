@@ -119,10 +119,10 @@
   [then else]
   (if (cljs-env? &env) then else))
 
-(defmacro try-catchall ; from plumatic schema/macros.clj
+(defn try-catchall-impl ; from plumatic schema/macros.clj
   "A cross-platform variant of try-catch that catches all exceptions.
    Does not (yet) support finally, and does not need or want an exception class."
-  [& forms]
+  [forms]
   (let [try-body (butlast forms)
         [catch-op ex-symbol & catch-body :as catch-form] (last forms)]
     (assert (= catch-op 'catch))
@@ -130,6 +130,11 @@
     `(tupelo.core/if-cljs
        (try ~@try-body (catch js/Object ~ex-symbol ~@catch-body))
        (try ~@try-body (catch Throwable ~ex-symbol ~@catch-body)))))
+
+(defmacro try-catchall ; from plumatic schema/macros.clj
+  "A cross-platform variant of try-catch that catches all exceptions.
+   Does not (yet) support finally, and does not need or want an exception class."
+  [& forms] (try-catchall-impl forms))
 
 (defmacro with-exception-default
   "Evaluates body & returns its result.  In the event of an exception, default-val is returned
