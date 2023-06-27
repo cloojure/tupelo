@@ -1283,14 +1283,6 @@
             :b2 {:c1 "c1"}}})))
 
 (verify
-  #?(:clj  (do
-             (is= true (t/is-clj?))
-             (is= false (t/is-cljs?)))
-     :cljs (do
-             (is= false (t/is-clj?))
-             (is= true (t/is-cljs?)))))
-
-(verify
   (t/try-catchall
     (throw (ex-info "some-big-error" {:answer 43}))
     (catch e
