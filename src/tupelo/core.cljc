@@ -129,7 +129,8 @@
     (assert (symbol? ex-symbol))
     `(tupelo.core/if-cljs
        (try ~@try-body (catch js/Object ~ex-symbol ~@catch-body))
-       (try ~@try-body (catch Throwable ~ex-symbol ~@catch-body)))))
+       (try ~@try-body (catch Throwable ~ex-symbol ~@catch-body)))
+    ))
 
 (defmacro try-catchall ; from plumatic schema/macros.clj
   "A cross-platform variant of try-catch that catches all exceptions.
