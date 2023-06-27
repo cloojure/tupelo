@@ -114,7 +114,7 @@
    Does not (yet) support finally, and does not need or want an exception class."
   [forms]
   (let [try-body (butlast forms)
-        [catch-op ex-symbol & catch-body :as catch-form] (last forms)]
+        [catch-op ex-symbol & catch-body] (last forms)]
     (assert (= catch-op 'catch))
     (assert (symbol? ex-symbol))
     `(tupelo.core/if-cljs

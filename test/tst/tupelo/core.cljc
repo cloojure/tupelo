@@ -1208,76 +1208,74 @@
 
 
 (verify
-  (let [map1 {:a   1 :b 2 :c nil
+  (let [data {:a   1 :b 2 :c nil
               nil  :NIL
               "hi" "hello"
               5    "five"}]
-    (is= 1 (t/grab :a map1))
-    (is= 2 (t/grab :b map1))
-    (is= nil (t/grab :c map1))
-    (is= :NIL (t/grab nil map1))
-    (is= "hello" (t/grab "hi" map1))
-    (is= "five" (t/grab 5 map1))
-    (throws? (t/grab :z map1))
-    (throws? (t/grab 42 map1))
-    ))
+    (is= 1 (t/grab :a data))
+    (is= 2 (t/grab :b data))
+    (is= nil (t/grab :c data))
+    (is= :NIL (t/grab nil data))
+    (is= "hello" (t/grab "hi" data))
+    (is= "five" (t/grab 5 data))
+    (throws? (t/grab :z data))
+    (throws? (t/grab 42 data))))
 
 (verify
-  (testing "basic usage"
-    (let [map1 {:a1  "a1"
+  (let [nested {:a1  "a1"
                 :a2  {:b1 "b1"
                       :b2 {:c1 "c1"
                            :c2 "c2"}}
                 nil  "NIL"
-                :nil nil}
-          vv   [[:00 :01 :02]
-                [:10 :11 :12]]]
-      (is= "a1" (t/fetch-in map1 [:a1]))
-      (is= "b1" (t/fetch-in map1 [:a2 :b1]))
-      (is= "c1" (t/fetch-in map1 [:a2 :b2 :c1]))
-      (is= "c2" (t/fetch-in map1 [:a2 :b2 :c2]))
-      (is= "NIL" (t/fetch-in map1 [nil]))
-      (is= nil (t/fetch-in map1 [:nil]))
-      (throws? (t/fetch-in map1 [:a9]))
-      (throws? (t/fetch-in map1 [:a2 :b9]))
-      (throws? (t/fetch-in map1 [:a2 :b2 :c9]))
-      (is= :12 (t/fetch-in vv [1 2]))
-      )))
+                :nil nil}]
+    (is= "a1" (t/fetch-in nested [:a1]))
+    (is= "b1" (t/fetch-in nested [:a2 :b1]))
+    (is= "c1" (t/fetch-in nested [:a2 :b2 :c1]))
+    (is= "c2" (t/fetch-in nested [:a2 :b2 :c2]))
+    (is= "NIL" (t/fetch-in nested [nil]))
+    (is= nil (t/fetch-in nested [:nil]))
+    (throws? (t/fetch-in nested [:a9]))
+    (throws? (t/fetch-in nested [:a2 :b9]))
+    (throws? (t/fetch-in nested [:a2 :b2 :c9]))
+
+    (let [matrix [[:00 :01 :02]
+                  [:10 :11 :12]]]
+      (is= :12 (t/fetch-in matrix [1 2])))))
 
 (verify
-  (let [mm {:a {:b {:c "c"}}}]
-    (is= (t/dissoc-in mm []) mm)
-    (is= (t/dissoc-in mm [:a]) {})
-    (is= (t/dissoc-in mm [:a :b]) {:a {}})
-    (is= (t/dissoc-in mm [:a :b :c]) {:a {:b {}}})
-    (is= (t/dissoc-in mm [:a :x :y]) {:a {:b {:c "c"}
-                                          :x nil}})
-    (is= (t/dissoc-in mm [:a :x :y :z]) {:a {:b {:c "c"}
-                                             :x {:y nil}}})
-    (is= (t/dissoc-in mm [:k1 :k2 :k3 :kz]) {:a  {:b {:c "c"}}
-                                             :k1 {:k2 {:k3 nil}}}))
-  (let [mm {:a1 "a1"
-            :a2 {:b1 "b1"
-                 :b2 {:c1 "c1"
-                      :c2 "c2"}}}]
-    (is= (t/dissoc-in mm [:a1])
+  (let [nested {:a {:b {:c "c"}}}]
+    (is= (t/dissoc-in nested []) nested)
+    (is= (t/dissoc-in nested [:a]) {})
+    (is= (t/dissoc-in nested [:a :b]) {:a {}})
+    (is= (t/dissoc-in nested [:a :b :c]) {:a {:b {}}})
+    (is= (t/dissoc-in nested [:a :x :y]) {:a {:b {:c "c"}
+                                              :x nil}})
+    (is= (t/dissoc-in nested [:a :x :y :z]) {:a {:b {:c "c"}
+                                                 :x {:y nil}}})
+    (is= (t/dissoc-in nested [:k1 :k2 :k3 :kz]) {:a  {:b {:c "c"}}
+                                                 :k1 {:k2 {:k3 nil}}}))
+  (let [nested {:a1 "a1"
+                :a2 {:b1 "b1"
+                     :b2 {:c1 "c1"
+                          :c2 "c2"}}}]
+    (is= (t/dissoc-in nested [:a1])
       {:a2 {:b1 "b1"
             :b2 {:c1 "c1"
                  :c2 "c2"}}})
-    (is= (t/dissoc-in mm [:a2])
+    (is= (t/dissoc-in nested [:a2])
       {:a1 "a1"})
-    (is= (t/dissoc-in mm [:a2 :b1])
+    (is= (t/dissoc-in nested [:a2 :b1])
       {:a1 "a1"
        :a2 {:b2 {:c1 "c1"
                  :c2 "c2"}}})
-    (is= (t/dissoc-in mm [:a2 :b2])
+    (is= (t/dissoc-in nested [:a2 :b2])
       {:a1 "a1"
        :a2 {:b1 "b1"}})
-    (is= (t/dissoc-in mm [:a2 :b2 :c1])
+    (is= (t/dissoc-in nested [:a2 :b2 :c1])
       {:a1 "a1"
        :a2 {:b1 "b1"
             :b2 {:c2 "c2"}}})
-    (is= (t/dissoc-in mm [:a2 :b2 :c2])
+    (is= (t/dissoc-in nested [:a2 :b2 :c2])
       {:a1 "a1"
        :a2 {:b1 "b1"
             :b2 {:c1 "c1"}}})))
