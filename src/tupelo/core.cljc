@@ -144,7 +144,7 @@
 
 (defn type-name->str
   "Returns the type/class name of a value as a string.  Works for both CLJ and CLJS."
-  [arg] (tupelo.core.impl/type-name->str arg)  )
+  [arg] (tupelo.core.impl/type-name->str arg))
 
 ;-----------------------------------------------------------------------------
 ; for tupelo.string
@@ -2313,7 +2313,7 @@
          nsteps-int     (Math/round nsteps-dbl)
          rounding-error (Math/abs (- nsteps-dbl nsteps-int))]
      (assert-info (< rounding-error 1e-5)
-       "thru: non-integer number of steps \n   args:" (vals->map start end step  rounding-error))
+       "thru: non-integer number of steps \n   args:" (vals->map start end step rounding-error))
      (vec (clojure.core/map #(-> %
                                (* step)
                                (+ start))
