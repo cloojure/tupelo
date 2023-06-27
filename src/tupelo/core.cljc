@@ -109,15 +109,15 @@
         :cljs true))
 
 (defn cljs-env? ; from plumatic schema/macros.clj
-  "Take the &env from a macro, and tell whether we are expanding into cljs."
-  [env]
-  (boolean (:ns env)))
+  "Given the &env from a macro, and tell whether we are expanding into cljs."
+  [env] (boolean (:ns env)))
 
 (defmacro if-cljs ; from plumatic schema/macros.clj
-  "Return `then` if we are generating cljs code and `else` for Clojure code.
-   https://groups.google.com/d/msg/clojurescript/iBY5HaQda4A/w1lAQi9_AwsJ"
-  [then else]
-  (if (cljs-env? &env) then else))
+  "For use within macros. Return `then-form` if we are generating ClojureScript code,
+   and `else-form` for Clojure code.
+     (from https://groups.google.com/d/msg/clojurescript/iBY5HaQda4A/w1lAQi9_AwsJ)"
+  [then-form else-form]
+  (if (cljs-env? &env) then-form else-form))
 
 (defn try-catchall-impl ; from plumatic schema/macros.clj
   "A cross-platform variant of try-catch that catches all exceptions.
