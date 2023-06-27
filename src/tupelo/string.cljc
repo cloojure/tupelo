@@ -25,7 +25,7 @@
 (def ^:const UTF-8-Charset-Name "UTF-8")
 
 ;-----------------------------------------------------------------------------
-; for convenience of requiring only 1 ns
+; for convenience of requiring only 1 namespace
 (def blank? "Alias for clojure.string/blank?" clojure.string/blank?)
 (def capitalize "Alias for clojure.string/capitalize" clojure.string/capitalize)
 (def ends-with? "Alias for clojure.string/ends-with?" clojure.string/ends-with?)
