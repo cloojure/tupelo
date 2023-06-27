@@ -98,6 +98,16 @@
 ; #todo                   some-fn-of-3-or-more-args)
 ; #todo    like (some-fn* (glue {0 0   1 "hello"   2 :cc} {<user args here>} ))
 
+(defn is-clj?
+  "Take the &env from a macro, and tell whether we are expanding into cljs."
+  [] #?(:clj  true
+        :cljs false))
+
+(defn is-cljs?
+  "Take the &env from a macro, and tell whether we are expanding into cljs."
+  [] #?(:clj  false
+        :cljs true))
+
 (defn cljs-env? ; from plumatic schema/macros.clj
   "Take the &env from a macro, and tell whether we are expanding into cljs."
   [env]
