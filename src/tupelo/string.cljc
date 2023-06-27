@@ -6,13 +6,13 @@
 ;   software.
 (ns tupelo.string
   "A superset of `clojure.string` with many added functions."
-  (:refer-clojure :exclude [drop take contains? format replace reverse uuid? ])
+  (:refer-clojure :exclude [drop take contains? format replace reverse uuid?])
   (:require
     [clojure.string]
     [clojure.walk :as walk]
     [schema.core :as s]
     [tupelo.chars :as chars]
-    [tupelo.core :as t ]
+    [tupelo.core :as t]
     #?(:clj [tupelo.types :as types])
     #?(:clj [clojure.java.io :as io])
     #?(:cljs [goog.string.format])
@@ -25,26 +25,26 @@
 
 ;-----------------------------------------------------------------------------
 ; for convenience of requiring only 1 ns
-(def blank?                "Alias for clojure.string/blank?"                 clojure.string/blank? )
-(def capitalize            "Alias for clojure.string/capitalize"             clojure.string/capitalize )
-(def ends-with?            "Alias for clojure.string/ends-with?"             clojure.string/ends-with? )
-(def escape                "Alias for clojure.string/escape"                 clojure.string/escape )
-(def includes?             "Alias for clojure.string/includes?"              clojure.string/includes? )
-(def index-of              "Alias for clojure.string/index-of"               clojure.string/index-of )
-(def join                  "Alias for clojure.string/join"                   clojure.string/join )
-(def last-index-of         "Alias for clojure.string/last-index-of"          clojure.string/last-index-of )
-(def lower-case            "Alias for clojure.string/lower-case"             clojure.string/lower-case )
-(def replace               "Alias for clojure.string/replace"                clojure.string/replace )
-(def replace-first         "Alias for clojure.string/replace-first"          clojure.string/replace-first )
-(def reverse               "Alias for clojure.string/reverse"                clojure.string/reverse )
-(def split                 "Alias for clojure.string/split"                  clojure.string/split )
-(def split-lines           "Alias for clojure.string/split-lines"            clojure.string/split-lines )
-(def starts-with?          "Alias for clojure.string/starts-with?"           clojure.string/starts-with? )
-(def trim                  "Alias for clojure.string/trim"                   clojure.string/trim )
-(def trim-newline          "Alias for clojure.string/trim-newline"           clojure.string/trim-newline )
-(def triml                 "Alias for clojure.string/triml"                  clojure.string/triml )
-(def trimr                 "Alias for clojure.string/trimr"                  clojure.string/trimr )
-(def upper-case            "Alias for clojure.string/upper-case"             clojure.string/upper-case )
+(def blank? "Alias for clojure.string/blank?" clojure.string/blank?)
+(def capitalize "Alias for clojure.string/capitalize" clojure.string/capitalize)
+(def ends-with? "Alias for clojure.string/ends-with?" clojure.string/ends-with?)
+(def escape "Alias for clojure.string/escape" clojure.string/escape)
+(def includes? "Alias for clojure.string/includes?" clojure.string/includes?)
+(def index-of "Alias for clojure.string/index-of" clojure.string/index-of)
+(def join "Alias for clojure.string/join" clojure.string/join)
+(def last-index-of "Alias for clojure.string/last-index-of" clojure.string/last-index-of)
+(def lower-case "Alias for clojure.string/lower-case" clojure.string/lower-case)
+(def replace "Alias for clojure.string/replace" clojure.string/replace)
+(def replace-first "Alias for clojure.string/replace-first" clojure.string/replace-first)
+(def reverse "Alias for clojure.string/reverse" clojure.string/reverse)
+(def split "Alias for clojure.string/split" clojure.string/split)
+(def split-lines "Alias for clojure.string/split-lines" clojure.string/split-lines)
+(def starts-with? "Alias for clojure.string/starts-with?" clojure.string/starts-with?)
+(def trim "Alias for clojure.string/trim" clojure.string/trim)
+(def trim-newline "Alias for clojure.string/trim-newline" clojure.string/trim-newline)
+(def triml "Alias for clojure.string/triml" clojure.string/triml)
+(def trimr "Alias for clojure.string/trimr" clojure.string/trimr)
+(def upper-case "Alias for clojure.string/upper-case" clojure.string/upper-case)
 
 #?(:clj (do
           (def re-quote-replacement "Alias for clojure.string/re-quote-replacement" clojure.string/re-quote-replacement)
@@ -59,21 +59,21 @@
         :o 'oscar'    :p 'papa'     :q 'quebec'   :r 'romeo '   :s 'sierra'   :t 'tango'    :u 'uniform'
         :v 'victor'   :w 'whiskey'  :x 'x-ray'    :y 'yankee'   :z 'zulu' }
     "
-   {:a "alpha"    :b "bravo"    :c "charlie"  :d "delta"    :e "echo"     :f "foxtrot"  :g "golf"
-    :h "hotel"    :i "india"    :j "juliett"  :k "kilo"     :l "lima"     :m "mike"     :n "november"
-    :o "oscar"    :p "papa"     :q "quebec"   :r "romeo "   :s "sierra"   :t "tango"    :u "uniform"
-    :v "victor"   :w "whiskey"  :x "x-ray"    :y "yankee"   :z "zulu" } )
+  {:a "alpha" :b "bravo" :c "charlie" :d "delta" :e "echo" :f "foxtrot" :g "golf"
+   :h "hotel" :i "india" :j "juliett" :k "kilo" :l "lima" :m "mike" :n "november"
+   :o "oscar" :p "papa" :q "quebec" :r "romeo " :s "sierra" :t "tango" :u "uniform"
+   :v "victor" :w "whiskey" :x "x-ray" :y "yankee" :z "zulu"})
 
 ;-----------------------------------------------------------------------------
 (s/defn quotes->single :- s/Str ; #todo readme & blog
   "Converts all double-quotes in a string to single-quotes"
   [arg :- s/Str]
-  (clojure.string/replace arg "\""  "'"))
+  (clojure.string/replace arg "\"" "'"))
 
 (s/defn quotes->double :- s/Str ; #todo readme & blog
   "Converts all single-quotes in a string to double-quotes"
   [arg :- s/Str]
-  (clojure.string/replace arg "'" "\"" ))
+  (clojure.string/replace arg "'" "\""))
 
 (s/defn ^:no-doc tab-space-oneline-impl :- s/Str
   [tab-size :- s/Int
@@ -109,12 +109,12 @@
   ([src-str :- s/Str] (tabs->spaces 8 src-str))
   ([tab-size :- s/Int
     src-str :- s/Str]
-    (let [lines (clojure.string/split-lines src-str)]
-      (clojure.string/join \newline
-        (for [line lines]
-          (tab-space-oneline-impl tab-size line))))))
+   (let [lines (clojure.string/split-lines src-str)]
+     (clojure.string/join \newline
+       (for [line lines]
+         (tab-space-oneline-impl tab-size line))))))
 
-(s/defn whitespace-collapse  :- s/Str ; #todo readme & blog
+(s/defn whitespace-collapse :- s/Str ; #todo readme & blog
   "Replaces all consecutive runs of whitespace characters (including newlines) with a single space.
    Removes any leading or trailing whitespace. Returns a string composed of all tokens
    separated by a single space."
@@ -137,7 +137,7 @@
   [it]
   (not (clojure.string/blank? it)))
 
-(s/defn nonblank= :- s/Bool  ; #todo readme & blog
+(s/defn nonblank= :- s/Bool ; #todo readme & blog
   "Compares strings for equality using tupelo.misc/collapse-whitespace.
    Equivalent to separating tokens by whitespace and comparing the resulting sequences."
   [& args :- [s/Str]]
@@ -165,7 +165,7 @@
   [& args]
   (apply nonblank= args))
 
-(comment ; #todo finish & use in Lumanu
+(comment  ; #todo finish & use in Lumanu
   (s/defn equals-ignore-spacing-seq? :- s/Bool ; #todo readme & blog
     "Given N sequences of strings, compares corresponding strings from each sequence for equality
     after collapsing continugous whitespace to a single blank. "
@@ -182,37 +182,37 @@
 
 (defn alphanumeric?
   "Returns true iff every char passes tupelo.chars/alphanumeric?"
-  [& args] (every? chars/alphanumeric?        (t/strcat args)))
+  [& args] (every? chars/alphanumeric? (t/strcat args)))
 (defn whitespace-horiz?
   "Returns true iff every char passes tupelo.chars/whitespace-horiz?"
-  [& args] (every? chars/whitespace-horiz?    (t/strcat args)))
+  [& args] (every? chars/whitespace-horiz? (t/strcat args)))
 (defn whitespace-eol?
   "Returns true iff every char passes tupelo.chars/whitespace-eol?"
-  [& args] (every? chars/whitespace-eol?      (t/strcat args)))
+  [& args] (every? chars/whitespace-eol? (t/strcat args)))
 (defn whitespace?
   "Returns true iff every char passes tupelo.chars/whitespace?"
-  [& args] (every? chars/whitespace?          (t/strcat args)))
+  [& args] (every? chars/whitespace? (t/strcat args)))
 (defn lowercase?
   "Returns true iff every char passes tupelo.chars/lowercase?"
-  [& args] (every? chars/lowercase?           (t/strcat args)))
+  [& args] (every? chars/lowercase? (t/strcat args)))
 (defn uppercase?
   "Returns true iff every char passes tupelo.chars/uppercase?"
-  [& args] (every? chars/uppercase?           (t/strcat args)))
+  [& args] (every? chars/uppercase? (t/strcat args)))
 (defn digit?
   "Returns true iff every char passes tupelo.chars/digit?"
-  [& args] (every? chars/digit?               (t/strcat args)))
+  [& args] (every? chars/digit? (t/strcat args)))
 (defn hex?
   "Returns true iff every char passes tupelo.chars/hex?"
-  [& args] (every? chars/hex?                 (t/strcat args)))
+  [& args] (every? chars/hex? (t/strcat args)))
 (defn alpha?
   "Returns true iff every char passes tupelo.chars/alpha?"
-  [& args] (every? chars/alpha?               (t/strcat args)))
+  [& args] (every? chars/alpha? (t/strcat args)))
 (defn visible?
   "Returns true iff every char passes tupelo.chars/visible?"
-  [& args] (every? chars/visible?             (t/strcat args)))
+  [& args] (every? chars/visible? (t/strcat args)))
 (defn text?
   "Returns true iff every char passes tupelo.chars/text?"
-  [& args] (every? chars/text?                (t/strcat args)))
+  [& args] (every? chars/text? (t/strcat args)))
 
 ; #todo make general version vec -> vec; str-specific version str -> str
 ; #todo need (substring {:start I :stop J                 } ) ; half-open (or :stop)
@@ -232,8 +232,8 @@
 
 (s/defn clip-text :- s/Str
   "Given a multi-line string, returns a string with each line clipped to a max of N chars "
-  [N       :- s/Int
-   src-str :- s/Str ]
+  [N :- s/Int
+   src-str :- s/Str]
   (clojure.string/join \newline
     (let [lines (clojure.string/split-lines src-str)]
       (for [line lines]
@@ -250,7 +250,7 @@
 ; #todo replace with other lib
 
 ; %todo define current mode only for (str->kw "ab*cd #()xyz" :sloppy), else throw
-(defn str->kw-normalized       ; #todo need test, README
+(defn str->kw-normalized ; #todo need test, README
   "Returns a keyword constructed from a normalized string"
   [arg]
   (keyword (normalize-str arg)))
@@ -265,27 +265,27 @@
 
 (s/defn ->kabob-str :- s/Str ; #todo fix for namespaced kw & sym
   "Coerce a string, keyword, or symbol to a kabob-case-string"
-  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol )]
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol)]
   (t/it-> arg
     (name it)
     (clojure.string/replace it \_ \-)))
 
 (s/defn ->snake-str :- s/Str ; #todo fix for namespaced kw & sym
   "Coerce a string, keyword, or symbol to a snake_case_string"
-  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol )]
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol)]
   (t/it-> arg
     (name it)
     (clojure.string/replace it \- \_)))
 
 (s/defn ->kabob-kw :- s/Keyword ; #todo fix for namespaced kw & sym
-  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol )]
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol)]
   "Coerce a string, keyword, or symbol to a kabob-case-keyword"
   (-> arg
     (->kabob-str)
     (keyword)))
 
-(s/defn ->snake-kw  :- s/Keyword ; #todo fix for namespaced kw & sym
-  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol )]
+(s/defn ->snake-kw :- s/Keyword ; #todo fix for namespaced kw & sym
+  [arg :- (s/cond-pre s/Keyword s/Str s/Symbol)]
   "Coerce a string, keyword, or symbol to a snake_case_keyword"
   (-> arg
     (->snake-str)
@@ -331,22 +331,22 @@
     form))
 ;-----------------------------------------------------------------------------
 
-(s/defn drop :- s/Str  ; #todo add readme
+(s/defn drop :- s/Str ; #todo add readme
   "Drops the first N chars of a string, returning a string result."
-  [n    :- s/Int
-   txt  :- s/Str]
+  [n :- s/Int
+   txt :- s/Str]
   (clojure.string/join (clojure.core/drop n txt)))
 
-(s/defn take :- s/Str  ; #todo add readme
+(s/defn take :- s/Str ; #todo add readme
   "Drops the first N chars of a string, returning a string result."
-  [n    :- s/Int
-   txt  :- s/Str]
+  [n :- s/Int
+   txt :- s/Str]
   (clojure.string/join (clojure.core/take n txt)))
 
-(s/defn indent :- s/Str  ; #todo add readme
+(s/defn indent :- s/Str ; #todo add readme
   "Indents a string by pre-pending N spaces. Returns a string result."
-  [n    :- s/Int
-   txt  :- s/Str]
+  [n :- s/Int
+   txt :- s/Str]
   (let [indent-str (clojure.string/join (repeat n \space))]
     (str indent-str txt)))
 
@@ -359,12 +359,12 @@
   (let [indent-str (clojure.string/join (repeat n \space))]
     (t/indent-lines-with indent-str txt)))
 
-(s/defn indent-lines-with :- s/Str  ; #todo delete?  else rename (prefix-lines txt prefix-str) ; add (suffix-lines txt suffix-str)
+(s/defn indent-lines-with :- s/Str ; #todo delete?  else rename (prefix-lines txt prefix-str) ; add (suffix-lines txt suffix-str)
   "Splits out each line of txt using clojure.string/split-lines, then
   indents each line by prepending it with the supplied string. Joins lines together into
   a single string result, with each line terminated by a single \newline."
   [indent-str :- s/Str
-   txt  :- s/Str]
+   txt :- s/Str]
   (t/indent-lines-with indent-str txt))
 
 ; #todo add undent (verify only leading whitespace removed)
@@ -373,23 +373,23 @@
 (s/defn increasing? :- s/Bool ; #todo merge with general in tupelo.core
   "Returns true if a pair of strings are in increasing lexicographic order."
   [a :- s/Str
-   b :- s/Str ]
-  (t/string-increasing? a b) )
+   b :- s/Str]
+  (neg? (compare a b)))
 
 (s/defn increasing-or-equal? :- s/Bool ; #todo merge with general in tupelo.core
   "Returns true if a pair of strings are in increasing lexicographic order, or equal."
   [a :- s/Str
-   b :- s/Str ]
-  (t/string-increasing-or-equal? a b))
+   b :- s/Str]
+  (<= (compare a b) 0))
 
-(s/defn contains-match?  :- s/Bool
+(s/defn contains-match? :- s/Bool
   "Returns true if the regex matches any portion of the intput string."
   [search-str :- s/Str
    re :- s/Any]
   #?(:clj (assert (instance? java.util.regex.Pattern re)))
   (t/truthy? (re-find re search-str)))
 
-(s/defn contains-str?  :- s/Bool
+(s/defn contains-str? :- s/Bool
   "Returns true if the intput string contains the target string."
   [search-str :- s/Str
    tgt-str :- s/Str]
@@ -409,7 +409,7 @@
       (let [frag      (t/xfirst frags)
             idx-found (.indexOf src frag)]
         (if (= -1 idx-found)
-          false     ; next fragment was not found
+          false ; next fragment was not found
           (let [src-next   (clojure.core/subs src idx-found)
                 frags-next (t/xrest frags)]
             (recur src-next frags-next)))))))
@@ -464,10 +464,10 @@
   ([str-val :- s/Str
     N :- s/Int
     pad-char]
-    (let [len    (count str-val)
-          needed (max 0 (- N len))
-          result (str (clojure.string/join (repeat needed pad-char)) str-val)]
-      result)))
+   (let [len    (count str-val)
+         needed (max 0 (- N len))
+         result (str (clojure.string/join (repeat needed pad-char)) str-val)]
+     result)))
 
 (s/defn pad-right :- s/Str
   "Pads a string on the right until it is at least N chars in size"
@@ -476,10 +476,10 @@
   ([str-val :- s/Str
     N :- s/Int
     pad-char]
-    (let [len    (count str-val)
-          needed (max 0 (- N len))
-          result (str str-val (clojure.string/join (repeat needed pad-char)))]
-      result)))
+   (let [len    (count str-val)
+         needed (max 0 (- N len))
+         result (str str-val (clojure.string/join (repeat needed pad-char)))]
+     result)))
 
 (defn pluralize-with
   "Returns `base-str` when N=1; otherwise appends an `s`"
@@ -503,7 +503,7 @@
 
          (format \"%8.2f\" 123.456789) => '  123.46'
   "
-  [fmtstr  :- s/Str
+  [fmtstr :- s/Str
    & args]
   (let [format-fn #?(:clj clojure.core/format
                      :cljs goog.string.format)]

@@ -146,23 +146,6 @@
   [arg] (tupelo.core.impl/type-name->str arg))
 
 ;-----------------------------------------------------------------------------
-; for tupelo.string
-
-; #todo move to tupelo.impl
-(s/defn ^:no-doc string-increasing? :- s/Bool ; #todo merge with general in tupelo.core
-  "Returns true if a pair of strings are in increasing lexicographic order."
-  [a :- s/Str
-   b :- s/Str]
-  (neg? (compare a b)))
-
-(s/defn ^:no-doc string-increasing-or-equal? :- s/Bool ; #todo merge with general in tupelo.core
-  "Returns true if a pair of strings are in increasing lexicographic order, or equal."
-  [a :- s/Str
-   b :- s/Str]
-  (or (= a b)
-    (string-increasing? a b)))
-
-;-----------------------------------------------------------------------------
 #?(:clj
    (do
 
