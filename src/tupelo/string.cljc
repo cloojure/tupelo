@@ -433,16 +433,15 @@
 ;-----------------------------------------------------------------------------
 #?(:clj
    (do
-
-     (defn str->byte-array ; #todo move to tupelo.misc
+     (s/defn str->byte-array ; #todo move to tupelo.misc
        "Converts a String to a byte array using the UTF-8 Charset"
-       [^String arg]
+       [^String arg :- s/Str]
        {:pre  [(string? arg)]
         :post [(types/byte-array? %)]}
        [arg]
        (.getBytes arg UTF-8-Charset-Name))
 
-     (defn byte-array->str ; #todo move to tupelo.misc
+     (s/defn byte-array->str  :- s/Str
        "Converts a byte array to a String using the UTF-8 Charset"
        [arg]
        {:pre  [(types/byte-array? arg)]
@@ -453,7 +452,6 @@
        [str-val :- s/Str]
        (io/input-stream
          (.getBytes str-val StandardCharsets/UTF_8)))
-
      ))
 
 ;-----------------------------------------------------------------------------
