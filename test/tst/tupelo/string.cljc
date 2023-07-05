@@ -339,12 +339,21 @@
      (verify
        (is (= [65 66 67] (vec (str/str->byte-array "ABC"))))
        (is (= "ABC" (str/byte-array->str (byte-array [65 66 67]))))
-       (is (= "Hello World!" (-> "Hello World!" (str/str->byte-array) (str/byte-array->str)))))
+       (is (= "Hello World!" (-> "Hello World!" (str/str->byte-array) (str/byte-array->str))))
+
+       (is= "abc" (slurp (str/string->stream "abc"))))
 
      (verify
        (is (= " :a :b 3 4" (t/seq->str [:a :b 3 4])))
        (is (= " \\a \\b \\c" (t/seq->str "abc")))
        (is (= " 1 2 3" (t/seq->str (byte-array [1 2 3])))))
+
+     (verify
+       (is= (str/str->var "tupelo.string/str->var")
+         (var tupelo.string/str->var) ; special form converts a Symbol => Var
+         #'tupelo.string/str->var ; reader macro converts to above
+         ))
+
      ))
 
 (verify

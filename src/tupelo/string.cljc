@@ -19,8 +19,10 @@
     #?(:cljs [goog.string.format])
     )
   #?(:clj
-     (:import [java.io InputStream ByteArrayInputStream]
-              [java.nio.charset StandardCharsets])))
+     (:import
+       [java.lang String]
+       [java.io InputStream ByteArrayInputStream]
+       [java.nio.charset StandardCharsets])))
 
 (def ^:const UTF-8-Charset-Name "UTF-8")
 
@@ -436,23 +438,23 @@
    (do
      (s/defn str->byte-array ; #todo move to tupelo.misc
        "Converts a String to a byte array using the UTF-8 Charset"
-       [^String arg :- s/Str]
-       {:pre  [(string? arg)]
-        :post [(types/byte-array? %)]}
-       [arg]
-       (.getBytes arg UTF-8-Charset-Name))
+       [arg :- s/Str]
+       (.getBytes ^String arg UTF-8-Charset-Name))
 
-     (s/defn byte-array->str  :- s/Str
+     (s/defn byte-array->str :- s/Str
        "Converts a byte array to a String using the UTF-8 Charset"
        [arg]
-       {:pre  [(types/byte-array? arg)]
-        :post [(string? %)]}
-       (String. arg UTF-8-Charset-Name))
+       (assert (types/byte-array? arg))
+       (String. #^bytes arg UTF-8-Charset-Name))
 
      (s/defn string->stream :- InputStream
        [str-val :- s/Str]
        (io/input-stream
-         (.getBytes str-val StandardCharsets/UTF_8)))
+         (.getBytes ^String str-val StandardCharsets/UTF_8)))
+
+     (s/defn str->var :- clojure.lang.Var
+       [var-str :- s/Str]
+       (eval `(var ~(symbol ^String var-str))))
      ))
 
 ;-----------------------------------------------------------------------------
