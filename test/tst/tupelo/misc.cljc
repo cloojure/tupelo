@@ -82,7 +82,7 @@
 ;---------------------------------------------------------------------------------------------------
 (verify
   (let [data [1 2 3]]
-    (is= (t/type-name->str data) ; #todo => tst.tupelo.core
+    (is= (t/type-name-str data) ; #todo => tst.tupelo.core
       #?(:clj  "clojure.lang.PersistentVector"
          :cljs "cljs.core/PersistentVector"))
     (is (= (drop 0 data) [1 2 3]))

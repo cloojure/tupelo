@@ -43,7 +43,7 @@
     (sequential? x) "Type/Clojure-Sequential"
 
     ; NOTE: record case must preempt `(map? ...)` case below, since all records can be viewed as maps
-    (record? x) (let [type-str  (tupelo.core.impl/type-name->str x)]
+    (record? x) (let [type-str  (tupelo.core.impl/type-name-str x)]
                   ; (prn :comparison-class--record [type-str x])
                   type-str)
 
@@ -57,11 +57,11 @@
        :cljs (satisfies? cljs.core/IComparable x))
     (do
       ; (println :comparable-block x)
-      (tupelo.core.impl/type-name->str x))
+      (tupelo.core.impl/type-name-str x))
 
     :else (throw
             (ex-info
-              (str "cc-cmp does not implement comparison of values with class name=" (tupelo.core.impl/type-name->str x))
+              (str "cc-cmp does not implement comparison of values with class name=" (tupelo.core.impl/type-name-str x))
               {:value x}))))
 
 (defn ^:no-doc compare-seq-lexi

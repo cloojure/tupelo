@@ -142,9 +142,9 @@
      (do ~@forms)
      result#))
 
-(defn type-name->str
+(defn type-name-str
   "Returns the type/class name of a value as a string.  Works for both CLJ and CLJS."
-  [arg] (tupelo.core.impl/type-name->str arg))
+  [arg] (tupelo.core.impl/type-name-str arg))
 
 ;-----------------------------------------------------------------------------
 #?(:clj
@@ -590,7 +590,7 @@
 
                         #?@(:clj [
                                   (instance? java.io.InputStream item) (slurp item) ; #todo need test
-                                  (= "datomic.query.EntityMap" (type-name->str item)) (into {} item) ; type-free test (doesn't need datomic)
+                                  (= "datomic.query.EntityMap" (type-name-str item)) (into {} item) ; type-free test (doesn't need datomic)
                                   (instance? java.util.List item) (vec item) ; #todo need test
                                   (instance? java.util.Map item) (into {} item) ; #todo need test
                                   (instance? java.lang.Iterable item) (into [] item) ; #todo need test
@@ -1205,7 +1205,7 @@
    expression, printing both the expression, its type, and its value to stdout, then returns the value."
   [expr]
   `(let [spy-val#   ~expr
-         type-name# (type-name->str spy-val#)]
+         type-name# (type-name-str spy-val#)]
      (when *spy-enabled*
        (println (str (spy-indent-spaces) '~expr " => <#" type-name# " " (pr-str spy-val#) ">")))
      spy-val#))
@@ -1227,6 +1227,11 @@
     final-code))
 
 ;-----------------------------------------------------------------------------
+(defn native-array?
+  "Returns true iff arg is a native Java or JavaScript array."
+  [arg] (impl/native-array? arg))
+
+
 (defn ^:no-doc glue-byte-arrays
   "Glues together N byte arrays."
   [& byte-arrays]
