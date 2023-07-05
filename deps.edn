@@ -55,10 +55,10 @@
                                        io.github.clojure/tools.build {:mvn/version "0.9.4"}
                                        slipset/deps-deploy           {:mvn/version "0.2.1"} ; or "RELEASE"
                                        }
-                          :ns-default build
+                          :ns-default tupelo.deps-build-deploy
 
                           ; For snapshots, MUST follow pattern `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
-                          :exec-args  {:version-str   "23.07.04"
+                          :exec-args  {:version-str   "23.07.04-SNAPSHOT"
 
                                        :lib-name      tupelo/tupelo ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
                                        :scm-root      "github.com/cloojure/tupelo"
