@@ -21,12 +21,9 @@
     [tupelo.string :as ts]
     [tupelo.test :refer [testing verify verify-focus is isnt is= isnt= is-set= is-nonblank=
                          throws? throws-not?
-                         ]]
-    )
+                         ]])
   #?(:clj (:require [tupelo.types :as types]
                     [tupelo.lexical :as lex])))
-
-#?(:cljs (enable-console-print!))
 
 ;--------------------------------------------------------------------------------------------------
 #?(:clj
