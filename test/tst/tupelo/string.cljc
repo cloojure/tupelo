@@ -348,12 +348,6 @@
        (is (= " \\a \\b \\c" (t/seq->str "abc")))
        (is (= " 1 2 3" (t/seq->str (byte-array [1 2 3])))))
 
-     (verify
-       (is= (str/str->var "tupelo.string/str->var")
-         (var tupelo.string/str->var) ; special form converts a Symbol => Var
-         #'tupelo.string/str->var ; reader macro converts to above
-         ))
-
      ))
 
 (verify

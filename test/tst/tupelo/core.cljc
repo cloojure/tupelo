@@ -80,6 +80,17 @@
              (doto System/err
                (.println "System.err.println"))
              (+ 2 3)))))
+
+     (verify
+       (is= (t/sym->var (quote tupelo.core/sym->var))
+         (var tupelo.core/sym->var) ; special form converts a Symbol => Var
+         #'tupelo.core/sym->var ; reader macro converts to above
+         )
+       (is= (t/str->var "tupelo.core/str->var")
+         (var tupelo.core/str->var) ; special form converts a Symbol => Var
+         #'tupelo.core/str->var ; reader macro converts to above
+         ))
+
      ))
 
 ;-----------------------------------------------------------------------------

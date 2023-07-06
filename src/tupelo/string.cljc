@@ -451,11 +451,6 @@
        [str-val :- s/Str]
        (io/input-stream
          (.getBytes ^String str-val StandardCharsets/UTF_8)))
-
-     (s/defn str->var :- clojure.lang.Var
-       "Converts a Java string to a clojure.lang.Var object."
-       [var-str :- s/Str]
-       (eval `(var ~(symbol ^String var-str))))
      ))
 
 ;-----------------------------------------------------------------------------

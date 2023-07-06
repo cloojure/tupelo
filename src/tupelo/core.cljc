@@ -216,7 +216,6 @@
        [exception]
        (with-system-err-str
          (.printStackTrace exception)))
-
      ))
 ;-----------------------------------------------------------------------------
 (defn assert-info-impl
@@ -435,6 +434,19 @@
              [arg]
              (.stringify js/JSON (clj->js arg)))))
 
+#?(:clj
+   (do
+     (s/defn sym->var :- clojure.lang.Var
+       "Given a fully-qualified Clojure symbol, returns the corresponding clojure.lang.Var object."
+       [var-sym :- s/Symbol]
+       (eval `(var ~var-sym)))
+
+     (s/defn str->var :- clojure.lang.Var
+       "Given a Java string representing a fully-qualified Clojure symbol,
+       returns the corresponding clojure.lang.Var object."
+       [var-str :- s/Str]
+       (sym->var (str->sym var-str)))
+     ))
 
 ;-----------------------------------------------------------------------------
 (s/defn not-nil? :- s/Bool
@@ -1230,7 +1242,6 @@
 (defn native-array?
   "Returns true iff arg is a native Java or JavaScript array."
   [arg] (impl/native-array? arg))
-
 
 (defn ^:no-doc glue-byte-arrays
   "Glues together N byte arrays."
