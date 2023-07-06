@@ -49,8 +49,8 @@
                           }
            ; build alias (for deployment)
            :build        {:extra-deps {io.github.io-tupelo/deps-build-deploy
-                                       #_{:git/sha "a8e32aefe55730119040548925cf0eba9ceacb48"}
-                                       {:local/root "/home/alan/io-tupelo/deps-build-deploy"}
+                                       {:git/sha "c77545b32255432fd0462a5e0bcb71fcee805011"}
+                                       #_{:local/root "/home/alan/io-tupelo/deps-build-deploy"}
 
                                        io.github.clojure/tools.build {:mvn/version "0.9.4"}
                                        slipset/deps-deploy           {:mvn/version "0.2.1"} ; or "RELEASE"
