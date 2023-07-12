@@ -1,4 +1,5 @@
 (ns ^:no-doc tupelo.iuid.prng
+  "Code for a Pseudo Random Number Generator"
   (:use tupelo.core)
   (:require
     [schema.core :as s]

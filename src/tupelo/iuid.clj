@@ -1,7 +1,7 @@
 (ns tupelo.iuid
   "Given a user-selected number of bits (currently [4..128]), creates a
-   reversible mapping from integer index to a Unique ID (UID). Both
-   the index and the UID are in the range of [0..N), where N = 2^num-bits. "
+   reversible mapping from integer index to an Indexed Unique ID (IUID). Both
+   the index and the IUID are in the range of [0..N), where N = 2^num-bits. "
   (:use tupelo.core)
   (:require
     [schema.core :as s]

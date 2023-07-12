@@ -223,9 +223,10 @@
 ;#todo make both rows/cols -> submatrix result
 (s/defn array->rows :- tsk/Array
   "Usage:
-     (array->rows arr)           Returns all array rows
-     (array->rows arr row-idxs)  Returns array rows specified by row-idxs
-     (array->rows arr low high)  Returns array rows in half-open interval [low..high) "
+         (array->rows arr)           Returns all array rows
+         (array->rows arr row-idxs)  Returns array rows specified by row-idxs
+         (array->rows arr low high)  Returns array rows in half-open interval [low..high)
+       "
   ([arr] (array->rows arr 0 (num-rows arr)))
   ([arr row-idxs]
    (forv [ii row-idxs]
@@ -254,9 +255,9 @@
 
 (s/defn array->cols :- tsk/Array
   "Usage:
-     (array->cols arr)           Returns all array cols
-     (array->cols arr col-idxs)  Returns array cols specified by col-idxs
-     (array->cols arr low high)  Returns array cols in half-open interval [low..high) "
+         (array->cols arr)           Returns all array cols
+         (array->cols arr col-idxs)  Returns array cols specified by col-idxs
+         (array->cols arr low high)  Returns array cols in half-open interval [low..high) "
   ([arr] (array->cols arr 0 (num-cols arr)))
   ([arr col-idxs]
    (forv [jj col-idxs]
