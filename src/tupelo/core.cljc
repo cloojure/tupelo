@@ -445,7 +445,7 @@
        "Given a Java string representing a fully-qualified Clojure symbol,
        returns the corresponding clojure.lang.Var object."
        [var-str :- s/Str]
-       (sym->var (str->sym var-str)))
+       (-> var-str (str->sym) (sym->var)))
      ))
 
 ;-----------------------------------------------------------------------------
