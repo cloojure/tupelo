@@ -109,6 +109,17 @@
   (isnt (sequential?  {:a 1} ))
   (isnt (sequential? #{:a 1} )) )
 
+; As of Clojure 1.9.0, seqable? is native to clojure
+(verify
+  (is   (seqable? "abc"))
+  (is   (seqable? {1 2 3 4}))
+  (is   (seqable? #{1 2 3}))
+  (is   (seqable? '(1 2 3)))
+  (is   (seqable? [1 2 3]))
+  (is   (seqable? (byte-array [1 2])))
+  (isnt (seqable? 1))
+  (isnt (seqable? \a)))
+
 (verify
   (is (every? odd? [1 3 5])))
 
