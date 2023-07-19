@@ -12,15 +12,15 @@
     [schema.core :as s]))
 
 ; An instance of the java.lang.Class<XXXX[]> (e.g. java.lang.Class<Byte[]>).
-(def ^:private  class-boolean-array (.getClass (boolean-array   0)))
-(def ^:private  class-byte-array    (.getClass (byte-array      0)))
-(def ^:private  class-char-array    (.getClass (char-array      0)))
-(def ^:private  class-double-array  (.getClass (double-array    0)))
-(def ^:private  class-float-array   (.getClass (float-array     0)))
-(def ^:private  class-int-array     (.getClass (int-array       0)))
-(def ^:private  class-long-array    (.getClass (long-array      0)))
-(def ^:private  class-object-array  (.getClass (object-array    0)))
-(def ^:private  class-short-array   (.getClass (short-array     0)))
+(def ^:no-doc  class-boolean-array (.getClass (boolean-array   0)))
+(def ^:no-doc  class-byte-array    (.getClass (byte-array      0)))
+(def ^:no-doc  class-char-array    (.getClass (char-array      0)))
+(def ^:no-doc  class-double-array  (.getClass (double-array    0)))
+(def ^:no-doc  class-float-array   (.getClass (float-array     0)))
+(def ^:no-doc  class-int-array     (.getClass (int-array       0)))
+(def ^:no-doc  class-long-array    (.getClass (long-array      0)))
+(def ^:no-doc  class-object-array  (.getClass (object-array    0)))
+(def ^:no-doc  class-short-array   (.getClass (short-array     0)))
 
 
 ; As of Clojure 1.9.0-alpha5, boolean? is native to clojure

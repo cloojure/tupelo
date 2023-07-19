@@ -393,15 +393,15 @@
   "Convert a unicode int to a char"
   [arg :- s/Int]
   (assert (int? arg))
-  #?(:clj (char arg))
-  #?(:cljs (.fromCharCode js/String arg))) ; #todo just use cljs.core/char  ???
+  #?(:clj  (char arg)
+     :cljs (.fromCharCode js/String arg))) ; #todo just use cljs.core/char  ???
 
 (s/defn char->codepoint :- s/Int
   "Convert a char to an unicode int"
   [arg :- s/Any] ; #todo need clj/cljs char? test
   (assert (char? arg))
-  #?(:clj (int arg))
-  #?(:cljs (.charCodeAt arg 0)))
+  #?(:clj  (int arg)
+     :cljs (.charCodeAt arg 0)))
 
 (defn kw->int [arg]
   #?(:clj  (Integer/parseInt (kw->str arg))

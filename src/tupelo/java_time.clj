@@ -505,7 +505,7 @@
                      (random-hex-str 8))]
         result))))
 
-(def ^:private ^:no-doc tuid-str-regex
+(def ^:no-doc tuid-str-regex
   #"(?x)           # expanded mode
        \p{Digit}{4}-    # YYYY
        \p{Digit}{4}-    # MMDD

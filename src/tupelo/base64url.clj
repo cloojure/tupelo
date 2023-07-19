@@ -23,13 +23,13 @@
          [\- \_ \=])))
 
 
-(def ^:private b64-code-62  (byte \+))
-(def ^:private b64-code-63  (byte \/ ))
-(def ^:private b64-code-pad (byte \= ))
+(def ^:no-doc b64-code-62  (byte \+))
+(def ^:no-doc b64-code-63  (byte \/ ))
+(def ^:no-doc b64-code-pad (byte \= ))
 
-(def ^:private b64url-code-62  (byte \- ))
-(def ^:private b64url-code-63  (byte \_ ))
-(def ^:private b64url-code-pad (byte \= ))
+(def ^:no-doc b64url-code-62  (byte \- ))
+(def ^:no-doc b64url-code-63  (byte \_ ))
+(def ^:no-doc b64url-code-pad (byte \= ))
 
 (s/defn ^:no-doc b64->b64url :- [s/Int] ; #todo need test
   "Converts a vector of byte values from base64 -> base64url encoding."

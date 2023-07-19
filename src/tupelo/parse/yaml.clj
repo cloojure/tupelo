@@ -11,10 +11,10 @@
 
 ;-----------------------------------------------------------------------------
 
-(def ^:private load-settings (-> (LoadSettings/builder)
+(def ^:no-doc load-settings (-> (LoadSettings/builder)
                                (.build)))
 
-(def ^:private yaml-load (Load. load-settings))
+(def ^:no-doc yaml-load (Load. load-settings))
 
 (s/defn parse-all-raw
   "Parses a String containing multiple YAML objects, returning a vector of normalized Clojure data structure."
@@ -39,13 +39,13 @@
     (parse-raw (s/validate s/Str yaml-str))))
 
 ;-----------------------------------------------------------------------------
-(def ^:private dump-settings
+(def ^:no-doc dump-settings
   (it-> (DumpSettings/builder)
    ;(.setDefaultScalarStyle it ScalarStyle/DOUBLE_QUOTED)
     (.setDefaultFlowStyle it FlowStyle/BLOCK)
     (.build it)))
 
-(def ^:private yaml-dump
+(def ^:no-doc yaml-dump
   (Dump. dump-settings))
 
 (s/defn edn->yaml :- s/Str ; #todo:  rename =>  `data->yaml`  ???

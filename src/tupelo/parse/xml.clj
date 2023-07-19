@@ -24,16 +24,16 @@
 
 (defstruct Element :tag :attrs :content)
 
-(def ^:private tag? :tag)
-(defn- document?
+(def ^:no-doc tag? :tag)
+(defn ^:no-doc document?
   "Document nodes are a parsing impelentation details and should never leak
    outside of it."
   [x] (= :document (:type x)))
 
-(defn- comment? [x] (= (:type x) :comment))
-(defn- dtd? [x] (= (:type x) :dtd))
+(defn ^:no-doc comment? [x] (= (:type x) :comment))
+(defn ^:no-doc dtd? [x] (= (:type x) :dtd))
 
-(defn- xml-zip
+(defn ^:no-doc xml-zip
   "Returns a zipper for xml elements (as from xml/parse), given a root element"
   [root]
   (zip/zipper
@@ -42,17 +42,17 @@
     #(assoc %1 :content %2)
     root))
 
-(defn- insert-element [result-zipper elem]
+(defn ^:no-doc insert-element [result-zipper elem]
   (-> result-zipper (zip/append-child elem) zip/down zip/rightmost))
 
-(defn- merge-text-left [result-zipper str-val]
+(defn ^:no-doc merge-text-left [result-zipper str-val]
   (or
     (when-let [item (-> result-zipper zip/down zip/rightmost)]
       (when (-> item zip/node string?)
         (-> item (zip/edit str str-val) zip/up)))
     (-> result-zipper (zip/append-child str-val))))
 
-(defn- handler [result-atom]
+(defn ^:no-doc handler [result-atom]
   (proxy [DefaultHandler2] []
     (startElement [uri local-name q-name ^Attributes atts]
       (let [elem (struct Element
@@ -116,7 +116,7 @@
       (glue item {:content content-new}))
     item))
 
-(defn ^:private sax-parse-fn
+(defn ^:no-doc sax-parse-fn
   [xml-input content-handler]
   (let [input-source (cond
                        (or (instance? InputStream xml-input)

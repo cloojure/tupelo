@@ -21,7 +21,7 @@
     [tupelo.string :as ts]
     [tupelo.schema :as tsk]))
 
-(s/defn ^:private tagsoup-parse-fn
+(s/defn ^:no-doc tagsoup-parse-fn
   [input-source :- org.xml.sax.InputSource
    content-handler]
   (doto (org.ccil.cowan.tagsoup.Parser.)

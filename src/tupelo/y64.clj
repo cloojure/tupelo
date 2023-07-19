@@ -30,16 +30,16 @@
          (chars-thru \0 \9)
          [\. \_ \-])))
 
-(def ^:private b64-code-62  (byte \+))
-(def ^:private b64-code-63  (byte \/ ))
-(def ^:private b64-code-pad (byte \= ))
+(def ^:no-doc b64-code-62  (byte \+))
+(def ^:no-doc b64-code-63  (byte \/ ))
+(def ^:no-doc b64-code-pad (byte \= ))
 
-(def ^:private y64-code-62  (byte \. ))
-(def ^:private y64-code-63  (byte \_ ))
-(def ^:private y64-code-pad (byte \- ))
+(def ^:no-doc y64-code-62  (byte \. ))
+(def ^:no-doc y64-code-63  (byte \_ ))
+(def ^:no-doc y64-code-pad (byte \- ))
 
 
-(defn- b64->y64
+(defn ^:no-doc b64->y64
   "Converts a byte array from base64 -> Y64 encoding."
   [code-bytes]
   (types/byte-array? code-bytes) 
@@ -51,7 +51,7 @@
         (= byte-val b64-code-pad)   y64-code-pad
         :default                    byte-val))))
 
-(defn- y64->b64
+(defn ^:no-doc y64->b64
   "Converts a byte array from Y64 -> base64 encoding."
   [code-bytes]
   (types/byte-array? code-bytes) 

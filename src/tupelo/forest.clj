@@ -197,7 +197,7 @@
       :else {::value data ::index idx ::kids []} ; #todo make explicit primative: number, string, kw, symbol
       )))
 
-(defn ^:private ^:no-doc validate-listvec-kids-idx
+(defn ^:no-doc validate-listvec-kids-idx
   "verify that a ::list node in a tree has a valid index for all kid nodes"
   [node]
   (let [tag         (grab :tag node)
@@ -209,22 +209,22 @@
     (assert (= idx-vals idx-tgts))
     kids-sorted))
 
-(s/defn ^:private ^:no-doc data-list-node?
+(s/defn ^:no-doc data-list-node?
   [node :- tsk/KeyMap]
   (and (contains-key? node :tag)
     (= ::list (grab :tag node))))
 
-(s/defn ^:private ^:no-doc data-vec-node?
+(s/defn ^:no-doc data-vec-node?
   [node :- tsk/KeyMap]
   (and (contains-key? node :tag)
     (= ::vec (grab :tag node))))
 
-(s/defn ^:private ^:no-doc data-entity-node?
+(s/defn ^:no-doc data-entity-node?
   [node :- tsk/KeyMap]
   (and (contains-key? node :tag)
     (= ::entity (grab :tag node))))
 
-(s/defn ^:private ^:no-doc data-leaf-node?
+(s/defn ^:no-doc data-leaf-node?
   [node :- tsk/KeyMap]
   (and (= #{::value ::index ::kids} (set (keys node)))
     (= [] (grab ::kids node))))
@@ -324,19 +324,19 @@
                    (and (string? value) (ts/whitespace? value))))]
     result))
 
-(s/defn ^:private ^:no-doc treenode-leaf? :- s/Bool
+(s/defn ^:no-doc treenode-leaf? :- s/Bool
   "Returns true if a treenode is a leaf (no kids)."
   [node :- tsk/KeyMap]
   (empty? (grab ::kids node)))
 
-(s/defn ^:private ^:no-doc treenode-has-all-raw-kids? :- s/Bool
+(s/defn ^:no-doc treenode-has-all-raw-kids? :- s/Bool
   "Returns true if all of a treenode's kids are raw leaf nodes."
   [node :- tsk/KeyMap]
   (let [kids (grab ::kids node)]
     (and (pos? (count kids))
       (every? truthy? (mapv raw-leaf-treenode? kids)))))
 
-(s/defn ^:private ^:no-doc consolidate-raw-kids :- tsk/Vec
+(s/defn ^:no-doc consolidate-raw-kids :- tsk/Vec
   "Consolidates kids with `:tag` value of `::raw` for a node into a single Enlive :content vector"
   [node :- tsk/KeyMap]
   (mapv #(grab :value %) (grab ::kids node)))
@@ -542,7 +542,7 @@
    (s/optional-key :id)    s/Keyword})
 
 ; #todo add [curr-path] to -impl and intc fn args
-(s/defn ^:private ^:no-doc walk-tree-impl
+(s/defn ^:no-doc walk-tree-impl
   [path :- [HID]
    interceptor :- Interceptor]
   (let [enter-fn (grab :enter interceptor)
@@ -719,7 +719,7 @@
                   nodes-merged-last (append nodes-2 (assoc node-last-1 :content [node-last]))]
               (nest-enlive-nodes nodes-merged-last)))))
 
-(defn ^:private ^:no-doc filter-enlive-subtrees-helper
+(defn ^:no-doc filter-enlive-subtrees-helper
   [ctx]
   (with-map-vals ctx [output-chan enlive-nodes-lazy parent-nodes path-target]
     (let [curr-tag (xfirst path-target)]
@@ -1002,7 +1002,7 @@
   (forv [soln solns]
     (format-path soln)))
 
-(s/defn ^:private ^:no-doc find-paths-impl
+(s/defn ^:no-doc find-paths-impl
   [result-atom
    parents :- [HID]
    hid :- HID
