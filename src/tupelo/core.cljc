@@ -1246,13 +1246,12 @@
 (defn ^:no-doc glue-byte-arrays
   "Glues together N byte arrays."
   [& byte-arrays]
-  #?(:clj
-     (let [total-len   (apply + 0 (mapv count byte-arrays))
-           byte-buffer (ByteBuffer/allocate total-len)]
-       (doseq [byte-array-curr byte-arrays]
-         (.put byte-buffer byte-array-curr))
-       (.array byte-buffer)))
-  #?(:cljs (throw (ex-info "glue-byte-arrays: unimplemented on CLJS" {}))))
+  #?(:clj  (let [total-len   (apply + 0 (mapv count byte-arrays))
+                 byte-buffer (ByteBuffer/allocate total-len)]
+             (doseq [byte-array-curr byte-arrays]
+               (.put byte-buffer byte-array-curr))
+             (.array byte-buffer))
+     :cljs (throw (ex-info "glue-byte-arrays: unimplemented on CLJS" {}))))
 
 (comment  ; #todo add this?
   ; latest comment under above gist provides another
