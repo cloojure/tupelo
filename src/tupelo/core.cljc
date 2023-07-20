@@ -1946,15 +1946,7 @@
                                (sequential? it)
                                (set? it)
                                (string? it)
-                               #?@(:clj [
-                                         (types/byte-array? it)
-                                         (types/char-array? it)
-                                         (types/int-array? it)
-                                         (types/long-array? it)
-                                         (types/object-array? it)
-                                         (types/short-array? it)
-                                         ])
-                               ) (seq it)
+                               #?(:clj (native-array? it))) (seq it)
 
                              #?@(:clj [(instance? java.io.InputStream it) (seq (slurp it))])
 

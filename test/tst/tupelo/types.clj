@@ -5,11 +5,8 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.types
-  (:use tupelo.types
-        tupelo.core
-        tupelo.test)
-  (:refer-clojure :exclude [float? integer? double?])
-  (:require [tupelo.core :as t]))
+  (:use tupelo.types tupelo.core tupelo.test)
+  (:refer-clojure :exclude [float? integer? double?]))
 
 ; As of Clojure 1.9.0-alpha5, boolean? is native to clojure
 #_(verify
