@@ -1946,7 +1946,7 @@
                                (sequential? it)
                                (set? it)
                                (string? it)
-                               #?(:clj (native-array? it))) (seq it)
+                               (native-array? it)) (seq it)
 
                              #?@(:clj [(instance? java.io.InputStream it) (seq (slurp it))])
 
