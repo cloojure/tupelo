@@ -1966,26 +1966,19 @@
                            (keep-if not-nil? seq-of-scalars)))]
     result))
 
-(defn print-versions [] ; #todo need CLJS version
-  #?(:clj
-     (let [version-str (format "Clojure %s    Java %s"
-                         (clojure-version) (System/getProperty "java.version"))
-           num-hyphen  (+ 6 (count version-str))
-           hyphens     (strcat (repeat num-hyphen \-))
-           version-str (strcat "   " version-str)]
-       (newline)
-       (println hyphens)
-       (println version-str)
-       (println hyphens)))
-  #?(:cljs
-     (let [version-str (str "ClojureScript " *clojurescript-version*)
-           num-hyphen (+ 6 (count version-str))
-           hyphens (strcat (repeat num-hyphen \-))
-           version-str (strcat "   " version-str)]
-       (newline)
-       (println hyphens)
-       (println version-str)
-       (println hyphens))))
+(defn print-versions
+  "Print an information string with the current version of Clojure/ClojureScript [and Java]."
+  []
+  (let [version-str #?(:clj (format "Clojure %s    Java %s"
+                              (clojure-version) (System/getProperty "java.version"))
+                       :cljs (str "ClojureScript " *clojurescript-version*))
+        num-hyphen          (+ 6 (count version-str))
+        hyphens             (str/join (repeat num-hyphen \-))
+        version-str         (str "   " version-str)]
+    (newline)
+    (println hyphens)
+    (println version-str)
+    (println hyphens)))
 
 (defn seq->str
   "Convert a seq into a string (using pr) with a space preceding each value"
