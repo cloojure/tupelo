@@ -2074,37 +2074,18 @@
     (apply mapv map-fn colls)))
 
 ; #todo rename :strict -> :trunc
-(defn zip-1*
-  "Usage:  `(zip* context & colls)`
-  where context is a map with default values:  `{:strict true}`
-  Not lazy. "
-  [context & colls] ; #todo how use Schema with "rest" args?
-  (assert (map? context))
-  (assert #(every? sequential? colls))
-  (let [strict        (get context :strict true)
-        lengths       (mapv count colls)
-        lengths-equal (apply = lengths)]
-    (when (and strict
-            (not lengths-equal))
-      (throw (ex-info "zip*: colls must all be same length; lengths=" lengths)))
-    (vec (apply map vector colls))))
-; #todo fix so doesn't hang if give infinite lazy seq. Technique:
-;  (def x [1 2 3])
-;  (seq (drop 2 x))          =>  (3)
-;  (seq (drop 3 x))          =>  nil
-;  (nil? (seq (drop 3 x)))   =>  true
-;  (nil? (drop 3 (range)))   =>  false
-
-; #todo rename :strict -> :trunc
 (defn zip*
-  "Usage:  `(zip* context & colls)`
-  where context is a map with default values:  `{:strict true}`
-  Not lazy. "
-  [context & colls] ; #todo how use Schema with "rest" args?
-  (assert (map? context))
+  "Usage:
+        (zip* ctx & colls)
+  Like `zip` in Python.  Given 2 or more sequences `colls`, joins the i'th item from each
+  collection into a vector, returning a vector of vectors. Context map `ctx` defaults to
+  `{:strict true}`. If `:strict` is set, colls must be identical in length.
+  Will accept infinite (lazy) sequences like `(range)`. Output is not lazy. "
+  [ctx & colls] ; #todo how use Schema with "rest" args?
+  (assert (map? ctx))
   (assert #(every? sequential? colls))
   (let [num-colls  (count colls)
-        strict-flg (get context :strict true)]
+        strict-flg (get ctx :strict true)]
     (loop [result []
            colls  colls]
       (let [empty-flgs  (mapv empty? colls)
@@ -2120,27 +2101,24 @@
             (when (and strict-flg
                     (not= num-empties num-colls))
               (throw (ex-info "zip*: collections are not all same length; empty-flgs="
-                       (vals->map empty-flgs))))
+                       (vals->map ctx empty-flgs))))
             result))))))
 
-; #todo add schema; result = tsk/List[ tsk/Pair ]
+; #todo add schema; result = tsk/List[ tsk/Vector ]
 ; #todo add :trunc & assert;
 (defn zip
-  "Zips together vectors producing a vector of tuples (like Python zip). Not lazy.
+  "Zips together vectors producing a vector of tuples (like Python zip).
   Example:
 
         (zip
           [:a :b :c]
-          [ 1  2  3])
+          [ 1  2  3]
+          [:x :y :z)
 
-        ;=>  [ [:a 1]
-               [:b 2]
-               [:c 3] ]
-
-   ***** WARNING - will hang for infinite length inputs ***** "
-  ; #todo ***** WARNING - will hang for infinite length inputs *****
-  ; #todo fix so doesn't hang if give infinite lazy seq. Technique:
-  ; #todo Use (zip ... {:trunc true}) if you want to truncate all inputs to the length of the shortest.
+        ;=>  [ [:a 1 :x]
+               [:b 2 :y]
+               [:c 3 :z] ]
+    Will accept infinite (lazy) sequences like `(range)`. Output is not lazy. "
   [& args]
   (assert #(every? sequential? args))
   (apply zip* {:strict true} args))

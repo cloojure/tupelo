@@ -849,7 +849,9 @@
   (is= (t/zip [:a] [1]) [[:a 1]]) ; #todo fails when use Schema for append/prepend
   (is= (t/zip [] []) [])
   (is= (t/zip [:A :B :C] [:a :b :c] [1 2 3])
-    [[:A :a 1] [:B :b 2] [:C :c 3]])
+    [[:A :a 1]
+     [:B :b 2]
+     [:C :c 3]])
   (throws? (t/zip [:a :b :c] [1 2 3 4]))
   (is= (t/zip* {:strict false} [:a :b :c] [1 2 3 4]) [[:a 1] [:b 2] [:c 3]])
 
