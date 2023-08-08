@@ -1085,8 +1085,8 @@ intent more obvious.
 
 === Keeping & Dropping Elements from a Map or Set
 
-The two functions `keep-if` and `drop-if` can be used equally well in order to retain or remote
-elements form a clojure map or set. The semantics for sets look the same as for a sequence (vector
+The two functions `keep-if` and `drop-if` can be used equally well in order to retain or remove
+elements from a clojure map or set. The semantics for sets look the same as for a sequence (vector
 or list). The predicate can be any 1-arg function:
 
 [source,clojure]
