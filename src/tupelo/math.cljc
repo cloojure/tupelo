@@ -148,7 +148,7 @@
      ;-----------------------------------------------------------------------------
      (s/defn ->bigdec-N :- BigDecimal
        "Coerces a numeric value to a BigDecimal with N decimal digits. Also accepts
-       a numeric value encoded as a String."
+       a numeric value encoded as a String. Uses RoundingMode/HALF_UP."
        [val :- (s/cond-pre s/Num s/Str)
         N :- s/Int]
        (it-> val
@@ -161,7 +161,7 @@
 
      (s/defn ->bigdec-2 :- BigDecimal
        "Coerces a numeric value to a BigDecimal with 2 decimal digits. Also accepts
-       a numeric value encoded as a String."
+       a numeric value encoded as a String. Uses RoundingMode/HALF_UP."
        [val :- (s/cond-pre s/Num s/Str)]
        (->bigdec-N val 2))
 
