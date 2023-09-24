@@ -26,3 +26,4 @@ package-lock.json
 pom.xml.asc
 .cpcache
 .shadow-cljs
+.DS_Store
