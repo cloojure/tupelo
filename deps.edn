@@ -59,13 +59,20 @@
 
                           ; For snapshots, MUST follow pattern `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
                           :exec-args  {:version-str   "21.06.24-SNAPSHOT"
-                                       :git-tag-str   "21.06.24-SNAPSHOT"
 
                                        :lib-name      enterprises.wizard/tupelo ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
                                        :scm-root      "github.com/wizard-enterprises/tupelo"
                                        :src-dirs      ["src"]
                                        :resource-dirs ["resources"]
                                        :build-folder  "target"
+
+                                        ; derived
+                                       :git-tag-str   "v21.06.24-SNAPSHOT"
+                                       :jar-content   "target/classes"
+                                       :jar-file-name "target/tupelo-21.06.24-SNAPSHOT.jar"
+                                       :basis {}
+
+                                       ;; (def basis (b/create-basis {:project "deps.edn"})) ; basis structure (read details in the article)
                                        }
                           }
            ; vvv Implicitly controls ClojureScript version
