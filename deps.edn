@@ -50,8 +50,9 @@
                           }
            ; build alias (for deployment)
            :build        {:extra-deps {io.github.io-tupelo/deps-build-deploy
+                                       {:git/sha "0332618295b2d0cf1becb1957bdbe0155ecf77fb"}
                                        #_{:git/sha "c77545b32255432fd0462a5e0bcb71fcee805011"}
-                                       {:local/root "/Users/alan/io-tupelo/deps-build-deploy"} ; mac studio
+                                       #_{:local/root "/Users/alan/io-tupelo/deps-build-deploy"} ; mac studio
 
                                        io.github.clojure/tools.build {:mvn/version "0.10.4"}
 
