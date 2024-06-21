@@ -6,6 +6,12 @@
   <artifactId>tupelo</artifactId>
   <version>23.03.03</version>
   <name>tupelo</name>
+  <licenses>
+    <license>
+      <name>EPL-1.0 license</name>
+      <url>https://github.com/cloojure/tupelo/blob/master/LICENSE.txt</url>
+    </license>
+  </licenses>
   <dependencies>
     <dependency>
       <groupId>org.clojure</groupId>

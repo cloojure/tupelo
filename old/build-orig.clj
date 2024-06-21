@@ -88,6 +88,11 @@
                 ; #todo throw if "src" is not root of project source code
                 ; #todo is this really needed?
                 :src-dirs      ["src"] ; ***** all but first dir will be discarded *****
+                :pom-data [[:licenses
+                            [:license
+                             [:name "EPL-1.0 license"]
+                             [:url "https://github.com/cloojure/tupelo/blob/master/LICENSE.txt"]
+                             [:distribution "repo"]]]]
                 })
 
   (b/jar {:class-dir jar-content ; create jar
