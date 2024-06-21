@@ -29,3 +29,4 @@ pom.xml.asc
 .DS_Store
 .clj-kondo/.cache
 .lsp/.cache
+deploy-clojars.bash

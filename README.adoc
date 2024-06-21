@@ -2,7 +2,7 @@
 = Making Clojure Even Sweeter
 
 === image:https://img.shields.io/clojars/v/tupelo.svg[link="http://clojars.org/tupelo"] <= Current Version (click for dep string)
-=== image:https://cljdoc.org/badge/tupelo/tupelo[link="https://cljdoc.org/d/tupelo/tupelo/CURRENT"] <= Full API docs (click for cljdoc.org)
+=== image:https://cljdoc.org/badge/enterprises.wizard/tupelo[link="https://cljdoc.org/d/enterprises.wizard/tupelo/CURRENT"] <= Full API docs (click for cljdoc.org)
 ==== Old-style link:http://cloojure.github.io/doc/tupelo/[API Docs] on GitHub Pages (codox)
 
 == Tupelo Overview

@@ -56,7 +56,7 @@
   :test-refresh {:quiet true ; true => suppress printing namespaces when testing
                  }
 
-  :codox {:src-dir-uri               "http://github.com/cloojure/tupelo/blob/master/"
+  :codox {:src-dir-uri               "http://github.com/wizard-enterprises/tupelo/blob/master/"
           :src-linenum-anchor-prefix "L"
           :source-paths              ["src/clj" "src/cljc"]
           :language                  :clojure

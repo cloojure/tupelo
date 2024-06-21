@@ -4,9 +4,9 @@
   <packaging>jar</packaging>
 
   <scm>
-    <url>https://github.com/cloojure/tupelo</url> 
-    <connection>scm:git:git://github.com/cloojure/tupelo.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/cloojure/tupelo.git</developerConnection>
+    <url>https://github.com/wizard-enterprises/tupelo</url>
+    <connection>scm:git:git://github.com/wizard-enterprises/tupelo.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/wizard-enterprises/tupelo.git</developerConnection>
   </scm>
 
 </project>

@@ -11,8 +11,8 @@
 ; User-supplied values
 
 (def version-str "23.05.04") ; snapshot versions MUST look like `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
-(def lib-name 'tupelo/tupelo) ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
-(def scm-root "github.com/cloojure/tupelo")
+(def lib-name 'enterprises.wizard/tupelo) ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
+(def scm-root "github.com/wizard-enterprises/tupelo")
 (def src-dirs ["src"])
 (def resource-dirs ["resources"])
 (def build-folder "target")
@@ -102,5 +102,3 @@
               :artifact  jar-file-name
               :pom-file  (b/pom-path {:lib       lib-name
                                       :class-dir jar-content})}))
-
-

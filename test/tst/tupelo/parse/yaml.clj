@@ -55,7 +55,7 @@
 "
 tupelo:
   name: Tupelo
-  url: https://github.com/cloojure/tupelo
+  url: https://github.com/wizard-enterprises/tupelo
   categories:
     - Data Transformation
     - Date and Time
@@ -72,7 +72,7 @@ tupelo:
 (verify
   (let [edn-data   {:tupelo
                     {:name       "Tupelo"
-                     :url        "https://github.com/cloojure/tupelo"
+                     :url        "https://github.com/wizard-enterprises/tupelo"
                      :categories ["Data Transformation"
                                   "Date and Time"
                                   "Datomic"
@@ -85,7 +85,7 @@ tupelo:
                      :platforms  ["clj" "cljs"]}}
         yaml-str-2 "tupelo:
                       name: Tupelo
-                      url: https://github.com/cloojure/tupelo
+                      url: https://github.com/wizard-enterprises/tupelo
                       categories: [Data Transformation, Date and Time, Datomic, Misc. Functions, Unit
                                    Testing, HTML Parsers, JSON Parsers, YAML Parsers, XML Parsers]
                       platforms: [clj, cljs] "
@@ -99,7 +99,7 @@ tupelo:
     (is-nonblank-lines= (yaml/edn->yaml edn-data)
       "tupelo:
          name: Tupelo
-         url: https://github.com/cloojure/tupelo
+         url: https://github.com/wizard-enterprises/tupelo
          categories:
          - Data Transformation
          - Date and Time
@@ -120,6 +120,3 @@ tupelo:
                     (yaml/parse)))
 
     ))
-
-
-
