@@ -71,6 +71,11 @@
                                        :jar-content   "target/classes"
                                        :jar-file-name "target/tupelo-21.06.24-SNAPSHOT.jar"
                                        :basis {}
+                                       :pom-data [[:licenses
+                                                   [:license
+                                                    [:name "EPL-1.0 license"]
+                                                    [:url "https://github.com/cloojure/tupelo/blob/master/LICENSE.txt"]
+                                                    [:distribution "repo"]]]]
 
                                        ;; (def basis (b/create-basis {:project "deps.edn"})) ; basis structure (read details in the article)
                                        }

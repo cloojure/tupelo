@@ -75,7 +75,7 @@
   (b/copy-dir {:src-dirs   src-dirs
                :target-dir jar-content})
 
-  (t/spy :write-pom (b/write-pom {:class-dir     jar-content ; create pom.xml
+  (b/write-pom {:class-dir     jar-content ; create pom.xml
                 :lib           lib-name
                 :version       version-str
                 :basis         basis
@@ -85,15 +85,15 @@
                                 :connection          (str "scm:git:git://" scm-root ".git")
                                 :developerConnection (str "scm:git:ssh://git@" scm-root ".git")}
 
-                ; #todo throw if "src" is not root of project source code
-                ; #todo is this really needed?
-                :src-dirs      ["src"] ; ***** all but first dir will be discarded *****
+                                        ; #todo throw if "src" is not root of project source code
+                                        ; #todo is this really needed?
+                :src-dirs ["src"] ; ***** all but first dir will be discarded *****
                 :pom-data [[:licenses
                             [:license
                              [:name "EPL-1.0 license"]
                              [:url "https://github.com/cloojure/tupelo/blob/master/LICENSE.txt"]
                              [:distribution "repo"]]]]
-                }))
+                })
 
   (b/jar {:class-dir jar-content ; create jar
           :jar-file  jar-file-name})
