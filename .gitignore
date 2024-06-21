@@ -27,3 +27,5 @@ pom.xml.asc
 .cpcache
 .shadow-cljs
 .DS_Store
+.clj-kondo/.cache
+.lsp/.cache
