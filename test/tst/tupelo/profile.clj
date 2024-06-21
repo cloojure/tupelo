@@ -6,7 +6,11 @@
   (:import
     java.lang.Thread))
 
-(defn sleep [millis] (Thread/sleep millis))
+(defn sleep [millis]
+  (try
+    (Thread/sleep millis)
+    (catch InterruptedException ex
+      nil)))
 
 (defnp sleep-02 [] (sleep 2))
 (defnp sleep-03 [] (sleep 3))
