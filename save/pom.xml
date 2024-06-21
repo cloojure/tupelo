@@ -9,4 +9,11 @@
     <developerConnection>scm:git:ssh://git@github.com/wizard-enterprises/tupelo.git</developerConnection>
   </scm>
 
+  <licenses>
+    <license>
+      <name>EPL-1.0 license</name>
+      <url>https://github.com/cloojure/tupelo/blob/master/LICENSE.txt</url>
+    </license>
+  </licenses>
+
 </project>
