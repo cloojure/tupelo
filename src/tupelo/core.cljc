@@ -1420,7 +1420,7 @@
             (+ a b c)))  ;=>  6
 
   `with-map-vals` is safe for typos since `grab` will throw if the requested key is not present in the map.
-  See `vals->map` for simple creation of labelled data maps."
+  See `vals->map` for simple creation of labeled data maps."
   [the-map items-vec & forms]
   `(do
      (let ; generate the binding vector dynamically

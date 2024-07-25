@@ -228,6 +228,8 @@
         node-out          (remove-nils-collection node-post-recurse)]
     node-out))
 
+; #todo if intc returns
+;   :walk/trim    then <don't recurse>
 (s/defn ^:no-doc walk-recurse-dispatch ; dispatch fn
   [stack :- tsk/Vec
    intc :- tsk/KeyMap
