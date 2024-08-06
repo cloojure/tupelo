@@ -9,6 +9,7 @@
   Clojure version."
   (:require
     [clojure.test] ; sometimes this is required - not sure why
+    [clojure.test.check.clojure-test :as tst]
     [schema.core :as s]
     [tupelo.core :as t :refer [spy spyx spyxx spyx-pretty]]
     [tupelo.test :refer [deftest testing dotest verify is isnt is= isnt= is-set= is-nonblank=
@@ -18,6 +19,18 @@
 #?(:cljs (enable-console-print!))
 
 (s/set-fn-validation! true) ; enforce fn schemas
+
+; Suppress reporting for successful runs of `test.check`.
+; Before:
+;     Testing tst.tupelo.y64
+;     {:result true, :num-tests 999, :seed 1722977330290, :time-elapsed-ms 44, :test-var "dospec-line-48"}
+;     {:result true, :num-tests 999, :seed 1722977330335, :time-elapsed-ms 43, :test-var "dospec-line-58"}
+;
+; After:
+;     Testing tst.tupelo.y64
+;
+; Test errors still generate reports
+(alter-var-root (var tst/*report-completion*) (constantly false))
 
 ; Prismatic Schema type definitions
 ; #todo add to Schema docs

@@ -5,7 +5,9 @@
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.y64
-  (:use tupelo.core tupelo.test tupelo.test.jvm )
+  (:use tupelo.core
+        tupelo.test
+        tupelo.test.jvm)
   (:require [clojure.string :as str]
             [clojure.test.check :as tc]
             [clojure.test.check.clojure-test :as tst]
@@ -14,7 +16,7 @@
             [tupelo.chars :as char]
             [tupelo.misc :as misc]
             [tupelo.types :as types]
-            [tupelo.y64 :as y64]) )
+            [tupelo.y64 :as y64]))
 
 (when (is-java-8-plus?)
   (verify
@@ -42,21 +44,21 @@
 
   ; Transform a seq of bytes to a y64 string and back
   (dospec 999       ; round-trip-bytes
-    (prop/for-all [orig gen/bytes]
-      (let [y64-str (y64/encode-byte-array->str orig)
-            result  (y64/decode-str->byte-array y64-str)]
-        (assert (every? y64/encoding-char-set (seq y64-str)))
-        (assert (types/byte-array? result))
-        (= (seq orig) (seq result)))))
+          (prop/for-all [orig gen/bytes]
+            (let [y64-str (y64/encode-byte-array->str orig)
+                  result  (y64/decode-str->byte-array y64-str)]
+              (assert (every? y64/encoding-char-set (seq y64-str)))
+              (assert (types/byte-array? result))
+              (= (seq orig) (seq result)))))
 
   ; Transform a string to a y64 string and back
   (dospec 999       ; round-trip-string
-    (prop/for-all [orig gen/string]
-      (let [y64-str (y64/encode-str orig)
-            result  (y64/decode-str y64-str)]
-        (assert (every? y64/encoding-char-set (seq y64-str)))
-        (assert (string? result))
-        (= orig result)))))
+          (prop/for-all [orig gen/string]
+            (let [y64-str (y64/encode-str orig)
+                  result  (y64/decode-str y64-str)]
+              (assert (every? y64/encoding-char-set (seq y64-str)))
+              (assert (string? result))
+              (= orig result)))))
 
 (defn -main []
   (newline)
