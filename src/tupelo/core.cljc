@@ -99,11 +99,11 @@
 ; #todo                   some-fn-of-3-or-more-args)
 ; #todo    like (some-fn* (glue {0 0   1 "hello"   2 :cc} {<user args here>} ))
 
-(defn cljs-env? ; from plumatic schema/macros.clj
+(defn cljs-env?     ; from plumatic schema/macros.clj
   "Given the &env from a macro, and tell whether we are expanding into cljs."
   [env] (boolean (:ns env)))
 
-(defmacro if-cljs ; from plumatic schema/macros.clj
+(defmacro if-cljs   ; from plumatic schema/macros.clj
   "For use within macros. Return `then-form` if we are generating ClojureScript code,
    and `else-form` for Clojure code.
      (from https://groups.google.com/d/msg/clojurescript/iBY5HaQda4A/w1lAQi9_AwsJ)"
@@ -398,7 +398,7 @@
 
 (s/defn char->codepoint :- s/Int
   "Convert a char to an unicode int"
-  [arg :- s/Any] ; #todo need clj/cljs char? test
+  [arg :- s/Any]    ; #todo need clj/cljs char? test
   (assert (char? arg))
   #?(:clj  (int arg)
      :cljs (.charCodeAt arg 0)))
@@ -486,7 +486,7 @@
   [coll :- s/Any
    elem :- s/Any]
   (has-some? truthy?
-    (mapv #(= elem %) (seq coll))))
+             (mapv #(= elem %) (seq coll))))
 
 (s/defn contains-key? :- s/Bool
   "For any map or set, returns true if elem is a map key or set element, respectively"
@@ -499,7 +499,7 @@
   [map :- tsk/Map
    elem :- s/Any]
   (has-some? truthy?
-    (mapv #(= elem %) (vals map))))
+             (mapv #(= elem %) (vals map))))
 
 (s/defn dissoc-in :- s/Any ; #todo upgrade tupelo.core
   "A sane version of dissoc-in that will not delete intermediate keys.
@@ -586,7 +586,7 @@
         result      (walk/postwalk pretty-item data)]
     result))
 
-(defn unlazy ; #todo need tests & docs. Use for datomic Entity?
+(defn unlazy        ; #todo need tests & docs. Use for datomic Entity?
   "Converts a lazy collection to a concrete (eager) collection of the same type."
   [coll]
   (let [unlazy-item (fn unlazy-item-fn
@@ -595,20 +595,21 @@
                       ;(prn :awt--unlazy-item-fn---------------------------------------------------------------------------)
                       ;(prn "(type item) => " (type item))
                       ;(prn "item => " item)
-                      (cond
-                        (sequential? item) (vec item)
-                        (map? item) (into {} item)
-                        (set? item) (into #{} item)
+                      (with-exception-default item
+                        (cond
+                          (sequential? item) (vec item)
+                          (map? item) (into {} item)
+                          (set? item) (into #{} item)
 
-                        #?@(:clj [
-                                  (instance? java.io.InputStream item) (slurp item) ; #todo need test
-                                  (= "datomic.query.EntityMap" (type-name-str item)) (into {} item) ; type-free test (doesn't need datomic)
-                                  (instance? java.util.List item) (vec item) ; #todo need test
-                                  (instance? java.util.Map item) (into {} item) ; #todo need test
-                                  (instance? java.lang.Iterable item) (into [] item) ; #todo need test
-                                  ])
-
-                        :else item))
+                          #?@(:clj [
+                                    (instance? java.io.InputStream item) (slurp item) ; #todo need test
+                                    (instance? java.util.List item) (vec item) ; #todo need test
+                                    (instance? java.util.Map item) (into {} item) ; #todo need test
+                                    (instance? java.util.Set item) (into #{} item) ; #todo need test
+                                    (instance? java.lang.Iterable item) (into [] item) ; #todo need test
+                                    (= "datomic.query.EntityMap" (type-name-str item)) (into {} item) ; type-free test (doesn't need datomic)
+                                    ])
+                          :else item)))
         result      (walk/prewalk unlazy-item coll)]
     result))
 
@@ -628,14 +629,14 @@
 
 ; #todo impl-merge *****************************************************************************
 
-(defn has-length? ; #todo rework => (count= N coll)  ???
+(defn has-length?   ; #todo rework => (count= N coll)  ???
   "Returns true if the collection has the indicated length. Does not hang for infinite sequences."
   [coll n]
   (assert-info (not-nil? coll) "has-length?: coll must not be nil" {:coll coll})
   (let [take-items (cc/take n coll)
         rest-items (cc/drop n coll)]
     (and (= n (count take-items))
-      (empty? rest-items))))
+         (empty? rest-items))))
 
 (defn only
   "Ensures that a sequence is of length=1, and returns the only value present.
@@ -663,7 +664,7 @@
 (s/defn only2? :- s/Bool
   "Returns true iff arg is two nested collections of length=1 (eg `[[5]]`)"
   [coll :- s/Any] (and (has-length? coll 1)
-                    (has-length? (first coll) 1)))
+                       (has-length? (first coll) 1)))
 
 (defn single?
   "Returns true if the collection contains a single item.`"
@@ -723,16 +724,16 @@
   [mappy key default] (clojure.core/get mappy key default))
 
 ; NOTE:  Plumatic Schema doesn't handle infininite sequences
-(defn xtake ;  :- tsk/Collection
+(defn xtake         ;  :- tsk/Collection
   "Returns the first n values from a collection.  Returns map for map colls.
   Throws if empty."
-  [n      ; :- s/Num
-   coll   ; :- tsk/Collection
+  [n                ; :- s/Num
+   coll             ; :- tsk/Collection
    ]
   (assert (number? n))
   (assert (or (sequential? coll) (map? coll) (set? coll)))
   (assert-info (and (not-nil? coll) (not-empty? coll))
-    "xtake: invalid coll: " {:coll coll})
+               "xtake: invalid coll: " {:coll coll})
   (let [items  (cc/take n coll)
         actual (count items)]
     (when (< actual n)
@@ -751,7 +752,7 @@
   (assert (number? n))
   (assert (or (sequential? coll) (map? coll) (set? coll)))
   (assert-info (and (not-nil? coll) (not-empty? coll))
-    "xdrop: invalid coll: " {:coll coll})
+               "xdrop: invalid coll: " {:coll coll})
   (let [taken     (cc/take n coll)
         taken-cnt (count taken)
         remaining (cc/drop n coll)]
@@ -762,31 +763,31 @@
       (set? coll) (into #{} remaining)
       :else (throw (ex-info "Invalid collection type" {:coll coll})))))
 
-(defn xfirst ; #todo -> tests
+(defn xfirst        ; #todo -> tests
   "Returns the first value in a list or vector. Throws if empty."
   [coll]
   (assert-info (and (not-nil? coll) (not-empty? coll))
-    "xfirst: invalid coll: " {:coll coll})
+               "xfirst: invalid coll: " {:coll coll})
   (nth coll 0))
 
 ; #todo fix up for maps
 ; #todo (it-> coll (take 2 it), (validate (= 2 (count it))), (last it))
-(defn xsecond ; #todo -> tests
+(defn xsecond       ; #todo -> tests
   "Returns the second value in a list or vector. Throws if (< len 2)."
   [coll]
   (assert-info (and (not-nil? coll) (not-empty? coll))
-    "xsecond: invalid coll: " {:coll coll})
+               "xsecond: invalid coll: " {:coll coll})
   (nth coll 1))
 
 ; #todo fix up for maps
-(defn xthird ; #todo -> tests
+(defn xthird        ; #todo -> tests
   "Returns the third value in a list or vector. Throws if (< len 3)."
   [coll]
   (assert-info (and (not-nil? coll) (not-empty? coll)) "xthird: invalid coll: " {:coll coll})
   (nth coll 2))
 
 ; #todo fix up for maps
-(defn xfourth ; #todo -> tests
+(defn xfourth       ; #todo -> tests
   "Returns the fourth value in a list or vector. Throws if (< len 4)."
   [coll]
   (assert-info (and (not-nil? coll) (not-empty? coll)) "xfourth: invalid coll: " {:coll coll})
@@ -809,13 +810,13 @@
 ; #todo need xnext
 
 ; #todo fix up for maps
-(defn xrest ; #todo -> tests
+(defn xrest         ; #todo -> tests
   "Returns the last value in a list or vector. Throws if empty."
   [coll]
   (assert-info (and (not-nil? coll) (not-empty? coll)) "xrest: invalid coll: " {:coll coll})
   (clojure.core/rest coll))
 
-(defn xreverse ; #todo -> tests & doc
+(defn xreverse      ; #todo -> tests & doc
   "Returns a vector containing a sequence in reversed order. Throws if nil."
   [coll]
   (assert-info (not-nil? coll) "xreverse: invalid coll: " {:coll coll})
@@ -836,14 +837,14 @@
   "Like clojure.core/sequential? EXCEPT returns false for clojure.lang.MapEntry"
   [coll]
   (and (sequential? coll)
-    (not (map-entry? coll))))
+       (not (map-entry? coll))))
 
 (s/defn xmap? :- s/Bool
   "Like clojure.core/map?, but returns false for records."
   [arg :- s/Any]
   (and (map? arg) (not (record? arg))))
 
-(defmacro forv ; #todo rename for-vec ???
+(defmacro forv      ; #todo rename for-vec ???
   "Like clojure.core/for but returns results in a vector.
   Wraps the loop body in a `do` as with `doseq`. Not lazy."
   [& forms]
@@ -852,7 +853,7 @@
     `(vec (for ~bindings-vec
             (do ~@body-forms)))))
 
-(defmacro for-list ; #todo test
+(defmacro for-list  ; #todo test
   "Like clojure.core/for but returns results in an eager list.
   Wraps the loop body in a `do` as with `doseq`. Not lazy."
   [& forms]
@@ -861,7 +862,7 @@
     `(->list (for ~bindings-vec
                (do ~@body-forms)))))
 
-(defmacro map-list ; #todo test
+(defmacro map-list  ; #todo test
   "Like clojure.core/map but returns results in an eager list. Not lazy."
   [& forms]
   `(->list (map ~@forms)))
@@ -872,7 +873,7 @@
     [bindings-vec (xfirst forms)
      body-forms   (xrest forms)
      >>           (assert-info (= 2 (count bindings-vec))
-                    "for-indexed: binding form must be len=2 " (vals->map bindings-vec))
+                               "for-indexed: binding form must be len=2 " (vals->map bindings-vec))
      bndg-dest    (xfirst bindings-vec)
      bndg-src     (xsecond bindings-vec)]
     `(vec
@@ -910,14 +911,14 @@
                              (if (pred k v)
                                (assoc cum-map k v)
                                cum-map))
-                  {}
-                  coll)
+                           {}
+                           coll)
     (set? coll) (reduce (fn [cum-set elem]
                           (if (pred elem)
                             (conj cum-set elem)
                             cum-set))
-                  #{}
-                  (seq coll))
+                        #{}
+                        (seq coll))
     :else (throw (ex-info "keep-if: coll must be sequential, map, or set." {:coll coll}))))
 
 (defn drop-if
@@ -955,13 +956,13 @@
 (def ^:dynamic *spy-enabled-map* {})
 
 (defmacro with-spy-enabled ; #todo README & test
-  [tag    ; :- s/Keyword #todo schema for macros?
+  [tag              ; :- s/Keyword #todo schema for macros?
    & forms]
   `(binding [*spy-enabled-map* (assoc *spy-enabled-map* ~tag true)]
      ~@forms))
 
 (defmacro check-spy-enabled ; #todo README & test
-  [tag    ; :- s/Keyword #todo schema for macros?
+  [tag              ; :- s/Keyword #todo schema for macros?
    & forms]
   `(binding [*spy-enabled* (get *spy-enabled-map* ~tag false)]
      ~@forms))
@@ -993,13 +994,13 @@
                       (keyword? arg1) [arg1 arg2]
                       (keyword? arg2) [arg2 arg1]
                       :else (throw (ex-info "spy: either first or 2nd arg must be a keyword tag \n   args:"
-                                     {:arg1 arg1
-                                      :arg2 arg2})))]
+                                            {:arg1 arg1
+                                             :arg2 arg2})))]
     (when *spy-enabled*
       (println (str (spy-indent-spaces) tag " => " (pr-str value))))
     value))
 
-(defmacro spy ; #todo clean up all spy stuff
+(defmacro spy       ; #todo clean up all spy stuff
   "A form of (println ...) to ease debugging display of either intermediate values in threading
    forms or function return values. There are three variants.  Usage:
 
@@ -1067,8 +1068,8 @@
                          (keyword? arg1) [arg1 arg2]
                          (keyword? arg2) [arg2 arg1]
                          :else (throw (ex-info "spy: either first or 2nd arg must be a keyword tag \n   args:"
-                                        {:arg1 arg1
-                                         :arg2 arg2})))]
+                                               {:arg1 arg1
+                                                :arg2 arg2})))]
        (when *spy-enabled*
          (println (str (spy-indent-spaces) tag " => " (pr-str value))))
        value))
@@ -1108,7 +1109,7 @@
                      `(let [spy-val# ~expr]
                         (when *spy-enabled*
                           (println (impl/indent-lines-with (spy-indent-spaces)
-                                     (pretty-str spy-val#))))
+                                                           (pretty-str spy-val#))))
                         spy-val#))
         final-code `(do
                       ~@r1
@@ -1116,7 +1117,7 @@
     final-code))
 
 ; #todo (spyl value) prints:   spy-line-xxxx => value
-(defn spyq ; #todo => tupelo.core/spy
+(defn spyq          ; #todo => tupelo.core/spy
   "(spyq <value>) - Spy Quiet
         This variant is intended for use in very simple situations and is the same as the
         2-argument arity where <msg-string> defaults to 'spy'.  For example (spy (+ 2 3))
@@ -1145,7 +1146,7 @@
                         (when *spy-enabled*
                           (println (str (spy-indent-spaces) '~expr " => "))
                           (println (impl/indent-lines-with (spy-indent-spaces)
-                                     (pretty-str spy-val#))))
+                                                           (pretty-str spy-val#))))
                         spy-val#))
         final-code `(do
                       ~@r1
@@ -1165,7 +1166,7 @@
   `(try
      (spy-indent-inc)
      (do ~@forms)
-     (finally ; ensure we un-do indentation in event of exception
+     (finally       ; ensure we un-do indentation in event of exception
        (spy-indent-dec))))
 
 (defmacro with-debug-tag
@@ -1253,7 +1254,7 @@
              (.array byte-buffer))
      :cljs (throw (ex-info "glue-byte-arrays: unimplemented on CLJS" {}))))
 
-(comment  ; #todo add this?
+(comment            ; #todo add this?
   ; latest comment under above gist provides another
   ; simpler and more consistent version of deep-merge
   ; Source: https://gist.github.com/danielpcox/c70a8aa2c36766200a95#gistcomment-2759497
@@ -1284,7 +1285,7 @@
 (defn list-entry?
   "Returns true iff the arg is a list-entry"
   [arg] (and (map? arg)
-          (= :list-entry (:type arg))))
+             (= :list-entry (:type arg))))
 
 (s/defn list->entries :- [tsk/Map]
   "Returns a vector of list-entry maps given a vector/list"
@@ -1322,9 +1323,9 @@
   (cond
     (map-entry? arg) arg
     (or (list? arg)
-      (vector? arg)) (do
-                       (assert-info (= 2 (count arg)) "map-entry must be of len=2" {:arg arg})
-                       (map-entry (xfirst arg) (xsecond arg)))
+        (vector? arg)) (do
+                         (assert-info (= 2 (count arg)) "map-entry must be of len=2" {:arg arg})
+                         (map-entry (xfirst arg) (xsecond arg)))
     (map? arg) (let [arg-seq (seq arg)]
                  (assert-info #(= 1 (count arg-seq)) "map must be of len=1" {:arg arg})
                  (xfirst arg-seq))))
@@ -1345,15 +1346,15 @@
    If there are duplicate keys when using glue for maps or sets, then \"the last one wins\":
 
        (glue {:band :VanHalen :singer :Dave}  {:singer :Sammy}) "
-  [& colls] ; #todo maybe return nil if no colls?  would allow some-> for users
+  [& colls]         ; #todo maybe return nil if no colls?  would allow some-> for users
   (let [string-or-char? #(or (string? %) (char? %))]
     (cond
       (every? #(or (map? %) ; NOTE: this must come first as MapEntry's pass `sequential?`
-                 (map-entry? %)) colls) (let [mapentries (drop-if map? colls)
-                                              maps       (keep-if map? colls)
-                                              me-result  (reduce conj {} mapentries)
-                                              result     (reduce into (append maps me-result))]
-                                          result)
+                   (map-entry? %)) colls) (let [mapentries (drop-if map? colls)
+                                                maps       (keep-if map? colls)
+                                                me-result  (reduce conj {} mapentries)
+                                                result     (reduce into (append maps me-result))]
+                                            result)
       (every? sequential? colls) (reduce into [] colls) ; coerce to vector result
       (every? set? colls) (reduce into colls) ; first item determines type of result
       (every? string-or-char? colls) (apply str colls)
@@ -1361,10 +1362,10 @@
 
       :else (throw (ex-info "glue: colls must be all same type; found types=" (mapv type colls))))))
 
-(defn glue-rows ; #todo :- tsk/List ; #todo necessary?
+(defn glue-rows     ; #todo :- tsk/List ; #todo necessary?
   " Convert a vector of vectors (2-dimensional) into a single vector (1-dimensional).
   Equivalent to `(apply glue ...)`"
-  [coll-2d ; :- tsk/List
+  [coll-2d          ; :- tsk/List
    ]
   (assert-info (sequential? coll-2d) "Sequential collection required, found=" coll-2d)
   (assert-info (every? sequential? coll-2d) "Nested sequential collections required, found=" coll-2d)
@@ -1408,8 +1409,8 @@
 (comment
   (with-map-vals-default user-map {:name    "Unknown" ; <= all default vals & defines keys
                                    :address "n/a"}
-    (spyx address)
-    (isnt= "unknown" name)))
+                         (spyx address)
+                         (isnt= "unknown" name)))
 
 (defmacro with-map-vals ; #todo -> README
   "Given a map like {:a 1 :b 2 :c 3} (such as generated by `(vals->map a b c)`),
@@ -1423,12 +1424,12 @@
   See `vals->map` for simple creation of labeled data maps."
   [the-map items-vec & forms]
   `(do
-     (let ; generate the binding vector dynamically
+     (let           ; generate the binding vector dynamically
        ~(apply glue
-          (for [item items-vec
-                :let [sym (symbol (name item))
-                      kw  (keyword item)]]
-            [sym (list `grab kw the-map)]))
+               (for [item items-vec
+                     :let [sym (symbol (name item))
+                           kw  (keyword item)]]
+                 [sym (list `grab kw the-map)]))
        ~@forms)))
 
 (defmacro with-strmap-vals ; #todo -> README
@@ -1443,12 +1444,12 @@
   See `vals->strmap` for simple creation of such maps."
   [the-map items-vec & forms]
   `(do
-     (let ; generate the binding vector dynamically
+     (let           ; generate the binding vector dynamically
        ~(apply glue
-          (for [item items-vec
-                :let [sym    (->sym item)
-                      strkey (->str item)]]
-            [sym (list `tupelo.core/grab strkey the-map)]))
+               (for [item items-vec
+                     :let [sym    (->sym item)
+                           strkey (->str item)]]
+                 [sym (list `tupelo.core/grab strkey the-map)]))
        ~@forms)))
 
 (s/defn select-paths :- {tsk/Vec s/Any}
@@ -1466,8 +1467,8 @@
   [m :- tsk/Map
    paths :- [tsk/Vec]]
   (apply glue
-    (forv [path paths]
-      {path (fetch-in m path)})))
+         (forv [path paths]
+           {path (fetch-in m path)})))
 
 (s/defn dissoc-paths :- tsk/Map
   "Inverse of `select-paths`. removes subtrees of a data structure as specified by paths
@@ -1484,15 +1485,15 @@
   ;(spyx template)
   ;(spy :impl-out)
   (walk-with-parents template
-    {:leave (fn [parents item]
-              (with-nil-default item
-                (when (= (->sym :?) item)
-                  (let [ancestors  (vec (reverse parents))
-                        -mv-ent-   (xfirst ancestors)
-                        me         (xsecond ancestors)
-                        me-key     (xfirst me)
-                        me-key-sym (kw->sym me-key)]
-                    me-key-sym))))}))
+                     {:leave (fn [parents item]
+                               (with-nil-default item
+                                                 (when (= (->sym :?) item)
+                                                   (let [ancestors  (vec (reverse parents))
+                                                         -mv-ent-   (xfirst ancestors)
+                                                         me         (xsecond ancestors)
+                                                         me-key     (xfirst me)
+                                                         me-key-sym (kw->sym me-key)]
+                                                     me-key-sym))))}))
 (defmacro construct
   [template] (construct-impl template))
 
@@ -1525,7 +1526,7 @@
      (defn ^:no-doc mutable-var-set-it-impl
        [forms]
        `(swap! *dynamic-atom*
-          (fn [~'it] ~@forms)))
+               (fn [~'it] ~@forms)))
 
      (defmacro mutable-var-set-it!
        "Within `(with-dynamic-val ...)`, replaces value."
@@ -1543,7 +1544,7 @@
        "
        [& forms]
        `(with-mutable-var []
-          ~@forms))
+                          ~@forms))
 
      (defn cum-vector-append! ; #todo file bug report for CLJS
        "Within `(with-cum-vector ...)`, appends a new value."
@@ -1587,10 +1588,10 @@
      (print "spy-it-> ") (prn ~expr)
      (let [~'it ~expr
            ~@(apply concat
-               (forv [form forms]
-                 ; (spyx form)  ; dbg
-                 ['it form
-                  '>> `(println "  " (quote ~form) " => " (pr-str ~'it))]))
+                    (forv [form forms]
+                      ; (spyx form)  ; dbg
+                      ['it form
+                       '>> `(println "  " (quote ~form) " => " (pr-str ~'it))]))
            ]
        ~'it)))
 (defmacro spy-it->
@@ -1636,7 +1637,7 @@
   (let [binding-pairs (interleave (repeat 'it) forms)]
     `(let-some [~'it ~expr
                 ~@binding-pairs]
-       ~'it)))
+               ~'it)))
 
 (s/defn sorted-map-via-path :- tsk/Map
   "
@@ -1681,7 +1682,7 @@
          comparator-fn   (fn [x y]
                            (let [compare-result (compare (sortable-unique x) (sortable-unique y))
                                  final-result   (cond-it-> compare-result
-                                                  (not ascending?) (- it))]
+                                                           (not ascending?) (- it))]
                              final-result))
          sorted-map      (glue (avl/sorted-map-by comparator-fn) src-map)]
      sorted-map)))
@@ -1692,16 +1693,16 @@
   [& xs :- [s/Any]]
   (assert (< 1 (count xs)))
   (every? neg?
-    (for [[a b] (partition 2 1 xs)]
-      (compare a b))))
+          (for [[a b] (partition 2 1 xs)]
+            (compare a b))))
 
 (s/defn compare-increasing-or-equal :- s/Bool
   "Returns true if each item is larger or equal to its predecessor"
   [& xs :- [s/Any]]
   (assert (< 1 (count xs)))
   (every? nonpos?
-    (for [[a b] (partition 2 1 xs)]
-      (compare a b))))
+          (for [[a b] (partition 2 1 xs)]
+            (compare a b))))
 
 ; #todo => tupelo.tuple/less-than?
 ; #todo re-home lexical increasing/equal fns
@@ -1718,10 +1719,10 @@
           (if (zero? c)
             (recur (rest x) (rest y))
             c))
-        1) ; else we reached end of y first, so x > y
+        1)          ; else we reached end of y first, so x > y
       (if (seq y)
-        -1 ; we reached end of x first, so x < y
-        0)))) ; Sequences contain same elements.  x = y
+        -1          ; we reached end of x first, so x < y
+        0))))       ; Sequences contain same elements.  x = y
 
 ; #todo make variadic versions of these?
 (s/defn increasing? :- s/Bool ; #todo => tupelo.tuple/less-than?
@@ -1755,7 +1756,7 @@
   (nonpos? (cmp-seq-lexi a b)))
 
 ;---------------------------------------------------------------------------------------------------
-#?(:clj   ; JVM stuff
+#?(:clj             ; JVM stuff
    (do
      ;-----------------------------------------------------------------------------
      ; Java version stuff
@@ -1954,15 +1955,15 @@
         ; Coerce any integer values into character equivalents (e.g. 65 -> \A), then combine
         ; into a single string.
         result         (apply str
-                         (clojure.core/map char
-                           (keep-if not-nil? seq-of-scalars)))]
+                              (clojure.core/map char
+                                                (keep-if not-nil? seq-of-scalars)))]
     result))
 
 (defn print-versions
   "Print an information string with the current version of Clojure/ClojureScript [and Java]."
   []
   (let [version-str #?(:clj (format "Clojure %s    Java %s"
-                              (clojure-version) (System/getProperty "java.version"))
+                                    (clojure-version) (System/getProperty "java.version"))
                        :cljs (str "ClojureScript " *clojurescript-version*))
         num-hyphen          (+ 6 (count version-str))
         hyphens             (str/join (repeat num-hyphen \-))
@@ -2042,7 +2043,7 @@
              map-fn#        (fn ~syms ~@forms)
              output-fn#     (if lazy# identity vec)]
          (when (and strict#
-                 (not lengths-equal#))
+                    (not lengths-equal#))
            (throw (ex-info "map-let*: colls must all be same length" {:lens lengths#})))
          (output-fn# (map map-fn# ~@colls))))))
 
@@ -2063,7 +2064,7 @@
   [bindings & forms]
   `(map-let* {:strict true
               :lazy   false}
-     ~bindings ~@forms))
+             ~bindings ~@forms))
 
 (s/defn xmap :- tsk/Vec
   "Like clojure.core/mapv, but throws if colls are not of equal length."
@@ -2081,7 +2082,7 @@
   collection into a vector, returning a vector of vectors. Context map `ctx` defaults to
   `{:strict true}`. If `:strict` is set, colls must be identical in length.
   Will accept infinite (lazy) sequences like `(range)`. Output is not lazy. "
-  [ctx & colls] ; #todo how use Schema with "rest" args?
+  [ctx & colls]     ; #todo how use Schema with "rest" args?
   (assert (map? ctx))
   (assert #(every? sequential? colls))
   (let [num-colls  (count colls)
@@ -2099,9 +2100,9 @@
                 (mapv xrest colls))))
           (do
             (when (and strict-flg
-                    (not= num-empties num-colls))
+                       (not= num-empties num-colls))
               (throw (ex-info "zip*: collections are not all same length; empty-flgs="
-                       (vals->map ctx empty-flgs))))
+                              (vals->map ctx empty-flgs))))
             result))))))
 
 ; #todo add schema; result = tsk/List[ tsk/Vector ]
@@ -2133,7 +2134,7 @@
 
   Returns a lazy result. Will truncate to the length of the shortest collection.
   A convenience wrapper for `(map vector coll1 coll2 ...)`.  "
-  [& colls] ; #todo how use Schema with "rest" args?
+  [& colls]         ; #todo how use Schema with "rest" args?
   (assert #(every? sequential? colls))
   (apply map vector colls))
 
@@ -2188,17 +2189,17 @@
           delta-abs (Math/abs (- val1 val2))
           or-result (truthy?
                       (or (zero? delta-abs)
-                        (and tol
-                          (let [tol-result (< delta-abs tol)]
-                            tol-result))
-                        (and digits
-                          (let [abs1          (Math/abs val1)
-                                abs2          (Math/abs val2)
-                                max-abs       (Math/max abs1 abs2)
-                                delta-rel-abs (/ delta-abs max-abs)
-                                rel-tol       (Math/pow 10 (- digits))
-                                dig-result    (< delta-rel-abs rel-tol)]
-                            dig-result))))
+                          (and tol
+                               (let [tol-result (< delta-abs tol)]
+                                 tol-result))
+                          (and digits
+                               (let [abs1          (Math/abs val1)
+                                     abs2          (Math/abs val2)
+                                     max-abs       (Math/max abs1 abs2)
+                                     delta-rel-abs (/ delta-abs max-abs)
+                                     rel-tol       (Math/pow 10 (- digits))
+                                     dig-result    (< delta-rel-abs rel-tol)]
+                                 dig-result))))
           ]
       or-result)))
 
@@ -2209,21 +2210,21 @@
         num-y (count y-vals)]
     (assert-info (= num-x num-y) ": x-vals & y-vals must be same length" (vals->map num-x num-y)))
   (every? truthy?
-    (clojure.core/map #(apply rel= %1 %2 opts)
-      x-vals y-vals)))
+          (clojure.core/map #(apply rel= %1 %2 opts)
+                            x-vals y-vals)))
 
 (comment
-  (defn deep-rel= ; #todo add sets
+  (defn deep-rel=   ; #todo add sets
     [a b]
     (or (= a b)
-      (and (number? a) (number? b) (or (tupelo.core/rel= a b :tol 1e-5)
-                                     (tupelo.core/rel= a b :digits 5)))
-      (and (map? a) (map? b) (every? truthy? (map-let [[ak av] (->sorted-map-generic a)
-                                                       [bk bv] (->sorted-map-generic b)]
-                                               (and (deep-rel= ak bk) (deep-rel= av bv)))))
-      (and (sequential? a) (sequential? b) (every? truthy? (map-let [av a
-                                                                     bv b]
-                                                             (deep-rel= av bv)))))))
+        (and (number? a) (number? b) (or (tupelo.core/rel= a b :tol 1e-5)
+                                         (tupelo.core/rel= a b :digits 5)))
+        (and (map? a) (map? b) (every? truthy? (map-let [[ak av] (->sorted-map-generic a)
+                                                         [bk bv] (->sorted-map-generic b)]
+                                                        (and (deep-rel= ak bk) (deep-rel= av bv)))))
+        (and (sequential? a) (sequential? b) (every? truthy? (map-let [av a
+                                                                       bv b]
+                                                                      (deep-rel= av bv)))))))
 
 ; #todo => tupelo.misc
 ; #todo add sets
@@ -2232,21 +2233,21 @@
 (defn deep-rel=
   [a b]
   (or (= a b)
-    (and (number? a) (number? b) (or (tupelo.core/rel= a b :tol 1e-5)
-                                   (tupelo.core/rel= a b :digits 5)))
-    (and (map? a) (map? b) (every? truthy? (map-let [[ak av] (->sorted-map-generic a)
-                                                     [bk bv] (->sorted-map-generic b)]
-                                             (and (deep-rel= ak bk) (deep-rel= av bv)))))
-    (and (sequential? a) (sequential? b) (every? truthy? (map-let [av a
-                                                                   bv b]
-                                                           (deep-rel= av bv))))))
+      (and (number? a) (number? b) (or (tupelo.core/rel= a b :tol 1e-5)
+                                       (tupelo.core/rel= a b :digits 5)))
+      (and (map? a) (map? b) (every? truthy? (map-let [[ak av] (->sorted-map-generic a)
+                                                       [bk bv] (->sorted-map-generic b)]
+                                                      (and (deep-rel= ak bk) (deep-rel= av bv)))))
+      (and (sequential? a) (sequential? b) (every? truthy? (map-let [av a
+                                                                     bv b]
+                                                                    (deep-rel= av bv))))))
 
 ; #todo need docs & tests
 ; #todo:  add
 ;            (thru start stop step) uses integer steps and
 ;            (rel= curr stop :tol step) as ending criteria
 ;  #todo range version => (butlast (thru ...))
-(defn thru ; #todo make lazy: (thruz ...) -> (thru* {:lazy true} ...)
+(defn thru          ; #todo make lazy: (thruz ...) -> (thru* {:lazy true} ...)
   "Returns a vector of numbers. Like clojure.core/range, but is inclusive of the right boundary value.
   Uses rounding to calculate an integer number of steps
   Not lazy.
@@ -2263,11 +2264,11 @@
          nsteps-int     (Math/round nsteps-dbl)
          rounding-error (Math/abs (- nsteps-dbl nsteps-int))]
      (assert-info (< rounding-error 1e-5)
-       "thru: non-integer number of steps \n   args:" (vals->map start end step rounding-error))
+                  "thru: non-integer number of steps \n   args:" (vals->map start end step rounding-error))
      (vec (clojure.core/map #(-> %
-                               (* step)
-                               (+ start))
-            (range (inc nsteps-int)))))))
+                                 (* step)
+                                 (+ start))
+                            (range (inc nsteps-int)))))))
 
 ; #todo need CLJS coercion ->char (char/str or int)
 ; #todo need CLJS coercion ->int (char/str or int)
@@ -2275,20 +2276,20 @@
 
 ; #todo need test, readme
 ; #todo merge into `thru` using a protocol for int, double, char, string, keyword, symbol, other?
-(defn chars-thru ; #todo add schema.
+(defn chars-thru    ; #todo add schema.
   "Given two characters (or numerical equivalents), returns a seq of characters
   (inclusive) from the first to the second.  Characters must be in ascending order."
   [start-char stop-char]
   ; #todo throw if not char or int
   (let [start-int (cond-it-> start-char
-                    (not (integer? it)) (char->codepoint it))
+                             (not (integer? it)) (char->codepoint it))
         stop-int  (cond-it-> stop-char
-                    (not (integer? it)) (char->codepoint it))]
+                             (not (integer? it)) (char->codepoint it))]
     (assert-info (and (nonneg? start-int) (<= stop-int 65535))
-      "chars-thru: start/stop out of range" (vals->map start-char stop-char start-int stop-int))
+                 "chars-thru: start/stop out of range" (vals->map start-char stop-char start-int stop-int))
     (assert-info (<= start-int stop-int) "chars-thru: start/stop out of order" (vals->map start-char stop-char start-int stop-int))
     (mapv codepoint->char
-      (thru start-int stop-int))))
+          (thru start-int stop-int))))
 
 (s/defn repeat-dims :- [s/Any]
   "Like clojure.core/repeat, but accepts a vector of N dimensions:
@@ -2374,7 +2375,7 @@
                                            :else [item])
                                accum-out (glue accum it-use)]
                            accum-out))
-                 [] args)]
+                       [] args)]
     result))
 
 (s/defn unnest :- [s/Any] ; #todo readme
@@ -2383,15 +2384,15 @@
   [& values]
   (let [unnest-coll (fn fn-unnest-coll [coll]
                       (apply glue
-                        (for [item coll]
-                          (if (coll? item)
-                            (fn-unnest-coll item)
-                            [item]))))
+                             (for [item coll]
+                               (if (coll? item)
+                                 (fn-unnest-coll item)
+                                 [item]))))
         result      (apply glue
-                      (for [item values]
-                        (if (coll? item)
-                          (unnest-coll item)
-                          [item])))]
+                           (for [item values]
+                             (if (coll? item)
+                               (unnest-coll item)
+                               [item])))]
     result))
 
 (defn validate
@@ -2445,7 +2446,7 @@
    idxs :- [s/Int]]
   (assert (= (count idxs) (count data))) ; #todo maybe remove this restriction?
   (let [data (it-> data ; ensure it is a vector for random access performance
-               (not (vector? data)) (vec data))]
+                   (not (vector? data)) (vec data))]
     (forv [idx idxs]
       (nth data idx))))
 
@@ -2467,13 +2468,13 @@
     (if (= opts [:missing-ok])
       (do
         (apply glue {}
-          (for [key keep-keys]
-            (with-exception-default {}
-              {key (grab key map-arg)}))))
+               (for [key keep-keys]
+                 (with-exception-default {}
+                                         {key (grab key map-arg)}))))
       (do
         (apply glue {}
-          (for [key keep-keys]
-            {key (grab key map-arg)}))))))
+               (for [key keep-keys]
+                 {key (grab key map-arg)}))))))
 
 ; #todo -> README
 (s/defn submap-by-vals :- tsk/Map
@@ -2487,10 +2488,10 @@
    & opts]
   (let [keep-vals    (set keep-vals)
         found-map    (into {}
-                       (for [entry map-arg
-                             :let [entry-val (val entry)]
-                             :when (contains? keep-vals entry-val)]
-                         entry))
+                           (for [entry map-arg
+                                 :let [entry-val (val entry)]
+                                 :when (contains? keep-vals entry-val)]
+                             entry))
         found-vals   (into #{} (vals found-map))
         missing-vals (set/difference keep-vals found-vals)]
     (if (or (empty? missing-vals) (= opts [:missing-ok]))
@@ -2513,18 +2514,18 @@
   [m :- tsk/Map]
   (reduce into [] (seq m)))
 
-(do       ; #todo fix delete this???
+(do                 ; #todo fix delete this???
   (s/defn ^:no-doc keyvals-seq-impl :- [s/Any]
     [ctx :- tsk/KeyMap]
     (with-map-vals ctx [missing-ok the-map the-keys]
       (apply glue
-        (for [key the-keys]
-          (let [val (get the-map key ::missing)]
-            (if-not (= val ::missing)
-              [key val]
-              (if missing-ok
-                []
-                (throw (ex-info "Key not present in map:" (vals->map the-map key))))))))))
+             (for [key the-keys]
+               (let [val (get the-map key ::missing)]
+                 (if-not (= val ::missing)
+                   [key val]
+                   (if missing-ok
+                     []
+                     (throw (ex-info "Key not present in map:" (vals->map the-map key))))))))))
 
   ; #todo convert to (keyvals (select-keys m ks))
   (s/defn keyvals-seq :- [s/Any]
@@ -2553,7 +2554,7 @@
   (assert-info (nonneg? index) "Index cannot be negative " index)
   (assert-info (< index (count coll)) "Index cannot exceed collection length: " {:length (count coll) :index index})
   (glue (take index coll)
-    (drop (inc index) coll)))
+        (drop (inc index) coll)))
 
 ; #todo rename -> insert-idx
 ; #todo force to vector result
@@ -2566,7 +2567,7 @@
   (assert-info (nonneg? index) "Index cannot be negative " index)
   (assert-info (<= index (count coll)) "Index cannot exceed collection length: " {:length (count coll) :index index})
   (glue (take index coll) [elem]
-    (drop index coll)))
+        (drop index coll)))
 
 ; #todo rename -> elem-set
 ; #todo force to vector result
@@ -2637,15 +2638,15 @@
   (let [valid-keys (set valid-keys)
         map-keys   (keys tst-map)]
     (when-not (every? truthy?
-                (forv [curr-key map-keys]
-                  (contains-key? valid-keys curr-key)))
+                      (forv [curr-key map-keys]
+                        (contains-key? valid-keys curr-key)))
       (throw (ex-info "validate-map-keys: invalid key found " (vals->map tst-map valid-keys))))
     tst-map))
 
 ; #todo readme
 (s/defn starts-with? :- s/Bool
   "Returns true when the initial elements of coll match those of tgt"
-  [coll tgt-in] ; #todo schema
+  [coll tgt-in]     ; #todo schema
   (let [tgt-vec (vec tgt-in)
         tgt-len (count tgt-vec)]
     (if (< (count coll) tgt-len)
@@ -2662,14 +2663,14 @@
         num-vals (count all-vals)]
     (loop [i 0]
       (if (<= num-vals i)
-        nil ; did not find match
+        nil         ; did not find match
         (let [curr-vals (subvec all-vals i)]
           (if (pred curr-vals)
             i
             (recur (inc i))))))))
 
 ; #todo readme
-(defn split-using ; #todo schema
+(defn split-using   ; #todo schema
   "Splits a collection based on a predicate with a collection argument.
   Finds the first index N such that (pred (drop N coll)) is true. Returns a length-2 vector
   of
@@ -2683,7 +2684,7 @@
       [(take N coll) (drop N coll)])))
 
 ; #todo readme
-(defn split-match ; #todo schema
+(defn split-match   ; #todo schema
   "Splits a collection src by matching with a sub-sequence tgt of length L.
   Finds the first index N such that
 
@@ -2711,7 +2712,7 @@
         (take N coll)
 
   If pred is never satisified, `[coll]` is returned."
-  [pred :- s/Any ; a predicate function taking a list arg
+  [pred :- s/Any    ; a predicate function taking a list arg
    coll :- tsk/List]
   (loop [vals   (vec coll)
          result []]
@@ -2752,8 +2753,8 @@
                                               (append cum i)
                                               cum)]
                                cum-next))
-                     []
-                     (thru 1 N-1))
+                           []
+                           (thru 1 N-1))
 
         ; Since we are using `subvec`, we must add in the "default" values at the start/end of the vector
         split-idxs (glue [0] split-idxs [N])
@@ -2763,8 +2764,8 @@
                              (let [next-part (subvec data i-start i-end)
                                    next-cum  (append cum next-part)]
                                next-cum))
-                     []
-                     idx-pairs)]
+                           []
+                           idx-pairs)]
     subvecs))
 
 (s/defn iterate-n :- s/Any
@@ -2778,8 +2779,8 @@
    x :- s/Any]
   (assert (int-nonneg? N))
   (last
-    (take (inc N) ; (take 0 <seq>) returns [], so we need (inc N) here to get a result
-      (iterate f x))))
+    (take (inc N)   ; (take 0 <seq>) returns [], so we need (inc N) here to get a result
+          (iterate f x))))
 
 (s/defn interleave-all :- tsk/List
   "Interleave all items from input collections, without discarding any values"
@@ -2790,7 +2791,7 @@
         lengths       (mapv count colls)
         max-len       (apply max lengths)
         total-items   (apply + lengths)
-        result-padded (forv [idx  (range max-len)
+        result-padded (forv [idx (range max-len)
                              ivec (range num-vecs)]
                         (let [curr-vec (get vecs ivec)
                               value    (get curr-vec idx ::dummy)]
@@ -2806,7 +2807,7 @@
   If pred is never falsey, `coll` is returned."
   [pred coll]
   (assert-info (and (not-nil? coll) (not-empty? coll))
-    "invalid source collection" {:coll coll})
+               "invalid source collection" {:coll coll})
   (loop [taken     []
          remaining (seq coll)]
     (if (empty? remaining)
@@ -2857,8 +2858,8 @@
 (s/defn sequential->idx-map :- {s/Any s/Any} ; #todo move
   [data :- [s/Any]]
   (into (sorted-map)
-    (map-indexed (fn [idx val] [idx val])
-      data)))
+        (map-indexed (fn [idx val] [idx val])
+                     data)))
 
 (defn char->sym [ch] (symbol (str ch))) ; #todo move
 
@@ -2898,8 +2899,8 @@
   "Return true if receive a form like either `(restruct)` or `(restruct info)` (i.e. either zero or one symbol args)."
   [form]
   (and (list? form)
-    (= 2 (count form))
-    (= 'restruct (cc/first form))))
+       (= 2 (count form))
+       (= 'restruct (cc/first form))))
 
 (defn ^:no-doc destruct-impl
   [bindings forms]
@@ -2925,26 +2926,26 @@
     (let [data-parsed-pairs (zip datas tmpls-parsed)]
       ; (spyx data-parsed-pairs)
       (let [extraction-pairs    (apply glue
-                                  (for [[data parsed] data-parsed-pairs
-                                        {:keys [name path]} parsed]
-                                    [name `(get-in-strict ~data ~path)]))
+                                       (for [[data parsed] data-parsed-pairs
+                                             {:keys [name path]} parsed]
+                                         [name `(get-in-strict ~data ~path)]))
             ; >>   (do (nl) (spyx extraction-pairs))
 
             construct-one-pairs (apply glue
-                                  (for [[data parsed] data-parsed-pairs]
-                                    {data (apply glue
-                                            (for [{:keys [name path]} parsed]
-                                              `[~data (assoc-in ~data ~path ~name)]))}))
+                                       (for [[data parsed] data-parsed-pairs]
+                                         {data (apply glue
+                                                      (for [{:keys [name path]} parsed]
+                                                        `[~data (assoc-in ~data ~path ~name)]))}))
             ; >>   (do (nl) (spyx-pretty construct-one-pairs))
 
             construct-all-pairs (apply glue (vals construct-one-pairs))
             ; >>   (spyx-pretty construct-all-pairs)
 
             restruct-one-defs   (apply glue
-                                  (for [[data construction-pairs] construct-one-pairs]
-                                    {data (apply list `[fn []
-                                                        (let [~@construction-pairs]
-                                                          ~data)])}))
+                                       (for [[data construction-pairs] construct-one-pairs]
+                                         {data (apply list `[fn []
+                                                             (let [~@construction-pairs]
+                                                               ~data)])}))
             ; >>   (do (nl) (spyx-pretty restruct-one-defs))
 
             restruct-only-def   (when (= 1 (count datas))
@@ -2970,7 +2971,7 @@
                                       form
                                       (list 'let ['restruct-fn restruct-all-def
                                                   'result (list 'restruct-fn)]
-                                        'result)))
+                                            'result)))
                                   res-raw)
             ; >>   (do (nl) (spyx-pretty res-all))
 
@@ -2982,7 +2983,7 @@
                                             restr-one-def  (get restruct-one-defs restr-one-data ::not-found)]
                                         (list 'let ['restruct-fn restr-one-def
                                                     'result (list 'restruct-fn)]
-                                          'result))))
+                                              'result))))
                                   res-all)
             ; >>   (do (nl) (spyx-pretty res-one))
 
@@ -2996,7 +2997,7 @@
                                           (throw (ex-info "restruct:  aborting..." (:count (count datas)))))
                                         (list 'let ['restruct-fn restruct-only-def
                                                     'result (list 'restruct-fn)]
-                                          'result))))
+                                              'result))))
                                   res-one)]
         ; (do (nl) (spyx-pretty res-only))
         res-only))))
@@ -3074,35 +3075,35 @@
                      (= pattern value) true
 
                      (and wildcard-ok
-                       (= pattern :*)) true
+                          (= pattern :*)) true
 
                      (and (map? pattern) (map? value))
                      (let [keyset-pat (set (keys pattern))
                            keyset-val (set (keys value))]
                        (and
                          (or (= keyset-pat keyset-val)
-                           (and submap-ok ; #todo need test
-                             (set/subset? keyset-pat keyset-val)))
+                             (and submap-ok ; #todo need test
+                                  (set/subset? keyset-pat keyset-val)))
                          (every? truthy?
-                           (forv [key keyset-pat]
-                             (wild-match-impl ctx
-                               (grab key pattern)
-                               (grab key value))))))
+                                 (forv [key keyset-pat]
+                                   (wild-match-impl ctx
+                                                    (grab key pattern)
+                                                    (grab key value))))))
 
                      (and (set? pattern) (set? value)) ; #todo need test
                      (or (= pattern value)
-                       (and subset-ok
-                         (set/subset? pattern value)))
+                         (and subset-ok
+                              (set/subset? pattern value)))
 
                      (and (coll? pattern) (coll? value))
                      (let [num-pat     (count pattern)
                            num-val     (count value)
                            lengths-ok? (or (= num-pat num-val) ; #todo need test
-                                         (and subvec-ok
-                                           (<= num-pat num-val)))]
+                                           (and subvec-ok
+                                                (<= num-pat num-val)))]
                        (and lengths-ok?
-                         (every? truthy?
-                           (mapv #(wild-match-impl ctx %1 %2) pattern value)))) ; truncates shortest
+                            (every? truthy?
+                                    (mapv #(wild-match-impl ctx %1 %2) pattern value)))) ; truncates shortest
 
                      :default false))]
       result)))
@@ -3113,50 +3114,50 @@
                    :subset-ok   false
                    :subvec-ok   false
                    :wildcard-ok true}
-              ctx-in)]
+                  ctx-in)]
     (with-map-vals ctx [pattern values]
       (every? truthy?
-        (for [value values]
-          (wild-match-impl ctx pattern value))))))
+              (for [value values]
+                (wild-match-impl ctx pattern value))))))
 
 (defmulti wild-match?
-  "Returns true if a pattern is matched by one or more values.  The special keyword :* (colon-star)
-   in the pattern serves as a wildcard value.  Note that a wildcald can match either a primitive or a
-   composite value: Classic usage:
+          "Returns true if a pattern is matched by one or more values.  The special keyword :* (colon-star)
+           in the pattern serves as a wildcard value.  Note that a wildcald can match either a primitive or a
+           composite value: Classic usage:
 
-       (wild-match? pattern & values)
+               (wild-match? pattern & values)
 
-   examples:
+           examples:
 
-       (wild-match? {:a :* :b 2}
-                    {:a 1  :b 2})         ;=> true
+               (wild-match? {:a :* :b 2}
+                            {:a 1  :b 2})         ;=> true
 
-       (wild-match? [1 :* 3]
-                    [1 2  3]
-                    [1 9  3] ))           ;=> true
+               (wild-match? [1 :* 3]
+                            [1 2  3]
+                            [1 9  3] ))           ;=> true
 
-       (wild-match? {:a :*       :b 2}
-                    {:a [1 2 3]  :b 2})   ;=> true
+               (wild-match? {:a :*       :b 2}
+                            {:a [1 2 3]  :b 2})   ;=> true
 
-   wild-match? also accepts a context map; usage:
+           wild-match? also accepts a context map; usage:
 
-       (wild-match? ctx)
+               (wild-match? ctx)
 
-   example (default values shown):
+           example (default values shown):
 
-       (wild-match?  { :submap-ok   false
-                       :subset-ok   false
-                       :subvec-ok   false
-                       :wildcard-ok true
-                       :pattern     <required param>
-                       :values    [ <patttern-spec>+ ]   ; vector of 1 or more required
-                     } )
-"
-  (fn wild-match-dispatch-fn [& args]
-    (if (and (= 1 (count args))
-          (map? (only args)))
-      :ctx
-      :classic)))
+               (wild-match?  { :submap-ok   false
+                               :subset-ok   false
+                               :subvec-ok   false
+                               :wildcard-ok true
+                               :pattern     <required param>
+                               :values    [ <patttern-spec>+ ]   ; vector of 1 or more required
+                             } )
+        "
+          (fn wild-match-dispatch-fn [& args]
+            (if (and (= 1 (count args))
+                     (map? (only args)))
+              :ctx
+              :classic)))
 
 (defmethod wild-match? :ctx
   [ctx]
@@ -3168,7 +3169,7 @@
   (wild-match-root?
     (vals->map pattern values)))
 
-(defn submatch? ; #todo readme & test
+(defn submatch?     ; #todo readme & test
   "Returns true if the first arg is (recursively) a subset/submap/subvec of the 2nd arg"
   [smaller larger]
   (let [ctx {:submap-ok   true
@@ -3219,19 +3220,19 @@
                   (recur (xrest items))))))
           ; non-wildcard pattern
           (and (contains? data sub-pat)
-            (let [data-new (set/difference data #{sub-pat})]
-              (set-match-impl ctx pattern-new data-new))))))))
+               (let [data-new (set/difference data #{sub-pat})]
+                 (set-match-impl ctx pattern-new data-new))))))))
 
 (defn set-match-ctx? [ctx-in pattern & values]
   (let [ctx (glue {:subset-ok false} ctx-in)]
     (every? truthy?
-      (for [value values]
-        (set-match-impl ctx pattern value)))))
+            (for [value values]
+              (set-match-impl ctx pattern value)))))
 
 (defn set-match? [pattern & values]
   (every? truthy?
-    (for [value values]
-      (set-match-impl {} pattern value))))
+          (for [value values]
+            (set-match-impl {} pattern value))))
 
 
 ; #todo add test & README
@@ -3257,37 +3258,37 @@
         leave-fn                (or (:leave intc) data-identity-fn)
         parents-next            (append parents data-in)
         data-post-enter         (cond-it-> (enter-fn parents data-in)
-                                  *walk-with-parents-readonly-flag* data-in)
+                                           *walk-with-parents-readonly-flag* data-in)
         data-post-walk-modified (cond
                                   (sequential? data-post-enter) (list-entries->vec
                                                                   (forv [listentry (list->entries data-post-enter)]
                                                                     (let [parents-next-le (append parents-next listentry)]
                                                                       (list-entry (grab :idx listentry)
-                                                                        (walk-with-parents-impl parents-next-le (grab :val listentry) intc)))))
+                                                                                  (walk-with-parents-impl parents-next-le (grab :val listentry) intc)))))
 
                                   (map? data-post-enter) (into {}
-                                                           (forv [mapentry data-post-enter]
-                                                             (let [me-key           (key mapentry)
-                                                                   me-val           (val mapentry)
-                                                                   parents-next-me  (append parents-next mapentry)
-                                                                   parents-next-key (append parents-next-me {:type :map-key :value me-key})
-                                                                   parents-next-val (append parents-next-me {:type :map-val :value me-val})]
-                                                               (map-entry
-                                                                 (walk-with-parents-impl parents-next-key me-key intc)
-                                                                 (walk-with-parents-impl parents-next-val me-val intc)))))
+                                                               (forv [mapentry data-post-enter]
+                                                                 (let [me-key           (key mapentry)
+                                                                       me-val           (val mapentry)
+                                                                       parents-next-me  (append parents-next mapentry)
+                                                                       parents-next-key (append parents-next-me {:type :map-key :value me-key})
+                                                                       parents-next-val (append parents-next-me {:type :map-val :value me-val})]
+                                                                   (map-entry
+                                                                     (walk-with-parents-impl parents-next-key me-key intc)
+                                                                     (walk-with-parents-impl parents-next-val me-val intc)))))
 
                                   (set? data-post-enter) (into #{}
-                                                           (forv [elem data-post-enter]
-                                                             (walk-with-parents-impl parents-next elem intc)))
+                                                               (forv [elem data-post-enter]
+                                                                 (walk-with-parents-impl parents-next elem intc)))
 
                                   ; otherwise, return data-in unaltered
                                   :else data-post-enter)
 
         data-post-walk          (cond-it-> data-post-walk-modified
-                                  *walk-with-parents-readonly-flag* data-in)
+                                           *walk-with-parents-readonly-flag* data-in)
 
         data-post-leave         (cond-it-> (leave-fn parents data-post-walk)
-                                  *walk-with-parents-readonly-flag* data-in)]
+                                           *walk-with-parents-readonly-flag* data-in)]
     data-post-leave))
 
 (s/defn walk-with-parents :- s/Any
@@ -3382,7 +3383,7 @@
      (s/defn ^:no-doc snip-seq-heads :- tsk/List
        [snip-sizes :- [s/Int]
         data-list :- tsk/List]
-       (vec ; always return a vector
+       (vec         ; always return a vector
          (let [snip-total (apply + snip-sizes)
                data-len   (count data-list)]
            (if (<= data-len snip-total)
@@ -3391,15 +3392,15 @@
                    part-size  (quot data-len num-parts) ; truncates
                    parts      (vec (take num-parts (partition part-size data-list))) ; drop any leftovers due to truncation
                    parts-keep (apply glue
-                                (map-let [part      parts
-                                          keep-curr snip-sizes]
-                                  (append (xtake keep-curr part) SNIP-TOKEN)))]
+                                     (map-let [part parts
+                                               keep-curr snip-sizes]
+                                              (append (xtake keep-curr part) SNIP-TOKEN)))]
                parts-keep)))))
 
      (s/defn ^:no-doc snip-seq-tail :- tsk/List
        [keep-tail :- s/Int
         data-list :- tsk/List]
-       (vec ; always return a vector
+       (vec         ; always return a vector
          (let [data-num (count data-list)]
            (if (<= data-num keep-tail)
              data-list
@@ -3408,7 +3409,7 @@
      (s/defn ^:no-doc snip-seq :- tsk/List
        [snip-sizes :- [s/Int]
         data-list :- tsk/List]
-       (vec ; always return a vector
+       (vec         ; always return a vector
          (let [num-snips (count snip-sizes)]
            (assert (pos? num-snips))
            (assert (every? int-pos? snip-sizes))
@@ -3441,33 +3442,33 @@
        [ctx :- SnipCtx]
        (with-map-vals ctx [snip-sizes data]
          (with-nil-default data ; return unchanged if no match
-           (cond
-             (sequential? data) (snip-seq snip-sizes (seq data)) ; coerce to a seq in case it's something weird
+                           (cond
+                             (sequential? data) (snip-seq snip-sizes (seq data)) ; coerce to a seq in case it's something weird
 
-             (map? data) (let [result-seq  (snip-seq snip-sizes (seq (->sorted-map-generic data)))
-                               parts       (partition-by #(= SNIP-TOKEN %) result-seq)
-                               parts-data  (drop-if #(= [SNIP-TOKEN] %) parts)
-                               parts-snip  (forv [idx (range (count parts-data))]
-                                             [[(str->kw (format "<snip-key-%d>" idx))
-                                               (str->kw (format "<snip-val-%d>" idx))]])
-                               parts-fused (drop-last (interleave parts-data parts-snip))
-                               result      (reduce (fn [accum item]
-                                                     (into accum item))
-                                             (omap/ordered-map)
-                                             parts-fused)]
-                           result)
+                             (map? data) (let [result-seq  (snip-seq snip-sizes (seq (->sorted-map-generic data)))
+                                               parts       (partition-by #(= SNIP-TOKEN %) result-seq)
+                                               parts-data  (drop-if #(= [SNIP-TOKEN] %) parts)
+                                               parts-snip  (forv [idx (range (count parts-data))]
+                                                             [[(str->kw (format "<snip-key-%d>" idx))
+                                                               (str->kw (format "<snip-val-%d>" idx))]])
+                                               parts-fused (drop-last (interleave parts-data parts-snip))
+                                               result      (reduce (fn [accum item]
+                                                                     (into accum item))
+                                                                   (omap/ordered-map)
+                                                                   parts-fused)]
+                                           result)
 
-             (set? data) (let [result-seq  (snip-seq snip-sizes (seq (->sorted-set-generic data)))
-                               parts       (partition-by #(= SNIP-TOKEN %) result-seq)
-                               parts-data  (drop-if #(= [SNIP-TOKEN] %) parts)
-                               parts-snip  (forv [idx (range (count parts-data))]
-                                             [(str->kw (format "<snip-%d>" idx))])
-                               parts-fused (drop-last (interleave parts-data parts-snip))
-                               result      (reduce (fn [accum item]
-                                                     (into accum item))
-                                             (oset/ordered-set)
-                                             parts-fused)]
-                           result)))))
+                             (set? data) (let [result-seq  (snip-seq snip-sizes (seq (->sorted-set-generic data)))
+                                               parts       (partition-by #(= SNIP-TOKEN %) result-seq)
+                                               parts-data  (drop-if #(= [SNIP-TOKEN] %) parts)
+                                               parts-snip  (forv [idx (range (count parts-data))]
+                                                             [(str->kw (format "<snip-%d>" idx))])
+                                               parts-fused (drop-last (interleave parts-data parts-snip))
+                                               result      (reduce (fn [accum item]
+                                                                     (into accum item))
+                                                                   (oset/ordered-set)
+                                                                   parts-fused)]
+                                           result)))))
 
 
      (s/defn snip* :- s/Any
@@ -3481,14 +3482,14 @@
          (walk/postwalk (fn [arg]
                           (let [ctx-arg (glue ctx {:data arg})]
                             (snip-impl ctx-arg)))
-           data)))
+                        data)))
 
      (s/defn snip :- s/Any
        "Returns snipped data with defaulting to first 4 and last 3 along each dimension"
        [data :- s/Any]
        (snip* {:snip-sizes [4 3] :data data}))
 
-     ))   ; :clj
+     ))             ; :clj
 
 ; bottom
 ;***************************************************************************************************
@@ -3523,8 +3524,8 @@
        (is= (merge-deep ; #todo need a merge-deep where
               {:a {:b 2}}
               {:a {:c 3}})
-         {:a {:b 2
-              :c 3}}))
+            {:a {:b 2
+                 :c 3}}))
 
      ;-----------------------------------------------------------------------------
      ; clojure.spec stuff
@@ -3534,13 +3535,13 @@
 
        ; #todo how to test the :ret part?
        (sp/fdef truthy?
-         :args (sp/cat :arg ::anything)
-         :ret boolean?)
+                :args (sp/cat :arg ::anything)
+                :ret boolean?)
 
        (sp/fdef falsey?
-         :args (sp/cat :arg ::anything)
-         :ret boolean?
-         :fn #(= (:ret %) (not (truthy? (-> % :args :arg))))))
+                :args (sp/cat :arg ::anything)
+                :ret boolean?
+                :fn #(= (:ret %) (not (truthy? (-> % :args :arg))))))
 
      ; #todo gogo ---------------------------------------------------------------------------------------------------
 
@@ -3619,8 +3620,8 @@
        [pattern & values]
        `(and ~@(forv [value values]
                  `(ccm/match ~value
-                    ~pattern true
-                    :else false))))
+                             ~pattern true
+                             :else false))))
 
      (defn macro?
        "Returns true if a quoted symbol resolves to a macro. Usage:
