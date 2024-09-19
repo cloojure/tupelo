@@ -61,7 +61,7 @@
                           :ns-default tupelo.deps-build-deploy
 
                           ; For snapshots, MUST follow pattern `23.03.03-SNAPSHOT` (i.e. no letters like `-03a`)
-                          :exec-args  {:version-str   "24.06.21"
+                          :exec-args  {:version-str   "24.09.19-SNAPSHOT"
 
                                        :lib-name      tupelo/tupelo ; must be a namespaced-qualified symbol, interpreted as `group-id/artifact-id`
                                        :scm-root      "github.com/cloojure/tupelo"
