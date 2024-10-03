@@ -18,7 +18,7 @@
            cheshire/cheshire                   {:mvn/version "5.13.0"} ; #todo switch to muuntaja/jsonista
            clj-time/clj-time                   {:mvn/version "0.15.2"}
            criterium/criterium                 {:mvn/version "0.4.6"}
-           danlentz/clj-uuid                   {:mvn/version "0.1.9"}
+           danlentz/clj-uuid                   {:mvn/version "0.2.0"}
            joda-time/joda-time                 {:mvn/version "2.13.0"}
            org.ccil.cowan.tagsoup/tagsoup      {:mvn/version "1.2.1"}
            org.clj-commons/claypoole           {:mvn/version "1.2.2"}
@@ -71,7 +71,7 @@
                                        }
                           }
            ; vvv Implicitly controls ClojureScript version
-           :shadow-cljs  {:extra-deps {thheller/shadow-cljs {:mvn/version "2.28.15"}}
+           :shadow-cljs  {:extra-deps {thheller/shadow-cljs {:mvn/version "2.28.16"}}
                           :main-opts  ["-m" "shadow.cljs.devtools.cli"]
                           }
            }
