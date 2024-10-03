@@ -3117,7 +3117,7 @@
                    :subset-ok   false
                    :subvec-ok   false
                    :wildcard-ok true
-                   :pred-fn-ok  false}
+                   :pred-fn-ok  true}
                   ctx-in)]
     (with-map-vals ctx [pattern values]
       (every? truthy?

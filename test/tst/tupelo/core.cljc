@@ -3000,7 +3000,7 @@
                       :pattern   [1 2]
                       :values    [[1 2 3 4]]})))
 
-(verify
+(verify-focus
   (isnt (t/wild-submatch? #{1 :*} #{1 2 3 4}))
   (is (t/wild-submatch? #{1 2} #{1 2 3 4}))
   (is (t/wild-submatch? {:a :*} {:a 1 :b 2}))
@@ -3022,18 +3022,33 @@
     (is (t/submatch? sample-rec {:a 1 :b 2}))
     (is (t/submatch? {:a 1 :b 2} sample-rec)))
 
+  (isnt (t/wild-match? [int?] [:1]))
+  (is (t/wild-match? [int?] [1]))
+  (is (t/wild-match? [:*] [:1]))
+  (isnt (t/wild-match? [int?] [1 :b]))
+  (is (t/wild-match? [string?] ["1"]))
+
+  (isnt (t/wild-match? [int?] [9 :abc]))
+  (isnt (t/wild-match? [string?] [123]))
+
   (is (t/wild-submatch? [int?] [1]))
   (is (t/wild-submatch? [int?] [1 :b]))
   (is (t/wild-submatch? [string?] ["1"]))
 
-  (isnt (t/wild-submatch? [int?] [:abc]))
+  (is (t/wild-submatch? [int?] [9 :abc]))
   (isnt (t/wild-submatch? [string?] [123]))
 
+  (isnt (t/wild-match? {:id   pos-int?
+                      :name string?}
+                     {:id      1
+                      :name    "Joe"
+                      :address :USA}))
   (is (t/wild-submatch? {:id   pos-int?
                          :name string?}
                         {:id      1
                          :name    "Joe"
-                         :address :USA})))
+                         :address :USA}))
+  )
 
 (verify
   (is (t/set-match? #{1 2 3} #{1 2 3}))
