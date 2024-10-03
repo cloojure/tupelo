@@ -3069,13 +3069,16 @@
   [ctx :- tsk/KeyMap ; #todo more precise schema needed { :submap-ok s/Bool ... }
    pattern :- s/Any
    value :- s/Any]
-  (with-map-vals ctx [submap-ok subset-ok subvec-ok wildcard-ok]
+  (with-map-vals ctx [submap-ok subset-ok subvec-ok wildcard-ok  pred-fn-ok]
     (let [result (truthy?
                    (cond
                      (= pattern value) true
 
                      (and wildcard-ok
                           (= pattern :*)) true
+
+                     (and pred-fn-ok
+                          (fn? pattern)) (pattern value)
 
                      (and (map? pattern) (map? value))
                      (let [keyset-pat (set (keys pattern))
@@ -3113,7 +3116,8 @@
   (let [ctx (glue {:submap-ok   false
                    :subset-ok   false
                    :subvec-ok   false
-                   :wildcard-ok true}
+                   :wildcard-ok true
+                   :pred-fn-ok  false}
                   ctx-in)]
     (with-map-vals ctx [pattern values]
       (every? truthy?
@@ -3149,6 +3153,7 @@
                                :subset-ok   false
                                :subvec-ok   false
                                :wildcard-ok true
+                               :pred-fn-ok  true
                                :pattern     <required param>
                                :values    [ <patttern-spec>+ ]   ; vector of 1 or more required
                              } )
@@ -3176,6 +3181,7 @@
              :subset-ok   true
              :subvec-ok   true
              :wildcard-ok false
+             :pred-fn-ok false
              :pattern     smaller
              :values      [larger]}]
     (wild-match? ctx)))
@@ -3187,6 +3193,7 @@
              :subset-ok   true
              :subvec-ok   true
              :wildcard-ok true
+             :pred-fn-ok true
              :pattern     pattern
              :values      values}]
     (wild-match? ctx)))

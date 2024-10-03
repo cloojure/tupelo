@@ -13,7 +13,7 @@
              [tupelo.test]
              ))
   (:require
-    [clojure.test] ; sometimes this is required for cljs - not sure why
+    [clojure.test]  ; sometimes this is required for cljs - not sure why
     [clojure.string :as str]
     [clojure.walk :as walk]
     [tupelo.core :as t :refer [spy spyx spyxx spy-pretty spyx-pretty nl
@@ -41,45 +41,45 @@
        ;------------------------------------------------------------------
        ; Clojure:  clojure.core/println
        (is-nonblank= "clojure.core/println"
-         (with-out-str
-           (clojure.core/println "clojure.core/println")
-           (+ 2 3)))
+                     (with-out-str
+                       (clojure.core/println "clojure.core/println")
+                       (+ 2 3)))
 
        ;------------------------------------------------------------------
        ; Java:  System.out.println
        (is-nonblank= "System.out.println"
-         (t/with-system-out-str ; discards return value, yields System.out
-           (doto System/out
-             (.println "System.out.println"))
-           (+ 2 3)))
+                     (t/with-system-out-str ; discards return value, yields System.out
+                       (doto System/out
+                         (.println "System.out.println"))
+                       (+ 2 3)))
        (is= 7 (t/discarding-system-out ; suppresses System.out, normal return value
                 (doto System/out
                   (.println "System.err.println"))
                 (+ 3 4)))
        (is-nonblank= ""
-         (t/with-system-out-str ; discards return value, yields System.out
-           (t/discarding-system-out ; suppresses System.out, normal return value
-             (doto System/out
-               (.println "System.err.println"))
-             (+ 3 4))))
+                     (t/with-system-out-str ; discards return value, yields System.out
+                       (t/discarding-system-out ; suppresses System.out, normal return value
+                         (doto System/out
+                           (.println "System.err.println"))
+                         (+ 3 4))))
 
        ;------------------------------------------------------------------
        ; Java:  System.err.println
        (is-nonblank= "System.err.println"
-         (t/with-system-err-str ; discards return value, yields System.err
-           (doto System/err
-             (.println "System.err.println"))
-           (+ 2 3)))
+                     (t/with-system-err-str ; discards return value, yields System.err
+                       (doto System/err
+                         (.println "System.err.println"))
+                       (+ 2 3)))
        (is= 5 (t/discarding-system-err ; suppresses System.err, normal return value
                 (doto System/err
                   (.println "System.err.println"))
                 (+ 2 3)))
        (is-nonblank= ""
-         (t/with-system-err-str ; discards return value, yields System.err
-           (t/discarding-system-err ; suppresses System.err, normal return value
-             (doto System/err
-               (.println "System.err.println"))
-             (+ 2 3)))))
+                     (t/with-system-err-str ; discards return value, yields System.err
+                       (t/discarding-system-err ; suppresses System.err, normal return value
+                         (doto System/err
+                           (.println "System.err.println"))
+                         (+ 2 3)))))
 
      (verify
        (is= (t/sym->var (quote tupelo.core/sym->var))
@@ -191,7 +191,7 @@
     (isnt (xmap? vv))))
 
 
-(verify   ; #todo => tupelo.core
+(verify             ; #todo => tupelo.core
   (is (t/only? [1]))
   (is (t/only? {:a 1}))
   (is (t/only? #{:stuff}))
@@ -297,7 +297,7 @@
     (is= [1] (t/xvec '(1)))
     (is= [1 2] (t/xvec [1 2]))))
 
-#?(:clj   ; #todo fix for cljs
+#?(:clj             ; #todo fix for cljs
    (verify
      ; clojure.lang.MapEntry passes sequential?  (argh!!!)
      (let [m    {:a 1 :b 2}
@@ -424,53 +424,53 @@
 (verify
   (let [data [true :a 'my-symbol 1 "hello" \x false nil]]
     (testing "basic usage"
-      (let [truthies (t/keep-if boolean data) ; coerce to primitive type
-            falsies  (t/keep-if not data)] ; unnatural syntax
-        (is (and (= truthies [true :a 'my-symbol 1 "hello" \x])
-              (= falsies [false nil]))))
-      (let [truthies (t/keep-if t/truthy? data)
-            falsies  (t/keep-if t/falsey? data)]
-        (is (and (= truthies [true :a 'my-symbol 1 "hello" \x])
-              (= falsies [false nil])))
-        (is (every? t/truthy? [true :a 'my-symbol 1 "hello" \x]))
-        (is (every? t/falsey? [false nil]))
-        (is (t/has-none? t/falsey? truthies))
-        (is (t/has-none? t/truthy? falsies))
+             (let [truthies (t/keep-if boolean data) ; coerce to primitive type
+                   falsies  (t/keep-if not data)] ; unnatural syntax
+               (is (and (= truthies [true :a 'my-symbol 1 "hello" \x])
+                        (= falsies [false nil]))))
+             (let [truthies (t/keep-if t/truthy? data)
+                   falsies  (t/keep-if t/falsey? data)]
+               (is (and (= truthies [true :a 'my-symbol 1 "hello" \x])
+                        (= falsies [false nil])))
+               (is (every? t/truthy? [true :a 'my-symbol 1 "hello" \x]))
+               (is (every? t/falsey? [false nil]))
+               (is (t/has-none? t/falsey? truthies))
+               (is (t/has-none? t/truthy? falsies))
 
-        (isnt (every? t/truthy? [true false]))
-        (is (every? t/truthy? [true "FALSE"]))
-        (is (every? t/truthy? [true]))
-        (is (every? t/truthy? []))))
+               (isnt (every? t/truthy? [true false]))
+               (is (every? t/truthy? [true "FALSE"]))
+               (is (every? t/truthy? [true]))
+               (is (every? t/truthy? []))))
 
     (testing "improved usage"
-      (let [count-if (comp count t/keep-if)]
-        (let [num-true  (count-if boolean data) ; awkward phrasing
-              num-false (count-if not data)] ; doesn't feel natural
-          (is (and (= 6 num-true)
-                (= 2 num-false))))
-        (let [num-true  (count-if t/truthy? data) ; matches intent much better
-              num-false (count-if t/falsey? data)]
-          (is (and (= 6 num-true)
-                (= 2 num-false)))))))
+             (let [count-if (comp count t/keep-if)]
+               (let [num-true  (count-if boolean data) ; awkward phrasing
+                     num-false (count-if not data)] ; doesn't feel natural
+                 (is (and (= 6 num-true)
+                          (= 2 num-false))))
+               (let [num-true  (count-if t/truthy? data) ; matches intent much better
+                     num-false (count-if t/falsey? data)]
+                 (is (and (= 6 num-true)
+                          (= 2 num-false)))))))
 
   (let [data [true :a 'my-symbol 1 "hello" \x false nil]]
     (testing "basic usage"
-      (let [notties (t/keep-if t/not-nil? data)
-            nillies (t/drop-if t/not-nil? data)]
-        (is (and (= notties [true :a 'my-symbol 1 "hello" \x false])
-              (= nillies [nil])))
-        (is (every? t/not-nil? notties))
-        (is (every? nil? [nil]))
-        (is (t/has-none? nil? notties))
-        (is (t/has-none? t/not-nil? nillies))))
+             (let [notties (t/keep-if t/not-nil? data)
+                   nillies (t/drop-if t/not-nil? data)]
+               (is (and (= notties [true :a 'my-symbol 1 "hello" \x false])
+                        (= nillies [nil])))
+               (is (every? t/not-nil? notties))
+               (is (every? nil? [nil]))
+               (is (t/has-none? nil? notties))
+               (is (t/has-none? t/not-nil? nillies))))
 
     (testing "improved usage"
-      (let [count-if (comp count t/keep-if)]
-        (let [num-valid-1 (count-if some? data) ; awkward phrasing, doesn't feel natural
-              num-valid-2 (count-if t/not-nil? data) ; matches intent much better
-              num-nil     (count-if nil? data)] ; intent is plain
-          (is (and (= 7 num-valid-1 num-valid-2)
-                (= 1 num-nil))))))))
+             (let [count-if (comp count t/keep-if)]
+               (let [num-valid-1 (count-if some? data) ; awkward phrasing, doesn't feel natural
+                     num-valid-2 (count-if t/not-nil? data) ; matches intent much better
+                     num-nil     (count-if nil? data)] ; intent is plain
+                 (is (and (= 7 num-valid-1 num-valid-2)
+                          (= 1 num-nil))))))))
 
 (verify
   (is= true (t/has-some? odd? [1 2 3]))
@@ -524,8 +524,8 @@
     (ts/whitespace-collapse
       (with-out-str
         (is= 3 (spyx (inc 0)
-                 (inc 1)
-                 (inc 2))))))
+                     (inc 1)
+                     (inc 2))))))
 
   ; #todo -> readme
   (is= (ts/whitespace-collapse ":some-kw
@@ -534,8 +534,8 @@
     (ts/whitespace-collapse
       (with-out-str
         (is= 3 (spyx :some-kw
-                 (inc 1)
-                 (inc 2)))))))
+                     (inc 1)
+                     (inc 2)))))))
 
 ; #todo blog about this nested (is= ...) testing technique
 (verify
@@ -563,69 +563,69 @@
 ;-----------------------------------------------------------------------------
 (verify
   (testing "basic usage"
-    (let [side-effect-cum-sum (atom 0) ; side-effect running total
+           (let [side-effect-cum-sum (atom 0) ; side-effect running total
 
-          ; Returns the sum of its arguments AND keep a running total.
-          side-effect-add!    (fn [& args]
-                                (let [result (apply + args)]
-                                  (swap! side-effect-cum-sum + result)
-                                  result))]
-      (is= ":hi => 5"
-        (ts/whitespace-collapse (with-out-str (spy (side-effect-add! 2 3) :hi))))
-      (is= ":hi => 5"
-        (ts/whitespace-collapse (with-out-str (spy :hi (side-effect-add! 2 3)))))
-      (is= ":after-inc => 2"
-        (ts/whitespace-collapse (with-out-str (-> 1
-                                                (inc)
-                                                (spy :after-inc) ; add a custom keyword message
-                                                (* 2)))))
-      (is= ":after-inc => 2"
-        (ts/whitespace-collapse (with-out-str (->> 1
-                                                (inc)
-                                                (spy :after-inc) ; add a custom keyword message
-                                                (* 2)))))
+                 ; Returns the sum of its arguments AND keep a running total.
+                 side-effect-add!    (fn [& args]
+                                       (let [result (apply + args)]
+                                         (swap! side-effect-cum-sum + result)
+                                         result))]
+             (is= ":hi => 5"
+               (ts/whitespace-collapse (with-out-str (spy (side-effect-add! 2 3) :hi))))
+             (is= ":hi => 5"
+               (ts/whitespace-collapse (with-out-str (spy :hi (side-effect-add! 2 3)))))
+             (is= ":after-inc => 2"
+               (ts/whitespace-collapse (with-out-str (-> 1
+                                                         (inc)
+                                                         (spy :after-inc) ; add a custom keyword message
+                                                         (* 2)))))
+             (is= ":after-inc => 2"
+               (ts/whitespace-collapse (with-out-str (->> 1
+                                                          (inc)
+                                                          (spy :after-inc) ; add a custom keyword message
+                                                          (* 2)))))
 
-      (is= "(side-effect-add! 2 3) => 5"
-        (ts/whitespace-collapse (with-out-str (spyx (side-effect-add! 2 3)))))
-      (is= 15 @side-effect-cum-sum))
+             (is= "(side-effect-add! 2 3) => 5"
+               (ts/whitespace-collapse (with-out-str (spyx (side-effect-add! 2 3)))))
+             (is= 15 @side-effect-cum-sum))
 
-    (is= ":first => 5 :second => 25"
-      (ts/whitespace-collapse
-        (with-out-str (-> 2
-                        (+ 3)
-                        (spy :first)
-                        (* 5)
-                        (spy :second)))))
-    (is= ":first => 5 :second => 25"
-      (ts/whitespace-collapse
-        (with-out-str (->> 2
-                        (+ 3)
-                        (spy :first)
-                        (* 5)
-                        (spy :second)))))
+           (is= ":first => 5 :second => 25"
+             (ts/whitespace-collapse
+               (with-out-str (-> 2
+                                 (+ 3)
+                                 (spy :first)
+                                 (* 5)
+                                 (spy :second)))))
+           (is= ":first => 5 :second => 25"
+             (ts/whitespace-collapse
+               (with-out-str (->> 2
+                                  (+ 3)
+                                  (spy :first)
+                                  (* 5)
+                                  (spy :second)))))
 
-    (let [side-effect-cum-sum (atom 0) ; side-effect running total
+           (let [side-effect-cum-sum (atom 0) ; side-effect running total
 
-          ; Returns the sum of its arguments AND keep a running total.
-          side-effect-add!    (fn [& args]
-                                (let [result (apply + args)]
-                                  (swap! side-effect-cum-sum + result)
-                                  result))
-          ]
-      (is= ":value => 5"
-        (ts/whitespace-collapse (with-out-str (spy (side-effect-add! 2 3) :value))))
-      (is= ":value => 5"
-        (ts/whitespace-collapse (with-out-str (spy :value (side-effect-add! 2 3)))))
-      (is= 10 @side-effect-cum-sum)
+                 ; Returns the sum of its arguments AND keep a running total.
+                 side-effect-add!    (fn [& args]
+                                       (let [result (apply + args)]
+                                         (swap! side-effect-cum-sum + result)
+                                         result))
+                 ]
+             (is= ":value => 5"
+               (ts/whitespace-collapse (with-out-str (spy (side-effect-add! 2 3) :value))))
+             (is= ":value => 5"
+               (ts/whitespace-collapse (with-out-str (spy :value (side-effect-add! 2 3)))))
+             (is= 10 @side-effect-cum-sum)
 
-      (is= ":value => 5" (ts/whitespace-collapse (with-out-str (spy :value (+ 2 3)))))
-      ; (is= ":spy => 5" (ts/collapse-whitespace (with-out-str (spy (+ 2 3)))))
+             (is= ":value => 5" (ts/whitespace-collapse (with-out-str (spy :value (+ 2 3)))))
+             ; (is= ":spy => 5" (ts/collapse-whitespace (with-out-str (spy (+ 2 3)))))
 
-      (is= "(str \"abc\" \"def\") => \"abcdef\""
-        (ts/whitespace-collapse (with-out-str (spyx (str "abc" "def")))))
+             (is= "(str \"abc\" \"def\") => \"abcdef\""
+               (ts/whitespace-collapse (with-out-str (spyx (str "abc" "def")))))
 
-      ; (throws? (spy :some-tag "some-str" 42))  ; #todo how test in cljs?
-      )))
+             ; (throws? (spy :some-tag "some-str" 42))  ; #todo how test in cljs?
+             )))
 (comment
   (verify
     (spy :hello)
@@ -634,7 +634,7 @@
     (spy 99 :tears)
     (spyx (t/source-code-env))
     (spyx "something")
-    (comment ; sample output
+    (comment        ; sample output
       :spy--tst.tupelo.core--line-057 => :hello
       :spy--tst.tupelo.core--line-058 => "goodbye"
       :hello => 5
@@ -658,81 +658,81 @@
   (is= 3 (t/let-some [a 1
                       b 2
                       c (+ a b)]
-           c))
+                     c))
   (is= nil (t/let-some [a 1
                         b nil
                         c 3]
-             [a b c]))
+                       [a b c]))
 
   (is= 5 (t/let-some [a (+ 2 3)]
-           a))
+                     a))
   (is= 7 (t/let-some [a (+ 2 3)
                       b (inc a)
                       c (inc b)]
-           c))
+                     c))
   (is= nil (t/let-some [a (+ 2 3)
                         b nil
                         c (inc b)]
-             c))
+                       c))
   (is= nil (t/let-some [a (+ 2 3)
                         b (when (< 5 0) a)
                         c (inc b)]
-             c))
+                       c))
   (is= [0 [1 2 3 4]] (t/let-some [tgt 5
                                   [x & others] (range tgt)]
-                       [x others]))
+                                 [x others]))
   (is= nil (t/let-some [tgt nil
                         [x & others] (range tgt)]
-             [x others])))
+                       [x others])))
 
 (verify
   (testing "vecs"
-    (let [coll (range 3)]
-      (isnt (t/contains-elem? coll -1))
-      (is (t/contains-elem? coll 0))
-      (is (t/contains-elem? coll 1))
-      (is (t/contains-elem? coll 2))
-      (isnt (t/contains-elem? coll 3))
-      (isnt (t/contains-elem? coll nil)))
+           (let [coll (range 3)]
+             (isnt (t/contains-elem? coll -1))
+             (is (t/contains-elem? coll 0))
+             (is (t/contains-elem? coll 1))
+             (is (t/contains-elem? coll 2))
+             (isnt (t/contains-elem? coll 3))
+             (isnt (t/contains-elem? coll nil)))
 
-    (let [coll [1 :two "three" \4]]
-      (isnt (t/contains-elem? coll :no-way))
-      (isnt (t/contains-elem? coll nil))
-      (is (t/contains-elem? coll 1))
-      (is (t/contains-elem? coll :two))
-      (is (t/contains-elem? coll "three"))
-      (is (t/contains-elem? coll \4)))
+           (let [coll [1 :two "three" \4]]
+             (isnt (t/contains-elem? coll :no-way))
+             (isnt (t/contains-elem? coll nil))
+             (is (t/contains-elem? coll 1))
+             (is (t/contains-elem? coll :two))
+             (is (t/contains-elem? coll "three"))
+             (is (t/contains-elem? coll \4)))
 
-    (let [coll [:yes nil 3]]
-      (isnt (t/contains-elem? coll :no-way))
-      (is (t/contains-elem? coll :yes))
-      (is (t/contains-elem? coll nil))))
+           (let [coll [:yes nil 3]]
+             (isnt (t/contains-elem? coll :no-way))
+             (is (t/contains-elem? coll :yes))
+             (is (t/contains-elem? coll nil))))
 
   (testing "maps"
-    (let [coll {1 :two "three" \4}]
-      (isnt (t/contains-elem? coll nil))
-      (isnt (t/contains-elem? coll [1 :no-way]))
-      (is (t/contains-elem? coll [1 :two]))
-      (is (t/contains-elem? coll ["three" \4])))
-    (let [coll {1 nil "three" \4}]
-      (isnt (t/contains-elem? coll [nil 1]))
-      (is (t/contains-elem? coll [1 nil])))
-    (let [coll {nil 2 "three" \4}]
-      (isnt (t/contains-elem? coll [1 nil]))
-      (is (t/contains-elem? coll [nil 2]))))
+           (let [coll {1 :two "three" \4}]
+             (isnt (t/contains-elem? coll nil))
+             (isnt (t/contains-elem? coll [1 :no-way]))
+             (is (t/contains-elem? coll [1 :two]))
+             (is (t/contains-elem? coll ["three" \4])))
+           (let [coll {1 nil "three" \4}]
+             (isnt (t/contains-elem? coll [nil 1]))
+             (is (t/contains-elem? coll [1 nil])))
+           (let [coll {nil 2 "three" \4}]
+             (isnt (t/contains-elem? coll [1 nil]))
+             (is (t/contains-elem? coll [nil 2]))))
 
   (testing "sets"
-    (let [coll #{1 :two "three" \4}]
-      (isnt (t/contains-elem? coll :no-way))
-      (is (t/contains-elem? coll 1))
-      (is (t/contains-elem? coll :two))
-      (is (t/contains-elem? coll "three"))
-      (is (t/contains-elem? coll \4)))
+           (let [coll #{1 :two "three" \4}]
+             (isnt (t/contains-elem? coll :no-way))
+             (is (t/contains-elem? coll 1))
+             (is (t/contains-elem? coll :two))
+             (is (t/contains-elem? coll "three"))
+             (is (t/contains-elem? coll \4)))
 
-    (let [coll #{:yes nil}]
-      (isnt (t/contains-elem? coll :no-way))
-      (is (t/contains-elem? coll :yes))
-      (is (t/contains-elem? coll nil)))))
+           (let [coll #{:yes nil}]
+             (isnt (t/contains-elem? coll :no-way))
+             (is (t/contains-elem? coll :yes))
+             (is (t/contains-elem? coll nil)))))
 
 (verify
   (is (t/contains-key? {:a 1 :b 2} :a))
@@ -790,8 +790,8 @@
 
 (verify
   (is= (t/for-indexed [[i x] [:a :b :c]]
-         ; (println (format "i=%d x=%s" i x)) ; uncomment to print to stdout :wa
-         {:i i :x x})
+                      ; (println (format "i=%d x=%s" i x)) ; uncomment to print to stdout :wa
+                      {:i i :x x})
     [{:i 0 :x :a}
      {:i 1 :x :b}
      {:i 2 :x :c}]))
@@ -892,9 +892,9 @@
 (verify
   ; unexpected results
   (is (= (concat {:a 1} {:b 2} {:c 3})
-        [[:a 1] [:b 2] [:c 3]]))
+         [[:a 1] [:b 2] [:c 3]]))
   (is (= (conj [1 2] [3 4])
-        [1 2 [3 4]]))
+         [1 2 [3 4]]))
 
   (let [objs [[] '() {} (sorted-map) #{} (sorted-set)]]
     (is= (map sequential? objs) [true true false false false false])
@@ -984,7 +984,7 @@
            (is (ts/contains-str? strace "Boom!"))
            (is (ts/contains-str? strace "tst.tupelo.core")))))))
 
-#?(:clj   ; #todo get cljs compiler strange errors if `?` is missing in '#?(:clj ...)'
+#?(:clj             ; #todo get cljs compiler strange errors if `?` is missing in '#?(:clj ...)'
    (verify
      (let [zz (byte-array 0)
            aa (byte-array 1 (byte 1))
@@ -1035,25 +1035,25 @@
   (throws? (t/append #{:a 1} #{99}))
 
   (testing "old conjv tests"
-    (is= [2] (t/append [] 2))
-    (is= [2] (t/append '() 2))
-    (is= [2 3] (t/append [] 2 3))
-    (is= [2 3] (t/append '() 2 3))
+           (is= [2] (t/append [] 2))
+           (is= [2] (t/append '() 2))
+           (is= [2 3] (t/append [] 2 3))
+           (is= [2 3] (t/append '() 2 3))
 
-    (is= [1 2 3] (t/append [1] 2 3))
-    (is= [1 2 3] (t/append '(1) 2 3))
-    (is= [1 2 3] (t/append [1 2] 3))
-    (is= [1 2 3] (t/append '(1 2) 3))
+           (is= [1 2 3] (t/append [1] 2 3))
+           (is= [1 2 3] (t/append '(1) 2 3))
+           (is= [1 2 3] (t/append [1 2] 3))
+           (is= [1 2 3] (t/append '(1 2) 3))
 
-    (is= [1 2 3 4] (t/append [1 2] 3 4))
-    (is= [1 2 3 4] (t/append '(1 2) 3 4))
-    (is= [1 2 3 4] (t/append [1] 2 3 4))
-    (is= [1 2 3 4] (t/append '(1) 2 3 4))
+           (is= [1 2 3 4] (t/append [1 2] 3 4))
+           (is= [1 2 3 4] (t/append '(1 2) 3 4))
+           (is= [1 2 3 4] (t/append [1] 2 3 4))
+           (is= [1 2 3 4] (t/append '(1) 2 3 4))
 
-    (is= [[1 2] [3 4] [5 6]] (t/append [[1 2] [3 4]] [5 6]))
+           (is= [[1 2] [3 4] [5 6]] (t/append [[1 2] [3 4]] [5 6]))
 
-    (is= [0 1 2 3 4 5] (t/append (range 4) 4 5))
-    (is= [0 1 2 3 4 5] (apply t/append [0] (range 1 6)))))
+           (is= [0 1 2 3 4 5] (t/append (range 4) 4 5))
+           (is= [0 1 2 3 4 5] (apply t/append [0] (range 1 6)))))
 
 (verify
   (throws? (t/prepend [2 1]))
@@ -1303,9 +1303,9 @@
 
 (verify
   (is= 42 (t/with-result 42
-            (with-out-str
-              (for [i (range 3)]
-                (println i))))))
+                         (with-out-str
+                           (for [i (range 3)]
+                             (println i))))))
 
 (verify
   (let [map1 {:a 1 :b 2 :c 3 :d 4 :e 5}]
@@ -1369,7 +1369,7 @@
     (is= m1 (apply hash-map (t/keyvals m1)))
     (is= m2 (apply hash-map (t/keyvals m2)))))
 
-(verify   ; #todo delete this???
+(verify             ; #todo delete this???
   (let [m1 {:a 1 :b 2 :c 3}]
     (is= [:a 1 :b 2] (t/keyvals-seq m1 [:a :b]))
     (is= [:b 2 :a 1] (t/keyvals-seq m1 [:b :a]))
@@ -1386,33 +1386,33 @@
 
 (verify
   (is= 2 (t/it-> 1
-           (inc it)
-           (+ 3 it)
-           (/ 10 it)))
+                 (inc it)
+                 (+ 3 it)
+                 (/ 10 it)))
   (let [mm {:a {:b 2}}]
     (is= (t/it-> mm (:a it)) {:b 2})
     (is= (t/it-> mm (it :a) (:b it)) 2))
   (is= 48 (t/it-> 42
-            (let [x 5]
-                 (+ x it))
-            (inc it))))
+                  (let [x 5]
+                    (+ x it))
+                  (inc it))))
 
 (verify
-  #_(spy-pretty ; dbg
+  #_(spy-pretty     ; dbg
       (t/spy-it->-impl '[1
                          (inc it)
                          (+ 3 it)
                          (/ 10 it)]))
   (let [stdout-result (with-out-str
                         (is= 2 (t/spy-it-> 1
-                                 (inc it)
-                                 (+ 3 it)
-                                 (/ 10 it))))]
+                                           (inc it)
+                                           (+ 3 it)
+                                           (/ 10 it))))]
     (is-nonblank= stdout-result
-      "spy-it-> 1
-         (inc it)   =>  2
-         (+ 3 it)   =>  5
-         (/ 10 it)  =>  2 ")))
+                  "spy-it-> 1
+                     (inc it)   =>  2
+                     (+ 3 it)   =>  5
+                     (/ 10 it)  =>  2 ")))
 
 (verify
   (let [params {:a 1 :b 1 :c nil :d nil}]
@@ -1438,16 +1438,16 @@
 
 (verify
   (is= 8 (t/some-it-> 1
-           (inc it)
-           (* it 3)
-           (+ 2 it)))
+                      (inc it)
+                      (* it 3)
+                      (+ 2 it)))
   (is (nil? (t/some-it-> nil
-              (inc it)
-              (* it 3)
-              (+ 2 it))))
+                         (inc it)
+                         (* it 3)
+                         (+ 2 it))))
   (is (nil? (t/some-it-> 1 (inc it)
-              (when false (* it 3))
-              (+ 2 it)))))
+                         (when false (* it 3))
+                         (+ 2 it)))))
 
 (verify
   ; java way to throw
@@ -1472,7 +1472,7 @@
   (is= (t/validate-or-default t/not-nil? nil 0) 0)
   (is= (t/validate-or-default t/not-empty? "" "How you doin?") "How you doin?")
   (is= (mapv #(t/with-nil-default :some-default %)
-         [0 1 "" [] nil true false])
+             [0 1 "" [] nil true false])
     [0 1 "" [] :some-default true false]))
 
 ;-----------------------------------------------------------------------------
@@ -1515,10 +1515,10 @@
   (let [base      {:a 1 :b [:c 3 :d [4 5 6]]}
         tweaked-3 (walk/postwalk #(t/cond-it-> %
                                     (number? it) (+ it 1.0e-3))
-                    base)
+                                 base)
         tweaked-9 (walk/postwalk #(t/cond-it-> %
                                     (number? it) (+ it 1.0e-9))
-                    base)]
+                                 base)]
     (isnt= base tweaked-3)
     (isnt (t/deep-rel= base tweaked-3))
     (is (t/deep-rel= base tweaked-9))))
@@ -1528,180 +1528,180 @@
   (throws? (t/thru 1.1 2.1 0.3))
 
   (testing "positive step"
-    (is= [0] (t/thru 0))
-    (is= [0 1] (t/thru 1))
-    (is= [0 1 2] (t/thru 2))
-    (is= [0 1 2 3] (t/thru 3))
+           (is= [0] (t/thru 0))
+           (is= [0 1] (t/thru 1))
+           (is= [0 1 2] (t/thru 2))
+           (is= [0 1 2 3] (t/thru 3))
 
-    (is= [0] (t/thru 0 0))
-    (is= [0 1] (t/thru 0 1))
-    (is= [0 1 2] (t/thru 0 2))
-    (is= [0 1 2 3] (t/thru 0 3))
+           (is= [0] (t/thru 0 0))
+           (is= [0 1] (t/thru 0 1))
+           (is= [0 1 2] (t/thru 0 2))
+           (is= [0 1 2 3] (t/thru 0 3))
 
-    (is= [] (t/thru 1 0))
-    (is= [1] (t/thru 1 1))
-    (is= [1 2] (t/thru 1 2))
-    (is= [1 2 3] (t/thru 1 3))
+           (is= [] (t/thru 1 0))
+           (is= [1] (t/thru 1 1))
+           (is= [1 2] (t/thru 1 2))
+           (is= [1 2 3] (t/thru 1 3))
 
-    (is= [] (t/thru 2 0))
-    (is= [] (t/thru 2 1))
-    (is= [2] (t/thru 2 2))
-    (is= [2 3] (t/thru 2 3))
+           (is= [] (t/thru 2 0))
+           (is= [] (t/thru 2 1))
+           (is= [2] (t/thru 2 2))
+           (is= [2 3] (t/thru 2 3))
 
-    ;--------------------------------------------
-    (is= [0] (t/thru 0 0 1))
-    (is= [0 1] (t/thru 0 1 1))
-    (is= [0 1 2] (t/thru 0 2 1))
-    (is= [0 1 2 3] (t/thru 0 3 1))
+           ;--------------------------------------------
+           (is= [0] (t/thru 0 0 1))
+           (is= [0 1] (t/thru 0 1 1))
+           (is= [0 1 2] (t/thru 0 2 1))
+           (is= [0 1 2 3] (t/thru 0 3 1))
 
-    (is= [] (t/thru 1 0 1))
-    (is= [1] (t/thru 1 1 1))
-    (is= [1 2] (t/thru 1 2 1))
-    (is= [1 2 3] (t/thru 1 3 1))
+           (is= [] (t/thru 1 0 1))
+           (is= [1] (t/thru 1 1 1))
+           (is= [1 2] (t/thru 1 2 1))
+           (is= [1 2 3] (t/thru 1 3 1))
 
-    (is= [] (t/thru 2 0 1))
-    (is= [] (t/thru 2 1 1))
-    (is= [2] (t/thru 2 2 1))
-    (is= [2 3] (t/thru 2 3 1))
+           (is= [] (t/thru 2 0 1))
+           (is= [] (t/thru 2 1 1))
+           (is= [2] (t/thru 2 2 1))
+           (is= [2 3] (t/thru 2 3 1))
 
-    ;--------------------------------------------
-    (is= [0] (t/thru 0 0 2))
-    (throws? (t/thru 0 1 2))
-    (is= [0 2] (t/thru 0 2 2))
-    (throws? (t/thru 0 3 2))
+           ;--------------------------------------------
+           (is= [0] (t/thru 0 0 2))
+           (throws? (t/thru 0 1 2))
+           (is= [0 2] (t/thru 0 2 2))
+           (throws? (t/thru 0 3 2))
 
-    (throws? (t/thru 1 0 2))
-    (is= [1] (t/thru 1 1 2))
-    (throws? (t/thru 1 2 2))
-    (is= [1 3] (t/thru 1 3 2))
+           (throws? (t/thru 1 0 2))
+           (is= [1] (t/thru 1 1 2))
+           (throws? (t/thru 1 2 2))
+           (is= [1 3] (t/thru 1 3 2))
 
-    (is= [] (t/thru 2 0 2))
-    (throws? (t/thru 2 1 2))
-    (is= [2] (t/thru 2 2 2))
-    (throws? (t/thru 2 3 2))
+           (is= [] (t/thru 2 0 2))
+           (throws? (t/thru 2 1 2))
+           (is= [2] (t/thru 2 2 2))
+           (throws? (t/thru 2 3 2))
 
-    (throws? (t/thru 3 0 2))
-    (is= [] (t/thru 3 1 2))
-    (throws? (t/thru 3 2 2))
-    (is= [3] (t/thru 3 3 2))
+           (throws? (t/thru 3 0 2))
+           (is= [] (t/thru 3 1 2))
+           (throws? (t/thru 3 2 2))
+           (is= [3] (t/thru 3 3 2))
 
-    ;--------------------------------------------
-    (is= [0] (t/thru 0 0 3))
-    (throws? (t/thru 0 1 3))
-    (throws? (t/thru 0 2 3))
-    (is= [0 3] (t/thru 0 3 3))
+           ;--------------------------------------------
+           (is= [0] (t/thru 0 0 3))
+           (throws? (t/thru 0 1 3))
+           (throws? (t/thru 0 2 3))
+           (is= [0 3] (t/thru 0 3 3))
 
-    (throws? (t/thru 1 0 3))
-    (is= [1] (t/thru 1 1 3))
-    (throws? (t/thru 1 2 3))
-    (throws? (t/thru 1 3 3))
+           (throws? (t/thru 1 0 3))
+           (is= [1] (t/thru 1 1 3))
+           (throws? (t/thru 1 2 3))
+           (throws? (t/thru 1 3 3))
 
-    (throws? (t/thru 2 0 3))
-    (throws? (t/thru 2 1 3))
-    (is= [2] (t/thru 2 2 3))
-    (throws? (t/thru 2 3 3))
+           (throws? (t/thru 2 0 3))
+           (throws? (t/thru 2 1 3))
+           (is= [2] (t/thru 2 2 3))
+           (throws? (t/thru 2 3 3))
 
-    ;--------------------------------------------
-    (is= [] (t/thru 3 0 3))
-    (throws? (t/thru 3 1 3))
-    (throws? (t/thru 3 2 3))
-    (is= [3] (t/thru 3 3 3)))
+           ;--------------------------------------------
+           (is= [] (t/thru 3 0 3))
+           (throws? (t/thru 3 1 3))
+           (throws? (t/thru 3 2 3))
+           (is= [3] (t/thru 3 3 3)))
 
   (testing "negative step"
-    (is= [0] (t/thru 0 0 -1))
-    (is= [1 0] (t/thru 1 0 -1))
-    (is= [2 1 0] (t/thru 2 0 -1))
-    (is= [3 2 1 0] (t/thru 3 0 -1))
+           (is= [0] (t/thru 0 0 -1))
+           (is= [1 0] (t/thru 1 0 -1))
+           (is= [2 1 0] (t/thru 2 0 -1))
+           (is= [3 2 1 0] (t/thru 3 0 -1))
 
-    (is= [] (t/thru 0 1 -1))
-    (is= [1] (t/thru 1 1 -1))
-    (is= [2 1] (t/thru 2 1 -1))
-    (is= [3 2 1] (t/thru 3 1 -1))
+           (is= [] (t/thru 0 1 -1))
+           (is= [1] (t/thru 1 1 -1))
+           (is= [2 1] (t/thru 2 1 -1))
+           (is= [3 2 1] (t/thru 3 1 -1))
 
-    (is= [] (t/thru 0 2 -1))
-    (is= [] (t/thru 1 2 -1))
-    (is= [2] (t/thru 2 2 -1))
-    (is= [3 2] (t/thru 3 2 -1))
+           (is= [] (t/thru 0 2 -1))
+           (is= [] (t/thru 1 2 -1))
+           (is= [2] (t/thru 2 2 -1))
+           (is= [3 2] (t/thru 3 2 -1))
 
-    (is= [] (t/thru 0 3 -1))
-    (is= [] (t/thru 1 3 -1))
-    (is= [] (t/thru 2 3 -1))
-    (is= [3] (t/thru 3 3 -1))
+           (is= [] (t/thru 0 3 -1))
+           (is= [] (t/thru 1 3 -1))
+           (is= [] (t/thru 2 3 -1))
+           (is= [3] (t/thru 3 3 -1))
 
-    ;--------------------------------------------
-    (is= [0] (t/thru 0 0 -2))
-    (throws? (t/thru 1 0 -2))
-    (is= [2 0] (t/thru 2 0 -2))
-    (throws? (t/thru 3 0 -2))
+           ;--------------------------------------------
+           (is= [0] (t/thru 0 0 -2))
+           (throws? (t/thru 1 0 -2))
+           (is= [2 0] (t/thru 2 0 -2))
+           (throws? (t/thru 3 0 -2))
 
-    (throws? (t/thru 0 1 -2))
-    (is= [1] (t/thru 1 1 -2))
-    (throws? (t/thru 2 1 -2))
-    (is= [3 1] (t/thru 3 1 -2))
+           (throws? (t/thru 0 1 -2))
+           (is= [1] (t/thru 1 1 -2))
+           (throws? (t/thru 2 1 -2))
+           (is= [3 1] (t/thru 3 1 -2))
 
-    (is= [] (t/thru 0 2 -2))
-    (throws? (t/thru 1 2 -2))
-    (is= [2] (t/thru 2 2 -2))
-    (throws? (t/thru 3 2 -2))
+           (is= [] (t/thru 0 2 -2))
+           (throws? (t/thru 1 2 -2))
+           (is= [2] (t/thru 2 2 -2))
+           (throws? (t/thru 3 2 -2))
 
-    (throws? (t/thru 0 3 -2))
-    (is= [] (t/thru 1 3 -2))
-    (throws? (t/thru 2 3 -2))
-    (is= [3] (t/thru 3 3 -2))
+           (throws? (t/thru 0 3 -2))
+           (is= [] (t/thru 1 3 -2))
+           (throws? (t/thru 2 3 -2))
+           (is= [3] (t/thru 3 3 -2))
 
-    ;--------------------------------------------
-    (is= [0] (t/thru 0 0 -3))
-    (throws? (t/thru 1 0 -3))
-    (throws? (t/thru 2 0 -3))
-    (is= [3 0] (t/thru 3 0 -3))
+           ;--------------------------------------------
+           (is= [0] (t/thru 0 0 -3))
+           (throws? (t/thru 1 0 -3))
+           (throws? (t/thru 2 0 -3))
+           (is= [3 0] (t/thru 3 0 -3))
 
-    (throws? (t/thru 0 1 -3))
-    (is= [1] (t/thru 1 1 -3))
-    (throws? (t/thru 2 1 -3))
-    (throws? (t/thru 3 1 -3))
+           (throws? (t/thru 0 1 -3))
+           (is= [1] (t/thru 1 1 -3))
+           (throws? (t/thru 2 1 -3))
+           (throws? (t/thru 3 1 -3))
 
-    (throws? (t/thru 0 2 -3))
-    (throws? (t/thru 1 2 -3))
-    (is= [2] (t/thru 2 2 -3))
-    (throws? (t/thru 3 2 -3))
+           (throws? (t/thru 0 2 -3))
+           (throws? (t/thru 1 2 -3))
+           (is= [2] (t/thru 2 2 -3))
+           (throws? (t/thru 3 2 -3))
 
-    (is= [] (t/thru 0 3 -3))
-    (throws? (t/thru 1 3 -3))
-    (throws? (t/thru 2 3 -3))
-    (is= [3] (t/thru 3 3 -3)))
+           (is= [] (t/thru 0 3 -3))
+           (throws? (t/thru 1 3 -3))
+           (throws? (t/thru 2 3 -3))
+           (is= [3] (t/thru 3 3 -3)))
 
   (testing "combinations"
-    (is= [0 2 4 6 8 10] (t/thru 0 10 2))
-    (is= [0 -2 -4 -6 -8 -10] (t/thru 0 -10 -2))
-    (is= [2 4 6 8 10] (t/thru 2 10 2))
-    (is= [-2 -4 -6 -8 -10] (t/thru -2 -10 -2))
-    (is= [2 0 -2 -4 -6 -8 -10] (t/thru 2 -10 -2))
-    (is= [-2 0 2 4 6 8 10] (t/thru -2 10 2))
+           (is= [0 2 4 6 8 10] (t/thru 0 10 2))
+           (is= [0 -2 -4 -6 -8 -10] (t/thru 0 -10 -2))
+           (is= [2 4 6 8 10] (t/thru 2 10 2))
+           (is= [-2 -4 -6 -8 -10] (t/thru -2 -10 -2))
+           (is= [2 0 -2 -4 -6 -8 -10] (t/thru 2 -10 -2))
+           (is= [-2 0 2 4 6 8 10] (t/thru -2 10 2))
 
-    (is= [10 8 6 4 2 0] (t/thru 10 0 -2))
-    (is= [-10 -8 -6 -4 -2 0] (t/thru -10 0 2))
-    (is= [10 8 6 4 2] (t/thru 10 2 -2))
-    (is= [-10 -8 -6 -4 -2] (t/thru -10 -2 2))
-    (is= [10 8 6 4 2 0 -2] (t/thru 10 -2 -2))
-    (is= [-10 -8 -6 -4 -2 0 2] (t/thru -10 2 2))
+           (is= [10 8 6 4 2 0] (t/thru 10 0 -2))
+           (is= [-10 -8 -6 -4 -2 0] (t/thru -10 0 2))
+           (is= [10 8 6 4 2] (t/thru 10 2 -2))
+           (is= [-10 -8 -6 -4 -2] (t/thru -10 -2 2))
+           (is= [10 8 6 4 2 0 -2] (t/thru 10 -2 -2))
+           (is= [-10 -8 -6 -4 -2 0 2] (t/thru -10 2 2))
 
-    (is= [0 5 10] (t/thru 0 10 5))
-    (is= [0 -5 -10] (t/thru 0 -10 -5))
-    (is= [5 10] (t/thru 5 10 5))
-    (is= [-5 -10] (t/thru -5 -10 -5))
-    (is= [5 0 -5 -10] (t/thru 5 -10 -5))
-    (is= [-5 0 5 10] (t/thru -5 10 5))
+           (is= [0 5 10] (t/thru 0 10 5))
+           (is= [0 -5 -10] (t/thru 0 -10 -5))
+           (is= [5 10] (t/thru 5 10 5))
+           (is= [-5 -10] (t/thru -5 -10 -5))
+           (is= [5 0 -5 -10] (t/thru 5 -10 -5))
+           (is= [-5 0 5 10] (t/thru -5 10 5))
 
-    (is= [10 5 0] (t/thru 10 0 -5))
-    (is= [-10 -5 0] (t/thru -10 0 5))
-    (is= [10 5] (t/thru 10 5 -5))
-    (is= [-10 -5] (t/thru -10 -5 5))
-    (is= [10 5 0 -5] (t/thru 10 -5 -5))
-    (is= [-10 -5 0 5] (t/thru -10 5 5)))
+           (is= [10 5 0] (t/thru 10 0 -5))
+           (is= [-10 -5 0] (t/thru -10 0 5))
+           (is= [10 5] (t/thru 10 5 -5))
+           (is= [-10 -5] (t/thru -10 -5 5))
+           (is= [10 5 0 -5] (t/thru 10 -5 -5))
+           (is= [-10 -5 0 5] (t/thru -10 5 5)))
 
   (testing "floats"
-    (is (t/all-rel= [1.1 1.3 1.5 1.7] (t/thru 1.1 1.7 0.2) :digits 7))
-    (is (t/all-rel= [1.1 1.2 1.3 1.4] (t/thru 1.1 1.4 0.1) :digits 7))))
+           (is (t/all-rel= [1.1 1.3 1.5 1.7] (t/thru 1.1 1.7 0.2) :digits 7))
+           (is (t/all-rel= [1.1 1.2 1.3 1.4] (t/thru 1.1 1.4 0.1) :digits 7))))
 
 (verify
   (is (= [\a] (t/chars-thru \a \a)))
@@ -1799,7 +1799,7 @@
     #?(:clj (throws? (t/keep-if (fn [arg1 arg2] :dummy) #{1 2 3})))))
 
 #?(:cljs
-   (verify ; in JS a char is just a single-char string
+   (verify          ; in JS a char is just a single-char string
      (is= "a" \a (t/codepoint->char 97))
      (is= 97 (t/char->codepoint "a") (t/char->codepoint \a))
      (is= [\a \b \c] (vec "abc"))
@@ -1888,7 +1888,7 @@
   (throws? (t/replace-at (range 3) -1 9))
   (throws? (t/replace-at (range 3) 3 9)))
 
-(verify   ; #todo need more tests
+(verify             ; #todo need more tests
   (is= (mapv #(mod % 3) (t/thru -6 6)) [0 1 2 0 1 2 0 1 2 0 1 2 0])
   (is= (mapv #(t/idx [0 1 2] %) (t/thru -3 3)) [0 1 2 0 1 2 0]))
 
@@ -2043,7 +2043,7 @@
                      (< (inc x) y)))]
     (is= [[1 2 3] [8 9 10] [99]]
       (t/partition-when split-fn
-        [1 2 3 8 9 10 99])))
+                        [1 2 3 8 9 10 99])))
   ; #todo add more tests
   )
 
@@ -2057,7 +2057,7 @@
     (is= 256 (t/iterate-n 8 times-2 1))))
 
 
-(verify   ; just read down by columns to get output
+(verify             ; just read down by columns to get output
   (is= [1 :a 2 :b :c] (t/interleave-all
                         [1 2]
                         [:a :b :c]))
@@ -2177,16 +2177,16 @@
     (is= ctx {"a" 1, "b" 2, "c" 3})
 
     (t/with-strmap-vals ctx [a b c]
-      (is= [a b c] [1 2 3])
-      (is= 6 (+ a b c)))
+                        (is= [a b c] [1 2 3])
+                        (is= 6 (+ a b c)))
     (t/with-strmap-vals ctx [b a c] ; order doesn't matter
-      (is= [a b c] [1 2 3])
-      (is= 6 (+ a b c)))
+                        (is= [a b c] [1 2 3])
+                        (is= 6 (+ a b c)))
     (t/with-strmap-vals ctx [b a] ; can ignore stuff you don't care about
-      (is= [a b] [1 2]))
+                        (is= [a b] [1 2]))
     (throws?
       (t/with-strmap-vals ctx [a b zzz] ; throws if key doesn't exist
-        (println "won't ever get here")))))
+                          (println "won't ever get here")))))
 
 (verify
   (let [m {:a 1
@@ -2209,7 +2209,7 @@
 
 ;---------------------------------------------------------------------------------------------------
 ; demo and poc for td/construct
-(verify   ; #todo do we need this at all?  maybe delete?
+(verify             ; #todo do we need this at all?  maybe delete?
   (def c 3)
   (let [env {:a 1 :b 2}]
     (t/with-map-vals env [a b]
@@ -2314,7 +2314,7 @@
         {:0 0, :3 0, :6 0, :1 1, :4 1, :7 1, :2 2, :5 2, :8 2})))
   )
 
-(verify   ; #todo #clojure.core/sorted-map-by bug
+(verify             ; #todo #clojure.core/sorted-map-by bug
   (when false
     (let [unsorted {:x.y/a {:rem 0}
                     :x.y/b {:rem 1}}
@@ -2322,7 +2322,7 @@
                            (fn [k1 k2]
                              (println {:keys-seen [k1 k2]})
                              (compare k1 k2)))
-                     unsorted)]
+                         unsorted)]
       (println :unsorted unsorted)
       (println :sorted sorted))))
 
@@ -2337,9 +2337,9 @@
     (is (apply < (seq sorted))))
   (let [sorted-map?   (fn [it]
                         (and (map? it)
-                          (let [keys-orig   (keys it)
-                                keys-sorted (sort keys-orig)]
-                            (= keys-orig keys-sorted))))
+                             (let [keys-orig   (keys it)
+                                   keys-sorted (sort keys-orig)]
+                               (= keys-orig keys-sorted))))
         nums          (shuffle (range 25))
         map-orig      (zipmap nums nums)
         map-sorted    (t/->sorted-map map-orig)
@@ -2356,7 +2356,7 @@
 #_(verify
     (let [intc {:enter (fn [parents data]
                          (t/with-result data
-                           (nl) (spy-pretty :enter (t/vals->map parents data))))
+                                        (nl) (spy-pretty :enter (t/vals->map parents data))))
                 ;:leave (fn [parents data]
                 ;         (t/with-result data
                 ;           (spy :leave (t/vals->map parents data))))
@@ -2395,7 +2395,7 @@
 #_(verify
     (let [intc {:enter (fn [parents data]
                          (t/with-result data
-                           (spy :enter (t/vals->map parents data))))}]
+                                        (spy :enter (t/vals->map parents data))))}]
       ; demo with vectors
       (let [data            [10 [20 21]]
             walk-result-str (with-out-str
@@ -2403,11 +2403,11 @@
                                 (is= data data-noop)))]
         ; (newline) (println walk-result-str) (newline)
         (is-nonblank= walk-result-str
-          " :enter => {:parents [], :data [10 [20 21]]}
-            :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 0, :val 10}], :data 10}
-            :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]}], :data [20 21]}
-            :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 0, :val 20}], :data 20}
-            :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 1, :val 21}], :data 21} "))))
+                      " :enter => {:parents [], :data [10 [20 21]]}
+                        :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 0, :val 10}], :data 10}
+                        :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]}], :data [20 21]}
+                        :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 0, :val 20}], :data 20}
+                        :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 1, :val 21}], :data 21} "))))
 
 (comment
   #?(:clj
@@ -2418,7 +2418,7 @@
              result (t/walk-with-parents-readonly data intc)] ; return values don't matter
          (throws? (t/walk-with-parents-readonly data {})) ; must have at least one of :enter or :leave
 
-         (do ; #todo #bug 2020-2-6 this fails in CLJS
+         (do        ; #todo #bug 2020-2-6 this fails in CLJS
            ; (println :2113-before)
            ; (spyx result)
            (is= result data)
@@ -2459,15 +2459,15 @@
     (let [data   {:a 1 :b {:c 3} 41 42}
           intc   {:leave (fn [parents data]
                            (t/with-nil-default data
-                             (when (<= 2 (count parents))
-                               (let [ancestors (reverse parents)
-                                     a1        (t/xfirst ancestors)
-                                     a2        (t/xsecond ancestors)]
-                                 (when (and (number? data)
-                                         (= :map-val (:type a1))
-                                         (map-entry? a2)
-                                         (= :c (key a2)))
-                                   (inc data))))))}
+                                               (when (<= 2 (count parents))
+                                                 (let [ancestors (reverse parents)
+                                                       a1        (t/xfirst ancestors)
+                                                       a2        (t/xsecond ancestors)]
+                                                   (when (and (number? data)
+                                                              (= :map-val (:type a1))
+                                                              (map-entry? a2)
+                                                              (= :c (key a2)))
+                                                     (inc data))))))}
           result (t/walk-with-parents data intc)]
       (is= result {:a 1 :b {:c 4} 41 42})))
 
@@ -2477,15 +2477,15 @@
           intc   {:leave (fn [parents data]
                            (spyx (t/vals->map parents data))
                            (t/with-nil-default data
-                             (when (number? data)
-                               (let [parent (t/xlast parents)]
-                                 (when (and (t/list-entry? parent) (even? (t/grab :idx parent)))
-                                   (inc data))))))}
+                                               (when (number? data)
+                                                 (let [parent (t/xlast parents)]
+                                                   (when (and (t/list-entry? parent) (even? (t/grab :idx parent)))
+                                                     (inc data))))))}
           result (t/walk-with-parents data intc)]
       (is= result [1 1 :two 3 5 5])))
 
 (verify
-  (is= (range 10) ; vector/list
+  (is= (range 10)   ; vector/list
     (t/unnest 0 1 2 3 4 5 6 7 8 9)
     (t/unnest 0 1 2 [3 [4] 5 6] 7 [8 9])
     (t/unnest [0 1 2 3 4 5 6 7 8 9])
@@ -2574,7 +2574,7 @@
                                    cum-result
                                    (let [x (first xs)]
                                      (recur (conj cum-result (* x x))
-                                       (rest xs))))))
+                                            (rest xs))))))
 
                   sq-lazyseq (fn lazy-squares [xs]
                                (when (t/not-empty? xs)
@@ -2584,7 +2584,7 @@
                   sq-reduce  (fn [xs]
                                (reduce (fn [cum-result x]
                                          (conj cum-result (* x x)))
-                                 [] xs))
+                                       [] xs))
 
                   sq-for     (fn [xs]
                                (for [x xs]
@@ -2612,11 +2612,11 @@
           (verify
             (let [heads-pairs (fn [flips]
                                 (reduce +
-                                  (let [flips (vec flips)]
-                                    (t/lazy-gen
-                                      (doseq [i (range (dec (count flips)))]
-                                        (when (= :h (flips i) (flips (inc i)))
-                                          (t/yield 1)))))))]
+                                        (let [flips (vec flips)]
+                                          (t/lazy-gen
+                                            (doseq [i (range (dec (count flips)))]
+                                              (when (= :h (flips i) (flips (inc i)))
+                                                (t/yield 1)))))))]
               (is= 3 (heads-pairs [:h :t :h :h :h :t :h :h])))
 
             ; from S. Sierra blogpost: https://stuartsierra.com/2015/04/26/clojure-donts-concat
@@ -2690,7 +2690,7 @@
   (is (t/submap? {:b 2} {:a 1 :b 2})))
 
 #?(:clj
-   (do    ; #todo fix this cljs failure
+   (do              ; #todo fix this cljs failure
      (verify
        (is= (range 5) (t/unlazy (range 5)))
        (let [c1 {:a 1 :b (range 3) :c {:x (range 4) (range 5) " end "}}]
@@ -2719,39 +2719,39 @@
                                :b {:c ?
                                    :d ?}}
                          mania {:y {:z ?}}] ; can ignore unwanted keys like :x
-              ;(spyx [a c])
-              (let [a (+ 100 a)
-                    c (+ 100 c)
-                    d z
-                    z 777]
-                ;(spyx [a c])
-                (restruct-all)))
-      (t/with-map-vals it [info mania]
-        (is= info {:a 101, :b {:c 103, :d 666}})
-        (is= mania {:x 6, :y {:w 333, :z 777}})))
+                        ;(spyx [a c])
+                        (let [a (+ 100 a)
+                              c (+ 100 c)
+                              d z
+                              z 777]
+                          ;(spyx [a c])
+                          (restruct-all)))
+            (t/with-map-vals it [info mania]
+              (is= info {:a 101, :b {:c 103, :d 666}})
+              (is= mania {:x 6, :y {:w 333, :z 777}})))
 
     (t/it-> (t/destruct [info {:a ?
                                :b {:c ?
                                    :d ?}}
                          mania {:y {:z ?}}] ; can ignore unwanted keys like :x
-              ;(spyx [a c])
-              (let [a (+ 100 a)
-                    c (+ 100 c)
-                    d z
-                    z 777]
-                ;(spyx [a c])
-                (restruct info)))
-      (is= it {:a 101, :b {:c 103, :d 666}}))
+                        ;(spyx [a c])
+                        (let [a (+ 100 a)
+                              c (+ 100 c)
+                              d z
+                              z 777]
+                          ;(spyx [a c])
+                          (restruct info)))
+            (is= it {:a 101, :b {:c 103, :d 666}}))
 
     (t/it-> (t/destruct [info {:a ?
                                :b {:c ?
                                    :d ?}}]
-              ;(spyx [a c])
-              (let [a (+ 100 a)
-                    c (+ 100 c)]
-                ;(spyx [a c])
-                (restruct)))
-      (is= it {:a 101, :b {:c 103, :d 4}}))))
+                        ;(spyx [a c])
+                        (let [a (+ 100 a)
+                              c (+ 100 c)]
+                          ;(spyx [a c])
+                          (restruct)))
+            (is= it {:a 101, :b {:c 103, :d 4}}))))
 
 (verify
   (let [info  {:a 777
@@ -2763,19 +2763,19 @@
       (t/it-> (t/destruct [info {:a z
                                  :b [d e f]}
                            mania [{:a ?} BBB {:c clutter}]]
-                ;(spyx z)
-                ;(spyx [d e f])
-                ;(spyx a)
-                ;(spyx BBB)
-                ;(spyx clutter)
-                (let [clutter (mapv inc clutter)
-                      BBB     {:BBB 33}
-                      z       77
-                      d       (+ 7 d)]
-                  (restruct-all)))
-        (t/with-map-vals it [info mania]
-          (is= info {:a 77, :b [9 3 4]})
-          (is= mania [{:a 11} {:BBB 33} {:c [8 9 10]}]))))))
+                          ;(spyx z)
+                          ;(spyx [d e f])
+                          ;(spyx a)
+                          ;(spyx BBB)
+                          ;(spyx clutter)
+                          (let [clutter (mapv inc clutter)
+                                BBB     {:BBB 33}
+                                z       77
+                                d       (+ 7 d)]
+                            (restruct-all)))
+              (t/with-map-vals it [info mania]
+                (is= info {:a 77, :b [9 3 4]})
+                (is= mania [{:a 11} {:BBB 33} {:c [8 9 10]}]))))))
 
 (verify
   (let [data {:a 1
@@ -2783,193 +2783,193 @@
                   :d 4}}] ; can ignore unwanted keys like :d
     (t/destruct [data {:a ?
                        :b {:c ?}}]
-      (is= [1 3] [a c]))
+                (is= [1 3] [a c]))
     (throws?
       (t/destruct [data {:a ?
                          :b {:z ?}}] ; bad data example (non-existant key)
-        (println [a z]))))
+                  (println [a z]))))
 
   (let [data [1 2 3 4 5]]
     (t/destruct [data [a b c]] ; can ignore unwanted indexes 3 or 4 (0-based)
-      (is= [1 2 3] [a b c]))
+                (is= [1 2 3] [a b c]))
     (t/destruct [data {0 a
                        2 c}] ; can destructure vectors using map-index technique
-      (is= [1 3] [a c])))
+                (is= [1 3] [a c])))
   (throws?
     (let [data [1 2 3]]
       (t/destruct [data [a b c d]] ; bad data example (non-existant element)
-        (println [a b c d]))))
+                  (println [a b c d]))))
 
   ; multi-destruct
   (let [data-1 {:a 1 :b {:c 3}}
         data-2 {:x 7 :y {:z 9}}]
     (t/destruct [data-1 {:a ? :b {:c ?}}
                  data-2 {:x ? :y {:z ?}}]
-      (is= [1 3 7 9] [a c x z])))
+                (is= [1 3 7 9] [a c x z])))
   (let [data-1 {:a 1 :b {:c 3}}
         data-2 [:x :y :z :666]]
     (t/destruct [data-1 {:a ? :b {:c ?}}
                  data-2 [x y z]]
-      (is= [1 3 :x :y :z] [a c x y z]))
+                (is= [1 3 :x :y :z] [a c x y z]))
     (t/destruct [[data-1 data-2]
                  [item-1 item-2]]
-      (is= [item-1 item-2] [data-1 data-2])))
+                (is= [item-1 item-2] [data-1 data-2])))
   (let [data-1 {:a 1 :b {:c [:x :y :z :666]}}]
     (t/destruct [data-1 {:a ? :b {:c [x y z]}}]
-      (is= [1 :x :y :z] [a x y z]))
+                (is= [1 :x :y :z] [a x y z]))
     (t/destruct [data-1 {:a ? :b ?}]
-      (is= a 1)
-      (is= b {:c [:x :y :z :666]})))
+                (is= a 1)
+                (is= b {:c [:x :y :z :666]})))
 
   (let [data [{:a 1 :b {:c 3}}
               {:x 7 :y {:z 9}}]]
     (t/destruct [data
                  [{:a ? :b {:c ?}}
                   {:x ? :y {:z ?}}]]
-      (is= [1 3 7 9] [a c x z])))
+                (is= [1 3 7 9] [a c x z])))
   (let [data {:a [{:b 2}
                   {:c 3}
                   [7 8 9]]}]
     (t/destruct [data {:a [{:b p}
                            {:c q}
                            [r s t]]}]
-      (is= [2 3 7 8 9] [p q r s t])))
+                (is= [2 3 7 8 9] [p q r s t])))
 
   ; duplicate vars
   (let [data-1 {:a 1 :b {:c 3}}
         data-2 {:x 7 :y {:c 9}}]
     (t/destruct [data-1 {:a ? :b {:c p}}
                  data-2 {:x ? :y {:c q}}]
-      (is= [1 7 3 9] [a x p q]))
+                (is= [1 7 3 9] [a x p q]))
     (t/destruct [data-1 {:a ? :b {:c ?}}
                  data-2 {:x ? :y {:c q}}]
-      (is= [1 7 3 9] [a x c q]))
+                (is= [1 7 3 9] [a x c q]))
 
     ; duplicate variables: these generate compile-time errors
     (comment
       (t/destruct [data-1 {:a ? :b {:c ?}}
                    data-2 {:x ? :y {:c ?}}]
-        (println " destruct/dummy "))
+                  (println " destruct/dummy "))
       (t/destruct [{:a {:b {:c ?}}
                     :x {:y {:c ?}}}]
-        (println " destruct/dummy ")))))
+                  (println " destruct/dummy ")))))
 
 ; #todo add different lengths a/b
 ; #todo add missing entries a/b
 (verify
   (testing " vectors "
-    (is (t/wild-match? [1] [1]))
-    (is (t/wild-match? [1] [1] [1]))
-    (is (t/wild-match? [:*] [1] [1]))
-    (is (t/wild-match? [:*] [1] [9]))
+           (is (t/wild-match? [1] [1]))
+           (is (t/wild-match? [1] [1] [1]))
+           (is (t/wild-match? [:*] [1] [1]))
+           (is (t/wild-match? [:*] [1] [9]))
 
-    (is (t/wild-match? [1] [1]))
-    (is (t/wild-match? [1] [1] [1]))
+           (is (t/wild-match? [1] [1]))
+           (is (t/wild-match? [1] [1] [1]))
 
-    (isnt (t/wild-match? [1] []))
-    (isnt (t/wild-match? [] [1]))
-    (isnt (t/wild-match? [1] [] []))
-    (isnt (t/wild-match? [] [1] []))
-    (isnt (t/wild-match? [] [] [1]))
-    (isnt (t/wild-match? [1] [1] []))
-    (isnt (t/wild-match? [1] [] [1]))
+           (isnt (t/wild-match? [1] []))
+           (isnt (t/wild-match? [] [1]))
+           (isnt (t/wild-match? [1] [] []))
+           (isnt (t/wild-match? [] [1] []))
+           (isnt (t/wild-match? [] [] [1]))
+           (isnt (t/wild-match? [1] [1] []))
+           (isnt (t/wild-match? [1] [] [1]))
 
-    (is (t/wild-match? [1 2 3]
-          [1 2 3]))
-    (is (t/wild-match? [1 :* 3]
-          [1 2 3]))
-    (is (t/wild-match? [1 :* 3]
-          [1 2 3]
-          [1 9 3]))
-    (isnt (t/wild-match? [1 2 3]
-            [1 2 9]))
-    (isnt (t/wild-match? [1 2]
-            [1 2 9]))
-    (isnt (t/wild-match? [1 2 3]
-            [1 2]))
+           (is (t/wild-match? [1 2 3]
+                              [1 2 3]))
+           (is (t/wild-match? [1 :* 3]
+                              [1 2 3]))
+           (is (t/wild-match? [1 :* 3]
+                              [1 2 3]
+                              [1 9 3]))
+           (isnt (t/wild-match? [1 2 3]
+                                [1 2 9]))
+           (isnt (t/wild-match? [1 2]
+                                [1 2 9]))
+           (isnt (t/wild-match? [1 2 3]
+                                [1 2]))
 
-    (is (t/wild-match? [1 [2 3]]
-          [1 [2 3]]))
-    (is (t/wild-match? [:* [2 3]]
-          [1 [2 3]]))
-    (is (t/wild-match? [:* [2 3]]
-          [1 [2 3]]
-          [9 [2 3]]))
-    (is (t/wild-match? [1 [2 :*]]
-          [1 [2 33]]
-          [1 [2 99]]))
-    (is (t/wild-match? [1 :*]
-          [1 2]
-          [1 [2 3]]))
-    (isnt (t/wild-match? [1 [2 3]]
-            [1 [2 9]]))
-    )
+           (is (t/wild-match? [1 [2 3]]
+                              [1 [2 3]]))
+           (is (t/wild-match? [:* [2 3]]
+                              [1 [2 3]]))
+           (is (t/wild-match? [:* [2 3]]
+                              [1 [2 3]]
+                              [9 [2 3]]))
+           (is (t/wild-match? [1 [2 :*]]
+                              [1 [2 33]]
+                              [1 [2 99]]))
+           (is (t/wild-match? [1 :*]
+                              [1 2]
+                              [1 [2 3]]))
+           (isnt (t/wild-match? [1 [2 3]]
+                                [1 [2 9]]))
+           )
   (testing " maps "
-    (is (t/wild-match? {:a 1} {:a 1}))
-    (is (t/wild-match? {:a :*} {:a 1}))
-    (is (t/wild-match? {:a :*} {:a 1} {:a 1}))
-    (is (t/wild-match? {:a :*} {:a 1} {:a 9}))
-    (is (t/wild-match? {:a :*} {:a :*} {:a 9}))
-    (is (t/wild-match? {:a :*} {:a :*} {:a :*}))
+           (is (t/wild-match? {:a 1} {:a 1}))
+           (is (t/wild-match? {:a :*} {:a 1}))
+           (is (t/wild-match? {:a :*} {:a 1} {:a 1}))
+           (is (t/wild-match? {:a :*} {:a 1} {:a 9}))
+           (is (t/wild-match? {:a :*} {:a :*} {:a 9}))
+           (is (t/wild-match? {:a :*} {:a :*} {:a :*}))
 
-    (isnt (t/wild-match? {:a 1} {:a 9}))
-    (isnt (t/wild-match? {:a 1} {:a 1 :b 2}))
-    (isnt (t/wild-match? {:a :*} {:b 1}))
-    (isnt (t/wild-match? {:a :*} {:a 1} {:b 1}))
-    (isnt (t/wild-match? {:a :*} {:a 1 :b 2}))
+           (isnt (t/wild-match? {:a 1} {:a 9}))
+           (isnt (t/wild-match? {:a 1} {:a 1 :b 2}))
+           (isnt (t/wild-match? {:a :*} {:b 1}))
+           (isnt (t/wild-match? {:a :*} {:a 1} {:b 1}))
+           (isnt (t/wild-match? {:a :*} {:a 1 :b 2}))
 
-    (let [vv {:a 1 :b {:c 3}}
-          tt {:a 1 :b {:c 3}}
-          w2 {:a :* :b {:c 3}}
-          w5 {:a 1 :b {:c :*}}
-          zz {:a 2 :b {:c 3}}
-          ]
-      (is (t/wild-match? tt vv))
-      (is (t/wild-match? w2 vv))
-      (is (t/wild-match? w5 vv))
-      (isnt (t/wild-match? zz vv)))
-    )
+           (let [vv {:a 1 :b {:c 3}}
+                 tt {:a 1 :b {:c 3}}
+                 w2 {:a :* :b {:c 3}}
+                 w5 {:a 1 :b {:c :*}}
+                 zz {:a 2 :b {:c 3}}
+                 ]
+             (is (t/wild-match? tt vv))
+             (is (t/wild-match? w2 vv))
+             (is (t/wild-match? w5 vv))
+             (isnt (t/wild-match? zz vv)))
+           )
   (testing " vecs & maps 1 "
-    (let [vv [:a 1 :b {:c 3}]
-          tt [:a 1 :b {:c 3}]
-          w1 [:* 1 :b {:c 3}]
-          w2 [:a :* :b {:c 3}]
-          w3 [:a 1 :* {:c 3}]
-          w5 [:a 1 :b {:c :*}]
-          zz [:a 2 :b {:c 3}]
-          ]
-      (is (t/wild-match? tt vv))
-      (is (t/wild-match? w1 vv))
-      (is (t/wild-match? w2 vv))
-      (is (t/wild-match? w3 vv))
-      (is (t/wild-match? w5 vv))
-      (isnt (t/wild-match? zz vv)))
-    )
+           (let [vv [:a 1 :b {:c 3}]
+                 tt [:a 1 :b {:c 3}]
+                 w1 [:* 1 :b {:c 3}]
+                 w2 [:a :* :b {:c 3}]
+                 w3 [:a 1 :* {:c 3}]
+                 w5 [:a 1 :b {:c :*}]
+                 zz [:a 2 :b {:c 3}]
+                 ]
+             (is (t/wild-match? tt vv))
+             (is (t/wild-match? w1 vv))
+             (is (t/wild-match? w2 vv))
+             (is (t/wild-match? w3 vv))
+             (is (t/wild-match? w5 vv))
+             (isnt (t/wild-match? zz vv)))
+           )
   (testing " vecs & maps 2 "
-    (let [vv {:a 1 :b [:c 3]}
-          tt {:a 1 :b [:c 3]}
-          w2 {:a :* :b [:c 3]}
-          w4 {:a 1 :b [:* 3]}
-          w5 {:a 1 :b [:c :*]}
-          z1 {:a 2 :b [:c 3]}
-          z2 {:a 1 :b [:c 9]}
-          ]
-      (is (t/wild-match? tt vv))
-      (is (t/wild-match? w2 vv))
-      (is (t/wild-match? w4 vv))
-      (is (t/wild-match? w5 vv))
-      (isnt (t/wild-match? z1 vv))
-      (isnt (t/wild-match? z2 vv)))
-    )
+           (let [vv {:a 1 :b [:c 3]}
+                 tt {:a 1 :b [:c 3]}
+                 w2 {:a :* :b [:c 3]}
+                 w4 {:a 1 :b [:* 3]}
+                 w5 {:a 1 :b [:c :*]}
+                 z1 {:a 2 :b [:c 3]}
+                 z2 {:a 1 :b [:c 9]}
+                 ]
+             (is (t/wild-match? tt vv))
+             (is (t/wild-match? w2 vv))
+             (is (t/wild-match? w4 vv))
+             (is (t/wild-match? w5 vv))
+             (isnt (t/wild-match? z1 vv))
+             (isnt (t/wild-match? z2 vv)))
+           )
   (testing " sets "
-    (is (t/wild-match? #{1} #{1}))
-    (isnt (t/wild-match? #{1} #{9}))
-    (isnt (t/wild-match? #{1} #{:a :b}))
-    (is (t/wild-match? #{1 #{:a :b}}
-          #{1 #{:a :b}}))
-    (isnt (t/wild-match? #{1 #{:a :c}}
-            #{1 #{:a :x}}))
-    ))
+           (is (t/wild-match? #{1} #{1}))
+           (isnt (t/wild-match? #{1} #{9}))
+           (isnt (t/wild-match? #{1} #{:a :b}))
+           (is (t/wild-match? #{1 #{:a :b}}
+                              #{1 #{:a :b}}))
+           (isnt (t/wild-match? #{1 #{:a :c}}
+                                #{1 #{:a :x}}))
+           ))
 
 (verify
   (isnt (t/wild-match? #{1 2} #{1 2 3 4}))
@@ -2998,8 +2998,9 @@
                         :values  [[1 2 3 4]]}))
   (is (t/wild-match? {:subvec-ok true
                       :pattern   [1 2]
-                      :values    [[1 2 3 4]]}))
+                      :values    [[1 2 3 4]]})))
 
+(verify
   (isnt (t/wild-submatch? #{1 :*} #{1 2 3 4}))
   (is (t/wild-submatch? #{1 2} #{1 2 3 4}))
   (is (t/wild-submatch? {:a :*} {:a 1 :b 2}))
@@ -3019,7 +3020,20 @@
     (is (t/wild-submatch? sample-rec {:a 1 :b 2}))
     (is (t/wild-submatch? {:a 1 :b 2} sample-rec))
     (is (t/submatch? sample-rec {:a 1 :b 2}))
-    (is (t/submatch? {:a 1 :b 2} sample-rec))))
+    (is (t/submatch? {:a 1 :b 2} sample-rec)))
+
+  (is (t/wild-submatch? [int?] [1]))
+  (is (t/wild-submatch? [int?] [1 :b]))
+  (is (t/wild-submatch? [string?] ["1"]))
+
+  (isnt (t/wild-submatch? [int?] [:abc]))
+  (isnt (t/wild-submatch? [string?] [123]))
+
+  (is (t/wild-submatch? {:id   pos-int?
+                         :name string?}
+                        {:id      1
+                         :name    "Joe"
+                         :address :USA})))
 
 (verify
   (is (t/set-match? #{1 2 3} #{1 2 3}))
@@ -3252,54 +3266,54 @@
      ;)
 
      #_(tst/defspec ^:slow t-keep-if-drop-if 999
-         (prop/for-all [vv (gen/vector gen/int)]
-           (let [even-1    (keep-if even? vv)
-                 even-2    (drop-if odd? vv)
-                 even-filt (filter even? vv)
+                    (prop/for-all [vv (gen/vector gen/int)]
+                                  (let [even-1    (keep-if even? vv)
+                                        even-2    (drop-if odd? vv)
+                                        even-filt (filter even? vv)
 
-                 odd-1     (keep-if odd? vv)
-                 odd-2     (drop-if even? vv)
-                 odd-rem   (remove even? vv)]
-             (and (= even-1 even-2 even-filt)
-               (= odd-1 odd-2 odd-rem)))))
+                                        odd-1     (keep-if odd? vv)
+                                        odd-2     (drop-if even? vv)
+                                        odd-rem   (remove even? vv)]
+                                    (and (= even-1 even-2 even-filt)
+                                         (= odd-1 odd-2 odd-rem)))))
 
      #_(tst/defspec ^:slow t-keep-if-drop-if-set 999
-         (prop/for-all [ss (gen/set gen/int)]
-           (let [even-1    (keep-if even? ss)
-                 even-2    (drop-if odd? ss)
-                 even-filt (into #{} (filter even? (seq ss)))
+                    (prop/for-all [ss (gen/set gen/int)]
+                                  (let [even-1    (keep-if even? ss)
+                                        even-2    (drop-if odd? ss)
+                                        even-filt (into #{} (filter even? (seq ss)))
 
-                 odd-1     (keep-if odd? ss)
-                 odd-2     (drop-if even? ss)
-                 odd-rem   (into #{} (remove even? (seq ss)))]
-             (and (= even-1 even-2 even-filt)
-               (= odd-1 odd-2 odd-rem)))))
+                                        odd-1     (keep-if odd? ss)
+                                        odd-2     (drop-if even? ss)
+                                        odd-rem   (into #{} (remove even? (seq ss)))]
+                                    (and (= even-1 even-2 even-filt)
+                                         (= odd-1 odd-2 odd-rem)))))
 
      #_(tst/defspec ^:slow t-keep-if-drop-if-map-key 99 ; seems to hang if (< 99 limit)
-         (prop/for-all [mm (gen/map gen/int gen/keyword {:max-elements 99})]
-           (let [even-1    (keep-if (fn [k v] (even? k)) mm)
-                 even-2    (drop-if (fn [k v] (odd? k)) mm)
-                 even-filt (into {} (filter #(even? (key %)) (seq mm)))
+                    (prop/for-all [mm (gen/map gen/int gen/keyword {:max-elements 99})]
+                                  (let [even-1    (keep-if (fn [k v] (even? k)) mm)
+                                        even-2    (drop-if (fn [k v] (odd? k)) mm)
+                                        even-filt (into {} (filter #(even? (key %)) (seq mm)))
 
-                 odd-1     (keep-if (fn [k v] (odd? k)) mm)
-                 odd-2     (drop-if (fn [k v] (even? k)) mm)
-                 odd-rem   (into {} (remove #(even? (key %)) (seq mm)))
-                 ]
-             (and (= even-1 even-2 even-filt)
-               (= odd-1 odd-2 odd-rem)))))
+                                        odd-1     (keep-if (fn [k v] (odd? k)) mm)
+                                        odd-2     (drop-if (fn [k v] (even? k)) mm)
+                                        odd-rem   (into {} (remove #(even? (key %)) (seq mm)))
+                                        ]
+                                    (and (= even-1 even-2 even-filt)
+                                         (= odd-1 odd-2 odd-rem)))))
 
      #_(tst/defspec ^:slow t-keep-if-drop-if-map-value 99 ; seems to hang if (< 99 limit)
-         (prop/for-all [mm (gen/map gen/keyword gen/int {:max-elements 99})]
-           (let [even-1    (keep-if (fn [k v] (even? v)) mm)
-                 even-2    (drop-if (fn [k v] (odd? v)) mm)
-                 even-filt (into {} (filter #(even? (val %)) (seq mm)))
+                    (prop/for-all [mm (gen/map gen/keyword gen/int {:max-elements 99})]
+                                  (let [even-1    (keep-if (fn [k v] (even? v)) mm)
+                                        even-2    (drop-if (fn [k v] (odd? v)) mm)
+                                        even-filt (into {} (filter #(even? (val %)) (seq mm)))
 
-                 odd-1     (keep-if (fn [k v] (odd? v)) mm)
-                 odd-2     (drop-if (fn [k v] (even? v)) mm)
-                 odd-rem   (into {} (remove #(even? (val %)) (seq mm)))
-                 ]
-             (and (= even-1 even-2 even-filt)
-               (= odd-1 odd-2 odd-rem)))))
+                                        odd-1     (keep-if (fn [k v] (odd? v)) mm)
+                                        odd-2     (drop-if (fn [k v] (even? v)) mm)
+                                        odd-rem   (into {} (remove #(even? (val %)) (seq mm)))
+                                        ]
+                                    (and (= even-1 even-2 even-filt)
+                                         (= odd-1 odd-2 odd-rem)))))
 
      ; #todo ***** toptop *****
 
@@ -3326,26 +3340,26 @@
        ;        (t/matches?  { _ 1} {:a 1} )   ***** error *****
 
        (is (t/matches? {:a _ :b _ :c 3}
-             {:a 1 :b [1 2 3] :c 3}))
+                       {:a 1 :b [1 2 3] :c 3}))
        (isnt (t/matches? {:a _ :b _ :c 4}
-               {:a 1 :b [1 2 3] :c 3}))
+                         {:a 1 :b [1 2 3] :c 3}))
        (isnt (t/matches? {:a _ :b _ :c 3}
-               {:a 1 :b [1 2 3] :c 4}))
+                         {:a 1 :b [1 2 3] :c 4}))
        (isnt (t/matches? {:a 9 :b _ :c 3}
-               {:a 1 :b [1 2 3] :c 3}))
+                         {:a 1 :b [1 2 3] :c 3}))
 
        (is (t/matches? {:a _ :b _ :c 3}
-             {:a 1 :b [1 2 3] :c 3}
-             {:a 2 :b 99 :c 3}
-             {:a 3 :b nil :c 3}))
+                       {:a 1 :b [1 2 3] :c 3}
+                       {:a 2 :b 99 :c 3}
+                       {:a 3 :b nil :c 3}))
        (isnt (t/matches? {:a _ :b _ :c 3}
-               {:a 1 :b [1 2 3] :c 9}
-               {:a 2 :b 99 :c 3}
-               {:a 3 :b nil :c 3}))
+                         {:a 1 :b [1 2 3] :c 9}
+                         {:a 2 :b 99 :c 3}
+                         {:a 3 :b nil :c 3}))
        (isnt (t/matches? {:a _ :b _ :c 3}
-               {:a 1 :b [1 2 3] :c 3}
-               {:a 2 :b 99 :c 3}
-               {:a 3 :b nil :c 9}))
+                         {:a 1 :b [1 2 3] :c 3}
+                         {:a 2 :b 99 :c 3}
+                         {:a 3 :b nil :c 9}))
        )
 
      (verify
@@ -3407,21 +3421,21 @@
 
      (verify
        (is= 5 (t/with-mutable-var 0
-                (doseq [ii (t/thru 5)]
-                  (t/mutable-var-set-it! ii))))
+                                  (doseq [ii (t/thru 5)]
+                                    (t/mutable-var-set-it! ii))))
        (is= 15 (t/with-mutable-var 0
-                 (doseq [ii (t/thru 5)]
-                   (t/mutable-var-set-it! (+ it ii)))))
+                                   (doseq [ii (t/thru 5)]
+                                     (t/mutable-var-set-it! (+ it ii)))))
        (is= (t/with-mutable-var {}
-              (doseq [ii (t/thru 3)]
-                (t/mutable-var-set-it! (glue it {ii (+ 10 ii)}))))
+                                (doseq [ii (t/thru 3)]
+                                  (t/mutable-var-set-it! (glue it {ii (+ 10 ii)}))))
          {0 10
           1 11
           2 12
           3 13})
        (is= (t/with-mutable-var {}
-              (doseq [ii (t/thru 3)]
-                (swap! t/*dynamic-atom* assoc ii (+ 10 ii)))) ; can do it "manually" if desired
+                                (doseq [ii (t/thru 3)]
+                                  (swap! t/*dynamic-atom* assoc ii (+ 10 ii)))) ; can do it "manually" if desired
          {0 10
           1 11
           2 12
@@ -3451,8 +3465,8 @@
          (is-set= nums (range N))) ; nums is in random order
 
        (is= 15 (t/with-mutable-var 0
-                 (doseq [i (t/thru 5)]
-                   (t/mutable-var-set-it! (+ it i))))))
+                                   (doseq [i (t/thru 5)]
+                                     (t/mutable-var-set-it! (+ it i))))))
 
      ))
 
