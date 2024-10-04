@@ -181,6 +181,7 @@
 (declare walk-recurse-dispatch)
 (def ^:dynamic stack-walk-noop? false)
 
+; #todo fix to allow :enter interceptor to remove `nil` without crashing here
 (s/defn ^:no-doc walk-recurse-entry :- tsk/KeyMap
   [stack :- tsk/Vec
    intc :- tsk/KeyMap
