@@ -54,13 +54,13 @@
                        (+ 2 3)))
        (is= 7 (t/discarding-system-out ; suppresses System.out, normal return value
                 (doto System/out
-                  (.println "System.err.println"))
+                  (.println "System.out.println"))
                 (+ 3 4)))
        (is-nonblank= ""
                      (t/with-system-out-str ; discards return value, yields System.out
                        (t/discarding-system-out ; suppresses System.out, normal return value
                          (doto System/out
-                           (.println "System.err.println"))
+                           (.println "System.out.println"))
                          (+ 3 4))))
 
        ;------------------------------------------------------------------

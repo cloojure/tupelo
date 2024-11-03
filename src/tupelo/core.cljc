@@ -1682,7 +1682,7 @@
          comparator-fn   (fn [x y]
                            (let [compare-result (compare (sortable-unique x) (sortable-unique y))
                                  final-result   (cond-it-> compare-result
-                                                           (not ascending?) (- it))]
+                                                  (not ascending?) (- it))]
                              final-result))
          sorted-map      (glue (avl/sorted-map-by comparator-fn) src-map)]
      sorted-map)))
@@ -2282,9 +2282,9 @@
   [start-char stop-char]
   ; #todo throw if not char or int
   (let [start-int (cond-it-> start-char
-                             (not (integer? it)) (char->codepoint it))
+                    (not (integer? it)) (char->codepoint it))
         stop-int  (cond-it-> stop-char
-                             (not (integer? it)) (char->codepoint it))]
+                    (not (integer? it)) (char->codepoint it))]
     (assert-info (and (nonneg? start-int) (<= stop-int 65535))
                  "chars-thru: start/stop out of range" (vals->map start-char stop-char start-int stop-int))
     (assert-info (<= start-int stop-int) "chars-thru: start/stop out of order" (vals->map start-char stop-char start-int stop-int))
@@ -2470,7 +2470,7 @@
         (apply glue {}
                (for [key keep-keys]
                  (with-exception-default {}
-                                         {key (grab key map-arg)}))))
+                   {key (grab key map-arg)}))))
       (do
         (apply glue {}
                (for [key keep-keys]
@@ -3069,7 +3069,7 @@
   [ctx :- tsk/KeyMap ; #todo more precise schema needed { :submap-ok s/Bool ... }
    pattern :- s/Any
    value :- s/Any]
-  (with-map-vals ctx [submap-ok subset-ok subvec-ok wildcard-ok  pred-fn-ok]
+  (with-map-vals ctx [submap-ok subset-ok subvec-ok wildcard-ok pred-fn-ok]
     (let [result (truthy?
                    (cond
                      (= pattern value) true
@@ -3181,7 +3181,7 @@
              :subset-ok   true
              :subvec-ok   true
              :wildcard-ok false
-             :pred-fn-ok false
+             :pred-fn-ok  false
              :pattern     smaller
              :values      [larger]}]
     (wild-match? ctx)))
@@ -3193,7 +3193,7 @@
              :subset-ok   true
              :subvec-ok   true
              :wildcard-ok true
-             :pred-fn-ok true
+             :pred-fn-ok  true
              :pattern     pattern
              :values      values}]
     (wild-match? ctx)))
@@ -3265,7 +3265,7 @@
         leave-fn                (or (:leave intc) data-identity-fn)
         parents-next            (append parents data-in)
         data-post-enter         (cond-it-> (enter-fn parents data-in)
-                                           *walk-with-parents-readonly-flag* data-in)
+                                  *walk-with-parents-readonly-flag* data-in)
         data-post-walk-modified (cond
                                   (sequential? data-post-enter) (list-entries->vec
                                                                   (forv [listentry (list->entries data-post-enter)]
@@ -3292,10 +3292,10 @@
                                   :else data-post-enter)
 
         data-post-walk          (cond-it-> data-post-walk-modified
-                                           *walk-with-parents-readonly-flag* data-in)
+                                  *walk-with-parents-readonly-flag* data-in)
 
         data-post-leave         (cond-it-> (leave-fn parents data-post-walk)
-                                           *walk-with-parents-readonly-flag* data-in)]
+                                  *walk-with-parents-readonly-flag* data-in)]
     data-post-leave))
 
 (s/defn walk-with-parents :- s/Any
