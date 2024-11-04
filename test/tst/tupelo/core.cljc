@@ -51,7 +51,7 @@
                      (t/with-system-out-str ; discards return value, yields System.out
                        (doto System/out
                          (.println "System.out.println"))
-                       (+ 2 3)))
+                       (+ 3 4)))
        (is= 7 (t/discarding-system-out ; suppresses System.out, normal return value
                 (doto System/out
                   (.println "System.out.println"))
@@ -69,17 +69,17 @@
                      (t/with-system-err-str ; discards return value, yields System.err
                        (doto System/err
                          (.println "System.err.println"))
-                       (+ 2 3)))
-       (is= 5 (t/discarding-system-err ; suppresses System.err, normal return value
+                       (+ 4 5)))
+       (is= 9 (t/discarding-system-err ; suppresses System.err, normal return value
                 (doto System/err
                   (.println "System.err.println"))
-                (+ 2 3)))
+                (+ 4 5)))
        (is-nonblank= ""
                      (t/with-system-err-str ; discards return value, yields System.err
                        (t/discarding-system-err ; suppresses System.err, normal return value
                          (doto System/err
                            (.println "System.err.println"))
-                         (+ 2 3)))))
+                         (+ 4 5)))))
 
      (verify
        (is= (t/sym->var (quote tupelo.core/sym->var))
@@ -3000,7 +3000,7 @@
                       :pattern   [1 2]
                       :values    [[1 2 3 4]]})))
 
-(verify-focus
+(verify
   (isnt (t/wild-submatch? #{1 :*} #{1 2 3 4}))
   (is (t/wild-submatch? #{1 2} #{1 2 3 4}))
   (is (t/wild-submatch? {:a :*} {:a 1 :b 2}))
