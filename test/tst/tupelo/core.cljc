@@ -39,16 +39,20 @@
 
      (verify
        ;------------------------------------------------------------------
-       ; Clojure:  clojure.core/println
-       (is-nonblank= "clojure.core/println"
+       ; Clojure:  clojure.core/prn & clojure.core/println
+       (is-nonblank= "\"clojure.core/prn\"" ; prn emits quoted strings
          (with-out-str
-           (clojure.core/println "clojure.core/println")
+           (clojure.core/prn "clojure.core/prn")
            (+ 2 3)))
-
        (is= 5
          (t/discarding-out-str
            (clojure.core/println "clojure.core/println")
            (+ 2 3)))
+       (is= ""
+         (with-out-str
+           (t/discarding-out-str
+             (clojure.core/println "clojure.core/println")
+             (+ 2 3))))
 
        ;------------------------------------------------------------------
        ; Java:  System.out.println
