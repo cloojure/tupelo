@@ -41,45 +41,50 @@
        ;------------------------------------------------------------------
        ; Clojure:  clojure.core/println
        (is-nonblank= "clojure.core/println"
-                     (with-out-str
-                       (clojure.core/println "clojure.core/println")
-                       (+ 2 3)))
+         (with-out-str
+           (clojure.core/println "clojure.core/println")
+           (+ 2 3)))
+
+       (is= 5
+         (t/discarding-out-str
+           (clojure.core/println "clojure.core/println")
+           (+ 2 3)))
 
        ;------------------------------------------------------------------
        ; Java:  System.out.println
        (is-nonblank= "System.out.println"
-                     (t/with-system-out-str ; discards return value, yields System.out
-                       (doto System/out
-                         (.println "System.out.println"))
-                       (+ 3 4)))
+         (t/with-system-out-str ; discards return value, yields System.out
+           (doto System/out
+             (.println "System.out.println"))
+           (+ 3 4)))
        (is= 7 (t/discarding-system-out ; suppresses System.out, normal return value
                 (doto System/out
                   (.println "System.out.println"))
                 (+ 3 4)))
        (is-nonblank= ""
-                     (t/with-system-out-str ; discards return value, yields System.out
-                       (t/discarding-system-out ; suppresses System.out, normal return value
-                         (doto System/out
-                           (.println "System.out.println"))
-                         (+ 3 4))))
+         (t/with-system-out-str ; discards return value, yields System.out
+           (t/discarding-system-out ; suppresses System.out, normal return value
+             (doto System/out
+               (.println "System.out.println"))
+             (+ 3 4))))
 
        ;------------------------------------------------------------------
        ; Java:  System.err.println
        (is-nonblank= "System.err.println"
-                     (t/with-system-err-str ; discards return value, yields System.err
-                       (doto System/err
-                         (.println "System.err.println"))
-                       (+ 4 5)))
+         (t/with-system-err-str ; discards return value, yields System.err
+           (doto System/err
+             (.println "System.err.println"))
+           (+ 4 5)))
        (is= 9 (t/discarding-system-err ; suppresses System.err, normal return value
                 (doto System/err
                   (.println "System.err.println"))
                 (+ 4 5)))
        (is-nonblank= ""
-                     (t/with-system-err-str ; discards return value, yields System.err
-                       (t/discarding-system-err ; suppresses System.err, normal return value
-                         (doto System/err
-                           (.println "System.err.println"))
-                         (+ 4 5)))))
+         (t/with-system-err-str ; discards return value, yields System.err
+           (t/discarding-system-err ; suppresses System.err, normal return value
+             (doto System/err
+               (.println "System.err.println"))
+             (+ 4 5)))))
 
      (verify
        (is= (t/sym->var (quote tupelo.core/sym->var))
@@ -1409,10 +1414,10 @@
                                            (+ 3 it)
                                            (/ 10 it))))]
     (is-nonblank= stdout-result
-                  "spy-it-> 1
-                     (inc it)   =>  2
-                     (+ 3 it)   =>  5
-                     (/ 10 it)  =>  2 ")))
+      "spy-it-> 1
+         (inc it)   =>  2
+         (+ 3 it)   =>  5
+         (/ 10 it)  =>  2 ")))
 
 (verify
   (let [params {:a 1 :b 1 :c nil :d nil}]
@@ -2403,11 +2408,11 @@
                                 (is= data data-noop)))]
         ; (newline) (println walk-result-str) (newline)
         (is-nonblank= walk-result-str
-                      " :enter => {:parents [], :data [10 [20 21]]}
-                        :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 0, :val 10}], :data 10}
-                        :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]}], :data [20 21]}
-                        :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 0, :val 20}], :data 20}
-                        :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 1, :val 21}], :data 21} "))))
+          " :enter => {:parents [], :data [10 [20 21]]}
+            :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 0, :val 10}], :data 10}
+            :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]}], :data [20 21]}
+            :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 0, :val 20}], :data 20}
+            :enter => {:parents [[10 [20 21]] {:type :list-entry, :idx 1, :val [20 21]} [20 21] {:type :list-entry, :idx 1, :val 21}], :data 21} "))))
 
 (comment
   #?(:clj
@@ -3039,10 +3044,10 @@
   (isnt (t/wild-submatch? [string?] [123]))
 
   (isnt (t/wild-match? {:id   pos-int?
-                      :name string?}
-                     {:id      1
-                      :name    "Joe"
-                      :address :USA}))
+                        :name string?}
+                       {:id      1
+                        :name    "Joe"
+                        :address :USA}))
   (is (t/wild-submatch? {:id   pos-int?
                          :name string?}
                         {:id      1
