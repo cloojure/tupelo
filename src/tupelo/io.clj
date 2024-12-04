@@ -95,6 +95,8 @@
 (s/defn create-temp-file :- File
   "Given a Path dir unique ID string (e.g. 'my.dummy.file'), returns a java File object
   for a temporary that will be deleted upon JVM exit."
+  ([prefix :- s/Str]
+   (create-temp-file prefix nil)) ; implies `.tmp` suffix
   ([prefix :- s/Str
     suffix :- (s/maybe s/Str)]
    (let [attrs    (into-array FileAttribute [])
