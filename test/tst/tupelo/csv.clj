@@ -1,11 +1,13 @@
-;   Copyright (c) Alan Thompson. All rights reserved. 
+;   Copyright (c) Alan Thompson. All rights reserved.
 ;   The use and distribution terms for this software are covered by the Eclipse Public
 ;   License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
 ;   fashion, you are agreeing to be bound by the terms of this license.
 ;   You must not remove this notice, or any other, from this software.
 (ns tst.tupelo.csv
-  (:use tupelo.csv tupelo.core tupelo.test)
+  (:use tupelo.csv
+        tupelo.core
+        tupelo.test)
   (:require
     [clojure.walk :as walk]
     [tupelo.parse :as parse]
@@ -99,9 +101,9 @@
      {:zip-postal-code "01009" :store-num "00439" :chain-rank "5"}
      {:zip-postal-code "01020" :store-num "01193" :chain-rank "5"}])
   (is= (csv->attrs csv1-str-hdr)
-    {:store-num ["00006" "00277" "00277" "01217" "00439" "01193"]
+    {:store-num       ["00006" "00277" "00277" "01217" "00439" "01193"]
      :zip-postal-code ["01002" "01002" "01003" "01008" "01009" "01020"]
-     :chain-rank ["4" "5" "5" "5" "5" "5"]})
+     :chain-rank      ["4" "5" "5" "5" "5" "5"]})
   (is= (csv->entities csv1-str-hdr {:keywordize-keys? false})
     [{"zip_postal_code" "01002" "store$num" "00006" "chain#rank" "4"}
      {"zip_postal_code" "01002" "store$num" "00277" "chain#rank" "5"}
@@ -153,7 +155,7 @@
 
   ; no header row in file, user spec :labels
   (let [result (csv->entities csv1-str-nohdr
-                 {:headers? false
+                 {:headers?       false
                   :headers-to-use [:zip-postal-code :store-num :chain-rank]})]
     (is= result csv1-entity))
   (let [result (csv->entities csv1-str-nohdr
@@ -188,7 +190,7 @@
          {:aa-key "aa2" :bb-key "bb2"}]))
 
     ; 'b,b' value quoted correctly
-    (let [result (str/quotes->single (entities->csv sample-edn {:force-quote? true}))
+    (let [result   (str/quotes->single (entities->csv sample-edn {:force-quote? true}))
           expected "'aa-key','bb-key'
                     'aaa','b,b'
                     'aa2','bb2' "]
@@ -199,10 +201,10 @@
                            (cond-it-> item
                              (keyword? it) (kw->str it)))
                          sample-edn)
-          result       (str/quotes->single (entities->csv edn-str-keys  {:force-quote? true
-                                                                         :key-fn str
-                                                                         }))
-          expected "'aa-key','bb-key'
+          result       (str/quotes->single (entities->csv edn-str-keys {:force-quote? true
+                                                                        :key-fn       str
+                                                                        }))
+          expected     "'aa-key','bb-key'
                     'aaa','b,b'
                     'aa2','bb2'  "]
       (is (str/nonblank-lines= result expected)))))
@@ -224,3 +226,22 @@
     5,439,01009
     5,1193,01020 "))
 
+; demo creating a tsv text string
+(verify
+  (let [update-data      [{:icn 101 :plan-icn 201 :status :accepted}
+                          {:icn 102 :plan-icn 202 :status :accepted}
+                          {:icn 103 :plan-icn 203 :status :rejected}]
+        tsv-str          (entities->csv update-data {:separator \tab})
+        tsv-str-noheader (entities->csv update-data {:separator \tab :header? false})]
+
+    ; (println tsv-str) ; pretty output for cut/paste
+    (is-nonblank-lines= tsv-str ; we use spaces for the unit test
+      "icn  plan-icn  status
+       101  201       accepted
+       102  202       accepted
+       103  203       rejected")
+    ; (println tsv-str-noheader) ; pretty output for cut/paste
+    (is-nonblank-lines= tsv-str-noheader
+      "101  201       accepted
+       102  202       accepted
+       103  203       rejected")))
