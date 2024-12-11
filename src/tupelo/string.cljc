@@ -346,6 +346,14 @@
    txt :- s/Str]
   (clojure.string/join (clojure.core/take n txt)))
 
+(s/defn drop-lines :- s/Str
+  "Drops the first N lines of a multi-line string, returning a string result."
+  [N :- s/Int
+   text :- s/Str]
+  (clojure.string/join \newline
+    (clojure.core/drop N
+      (clojure.string/split-lines text))))
+
 (s/defn indent :- s/Str ; #todo add readme
   "Indents a string by pre-pending N spaces. Returns a string result."
   [n :- s/Int

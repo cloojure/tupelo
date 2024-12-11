@@ -590,3 +590,15 @@
     (is= "Cost: 00123" (str/format "Cost: %05d" 123))
     (is= "Cost:   123.46" (str/format "Cost: %8.2f" xx))))
 
+(verify
+  (let [sample-text "hello
+                     there
+                     again"
+        drop-1-str  (str/drop-lines 1 sample-text)
+        drop-2-str  (str/drop-lines 2 sample-text)]
+    (is-nonblank-lines= drop-1-str
+      "there
+       again")
+    (is-nonblank-lines= drop-2-str
+      "again")))
+

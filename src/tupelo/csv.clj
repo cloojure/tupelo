@@ -1,4 +1,4 @@
-;   Copyright (c) Alan Thompson. All rights reserved. 
+;   Copyright (c) Alan Thompson. All rights reserved.
 ;   The use and distribution terms for this software are covered by the Eclipse Public
 ;   License 1.0 (http://opensource.org/licenses/eclipse-1.0.php) which can be found in the
 ;   file epl-v10.html at the root of this distribution.  By using this software in any
@@ -15,7 +15,7 @@
   (:import
     [java.io Reader StringReader StringWriter]))
 
-(def ^:no-doc CsvInput  (s/cond-pre Reader s/Str))
+(def ^:no-doc CsvInput (s/cond-pre Reader s/Str))
 
 (s/defn ^:no-doc verified-keys :- [s/Any]
   "Verifies that each entity has an identical keyset. Returns a vector of keys."
@@ -59,7 +59,7 @@
     {:labels-kw  (grab :labels opts) ; use them
      :data-lines parsed-lines} ; all lines are data
 
-)) ; rest of lines are data
+    ))    ; rest of lines are data
 
 (s/defn csv->table :- [[s/Str]]
   "Load `csv-input` (Reader or String) into a string table (vector of vectors). Default options:
@@ -126,15 +126,15 @@
   ([csv-input :- CsvInput
     opts :- tsk/KeyMap]
    (let [opts-default
-                   {:key-fn           str/trim
-                    :val-fn           str/trim
-                    :headers?         true
-                    :headers-to-use   nil
-                    :keywordize-keys? true
-                    :separator        \,
-                    :quote            \"}
-      options         (glue opts-default opts)
-      parsed-lines (csv->table csv-input options)]
+                      {:key-fn           str/trim
+                       :val-fn           str/trim
+                       :headers?         true
+                       :headers-to-use   nil
+                       :keywordize-keys? true
+                       :separator        \,
+                       :quote            \"}
+         options      (glue opts-default opts)
+         parsed-lines (csv->table csv-input options)]
      (with-map-vals options [key-fn val-fn headers? headers-to-use keywordize-keys?]
        (let [parsed-first-row (first parsed-lines)
              keys-vec         (if (not-nil? headers-to-use)
@@ -183,36 +183,38 @@
          :key-fn        kw->str
          :val-fn        ->str
          :newline       :lf     ; or :cr+lf
-         :force-quote?   false
+         :force-quote?  false
+         :header?       true
         }
   "
   ([entities :- [tsk/Map]] (entities->csv entities {}))
   ([entities :- [tsk/Map]
     opts :- tsk/KeyMap]
    (let [opts-default
-                      {:separator \,
-                       :quote     \"
-                       :key-fn    kw->str
-                       :val-fn    ->str
-                       :newline   :lf     ; or :cr+lf
-                       :force-quote? false
-                       ; #todo :quote?  *** add this? ***
-                       }
-         options      (glue opts-default opts)
-         lib-opts     (cond-it-> (submap-by-keys options [:separator :quote :newline])
-                        (grab :force-quote? options) (glue it {:quote? (constantly true)}))
+                  {:separator    \,
+                   :quote        \"
+                   :key-fn       kw->str
+                   :val-fn       ->str
+                   :newline      :lf ; or :cr+lf
+                   :force-quote? false
+                   :header?      true
+                   ; #todo :quote?  *** add this? ***
+                   }
+         options  (glue opts-default opts)
+         lib-opts (cond-it-> (submap-by-keys options [:separator :quote :newline])
+                    (grab :force-quote? options) (glue it {:quote? (constantly true)}))
          ]
-     (with-map-vals options [key-fn val-fn]
+     (with-map-vals options [key-fn val-fn header?]
        (let [keys-sorted     (vec (sort (verified-keys entities)))
-             hdr-vec         (mapv  key-fn keys-sorted)
+             hdr-vec         (mapv key-fn keys-sorted)
              data-vecs       (forv [entity entities]
                                (forv [curr-key keys-sorted]
                                  (val-fn (grab curr-key entity)))) ; coerce all to string for output to CSV
-             string-table-2d (prepend hdr-vec data-vecs)
+             string-table-2d (cond-it-> data-vecs
+                               header? (prepend hdr-vec it))
              string-writer   (StringWriter.)
              >>              (apply csv/write-csv string-writer string-table-2d
-                                (keyvals lib-opts))
+                               (keyvals lib-opts))
              result          (.toString string-writer)
-
              ]
          result)))))
