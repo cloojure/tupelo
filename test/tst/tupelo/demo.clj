@@ -127,7 +127,12 @@
   (is= [] (range 0 -1))
   (is= [] (range 0 0))
   (is= [0] (range 0 1))
-  (is= [0 1] (range 0 2)))
+  (is= [0 1] (range 0 2))
+
+  (is= [] (t/thru 0 -1))
+  (is= [0] (t/thru 0 0))
+  (is= [0 1] (t/thru 0 1))
+  (is= [0 1 2] (t/thru 0 2)))
 
 (verify
   (is= #{} (empty #{1 2 3}))
