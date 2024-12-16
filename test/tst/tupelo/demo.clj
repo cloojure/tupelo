@@ -96,8 +96,7 @@
 
   (is= "abc" (str/join [\a \b \c]))
   (is= "abc" (str/join ["ab" "c"]))
-  (is= "abc" (str/join ["ab" \c]))
-  )
+  (is= "abc" (str/join ["ab" \c])))
 
 (verify
   (is (sequential? []))
@@ -121,7 +120,8 @@
   (isnt (seqable? \a)))
 
 (verify
-  (is (every? odd? [1 3 5])))
+  (is (every? odd? [1 3 5]))
+  (is (every? even? [2 4 6])))
 
 (verify
   (is= [] (range 0 -1))
@@ -129,13 +129,26 @@
   (is= [0] (range 0 1))
   (is= [0 1] (range 0 2))
 
+  ; `thru` includes both endpoints
   (is= [] (t/thru 0 -1))
   (is= [0] (t/thru 0 0))
   (is= [0 1] (t/thru 0 1))
-  (is= [0 1 2] (t/thru 0 2)))
+  (is= [0 1 2] (t/thru 0 2))
 
+  (is= [] (t/thru 0 -1 0.5)) ; can also use increment
+  (is= [0.0] (t/thru 0 0 0.5))
+  (is= [0.0 0.5 1.0] (t/thru 0 1 0.5)))
+
+; `empty` returns an empty collection of the same type as the input
 (verify
   (is= #{} (empty #{1 2 3}))
-  (is= [] (empty [1 2 3]))
-  (is= {} (empty {:a 1 :b 2})))
+  (is= {} (empty {:a 1 :b 2}))
+  (is= [] () (empty [1 2 3])) ; all empty sequences are "equal"
+  (is= [] () (empty '(1 2 3)))
+
+  ; type testing verifys output type
+  (is (set? (empty #{1 2 3})))
+  (is (map? (empty {:a 1 :b 2})))
+  (is (vector? (empty [1 2 3])))
+  (is (list? (empty '(1 2 3)))))
 
