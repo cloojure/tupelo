@@ -322,6 +322,7 @@
      ;  (spyx-pretty (misc/stacktrace-info (RuntimeException. "dummy"))))
 
      (do
+       ; #todo add (fn-info-caller N) to get info about the N'th caller of a fn
        (defn add2 [x y]
          (let [add2-info        (misc/fn-info)
                add2-caller-info (misc/fn-info-caller)
