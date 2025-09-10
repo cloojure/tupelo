@@ -1,8 +1,8 @@
 {:paths   ["src" "test"]
 
- :deps    {org.clojure/clojure                 {:mvn/version "1.12.0"}
+ :deps    {org.clojure/clojure                 {:mvn/version "1.12.2"}
 
-           org.clojure/core.async              {:mvn/version "1.7.701"}
+           org.clojure/core.async              {:mvn/version "1.8.741"}
            org.clojure/core.match              {:mvn/version "1.1.0"}
            org.clojure/data.avl                {:mvn/version "0.2.0"}
            org.clojure/data.csv                {:mvn/version "1.1.0"}
@@ -10,18 +10,18 @@
            org.clojure/math.combinatorics      {:mvn/version "0.3.0"}
            org.clojure/spec.alpha              {:mvn/version "0.5.238"}
            org.clojure/test.check              {:mvn/version "1.1.1"}
-           org.clojure/tools.reader            {:mvn/version "1.5.0"}
+           org.clojure/tools.reader            {:mvn/version "1.5.2"}
 
            camel-snake-kebab/camel-snake-kebab {:mvn/version "0.4.3"}
-           cheshire/cheshire                   {:mvn/version "5.13.0"} ; #todo switch to muuntaja/jsonista
+           cheshire/cheshire                   {:mvn/version "6.1.0"} ; #todo switch to muuntaja/jsonista
            clj-time/clj-time                   {:mvn/version "0.15.2"}
            criterium/criterium                 {:mvn/version "0.4.6"}
            danlentz/clj-uuid                   {:mvn/version "0.2.0"}
-           joda-time/joda-time                 {:mvn/version "2.13.1"}
+           joda-time/joda-time                 {:mvn/version "2.14.0"}
            org.ccil.cowan.tagsoup/tagsoup      {:mvn/version "1.2.1"}
            org.clj-commons/claypoole           {:mvn/version "1.2.2"}
            org.flatland/ordered                {:mvn/version "1.15.12"}
-           org.snakeyaml/snakeyaml-engine      {:mvn/version "2.9"}
+           org.snakeyaml/snakeyaml-engine      {:mvn/version "2.10"}
            overtone/at-at                      {:mvn/version "1.4.65"}
            prismatic/schema                    {:mvn/version "1.4.1"}
            }
@@ -52,7 +52,7 @@
                                        #_{:git/sha "c77545b32255432fd0462a5e0bcb71fcee805011"}
                                        #_{:local/root "/Users/alan/io-tupelo/deps-build-deploy"} ; mac studio
 
-                                       io.github.clojure/tools.build {:mvn/version "0.10.7"}
+                                       io.github.clojure/tools.build {:mvn/version "0.10.10"}
                                        slipset/deps-deploy           {:mvn/version "0.2.2"} ; or "RELEASE"
                                        }
 
@@ -69,7 +69,7 @@
                                        }
                           }
            ; vvv Implicitly controls ClojureScript version
-           :shadow-cljs  {:extra-deps {thheller/shadow-cljs {:mvn/version "2.28.21"}}
+           :shadow-cljs  {:extra-deps {thheller/shadow-cljs {:mvn/version "3.2.0"}}
                           :main-opts  ["-m" "shadow.cljs.devtools.cli"]
                           }
            }
